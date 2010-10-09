@@ -211,7 +211,7 @@ static DocCmdMap docCmdMap[] =
   { "copydetails",     0,                       TRUE  },
   { "date",            0,                       TRUE  },
   { "dotfile",         0,                       TRUE  },
-  { "htmlinclude",     0,                       TRUE  },
+  { "htmlinclude",     0,                       FALSE },
   { "image",           0,                       TRUE  },
   { "include",         0,                       TRUE  },
   { "includelineno",   0,                       TRUE  },
@@ -236,7 +236,7 @@ static DocCmdMap docCmdMap[] =
   { "throw",           0,                       TRUE  },
   { "throws",          0,                       TRUE  },
   { "until",           0,                       TRUE  },
-  { "verbinclude",     0,                       TRUE  },
+  { "verbinclude",     0,                       FALSE },
   { "version",         0,                       TRUE  },
   { "warning",         0,                       TRUE  },
   { 0, 0, FALSE }
@@ -720,6 +720,7 @@ static inline void setOutput(OutputContext ctx)
       else
       {
         pOutputString = &current->doc;
+	inContext = OutputDoc; // need to switch to detailed docs, see bug 631380
       }
       break;
     case OutputXRef:
@@ -2556,7 +2557,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   newEntryNeeded = needNewEntry;
 
   // if we did not proceed during this call, it does not make
-  // sence to continue, since we get stuck. See bug 567346 for situations
+  // sense to continue, since we get stuck. See bug 567346 for situations
   // were this happens
   if (parseMore && position==inputPosition) parseMore=FALSE;
 

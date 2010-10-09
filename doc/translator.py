@@ -59,7 +59,9 @@
   2010/08/20 - maintainers.txt to UTF-8, related processin of unicode strings
              - [any mark] introduced instead of [unreachable] only
              - marks hihglighted in HTML
-  2010/09/30 - Highlighting in what will be the table in langhowto.html modified.
+  2010/08/30 - Highlighting in what will be the table in langhowto.html modified.
+  2010/09/27 - The underscore in \latexonly part of the generated language.doc
+               was prefixed by backslash (was LaTeX related error).
   """                               
 
 from __future__ import generators
@@ -1955,12 +1957,12 @@ class TrManager:
             if obj.status == 'En':
                 # Check whether there is the coupled non-English.
                 classId = obj.classId[:-2]
-                if self.__translDic.has_key(classId):
+                if classId in self.__translDic:
                     langNE = self.__translDic[classId].langReadable
                     maintainer = u'see the %s language' % langNE
                     email = u'~'
             
-            if not maintainer and self.__maintainersDic.has_key(obj.classId):
+            if not maintainer and (obj.classId in self.__maintainersDic):
                 lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]  
                 maintainer = maintainers[0][0]
                 email = maintainers[0][1]
@@ -1969,8 +1971,11 @@ class TrManager:
 
             # Use the template to produce the line of the table and insert
             # the hline plus the constructed line into the table content.
+            # The underscore character must be escaped.
             trlst.append(u'\n  \\hline')
-            trlst.append(latexLineTpl % (lang, maintainer, email, status))
+            s = latexLineTpl % (lang, maintainer, email, status)
+            s = s.replace(u'_', u'\\_')
+            trlst.append(s)
                         
             # List the other maintainers for the language. Do not set
             # lang and status for them.
@@ -1979,7 +1984,9 @@ class TrManager:
             for m in maintainers[1:]:
                 maintainer = m[0]
                 email = m[1]
-                trlst.append(latexLineTpl % (lang, maintainer, email, status))
+                s = latexLineTpl % (lang, maintainer, email, status)
+                s = s.replace(u'_', u'\\_')
+                trlst.append(s)
             
         # Join the table lines and insert into the template.
         latexTable = latexTableTpl % (u''.join(trlst))

@@ -483,6 +483,7 @@ void HtmlHelp::createProjectFile()
       t << s << endl;
       s = indexFiles.next();
     }
+    // items not found by the html help compiler scan.
     t << "tabs.css" << endl;
     t << "tab_a.png" << endl;
     t << "tab_b.png" << endl;
@@ -490,10 +491,11 @@ void HtmlHelp::createProjectFile()
     t << "tab_s.png" << endl;
     t << "nav_h.png" << endl;
     t << "nav_f.png" << endl;
+    t << "bc_s.png" << endl;
     if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
     {
-      t << "open.gif" << endl;
-      t << "closed.gif" << endl;
+      t << "open.png" << endl;
+      t << "closed.png" << endl;
     }
     f.close();
   }

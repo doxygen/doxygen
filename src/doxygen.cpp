@@ -8628,6 +8628,7 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
 static QCString resolveSymlink(QCString path)
 {
   int sepPos=0;
+  int oldPos=0;
   QFileInfo fi;
   QDict<void> nonSymlinks;
   QDict<void> known;
@@ -8651,7 +8652,8 @@ static QCString resolveSymlink(QCString path)
       if (fi.isSymLink())
       {
         QString target = fi.readLink();
-        if (QFileInfo(target).isRelative())
+        bool isRelative = QFileInfo(target).isRelative();
+        if (isRelative)
         {
           target = QDir::cleanDirPath(oldPrefix+"/"+target.data());
         }
@@ -8667,12 +8669,22 @@ static QCString resolveSymlink(QCString path)
         sepPos = 0;
         if (known.find(result)) return QCString(); // recursive symlink!
         known.insert(result,(void*)0x8);
+        if (isRelative)
+        {
+          sepPos = oldPos;
+        }
+        else // link to absolute path
+        {
+          sepPos = 0;
+          oldPrefix = "/";
+        }
       }
       else
       {
         nonSymlinks.insert(prefix,(void*)0x8);
+        oldPrefix = prefix;
       }
-      oldPrefix = prefix;
+      oldPos = sepPos;
     }
   }
   while (sepPos!=-1);
@@ -10473,7 +10485,8 @@ void generateOutput()
   
   //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
   
-  if (Doxygen::formulaList.count()>0 && Config_getBool("GENERATE_HTML"))
+  if (Doxygen::formulaList.count()>0 && Config_getBool("GENERATE_HTML")
+      && !Config_getBool("USE_MATHJAX"))
   {
     msg("Generating bitmaps for formulas in HTML...\n");
     Doxygen::formulaList.generateBitmaps(Config_getString("HTML_OUTPUT"));

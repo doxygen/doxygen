@@ -490,14 +490,36 @@ void HtmlDocVisitor::visit(DocFormula *f)
     forceEndParagraph(f);
     m_t << "<p class=\"formulaDsp\">" << endl;
   }
-  m_t << "<img class=\"formula" 
+
+  if (Config_getBool("USE_MATHJAX"))
+  {
+    QCString text = f->text();
+    bool closeInline = FALSE;
+    if (!bDisplay && !text.isEmpty() && text.at(0)=='$' && 
+                      text.at(text.length()-1)=='$')
+    {
+      closeInline=TRUE;
+      text = text.mid(1,text.length()-2);
+      m_t << "\\(";
+    }
+    m_t << convertToHtml(text);
+    if (closeInline)
+    {
+      m_t << "\\)";
+    }
+  }
+  else
+  {
+    m_t << "<img class=\"formula" 
       << (bDisplay ? "Dsp" : "Inl");
-  m_t << "\" alt=\"";
-  filterQuotedCdataAttr(f->text());
-  m_t << "\"";
-  /// @todo cache image dimensions on formula generation and give height/width
-  /// for faster preloading and better rendering of the page
-  m_t << " src=\"" << f->relPath() << f->name() << ".png\"/>";
+    m_t << "\" alt=\"";
+    filterQuotedCdataAttr(f->text());
+    m_t << "\"";
+    /// @todo cache image dimensions on formula generation and give height/width
+    /// for faster preloading and better rendering of the page
+    m_t << " src=\"" << f->relPath() << f->name() << ".png\"/>";
+
+  }
   if (bDisplay)
   {
     m_t << endl << "</p>" << endl;

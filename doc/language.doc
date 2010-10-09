@@ -122,7 +122,7 @@ when the translator was updated.
     <td>Esperanto</td>
     <td>Ander Martinez</td>
     <td>dwarfnauko at gmail dot com</td>
-    <td>1.6.3</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Finnish</td>
@@ -222,8 +222,8 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Portuguese</td>
-    <td>Rui Godinho Lopes</td>
-    <td><span style="color: brown">[resigned]</span></td>
+    <td>Rui Godinho Lopes<br/><span style="color: red; background-color: yellow">-- searching for the maintainer --</span></td>
+    <td><span style="color: brown">[resigned]</span><br/><span style="color: brown">[Please, try to help to find someone.]</span></td>
     <td>1.3.3</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -334,7 +334,7 @@ when the translator was updated.
   \hline
   English & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & up-to-date \\
   \hline
-  Esperanto & Ander Martinez & {\tt\tiny dwarfnauko at gmail dot com} & 1.6.3 \\
+  Esperanto & Ander Martinez & {\tt\tiny dwarfnauko at gmail dot com} & up-to-date \\
   \hline
   Finnish & Antti Laine & {\tt\tiny antti dot a dot laine at tut dot fi} & 1.6.0 \\
   \hline
@@ -377,10 +377,11 @@ when the translator was updated.
   Persian & Ali Nadalizadeh & {\tt\tiny nadalizadeh at gmail dot com} & up-to-date \\
   \hline
   Polish & Piotr Kaminski & {\tt\tiny [unreachable] Piotr dot Kaminski at ctm dot gdynia dot pl} & 1.6.3 \\
-  ~ & Grzegorz Kowal & {\tt\tiny [unreachable] g_kowal at poczta dot onet dot pl} & ~ \\
+  ~ & Grzegorz Kowal & {\tt\tiny [unreachable] g\_kowal at poczta dot onet dot pl} & ~ \\
   ~ & Krzysztof Kral & {\tt\tiny krzysztof dot kral at gmail dot com} & ~ \\
   \hline
   Portuguese & Rui Godinho Lopes & {\tt\tiny [resigned] rgl at ruilopes dot com} & 1.3.3 \\
+  ~ & -- searching for the maintainer -- & {\tt\tiny [Please, try to help to find someone.]} & ~ \\
   \hline
   Romanian & Ionut Dumitrascu & {\tt\tiny reddumy at yahoo dot com} & 1.6.0 \\
   ~ & Alexandru Iosup & {\tt\tiny aiosup at yahoo dot com} & ~ \\

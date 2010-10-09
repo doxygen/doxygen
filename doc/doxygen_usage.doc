@@ -75,7 +75,7 @@ doxygen -w latex header.tex doxygen.sty
 \endverbatim
 If you need non-default options (for instance to use pdflatex) you need
 to make a config file with those options set correctly and then specify
-that config file as the forth argument. 
+that config file as the third argument. 
 <li>For RTF output, you can generate the default style sheet file (see
     \ref cfg_rtf_stylesheet_file "RTF_STYLESHEET_FILE") using:
 \verbatim
