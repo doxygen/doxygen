@@ -259,6 +259,7 @@ static void handleHtmlTag()
   
 static QCString stripEmptyLines(const char *s)
 {
+  if (s==0) return QCString();
   int result=0,p=0;
   for (;;)
   {

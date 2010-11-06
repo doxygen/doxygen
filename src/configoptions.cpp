@@ -1922,17 +1922,16 @@ void addConfigOptions(Config *cfg)
                  "If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then\n"
                  "this tag can be used to specify a list of macro names that should be expanded.\n"
                  "The macro definition that is found in the sources will be used.\n"
-                 "Use the PREDEFINED tag if you want to use a different macro definition."
+                 "Use the PREDEFINED tag if you want to use a different macro definition that overrules the definition found in the source code."
                 );
   cl->addDependency("ENABLE_PREPROCESSING");
   //----
   cb = cfg->addBool(
                  "SKIP_FUNCTION_MACROS",
                  "If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then\n"
-                 "doxygen's preprocessor will remove all function-like macros that are alone\n"
-                 "on a line, have an all uppercase name, and do not end with a semicolon. Such\n"
-                 "function macros are typically used for boiler-plate code, and will confuse\n"
-                 "the parser if not removed.",
+                 "doxygen's preprocessor will remove all references to function-like macros\n"
+                 "that are alone on a line, have an all uppercase name, and do not end with a\n"
+                 "semicolon, because these will confuse the parser if not removed.",
                  TRUE
                 );
   cb->addDependency("ENABLE_PREPROCESSING");
@@ -2046,16 +2045,15 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "DOT_FONTNAME",
-                 "By default doxygen will write a font called FreeSans.ttf to the output\n"
-                 "directory and reference it in all dot files that doxygen generates. This\n"
-                 "font does not include all possible unicode characters however, so when you need\n"
-                 "these (or just want a differently looking font) you can specify the font name\n"
+                 "By default doxygen will write a font called Helvetica to the output\n"
+                 "directory and reference it in all dot files that doxygen generates.\n"
+                 "When you want a differently looking font you can specify the font name\n"
                  "using DOT_FONTNAME. You need need to make sure dot is able to find the font,\n"
                  "which can be done by putting it in a standard location or by setting the\n"
                  "DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory\n"
                  "containing the font."
                 );
-  cs->setDefaultValue("FreeSans.ttf");
+  cs->setDefaultValue("Helvetica");
   cs->addDependency("HAVE_DOT");
   //----
   ci = cfg->addInt(
@@ -2190,6 +2188,7 @@ void addConfigOptions(Config *cfg)
   ce->addValue("png");
   ce->addValue("jpg");
   ce->addValue("gif");
+  ce->addValue("svg");
   ce->addDependency("HAVE_DOT");
   //----
   cs = cfg->addString(

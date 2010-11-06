@@ -2389,7 +2389,7 @@ INPUT            = examples/examples.doc src
 FILE_PATTERNS    = *.cc *.h
 INCLUDE_PATH     = examples
 TAGFILES         = qt.tag
-PERL_PATH        = /usr/local/bin/perl
+PERL_PATH        = /usr/bin/perl
 SEARCHENGINE     = YES
 \endverbatim
 

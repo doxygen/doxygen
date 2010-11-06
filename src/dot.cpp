@@ -48,7 +48,7 @@
 
 #define MAP_CMD "cmapx"
 
-//#define FONTNAME "FreeSans"
+//#define FONTNAME "Helvetica"
 #define FONTNAME getDotFontName()
 #define FONTSIZE getDotFontSize()
 
@@ -86,7 +86,11 @@ static const char *edgeStyleMap[] =
 static QCString getDotFontName()
 {
   static QCString dotFontName = Config_getString("DOT_FONTNAME");
-  if (dotFontName.isEmpty()) dotFontName="FreeSans.ttf";
+  if (dotFontName.isEmpty()) 
+  {
+    //dotFontName="FreeSans.ttf";
+    dotFontName="Helvetica";
+  }
   return dotFontName;
 }
 
@@ -116,6 +120,79 @@ static void writeGraphHeader(FTextStream &t)
 static void writeGraphFooter(FTextStream &t)
 {
   t << "}" << endl;
+}
+
+static QCString replaceRef(const QCString &buf,const QCString relPath,
+       bool urlOnly,const QCString &context,const QCString &target=QCString())
+{
+  // search for href="...", store ... part in link
+  QCString href = "href";
+  bool isXLink=FALSE;
+  int len = 6;
+  int indexS = buf.find("href=\""), indexE;
+  if (indexS>5 && buf.find("xlink:href=\"")!=-1) // XLink href (for SVG)
+  {
+    indexS-=6;
+    len+=6;
+    href.prepend("xlink:");
+    isXLink=TRUE;
+  }
+  if (indexS>=0 && (indexE=buf.find('"',indexS+len))!=-1)
+  {
+    QCString link = buf.mid(indexS+len,indexE-indexS-len);
+    QCString result;
+    if (urlOnly) // for user defined dot graphs
+    {
+      if (link.left(5)=="\\ref " || link.left(5)=="@ref ") // \ref url
+      {
+        result=href+"=\"";
+        // fake ref node to resolve the url
+        DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
+        result+=externalRef(relPath,df->ref(),TRUE);
+        if (!df->file().isEmpty())  
+          result += df->file().data() + Doxygen::htmlFileExtension;
+        if (!df->anchor().isEmpty()) 
+          result += "#" + df->anchor();
+        delete df;
+        result += "\"";
+      }
+      else
+      {
+        result = href+"=\"" + link + "\"";
+      }
+    }
+    else // ref$url (external ref via tag file), or $url (local ref)
+    {
+      int marker = link.find('$');
+      if (marker!=-1)
+      {
+        QCString ref = link.left(marker);
+        QCString url = link.mid(marker+1);
+        if (!ref.isEmpty())
+        {
+          result = externalLinkTarget() + externalRef(relPath,ref,FALSE);
+        }
+        result+= href+"=\"";
+        result+=externalRef(relPath,ref,TRUE);
+        result+= url + "\"";
+      }
+      else // should not happen, but handle properly anyway
+      {
+        result = href+"=\"" + link + "\"";
+      }
+    }
+    if (!target.isEmpty())
+    {
+      result+=" target=\""+target+"\"";
+    }
+    QCString leftPart = buf.left(indexS);
+    QCString rightPart = buf.mid(indexE+1);
+    return leftPart + result + rightPart;
+  }
+  else
+  {
+    return buf;
+  }
 }
 
 /*! converts the rectangles in a client site image map into a stream
@@ -150,57 +227,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
 
     if (buf.left(5)=="<area")
     {
-      // search for href="...", store ... part in link
-      int indexS = buf.find("href=\""), indexE;
-      if (indexS!=-1 && (indexE=buf.find('"',indexS+6))!=-1)
-      {
-        QCString link = buf.mid(indexS+6,indexE-indexS-6);
-        QCString result;
-        if (urlOnly) // for user defined dot graphs
-        {
-          if (link.left(5)=="\\ref " || link.left(5)=="@ref ") // \ref url
-          {
-            result="href=\"";
-            // fake ref node to resolve the url
-            DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
-            result+=externalRef(relPath,df->ref(),TRUE);
-            if (!df->file().isEmpty())  
-              result += df->file().data() + Doxygen::htmlFileExtension;
-            if (!df->anchor().isEmpty()) 
-              result += "#" + df->anchor();
-            delete df;
-            result += "\"";
-          }
-          else
-          {
-            result = "href=\"" + link + "\"";
-          }
-        }
-        else // ref$url (external ref via tag file), or $url (local ref)
-        {
-          int marker = link.find('$');
-          if (marker!=-1)
-          {
-            QCString ref = link.left(marker);
-            QCString url = link.mid(marker+1);
-            if (!ref.isEmpty())
-            {
-              result = externalLinkTarget() + externalRef(relPath,ref,FALSE);
-            }
-            result+= "href=\"";
-            result+=externalRef(relPath,ref,TRUE);
-            result+= url + "\"";
-          }
-          else // should not happen, but handle properly anyway
-          {
-            result = "href=\"" + link + "\"";
-          }
-        }
-        QCString leftPart = buf.left(indexS);
-        QCString rightPart = buf.mid(indexE+1);
-        buf = leftPart + result + rightPart;
-      }
-      t << buf;
+      t << replaceRef(buf,relPath,urlOnly,context);
     }
   }
   return TRUE;
@@ -373,6 +400,64 @@ static bool writeVecGfxFigure(FTextStream &out,const QCString &baseName,
          "\\end{figure}\n";
 
   //printf("writeVecGfxFigure()=1\n");
+  return TRUE;
+}
+
+// extract size from a dot generated SVG file
+static bool readSVGSize(const QCString &fileName,int *width,int *height)
+{
+  bool found=FALSE;
+  QFile f(fileName);
+  if (!f.open(IO_ReadOnly))
+  {
+    return FALSE;
+  }
+  const int maxLineLen=4096;
+  char buf[maxLineLen];
+  while (!f.atEnd() && !found)
+  {
+    int numBytes = f.readLine(buf,maxLineLen-1); // read line
+    if (numBytes>0)
+    {
+      buf[numBytes]='\0';
+      if (sscanf(buf,"<svg width=\"%dpt\" height=\"%dpt\"",width,height)==2)
+      {
+        found=TRUE;
+      }
+    }
+    else // read error!
+    {
+      //printf("Read error %d!\n",numBytes);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+static void writeSVGNotSupported(FTextStream &out)
+{
+  out << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
+}
+
+// check if a reference to a SVG figure can be written and does so if possible.
+// return FALSE if not possible (for instance because the SVG file is not yet generated).
+static bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
+                           const QCString &baseName,const QCString &absImgName)
+{
+  int width=600,height=450;
+  if (!readSVGSize(absImgName,&width,&height))
+  {
+    return FALSE;
+  }
+//  out << "<object type=\"image/svg+xml\" data=\"" 
+  out << "<iframe src=\"" 
+      << relPath << baseName << ".svg\" width=\"" 
+      << ((width*96+48)/72) << "\" height=\"" 
+      << ((height*96+48)/72) << "\">";
+  writeSVGNotSupported(out);
+//  out << "</object>";
+  out << "</iframe>";
+
   return TRUE;
 }
 
@@ -588,13 +673,13 @@ error:
 
 //--------------------------------------------------------------------
 
-DotMapConverter::DotMapConverter(const char *patchFile) 
+DotFilePatcher::DotFilePatcher(const char *patchFile) 
   : m_patchFile(patchFile)
 {
   m_maps.setAutoDelete(TRUE);
 }
 
-int DotMapConverter::addMap(const QCString &mapFile,const QCString &relPath,
+int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
                bool urlOnly,const QCString &context,const QCString &label)
 {
   int id = m_maps.count();
@@ -608,8 +693,8 @@ int DotMapConverter::addMap(const QCString &mapFile,const QCString &relPath,
   return id;
 }
 
-int DotMapConverter::addFigure(const QCString &baseName,
-                               const QCString &figureName,bool heightCheck)
+int DotFilePatcher::addFigure(const QCString &baseName,
+                              const QCString &figureName,bool heightCheck)
 {
   int id = m_maps.count();
   Map *map = new Map;
@@ -620,9 +705,35 @@ int DotMapConverter::addFigure(const QCString &baseName,
   return id;
 }
 
-bool DotMapConverter::run()
+int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
+                                     const QCString &context)
 {
-  //printf("DotMapConverter::run(): %s\n",m_patchFile.data());
+  int id = m_maps.count();
+  Map *map = new Map;
+  map->relPath = relPath;
+  map->urlOnly = urlOnly;
+  map->context = context;
+  m_maps.append(map);
+  return id;
+}
+
+int DotFilePatcher::addSVGObject(const QCString &baseName,
+                                 const QCString &absImgName,
+                                 const QCString &relPath)
+{
+  int id = m_maps.count();
+  Map *map = new Map;
+  map->mapFile = absImgName;
+  map->relPath = relPath;
+  map->label = baseName;
+  m_maps.append(map);
+  return id;
+}
+
+bool DotFilePatcher::run()
+{
+  //printf("DotFilePatcher::run(): %s\n",m_patchFile.data());
+  bool isSVGFile = m_patchFile.right(4)==".svg";
   QCString tmpName = m_patchFile+".tmp";
   if (!QDir::current().rename(m_patchFile,tmpName))
   {
@@ -649,12 +760,41 @@ bool DotMapConverter::run()
   {
     QCString line(maxLineLen);
     int numBytes = fi.readLine(line.data(),maxLineLen);
+    //printf("line=[%s]\n",line.stripWhiteSpace().data());
     int i;
     ASSERT(numBytes<maxLineLen);
-    if ((i=line.find("<!-- MAP"))!=-1)
+    if (isSVGFile)
+    {
+      Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
+      t << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
+    }
+    else if ((i=line.find("<!-- SVG"))!=-1 || (i=line.find("[!-- SVG"))!=-1)
+    {
+      //printf("Found marker at %d\n",i);
+      int mapId=-1;
+      t << line.left(i);
+      int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
+      if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
+      {
+        int e = QMAX(line.find("--]"),line.find("-->"));
+        Map *map = m_maps.at(mapId);
+        if (!writeSVGFigureLink(t,map->relPath,map->label,map->mapFile))
+        {
+          err("Problem extracting size from SVG file %s\n",map->mapFile.data());
+        }
+        if (e!=-1) t << line.mid(e+3);
+      }
+      else // error invalid map id!
+      {
+        err("Found invalid SVG id in file %s!\n",m_patchFile.data());
+        t << line.mid(i);
+      }
+    }
+    else if ((i=line.find("<!-- MAP"))!=-1)
     {
       int mapId=-1;
-      int n = sscanf(line,"<!-- MAP %d",&mapId);
+      t << line.left(i);
+      int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
       if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
       {
         Map *map = m_maps.at(mapId);
@@ -666,8 +806,8 @@ bool DotMapConverter::run()
       }
       else // error invalid map id!
       {
-        err("Found invalid MAP id in file %s!\n",mapId,m_patchFile.data());
-        t << line;
+        err("Found invalid MAP id in file %s!\n",m_patchFile.data());
+        t << line.mid(i);
       }
     }
     else if ((i=line.find("% FIG"))!=-1)
@@ -808,10 +948,10 @@ int DotManager::addMap(const QCString &file,const QCString &mapFile,
                 const QCString &relPath,bool urlOnly,const QCString &context,
                 const QCString &label)
 {
-  DotMapConverter *map = m_dotMaps.find(file);
+  DotFilePatcher *map = m_dotMaps.find(file);
   if (map==0)
   {
-    map = new DotMapConverter(file);
+    map = new DotFilePatcher(file);
     m_dotMaps.append(file,map);
   }
   return map->addMap(mapFile,relPath,urlOnly,context,label);
@@ -820,13 +960,37 @@ int DotManager::addMap(const QCString &file,const QCString &mapFile,
 int DotManager::addFigure(const QCString &file,const QCString &baseName,
                           const QCString &figureName,bool heightCheck)
 {
-  DotMapConverter *map = m_dotMaps.find(file);
+  DotFilePatcher *map = m_dotMaps.find(file);
   if (map==0)
   {
-    map = new DotMapConverter(file);
+    map = new DotFilePatcher(file);
     m_dotMaps.append(file,map);
   }
   return map->addFigure(baseName,figureName,heightCheck);
+}
+
+int DotManager::addSVGConversion(const QCString &file,const QCString &relPath,
+                       bool urlOnly,const QCString &context)
+{
+  DotFilePatcher *map = m_dotMaps.find(file);
+  if (map==0)
+  {
+    map = new DotFilePatcher(file);
+    m_dotMaps.append(file,map);
+  }
+  return map->addSVGConversion(relPath,urlOnly,context);
+}
+
+int DotManager::addSVGObject(const QCString &file,const QCString &baseName,
+                             const QCString &absImgName,const QCString &relPath)
+{
+  DotFilePatcher *map = m_dotMaps.find(file);
+  if (map==0)
+  {
+    map = new DotFilePatcher(file);
+    m_dotMaps.append(file,map);
+  }
+  return map->addSVGObject(baseName,absImgName,relPath);
 }
 
 bool DotManager::run()
@@ -903,11 +1067,11 @@ bool DotManager::run()
 
   // patch the output file and insert the maps and figures
   i=1;
-  SDict<DotMapConverter>::Iterator di(m_dotMaps);
-  DotMapConverter *map;
+  SDict<DotFilePatcher>::Iterator di(m_dotMaps);
+  DotFilePatcher *map;
   for (di.toFirst();(map=di.current());++di)
   {
-    msg("Inserting map/figure %d/%d\n",i,numDotMaps);
+    msg("Patching output file %d/%d\n",i,numDotMaps);
     if (!map->run()) return FALSE;
     i++;
   }
@@ -1640,14 +1804,32 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
     Doxygen::indexList.addImageFile(imgName);
     // write image and map in a table row
     QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
-    out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"
+    out << "<tr><td>";
+    if (imgExt=="svg") // vector graphics
+    {
+      if (regenerate || !writeSVGFigureLink(out,QCString(),baseName,absImgName))
+      {
+        if (regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName,QCString(),
+                                                   FALSE,QCString());
+        }
+        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,
+                                                         absImgName,QCString());
+        out << "<!-- SVG " << mapId << " -->" << endl;
+      }
+    }
+    else // normal bitmap
+    {
+      out << "<img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"
         << mapLabel << "\"/>" << endl;
 
-    if (regenerate || !insertMapFile(out,absMapName,QCString(),mapLabel))
-    {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,QCString(),
-                                                 FALSE,QCString(),mapLabel);
-      out << "<!-- MAP " << mapId << " -->" << endl;
+      if (regenerate || !insertMapFile(out,absMapName,QCString(),mapLabel))
+      {
+        int mapId = DotManager::instance()->addMap(fileName,absMapName,QCString(),
+                                                   FALSE,QCString(),mapLabel);
+        out << "<!-- MAP " << mapId << " -->" << endl;
+      }
     }
 
     out << "</td></tr>" << endl;
@@ -2362,6 +2544,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   }
   baseName = convertNameToFile(diskName());
 
+  // derive target file names from baseName
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString absBaseName = QCString(d.absPath())+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
@@ -2416,27 +2599,47 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   {
     QCString mapLabel = escapeCharsInString(m_startNode->m_label,FALSE)+"_"+
                         escapeCharsInString(mapName,FALSE);
-    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
-      << imgExt << "\" border=\"0\" usemap=\"#"
-      << mapLabel << "\" alt=\"";
-    switch (m_graphType)
+    if (imgExt=="svg") // add link to SVG file without map file
     {
-      case DotNode::Collaboration:
-        out << "Collaboration graph";
-        break;
-      case DotNode::Inheritance:
-        out << "Inheritance graph";
-        break;
-      default:
-        ASSERT(0);
-        break;
+      out << "<div class=\"center\">";
+      if (regenerate || !writeSVGFigureLink(out,relPath,baseName,absImgName)) // need to patch the links in the generated SVG file
+      {
+        if (regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString());
+        }
+        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
+        out << "<!-- SVG " << mapId << " -->" << endl;
+      }
+      out << "</div>" << endl;
     }
-    out << "\"/></div>" << endl;
-    if (regenerate || !insertMapFile(out,absMapName,relPath,mapLabel))
+    else // add link to bitmap file with image map
     {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                               FALSE,QCString(),mapLabel);
-      out << "<!-- MAP " << mapId << " -->" << endl;
+      out << "<div class=\"center\">";
+      out << "<img src=\"" << relPath << baseName << "." 
+        << imgExt << "\" border=\"0\" usemap=\"#"
+        << mapLabel << "\" alt=\"";
+      switch (m_graphType)
+      {
+        case DotNode::Collaboration:
+          out << "Collaboration graph";
+          break;
+        case DotNode::Inheritance:
+          out << "Inheritance graph";
+          break;
+        default:
+          ASSERT(0);
+          break;
+      } 
+      out << "\"/>";
+      out << "</div>" << endl;
+
+      if (regenerate || !insertMapFile(out,absMapName,relPath,mapLabel))
+      {
+        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+            FALSE,QCString(),mapLabel);
+        out << "<!-- MAP " << mapId << " -->" << endl;
+      }
     }
   }
   else if (format==EPS) // produce tex to include the .eps image
@@ -2712,21 +2915,37 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
-        << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "\" alt=\"\"/>";
-    out << "</div>" << endl;
-
-    QCString absMapName = absBaseName+".map";
-    if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
+    if (imgExt=="svg") // Scalable vector graphics
     {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                               FALSE,QCString(),mapName);
-      out << "<!-- MAP " << mapId << " -->" << endl;
+      out << "<div class=\"center\">";
+      if (regenerate || !writeSVGFigureLink(out,relPath,baseName,absImgName)) // need to patch the links in the generated SVG file
+      {
+        if (regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString());
+        }
+        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
+        out << "<!-- SVG " << mapId << " -->" << endl;
+      }
+      out << "</div>" << endl;
     }
-        
+    else // bitmap graphics
+    {
+      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
+          << imgExt << "\" border=\"0\" usemap=\"#"
+          << mapName << "\" alt=\"\"/>";
+      out << "</div>" << endl;
+
+      QCString absMapName = absBaseName+".map";
+      if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
+      {
+        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                                 FALSE,QCString(),mapName);
+        out << "<!-- MAP " << mapId << " -->" << endl;
+      }
+    }
   }
-  else if (format==EPS)
+  else if (format==EPS) // encapsulated postscript
   {
     if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
@@ -2986,21 +3205,37 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
-        << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "\" alt=\"";
-    out << "\"/>";
-    out << "</div>" << endl;
-
-    if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
+    if (imgExt=="svg") // Scalable vector graphics
     {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                               FALSE,QCString(),mapName);
-      out << "<!-- MAP " << mapId << " -->" << endl;
+      out << "<div class=\"center\">";
+      if (regenerate || !writeSVGFigureLink(out,relPath,baseName,absImgName)) // need to patch the links in the generated SVG file
+      {
+        if (regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString());
+        }
+        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
+        out << "<!-- SVG " << mapId << " -->" << endl;
+      }
+      out << "</div>" << endl;
     }
+    else // bitmap graphics
+    {
+      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
+          << imgExt << "\" border=\"0\" usemap=\"#"
+          << mapName << "\" alt=\"";
+      out << "\"/>";
+      out << "</div>" << endl;
 
+      if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
+      {
+        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                                   FALSE,QCString(),mapName);
+        out << "<!-- MAP " << mapId << " -->" << endl;
+      }
+    }
   }
-  else if (format==EPS)
+  else if (format==EPS) // encapsulated postscript
   {
     if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
@@ -3114,18 +3349,35 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
-        << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "\" alt=\"";
-    out << convertToXML(m_dir->displayName());
-    out << "\"/>";
-    out << "</div>" << endl;
-
-    if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
+    if (imgExt=="svg") // Scalable vector graphics
     {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-                                               TRUE,QCString(),mapName);
-      out << "<!-- MAP " << mapId << " -->" << endl;
+      out << "<div class=\"center\">";
+      if (regenerate || !writeSVGFigureLink(out,relPath,baseName,absImgName)) // need to patch the links in the generated SVG file
+      {
+        if (regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString());
+        }
+        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
+        out << "<!-- SVG " << mapId << " -->" << endl;
+      }
+      out << "</div>" << endl;
+    }
+    else // bitmap graphics
+    {
+      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
+          << imgExt << "\" border=\"0\" usemap=\"#"
+          << mapName << "\" alt=\"";
+      out << convertToXML(m_dir->displayName());
+      out << "\"/>";
+      out << "</div>" << endl;
+
+      if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
+      {
+        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                                   TRUE,QCString(),mapName);
+        out << "<!-- MAP " << mapId << " -->" << endl;
+      }
     }
   }
   else if (format==EPS)
@@ -3214,6 +3466,14 @@ void generateGraphLegend(const char *path)
   }
   Doxygen::indexList.addImageFile(imgName);
 
+  if (imgExt=="svg")
+  {
+    DotManager::instance()->addSVGObject(
+        absBaseName+Config_getString("HTML_FILE_EXTENSION"),
+        "graph_legend",
+        absImgName,QCString());
+  }
+
 }
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
@@ -3258,16 +3518,16 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 }
 
  
-/*! Marco Dalla Gasperina [marcodg@attbi.com] added this to allow
- *  dotfiles to generate image maps.
+/*! Writes user defined image map to the output.
+ *  \param t text stream to write to
  *  \param inFile just the basename part of the filename
  *  \param outDir output directory
  *  \param relPath relative path the to root of the output dir
  *  \param context the scope in which this graph is found (for resolving links)
- *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
  */
-QCString getDotImageMapFromFile(const QCString& inFile, const QCString& outDir,
-                                const QCString &relPath, const QCString &context)
+void writeDotImageMapFromFile(FTextStream &t,
+                            const QCString& inFile, const QCString& outDir,
+                            const QCString &relPath, const QCString &context)
 {
   QCString outFile = inFile + ".map";
 
@@ -3282,17 +3542,32 @@ QCString getDotImageMapFromFile(const QCString& inFile, const QCString& outDir,
   dotRun.preventCleanUp();
   if (!dotRun.run())
   {
-    return "";
+    return;
   }
 
-  QGString result;
-  FTextStream tmpout(&result);
-  convertMapFile(tmpout, outFile, relPath ,TRUE, context);
-  d.remove(outFile);
+  QCString mapName = inFile+".map";
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
-  return result.data();
+  if (imgExt=="svg") // vector graphics
+  {
+    writeSVGFigureLink(t,relPath,inFile,inFile+".svg");
+    DotFilePatcher patcher(inFile+".svg");
+    patcher.addSVGConversion(relPath,TRUE,context);
+    patcher.run();
+  }
+  else // bitmap graphics
+  {
+    t << "<img src=\"" << relPath << inFile << "." 
+      << imgExt << "\" alt=\""
+      << inFile << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl
+      << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
+
+    convertMapFile(t, outFile, relPath ,TRUE, context);
+
+    t << "</map>" << endl;
+  }
+  d.remove(outFile);
 }
-// end MDG mods
 
 //-------------------------------------------------------------
 
@@ -3605,14 +3880,33 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
   if (format==BITMAP && writeImageMap)
   {
     QCString mapLabel = escapeCharsInString(baseName,FALSE);
-    t << "<center><table><tr><td><img src=\"" << relPath << imgName
-      << "\" border=\"0\" alt=\"\" usemap=\"#" 
-      << mapLabel << "\"/>" << endl;
-    if (regenerate || !insertMapFile(t,absMapName,relPath,mapLabel))
+    t << "<center><table><tr><td>";
+
+    if (imgExt=="svg")
     {
-      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
-          FALSE,QCString(),mapLabel);
-      t << "<!-- MAP " << mapId << " -->" << endl;
+      t << "<div class=\"center\">";
+      if (regenerate || !writeSVGFigureLink(t,relPath,baseName,absImgName)) // need to patch the links in the generated SVG file
+      {
+        if (regenerate)
+        {
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString());
+        }
+        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
+        t << "<!-- SVG " << mapId << " -->" << endl;
+      }
+      t << "</div>" << endl;
+    }
+    else
+    {
+      t << "<img src=\"" << relPath << imgName
+        << "\" border=\"0\" alt=\"\" usemap=\"#" 
+        << mapLabel << "\"/>" << endl;
+      if (regenerate || !insertMapFile(t,absMapName,relPath,mapLabel))
+      {
+        int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                                   FALSE,QCString(),mapLabel);
+        t << "<!-- MAP " << mapId << " -->" << endl;
+      }
     }
 
     t << "</td></tr></table></center>" << endl;

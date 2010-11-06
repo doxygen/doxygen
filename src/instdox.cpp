@@ -119,6 +119,7 @@ void writeInstallScript()
     t << "      $match = \"" << Config_getString("HTML_FILE_EXTENSION") << "\";\n";
     t << "      next if ( $file =~ /^\\.\\.?$/ );\n";
     t << "      ($file =~ /$match/) && (push @files, $file);\n";
+    t << "      ($file =~ /\\.svg/) && (push @files, $file);\n";
     t << "      ($file =~ \"tree.js\") && (push @files, $file);\n";
     t << "    }\n";
     t << "    closedir(D);\n";
@@ -147,7 +148,7 @@ void writeInstallScript()
     t << "    }\n";
     t << "    if ($oldf ne \"tree.js\") {\n";
     t << "      while (<F>) {\n";
-    t << "        s/doxygen\\=\\\"([^ \\\"\\:\\t\\>\\<]*)\\:([^ \\\"\\t\\>\\<]*)\\\" (href|src)=\\\"\\2/doxygen\\=\\\"$1:$subst{$1}\\\" \\3=\\\"$subst{$1}/g;\n";
+    t << "        s/doxygen\\=\\\"([^ \\\"\\:\\t\\>\\<]*)\\:([^ \\\"\\t\\>\\<]*)\\\" (xlink:href|href|src)=\\\"\\2/doxygen\\=\\\"$1:$subst{$1}\\\" \\3=\\\"$subst{$1}/g;\n";
     t << "        print G \"$_\";\n";
     t << "      }\n";
     t << "    }\n";

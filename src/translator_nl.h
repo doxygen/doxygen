@@ -33,9 +33,6 @@ class TranslatorDutch : public Translator
      *  "\\usepackage[latin2]{inputenc}\n"
      *  "\\usepackage[T1]{fontenc}\n"
      *  </pre>
-     * 
-     * The Dutch LaTeX does not use such commands.  Because of this
-     * the empty string is returned in this implementation.
      */
     QCString latexLanguageSupportCommand()
     {
@@ -90,11 +87,11 @@ class TranslatorDutch : public Translator
     QCString trCompoundList()
     { return "Klasse Lijst"; }
     QCString trFileList()
-    { return "File Lijst"; }
+    { return "Bestandslijst"; }
     QCString trCompoundMembers()
     { return "Klasse Members"; }
     QCString trFileMembers()
-    { return "File members"; }
+    { return "Bestand members"; }
     QCString trRelatedPages()
     { return "Gerelateerde pagina's"; }
     QCString trExamples()
@@ -150,13 +147,13 @@ class TranslatorDutch : public Translator
     QCString trCompoundIndex()
     { return "Klasse Index"; }
     QCString trFileIndex() 
-    { return "File Index"; }
+    { return "Bestand Index"; }
     QCString trModuleDocumentation()
     { return "Module Documentatie"; }
     QCString trClassDocumentation()
     { return "Klassen Documentatie"; }
     QCString trFileDocumentation()
-    { return "File Documentatie"; }
+    { return "Bestand Documentatie"; }
     QCString trExampleDocumentation()
     { return "Documentatie van voorbeelden"; }
     QCString trPageDocumentation()
@@ -1145,7 +1142,7 @@ class TranslatorDutch : public Translator
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-    { return "Deze directory hi&euml;rarchie is min of meer alfabetisch "
+    { return "Deze folder hi&euml;rarchie is min of meer alfabetisch "
              "gesorteerd:";
     }
 
@@ -1191,7 +1188,7 @@ class TranslatorDutch : public Translator
     
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
-    { return "Member Function/Subroutine Documentation"; }
+    { return "Member Funcie/Subroutine Documentatie"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)

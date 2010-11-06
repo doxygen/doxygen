@@ -1634,11 +1634,14 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   writeDotGraphFromFile(fn,outDir,baseName,BITMAP);
   QCString mapName = baseName+".map";
   QCString mapFile = fn+".map";
-  m_t << "<img src=\"" << relPath << baseName << "." 
-      << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
-      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QCString imap = getDotImageMapFromFile(fn,outDir,relPath,context);
-  m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+  //m_t << "<img src=\"" << relPath << baseName << "." 
+  //    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
+  //    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" 
+  //    << endl;
+  //QCString imap = getDotImageMapFromFile(m_t,fn,baseName,outDir,relPath,context);
+  //m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" 
+  //    << imap << "</map>" << endl;
+  writeDotImageMapFromFile(m_t,fn,outDir,relPath,context);
 }
 
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,

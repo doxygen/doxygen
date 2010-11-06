@@ -365,8 +365,8 @@ void Entry::addSpecialListItem(const char *listName,int itemId)
 
 EntryNav::EntryNav(EntryNav *parent, Entry *e)
              : m_parent(parent), m_subList(0), m_section(e->section), m_type(e->type),
-              m_name(e->name), m_fileDef(0), m_info(0), m_offset(-1), 
-              m_noLoad(FALSE)
+              m_name(e->name), m_fileDef(0), m_lang(e->lang), 
+              m_info(0), m_offset(-1), m_noLoad(FALSE) 
 {
   if (e->tagInfo)
   {

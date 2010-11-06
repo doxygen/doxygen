@@ -3141,7 +3141,15 @@ void writeGraphInfo(OutputList &ol)
   bool oldStripCommentsState = stripCommentsStateRef;
   // temporarily disable the stripping of comments for our own code example!
   stripCommentsStateRef = FALSE;
-  ol.parseDoc("graph_legend",1,0,0,theTranslator->trLegendDocs(),FALSE,FALSE);
+  QCString legendDocs = theTranslator->trLegendDocs();
+  int s = legendDocs.find("<center>");
+  int e = legendDocs.find("</center>");
+  if (Config_getEnum("DOT_IMAGE_FORMAT")=="svg" && s!=-1 && e!=-1)
+  {
+    legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]\n" + legendDocs.mid(e); 
+    //printf("legendDocs=%s\n",legendDocs.data());
+  }
+  ol.parseDoc("graph_legend",1,0,0,legendDocs,FALSE,FALSE);
   stripCommentsStateRef = oldStripCommentsState;
   endFile(ol);
   ol.popGeneratorState();

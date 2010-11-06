@@ -2197,8 +2197,9 @@ static MemberDef *addVariableToFile(
  *  \returns -1 if this is not a function pointer variable or
  *           the index at which the brace of (...*name) was found.
  */
-static int findFunctionPtr(const QCString &type,int *pLength=0)
+static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
 {
+  if (lang == SrcLangExt_F90) return -1; // Fortran does not have function pointers
   static const QRegExp re("([^)]*[\\*\\^][^)]*)");
   int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
@@ -2381,7 +2382,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
     else
     {
       int i=isFuncPtr;
-      if (i==-1) i=findFunctionPtr(root->type); // for typedefs isFuncPtr is not yet set
+      if (i==-1) i=findFunctionPtr(root->type,root->lang); // for typedefs isFuncPtr is not yet set
       if (i!=-1) // function pointer
       {
         int ai = root->type.find('[',i);
@@ -2593,7 +2594,7 @@ static void buildVarList(EntryNav *rootNav)
        (rootNav->section()==Entry::VARIABLE_SEC    // it's a variable
        ) ||
        (rootNav->section()==Entry::FUNCTION_SEC && // or maybe a function pointer variable 
-        (isFuncPtr=findFunctionPtr(rootNav->type()))!=-1
+        (isFuncPtr=findFunctionPtr(rootNav->type(),rootNav->lang()))!=-1
        ) ||
        (rootNav->section()==Entry::FUNCTION_SEC && // class variable initialized by constructor
         isVarWithConstructor(rootNav)
@@ -6164,7 +6165,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
   }
 
   if ( // detect func variable/typedef to func ptr
-      (i=findFunctionPtr(root->type,&l))!=-1 
+      (i=findFunctionPtr(root->type,root->lang,&l))!=-1 
      )
   {
     //printf("Fixing function pointer!\n");
@@ -10393,6 +10394,7 @@ void generateOutput()
   // what categories we find in this function.
   if (Config_getBool("GENERATE_HTML") && searchEngine)
   {
+    msg("Generating search indices...\n");
     QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))

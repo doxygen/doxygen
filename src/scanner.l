@@ -4733,19 +4733,27 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN( ClassVar );
 					}
 <ClassVar>":"				{ 
-  					  current->type.resize(0);
-					  if ((current->spec & Entry::Interface) || 
-					      (current->spec & Entry::Struct)    || 
-					      (current->spec & Entry::Ref)       || 
-					      (current->spec & Entry::Value)     || 
-					      insidePHP || insideCS || insideD || insideObjC
-					     )
-					    baseProt=Public;
+					  if (current->section == Entry::VARIABLE_SEC) // enum a b:2, see bug 313527
+					  {
+  					    BEGIN(BitFields);
+					    current->bitfields+=":";
+					  }
 					  else
-					    baseProt=Private;
-                                          baseVirt=Normal;
-					  baseName.resize(0);
-					  BEGIN( BasesProt ) ;
+					  {
+					    current->type.resize(0);
+					    if ((current->spec & Entry::Interface) || 
+						(current->spec & Entry::Struct)    || 
+						(current->spec & Entry::Ref)       || 
+						(current->spec & Entry::Value)     || 
+						insidePHP || insideCS || insideD || insideObjC
+					       )
+					      baseProt=Public;
+					    else
+					      baseProt=Private;
+					    baseVirt=Normal;
+					    baseName.resize(0);
+					    BEGIN( BasesProt ) ;
+					  }
 					}
 <ClassVar>[;=*&]			{
     					  unput(*yytext);
