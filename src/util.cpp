@@ -3194,6 +3194,7 @@ static QCString getCanonicalTypeForIdentifier(
   }
   if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
 
+  //printf("cd=%p mtype=%p\n",cd,mType);
   //printf("  getCanonicalTypeForIdentifer: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
@@ -3264,7 +3265,8 @@ static QCString getCanonicalTypeForIdentifier(
   }
   else if (mType && mType->isTypedef()) // a typedef
   {
-    result = mType->qualifiedName();
+    //result = mType->qualifiedName(); // changed after 1.7.2
+    result = mType->typeString();
   }
   else // fallback
   {

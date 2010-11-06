@@ -1008,7 +1008,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   ClassDef *cd=0;
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::inputNameDict,g_fileName,ambig);
-  //printf("handleLinkedWord(%s) g_context=%s\n",name.data(),g_context.data());
+  //printf("handleLinkedWord(%s) g_context=%s\n",g_token->name.data(),g_context.data());
   if (!g_insideHtmlLink && 
       (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!g_context.isEmpty() &&  // also try with global scope
@@ -1104,7 +1104,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   }
   else // normal non-linkable word
   {
-    if (g_token->name.left(1)=='#' || g_token->name.left(2)=="::")
+    if (g_token->name.left(1)=="#" || g_token->name.left(2)=="::")
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: explicit link request to '%s' could not be resolved",qPrint(name));
     }
@@ -5662,6 +5662,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case XML_PARAM:
     case XML_TYPEPARAM:
     case XML_RETURNS:
+    case XML_SEE:
     case XML_SEEALSO:
     case XML_EXCEPTION:
       retval = RetVal_CloseXml;

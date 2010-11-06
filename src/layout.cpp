@@ -769,6 +769,8 @@ class LayoutParser : public QXmlDefaultHandler
       bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
       bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+      bool hasGraphicalHierarchy = Config_getBool("HAVE_DOT") &&
+                                   Config_getBool("GRAPHICAL_HIERARCHY");
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file
@@ -799,7 +801,8 @@ class LayoutParser : public QXmlDefaultHandler
                                                                 theTranslator->trClasses(), 
                                                                 theTranslator->trCompoundList(), "annotated" },
         { "hierarchy",        LayoutNavEntry::ClassHierarchy,   vhdlOpt    ? VhdlDocGen::trDesignUnitHierarchy() :
-                                                                theTranslator->trClassHierarchy(), QCString(), "hierarchy" },
+                                                                theTranslator->trClassHierarchy(), QCString(), 
+                                                                hasGraphicalHierarchy ? "inherits" : "hierarchy" },
         { "classmembers",     LayoutNavEntry::ClassMembers,     fortranOpt ? theTranslator->trCompoundMembersFortran() :
                                                                 vhdlOpt    ? VhdlDocGen::trDesignUnitMembers() :
                                                                 theTranslator->trCompoundMembers(), QCString(), "functions" },

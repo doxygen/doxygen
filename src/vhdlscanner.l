@@ -176,7 +176,7 @@ static void deleteSpecChars(char* str,char *buf)
   *buf='\0';
 }
 
-void getType(Entry* p,char* text)
+static void getType(Entry* p,char* text)
 {
   QCString name(text);
   name=name.stripWhiteSpace();           
@@ -241,7 +241,7 @@ void getType(Entry* p,char* text)
  * adds signals found in entities|records|units
  */
 
-void addSignals(const char* str,int line, Entry *e,const char *comment=0)
+static void addSignals(const char* str,int line, Entry *e,const char *comment=0)
 {
   //printf("===> addSignals (%s) comment='%s'\n",str,comment);
   QList<QCString> ql;
@@ -492,8 +492,7 @@ static Entry* getEntryAtLine(const Entry* ce,int line)
 
 //-------------------------------------------------------------------------
 
-
-void parserInit()
+static void parserInit()
 {
   iCounter=0; 
   iTextCounter=0;
@@ -1803,7 +1802,7 @@ static void mergeGrouping(const Entry* ce,int)
  * and so on..
  */
 
-void mapLibPackage(const Entry* ce)
+static void mapLibPackage(const Entry* ce)
 {
   Entry *lastComp=0;
   while (TRUE)

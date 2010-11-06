@@ -32,21 +32,6 @@
 #include "entry.h"
 #include "memberlist.h"
 
-#if 0
-#include "qcstring.h"
-#include "qlist.h"
-#include "qstringlist.h"
-#include "filedef.h"
-#include "classlist.h"
-#include "classdef.h"
-#include "translator.h"
-#include "qregexp.h"
-#include "outputlist.h"
-#include "membername.h"
-#include "memberdef.h"
-#include "memberlist.h"
-#endif
-
 class Entry;
 class ClassSDict;
 class FileStorage;

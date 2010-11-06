@@ -422,7 +422,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     if (!st.isEmpty())
     {
       ol.startMemberSubtitle();
-      ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE);
+      ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,TRUE,FALSE);
       ol.endMemberSubtitle();
     }
   }

@@ -43,8 +43,8 @@
 #include "image.h"
 
 
-//#define DBG_HTML(x) x;
-#define DBG_HTML(x) 
+#define DBG_HTML(x) x;
+//#define DBG_HTML(x) 
 
 static const char defaultStyleSheet[] = 
 #include "doxygen_css.h"

@@ -169,7 +169,11 @@ class ClassDefImpl
      */
     bool subGrouping; 
 
+    /** Reason of existance is a "use" relation */
     bool usedOnly;
+
+    /** List of titles to use for the summary */
+    SDict<QCString> vhdlSummaryTitles;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -224,8 +228,9 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   }
 }
 
-ClassDefImpl::ClassDefImpl()
+ClassDefImpl::ClassDefImpl() : vhdlSummaryTitles(17)
 {
+  vhdlSummaryTitles.setAutoDelete(TRUE);
 }
 
 ClassDefImpl::~ClassDefImpl()
@@ -363,6 +368,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
 {
   //printf("insertInternalMember(%s) isHidden()=%d\n",md->name().data(),md->isHidden());
   if (md->isHidden()) return;
+
+  static bool optVhdl    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  if (optVhdl)
+  {
+    QCString title=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),FALSE);
+    if (!m_impl->vhdlSummaryTitles.find(title))
+    {
+      m_impl->vhdlSummaryTitles.append(title,new QCString(title));
+    }
+  }
 
   if (!isReference())
   {
@@ -1369,30 +1384,43 @@ void ClassDef::writeAuthorSection(OutputList &ol)
 
 void ClassDef::writeSummaryLinks(OutputList &ol)
 {
+  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
   LayoutDocEntry *lde;
   bool first=TRUE;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  
+  if (!vhdlOpt)
   {
-    if (lde->kind()==LayoutDocEntry::ClassNestedClasses && 
-        m_impl->innerClasses  &&
-        m_impl->innerClasses->declVisible()
-       )
+    for (eli.toFirst();(lde=eli.current());++eli)
     {
-      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-      writeSummaryLink(ol,"nested-classes",ls->title,first);
-    }
-    else if (lde->kind()== LayoutDocEntry::MemberDecl)
-    {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-      MemberList * ml = getMemberList(lmd->type);
-      if (ml && ml->declVisible())
+      if (lde->kind()==LayoutDocEntry::ClassNestedClasses && 
+          m_impl->innerClasses  &&
+          m_impl->innerClasses->declVisible()
+         )
       {
-        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+        LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+        writeSummaryLink(ol,"nested-classes",ls->title,first);
       }
+      else if (lde->kind()== LayoutDocEntry::MemberDecl)
+      {
+        LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+        MemberList * ml = getMemberList(lmd->type);
+        if (ml && ml->declVisible())
+        {
+          writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+        }
+      }
+    }
+  }
+  else // VDHL only
+  {
+    SDict<QCString>::Iterator li(m_impl->vhdlSummaryTitles);
+    for (li.toFirst();li.current();++li)
+    {
+      writeSummaryLink(ol,li.current()->data(),li.current()->data(),first);
     }
   }
   if (!first)

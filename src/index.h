@@ -203,7 +203,7 @@ enum NamespaceMemberHighlight
   NMHL_Typedefs,
   NMHL_Enums,
   NMHL_EnumValues,
-  NMHL_Total = FMHL_EnumValues+1
+  NMHL_Total = NMHL_EnumValues+1
 };
 
 enum ClassHighlight
