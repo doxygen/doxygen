@@ -42,6 +42,7 @@
 #include "pagedef.h"
 #include "dirdef.h"
 #include "vhdldocgen.h"
+#include "layout.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
@@ -1879,6 +1880,35 @@ void writeQuickMemberIndex(OutputList &ol,
 
 //----------------------------------------------------------------------------
 
+struct CmhlInfo
+{
+  CmhlInfo(const char *fn,const char *t) : fname(fn), title(t) {}
+  const char *fname;
+  QCString title;
+};
+
+static const CmhlInfo *getCmhlInfo(int hl)
+{
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static CmhlInfo cmhlInfo[] = 
+  {
+    CmhlInfo("functions",     theTranslator->trAll()),
+    CmhlInfo("functions_func",
+        fortranOpt ? theTranslator->trSubprograms() : 
+        vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
+                     theTranslator->trFunctions()),
+    CmhlInfo("functions_vars",theTranslator->trVariables()),
+    CmhlInfo("functions_type",theTranslator->trTypedefs()),
+    CmhlInfo("functions_enum",theTranslator->trEnumerations()),
+    CmhlInfo("functions_eval",theTranslator->trEnumerationValues()),
+    CmhlInfo("functions_prop",theTranslator->trProperties()),
+    CmhlInfo("functions_evnt",theTranslator->trEvents()),
+    CmhlInfo("functions_rela",theTranslator->trRelatedFunctions())
+  };
+  return &cmhlInfo[hl];
+}
+
 static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight hl)
 {
   if (documentedClassMembers[hl]==0) return;
@@ -1894,6 +1924,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
     numPages=127;
   }
 
+#if 0
   struct CmhlInfo
   {
     CmhlInfo(const char *fn,const char *t) : fname(fn), title(t) {}
@@ -1914,6 +1945,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
     CmhlInfo("functions_evnt",theTranslator->trEvents()),
     CmhlInfo("functions_rela",theTranslator->trRelatedFunctions())
   };
+#endif
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1922,7 +1954,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
   QCString title = fortranOpt ? theTranslator->trCompoundMembersFortran() : 
                    vhdlOpt    ? VhdlDocGen::trDesignUnitMembers()             : 
                                 theTranslator->trCompoundMembers()        ;
-  if (hl!=CMHL_All) title+=(QCString)" - "+cmhlInfo[hl].title;
+  if (hl!=CMHL_All) title+=(QCString)" - "+getCmhlInfo(hl)->title;
 
   int page;
   bool first=TRUE;
@@ -1930,7 +1962,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
   {
     if (!multiPageIndex || g_memberIndexLetterUsed[hl][page].count()>0)
     {
-      QCString fileName = cmhlInfo[hl].fname;
+      QCString fileName = getCmhlInfo(hl)->fname;
       if (multiPageIndex && !first)
       { 
         fileName+=QCString().sprintf("_0x%02x",page);
@@ -1942,8 +1974,8 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
 
       // index item for global member list
       startQuickIndexItem(ol,
-          cmhlInfo[0].fname+Doxygen::htmlFileExtension,hl==CMHL_All,TRUE,first);
-      ol.writeString(fixSpaces(cmhlInfo[0].title));
+          getCmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==CMHL_All,TRUE,first);
+      ol.writeString(fixSpaces(getCmhlInfo(0)->title));
       endQuickIndexItem(ol);
 
       // index items per category member lists
@@ -1952,10 +1984,10 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       {
         if (documentedClassMembers[i]>0)
         {
-          startQuickIndexItem(ol,cmhlInfo[i].fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
-          ol.writeString(fixSpaces(cmhlInfo[i].title));
+          startQuickIndexItem(ol,getCmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
+          ol.writeString(fixSpaces(getCmhlInfo(i)->title));
           //printf("multiPageIndex=%d first=%d fileName=%s file=%s title=%s\n",
-          //    multiPageIndex,first,fileName.data(),cmhlInfo[i].fname,cmhlInfo[i].title.data());
+          //    multiPageIndex,first,fileName.data(),getCmhlInfo(i)->fname,getCmhlInfo(i)->title.data());
           endQuickIndexItem(ol);
         }
       }
@@ -1967,7 +1999,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       if (quickIndex)
       {
         writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl],page,
-                              cmhlInfo[hl].fname,multiPageIndex);
+                              getCmhlInfo(hl)->fname,multiPageIndex);
       }
 
       ol.endQuickIndices();
@@ -2978,6 +3010,57 @@ void writeExampleIndex(OutputList &ol)
   ol.popGeneratorState();
 }
 
+
+//----------------------------------------------------------------------------
+
+void writeFullNavIndex(QTextStream &t, LayoutNavEntry *root,int indent)
+{
+  QCString indentStr;
+  indentStr.fill(' ',indent*2);
+  if (root->children().count()>0)
+  {
+    t << indentStr << "<ul>" << endl;
+    QListIterator<LayoutNavEntry> li(root->children());
+    LayoutNavEntry *entry;
+    for (li.toFirst();(entry=li.current());++li)
+    {
+      t << indentStr << "<li>";
+      t << "<a href=\"" << entry->baseFile() << Doxygen::htmlFileExtension << "\">";
+      t << fixSpaces(entry->title());
+      t << "</a>";
+      t << "</li>" << endl; 
+      writeFullNavIndex(t,entry,indent+1);
+      if (entry->kind()==LayoutNavEntry::ClassMembers)
+      {
+        t << indentStr << "  <ul>" << endl;
+        // index items per category member lists
+        int i;
+        for (i=0;i<CMHL_Total;i++)
+        {
+          if (documentedClassMembers[i]>0)
+          {
+            t << indentStr << "  <li>";
+            t << "<a href=\"" << getCmhlInfo(i)->fname << Doxygen::htmlFileExtension << "\">";
+            t << fixSpaces(getCmhlInfo(i)->title);
+            t << "</a>";
+            t << "</li>" << endl;
+          }
+        }
+        t << indentStr << "  </ul>" << endl;
+      }
+      else if (entry->kind()==LayoutNavEntry::NamespaceMembers)
+      {
+        t << indentStr << "  <namespacemembers>" << endl;
+      }
+      else if (entry->kind()==LayoutNavEntry::FileGlobals)
+      {
+        t << indentStr << "  <fileglobals>" << endl;
+      }
+    }
+    t << indentStr << "</ul>" << endl;
+  }
+}
+
 //----------------------------------------------------------------------------
 
 void countRelatedPages(int &docPages,int &indexPages)
@@ -3618,6 +3701,18 @@ void writeIndex(OutputList &ol)
   {
     projPrefix=Config_getString("PROJECT_NAME")+" ";
   }
+
+#if 0
+  {
+    QFile f("navindex.html");
+    if (f.open(IO_WriteOnly))
+    {
+      QTextStream t(&f);
+      LayoutNavEntry *layout = LayoutDocManager::instance().rootNavEntry();
+      writeFullNavIndex(t,layout,0);
+    }
+  }
+#endif
 
   //--------------------------------------------------------------------
   // write HTML index

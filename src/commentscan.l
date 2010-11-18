@@ -2661,7 +2661,7 @@ void openGroup(Entry *e,const char *,int)
   }
   else // start of a member group
   {
-    //printf("    membergroup id=%d\n",g_memberGroupId);
+    //printf("    membergroup id=%d %s\n",g_memberGroupId,g_memberGroupHeader.data());
     if (g_memberGroupId==DOX_NOGROUP) // no group started yet
     {
       static int curGroupId=0;

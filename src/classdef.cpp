@@ -1315,6 +1315,7 @@ void ClassDef::writeMemberGroups(OutputList &ol)
   // write user defined member groups
   if (m_impl->memberGroupSDict)
   {
+    m_impl->memberGroupSDict->sort();
     MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)

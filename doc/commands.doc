@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,10 +19,10 @@
 \section cmd_intro Introduction
 
 All commands in the documentation start with a backslash (<b>\\</b>) or an
-at-sign (<b>\@</b>). If you prefer you can replace all commands starting with a 
+at-sign (<b>\@</b>). If you prefer you can replace all commands starting with a
 backslash below by their counterparts that start with an at-sign.
 
-Some commands have one or more arguments. 
+Some commands have one or more arguments.
 Each argument has a certain range:
 <ul>
 <li>If \<sharp\> braces are used the argument is a single word.
@@ -31,9 +31,9 @@ Each argument has a certain range:
 <li>If {curly} braces are used the argument extends until the next paragraph.
     Paragraphs are delimited by a blank line or by a section indicator.
 </ul>
-If [square] brackets are used the argument is optional.
+If in addition to the aboveargument specifiers [square] brackets are used the argument is optional.
 
-Here is an alphabetically sorted list of all commands with references to their 
+Here is an alphabetically sorted list of all commands with references to their
 documentation:
 \secreflist
 \refitem cmda \\a
@@ -66,7 +66,6 @@ documentation:
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
 \refitem cmddotfile \\dotfile
-\refitem cmdmscfile \\mscfile
 \refitem cmde \\e
 \refitem cmdelse \\else
 \refitem cmdelseif \\elseif
@@ -117,6 +116,7 @@ documentation:
 \refitem cmdmanonly \\manonly
 \refitem cmdmemberof \\memberof
 \refitem cmdmsc \\msc
+\refitem cmdmscfile \\mscfile
 \refitem cmdn \\n
 \refitem cmdname \\name
 \refitem cmdnamespace \\namespace
@@ -146,6 +146,7 @@ documentation:
 \refitem cmdrelatesalso \\relatesalso
 \refitem cmdremark \\remark
 \refitem cmdremarks \\remarks
+\refitem cmdresult \\result
 \refitem cmdreturn \\return
 \refitem cmdreturns \\returns
 \refitem cmdretval \\retval
@@ -194,11 +195,11 @@ The following subsections provide a list of all commands that are recognized by
 doxygen. Unrecognized commands are treated as normal text.
 
 
-\htmlonly <center> \endhtmlonly 
+\htmlonly <center> \endhtmlonly
 <h2>
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 Structural indicators
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 </h2>
 \htmlonly </center> \endhtmlonly
 
@@ -209,7 +210,7 @@ Structural indicators
   but rather one group with a merged documentation and the first title found in
   any of the commands.
 
-  The title is optional, so this command can also be used to add a number of 
+  The title is optional, so this command can also be used to add a number of
   entities to an existing group using \@{ and \@} like this:
 
 \verbatim
@@ -219,7 +220,7 @@ Structural indicators
    */
 
   /*!
-   *  A function 
+   *  A function
    */
   void func1()
   {
@@ -233,39 +234,43 @@ Structural indicators
   /*! @} */
 \endverbatim
 
-  \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup", \ref cmdingroup "\\ingroup" and
+  \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup", \ref cmdingroup "\\ingroup", and
   \ref cmdweakgroup "\\weakgroup".
 
 <hr>
-\section cmdcallgraph \\callgraph 
+\section cmdcallgraph \\callgraph
 
   \addindex \\callgraph
   When this command is put in a comment block of a function or method
-  and \ref cfg_have_dot "HAVE_DOT" is set to YES, then doxygen will 
+  and \ref cfg_have_dot "HAVE_DOT" is set to YES, then doxygen will
   generate a call graph for that function (provided the implementation of the
-  function or method calls other documented functions). The call graph will 
+  function or method calls other documented functions). The call graph will be
   generated regardless of the value of \ref cfg_call_graph "CALL_GRAPH".
-  \note The completeness (and correctness) of the call graph depends on the 
+  \note The completeness (and correctness) of the call graph depends on the
   doxygen code parser which is not perfect.
 
+  \sa section \ref cmdcallergraph "\\callergraph".
+
 <hr>
-\section cmdcallergraph \\callergraph 
+\section cmdcallergraph \\callergraph
 
   \addindex \\callergraph
   When this command is put in a comment block of a function or method
-  and \ref cfg_have_dot "HAVE_DOT" is set to YES, then doxygen will 
+  and \ref cfg_have_dot "HAVE_DOT" is set to YES, then doxygen will
   generate a caller graph for that function (provided the implementation of the
-  function or method calls other documented functions). The caller graph will 
+  function or method calls other documented functions). The caller graph will be
   generated regardless of the value of \ref cfg_caller_graph "CALLER_GRAPH".
-  \note The completeness (and correctness) of the caller graph depends on the 
+  \note The completeness (and correctness) of the caller graph depends on the
   doxygen code parser which is not perfect.
+
+  \sa section \ref cmdcallgraph "\\callgraph".
 
 <hr>
 \section cmdcategory \\category <name> [<header-file>] [<header-name>]
 
   \addindex \\category
-  For Objective-C only: Indicates that a comment block contains documentation 
-  for a class category with name \<name\>. The arguments are 
+  For Objective-C only: Indicates that a comment block contains documentation
+  for a class category with name \<name\>. The arguments are
   equal to the \\class command.
 
   \sa section \ref cmdclass "\\class".
@@ -275,23 +280,23 @@ Structural indicators
 
   \addindex \\class
   Indicates that a comment block contains documentation for a
-  class with name \<name\>. Optionally a header file and a header name 
-  can be specified. If the header-file is specified, a link to a verbatim copy 
-  of the header will be included in the HTML documentation. 
-  The \<header-name\> argument can be used to overwrite the 
-  name of the link that is used in the class documentation to something other 
-  than \<header-file\>. This can be useful if the include name is not located 
+  class with name \<name\>. Optionally a header file and a header name
+  can be specified. If the header-file is specified, a link to a verbatim copy
+  of the header will be included in the HTML documentation.
+  The \<header-name\> argument can be used to overwrite the
+  name of the link that is used in the class documentation to something other
+  than \<header-file\>. This can be useful if the include name is not located
   on the default include path (like \<X11/X.h\>). With the \<header-name\>
-  argument you can also specify how the include statement should look like, 
-  by adding either quotes or sharp brackets around the name. 
-  Sharp brackets are used if just the name is given. Note that the 
-  last two arguments can also specified using 
+  argument you can also specify how the include statement should look like,
+  by adding either quotes or sharp brackets around the name.
+  Sharp brackets are used if just the name is given. Note that the
+  last two arguments can also be specified using
   the \ref cmdheaderfile "\\headerfile" command.
-  
-  \par Example: 
-  \verbinclude class.h  
+
+  \par Example:
+  \verbinclude class.h
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/class/html/index.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/class/html/index.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -299,13 +304,13 @@ Structural indicators
 \section cmddef \\def <name>
 
   \addindex \\def
-  Indicates that a comment block contains documentation for a 
-  \c \#define macro. 
+  Indicates that a comment block contains documentation for a
+  \c \#define macro.
 
   \par Example:
-  \verbinclude define.h  
+  \verbinclude define.h
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/define/html/define_8h.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/define/html/define_8h.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -320,28 +325,28 @@ Structural indicators
   thus building a hierarchy of groups.
 
   The \<name\> argument should be a single-word identifier.
-  
-  \sa page \ref grouping "Grouping", sections \ref cmdingroup "\\ingroup", \ref cmdaddtogroup "\\addtogroup",
+
+  \sa page \ref grouping "Grouping", sections \ref cmdingroup "\\ingroup", \ref cmdaddtogroup "\\addtogroup", and
   \ref cmdweakgroup "\\weakgroup".
 
 <hr>
 \section cmddir \\dir [<path fragment>]
-  
+
   \addindex \\dir
   Indicates that a comment block contains documentation for a directory.
-  The "path fragment" argument should include the directory name and 
-  enough of the path to be unique with respect to the other directories 
+  The "path fragment" argument should include the directory name and
+  enough of the path to be unique with respect to the other directories
   in the project.
-  The \ref cfg_show_dirs "SHOW_DIRECTORIES" option determines whether 
+  The \ref cfg_show_dirs "SHOW_DIRECTORIES" option determines whether
   or not the directory information is shown and the
-  \ref cfg_strip_from_path "STRIP_FROM_PATH" option determines what is 
+  \ref cfg_strip_from_path "STRIP_FROM_PATH" option determines what is
   stripped from the full path before it appears in the output.
 
 <hr>
 \section cmdenum \\enum <name>
 
   \addindex \\enum
-  Indicates that a comment block contains documentation for an 
+  Indicates that a comment block contains documentation for an
   enumeration, with name \<name\>. If the enum is a member of a class and
   the documentation block is located outside the class definition,
   the scope of the class should be specified as well.
@@ -349,32 +354,32 @@ Structural indicators
   the \\enum comment may be omitted.
 
   \par Note:
-  The type of an anonymous enum cannot be documented, but the values 
+  The type of an anonymous enum cannot be documented, but the values
   of an anonymous enum can.
-  
+
   \par Example:
-  \verbinclude enum.h  
+  \verbinclude enum.h
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/enum/html/class_test.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/enum/html/class_test.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
 <hr>
 \section cmdexample \\example <file-name>
-  
+
   \addindex \\example
-  Indicates that a comment block contains documentation for a source code 
+  Indicates that a comment block contains documentation for a source code
   example. The name of the source file is \<file-name\>. The text of
-  this file will be included in the documentation, just after the 
+  this file will be included in the documentation, just after the
   documentation contained in the comment block. All examples are placed
   in a list. The source code is scanned for documented members and classes.
-  If any are found, the names are cross-referenced with the documentation. 
-  Source files or directories can be specified using the 
-  \ref cfg_example_path "EXAMPLE_PATH" 
+  If any are found, the names are cross-referenced with the documentation.
+  Source files or directories can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH"
   tag of doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
-  by the 
+  by the
   \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part of the absolute path
   to disambiguate it.
 
@@ -386,7 +391,7 @@ Structural indicators
   Where the example file \c example_test.cpp looks as follows:
   \verbinclude example_test.cpp
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/example/html/examples.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/example/html/examples.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -397,8 +402,8 @@ Structural indicators
 
   \addindex \\endinternal
   This command ends a documentation fragment that was started with a
-  \ref cmdinternal "\\internal" command. The text between \c \\internal and 
-  \c \\endinternal will only be visible 
+  \ref cmdinternal "\\internal" command. The text between \c \\internal and
+  \c \\endinternal will only be visible
   if \ref cfg_internal_docs "INTERNAL_DOCS" is set to YES.
 
 <hr>
@@ -408,11 +413,11 @@ Structural indicators
   This command can be used to manually indicate an inheritance relation,
   when the programming language does not support this concept natively
   (e.g. C).
- 
+
   The file \c manual.c in the example directory shows how to use this command.
 
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/manual/html/index.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/manual/html/index.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -421,22 +426,22 @@ Structural indicators
 
 <hr>
 \section cmdfile \\file [<name>]
-  
+
   \addindex \\file
-  Indicates that a comment block contains documentation for a source or 
+  Indicates that a comment block contains documentation for a source or
   header file with name \<name\>. The file name may include (part of) the
   path if the file-name alone is not unique. If the file name is omitted
-  (i.e. the line after \\file is left blank) then the documentation block that 
+  (i.e. the line after \\file is left blank) then the documentation block that
   contains the \\file command will belong to the file it is located in.
 
   \par Important:
-  The documentation of global functions, variables, typedefs, and enums will 
+  The documentation of global functions, variables, typedefs, and enums will
   only be included in the output if the file they are in is documented as well.
 
   \par Example:
-  \verbinclude file.h  
+  \verbinclude file.h
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/file/html/file_8h.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/file/html/file_8h.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -445,34 +450,37 @@ Structural indicators
 
 <hr>
 \section cmdfn \\fn (function declaration)
- 
+
   \addindex \\fn
   Indicates that a comment block contains documentation for a function
-  (either global or as a member of a class). This command is \em only 
-  needed if a comment block is \e not placed in front (or behind) 
-  the function declaration or definition. 
-  
-  If your comment block \e is in front of the function 
+  (either global or as a member of a class). This command is \em only
+  needed if a comment block is \e not placed in front (or behind)
+  the function declaration or definition.
+
+  If your comment block \e is in front of the function
   declaration or definition this command can (and to avoid redundancy
-  should) be omitted. 
+  should) be omitted.
 
   A full function declaration including arguments should be specified after the
-  \\fn command on a \e single line, since the argument ends at the end 
+  \\fn command on a \e single line, since the argument ends at the end
   of the line!
 
+  This command is equivalent to \\var, \\typedef, and \\property.
+
   \warning Do not use this command
-  if it is not absolutely needed, since it will lead to duplication of 
+  if it is not absolutely needed, since it will lead to duplication of
   information and thus to errors.
 
   \par Example:
-  \verbinclude func.h  
+  \verbinclude func.h
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/func/html/class_test.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/func/html/class_test.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
 
-  \sa section \ref cmdvar "\\var" and \ref cmdtypedef "\\typedef".
+  \sa sections \ref cmdvar "\\var", \ref cmdproperty "\\property", and
+               \ref cmdtypedef "\\typedef".
 
 <hr>
 \section cmdheaderfile \\headerfile <header-file> [<header-name>]
@@ -480,22 +488,22 @@ Structural indicators
   \addindex \\headerfile
   Intended to be used for class, struct, or union documentation, where
   the documentation is in front of the definition. The arguments of
-  this command are the same as the second and third argument of 
-  \ref cmdclass "\\cmdclass".
-  The header-file name refers to the file that should by included by the 
+  this command are the same as the second and third argument of
+  \ref cmdclass "\\class".
+  The \<header-file\> name refers to the file that should by included by the
   application to obtain the definition of the class, struct, or union.
-  The \<header-name\> argument can be used to overwrite the 
-  name of the link that is used in the class documentation to something other 
-  than \<header-file\>. This can be useful if the include name is not located 
-  on the default include path (like \<X11/X.h\>). 
+  The \<header-name\> argument can be used to overwrite the
+  name of the link that is used in the class documentation to something other
+  than \<header-file\>. This can be useful if the include name is not located
+  on the default include path (like \<X11/X.h\>).
 
   With the \<header-name\>
-  argument you can also specify how the include statement should look like, 
-  by adding either double quotes or sharp brackets around the name. 
-  By default sharp brackets are used if just the name is given. 
+  argument you can also specify how the include statement should look like,
+  by adding either double quotes or sharp brackets around the name.
+  By default sharp brackets are used if just the name is given.
 
-  If a pair of double quotes is given for either the header-file or 
-  header-name argument, the current file (in which the command was found) 
+  If a pair of double quotes is given for either the \<header-file\> or
+  \<header-name\> argument, the current file (in which the command was found)
   will be used but with quotes. So for a comment block with a \\headerfile
   command inside a file test.h, the following three commands are equivalent:
   \verbatim
@@ -509,7 +517,7 @@ Structural indicators
   \headerfile test.h <>
   \headerfile <> \endverbatim
 
-  To globally reverse the default include representation to 
+  To globally reverse the default include representation to
   local includes you can set
   \ref cfg_force_local_includes "FORCE_LOCAL_INCLUDES" to \c YES.
 
@@ -522,8 +530,11 @@ Structural indicators
   \addindex \\hideinitializer
   By default the value of a define and the initializer of a variable
   are displayed unless they are longer than 30 lines. By putting
-  this command in a comment block of a define or variable, the 
-  initializer is always hidden.
+  this command in a comment block of a define or variable, the
+  initializer is always hidden. The maximum number of initalization linens
+  can be changed by means of the configuration parameter
+  \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES", the default value is
+  30.
 
   \sa section \ref cmdshowinitializer "\\showinitializer".
 
@@ -534,11 +545,11 @@ Structural indicators
   This command can be used to manually indicate an inheritance relation,
   when the programming language does not support this concept natively
   (e.g. C).
- 
+
   The file \c manual.c in the example directory shows how to use this command.
 
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/manual/html/index.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/manual/html/index.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -554,43 +565,45 @@ Structural indicators
   groups identified by \<groupname\>.
 
   \sa page \ref grouping "Grouping", sections \ref cmddefgroup "\\defgroup",
-  \ref cmdaddtogroup "\\addtogroup" and \ref cmdweakgroup "\\weakgroup"
+  \ref cmdaddtogroup "\\addtogroup", and \ref cmdweakgroup "\\weakgroup"
 
 <hr>
 \section cmdinterface \\interface <name> [<header-file>] [<header-name>]
 
   \addindex \\interface
   Indicates that a comment block contains documentation for an
-  interface with name \<name\>. The arguments are equal to the \\class
+  interface with name \<name\>. The arguments are equal to the arguments of the \\class
   command.
 
   \sa section \ref cmdclass "\\class".
 
 <hr>
 \section cmdinternal \\internal
-  
+
   \addindex \\internal
   This command starts a documentation fragment that is meant for internal
-  use only. The fragment naturally ends at the end of the comment block. 
-  You can also force the internal section to end earlier using the 
+  use only. The fragment naturally ends at the end of the comment block.
+  You can also force the internal section to end earlier by using the
   \ref cmdendinternal "\\endinternal" command.
 
-  If the \\internal command is put inside a section 
-  (see for example \ref cmdsection "\\section") all subsections after the 
-  command are considered to be internal as well. Only a new section at the 
+  If the \\internal command is put inside a section
+  (see for example \ref cmdsection "\\section") all subsections after the
+  command are considered to be internal as well. Only a new section at the
   same level will end the fragment that is considered internal.
 
   You can use \ref cfg_internal_docs "INTERNAL_DOCS" in the config file
   to show (\c YES) or hide (\c NO) the internal documentation.
+
+  \sa section \ref cmdendinternal "\\endinternal".
 
 <hr>
 \section cmdmainpage \\mainpage [(title)]
 
   \addindex \\mainpage
 
-  If the \\mainpage command is placed in a comment block the 
+  If the \\mainpage command is placed in a comment block the
   block is used to customize the index page (in HTML) or
-  the first chapter (in \f$\mbox{\LaTeX}\f$). 
+  the first chapter (in \f$\mbox{\LaTeX}\f$).
 
   The title argument is optional and replaces the default title that
   doxygen normally generates. If you do not want any title you can
@@ -607,7 +620,7 @@ Structural indicators
  * \section install_sec Installation
  *
  * \subsection step1 Step 1: Opening the box
- *  
+ *
  * etc...
  */
 \endverbatim
@@ -615,28 +628,28 @@ Structural indicators
  You can refer to the main page using \\ref index (if the treeview
  is disabled, otherwise you should use \\ref main).
 
- \sa section \ref cmdsection "\\section", 
-     section \ref cmdsubsection "\\subsection" and 
+ \sa section \ref cmdsection "\\section",
+     section \ref cmdsubsection "\\subsection", and
      section \ref cmdpage "\\page".
 
 <hr>
 \section cmdmemberof \\memberof <name>
 
   \addindex \\memberof
-  This command make a function a member of a class in a similar way
+  This command makes a function a member of a class in a similar way
   as \ref cmdrelates "\\relates" does, only with this command the function
   is represented as a real member of the class.
-  This can be useful when the programming language does not support 
+  This can be useful when the programming language does not support
   the concept of member functions natively (e.g. C).
 
   It is also possible to use this command together with
   \ref cmdpublic "\\public", \ref cmdprotected "\\protected" or
   \ref cmdprivate "\\private".
- 
+
   The file \c manual.c in the example directory shows how to use this command.
 
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/manual/html/index.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/manual/html/index.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -645,25 +658,25 @@ Structural indicators
       \ref cmdprivate "\\private".
 
 <hr>
-\section cmdname \\name [(header)]  
+\section cmdname \\name [(header)]
 
   \addindex \\name
 
   This command turns a comment block into a header
   definition of a member group. The
-  comment block should be followed by a 
+  comment block should be followed by a
   <code>//\@{ ... //\@}</code> block containing the
   members of the group.
 
   See section \ref memgroup for an example.
 
 <hr>
-\section cmdnamespace \\namespace <name> 
+\section cmdnamespace \\namespace <name>
 
   \addindex \\namespace
   Indicates that a comment block contains documentation for a
-  namespace with name \<name\>. 
-  
+  namespace with name \<name\>.
+
 <hr>
 \section cmdnosubgrouping \\nosubgrouping
 
@@ -673,20 +686,23 @@ Structural indicators
   to avoid that doxygen puts a member group as a subgroup of a
   Public/Protected/Private/... section.
 
+  \sa sections \ref cmdpublicsection "\\publicsection",
+      \ref cmdprotectedsection "\\protectedsection" and
+      \ref cmdprivatesection "\\privatesection".
 <hr>
 \section cmdoverload \\overload [(function declaration)]
 
   \addindex \\overload
-  This command can be used to generate the following 
+  This command can be used to generate the following
   standard text for an overloaded member function:
 
-   `This is an overloaded member function, provided for convenience. 
+   `This is an overloaded member function, provided for convenience.
     It differs from the above function only in what argument(s) it accepts.'
 
   If the documentation for the overloaded member function is not located
-  in front of the function declaration or definition, the optional 
+  in front of the function declaration or definition, the optional
   argument should be used to specify the correct function.
- 
+
   Any other documentation that is inside the documentation block will
   by appended after the generated message.
 
@@ -700,52 +716,51 @@ Structural indicators
   \par Example:
   \verbinclude examples/overload.cpp
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/overload/html/class_test.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/overload/html/class_test.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
 <hr>
 \section cmdpackage \\package <name>
-  
+
   \addindex \\package
   Indicates that a comment block contains documentation for a
-  Java package with name \<name\>. 
+  Java package with name \<name\>.
 
 <hr>
 \section cmdpage \\page <name> (title)
 
   \addindex \\page
   Indicates that a comment block contains a piece of documentation that is
-  not directly related to one specific class, file or member. 
+  not directly related to one specific class, file or member.
   The HTML generator creates a page containing the documentation. The
-  \f$\mbox{\LaTeX}\f$ generator 
+  \f$\mbox{\LaTeX}\f$ generator
   starts a new section in the chapter `Page documentation'.
-  
+
   \par Example:
-  \verbinclude page.doc  
+  \verbinclude page.doc
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/page/html/pages.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/page/html/pages.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
-  \par Note: 
+  \par Note:
      The \<name\> argument consists of a combination of letters and number
-     digits. If you wish to use upper case letters (e.g. \c MYPAGE1), or 
-     mixed case letters (e.g. \c MyPage1) in the \<name\> argument, you 
-     should set \c CASE_SENSE_NAMES to \c YES. However, this is advisable 
-     only if your file system is case sensitive. Otherwise (and for better 
-     portability) you should use all lower case letters (e.g. \c mypage1) 
+     digits. If you wish to use upper case letters (e.g. \c MYPAGE1), or
+     mixed case letters (e.g. \c MyPage1) in the \<name\> argument, you
+     should set \c CASE_SENSE_NAMES to \c YES. However, this is advisable
+     only if your file system is case sensitive. Otherwise (and for better
+     portability) you should use all lower case letters (e.g. \c mypage1)
      for \<name\> in all references to the page.
-  
-  \sa section \ref cmdsection "\\section", section 
-              \ref cmdsubsection "\\subsection", and section 
+
+  \sa section \ref cmdsection "\\section", section
+              \ref cmdsubsection "\\subsection", and section
               \ref cmdref "\\ref".
 
 <hr>
 \section cmdprivate \\private
 
   \addindex \\private
-  \addindex \\privatesection
   Indicates that the member documented in the comment block is private,
   i.e., should only be accessed by other members in the same class.
 
@@ -758,23 +773,35 @@ Structural indicators
   "private:" class marker in C++, use \\privatesection.
 
   \sa sections \ref cmdmemberof "\\memberof", \ref cmdpublic "\\public",
-      and \ref cmdprotected "\\protected".
+      \ref cmdprotected "\\protected" and \ref cmdprivatesection "\\privatesection".
+
+<hr>
+\section cmdprivatesection \\privatesection
+
+  \addindex \\privatesection
+  Starting a section of private members, in a way similar to the
+  "private:" class marker in C++.
+  Indicates that the member documented in the comment block is private,
+  i.e., should only be accessed by other members in the same class.
+
+  \sa sections \ref cmdmemberof "\\memberof", \ref cmdpublic "\\public",
+      \ref cmdprotected "\\protected" and \ref cmdprivate "\\private".
 
 <hr>
 \section cmdproperty \\property (qualified property name)
 
   \addindex \\property
   Indicates that a comment block contains documentation for a
-  property (either global or as a member of a class). 
-  This command is equivalent to \\var and \\fn.
+  property (either global or as a member of a class).
+  This command is equivalent to \\var, \\typedef, and \\fn.
 
-  \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
+  \sa sections \ref cmdfn "\\fn", \ref cmdtypedef "\\typedef", and
+               \ref cmdvar "\\var".
 
 <hr>
 \section cmdprotected \\protected
 
   \addindex \\protected
-  \addindex \\protectedsection
   Indicates that the member documented in the comment block is protected,
   i.e., should only be accessed by other members in the same or derived
   classes.
@@ -788,14 +815,27 @@ Structural indicators
   "protected:" class marker in C++, use \\protectedsection.
 
   \sa sections \ref cmdmemberof "\\memberof", \ref cmdpublic "\\public",
-      and \ref cmdprivate "\\private".
+      \ref cmdprivate "\\private" and \ref cmdprotectedsection "\\protectedsection".
+
+<hr>
+\section cmdprotectedsection \\protectedsection
+
+  \addindex \\protectedsection
+  Starting a section of protected members, in a way similar to the
+  "protected:" class marker in C++.
+  Indicates that the member documented in the comment block is protected,
+  i.e., should only be accessed by other members in the same or derived
+  classes.
+
+  \sa sections \ref cmdmemberof "\\memberof", \ref cmdpublic "\\public",
+      \ref cmdprivate "\\private" and \ref cmdprotected "\\protected".
 
 <hr>
 \section cmdprotocol \\protocol <name> [<header-file>] [<header-name>]
 
   \addindex \\protocol
   Indicates that a comment block contains documentation for a
-  protocol in Objective-C with name \<name\>. The arguments are equal 
+  protocol in Objective-C with name \<name\>. The arguments are equal
   to the \\class command.
 
   \sa section \ref cmdclass "\\class".
@@ -804,7 +844,6 @@ Structural indicators
 \section cmdpublic \\public
 
   \addindex \\public
-  \addindex \\publicsection
   Indicates that the member documented in the comment block is public,
   i.e., can be accessed by any other class or function.
 
@@ -816,24 +855,36 @@ Structural indicators
   For starting a section of public members, in a way similar to the
   "public:" class marker in C++, use \\publicsection.
 
-  \sa sections \ref cmdmemberof "\\memberof", \ref cmdprotected "\\protected"
-      and \ref cmdprivate "\\private".
+  \sa sections \ref cmdmemberof "\\memberof", \ref cmdprotected "\\protected",
+      \ref cmdprivate "\\private" and \ref cmdpublicsection "\\publicsection".
+
+<hr>
+\section cmdpublicsection \\publicsection
+
+  \addindex \\publicsection
+  Starting a section of public members, in a way similar to the
+  "public:" class marker in C++.
+  Indicates that the member documented in the comment block is public,
+  i.e., can be accessed by any other class or function.
+
+  \sa sections \ref cmdmemberof "\\memberof", \ref cmdprotected "\\protected",
+      \ref cmdprivate "\\private" and \ref cmdpublic "\\public".
 
 <hr>
 \section cmdrelates \\relates <name>
 
   \addindex \\relates
   This command can be used in the documentation of a non-member function
-  \<name\>. It puts the function inside the `related function' section 
-  of the class documentation. This command is useful for documenting 
+  \<name\>. It puts the function inside the `related function' section
+  of the class documentation. This command is useful for documenting
   non-friend functions that are nevertheless strongly coupled to a certain
   class. It prevents the need of having to document a file, but
-  only works for functions.  
+  only works for functions.
 
   \par Example:
-  \verbinclude relates.cpp  
+  \verbinclude relates.cpp
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/relates/html/class_string.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/relates/html/class_string.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
@@ -848,11 +899,11 @@ Structural indicators
 
   \addindex \\relatesalso
   This command can be used in the documentation of a non-member function
-  \<name\>. It puts the function both inside the `related function' section 
-  of the class documentation as well as leaving its normal file documentation
-  location. This command is useful for documenting 
+  \<name\>. It puts the function both inside the `related function' section
+  of the class documentation as well as leaving it at its normal file documentation
+  location. This command is useful for documenting
   non-friend functions that are nevertheless strongly coupled to a certain
-  class. It only works for functions.  
+  class. It only works for functions.
 
 <hr>
 \section cmdrelatedalso \\relatedalso <name>
@@ -866,8 +917,12 @@ Structural indicators
   \addindex \\showinitializer
   By default the value of a define and the initializer of a variable
   are only displayed if they are less than 30 lines long. By putting
-  this command in a comment block of a define or variable, the 
+  this command in a comment block of a define or variable, the
   initializer is shown unconditionally.
+  The maximum number of initalization linens
+  can be changed by means of the configuration parameter
+  \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES", the default value is
+  30.
 
   \sa section \ref cmdhideinitializer "\\hideinitializer".
 
@@ -876,7 +931,7 @@ Structural indicators
 
   \addindex \\struct
   Indicates that a comment block contains documentation for a
-  struct with name \<name\>. The arguments are equal to the \\class
+  struct with name \<name\>. The arguments are equal to the arguments of the \\class
   command.
 
   \sa section \ref cmdclass "\\class".
@@ -886,17 +941,18 @@ Structural indicators
 
   \addindex \\typedef
   Indicates that a comment block contains documentation for a
-  typedef (either global or as a member of a class). 
-  This command is equivalent to \\var and \\fn.
+  typedef (either global or as a member of a class).
+  This command is equivalent to \\var, \\propery, and \\fn.
 
-  \sa section \ref cmdfn "\\fn" and \ref cmdvar "\\var".
+  \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and
+              \ref cmdvar "\\var".
 
 <hr>
 \section cmdunion \\union <name> [<header-file>] [<header-name>]
 
   \addindex \\union
   Indicates that a comment block contains documentation for a
-  union with name \<name\>. The arguments are equal to the \\class
+  union with name \<name\>. The arguments are equal to the arguments of the \\class
   command.
 
   \sa section \ref cmdclass "\\class".
@@ -906,10 +962,10 @@ Structural indicators
 
   \addindex \\var
   Indicates that a comment block contains documentation for a variable or
-  enum value (either global or as a member of a class). 
-  This command is equivalent to \\typedef and \\fn.
+  enum value (either global or as a member of a class).
+  This command is equivalent to \\typedef, \\propery, and \\fn.
 
-  \sa section \ref cmdfn "\\fn" and \ref cmdtypedef "\\typedef".
+  \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
 <hr>
 \section cmdweakgroup \\weakgroup <name> [(title)]
@@ -918,15 +974,15 @@ Structural indicators
   a lower priority when it comes to resolving conflicting grouping
   definitions.
 
-  \sa page \ref grouping "Grouping" and \ref cmdaddtogroup "\\addtogroup".
+  \sa page \ref grouping "Grouping" and section \ref cmdaddtogroup "\\addtogroup".
 
 <hr>
 
-\htmlonly <center> \endhtmlonly 
+\htmlonly <center> \endhtmlonly
 <h2>
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 Section indicators
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 </h2>
 \htmlonly </center>\endhtmlonly
 
@@ -934,31 +990,31 @@ Section indicators
 \section cmdattention \\attention { attention text }
 
   \addindex \\attention
-  Starts a paragraph where a message that needs attention may be entered. 
-  The paragraph will be indented. 
+  Starts a paragraph where a message that needs attention may be entered.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\attention commands will be joined into a single paragraph.
-  The \\attention command ends when a blank line or some other 
-  sectioning command is encountered. 
+  The \\attention command ends when a blank line or some other
+  sectioning command is encountered.
 
 <hr>
 \section cmdauthor \\author { list of authors }
 
   \addindex \\author
-  Starts a paragraph where one or more author names may be entered. 
-  The paragraph will be indented. 
+  Starts a paragraph where one or more author names may be entered.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\author commands will be joined into a single paragraph.
-  Each author description will start a new line. Alternatively, one \\author command 
-  may mention several authors. The \\author command ends when a blank line or some other 
+  Each author description will start a new line. Alternatively, one \\author command
+  may mention several authors. The \\author command ends when a blank line or some other
   sectioning command is encountered.
 
   \par Example:
-  \verbinclude author.cpp  
+  \verbinclude author.cpp
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/author/html/class_windows_n_t.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/author/html/class_windows_n_t.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 <hr>
@@ -968,7 +1024,7 @@ Section indicators
   Equivalent to \ref cmdauthor "\\author".
 
 <hr>
-\section cmdbrief \\brief {brief description}
+\section cmdbrief \\brief { brief description }
 
   \addindex \\brief
   Starts a paragraph that serves as a brief description. For classes and files
@@ -976,10 +1032,10 @@ Section indicators
   documentation page. For class and file members, the brief description
   will be placed at the declaration of the member and prepended to the
   detailed description. A brief description may span several lines (although
-  it is advised to keep it brief!). A brief description ends when a 
+  it is advised to keep it brief!). A brief description ends when a
   blank line or another sectioning command is encountered. If multiple
-  \\brief commands are present they will be joined. See section 
-  \ref cmdauthor "\\author" for an example. 
+  \\brief commands are present they will be joined. See section
+  \ref cmdauthor "\\author" for an example.
 
   Synonymous to \\short.
 
@@ -987,14 +1043,14 @@ Section indicators
 \section cmdbug \\bug { bug description }
 
   \addindex \\bug
-  Starts a paragraph where one or more bugs may be reported. 
-  The paragraph will be indented. 
+  Starts a paragraph where one or more bugs may be reported.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\bug commands will be joined into a single paragraph.
   Each bug description will start on a new line.
-  Alternatively, one \\bug command may mention 
-  several bugs. The \\bug command ends when a blank line or some other 
+  Alternatively, one \\bug command may mention
+  several bugs. The \\bug command ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
 
@@ -1002,18 +1058,18 @@ Section indicators
 \section cmdcond \\cond [<section-label>]
 
   \addindex \\cond
-  Starts a conditional section that ends with a corresponding 
-  \ref cmdendcond "\\endcond" command, which is typically found in 
+  Starts a conditional section that ends with a corresponding
+  \ref cmdendcond "\\endcond" command, which is typically found in
   another comment block. The main purpose of this pair of
   commands is to (conditionally) exclude part of a file from processing
-  (in older version of doxygen this could only be achieved using C preprocessor commands). 
+  (in older version of doxygen this could only be achieved using C preprocessor commands).
 
   The section between \\cond and \\endcond commands can be included by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   configuration option. If the section label is omitted, the section will
   be excluded from processing unconditionally.
 
-  For conditional sections within a comment block one should 
+  For conditional sections within a comment block one should
   use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
 
   Conditional sections can be nested. In this case a nested section will only
@@ -1039,7 +1095,7 @@ class Intf
 
 /// @cond DEV
 /*
- *  The implementation of the interface 
+ *  The implementation of the interface
  */
 class Implementation : public Intf
 {
@@ -1058,25 +1114,27 @@ class Implementation : public Intf
     /// @endcond
 };
 
-/// @endcond 
+/// @endcond
 \endverbatim
 
 The output will be different depending on whether or not \c ENABLED_SECTIONS
 contains \c TEST, or \c DEV
 
+  \sa section \ref cmdendcond "\\endcond".
+
 <hr>
 \section cmddate \\date { date description }
 
   \addindex \\date
-  Starts a paragraph where one or more dates may be entered. 
-  The paragraph will be indented. 
+  Starts a paragraph where one or more dates may be entered.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\date commands will be joined into a single paragraph.
   Each date description will start on a new line.
-  Alternatively, one \\date command may mention 
-  several dates. The \\date command ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdauthor "\\author" 
+  Alternatively, one \\date command may mention
+  several dates. The \\date command ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
 
 <hr>
@@ -1084,11 +1142,11 @@ contains \c TEST, or \c DEV
 
   \addindex \\deprecated
   Starts a paragraph indicating that this documentation block belongs to
-  a deprecated entity. Can be used to describe alternatives, 
+  a deprecated entity. Can be used to describe alternatives,
   expected life span, etc.
 
 <hr>
-\section cmddetails \\details {detailed decription}
+\section cmddetails \\details { detailed decription }
 
   \addindex \\details
   Just like \ref cmdbrief "\\brief" starts a brief description, \\details
@@ -1096,11 +1154,11 @@ contains \c TEST, or \c DEV
   then the \\details command is not needed.
 
 <hr>
-\section cmdelse \\else 
+\section cmdelse \\else
 
   \addindex \\else
-  Starts a conditional section if the previous conditional section 
-  was not enabled. The previous section should have been started with 
+  Starts a conditional section if the previous conditional section
+  was not enabled. The previous section should have been started with
   a \c \\if, \c \\ifnot, or \c \\elseif command.
 
   \sa \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelseif "\\elseif",
@@ -1110,15 +1168,15 @@ contains \c TEST, or \c DEV
 \section cmdelseif \\elseif <section-label>
 
   \addindex \\elseif
-  Starts a conditional documentation section if the previous section 
+  Starts a conditional documentation section if the previous section
   was not enabled. A conditional section is
   disabled by default. To enable it you must put the
-  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
+  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   tag in the configuration
   file. Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
 
-  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot", 
+  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
@@ -1127,43 +1185,40 @@ contains \c TEST, or \c DEV
   \addindex \\endcond
   Ends a conditional section that was started by \ref cmdcond "\\cond".
 
-  \sa \ref cmdcond "\\cond".
+  \sa section \ref cmdcond "\\cond".
 
 <hr>
-\section cmdendif \\endif 
+\section cmdendif \\endif
 
   \addindex \\endif
   Ends a conditional section that was started by \c \\if or \c \\ifnot
   For each \c \\if or \c \\ifnot one and only one matching \c \\endif must follow.
 
-  \sa \ref cmdif "\\if", and \ref cmdifnot "\\ifnot".
+  \sa sections \ref cmdif "\\if" and \ref cmdifnot "\\ifnot".
 
 <hr>
 \section cmdexception \\exception <exception-object> { exception description }
 
   \addindex \\exception
-  Starts an exception description for an exception object with name 
-  \<exception-object\>. Followed by a description of the exception. 
+  Starts an exception description for an exception object with name
+  \<exception-object\>. Followed by a description of the exception.
   The existence of the exception object is not checked.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\exception commands will be joined into a single paragraph.
-  Each parameter description will start on a new line.
-  The \\exception description ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
+  Each exception description will start on a new line.
+  The \\exception description ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
-
-  \par Note: 
-  the tag \\exceptions is a synonym for this tag.
 
 <hr>
 \section cmdif \\if <section-label>
 
   \addindex \\if
-  Starts a conditional documentation section. The section ends 
+  Starts a conditional documentation section. The section ends
   with a matching \c \\endif command. A conditional section is
   disabled by default. To enable it you must put the
-  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
+  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   tag in the configuration
   file. Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
@@ -1183,9 +1238,9 @@ contains \c TEST, or \c DEV
    *  \endif
    *  Unconditional text.
    */
-\endverbatim  
+\endverbatim
 
-  You can also use conditional commands inside aliases. To 
+  You can also use conditional commands inside aliases. To
   document a class in two languages you could for instance use:
 
 \par Example 2:
@@ -1213,21 +1268,21 @@ ALIASES  = "english=\if english" \
 
   and \c ENABLED_SECTIONS can be used to enable either \c english or \c dutch.
 
-  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot", 
+  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
 \section cmdifnot \\ifnot <section-label>
 
   \addindex \\ifnot
-  Starts a conditional documentation section. The section ends 
+  Starts a conditional documentation section. The section ends
   with a matching \c \\endif command. This conditional section is
   enabled by default. To disable it you must put the
-  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
+  section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   tag in the configuration
-  file. 
+  file.
 
-  \sa sections \ref cmdendif "\\endif", \ref cmdif "\\if", 
+  \sa sections \ref cmdendif "\\endif", \ref cmdif "\\if",
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
@@ -1235,66 +1290,68 @@ ALIASES  = "english=\if english" \
 
   \addindex \\invariant
   Starts a paragraph where the invariant of an entity can be described.
-  The paragraph will be indented. 
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\invariant commands will be joined into a single paragraph.
   Each invariant description will start on a new line.
-  Alternatively, one \\invariant command may mention 
-  several invariants. The \\invariant command ends when a blank line or some other 
+  Alternatively, one \\invariant command may mention
+  several invariants. The \\invariant command ends when a blank line or some other
   sectioning command is encountered.
 
 <hr>
 \section cmdnote \\note { text }
 
   \addindex \\note
-  Starts a paragraph where a note can be entered. The paragraph will be 
-  indented. The text of the paragraph has no special internal structure. 
+  Starts a paragraph where a note can be entered. The paragraph will be
+  indented. The text of the paragraph has no special internal structure.
   All visual enhancement commands may be used inside the paragraph.
   Multiple adjacent \\note commands will be joined into a single paragraph.
   Each note description will start on a new line.
-  Alternatively, one \\note command may mention 
-  several notes. The \\note command ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdpar "\\par" 
+  Alternatively, one \\note command may mention
+  several notes. The \\note command ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdpar "\\par"
   for an example.
 
 <hr>
 \section cmdpar \\par [(paragraph title)] { paragraph }
 
   \addindex \\par
-  If a paragraph title is given this command starts a paragraph with a 
+  If a paragraph title is given this command starts a paragraph with a
   user defined heading. The heading extends until the end of the
   line. The paragraph following the command will be indented.
 
   If no paragraph title is given this command will start a new paragraph.
-  This will also work inside other paragraph commands 
-  (like \\param or \\warning) without ending the that command. 
- 
+  This will also work inside other paragraph commands
+  (like \\param or \\warning) without ending that command.
+
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
-  The \\par command ends when a blank line or some other 
-  sectioning command is encountered. 
+  The \\par command ends when a blank line or some other
+  sectioning command is encountered.
 
   \par Example:
-  \verbinclude par.cpp  
+  \verbinclude par.cpp
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/par/html/class_test.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/par/html/class_test.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
 <hr>
-\section cmdparam \\param <parameter-name> { parameter description }
+\section cmdparam \\param [(dir)] <parameter-name> { parameter description }
 
   \addindex \\param
-  Starts a parameter description for a function parameter with name 
-  \<parameter-name\>, followed by a description of the parameter. 
+  Starts a parameter description for a function parameter with name
+  \<parameter-name\>, followed by a description of the parameter.
   The existence of the parameter is checked and a warning is given if
   the documentation of this (or any other) parameter is missing or not
   present in the function declaration or definition.
 
-  The \\param command has an optional attribute specifying the direction
-  of the attribute. Possible values are "in" and "out". Here is an example
-  for the function memcpy:
+  The \\param command has an optional attribute, (dir), specifying the direction
+  of the parameter. Possible values are "[in]", "[in,out]", and "[out]",
+  note the [square] brackets in this description.
+  When a parameter is both input and output, [in,out] is used as attribute.
+  Here is an example for the function memcpy:
   \code
 /*!
  * Copies bytes from a source memory area to a destination memory area,
@@ -1305,19 +1362,18 @@ ALIASES  = "english=\if english" \
  */
 void memcpy(void *dest, const void *src, size_t n);
   \endcode
-  If a parameter is both input and output, use [in,out] as an attribute.
 
-  The parameter description is a paragraph with no special internal structure. 
+  The parameter description is a paragraph with no special internal structure.
   All visual enhancement commands may be used inside the paragraph.
 
   Multiple adjacent \\param commands will be joined into a single paragraph.
   Each parameter description will start on a new line.
-  The \\param description ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
+  The \\param description ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
 
   Note that for PHP one can also specify the type (or types if you
-  separate them with a pipe symbol) which are allowed for a parameter 
+  separate them with a pipe symbol) which are allowed for a parameter
   (as this is not part of the definition).
   The syntax is the same as for phpDocumentor, i.e.
 \verbatim
@@ -1328,24 +1384,24 @@ void memcpy(void *dest, const void *src, size_t n);
 \section cmdtparam \\tparam <template-parameter-name> { description }
 
   \addindex \\tparam
-  Starts a template parameters for a class or function template parameter
+  Starts a template parameter for a class or function template parameter
   with name \<template-parameter-name\>, followed by a description of the
   template parameter.
 
-  Otherwise similar to \ref cmdparam "\\cmdparam".
+  Otherwise similar to \ref cmdparam "\\param".
 
 <hr>
 \section cmdpost \\post { description of the postcondition }
 
   \addindex \\post
   Starts a paragraph where the postcondition of an entity can be described.
-  The paragraph will be indented. 
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\post commands will be joined into a single paragraph.
   Each postcondition will start on a new line.
-  Alternatively, one \\post command may mention 
-  several postconditions. The \\post command ends when a blank line or some other 
+  Alternatively, one \\post command may mention
+  several postconditions. The \\post command ends when a blank line or some other
   sectioning command is encountered.
 
 <hr>
@@ -1353,28 +1409,28 @@ void memcpy(void *dest, const void *src, size_t n);
 
   \addindex \\pre
   Starts a paragraph where the precondition of an entity can be described.
-  The paragraph will be indented. 
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\pre commands will be joined into a single paragraph.
   Each precondition will start on a new line.
-  Alternatively, one \\pre command may mention 
-  several preconditions. The \\pre command ends when a blank line or some other 
+  Alternatively, one \\pre command may mention
+  several preconditions. The \\pre command ends when a blank line or some other
   sectioning command is encountered.
-  
+
 <hr>
 \section cmdremark \\remark { remark text }
 
   \addindex \\remark
-  Starts a paragraph where one or more remarks may be entered. 
-  The paragraph will be indented. 
+  Starts a paragraph where one or more remarks may be entered.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\remark commands will be joined into a single paragraph.
   Each remark will start on a new line.
-  Alternatively, one \\remark command may mention 
-  several remarks. The \\remark command ends when a blank line or some other 
-  sectioning command is encountered. 
+  Alternatively, one \\remark command may mention
+  several remarks. The \\remark command ends when a blank line or some other
+  sectioning command is encountered.
 
 <hr>
 \section cmdremarks \\remarks { remark text }
@@ -1383,15 +1439,21 @@ void memcpy(void *dest, const void *src, size_t n);
   Equivalent to \ref cmdremark "\\remark".
 
 <hr>
+\section cmdresult \\result { description of the result value }
+
+  \addindex \\result
+  Equivalent to \ref cmdreturn "\\return".
+
+<hr>
 \section cmdreturn \\return { description of the return value }
 
   \addindex \\return
-  Starts a return value description for a function. 
+  Starts a return value description for a function.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\return commands will be joined into a single paragraph.
-  The \\return description ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
+  The \\return description ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
 
 <hr>
@@ -1399,36 +1461,36 @@ void memcpy(void *dest, const void *src, size_t n);
 
   \addindex \\returns
   Equivalent to \ref cmdreturn "\\return".
-  
+
 <hr>
 \section cmdretval \\retval <return value> { description }
 
   \addindex \\retval
-  Starts a description for a function's return value with name 
-  \<return value\>. Followed by a description of the return value. 
+  Starts a description for a function's return value with name
+  \<return value\>, followed by a description of the return value.
   The text of the paragraph that forms the description has no special
-  internal structure. All visual enhancement commands may be used inside the 
+  internal structure. All visual enhancement commands may be used inside the
   paragraph.
   Multiple adjacent \\retval commands will be joined into a single paragraph.
   Each return value description will start on a new line.
-  The \\retval description ends when a blank line or some other 
-  sectioning command is encountered. 
+  The \\retval description ends when a blank line or some other
+  sectioning command is encountered.
 
 <hr>
 \section cmdsa \\sa { references }
 
   \addindex \\sa
-  Starts a paragraph where one or more cross-references to classes, 
+  Starts a paragraph where one or more cross-references to classes,
   functions, methods, variables, files or URL may be specified.
-  Two names joined by either <code>::</code> or <code>\#</code> 
-  are understood as referring to a class and one of its members. 
-  One of several overloaded methods or constructors 
-  may be selected by including a parenthesized list of argument types after 
-  the method name. 
+  Two names joined by either <code>::</code> or <code>\#</code>
+  are understood as referring to a class and one of its members.
+  One of several overloaded methods or constructors
+  may be selected by including a parenthesized list of argument types after
+  the method name.
 
   Synonymous to \\see.
 
-  \sa section \ref autolink "autolink" for information on how to create links 
+  \sa section \ref autolink "autolink" for information on how to create links
       to objects.
 
 <hr>
@@ -1438,27 +1500,27 @@ void memcpy(void *dest, const void *src, size_t n);
   Equivalent to \ref cmdsa "\\sa". Introduced for compatibility with Javadoc.
 
 <hr>
-\section cmdshort \\short {short description}
+\section cmdshort \\short { short description }
 
   \addindex \\short
-  Equivalent to \\ref cmdbrief "\\brief".
- 
+  Equivalent to \ref cmdbrief "\\brief".
+
 <hr>
 \section cmdsince \\since { text }
 
   \addindex \\since
   This tag can be used to specify since when (version or time) an
   entity is available. The paragraph that follows \\since does not have any
-  special internal structure. All visual enhancement commands may be 
-  used inside the paragraph. The \\since description ends when a blank 
-  line or some other sectioning command is encountered. 
+  special internal structure. All visual enhancement commands may be
+  used inside the paragraph. The \\since description ends when a blank
+  line or some other sectioning command is encountered.
 
 <hr>
 \section cmdtest \\test { paragraph describing a test case }
 
   \addindex \\test
-  Starts a paragraph where a test case can be described. 
-  The description will also add the test case to a separate test list. 
+  Starts a paragraph where a test case can be described.
+  The description will also add the test case to a separate test list.
   The two instances of the description will be cross-referenced.
   Each test case in the test list will be preceded by a header that
   indicates the origin of the test case.
@@ -1469,21 +1531,23 @@ void memcpy(void *dest, const void *src, size_t n);
   \addindex \\throw
   Synonymous to \\exception (see section \ref cmdexception "\\exception").
 
-  \par Note: 
+  \par Note:
   the tag \\throws is a synonym for this tag.
+
+  \sa section \ref cmdexception "\\exception"
 
 <hr>
 \section cmdthrows \\throws <exception-object> { exception description }
 
   \addindex \\throws
-  Equivalent to \ref cmdthrows "\\throws".
+  Equivalent to \ref cmdthrow "\\throw".
 
 <hr>
 \section cmdtodo \\todo { paragraph describing what is to be done }
 
   \addindex \\todo
-  Starts a paragraph where a TODO item is described. 
-  The description will also add an item to a separate TODO list. 
+  Starts a paragraph where a TODO item is described.
+  The description will also add an item to a separate TODO list.
   The two instances of the description will be cross-referenced.
   Each item in the TODO list will be preceded by a header that
   indicates the origin of the item.
@@ -1492,59 +1556,59 @@ void memcpy(void *dest, const void *src, size_t n);
 \section cmdversion \\version { version number }
 
   \addindex \\version
-  Starts a paragraph where one or more version strings may be entered. 
-  The paragraph will be indented. 
+  Starts a paragraph where one or more version strings may be entered.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\version commands will be joined into a single paragraph.
   Each version description will start on a new line.
-  Alternatively, one \\version command may mention 
-  several version strings. 
-  The \\version command ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdauthor "\\author" 
+  Alternatively, one \\version command may mention
+  several version strings.
+  The \\version command ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
- 
+
 <hr>
 \section cmdwarning \\warning { warning message }
 
   \addindex \\warning
-  Starts a paragraph where one or more warning messages may be entered. 
-  The paragraph will be indented. 
+  Starts a paragraph where one or more warning messages may be entered.
+  The paragraph will be indented.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\warning commands will be joined into a single paragraph.
   Each warning description will start on a new line.
-  Alternatively, one \\warning command may mention 
-  several warnings. The \\warning command ends when a blank line or some other 
-  sectioning command is encountered. See section \ref cmdauthor "\\author" 
+  Alternatively, one \\warning command may mention
+  several warnings. The \\warning command ends when a blank line or some other
+  sectioning command is encountered. See section \ref cmdauthor "\\author"
   for an example.
 
 <hr>
-\section cmdxrefitem \\xrefitem <key> "(heading)" "(list title)" {text}
+\section cmdxrefitem \\xrefitem <key> "(heading)" "(list title)" { text }
 
  \addindex \\xrefitem
- This command is a generalization of commands such as \ref cmdtodo "\\todo" 
+ This command is a generalization of commands such as \ref cmdtodo "\\todo"
  and \ref cmdbug "\\bug".
- It can be used to create user-defined text sections which are automatically 
- cross-referenced between the place of occurrence and a related page, 
- which will be generated. On the related page all sections of 
- the same type will be collected. 
- 
- The first argument \<key\> is a
- identifier uniquely representing the type of the section. The second argument 
- is a quoted string representing the heading of the section under which 
- text passed as the forth argument is put. The third argument (list title)
- is used as the title for the related page containing all items with the 
- same key. The keys "todo", "test", "bug", and "deprecated" are predefined.
- 
- To get an idea on how to use the \\xrefitem command and what its effect 
- is, consider the todo list, which (for English output) can be seen an 
+ It can be used to create user-defined text sections which are automatically
+ cross-referenced between the place of occurrence and a related page,
+ which will be generated. On the related page all sections of
+ the same type will be collected.
+
+ The first argument \<key\> is an
+ identifier uniquely representing the type of the section. The second argument
+ is a quoted string representing the heading of the section under which
+ text passed as the fourth argument is put. The third argument (list title)
+ is used as the title for the related page containing all items with the
+ same key. The keys "todo", "test", "bug" and "deprecated" are predefined.
+
+ To get an idea on how to use the \\xrefitem command and what its effect
+ is, consider the todo list, which (for English output) can be seen an
  alias for the command
  \verbatim \xrefitem todo "Todo" "Todo List" \endverbatim
 
- Since it is very tedious and error-prone to repeat the first three 
- parameters of the command for each section, the command is meant to 
- be used in combination with the \ref cfg_aliases "ALIASES" option in the 
+ Since it is very tedious and error-prone to repeat the first three
+ parameters of the command for each section, the command is meant to
+ be used in combination with the \ref cfg_aliases "ALIASES" option in the
  configuration file.
  To define a new command \\reminder, for instance, one should add the following
  line to the configuration file:
@@ -1554,11 +1618,11 @@ void memcpy(void *dest, const void *src, size_t n);
 
 <hr>
 
-\htmlonly <center> \endhtmlonly 
+\htmlonly <center> \endhtmlonly
 <h2>
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 Commands to create links
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 </h2>
 \htmlonly </center>\endhtmlonly
 
@@ -1573,36 +1637,36 @@ Commands to create links
 
   \addindex \\anchor
   This command places an invisible, named anchor into the documentation
-  to which you can refer with the \\ref command. 
+  to which you can refer with the \\ref command.
 
   \note Anchors can currently only be put into a comment block
   that is marked as a page (using \ref cmdpage "\\page") or mainpage
-  (\ref cmdmainpage "\\mainpage"). 
+  (\ref cmdmainpage "\\mainpage").
 
   \sa section \ref cmdref "\\ref".
 
 <hr>
 \section cmdendlink \\endlink
 
-  \addindex \\endlink 
+  \addindex \\endlink
   This command ends a link that is started with the \\link command.
-  
+
   \sa section \ref cmdlink "\\link".
 
 <hr>
-\section cmdlink \\link <link-object> 
+\section cmdlink \\link <link-object>
 
   \addindex \\link
   The links that are automatically generated by doxygen always have the
-  name of the object they point to as link-text. 
+  name of the object they point to as link-text.
 
-  The \\link command can be used to create a link to an object (a file, 
-  class, or member) with a user specified link-text. 
+  The \\link command can be used to create a link to an object (a file,
+  class, or member) with a user specified link-text.
   The link command should end with an \\endlink command. All text between
-  the \\link and \\endlink commands serves as text for a link to 
+  the \\link and \\endlink commands serves as text for a link to
   the \<link-object\> specified as the first argument of \\link.
-  
-  See section \ref autolink "autolink" for more information on automatically 
+
+  See section \ref autolink "autolink" for more information on automatically
   generated links and valid link-objects.
 
 <hr>
@@ -1610,12 +1674,12 @@ Commands to create links
 
   \addindex \\ref
   Creates a reference to a named section, subsection, page or anchor.
-  For HTML documentation the reference command will generate a link to 
-  the section. For a sections or subsections the title of the section will be 
-  used as the text of the link. For anchor the optional text between quotes
+  For HTML documentation the reference command will generate a link to
+  the section. For a section or subsection the title of the section will be
+  used as the text of the link. For an anchor the optional text between quotes
   will be used or \<name\> if no text is specified.
-  For \f$\mbox{\LaTeX}\f$ documentation the reference command will 
-  generate a section number for sections or the text followed by a 
+  For \f$\mbox{\LaTeX}\f$ documentation the reference command will
+  generate a section number for sections or the text followed by a
   page number if \<name\> refers to an anchor.
 
   \sa
@@ -1628,33 +1692,33 @@ Commands to create links
   This command can be used to create a hierarchy of pages. The
   same structure can be made using the \ref cmddefgroup "\\defgroup" and
   \ref cmdingroup "\\ingroup" commands, but for pages the \\subpage command
-  is often more convenient. The main page (see \ref cmdmainpage "\\mainpage") 
-  is typically the root of hierarchy. 
+  is often more convenient. The main page (see \ref cmdmainpage "\\mainpage")
+  is typically the root of hierarchy.
 
   This command behaves similar as \ref cmdref "\\ref" in the sense that
   it creates a reference to a page labeled \<name\> with the optional
-  link text as specified in the second argument. 
+  link text as specified in the second argument.
 
   It differs from the \\ref command in that it only works for pages,
   and creates a parent-child relation between pages, where the
-  child page (or sub page) is identified by label \<name\>. 
-  
+  child page (or sub page) is identified by label \<name\>.
+
   See the \ref cmdsection "\\section"
   and \ref cmdsubsection "\\subsection" commands if you want to add structure
   without creating multiple pages.
 
   \note Each page can be the sub page of only one other page and
-  no cyclic relations are allowed, i.e. the page hierarchy must have a tree 
+  no cyclic relations are allowed, i.e. the page hierarchy must have a tree
   structure.
-  
+
   Here is an example:
 \verbatim
 /*! \mainpage A simple manual
 
 Some general info.
-  
+
 This manual is divided in the following sections:
-- \subpage intro 
+- \subpage intro
 - \subpage advanced "Advanced usage"
 */
 
@@ -1662,7 +1726,7 @@ This manual is divided in the following sections:
 
 /*! \page intro Introduction
 This page introduces the user to the topic.
-Now you can proceed to the \ref advanced "advanced section".  
+Now you can proceed to the \ref advanced "advanced section".
 */
 
 //-----------------------------------------------------------
@@ -1675,14 +1739,18 @@ Make sure you have first read \ref intro "the introduction".
 
 <hr>
 \section cmdsection \\section <section-name> (section title)
-  
+
   \addindex \\section
   Creates a section with name \<section-name\>. The title of the
-  section should be specified as the second argument of the \\section 
+  section should be specified as the second argument of the \\section
   command.
 
   \warning This command only works inside related page documentation and
            \e not in other documentation blocks!
+
+  \sa
+   Section \ref cmdpage "\\page" for an example of the
+           \ref cmdsection "\\section" command.
 
 <hr>
 \section cmdsubsection \\subsection <subsection-name> (subsection title)
@@ -1692,12 +1760,12 @@ Make sure you have first read \ref intro "the introduction".
   subsection should be specified as the second argument of the \\subsection
   command.
 
-  \warning This command only works inside a section of a related page 
+  \warning This command only works inside a section of a related page
            documentation block and
            \e not in other documentation blocks!
 
   \sa
-   Section \ref cmdpage "\\page" for an example of the 
+   Section \ref cmdpage "\\page" for an example of the
            \ref cmdsubsection "\\subsection" command.
 
 <hr>
@@ -1705,40 +1773,37 @@ Make sure you have first read \ref intro "the introduction".
 
   \addindex \\subsubsection
   Creates a subsubsection with name \<subsubsection-name\>. The title of the
-  subsubsection should be specified as the second argument of the 
+  subsubsection should be specified as the second argument of the
   \\subsubsection command.
 
-  \warning This command only works inside a subsection of a 
+  \warning This command only works inside a subsection of a
            related page documentation block and
            \e not in other documentation blocks!
 
   \sa
-   Section \ref cmdpage "\\page" for an example of the 
-           \ref cmdsubsubsection "\\subsubsection" command.
+   Section \ref cmdpage "\\page" for an example of the
+           \ref cmdsection "\\section" command and
+           \ref cmdsubsection "\\subsection" command.
 
 <hr>
 \section cmdparagraph \\paragraph <paragraph-name> (paragraph title)
 
   \addindex \\paragraph
   Creates a named paragraph with name \<paragraph-name\>. The title of the
-  paragraph should be specified as the second argument of the 
+  paragraph should be specified as the second argument of the
   \\paragraph command.
 
-  \warning This command only works inside a subsubsection of a 
+  \warning This command only works inside a subsubsection of a
            related page documentation block and
            \e not in other documentation blocks!
 
-  \sa
-   Section \ref cmdpage "\\page" for an example of the 
-           \ref cmdparagraph "\\paragraph" command.
-
 <hr>
 
-\htmlonly <center> \endhtmlonly 
+\htmlonly <center> \endhtmlonly
 <h2>
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 Commands for displaying examples
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 </h2>
 \htmlonly </center>\endhtmlonly
 
@@ -1746,20 +1811,20 @@ Commands for displaying examples
 \section cmddontinclude \\dontinclude <file-name>
 
   \addindex \\dontinclude
-  This command can be used to parse a source file without actually 
-  verbatim including it in the documentation (as the \\include command does). 
+  This command can be used to parse a source file without actually
+  verbatim including it in the documentation (as the \\include command does).
   This is useful if you want to divide the source file into smaller pieces and
   add documentation between the pieces.
-  Source files or directories can be specified using the 
-  \ref cfg_example_path "EXAMPLE_PATH" 
+  Source files or directories can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH"
   tag of doxygen's configuration file.
 
   The class and member declarations and definitions inside the code fragment
-  are `remembered' during the parsing of the comment block that contained 
-  the \\dontinclude command. 
+  are `remembered' during the parsing of the comment block that contained
+  the \\dontinclude command.
 
-  For line by line descriptions of source files, one or more lines 
-  of the example can be displayed using the \\line, \\skip, \\skipline, and 
+  For line by line descriptions of source files, one or more lines
+  of the example can be displayed using the \\line, \\skip, \\skipline, and
   \\until commands. An internal pointer is used for these commands. The
   \\dontinclude command sets the pointer to the first line of the example.
 
@@ -1768,52 +1833,53 @@ Commands for displaying examples
   Where the example file \c example_test.cpp looks as follows:
   \verbinclude example_test.cpp
   \htmlonly
-  Click <a href="$(DOXYGEN_DOCDIR)/examples/include/html/example.html">here</a> 
+  Click <a href="$(DOXYGEN_DOCDIR)/examples/include/html/example.html">here</a>
   for the corresponding HTML documentation that is generated by doxygen.
   \endhtmlonly
 
-  \sa sections \ref cmdline "\\line", \ref cmdskip "\\skip", 
-               \ref cmdskipline "\\skipline", and \ref cmduntil "\\until".
+  \sa sections \ref cmdline "\\line", \ref cmdskip "\\skip",
+               \ref cmdskipline "\\skipline", \ref cmduntil "\\until", and
+               \ref cmdinclude "\\include".
 
 <hr>
 \section cmdinclude \\include <file-name>
 
   \addindex \\include
   This command can be used to include a source file as a block of code.
-  The command takes the name of an include file as an argument. 
-  Source files or directories can be specified using the 
-  \ref cfg_example_path "EXAMPLE_PATH" 
+  The command takes the name of an include file as an argument.
+  Source files or directories can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH"
   tag of doxygen's configuration file.
 
   If \<file-name\> itself is not unique for the set of example files specified
-  by the \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part 
+  by the \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part
   of the absolute path to disambiguate it.
 
-  Using the \\include command is equivalent to inserting the file into 
-  the documentation block and surrounding it 
+  Using the \\include command is equivalent to inserting the file into
+  the documentation block and surrounding it
   with \ref cmdcode "\\code" and \ref cmdendcode "\\endcode" commands.
 
-  The main purpose of the \\include command is to avoid code 
+  The main purpose of the \\include command is to avoid code
   duplication in case of example blocks that consist of multiple
   source and header files.
 
-  For a line by line description of a source files use the 
-  \ref cmddontinclude "\\dontinclude" command in combination with 
-  the \ref cmdline "\\line", \ref cmdskip "\\skip", 
-  \ref cmdskipline "\\skipline", 
-  and \\until commands.  
+  For a line by line description of a source files use the
+  \ref cmddontinclude "\\dontinclude" command in combination with
+  the \ref cmdline "\\line", \ref cmdskip "\\skip",
+  \ref cmdskipline "\\skipline",
+  and \\until commands.
 
-  \note Doxygen's special commands do not work inside blocks of code. 
+  \note Doxygen's special commands do not work inside blocks of code.
   It is allowed to nest C-style comments inside a code block though.
 
-  \sa section \ref cmdexample "\\example", \ref cmddontinclude "\\dontinclude", and
-      section \ref cmdverbatim "\\verbatim".
+  \sa sections \ref cmdexample "\\example", \ref cmddontinclude "\\dontinclude", and
+      \ref cmdverbatim "\\verbatim".
 
 <hr>
 \section cmdincludelineno \\includelineno <file-name>
 
   \addindex \\includelineno
-  This command works the same way as \\include, but will add line 
+  This command works the same way as \\include, but will add line
   numbers to the included file.
 
   \sa section \ref cmdinclude "\\include".
@@ -1824,9 +1890,9 @@ Commands for displaying examples
   \addindex \\line
   This command searches line by line through the example that was last
   included using \\include or \\dontinclude until it finds a non-blank
-  line. If that line contains the specified pattern, it is written 
+  line. If that line contains the specified pattern, it is written
   to the output.
-  
+
   The internal pointer that is used to keep track of the current line in
   the example, is set to the start of the line following the non-blank
   line that was found (or to the end of the example if no such line could
@@ -1840,29 +1906,29 @@ Commands for displaying examples
   \addindex \\skip
   This command searches line by line through the example that was last
   included using \\include or \\dontinclude until it finds a line that contains
-  the specified pattern. 
-  
+  the specified pattern.
+
   The internal pointer that is used to keep track of the current line in
   the example, is set to the start of the line that contains the specified
-  pattern (or to the end of the example if the pattern could not be found). 
+  pattern (or to the end of the example if the pattern could not be found).
 
   See section \ref cmddontinclude "\\dontinclude" for an example.
 
 <hr>
-\section cmdskipline \\skipline ( pattern ) 
+\section cmdskipline \\skipline ( pattern )
 
   \addindex \\skipline
   This command searches line by line through the example that was last
   included using \\include or \\dontinclude until it finds a line that contains
   the specified pattern. It then writes the line to the output.
-  
+
   The internal pointer that is used to keep track of the current line in
   the example, is set to the start of the line following the line that is
-  written (or to the end of the example if the pattern could not be found). 
+  written (or to the end of the example if the pattern could not be found).
 
   \par Note:
     The command:
-    \verbatim\skipline pattern\endverbatim 
+    \verbatim\skipline pattern\endverbatim
     is equivalent to:
 \verbatim
 \skip pattern
@@ -1875,10 +1941,10 @@ Commands for displaying examples
 
   \addindex \\until
   This command writes all lines of the example that was last
-  included using \\include or \\dontinclude to the output, until it finds 
+  included using \\include or \\dontinclude to the output, until it finds
   a line containing the specified pattern. The line containing the pattern
   will be written as well.
-  
+
   The internal pointer that is used to keep track of the current line in
   the example, is set to the start of the line following last written
   line (or to the end of the example if the pattern could not be found).
@@ -1891,9 +1957,9 @@ Commands for displaying examples
   \addindex \\verbinclude
   This command includes the file \<file-name\> verbatim in the documentation.
   The command is equivalent to pasting the file in the documentation and
-  placing \\verbatim and \\endverbatim commands around it. 
+  placing \\verbatim and \\endverbatim commands around it.
 
-  Files or directories that doxygen should look for can be specified using the 
+  Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
 <hr>
@@ -1904,49 +1970,53 @@ Commands for displaying examples
   The command is equivalent to pasting the file in the documentation and
   placing \\htmlonly and \\endhtmlonly commands around it.
 
-  Files or directories that doxygen should look for can be specified using the 
+  Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
 <hr>
 
-\htmlonly <center> \endhtmlonly 
+\htmlonly <center> \endhtmlonly
 <h2>
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 Commands for visual enhancements
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 </h2>
 \htmlonly </center>\endhtmlonly
 
 \section cmda \\a <word>
- 
+
   \addindex \\a
-  Displays the argument \<word\> using a special font.
+  Displays the argument \<word\> in italics.
+  Use this command to emphasize words.
   Use this command to refer to member arguments in the running text.
 
   \par Example:
   \verbatim
   ... the \a x and \a y coordinates are used to ...
-  \endverbatim 
+  \endverbatim
   This will result in the following text:<br><br>
   ... the \a x and \a y coordinates are used to ...
 
+  Equivalent to \ref cmda "\\e" and \ref cmdem "\\em".
+  To emphasize multiple words use \<em\>multiple words\</em\>.
+
 <hr>
 \section cmdarg \\arg { item-description }
-  
+
   \addindex \\arg
   This command has one argument that continues until the first
   blank line or until another \\arg is encountered.
   The command can be used to generate a simple, not nested list of
-  arguments. 
+  arguments.
   Each argument should start with a \\arg command.
-  
+
   \par Example:
   Typing:
   \verbatim
   \arg \c AlignLeft left alignment.
   \arg \c AlignCenter center alignment.
   \arg \c AlignRight right alignment
-  
+
   No other types of alignment are supported.
   \endverbatim
   will result in the following text:<br><br>
@@ -1970,7 +2040,7 @@ Commands for visual enhancements
   Displays the argument \<word\> using a bold font.
   Equivalent to \<b\>word\</b\>.
   To put multiple words in bold use \<b\>multiple words\</b\>.
-  
+
 <hr>
 \section cmdc \\c <word>
 
@@ -1996,37 +2066,37 @@ Commands for visual enhancements
   \addindex \\code
   Starts a block of code. A code block is treated differently
   from ordinary text. It is interpreted as C/C++ code. The names of the
-  classes and members that are documented are automatically replaced by 
-  links to the documentation. 
+  classes and members that are documented are automatically replaced by
+  links to the documentation.
 
-  \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim".
+  \sa section \ref cmdendcode "\\endcode" and section \ref cmdverbatim "\\verbatim".
 
 <hr>
 \section cmdcopydoc \\copydoc <link-object>
 
   \addindex \\copydoc
   Copies a documentation block from the object specified by \<link-object\>
-  and pastes it at the location of the command. This command can be useful 
-  to avoid cases where a documentation block would otherwise have to be 
-  duplicated or it can be used to extend the documentation of an inherited 
+  and pastes it at the location of the command. This command can be useful
+  to avoid cases where a documentation block would otherwise have to be
+  duplicated or it can be used to extend the documentation of an inherited
   member.
-  
-  The link object can point to a member (of a class, file or group), 
-  a class, a namespace, a group, a page, or a file (checked in that order). 
-  Note that if the object pointed to is a member (function, variable, 
-  typedef, etc), the compound (class, file, or group) containing it 
-  should also be documented for the copying to work. 
 
-  To copy the documentation for a member of a 
+  The link object can point to a member (of a class, file or group),
+  a class, a namespace, a group, a page, or a file (checked in that order).
+  Note that if the object pointed to is a member (function, variable,
+  typedef, etc), the compound (class, file, or group) containing it
+  should also be documented for the copying to work.
+
+  To copy the documentation for a member of a
   class for instance one can put the following in the documentation
 
 \verbatim
-  /*! @copydoc MyClass::myfunction() 
+  /*! @copydoc MyClass::myfunction()
    *  More documentation.
    */
 \endverbatim
 
-  if the member is overloaded, you should specify the argument types 
+  if the member is overloaded, you should specify the argument types
   explicitly (without spaces!), like in the following:
 
 \verbatim
@@ -2036,13 +2106,15 @@ Commands for visual enhancements
   Qualified names are only needed if the context in which the documentation
   block is found requires them.
 
-  The copydoc command can be used recursively, but cycles in the copydoc
+  The \\copydoc command can be used recursively, but cycles in the \\copydoc
   relation will be broken and flagged as an error.
 
   Note that both the brief description and the detailed documentation
-  will be copied. See \ref cmdcopybrief "\\cmdcopybrief" and
-  \ref cmdcopydetails "\\cmdcopydetails" for copying only the brief or
+  will be copied. See \ref cmdcopybrief "\\copybrief" and
+  \ref cmdcopydetails "\\copydetails" for copying only the brief or
   detailed part of the comment block.
+
+  \sa sections \ref cmdcopybrief "\\copybrief" and \ref cmdcopydetails "\\copydetails"
 
 <hr>
 \section cmdcopybrief \\copybrief <link-object>
@@ -2061,11 +2133,11 @@ only copy the detailed documentation, not the brief description.
 
   \addindex \\dot
   Starts a text fragment which should contain a valid description of a
-  dot graph. The text fragment ends with \ref cmdenddot "\\enddot". 
-  Doxygen will pass the text on to dot and include the resulting 
+  dot graph. The text fragment ends with \ref cmdenddot "\\enddot".
+  Doxygen will pass the text on to dot and include the resulting
   image (and image map) into the output.
   The nodes of a graph can be made clickable by using the URL attribute.
-  By using the command \\ref inside the URL value you can conveniently 
+  By using the command \\ref inside the URL value you can conveniently
   link to an item inside doxygen. Here is an example:
 \code
 /*! class B */
@@ -2085,23 +2157,23 @@ class C {};
  *      b -> c [ arrowhead="open", style="dashed" ];
  *  }
  *  \enddot
- *  Note that the classes in the above graph are clickable 
+ *  Note that the classes in the above graph are clickable
  *  (in the HTML output).
  */
 \endcode
-  
+
 <hr>
 \section cmdmsc \\msc
 
   \addindex \\msc
   Starts a text fragment which should contain a valid description of a
   message sequence chart. See http://www.mcternan.me.uk/mscgen/ for examples.
-  The text fragment ends with \ref cmdendmsc "\\endmsc". 
-  \note The text fragment should only include the part of the message 
+  The text fragment ends with \ref cmdendmsc "\\endmsc".
+  \note The text fragment should only include the part of the message
   sequence chart that is
   within the <code>msc {...}</code> block.
   \note You need to install the <code>mscgen</code> tool, if you want to use this
-  command. 
+  command.
 
 Here is an example of the use of the \\msc command.
 \code
@@ -2135,18 +2207,20 @@ class Receiver
     void Command(int commandId);
 };
 
-\endcode  
+\endcode
+
+  \sa section \ref cmdmscfile "\\mscfile".
 
 <hr>
-\section cmddotfile \\dotfile <file> ["caption"] 
+\section cmddotfile \\dotfile <file> ["caption"]
 
   \addindex \\dotfile
-  Inserts an image generated by dot from \<file\> into the documentation. 
+  Inserts an image generated by dot from \<file\> into the documentation.
 
-  The first argument specifies the file name of the image. 
-  doxygen will look for files in the paths (or files) that you specified 
-  after the \ref cfg_dotfile_dirs "DOTFILE_DIRS" tag. 
-  If the dot file is found it will be used as an input file to the dot tool. 
+  The first argument specifies the file name of the image.
+  doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_dotfile_dirs "DOTFILE_DIRS" tag.
+  If the dot file is found it will be used as an input file to the dot tool.
   The resulting image will be put into the correct output directory.
   If the dot file name contains spaces you'll have to put quotes ("...") around it.
 
@@ -2156,57 +2230,61 @@ class Receiver
   stripped before the caption is displayed.
 
 <hr>
-\section cmdmscfile \\mscfile <file> ["caption"] 
+\section cmdmscfile \\mscfile <file> ["caption"]
 
   \addindex \\mscfile
-  Inserts an image generated by mscgen from \<file\> into the documentation. 
+  Inserts an image generated by mscgen from \<file\> into the documentation.
+  See http://www.mcternan.me.uk/mscgen/ for examples.
 
-  The first argument specifies the file name of the image. 
-  doxygen will look for files in the paths (or files) that you specified 
-  after the \ref cfg_mscfile_dirs "MSCFILE_DIRS" tag. 
-  If the msc file is found it will be used as an input file to the mscgen tool. 
+  The first argument specifies the file name of the image.
+  doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_mscfile_dirs "MSCFILE_DIRS" tag.
+  If the msc file is found it will be used as an input file to the mscgen tool.
   The resulting image will be put into the correct output directory.
-  If the dot file name contains spaces you'll have to put quotes ("...") around it.
+  If the msc file name contains spaces you'll have to put quotes ("...") around it.
 
   The second argument is optional and can be used to specify the caption
   that is displayed below the image. This argument has to be specified
   between quotes even if it does not contain any spaces. The quotes are
   stripped before the caption is displayed.
+
+  \sa section \ref cmdmsc "\\msc".
 
 <hr>
 \section cmde \\e <word>
 
-  \addindex \\e 
+  \addindex \\e
   Displays the argument \<word\> in italics.
   Use this command to emphasize words.
 
   \par Example:
   Typing:
   \verbatim
-  ... this is a \e really good example ... 
+  ... this is a \e really good example ...
   \endverbatim
   will result in the following text:<br><br>
   ... this is a \e really good example ...
 
-  Equivalent to \ref cmdem "\\em". 
-  To emphasis multiple words use \<em\>multiple words\</em\>.
+  Equivalent to \ref cmda "\\a" and \ref cmdem "\\em".
+  To emphasize multiple words use \<em\>multiple words\</em\>.
 
 <hr>
 \section cmdem \\em <word>
 
-  \addindex \\em 
+  \addindex \\em
   Displays the argument \<word\> in italics.
   Use this command to emphasize words.
 
   \par Example:
   Typing:
   \verbatim
-  ... this is a \em really good example ... 
+  ... this is a \em really good example ...
   \endverbatim
   will result in the following text:<br><br>
   ... this is a \em really good example ...
 
-  Equivalent to \ref cmde "\\e"
+  Equivalent to \ref cmda "\\a" and \ref cmde "\\e".
+  To emphasize multiple words use \<em\>multiple words\</em\>.
 
 <hr>
 \section cmdendcode \\endcode
@@ -2214,7 +2292,7 @@ class Receiver
   \addindex \\endcode
   Ends a block of code.
   \sa section \ref cmdcode "\\code"
- 
+
 <hr>
 \section cmdenddot \\enddot
 
@@ -2265,7 +2343,7 @@ class Receiver
 
   \addindex \\endverbatim
   Ends a block of text that was started with a \\verbatim command.
-  
+
   \sa section \ref cmdverbatim "\\verbatim".
 
 <hr>
@@ -2273,7 +2351,7 @@ class Receiver
 
   \addindex \\endxmlonly
   Ends a block of text that was started with a \\xmlonly command.
-  
+
   \sa section \ref cmdxmlonly "\\xmlonly".
 
 <hr>
@@ -2281,15 +2359,15 @@ class Receiver
 
   \addindex \\f\$
 
-  Marks the start and end of an in-text formula. 
+  Marks the start and end of an in-text formula.
   \sa section \ref formulas "formulas" for an example.
-  
+
 <hr>
 \section cmdfbropen \\f[
 
   \addindex \\f[
 
-  Marks the start of a long formula that is displayed 
+  Marks the start of a long formula that is displayed
   centered on a separate line.
   \sa section \ref cmdfbrclose "\\f]" and section \ref formulas "formulas".
 
@@ -2297,7 +2375,7 @@ class Receiver
 \section cmdfbrclose \\f]
 
   \addindex \\f]
-  
+
   Marks the end of a long formula that is displayed
   centered on a separate line.
   \sa section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
@@ -2306,7 +2384,7 @@ class Receiver
 \section cmdfcurlyopen \\f{environment}{
 
   Marks the start of a formula that is in a specific environment.
-  \note The second \{ is optional and is only to help editors (such as Vim) to
+  \note The second { is optional and is only to help editors (such as Vim) to
   do proper syntax highlighting by making the number of opening and closing braces
   the same.
 
@@ -2328,11 +2406,10 @@ class Receiver
   require attributes). You can use the \\latexonly and \\endlatexonly
   pair to provide a proper \f$\mbox{\LaTeX}\f$ alternative.
 
-  \b Note:
-    environment variables (like \$(HOME) ) are resolved inside a 
+  \note environment variables (like \$(HOME) ) are resolved inside a
     HTML-only block.
 
-  \sa section \ref cmdmanonly "\\manonly", section 
+  \sa section \ref cmdmanonly "\\manonly", section
               \ref cmdlatexonly "\\latexonly", and section
               \ref cmdrtfonly "\\rtfonly".
 
@@ -2344,12 +2421,12 @@ class Receiver
   specific, so if you want to insert an image for more than one
   format you'll have to repeat this command for each format.
 
-  The first argument specifies the output format. Currently, the 
-  following values are supported: \c html and \c latex.
-  
-  The second argument specifies the file name of the image. 
-  doxygen will look for files in the paths (or files) that you specified 
-  after the \ref cfg_image_path "IMAGE_PATH" tag. 
+  The first argument specifies the output format. Currently, the
+  following values are supported: \c html, \c latex and \c rtf.
+
+  The second argument specifies the file name of the image.
+  doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_image_path "IMAGE_PATH" tag.
   If the image is found it will be copied to the correct output directory.
   If the image name contains spaces you'll have to put quotes ("...") around it.
   You can also specify an absolute URL instead of a file name, but then
@@ -2357,15 +2434,15 @@ class Receiver
 
   The third argument is optional and can be used to specify the caption
   that is displayed below the image. This argument has to be specified
-  on a single line and between quotes even if it does not contain any 
+  on a single line and between quotes even if it does not contain any
   spaces. The quotes are stripped before the caption is displayed.
 
-  The fourth argument is also optional and can be used to specify the 
-  width or height of the image. This is only useful 
+  The fourth argument is also optional and can be used to specify the
+  width or height of the image. This is only useful
   for \f$\mbox{\LaTeX}\f$ output
-  (i.e. format=<code>latex</code>). The \c sizeindication can be 
-  either \c width or \c height. The size should be a valid 
-  size specifier in \f$\mbox{\LaTeX}\f$ (for example <code>10cm</code> or 
+  (i.e. format=<code>latex</code>). The \c sizeindication can be
+  either \c width or \c height. The size should be a valid
+  size specifier in \f$\mbox{\LaTeX}\f$ (for example <code>10cm</code> or
   <code>6in</code> or a symbolic width like <code>\\textwidth</code>).
 
   Here is example of a comment block:
@@ -2377,7 +2454,7 @@ class Receiver
    */
 \endverbatim
 
-  And this is an example of how the relevant part of the configuration file 
+  And this is an example of how the relevant part of the configuration file
   may look:
 
 \verbatim
@@ -2388,7 +2465,7 @@ class Receiver
            browser supports. For \f$\mbox{\LaTeX}\f$, the image format
            must be Encapsulated PostScript (eps).
            <br><br>
-           Doxygen does not check if the image is in the correct format. 
+           Doxygen does not check if the image is in the correct format.
            So \e you have to make sure this is the case!
 
 <hr>
@@ -2399,16 +2476,17 @@ class Receiver
   generated \f$\mbox{\LaTeX}\f$ documentation only. The block ends with a
   \ref cmdendlatexonly "\\endlatexonly" command.
 
-  This command can be used to include \f$\mbox{\LaTeX}\f$ code that is too 
-  complex for doxygen (i.e. images, formulas, special characters). You can 
-  use the \\htmlonly and \\endhtmlonly pair to provide a proper HTML 
+  This command can be used to include \f$\mbox{\LaTeX}\f$ code that is too
+  complex for doxygen (i.e. images, formulas, special characters). You can
+  use the \\htmlonly and \\endhtmlonly pair to provide a proper HTML
   alternative.
 
   \b Note:
-    environment variables (like \$(HOME) ) are resolved inside a 
+    environment variables (like \$(HOME) ) are resolved inside a
     \f$\mbox{\LaTeX}\f$-only block.
 
   \sa section \ref cmdrtfonly "\\rtfonly",
+      section \ref cmdxmlonly "\\xmlonly",
       section \ref cmdmanonly "\\manonly", and
       section \ref cmdhtmlonly "\\htmlonly".
 
@@ -2421,31 +2499,32 @@ class Receiver
   \ref cmdendmanonly "\\endmanonly" command.
 
   This command can be used to include groff code directly into
-  MAN pages. You can use the \\htmlonly and \\latexonly and 
-  \\endhtmlonly and \\endlatexonly pairs to provide proper 
+  MAN pages. You can use the \\htmlonly and \\latexonly and
+  \\endhtmlonly and \\endlatexonly pairs to provide proper
   HTML and \f$\mbox{\LaTeX}\f$ alternatives.
 
-  \sa section \ref cmdhtmlonly "\\htmlonly", 
+  \sa section \ref cmdhtmlonly "\\htmlonly",
+      section \ref cmdxmlonly "\\xmlonly",
       section \ref cmdrtfonly "\\rtfonly", and
       section \ref cmdlatexonly "\\latexonly".
 
 <hr>
 \section cmdli \\li { item-description }
-  
+
   \addindex \\li
   This command has one argument that continues until the first
   blank line or until another \\li is encountered.
   The command can be used to generate a simple, not nested list of
-  arguments. 
+  arguments.
   Each argument should start with a \\li command.
-  
+
   \par Example:
   Typing:
   \verbatim
   \li \c AlignLeft left alignment.
   \li \c AlignCenter center alignment.
   \li \c AlignRight right alignment
-  
+
   No other types of alignment are supported.
   \endverbatim
   will result in the following text:<br><br>
@@ -2462,29 +2541,30 @@ class Receiver
   Equivalent to \ref cmdarg "\\arg"
 
 <hr>
-\section cmdn \\n 
-  
+\section cmdn \\n
+
   \addindex \\n
   Forces a new line. Equivalent to \<br\> and inspired by
   the printf function.
 
 <hr>
 \section cmdp \\p <word>
- 
+
   \addindex \\p
   Displays the parameter \<word\> using a typewriter font.
-  You can use this command to refer to member function parameters in 
+  You can use this command to refer to member function parameters in
   the running text.
 
   \par Example:
   \verbatim
   ... the \p x and \p y coordinates are used to ...
-  \endverbatim 
+  \endverbatim
   This will result in the following text:<br><br>
   ... the \p x and \p y coordinates are used to ...
 
   Equivalent to \ref cmdc "\\c"
- 
+  To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
+
 <hr>
 \section cmdrtfonly \\rtfonly
 
@@ -2494,13 +2574,14 @@ class Receiver
   \ref cmdendrtfonly "\\endrtfonly" command.
 
   This command can be used to include RTF code that is too complex
-  for doxygen. 
+  for doxygen.
 
   \b Note:
-    environment variables (like \$(HOME) ) are resolved inside a 
+    environment variables (like \$(HOME) ) are resolved inside a
     RTF-only block.
 
-  \sa section \ref cmdmanonly "\\manonly", section 
+  \sa section \ref cmdmanonly "\\manonly", section
+              \ref cmdxmlonly "\\xmlonly", section
               \ref cmdlatexonly "\\latexonly", and section
               \ref cmdhtmlonly "\\htmlonly".
 
@@ -2508,15 +2589,15 @@ class Receiver
 \section cmdverbatim \\verbatim
 
   \addindex \\verbatim
-  Starts a block of text that will be verbatim included in 
-  the documentation. The block should end with a 
-  \ref cmdendverbatim "\\endverbatim" block. 
+  Starts a block of text that will be verbatim included in
+  the documentation. The block should end with a
+  \ref cmdendverbatim "\\endverbatim" block.
   All commands are disabled in a verbatim block.
 
-  \warning Make sure you include a \\endverbatim command for each 
+  \warning Make sure you include a \\endverbatim command for each
   \\verbatim command or the parser will get confused!
 
-  \sa section \ref cmdcode "\\code", and 
+  \sa section \ref cmdcode "\\code", and
       section \ref cmdverbinclude "\\verbinclude".
 
 <hr>
@@ -2527,25 +2608,27 @@ class Receiver
   generated XML output only. The block ends with a
   endxmlonly command.
 
-  This command can be used to include custom XML tags. 
+  This command can be used to include custom XML tags.
 
-  \sa section \ref cmdhtmlonly "\\htmlonly" and section 
-              \ref cmdlatexonly "\\latexonly".
+  \sa section \ref cmdmanonly "\\manonly", section
+              \ref cmdrtfonly "\\rtfonly", section
+              \ref cmdlatexonly "\\latexonly", and section
+              \ref cmdhtmlonly "\\htmlonly".
 
 <hr>
 \section cmdbackslash \\\\
 
   \addindex \\\\
-  This command writes a backslash character (\\) to the 
-  output. The backslash has to be escaped in some 
+  This command writes a backslash character (\\) to the
+  output. The backslash has to be escaped in some
   cases because doxygen uses it to detect commands.
 
 <hr>
 \section cmdat \\\@
 
   \addindex \\\@
-  This command writes an at-sign (\@) to the output. 
-  The at-sign has to be escaped in some cases 
+  This command writes an at-sign (\@) to the output.
+  The at-sign has to be escaped in some cases
   because doxygen uses it to detect JavaDoc commands.
 
 <hr>
@@ -2563,67 +2646,67 @@ class Receiver
     deutsch. \~ output for all languages.
  */
 \endverbatim
-   
+
 
 <hr>
 \section cmdamp \\\&
 
   \addindex \\\&
-  This command writes the \& character to output. 
+  This command writes the \& character to output.
   This character has to be escaped because it has a special meaning in HTML.
 
 <hr>
 \section cmddollar \\\$
 
   \addindex \\\$
-  This command writes the \$ character to the output. 
-  This character has to be escaped in some cases, because it is used to expand 
+  This command writes the \$ character to the output.
+  This character has to be escaped in some cases, because it is used to expand
   environment variables.
 
 <hr>
 \section cmdhash \\\#
 
   \addindex \\\#
-  This command writes the \# character to the output. This 
+  This command writes the \# character to the output. This
   character has to be escaped in some cases, because it is used to refer
-  to documented entities. 
+  to documented entities.
 
 <hr>
 \section cmdlt \\\<
 
   \addindex \\\<
-  This command writes the \< character to the output. 
+  This command writes the \< character to the output.
   This character has to be escaped because it has a special meaning in HTML.
 
 <hr>
 \section cmdgt \\\>
 
   \addindex \\\>
-  This command writes the \> character to the output. This 
+  This command writes the \> character to the output. This
   character has to be escaped because it has a special meaning in HTML.
 
 <hr>
 \section cmdperc \\\%
 
   \addindex \\\%
-  This command writes the \% character to the output. This 
-  character has to be escaped in some cases, because it is used to 
-  prevent auto-linking to word that is also a documented class or struct. 
+  This command writes the \% character to the output. This
+  character has to be escaped in some cases, because it is used to
+  prevent auto-linking to word that is also a documented class or struct.
 
 <hr>
 \section cmdquot \\"
 
   \addindex \\\"
-  This command writes the \" character to the output. This 
+  This command writes the \" character to the output. This
   character has to be escaped in some cases, because it is used in pairs
   to indicate an unformatted text fragment.
 
 <hr>
-\htmlonly <center> \endhtmlonly 
+\htmlonly <center> \endhtmlonly
 <h2>
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 Commands included for Qt compatibility
-\htmlonly --- \endhtmlonly 
+\htmlonly --- \endhtmlonly
 </h2>
 \htmlonly </center>\endhtmlonly
 

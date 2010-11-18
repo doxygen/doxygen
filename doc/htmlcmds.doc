@@ -18,7 +18,7 @@
 
 Here is a list of all HTML commands that may be used inside the
 documentation. Note that although these HTML tags are translated to the
-proper commands for outer formats other than HTML, all attributes 
+proper commands for output formats other than HTML, all attributes 
 of a HTML tag are passed on to the HTML output only 
 (the HREF and NAME attributes for the A tag are the only exception).
 
@@ -38,7 +38,7 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
                        Note that for C# code, this command is equivalent to 
                        \ref cmdcode "\\code".
-<li><tt>\</CODE\></tt> End a <tt>\<CODE\></tt> section.
+<li><tt>\</CODE\></tt> Ends a <tt>\<CODE\></tt> section.
                        Note that for C# code, this command is equivalent to
                        \ref cmdendcode "\\endcode".
 <li><tt>\<DD\></tt>    Starts an item description.
@@ -101,7 +101,7 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\<UL\></tt>    Starts an unnumbered item list.
 <li><tt>\</UL\></tt>   Ends an unnumbered item list.
 <li><tt>\<VAR\></tt>   Starts a piece of text displayed in an italic font.
-<li><tt>\</VAR\></tt>  Ends a <tt>\</VAR\></tt> section.
+<li><tt>\</VAR\></tt>  Ends a <tt>\<VAR\></tt> section.
 </ul>
 
 The special HTML character entities that are recognized by Doxygen:

@@ -420,6 +420,14 @@ Note: This option is not very useful if HIDE_SCOPE_NAMES is set to YES.
 Note: This option applies only to the class list, not to the 
 alphabetical list. 
 ' defval='0'/>
+    <option type='bool' id='STRICT_PROTO_MATCHING' docs='
+If the STRICT_PROTO_MATCHING option is enabled and doxygen fails to
+do proper type resolution of all parameters of a function it will reject a 
+match between the prototype and the implementation of a member function even
+if there is only one candidate or it is obvious which candidate to choose
+by doing a simple string match. By disabling STRICT_PROTO_MATCHING doxygen 
+will still accept a match between prototype and implementation in such cases.
+' defval='0'/>
     <option type='bool' id='GENERATE_TODOLIST' docs='
 The GENERATE_TODOLIST tag can be used to enable (YES) or 
 disable (NO) the todo list. This list is created by putting \todo 
@@ -663,8 +671,8 @@ The FILTER_PATTERNS tag can be used to specify filters on a per file pattern
 basis.  Doxygen will compare the file name with each pattern and apply the 
 filter if there is a match.  The filters are a list of the form: 
 pattern=filter (like *.cpp=my_cpp_filter). See INPUT_FILTER for further 
-info on how filters are used. If FILTER_PATTERNS is empty, INPUT_FILTER 
-is applied to all files. 
+info on how filters are used. If FILTER_PATTERNS is empty or if 
+non of the patterns match the file name, INPUT_FILTER is applied. 
 '>
     </option>
     <option type='bool' id='FILTER_SOURCE_FILES' docs='
@@ -672,6 +680,13 @@ If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using
 INPUT_FILTER) will be used to filter the input files when producing source 
 files to browse (i.e. when SOURCE_BROWSER is set to YES). 
 ' defval='0'/>
+    <option type='list' id='FILTER_SOURCE_PATTERNS' format='file' docs='
+The FILTER_SOURCE_PATTERNS tag can be used to specify source filters per file 
+pattern. A pattern will override the setting for FILTER_PATTERN (if any) 
+and it is also possible to disable source filtering for a specific pattern 
+using *.ext= (so without naming a filter). This option only has effect when 
+FILTER_SOURCE_FILES is enabled.
+' depends='FILTER_SOURCE_FILES'/>
   </group>
   <group name='Source Browser' docs='configuration options related to source browsing'>
     <option type='bool' id='SOURCE_BROWSER' docs='

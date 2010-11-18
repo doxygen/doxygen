@@ -118,7 +118,7 @@ void linkifyText(const TextGeneratorIntf &ol,
 
 void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
 
-QCString fileToString(const char *name,bool filter=FALSE);
+QCString fileToString(const char *name,bool filter=FALSE,bool isSourceCode=FALSE);
 
 QCString dateToString(bool);
 
@@ -135,7 +135,7 @@ bool getDefs(const QCString &scopeName,
                     bool checkCV=FALSE
                    );
 
-QCString getFileFilter(const char* name);
+QCString getFileFilter(const char* name,bool isSourceCode);
 
 bool resolveRef(/* in */  const char *scName,
                 /* in */  const char *name,
@@ -207,7 +207,7 @@ inline bool isId(int c)
 
 QCString removeRedundantWhiteSpace(const QCString &s);
 
-QCString argListToString(ArgumentList *al,bool useCanonicalType=FALSE);
+QCString argListToString(ArgumentList *al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
 
 QCString tempArgListToString(ArgumentList *al);
 

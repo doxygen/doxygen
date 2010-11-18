@@ -601,6 +601,14 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "STRICT_PROTO_MATCHING",
+                 "If the STRICT_PROTO_MATCHING option is enabled and doxygen fails to do proper type resolution of all parameters of a function it will reject a\n"
+                 "match between the prototype and the implementation of a member function even if there is only one candidate or it is obvious which candidate to choose by doing a simple string match. By disabling STRICT_PROTO_MATCHING doxygen\n"
+                 "will still accept a match between prototype and implementation in such cases.",
+                 FALSE
+                );
+  //----
+  cb = cfg->addBool(
                  "GENERATE_TODOLIST",
                  "The GENERATE_TODOLIST tag can be used to enable (YES) or\n"
                  "disable (NO) the todo list. This list is created by putting \\todo\n"
@@ -934,8 +942,8 @@ void addConfigOptions(Config *cfg)
                  "filter if there is a match.\n"
                  "The filters are a list of the form:\n"
                  "pattern=filter (like *.cpp=my_cpp_filter). See INPUT_FILTER for further\n"
-                 "info on how filters are used. If FILTER_PATTERNS is empty, INPUT_FILTER\n"
-                 "is applied to all files."
+                 "info on how filters are used. If FILTER_PATTERNS is empty or if\n"
+                 "non of the patterns match the file name, INPUT_FILTER is applied."
                 );
   cl->setWidgetType(ConfigList::File);
   //----
@@ -946,6 +954,17 @@ void addConfigOptions(Config *cfg)
                  "files to browse (i.e. when SOURCE_BROWSER is set to YES).",
                  FALSE
                 );
+  //----
+  cl = cfg->addList(
+                 "FILTER_SOURCE_PATTERNS",
+                 "The FILTER_SOURCE_PATTERNS tag can be used to specify source filters per file\n"
+                 "pattern. A pattern will override the setting for FILTER_PATTERN (if any)\n"
+                 "and it is also possible to disable source filtering for a specific pattern\n"
+                 "using *.ext= (so without naming a filter). This option only has effect when\n"
+                 "FILTER_SOURCE_FILES is enabled."
+                );
+  cl->addDependency("FILTER_SOURCE_FILES");
+  cl->setWidgetType(ConfigList::File);
   //---------------------------------------------------------------------------
   cfg->addInfo("Source Browser","configuration options related to source browsing");
   //---------------------------------------------------------------------------

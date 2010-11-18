@@ -1300,10 +1300,10 @@ static void readIncludeFile(const QCString &inc)
 	QCString absPath = incFileName;
 	if (QDir::isRelativePath(incFileName))
 	{
-	  QString absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
+	  absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
 	  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
 	}
-	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
+	FileDef *fd = findFileDef(Doxygen::inputNameDict,absPath,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(fd,incFileName,localInclude,g_isImported);
@@ -2130,8 +2130,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*\n  |
 <CondLine>.				{
-  					  outputArray(yytext,yyleng);
-  					  g_yyLineNr+=QCString(yytext).contains('\n');
+  					  unput(*yytext);
   					  startCondSection(" ");
 					  if (YY_START==CondLine) BEGIN(g_condCtx);
   					}

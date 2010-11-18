@@ -1959,7 +1959,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
 }
 
 
-QCString argListToString(ArgumentList *al,bool useCanonicalType)
+QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals)
 {
   QCString result;
   if (al==0) return result;
@@ -1988,7 +1988,7 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType)
     {
       result+= type1+type2;
     }
-    if (!a->defval.isEmpty())
+    if (!a->defval.isEmpty() && showDefVals)
     {
       result+="="+a->defval;
     }
@@ -2089,24 +2089,9 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
-
-/*! looks for a filter for the file \a name.  Returns the name of the filter
- *  if there is a match for the file name, otherwise an empty string.
- */
-QCString getFileFilter(const char* name)
+static QCString getFilterFromList(const char *name,const QStrList &filterList,bool &found)
 {
-  // sanity check
-  if (name==0) return "";
-
-  // first look for filter pattern list
-  QStrList& filterList = Config_getList("FILTER_PATTERNS");
-
-  if (filterList.isEmpty()) 
-  {
-    // use INPUT_FILTER instead (For all files)
-    return Config_getString("INPUT_FILTER");
-  }
-
+  found=FALSE;
   // compare the file name to the filter pattern list
   QStrListIterator sli(filterList);
   char* filterStr;
@@ -2127,6 +2112,7 @@ QCString getFileFilter(const char* name)
         { // add quotes if the name has spaces
           filterName="\""+filterName+"\"";
         }
+        found=TRUE;
         return filterName;
       }
     }
@@ -2134,6 +2120,39 @@ QCString getFileFilter(const char* name)
 
   // no match
   return "";
+}
+
+/*! looks for a filter for the file \a name.  Returns the name of the filter
+ *  if there is a match for the file name, otherwise an empty string.
+ *  In case \a inSourceCode is TRUE then first the source filter list is
+ *  considered.
+ */
+QCString getFileFilter(const char* name,bool isSourceCode)
+{
+  // sanity check
+  if (name==0) return "";
+
+  QStrList& filterSrcList = Config_getList("FILTER_SOURCE_PATTERNS");
+  QStrList& filterList    = Config_getList("FILTER_PATTERNS");
+
+  QCString filterName;
+  bool found=FALSE;
+  if (isSourceCode && !filterSrcList.isEmpty())
+  { // first look for source filter pattern list
+    filterName = getFilterFromList(name,filterSrcList,found);
+  }
+  if (!found && !filterName.isEmpty())
+  { // then look for filter pattern list
+    filterName = getFilterFromList(name,filterList,found);
+  }
+  if (!found)
+  { // then use the generic input filter
+    return Config_getString("INPUT_FILTER");
+  }
+  else
+  {
+    return filterName;
+  }
 }
 
 #if 0
@@ -2220,7 +2239,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
  *  is TRUE the file will be filtered by any user specified input filter.
  *  If \a name is "-" the string will be read from standard input. 
  */
-QCString fileToString(const char *name,bool filter)
+QCString fileToString(const char *name,bool filter,bool isSourceCode)
 {
   if (name==0 || name[0]==0) return 0;
   QFile f;
@@ -2255,7 +2274,7 @@ QCString fileToString(const char *name,bool filter)
       err("error: file `%s' not found\n",name);
       return "";
     }
-    QCString filterName = getFileFilter(name);
+    QCString filterName = getFileFilter(name,isSourceCode);
     if (filterName.isEmpty() || !filter)
     {
       f.setName(name);
@@ -2870,13 +2889,13 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         (srcAType+" "+srcAName)==dstAType)
     {
       MATCH
-        return TRUE;
+      return TRUE;
     }
     else if (!dstAName.isEmpty() && !srcA->type.isEmpty() &&
         (dstAType+" "+dstAName)==srcAType)
     {
       MATCH
-        return TRUE;
+      return TRUE;
     }
 
 
@@ -2993,7 +3012,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     }
   }
   MATCH
-    return TRUE;
+  return TRUE;
 }
 
 
@@ -3033,12 +3052,12 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     if (match)
     {
       MATCH
-        return TRUE;
+      return TRUE;
     }
     else
     {
       NOMATCH
-        return FALSE;
+      return FALSE;
     }
   }
 
@@ -3050,7 +3069,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     a->type = "void";
     srcAl->append(a);
     MATCH
-      return TRUE;
+    return TRUE;
   }
   if ( dstAl->count()==0 && srcAl->count()==1 &&
       srcAl->getFirst()->type=="void" )
@@ -3059,13 +3078,13 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     a->type = "void";
     dstAl->append(a);
     MATCH
-      return TRUE;
+    return TRUE;
   }
 
   if (srcAl->count() != dstAl->count())
   {
     NOMATCH
-      return FALSE; // different number of arguments -> no match
+    return FALSE; // different number of arguments -> no match
   }
 
   if (checkCV)
@@ -3073,12 +3092,12 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     if (srcAl->constSpecifier != dstAl->constSpecifier) 
     {
       NOMATCH
-        return FALSE; // one member is const, the other not -> no match
+      return FALSE; // one member is const, the other not -> no match
     }
     if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
     {
       NOMATCH
-        return FALSE; // one member is volatile, the other not -> no match
+      return FALSE; // one member is volatile, the other not -> no match
     }
   }
 
@@ -3092,11 +3111,11 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
           usingNamespaces,usingClasses))
     {
       NOMATCH
-        return FALSE;
+      return FALSE;
     }
   }
   MATCH
-    return TRUE; // all arguments match 
+  return TRUE; // all arguments match 
 }
 
 #endif
@@ -3162,8 +3181,10 @@ QCString getCanonicalTemplateSpec(Definition *d,FileDef *fs,const QCString& spec
 
 static QCString getCanonicalTypeForIdentifier(
     Definition *d,FileDef *fs,const QCString &word,
-    QCString *tSpec)
+    QCString *tSpec,int count=0)
 {
+  if (count>10) return word; // oops recursion
+
   QCString symName,scope,result,templSpec,tmpName;
   //DefinitionList *defList=0;
   if (tSpec && !tSpec->isEmpty()) templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
@@ -3266,7 +3287,15 @@ static QCString getCanonicalTypeForIdentifier(
   else if (mType && mType->isTypedef()) // a typedef
   {
     //result = mType->qualifiedName(); // changed after 1.7.2
-    result = mType->typeString();
+    //result = mType->typeString();
+    if (word!=mType->typeString())
+    {
+      result = getCanonicalTypeForIdentifier(d,fs,mType->typeString(),tSpec,count++);
+    }
+    else
+    {
+      result = mType->typeString();
+    }
   }
   else // fallback
   {
@@ -6927,7 +6956,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
 
   QFileInfo fi(fileName);
   if (!fi.exists()) return FALSE;
-  QCString filterName = getFileFilter(fileName);
+  QCString filterName = getFileFilter(fileName,FALSE);
   if (filterName.isEmpty())
   {
     QFile f(fileName);

@@ -107,7 +107,7 @@ void MemberGroup::setAnchors(ClassDef *context)
 void MemberGroup::writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
 {
-  //printf("MemberGroup::writeDeclarations() memberList->count()=%d\n",memberList->count());
+  printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
   QCString ldoc = doc;
   if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc/*,TRUE,TRUE*/);

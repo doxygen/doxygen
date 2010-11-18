@@ -128,9 +128,11 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 				    name += yytext;
 				  }
   				}
-<Start>(~{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
+<Start>([~!]{B}*)?{ID}/({B}*"["{B}*"]")* { // the []'s are for Java, 
                                         // the / was add to deal with multi-
                                         // dimensional C++ arrays like A[][15]
+                                        // the leading ~ is for a destructor
+                                        // the leading ! is for a C++/CLI finalizer (see bug 456475 and 635198)
   				  addTypeName();
 				  name += yytext;
   				}

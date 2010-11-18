@@ -114,7 +114,8 @@ enum CommandType
   CMD_COPYBRIEF    = 80,
   CMD_COPYDETAILS  = 81,
   CMD_QUOTE        = 82,
-  CMD_MSCFILE      = 83 
+  CMD_MSCFILE      = 83,
+  CMD_DCOLON       = 84
 };
 
 enum HtmlTagType

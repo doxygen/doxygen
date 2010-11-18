@@ -63,11 +63,11 @@ tools should be installed.
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
-    \latexonly \\par (see {\tt http://www.tug.org/interest.html\#free})\endlatexonly.
+    \latexonly (see {\tt http://www.tug.org/interest.html\#free})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10 or higher</a>
-    \latexonly \\par (see {\tt http://www.graphviz.org/})\endlatexonly.
+    \latexonly (see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
     If you compile graphviz yourself, make sure you do include
