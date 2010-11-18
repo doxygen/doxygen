@@ -25,6 +25,7 @@
 #include <qstack.h>
 #include <qregexp.h>
 #include <qtextstream.h>
+#include <qglobal.h>
 
 #include "bufstr.h"
 #include "debug.h"
@@ -33,6 +34,7 @@
 #include "doxygen.h"
 #include "util.h"
 
+#include <assert.h>
 
 #define ADDCHAR(c)    g_outBuf->addChar(c)
 #define ADDARRAY(a,s) g_outBuf->addArray(a,s)
@@ -134,7 +136,7 @@ static inline void copyToOutput(const char *s,int len)
       }
     }
   }
-  else
+  else if (len>0)
   {
     ADDARRAY(s,len);
     static int tabSize=Config_getInt("TAB_SIZE");
@@ -318,17 +320,23 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
                                    }
 <Scan>("//!"|"///").*/\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
-  				     if (g_mlBrief) REJECT; // bail out if we do not need to convert
-  				     int i=3;
-				     if (yytext[2]=='/')
+  				     if (g_mlBrief) 
 				     {
-				       while (i<(int)yyleng && yytext[i]=='/') i++;
+				       REJECT; // bail out if we do not need to convert
 				     }
-				     g_blockHeadCol=g_col;
-                                     copyToOutput("/**",3); 
-				     replaceAliases(yytext+i);
-				     g_inSpecialComment=TRUE;
-				     BEGIN(SComment); 
+				     else
+				     {
+				       int i=3;
+				       if (yytext[2]=='/')
+				       {
+					 while (i<(int)yyleng && yytext[i]=='/') i++;
+				       }
+				       g_blockHeadCol=g_col;
+				       copyToOutput("/**",3); 
+				       replaceAliases(yytext+i);
+				       g_inSpecialComment=TRUE;
+				       BEGIN(SComment); 
+				     }
                                    }
 <Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
                                      if (g_mlBrief) REJECT;
@@ -602,7 +610,7 @@ void replaceComment(int offset);
                                    }
 <SComment>\n[ \t]*"//!"            |
 <SComment>\n[ \t]*"//!<"/.*\n      |
-<SComment>\n[ \t]*"//!"[^<\n]/.*\n   { 
+<SComment>\n[ \t]*"//!"[^<\n]/.*\n { 
                                      replaceComment(1); 
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
@@ -752,24 +760,25 @@ void replaceComment(int offset);
 
 %%
 
-void replaceComment(int offset)                                
+void replaceComment(int offset)
 {
-  if (g_mlBrief)                                              
-  {                                                           
-    copyToOutput(yytext,yyleng); 
-  }                                                           
-  else                                                        
-  {                                                           
+  if (g_mlBrief)
+  {
+    copyToOutput(yytext,yyleng);
+  }
+  else
+  {
     //printf("replaceComment(%s)\n",yytext);
-    int i=computeIndent(&yytext[offset]);                     
-    if (i==g_blockHeadCol)                                    
-    {                                                         
-      replaceCommentMarker(yytext,yyleng);                    
-    }                                                         
-    else                                                      
-    {                                                         
-      copyToOutput(" */",3);                                  
-      int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);       
+    int i=computeIndent(&yytext[offset]);
+    if (i==g_blockHeadCol)
+    {
+      replaceCommentMarker(yytext,yyleng);
+    }
+    else
+    {
+      copyToOutput(" */",3);
+      int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+      g_inSpecialComment=FALSE;
       BEGIN(Scan);                                            
     }                                                         
   }

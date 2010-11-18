@@ -61,7 +61,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 //---------------------------------------------------------------------------
 
 /*! create a new file definition, where \a p is the file path, 
-    \a nm the file name, and \a ref is an HTML anchor name if the
+    \a nm the file name, and \a lref is an HTML anchor name if the
     file was read from a tag file or 0 otherwise
 */
 FileDef::FileDef(const char *p,const char *nm,
@@ -431,6 +431,7 @@ void FileDef::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   if (memberGroupSDict)
   {
+    memberGroupSDict->sort();
     MemberGroupSDict::Iterator mgli(*memberGroupSDict);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
@@ -789,7 +790,7 @@ void FileDef::writeSource(OutputList &ol)
   pIntf->resetCodeParserState();
   ol.startCodeFragment();
   pIntf->parseCode(ol,0,
-            fileToString(absFilePath(),filterSourceFiles),
+            fileToString(absFilePath(),filterSourceFiles,TRUE),
             FALSE,0,this
            );
   ol.endCodeFragment();
@@ -806,7 +807,7 @@ void FileDef::parseSource()
   pIntf->resetCodeParserState();
   pIntf->parseCode(
             devNullIntf,0,
-            fileToString(absFilePath(),filterSourceFiles),
+            fileToString(absFilePath(),filterSourceFiles,TRUE),
             FALSE,0,this
            );
 }

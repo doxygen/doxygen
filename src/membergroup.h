@@ -115,6 +115,10 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
   public:
     MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
    ~MemberGroupSDict() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return ((MemberGroup *)item1)->groupId() - ((MemberGroup*)item2)->groupId();
+    }
 };
 
 

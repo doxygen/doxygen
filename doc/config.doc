@@ -122,6 +122,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_file_version_filter FILE_VERSION_FILTER
 \refitem cfg_filter_patterns FILTER_PATTERNS
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
+\refitem cfg_filter_source_patterns FILTER_SOURCE_PATTERNS
 \refitem cfg_force_local_includes FORCE_LOCAL_INCLUDES
 \refitem cfg_formula_fontsize FORMULA_FONTSIZE
 \refitem cfg_formula_transparent FORMULA_TRANSPARENT
@@ -215,6 +216,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_predefined PREDEFINED
 \refitem cfg_project_name PROJECT_NAME
 \refitem cfg_project_number PROJECT_NUMBER
+\refitem cfg_qch_file QCH_FILE
 \refitem cfg_qhg_location QHG_LOCATION
 \refitem cfg_qhp_cust_filter_attrs QHP_CUST_FILTER_ATTRS
 \refitem cfg_qhp_cust_filter_name QHP_CUST_FILTER_NAME
@@ -1101,8 +1103,8 @@ AClass::ANamespace, ANamespace::*Test
  basis.  Doxygen will compare the file name with each pattern and apply the
  filter if there is a match.  The filters are a list of the form:
  pattern=filter (like <code>*.cpp=my_cpp_filter</code>). See \c INPUT_FILTER for further
- info on how filters are used. If \c FILTER_PATTERNS is empty, \c INPUT_FILTER
- is applied to all files. 
+ info on how filters are used. If \c FILTER_PATTERNS is empty or if
+ non of the patterns match the file name, \c INPUT_FILTER is applied.
 
 \anchor cfg_filter_source_files
 <dt>\c FILTER_SOURCE_FILES <dd>
@@ -1111,6 +1113,15 @@ AClass::ANamespace, ANamespace::*Test
  \ref cfg_input_filter "INPUT_FILTER" ) will also be used to filter the input
  files that are used for producing the source files to browse 
  (i.e. when SOURCE_BROWSER is set to YES).
+
+\anchor cfg_filter_source_patterns
+<dt>\c FILTER_SOURCE_PATTERNS <dd>
+ \addindex FILTER_SOURCE_PATTERNS
+ The \c FILTER_SOURCE_PATTERNS tag can be used to specify source filters per 
+ file pattern. A pattern will override the setting for \c FILTER_PATTERN (if any) 
+ and it is also possible to disable source filtering for a specific pattern 
+ using *.ext= (so without naming a filter). This option only has effect when 
+ \c FILTER_SOURCE_FILES is enabled.
 
 </dl>
 
@@ -1480,6 +1491,13 @@ The GENERATE_PUBLISHER_NAME tag identifies the documentation publisher.
  be generated that can be used as input for Qt's qhelpgenerator
  to generate a Qt Compressed Help (.qch) of the generated HTML
  documentation.
+
+\anchor cfg_qch_file
+<dt>\c QCH_FILE <dd>
+ \addindex QCH_FILE
+ If the QHG_LOCATION tag is specified, the QCH_FILE tag can
+ be used to specify the file name of the resulting .qch file.
+ The path specified is relative to the HTML output folder.
 
 \anchor cfg_qhp_namespace
 <dt>\c QHP_NAMESPACE <dd>
@@ -2374,7 +2392,7 @@ PROJECT_NAME     = Example
 INPUT            = example.cc example.h
 WARNINGS         = YES
 TAGFILES         = qt.tag
-PERL_PATH        = /usr/bin/perl
+PERL_PATH        = /usr/local/bin/perl
 SEARCHENGINE     = NO
 \endverbatim
 

@@ -544,7 +544,7 @@ static bool readCodeFragment(const char *fileName,
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
-  QCString filter = getFileFilter(fileName);
+  QCString filter = getFileFilter(fileName,TRUE);
   FILE *f=0;
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
   if (!usePipe) // no filter given or wanted

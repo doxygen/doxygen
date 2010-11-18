@@ -621,7 +621,7 @@ static void addParmType()
 
 static void addUsingDirective(const char *name)
 {
-  if (g_exampleBlock && g_sourceFileDef && name)
+  if (g_sourceFileDef && name)
   {
     NamespaceDef *nd = Doxygen::namespaceSDict->find(name);
     if (nd)
@@ -3394,10 +3394,12 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_exampleName   = exName;
   g_sourceFileDef = fd;
   g_lineNumbers   = fd!=0 && showLineNumbers;
-  if (exBlock && fd==0)
+  bool cleanupSourceDef = FALSE;
+  if (/* exBlock */ fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = new FileDef("",exName);
+    g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
+    cleanupSourceDef = TRUE;
   }
   if (g_sourceFileDef) 
   {
@@ -3433,7 +3435,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     endFontClass();
     g_code->endCodeLine();
   }
-  if (exBlock && fd==0)
+  if (cleanupSourceDef)
   {
     // delete the temporary file definition used for this example
     delete g_sourceFileDef;

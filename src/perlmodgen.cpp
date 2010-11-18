@@ -532,6 +532,7 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
     case DocSymbol::Amp:     c = '&'; break;
     case DocSymbol::Dollar:  c = '$'; break;
     case DocSymbol::Hash:    c = '#'; break;
+    case DocSymbol::DoubleColon: s = "::"; break;
     case DocSymbol::Percent: c = '%'; break;
     case DocSymbol::Quot:    c = '"'; break;
     case DocSymbol::Lsquo:   s = "\\\'"; break;

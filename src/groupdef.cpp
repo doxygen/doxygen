@@ -753,6 +753,7 @@ void GroupDef::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   if (memberGroupSDict)
   {
+    memberGroupSDict->sort();
     /* write user defined member groups */
     MemberGroupSDict::Iterator mgli(*memberGroupSDict);
     MemberGroup *mg;

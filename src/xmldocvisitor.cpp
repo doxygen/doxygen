@@ -76,6 +76,7 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Amp:     m_t << "&amp;"; break;
     case DocSymbol::Dollar:  m_t << "$"; break;
     case DocSymbol::Hash:    m_t << "#"; break;
+    case DocSymbol::DoubleColon: m_t << "::"; break;
     case DocSymbol::Percent: m_t << "%"; break;
     case DocSymbol::Copy:    m_t << "<copy/>"; break;
     case DocSymbol::Tm:      m_t << "<trademark/>"; break;

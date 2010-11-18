@@ -179,6 +179,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Amp:     m_t << "&amp;"; break;
     case DocSymbol::Dollar:  m_t << "$"; break;
     case DocSymbol::Hash:    m_t << "#"; break;
+    case DocSymbol::DoubleColon: m_t << "::"; break;
     case DocSymbol::Percent: m_t << "%"; break;
     case DocSymbol::Copy:    m_t << "&copy;"; break;
     case DocSymbol::Tm:      m_t << "&trade;"; break;
@@ -304,7 +305,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   if (m_hide) return;
   switch(s->type())
   {
-    case DocVerbatim::Code: // fall though
+    case DocVerbatim::Code: 
       forceEndParagraph(s);
       m_t << PREFRAG_START;
       Doxygen::parserManager->getParser(m_langExt)

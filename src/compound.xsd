@@ -586,12 +586,6 @@
     <xsd:sequence>
       <xsd:element name="ref" type="refTextType" minOccurs="0" maxOccurs="1" />
     </xsd:sequence>
-  </xsd:complexType>
-
-  <xsd:complexType name="docParamName" mixed="true">
-    <xsd:sequence>
-      <xsd:element name="ref" type="refTextType" minOccurs="0" maxOccurs="1" />
-    </xsd:sequence>
     <xsd:attribute name="direction" type="DoxParamDir" use="optional" />
   </xsd:complexType>
 

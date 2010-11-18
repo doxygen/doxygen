@@ -310,6 +310,7 @@ VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM})
 SPCMD2    {CMD}[\\@<>&$#%~"]
 SPCMD3    {CMD}form#[0-9]+
+SPCMD4    {CMD}"::"
 INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
@@ -429,7 +430,8 @@ REFWORD   {LABELID}|{REFWORD2}
 			 return TK_COMMAND;
   		       }
 <St_Para>{SPCMD1}      |
-<St_Para>{SPCMD2}      { /* special command */
+<St_Para>{SPCMD2}      |
+<St_Para>{SPCMD4}      { /* special command */
                          g_token->name = yytext+1;
 			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;

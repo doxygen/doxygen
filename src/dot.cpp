@@ -997,9 +997,9 @@ bool DotManager::run()
 {
   uint numDotRuns = m_dotRuns.count();
   uint numDotMaps = m_dotMaps.count();
-  if (numDotRuns+numDotMaps>0)
+  if (numDotRuns+numDotMaps>1)
   {
-    msg("Generating dot graphs using %d parallel threads...\n",m_workers.count());
+    msg("Generating dot graphs using %d parallel threads...\n",QMIN(numDotRuns+numDotMaps,m_workers.count()));
   }
   int i=1;
   QListIterator<DotRunner> li(m_dotRuns);
