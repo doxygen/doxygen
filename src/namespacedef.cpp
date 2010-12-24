@@ -411,7 +411,8 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
 
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
 
   QCString pageTitle;
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
@@ -426,12 +427,17 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     pageTitle = theTranslator->trNamespaceReference(displayName());
   }
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible,TRUE);
-  if (getOuterScope()!=Doxygen::globalScope)
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible,!generateTreeView);
+
+  if (!generateTreeView)
   {
-    writeNavigationPath(ol);
+    if (getOuterScope()!=Doxygen::globalScope)
+    {
+      writeNavigationPath(ol);
+    }
+    ol.endQuickIndices();
   }
-  ol.endQuickIndices();
+
   startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
@@ -544,7 +550,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- end flexible part -------------------------------
 
-  endFile(ol);
+  ol.endContents();
+
+  if (generateTreeView)
+  {
+    writeNavigationPath(ol);
+  }
+
+  endFile(ol,TRUE);
 
   if (generateTagFile)
   {

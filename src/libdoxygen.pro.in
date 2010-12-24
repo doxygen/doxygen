@@ -61,6 +61,7 @@ HEADERS      =	bufstr.h \
 		index.h \
                 index_xsd.h \
 		instdox.h \
+		jquery_js.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \
@@ -78,6 +79,8 @@ HEADERS      =	bufstr.h \
 		message.h \
                 msc.h \
 		namespacedef.h \
+		navtree_css.h \
+		navtree_js.h \
                 objcache.h \
 		outputgen.h \
 		outputlist.h \
@@ -95,6 +98,7 @@ HEADERS      =	bufstr.h \
 		qhpxmlwriter.h \
 		qtbc.h \
 		reflist.h \
+		resize_js.h \
                 rtfdocvisitor.h \
 		rtfgen.h \
 		rtfstyle.h \

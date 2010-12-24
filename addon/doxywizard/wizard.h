@@ -17,6 +17,7 @@
 
 #include <QSplitter>
 #include <QHash>
+#include <QDialog>
 
 class Input;
 class QTreeWidget;
@@ -29,11 +30,25 @@ class QRadioButton;
 class QGroupBox;
 class QButtonGroup;
 class Wizard;
+class QImage;
+class QLabel;
 
 enum OptLang     { Lang_Cpp, Lang_C, Lang_Java, Lang_CS };
 enum HtmlStyle   { HS_Plain, HS_TreeView, HS_CHM };
 enum TexStyle    { TS_PDFHyper, TS_PDF, TS_PS };
 enum DiagramMode { DM_None, DM_Builtin, DM_Dot };
+
+class TuneColorDialog : public QDialog
+{
+    Q_OBJECT
+
+  public:
+    TuneColorDialog(QWidget *parent=0);
+
+  private:
+    QImage *m_image;
+    QLabel *m_imageLab;
+};
 
 class Step1 : public QWidget
 {
@@ -103,6 +118,7 @@ class Step3 : public QWidget
     void setSearchEnabled(int);
     void setHtmlOptions(int);
     void setLatexOptions(int);
+    void tuneColorDialog();
 
   private:
     QGroupBox *m_texOptions;
@@ -115,6 +131,7 @@ class Step3 : public QWidget
     QCheckBox *m_rtfEnabled;
     QCheckBox *m_xmlEnabled;
     QCheckBox *m_searchEnabled;
+    QPushButton *m_tuneColor;
     Wizard    *m_wizard;
     const QHash<QString,Input *> &m_modelData;
 };

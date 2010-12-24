@@ -189,6 +189,7 @@ documentation:
 \refitem cmdhash \\\#
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
+\refitem cmddcolon \\\::
 \endsecreflist
 
 The following subsections provide a list of all commands that are recognized by
@@ -2700,6 +2701,14 @@ class Receiver
   This command writes the \" character to the output. This
   character has to be escaped in some cases, because it is used in pairs
   to indicate an unformatted text fragment.
+
+<hr>
+\section cmddcolon \\::
+
+  \addindex \\\::
+  This command write a double colon (\::) to the output. This
+  character sequence has to be escaped in some cases, because it is used
+  to ref to documented entities.
 
 <hr>
 \htmlonly <center> \endhtmlonly

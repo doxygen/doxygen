@@ -44,6 +44,20 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cs = cfg->addString(
+                 "PROJECT_BRIEF",
+                 "Using the PROJECT_BRIEF tag one can provide an optional one line description for a project that appears at the top of each page and should give viewer a quick idea about the purpose of the project. Keep the description short."
+                );
+  //----
+  cs = cfg->addString(
+                 "PROJECT_LOGO",
+                 "With the PROJECT_LOGO tag one can specify an logo or icon that is\n"
+                 "included in the documentation. The maximum height of the logo should not\n"
+                 "exceed 55 pixels and the maximum width should not exceed 200 pixels.\n"
+                 "Doxygen will copy the logo to the output directory."
+                );
+  cs->setWidgetType(ConfigString::File);
+  //----
+  cs = cfg->addString(
                  "OUTPUT_DIRECTORY",
                  "The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)\n"
                  "base path where the generated documentation will be put.\n"
@@ -811,7 +825,7 @@ void addConfigOptions(Config *cfg)
                  "blank the following patterns are tested:\n"
                  "*.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh\n"
                  "*.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py\n"
-                 "*.f90 *.f *.vhd *.vhdl"
+                 "*.f90 *.f *.for *.vhd *.vhdl"
                 );
   cl->addValue("*.c");
   cl->addValue("*.cc");
@@ -842,6 +856,7 @@ void addConfigOptions(Config *cfg)
   cl->addValue("*.py");
   cl->addValue("*.f90");
   cl->addValue("*.f");
+  cl->addValue("*.for");
   cl->addValue("*.vhd");
   cl->addValue("*.vhdl");
   //----
@@ -945,7 +960,6 @@ void addConfigOptions(Config *cfg)
                  "info on how filters are used. If FILTER_PATTERNS is empty or if\n"
                  "non of the patterns match the file name, INPUT_FILTER is applied."
                 );
-  cl->setWidgetType(ConfigList::File);
   //----
   cb = cfg->addBool(
                  "FILTER_SOURCE_FILES",
@@ -964,7 +978,6 @@ void addConfigOptions(Config *cfg)
                  "FILTER_SOURCE_FILES is enabled."
                 );
   cl->addDependency("FILTER_SOURCE_FILES");
-  cl->setWidgetType(ConfigList::File);
   //---------------------------------------------------------------------------
   cfg->addInfo("Source Browser","configuration options related to source browsing");
   //---------------------------------------------------------------------------

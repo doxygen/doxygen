@@ -59,12 +59,6 @@ void writeInstallScript()
     t << ");\n";
     t << "$quiet   = 0;\n";
     t << "\n";
-    t << "if (open(F,\"search.cfg\"))\n";
-    t << "{\n";
-    t << "  $_=<F> ; s/[ \\t\\n]*$//g ; $subst{\"_doc\"} = $_;\n";
-    t << "  $_=<F> ; s/[ \\t\\n]*$//g ; $subst{\"_cgi\"} = $_;\n";
-    t << "}\n";
-    t << "\n";
     t << "while ( @ARGV ) {\n";
     t << "  $_ = shift @ARGV;\n";
     t << "  if ( s/^-// ) {\n";
@@ -120,7 +114,7 @@ void writeInstallScript()
     t << "      next if ( $file =~ /^\\.\\.?$/ );\n";
     t << "      ($file =~ /$match/) && (push @files, $file);\n";
     t << "      ($file =~ /\\.svg/) && (push @files, $file);\n";
-    t << "      ($file =~ \"tree.js\") && (push @files, $file);\n";
+    t << "      ($file =~ \"navtree.js\") && (push @files, $file);\n";
     t << "    }\n";
     t << "    closedir(D);\n";
     t << "  }\n";

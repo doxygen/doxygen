@@ -84,7 +84,9 @@ void EclipseHelp::initialize()
   {
     title = "Doxygen generated documentation";
   }
-  m_tocstream << "<toc label=\"" << convertToXML(title) << "\">" << endl;
+  m_tocstream << "<toc label=\"" << convertToXML(title) 
+              << "\" topic=\"" << convertToXML(m_pathprefix) 
+              << "index" << Doxygen::htmlFileExtension << "\">" << endl;
   ++ m_depth;
 }
 
@@ -155,7 +157,7 @@ void EclipseHelp::decContentsDepth()
  * @param anchor Name of an anchor of the item.
  */
 void EclipseHelp::addContentsItem(
-    bool isDir,
+    bool /* isDir */,
     const char *name,
     const char * /* ref */,
     const char *file,
@@ -165,8 +167,8 @@ void EclipseHelp::addContentsItem(
   closedTag();
   indent();
   m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
-  if (!isDir && file) 
-  {  // -- Eclipse help cannot handle directories 
+  if (file) 
+  { 
     m_tocstream << " href=\"" << convertToXML(m_pathprefix) 
                 << file << Doxygen::htmlFileExtension;
     if (anchor)

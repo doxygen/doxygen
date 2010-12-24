@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_6_0
+class TranslatorChinese : public Translator
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -1787,6 +1787,81 @@ class TranslatorChinese : public TranslatorAdapter_1_6_0
     {
       return "类型限制";
     }
+	
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0
+//////////////////////////////////////////////////////////////////////////
+	virtual QCString trDirRelation(const char *name)
+	{
+		// return QCString(name)+" Relation";
+		// unsure
+		return QCString(name)+CN_SPC"关系";
+	}
+	
+    virtual QCString trLoading()
+	{
+		return "载入中...";
+	}
+    
+	virtual QCString trGlobalNamespace()
+	{
+		return "全局命名空间";
+	}
+	
+    virtual QCString trSearching()
+	{
+		return "搜索中...";
+	}
+    
+	virtual QCString trNoMatches()
+	{
+		return "未找到";
+	}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDirDependency(const char *name)
+	{
+		// return (QCString)"Directory dependency graph for "+name;
+		// unsure
+		return QCString(name)+CN_SPC"的目录依赖关系图";
+	}
+    
+	virtual QCString trFileIn(const char *name)
+	{
+		// return (QCString)"File in "+name;
+		// unsure
+		return (QCString)"文件在"+CN_SPC+name;
+	}
+	
+    virtual QCString trIncludesFileIn(const char *name)
+	{
+		// return (QCString)"Includes file in "+name;
+		// unsure
+		return (QCString)"在"CN_SPC+name+CN_SPC"中引用";
+	}
+
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+	{
+	  static const char *days[]   = { "一","二","三","四","五","六","日" };
+      static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
+      
+	  QCString sdate;
+      
+	  sdate.sprintf("%d年%s月%d日 星期%s",year, months[month-1], day, days[dayOfWeek-1]);
+      
+	  if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+	}                    
 };
 
 #endif

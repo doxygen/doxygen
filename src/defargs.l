@@ -275,11 +275,10 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 					      int i=l-1;
 					      while (i>=0 && (isspace((uchar)g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && isId(g_curArgTypeName.at(i))) i--;
-					      //printf("g_curArgTypeName=`%s' i=%d\n",g_curArgTypeName.data(),i);
 					      Argument *a = new Argument; 
 					      a->attrib = g_curArgAttrib.copy();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
-					      //	a->type.data(),a->name.data(),i,l);
+					      //        a->type.data(),a->name.data(),i,l);
 					      a->array.resize(0);
 					      if (i==l-1 && g_curArgTypeName.at(i)==')') // function argument
 					      {
@@ -300,24 +299,28 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 					      }
 					      else if (i>=0 && g_curArgTypeName.at(i)!=':')
 					      { // type contains a name
-						a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
+						a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1)).stripWhiteSpace();
 						a->name = g_curArgTypeName.right(l-i-1).stripWhiteSpace();
 
 						// if the type becomes a type specifier only then we make a mistake
 						// and need to correct it to avoid seeing a nameless parameter
 						// "struct A" as a parameter with type "struct" and name "A".
 						int sv=0;
-						if (a->type.left(6)=="const ") sv=6;
-						else if (a->type.left(8)=="volatile ") sv=9;
-						if (a->type.mid(sv)=="struct"    || 
-						    a->type.mid(sv)=="union"     || 
-						    a->type.mid(sv)=="class"     || 
-						    a->type.mid(sv)=="typename"  || 
-						    a->type=="const" || a->type=="volatile")
+						if      (a->type.left(6)=="const ")    sv=6;
+						else if (a->type.left(9)=="volatile ") sv=9;
+
+						if (a->type.mid(sv)=="struct"    ||
+						    a->type.mid(sv)=="union"     ||
+						    a->type.mid(sv)=="class"     ||
+						    a->type.mid(sv)=="typename"  ||
+						    a->type=="const"             ||
+						    a->type=="volatile"
+						   )
 						{ 
 						  a->type = a->type + " " + a->name;
 						  a->name.resize(0);
 						}
+						//printf(" --> a->type='%s'\n",a->type.data());
 					      }
 					      else // assume only the type was specified, try to determine name later 
 					      {

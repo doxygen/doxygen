@@ -15,6 +15,17 @@ The PROJECT_NUMBER tag can be used to enter a project or revision number.
 This could be handy for archiving the generated documentation or 
 if some version control system is used. 
 ' defval=''/>
+    <option type='string' id='PROJECT_BRIEF' format='string' docs='
+Using the PROJECT_BRIEF tag one can provide an optional one line description
+for a project that appears at the top of each page and should give viewer
+a quick idea about the purpose of the project. Keep the description short. 
+' defval=''/>
+    <option type='string' id='PROJECT_LOGO' format='file' docs='
+With the PROJECT_LOGO tag one can specify an logo or icon that is 
+included in the documentation. The maximum height of the logo should not 
+exceed 55 pixels and the maximum width should not exceed 200 pixels. 
+Doxygen will copy the logo to the output directory.
+' defval=''/>
     <option type='string' id='OUTPUT_DIRECTORY' format='dir' docs='
 The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 base path where the generated documentation will be put. 
@@ -565,7 +576,7 @@ and *.h) to filter out the source-files in the directories. If left
 blank the following patterns are tested: 
 *.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh 
 *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py 
-*.f90 *.f *.vhd *.vhdl
+*.f90 *.f *.for *.vhd *.vhdl
 '>
       <value name='*.c'/>
       <value name='*.cc'/>
@@ -596,6 +607,7 @@ blank the following patterns are tested:
       <value name='*.py'/>
       <value name='*.f90'/>
       <value name='*.f'/>
+      <value name='*.for'/>
       <value name='*.vhd'/>
       <value name='*.vhdl'/>
     </option>
@@ -666,7 +678,7 @@ input file. Doxygen will then use the output that the filter program writes
 to standard output.  If FILTER_PATTERNS is specified, this tag will be 
 ignored. 
 ' defval=''/>
-    <option type='list' id='FILTER_PATTERNS' format='file' docs='
+    <option type='list' id='FILTER_PATTERNS' format='string' docs='
 The FILTER_PATTERNS tag can be used to specify filters on a per file pattern 
 basis.  Doxygen will compare the file name with each pattern and apply the 
 filter if there is a match.  The filters are a list of the form: 
@@ -680,7 +692,7 @@ If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using
 INPUT_FILTER) will be used to filter the input files when producing source 
 files to browse (i.e. when SOURCE_BROWSER is set to YES). 
 ' defval='0'/>
-    <option type='list' id='FILTER_SOURCE_PATTERNS' format='file' docs='
+    <option type='list' id='FILTER_SOURCE_PATTERNS' format='string' docs='
 The FILTER_SOURCE_PATTERNS tag can be used to specify source filters per file 
 pattern. A pattern will override the setting for FILTER_PATTERN (if any) 
 and it is also possible to disable source filtering for a specific pattern 

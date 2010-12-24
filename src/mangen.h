@@ -178,6 +178,8 @@ class ManGenerator : public OutputGenerator
     void endPageRef(const char *,const char *) {}
     void startQuickIndices() {}
     void endQuickIndices() {}
+    void writeSplitBar(const char *) {}
+    void writeLogo() {}
     void writeQuickLinks(bool,HighlightedItem) {}
     void startContents() {}
     void endContents() {}

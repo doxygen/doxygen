@@ -515,14 +515,19 @@ void MemberList::writeDocumentation(OutputList &ol,
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const char *scopeName, Definition *container)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   MemberListIterator mli(*this);
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
     QCString diskName=md->getOutputFileBase();
     QCString title=md->qualifiedName();
-    startFile(ol,diskName,md->name(),title);
-    container->writeNavigationPath(ol);
+    startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,
+              container->getOutputFileBase());
+    if (!generateTreeView)
+    {
+      container->writeNavigationPath(ol);
+    }
     ol.startContents();
 
     ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
@@ -539,8 +544,15 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     ol.writeString("    </td>\n");
     ol.writeString("  </tr>\n");
     ol.writeString("</table>\n");
-    
-    endFile(ol);
+
+    ol.endContents();
+
+    if (generateTreeView)
+    {
+      container->writeNavigationPath(ol);
+    }
+
+    endFile(ol,TRUE);
   }
   if (memberGroupList)
   {

@@ -328,6 +328,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startQuickIndices); }
     void endQuickIndices()
     { forall(&OutputGenerator::endQuickIndices); }
+    void writeSplitBar(const char *name)
+    { forall(&OutputGenerator::writeSplitBar,name); }
+    void writeLogo()
+    { forall(&OutputGenerator::writeLogo); }
     void writeQuickLinks(bool compact,HighlightedItem hli)
     { forall(&OutputGenerator::writeQuickLinks,compact,hli); }
     void startContents()

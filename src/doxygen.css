@@ -636,14 +636,14 @@ table.doxtable th {
 	list-style-type:none;
 	float:left;
 	padding-left:10px;
-	padding-right: 15px;
+	padding-right:15px;
 	background-image:url('bc_s.png');
 	background-repeat:no-repeat;
 	background-position:right;
 	color:##45;
 }
 
-.navpath a
+.navpath li.navelem a
 {
 	height:32px;
 	display:block;
@@ -651,10 +651,24 @@ table.doxtable th {
 	outline: none;
 }
 
-.navpath a:hover
+.navpath li.navelem a:hover
 {
 	color:##80;
 }
+
+.navpath li.footer
+{
+        list-style-type:none;
+        float:right;
+        padding-left:10px;
+        padding-right:15px;
+        background-image:none;
+        background-repeat:no-repeat;
+        background-position:right;
+        color:##45;
+        font-size: 8pt;
+}
+
 
 div.summary
 {
@@ -666,6 +680,19 @@ div.summary
 }       
 
 div.summary a
+{
+	white-space: nowrap;
+}
+
+div.ingroups
+{
+	font-size: 8pt;
+	padding-left: 5px;
+	width: 50%;
+	text-align: left;
+}
+
+div.ingroups a
 {
 	white-space: nowrap;
 }
@@ -722,5 +749,46 @@ dl.test
 dl.bug
 {
         border-color: #C08050;
+}
+
+#projectlogo
+{
+	text-align: center;
+	vertical-align: bottom;
+	border-collapse: separate;
+}
+ 
+#projectlogo img
+{ 
+	border: 0px none;
+}
+ 
+#projectname
+{
+	font: 300% arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+    
+#projectbrief
+{
+	font: 120% arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+
+#projectnumber
+{
+	font: 50% arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+
+#titlearea
+{
+	padding: 0px;
+	margin: 0px;
+	width: 100%;
+	border-bottom: 1px solid ##70;
 }
 

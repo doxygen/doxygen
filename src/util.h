@@ -382,5 +382,17 @@ QCString externalLinkTarget();
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
 
+struct ColoredImgDataItem
+{
+  const char *name;
+  unsigned short width;
+  unsigned short height;
+  unsigned char *content;
+  unsigned char *alpha;
+};
+
+void writeColoredImgData(const char *dir,ColoredImgDataItem data[]);
+QCString replaceColorMarkers(const char *str);
+
 #endif
 

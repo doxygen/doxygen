@@ -1890,8 +1890,14 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  bool ambig;
 					  bool found=FALSE;
                                           FileDef *fd=0;
-					  //printf("looking for include %s\n",yytext);
-					  if ((fd=findFileDef(Doxygen::inputNameDict,yytext,ambig)) &&
+					  QCString absPath = yytext;
+					  if (g_sourceFileDef && QDir::isRelativePath(absPath))
+					  {
+					    absPath = QDir::cleanDirPath(g_sourceFileDef->getPath()+"/"+absPath);
+					  }
+
+					  //printf("looking for include %s -> %s\n",yytext,absPath.data());
+					  if ((fd=findFileDef(Doxygen::inputNameDict,absPath,ambig)) &&
 					      fd->isLinkable())
 					  {
 					    if (ambig) // multiple input files match the name

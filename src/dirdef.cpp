@@ -191,12 +191,12 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
     {
       msg("Generating dependency graph for directory %s\n",displayName().data());
       ol.disable(OutputGenerator::Man);
-      ol.startParagraph();
+      //ol.startParagraph();
       ol.startDirDepGraph();
       //TODO: ol.parseText(theTranslator->trDirDepGraph());
       ol.parseText((QCString)"Directory dependency graph for "+displayName()+":");
       ol.endDirDepGraph(dirDep);
-      ol.endParagraph();
+      //ol.endParagraph();
       ol.enableAll();
     }
   }
@@ -318,16 +318,19 @@ void DirDef::endMemberDeclarations(OutputList &ol)
 
 void DirDef::writeDocumentation(OutputList &ol)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
   
   QCString shortTitle=theTranslator->trDirReference(m_shortName);
   QCString title=theTranslator->trDirReference(m_dispName);
-  startFile(ol,getOutputFileBase(),name(),title,HLI_None,TRUE);
+  startFile(ol,getOutputFileBase(),name(),title,HLI_None,!generateTreeView);
 
-  // write navigation path
-  writeNavigationPath(ol);
-
-  ol.endQuickIndices();
+  if (!generateTreeView)
+  {
+    // write navigation path
+    writeNavigationPath(ol);
+    ol.endQuickIndices();
+  }
 
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();
@@ -422,35 +425,18 @@ void DirDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  </compound>" << endl;
   }
 
-  endFile(ol); 
-  ol.popGeneratorState();
+  ol.endContents();
 
-
-}
-
-#if 0
-void DirDef::writePathFragment(OutputList &ol) const
-{
-  if (m_parent)
+  if (generateTreeView)
   {
-    m_parent->writePathFragment(ol);
-    ol.writeString("&#160;/&#160;");
+    writeNavigationPath(ol);
   }
-  ol.writeObjectLink(getReference(),getOutputFileBase(),0,shortName());
-}
 
-void DirDef::writeNavigationPath(OutputList &ol)
-{
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-
-  ol.writeString("<div class=\"nav\">\n");
-  writePathFragment(ol);
-  ol.writeString("</div>\n");
-
+  endFile(ol,TRUE); 
   ol.popGeneratorState();
+
+
 }
-#endif
 
 void DirDef::setLevel()
 {
@@ -701,6 +687,7 @@ static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef
 
 void DirRelation::writeDocumentation(OutputList &ol)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
@@ -710,28 +697,24 @@ void DirRelation::writeDocumentation(OutputList &ol)
   QCString title=theTranslator->trDirRelation(
                  m_src->displayName()+" -> "+
                  m_dst->dir()->shortName());
-  startFile(ol,getOutputFileBase(),getOutputFileBase(),title);
+  startFile(ol,getOutputFileBase(),getOutputFileBase(),
+            title,HLI_None,!generateTreeView,m_src->getOutputFileBase());
 
-  // write navigation path
-  m_src->writeNavigationPath(ol);
+  if (!generateTreeView)
+  {
+    // write navigation path
+    m_src->writeNavigationPath(ol);
+    ol.endQuickIndices();
+  }
   ol.startContents();
 
-  //startTitle(ol,getOutputFileBase());
-  //  ol.parseText(shortTitle);
-  //endTitle(ol,getOutputFileBase(),title);
   ol.writeString("<h3>"+shortTitle+"</h3>");
-  
   ol.writeString("<table class=\"dirtab\">");
   ol.writeString("<tr class=\"dirtab\">");
-  // TODO: translate me! "File in %s"
   ol.writeString("<th class=\"dirtab\">");
   ol.parseText(theTranslator->trFileIn(m_src->pathFragment()));
-  //m_src->writePathFragment(ol);
   ol.writeString("</th>");
-  // TODO: translate me! "Includes file in %s"
   ol.writeString("<th class=\"dirtab\">");
-  //ol.writeString("Includes file in ");
-  //m_dst->dir()->writePathFragment(ol);
   ol.parseText(theTranslator->trIncludesFileIn(m_dst->dir()->pathFragment()));
   ol.writeString("</th>");
   ol.writeString("</tr>");
@@ -750,8 +733,15 @@ void DirRelation::writeDocumentation(OutputList &ol)
     ol.writeString("</tr>");
   }
   ol.writeString("</table>");
+
+  ol.endContents();
   
-  endFile(ol); 
+  if (generateTreeView)
+  {
+    m_src->writeNavigationPath(ol);
+  }
+
+  endFile(ol,TRUE); 
   ol.popGeneratorState();
 }
 
