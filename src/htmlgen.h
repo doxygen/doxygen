@@ -36,8 +36,12 @@ class HtmlGenerator : public OutputGenerator
     static void writeStyleSheetFile(QFile &f);
     static void writeHeaderFile(QFile &f);
     static void writeFooterFile(QFile &f);
-    static void writeSearchPage();
     static void writeTabData();
+    static void writeSearchFooter(FTextStream &t,const QCString &relPath);
+    static void writeSearchData(const char *dir);
+    static void writeSearchPage();
+    static QCString writeLogoAsString(const char *path);
+    static QCString writeSplitBarAsString(const char *name,const char *relpath);
    
     void enable() 
     { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
@@ -188,6 +192,8 @@ class HtmlGenerator : public OutputGenerator
     void endPageRef(const char *,const char *) {}
     void startQuickIndices();
     void endQuickIndices();
+    void writeSplitBar(const char *name);
+    void writeLogo();
     void writeQuickLinks(bool compact,HighlightedItem hli);
     void startContents();
     void endContents();
@@ -245,15 +251,15 @@ class HtmlGenerator : public OutputGenerator
     void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
     void endFontClass() { t << "</span>"; }
 
+
     void writeCodeAnchor(const char *anchor) 
     { t << "<a name=\"" << anchor << "\"></a>"; }
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
-    static void writeSearchFooter(FTextStream &t,const QCString &relPath);
-    static void writeSearchData(const char *dir);
     //static void generateSectionImages();
 
   private:
+    static void writePageFooter(FTextStream &t,const QCString &,const QCString &);
     QCString lastTitle;
     QCString lastFile;
     QCString relPath;

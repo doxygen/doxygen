@@ -1303,6 +1303,7 @@ void Config::check()
     filePatternList.append("*.py");
     filePatternList.append("*.f90");
     filePatternList.append("*.f");
+    filePatternList.append("*.for");
     filePatternList.append("*.vhd");
     filePatternList.append("*.vhdl");
     if (portable_fileSystemIsCaseSensitive())

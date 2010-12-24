@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 
 #include <md5.h>
 
@@ -50,6 +51,7 @@
 #include "portable.h"
 #include "parserintf.h"
 #include "bufstr.h"
+#include "image.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1520,12 +1522,9 @@ static bool findOperator2(const QCString &s,int i)
   return TRUE;
 }
 
-static const char constScope[] = { 'c', 'o', 'n', 's', 't', ':' };
+static const char constScope[]   = { 'c', 'o', 'n', 's', 't', ':' };
 static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 
-
-//#define ADD_CHAR(c) if (resultPos>=resultLen) { resultLen+=1024; result.resize(resultLen); } 
-//                    result[resultPos++]=(c)
 
 class StrBuf
 {
@@ -1551,14 +1550,7 @@ class StrBuf
     int len;
 };
 
-#define CLR_BUF()   g_strBuf.clear()
-#define ADD_CHAR(c) g_strBuf.addChar(c)
-#define ADD_STR(s)  g_strBuf.addStr(s)
-#define GET_STR()   g_strBuf.get()
-#define STR_POS()   g_strBuf.getPos()
-#define STR_AT(i)   g_strBuf.at(i)
-
-// Not this function is not reentrant due to the use of static buffer!
+// Note: this function is not reentrant due to the use of static buffer!
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
   static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
@@ -2099,7 +2091,6 @@ static QCString getFilterFromList(const char *name,const QStrList &filterList,bo
   {
     QCString fs = filterStr;
     int i_equals=fs.find('=');
-
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
@@ -2141,7 +2132,7 @@ QCString getFileFilter(const char* name,bool isSourceCode)
   { // first look for source filter pattern list
     filterName = getFilterFromList(name,filterSrcList,found);
   }
-  if (!found && !filterName.isEmpty())
+  if (!found && filterName.isEmpty())
   { // then look for filter pattern list
     filterName = getFilterFromList(name,filterList,found);
   }
@@ -2154,45 +2145,6 @@ QCString getFileFilter(const char* name,bool isSourceCode)
     return filterName;
   }
 }
-
-#if 0
-QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding)
-{
-  QCString inputEncoding  = fromEncoding;
-  QCString outputEncoding = toEncoding;
-  if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || 
-      inputEncoding==outputEncoding) return str;
-  int inputSize=str.length();
-  int outputSize=inputSize*4+1;
-  QCString output(outputSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==(void *)(-1))
-  {
-    err("error: unsupported character conversion: '%s'->'%s'\n",
-        inputEncoding.data(),outputEncoding.data());
-    exit(1);
-  }
-  size_t iLeft=inputSize;
-  size_t oLeft=outputSize;
-  const char *inputPtr  = str.data();
-  char       *outputPtr = output.data();
-  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
-  {
-    outputSize-=oLeft;
-    output.resize(outputSize+1);
-    output.at(outputSize)='\0';
-    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
-  }
-  else
-  {
-    err("error: failed to translate characters from %s to %s: %s\n",
-        inputEncoding.data(),outputEncoding.data(),strerror(errno));
-    exit(1);
-  }
-  portable_iconv_close(cd);
-  return output;
-}
-#endif
 
 
 QCString transcodeCharacterStringToUTF8(const QCString &input)
@@ -2343,22 +2295,6 @@ QCString dateToString(bool includeTime)
                                    current.time().minute(),
                                    current.time().second(),
                                    includeTime);
-#if 0
-  if (includeTime)
-  {
-    return convertToQCString(QDateTime::currentDateTime().toString());
-  }
-  else
-  {
-    const QDate &d=QDate::currentDate();
-    QCString result;
-    result.sprintf("%d %s %d",
-        d.day(),
-        convertToQCString(d.monthName(d.month())).data(),
-        d.year());
-    return result;
-  }
-#endif
 }
 
 QCString yearToString()
@@ -4692,7 +4628,6 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1); 
   }
-  //printf("findFileDef path=`%s' name=`%s'\n",path.data(),name.data());
   if (name.isEmpty()) goto exit;
   if ((fn=(*fnDict)[name]))
   {
@@ -4729,6 +4664,10 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
       g_findFileDefCache.insert(key,cachedResult);
       return lastMatch;
     }
+  }
+  else
+  {
+    //printf("not found!\n");
   }
 exit:
   g_findFileDefCache.insert(key,cachedResult);
@@ -5981,214 +5920,20 @@ void addGroupListToTitle(OutputList &ol,Definition *d)
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.lineBreak();
-    ol.startSmall();
-    ol.docify("[");
+    ol.writeString("<div class=\"ingroups\">");
     GroupListIterator gli(*groups);
     GroupDef *gd;
     bool first=TRUE;
     for (gli.toFirst();(gd=gli.current());++gli)
     {
-      if (!first) { ol.docify(","); ol.writeNonBreakableSpace(1); } else first=FALSE; 
+      if (!first) { ol.writeString(" &#124; "); } else first=FALSE; 
       ol.writeObjectLink(gd->getReference(),
           gd->getOutputFileBase(),0,gd->groupTitle());
     }
-    ol.docify("]");
-    ol.endSmall();
+    ol.writeString("</div>");
     ol.popGeneratorState();
   }
 }
-
-#if 0
-/*!
- * Function converts Latin1 character to latex string representing the same
- * character.
- */
-static void latin1ToLatex(QTextStream &t,unsigned char c)
-{
-  switch (c)
-  {
-    // the Latin-1 characters
-    case 161: t << "!`";            break;
-    case 181: t << "$\\mu$";        break;
-    case 191: t << "?`";            break;
-    case 192: t << "\\`{A}";        break;
-    case 193: t << "\\'{A}";        break;
-    case 194: t << "\\^{A}";        break;
-    case 195: t << "\\~{A}";        break;
-    case 196: t << "\\\"{A}";       break;
-    case 197: t << "\\AA{}";        break;
-    case 198: t << "\\AE{}";        break;
-    case 199: t << "\\c{C}";        break;
-    case 200: t << "\\`{E}";        break;
-    case 201: t << "\\'{E}";        break;
-    case 202: t << "\\^{E}";        break;
-    case 203: t << "\\\"{E}";       break;
-    case 204: t << "\\`{I}";        break;
-    case 205: t << "\\'{I}";        break;
-    case 206: t << "\\^{I}";        break;
-    case 207: t << "\\\"{I}";       break;
-    case 208: t << "D ";            break; // anyone know the real code?
-    case 209: t << "\\~{N}";        break;
-    case 210: t << "\\`{O}";        break;
-    case 211: t << "\\'{O}";        break;
-    case 212: t << "\\^{O}";        break;
-    case 213: t << "\\~{O}";        break;
-    case 214: t << "\\\"{O}";       break;
-    case 215: t << "$\\times$";     break;
-    case 216: t << "\\O";           break;
-    case 217: t << "\\`{U}";        break;
-    case 218: t << "\\'{U}";        break;
-    case 219: t << "\\^{U}";        break;
-    case 220: t << "\\\"{U}";       break;
-    case 221: t << "\\'{Y}";        break;
-    case 223: t << "\\ss{}";        break; 
-    case 224: t << "\\`{a}";        break;
-    case 225: t << "\\'{a}";        break;
-    case 226: t << "\\^{a}";        break;
-    case 227: t << "\\~{a}";        break;
-    case 228: t << "\\\"{a}";       break;
-    case 229: t << "\\aa{}";        break;
-    case 230: t << "\\ae{}";        break;
-    case 231: t << "\\c{c}";        break;
-    case 232: t << "\\`{e}";        break;
-    case 233: t << "\\'{e}";        break;
-    case 234: t << "\\^{e}";        break;
-    case 235: t << "\\\"{e}";       break;
-    case 236: t << "\\`{\\i}";      break;
-    case 237: t << "\\'{\\i}";      break;
-    case 238: t << "\\^{\\i}";      break;
-    case 239: t << "\\\"{\\i}";     break;
-    case 241: t << "\\~{n}";        break;
-    case 242: t << "\\`{o}";        break;
-    case 243: t << "\\'{o}";        break;
-    case 244: t << "\\^{o}";        break;
-    case 245: t << "\\~{o}";        break;
-    case 246: t << "\\\"{o}";       break;
-    case 248: t << "\\o{}";         break;
-    case 249: t << "\\`{u}";        break;
-    case 250: t << "\\'{u}";        break;
-    case 251: t << "\\^{u}";        break;
-    case 252: t << "\\\"{u}";       break;
-    case 253: t << "\\'{y}";        break;
-    case 255: t << "\\\"{y}";       break;           
-    default: t << (char)c;
-  }
-}
-
-/*!
- * Function converts Latin2 character to latex string representing the same
- * character.
- */
-static void latin2ToLatex(QTextStream &t,unsigned char c)
-{
-  switch (c)
-  {
-    case 0xA1: t << "\\k{A}";   break;
-    case 0xA2: t << (char)c;    break;
-    case 0xA3: t << "\\L{}";    break;
-    case 0xA4: t << (char)c;    break;
-    case 0xA5: t << (char)c;    break;
-    case 0xA6: t << "\\'{S}";   break;
-    case 0xA7: t << (char)c;    break;
-    case 0xA8: t << (char)c;    break;
-    case 0xA9: t << "\\v{S}";   break;
-    case 0xAA: t << "\\c{S}";   break;
-    case 0xAB: t << "\\v{T}";   break;
-    case 0xAC: t << "\\'{Z}";   break;
-    case 0xAD: t << (char)c;    break;
-    case 0xAE: t << "\\v{Z}";   break;
-    case 0xAF: t << "\\.{Z}";   break;
-
-    case 0xB0: t << (char)c;    break;
-    case 0xB1: t << "\\k{a}";   break;
-    case 0xB2: t << (char)c;    break;
-    case 0xB3: t << "\\l{}";    break;
-    case 0xB4: t << (char)c;    break;
-    case 0xB5: t << (char)c;    break;
-    case 0xB6: t << "\\'{s}";   break;
-    case 0xB7: t << (char)c;    break;
-    case 0xB8: t << (char)c;    break;
-    case 0xB9: t << "\\v{s}";   break;
-    case 0xBA: t << "\\c{s}";   break;
-    case 0xBB: t << "\\v{t}";   break;
-    case 0xBC: t << "\\'{z}";   break;
-    case 0xBD: t << (char)c;    break;
-    case 0xBE: t << "\\v{z}";   break;
-    case 0xBF: t << "\\.{z}";   break;
-
-    case 0xC0: t << "\\'{R}";   break;
-    case 0xC1: t << "\\'{A}";   break;
-    case 0xC2: t << "\\^{A}";   break;
-    case 0xC3: t << "\\u{A}";   break;
-    case 0xC4: t << "\\\"{A}";  break;
-    case 0xC5: t << "\\'{L}";   break;
-    case 0xC6: t << "\\'{C}";   break;
-    case 0xC7: t << "\\c{C}";   break;
-    case 0xC8: t << "\\v{C}";   break;
-    case 0xC9: t << "\\'{E}";   break;
-    case 0xCA: t << "\\k{E}";   break;
-    case 0xCB: t << "\\\"{E}";  break;
-    case 0xCC: t << "\\v{E}";   break;
-    case 0xCD: t << "\\'{I}";   break;
-    case 0xCE: t << "\\^{I}";   break;
-    case 0xCF: t << "\\v{D}";   break;
-
-    case 0xD0: t << "\\DJ "; break;
-    case 0xD1: t << "\\'{N}";   break;
-    case 0xD2: t << "\\v{N}";   break;
-    case 0xD3: t << "\\'{O}";   break;
-    case 0xD4: t << "\\^{O}";   break;
-    case 0xD5: t << "\\H{O}";   break;
-    case 0xD6: t << "\\\"{O}";  break;
-    case 0xD7: t << (char)c;    break;
-    case 0xD8: t << "\\v{R}";   break;
-    case 0xD9: t << (char)c;    break;
-    case 0xDA: t << "\\'{U}";   break;
-    case 0xDB: t << "\\H{U}";   break;
-    case 0xDC: t << "\\\"{U}";  break;
-    case 0xDD: t << "\\'{Y}";   break;
-    case 0xDE: t << "\\c{T}";   break;
-    case 0xDF: t << "\\ss";     break;
-
-    case 0xE0: t << "\\'{r}";   break;
-    case 0xE1: t << "\\'{a}";   break;
-    case 0xE2: t << "\\^{a}";   break;
-    case 0xE3: t << (char)c;    break;
-    case 0xE4: t << "\\\"{a}";  break;
-    case 0xE5: t << "\\'{l}";   break;
-    case 0xE6: t << "\\'{c}";   break;
-    case 0xE7: t << "\\c{c}";   break;
-    case 0xE8: t << "\\v{c}";   break;
-    case 0xE9: t << "\\'{e}";   break;
-    case 0xEA: t << "\\k{e}";   break;
-    case 0xEB: t << "\\\"{e}";  break;
-    case 0xEC: t << "\\v{e}";   break;
-    case 0xED: t << "\\'{\\i}"; break;
-    case 0xEE: t << "\\^{\\i}"; break;
-    case 0xEF: t << "\\v{d}";   break;
-
-    case 0xF0: t << "\\dj "; break;
-    case 0xF1: t << "\\'{n}";   break;
-    case 0xF2: t << "\\v{n}";   break;
-    case 0xF3: t << "\\'{o}";   break;
-    case 0xF4: t << "\\^{o}";   break;
-    case 0xF5: t << "\\H{o}";   break;
-    case 0xF6: t << "\\\"{o}";  break;
-    case 0xF7: t << (char)c;    break;
-    case 0xF8: t << "\\v{r}";   break;
-    case 0xF9: t << (char)c;    break;
-    case 0xFA: t << "\\'{u}";   break;
-    case 0xFB: t << "\\H{u}";   break;
-    case 0xFC: t << "\\\"{u}";  break;
-    case 0xFD: t << "\\'{y}";   break;
-    case 0xFE: t << (char)c;    break;
-    case 0xFF: t << (char)c;    break;
-
-    default: t << (char)c;
-  }
-}
-#endif
 
 void filterLatexString(FTextStream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem)
@@ -6519,6 +6264,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".mm",    "objective-c");
   updateLanguageMapping(".py",    "python");
   updateLanguageMapping(".f",     "fortran");
+  updateLanguageMapping(".for",   "fortran");
   updateLanguageMapping(".f90",   "fortran");
   updateLanguageMapping(".vhd",   "vhdl");
   updateLanguageMapping(".vhdl",  "vhdl");
@@ -7134,6 +6880,75 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   {
     result = relPath;
   }
+  return result;
+}
+
+void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
+{
+  static int hue   = Config_getInt("HTML_COLORSTYLE_HUE");
+  static int sat   = Config_getInt("HTML_COLORSTYLE_SAT");
+  static int gamma = Config_getInt("HTML_COLORSTYLE_GAMMA");
+  while (data->name)
+  {
+    QCString fileName;
+    fileName=(QCString)dir+"/"+data->name;
+    QFile f(fileName);
+    if (f.open(IO_WriteOnly))
+    {
+      ColoredImage img(data->width,data->height,data->content,data->alpha,
+                       sat,hue,gamma);
+      img.save(fileName);
+    }
+    else
+    {
+      fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
+    }
+    Doxygen::indexList.addImageFile(data->name);
+    data++;
+  }
+}
+
+QCString replaceColorMarkers(const char *str)
+{
+  QCString result;
+  QCString s=str;
+  if (s.isEmpty()) return result;
+  static QRegExp re("##[0-9A-Fa-f][0-9A-Fa-f]");
+  static const char hex[] = "0123456789ABCDEF";
+  static int hue   = Config_getInt("HTML_COLORSTYLE_HUE");
+  static int sat   = Config_getInt("HTML_COLORSTYLE_SAT");
+  static int gamma = Config_getInt("HTML_COLORSTYLE_GAMMA");
+  int i,l,sl=s.length(),p=0;
+  while ((i=re.match(s,p,&l))!=-1)
+  {
+    result+=s.mid(p,i-p);
+    QCString lumStr = s.mid(i+2,l-2);
+#define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
+                     ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
+                     ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
+    
+    double r,g,b;
+    int red,green,blue;
+    int level = HEXTONUM(lumStr[0])*16+HEXTONUM(lumStr[1]);
+    ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
+                          pow(level/255.0,gamma/100.0),&r,&g,&b);
+    red   = (int)(r*255.0);
+    green = (int)(g*255.0);
+    blue  = (int)(b*255.0);
+    char colStr[8];
+    colStr[0]='#';
+    colStr[1]=hex[red>>4];
+    colStr[2]=hex[red&0xf];
+    colStr[3]=hex[green>>4];
+    colStr[4]=hex[green&0xf];
+    colStr[5]=hex[blue>>4];
+    colStr[6]=hex[blue&0xf];
+    colStr[7]=0;
+    //printf("replacing %s->%s (level=%d)\n",lumStr.data(),colStr,level);
+    result+=colStr;
+    p=i+l;
+  }
+  result+=s.right(sl-p);
   return result;
 }
 

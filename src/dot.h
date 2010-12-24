@@ -144,7 +144,7 @@ class DotGfxHierarchyTable
   public:
     DotGfxHierarchyTable();
    ~DotGfxHierarchyTable();
-    void writeGraph(FTextStream &t,const char *path,const char *fileName) const;
+    void writeGraph(FTextStream &t,const char *path, const char *fileName) const;
   
   private:
     void addHierarchy(DotNode *n,ClassDef *cd,bool hide);

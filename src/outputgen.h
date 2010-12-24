@@ -379,6 +379,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeGraphicalHierarchy(const DotGfxHierarchyTable &g) = 0;
     virtual void startQuickIndices() = 0;
     virtual void endQuickIndices() = 0;
+    virtual void writeSplitBar(const char *) = 0;
+    virtual void writeLogo() = 0;
     virtual void writeQuickLinks(bool compact,HighlightedItem hli) = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;

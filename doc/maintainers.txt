@@ -30,6 +30,7 @@ Maximiliano Pin: max dot pin at bitroit dot com
 Albert Mora: [unreachable] amora at iua dot upf dot es
 
 TranslatorChinese
+Lang Yang: lian dot yang dot cn at gmail dot com
 Li Daobing: lidaobing at gmail dot com
 Wei Liu: liuwei at asiainfo dot com
 

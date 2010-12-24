@@ -1434,6 +1434,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString pageType = " ";
@@ -1459,12 +1460,15 @@ void ClassDef::writeDocumentation(OutputList &ol)
               m_impl->tempArgs != 0);
   }
   
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,TRUE);  
-  if (getOuterScope()!=Doxygen::globalScope)
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,!generateTreeView);  
+  if (!generateTreeView)
   {
-    writeNavigationPath(ol);
+    if (getOuterScope()!=Doxygen::globalScope)
+    {
+      writeNavigationPath(ol);
+    }
+    ol.endQuickIndices();
   }
-  ol.endQuickIndices();
 
   startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
@@ -1621,8 +1625,15 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
   }
+
+  ol.endContents();
+    
+  if (generateTreeView)
+  {
+    writeNavigationPath(ol);
+  }
  
-  endFile(ol);
+  endFile(ol,TRUE);
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -1730,14 +1741,23 @@ void ClassDef::writeMemberList(OutputList &ol)
 {
   static bool cOpt    = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
   static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   if (m_impl->allMemberNameInfoSDict==0 || cOpt) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
   QCString memListFile = getMemberListFileName();
-  startFile(ol,memListFile,memListFile,
-            theTranslator->trMemberList(),HLI_ClassVisible);
+  startFile(ol,memListFile,memListFile,theTranslator->trMemberList(),
+            HLI_ClassVisible,!generateTreeView,getOutputFileBase());  
+  if (!generateTreeView)
+  {
+    if (getOuterScope()!=Doxygen::globalScope)
+    {
+      writeNavigationPath(ol);
+    }
+    ol.endQuickIndices();
+  }
   startTitle(ol,0);
   ol.parseText(displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);

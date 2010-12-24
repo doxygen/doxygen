@@ -497,6 +497,7 @@ void FileDef::writeSummaryLinks(OutputList &ol)
 */
 void FileDef::writeDocumentation(OutputList &ol)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   //funcList->countDecMembers();
   
   //QCString fn = name();
@@ -517,9 +518,12 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {
-    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,TRUE);
-    getDirDef()->writeNavigationPath(ol);
-    ol.endQuickIndices();
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,!generateTreeView);
+    if (!generateTreeView)
+    {
+      getDirDef()->writeNavigationPath(ol);
+      ol.endQuickIndices();
+    }
     QCString pageTitleShort=theTranslator->trFileReference(name());
     startTitle(ol,getOutputFileBase(),this);
     ol.pushGeneratorState();
@@ -534,7 +538,11 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   else
   {
-    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible);
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,!generateTreeView);
+    if (!generateTreeView)
+    {
+      ol.endQuickIndices();
+    }
     startTitle(ol,getOutputFileBase(),this);
     ol.parseText(pageTitle);
     addGroupListToTitle(ol,this);
@@ -672,7 +680,14 @@ void FileDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  </compound>" << endl;
   }
 
-  endFile(ol);
+  ol.endContents();
+
+  if (generateTreeView)
+  {
+    writeNavigationPath(ol);
+  }
+
+  endFile(ol,TRUE);
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -746,6 +761,7 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
   QCString title = docname;
@@ -760,16 +776,21 @@ void FileDef::writeSource(OutputList &ol)
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {
-    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,TRUE);
-    getDirDef()->writeNavigationPath(ol);
-    ol.endQuickIndices();
+    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,
+        !generateTreeView,getOutputFileBase());
+    if (!generateTreeView)
+    {
+      getDirDef()->writeNavigationPath(ol);
+      ol.endQuickIndices();
+    }
     startTitle(ol,getOutputFileBase());
     ol.parseText(name());
     endTitle(ol,getOutputFileBase(),title);
   }
   else
   {
-    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,TRUE);
+    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,
+        !generateTreeView,getOutputFileBase());
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);
     endTitle(ol,getSourceFileBase(),0);
@@ -795,7 +816,15 @@ void FileDef::writeSource(OutputList &ol)
            );
   ol.endCodeFragment();
   ol.endContents();
-  endFile(ol);
+  if (generateTreeView)
+  {
+    writeNavigationPath(ol);
+    endFile(ol,TRUE);
+  }
+  else
+  {
+    endFile(ol);
+  }
   ol.enableAll();
 }
 

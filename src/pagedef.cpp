@@ -69,13 +69,15 @@ bool PageDef::hasParentPage() const
 
 void PageDef::writeDocumentation(OutputList &ol)
 {
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+
   //outputList->disable(OutputGenerator::Man);
   QCString pageName;
   pageName=escapeCharsInString(name(),FALSE,TRUE);
 
   //printf("PageDef::writeDocumentation: %s\n",getOutputFileBase().data());
 
-  startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,TRUE);
+  startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
 
   ol.pushGeneratorState();
   //1.{ 
@@ -92,12 +94,14 @@ void PageDef::writeDocumentation(OutputList &ol)
     ol.enable(OutputGenerator::Html);
   }
 
-  if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
+  if (!generateTreeView)
   {
-    getOuterScope()->writeNavigationPath(ol);
+    if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
+    {
+      getOuterScope()->writeNavigationPath(ol);
+    }
+    ol.endQuickIndices();
   }
-
-  ol.endQuickIndices();
 
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
@@ -135,7 +139,16 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //1.}
 
-  endFile(ol);
+  if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
+  {
+    ol.endContents();
+    getOuterScope()->writeNavigationPath(ol);
+    endFile(ol,TRUE);
+  }
+  else
+  {
+    endFile(ol);
+  }
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {

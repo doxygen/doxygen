@@ -161,11 +161,7 @@ void LatexGenerator::init()
 
   t << endl
     << "clean:" << endl
-#if defined(_MSC_VER)
-    << "\tdel "  
-#else
     << "\trm -f " 
-#endif
     << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out refman.pdf" << endl;
 
   createSubDirs(d);

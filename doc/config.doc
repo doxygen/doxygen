@@ -801,6 +801,16 @@ function's detailed documentation block.
  putting \ref cmddeprecated "\\deprecated"
  commands in the documentation.
 
+\anchor cfg_strict_proto_matching
+<dt>\c STRICT_PROTO_MATCHING <dd>
+ \addindex STRICT_PROTO_MATCHING
+ If the \c STRICT_PROTO_MATCHING option is enabled and doxygen fails to
+ do proper type resolution of all parameters of a function it will reject a  
+ match between the prototype and the implementation of a member function even
+ if there is only one candidate or it is obvious which candidate to choose
+ by doing a simple string match. By disabling \c STRICT_PROTO_MATCHING doxygen 
+ will still accept a match between prototype and implementation in such cases.
+
 \anchor cfg_generate_todolist
 <dt>\c GENERATE_TODOLIST <dd>
  \addindex GENERATE_TODOLIST

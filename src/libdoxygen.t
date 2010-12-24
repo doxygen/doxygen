@@ -120,3 +120,18 @@ search_css.h: search.css
 doxygen_css.h: doxygen.css
 	cat doxygen.css | $(TO_C_CMD) >doxygen_css.h 
 
+navtree_js.h: navtree.js
+	cat navtree.js | $(TO_C_CMD) >navtree_js.h
+
+navindex_js.h: navindex.js
+	cat navindex.js | $(TO_C_CMD) >navindex_js.h
+
+resize_js.h: resize.js
+	cat resize.js | $(TO_C_CMD) >resize_js.h
+
+jquery_js.h: jquery.js
+	cat jquery.js | $(TO_C_CMD) >jquery_js.h
+
+navtree_css.h: navtree.css
+	cat navtree.css | $(TO_C_CMD) >navtree_css.h
+

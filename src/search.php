@@ -140,7 +140,7 @@ function combine_results($results,&$docs)
     {
       $key=$di["url"];
       $rank=$di["rank"];
-      if (in_array($key, array_keys($docs)))
+      if ($docs[$key])
       {
         $docs[$key]["rank"]+=$rank;
       }
@@ -219,10 +219,13 @@ function sort_results($docs,&$sorted)
 
 function report_results(&$docs)
 {
+  echo "<div class=\"header\">";
+  echo "  <div class=\"headertitle\">\n";
+  echo "    <h1>".search_results()."</h1>\n";
+  echo "  </div>\n";
+  echo "</div>\n";
+  echo "<div class=\"searchresults\">\n";
   echo "<table cellspacing=\"2\">\n";
-  echo "  <tr>\n";
-  echo "    <td colspan=\"2\"><h2>".search_results()."</h2></td>\n";
-  echo "  </tr>\n";
   $numDocs = sizeof($docs);
   if ($numDocs==0)
   {
@@ -279,7 +282,6 @@ function main()
     $query=$_GET["query"];
   }
   end_form(preg_replace("/[^a-zA-Z0-9\-\_\.]/i", " ", $query ));
-  echo "&#160;\n<div class=\"searchresults\">\n";
   $results = array();
   $requiredWords = array();
   $forbiddenWords = array();
@@ -307,6 +309,7 @@ function main()
   // report results to the user
   report_results($sorted);
   echo "</div>\n";
+  end_page();
   fclose($file);
 }
 

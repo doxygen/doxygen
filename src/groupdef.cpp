@@ -589,11 +589,11 @@ void GroupDef::writeGroupGraph(OutputList &ol)
       msg("Generating dependency graph for group %s\n",qualifiedName().data());
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
-      ol.startParagraph();
+      //ol.startParagraph();
       ol.startGroupCollaboration();
       ol.parseText(theTranslator->trCollaborationDiagram(title));
       ol.endGroupCollaboration(graph);
-      ol.endParagraph();
+      //ol.endParagraph();
       ol.popGeneratorState();
     }
   }
@@ -848,12 +848,20 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
 
 void GroupDef::writeDocumentation(OutputList &ol)
 {
+  //static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
   startFile(ol,getOutputFileBase(),name(),title);
-  startTitle(ol,getOutputFileBase(),this);
+
+  ol.startHeaderSection();
+  writeSummaryLinks(ol);
+  ol.startTitleHead(getOutputFileBase());
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Man);
   ol.parseText(title);
+  ol.popGeneratorState();
+  ol.endTitleHead(getOutputFileBase(),title);
   addGroupListToTitle(ol,this);
-  endTitle(ol,getOutputFileBase(),title);
+  ol.endHeaderSection();
   ol.startContents();
 
   if (Doxygen::searchIndex)
@@ -989,6 +997,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   //---------------------------------------- end flexible part -------------------------------
 
   endFile(ol); 
+
   ol.popGeneratorState();
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 

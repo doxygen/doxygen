@@ -6,5 +6,6 @@
   <file>images/file.png</file>
   <file>images/folder.png</file>
   <file>images/refresh.png</file>
+  <file>images/tunecolor.png</file>
 </qresource>
 </RCC>

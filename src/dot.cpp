@@ -453,7 +453,7 @@ static bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
   out << "<iframe src=\"" 
       << relPath << baseName << ".svg\" width=\"" 
       << ((width*96+48)/72) << "\" height=\"" 
-      << ((height*96+48)/72) << "\">";
+      << ((height*96+48)/72) << "\" frameborder=\"0\" scrolling=\"no\">";
   writeSVGNotSupported(out);
 //  out << "</object>";
   out << "</iframe>";
@@ -1744,7 +1744,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
     QCString baseName;
     QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
     baseName.sprintf("inherit_graph_%d",count++);
-    baseName = convertNameToFile(baseName);
+    //baseName = convertNameToFile(baseName);
     QCString imgName = baseName+"."+ imgExt;
     QCString mapName = baseName+".map";
     QCString absImgName = QCString(d.absPath().data())+"/"+imgName;

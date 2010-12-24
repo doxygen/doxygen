@@ -117,6 +117,32 @@ static void updateStringOption(
 
 //==========================================================================
 
+TuneColorDialog::TuneColorDialog(QWidget *parent) : QDialog(parent)
+{
+   setWindowTitle(tr("Tune the color of the HTML output"));
+   QGridLayout *layout = new QGridLayout(this);
+   m_image = new QImage(QString::fromAscii(":/images/tunecolor.png"));
+   m_imageLab = new QLabel;
+   m_imageLab->setPixmap(QPixmap::fromImage(*m_image));
+   layout->addWidget(new QLabel(tr("Example output: use the sliders to change")),0,0);
+   layout->addWidget(m_imageLab,1,0);
+   QHBoxLayout *buttonsLayout = new QHBoxLayout;
+
+   QPushButton *okButton = new QPushButton(tr("Ok"));
+   connect(okButton,SIGNAL(clicked()),SLOT(accept()));
+   okButton->setDefault(true);
+   QPushButton *cancelButton = new QPushButton(tr("Cancel"));
+   connect(cancelButton,SIGNAL(clicked()),SLOT(reject()));
+
+   buttonsLayout->addStretch();
+   buttonsLayout->addWidget(okButton);
+   buttonsLayout->addWidget(cancelButton);
+   layout->addLayout(buttonsLayout,5,0);
+
+}
+
+//==========================================================================
+
 Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(wizard), m_modelData(modelData)
 {
   QVBoxLayout *layout = new QVBoxLayout(this);
@@ -477,9 +503,14 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
     m_htmlOptionsGroup->addButton(r, 2);
     // GENERATE_HTMLHELP
     vbox->addWidget(r);
-    m_searchEnabled=new QCheckBox(tr("With search function (requires PHP enabled web server)"));
+    m_searchEnabled=new QCheckBox(tr("With search function"));
     vbox->addWidget(m_searchEnabled);
     // SEARCH_ENGINE
+    QHBoxLayout *hbox = new QHBoxLayout;
+    m_tuneColor=new QPushButton(tr("Change color..."));
+    hbox->addWidget(m_tuneColor);
+    hbox->addStretch(1);
+    vbox->addLayout(hbox);
     m_htmlOptions->setLayout(vbox);
     m_htmlOptions->setChecked(true);
   }
@@ -531,6 +562,13 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
           SLOT(setHtmlOptions(int)));
   connect(m_texOptionsGroup,SIGNAL(buttonClicked(int)),
           SLOT(setLatexOptions(int)));
+  connect(m_tuneColor,SIGNAL(clicked()),SLOT(tuneColorDialog()));
+}
+
+void Step3::tuneColorDialog()
+{
+  TuneColorDialog tuneColor(this);
+  tuneColor.exec();
 }
 
 void Step3::setHtmlEnabled(bool b)
