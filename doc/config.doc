@@ -336,7 +336,7 @@ followed by the descriptions of the tags grouped by category.
  Afrikaans, Arabic, Brazilian, Catalan, Chinese, Croatian, Czech, Danish, Dutch, 
  Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean, 
  Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian, 
- Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+ Serbian-Cyrillic, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
@@ -1041,7 +1041,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <dt>\c EXCLUDE_SYMLINKS <dd>
  \addindex EXCLUDE_SYMLINKS
  The \c EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
- that are symbolic links (a Unix filesystem feature) are excluded from the input.
+ that are symbolic links (a Unix file system feature) are excluded from the input.
 
 \anchor cfg_exclude_patterns
 <dt>\c EXCLUDE_PATTERNS <dd>
@@ -2197,7 +2197,7 @@ install and use dot, since it yields more powerful graphs.
  directory and reference it in all dot files that doxygen generates. This
  font does not include all possible unicode characters however, so when you need 
  these (or just want a differently looking font) you can specify the font name
- using \c DOT_FONTNAME. You need need to make sure dot is able to find the font,
+ using \c DOT_FONTNAME. You need to make sure dot is able to find the font,
  which can be done by putting it in a standard location or by setting the
  \c DOTFONTPATH environment variable or by setting \c DOT_FONTPATH to the directory
  containing the font.

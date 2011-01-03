@@ -62,6 +62,8 @@ HEADERS      =	bufstr.h \
                 index_xsd.h \
 		instdox.h \
 		jquery_js.h \
+		jquery_ui_js.h \
+		sizzle_js.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \

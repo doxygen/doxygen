@@ -766,52 +766,120 @@ class LayoutParser : public QXmlDefaultHandler
 
     void startNavEntry(const QXmlAttributes &attrib)
     {
-      bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
-      bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-      bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-      bool hasGraphicalHierarchy = Config_getBool("HAVE_DOT") &&
-                                   Config_getBool("GRAPHICAL_HIERARCHY");
+      static bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+      static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+      static bool hasGraphicalHierarchy = Config_getBool("HAVE_DOT") &&
+                                          Config_getBool("GRAPHICAL_HIERARCHY");
+      static bool extractAll = Config_getBool("EXTRACT_ALL");
       static struct NavEntryMap
       {
         const char *typeStr;       // type attribute name in the XML file
         LayoutNavEntry::Kind kind; // corresponding enum name
         QCString mainName;         // default title for an item if it has children
         QCString subName;          // optional name for an item if it is rendered as a child
+        QCString intro;            // introduction text to be put on the index page
         QCString baseFile;         // base name of the file containing the index page
       } mapping[] =
       {
-        { "mainpage",         LayoutNavEntry::MainPage,         theTranslator->trMainPage(),     QCString(), /*Config_getBool("GENERATE_TREEVIEW") ? "main" :*/ "index" },
-        { "pages",            LayoutNavEntry::Pages,            theTranslator->trRelatedPages(), QCString(), "pages"  },
-        { "modules",          LayoutNavEntry::Modules,          theTranslator->trModules(),      QCString(), "modules" },
-        { "namespaces",       LayoutNavEntry::Namespaces,       javaOpt    ? theTranslator->trPackages() : 
-                                                                fortranOpt ? theTranslator->trModules() : 
-                                                                theTranslator->trNamespaces(),        
-                                                                javaOpt    ? theTranslator->trPackages() :
-                                                                fortranOpt ? theTranslator->trModulesList() :
-                                                                theTranslator->trNamespaceList(), "namespaces" },
-        { "namespacemembers", LayoutNavEntry::NamespaceMembers, javaOpt    ? theTranslator->trPackageMembers() :
-                                                                fortranOpt ? theTranslator->trModulesMembers() :
-                                                                theTranslator->trNamespaceMembers(), QCString(), "namespacemembers" },
-        { "classindex",       LayoutNavEntry::Classes,          fortranOpt ? theTranslator->trDataTypes() :
-                                                                vhdlOpt    ? VhdlDocGen::trDesignUnits() :
-                                                                theTranslator->trCompoundIndex(),
-                                                                QCString(), "classes" },
-        { "classes",          LayoutNavEntry::ClassAnnotated,   fortranOpt ? theTranslator->trCompoundListFortran() :
-                                                                vhdlOpt    ? VhdlDocGen::trDesignUnitList() :
-                                                                theTranslator->trClasses(), 
-                                                                theTranslator->trCompoundList(), "annotated" },
-        { "hierarchy",        LayoutNavEntry::ClassHierarchy,   vhdlOpt    ? VhdlDocGen::trDesignUnitHierarchy() :
-                                                                theTranslator->trClassHierarchy(), QCString(), 
-                                                                hasGraphicalHierarchy ? "inherits" : "hierarchy" },
-        { "classmembers",     LayoutNavEntry::ClassMembers,     fortranOpt ? theTranslator->trCompoundMembersFortran() :
-                                                                vhdlOpt    ? VhdlDocGen::trDesignUnitMembers() :
-                                                                theTranslator->trCompoundMembers(), QCString(), "functions" },
-        { "files",            LayoutNavEntry::Files,            theTranslator->trFile(TRUE,FALSE), 
-                                                                theTranslator->trFileList(), "files" },
-        { "globals",          LayoutNavEntry::FileGlobals,      theTranslator->trFileMembers(), QCString(), "globals" },
-        { "dirs",             LayoutNavEntry::Dirs,             theTranslator->trDirectories(), QCString(), "dirs" },
-        { "examples",         LayoutNavEntry::Examples,         theTranslator->trExamples(), QCString(), "examples" },
-        { 0,                 (LayoutNavEntry::Kind)0,           QCString(), QCString(), QCString() }
+        { "mainpage",
+          LayoutNavEntry::MainPage,
+          theTranslator->trMainPage(),
+          QCString(),
+          QCString(),
+          "index"
+        },
+        { "pages",
+          LayoutNavEntry::Pages,
+          theTranslator->trRelatedPages(),
+          QCString(),
+          theTranslator->trRelatedPagesDescription(),
+          "pages"
+        },
+        { "modules",
+          LayoutNavEntry::Modules,
+          theTranslator->trModules(),
+          QCString(),
+          theTranslator->trModulesDescription(),
+          "modules"
+        },
+        { "namespaces",
+          LayoutNavEntry::Namespaces,
+          javaOpt    ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
+          javaOpt    ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt    ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
+          "namespaces"
+        },
+        { "namespacemembers",
+          LayoutNavEntry::NamespaceMembers,
+          javaOpt    ? theTranslator->trPackageMembers() : fortranOpt ? theTranslator->trModulesMembers() : theTranslator->trNamespaceMembers(),
+          QCString(),
+          fortranOpt ? theTranslator->trModulesMemberDescription(extractAll) : theTranslator->trNamespaceMemberDescription(extractAll),
+          "namespacemembers"
+        },
+        { "classindex",
+          LayoutNavEntry::Classes,
+          fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? VhdlDocGen::trDesignUnits() : theTranslator->trCompoundIndex(),
+          QCString(),
+          QCString(),
+          "classes"
+        },
+        { "classes",
+          LayoutNavEntry::ClassAnnotated,
+          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitList() : theTranslator->trClasses(),
+          theTranslator->trCompoundList(),
+          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
+          "annotated"
+        },
+        { "hierarchy",
+          LayoutNavEntry::ClassHierarchy,
+          vhdlOpt    ? VhdlDocGen::trDesignUnitHierarchy() : theTranslator->trClassHierarchy(),
+          QCString(),
+          theTranslator->trClassHierarchyDescription(),
+          hasGraphicalHierarchy ? "inherits" : "hierarchy"
+        },
+        { "classmembers",
+          LayoutNavEntry::ClassMembers,
+          fortranOpt ? theTranslator->trCompoundMembersFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitMembers() : theTranslator->trCompoundMembers(),
+          QCString(),
+          fortranOpt ? theTranslator->trCompoundMembersDescriptionFortran(extractAll) : theTranslator->trCompoundMembersDescription(extractAll),
+          "functions"
+        },
+        { "files",
+          LayoutNavEntry::Files,
+          theTranslator->trFile(TRUE,FALSE),
+          theTranslator->trFileList(),
+          theTranslator->trFileListDescription(extractAll),
+          "files"
+        },
+        { "globals",
+          LayoutNavEntry::FileGlobals,
+          theTranslator->trFileMembers(),
+          QCString(),
+          theTranslator->trFileMembersDescription(extractAll),
+          "globals"
+        },
+        { "dirs",
+          LayoutNavEntry::Dirs,
+          theTranslator->trDirectories(),
+          QCString(),
+          theTranslator->trDirDescription(),
+          "dirs"
+        },
+        { "examples",
+          LayoutNavEntry::Examples,
+          theTranslator->trExamples(),
+          QCString(),
+          theTranslator->trExamplesDescription(),
+          "examples"
+        },
+        { 0, // end of list
+          (LayoutNavEntry::Kind)0,
+          QCString(),
+          QCString(),
+          QCString(),
+          QCString()
+        }
       };
       LayoutNavEntry::Kind kind;
       // find type in the table
@@ -850,8 +918,13 @@ class LayoutParser : public QXmlDefaultHandler
                                       // this is mainly done to get compatible naming with older versions.
         }
       }
+      QCString intro = convertToQCString(attrib.value("intro"));
+      if (intro.isEmpty()) // use default intro text
+      {
+        intro = mapping[i].intro;
+      }
       // create new item and make it the new root
-      m_rootNav = new LayoutNavEntry(m_rootNav,kind,kind==LayoutNavEntry::MainPage?TRUE:isVisible,baseFile,title);
+      m_rootNav = new LayoutNavEntry(m_rootNav,kind,kind==LayoutNavEntry::MainPage?TRUE:isVisible,baseFile,title,intro);
     }
 
     void endNavEntry()

@@ -224,8 +224,10 @@ class HtmlGenerator : public OutputGenerator
     void endDirDepGraph(const DotDirDeps &g);
     void writeGraphicalHierarchy(const DotGfxHierarchyTable &g);
 
-    void startTextBlock(bool) {}
-    void endTextBlock(bool) {}
+    void startTextBlock(bool) 
+    { t << "<div class=\"textblock\">"; }
+    void endTextBlock(bool) 
+    { t << "</div>"; }
     void lastIndexPage() {}
 
     void startMemberDocPrefixItem();

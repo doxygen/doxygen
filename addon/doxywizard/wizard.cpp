@@ -4,8 +4,10 @@
 
 #include <QtGui>
 
-// step1 options
+// options configurable via the wizard
 #define STR_PROJECT_NAME          QString::fromAscii("PROJECT_NAME")
+#define STR_PROJECT_LOGO          QString::fromAscii("PROJECT_LOGO")
+#define STR_PROJECT_BRIEF         QString::fromAscii("PROJECT_BRIEF")
 #define STR_INPUT                 QString::fromAscii("INPUT")
 #define STR_OUTPUT_DIRECTORY      QString::fromAscii("OUTPUT_DIRECTORY")
 #define STR_PROJECT_NUMBER        QString::fromAscii("PROJECT_NUMBER")
@@ -37,7 +39,9 @@
 #define STR_INCLUDED_BY_GRAPH     QString::fromAscii("INCLUDED_BY_GRAPH")
 #define STR_CALL_GRAPH            QString::fromAscii("CALL_GRAPH")
 #define STR_CALLER_GRAPH          QString::fromAscii("CALLER_GRAPH")
-
+#define STR_HTML_COLORSTYLE_HUE   QString::fromAscii("HTML_COLORSTYLE_HUE")
+#define STR_HTML_COLORSTYLE_SAT   QString::fromAscii("HTML_COLORSTYLE_SAT")
+#define STR_HTML_COLORSTYLE_GAMMA QString::fromAscii("HTML_COLORSTYLE_GAMMA")
 
 static bool g_optimizeMapping[6][6] = 
 {
@@ -82,6 +86,14 @@ static bool getBoolOption(
   return stringVariantToBool(option->value());
 } 
 
+static int getIntOption(
+    const QHash<QString,Input*>&model,const QString &name)
+{
+  Input *option = model[name];
+  Q_ASSERT(option!=0);
+  return option->value().toInt();
+} 
+
 static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
 {
@@ -103,6 +115,20 @@ static void updateBoolOption(
   }
 }
 
+static void updateIntOption(
+    const QHash<QString,Input*>&model,const QString &name,int iNew)
+{
+  Input *option = model[name];
+  Q_ASSERT(option!=0);
+  int iOld = option->value().toInt();
+  if (iOld!=iNew)
+  {
+    option->value()=QString::fromAscii("%1").arg(iNew);
+    option->update();
+  }
+}
+
+
 static void updateStringOption(
     const QHash<QString,Input*>&model,const QString &name,const QString &s)
 {
@@ -117,14 +143,14 @@ static void updateStringOption(
 
 //==========================================================================
 
-TuneColorDialog::TuneColorDialog(QWidget *parent) : QDialog(parent)
+TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QDialog(parent)
 {
    setWindowTitle(tr("Tune the color of the HTML output"));
    QGridLayout *layout = new QGridLayout(this);
    m_image = new QImage(QString::fromAscii(":/images/tunecolor.png"));
    m_imageLab = new QLabel;
-   m_imageLab->setPixmap(QPixmap::fromImage(*m_image));
-   layout->addWidget(new QLabel(tr("Example output: use the sliders to change")),0,0);
+   updateImage(hue,sat,gamma);
+   layout->addWidget(new QLabel(tr("Example output: use the sliders on the right to adjust the color")),0,0);
    layout->addWidget(m_imageLab,1,0);
    QHBoxLayout *buttonsLayout = new QHBoxLayout;
 
@@ -134,11 +160,282 @@ TuneColorDialog::TuneColorDialog(QWidget *parent) : QDialog(parent)
    QPushButton *cancelButton = new QPushButton(tr("Cancel"));
    connect(cancelButton,SIGNAL(clicked()),SLOT(reject()));
 
+   ColorPicker *huePicker = new ColorPicker(ColorPicker::Hue);
+   huePicker->setCol(hue,sat,gamma);
+   huePicker->setFixedWidth(20);
+   layout->addWidget(huePicker,1,1);
+   ColorPicker *satPicker = new ColorPicker(ColorPicker::Saturation);
+   satPicker->setCol(hue,sat,gamma);
+   satPicker->setFixedWidth(20);
+   layout->addWidget(satPicker,1,2);
+   ColorPicker *gamPicker = new ColorPicker(ColorPicker::Gamma);
+   gamPicker->setCol(hue,sat,gamma);
+   gamPicker->setFixedWidth(20);
+   layout->addWidget(gamPicker,1,3);
+
+   connect(huePicker,SIGNAL(newHsv(int,int,int)),satPicker,SLOT(setCol(int,int,int)));
+   connect(satPicker,SIGNAL(newHsv(int,int,int)),huePicker,SLOT(setCol(int,int,int)));
+   connect(huePicker,SIGNAL(newHsv(int,int,int)),gamPicker,SLOT(setCol(int,int,int)));
+   connect(satPicker,SIGNAL(newHsv(int,int,int)),gamPicker,SLOT(setCol(int,int,int)));
+   connect(gamPicker,SIGNAL(newHsv(int,int,int)),satPicker,SLOT(setCol(int,int,int)));
+   connect(gamPicker,SIGNAL(newHsv(int,int,int)),huePicker,SLOT(setCol(int,int,int)));
+   connect(huePicker,SIGNAL(newHsv(int,int,int)),this,SLOT(updateImage(int,int,int)));
+   connect(satPicker,SIGNAL(newHsv(int,int,int)),this,SLOT(updateImage(int,int,int)));
+   connect(gamPicker,SIGNAL(newHsv(int,int,int)),this,SLOT(updateImage(int,int,int)));
+
    buttonsLayout->addStretch();
    buttonsLayout->addWidget(okButton);
    buttonsLayout->addWidget(cancelButton);
-   layout->addLayout(buttonsLayout,5,0);
+   layout->addLayout(buttonsLayout,5,0,1,4);
+}
 
+void hsl2rgb(double h,double s,double l,
+             double *pRed,double *pGreen,double *pBlue)
+{
+  double v;
+  double r,g,b;
+
+  r = l;   // default to gray
+  g = l;
+  b = l;
+  v = (l <= 0.5) ? (l * (1.0 + s)) : (l + s - l * s);
+  if (v > 0)
+  {
+    double m;
+    double sv;
+    int sextant;
+    double fract, vsf, mid1, mid2;
+
+    m       = l + l - v;
+    sv      = (v - m ) / v;
+    h      *= 6.0;
+    sextant = (int)h;
+    fract   = h - sextant;
+    vsf     = v * sv * fract;
+    mid1    = m + vsf;
+    mid2    = v - vsf;
+    switch (sextant)
+    {
+      case 0:
+        r = v;
+        g = mid1;
+        b = m;
+        break;
+      case 1:
+        r = mid2;
+        g = v;
+        b = m;
+        break;
+      case 2:
+        r = m;
+        g = v;
+        b = mid1;
+        break;
+      case 3:
+        r = m;
+        g = mid2;
+        b = v;
+        break;
+      case 4:
+        r = mid1;
+        g = m;
+        b = v;
+        break;
+      case 5:
+        r = v;
+        g = m;
+        b = mid2;
+        break;
+    }
+  }
+  *pRed   = r;
+  *pGreen = g;
+  *pBlue  = b;
+}
+
+
+
+void TuneColorDialog::updateImage(int hue,int sat,int gam)
+{
+  QImage coloredImg(m_image->width(),m_image->height(),QImage::Format_RGB32);
+  uint *srcPixel = (uint *)m_image->scanLine(0);
+  uint *dstPixel = (uint *)coloredImg.scanLine(0);
+  uint nrPixels = coloredImg.width()*coloredImg.height();
+  for (uint i=0;i<nrPixels;i++,srcPixel++,dstPixel++)
+  {
+    QColor c = QColor::fromRgb(*srcPixel);
+    double r,g,b;
+    hsl2rgb(hue/359.0, sat/255.0, pow(c.green()/255.0,gam/100.0),&r,&g,&b);
+    *dstPixel = qRgb((int)(r*255.0),(int)(g*255.0),(int)(b*255.0));
+  }
+  m_imageLab->setPixmap(QPixmap::fromImage(coloredImg));
+  m_hue = hue;
+  m_sat = sat;
+  m_gam = gam;
+}
+
+int TuneColorDialog::getHue() const
+{
+  return m_hue;
+}
+
+int TuneColorDialog::getSaturation() const
+{
+  return m_sat;
+}
+
+int TuneColorDialog::getGamma() const
+{
+  return m_gam;
+}
+
+//==========================================================================
+
+ColorPicker::ColorPicker(Mode m)
+{
+  m_hue = 220;
+  m_gam = 100;
+  m_sat = 100;
+  m_mode = m;
+  m_pix = 0;
+}
+
+ColorPicker::~ColorPicker()
+{
+  delete m_pix;
+}
+
+void ColorPicker::paintEvent(QPaintEvent*)
+{
+  int w = width() - 5;
+
+  QRect r(0, foff, w, height() - 2*foff);
+  int wi = r.width() - 2;
+  int hi = r.height() - 2;
+  if (!m_pix || m_pix->height() != hi || m_pix->width() != wi) 
+  {
+    delete m_pix;
+    QImage img(wi, hi, QImage::Format_RGB32);
+    int y;
+    uint *pixel = (uint *) img.scanLine(0);
+    for (y = 0; y < hi; y++) 
+    {
+      const uint *end = pixel + wi;
+      int yh = y2hue(y+coff);
+      int ys = y2sat(y+coff);
+      int yg = y2gam(y+coff);
+      while (pixel < end) 
+      {
+        QColor c;
+        c.setHsv(yh, ys, (int)(255*pow(0.7,yg/100.0)));
+        *pixel = c.rgb();
+        ++pixel;
+      }
+    }
+    m_pix = new QPixmap(QPixmap::fromImage(img));
+  }
+  QPainter p(this);
+  p.drawPixmap(1, coff, *m_pix);
+  const QPalette &g = palette();
+  qDrawShadePanel(&p, r, g, true);
+  p.setPen(g.foreground().color());
+  p.setBrush(g.foreground());
+  QPolygon a;
+  int y = m_mode==Hue ?        hue2y(m_hue) : 
+          m_mode==Saturation ? sat2y(m_sat) :
+                               gam2y(m_gam);
+  a.setPoints(3, w, y, w+5, y+5, w+5, y-5);
+  p.eraseRect(w, 0, 5, height());
+  p.drawPolygon(a);
+}
+
+void ColorPicker::mouseMoveEvent(QMouseEvent *m)
+{
+  if      (m_mode==Hue)        setHue(y2hue(m->y())); 
+  else if (m_mode==Saturation) setSat(y2sat(m->y()));
+  else                         setGam(y2gam(m->y()));
+}
+
+void ColorPicker::mousePressEvent(QMouseEvent *m)
+{
+  if      (m_mode==Hue)        setHue(y2hue(m->y())); 
+  else if (m_mode==Saturation) setSat(y2sat(m->y()));
+  else                         setGam(y2gam(m->y()));
+}
+
+void ColorPicker::setHue(int h)
+{
+  if (h==m_hue) return;
+  m_hue = qMax(0,qMin(h,359));
+  delete m_pix; m_pix=0;
+  repaint();
+  emit newHsv(m_hue,m_sat,m_gam);
+}
+
+void ColorPicker::setSat(int s)
+{
+  if (s==m_sat) return;
+  m_sat = qMax(0,qMin(s,255));
+  delete m_pix; m_pix=0;
+  repaint();
+  emit newHsv(m_hue,m_sat,m_gam);
+}
+
+void ColorPicker::setGam(int g)
+{
+  if (g==m_gam) return;
+  m_gam = qMax(40,qMin(g,240));
+  delete m_pix; m_pix=0;
+  repaint();
+  emit newHsv(m_hue,m_sat,m_gam);
+}
+
+void ColorPicker::setCol(int h, int s, int g)
+{
+  if (m_hue!=h || m_sat!=s || m_gam!=g)
+  {
+    m_hue = h;
+    m_sat = s;
+    m_gam = g;
+    delete m_pix; m_pix=0;
+    repaint();
+  }
+}
+
+int ColorPicker::y2hue(int y)
+{
+  int d = height() - 2*coff - 1;
+  return m_mode==Hue ? (y - coff)*359/d : m_hue;
+}
+
+int ColorPicker::hue2y(int v)
+{
+  int d = height() - 2*coff - 1;
+  return coff + v*d/359;
+}
+
+int ColorPicker::y2sat(int y)
+{
+  int d = height() - 2*coff - 1;
+  return m_mode==Saturation ? 255 - (y - coff)*255/d : m_sat;
+}
+
+int ColorPicker::sat2y(int v)
+{
+  int d = height() - 2*coff - 1;
+  return coff + (255-v)*d/255;
+}
+
+int ColorPicker::y2gam(int y)
+{
+  int d = height() - 2*coff - 1;
+  return m_mode==Gamma ? 240 - (y - coff)*200/d : m_gam;
+}
+
+int ColorPicker::gam2y(int g)
+{
+  int d = height() - 2*coff - 1;
+  return coff + (240-g)*d/200;
 }
 
 //==========================================================================
@@ -153,32 +450,50 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
               "about the project you are documenting"));
   layout->addWidget(l);
   QWidget *w      = new QWidget( this );
-  QHBoxLayout *bl = new QHBoxLayout(w);
-  bl->setSpacing(10);
+  QGridLayout *grid = new QGridLayout(w);
+  grid->setSpacing(10);
 
-  QWidget *col1 = new QWidget;
-  QVBoxLayout *col1Layout = new QVBoxLayout(col1);
-  col1Layout->setSpacing(8);
+  // project name
   QLabel *projName = new QLabel(this);
   projName->setText(tr("Project name:"));
   projName->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  // project brief
+  QLabel *projBrief = new QLabel(this);
+  projBrief->setText(tr("Project synopsis:"));
+  projBrief->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  // project version
   QLabel *projVersion = new QLabel(this);
   projVersion->setText(tr("Project version or id:"));
   projVersion->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-  col1Layout->addWidget(projName);
-  col1Layout->addWidget(projVersion);
+  // project icon
+  QLabel *projLogo = new QLabel(this);
+  projLogo->setText(tr("Project logo:"));
+  projLogo->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
-  QWidget *col2 = new QWidget;
-  QVBoxLayout *col2Layout = new QVBoxLayout(col2);
-  col2Layout->setSpacing(8);
-  m_projName = new QLineEdit;
+  grid->addWidget(projName,0,0);
+  grid->addWidget(projBrief,1,0);
+  grid->addWidget(projVersion,2,0);
+  grid->addWidget(projLogo,3,0);
+
+  m_projName   = new QLineEdit;
+  m_projBrief  = new QLineEdit;
   m_projNumber = new QLineEdit;
-  col2Layout->addWidget(m_projName);
-  col2Layout->addWidget(m_projNumber);
+  QPushButton *projIconSel = new QPushButton(this);
+  projIconSel->setText(tr("Select..."));
+  QPixmap pm(QSize(120,55));
+  pm.fill();
+  m_projIconLab = new QLabel;
+  m_projIconLab->setPixmap(pm);
 
-  bl->addWidget(col1);
-  bl->addWidget(col2);
-  w->setLayout(bl);
+  grid->addWidget(m_projName,0,1,1,2);
+  grid->addWidget(m_projBrief,1,1,1,2);
+  grid->addWidget(m_projNumber,2,1,1,2);
+  grid->addWidget(projIconSel,3,1);
+  grid->addWidget(m_projIconLab,3,2);
+
+  grid->setColumnStretch(2,1);
+
+  w->setLayout(grid);
 
   layout->addWidget(w);
 
@@ -232,15 +547,31 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   layout->addStretch(1);
   setLayout(layout);
 
+  connect(projIconSel,SIGNAL(clicked()),
+          this,SLOT(selectProjectIcon()));
   connect(m_srcSelectDir,SIGNAL(clicked()),
           this,SLOT(selectSourceDir()));
   connect(m_dstSelectDir,SIGNAL(clicked()),
           this,SLOT(selectDestinationDir()));
   connect(m_projName,SIGNAL(textChanged(const QString &)),SLOT(setProjectName(const QString &)));
+  connect(m_projBrief,SIGNAL(textChanged(const QString &)),SLOT(setProjectBrief(const QString &)));
   connect(m_projNumber,SIGNAL(textChanged(const QString &)),SLOT(setProjectNumber(const QString &)));
   connect(m_sourceDir,SIGNAL(textChanged(const QString &)),SLOT(setSourceDir(const QString &)));
   connect(m_recursive,SIGNAL(stateChanged(int)),SLOT(setRecursiveScan(int)));
   connect(m_destDir,SIGNAL(textChanged(const QString &)),SLOT(setDestinationDir(const QString &)));
+}
+
+void Step1::selectProjectIcon()
+{
+  QString path = QFileInfo(MainWindow::instance().configFileName()).path();
+  QString iconName = QFileDialog::getOpenFileName(this,
+                                    tr("Select project icon/image"),path);
+  QPixmap pm(iconName);
+  if (!pm.isNull())
+  {
+    m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+    updateStringOption(m_modelData,STR_PROJECT_LOGO,iconName);
+  }
 }
 
 void Step1::selectSourceDir()
@@ -282,6 +613,11 @@ void Step1::setProjectName(const QString &name)
   updateStringOption(m_modelData,STR_PROJECT_NAME,name);
 }
 
+void Step1::setProjectBrief(const QString &desc)
+{
+  updateStringOption(m_modelData,STR_PROJECT_BRIEF,desc);
+}
+
 void Step1::setProjectNumber(const QString &num)
 {
   updateStringOption(m_modelData,STR_PROJECT_NUMBER,num);
@@ -321,7 +657,23 @@ void Step1::init()
 {
   Input *option;
   m_projName->setText(getStringOption(m_modelData,STR_PROJECT_NAME));
+  m_projBrief->setText(getStringOption(m_modelData,STR_PROJECT_BRIEF));
   m_projNumber->setText(getStringOption(m_modelData,STR_PROJECT_NUMBER));
+  QString iconName = getStringOption(m_modelData,STR_PROJECT_LOGO);
+  if (!iconName.isEmpty())
+  {
+    QPixmap pm(iconName);
+    if (!pm.isNull())
+    {
+      m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+    }
+  }
+  else
+  {
+    QPixmap pm(QSize(120,55));
+    pm.fill();
+    m_projIconLab->setPixmap(pm);
+  }
   option = m_modelData[STR_INPUT];
   if (option->value().toStringList().count()>0)
   {
@@ -495,7 +847,7 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
     m_htmlOptionsGroup->addButton(r, 0);
     vbox = new QVBoxLayout;
     vbox->addWidget(r);
-    r = new QRadioButton(tr("with frames and a navigation tree"));
+    r = new QRadioButton(tr("with navigation panel"));
     m_htmlOptionsGroup->addButton(r, 1);
     // GENERATE_TREEVIEW
     vbox->addWidget(r);
@@ -567,8 +919,16 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
 
 void Step3::tuneColorDialog()
 {
-  TuneColorDialog tuneColor(this);
-  tuneColor.exec();
+  int hue = getIntOption(m_modelData,STR_HTML_COLORSTYLE_HUE);
+  int sat = getIntOption(m_modelData,STR_HTML_COLORSTYLE_SAT);
+  int gam = getIntOption(m_modelData,STR_HTML_COLORSTYLE_GAMMA);
+  TuneColorDialog tuneColor(hue,sat,gam,this);
+  if (tuneColor.exec()==QDialog::Accepted)
+  {
+    updateIntOption(m_modelData,STR_HTML_COLORSTYLE_HUE,tuneColor.getHue());
+    updateIntOption(m_modelData,STR_HTML_COLORSTYLE_SAT,tuneColor.getSaturation());
+    updateIntOption(m_modelData,STR_HTML_COLORSTYLE_GAMMA,tuneColor.getGamma());
+  }
 }
 
 void Step3::setHtmlEnabled(bool b)

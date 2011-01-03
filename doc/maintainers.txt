@@ -45,6 +45,7 @@ TranslatorCzech
 Petr Přikryl: prikrylp at skil dot cz
 
 TranslatorDanish
+Poul-Erik Hansen: pouhan at gnotometrics dot dk
 Erik Søe Sørensen: eriksoe+doxygen at daimi dot au dot dk
 
 TranslatorDutch 

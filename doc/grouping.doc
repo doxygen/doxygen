@@ -58,9 +58,12 @@ but when the group has been defined already, then it silently merges the
 existing documentation with the new one.
 The title of the group is optional for this command, so you can use
 \verbatim
-/** \addtogroup <label> */
-/*\@{*/
-/*\@}*/
+/** \addtogroup <label> 
+ *  @{
+ */
+...
+
+/** @}*/
 \endverbatim
 to add additional members to a group that is defined in more detail elsewhere.
 
@@ -91,27 +94,27 @@ extern int VarInA;
 
 /**
  * \defgroup IntVariables Global integer variables
+ * @{
  */
-/*@{*/
 
 /** an integer variable */
 extern int IntegerVariable;
 
-/*@}*/
+/**@}*/
 
 ....
 
 /**
  * \defgroup Variables Global variables
  */
-/*@{*/
+/**@{*/
 
 /** a variable in group A */
 int VarInA;
 
 int IntegerVariable;
 
-/*@}*/
+/**@}*/
 \endverbatim
 
 The \ref cmdref "\\ref" command can be used to refer to a group.
@@ -151,15 +154,15 @@ types belong to the same (semantic) group.
 A member group is defined by 
 a 
 \verbatim
-//@{ 
+///@{ 
   ...
-//@}
+///@}
 \endverbatim 
 block or a 
 \verbatim
-/*@{*/ 
+/**@{*/ 
   ... 
-/*@}*/ 
+/**@}*/ 
 \endverbatim 
 block if you prefer C style 
 comments. Note that the members of the group should be 

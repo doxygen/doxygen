@@ -703,7 +703,6 @@ int countClassHierarchy()
 
 void writeHierarchicalIndex(OutputList &ol)
 {
-  bool vhdlOpt=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
@@ -711,11 +710,6 @@ void writeHierarchicalIndex(OutputList &ol)
   QCString title = lne->title();
   startFile(ol,"hierarchy",0, title, HLI_Hierarchy);
   startTitle(ol,0);
-  if (vhdlOpt) title = VhdlDocGen::trDesignUnitHierarchy();
-  //if (!Config_getString("PROJECT_NAME").isEmpty()) 
-  //{
-  //  title.prepend(Config_getString("PROJECT_NAME")+" ");
-  //}
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startContents();
@@ -733,7 +727,7 @@ void writeHierarchicalIndex(OutputList &ol)
     ol.enable(OutputGenerator::Latex);
     ol.enable(OutputGenerator::RTF);
   }
-  ol.parseText(theTranslator->trClassHierarchyDescription());
+  ol.parseText(lne->intro());
   ol.endTextBlock();
 
   FTVHelp* ftv = 0;
@@ -847,7 +841,7 @@ void writeFileIndex(OutputList &ol)
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"files",0); 
   Doxygen::indexList.incContentsDepth();
-  ol.parseText(theTranslator->trFileListDescription(Config_getBool("EXTRACT_ALL")));
+  ol.parseText(lne->intro());
   ol.endTextBlock();
 
   OutputNameDict outputNameDict(1009);
@@ -1001,7 +995,6 @@ int countNamespaces()
 
 void writeNamespaceIndex(OutputList &ol)
 {
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (documentedNamespaces==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
@@ -1019,20 +1012,7 @@ void writeNamespaceIndex(OutputList &ol)
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"namespaces",0); 
   Doxygen::indexList.incContentsDepth();
-  //ol.newParagraph();
-  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-  {
-    ol.parseText(theTranslator->trPackageListDescription());
-  }
-  else if (fortranOpt)
-  {
-    ol.parseText(theTranslator->trModulesListDescription(Config_getBool("EXTRACT_ALL")));
-  }
-  else
-  {
-    ol.parseText(theTranslator->trNamespaceListDescription(Config_getBool("EXTRACT_ALL")));
-  }
-  //ol.newParagraph();
+  ol.parseText(lne->intro());
   ol.endTextBlock();
 
   bool first=TRUE;
@@ -1475,8 +1455,6 @@ void writeAlphabeticalIndex(OutputList &ol)
 
 void writeAnnotatedIndex(OutputList &ol)
 {
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   if (annotatedClasses==0) return;
   
   ol.pushGeneratorState();
@@ -1496,10 +1474,7 @@ void writeAnnotatedIndex(OutputList &ol)
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"annotated",0); 
   Doxygen::indexList.incContentsDepth();
-  QCString desc = fortranOpt ? theTranslator->trCompoundListDescriptionFortran() :
-                  vhdlOpt    ? VhdlDocGen::trDesignUnitListDescription()             :
-                               theTranslator->trCompoundListDescription()        ;
-  ol.parseText(desc);
+  ol.parseText(lne->intro());
   ol.endTextBlock();
   writeAnnotatedClassList(ol);
   Doxygen::indexList.decContentsDepth();
@@ -1926,8 +1901,6 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
 {
   if (documentedClassMembers[hl]==0) return;
   
-  static bool fortranOpt       = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  //static bool vhdlOpt          = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
@@ -2007,9 +1980,9 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
 
       if (hl==CMHL_All)
       {
-        static bool extractAll = Config_getBool("EXTRACT_ALL");
-        ol.parseText(fortranOpt ?  theTranslator->trCompoundMembersDescriptionFortran(extractAll) : 
-                                   theTranslator->trCompoundMembersDescription(extractAll));
+        ol.startTextBlock();
+        ol.parseText(lne->intro());
+        ol.endTextBlock();
       }
       else
       {
@@ -2160,7 +2133,9 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
 
       if (hl==FMHL_All)
       {
-        ol.parseText(theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
+        ol.startTextBlock();
+        ol.parseText(lne->intro());
+        ol.endTextBlock();
       }
       else
       {
@@ -2234,7 +2209,6 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   if (documentedNamespaceMembers[hl]==0) return;
 
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  static bool fortranOpt       = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
   bool multiPageIndex=FALSE;
@@ -2309,7 +2283,9 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
       if (hl==NMHL_All)
       {
-        ol.parseText(fortranOpt?theTranslator->trModulesMemberDescription(Config_getBool("EXTRACT_ALL")):theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
+        ol.startTextBlock();
+        ol.parseText(lne->intro());
+        ol.endTextBlock();
       }
       else
       {
@@ -3013,18 +2989,13 @@ void writeExampleIndex(OutputList &ol)
   QCString title = lne->title();
   startFile(ol,"examples",0,title,HLI_Examples);
   startTitle(ol,0);
-  //if (!Config_getString("PROJECT_NAME").isEmpty()) 
-  //{
-  //  title.prepend(Config_getString("PROJECT_NAME")+" ");
-  //}
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startContents();
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"examples",0); 
   Doxygen::indexList.incContentsDepth();
-  ol.parseText(theTranslator->trExamplesDescription());
-  //ol.newParagraph();
+  ol.parseText(lne->intro());
   ol.endTextBlock();
   ol.startItemList();
   PageSDict::Iterator pdi(*Doxygen::exampleSDict);
@@ -3279,7 +3250,7 @@ void writePageIndex(OutputList &ol)
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"pages",0); 
   Doxygen::indexList.incContentsDepth();
-  ol.parseText(theTranslator->trRelatedPagesDescription());
+  ol.parseText(lne->intro());
   ol.endTextBlock();
   startIndexHierarchy(ol,0);
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
@@ -3752,7 +3723,7 @@ void writeGroupIndex(OutputList &ol)
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"modules",0); 
   Doxygen::indexList.incContentsDepth();
-  ol.parseText(theTranslator->trModulesDescription());
+  ol.parseText(lne->intro());
   ol.endTextBlock();
 
   FTVHelp* ftv = 0;
@@ -3801,7 +3772,7 @@ void writeDirIndex(OutputList &ol)
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"dirs",0); 
   Doxygen::indexList.incContentsDepth();
-  ol.parseText(theTranslator->trDirDescription());
+  ol.parseText(lne->intro());
   ol.endTextBlock();
 
   FTVHelp* ftv = 0;
@@ -3965,9 +3936,11 @@ void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     Doxygen::insideMainPage=TRUE;
+    ol.startTextBlock();
     ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,
                 Doxygen::mainPage->documentation(),TRUE,FALSE
                 /*,Doxygen::mainPage->sectionDict*/);
+    ol.endTextBlock();
 
     if (!Config_getString("GENERATE_TAGFILE").isEmpty())
     {

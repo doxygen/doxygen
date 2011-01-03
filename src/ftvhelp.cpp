@@ -43,8 +43,14 @@ static const char resize_script[]=
 #include "resize_js.h"
 ;
 
-static const char jquery_script[]=
+static const char jquery_script1[]=
 #include "jquery_js.h"
+;
+static const char jquery_script2[]=
+#include "sizzle_js.h"
+;
+static const char jquery_script3[]=
+#include "jquery_ui_js.h"
 ;
 
 static const char navtree_css[]=
@@ -1088,7 +1094,7 @@ void FTVHelp::generateTreeViewScripts()
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
-      t << jquery_script;
+      t << jquery_script1 << jquery_script2 << jquery_script3;
     }
   }
   // generate navtree.css

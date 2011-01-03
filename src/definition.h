@@ -258,18 +258,18 @@ class Definition : public DefinitionIntf, public LockableObj
     void setName(const char *name);
 
     /*! Sets the documentation of this definition to \a d. */
-    void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
+    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    void setBriefDescription(const char *b,const char *briefFile,int briefLine);
+    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
 
     /*! Set the documentation that was found inside the body of an item.
      *  If there was already some documentation set, the new documentation
      *  will be appended.
      */
-    void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
+    virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
 
     /*! Sets the tag file id via which this definition was imported. */
     void setReference(const char *r);

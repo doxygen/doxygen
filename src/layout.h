@@ -123,8 +123,9 @@ struct LayoutNavEntry
       Dirs, 
       Examples
     };
-    LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf, const QCString &tl,bool prepend=FALSE) 
-      : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl) 
+    LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf, 
+                   const QCString &tl,const QCString &intro,bool prepend=FALSE) 
+      : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro)
     { m_children.setAutoDelete(TRUE); 
       if (parent) { if (prepend) parent->prependChild(this); else parent->addChild(this); }
     }
@@ -132,6 +133,7 @@ struct LayoutNavEntry
     Kind kind() const                { return m_kind; }
     QCString baseFile() const        { return m_baseFile; }
     QCString title() const           { return m_title; }
+    QCString intro() const           { return m_intro; }
     bool visible()                   { return m_visible; }
     void clear()                     { m_children.clear(); }
     void addChild(LayoutNavEntry *e) { m_children.append(e); }
@@ -146,6 +148,7 @@ struct LayoutNavEntry
     bool m_visible;
     QCString m_baseFile;
     QCString m_title;
+    QCString m_intro;
     QList<LayoutNavEntry> m_children;
     friend class LayoutDocManager;
 };

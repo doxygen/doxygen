@@ -330,6 +330,10 @@ class MemberDef : public Definition
     void copyArgumentNames(MemberDef *bmd);
 
     void setCategory(ClassDef *);
+
+    void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
+    void setBriefDescription(const char *b,const char *briefFile,int briefLine);
+    void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine);
     
     //-----------------------------------------------------------------------------------
     // --- actions ----
