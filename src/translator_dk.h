@@ -15,6 +15,9 @@
  * input used in their production; they are not affected by this license.
  *
  */
+ /*! @file
+  * @brief ´Danish translation
+  */
 
 /*
  * Danish translation by
@@ -74,12 +77,18 @@
 
 	(Konstruktivt) input modtages med glæde!
 	-- Erik Søe Sørensen <eriksoe@daimi.au.dk>
+
+
+	links -> (links.)
+	-- Poul-Erik Hansen
+
  */
 
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-class TranslatorDanish : public TranslatorAdapter_1_5_4
+// class TranslatorDanish : public TranslatorAdapter_1_5_4
+class TranslatorDanish : public Translator
 {
   public:
 
@@ -566,7 +575,7 @@ class TranslatorDanish : public TranslatorAdapter_1_5_4
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return "Exceptions"; }
+    { return "Undtagelser"; }    // "Exceptions"
 
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
@@ -621,11 +630,11 @@ class TranslatorDanish : public TranslatorAdapter_1_5_4
         case ClassDef::Struct:     result+=" Datastruktur-"; break;
         case ClassDef::Union:      result+=" Union-"; break;
         case ClassDef::Interface:  result+=" Grænseflade-"; break;
-        case ClassDef::Protocol:   result+=" Protocol-"; break; // translate me!
-        case ClassDef::Category:   result+=" Category-"; break; // translate me!
-        case ClassDef::Exception:  result+=" Exception-"; break;
+        case ClassDef::Protocol:   result+=" Protokol-"; break;
+        case ClassDef::Category:   result+=" Kategori-"; break; // " Category-"
+        case ClassDef::Exception:  result+=" Undtagelse-"; break;   //  " Exception"
       }
-      if (isTemplate) result+="template-";
+      if (isTemplate) result+="skabelon-";  // "template-"
       result+="reference";
       return result;
     }
@@ -778,9 +787,9 @@ class TranslatorDanish : public TranslatorAdapter_1_5_4
         case ClassDef::Struct:     result+="datastruktur"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="grænseflade"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
-        case ClassDef::Exception:  result+="exception"; break;
+        case ClassDef::Protocol:   result+="protokol"; break; // "protocol"
+        case ClassDef::Category:   result+="kategori"; break; // "category"
+        case ClassDef::Exception:  result+="undtagelse"; break;  // "exception"
       }
       result+=" blev genereret ud fra fil";
       if (single) result+="en:"; else result+="erne:";
@@ -1485,6 +1494,13 @@ class TranslatorDanish : public TranslatorAdapter_1_5_4
       return "Her er kalder-grafen for denne funktion:";
     }
 
+    // None translated yet PEH 2010-11-27
+    // Subroutine
+
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Medlem Funktion/Subroutine Dokumentation"; }  // "Member Function/Subroutine Documentation"
+
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
@@ -1493,6 +1509,293 @@ class TranslatorDanish : public TranslatorAdapter_1_5_4
       { return "Enumerator-dokumentation"; } //TODO?
 */
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
+    virtual QCString trCompoundListFortran()
+    { return "Data Type Liste"; }       // "Data Types List"
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Data felter"; }   // "Data Fields"
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Her er de datatyper med kort beskrivelse:"; }  // "Here are the data types with brief descriptions:"
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Her er en liste af alle "; // "Here is a list of all "
+      if (!extractAll)
+      {
+        result+="dokumenteret ";  // "documented "
+      }
+      result+="datatype medlemmer"; //  "data types members"
+      result+=" med links til ";    // " with links to "
+      if (!extractAll)
+      {
+         result+="data strukturer dokumenteret for hver medlem";    // "the data structure documentation for each member"
+      }
+      else
+      {
+         result+="de datatyper som de tilhører:";  // "the data types they belong to:"
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Datatype indeks"; }   // "Data Type Index"
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Datatype dokumentation"; }   // "Data Type Documentation"
+
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Funktioner/Subroutiner"; } // "Functions/Subroutines"
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Funktion/Subroutine dokumentation"; } // "Function/Subroutine Documentation"
+
+    /*! This is used in the documentation of a file/namespace/group before
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Datatyper"; }    // "Data Types"
+
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Modulliste"; }  // "Modules List"
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Her er en liste over alle ";     // "Here is a list of all "
+      if (!extractAll) result+="dokumenteret ";       // "documented "
+      result+="moduler med kort beskrivelse:";   // "modules with brief descriptions:"
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Modul"; break;     // " Module"
+        case ClassDef::Struct:     result+=" Type"; break;      // " Type"
+        case ClassDef::Union:      result+=" Union"; break;     // " Union"
+        case ClassDef::Interface:  result+=" Grænseflade"; break; // " Interface"
+        case ClassDef::Protocol:   result+=" Protocol"; break;      // " Protocol"
+        case ClassDef::Category:   result+=" Kategori"; break;      // " Category"
+        case ClassDef::Exception:  result+=" Undtagelse"; break; // " Exception"
+      }
+      if (isTemplate) result+=" Template";
+      result+=" Reference";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Modulreference";  // " Module Reference"
+      return result;
+    }
+
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Modulmedlemmer"; }    // "Module Members"
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    {
+      QCString result="Her er en list over alle ";     // "Here is a list of all "
+      if (!extractAll) result+="Dokumentet ";       // "documented "
+      result+="modulmemlemmer med link til ";      // "module members with links to "
+      if (extractAll)
+      {
+        result+="dokumentation for hvert model medlem:";    // "the module documentation for each member:"
+      }
+      else
+      {
+        result+="moduler de tilhøre:";  // "the modules they belong to:"
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Modulindekser"; }     // "Modules Index"
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Modul" : "modul"));   // "Module" : "module"));
+      if (!singular)  result+="er";  // "s";
+      return result;
+    }
+
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"The documentation for this ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="modul"; break;        // "module"
+        case ClassDef::Struct:     result+="type"; break;         // "type"
+        case ClassDef::Union:      result+="union"; break;        // "union"
+        case ClassDef::Interface:  result+="grænseflade"; break;  // "interface"
+        case ClassDef::Protocol:   result+="protokol"; break;     // "protocol"
+        case ClassDef::Category:   result+="kategori"; break;     // "category"
+        case ClassDef::Exception:  result+="undtagelse"; break;   // "exception"
+      }
+      result+=" var lavet udfra følgende file";                   // " was generated from the following file"
+      if (single) result+=":"; else result+="r:";                 // ":" / "s:"
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Type" : "type"));   // "Type" : "type"
+      if (!singular)  result+="r";                          // "s"
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Subprogram" : "subprogram"));   // "Subprogram" : "subprogram"
+      if (!singular)  result+="er";                                     // "s"
+      return result;
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "typebegrænsninger";        // "Type Constraints"
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" Relation";        // " Relation"
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Indlæser...";          // "Loading..."
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Globalt Namespace";    // "Global Namespace"
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Søger...";    // "Searching..."
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Ingen fund";      // "No Matches"
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Afhængighedsgraf for "+name;  // "Directory dependency graph for "
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"File i "+name;     // "File in "
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Inkluderer file i "+name;    // "Includes file in "
+    }
+
+    /** Compiles a date string.
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Man","Tir","Ons","Tor","Fre","Lør","Søn" }; // { "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
+      static const char *months[] = { "Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };    //  { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
+      QCString sdate;
+      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
 
 
 /*---------- For internal use: ----------------------------------------*/

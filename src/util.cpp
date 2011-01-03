@@ -421,13 +421,18 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
   // step 3: get the member's type
   if (md)
   {
-    //printf(">>resolveTypeDef: Found typedef name `%s' in scope `%s' value=`%s'\n",
-    //    qualifiedName.data(),context->name().data(),md->typeString()
+    //printf(">>resolveTypeDef: Found typedef name `%s' in scope `%s' value=`%s' args='%s'\n",
+    //    qualifiedName.data(),context->name().data(),md->typeString(),md->argsString()
     //    );
     result=md->typeString();
+    QString args = md->argsString();
     if (result.find("*)")!=-1) // typedef of a function/member pointer
     {
       result+=md->argsString();
+    }
+    if (args.find('[')!=-1)
+    {
+      result+=args;
     }
     if (typedefContext) *typedefContext=md->getOuterScope();
   }
@@ -2851,7 +2856,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       if (srcPos==0 || dstPos==0) 
       {
         NOMATCH
-          return FALSE;
+        return FALSE;
       }
       if (isId(srcAType.at(srcPos)) && isId(dstAType.at(dstPos)))
       {
@@ -2860,7 +2865,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         if (!srcAName.isEmpty() || !dstAName.isEmpty()) 
         {
           NOMATCH
-            return FALSE;
+          return FALSE;
         }
         // types only
         while (srcPos<srcATypeLen && isId(srcAType.at(srcPos))) srcPos++;
@@ -2871,7 +2876,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
            ) 
         {
           NOMATCH
-            return FALSE;
+          return FALSE;
         }
       }
       else
@@ -2888,7 +2893,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         if (srcPos!=srcATypeLen || dstPos!=dstATypeLen) 
         { 
           NOMATCH
-            return FALSE; 
+          return FALSE; 
         }
       }
     }
@@ -2899,13 +2904,13 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         if (!dstAName.isEmpty()) // dst has its name separated from its type
         {
           NOMATCH
-            return FALSE;
+          return FALSE;
         }
         while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
         if (dstPos!=dstAType.length()) 
         {
           NOMATCH
-            return FALSE; // more than a difference in name -> no match
+          return FALSE; // more than a difference in name -> no match
         }
       }
       else  // maybe dst has a name while src has not
@@ -2915,7 +2920,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         if (dstPos!=dstAType.length() || !srcAName.isEmpty()) 
         {
           NOMATCH
-            return FALSE; // nope not a name -> no match
+          return FALSE; // nope not a name -> no match
         }
       }
     }
@@ -2926,13 +2931,13 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         if (!srcAName.isEmpty()) // src has its name separated from its type
         {
           NOMATCH
-            return FALSE;
+          return FALSE;
         }
         while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
         if (srcPos!=srcAType.length()) 
         {
           NOMATCH
-            return FALSE; // more than a difference in name -> no match
+          return FALSE; // more than a difference in name -> no match
         }
       }
       else // maybe src has a name while dst has not
@@ -2942,7 +2947,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         if (srcPos!=srcAType.length() || !dstAName.isEmpty()) 
         {
           NOMATCH
-            return FALSE; // nope not a name -> no match
+          return FALSE; // nope not a name -> no match
         }
       }
     }
@@ -3335,6 +3340,10 @@ static QCString extractCanonicalArgType(Definition *d,FileDef *fs,const Argument
     if (!type.isEmpty()) type+=" ";
     type+=name;
   }
+  if (!arg->array.isEmpty())
+  {
+    type+=arg->array;
+  }
 
   return extractCanonicalType(d,fs,type);
 }
@@ -3350,11 +3359,11 @@ static bool matchArgument2(
   //    dstScope ? dstScope->name().data() : "",
   //    dstA->type.data(),dstA->name.data(),dstA->canType.data());
 
-  if (srcA->array!=dstA->array) // nomatch for char[] against char
-  {
-    NOMATCH
-    return FALSE;
-  }
+  //if (srcA->array!=dstA->array) // nomatch for char[] against char
+  //{
+  //  NOMATCH
+  //  return FALSE;
+  //}
   QCString sSrcName = " "+srcA->name;
   QCString sDstName = " "+dstA->name;
   QCString srcType  = srcA->type;

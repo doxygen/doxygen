@@ -132,6 +132,12 @@ resize_js.h: resize.js
 jquery_js.h: jquery.js
 	cat jquery.js | $(TO_C_CMD) >jquery_js.h
 
+jquery_ui_js.h: jquery_ui.js
+	cat jquery_ui.js | $(TO_C_CMD) >jquery_ui_js.h
+
+sizzle_js.h: sizzle.js
+	cat sizzle.js | $(TO_C_CMD) >sizzle_js.h
+
 navtree_css.h: navtree.css
 	cat navtree.css | $(TO_C_CMD) >navtree_css.h
 

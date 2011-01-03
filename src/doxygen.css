@@ -710,6 +710,12 @@ div.headertitle
 {
 	padding: 5px 5px 5px 10px;
 }
+
+dl
+{
+        padding: 0 0 0 10px;
+}
+
 dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug
 {
         border-left:4px solid;

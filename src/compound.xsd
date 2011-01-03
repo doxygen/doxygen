@@ -59,7 +59,7 @@
     <xsd:attribute name="ambiguityscope" type="xsd:string" />
   </xsd:complexType>
 
-  <xsd:complexType name="compoundRefType" mixed="true">
+  <xsd:complexType name="compoundRefType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
         <xsd:attribute name="refid" type="xsd:string" use="optional" />
@@ -69,7 +69,7 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
-  <xsd:complexType name="reimplementType" mixed="true">
+  <xsd:complexType name="reimplementType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
         <xsd:attribute name="refid" type="xsd:string" />
@@ -77,7 +77,7 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
-  <xsd:complexType name="incType" mixed="true">
+  <xsd:complexType name="incType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
         <xsd:attribute name="refid" type="xsd:string" />
@@ -86,7 +86,7 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
-  <xsd:complexType name="refType" mixed="true">
+  <xsd:complexType name="refType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
         <xsd:attribute name="refid" type="xsd:string" />
@@ -95,7 +95,7 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
-  <xsd:complexType name="refTextType" mixed="true">
+  <xsd:complexType name="refTextType">
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
        <xsd:attribute name="refid" type="xsd:string" />
@@ -579,6 +579,12 @@
     <xsd:sequence>
       <xsd:element name="parametertype" type="docParamType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="parametername" type="docParamName" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="docParamType" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="ref" type="refTextType" minOccurs="0" maxOccurs="1" />
     </xsd:sequence>
   </xsd:complexType>
 

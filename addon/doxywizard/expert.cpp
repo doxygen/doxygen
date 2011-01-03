@@ -33,6 +33,7 @@ Expert::Expert()
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
   m_topicStack = new QStackedWidget;
+  m_inShowHelp = FALSE;
 
   QFile file(SA(":/config.xml"));
   QString err;
@@ -435,13 +436,18 @@ bool Expert::restoreInnerState ( const QByteArray & state )
 
 void Expert::showHelp(Input *option)
 {
-  m_helper->setText(
-           QString::fromAscii("<qt><b>")+option->id()+
-           QString::fromAscii("</b><br>")+
-           option->docs().
-           replace(QChar::fromAscii('\n'),QChar::fromAscii(' '))+
-           QString::fromAscii("<qt>")
-          );
+  if (!m_inShowHelp)
+  {
+    m_inShowHelp = TRUE;
+    m_helper->setText(
+        QString::fromAscii("<qt><b>")+option->id()+
+        QString::fromAscii("</b><br>")+
+        option->docs().
+        replace(QChar::fromAscii('\n'),QChar::fromAscii(' '))+
+        QString::fromAscii("<qt>")
+        );
+    m_inShowHelp = FALSE;
+  }
 }
 
 void Expert::nextTopic()

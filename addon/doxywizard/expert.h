@@ -59,6 +59,7 @@ class Expert : public QSplitter
     QPushButton             *m_next;
     QPushButton             *m_prev;
     QDomElement              m_rootElement;
+    bool                     m_inShowHelp;
 };
 
 #endif

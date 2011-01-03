@@ -923,6 +923,27 @@ void MemberDef::_computeLinkableInProject()
   return; // linkable!
 }
 
+void MemberDef::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace)
+{
+  makeResident();
+  Definition::setDocumentation(d,docFile,docLine,stripWhiteSpace);
+  m_isLinkableCached = 0;
+}
+
+void MemberDef::setBriefDescription(const char *b,const char *briefFile,int briefLine)
+{
+  makeResident();
+  Definition::setBriefDescription(b,briefFile,briefLine);
+  m_isLinkableCached = 0;
+}
+
+void MemberDef::setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine)
+{
+  makeResident();
+  Definition::setInbodyDocumentation(d,inbodyFile,inbodyLine);
+  m_isLinkableCached = 0;
+}
+
 bool MemberDef::isLinkableInProject() const
 {
   if (m_isLinkableCached==0)
@@ -2095,7 +2116,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       MemberDef *fmd=fmdl->first();
       while (fmd)
       {
-        //printf("Enum: isLinkable()=%d\n",fmd->isLinkable());
+        //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
         if (fmd->isLinkable())
         {
           if (first)

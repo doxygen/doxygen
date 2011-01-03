@@ -78,9 +78,9 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Chinese</td>
-    <td>Li Daobing<br/>Wei Liu</td>
-    <td>lidaobing at gmail dot com<br/>liuwei at asiainfo dot com</td>
-    <td>1.6.0</td>
+    <td>Lang Yang<br/>Li Daobing<br/>Wei Liu</td>
+    <td>lian dot yang dot cn at gmail dot com<br/>lidaobing at gmail dot com<br/>liuwei at asiainfo dot com</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Chinese Traditional</td>
@@ -102,9 +102,9 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Danish</td>
-    <td>Erik Søe Sørensen</td>
-    <td>eriksoe+doxygen at daimi dot au dot dk</td>
-    <td>1.5.4</td>
+    <td>Poul-Erik Hansen<br/>Erik Søe Sørensen</td>
+    <td>pouhan at gnotometrics dot dk<br/>eriksoe+doxygen at daimi dot au dot dk</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Dutch</td>
@@ -318,7 +318,8 @@ when the translator was updated.
   Catalan & Maximiliano Pin & {\tt\tiny max dot pin at bitroit dot com} & 1.6.3 \\
   ~ & Albert Mora & {\tt\tiny [unreachable] amora at iua dot upf dot es} & ~ \\
   \hline
-  Chinese & Li Daobing & {\tt\tiny lidaobing at gmail dot com} & 1.6.0 \\
+  Chinese & Lang Yang & {\tt\tiny lian dot yang dot cn at gmail dot com} & up-to-date \\
+  ~ & Li Daobing & {\tt\tiny lidaobing at gmail dot com} & ~ \\
   ~ & Wei Liu & {\tt\tiny liuwei at asiainfo dot com} & ~ \\
   \hline
   Chinese Traditional & Daniel YC Lin & {\tt\tiny dlin dot tw at gmail dot com} & 1.6.0 \\
@@ -328,7 +329,8 @@ when the translator was updated.
   \hline
   Czech & Petr Přikryl & {\tt\tiny prikrylp at skil dot cz} & up-to-date \\
   \hline
-  Danish & Erik Søe Sørensen & {\tt\tiny eriksoe+doxygen at daimi dot au dot dk} & 1.5.4 \\
+  Danish & Poul-Erik Hansen & {\tt\tiny pouhan at gnotometrics dot dk} & up-to-date \\
+  ~ & Erik Søe Sørensen & {\tt\tiny eriksoe+doxygen at daimi dot au dot dk} & ~ \\
   \hline
   Dutch & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & up-to-date \\
   \hline
