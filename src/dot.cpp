@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -3526,10 +3526,10 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param context the scope in which this graph is found (for resolving links)
  */
 void writeDotImageMapFromFile(FTextStream &t,
-                            const QCString& inFile, const QCString& outDir,
-                            const QCString &relPath, const QCString &context)
+                            const QCString &inFile, const QCString &outDir,
+                            const QCString &relPath, const QCString &baseName,
+                            const QCString &context)
 {
-  QCString outFile = inFile + ".map";
 
   QDir d(outDir);
   if (!d.exists())
@@ -3537,16 +3537,18 @@ void writeDotImageMapFromFile(FTextStream &t,
     err("error: Output dir %s does not exist!\n",outDir.data()); exit(1);
   }
 
+  QCString mapName = baseName+".map";
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString imgName = baseName+"."+imgExt;
+  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
+
   DotRunner dotRun(inFile,d.absPath().data(),FALSE);
-  dotRun.addJob(MAP_CMD,outFile);
+  dotRun.addJob(MAP_CMD,absOutFile);
   dotRun.preventCleanUp();
   if (!dotRun.run())
   {
     return;
   }
-
-  QCString mapName = inFile+".map";
-  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
   if (imgExt=="svg") // vector graphics
   {
@@ -3557,16 +3559,15 @@ void writeDotImageMapFromFile(FTextStream &t,
   }
   else // bitmap graphics
   {
-    t << "<img src=\"" << relPath << inFile << "." 
-      << imgExt << "\" alt=\""
-      << inFile << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl
+    t << "<img src=\"" << relPath << imgName << "\" alt=\""
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl
       << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
 
-    convertMapFile(t, outFile, relPath ,TRUE, context);
+    convertMapFile(t, absOutFile, relPath ,TRUE, context);
 
     t << "</map>" << endl;
   }
-  d.remove(outFile);
+  d.remove(absOutFile);
 }
 
 //-------------------------------------------------------------

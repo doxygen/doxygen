@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1186,6 +1186,18 @@ void Config::check()
     s=aliasList.next();
   }
 
+  // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
+  if (Config_getBool("GENERATE_TREEVIEW") && Config_getBool("GENERATE_HTMLHELP"))
+  {
+    config_err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
+    Config_getBool("GENERATE_TREEVIEW")=FALSE;
+  }
+  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTMLHELP"))
+  {
+    config_err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
+    Config_getBool("SEARCHENGINE")=FALSE;
+  }
+    
   // check dot image format
   QCString &dotImageFormat=Config_getEnum("DOT_IMAGE_FORMAT");
   dotImageFormat=dotImageFormat.stripWhiteSpace();

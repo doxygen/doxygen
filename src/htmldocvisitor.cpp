@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1191,13 +1191,13 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    m_t << "<div align=\"center\">" << endl;
+    m_t << "<div class=\"image\">" << endl;
     m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\"" 
         << baseName << "\"" << htmlAttribsToString(img->attribs()) 
         << "/>" << endl;
     if (img->hasCaption())
     {
-      m_t << "<p><strong>";
+      m_t << "<div class=\"caption\">" << endl;
     }
   }
   else // other format -> skip
@@ -1214,7 +1214,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     if (m_hide) return;
     if (img->hasCaption())
     {
-      m_t << "</strong></p>";
+      m_t << "</div>";
     }
     m_t << "</div>" << endl;
     forceStartParagraph(img);
@@ -1228,11 +1228,11 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
+  m_t << "<div class=\"dotgraph\">" << endl;
   writeDotFile(df->file(),df->relPath(),df->context());
-  m_t << "<div align=\"center\">" << endl;
   if (df->hasCaption())
   { 
-    m_t << "<p><strong>";
+    m_t << "<div class=\"caption\">" << endl;
   }
 }
 
@@ -1241,7 +1241,7 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
   if (m_hide) return;
   if (df->hasCaption())
   {
-    m_t << "</strong></p>" << endl;
+    m_t << "</div>" << endl;
   }
   m_t << "</div>" << endl;
 }
@@ -1249,11 +1249,11 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
 void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
+  m_t << "<div class=\"mscgraph\">" << endl;
   writeMscFile(df->file(),df->relPath(),df->context());
-  m_t << "<div align=\"center\">" << endl;
   if (df->hasCaption())
   { 
-    m_t << "<p><strong>";
+    m_t << "<div class=\"caption\">" << endl;
   }
 }
 void HtmlDocVisitor::visitPost(DocMscFile *df) 
@@ -1261,7 +1261,7 @@ void HtmlDocVisitor::visitPost(DocMscFile *df)
   if (m_hide) return;
   if (df->hasCaption())
   {
-    m_t << "</strong></p>" << endl;
+    m_t << "</div>" << endl;
   }
   m_t << "</div>" << endl;
 }
@@ -1631,18 +1631,14 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
+  if ((i=baseName.find('.'))!=-1) // strip extension
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("dot_");
   QCString outDir = Config_getString("HTML_OUTPUT");
   writeDotGraphFromFile(fn,outDir,baseName,BITMAP);
-  QCString mapName = baseName+".map";
-  QCString mapFile = fn+".map";
-  //m_t << "<img src=\"" << relPath << baseName << "." 
-  //    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
-  //    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" 
-  //    << endl;
-  //QCString imap = getDotImageMapFromFile(m_t,fn,baseName,outDir,relPath,context);
-  //m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" 
-  //    << imap << "</map>" << endl;
-  writeDotImageMapFromFile(m_t,fn,outDir,relPath,context);
+  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context);
 }
 
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
@@ -1650,18 +1646,18 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
 {
   QCString baseName=fileName;
   int i;
-  if ((i=baseName.findRev('/'))!=-1)
+  if ((i=baseName.findRev('/'))!=-1) // strip path
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
+  if ((i=baseName.find('.'))!=-1) // strip extension
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("msc_");
   QCString outDir = Config_getString("HTML_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
-  QCString mapName = baseName+".map";
-  QCString mapFile = fileName+".map";
-  m_t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
-    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QCString imap = getMscImageMapFromFile(fileName,outDir,relPath,context);
-  m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context);
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions

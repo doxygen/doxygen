@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -751,7 +751,7 @@ void parseFileOrDir(const char *fileName)
 
 void usage(const char *name)
 {
-  fprintf(stderr,"Doxytag version %s\nCopyright Dimitri van Heesch 1997-2010\n\n",
+  fprintf(stderr,"Doxytag version %s\nCopyright Dimitri van Heesch 1997-2011\n\n",
       versionString);
   fprintf(stderr,"  Generates a tag file and/or a search index for a set of HTML files\n\n");
   fprintf(stderr,"Usage: %s [-t tag_file] [ html_file [html_file...] ]\n",name);

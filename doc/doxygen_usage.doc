@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -54,7 +54,7 @@ to the new configuration file. Any new options will have their default value.
 Note that comments that you may have added in the original configuration file 
 will be lost.
 
-\anchor doxygen_finetune
+\section doxygen_finetune Fine-tuning the output
 If you want to fine-tune the way the output looks, doxygen allows you 
 generate default style sheet, header, and footer files that you can edit
 afterwards:
@@ -65,8 +65,12 @@ afterwards:
     sheet (see \ref cfg_html_stylesheet "HTML_STYLESHEET"), using the
     following command:
 \verbatim
-doxygen -w html header.html footer.html stylesheet.css
+doxygen -w html header.html footer.html stylesheet.css <config_file>
 \endverbatim
+  The config_file is optional. When omitted doxygen will search for 
+  a file named Doxyfile and process that. When this is also not found it
+  will used the default settings.
+
 <li>For LaTeX output, you can generate the first part of \c refman.tex 
     (see \ref cfg_latex_header "LATEX_HEADER") and the style sheet included
     by that header (normally <code>doxygen.sty</code>), using:
@@ -82,8 +86,12 @@ that config file as the third argument.
 doxygen -w rtf rtfstyle.cfg
 \endverbatim
 </ul>
+\warning When using a custom header you are responsible 
+  for the proper inclusion of any scripts and style sheets that doxygen 
+  needs, which is dependent on the configuration options and may changes
+  when upgrading to a new doxygen release.
 
-<b>Note:</b><br>
+\note
 <ul>
 <li> If you do not want documentation for each item inside the configuration
      file then you can use the optional \c -s option. This can use be

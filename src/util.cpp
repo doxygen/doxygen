@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -3229,6 +3229,7 @@ static QCString getCanonicalTypeForIdentifier(
   {
     //result = mType->qualifiedName(); // changed after 1.7.2
     //result = mType->typeString();
+    //printf("word=%s typeString=%s\n",word.data(),mType->typeString());
     if (word!=mType->typeString())
     {
       result = getCanonicalTypeForIdentifier(d,fs,mType->typeString(),tSpec,count++);
@@ -3708,8 +3709,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   QCString scopeName=scName;
-  //printf("Search for name=%s args=%s in scope=%s\n",
-  //          memberName.data(),args,scopeName.data());
+  //printf("Search for name=%s args=%s in scope=%s forceEmpty=%d\n",
+  //          memberName.data(),args,scopeName.data(),forceEmptyScope);
 
   int is,im=0,pm=0;
   // strip common part of the scope from the scopeName
@@ -3743,7 +3744,9 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
   MemberName *mn = Doxygen::memberNameSDict->find(mName);
   //printf("mName=%s mn=%p\n",mName.data(),mn);
-  if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
+
+  if ((!forceEmptyScope || scopeName.isEmpty()) && // this was changed for bug638856, forceEmptyScope => empty scopeName
+      mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
     //printf("  >member name '%s' found\n",mName.data());
     int scopeOffset=scopeName.length();
@@ -4309,6 +4312,7 @@ QCString linkToText(const char *link,bool isFileName)
   return result;
 }
 
+#if 0
 /*
  * generate a reference to a class, namespace or member.
  * `scName' is the name of the scope that contains the documentation 
@@ -4331,7 +4335,7 @@ QCString linkToText(const char *link,bool isFileName)
 bool generateRef(OutputDocInterface &od,const char *scName,
     const char *name,bool inSeeBlock,const char *rt)
 {
-  //printf("generateRef(scName=%s,name=%s,rt=%s)\n",scName,name,rt);
+  //printf("generateRef(scName=%s,name=%s,inSee=%d,rt=%s)\n",scName,name,inSeeBlock,rt);
 
   Definition *compound;
   MemberDef *md;
@@ -4376,10 +4380,11 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   od.docify(linkText);
   return FALSE;
 }
+#endif
 
 bool resolveLink(/* in */ const char *scName,
     /* in */ const char *lr,
-    /* in */ bool inSeeBlock,
+    /* in */ bool /*inSeeBlock*/,
     /* out */ Definition **resContext,
     /* out */ QCString &resAnchor
     )
@@ -4387,7 +4392,7 @@ bool resolveLink(/* in */ const char *scName,
   *resContext=0;
 
   QCString linkRef=lr;
-  //printf("ResolveLink linkRef=%s\n",lr);
+  //printf("ResolveLink linkRef=%s inSee=%d\n",lr,inSeeBlock);
   FileDef  *fd;
   GroupDef *gd;
   PageDef  *pd;
@@ -4460,7 +4465,7 @@ bool resolveLink(/* in */ const char *scName,
   else // probably a member reference
   {
     MemberDef *md;
-    bool res = resolveRef(scName,lr,inSeeBlock,resContext,&md);
+    bool res = resolveRef(scName,lr,TRUE,resContext,&md);
     if (md) resAnchor=md->anchor();
     return res;
   }
@@ -4724,6 +4729,8 @@ QCString substituteKeywords(const QCString &s,const char *title,const QCString &
   result = substitute(result,"$doxygenversion",versionString);
   result = substitute(result,"$projectname",Config_getString("PROJECT_NAME"));
   result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));
+  result = substitute(result,"$projectbrief",Config_getString("PROJECT_BRIEF"));
+  result = substitute(result,"$projectlogo",Config_getString("PROJECT_LOGO"));
   result = substitute(result,"$relpath$",relPath);
   return result;
 }

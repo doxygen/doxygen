@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -85,6 +85,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
 
   return TRUE;
 }
+
 void writeMscGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,MscOutputFormat format)
 {
@@ -113,12 +114,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   mscArgs+=" -i \"";
   mscArgs+=inFile;
  
-  if (QCString(inFile).right(4)!=".msc") // add extension if not given
-  {
-    mscArgs+=".msc";
-  }
   mscArgs+="\" -o \"";
-
   mscArgs+=outFile;
   mscArgs+=extension+"\"";
   int exitCode;
@@ -163,10 +159,7 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   QCString mscExe = Config_getString("MSCGEN_PATH")+"mscgen"+portable_commandExtension();
   QCString mscArgs = "-T ismap -i \"";
   mscArgs+=inFile;
-  if (QCString(inFile).right(4)!=".msc") // add extension if not given
-  {
-    mscArgs+=".msc";
-  }
+  QFileInfo fi(inFile);
   mscArgs+="\" -o \"";
   mscArgs+=outFile + "\"";
 
@@ -189,4 +182,17 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   return result.data();
 }
 
+void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
+                              const QCString &outDir,
+                              const QCString &relPath,
+                              const QCString &baseName,
+                              const QCString &context)
+{
+  QCString mapName = baseName+".map";
+  QCString mapFile = inFile+".map";
+  t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
+    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
+  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context);
+  t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+}
 

@@ -724,7 +724,7 @@ dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated,
 
 dl.note
 {
-        border-color: #D0D000;
+        border-color: #D0C000;
 }
 
 dl.warning, dl.attention
@@ -796,5 +796,25 @@ dl.bug
 	margin: 0px;
 	width: 100%;
 	border-bottom: 1px solid ##70;
+}
+
+.image
+{
+        text-align: center;
+}
+
+.dotgraph
+{
+        text-align: center;
+}
+
+.mscgraph
+{
+        text-align: center;
+}
+
+.caption
+{
+	font-weight: bold;
 }
 
