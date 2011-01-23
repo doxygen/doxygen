@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -753,9 +753,10 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
   }
 }
 
-static QCString getLogoName()
+static QCString getLogoName(const char *projectLogo)
 {
-  static QCString projectLogo = Config_getString("PROJECT_LOGO");
+  if (projectLogo==0) return "";
+  if (projectLogo[0]=='$') return projectLogo; // marker is used
   QFileInfo fi(projectLogo);
   if (fi.exists())
   {
@@ -764,16 +765,16 @@ static QCString getLogoName()
   return "";
 }
 
-static void writeTitleArea(FTextStream &t,const char *relPath)
+static void writeTitleArea(FTextStream &t,const char *relPath,
+            const char *projectName,const char *projectBrief,
+            const char *projectNumber,const char *projectLogo)
 {
-  QCString logoName = getLogoName();
-  static QCString projectName = Config_getString("PROJECT_NAME");
-  static QCString projectBrief = Config_getString("PROJECT_BRIEF"); 
-  static QCString projectNumber = Config_getString("PROJECT_NUMBER"); 
+  QCString logoName = getLogoName(projectLogo);
   static bool disableIndex = Config_getBool("DISABLE_INDEX"); 
   static bool searchEngine      = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-  if (!(logoName.isEmpty() && projectName.isEmpty() && projectBrief.isEmpty()) ||
+  if (!(logoName.isEmpty() && QCString(projectName).isEmpty() && 
+        QCString(projectBrief).isEmpty()) ||
       (disableIndex && searchEngine))
   {
     t << "<div id=\"titlearea\">" << endl;
@@ -784,19 +785,19 @@ static void writeTitleArea(FTextStream &t,const char *relPath)
     {
       t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"" << relPath << logoName << "\"></td>" << endl;
     }
-    if (!(projectName.isEmpty() && projectBrief.isEmpty()))
+    if (!(QCString(projectName).isEmpty() && QCString(projectBrief).isEmpty()))
     {
       t << "  <td style=\"padding-left: 0.5em;\">" << endl;
-      if (!projectName.isEmpty())
+      if (!QCString(projectName).isEmpty())
       {
         t << "   <div id=\"projectname\">" << projectName;
-        if (!projectNumber.isEmpty())
+        if (!QCString(projectNumber).isEmpty())
         {
           t << "&#160;<span id=\"projectnumber\">" << projectNumber << "</span>";
         }
         t << "</div>" << endl;
       }
-      if (!projectBrief.isEmpty())
+      if (!QCString(projectBrief).isEmpty())
       {
         t << "   <div id=\"projectbrief\">" << projectBrief << "</div>" << endl;
       }
@@ -916,7 +917,8 @@ static void writeDefaultNavTree(FTextStream &t,const char *relPathStr)
   }
 }
 
-static void writeDefaultHeaderFile(FTextStream &t, const char *title,
+static void writeDefaultHeaderFile(FTextStream &t, const char *name,
+                                   const char *title,
                                    const char *relPath,bool usePathCmd,
                                    bool searchPage=FALSE)
 {
@@ -925,6 +927,12 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
     relPathStr="$relpath$";
   else
     relPathStr=relPath;
+
+  QCString id = name;
+  if (id.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
+  {
+    id=id.left(id.length()-Doxygen::htmlFileExtension.length());
+  }
 
   static bool searchEngine = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
@@ -940,6 +948,7 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
        "<title>"; 
   t << convertToHtml(title);
   t << "</title>\n";
+  
   t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   if (searchEngine /* && !generateTreeView*/ )
   {
@@ -969,19 +978,26 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
   }
   t << "<link ";
   t << "href=\"";
-  if (Config_getString("HTML_STYLESHEET").isEmpty())
+  QCString cssname=Config_getString("HTML_STYLESHEET");
+  if (cssname.isEmpty())
   {
     t << relPathStr << "doxygen.css";
   }
   else
   {
-    QCString cssname=Config_getString("HTML_STYLESHEET");
-    QFileInfo cssfi(cssname);
-    if (!cssfi.exists())
+    if (usePathCmd)
     {
-      err("error: user specified HTML style sheet file does not exist!\n");
+      t << relPathStr << cssname;
     }
-    t << relPathStr << cssfi.fileName();
+    else
+    {
+      QFileInfo cssfi(cssname);
+      if (!cssfi.exists())
+      {
+        err("error: user specified HTML style sheet file does not exist!\n");
+      }
+      t << relPathStr << cssfi.fileName();
+    }
   }
   
   t << "\" rel=\"stylesheet\" type=\"text/css\"/>\n";
@@ -1009,9 +1025,9 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
 void HtmlGenerator::writeHeaderFile(QFile &file)
 {
   FTextStream t(&file);
-  writeDefaultHeaderFile(t,"$title",relativePathToRoot(0),TRUE);
+  writeDefaultHeaderFile(t,file.name(),"$title",relativePathToRoot(0),TRUE);
   t << "<div id=\"top\"><!-- do not remove this div! -->" << endl;
-  writeTitleArea(t,"$relpath$");
+  writeTitleArea(t,"$relpath$","$projectname","$projectbrief","$projectnumber","$projectlogo");
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
@@ -1160,7 +1176,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   lastFile = fileName;
   if (g_header.isEmpty()) 
   {
-    writeDefaultHeaderFile(t,dispTitle,relPath,FALSE);
+    writeDefaultHeaderFile(t,name,dispTitle,relPath,FALSE);
   }
   else
   {
@@ -2561,6 +2577,10 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
 void HtmlGenerator::startQuickIndices()
 {
   static bool customHeader = !Config_getString("HTML_HEADER").isEmpty();
+  static QCString projectName = Config_getString("PROJECT_NAME");
+  static QCString projectBrief = Config_getString("PROJECT_BRIEF"); 
+  static QCString projectNumber = Config_getString("PROJECT_NUMBER"); 
+  static QCString projectLogo = Config_getString("PROJECT_LOGO");
 
   if (!customHeader)
   {
@@ -2570,7 +2590,7 @@ void HtmlGenerator::startQuickIndices()
     //  t << " onmouseout=\"return navLeave()\" onmouseover=\"navEnter()\"";
     //}
     t << ">" << endl;
-    writeTitleArea(t,relPath);
+    writeTitleArea(t,relPath,projectName,projectBrief,projectNumber,projectLogo);
   }
 }
 
@@ -2631,6 +2651,10 @@ void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
 void HtmlGenerator::writeSearchPage()
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static QCString projectName = Config_getString("PROJECT_NAME");
+  static QCString projectBrief = Config_getString("PROJECT_BRIEF"); 
+  static QCString projectNumber = Config_getString("PROJECT_NUMBER"); 
+  static QCString projectLogo = Config_getString("PROJECT_LOGO");
   QCString fileName = Config_getString("HTML_OUTPUT")+"/search.php";
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
@@ -2638,7 +2662,7 @@ void HtmlGenerator::writeSearchPage()
     FTextStream t(&f);
     if (g_header.isEmpty()) 
     {
-      writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE,TRUE);
+      writeDefaultHeaderFile(t,"search",theTranslator->trSearch().data(),0,FALSE,TRUE);
     }
     else
     {
@@ -2657,7 +2681,7 @@ void HtmlGenerator::writeSearchPage()
       t << "--></script>\n";
     }
     t << "<div id=\"top\">" << endl;
-    writeTitleArea(t,"");
+    writeTitleArea(t,"",projectName,projectBrief,projectNumber,projectLogo);
     if (!Config_getBool("DISABLE_INDEX")) 
     { 
       writeDefaultQuickLinks(t,TRUE,HLI_Search,"");

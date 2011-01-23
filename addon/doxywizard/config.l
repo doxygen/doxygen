@@ -2,7 +2,7 @@
  *
  * $Id: config_templ.l,v 1.8 2001/01/01 10:15:16 root Exp $
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 

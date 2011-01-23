@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -23,9 +23,11 @@ of a HTML tag are passed on to the HTML output only
 (the HREF and NAME attributes for the A tag are the only exception).
 
 <ul>
-<li><tt>\<A HREF="..."\></tt> Starts a HTML hyper-link (HTML only). 
-<li><tt>\<A NAME="..."\></tt> Starts an named anchor (HTML only).
-<li><tt>\</A\></tt>    Ends a link or anchor (HTML only).
+<li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
+                       (if supported by the output format). 
+<li><tt>\<A NAME="..."\></tt> Starts an named anchor 
+                       (if supported by the output format).
+<li><tt>\</A\></tt>    Ends a link or anchor 
 <li><tt>\<B\></tt>     Starts a piece of text displayed in a bold font.
 <li><tt>\</B\></tt>    Ends a <tt>\<B\></tt> section.
 <li><tt>\<BODY\></tt>  Does not generate any output.

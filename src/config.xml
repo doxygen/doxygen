@@ -16,8 +16,8 @@ This could be handy for archiving the generated documentation or
 if some version control system is used. 
 ' defval=''/>
     <option type='string' id='PROJECT_BRIEF' format='string' docs='
-Using the PROJECT_BRIEF tag one can provide an optional one line description
-for a project that appears at the top of each page and should give viewer
+Using the PROJECT_BRIEF tag one can provide an optional one line description 
+for a project that appears at the top of each page and should give viewer 
 a quick idea about the purpose of the project. Keep the description short. 
 ' defval=''/>
     <option type='string' id='PROJECT_LOGO' format='file' docs='
@@ -432,10 +432,10 @@ Note: This option applies only to the class list, not to the
 alphabetical list. 
 ' defval='0'/>
     <option type='bool' id='STRICT_PROTO_MATCHING' docs='
-If the STRICT_PROTO_MATCHING option is enabled and doxygen fails to
+If the STRICT_PROTO_MATCHING option is enabled and doxygen fails to 
 do proper type resolution of all parameters of a function it will reject a 
-match between the prototype and the implementation of a member function even
-if there is only one candidate or it is obvious which candidate to choose
+match between the prototype and the implementation of a member function even 
+if there is only one candidate or it is obvious which candidate to choose 
 by doing a simple string match. By disabling STRICT_PROTO_MATCHING doxygen 
 will still accept a match between prototype and implementation in such cases.
 ' defval='0'/>
@@ -782,7 +782,14 @@ doxygen will generate files with .html extension.
     <option type='string' id='HTML_HEADER' format='file' docs='
 The HTML_HEADER tag can be used to specify a personal HTML header for 
 each generated HTML page. If it is left blank doxygen will generate a 
-standard header. 
+standard header. Note that when using a custom header you are responsible 
+for the proper inclusion of any scripts and style sheets that doxygen 
+needs, which is dependent on the configuration options used. 
+It is adviced to generate a default header using "doxygen -w html 
+header.html footer.html stylesheet.css YourConfigFile" and then modify 
+that header. Note that the header is subject to change so you typically 
+have to redo this when upgrading to a newer version of doxygen or when
+changing the value of configuration settings such as GENERATE_TREEVIEW!
 ' defval='' depends='GENERATE_HTML'/>
     <option type='string' id='HTML_FOOTER' format='file' docs='
 The HTML_FOOTER tag can be used to specify a personal HTML footer for 
@@ -971,10 +978,10 @@ top of each HTML page. The value NO (the default) enables the index and
 the value YES disables it. 
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='int' id='ENUM_VALUES_PER_LINE' docs='
-This tag can be used to set the number of enum values (range [0,1..20]) 
-that doxygen will group on one line in the generated HTML documentation. 
-Note that a value of 0 will completely suppress the enum values from
-appearing in the overview section.
+The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values 
+(range [0,1..20]) that doxygen will group on one line in the generated HTML 
+documentation. Note that a value of 0 will completely suppress the enum 
+values from appearing in the overview section.
 ' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'/>
     <option type='bool' id='GENERATE_TREEVIEW' defval='0' docs='
 The GENERATE_TREEVIEW tag is used to specify whether a tree-like index 
@@ -1025,7 +1032,7 @@ When MathJax is enabled you need to specify the location relative to the
 HTML output directory using the MATHJAX_RELPATH option. The destination 
 directory should contain the MathJax.js script. For instance, if the mathjax 
 directory is located at the same level as the HTML output directory, then 
-MATHJAX_RELPATH should be ../mathjax. The default value points to the
+MATHJAX_RELPATH should be ../mathjax. The default value points to the 
 mathjax.org site, so you can quickly see the result without installing 
 MathJax, but it is strongly recommended to install a local copy of MathJax 
 before deployment.
@@ -1265,7 +1272,7 @@ PREDEFINED and EXPAND_AS_DEFINED tags.
 ' defval='0' depends='ENABLE_PREPROCESSING'/>
     <option type='bool' id='SEARCH_INCLUDES' docs='
 If the SEARCH_INCLUDES tag is set to YES (the default) the includes files 
-in the INCLUDE_PATH (see below) will be search if a #include is found. 
+pointed to by INCLUDE_PATH will be searched when a #include is found. 
 ' defval='1' depends='ENABLE_PREPROCESSING'/>
     <option type='list' id='INCLUDE_PATH' format='dir' docs='
 The INCLUDE_PATH tag can be used to specify one or more directories that 
@@ -1294,7 +1301,7 @@ instead of the = operator.
 If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 this tag can be used to specify a list of macro names that should be expanded. 
 The macro definition that is found in the sources will be used. 
-Use the PREDEFINED tag if you want to use a different macro definition that
+Use the PREDEFINED tag if you want to use a different macro definition that 
 overrules the definition found in the source code. 
 ' depends='ENABLE_PREPROCESSING'>
     </option>
@@ -1458,7 +1465,7 @@ relations between the files in the directories.
 ' defval='1' depends='HAVE_DOT'/>
     <option type='enum' id='DOT_IMAGE_FORMAT' defval='png' docs='
 The DOT_IMAGE_FORMAT tag can be used to set the image format of the images 
-generated by dot. Possible values are png, svg, gif or svg. 
+generated by dot. Possible values are svg, png, jpg, or gif. 
 If left blank png will be used. 
 ' depends='HAVE_DOT'>
       <value name='png'/>

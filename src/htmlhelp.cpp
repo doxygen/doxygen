@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -496,6 +496,36 @@ void HtmlHelp::createProjectFile()
     {
       t << "open.png" << endl;
       t << "closed.png" << endl;
+    }
+    if (Config_getBool("GENERATE_HTMLHELP"))
+    {
+      t << "ftv2blank.png" << endl;
+      t << "ftv2doc.png" << endl;
+      t << "ftv2folderclosed.png" << endl;
+      t << "ftv2folderopen.png" << endl;
+      t << "ftv2lastnode.png" << endl;
+      t << "ftv2link.png" << endl;
+      t << "ftv2mlastnode.png" << endl;
+      t << "ftv2mnode.png" << endl;
+      t << "ftv2node.png" << endl;
+      t << "ftv2plastnode.png" << endl;
+      t << "ftv2pnode.png" << endl;
+      t << "ftv2vertline.png" << endl;
+    }
+    if (Config_getBool("SEARCHENGINE"))
+    {
+      t << "search_l.png" << endl;
+      t << "search_m.png" << endl;
+      t << "search_r.png" << endl;
+      if (Config_getBool("SERVER_BASED_SEARCH"))
+      {
+        t << "mag.png" << endl;
+      }
+      else
+      {
+        t << "mag_sel.png" << endl;
+        t << "close.png" << endl;
+      }
     }
     f.close();
   }

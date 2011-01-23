@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1383,14 +1383,11 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
+  if ((i=baseName.find('.'))!=-1)
   {
-    baseName=baseName.left(baseName.length()-4);
+    baseName=baseName.left(i);
   }
-  if (baseName.right(4)==".dot")
-  {
-    baseName=baseName.left(baseName.length()-4);
-  }
+  baseName.prepend("dot_");
   QCString outDir = Config_getString("LATEX_OUTPUT");
   QCString name = fileName;
   writeDotGraphFromFile(name,outDir,baseName,EPS);
@@ -1450,14 +1447,12 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
+  if ((i=baseName.find('.'))!=-1)
   {
-    baseName=baseName.left(baseName.length()-4);
+    baseName=baseName.left(i);
   }
-  if (baseName.right(4)==".dot")
-  {
-    baseName=baseName.left(baseName.length()-4);
-  }
+  baseName.prepend("msc_");
+
   QCString outDir = Config_getString("LATEX_OUTPUT");
   QCString name = fileName;
   writeMscGraphFromFile(name,outDir,baseName,MSC_EPS); 
@@ -1515,7 +1510,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName)
     shortName=shortName.right(shortName.length()-i-1);
   } 
   QCString outDir = Config_getString("LATEX_OUTPUT");
-  writeMscGraphFromFile(baseName,outDir,baseName,MSC_EPS);
+  writeMscGraphFromFile(baseName,outDir,shortName,MSC_EPS);
   m_t << "\n\\begin{DoxyImageNoCaption}"
          "  \\mbox{\\includegraphics";
   m_t << "{" << shortName << "}";

@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2546,6 +2546,10 @@ void DocDotFile::parse()
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameDict,m_name,ambig);
+  if (fd==0 && m_name.right(4)!=".dot") // try with .dot extension as well
+  {
+    fd = findFileDef(Doxygen::dotFileNameDict,m_name+".dot",ambig);
+  }
   if (fd)
   {
     m_file = fd->absFilePath();
@@ -2626,6 +2630,10 @@ void DocMscFile::parse()
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameDict,m_name,ambig);
+  if (fd==0 && m_name.right(4)!=".msc") // try with .msc extension as well
+  {
+    fd = findFileDef(Doxygen::mscFileNameDict,m_name+".msc",ambig);
+  }
   if (fd)
   {
     m_file = fd->absFilePath();
@@ -2639,7 +2647,7 @@ void DocMscFile::parse()
   }
   else
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: included dot file %s is not found "
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: included msc file %s is not found "
            "in any of the paths specified via MSCFILE_DIRS!",qPrint(m_name));
   }
 

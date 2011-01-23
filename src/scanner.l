@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2109,13 +2109,28 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <PreLineCtrl>"\""[^\n\"]*"\""		{
 				          yyFileName = stripQuotes(yytext);
-  					  current->program+=yytext;
+					  if (lastPreLineCtrlContext==ReadBody || 
+					      lastPreLineCtrlContext==ReadNSBody ||
+					      lastPreLineCtrlContext==ReadBodyIntf)
+					  {
+					    current->program+=yytext;
+					  }
   					}
 <PreLineCtrl>.				{
-  					  current->program+=yytext;
+					  if (lastPreLineCtrlContext==ReadBody || 
+					      lastPreLineCtrlContext==ReadNSBody ||
+					      lastPreLineCtrlContext==ReadBodyIntf)
+					  {
+  					    current->program+=yytext;
+					  }
                                         }
 <PreLineCtrl>\n				{
-  					  current->program+=yytext;
+					  if (lastPreLineCtrlContext==ReadBody || 
+					      lastPreLineCtrlContext==ReadNSBody ||
+					      lastPreLineCtrlContext==ReadBodyIntf)
+					  {
+  					    current->program+=yytext;
+					  }
                                           yyLineNr++;
   					  BEGIN( lastPreLineCtrlContext );
   					}

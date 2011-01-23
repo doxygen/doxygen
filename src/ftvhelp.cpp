@@ -1,7 +1,7 @@
 /******************************************************************************
  * ftvhelp.cpp,v 1.0 2000/09/06 16:09:00
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
