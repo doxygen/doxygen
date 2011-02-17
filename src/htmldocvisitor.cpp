@@ -1138,17 +1138,17 @@ void HtmlDocVisitor::visitPost(DocHtmlCaption *)
   m_t << "</caption>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocInternal *i)
+void HtmlDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  forceEndParagraph(i);
-  m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
+  //forceEndParagraph(i);
+  //m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
 }
 
-void HtmlDocVisitor::visitPost(DocInternal *i) 
+void HtmlDocVisitor::visitPost(DocInternal *) 
 {
   if (m_hide) return;
-  forceStartParagraph(i);
+  //forceStartParagraph(i);
 }
 
 void HtmlDocVisitor::visitPre(DocHRef *href)

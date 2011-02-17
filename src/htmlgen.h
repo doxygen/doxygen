@@ -34,7 +34,7 @@ class HtmlGenerator : public OutputGenerator
     virtual ~HtmlGenerator();
     static void init();
     static void writeStyleSheetFile(QFile &f);
-    static void writeHeaderFile(QFile &f);
+    static void writeHeaderFile(QFile &f, const char *cssname);
     static void writeFooterFile(QFile &f);
     static void writeTabData();
     static void writeSearchFooter(FTextStream &t,const QCString &relPath);

@@ -771,21 +771,21 @@ dl.bug
  
 #projectname
 {
-	font: 300% arial,sans-serif;
+	font: 300% Tahoma, Arial,sans-serif;
 	margin: 0px;
-	padding: 0px;
+	padding: 2px 0px;
 }
     
 #projectbrief
 {
-	font: 120% arial,sans-serif;
+	font: 120% Tahoma, Arial,sans-serif;
 	margin: 0px;
 	padding: 0px;
 }
 
 #projectnumber
 {
-	font: 50% arial,sans-serif;
+	font: 50% Tahoma, Arial,sans-serif;
 	margin: 0px;
 	padding: 0px;
 }

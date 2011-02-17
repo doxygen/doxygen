@@ -43,6 +43,7 @@ static const char resize_script[]=
 #include "resize_js.h"
 ;
 
+#if 0
 static const char jquery_script1[]=
 #include "jquery_js.h"
 ;
@@ -52,6 +53,7 @@ static const char jquery_script2[]=
 static const char jquery_script3[]=
 #include "jquery_ui_js.h"
 ;
+#endif
 
 static const char navtree_css[]=
 #include "navtree_css.h"
@@ -936,13 +938,13 @@ void FTVHelp::generateJSLink(FTextStream &t,FTVNode *n)
 {
   if (n->file.isEmpty()) // no link
   {
-    t << "\"" << n->name << "\", null, ";
+    t << "\"" << convertToJSString(n->name) << "\", null, ";
   }
   else // link into other page
   {
     // TODO: external links with installdox
     // TODO: use m_topLevelIndex
-    t << "\"" << n->name << "\", \"";
+    t << "\"" << convertToJSString(n->name) << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << n->file << Doxygen::htmlFileExtension;
     if (!n->anchor.isEmpty()) t << "#" << n->anchor;
@@ -1088,6 +1090,7 @@ void FTVHelp::generateTreeViewScripts()
       t << resize_script;
     }
   }
+#if 0
   // generate jquery.js
   {
     QFile f(Config_getString("HTML_OUTPUT")+"/jquery.js");
@@ -1097,6 +1100,7 @@ void FTVHelp::generateTreeViewScripts()
       t << jquery_script1 << jquery_script2 << jquery_script3;
     }
   }
+#endif
   // generate navtree.css
   {
     QFile f(Config_getString("HTML_OUTPUT")+"/navtree.css");

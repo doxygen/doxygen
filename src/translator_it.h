@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,6 +19,10 @@
  *
  * Revision history
  *
+ *  2010/08: updated translation of new items used since version 1.6.0 and 1.6.3
+ *           completely reviewed the translation in the trLegendDocs() function
+ *           corrected some typos all around
+ *           reviewed some translations all around
  *  2007/11: updated translation of new items used since version 1.5.4
  *  2007/10: Included corrections provided by Arialdo Martini <arialdomartini@bebox.it>, updated some strings marked with 'translate me' comment
  *  2006/10: made class to derive directly from Translator class (reported in Petr Prikryl October 9 translator report)
@@ -80,7 +84,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_6_0
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -144,7 +148,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
       }
       else
       {
-        return "Documentazione dei dati membri";
+        return "Documentazione dei membri dato";
       }
     }
 
@@ -242,7 +246,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
       }
       else
       {
-        return "Membri dei file";
+        return "Elementi dei file";
       }
     }
 
@@ -323,13 +327,13 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
       QCString result="Questo è un elenco ";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-          if (!extractAll) result+="delle funczioni, delle variabili, delle define, dei tipi enumerati e delle typedef documentate ";
-          else result+="di tutte le funczioni, variabili, define, tipi enumerati, e typedef ";
+          if (!extractAll) result+="delle funzioni, delle variabili, delle define, dei tipi enumerati e delle ridefinizioni dei tipi (typedef) documentate ";
+          else result+="di tutte le funzioni, variabili, define, tipi enumerati, e ridefinizioni dei tipi (typedef) ";
       }
       else
       {
-          if (!extractAll) result+="dei membri dei file documentati ";
-          else result+="di tutti i membri dei file ";
+          if (!extractAll) result+="degli elementi documentati dei file ";
+          else result+="di tutti gli elementi dei file ";
       }
       result+="con collegamenti alla documentazione";
       if (extractAll) result+=" del file a cui appartengono:";
@@ -343,7 +347,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription()
-    { return "Questo è l'elenco di tutte le pagine di documentazione generale:"; }
+    { return "Questo è l'elenco di tutte le pagine di documentazione collegate:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription()
@@ -462,7 +466,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
      *  list of (global) variables
      */
     QCString trEnumerationValues()
-    { return "Valori dei tipi enumerati"; }
+    { return "Valori del tipo enumerato"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
@@ -520,7 +524,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
      */
     QCString trGeneratedAt(const char *date,const char *projName)
     {
-      QCString result=(QCString)"Generato il "+date;
+      QCString result=(QCString)"Generato "+date;
       if (projName) result+=(QCString)" per "+projName;
       result+=(QCString)" da";
       return result;
@@ -560,7 +564,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
-    { return "Vedi anche"; }
+    { return "Si veda anche"; }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters()
@@ -737,8 +741,8 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
     QCString trNamespaceMemberDescription(bool extractAll)
     {
       QCString result="Questa è la lista ";
-      if (!extractAll) result+="dei membri dei namespace documentati, ";
-       else result+="di tutti i membri dei namespace ";
+      if (!extractAll) result+="dei membri documentati del namespace, ";
+       else result+="di tutti i membri del namespace ";
       result+="con collegamenti ";
       if (extractAll)
         result+="alla documentazione del namespace per ciascun membro:";
@@ -1021,21 +1025,21 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
     {
       return
         "Questa pagina spiega come interpretare i grafi generati da doxygen.<p>\n"
-        "Considerate l'esempio seguente:\n"
+        "Si consideri l'esempio seguente:\n"
         "\\code\n"
         "/*! Classe invisibile per troncamento */\n"
         "class Invisible { };\n\n"
-        "/*! Classe troncata, la relazione di ereditarietà e nascosta */\n"
+        "/*! Classe tronca, la relazione di ereditarietà è nascosta */\n"
         "class Truncated : public Invisible { };\n\n"
         "/* Classe non documentata con i commenti speciali di doxygen*/\n"
         "class Undocumented { };\n\n"
-        "/*! Classe che utilizza una ereditarietà pubblica */\n"
+        "/*! Classe estesa mediante ereditarietà pubblica */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! A template class */\n"
+        "/*! Classe templatizzata */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! Classe che utilizza una ereditarietà protetta*/\n"
+        "/*! Classe estesa mediante ereditarietà protetta*/\n"
         "class ProtectedBase { };\n\n"
-        "/*! Classe che utilizza una ereditarietà  privata*/\n"
+        "/*! Classe estesa mediante ereditarietà privata*/\n"
         "class PrivateBase { };\n\n"
         "/*! Classe utilizzata dalla classe Inherited */\n"
         "class Used { };\n\n"
@@ -1050,24 +1054,28 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Se il tag \\c MAX_DOT_GRAPH_HEIGHT nel file di configurazione "
-        "è impostato a 200 verrà prodotto il grafo seguente:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "Verrà prodotto il grafo seguente:"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
         "<p>\n"
         "I riquadri nel grafo qui sopra hanno il seguente significato:\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Il riquadro nero pieno rappresenta la struct o la classe per la quale il grafo è stato generato.\n"
-        "<li>Un riquadro con un bordo nero denota una struct o una classe documentata.\n"
-        "<li>Un riquadro con un bordo grigio indica una struct o una classe non documentata.\n"
-        "<li>Un riquadro con un bordo rosso indica una struct o una classe per la quale non sono mostrate tutte le relazioni di ereditarietà/contenimento (un grafo viene troncato se non rientra nei limiti prestabiliti)."
+        "<li>Il riquadro grigio pieno rappresenta la struct o la classe per la quale il grafo è stato generato.</li>\n"
+        "<li>Un riquadro con un bordo nero denota una struct o una classe documentata.</li>\n"
+        "<li>Un riquadro con un bordo grigio indica una struct o una classe non documentata.</li>\n"
+        "<li>Un riquadro con un bordo rosso indica una struct o una classe per la quale non sono mostrate tutte le relazioni di ereditarietà/contenimento (un grafo viene troncato se non rientra nei limiti prestabiliti).</li>\n"
         "</ul>\n"
+        "<p>\n"
         "Le frecce hanno il seguente significato:\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Una freccia blu scuro indica una relazione di ereditarietà pubblica tra due classi.\n"
-        "<li>Una freccia verde indica un'ereditarietà protetta.\n"
-        "<li>Una freccia rossa indica un'ereditarietà privata.\n"
+        "<li>Una freccia blu scuro indica una relazione di ereditarietà pubblica tra due classi.</li>\n"
+        "<li>Una freccia verde indica un'ereditarietà protetta.</li>\n"
+        "<li>Una freccia rossa indica un'ereditarietà privata.</li>\n"
         "<li>Una freccia viola tratteggiata indica che una classe è contenuta o usata da un'altra classe."
-        " La freccia viene etichettata con la o le variabili attraverso cui la struct o la classe puntata dalla freccia è accessibile.\n"
+        " La freccia viene etichettata con la o le variabili attraverso cui la struct o la classe puntata dalla freccia è accessibile.</li>\n"
+        "<li>Una freccia gialla tratteggiata indica la relazione tra una istanza di un template e la classe templatizzata da cui è stata istanziata."
+        " La freccia viene etichettata con i parametri di template dell'istanza.</li>\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
@@ -1291,7 +1299,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trReferences()
     {
-      return "Riferimenti";
+      return "Referenzia";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1529,7 +1537,7 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
     virtual QCString trOverloadText()
     {
        return "Questa è una funzione membro sovraccaricata (overloaded), "
-              "fornita per comodità. Differisce dalla funzione di cui sopra"
+              "fornita per comodità. Differisce dalla funzione di cui sopra "
               "unicamente per gli argomenti passati.";
     }
 
@@ -1750,6 +1758,96 @@ class TranslatorItalian : public TranslatorAdapter_1_6_0
       return "Vincoli dei tipi";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return "Relazione per "+QCString(name);
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Caricamento in corso...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Namespace globale";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Ricerca in corso...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Nessun risultato";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Grafo di dipendenza delle directory per "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"File in "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Include il file in "+name;
+    }
+
+    /** Compiles a date string.
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Lun","Mar","Mer","Gio","Ven","Sab","Dom" };
+      static const char *months[] = { "Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic" };
+      QCString sdate;
+      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
 };
 
 #endif
+

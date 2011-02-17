@@ -587,6 +587,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	ClassVar
 %x	CSConstraintName
 %x	CSConstraintType
+%x 	CSIndexer
 %x	ClassCategory
 %x	ClassTemplSpec
 %x      CliPropertyType
@@ -1660,7 +1661,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <NSAliasArg>";"				{
   					  BEGIN( FindMembers );
   					}
-<PHPUse>({ID}{BN}*"\\"{BN}*)+{ID}	{
+<PHPUse>({ID}{BN}*"\\"{BN}*)*{ID}	{
   					  lineCount();
 					  aliasName=yytext;
                                           //current->fileName = yyFileName; 
@@ -1972,6 +1973,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  { // javascript function
 					    current->type="function";
 					  }
+					  else if (insideCS && strcmp(yytext,"this")==0)
+					  {
+					    // C# indexer
+					    addType( current ) ;
+					    current->name="this";
+					    BEGIN(CSIndexer);
+					  }
 					  else
 					  {
 					    if (YY_START==FindMembers)
@@ -2046,6 +2054,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             }
 					  }
 					}
+<CSIndexer>"["[^\n\]]*"]"		{
+					  current->name+=removeRedundantWhiteSpace(yytext);
+  					  BEGIN(FindMembers);
+  					}
 <FindMembers>[0-9]{ID}			{ // some number where we did not expect one
   					}
 <FindMembers>"."			{
@@ -4089,9 +4101,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <OldStyleArgs>.	 			{ current->args += *yytext; }
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
+<FuncQual>{BN}*"try:"			|
 <FuncQual>{BN}*"try"{BN}+		{ /* try-function-block */ 
 					  insideTryBlock=TRUE;
 					  lineCount();
+  					  if (yytext[yyleng-1]==':')
+					  {
+					    unput(':');
+					    BEGIN( Function );
+					  }
 					}
 <FuncQual>{BN}*"throw"{BN}*"("		{ // C++ style throw clause
   					  current->exception = " throw (" ;
@@ -4869,7 +4887,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <BasesProt>"private"{BN}+               { lineCount(); baseProt = Private; }
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
-<Bases>("\\")?{BN}*({ID}{BN}*"\\"{BN}*)*{ID}	{ 
+<Bases>("\\")?({ID}"\\")*{ID}		{ // PHP namespace token, not sure if interspacing is allowed but it gives problems (see bug 640847)
                                           if (!insidePHP)
 					  {
 					    REJECT;

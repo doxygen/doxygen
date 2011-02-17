@@ -953,25 +953,25 @@ void RTFDocVisitor::visitPost(DocHtmlCell *)
 void RTFDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocInternal)}\n");
-  m_t << "{"; // start desc
-  m_t << "{\\b "; // start bold
-  m_t << theTranslator->trForInternalUseOnly();
-  m_t << "}"; // end bold
-  m_t << "\\par" << endl;
-  incIndentLevel();
-  m_t << rtf_Style_Reset << getStyle("DescContinue");
-  m_lastIsPara=FALSE;
+  //DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocInternal)}\n");
+  //m_t << "{"; // start desc
+  //m_t << "{\\b "; // start bold
+  //m_t << theTranslator->trForInternalUseOnly();
+  //m_t << "}"; // end bold
+  //m_t << "\\par" << endl;
+  //incIndentLevel();
+  //m_t << rtf_Style_Reset << getStyle("DescContinue");
+  //m_lastIsPara=FALSE;
 }
 
 void RTFDocVisitor::visitPost(DocInternal *) 
 {
   if (m_hide) return;
-  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocInternal)}\n");
-  m_t << "\\par";
-  decIndentLevel();
-  m_t << "}"; // end desc
-  m_lastIsPara=TRUE;
+  //DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocInternal)}\n");
+  //m_t << "\\par";
+  //decIndentLevel();
+  //m_t << "}"; // end desc
+  //m_lastIsPara=TRUE;
 }
 
 void RTFDocVisitor::visitPre(DocHRef *href)

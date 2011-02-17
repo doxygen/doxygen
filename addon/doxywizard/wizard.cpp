@@ -2,6 +2,7 @@
 #include "input.h"
 #include "doxywizard.h"
 
+#include <math.h>
 #include <QtGui>
 
 // options configurable via the wizard

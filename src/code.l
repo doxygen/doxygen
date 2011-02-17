@@ -1889,16 +1889,15 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  //FileInfo *f;
 					  bool ambig;
 					  bool found=FALSE;
-                                          FileDef *fd=0;
-					  QCString absPath = yytext;
-					  if (g_sourceFileDef && QDir::isRelativePath(absPath))
-					  {
-					    absPath = QDir::cleanDirPath(g_sourceFileDef->getPath()+"/"+absPath);
-					  }
+					  //QCString absPath = yytext;
+					  //if (g_sourceFileDef && QDir::isRelativePath(absPath))
+					  //{
+					  //  absPath = QDir::cleanDirPath(g_sourceFileDef->getPath()+"/"+absPath);
+					  //}
 
-					  //printf("looking for include %s -> %s\n",yytext,absPath.data());
-					  if ((fd=findFileDef(Doxygen::inputNameDict,absPath,ambig)) &&
-					      fd->isLinkable())
+                                          FileDef *fd=findFileDef(Doxygen::inputNameDict,yytext,ambig);
+					  //printf("looking for include %s -> %s fd=%p\n",yytext,absPath.data(),fd);
+					  if (fd && fd->isLinkable())
 					  {
 					    if (ambig) // multiple input files match the name
 					    {
@@ -1925,9 +1924,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					      found = TRUE;
 					    }
 					  }
+					  //printf("      include file %s found=%d\n",fd ? fd->absFilePath().data() : "<none>",found);
 					  if (found)
 					  {
-					    //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
 					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext,fd->briefDescriptionAsTooltip());
 					  }
 					  else

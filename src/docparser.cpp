@@ -5424,7 +5424,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       g_hasReturnCommand=TRUE;
       break;
     case XML_TERM:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
+      //m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
       if (insideTable(this))
       {
         retval=RetVal_TableCell;
@@ -5506,19 +5506,19 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         QCString type;
         findAttribute(tagHtmlAttribs,"type",&type);
         DocHtmlList::Type listType = DocHtmlList::Unordered;
+        HtmlAttribList emptyList;
         if (type=="number")
         {
           listType=DocHtmlList::Ordered;
         }
         if (type=="table")
         {
-          DocHtmlTable *table = new DocHtmlTable(this,tagHtmlAttribs);
+          DocHtmlTable *table = new DocHtmlTable(this,emptyList);
           m_children.append(table);
           retval=table->parseXml();
         }
         else
         {
-          HtmlAttribList emptyList;
           DocHtmlList *list = new DocHtmlList(this,emptyList,listType);
           m_children.append(list);
           retval=list->parseXml();
@@ -5671,7 +5671,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
 
     case XML_TERM:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+      //m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
     case XML_REMARKS:

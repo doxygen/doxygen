@@ -804,6 +804,14 @@ will generate a default style sheet. Note that doxygen will try to copy
 the style sheet file to the HTML output directory, so don&apos;t put your own 
 stylesheet in the HTML output directory as well, or it will be erased! 
 ' defval='' depends='GENERATE_HTML'/>
+    <option type='list' id='HTML_EXTRA_FILES' format='file' docs='
+The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
+other source files which should be copied to the HTML output directory. Note 
+that these files will be copied to the base HTML output directory. Use the 
+$relpath$ marker in the HTML_HEADER and/or HTML_FOOTER files to load these 
+files. In the HTML_STYLESHEET file, use the file name only. Also note that 
+the files will be copied as-is; there are no commands or markers available.
+' depends='GENERATE_HTML'/>
     <option type='int' id='HTML_COLORSTYLE_HUE' docs='
 The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. 
 Doxygen will adjust the colors in the stylesheet and background images 
@@ -1104,6 +1112,12 @@ The LATEX_HEADER tag can be used to specify a personal LaTeX header for
 the generated latex document. The header should contain everything until 
 the first chapter. If it is left blank doxygen will generate a 
 standard header. Notice: only use this tag if you know what you are doing! 
+' defval='' depends='GENERATE_LATEX'/>
+    <option type='string' id='LATEX_FOOTER' format='file' docs='
+The LATEX_FOOTER tag can be used to specify a personal LaTeX footer for 
+the generated latex document. The footer should contain everything after 
+the last chapter. If it is left blank doxygen will generate a 
+standard footer. Notice: only use this tag if you know what you are doing! 
 ' defval='' depends='GENERATE_LATEX'/>
     <option type='bool' id='PDF_HYPERLINKS' docs='
 If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated 

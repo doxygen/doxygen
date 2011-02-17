@@ -85,7 +85,7 @@ void Qhp::initialize()
     { "name", filterName, 0 };
     m_doc.open("customFilter", tagAttributes);
 
-    QStringList customFilterAttributes = QStringList::split(' ', Config_getString("QHP_CUST_FILTER_ATTRS"));
+    QStringList customFilterAttributes = QStringList::split(QChar(' '), Config_getString("QHP_CUST_FILTER_ATTRS"));
     for (int i = 0; i < (int)customFilterAttributes.count(); i++)
     {
       m_doc.openCloseContent("filterAttribute", customFilterAttributes[i]);
@@ -96,7 +96,7 @@ void Qhp::initialize()
   m_doc.open("filterSection");
 
   // Add section attributes
-  QStringList sectionFilterAttributes = QStringList::split(' ',
+  QStringList sectionFilterAttributes = QStringList::split(QChar(' '),
       Config_getString("QHP_SECT_FILTER_ATTRS"));
   if (!sectionFilterAttributes.contains(QString("doxygen")))
   {

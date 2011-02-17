@@ -102,6 +102,7 @@ void PageDef::writeDocumentation(OutputList &ol)
     }
     ol.endQuickIndices();
   }
+  SectionInfo *si=Doxygen::sectionDict.find(name());
 
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
@@ -109,6 +110,11 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Man);
   ol.startTitleHead(pageName);
   ol.endTitleHead(pageName, pageName);
+  if (si)
+  {
+    ol.parseDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
+    ol.endSection(si->label,si->type);
+  }
   ol.popGeneratorState();
   //2.}
 
@@ -117,9 +123,8 @@ void PageDef::writeDocumentation(OutputList &ol)
   //2.{
   ol.disable(OutputGenerator::Latex);
   ol.disable(OutputGenerator::RTF);
-  SectionInfo *si=0;
-  if (!title().isEmpty() && !name().isEmpty() &&
-      (si=Doxygen::sectionDict.find(name()))!=0)
+  ol.disable(OutputGenerator::Man);
+  if (!title().isEmpty() && !name().isEmpty() && si!=0)
   {
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);

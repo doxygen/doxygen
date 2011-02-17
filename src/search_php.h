@@ -140,7 +140,7 @@
 "    {\n"
 "      $key=$di[\"url\"];\n"
 "      $rank=$di[\"rank\"];\n"
-"      if ($docs[$key])\n"
+"      if (isset($docs[$key]))\n"
 "      {\n"
 "        $docs[$key][\"rank\"]+=$rank;\n"
 "      }\n"

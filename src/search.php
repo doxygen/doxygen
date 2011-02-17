@@ -140,7 +140,7 @@ function combine_results($results,&$docs)
     {
       $key=$di["url"];
       $rank=$di["rank"];
-      if ($docs[$key])
+      if (isset($docs[$key]))
       {
         $docs[$key]["rank"]+=$rank;
       }

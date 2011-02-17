@@ -492,6 +492,7 @@ void HtmlHelp::createProjectFile()
     t << "nav_h.png" << endl;
     t << "nav_f.png" << endl;
     t << "bc_s.png" << endl;
+#if 0
     if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
     {
       t << "open.png" << endl;
@@ -526,6 +527,12 @@ void HtmlHelp::createProjectFile()
         t << "mag_sel.png" << endl;
         t << "close.png" << endl;
       }
+    }
+#endif
+    uint i;
+    for (i=0;i<imageFiles.count();i++)
+    {
+      t << imageFiles.at(i) << endl;
     }
     f.close();
   }
@@ -688,5 +695,10 @@ void HtmlHelp::addIndexItem(Definition *context,MemberDef *md,
     QCString level1  = word ? QCString(word) : context->name();
     index->addItem(level1,0,context->getOutputFileBase(),0,TRUE,FALSE);
   }
+}
+
+void HtmlHelp::addImageFile(const char *fileName)
+{
+  imageFiles.append(fileName);
 }
 
