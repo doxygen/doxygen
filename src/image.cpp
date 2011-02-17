@@ -18,7 +18,6 @@
 
 #include "qtbc.h"
 #include "image.h"
-//#include "gifenc.h"
 #include <qfile.h>
 #include <math.h>
 #include "lodepng.h"

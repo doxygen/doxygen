@@ -56,12 +56,9 @@ struct FileState
   FileState(int size) : fileBuf(size), 
                         oldFileBuf(0), oldFileBufPos(0) {}
   int lineNr;
-  //FILE *filePtr;
   BufStr fileBuf;
-  //FILE *oldYYin;
   BufStr *oldFileBuf;
   int oldFileBufPos;
-  //bool isPlainFile;
   YY_BUFFER_STATE bufState;
   QCString fileName;
 };  
@@ -1264,7 +1261,10 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef)
       {
         // add include dependency to the file in which the #include was found
-        oldFileDef->addIncludeDependency(g_yyFileDef,incFileName,localInclude,g_isImported);
+	bool ambig;
+	// change to local name for bug 641336 
+        FileDef *incFd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
+        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,g_isImported);
         // add included by dependency
         if (g_yyFileDef)
         {
@@ -1297,16 +1297,18 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef)
       {
 	bool ambig;
-	QCString absPath = incFileName;
-	if (QDir::isRelativePath(incFileName))
-	{
-	  absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
-	  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
-	}
-	FileDef *fd = findFileDef(Doxygen::inputNameDict,absPath,ambig);
+	//QCString absPath = incFileName;
+	//if (QDir::isRelativePath(incFileName))
+	//{
+	//  absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
+	//  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
+	//}
+
+	// change to local name for bug 641336 
+	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(fd,incFileName,localInclude,g_isImported);
+	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,g_isImported);
 	// add included by dependency
         if (fd)
         {
@@ -2506,9 +2508,10 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   g_expandedDict->clear();
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
+  g_fileDefineDict->clear(); // add due to bug 641346
   
-  static bool firstTime=TRUE;
-  if (firstTime)
+  //static bool firstTime=TRUE;
+  //if (firstTime)
   {
     // add predefined macros
     char *defStr;
@@ -2618,7 +2621,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	//  def->name.data(),def->definition.data(),def->nargs);
       }
     }
-    firstTime=FALSE;
+    //firstTime=FALSE;
   }
  
   g_yyLineNr = 1;

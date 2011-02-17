@@ -3523,6 +3523,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param inFile just the basename part of the filename
  *  \param outDir output directory
  *  \param relPath relative path the to root of the output dir
+ *  \param baseName the base name of the output files
  *  \param context the scope in which this graph is found (for resolving links)
  */
 void writeDotImageMapFromFile(FTextStream &t,

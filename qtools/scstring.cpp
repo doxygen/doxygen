@@ -141,15 +141,16 @@ SCString &SCString::sprintf( const char *format, ... )
   va_list ap;
   va_start( ap, format );
   uint l = length();
-  const uint minlen=256;
+  const uint minlen=4095;
   if (l<minlen)
   {
     if (m_data) 
-      m_data = (char *)realloc(m_data,minlen);
+      m_data = (char *)realloc(m_data,minlen+1);
     else
-      m_data = (char *)malloc(minlen);
+      m_data = (char *)malloc(minlen+1);
+    m_data[minlen]='\0';
   }
-  vsprintf( m_data, format, ap );
+  vsnprintf( m_data, minlen, format, ap );
   resize( qstrlen(m_data) + 1 );              // truncate
   va_end( ap );
   return *this;

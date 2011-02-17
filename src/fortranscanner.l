@@ -197,7 +197,7 @@ static int getAmpOrExclAtTheEnd(const char *buf, int length);
 static void truncatePrepass(int index);
 static void pushBuffer(QCString &buffer);
 static void popBuffer();
-static void extractPrefix(QCString& text);
+//static void extractPrefix(QCString& text);
 static QCString extractFromParens(const QCString name);
 
 //-----------------------------------------------------------------------------

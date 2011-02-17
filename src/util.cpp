@@ -3645,7 +3645,7 @@ static void findMembersWithSpecificName(MemberName *mn,
     //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p current=%p\n",
     //    md->name().data(),args,fd,gd,currentFile);
     if (
-        ((gd && gd->isLinkable()) || (fd && fd->isLinkable())) && 
+        ((gd && gd->isLinkable()) || (fd && fd->isLinkable()) || md->isReference()) && 
         md->getNamespaceDef()==0 && md->isLinkable() &&
         (!checkStatics || (!md->isStatic() && !md->isDefine()) || 
          currentFile==0 || fd==currentFile) // statics must appear in the same file
@@ -3908,11 +3908,11 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
 
   // maybe an namespace, file or group member ?
-  //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
+  //printf("Testing for global symbol scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
   if ((mn=Doxygen::functionNameSDict->find(mName))) // name is known
   {
-    //printf("  >function name found\n");
+    //printf("  >symbol name found\n");
     NamespaceDef *fnd=0;
     int scopeOffset=scopeName.length();
     do
@@ -4250,6 +4250,7 @@ bool resolveRef(/* in */  const char *scName,
       // we did find a member, but it is a global one while we were explicitly 
       // looking for a scoped variable. See bug 616387 for an example why this check is needed.
       // note we do need to support autolinking to "::symbol" hence the >0
+      //printf("not global member!\n");
       *resContext=0;
       *resMember=0;
       return FALSE;
@@ -4285,6 +4286,7 @@ bool resolveRef(/* in */  const char *scName,
   {
     return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,0,checkScope);
   }
+  //printf("resolveRef: %s not found!\n",name);
 
   return FALSE;
 }
@@ -4565,41 +4567,6 @@ QCString substituteClassNames(const QCString &s)
 #endif
 
 //----------------------------------------------------------------------
-// substitute all occurrences of `src' in `s' by `dst'
-
-QCString substitute(const char *s,const char *src,const char *dst)
-{
-  if (s==0 || src==0) return s;
-  const char *p, *q;
-  int srcLen = strlen(src);
-  int dstLen = dst ? strlen(dst) : 0;
-  int resLen;
-  if (srcLen!=dstLen)
-  {
-    int count;
-    for (count=0, p=s; (q=strstr(p,src))!=0; p=q+srcLen) count++;
-    resLen = p-s+strlen(p)+count*(dstLen-srcLen);
-  }
-  else // result has same size as s
-  {
-    resLen = strlen(s);
-  }
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.data(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
-  {
-    int l = (int)(q-p);
-    memcpy(r,p,l);
-    r+=l;
-    if (dst) memcpy(r,dst,dstLen);
-    r+=dstLen;
-  }
-  strcpy(r,p);
-  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
-  return result;
-}
-
-//----------------------------------------------------------------------
 
 struct FindFileCacheElem
 {
@@ -4621,9 +4588,11 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 
   g_findFileDefCache.setAutoDelete(TRUE);
   FindFileCacheElem *cachedResult = g_findFileDefCache.find(key);
+  //printf("key=%s cachedResult=%p\n",key.data(),cachedResult);
   if (cachedResult)
   {
     ambig = cachedResult->isAmbig;
+    //printf("cached: fileDef=%p\n",cachedResult->fileDef);
     return cachedResult->fileDef;
   }
   else
@@ -4641,10 +4610,12 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
   {
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1); 
+    //printf("path=%s name=%s\n",path.data(),name.data());
   }
   if (name.isEmpty()) goto exit;
   if ((fn=(*fnDict)[name]))
   {
+    //printf("fn->count()=%d\n",fn->count());
     if (fn->count()==1)
     {
       FileDef *fd = fn->getFirst();
@@ -4652,6 +4623,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
       {
         cachedResult->fileDef = fd;
         g_findFileDefCache.insert(key,cachedResult);
+        //printf("=1 ===> add to cache %p\n",fd);
         return fd;
       }
     }
@@ -4671,6 +4643,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
           lastMatch=fd; 
         }
       }
+      //printf(">1 ===> add to cache %p\n",fd);
 
       ambig=(count>1);
       cachedResult->isAmbig = ambig;
@@ -4684,7 +4657,9 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     //printf("not found!\n");
   }
 exit:
+  //printf("0  ===> add to cache %p: %s\n",cachedResult,n);
   g_findFileDefCache.insert(key,cachedResult);
+  //delete cachedResult;
   return 0;
 }
 
@@ -4719,9 +4694,9 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(const QCString &s,const char *title,const QCString &relPath)
+QCString substituteKeywords(const QCString &s,const char *title)
 {
-  QCString result = s.copy();
+  QCString result = s;
   if (title) result = substitute(result,"$title",title);
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
@@ -4731,7 +4706,6 @@ QCString substituteKeywords(const QCString &s,const char *title,const QCString &
   result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));
   result = substitute(result,"$projectbrief",Config_getString("PROJECT_BRIEF"));
   result = substitute(result,"$projectlogo",Config_getString("PROJECT_LOGO"));
-  result = substitute(result,"$relpath$",relPath);
   return result;
 }
 
@@ -5271,6 +5245,26 @@ QCString convertToHtml(const char *s,bool keepEntities)
   strBuf.addChar(0);
   return strBuf.get();
 }
+
+QCString convertToJSString(const char *s)
+{
+  static StrBuf strBuf;
+  strBuf.clear();
+  if (s==0) return "";
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '"':  strBuf.addStr("\\\""); break;
+      default:   strBuf.addChar(c);   break;
+    }
+  }
+  strBuf.addChar(0);
+  return strBuf.get();
+}
+
 
 QCString convertCharEntitiesToUTF8(const QCString &s)
 {

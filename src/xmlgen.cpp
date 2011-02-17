@@ -167,7 +167,7 @@ static void writeCombineScript()
   "     xsltproc combine.xslt index.xml >all.xml\n"
   "-->\n"
   "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">\n"
-  "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"yes\" standalone=\"yes\" />\n"
+  "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"no\" standalone=\"yes\" />\n"
   "  <xsl:template match=\"/\">\n"
   "    <doxygen version=\"{doxygenindex/@version}\">\n"
   "      <!-- Load all doxgen generated xml files -->\n"

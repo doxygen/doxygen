@@ -661,19 +661,19 @@ void ManDocVisitor::visitPost(DocHtmlCell *)
 void ManDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
-  m_t << "\\fB" << theTranslator->trForInternalUseOnly() << "\\fP" << endl;
-  m_t << ".RS 4" << endl;
+  //if (!m_firstCol) m_t << endl;
+  //m_t << ".PP" << endl;
+  //m_t << "\\fB" << theTranslator->trForInternalUseOnly() << "\\fP" << endl;
+  //m_t << ".RS 4" << endl;
 }
 
 void ManDocVisitor::visitPost(DocInternal *) 
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".RE" << endl;
-  m_t << ".PP" << endl;
-  m_firstCol=TRUE;
+  //if (!m_firstCol) m_t << endl;
+  //m_t << ".RE" << endl;
+  //m_t << ".PP" << endl;
+  //m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocHRef *)

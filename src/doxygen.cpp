@@ -4694,7 +4694,7 @@ static void addListReferences()
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    QCString name = pd->name();
+    QCString name = pd->getOutputFileBase();
     if (pd->getGroupDef())
     {
       name = pd->getGroupDef()->getOutputFileBase();
@@ -8619,6 +8619,30 @@ static void copyLogo()
   }
 }
 
+static void copyExtraFiles()
+{
+  QStrList files = Config_getList("HTML_EXTRA_FILES");
+  uint i;
+  for (i=0; i<files.count(); ++i)
+  {
+    QCString fileName(files.at(i));
+    
+    if (!fileName.isEmpty())
+    {
+      QFileInfo fi(fileName);
+      if (!fi.exists()) 
+      {
+        err("Extra HTML file '%s' specified in HTML_EXTRA_FILES does not exist!\n", fileName.data());
+      }
+      else
+      {
+        QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+        Doxygen::indexList.addImageFile(fi.fileName().data());
+        copyFile(fileName, destFileName);
+      }
+    }
+  }
+}
 
 //! parse the list of input files
 static void parseFiles(Entry *root,EntryNav *rootNav)
@@ -9151,7 +9175,7 @@ static void usage(const char *name)
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:   %s -w rtf styleSheetFile\n",name);
   msg("    HTML:  %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
-  msg("    LaTeX: %s -w latex headerFile styleSheetFile [configFile]\n\n",name);
+  msg("    LaTeX: %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",name);
   msg("6) Use doxygen to generate an rtf extensions file\n");
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments in the config file will be omitted.\n");
@@ -9430,7 +9454,7 @@ void readConfiguration(int argc, char **argv)
           QFile f;
           if (openOutputFile(argv[optind+1],f))
           {
-            HtmlGenerator::writeHeaderFile(f);
+            HtmlGenerator::writeHeaderFile(f, argv[optind+3]);
           }
           f.close();
           if (openOutputFile(argv[optind+2],f))
@@ -9447,11 +9471,11 @@ void readConfiguration(int argc, char **argv)
         }
         else if (stricmp(formatName,"latex")==0)
         {
-          if (optind+3<argc) // use config file to get settings
+          if (optind+4<argc) // use config file to get settings
           {
-            if (!Config::instance()->parse(argv[optind+3]))
+            if (!Config::instance()->parse(argv[optind+4]))
             {
-              err("error opening or reading configuration file %s!\n",argv[optind+3]);
+              err("error opening or reading configuration file %s!\n",argv[optind+4]);
               exit(1);
             }
             Config::instance()->substituteEnvironmentVars();
@@ -9463,7 +9487,7 @@ void readConfiguration(int argc, char **argv)
           {
             Config::instance()->init();
           }
-          if (optind+2>=argc)
+          if (optind+3>=argc)
           {
             err("error: option \"-w latex\" does not have enough arguments\n");
             cleanUpDoxygen();
@@ -9483,6 +9507,11 @@ void readConfiguration(int argc, char **argv)
           }
           f.close();
           if (openOutputFile(argv[optind+2],f))
+          {
+            LatexGenerator::writeFooterFile(f);
+          }
+          f.close();
+          if (openOutputFile(argv[optind+3],f))
           {
             LatexGenerator::writeStyleSheetFile(f);
           }
@@ -10380,6 +10409,7 @@ void generateOutput()
     //if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
     copyLogo();
+    copyExtraFiles();
     if (!generateTreeView && Config_getBool("USE_INLINE_TREES"))
     {
       FTVHelp::generateTreeViewImages();

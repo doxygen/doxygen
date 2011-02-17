@@ -2381,7 +2381,8 @@ static bool handleInternal(const QCString &)
   }
   else
   {
-    //addOutput("\\internal "); 
+    // re-enabled for bug640828
+    addOutput("\\internal "); 
   }
   return FALSE;
 }

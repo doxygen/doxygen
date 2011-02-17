@@ -79,7 +79,7 @@ class HtmlHelp  : public IndexIntf
     //                  const char *anchor,const MemberDef *md);
     void addIndexItem(Definition *context,MemberDef *md,const char *title);
     void addIndexFile(const char *name);
-    void addImageFile(const char *) {}
+    void addImageFile(const char *);
     void addStyleSheetFile(const char *) {}
 
   private:
@@ -90,6 +90,7 @@ class HtmlHelp  : public IndexIntf
     HtmlHelpIndex *index;
     int dc;
     QStrList indexFiles;
+    QStrList imageFiles;
     QDict<void> indexFileDict;
     static HtmlHelp *theInstance;
     QCString recode(const QCString &s);

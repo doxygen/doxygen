@@ -1151,6 +1151,18 @@ void addConfigOptions(Config *cfg)
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
   //----
+  cl = cfg->addList(
+                 "HTML_EXTRA_FILES",
+                 "The HTML_EXTRA_FILES tag can be used to specify one or more extra images or\n"
+                 "other source files which should be copied to the HTML output directory. Note\n"
+                 "that these files will be copied to the base HTML output directory. Use the\n"
+                 "$relpath$ marker in the HTML_HEADER and/or HTML_FOOTER files to load these\n"
+                 "files. In the HTML_STYLESHEET file, use the file name only. Also note that\n"
+                 "the files will be copied as-is; there are no commands or markers available."
+                );
+  cl->addDependency("GENERATE_HTML");
+  cl->setWidgetType(ConfigList::File);
+  //----
   ci = cfg->addInt(
                  "HTML_COLORSTYLE_HUE",
                  "The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.\n"
@@ -1634,6 +1646,16 @@ void addConfigOptions(Config *cfg)
                  "the generated latex document. The header should contain everything until\n"
                  "the first chapter. If it is left blank doxygen will generate a\n"
                  "standard header. Notice: only use this tag if you know what you are doing!"
+                );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_LATEX");
+  //----
+  cs = cfg->addString(
+                 "LATEX_FOOTER",
+                 "The LATEX_FOOTER tag can be used to specify a personal LaTeX footer for\n"
+                 "the generated latex document. The footer should contain everything after\n"
+                 "the last chapter. If it is left blank doxygen will generate a\n"
+                 "standard footer. Notice: only use this tag if you know what you are doing!"
                 );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_LATEX");

@@ -178,6 +178,10 @@ QCString substituteClassNames(const QCString &s);
 
 QCString substitute(const char *s,const char *src,const char *dst);
 
+QCString clearBlock(const char *s,const char *begin,const char *end);
+
+QCString selectBlock(const QCString& s,const QCString &name,bool which);
+
 QCString resolveDefines(const char *n);
 
 ClassDef *getClass(const char *key);
@@ -225,7 +229,7 @@ bool rightScopeMatch(const QCString &scope, const QCString &name);
 
 bool leftScopeMatch(const QCString &scope, const QCString &name);
 
-QCString substituteKeywords(const QCString &s,const char *title,const QCString &relPath="");
+QCString substituteKeywords(const QCString &s,const char *title);
 
 int getPrefixIndex(const QCString &name);
 
@@ -252,6 +256,8 @@ QCString stripScope(const char *name);
 QCString convertToHtml(const char *s,bool keepEntities=TRUE);
 
 QCString convertToXML(const char *s);
+
+QCString convertToJSString(const char *s);
 
 QCString getOverloadDocs();
 

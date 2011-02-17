@@ -894,15 +894,15 @@ void LatexDocVisitor::visitPost(DocHtmlCell *c)
 void LatexDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  m_t << "\\begin{DoxyInternal}{";
-  filter(theTranslator->trForInternalUseOnly());
-  m_t << "}\n";
+  //m_t << "\\begin{DoxyInternal}{";
+  //filter(theTranslator->trForInternalUseOnly());
+  //m_t << "}\n";
 }
 
 void LatexDocVisitor::visitPost(DocInternal *) 
 {
   if (m_hide) return;
-  m_t << "\\end{DoxyInternal}" << endl;
+  //m_t << "\\end{DoxyInternal}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocHRef *href)
