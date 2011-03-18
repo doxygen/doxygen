@@ -910,15 +910,14 @@ private                                 {
 
  /*---- documentation comments --------------------------------------------------------------------*/
 
-<Variable>"!<"                           { /* backward docu comment (only one line) */
+<Variable,SubprogBody,ModuleBody,TypedefBody>"!<"  { /* backward docu comment (only one line) */
                                           if (v_type != V_IGNORE) {
-                                           yy_push_state(YY_START);
 					   current->docLine  = yyLineNr;
  					   docBlockJavaStyle = FALSE;
 					   docBlock.resize(0);
 					   docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
 					   startCommentBlock(TRUE);
-					   BEGIN(DocBackLine);
+                                           yy_push_state(DocBackLine);
                                           }
   					 }
 <DocBackLine>.*    			 { // contents of current comment line
@@ -932,7 +931,7 @@ private                                 {
                                           }
 					  else if (v_type == V_PARAMETER) 
 					  {
-					    parameter->docs=docBlock;
+					    parameter->docs+=docBlock;
                                           }
                                           yy_pop_state();
  					 }
