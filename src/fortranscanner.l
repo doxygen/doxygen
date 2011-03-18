@@ -1225,12 +1225,13 @@ static const char* prepassFixedForm(const char* contents)
       case 'C':
       case 'c':
       case '*':
-	emptyLabel=FALSE;
-        if(column==1)
+        if(column==1) {
 	  newContents[j]='!';
-        else
-          newContents[j]=c;
-        break;
+	  emptyLabel=FALSE;
+	  break;
+	} else {
+	  // proceed to the next rule
+        }
       default:
         if(column==6 && emptyLabel) { // continuation
           newContents[j]=' ';
@@ -2029,8 +2030,8 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)
 {
-  (void)extension;
-  return TRUE;
+  return !(extension==".f"||extension==".f90"||
+           extension==".f95"||extension==".f03");
 }
 void FortranLanguageScanner::resetCodeParserState()
 {
