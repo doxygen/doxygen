@@ -34,6 +34,8 @@
  * with separate rule?: It seems it is often necessary, because we may parse something like 
  * "functionA" or "MyInterface". So constructs like `(^|[ \t])interface({BS_}{ID})?/[ \t\n]'
  * are desired.
+ *
+ * - Must track yyLineNr when using REJECT, unput() or similar commands.
  */
 
 %{
@@ -139,6 +141,7 @@ int include_stack_ptr = 0;
 static QFile            inputFile;
 static QCString		yyFileName;
 static int		yyLineNr     = 1 ;
+static int		yyColNr     = 0 ;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		file_root    = 0 ;
@@ -184,7 +187,7 @@ static void addCurrentEntry();
 static void addModule(const char *name, bool isModule=FALSE);
 static void addSubprogram(const char *text);
 static void addInterface(QCString name, InterfaceType type);
-static Argument *addFortranParameter(const QCString &type,const QCString &name, const QCString docs);
+static Argument *getParameter(const QCString &name);
 static void scanner_abort();
 
 static void startScope(Entry *scope);
@@ -199,10 +202,14 @@ static void pushBuffer(QCString &buffer);
 static void popBuffer();
 //static void extractPrefix(QCString& text);
 static QCString extractFromParens(const QCString name);
+static CommentInPrepass* locatePrepassComment(int from, int to);
+static void updateVariablePrepassComment(int from, int to);
+static void newLine();
 
 //-----------------------------------------------------------------------------
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+#define YY_USER_ACTION yyColNr+=yyleng;
 //-----------------------------------------------------------------------------
 
 %}
@@ -301,9 +308,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                                  // Only take input after initial ampersand
                                                  inputStringPrepass+=(const char*)(yytext+(indexStart+1));
    
+						 //printf("BUFFER:%s\n", (const char*)inputStringPrepass);
                                                  pushBuffer(inputStringPrepass);
+						 yyColNr = 0;						 
                                                  yy_pop_state();
                                                } else { // simple line
+					         yyColNr = 0;
                                                  REJECT;
                                                }
 
@@ -337,7 +347,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    initializer+=yytext;
 					}
 <String>\"|\'                           { // string ends with next quote without previous backspace
-                                          if (yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
+                                          if (yytext[0]!=stringStartSymbol) { yyColNr -= yyleng; REJECT; } // single vs double quote
 					  if (yy_top_state() == Initialization
 					      || yy_top_state() == ArrayInitializer)
 					    initializer+=yytext;
@@ -348,7 +358,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    initializer+=yytext;
 					} 
 <*>\"|\'                                { /* string starts */
-					  if (YY_START == StrIgnore) REJECT; // ignore in simple comments
+					  if (YY_START == StrIgnore) { yyColNr -= yyleng; REJECT; }; // ignore in simple comments
                                           yy_push_state(YY_START);
                                           if (yy_top_state() == Initialization
 					      || yy_top_state() == ArrayInitializer)
@@ -359,7 +369,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*------ ignore simple comment (not documentation comments) */
 
-<*>"!"/[^<>\n]                         {  if (YY_START == String) REJECT; // "!" is ignored in strings
+<*>"!"/[^<>\n]                         {  if (YY_START == String) { yyColNr -= yyleng; REJECT; } // "!" is ignored in strings
                                           // skip comment line (without docu comments "!>" "!<" ) 
                                           /* ignore further "!" and ignore comments in Strings */
                                           if ((YY_START != StrIgnore) && (YY_START != String)) 
@@ -411,6 +421,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           current->lang    = SrcLangExt_F90; 
   					}
 <Use,UseOnly>"\n"                       {
+					  yyColNr -= 1;
                                           unput(*yytext);
                                           yy_pop_state();
                                         }
@@ -463,7 +474,8 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           moduleProcedures.append(current);
                                           addCurrentEntry();
                                         }
-<ModuleProcedure>"\n"                   { unput(*yytext); 
+<ModuleProcedure>"\n"                   { yyColNr -= 1;
+					  unput(*yytext); 
                                           yy_pop_state();
                                         }
 <InterfaceBody>.                        {}
@@ -596,7 +608,7 @@ private                                 {
                                         }
 "\n"                                    {
                                           currentModifiers = SymbolModifiers();
-                                          yyLineNr++; yyLineNr+=lineCountPrepass; lineCountPrepass=0;
+					  newLine();
                                           docBlock.resize(0);
                                         }
 }
@@ -655,6 +667,7 @@ private                                 {
 					  } 
 					  else 
 					  {
+					    yyColNr -= yyleng;
 					    REJECT;
 					  }
 					}
@@ -679,12 +692,14 @@ private                                 {
                                           QChar chr = yytext[yyleng-1];
                                           if (chr.isLetter() || chr.isDigit() || (chr == '_'))
                                           {
+					    yyColNr -= yyleng;
                                             REJECT;
                                           }
                                           else
                                           {
                                             QCString tmp = yytext;
                                             tmp = tmp.left(tmp.length() - 1);
+					    yyColNr -= 1;
                                             unput(yytext[yyleng-1]);
                                             currentModifiers |= (tmp);
                                           }
@@ -694,12 +709,13 @@ private                                 {
 					}
 .					{ /* unknown attribute, consider variable name */
 					  //cout<<"start variables, unput "<<*yytext<<endl;
+					  yyColNr -= 1;
 					  unput(*yytext);
 					  BEGIN( Variable );
 					}
 }
 
-<Variable>{BS}				{}
+<Variable>{BS}				{ }
 <Variable>{ID}				{ /* parse variable declaration */
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
  					  /* work around for bug in QCString.replace (QCString works) */
@@ -721,8 +737,16 @@ private                                 {
                                           } 
 					  else if (!argType.isEmpty())
 					  { // deklaration of parameter list: add type for corr. parameter 
-					    parameter= addFortranParameter(argType,argName,docBlock);
-					    if (parameter) v_type= V_PARAMETER;
+					    parameter = getParameter(argName);
+					    if (parameter) {
+					      v_type= V_PARAMETER;
+      					      if (!argType.isNull())
+        				        parameter->type=argType.stripWhiteSpace();
+					      if (!docBlock.isNull()) {
+					        parameter->docs += "\n";
+					        parameter->docs += docBlock;
+      					      }					    
+					    }
 					    // save, it may be function return type
 					    modifiers[current_root][name.lower()].type = argType;
 					    // any accumulated doc for argument should be emptied,
@@ -738,7 +762,10 @@ private                                 {
 					  attr += yytext;
 					  modifiers[current_root][name] |= attr;
 					}
-<Variable>{COMMA}	                {}
+<Variable>{COMMA}	                { //printf("COMMA: %d<=..<=%d\n", yyColNr-yyleng, yyColNr);
+					  // locate !< comment
+					  updateVariablePrepassComment(yyColNr-yyleng, yyColNr);
+					}
 <Variable>{BS}"="                       { yy_push_state(YY_START);
                                           initializer="";
                                           initializerScope = initializerArrayScope = 0;
@@ -746,7 +773,7 @@ private                                 {
                                         }
 <Variable>"\n"	                        { currentModifiers = SymbolModifiers();
                                           yy_pop_state(); // end variable deklaration list
-                                          yyLineNr++; yyLineNr+=lineCountPrepass; lineCountPrepass=0;
+					  newLine();
                                           docBlock.resize(0);
                                         }
 <Variable>";".*"\n"                     { currentModifiers = SymbolModifiers();
@@ -777,6 +804,7 @@ private                                 {
 					}
 <Initialization>{COMMA}                 { if (initializerScope == 0)
 					  {
+					    updateVariablePrepassComment(yyColNr-yyleng, yyColNr);
 					    yy_pop_state(); // end initialization
                                             if (v_type == V_VARIABLE) last_entry->initializer= initializer;
 					  }
@@ -786,6 +814,7 @@ private                                 {
 <Initialization>"\n"|"!"                { //|
                                           yy_pop_state(); // end initialization
                                           if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+					  yyColNr -= 1;
  					  unput(*yytext);
                                         }
 <Initialization>.                       { initializer+=yytext; }
@@ -837,26 +866,36 @@ private                                 {
 
                                          BEGIN(Parameterlist);
                                        }
-<Parameterlist>{ARGS}                  {
+<Parameterlist>"("                     { current->args = "("; }
+<Parameterlist>")"                     {
+				         current->args += ")";
+				         current->args = removeRedundantWhiteSpace(current->args);
+                                         addCurrentEntry();
+					 startScope(last_entry);
+					 BEGIN(SubprogBody);
+				       }
+<Parameterlist>{COMMA}|{BS}            { current->args += yytext;
+					 CommentInPrepass *c = locatePrepassComment(yyColNr-yyleng, yyColNr);
+					 if (c!=NULL) {
+                                           if(current->argList->count()>0) {
+					     current->argList->at(current->argList->count()-1)->docs = c->str;
+					   }
+					 }		         
+				       }
+<Parameterlist>{ID}                    {
 				           //current->type not yet available
-                                           QCString arglist= yytext;
-					   //cout << "3=========> got parameterlist " << yytext << endl;
-                                           //yyLineNr+= arglist.contains('\n');
-					   //static QRegExp re("&[^\n]*\n");
-                                           //arglist = arglist.replace(re,"");
-					   //cout << "3=========> got parameterlist " << arglist << endl;
-					   current->args = arglist;
-					   current->args = removeRedundantWhiteSpace(current->args);
-					   stringToArgumentList(current->args, current->argList);
-                                           addCurrentEntry();
-
-					   startScope(last_entry);
-					   BEGIN(SubprogBody);
+                                           QCString param = yytext;
+					   // std::cout << "3=========> got parameter " << param << std::endl;
+					   current->args += param;
+					   Argument *arg = new Argument;
+					   arg->name = param;
+					   arg->type = "";
+					   current->argList->append(arg);
  				       } 
 <Parameterlist>{NOARGS}                {   
-                                           yyLineNr++; yyLineNr+=lineCountPrepass; lineCountPrepass=0;
+				           newLine();
 					   //printf("3=========> without parameterlist \n");
- 					   stringToArgumentList("", current->argList);
+ 					   //current->argList = ;
                                            addCurrentEntry();
 					   startScope(last_entry);
 					   BEGIN(SubprogBody);				           
@@ -914,10 +953,11 @@ private                                 {
   					}
 <DocBlock>"\n"{BS}"!"(">"|"!"+)		{ // comment block (next line is also comment line)
 					  docBlock+="\n"; // \n is necessary for lists
-                                          yyLineNr++; yyLineNr+=lineCountPrepass; lineCountPrepass=0;
+					  newLine();
   					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
                                           //cout <<"3=========> comment block : "<< docBlock << endl;
+					  yyColNr -= 1;
 					  unput(*yytext);                                        
  					  handleCommentBlock(docBlock,TRUE);
                                           yy_pop_state();                                          
@@ -926,7 +966,7 @@ private                                 {
  /*------------------------------------------------------------------------------------------------*/
 
 <*>"\n"                                 {
-                                          yyLineNr++; yyLineNr+=lineCountPrepass; lineCountPrepass=0;
+					  newLine();
                                           //if (debugStr.stripWhiteSpace().length() > 0) cout << "ignored text: " << debugStr << " state: " <<YY_START << endl;
                                           debugStr="";
                                         }
@@ -978,6 +1018,36 @@ static void extractPrefix(QCString &text)
   }
 }
 #endif
+
+static void newLine() {
+  yyLineNr++;
+  yyLineNr+=lineCountPrepass;
+  lineCountPrepass=0;
+  comments.clear();
+}
+
+static CommentInPrepass* locatePrepassComment(int from, int to) {
+  //printf("Locate %d-%d\n", from, to);
+  for(uint i=0; i<comments.count(); i++) { // todo: optimize
+    int c = comments.at(i)->column;
+    //printf("Candidate %d\n", c);
+    if (c>=from && c<=to) {
+      // comment for previous variable or parameter
+      return comments.at(i);
+    }
+  }
+  return NULL;
+}
+
+static void updateVariablePrepassComment(int from, int to) {
+  CommentInPrepass *c = locatePrepassComment(from, to);
+  if (c!=NULL && v_type == V_VARIABLE) {
+    last_entry->brief = c->str;
+  } else if (c!=NULL && v_type == V_PARAMETER) {
+    Argument *parameter = getParameter(argName);
+    if (parameter) parameter->docs = c->str;
+  }
+}
 
 static int getAmpersandAtTheStart(const char *buf, int length)
 {
@@ -1065,9 +1135,8 @@ void truncatePrepass(int index)
 {
   int length = inputStringPrepass.length();
   for (int i=index+1; i<length; i++) {
-    if (inputStringPrepass[i]=='!') { // save comment 
-      //printf("-----SAVE----- %d:%s", i, (const char*)inputStringPrepass.right(length-i));
-      struct CommentInPrepass *c=new CommentInPrepass(index, inputStringPrepass.right(length-i));
+    if (inputStringPrepass[i]=='!' && i<length-1 && inputStringPrepass[i+1]=='<') { // save comment 
+      struct CommentInPrepass *c=new CommentInPrepass(index, inputStringPrepass.right(length-i-2));
       comments.append(c);
     }
   }
@@ -1776,25 +1845,21 @@ static void addInterface(QCString name, InterfaceType type)
 
 //-----------------------------------------------------------------------------
 
-/*! Update the argument \a name with additional \a type info. 
+/*! Get the argument \a name.
  */
-static Argument *addFortranParameter(const QCString &type,const QCString &name, const QCString docs)
+static Argument* getParameter(const QCString &name)
 {
-  //cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<endl;
+  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<std::endl;
   Argument *ret = 0;
   if (current_root->argList==0) return 0;
   ArgumentListIterator ali(*current_root->argList);
   Argument *a;
   for (ali.toFirst();(a=ali.current());++ali)
   {
-    if (a->type.lower()==name.lower())
+    if (a->name.lower()==name.lower())
     {
       ret=a;
-//cout << "addParameter found:   " << type << " , " << name << endl;
-      a->type=type.stripWhiteSpace();
-      a->name=name.stripWhiteSpace();
-      if (!docs.isNull())
-        a->docs = docs;
+      //printf("parameter found: %s\n",(const char*)name);
       break;
     }
   } // for
