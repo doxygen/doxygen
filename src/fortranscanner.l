@@ -1225,13 +1225,12 @@ static const char* prepassFixedForm(const char* contents)
       case 'C':
       case 'c':
       case '*':
-        if(column==1) {
+	emptyLabel=FALSE;
+        if(column==1)
 	  newContents[j]='!';
-	  emptyLabel=FALSE;
-	  break;
-	} else {
-	  // proceed to the next rule
-        }
+        else
+          newContents[j]=c;
+        break;
       default:
         if(column==6 && emptyLabel) { // continuation
           newContents[j]=' ';
