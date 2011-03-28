@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <qregexp.h>
 #include <assert.h>
-#include <md5.h>
+#include "md5.h"
 #include "memberdef.h"
 #include "membername.h"
 #include "doxygen.h"
@@ -1158,6 +1158,7 @@ bool MemberDef::isBriefSectionVisible() const
                                    !hasDocs
                                   );
 
+
   //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d "
   //       "visibleIfPrivate=%d visibltIfNotDefaultCDTor=%d "
   //       "visibleIfFriendCompound=%d !annScope=%d\n",
@@ -1168,7 +1169,7 @@ bool MemberDef::isBriefSectionVisible() const
   bool visible = visibleIfStatic     && visibleIfDocumented      && 
                  visibleIfEnabled    && visibleIfPrivate         &&
                  /*visibleIfDocVirtual &&*/ visibleIfNotDefaultCDTor && 
-                 visibleIfFriendCompound &&
+                 visibleIfFriendCompound && 
                  !m_impl->annScope;
   //printf("MemberDef::isBriefSectionVisible() %d\n",visible);
   return visible;
@@ -1682,7 +1683,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    const char *scName,
                                    Definition *container,
                                    bool inGroup,
-                                   bool showEnumValues
+                                   bool showEnumValues,
+                                   bool showInline
                                   )
 {
   // if this member is in a group find the real scope name.
@@ -1763,7 +1765,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-        ol.startMemberDoc(cname,name(),memAnchor,name());
+        ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-i-l));
@@ -1775,7 +1777,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     {
       //printf("Anonymous compound `%s'\n",cname.data());
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-      ol.startMemberDoc(cname,name(),memAnchor,name());
+      ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
       // strip anonymous compound names from definition
       int si=ldef.find(' '),pi,ei=i+l;
       if (si==-1) si=0;
@@ -1793,7 +1795,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   else // not an enum value
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-    ol.startMemberDoc(cname,name(),memAnchor,name());
+    ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
 
     ClassDef *cd=getClassDef();
     if (!Config_getBool("HIDE_SCOPE_NAMES"))
@@ -1916,7 +1918,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
        isFriend() || isRelated() || 
        (isInline() && Config_getBool("INLINE_INFO")) ||
        isSignal() || isSlot() ||
-       isStatic() || (m_impl->classDef && m_impl->classDef!=container) ||
+       isStatic() || 
+       (m_impl->classDef && m_impl->classDef!=container && container->definitionType()==TypeClass) ||
        (m_impl->memSpec & ~Entry::Inline)!=0 
       )
      )
@@ -1971,7 +1974,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           if      (isSlot())                sl.append("slot");
         }
       }
-      if (m_impl->classDef && m_impl->classDef!=container) sl.append("inherited");
+      if (m_impl->classDef && 
+          container->definitionType()==TypeClass && 
+          m_impl->classDef!=container
+         ) 
+      {
+        sl.append("inherited");
+      }
     }
     const char *s=sl.first();
     while (s)
@@ -2059,7 +2068,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if (!detailed.isEmpty() || 
       !inbodyDocumentation().isEmpty())
   { 
-    ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
+    // write vhdl inline code with or without option INLINE_SOURCE
+    if (optVhdl && VhdlDocGen::isMisc(this)) 
+    {
+      VhdlDocGen::writeSource(this,ol,cname);
+      return;
+    }
+    else
+    {
+      ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
+    }
+   
     if (!inbodyDocumentation().isEmpty())
     {
       ol.startParagraph();
@@ -2126,8 +2145,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             ol.startDescTable();
           }
 
-          ol.addIndexItem(fmd->name(),cname);
-          ol.addIndexItem(cname,fmd->name());
+          ol.addIndexItem(fmd->name(),ciname);
+          ol.addIndexItem(ciname,fmd->name());
 
           //Doxygen::indexList.addIndexItem(
           //                       ciname,                                // level1
@@ -2223,7 +2242,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
               0,bcd->displayName());
           if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ )
           {
-            writePageRef(ol,bcd->getOutputFileBase(),0);
+            writePageRef(ol,bcd->getOutputFileBase(),bcd->anchor());
           }
         }
         ol.parseText(reimplFromLine.right(

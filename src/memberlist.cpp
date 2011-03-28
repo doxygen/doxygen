@@ -66,7 +66,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
 /*! Count the number of members in this list that are visible in
  *  the declaration part of a compound's documentation page.
  */
-void MemberList::countDecMembers(bool countEnumValues)
+void MemberList::countDecMembers(bool countEnumValues,GroupDef *gd)
 {
   if (m_numDecMembers!=-1) return; 
   
@@ -118,7 +118,7 @@ void MemberList::countDecMembers(bool countEnumValues)
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      mg->countDecMembers();
+      mg->countDecMembers(gd);
       m_varCnt+=mg->varCount();
       m_funcCnt+=mg->funcCount();
       m_enumCnt+=mg->enumCount();
@@ -313,7 +313,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             if (enumVars==0) // show enum here
             {
               //printf("Enum!!\n");
-              if (first) ol.startMemberList(),first=FALSE;
+              if (first)
+              {
+                ol.startMemberList();
+                first=FALSE;
+              }
               ol.startMemberItem(0);
               ol.writeString("enum ");
               ol.insertMemberAlign();
@@ -326,8 +330,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                     md->briefFile(),md->briefLine(),
                     cd,md,
                     md->briefDescription(),
-                    TRUE,
-                    FALSE
+                    TRUE,FALSE,0,TRUE,FALSE
                     );
                 if (md->isDetailedSectionLinkable())
                 {
@@ -347,7 +350,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
         case MemberDef::Friend:
           {
-            if (first) ol.startMemberList(),first=FALSE;
+            if (first) 
+            {
+              ol.startMemberList();
+              first=FALSE;
+            }
             md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
             break;
           }
@@ -378,7 +385,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         //printf("anonymous compound members\n");
         if (md->isBriefSectionVisible())
         {
-          if (first) ol.startMemberList(),first=FALSE;
+          if (first) 
+          {
+            ol.startMemberList();
+            first=FALSE;
+          }
           md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         }
         md->setFromAnonymousScope(TRUE);
@@ -386,7 +397,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     }
   }
  
-  if (!first) ol.endMemberList(); 
+  if (!first) 
+  {
+    ol.endMemberList(); 
+  }
 
   ol.popGeneratorState();
   //printf("----- end writePlainDeclaration() ----\n");
@@ -394,13 +408,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-             const char *title,const char *subtitle, bool showEnumValues
-             /*, bool inGroup,bool countSubGroups*/)
+             const char *title,const char *subtitle, bool showEnumValues,
+             bool showInline)
 {
   //printf("----- writeDeclaration() this=%p ----\n",this);
   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
 
-  countDecMembers(showEnumValues); // count member not in group
+  countDecMembers(showEnumValues,gd); // count members shown in this section
   Definition *ctx = cd;
   if (ctx==0 && nd) ctx = nd;
   if (ctx==0 && gd) ctx = gd;
@@ -409,12 +423,26 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (numDecMembers()==0) return;
   //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
   //    this,title,subtitle,numDecMembers());
-  ol.startMemberHeader(listTypeAsString());
   if (title) 
   {
+    if (showInline)
+    {
+      ol.startInlineHeader();
+    }
+    else
+    {
+      ol.startMemberHeader(listTypeAsString());
+    }
     ol.parseText(title);
+    if (showInline)
+    {
+      ol.endInlineHeader();
+    }
+    else
+    {
+      ol.endMemberHeader();
+    }
   }
-  ol.endMemberHeader();
   if (subtitle) 
   {
     QCString st=subtitle;
@@ -422,7 +450,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     if (!st.isEmpty())
     {
       ol.startMemberSubtitle();
-      ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,TRUE,FALSE);
+      ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,FALSE,FALSE);
       ol.endMemberSubtitle();
     }
   }
@@ -477,7 +505,7 @@ void MemberList::writeDeclarations(OutputList &ol,
 
 void MemberList::writeDocumentation(OutputList &ol,
                      const char *scopeName, Definition *container,
-                     const char *title,bool showEnumValues)
+                     const char *title,bool showEnumValues,bool showInline)
 {
   //printf("MemberList::writeDocumentation()\n");
 
@@ -487,9 +515,9 @@ void MemberList::writeDocumentation(OutputList &ol,
   if (title)
   {
     ol.writeRuler();
-    ol.startGroupHeader();
+    ol.startGroupHeader(showInline ? 2 : 0);
     ol.parseText(title);
-    ol.endGroupHeader();
+    ol.endGroupHeader(showInline ? 2 : 0);
   }
   ol.startMemberDocList();
   
@@ -497,7 +525,8 @@ void MemberList::writeDocumentation(OutputList &ol,
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName,container,m_inGroup,showEnumValues);
+    md->writeDocumentation(this,ol,scopeName,container,
+                           m_inGroup,showEnumValues,showInline);
   }
   if (memberGroupList)
   {
@@ -506,7 +535,7 @@ void MemberList::writeDocumentation(OutputList &ol,
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      mg->writeDocumentation(ol,scopeName,container);
+      mg->writeDocumentation(ol,scopeName,container,showEnumValues,showInline);
     }
   }
   ol.endMemberDocList();
@@ -527,6 +556,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     if (!generateTreeView)
     {
       container->writeNavigationPath(ol);
+      ol.endQuickIndices();
     }
     ol.startContents();
 
@@ -537,7 +567,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     container->writeQuickMemberLinks(ol,md);
 
     ol.writeString("   </td>\n");
-    ol.writeString("   <td valign=\"top\">\n");
+    ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
     
     md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
 
@@ -545,14 +575,17 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     ol.writeString("  </tr>\n");
     ol.writeString("</table>\n");
 
-    ol.endContents();
 
     if (generateTreeView)
     {
+      ol.endContents();
       container->writeNavigationPath(ol);
+      endFile(ol,TRUE);
     }
-
-    endFile(ol,TRUE);
+    else
+    {
+      endFile(ol);
+    }
   }
   if (memberGroupList)
   {

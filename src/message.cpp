@@ -113,12 +113,8 @@ void msg(const char *fmt, ...)
   }
 }
 
-static void do_warn(const char *tag, const char *file, int line, const char *fmt, va_list args)
+static void format_warn(const char *file,int line,const char *text)
 {
-  if (!Config_getBool(tag)) return; // warning type disabled
-  char text[4096];
-  vsnprintf(text, 4096, fmt, args);
-  text[4095]='\0';
   QCString fileSubst = file==0 ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
   QCString textSubst = text;
@@ -134,7 +130,6 @@ static void do_warn(const char *tag, const char *file, int line, const char *fmt
   }
   // substitute markers by actual values
   QCString msgText = 
-    substitute(
       substitute(
         substitute(
           substitute(
@@ -147,12 +142,19 @@ static void do_warn(const char *tag, const char *file, int line, const char *fmt
           "$line",lineSubst
         ),
         "$version",versionSubst
-      ),
-      "%","%%"
-    )+'\n';
+      )+'\n';
 
   // print resulting message
-  fprintf(warnFile,"%s",msgText.data());
+  fwrite(msgText.data(),1,msgText.length(),warnFile);
+}
+
+static void do_warn(const char *tag, const char *file, int line, const char *fmt, va_list args)
+{
+  if (!Config_getBool(tag)) return; // warning type disabled
+  char text[4096];
+  vsnprintf(text, 4096, fmt, args);
+  text[4095]='\0';
+  format_warn(file,line,text);
 }
 
 void warn(const char *file,int line,const char *fmt, ...)
@@ -161,6 +163,12 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_start(args, fmt);
   do_warn("WARNINGS", file, line, fmt, args);
   va_end(args); 
+}
+
+void warn_simple(const char *file,int line,const char *text)
+{
+  if (!Config_getBool("WARNINGS")) return; // warning type disabled
+  format_warn(file,line,text);
 }
 
 void warn_undoc(const char *file,int line,const char *fmt, ...)

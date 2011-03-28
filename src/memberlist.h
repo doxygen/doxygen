@@ -134,15 +134,15 @@ class MemberList : public QList<MemberDef>
     int numDecMembers() const  { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
     int numDocMembers() const  { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
     bool needsSorting() const  { return m_needsSorting; }
-    void countDecMembers(bool countEnumValues=FALSE);
+    void countDecMembers(bool countEnumValues=FALSE,GroupDef *gd=0);
     void countDocMembers(bool countEnumValues=FALSE);
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *title,const char *subtitle,bool showEnumValues=FALSE);
+               const char *title,const char *subtitle,bool showEnumValues=FALSE,bool showInline=FALSE);
     void writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container,const char *title,bool showEnumValues=FALSE);
+               Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, Definition *container);
     bool declVisible() const;

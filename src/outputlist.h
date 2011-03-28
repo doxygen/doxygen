@@ -157,10 +157,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startTypewriter); }
     void endTypewriter() 
     { forall(&OutputGenerator::endTypewriter); }
-    void startGroupHeader()
-    { forall(&OutputGenerator::startGroupHeader); }
-    void endGroupHeader()
-    { forall(&OutputGenerator::endGroupHeader); }
+    void startGroupHeader(int extraLevels=0)
+    { forall(&OutputGenerator::startGroupHeader,extraLevels); }
+    void endGroupHeader(int extraLevels=0)
+    { forall(&OutputGenerator::endGroupHeader,extraLevels); }
     //void writeListItem() 
     //{ forall(&OutputGenerator::writeListItem); }
     void startItemListItem() 
@@ -191,6 +191,14 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberList); }
     void endMemberList() 
     { forall(&OutputGenerator::endMemberList); }
+    void startInlineDescription()
+    { forall(&OutputGenerator::startInlineDescription); }
+    void endInlineDescription()
+    { forall(&OutputGenerator::endInlineDescription); }
+    void startInlineHeader()
+    { forall(&OutputGenerator::startInlineHeader); }
+    void endInlineHeader()
+    { forall(&OutputGenerator::endInlineHeader); }
     void startAnonTypeScope(int i1) 
     { forall(&OutputGenerator::startAnonTypeScope,i1); }
     void endAnonTypeScope(int i1) 
@@ -239,8 +247,8 @@ class OutputList : public OutputDocInterface
     void writeChar(char c)
     { forall(&OutputGenerator::writeChar,c); }
     void startMemberDoc(const char *clName,const char *memName,
-                        const char *anchor,const char *title)
-    { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title); }
+                        const char *anchor,const char *title,bool showInline)
+    { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title,showInline); }
     void endMemberDoc(bool hasArgs) 
     { forall(&OutputGenerator::endMemberDoc,hasArgs); }
     void startDoxyAnchor(const char *fName,const char *manName,
@@ -484,6 +492,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);
     FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
+    FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

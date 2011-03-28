@@ -1,4 +1,4 @@
-#include <md5.h>
+#include "md5.h"
 
 #include "dirdef.h"
 #include "filename.h"
@@ -117,7 +117,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.writeRuler();
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-      ol.writeAnchor(0,"_details");
+      ol.writeAnchor(0,"details");
     ol.popGeneratorState();
     ol.startGroupHeader();
     ol.parseText(title);
@@ -166,7 +166,7 @@ void DirDef::writeBriefDescription(OutputList &ol)
        )
     {
       ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"_details");
+      ol.startTextLink(0,"details");
       ol.parseText(theTranslator->trMore());
       ol.endTextLink();
     }
@@ -399,6 +399,7 @@ void DirDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileIncludedByGraph: 
       case LayoutDocEntry::FileSourceLink:
       case LayoutDocEntry::GroupClasses: 
+      case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs: 
       case LayoutDocEntry::GroupNestedGroups: 

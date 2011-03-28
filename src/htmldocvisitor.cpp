@@ -142,6 +142,7 @@ HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
 
 void HtmlDocVisitor::visit(DocWord *w)
 {
+  //printf("word: %s\n",w->word().data());
   if (m_hide) return;
   filter(w->word());
 }
@@ -379,7 +380,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 
         forceEndParagraph(s);
         m_t << "<div align=\"center\">" << endl;
-        writeMscFile(baseName,s->relPath(),s->context());
+        writeMscFile(baseName+".msc",s->relPath(),s->context());
         m_t << "</div>" << endl;
         forceStartParagraph(s);
 
@@ -557,6 +558,7 @@ void HtmlDocVisitor::visit(DocSimpleSectSep *)
 
 void HtmlDocVisitor::visitPre(DocAutoList *l)
 {
+  //printf("DocAutoList::visitPre\n");
   if (m_hide) return;
   forceEndParagraph(l);
   if (l->isEnumList())
@@ -580,6 +582,7 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
 
 void HtmlDocVisitor::visitPost(DocAutoList *l)
 {
+  //printf("DocAutoList::visitPost\n");
   if (m_hide) return;
   if (l->isEnumList())
   {
@@ -668,6 +671,11 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         isLast =TRUE;
         t=1; // not used
         break;
+      case DocNode::Kind_ParamList:
+        isFirst=TRUE;
+        isLast =TRUE;
+        t=1; // not used
+        break;
       case DocNode::Kind_HtmlListItem:
         isFirst=isFirstChildNode((DocHtmlListItem*)p->parent(),p);
         isLast =isLastChildNode ((DocHtmlListItem*)p->parent(),p);
@@ -724,7 +732,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
 {
   if (m_hide) return;
 
-  //printf("Processing docpara with parent of kind %d\n",
+  //printf("DocPara::visitPre: parent of kind %d ",
   //       p->parent() ? p->parent()->kind() : -1);
 
   bool needsTag = FALSE;
@@ -792,6 +800,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //printf("startPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTag=FALSE;
 
+  //printf("  needsTag=%d\n",needsTag);
   // write the paragraph tag (if needed)
   if (needsTag) m_t << "<p" << contexts[t] << ">";
 }
@@ -859,6 +868,8 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   getParagraphContext(p,isFirst,isLast);
   //printf("endPara first=%d last=%d\n",isFirst,isLast);
   if (isFirst && isLast) needsTag=FALSE;
+
+  //printf("DocPara::visitPost needsTag=%d\n",needsTag);
 
   if (needsTag) m_t << "</p>\n";
 
@@ -1394,6 +1405,7 @@ void HtmlDocVisitor::visitPost(DocParamSect *s)
 
 void HtmlDocVisitor::visitPre(DocParamList *pl)
 {
+  //printf("DocParamList::visitPre\n");
   if (m_hide) return;
   m_t << "    <tr>";
   DocParamSect *sect = 0;
@@ -1466,6 +1478,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
 
 void HtmlDocVisitor::visitPost(DocParamList *)
 {
+  //printf("DocParamList::visitPost\n");
   if (m_hide) return;
   m_t << "</td></tr>" << endl;
 }

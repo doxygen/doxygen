@@ -67,6 +67,7 @@ void TextDocVisitor::visit(DocSymbol *s)
 void TextDocVisitor::filter(const char *str)
 { 
   if (str==0) return;
+  //printf("TextDocVisitor::filter(%s)\n",str);
   const char *p=str;
   char c;
   while (*p)

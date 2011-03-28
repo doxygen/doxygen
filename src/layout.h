@@ -52,7 +52,7 @@ struct LayoutDocEntry
               FileIncludedByGraph, FileSourceLink,
 
               // Group specific items
-              GroupClasses, GroupNamespaces,
+              GroupClasses, GroupInlineClasses, GroupNamespaces,
               GroupDirs, GroupNestedGroups, GroupFiles,
               GroupGraph, GroupPageDocs,
 

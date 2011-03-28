@@ -485,22 +485,24 @@ static void addRelatedPage(EntryNav *rootNav)
   }
 }
 
-static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
+static void buildGroupListFiltered(EntryNav *rootNav,bool additional, bool includeExternal)
 {
-  if (rootNav->section()==Entry::GROUPDOC_SEC && !rootNav->name().isEmpty())
+  if (rootNav->section()==Entry::GROUPDOC_SEC && !rootNav->name().isEmpty() && 
+        ((!includeExternal && rootNav->tagInfo()==0) ||
+         ( includeExternal && rootNav->tagInfo()!=0))
+     )
   {
-    //printf("Found group %s title=`%s type=%d'\n",
-    //    root->name.data(),root->type.data(),root->groupDocType);
-
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
-    
-    if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
-        (root->groupDocType!=Entry::GROUPDOC_NORMAL && additional))
-    {
-      GroupDef *gd;
 
-      if ((gd=Doxygen::groupSDict->find(root->name)))
+    if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
+        (root->groupDocType!=Entry::GROUPDOC_NORMAL &&  additional))
+    {
+      GroupDef *gd = Doxygen::groupSDict->find(root->name);
+      //printf("Processing group '%s': add=%d ext=%d gd=%p\n",
+      //    root->type.data(),additional,includeExternal,gd);
+
+      if (gd)
       {
         if ( !gd->hasGroupTitle() )
         {
@@ -546,17 +548,24 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
     EntryNav *e;
     for (;(e=eli.current());++eli)
     {
-      buildGroupListFiltered(e,additional);
+      buildGroupListFiltered(e,additional,includeExternal);
     }
   }
 }
 
 static void buildGroupList(EntryNav *rootNav)
 {
+  // --- first process only local groups
   // first process the @defgroups blocks
-  buildGroupListFiltered(rootNav,FALSE);
+  buildGroupListFiltered(rootNav,FALSE,FALSE);
   // then process the @addtogroup, @weakgroup blocks
-  buildGroupListFiltered(rootNav,TRUE);
+  buildGroupListFiltered(rootNav,TRUE,FALSE);
+
+  // --- then also process external groups
+  // first process the @defgroups blocks
+  buildGroupListFiltered(rootNav,FALSE,TRUE);
+  // then process the @addtogroup, @weakgroup blocks
+  buildGroupListFiltered(rootNav,TRUE,TRUE);
 }
 
 static void findGroupScope(EntryNav *rootNav)
@@ -1304,6 +1313,40 @@ static void resolveClassNestingRelations()
   }
 }
 
+void distributeClassGroupRelations()
+{
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  if (!inlineGroupedClasses) return;
+  //printf("** distributeClassGroupRelations()\n");
+
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+
+  ClassDef *cd;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    //printf("Checking %s\n",cd->name().data());
+    // distribute the group to nested classes as well
+    if (!cd->visited && cd->partOfGroups()!=0 && cd->getInnerClasses())
+    {
+      //printf("  Candidate for merging\n");
+      ClassSDict::Iterator ncli(*cd->getInnerClasses());
+      ClassDef *ncd;
+      GroupDef *gd = cd->partOfGroups()->at(0);
+      for (ncli.toFirst();(ncd=ncli.current());++ncli)
+      {
+        if (ncd->partOfGroups()==0)
+        {
+          //printf("  Adding %s to group '%s'\n",ncd->name().data(),
+          //    gd->groupTitle());
+          ncd->makePartOfGroup(gd);
+          gd->addClass(ncd);
+        }
+      }
+      cd->visited=TRUE; // only visit every class once
+    }
+  }
+}
 
 //----------------------------------------------------------------------
 // build a list of all namespaces mentioned in the documentation
@@ -5759,7 +5802,7 @@ static void findMember(EntryNav *rootNav,
                 }
               }
             }
-            warn(root->fileName,root->startLine,warnMsg);
+            warn_simple(root->fileName,root->startLine,warnMsg);
           }
         }
         else if (cd) // member specialization
@@ -7256,7 +7299,10 @@ static void addSourceReferences()
     MemberDef *md=0;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      //printf("class member %s\n",md->name().data());
+      //printf("class member %s: def=%s body=%d link?=%d\n",
+      //    md->name().data(),
+      //    md->getBodyDef()?md->getBodyDef()->name().data():"<none>",
+      //    md->getStartBodyLine(),md->isLinkableInProject());
       FileDef *fd=md->getBodyDef();
       if (fd && 
           md->getStartBodyLine()!=-1 &&
@@ -7352,7 +7398,7 @@ static void generateClassList(ClassSDict &classSDict)
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
     if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
-        ) && !cd->isHidden()
+        ) && !cd->isHidden() && !cd->isEmbeddedInGroupDocs()
        ) 
     {
       // skip external references, anonymous compounds and 
@@ -10186,6 +10232,7 @@ void parseInput()
   
   msg("Computing nesting relations for classes...\n");
   resolveClassNestingRelations();
+  distributeClassGroupRelations();
 
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelations(), that's why

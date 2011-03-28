@@ -131,8 +131,9 @@ void GroupDef::findSectionsInDocumentation()
 
 void GroupDef::addFile(const FileDef *def)
 {
+  static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (def->isHidden()) return;
-  if (Config_getBool("SORT_BRIEF_DOCS"))
+  if (sortBriefDocs)
     fileList->inSort(def);
   else
     fileList->append(def);
@@ -140,13 +141,15 @@ void GroupDef::addFile(const FileDef *def)
 
 bool GroupDef::addClass(const ClassDef *cd)
 {
+  static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (cd->isHidden()) return FALSE;
-  if (classSDict->find(cd->name())==0)
+  if (classSDict->find(cd->qualifiedName())==0)
   {
-    if (Config_getBool("SORT_BRIEF_DOCS"))
-      classSDict->inSort(cd->name(),cd);
+    //printf("addClass %s sort=%d\n",cd->qualifiedName().data(),sortBriefDocs);
+    if (sortBriefDocs)
+      classSDict->inSort(cd->qualifiedName(),cd);
     else
-      classSDict->append(cd->name(),cd);
+      classSDict->append(cd->qualifiedName(),cd);
     return TRUE;
   }
   return FALSE;
@@ -154,10 +157,11 @@ bool GroupDef::addClass(const ClassDef *cd)
 
 bool GroupDef::addNamespace(const NamespaceDef *def)
 {
+  static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (def->isHidden()) return FALSE;
   if (namespaceSDict->find(def->name())==0)
   {
-    if (Config_getBool("SORT_BRIEF_DOCS"))
+    if (sortBriefDocs)
       namespaceSDict->inSort(def->name(),def);  
     else
       namespaceSDict->append(def->name(),def);
@@ -508,7 +512,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.writeRuler();
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
-        ol.writeAnchor(0,"_details");
+        ol.writeAnchor(0,"details");
       ol.popGeneratorState();
       ol.startGroupHeader();
       ol.parseText(title);
@@ -565,7 +569,7 @@ void GroupDef::writeBriefDescription(OutputList &ol)
        )
     {
       ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"_details");
+      ol.startTextLink(0,"details");
       ol.parseText(theTranslator->trMore());
       ol.endTextLink();
     }
@@ -718,6 +722,11 @@ void GroupDef::writeClasses(OutputList &ol,const QCString &title)
   classSDict->writeDeclaration(ol,0,title,FALSE);
 }
 
+void GroupDef::writeInlineClasses(OutputList &ol)
+{
+  classSDict->writeDocumentation(ol);
+}
+
 void GroupDef::writePageDocumentation(OutputList &ol)
 {
   PageDef *pd=0;
@@ -776,8 +785,10 @@ void GroupDef::endMemberDeclarations(OutputList &ol)
 
 void GroupDef::startMemberDocumentation(OutputList &ol)
 {
+  //printf("** GroupDef::startMemberDocumentation()\n");
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
+    ol.pushGeneratorState();
     ol.disable(OutputGenerator::Html);
     Doxygen::suppressDocWarnings = TRUE;
   }
@@ -785,9 +796,10 @@ void GroupDef::startMemberDocumentation(OutputList &ol)
 
 void GroupDef::endMemberDocumentation(OutputList &ol)
 {
+  //printf("** GroupDef::endMemberDocumentation()\n");
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    ol.enable(OutputGenerator::Html);
+    ol.popGeneratorState();
     Doxygen::suppressDocWarnings = FALSE;
   }
 }
@@ -908,6 +920,11 @@ void GroupDef::writeDocumentation(OutputList &ol)
           writeClasses(ol,ls->title);
         }
         break; 
+      case LayoutDocEntry::GroupInlineClasses: 
+        {
+          writeInlineClasses(ol);
+        }
+        break;
       case LayoutDocEntry::GroupNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
@@ -1084,8 +1101,11 @@ void addClassToGroups(Entry *root,ClassDef *cd)
     GroupDef *gd=0;
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
-      if (gd->addClass(cd)) cd->makePartOfGroup(gd);
-      //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
+      if (gd->addClass(cd)) 
+      {
+        cd->makePartOfGroup(gd);
+      }
+      //printf("Compound %s: in group %s\n",cd->name().data(),gd->groupTitle());
     }
   }
 }
@@ -1151,99 +1171,124 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
 /*! Add a member to the group with the highest priority */
 void addMemberToGroups(Entry *root,MemberDef *md)
 {
-  //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%d\n", 
-  //    root, root->name.data(), md, md->name().data(), root->groups->count() );
-  QListIterator<Grouping> gli(*root->groups);
-  Grouping *g;
-
-  // Search entry's group list for group with highest pri.
-  Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
-  GroupDef *fgd=0;
-  for (;(g=gli.current());++gli)
+//  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+//  //printf("addMembersToGroups: %s: %s\n",md->name().data(),md->getClassDef()?md->getClassDef()->name().data():"<none>");
+//  if (inlineGroupedClasses && // member part of a grouped class?
+//     !md->getGroupDef() &&
+//      md->getClassDef() &&
+//      md->getClassDef()->partOfGroups()!=0 &&
+//      md->getClassDef()->partOfGroups()->count()>0)
+//  {
+//    GroupDef *gd = md->getClassDef()->partOfGroups()->at(0);
+//    //printf("-> add to group '%s'\n",gd->name().data());
+//    bool success = gd->insertMember(md);
+//    if (success)
+//    {
+//      md->setGroupDef(gd,
+//                      Grouping::GROUPING_LOWEST,root->fileName,root->startLine,
+//                      !root->doc.isEmpty());
+//    }
+//  }
+//  else // add if the member was explicitly added to a group
   {
-    GroupDef *gd=0;
-    if (!g->groupname.isEmpty() &&
-        (gd=Doxygen::groupSDict->find(g->groupname)) &&
-	g->pri >= pri)
-    {
-      if (fgd && gd!=fgd && g->pri==pri) 
-      {
-         warn(root->fileName.data(), root->startLine,
-           "warning: Member %s found in multiple %s groups! "
-           "The member will be put in group %s, and not in group %s",
-	   md->name().data(), Grouping::getGroupPriName( pri ),
-	   gd->name().data(), fgd->name().data()
-          );
-      }
 
-      fgd = gd;
-      pri = g->pri;
-    }
-  }
-  //printf("fgd=%p\n",fgd);
+    //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%d\n", 
+    //    root, root->name.data(), md, md->name().data(), root->groups->count() );
+    QListIterator<Grouping> gli(*root->groups);
+    Grouping *g;
 
-  // put member into group defined by this entry?
-  if (fgd)
-  {
-    GroupDef *mgd = md->getGroupDef();
-    //printf("mgd=%p\n",mgd);
-    bool insertit = FALSE;
-    if (mgd==0)
+    // Search entry's group list for group with highest pri.
+    Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
+    GroupDef *fgd=0;
+    for (;(g=gli.current());++gli)
     {
-      insertit = TRUE;
-    }
-    else if (mgd!=fgd)
-    {
-      bool moveit = FALSE;
-
-      // move member from one group to another if 
-      // - the new one has a higher priority
-      // - the new entry has the same priority, but with docs where the old one had no docs
-      if (md->getGroupPri()<pri)
+      GroupDef *gd=0;
+      if (!g->groupname.isEmpty() &&
+          (gd=Doxygen::groupSDict->find(g->groupname)) &&
+          g->pri >= pri)
       {
-        moveit = TRUE;
-      }
-      else
-      {
-        if (md->getGroupPri()==pri)
+        if (fgd && gd!=fgd && g->pri==pri) 
         {
-          if (!root->doc.isEmpty() && !md->getGroupHasDocs())
+          warn(root->fileName.data(), root->startLine,
+              "warning: Member %s found in multiple %s groups! "
+              "The member will be put in group %s, and not in group %s",
+              md->name().data(), Grouping::getGroupPriName( pri ),
+              gd->name().data(), fgd->name().data()
+              );
+        }
+
+        fgd = gd;
+        pri = g->pri;
+      }
+    }
+    //printf("fgd=%p\n",fgd);
+
+    // put member into group defined by this entry?
+    if (fgd)
+    {
+      GroupDef *mgd = md->getGroupDef();
+      //printf("mgd=%p\n",mgd);
+      bool insertit = FALSE;
+      if (mgd==0)
+      {
+        insertit = TRUE;
+      }
+      else if (mgd!=fgd)
+      {
+        bool moveit = FALSE;
+
+        // move member from one group to another if 
+        // - the new one has a higher priority
+        // - the new entry has the same priority, but with docs where the old one had no docs
+        if (md->getGroupPri()<pri)
+        {
+          moveit = TRUE;
+        }
+        else
+        {
+          if (md->getGroupPri()==pri)
           {
-            moveit = TRUE;
+            if (!root->doc.isEmpty() && !md->getGroupHasDocs())
+            {
+              moveit = TRUE;
+            }
+            else if (!root->doc.isEmpty() && md->getGroupHasDocs())
+            {
+              warn(md->getGroupFileName(),md->getGroupStartLine(),
+                  "warning: Member documentation for %s found several times in %s groups!\n"
+                  "%s:%d: The member will remain in group %s, and won't be put into group %s",
+                  md->name().data(), Grouping::getGroupPriName( pri ),
+                  root->fileName.data(), root->startLine,
+                  mgd->name().data(),
+                  fgd->name().data()
+                  );
+            }
           }
-          else if (!root->doc.isEmpty() && md->getGroupHasDocs())
-          {
-            warn(md->getGroupFileName(),md->getGroupStartLine(),
-                "warning: Member documentation for %s found several times in %s groups!\n"
-                "%s:%d: The member will remain in group %s, and won't be put into group %s",
-                md->name().data(), Grouping::getGroupPriName( pri ),
-                root->fileName.data(), root->startLine,
-                mgd->name().data(),
-                fgd->name().data()
-                );
-          }
+        }
+
+        if (moveit)
+        {
+          //printf("removeMember\n");
+          mgd->removeMember(md);
+          insertit = TRUE;
         }
       }
 
-      if (moveit)
+      if (insertit)
       {
-        //printf("removeMember\n");
-        mgd->removeMember(md);
-        insertit = TRUE;
-      }
-    }
-
-    if (insertit)
-    {
-      //printf("insertMember found at %s line %d\n",md->getDefFileName().data(),md->getDefLine());
-      bool success = fgd->insertMember(md);
-      if (success)
-      {
-        //printf("insertMember successful\n");
-        md->setGroupDef(fgd,pri,root->fileName,root->startLine,
-                        !root->doc.isEmpty());
-        ClassDef *cd = md->getClassDefOfAnonymousType();
-        if (cd) cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+        //printf("insertMember found at %s line %d\n",md->getDefFileName().data(),md->getDefLine());
+        bool success = fgd->insertMember(md);
+        if (success)
+        {
+          //printf("insertMember successful\n");
+          md->setGroupDef(fgd,pri,root->fileName,root->startLine,
+                          !root->doc.isEmpty());
+          ClassDef *cd = md->getClassDefOfAnonymousType();
+          if (cd) 
+          {
+            cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+          }
+        }
       }
     }
   }
@@ -1334,13 +1379,6 @@ void GroupDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
       ((ml->listType()&MemberList::declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberList::documentationLists) && sortMemberDocs));
   ml->append(md);
-
-#if 0  
-  if (ml->needsSorting())
-    ml->inSort(md);
-  else
-    ml->append(md);
-#endif
 }
 
 void GroupDef::sortMemberLists()

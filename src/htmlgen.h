@@ -67,8 +67,8 @@ class HtmlGenerator : public OutputGenerator
     void writeStyleInfo(int part);
     void startTitleHead(const char *);
     void endTitleHead(const char *,const char *);
-    void startTitle() { t << "<h1>"; }
-    void endTitle() { t << "</h1>"; }
+    void startTitle() { t << "<div class=\"title\">"; }
+    void endTitle() { t << "</div>"; }
     
     void startParagraph();
     void endParagraph();
@@ -98,8 +98,8 @@ class HtmlGenerator : public OutputGenerator
     void endHtmlLink();
     void startTypewriter() { t << "<code>"; }
     void endTypewriter()   { t << "</code>"; }
-    void startGroupHeader();
-    void endGroupHeader();
+    void startGroupHeader(int);
+    void endGroupHeader(int);
     void startItemListItem() { t << "<li>"; }
     void endItemListItem() { t << "</li>\n"; }
 
@@ -115,6 +115,10 @@ class HtmlGenerator : public OutputGenerator
     void endMemberDocList();
     void startMemberList();
     void endMemberList();
+    void startInlineDescription();
+    void endInlineDescription();
+    void startInlineHeader();
+    void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
     void startMemberItem(int);
@@ -135,7 +139,7 @@ class HtmlGenerator : public OutputGenerator
 
     void writeRuler()    { t << "<hr/>"; }
     void writeAnchor(const char *,const char *name) 
-                         { t << "<a name=\"" << name <<"\"></a>"; }
+                         { t << "<a name=\"" << name <<"\" id=\"" << name << "\"></a>"; }
     void startCodeFragment() { t << PREFRAG_START; }
     void endCodeFragment()   { t << PREFRAG_END; } 
     void writeLineNumber(const char *,const char *,const char *,int);
@@ -153,7 +157,7 @@ class HtmlGenerator : public OutputGenerator
     void endDescForItem()   { t << "</dd>\n"; }
     void lineBreak(const char *style);
     void writeChar(char c);
-    void startMemberDoc(const char *,const char *,const char *,const char *);
+    void startMemberDoc(const char *,const char *,const char *,const char *,bool);
     void endMemberDoc(bool); 
     void startDoxyAnchor(const char *fName,const char *manName,
                          const char *anchor,const char *name,

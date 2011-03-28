@@ -309,6 +309,7 @@ FORALL4(SectionTypes a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4
 FORALL4(const char *a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4)
 FORALL4(const char *a1,const char *a2,const char *a3,int a4,a1,a2,a3,a4)
 FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,const char *a5,a1,a2,a3,a4,a5)
+FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,bool a5,a1,a2,a3,a4,a5)
 
 
 //--------------------------------------------------------------------------

@@ -176,6 +176,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_include_path INCLUDE_PATH
 \refitem cfg_included_by_graph INCLUDED_BY_GRAPH
 \refitem cfg_inherit_docs INHERIT_DOCS
+\refitem cfg_inline_grouped_classes INLINE_GROUPED_CLASSES
 \refitem cfg_inline_info INLINE_INFO
 \refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
 \refitem cfg_inline_sources INLINE_SOURCES
@@ -601,6 +602,15 @@ followed by the descriptions of the tags grouped by category.
  subgroup of that type (e.g. under the Public Functions section). Set it to
  \c NO to prevent subgrouping. Alternatively, this can be done per class using
  the \ref cmdnosubgrouping "\\nosubgrouping" command. 
+
+\anchor cfg_inline_grouped_classes
+<dt>\c INLINE_GROUPED_CLASSES <dd>
+ \addindex INLINE_GROUPED_CLASSES
+When the \c INLINE_GROUPED_CLASSES tag is set to \c YES, classes, structs and 
+unions are shown inside the group in which they are included 
+(e.g. using @@ingroup) instead of on a separate page (for HTML and Man pages) 
+or section (for LaTeX and RTF). Note that this feature does not work in
+combination with \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".
 
 \anchor cfg_typedef_hides_struct 
 <dt>\c TYPEDEF_HIDES_STRUCT <dd>

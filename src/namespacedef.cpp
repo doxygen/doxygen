@@ -241,7 +241,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
     ol.writeRuler();
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-      ol.writeAnchor(0,"_details"); 
+      ol.writeAnchor(0,"details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
     ol.parseText(title);
@@ -289,7 +289,7 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
        )
     {
       ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"_details");
+      ol.startTextLink(0,"details");
       ol.parseText(theTranslator->trMore());
       ol.endTextLink();
     }
@@ -413,9 +413,10 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static bool outputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
 
   QCString pageTitle;
-  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  if (outputJava)
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
@@ -533,6 +534,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileIncludedByGraph: 
       case LayoutDocEntry::FileSourceLink:
       case LayoutDocEntry::GroupClasses: 
+      case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs: 
       case LayoutDocEntry::GroupNestedGroups: 

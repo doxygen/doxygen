@@ -872,18 +872,15 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
     ol.enable(OutputGenerator::RTF);
+    ol.popGeneratorState();
 
     if (Config_getBool("REPEAT_BRIEF") || 
         !documentation().isEmpty() || 
         exampleFlag
        )
     {
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"_details");
-      ol.parseText(theTranslator->trMore());
-      ol.endTextLink();
+      writeMoreLink(ol,anchor());
     }
-    ol.popGeneratorState();
 
     //ol.pushGeneratorState();
     //ol.disable(OutputGenerator::RTF);
@@ -894,9 +891,54 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
   ol.writeSynopsis();
 }
 
+void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
+{
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
+
+  ol.startTextBlock();
+
+  writeTemplateSpec(ol,this,compoundTypeString());
+
+  // repeat brief description
+  if (!briefDescription().isEmpty() && repeatBrief)
+  {
+    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+  }
+  if (!briefDescription().isEmpty() && repeatBrief &&
+      !documentation().isEmpty())
+  {
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Html);
+    ol.writeString("\n\n");
+    ol.popGeneratorState();
+  }
+  // write documentation
+  if (!documentation().isEmpty())
+  {
+    ol.parseDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
+  }
+  // write type constraints
+  writeTypeConstraints(ol,this,m_impl->typeConstraints);
+
+  // write examples
+  if (hasExamples() && m_impl->exampleSDict)
+  {
+    ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
+    ol.startDescForItem();
+    ol.startParagraph();
+    writeExample(ol,m_impl->exampleSDict);
+    ol.endParagraph();
+    ol.endDescForItem();
+    ol.endSimpleSect();
+  }
+  //ol.newParagraph();
+  writeSourceDef(ol,name());
+  ol.endTextBlock();
+}
+
 // write the detailed description for this class
 void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType, bool exampleFlag, 
-                                        const QCString &title)
+                                        const QCString &title,const QCString &anchor)
 {
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() || 
@@ -904,57 +946,27 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
       exampleFlag)
   {
     ol.writeRuler();
+
     ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
-      ol.writeAnchor(0,"_details");
+      ol.writeAnchor(0,anchor.isEmpty() ? QCString("details") : anchor);
     ol.popGeneratorState();
+
+    if (!anchor.isEmpty())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Man);
+      ol.writeAnchor(getOutputFileBase(),anchor);
+      ol.popGeneratorState();
+    }
+
     ol.startGroupHeader();
     ol.parseText(title);
     ol.endGroupHeader();
 
-    ol.startTextBlock();
-    
-    writeTemplateSpec(ol,this,pageType);
-    
-    // repeat brief description
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
-    {
-      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
-    }
-    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
-        !documentation().isEmpty())
-    {
-      ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disable(OutputGenerator::RTF);
-        //ol.newParagraph(); // FIXME:PARA
-        ol.enableAll();
-        ol.disableAllBut(OutputGenerator::Man);
-        ol.writeString("\n\n");
-      ol.popGeneratorState();
-    }
-    // write documentation
-    if (!documentation().isEmpty())
-    {
-      ol.parseDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
-    }
-    // write type constraints
-    writeTypeConstraints(ol,this,m_impl->typeConstraints);
+    writeDetailedDocumentationBody(ol);
 
-    // write examples
-    if (exampleFlag && m_impl->exampleSDict)
-    {
-      ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
-      ol.startDescForItem();
-      ol.startParagraph();
-      writeExample(ol,m_impl->exampleSDict);
-      ol.endParagraph();
-      ol.endDescForItem();
-      ol.endSimpleSect();
-    }
-    //ol.newParagraph();
-    writeSourceDef(ol,name());
-    ol.endTextBlock();
   }
   else
   {
@@ -1160,7 +1172,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
           }
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),
-                             0,
+                             cd->anchor(),
                              displayName);
         }
         else
@@ -1197,7 +1209,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
         {
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
         }
         else
         {
@@ -1310,7 +1322,7 @@ void ClassDef::writeAllMembersLink(OutputList &ol)
   }
 }
 
-void ClassDef::writeMemberGroups(OutputList &ol)
+void ClassDef::writeMemberGroups(OutputList &ol,bool showInline)
 {
   // write user defined member groups
   if (m_impl->memberGroupSDict)
@@ -1322,7 +1334,7 @@ void ClassDef::writeMemberGroups(OutputList &ol)
     {
       if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
       {
-        mg->writeDeclarations(ol,this,0,0,0);
+        mg->writeDeclarations(ol,this,0,0,0,showInline);
       }
       else // add this group to the corresponding member section
       {
@@ -1431,76 +1443,31 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
   ol.popGeneratorState();
 }
 
-// write all documentation for this class
-void ClassDef::writeDocumentation(OutputList &ol)
+void ClassDef::writeTagFileMarker(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-  QCString pageType = " ";
-  QCString pageTitle = " ";
-    
-  pageType += compoundTypeString();
-  toupper(pageType.at(1));
-  if (fortranOpt)
+  // write markers for tag file processing to the output
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  ol.writeString("<!-- doxytag: class=\"");
+  ol.docify(name());
+  ol.writeString("\" -->");
+  if (m_impl->inherits && m_impl->inherits->count()>0)
   {
-    pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
-              m_impl->compType,
-              m_impl->tempArgs != 0);  
-  }
-  else if (vhdlOpt)
-  {
-    // TODO: translate
-    pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
-  }
-  else
-  {
-    pageTitle = theTranslator->trCompoundReference(displayName(),
-              m_impl->compType == Interface && m_impl->lang==SrcLangExt_ObjC ? Class : m_impl->compType,
-              m_impl->tempArgs != 0);
-  }
-  
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,!generateTreeView);  
-  if (!generateTreeView)
-  {
-    if (getOuterScope()!=Doxygen::globalScope)
+    BaseClassListIterator bli(*m_impl->inherits);
+    ol.writeString("<!-- doxytag: inherits=\"");
+    BaseClassDef *bcd=0;
+    bool first=TRUE;
+    for (bli.toFirst();(bcd=bli.current());++bli)
     {
-      writeNavigationPath(ol);
+      if (!first) ol.writeString(",");
+      ol.docify(bcd->classDef->name());
+      first=FALSE;
     }
-    ol.endQuickIndices();
-  }
-
-  startTitle(ol,getOutputFileBase(),this);
-  ol.parseText(pageTitle);
-  addGroupListToTitle(ol,this);
-  endTitle(ol,getOutputFileBase(),name());
-  ol.startContents();
-
-  {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString("<!-- doxytag: class=\"");
-    ol.docify(name());
     ol.writeString("\" -->");
-    if (m_impl->inherits && m_impl->inherits->count()>0)
-    {
-      BaseClassListIterator bli(*m_impl->inherits);
-      ol.writeString("<!-- doxytag: inherits=\"");
-      BaseClassDef *bcd=0;
-      bool first=TRUE;
-      for (bli.toFirst();(bcd=bli.current());++bli)
-      {
-        if (!first) ol.writeString(",");
-        ol.docify(bcd->classDef->name());
-        first=FALSE;
-      }
-      ol.writeString("\" -->");
-    }
-    ol.popGeneratorState();
   }
+  ol.popGeneratorState();
 
-  Doxygen::indexList.addIndexItem(this,0);
-
+  // write section to the tag file
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
@@ -1509,6 +1476,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << ">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+    if (!anchor().isEmpty())
+    {
+      Doxygen::tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+    }
     if (m_impl->tempArgs)
     {
       ArgumentListIterator ali(*m_impl->tempArgs);
@@ -1519,10 +1490,310 @@ void ClassDef::writeDocumentation(OutputList &ol)
       }
     }
   }
+}
+
+#if 0
+void ClassDef::writeInlineDeclaration(OutputList &ol,bool first)
+{
+  //printf("ClassDef::writeInlineDeclaration for %s\n",name().data());
+  bool exampleFlag=hasExamples();
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
+  LayoutDocEntry *lde;
+  ol.startMemberHeader(first ? "nested-classes" : 0);
+  //ol.parseText(name()+" "+theTranslator->trClassDocumentation());
+  QCString s = compoundTypeString();
+  if (s.length()>0 && isId(s.at(0))) s[0]=toupper(s[0]);
+  s+=" "+name();
+  ol.parseText(s);
+  ol.endMemberHeader();
+  ol.writeAnchor(getOutputFileBase(),anchor());
+  ol.startInlineDescription();
+  writeBriefDescription(ol,exampleFlag);
+  ol.endInlineDescription();
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    if (lde->kind()==LayoutDocEntry::MemberDecl)
+    {
+      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      writeMemberDeclarations(ol,lmd->type,lmd->title,lmd->subscript,TRUE);
+    }
+    else if (lde->kind()==LayoutDocEntry::MemberGroups)
+    {
+      writeMemberGroups(ol,TRUE);
+    }
+  }
+}
+#endif
+
+/** Write class documentation inside another container (i.e. a group) */
+void ClassDef::writeInlineDocumentation(OutputList &ol)
+{
+  ol.addIndexItem(name(),0);
+  //printf("ClassDef::writeInlineDocumentation(%s)\n",name().data());
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
+  LayoutDocEntry *lde;
+
+  // part 1: anchor and title
+  QCString s = compoundTypeString()+" "+name(); 
+
+  // part 1a
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  { // only HTML only
+    ol.writeAnchor(0,anchor());
+    ol.startMemberDoc(0,0,0,0,FALSE);
+    ol.startMemberDocName(FALSE);
+    ol.parseText(s);
+    ol.endMemberDocName();
+    ol.endMemberDoc(FALSE);
+    ol.startIndent();
+  }
+  ol.popGeneratorState();
+
+  // part 1b
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Html);
+  ol.disable(OutputGenerator::Man);
+  { // for LaTeX/RTF only
+    ol.writeAnchor(getOutputFileBase(),anchor());
+  }
+  ol.popGeneratorState();
+
+  // part 1c
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Html);
+  {
+    // for LaTeX/RTF/Man
+    ol.startGroupHeader(1);
+    ol.parseText(s);
+    ol.endGroupHeader(1);
+  }
+  ol.popGeneratorState();
+
+  // part 2: the header and detailed description
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    switch (lde->kind())
+    {
+      case LayoutDocEntry::BriefDesc: 
+        {
+          // since we already shown the brief description in the
+          // declaration part of the container, so we use this to
+          // show the details on top.
+          writeDetailedDocumentationBody(ol);
+        }
+        break;
+      case LayoutDocEntry::ClassInheritanceGraph: 
+        writeInheritanceGraph(ol); 
+        break; 
+      case LayoutDocEntry::ClassCollaborationGraph: 
+        writeCollaborationGraph(ol); 
+        break; 
+      case LayoutDocEntry::MemberDeclStart: 
+        startMemberDeclarations(ol);
+        break; 
+      case LayoutDocEntry::MemberDecl:
+        {
+          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          writeMemberDeclarations(ol,lmd->type,lmd->title,lmd->subscript,TRUE);
+        }
+        break;
+      case LayoutDocEntry::MemberGroups:
+        {
+          writeMemberGroups(ol,TRUE);
+        }
+        break;
+      case LayoutDocEntry::MemberDeclEnd: 
+        endMemberDeclarations(ol);
+        break;
+      case LayoutDocEntry::MemberDefStart: 
+        startMemberDocumentation(ol);
+        break; 
+      case LayoutDocEntry::MemberDef: 
+        {
+          LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+          writeMemberDocumentation(ol,lmd->type,lmd->title,TRUE);
+        }
+        break; 
+      case LayoutDocEntry::MemberDefEnd: 
+        endMemberDocumentation(ol);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // part 3: close the block
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  { // HTML only
+    ol.endIndent();
+  }
+  ol.popGeneratorState();
+
+  // part 4: write tag file information
+  writeTagFileMarker(ol);
+}
+
+void ClassDef::writeMoreLink(OutputList &ol,const QCString &anchor)
+{
+  // TODO: clean up this mess by moving it to
+  // the output generators...
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool rtfHyperlinks = Config_getBool("RTF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+
+  // HTML only
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  ol.docify(" ");
+  ol.startTextLink(getOutputFileBase(),
+      anchor.isEmpty() ? QCString("details") : anchor);
+  ol.parseText(theTranslator->trMore());
+  ol.endTextLink();
+  ol.popGeneratorState();
+
+  if (!anchor.isEmpty())
+  {
+    ol.pushGeneratorState();
+    // LaTeX + RTF
+    ol.disable(OutputGenerator::Html);
+    ol.disable(OutputGenerator::Man);
+    if (!(usePDFLatex && pdfHyperlinks))
+    {
+      ol.disable(OutputGenerator::Latex);
+    }
+    if (!rtfHyperlinks)
+    {
+      ol.disable(OutputGenerator::RTF);
+    }
+    ol.docify(" ");
+    ol.startTextLink(getOutputFileBase(), anchor);
+    ol.parseText(theTranslator->trMore());
+    ol.endTextLink();
+    // RTF only
+    ol.disable(OutputGenerator::Latex);
+    ol.writeString("\\par");
+    ol.popGeneratorState();
+  }
+}
+
+
+void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *header,bool localNames)
+{
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
+  static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
+  bool isLink = isLinkable();
+  if (isLink || 
+      (!hideUndocClasses && 
+       (!isLocal() || extractLocalClasses)
+      )
+     )
+  {
+    if (!found) // first class
+    {
+      ol.startMemberHeader("nested-classes");
+      if (header)
+      {
+        ol.parseText(header);
+      }
+      else if (vhdlOpt)
+      {
+        ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
+      }
+      else
+      {
+        ol.parseText(fortranOpt ? theTranslator->trDataTypes() :
+            theTranslator->trCompounds());
+      }
+      ol.endMemberHeader();
+      ol.startMemberList();
+      found=TRUE;
+    }
+    if (!Config_getString("GENERATE_TAGFILE").isEmpty() &&
+        !isReference())  // skip classes found in tag files
+    {
+      Doxygen::tagFile << "    <class kind=\"" << compoundTypeString() 
+        << "\">" << convertToXML(name()) << "</class>" << endl;
+    }
+    ol.startMemberItem(FALSE);
+    QCString ctype = compoundTypeString();
+    QCString cname;
+    if (localNames)
+    {
+      cname = localName();
+      if (cname.right(2)=="-p" || cname.right(2)=="-g")
+      {
+        cname = cname.left(cname.length()-2);
+      }
+    }
+    else
+    {
+      cname = displayName();
+    }
+
+    if (!vhdlOpt) // for VHDL we swap the name and the type
+    {
+      ol.writeString(ctype);
+      ol.writeString(" ");
+      ol.insertMemberAlign();
+    }
+    if (isLink) 
+    {
+      ol.writeObjectLink(getReference(),
+          getOutputFileBase(),
+          anchor(),
+          cname
+          );
+    }
+    else 
+    {
+      ol.startBold();
+      ol.docify(cname);
+      ol.endBold();
+    }
+    if (vhdlOpt) // now write the type
+    {
+      ol.writeString(" ");
+      ol.insertMemberAlign();
+      VhdlDocGen::writeClassType(this,ol,cname);
+    }
+    ol.endMemberItem();
+
+    // add the brief description if available
+    if (!briefDescription().isEmpty())
+    {
+      ol.startMemberDescription();
+      ol.parseDoc(briefFile(),briefLine(),this,0,
+          briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+      if (isLinkableInProject())
+      {
+        writeMoreLink(ol,anchor());
+      }
+      ol.endMemberDescription();
+    }
+  }
+}
+
+void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTitle)
+{
+  ol.startContents();
+
+  QCString pageType = " ";
+  pageType += compoundTypeString();
+  toupper(pageType.at(1));
+
+  writeTagFileMarker(ol);
+
+  Doxygen::indexList.addIndexItem(this,0);
 
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase(),anchor());
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
   bool exampleFlag=hasExamples();
@@ -1605,6 +1876,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileIncludedByGraph: 
       case LayoutDocEntry::FileSourceLink:
       case LayoutDocEntry::GroupClasses: 
+      case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs: 
       case LayoutDocEntry::GroupNestedGroups: 
@@ -1625,8 +1897,50 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
   }
-
   ol.endContents();
+}
+
+// write all documentation for this class
+void ClassDef::writeDocumentation(OutputList &ol)
+{
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  QCString pageTitle;
+    
+  if (fortranOpt)
+  {
+    pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
+              m_impl->compType,
+              m_impl->tempArgs != 0);  
+  }
+  else if (vhdlOpt)
+  {
+    // TODO: translate
+    pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
+  }
+  else
+  {
+    pageTitle = theTranslator->trCompoundReference(displayName(),
+              m_impl->compType == Interface && m_impl->lang==SrcLangExt_ObjC ? Class : m_impl->compType,
+              m_impl->tempArgs != 0);
+  }
+  
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,!generateTreeView);  
+  if (!generateTreeView)
+  {
+    if (getOuterScope()!=Doxygen::globalScope)
+    {
+      writeNavigationPath(ol);
+    }
+    ol.endQuickIndices();
+  }
+
+  startTitle(ol,getOutputFileBase(),this);
+  ol.parseText(pageTitle);
+  addGroupListToTitle(ol,this);
+  endTitle(ol,getOutputFileBase(),name());
+  writeDocumentationContents(ol,pageTitle);
     
   if (generateTreeView)
   {
@@ -1763,7 +2077,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   endTitle(ol,0,0);
   ol.startContents();
   ol.parseText(theTranslator->trThisIsTheListOfAllMembers());
-  ol.writeObjectLink(getReference(),getOutputFileBase(),0,displayName());
+  ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),displayName());
   ol.parseText(theTranslator->trIncludingInheritedMembers());
   
   //ol.startItemList();
@@ -1877,7 +2191,7 @@ void ClassDef::writeMemberList(OutputList &ol)
             ol.writeObjectLink(
                 cd->getReference(),
                 cd->getOutputFileBase(),
-                0,
+                cd->anchor(),
                 cd->displayName());
           }
           else
@@ -1895,7 +2209,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("<td>");
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),
-                             0,
+                             cd->anchor(),
                              md->category() ? 
                                 md->category()->displayName() : 
                                 cd->displayName());
@@ -2564,14 +2878,15 @@ void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
   {
      ucd = new UsesClassDef(cd);
      m_impl->usesImplClassDict->insert(cd->name(),ucd);
-     //printf("Adding used class %s to class %s\n",
-     //    cd->name().data(),name().data());
+     //printf("Adding used class %s to class %s via accessor %s\n",
+     //    cd->name().data(),name().data(),accessName);
   }
   ucd->addAccessor(accessName);
 }
 
 void ClassDef::addUsedByClass(ClassDef *cd,const char *accessName)
 {
+  //printf("%s::addUsedByClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
   if (m_impl->usedByImplClassDict==0) 
   {
     m_impl->usedByImplClassDict = new UsesClassDict(17); 
@@ -2819,19 +3134,36 @@ QCString ClassDef::compoundTypeString() const
   }
 }
 
-QCString ClassDef::getOutputFileBase() const 
-{ 
+QCString ClassDef::getXmlOutputFileBase() const
+{
   if (m_impl->templateMaster)
   {
+    // point to the template of which this class is an instance
     return m_impl->templateMaster->getOutputFileBase();
   }
   else if (isReference())
   {
+    // point to the external location
     return m_impl->fileName;
   }
   else
   {
+    // normal locally defined class
     return convertNameToFile(m_impl->fileName); 
+  }
+}
+
+QCString ClassDef::getOutputFileBase() const 
+{ 
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  if (inlineGroupedClasses && partOfGroups()!=0)
+  {
+    // point to the group that embeds this class
+    return partOfGroups()->at(0)->getOutputFileBase();
+  }
+  else
+  {
+    return getXmlOutputFileBase();
   }
 }
 
@@ -3314,7 +3646,7 @@ void ClassDef::sortMemberLists()
 }
 
 void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
-               const char *subTitle)
+               const char *subTitle,bool showInline)
 {
   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   MemberList * ml = getMemberList(lt);
@@ -3324,17 +3656,17 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
     {
       VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0);
     }
-    else // ise generic declaration function
+    else // use generic declaration function
     {
-      ml->writeDeclarations(ol,this,0,0,0,title,subTitle); 
+      ml->writeDeclarations(ol,this,0,0,0,title,subTitle,FALSE,showInline); 
     }
   }
 }
 
-void ClassDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void ClassDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title,bool showInline)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,name(),this,title);
+  if (ml) ml->writeDocumentation(ol,name(),this,title,FALSE,showInline);
 }
 
 void ClassDef::writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup)
@@ -3538,4 +3870,35 @@ void ClassDef::reclassifyMember(MemberDef *md,MemberDef::MemberType t)
   }
   insertMember(md);
 }
+
+QCString ClassDef::anchor() const
+{
+  QCString anc;
+  if (isEmbeddedInGroupDocs())
+  {
+    if (m_impl->templateMaster)
+    {
+      // point to the template of which this class is an instance
+      anc = m_impl->templateMaster->getOutputFileBase();
+    }
+    else if (isReference())
+    {
+      // point to the external location
+      anc = m_impl->fileName;
+    }
+    else
+    {
+      // normal locally defined class
+      anc = convertNameToFile(m_impl->fileName); 
+    }
+  }
+  return anc;
+}
+
+bool ClassDef::isEmbeddedInGroupDocs() const
+{
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  return (inlineGroupedClasses && partOfGroups()!=0);
+}
+
 

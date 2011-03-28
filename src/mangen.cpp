@@ -239,7 +239,7 @@ void ManGenerator::endHtmlLink()
 //  docify(url);
 //}
 
-void ManGenerator::startGroupHeader()
+void ManGenerator::startGroupHeader(int)
 {
   if (!firstCol) t << endl;
   t << ".SH \"";
@@ -247,7 +247,7 @@ void ManGenerator::startGroupHeader()
   firstCol=FALSE;
 }
 
-void ManGenerator::endGroupHeader()
+void ManGenerator::endGroupHeader(int)
 {
   t << "\"\n.PP " << endl;
   firstCol=TRUE;
@@ -387,7 +387,7 @@ void ManGenerator::endCodeFragment()
   col=0;
 }
 
-void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
+void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *,bool) 
 { 
   if (!firstCol) t << endl;
   t << ".SS \""; 
@@ -586,8 +586,8 @@ void ManGenerator::startSection(const char *,const char *,SectionInfo::SectionTy
   {
     switch(type)
     {
-      case SectionInfo::Page:          startGroupHeader(); break;
-      case SectionInfo::Section:       startGroupHeader(); break;
+      case SectionInfo::Page:          startGroupHeader(FALSE); break;
+      case SectionInfo::Section:       startGroupHeader(FALSE); break;
       case SectionInfo::Subsection:    startMemberHeader(0); break;
       case SectionInfo::Subsubsection: startMemberHeader(0); break;
       case SectionInfo::Paragraph:     startMemberHeader(0); break;
@@ -602,8 +602,8 @@ void ManGenerator::endSection(const char *,SectionInfo::SectionType type)
   {
     switch(type)
     {
-      case SectionInfo::Page:          endGroupHeader(); break;
-      case SectionInfo::Section:       endGroupHeader(); break;
+      case SectionInfo::Page:          endGroupHeader(0); break;
+      case SectionInfo::Section:       endGroupHeader(0); break;
       case SectionInfo::Subsection:    endMemberHeader(); break;
       case SectionInfo::Subsubsection: endMemberHeader(); break;
       case SectionInfo::Paragraph:     endMemberHeader(); break;
@@ -713,6 +713,29 @@ void ManGenerator::endConstraintDocs()
 
 void ManGenerator::endConstraintList()
 {
+}
+
+void ManGenerator::startInlineDescription() 
+{
+}
+
+void ManGenerator::endInlineDescription() 
+{
+}
+
+void ManGenerator::startInlineHeader() 
+{
+  if (!firstCol) 
+  {
+    t << endl << ".PP" << endl << ".in -1c" << endl;
+  }
+  t << ".RI \"\\fB"; 
+}
+
+void ManGenerator::endInlineHeader() 
+{
+  t << "\\fP\"" << endl << ".in +1c" << endl;
+  firstCol = FALSE;
 }
 
 

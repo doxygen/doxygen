@@ -538,7 +538,7 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
     else 
     { // write type or interface link
       ol.linkableSymbol(g_yyLineNr, lname, cd, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
-      writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,lname);
+      writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),lname);
       addToSearchIndex(lname);
     }
   }

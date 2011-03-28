@@ -75,7 +75,8 @@ class VhdlDocGen
       VFILE,   
       SHAREDVARIABLE,
       CONFIG,
-      ALIAS
+      ALIAS,
+      MISCELLANEOUS
     };
 
     VhdlDocGen();
@@ -137,7 +138,8 @@ class VhdlDocGen
                                      OutputList &ol);
 
     //static void writeVhdlComponentList(OutputList &ol,int type);
-
+     static bool isMisc(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }   
     static bool isConfig(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::CONFIG; }
     static bool isAlias(const MemberDef *mdef) 
@@ -255,7 +257,7 @@ class VhdlDocGen
         const char *title,const char *subtitle,bool showEnumValues,int type);
 
     static QCString getClassName(const ClassDef*);
-    static bool writeClassType(ClassDef *&,OutputList &ol ,QCString & cname);
+    static bool writeClassType(ClassDef *,OutputList &ol ,QCString & cname);
     static void adjustRecordMember(MemberDef *mdef);
     static bool writeDoc(EntryNav* rootNav);
 
@@ -265,12 +267,15 @@ class VhdlDocGen
     static void startFonts(const QCString& q, const char *keyword,OutputList& ol);
     static bool isNumber(const QCString& s);
     static QCString getProtectionName(int prot);
+	static void writeSource(MemberDef *mdef,OutputList& ol,QCString &);
   private:
     static void getFuncParams(QList<Argument>&, const char* str);
     static bool compareArgList(ArgumentList*,ArgumentList*);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
+     static void writeCodeFragment(MemberDef *mdef,OutputList& ol);
+
 };
 
 #endif

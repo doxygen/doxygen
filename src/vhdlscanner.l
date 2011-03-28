@@ -56,6 +56,7 @@ static int              openGroups;
 static ParserInterface *g_thisParser;
 static const char *     inputString;
 static int              inputPosition;
+static int              inputLen;
 static int              startComment  = 0;
 static QFile            inputFile;
 static QCString         inbuf;
@@ -84,16 +85,56 @@ static int              g_lastCommentContext = 0;
 static bool             docBlockAutoBrief;
 static char             docBlockTerm;
 static int              iDocLine      = -1;
+static Entry            gBlock;
+static int              num_chars;
 
 //#define YY_A_INTERACTIVE 1
 #define YY_NEVER_INTERACTIVE 1
 //-----------------------------------------------------------------------------
-
+#define YY_USER_ACTION num_chars += yyleng;
 static void parserInit();
 static void deleteSpecChars(char* str,char *buf);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void newEntry();
 static void initEntry(Entry *e);
+
+static int iCodeLen;
+
+static void makeInline()
+{
+  int diff=num_chars-iCodeLen;
+  assert(inputLen>iCodeLen+diff);
+  QCString par(&inputString[iCodeLen],diff);
+  int index=par.findRev("\\endcode");
+  int tt=par.length()-par.find("\n",index);
+  QCString qc(&inputString[iCodeLen-tt],diff);
+  index=qc.findRev("--!");
+  if (index<=0) return;
+  par=qc.left(index);
+  /*
+     fprintf(stderr,"\n-------------------------------------------------------------------------------- ");
+     fprintf(stderr,"\n bytes since %d %d \n %s",num_chars,iCodeLen,par.data());
+     fprintf(stderr,"\n-------------------------------------------------------------------------------- ");
+   */
+  gBlock.doc=par;
+  gBlock.section=Entry::VARIABLE_SEC;
+  gBlock.spec=VhdlDocGen::MISCELLANEOUS;
+  gBlock.fileName = yyFileName;
+  gBlock.endBodyLine=yyLineNr-1;
+  Entry *temp=new Entry(gBlock);
+  if (lastCompound)
+    lastCompound->addSubEntry(temp);
+  else if (lastEntity)
+    lastEntity->addSubEntry(temp);
+  else
+  {
+    temp->type="misc"; // global code
+    current_root->addSubEntry(temp);
+  }
+
+  gBlock.reset();
+
+}// makeInline
 
 static void addSubEntry(Entry* root, Entry* e)
 {
@@ -502,16 +543,13 @@ static void parserInit()
   isFunc=0;
   isBody=0;
   scantype=0;
-  //pEntry=0;
-  //pp=0; 
   lastCompound=0;
   lastEntity=0;
   bropen=0;
   openGroups=0;
   iDocLine=-1;
-  //isPrevDoc=FALSE;
-  //prevDocEntry.reset();
   qrl.clear();
+  num_chars=0;
 
   if (!g_lexInit) 
   {
@@ -557,36 +595,14 @@ static int yyread(char *buf,int max_size)
     while ( c < max_size && inputString[inputPosition] )
     {
       *buf = inputString[inputPosition++] ;
-      c++; buf++;
+      c++; 
+      buf++;
     }
   }
   return c;
 }
 
-#if 0
-/*
- * adds a  text line description [--#] to the the previous type  
- */
 
-static void addOneTextLine(QCString& ss )
-{
-  Entry* pTemp=0;
-  if (current && current->bodyLine==yyLineNr)
-    pTemp=current;
-  //else if (pEntry && pEntry->bodyLine==yyLineNr)
-  //  pTemp=pEntry;
-  else 
-    pTemp=getEntryAtLine(current_root,yyLineNr) ;
-
-  if (pTemp)
-  {
-    ss=ss.stripWhiteSpace();
-    ss.stripPrefix("--!");
-    pTemp->brief=ss;
-    pTemp->briefLine=yyLineNr;
-  }        
-}
-#endif
 
 %}
 
@@ -1042,7 +1058,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
 
 <ParseRecord>{BR}* {
   lineCount();
-}
+ }
 
 <ParseRecord>("end"){BR}*("record"){BR}*{LETTER}*{BR}*[;]|("end"){BR}*("units"){BR}*[;]  {
   lineCount();
@@ -1098,36 +1114,6 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
     functionEntry=0;
     //eFuncBody=new Entry;
     ::parseFunctionProto();
-#if 0
-
-    EntryListIterator eli(*eFuncBody->children());
-    Entry *rrt=eli.current();
-
-    if (current && (current->spec==VhdlDocGen::ARCHITECTURE && rrt))
-    {
-      Entry *ep=new Entry(*rrt);
-      addSubEntry(current,ep);
-      isBody=1;
-    }
-    if (rrt) 
-    {
-      Entry *ef=VhdlDocGen::findFunction(current_root,rrt);
-      if (ef) 
-      { 
-	ef->bodyLine=iFuncLine;
-	functionEntry=ef;
-      }
-      else if ((current->spec==VhdlDocGen::PACKAGE_BODY))//VhdlDocGen::Package_Body))
-      {
-	Entry *ep=new Entry(*rrt);
-	addSubEntry(current,ep);
-	ep->bodyLine=iFuncLine;
-	functionEntry = ep;
-      }
-    }
-    delete eFuncBody;
-    eFuncBody=0;
-#endif
   }
   bufferClear();  
   BEGIN(ParseType);
@@ -1316,11 +1302,6 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
   }
 }
 
-<ParseType>{TEXTT} {
-  lineCount();
-  BEGIN(ParseType);
-}
-
 <ParseType>{BR}* {
   lineCount();
   addText(yytext,yyleng);
@@ -1348,6 +1329,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
     //qq=qq.lower();
 
     current->name=qq;
+    qq=qq.lower();
     if (lastCompound)
     {
       if (lastCompound->spec==VhdlDocGen::PACKAGE)
@@ -1600,7 +1582,30 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
   QCString qcs;
   getBufText(qcs,iTextCounter);
   VhdlDocGen::prepareComment(qcs);
-  handleCommentBlock(qcs,FALSE);
+  int ii =qcs.find("\\code");
+  if (ii>0)
+  {
+    iCodeLen=num_chars;
+
+    gBlock.reset();
+    int len=qcs.length();
+    QCString name=qcs.right(len-ii);
+    name=VhdlDocGen::getIndexWord(name.data(),1);
+    if (!name)
+      gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
+    else
+      gBlock.name=name;
+    qcs=qcs.left(ii);
+    gBlock.startLine=yyLineNr+1;
+    gBlock.bodyLine=yyLineNr+1;
+    gBlock.brief+=qcs;
+    iTextCounter=0;
+  }
+
+  if (ii==-1)
+  {
+    handleCommentBlock(qcs,FALSE);
+  }
   bufferClear();
   unput(*yytext);
   BEGIN(g_lastCommentContext);
@@ -1611,21 +1616,30 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
   QCString qcs(yytext);
   int j=qcs.find("--!");
   qcs=qcs.right(qcs.length()-3-j);
+  bool isEndCode=qcs.contains("\\endcode");
+
+  if (isEndCode)
+    makeInline();
   //printf("--> handleCommentBlock line %d\n",yyLineNr);
   Entry* pTemp=getEntryAtLine(current_root,yyLineNr);
-  if (pTemp)
+
+  if (!isEndCode)
   {
-    pTemp->briefLine=yyLineNr;
-    pTemp->brief+=qcs;
-    iDocLine=-1;
-  }
-  else
-  {
-    handleCommentBlock(qcs,TRUE);
-  }
-  //printf("--> end: handleCommentBlock line %d\n",yyLineNr);
+    if (pTemp)
+    {
+      pTemp->briefLine=yyLineNr;
+      pTemp->brief+=qcs;
+      iDocLine=-1;
+    }
+    else
+    {
+      handleCommentBlock(qcs,TRUE);
+    }
+  } 
+
   bufferClear();
-} 
+}// one line
+
 
 <*>{COMMENT} {
 }
@@ -1914,7 +1928,9 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   g_inputFromFile = FALSE;
   inputPosition = 0;
   assert(root!=0);
+
   inputString=fileBuf;
+  inputLen=strlen(fileBuf);
   current_root  = root;
   global_root   = root;
   current=new Entry;

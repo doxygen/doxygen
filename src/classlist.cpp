@@ -96,10 +96,8 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
 void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
                                   const char *header,bool localNames)
 {
-  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-  static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
-  static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
+//  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+//  bool first=TRUE;
   if (count()>0)
   {
     ClassSDict::Iterator sdi(*this);
@@ -107,111 +105,53 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     bool found=FALSE;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
+      //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
       if (cd->name().find('@')==-1 && 
           (filter==0 || *filter==cd->compoundType())
          )
       {
-        bool isLink = cd->isLinkable();
-        if (isLink || 
-             (!hideUndocClasses && 
-              (!cd->isLocal() || extractLocalClasses)
-             )
-           )
-        {
-          if (!found)
-          {
-            ol.startMemberHeader("nested-classes");
-            if (header)
-            {
-              ol.parseText(header);
-            }
-            else if (vhdlOpt)
-            {
-              ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
-            }
-            else
-            {
-              ol.parseText(fortranOpt ? theTranslator->trDataTypes() :
-                                        theTranslator->trCompounds());
-            }
-            ol.endMemberHeader();
-            ol.startMemberList();
-            found=TRUE;
-          }
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty() &&
-              !cd->isReference())  // skip classes found in tag files
-          {
-            Doxygen::tagFile << "    <class kind=\"" << cd->compoundTypeString() 
-              << "\">" << convertToXML(cd->name()) << "</class>" << endl;
-          }
-          ol.startMemberItem(FALSE);
-          QCString tmp = cd->compoundTypeString();
-          QCString cname;
-          if (localNames)
-          {
-            cname = cd->localName();
-            if (cname.right(2)=="-p" || cname.right(2)=="-g")
-            {
-              cname = cname.left(cname.length()-2);
-            }
-          }
-          else
-          {
-            cname = cd->displayName();
-          }
-
-          if (!vhdlOpt) // for VHDL we swap the name and the type
-          {
-            ol.writeString(tmp);
-            ol.writeString(" ");
-            ol.insertMemberAlign();
-          }
-          if (isLink) 
-          {
-            ol.writeObjectLink(cd->getReference(),
-                cd->getOutputFileBase(),
-                0,
-                cname
-                );
-          }
-          else 
-          {
-            ol.startBold();
-            ol.docify(cname);
-            ol.endBold();
-          }
-          if (vhdlOpt) // now write the type
-          {
-            ol.insertMemberAlign();
-            VhdlDocGen::writeClassType(cd,ol,cname);
-          }
-          ol.endMemberItem();
-          if (!cd->briefDescription().isEmpty())
-          {
-            ol.startMemberDescription();
-            ol.parseDoc(cd->briefFile(),cd->briefLine(),cd,0,
-                cd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
-            if (//(!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
-                //!cd->documentation().isEmpty())
-                cd->isLinkableInProject()
-                )
-            {
-              ol.pushGeneratorState();
-              ol.disableAllBut(OutputGenerator::Html);
-              //ol.endEmphasis();
-              ol.docify(" ");
-              ol.startTextLink(cd->getOutputFileBase(),"_details");
-              ol.parseText(theTranslator->trMore());
-              ol.endTextLink();
-              //ol.startEmphasis();
-              ol.popGeneratorState();
-            }
-            ol.endMemberDescription();
-          }
-        }
+//        //bool isLink = cd->isLinkable();
+//        if (inlineGroupedClasses && cd->partOfGroups()->count()>0)
+//        {
+//          cd->writeInlineDeclaration(ol,first);
+//          first=FALSE;
+//        }
+//        else // show link's only
+//        {
+          cd->writeDeclarationLink(ol,found,header,localNames);
+//        }
       }
     }
     if (found) ol.endMemberList();
   }
 }
   
+void ClassSDict::writeDocumentation(OutputList &ol)
+{
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  if (!inlineGroupedClasses) return;
+
+  if (count()>0)
+  {
+    ol.writeRuler();
+    ol.startGroupHeader();
+    ol.parseText(fortranOpt?theTranslator->trTypeDocumentation():
+        theTranslator->trClassDocumentation());
+    ol.endGroupHeader();
+
+    ClassSDict::Iterator sdi(*this);
+    ClassDef *cd=0;
+    for (sdi.toFirst();(cd=sdi.current());++sdi)
+    {
+      if (cd->name().find('@')==-1 && 
+          cd->partOfGroups()->count()==1
+         )
+      {
+        cd->writeInlineDocumentation(ol);
+      }
+    }
+  }
+}
+

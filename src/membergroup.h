@@ -50,16 +50,17 @@ class MemberGroup
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               bool showInline=FALSE);
 
     void writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container);
+               Definition *container,bool showEnumValues,bool showInline);
     void writeDocumentationPage(OutputList &ol,const char *scopeName,
                Definition *container);
     QCString documentation() { return doc; }
     bool allMembersInSameSection() { return inSameSection; }
     void addToDeclarationSection();
-    int countDecMembers();
+    int countDecMembers(GroupDef *gd=0);
     int countDocMembers();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();

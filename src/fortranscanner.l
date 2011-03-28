@@ -651,7 +651,7 @@ private                                 {
 ^{BS}{PP_ID}{KIND}?			{ /* check for preprocessor symbol expand to type */
 					  QCString str = yytext;
 					  str = str.stripWhiteSpace();
-					  DefineDict* defines = getFileDefineDict();
+					  DefineDict* defines = getGlobalDefineDict();
 					  QCString name;
 					  int index = str.find("(");
 					  if (index != -1)

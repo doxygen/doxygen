@@ -39,7 +39,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include "ftextstream.h"
-#include <md5.h>
+#include "md5.h"
 #include <qqueue.h>
 
 #include <qthread.h>
@@ -1230,6 +1230,7 @@ static QCString convertLabel(const QCString &l)
   return result;
 }
 
+#if 0
 static QCString escapeTooltip(const QCString &tooltip)
 {
   QCString result;
@@ -1246,6 +1247,7 @@ static QCString escapeTooltip(const QCString &tooltip)
   }
   return result;
 }
+#endif
 
 static void writeBoxMemberList(FTextStream &t,char prot,MemberList *ml,ClassDef *scope)
 {
@@ -1376,7 +1378,7 @@ void DotNode::writeBox(FTextStream &t,
     }
     if (!m_tooltip.isEmpty())
     {
-      t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
+      t << ",tooltip=\"" << /*escapeTooltip(m_tooltip)*/ m_tooltip << "\"";
     }
   }
   t << "];" << endl; 
@@ -1877,6 +1879,10 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
           if (bClass->isLinkable() && !bClass->isHidden())
           {
             tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
+            if (!bClass->anchor().isEmpty())
+            {
+              tmp_url+="#"+bClass->anchor();
+            }
           }
           QCString tooltip = bClass->briefDescriptionAsTooltip();
           bn = new DotNode(m_curNodeNumber++,
@@ -1922,6 +1928,10 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
       if (cd->isLinkable() && !cd->isHidden()) 
       {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+        if (!cd->anchor().isEmpty())
+        {
+          tmp_url+="#"+cd->anchor();
+        }
       }
       //printf("Inserting root class %s\n",cd->name().data());
       QCString tooltip = cd->briefDescriptionAsTooltip();
@@ -2062,6 +2072,10 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     if (cd->isLinkable() && !cd->isHidden()) 
     {
       tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+      if (!cd->anchor().isEmpty())
+      {
+        tmp_url+="#"+cd->anchor();
+      }
     }
     QCString tooltip = cd->briefDescriptionAsTooltip();
     bn = new DotNode(m_curNodeNumber++,
@@ -2331,6 +2345,10 @@ DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
   if (cd->isLinkable() && !cd->isHidden()) 
   {
     tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+    if (!cd->anchor().isEmpty())
+    {
+      tmp_url+="#"+cd->anchor();
+    }
   }
   QCString className = cd->displayName();
   QCString tooltip = cd->briefDescriptionAsTooltip();
@@ -3656,6 +3674,10 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
     for (;(def=defli.current());++defli)
     {
       tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      if (!def->anchor().isEmpty())
+      {
+        tmp_url+="#"+def->anchor();
+      }
       addCollaborationMember( def, tmp_url, DotGroupCollaboration::tclass );          
     }
   }

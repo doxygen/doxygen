@@ -610,7 +610,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 
   if (cd && cd->isLinkable()) // is it a linkable class
   {
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName,cd->briefDescriptionAsTooltip());
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),clName,cd->briefDescriptionAsTooltip());
     addToSearchIndex(className);
     if (md)
     {

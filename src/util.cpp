@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <math.h>
 
-#include <md5.h>
+#include "md5.h"
 
 #include "qtbc.h"
 #include <qregexp.h>
@@ -426,11 +426,11 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
     //    );
     result=md->typeString();
     QString args = md->argsString();
-    if (result.find("*)")!=-1) // typedef of a function/member pointer
+    if (args.find(")(")!=-1) // typedef of a function/member pointer
     {
-      result+=md->argsString();
+      result+=args;
     }
-    if (args.find('[')!=-1)
+    else if (args.find('[')!=-1) // typedef of an array
     {
       result+=args;
     }
@@ -1830,7 +1830,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
           found=TRUE;
         }
       }
@@ -1851,7 +1851,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
           found=TRUE;
         }
       }
@@ -1860,7 +1860,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
+          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
           found=TRUE;
         }
       }
@@ -3128,7 +3128,8 @@ static QCString getCanonicalTypeForIdentifier(
 
   QCString symName,scope,result,templSpec,tmpName;
   //DefinitionList *defList=0;
-  if (tSpec && !tSpec->isEmpty()) templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
+  if (tSpec && !tSpec->isEmpty()) 
+    templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
@@ -3232,7 +3233,7 @@ static QCString getCanonicalTypeForIdentifier(
     //printf("word=%s typeString=%s\n",word.data(),mType->typeString());
     if (word!=mType->typeString())
     {
-      result = getCanonicalTypeForIdentifier(d,fs,mType->typeString(),tSpec,count++);
+      result = getCanonicalTypeForIdentifier(d,fs,mType->typeString(),tSpec,count+1);
     }
     else
     {
@@ -4245,7 +4246,9 @@ bool resolveRef(/* in */  const char *scName,
         )
      )
   {
-    if (checkScope && md && !cd && !nd && (!scopeStr.isEmpty() || nameStr.find("::")>0))
+    //printf("after getDefs checkScope=%d nameStr=%s cd=%p nd=%p\n",checkScope,nameStr.data(),cd,nd);
+    if (checkScope && md && md->getOuterScope()==Doxygen::globalScope && 
+        (!scopeStr.isEmpty() || nameStr.find("::")>0))
     {
       // we did find a member, but it is a global one while we were explicitly 
       // looking for a scoped variable. See bug 616387 for an example why this check is needed.
@@ -4441,16 +4444,19 @@ bool resolveLink(/* in */ const char *scName,
   else if ((cd=getClass(linkRef))) // class link
   {
     *resContext=cd;
+    resAnchor=cd->anchor();
     return TRUE;
   }
   else if ((cd=getClass(linkRef+"-p"))) // Obj-C protocol link
   {
     *resContext=cd;
+    resAnchor=cd->anchor();
     return TRUE;
   }
   else if ((cd=getClass(linkRef+"-g"))) // C# generic link
   {
     *resContext=cd;
+    resAnchor=cd->anchor();
     return TRUE;
   }
   else if ((nd=Doxygen::namespaceSDict->find(linkRef)))
@@ -6072,18 +6078,17 @@ QCString stripExtension(const char *fName)
 
 void replaceNamespaceAliases(QCString &scope,int i)
 {
-  //printf("replaceNamespaceAliases(%s,%d)\n",scope.data(),i);
   while (i>0)
   {
-    QCString *s = Doxygen::namespaceAliasDict[scope.left(i)];
+    QCString ns = scope.left(i);
+    QCString *s = Doxygen::namespaceAliasDict[ns];
     if (s)
     {
       scope=*s+scope.right(scope.length()-i);
       i=s->length();
     }
-    i=scope.findRev("::",i-1);
+    if (i>0 && ns==scope.left(i)) break;
   }
-  //printf("replaceNamespaceAliases() result=%s\n",scope.data());
 }
 
 QCString stripPath(const char *s)
@@ -6390,6 +6395,22 @@ int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos)
       bytes++; // 1111.xxxx: 4 byte character
     }
   }
+  else if (c=='&') // skip over character entities
+  {
+    static QRegExp re1("&#[0-9]+;");     // numerical entity
+    static QRegExp re2("&[A-Z_a-z]+;");  // named entity
+    int l1,l2;
+    int i1 = re1.match(utf8Str,startPos,&l1);
+    int i2 = re2.match(utf8Str,startPos,&l2);
+    if (i1!=-1)
+    {
+      bytes=l1;
+    }
+    else if (i2!=-1)
+    {
+      bytes=l2;
+    }
+  }
   return startPos+bytes;
 }
 
@@ -6420,7 +6441,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
     while ((i=nextUtf8CharPosition(result,l,i))<l && charCnt<100)
     {
       charCnt++;
-      if (isspace(result.at(i)))
+      if (result.at(i)>=0 && isspace(result.at(i)))
       {
         addEllipsis=TRUE;
       }

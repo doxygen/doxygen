@@ -1064,11 +1064,11 @@ void FTVHelp::generateTreeViewScripts()
       if (projName.isEmpty())
       {
         LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::MainPage);
-        t << "\"" << lne->title() << "\", ";
+        t << "\"" << convertToJSString(lne->title()) << "\", ";
       }
       else
       {
-        t << "\"" << projName << "\", ";
+        t << "\"" << convertToJSString(projName) << "\", ";
       }
       t << "\"index" << Doxygen::htmlFileExtension << "\", ";
 

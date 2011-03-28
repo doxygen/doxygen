@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 15 translators are up-to-date, 23 translators are based on
+Of them, 16 translators are up-to-date, 22 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -31,6 +31,7 @@ still may be some details listed even for them:
   TranslatorItalian
   TranslatorKorean -- Change the base class to Translator.
   TranslatorPersian -- The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()
+  TranslatorRussian -- Reimplementation using UTF-8 suggested.
   TranslatorSlovak
   TranslatorSpanish -- The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()
   TranslatorTurkish
@@ -55,9 +56,6 @@ must be implemented to become up-to-date:
 	Note: Reimplementation using UTF-8 suggested.
 
   TranslatorSerbianCyrilic        1.6.0 	 9 methods to implement (4 %)
-  TranslatorRussian               1.6.0 	 9 methods to implement (4 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorRomanian              1.6.0 	 9 methods to implement (4 %)
 	Note: Reimplementation using UTF-8 suggested.
 
@@ -670,22 +668,10 @@ TranslatorRomanian   (TranslatorAdapter_1_6_0)  9 methods to implement (4 %)
     virtual QCString trIncludesFileIn(const char * name)
 
 
-TranslatorRussian   (TranslatorAdapter_1_6_0)  9 methods to implement (4 %)
+TranslatorRussian   (Translator)
 -----------------
 
-  Implements 216 of the required methods (96 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trSearching()
-    virtual QCString trNoMatches()
-    virtual QCString trLoading()
-    virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
-    virtual QCString trFileIn(const char * name)
-    virtual QCString trGlobalNamespace()
-    virtual QCString trDirRelation(const char * name)
-    virtual QCString trDirDependency(const char * name)
-    virtual QCString trIncludesFileIn(const char * name)
+  Implements 225 of the required methods (100 %).
 
 
 TranslatorSerbian   (TranslatorAdapter_1_6_0)  9 methods to implement (4 %)

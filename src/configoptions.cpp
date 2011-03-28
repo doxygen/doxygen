@@ -396,6 +396,15 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "INLINE_GROUPED_CLASSES",
+                 "When the INLINE_GROUPED_CLASSES tag is set to YES, classes, structs and\n"
+                 "unions are shown inside the group in which they are included (e.g. using\n"
+                 "@ingroup) instead of on a separate page (for HTML and Man pages) or\n"
+                 "section (for LaTeX and RTF).",
+                 FALSE
+                );
+  //----
+  cb = cfg->addBool(
                  "TYPEDEF_HIDES_STRUCT",
                  "When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum\n"
                  "is documented as struct, union, or enum with the name of the typedef. So\n"

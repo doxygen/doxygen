@@ -792,7 +792,7 @@ static void writeTitleArea(FTextStream &t,const char *relPath,
     t << " <tr style=\"height: 56px;\">" << endl;
     if (!logoName.isEmpty())
     {
-      t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"" << relPath << logoName << "\"></td>" << endl;
+      t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"" << relPath << logoName << "\"/></td>" << endl;
     }
     if (!(QCString(projectName).isEmpty() && QCString(projectBrief).isEmpty()))
     {
@@ -1471,7 +1471,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
 void HtmlGenerator::writeSearchFooter(FTextStream &t,const QCString &relPath)
 {
   (void)relPath;
-  t << "<!--- window showing the filter options -->\n";
+  t << "<!-- window showing the filter options -->\n";
   t << "<div id=\"MSearchSelectWindow\"\n";
   t << "     onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
   t << "     onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
@@ -1481,7 +1481,7 @@ void HtmlGenerator::writeSearchFooter(FTextStream &t,const QCString &relPath)
   t << "\n";
   t << "<!-- iframe showing the search results (closed by default) -->\n";
   t << "<div id=\"MSearchResultsWindow\">\n";
-  t << "<iframe src=\"\" frameborder=\"0\" \n";
+  t << "<iframe src=\"javascript:void(0)\" frameborder=\"0\" \n";
   t << "        name=\"MSearchResults\" id=\"MSearchResults\">\n";
   t << "</iframe>\n";
   t << "</div>\n";
@@ -1748,7 +1748,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\"";
-  if (tooltip) t << " title=\"" << convertToXML(tooltip) << "\"";
+  if (tooltip) t << " title=\"" << tooltip << "\"";
   t << ">";
   docify(name);
   t << "</a>";
@@ -1783,14 +1783,36 @@ void HtmlGenerator::endHtmlLink()
   t << "</a>";
 }
 
-void HtmlGenerator::startGroupHeader()
+void HtmlGenerator::startGroupHeader(int extraIndentLevel)
 {
-  t << "<h2>";
+  if (extraIndentLevel==2)
+  {
+    t << "<h4>";
+  }
+  else if (extraIndentLevel==1)
+  {
+    t << "<h3>";
+  }
+  else // extraIndentLevel==0
+  {
+    t << "<h2>";
+  }
 }
 
-void HtmlGenerator::endGroupHeader()
+void HtmlGenerator::endGroupHeader(int extraIndentLevel)
 {
-  t << "</h2>" << endl;
+  if (extraIndentLevel==2)
+  {
+    t << "</h4>" << endl;
+  }
+  else if (extraIndentLevel==1)
+  {
+    t << "</h3>" << endl;
+  }
+  else
+  {
+    t << "</h2>" << endl;
+  }
 }
 
 void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
@@ -2157,7 +2179,7 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
   }
   else
   {
-    startGroupHeader();
+    startGroupHeader(FALSE);
   }
   if (anchor)
   {
@@ -2174,20 +2196,20 @@ void HtmlGenerator::endMemberHeader()
   }
   else
   {
-    endGroupHeader();
+    endGroupHeader(FALSE);
   }
 }
 
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td colspan=\"2\">";
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<br/></td></tr>" << endl;
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "</td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
@@ -2225,46 +2247,30 @@ void HtmlGenerator::endIndexValue(const char *,bool)
 void HtmlGenerator::startMemberDocList()
 {
   DBG_HTML(t << "<!-- startMemberDocList -->" << endl;)
-  //t << "<table class=\"memlist\">" << endl;
-  //t << "  <tr>" << endl;
-  //t << "    <td>" << endl;
 }
 
 void HtmlGenerator::endMemberDocList()
 {
   DBG_HTML(t << "<!-- endMemberDocList -->" << endl;)
-  //t << "    </td>" << endl;
-  //t << "  </tr>" << endl;
-  //t << "</table>" << endl;
 }
 
-void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
+void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *,bool) 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
-  //t << "<p>" << endl;
  
   t << "\n<div class=\"memitem\">" << endl;
-  //t << "<table>" << endl;
-  //t << "  <tr>" << endl;
-  //t << "    <td>" << endl;
-  //t << "      <table class=\"memproto\">" << endl;
   t << "<div class=\"memproto\">" << endl;
-  
 }
 
 void HtmlGenerator::startMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)
-  //t << "        <tr>" << endl;
-  //t << "          <td class=\"memtemplate\" colspan=\"5\">";
   t << "<div class=\"memtemplate\">" << endl;
 }
 
 void HtmlGenerator::endMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- endMemberDocPrefixItem -->" << endl;)
-  //t << "</td>" << endl;
-  //t << "        </tr>" << endl;
   t << "</div>" << endl;
 }
 
@@ -2368,9 +2374,6 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
     t << "        </tr>" << endl;
   }
   t << "      </table>" << endl;
-  //t << "    </td>" << endl;
-  //t << "  </tr>" << endl;
-  //t << "</table>" << endl;
   t << "</div>" << endl;
 }
 
@@ -3179,4 +3182,25 @@ void HtmlGenerator::endHeaderSection()
 {
   t << "</div>" << endl;
 }
+
+void HtmlGenerator::startInlineDescription()
+{
+  t << "<tr><td colspan=\"2\">";
+}
+
+void HtmlGenerator::endInlineDescription()
+{
+  t << "</td></tr>" << endl;
+}
+
+void HtmlGenerator::startInlineHeader()
+{
+  t << "<tr><td colspan=\"2\"><h3>";
+}
+
+void HtmlGenerator::endInlineHeader()
+{
+  t << "</h3></td></tr>" << endl;
+}
+
 
