@@ -345,7 +345,8 @@ class MemberDef : public Definition
                    bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName,Definition *container,
-                            bool inGroup,bool showEnumValues=FALSE);
+                            bool inGroup,bool showEnumValues=FALSE,bool
+                            showInline=FALSE);
     void warnIfUndocumented();
     
     MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,

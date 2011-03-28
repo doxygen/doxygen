@@ -513,7 +513,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 			g_currentDefinition);
       writeMultiLineCodeLink(ol,cd->getReference(),
 	                        cd->getOutputFileBase(),
-				0,
+				cd->anchor(),
 				temp,
 				cd->briefDescriptionAsTooltip());
       addToSearchIndex(className);

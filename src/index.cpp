@@ -56,6 +56,7 @@ static const char search_script[]=
 //;
 
 int annotatedClasses;
+int annotatedClassesPrinted;
 int hierarchyClasses;
 int documentedFiles;
 int documentedGroups;
@@ -75,14 +76,14 @@ void countFiles(int &htmlFiles,int &files);
 int countGroups();
 int countDirs();
 int countNamespaces();
-int countAnnotatedClasses();
+int countAnnotatedClasses(int *cp);
 int countNamespaceMembers(int filter=NMHL_All);
 int countIncludeFiles();
 void countRelatedPages(int &docPages,int &indexPages);
 
 void countDataStructures()
 {
-  annotatedClasses           = countAnnotatedClasses(); // "classes" + "annotated"
+  annotatedClasses           = countAnnotatedClasses(&annotatedClassesPrinted); // "classes" + "annotated"
   hierarchyClasses           = countClassHierarchy();   // "hierarchy"
   countFiles(documentedHtmlFiles,documentedFiles);      // "files"
   countRelatedPages(documentedPages,indexedPages);      // "pages"
@@ -418,9 +419,9 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,F
           ol.docify(" [external]");
           ol.endTypewriter();
         }
-        Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+        Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
         if (ftv)
-          ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+          ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
       }
       else
       {
@@ -481,7 +482,7 @@ void writeClassTree(BaseClassList *cl,int level)
       //printf("tree2: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
-        Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+        Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
       }
       if (hasChildren)
       {
@@ -514,7 +515,7 @@ void writeClassTreeNode(ClassDef *cd,bool &started,int level)
     //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
     if (cd->isLinkable())
     {
-      Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+      Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
     }
     if (hasChildren)
     {
@@ -616,9 +617,9 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
             ol.docify(" [external]");
             ol.endTypewriter();
           }
-          Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+          Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
           if (ftv)
-            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0); 
+            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor()); 
         }
         else
         {
@@ -1062,22 +1063,27 @@ void writeNamespaceIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-int countAnnotatedClasses()
+int countAnnotatedClasses(int *cp)
 {
   int count=0;
-  //ClassDef *cd=Doxygen::classList.first();
+  int countPrinted=0;
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0) 
     { 
-      //printf("Annotated class %s\n",cd->name().data()); 
+      if (!cd->isEmbeddedInGroupDocs())
+      {
+        countPrinted++;
+      }
       count++; 
     }
   }
+  *cp = countPrinted;
   return count;
 }
+
 
 //----------------------------------------------------------------------
 
@@ -1135,6 +1141,12 @@ void writeAnnotatedClassList(OutputList &ol)
   
   for (cli.toFirst();(cd=cli.current());++cli)
   {
+    ol.pushGeneratorState();
+    if (cd->isEmbeddedInGroupDocs())
+    {
+      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
+    }
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       QCString type=cd->compoundTypeString();
@@ -1144,9 +1156,10 @@ void writeAnnotatedClassList(OutputList &ol)
       {
         QCString prot= VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)cd->protection());
         ol.docify(prot.data());
+        ol.writeString(" ");
         ol.insertMemberAlign();
       }
-      ol.writeObjectLink(0,cd->getOutputFileBase(),0,cd->displayName());
+      ol.writeObjectLink(0,cd->getOutputFileBase(),cd->anchor(),cd->displayName());
       ol.endIndexKey();
       bool hasBrief = !cd->briefDescription().isEmpty();
       ol.startIndexValue(hasBrief);
@@ -1165,8 +1178,9 @@ void writeAnnotatedClassList(OutputList &ol)
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
       //ol.writeEndAnnoItem(cd->getOutputFileBase());
-      Doxygen::indexList.addContentsItem(FALSE,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+      Doxygen::indexList.addContentsItem(FALSE,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
     }
+    ol.popGeneratorState();
   }
   ol.endIndexList();
 }
@@ -1383,7 +1397,7 @@ void writeAlphabeticalClassList(OutputList &ol)
         }
 
         ol.writeObjectLink(cd->getReference(),
-                           cd->getOutputFileBase(),0,cname);
+                           cd->getOutputFileBase(),cd->anchor(),cname);
         if (!namesp.isEmpty())
         {
           ol.docify(" (");
@@ -1428,8 +1442,6 @@ void writeAlphabeticalClassList(OutputList &ol)
 
 void writeAlphabeticalIndex(OutputList &ol)
 {
-  //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  //bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   if (annotatedClasses==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1455,10 +1467,17 @@ void writeAlphabeticalIndex(OutputList &ol)
 
 void writeAnnotatedIndex(OutputList &ol)
 {
+  //printf("writeAnnotatedIndex: count=%d printed=%d\n",
+  //    annotatedClasses,annotatedClassesPrinted);
   if (annotatedClasses==0) return;
   
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
+  if (annotatedClassesPrinted==0)
+  {
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
+  }
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::ClassAnnotated);
   QCString title = lne->title();
   startFile(ol,"annotated",0,title,HLI_Annotated);
@@ -3535,7 +3554,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp* ftv)
           if (cd->isLinkable())
           {
             //printf("node: Has children %s\n",cd->name().data());
-            Doxygen::indexList.addContentsItem(FALSE,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
+            Doxygen::indexList.addContentsItem(FALSE,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
           }
         }
 
@@ -4076,18 +4095,18 @@ void writeIndex(OutputList &ol)
       ol.startIndexSection(isClassHierarchyIndex);
       ol.parseText(/*projPrefix+*/
           (fortranOpt ? theTranslator->trCompoundIndexFortran() : 
-           vhdlOpt    ? VhdlDocGen::trDesignUnitIndex()             :
+           vhdlOpt    ? VhdlDocGen::trDesignUnitIndex()         :
                         theTranslator->trCompoundIndex()
           ));
       ol.endIndexSection(isClassHierarchyIndex);
     }
-    if (annotatedClasses>0)
+    if (annotatedClassesPrinted>0)
     {
       ol.startIndexSection(isCompoundIndex);
       ol.parseText(/*projPrefix+*/
           (fortranOpt ? theTranslator->trCompoundIndexFortran() :
-           vhdlOpt ? VhdlDocGen::trDesignUnitIndex() : 
-                     theTranslator->trCompoundIndex()
+              vhdlOpt ? VhdlDocGen::trDesignUnitIndex()         : 
+                        theTranslator->trCompoundIndex()
           ));
       ol.endIndexSection(isCompoundIndex);
     }

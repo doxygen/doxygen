@@ -1197,6 +1197,13 @@ void Config::check()
     config_err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
     Config_getBool("SEARCHENGINE")=FALSE;
   }
+
+  // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
+  if (Config_getBool("SEPARATE_MEMBER_PAGES") && Config_getBool("INLINE_GROUPED_CLASSES"))
+  {
+    config_err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
+    Config_getBool("SEPARATE_MEMBER_PAGES")=FALSE;
+  }
     
   // check dot image format
   QCString &dotImageFormat=Config_getEnum("DOT_IMAGE_FORMAT");

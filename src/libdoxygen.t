@@ -84,7 +84,7 @@ sub GenerateDep {
 #$ GenerateDep("commentcnv.cpp","commentcnv.l");
 	$(LEX) -PcommentcnvYY -t commentcnv.l | $(INCBUFSIZE) >commentcnv.cpp
 
-#$GenerateDep("commentscan.cpp","commentscan.l");
+#$ GenerateDep("commentscan.cpp","commentscan.l");
 	$(LEX) -PcommentScanYY -t commentscan.l | $(INCBUFSIZE) >commentscan.cpp
 
 #$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
@@ -96,6 +96,8 @@ sub GenerateDep {
 #$ GenerateDep("ce_parse.h","constexp.y");
 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
 	-rm ce_parse.c	
+
+#$ GenerateDep("layout.cpp","layout_default.h");
 
 TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
 

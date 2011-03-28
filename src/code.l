@@ -469,10 +469,12 @@ static void startCodeLine()
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
+    //printf("%s:startCodeLine(%d)=%p\n",g_sourceFileDef->name().data(),g_yyLineNr,d);
     if (!g_includeCodeFragment && d)
     {
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
+      //printf("->startCodeLine(%s)=%p\n",d->name().data(),g_currentMemberDef);
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
@@ -1000,7 +1002,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     }
     ol.linkableSymbol(g_yyLineNr,cd->name(),cd,
                       g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName,cd->briefDescriptionAsTooltip());
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),clName,cd->briefDescriptionAsTooltip());
     addToSearchIndex(className);
     g_theCallContext.setClass(cd);
     if (md)
@@ -1552,7 +1554,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      writeMultiLineCodeLink(*g_code,
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
-		    0,
+		    cd->anchor(),
 		    pObject->data(),
 		    cd->briefDescriptionAsTooltip());
 	    }
@@ -1568,7 +1570,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	   	writeMultiLineCodeLink(*g_code,
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
-		    0,
+		    cd->anchor(),
 		    pObject->data(),
 		    cd->briefDescriptionAsTooltip());
 	      }

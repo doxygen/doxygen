@@ -154,6 +154,7 @@
 "    <detaileddescription title=\"\"/>\n"
 "    <memberdef>\n"
 "      <pagedocs/>\n"
+"      <inlineclasses title=\"\"/>\n"
 "      <defines title=\"\"/>\n"
 "      <typedefs title=\"\"/>\n"
 "      <enums title=\"\"/>\n"

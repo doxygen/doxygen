@@ -612,6 +612,11 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandler(this,&LayoutParser::startMemberDef));
       m_sHandler.insert("group/memberdef/pagedocs", 
           new StartElementHandlerKind(this,LayoutDocEntry::GroupPageDocs,&LayoutParser::startSimpleEntry));
+      m_sHandler.insert("group/memberdef/inlineclasses", 
+          new StartElementHandlerSection(this,LayoutDocEntry::GroupInlineClasses,&LayoutParser::startSectionEntry,
+                                         fortranOpt ? theTranslator->trTypeDocumentation() :
+                                         theTranslator->trClassDocumentation() 
+                                         ));
       m_sHandler.insert("group/memberdef/defines", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
                                         MemberList::docDefineMembers,theTranslator->trDefineDocumentation()));

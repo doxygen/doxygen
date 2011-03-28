@@ -473,7 +473,10 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject() && cd->templateMaster()==0)
+          if (cd->isLinkableInProject() && 
+              cd->templateMaster()==0 &&
+             !cd->isEmbeddedInGroupDocs()
+             )
           {
             beginRTFChapter();
             found=TRUE;
@@ -753,7 +756,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject() && cd->templateMaster()==0)
+          if (cd->isLinkableInProject() && 
+              cd->templateMaster()==0 &&
+             !cd->isEmbeddedInGroupDocs()
+             )
           {
             t << "\\par " << rtf_Style_Reset << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
@@ -764,7 +770,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         for (;(cd=cli.current());++cli)
         {
-          if (cd->isLinkableInProject() && cd->templateMaster()==0)
+          if (cd->isLinkableInProject() && 
+              cd->templateMaster()==0 &&
+             !cd->isEmbeddedInGroupDocs()
+             )
           {
             t << "\\par " << rtf_Style_Reset << endl;
             beginRTFSection();
@@ -1409,16 +1418,27 @@ void RTFGenerator::startTitle()
     beginRTFChapter();
 }
 
-void RTFGenerator::startGroupHeader()
+void RTFGenerator::startGroupHeader(int extraIndent)
 {
   DBG_RTF(t <<"{\\comment startGroupHeader}" << endl)
   //newParagraph();
   t << rtf_Style_Reset;
-  t << rtf_Style["Heading3"]->reference;
+  if (extraIndent==2)
+  {
+    t << rtf_Style["Heading5"]->reference;
+  }
+  else if (extraIndent==1)
+  {
+    t << rtf_Style["Heading4"]->reference;
+  }
+  else // extraIndent==0
+  {
+    t << rtf_Style["Heading3"]->reference;
+  }
   t << endl;
 }
 
-void RTFGenerator::endGroupHeader()
+void RTFGenerator::endGroupHeader(int)
 {
   DBG_RTF(t <<"{\\comment endGroupHeader}" << endl)
   t << "\\par" << endl;
@@ -1428,7 +1448,8 @@ void RTFGenerator::endGroupHeader()
 void RTFGenerator::startMemberDoc(const char *clname,
     const char *memname,
     const char *,
-    const char *)
+    const char *,
+    bool showInline)
 {
   DBG_RTF(t << "{\\comment startMemberDoc}" << endl)
   if (memname && memname[0]!='@')
@@ -1436,7 +1457,7 @@ void RTFGenerator::startMemberDoc(const char *clname,
     addIndexItem(memname,clname);
     addIndexItem(clname,memname);
   }
-  t << rtf_Style_Reset << rtf_Style["Heading4"]->reference;
+  t << rtf_Style_Reset << rtf_Style[showInline ? "Heading5" : "Heading4"]->reference;
   //styleStack.push(rtf_Style_Heading4);
   t << "{" << endl;
   //printf("RTFGenerator::startMemberDoc() `%s'\n",rtf_Style["Heading4"]->reference);
@@ -1447,11 +1468,11 @@ void RTFGenerator::startMemberDoc(const char *clname,
 void RTFGenerator::endMemberDoc(bool)
 {
   DBG_RTF(t << "{\\comment endMemberDoc}" << endl)
-  t << "}" << endl;
   //const char *style = styleStack.pop();
   //printf("RTFGenerator::endMemberDoc() `%s'\n",style);
   //ASSERT(style==rtf_Style["Heading4"]->reference);
   endBold();
+  t << "}" << endl;
   newParagraph();
 }
 
@@ -2748,13 +2769,13 @@ void RTFGenerator::startConstraintDocs()
 
 void RTFGenerator::endConstraintDocs()
 {
-  DBG_RTF(t << "{\\comment (endConstraintDocs)}"    << endl)
+  DBG_RTF(t << "{\\comment (endConstraintDocs)}" << endl)
   newParagraph();
 }
 
 void RTFGenerator::endConstraintList()
 {
-  DBG_RTF(t << "{\\comment (endConstraintList)}"    << endl)
+  DBG_RTF(t << "{\\comment (endConstraintList)}" << endl)
   newParagraph();
   decrementIndentLevel();
   m_omitParagraph = TRUE;
@@ -2763,13 +2784,39 @@ void RTFGenerator::endConstraintList()
 
 void RTFGenerator::startIndexListItem()
 {
-  DBG_RTF(t << "{\\comment (startIndexListItem)}"    << endl)
+  DBG_RTF(t << "{\\comment (startIndexListItem)}" << endl)
 }
 
 void RTFGenerator::endIndexListItem()
 {
-  DBG_RTF(t << "{\\comment (endIndexListItem)}"    << endl)
+  DBG_RTF(t << "{\\comment (endIndexListItem)}" << endl)
   t << "\\par" << endl;
+}
+
+void RTFGenerator::startInlineDescription() 
+{
+  DBG_RTF(t << "{\\comment (startInlineDescription)}" << endl)
+}
+
+void RTFGenerator::endInlineDescription() 
+{
+  DBG_RTF(t << "{\\comment (endInlineDescription)}" << endl)
+}
+
+void RTFGenerator::startInlineHeader() 
+{
+  DBG_RTF(t << "{\\comment (startInlineHeader)}" << endl)
+  t << "{" << endl;
+  t << rtf_Style_Reset << rtf_Style["Heading5"]->reference;
+  startBold();
+}
+
+void RTFGenerator::endInlineHeader() 
+{
+  DBG_RTF(t << "{\\comment (endInlineHeader)}" << endl)
+  endBold();
+  t << "\\par";
+  t << "}" << endl;
 }
 
 

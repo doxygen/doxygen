@@ -846,6 +846,7 @@ void DBusXMLScanner::parseInput(const char * fileName,
                                 const char * /* fileBuf */,
                                 Entry * root)
 {
+    err("Note that the dbusxml parser seems to be broken :-(\nPlease help me to fix it!\n");
     QFile inputFile(fileName);
 
     QXmlInputSource inputSource(inputFile);

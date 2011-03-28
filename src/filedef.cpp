@@ -171,7 +171,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     ol.writeRuler();
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-      ol.writeAnchor(0,"_details"); 
+      ol.writeAnchor(0,"details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
     ol.parseText(title);
@@ -235,7 +235,7 @@ void FileDef::writeBriefDescription(OutputList &ol)
        )
     {
       ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"_details");
+      ol.startTextLink(0,"details");
       ol.parseText(theTranslator->trMore());
       ol.endTextLink();
     }
@@ -657,6 +657,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceClasses:
       case LayoutDocEntry::GroupClasses: 
+      case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs: 
       case LayoutDocEntry::GroupNestedGroups: 
@@ -1486,7 +1487,7 @@ bool FileDef::isDocumentationFile() const
 void FileDef::acquireFileVersion()
 {
   QCString vercmd = Config_getString("FILE_VERSION_FILTER");
-  if (!vercmd.isEmpty()) 
+  if (!vercmd.isEmpty() && filepath!="generated") 
   {
     msg("Version of %s : ",filepath.data());
     QCString cmd = vercmd+" \""+filepath+"\"";

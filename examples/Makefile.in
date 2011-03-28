@@ -25,13 +25,16 @@ all: class/html/index.html \
      docstring/html/index.html \
      pyexample/html/index.html \
      mux/html/index.html \
-     manual/html/index.html
+     manual/html/index.html 
+
+# Disabled since it is broken :-(
+#     dbusxml/html/index.html
 
 clean:
 	rm -rf  class define enum file func page relates author \
                 par overload example include qtstyle jdstyle structcmd \
 		autolink tag restypedef afterdoc template tag group diagrams \
-		memgrp docstring pyexample mux manual
+		memgrp docstring pyexample mux manual dbusxml
 
 class/html/index.html: class.h class.cfg
 	$(DOXYGEN)/bin/doxygen class.cfg
@@ -112,6 +115,9 @@ manual/html/index.html: manual.c manual.cfg
 
 docstring/html/index.html: docstring.py docstring.cfg
 	$(DOXYGEN)/bin/doxygen docstring.cfg
+
+#dbusxml/html/index.html: dbusxml.xml dbusxml.cfg
+#	$(DOXYGEN)/bin/doxygen dbusxml.cfg
 
 diagrams/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
 ifneq ($(HAVE_DOT),)

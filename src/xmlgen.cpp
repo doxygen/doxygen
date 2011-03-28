@@ -544,6 +544,25 @@ static void stripQualifiers(QCString &typeStr)
   }
 }
 
+static QCString classOutputFileBase(ClassDef *cd)
+{
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  if (inlineGroupedClasses && cd->partOfGroups()!=0) 
+    return cd->getXmlOutputFileBase();
+  else 
+    return cd->getOutputFileBase();
+}
+
+static QCString memberOutputFileBase(MemberDef *md)
+{
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0) 
+    return md->getClassDef()->getXmlOutputFileBase();
+  else 
+    return md->getOutputFileBase();
+}
+
+
 static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,Definition *def)
 {
 
@@ -587,7 +606,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     case MemberDef::Slot:        memType="slot";      isFunc=TRUE; break;
   }
 
-  ti << "    <member refid=\"" << md->getOutputFileBase() 
+  ti << "    <member refid=\"" << memberOutputFileBase(md) 
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>" 
      << convertToXML(md->name()) << "</name></member>" << endl;
   
@@ -606,7 +625,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   }
   else
   {
-    t << md->getOutputFileBase();
+    t << memberOutputFileBase(md);
   }
   t << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
     << md->anchor();
@@ -772,7 +791,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   if (rmd)
   {
     t << "        <reimplements refid=\"" 
-      << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
+      << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
       << convertToXML(rmd->name()) << "</reimplements>" << endl;
   }
   LockingPtr<MemberList> rbml = md->reimplementedBy();
@@ -782,7 +801,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     for (mli.toFirst();(rmd=mli.current());++mli)
     {
       t << "        <reimplementedby refid=\"" 
-        << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
+        << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
         << convertToXML(rmd->name()) << "</reimplementedby>" << endl;
     }
   }
@@ -891,11 +910,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
-        ti << "    <member refid=\"" << emd->getOutputFileBase() 
+        ti << "    <member refid=\"" << memberOutputFileBase(emd) 
            << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>" 
            << convertToXML(emd->name()) << "</name></member>" << endl;
 
-        t << "        <enumvalue id=\"" << emd->getOutputFileBase() << "_1" 
+        t << "        <enumvalue id=\"" << memberOutputFileBase(emd) << "_1" 
           << emd->anchor() << "\" prot=\"";
         switch (emd->protection())
         {
@@ -1036,7 +1055,7 @@ static void writeListOfAllMembers(ClassDef *cd,FTextStream &t)
         {
           Protection prot = mi->prot;
           Specifier virt=md->virtualness();
-          t << "      <member refid=\"" << md->getOutputFileBase() << "_1" <<
+          t << "      <member refid=\"" << memberOutputFileBase(md) << "_1" <<
             md->anchor() << "\" prot=\"";
           switch (prot)
           {
@@ -1169,7 +1188,6 @@ static void writeInnerDirs(const DirList *dl,FTextStream &t)
   }
 }
   
-
 static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
 {
   // + brief description
@@ -1187,7 +1205,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
   // + standard member sections
   // + detailed member documentation
   // - examples using the class
-  
+
   if (cd->isReference())        return; // skip external references.
   if (cd->isHidden())           return; // skip hidden classes.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
@@ -1195,12 +1213,12 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
 
   msg("Generating XML output for class %s\n",cd->name().data());
 
-  ti << "  <compound refid=\"" << cd->getOutputFileBase() 
+  ti << "  <compound refid=\"" << classOutputFileBase(cd) 
      << "\" kind=\"" << cd->compoundTypeString()
      << "\"><name>" << convertToXML(cd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("XML_OUTPUT");
-  QCString fileName=outputDirectory+"/"+cd->getOutputFileBase()+".xml";
+  QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -1212,7 +1230,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
-    << cd->getOutputFileBase() << "\" kind=\"" 
+    << classOutputFileBase(cd) << "\" kind=\"" 
     << cd->compoundTypeString() << "\" prot=\"";
   switch (cd->protection())
   {
@@ -1234,7 +1252,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
       t << "    <basecompoundref ";
       if (bcd->classDef->isLinkable())
       {
-        t << "refid=\"" << bcd->classDef->getOutputFileBase() << "\" ";
+        t << "refid=\"" << classOutputFileBase(bcd->classDef) << "\" ";
       }
       t << "prot=\"";
       switch (bcd->prot)
@@ -1273,7 +1291,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
       t << "    <derivedcompoundref refid=\"" 
-        << bcd->classDef->getOutputFileBase()
+        << classOutputFileBase(bcd->classDef)
         << "\" prot=\"";
       switch (bcd->prot)
       {

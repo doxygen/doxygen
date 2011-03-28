@@ -1107,7 +1107,7 @@ void PerlModDocVisitor::visitPre(DocMscFile *)
 void PerlModDocVisitor::visitPost(DocMscFile *)
 {
 #if 0
-  m_output.add("</dotfile>");
+  m_output.add("<mscfile>");
 #endif
 }
 

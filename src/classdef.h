@@ -96,6 +96,7 @@ class ClassDef : public Definition
 
     /*! Returns the unique base name (without extension) of the class's file on disk */
     QCString getOutputFileBase() const; 
+    QCString getXmlOutputFileBase() const;
     QCString getInstanceOutputFileBase() const; 
     QCString getFileBase() const;
 
@@ -263,6 +264,9 @@ class ClassDef : public Definition
 
     bool isUsedOnly() const;
 
+    QCString anchor() const;
+    bool isEmbeddedInGroupDocs() const;
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
@@ -317,6 +321,9 @@ class ClassDef : public Definition
     void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
     void writeSummaryLinks(OutputList &ol);
     void reclassifyMember(MemberDef *md,MemberDef::MemberType t);
+    void writeInlineDocumentation(OutputList &ol);
+    void writeDeclarationLink(OutputList &ol,bool &found,
+                              const char *header,bool localNames);
     
     bool visited;
 
@@ -327,28 +334,32 @@ class ClassDef : public Definition
     void showUsedFiles(OutputList &ol);
 
   private: 
+    void writeTagFileMarker(OutputList &ol);
+    void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     QCString getMemberListFileName() const;
     void addMemberToList(MemberList::ListType lt,MemberDef *md,bool isBrief);
     MemberList *createMemberList(MemberList::ListType lt);
     void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
-                                 const char *subTitle=0);
-    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+                                 const char *subTitle=0,bool showInline=FALSE);
+    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title,bool showInline=FALSE);
     void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup);
     void writeBriefDescription(OutputList &ol,bool exampleFlag);
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
-                                  const QCString &title);
+                                  const QCString &title,const QCString &anchor=QCString());
     void writeIncludeFiles(OutputList &ol);
     void writeAllMembersLink(OutputList &ol);
     void writeInheritanceGraph(OutputList &ol);
     void writeCollaborationGraph(OutputList &ol);
-    void writeMemberGroups(OutputList &ol);
+    void writeMemberGroups(OutputList &ol,bool showInline=FALSE);
     void writeNestedClasses(OutputList &ol,const QCString &title);
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
     void startMemberDocumentation(OutputList &ol);
     void endMemberDocumentation(OutputList &ol);
     void writeAuthorSection(OutputList &ol);
+    void writeMoreLink(OutputList &ol,const QCString &anchor);
+    void writeDetailedDocumentationBody(OutputList &ol);
     
     ClassDefImpl *m_impl;
 

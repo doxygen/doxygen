@@ -321,8 +321,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endIndexValue(const char *,bool) = 0;
     virtual void startIndexItem(const char *ref,const char *file) = 0;
     virtual void endIndexItem(const char *ref,const char *file) = 0;
-    virtual void startGroupHeader() = 0;
-    virtual void endGroupHeader() = 0;
+    virtual void startGroupHeader(int) = 0;
+    virtual void endGroupHeader(int) = 0;
     virtual void startMemberSections() = 0;
     virtual void endMemberSections() = 0;
     virtual void startHeaderSection() = 0;
@@ -335,6 +335,10 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDocList() = 0;
     virtual void startMemberList() = 0;
     virtual void endMemberList() = 0;
+    virtual void startInlineDescription() = 0;
+    virtual void endInlineDescription() = 0;
+    virtual void startInlineHeader() = 0;
+    virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
     virtual void startMemberItem(int) = 0;
@@ -349,7 +353,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberGroup(bool) = 0;
     virtual void insertMemberAlign(bool) = 0;
     virtual void startMemberDoc(const char *,const char *,
-                                const char *,const char *) = 0;
+                                const char *,const char *,bool) = 0;
     virtual void endMemberDoc(bool) = 0;
     virtual void startDoxyAnchor(const char *fName,const char *manName,
                                  const char *anchor,const char *name,

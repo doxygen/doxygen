@@ -1036,6 +1036,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     }
     else if (compound->isLinkable()) // compound link
     {
+      QCString anchor;
       if (compound->definitionType()==Definition::TypeFile)
       {
         name=g_token->name;
@@ -1044,11 +1045,15 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
       {
         name=((GroupDef*)compound)->groupTitle();
       }
+      else if (compound->definitionType()==Definition::TypeClass)
+      {
+        anchor=((ClassDef*)compound)->anchor();
+      }
       children.append(new 
           DocLinkedWord(parent,name,
                         compound->getReference(),
                         compound->getOutputFileBase(),
-                        "",
+                        anchor,
                         compound->briefDescriptionAsTooltip()
                        )
                      );
@@ -1087,7 +1092,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
         DocLinkedWord(parent,name,
           cd->getReference(),
           cd->getOutputFileBase(),
-          "",
+          cd->anchor(),
           cd->briefDescriptionAsTooltip()
           ));
   }
@@ -1099,7 +1104,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
         DocLinkedWord(parent,name,
           cd->getReference(),
           cd->getOutputFileBase(),
-          "",
+          cd->anchor(),
           cd->briefDescriptionAsTooltip()
           ));
   }
@@ -1644,7 +1649,8 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QCString &word,
       m_tooltip(tooltip)
 {
   m_parent = parent; 
-  //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
+  //printf("DocLinkedWord: new word %s url=%s tooltip='%s'\n",
+  //    word.data(),g_searchUrl.data(),tooltip.data());
   if (Doxygen::searchIndex && !g_searchUrl.isEmpty())
   {
     Doxygen::searchIndex->addWord(word,FALSE);

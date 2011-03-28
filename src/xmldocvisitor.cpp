@@ -721,7 +721,7 @@ void XmlDocVisitor::visitPre(DocMscFile *df)
 void XmlDocVisitor::visitPost(DocMscFile *) 
 {
   if (m_hide) return;
-  m_t << "</dotfile>" << endl;
+  m_t << "</mscfile>" << endl;
 }
 void XmlDocVisitor::visitPre(DocLink *lnk)
 {

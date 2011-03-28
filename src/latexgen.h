@@ -91,8 +91,8 @@ class LatexGenerator : public OutputGenerator
     void endHtmlLink();
     void startTypewriter() { t << "{\\ttfamily "; }
     void endTypewriter()   { t << "}";      }
-    void startGroupHeader();
-    void endGroupHeader();
+    void startGroupHeader(int);
+    void endGroupHeader(int);
     void startItemListItem() { t << "\\item " << endl; }
     void endItemListItem()   {}
 
@@ -108,6 +108,10 @@ class LatexGenerator : public OutputGenerator
     void endMemberDocList() {}
     void startMemberList();
     void endMemberList();
+    void startInlineDescription() {}
+    void endInlineDescription() {}
+    void startInlineHeader();
+    void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
     void startMemberItem(int);
@@ -140,7 +144,7 @@ class LatexGenerator : public OutputGenerator
     void startDescItem();
     void endDescItem();
     void lineBreak(const char *style=0) { (void)style; t << "\\par\n"; }
-    void startMemberDoc(const char *,const char *,const char *,const char *);
+    void startMemberDoc(const char *,const char *,const char *,const char *,bool);
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);

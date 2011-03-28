@@ -282,6 +282,12 @@ subgroup of that type (e.g. under the Public Functions section). Set it to
 NO to prevent subgrouping. Alternatively, this can be done per class using 
 the \nosubgrouping command. 
 ' defval='1'/>
+    <option type='bool' id='INLINE_GROUPED_CLASSES' docs='
+When the INLINE_GROUPED_CLASSES tag is set to YES, classes, structs and 
+unions are shown inside the group in which they are included (e.g. using 
+@ingroup) instead of on a separate page (for HTML and Man pages) or 
+section (for LaTeX and RTF).
+' defval='0'/>
     <option type='bool' id='TYPEDEF_HIDES_STRUCT' docs='
 When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum 
 is documented as struct, union, or enum with the name of the typedef. So 

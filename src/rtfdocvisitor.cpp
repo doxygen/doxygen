@@ -750,6 +750,8 @@ void RTFDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocSection)}\n");
   if (!m_lastIsPara) m_t << "\\par" << endl;
+  m_t << "{\\bkmkstart " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}" << endl;
+  m_t << "{\\bkmkend " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}" << endl;
   m_t << "{{" // start section
       << rtf_Style_Reset;
   QCString heading;
@@ -1084,7 +1086,7 @@ void RTFDocVisitor::visitPost(DocDotFile *)
 }
 void RTFDocVisitor::visitPre(DocMscFile *df)
 {
-  DBG_RTF("{\\comment RTFDocVisitor::visitPre(MscDotFile)}\n");
+  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocMscFile)}\n");
   writeMscFile(df->file());
 
   // hide caption since it is not supported at the moment
@@ -1094,7 +1096,7 @@ void RTFDocVisitor::visitPre(DocMscFile *df)
 
 void RTFDocVisitor::visitPost(DocMscFile *) 
 {
-  DBG_RTF("{\\comment RTFDocVisitor::visitPost(MscDotFile)}\n");
+  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocMscFile)}\n");
   popEnabled();
 }
 
@@ -1125,7 +1127,7 @@ void RTFDocVisitor::visitPost(DocRef *ref)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocRef)}\n");
   if (!ref->file().isEmpty()) endLink(ref->ref());
-  m_t << " ";
+  //m_t << " ";
 }
 
 

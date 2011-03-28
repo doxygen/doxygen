@@ -18,7 +18,7 @@
 #include "qtbc.h"
 #include <ctype.h>
 #include <qregexp.h>
-#include <md5.h>
+#include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -1356,14 +1356,14 @@ void Definition::writeNavigationPath(OutputList &ol) const
   ol.writeString("  <div id=\"nav-path\" class=\"navpath\">\n");
   ol.writeString("    <ul>\n");
   writePathFragment(ol);
-  if (!hasCustomFooter)
+  if (!hasCustomFooter && generateTreeView) // write the doxygen logo as part of the navigation bar
   {
-    if (generateTreeView) // write the doxygen logo as part of the navigation bar
-    {
-      ol.writeString("      <li class=\"footer\">");
-      ol.writeLogo();
-      ol.writeString("</li>\n");
-    }
+    ol.writeString("      <li class=\"footer\">");
+    ol.writeLogo();
+    ol.writeString("</li>\n");
+  }
+  if (!hasCustomFooter || !generateTreeView)
+  {
     ol.writeString("    </ul>\n");
     ol.writeString("  </div>\n");
   }
