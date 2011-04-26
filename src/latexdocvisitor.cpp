@@ -46,6 +46,28 @@ static QCString escapeLabelName(const char *s)
   return result;
 }
 
+static bool isSymbol(const char *s)
+{
+  int l=0;        // word length
+  int nCaps=0;    // number of captials
+  int nCamels=0;  // number of lowerCase+upperCase combos
+  int nUnscore=0; // number of underscores
+  const char *p=s;
+  char c;
+  bool plo=FALSE;
+  while ((c=*p++))
+  {
+    bool lo=c>='a' && c<='z';
+    bool up=c>='A' && c<='Z';
+    if (c=='_') nUnscore++;
+    if (up) nCaps++;
+    if (up && plo) nCamels++;
+    plo=lo;
+    l++;
+  }
+  return l>=20 || nCaps>=4 || nCamels>=2 || nUnscore>0;
+}
+
 const int maxLevels=5;
 static const char *secLabels[maxLevels] = 
    { "section","subsection","subsubsection","paragraph","subparagraph" };
@@ -100,7 +122,8 @@ LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                                  const char *langExt,bool insideTabbing) 
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
     m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
-    m_langExt(langExt), m_currentColumn(0), m_inRowspan(FALSE)
+    m_forceBreaks(FALSE), m_langExt(langExt), m_currentColumn(0), 
+    m_inRowspan(FALSE)
 {
 }
 
@@ -111,14 +134,14 @@ LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
 void LatexDocVisitor::visit(DocWord *w)
 {
   if (m_hide) return;
-  filter(w->word());
+  filter(w->word(),isSymbol(w->word()));
 }
 
 void LatexDocVisitor::visit(DocLinkedWord *w)
 {
   if (m_hide) return;
   startLink(w->ref(),w->file(),w->anchor());
-  filter(w->word());
+  filter(w->word(),isSymbol(w->word()));
   endLink(w->ref(),w->file(),w->anchor());
 }
 
@@ -1301,17 +1324,18 @@ void LatexDocVisitor::visitPost(DocCopy *)
 {
 }
 
-void LatexDocVisitor::visitPre(DocText *)
+void LatexDocVisitor::visitPre(DocText *t)
 {
+  m_forceBreaks = t->forceBreaks();
 }
 
 void LatexDocVisitor::visitPost(DocText *)
 {
 }
 
-void LatexDocVisitor::filter(const char *str)
+void LatexDocVisitor::filter(const char *str,bool forceBreaks)
 { 
-  filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);
+  filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem,m_forceBreaks || forceBreaks);
 }
 
 void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)

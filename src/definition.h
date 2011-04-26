@@ -290,7 +290,7 @@ class Definition : public DefinitionIntf, public LockableObj
     virtual void addInnerCompound(Definition *d);
     virtual void setOuterScope(Definition *d);
 
-    void setHidden(bool b);
+    virtual void setHidden(bool b);
 
     void setArtificial(bool b);
 

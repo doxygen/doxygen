@@ -60,7 +60,8 @@ int MemberList::compareItems(GCI item1, GCI item2)
     else if (ord2 > ord1)
       return 1;
   }
-  return stricmp(c1->name(),c2->name());
+  int cmp = stricmp(c1->name(),c2->name());
+  return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
 }
 
 /*! Count the number of members in this list that are visible in
@@ -792,7 +793,8 @@ int MemberSDict::compareItems(GCI item1, GCI item2)
 {
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
-  return stricmp(c1->name(),c2->name());
+  int cmp = stricmp(c1->name(),c2->name());
+  return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
 }
 
 

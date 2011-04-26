@@ -69,11 +69,13 @@ MemberGroup::~MemberGroup()
 void MemberGroup::insertMember(MemberDef *md)
 {
   //printf("MemberGroup::insertMember m_parent=%s memberList=%p count=%d"
-  //       " member section list: %p\n",
+  //       " member section list: %p: md=%p:%s\n",
   //       m_parent ? m_parent->name().data() : "<null>",
   //       memberList->first() ? memberList->first()->getSectionList(m_parent) : 0,
   //       memberList->count(),
-  //       md->getSectionList(m_parent));
+  //       md->getSectionList(m_parent),
+  //       md,md->name().data());
+
   MemberDef *firstMd = memberList->first();
   if (inSameSection && memberList->count()>0 && 
       firstMd->getSectionList(m_parent)!=md->getSectionList(m_parent))

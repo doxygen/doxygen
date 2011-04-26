@@ -274,7 +274,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
 
 void NamespaceDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty()) 
+  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
     ol.startParagraph();
     ol.parseDoc(briefFile(),briefLine(),this,0,
@@ -440,7 +440,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
 
   startTitle(ol,getOutputFileBase(),this);
-  ol.parseText(pageTitle);
+  ol.parseText(pageTitle,TRUE);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
   ol.startContents();
@@ -865,11 +865,9 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
       ol.endMemberItem();
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.endParagraph();
       }
     }
   }

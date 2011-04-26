@@ -2398,12 +2398,13 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
 
     Debug::print(Debug::Variables,0,
                   "VARIABLE_SEC: \n"
-                  "  type=`%s' name=`%s' args=`%s' bodyLine=`%d' mGrpId=%d\n",
+                  "  type=`%s' name=`%s' args=`%s' bodyLine=`%d' mGrpId=%d relates=%s\n",
                    root->type.data(),
                    root->name.data(),
                    root->args.data(),
                    root->bodyLine,
-                   root->mGrpId
+                   root->mGrpId,
+                   root->relates.data()
                 );
     //printf("root->parent->name=%s\n",root->parent->name.data());
 
@@ -4355,8 +4356,8 @@ static bool findClassRelation(
         else if (mode==Undocumented && (scopeOffset==0 || isATemplateArgument))
         {
           Debug::print(Debug::Classes,0,
-                       "    New undocumented base class `%s' baseClassName=%s\n",
-                       biName.data(),baseClassName.data()
+                       "    New undocumented base class `%s' baseClassName=%s isArtificial=%d\n",
+                       biName.data(),baseClassName.data(),isArtificial
                       );
           baseClass=0;
           if (isATemplateArgument)
@@ -5941,16 +5942,17 @@ static void findMember(EntryNav *rootNav,
       {
         bool newMember=TRUE; // assume we have a new member
         bool newMemberName=FALSE; 
+        MemberDef *mdDefine=0;
         bool isDefine=FALSE;
         {
           MemberName *mn = Doxygen::functionNameSDict->find(funcName);
           if (mn)
           {
-            MemberDef *md = mn->first();
-            while (md && !isDefine)
+            mdDefine = mn->first();
+            while (mdDefine && !isDefine)
             {
-              isDefine = isDefine || md->isDefine();
-              md = mn->next();
+              isDefine = isDefine || mdDefine->isDefine();
+              if (!isDefine) mdDefine = mn->next();
             }
           }
         }
@@ -5970,6 +5972,7 @@ static void findMember(EntryNav *rootNav,
             LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
 
             newMember=
+              className!=rmd->getOuterScope()->name() ||
               !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
                                cd,fd,root->argList,
                                TRUE);
@@ -5997,19 +6000,17 @@ static void findMember(EntryNav *rootNav,
           else
             mtype=MemberDef::Function;
 
+          if (isDefine && mdDefine)
+          {
+            mdDefine->setHidden(TRUE);
+            funcType="#define";
+            funcArgs=mdDefine->argsString();
+            funcDecl=funcType + " " + funcName;
+          } 
+
           //printf("New related name `%s' `%d'\n",funcName.data(),
           //    root->argList ? (int)root->argList->count() : -1);
 
-          // new related (member) function
-#if 0 // removed as it doesn't handle related template functions correctly
-          ArgumentList *tArgList = 
-            getTemplateArgumentsFromName(scopeName+"::"+funcName,root->tArgLists);
-          MemberDef *md=new MemberDef(
-              root->fileName,root->startLine,
-              funcType,funcName,funcArgs,exceptions,
-              root->protection,root->virt,root->stat,TRUE,
-              mtype,tArgList,funcArgs.isEmpty() ? 0 : root->argList);
-#endif
           // first note that we pass:
           //   (root->tArgLists ? root->tArgLists->last() : 0)
           // for the template arguments fo the new "member."
@@ -6025,6 +6026,12 @@ static void findMember(EntryNav *rootNav,
               mtype,
               (root->tArgLists ? root->tArgLists->last() : 0),
               funcArgs.isEmpty() ? 0 : root->argList);
+
+          if (isDefine && mdDefine)
+          {
+            md->setInitializer(mdDefine->initializer());
+          }
+
           // 
           // we still have the problem that
           // MemberDef::writeDocumentation() in memberdef.cpp
@@ -6105,7 +6112,10 @@ static void findMember(EntryNav *rootNav,
           cd->insertUsedFile(root->fileName);
           md->setRefItems(root->sli);
           if (root->relatesType == Duplicate) md->setRelatedAlso(cd);
-          addMemberToGroups(root,md);
+          if (!isDefine)
+          {
+            addMemberToGroups(root,md);
+          }
           //printf("Adding member=%s\n",md->name().data());
           if (newMemberName)
           {
@@ -7986,7 +7996,8 @@ static void buildPageList(EntryNav *rootNav)
 
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
-    QCString name = Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+    //QCString name = Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+    QCString name = "index";
     addRefItem(root->sli,
                name,
                "page",
@@ -8011,7 +8022,8 @@ static void findMainPage(EntryNav *rootNav)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
-      QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+      //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+      QCString indexName="index";
       Doxygen::mainPage = new PageDef(root->fileName,root->startLine,
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
@@ -9918,7 +9930,7 @@ void searchInputFiles(StringList &inputFiles)
     readFileOrDirectory(s,0,Doxygen::mscFileNameDict,0,0,
                         0,0,0,
                         alwaysRecursive);
-    s=dotFileList.next(); 
+    s=mscFileList.next(); 
   }
 
 

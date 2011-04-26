@@ -173,7 +173,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   delete root;
 }
 
-void OutputList::parseText(const QCString &textStr)
+void OutputList::parseText(const QCString &textStr,bool forceBreaks)
 {
   int count=0;
   OutputGenerator *og=outputs->first();
@@ -184,7 +184,7 @@ void OutputList::parseText(const QCString &textStr)
   }
   if (count==0) return; // no output formats enabled.
 
-  DocNode *root = validatingParseText(textStr);
+  DocNode *root = validatingParseText(textStr,forceBreaks);
 
   og=outputs->first();
   while (og)

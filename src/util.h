@@ -65,7 +65,7 @@ class TextGeneratorIntf
   public:
     virtual ~TextGeneratorIntf() {}
     virtual void writeString(const char *,bool) const = 0;
-    virtual void writeBreak() const = 0;
+    virtual void writeBreak(int indent) const = 0;
     virtual void writeLink(const char *extRef,const char *file,
                       const char *anchor,const char *text
                      ) const = 0; 
@@ -77,7 +77,7 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
     virtual ~TextGeneratorOLImpl() {}
     TextGeneratorOLImpl(OutputDocInterface &od);
     void writeString(const char *s,bool keepSpaces) const;
-    void writeBreak() const;
+    void writeBreak(int indent) const;
     void writeLink(const char *extRef,const char *file,
                    const char *anchor,const char *text
                   ) const;
@@ -113,7 +113,8 @@ void linkifyText(const TextGeneratorIntf &ol,
                  const char *text,
                  bool autoBreak=FALSE,
                  bool external=TRUE,
-                 bool keepSpaces=FALSE
+                 bool keepSpaces=FALSE,
+                 int indentLevel=0
                 );
 
 void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
@@ -307,8 +308,10 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
 void addGroupListToTitle(OutputList &ol,Definition *d);
 
 void filterLatexString(FTextStream &t,const char *str,
-                       bool insideTabbing=FALSE,bool insidePre=FALSE,
-                       bool insideItem=FALSE);
+                       bool insideTabbing=FALSE,
+                       bool insidePre=FALSE,
+                       bool insideItem=FALSE,
+                       bool forceBreaks=FALSE);
 
 QCString rtfFormatBmkStr(const char *name);
 

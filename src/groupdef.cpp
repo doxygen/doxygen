@@ -554,7 +554,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 
 void GroupDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty())
+  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
     ol.startParagraph();
     ol.parseDoc(briefFile(),briefLine(),this,0,
@@ -574,11 +574,6 @@ void GroupDef::writeBriefDescription(OutputList &ol)
       ol.endTextLink();
     }
     ol.popGeneratorState();
-
-    //ol.pushGeneratorState();
-    //ol.disable(OutputGenerator::RTF);
-    //ol.newParagraph();
-    //ol.popGeneratorState();
     ol.endParagraph();
   }
 }
@@ -626,11 +621,9 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.endParagraph();
       }
       fd=fileList->next();
     }
@@ -668,11 +661,9 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
       ol.endMemberItem();
       if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.endParagraph();
       }
       gd=groupList->next();
     }
@@ -703,11 +694,9 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
       }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.endParagraph();
       }
       dd=dirList->next();
     }
@@ -1276,7 +1265,9 @@ void addMemberToGroups(Entry *root,MemberDef *md)
 
       if (insertit)
       {
-        //printf("insertMember found at %s line %d\n",md->getDefFileName().data(),md->getDefLine());
+        //printf("insertMember found at %s line %d: %s: related %s\n",
+        //    md->getDefFileName().data(),md->getDefLine(),
+        //    md->name().data(),root->relates.data());
         bool success = fgd->insertMember(md);
         if (success)
         {

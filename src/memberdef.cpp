@@ -944,6 +944,13 @@ void MemberDef::setInbodyDocumentation(const char *d,const char *inbodyFile,int 
   m_isLinkableCached = 0;
 }
 
+void MemberDef::setHidden(bool b)
+{
+  makeResident();
+  Definition::setHidden(b);
+  m_isLinkableCached = 0;
+}
+
 bool MemberDef::isLinkableInProject() const
 {
   if (m_isLinkableCached==0)
@@ -988,8 +995,18 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
   LockingPtr<MemberDef> lock(this,this);
   QCString sep = optimizeOutputJava ? "." : "::";
   QCString n = name();
-  if (!hideScopeNames && m_impl->classDef && gd) n.prepend(m_impl->classDef->name()+sep);
-  else if (!hideScopeNames && m_impl->nspace && (gd || fd)) n.prepend(m_impl->nspace->name()+sep);
+  if (!hideScopeNames)
+  {
+    if (m_impl->classDef && gd && !isRelated()) 
+    {
+      n.prepend(m_impl->classDef->name()+sep);
+    }
+    else if (m_impl->nspace && (gd || fd)) 
+    {
+      n.prepend(m_impl->nspace->name()+sep);
+    }
+  }
+
   if (isObjCMethod())
   {
     if (isStatic()) ol.docify("+ "); else ol.docify("- ");
@@ -1170,7 +1187,7 @@ bool MemberDef::isBriefSectionVisible() const
                  visibleIfEnabled    && visibleIfPrivate         &&
                  /*visibleIfDocVirtual &&*/ visibleIfNotDefaultCDTor && 
                  visibleIfFriendCompound && 
-                 !m_impl->annScope;
+                 !m_impl->annScope && !isHidden();
   //printf("MemberDef::isBriefSectionVisible() %d\n",visible);
   return visible;
 }
@@ -1343,7 +1360,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       if (getAnonymousEnumType()) // type is an anonymous enum
       {
-        linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype.left(i),TRUE); 
+        linkifyText(TextGeneratorOLImpl(ol), // out
+                    d,                       // scope
+                    getBodyDef(),            // fileScope
+                    name(),                  // 
+                    ltype.left(i),           // text
+                    TRUE                     // autoBreak
+                   ); 
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd);
         //ol+=*getAnonymousEnumType()->enumDecl();
         linkifyText(TextGeneratorOLImpl(ol),d,m_impl->fileDef,name(),ltype.right(ltype.length()-i-l),TRUE); 
@@ -1351,7 +1374,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
       else
       {
         ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
-        linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype,TRUE); 
+        linkifyText(TextGeneratorOLImpl(ol), // out
+                    d,                       // scope
+                    getBodyDef(),            // fileScope
+                    name(),                  // 
+                    ltype,                   // text
+                    TRUE                     // autoBreak
+                   ); 
       }
     }
   }
@@ -1366,7 +1395,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ltype.prepend("(");
       ltype.append(")");
     }
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype,TRUE); 
+    linkifyText(TextGeneratorOLImpl(ol), // out
+                d,                       // scope
+                getBodyDef(),            // fileScope
+                name(),                  //
+                ltype,                   // text
+                TRUE                     // autoBreak
+               );
   }
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
   if (htmlOn && Config_getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
@@ -1466,8 +1501,16 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (argsString() && !isObjCMethod()) 
   {
     if (!isDefine()) ol.writeString(" ");
-    //ol.docify(argsString());
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),argsString()); 
+    linkifyText(TextGeneratorOLImpl(ol), // out
+                d,                       // scope
+                getBodyDef(),            // fileScope
+                name(),                  //
+                argsString(),            // text
+                m_impl->annMemb,         // autoBreak
+                TRUE,                    // external
+                FALSE,                   // keepSpaces
+                s_indentLevel
+               );
   }
 
   // *** write exceptions
@@ -1661,7 +1704,7 @@ bool MemberDef::isDetailedSectionLinkable() const
                                 )
                                );
   
-  return ((docFilter && staticFilter && privateFilter && friendCompoundFilter) /*|| inAnonymousScope*/);
+  return ((docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden()) /*|| inAnonymousScope*/);
 }
 
 bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const          
@@ -1694,6 +1737,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   static bool optVhdl          = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
+
   if ( !hasDocs ) return;
   if (isEnumValue() && !showEnumValues) return;
 
@@ -1976,7 +2020,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       }
       if (m_impl->classDef && 
           container->definitionType()==TypeClass && 
-          m_impl->classDef!=container
+          m_impl->classDef!=container &&
+          !isRelated()
          ) 
       {
         sl.append("inherited");

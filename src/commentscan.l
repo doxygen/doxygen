@@ -1040,7 +1040,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   				          addOutput(yytext); 
 					}
 <Comment>^{B}*"-"			{ // start of autolist
-					  setOutput(OutputDoc);
+					  if (inContext!=OutputXRef) 
+					  {
+					    briefEndsAtDot=FALSE;
+					    setOutput(OutputDoc);
+					  }
   				          addOutput(yytext); 
   					}
 <Comment>("."+)[a-z_A-Z0-9\)]		{ // . at start or in the middle of a word, or ellipsis
@@ -2570,6 +2574,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   lineNr = yyLineNr;
   //printf("position=%d parseMore=%d\n",position,parseMore);
+
 
   return parseMore;
 }

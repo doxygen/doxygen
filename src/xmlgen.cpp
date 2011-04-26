@@ -203,7 +203,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
     {
       writeXMLString(m_t,s); 
     }
-    void writeBreak() const {}
+    void writeBreak(int) const {}
     void writeLink(const char *extRef,const char *file,
                    const char *anchor,const char *text
                   ) const

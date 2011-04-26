@@ -64,6 +64,7 @@ TranslatorFrench
 Xavier Outhier: xouthier at yahoo dot fr
 
 TranslatorGerman  
+Peter Grotrian: Peter dot Grotrian at pdv-FS dot de
 Jens Seidel: jensseidel at users dot sf dot net
 
 TranslatorGreek

@@ -143,7 +143,7 @@ class LatexGenerator : public OutputGenerator
     void endDescription();
     void startDescItem();
     void endDescItem();
-    void lineBreak(const char *style=0) { (void)style; t << "\\par\n"; }
+    void lineBreak(const char *style=0);
     void startMemberDoc(const char *,const char *,const char *,const char *,bool);
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);

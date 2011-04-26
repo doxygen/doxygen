@@ -1220,15 +1220,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
-					  curlyCount=0;
-					  current_root->addSubEntry(current);
-                                          current_root = current ;
-					  current             = new Entry ;
-					  initEntry();
-					  BEGIN( FindMembers ) ;
   					}
 <PackageName>";"			{
+					  current_root->addSubEntry(current);
+                                          current_root = current ;
+					  current = new Entry ;
+					  initEntry();
   					  BEGIN(FindMembers);
+  					}
+<PackageName>"{"			{
+					  curlyCount=0;
+					  BEGIN( ReadNSBody );
   					}
 <FindMembers>{B}*"initonly"{BN}+	{
   					  current->type += " initonly ";
@@ -3129,7 +3131,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->endBodyLine = yyLineNr;
 					    QCString &cn = current->name;
 					    QCString rn = current_root->name.copy();
-					    //printf("cn=`%s' rn=`%s'\n",cn.data(),rn.data());
+					    //printf("cn=`%s' rn=`%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
 					    if (!cn.isEmpty() && !rn.isEmpty())
 					    {
 					      prependScope();
@@ -3174,7 +3176,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						}
 						else
 						{
-						  if (!isTypedef)
+						  if (!isTypedef && cn.find('@')==-1) // not typedef or unnamed struct
 						  {
 						    // enabled the next two lines for bug 623424
 						    current->doc.resize(0);
@@ -3392,7 +3394,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  if (*yytext==';') // end of a struct/class ...
 					  {
-					    if (msName.isEmpty() && memspecEntry && (current->section&Entry::COMPOUND_MASK))
+					    if (!isTypedef && msName.isEmpty() && memspecEntry && (current->section&Entry::COMPOUND_MASK))
 					    { // case where a class/struct has a doc block after it
 					      if (!current->doc.isEmpty())
 					      {
