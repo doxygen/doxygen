@@ -152,7 +152,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 
 void DirDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty()) 
+  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
     ol.startParagraph();
     ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
@@ -225,7 +225,6 @@ void DirDef::writeSubDirList(OutputList &ol)
       }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
             FALSE, // indexWords
@@ -235,7 +234,6 @@ void DirDef::writeSubDirList(OutputList &ol)
             TRUE   // link from index
            );
         ol.endMemberDescription();
-        ol.endParagraph();
       }
       dd=m_subdirs.next();
     }
@@ -288,7 +286,6 @@ void DirDef::writeFileList(OutputList &ol)
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
             FALSE, // indexWords
@@ -298,7 +295,6 @@ void DirDef::writeFileList(OutputList &ol)
             TRUE   // link from index
            );
         ol.endMemberDescription();
-        ol.endParagraph();
       }
       fd=m_fileList->next();
     }

@@ -1,4 +1,4 @@
-(1.7.3)
+(1.7.4)
 
 Doxygen supports the following 38 languages (sorted alphabetically):
 
@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 16 translators are up-to-date, 22 translators are based on
+Of them, 17 translators are up-to-date, 21 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -27,6 +27,7 @@ still may be some details listed even for them:
   TranslatorDutch
   TranslatorEnglish
   TranslatorEsperanto
+  TranslatorGerman
   TranslatorGreek
   TranslatorItalian
   TranslatorKorean -- Change the base class to Translator.
@@ -43,7 +44,6 @@ version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
   TranslatorPolish                1.6.3 	 4 methods to implement (1 %)
-  TranslatorGerman                1.6.3 	 4 methods to implement (1 %)
   TranslatorFrench                1.6.3 	 4 methods to implement (1 %)
 	Note: Reimplementation using UTF-8 suggested.
 
@@ -257,19 +257,6 @@ TranslatorFinnish   (TranslatorAdapter_1_6_0)  9 methods to implement (4 %)
 
 
 TranslatorFrench   (TranslatorAdapter_1_6_3)  4 methods to implement (1 %)
-----------------
-
-  Implements 221 of the required methods (98 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
-    virtual QCString trFileIn(const char * name)
-    virtual QCString trDirDependency(const char * name)
-    virtual QCString trIncludesFileIn(const char * name)
-
-
-TranslatorGerman   (TranslatorAdapter_1_6_3)  4 methods to implement (1 %)
 ----------------
 
   Implements 221 of the required methods (98 %).

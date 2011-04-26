@@ -68,7 +68,7 @@ class OutputList : public OutputDocInterface
                   Definition *ctx,MemberDef *md,const QCString &docStr,
                   bool indexWords,bool isExample,const char *exampleName=0,
                   bool singleLine=FALSE,bool linkFromIndex=FALSE);
-    void parseText(const QCString &textStr);
+    void parseText(const QCString &textStr,bool forceBreaks=FALSE);
     
 
     void startIndexSection(IndexSections is)

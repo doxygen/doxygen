@@ -135,7 +135,8 @@ void DocSets::initialize()
     err("Could not open file %s for writing\n",notes.data());
     exit(1);
   }
-  QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+  //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+  QCString indexName="index";
   m_nts.setDevice(m_nf);
   m_nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
   m_nts << "<DocSetNodes version=\"1.0\">" << endl;

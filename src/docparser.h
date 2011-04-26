@@ -69,7 +69,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.
  */
-DocNode *validatingParseText(const char *input);
+DocNode *validatingParseText(const char *input,bool forceBreaks=FALSE);
 
 /*! Searches for section and anchor commands in the input */
 void docFindSections(const char *input,
@@ -1195,10 +1195,14 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
 class DocText : public CompAccept<DocText>, public DocNode
 {
   public:
-    DocText() {}
+    DocText(bool forceBreaks) : m_forceBreaks(forceBreaks) {}
     Kind kind() const       { return Kind_Text; }
     void accept(DocVisitor *v) { CompAccept<DocText>::accept(this,v); }
     void parse();
+    bool forceBreaks() const { return m_forceBreaks; }
+
+  private:
+    bool m_forceBreaks;
 };
 
 /*! @brief Root node of documentation tree */

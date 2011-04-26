@@ -137,7 +137,7 @@ class LatexDocVisitor : public DocVisitor
     // helper functions 
     //--------------------------------------
     
-    void filter(const char *str);
+    void filter(const char *str,bool forceBreaks=FALSE);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink(const QCString &ref,const QCString &file,
@@ -165,6 +165,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_insideItem;
     bool m_hide;
     bool m_insideTabbing;
+    bool m_forceBreaks;
     QStack<bool> m_enabled;
     QCString m_langExt;
 	QMap<int, int> m_rowspanIndices;

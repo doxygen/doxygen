@@ -326,6 +326,7 @@ class TagFileParser : public QXmlDefaultHandler
       else
       {
         warn("warning: Unknown compound attribute `%s' found!\n",kind.data());
+        m_state = Invalid;
       }
       if (isObjC=="yes" && m_curClass)
       {

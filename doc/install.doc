@@ -560,7 +560,7 @@ Doxygen comes as a self-installing archive, so installation is extremely simple.
 Just follow the dialogs.
 
 After installation it is recommended to also download and install GraphViz
-(version 2.8 or better is highly recommended). Doxygen can use the \c dot tool 
+(version 2.20 or better is highly recommended). Doxygen can use the \c dot tool 
 of the GraphViz package to render nicer diagrams, see the 
 \ref cfg_have_dot "HAVE_DOT" option in the configuration file.
 

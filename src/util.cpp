@@ -90,6 +90,8 @@ TextGeneratorOLImpl::TextGeneratorOLImpl(OutputDocInterface &od) : m_od(od)
 
 void TextGeneratorOLImpl::writeString(const char *s,bool keepSpaces) const
 { 
+  if (s==0) return;
+  //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
   if (keepSpaces)
   {
     const char *p=s;
@@ -111,18 +113,21 @@ void TextGeneratorOLImpl::writeString(const char *s,bool keepSpaces) const
   }
 }
 
-void TextGeneratorOLImpl::writeBreak() const
+void TextGeneratorOLImpl::writeBreak(int indent) const
 { 
-  m_od.pushGeneratorState();
-  m_od.disableAllBut(OutputGenerator::Html);
   m_od.lineBreak("typebreak");
-  m_od.popGeneratorState();
+  int i;
+  for (i=0;i<indent;i++)
+  {
+    m_od.writeNonBreakableSpace(3);
+  }
 }
 
 void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
                                     const char *anchor,const char *text
                                    ) const
 {
+  //printf("TextGeneratorOlImpl::writeLink('%s')\n",text);
   m_od.writeObjectLink(extRef,file,anchor,text);
 }
 
@@ -1749,9 +1754,9 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     FileDef *fileScope,const char *,
     const char *text, bool autoBreak,bool external,
-    bool keepSpaces)
+    bool keepSpaces,int indentLevel)
 {
-  //printf("`%s'\n",text);
+  //printf("linkify=`%s'\n",text);
   static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9.:\\x80-\\xFF]*");
   static QRegExp regExpSplit("(?!:),");
   QCString txtStr=text;
@@ -1794,7 +1799,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       if (i!=-1) // add a link-break at i in case of Html output
       {
         out.writeString(splitText.left(i+offset),keepSpaces);
-        out.writeBreak();
+        out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
         out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
         floatingIndex=splitLength-i-offset+matchLen;
       } 
@@ -1824,17 +1829,8 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       //printf("** Match word '%s'\n",matchWord.data());
 
       MemberDef *typeDef=0;
-      if ((cd=getResolvedClass(scope,fileScope,matchWord,&typeDef))) 
-      {
-        //printf("Found class %s\n",cd->name().data());
-        // add link to the result
-        if (external ? cd->isLinkable() : cd->isLinkableInProject())
-        {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-          found=TRUE;
-        }
-      }
-      else if (typeDef)
+      cd=getResolvedClass(scope,fileScope,matchWord,&typeDef);
+      if (typeDef) // First look at typedef then class, see bug 584184.
       {
         //printf("Found typedef %s\n",typeDef->name().data());
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
@@ -1843,6 +1839,16 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
               typeDef->getOutputFileBase(),
               typeDef->anchor(),
               word);
+          found=TRUE;
+        }
+      }
+      if (!found && cd) 
+      {
+        //printf("Found class %s\n",cd->name().data());
+        // add link to the result
+        if (external ? cd->isLinkable() : cd->isLinkableInProject())
+        {
+          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
           found=TRUE;
         }
       }
@@ -4711,7 +4717,7 @@ QCString substituteKeywords(const QCString &s,const char *title)
   result = substitute(result,"$projectname",Config_getString("PROJECT_NAME"));
   result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));
   result = substitute(result,"$projectbrief",Config_getString("PROJECT_BRIEF"));
-  result = substitute(result,"$projectlogo",Config_getString("PROJECT_LOGO"));
+  result = substitute(result,"$projectlogo",stripPath(Config_getString("PROJECT_LOGO")));
   return result;
 }
 
@@ -5952,7 +5958,7 @@ void addGroupListToTitle(OutputList &ol,Definition *d)
 }
 
 void filterLatexString(FTextStream &t,const char *str,
-    bool insideTabbing,bool insidePre,bool insideItem)
+    bool insideTabbing,bool insidePre,bool insideItem,bool forceBreaks)
 {
   if (str==0) return;
   const unsigned char *p=(const unsigned char *)str;
@@ -6017,6 +6023,10 @@ void filterLatexString(FTextStream &t,const char *str,
                    break;
 
         default:   
+                   if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
+                   {
+                     t << "\\-";
+                   }
                    t << (char)c;
       }
     }

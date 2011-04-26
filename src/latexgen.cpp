@@ -264,6 +264,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     "\\setcounter{tocdepth}{3}\n"
     "\\renewcommand{\\footrulewidth}{0.4pt}\n"
     "\\renewcommand{\\familydefault}{\\sfdefault}\n"
+    "\\hfuzz=10pt\n"  // allow a bit of overflow to go unnoticed
     "\\begin{document}\n";
   static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
@@ -618,21 +619,23 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "  \\begin{DoxyDesc}{#2}%\n"
        "    \\begin{description}%\n"
        "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
-       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
-       "      \\rowcolors{1}{white}{tableShade}%\n"
-       "      \\arrayrulecolor{gray}%\n"
+       //"      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
+       //"      \\rowcolors{1}{white}{tableShade}%\n"
+       //"      \\arrayrulecolor{gray}%\n"
+       "      \\settowidth{\\labelwidth}{40pt}%\n"
+       "      \\setlength{\\LTleft}{\\labelwidth}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\ifthenelse{\\equal{#1}{}}\n" // default: name, docs columns
        "      {\\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          p{0.87\\textwidth}|}}%\n"
+       "                          p{0.76\\textwidth}|}}%\n"
        "      {\\ifthenelse{\\equal{#1}{1}}%\n" // inout, name, docs columns, or type, name, docs columns
        "       {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n"
        "                          >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          p{0.75\\textwidth}|}}%\n"
+       "                          p{0.64\\textwidth}|}}%\n"
        "       {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n" // inout, type, name, docs columns
        "                          >{\\centering\\hspace{0pt}}p{0.15\\textwidth}|%\n"
        "                          >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          p{0.58\\textwidth}|}}%\n"
+       "                          p{0.47\\textwidth}|}}%\n"
        "       }\\hline%\n"
        "}{%\n"
        "      \\end{longtable}%\n"
@@ -1033,7 +1036,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isMainPage:
       {
-        QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+        //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+        QCString indexName="index";
         t << "}\n\\label{index}";
         if (Config_getBool("PDF_HYPERLINKS")) t << "\\hypertarget{index}{}";
         t << "\\input{" << indexName << "}\n";
@@ -1397,12 +1401,12 @@ void LatexGenerator::endIndexKey()
 void LatexGenerator::startIndexValue(bool hasBrief)
 {
   t << " ";
-  if (hasBrief) t << "(";
+  if (hasBrief) t << "\\\\*";
 }
 
-void LatexGenerator::endIndexValue(const char *name,bool hasBrief)
+void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 {
-  if (hasBrief) t << ")";
+  //if (hasBrief) t << ")";
   t << "}{\\pageref{" << name << "}}{}" << endl;
 }
 
@@ -1777,7 +1781,7 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 
 void LatexGenerator::docify(const char *str)
 {
-  filterLatexString(t,str,insideTabbing,FALSE);
+  filterLatexString(t,str,insideTabbing,FALSE,FALSE,TRUE);
 }
 
 void LatexGenerator::codify(const char *str)
@@ -1961,7 +1965,9 @@ void LatexGenerator::writeNonBreakableSpace(int)
     t << "\\>";
   }
   else
+  {
     t << "~"; 
+  }
 }
 
 void LatexGenerator::startMemberList()  
@@ -2364,5 +2370,17 @@ void LatexGenerator::startInlineHeader()
 void LatexGenerator::endInlineHeader()
 {
   t << "}" << endl;
+}
+
+void LatexGenerator::lineBreak(const char *)
+{
+  if (insideTabbing)
+  {
+    t << "\\\\\n";
+  }
+  else
+  {
+    t << "\\*\n";
+  }
 }
 

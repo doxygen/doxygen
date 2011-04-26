@@ -6509,7 +6509,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   return root;
 }
 
-DocNode *validatingParseText(const char *input)
+DocNode *validatingParseText(const char *input,bool forceBreaks)
 {
   // store parser state so we can re-enter this function if needed
   docParserPushContext();
@@ -6537,7 +6537,7 @@ DocNode *validatingParseText(const char *input)
   g_paramsFound.clear();
   g_searchUrl="";
 
-  DocText *txt = new DocText;
+  DocText *txt = new DocText(forceBreaks);
 
   if (input)
   {

@@ -333,12 +333,12 @@ LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  (({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})){CVSPEC}?
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
-CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."]
+CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=]
 ESCWORD   "%"{ID}(("::"|"."){ID})*
 WORD1     {ESCWORD}|{CHARWORDQ}+|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
-WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
+WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+
-WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
+WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
@@ -940,7 +940,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <*>\n                  { 
                          warn(g_fileName,yylineno,"warning: Unexpected new line character"); 
 		       }
-<*>[\\@<>&$#%~"]       { /* unescaped special character */
+<*>[\\@<>&$#%~"=]      { /* unescaped special character */
                          //warn(g_fileName,yylineno,"warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND;

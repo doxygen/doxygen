@@ -3579,7 +3579,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   else // bitmap graphics
   {
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
-      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl
       << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
 
     convertMapFile(t, absOutFile, relPath ,TRUE, context);

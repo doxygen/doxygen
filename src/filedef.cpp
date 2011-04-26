@@ -220,7 +220,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 
 void FileDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty()) 
+  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
     ol.startParagraph();
     ol.parseDoc(briefFile(),briefLine(),this,0,
@@ -531,7 +531,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.parseText(pageTitleShort); // Html only
       ol.enableAll();
       ol.disable(OutputGenerator::Html);
-      ol.parseText(pageTitle); // other output formats
+      ol.parseText(pageTitle,TRUE); // other output formats
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
     endTitle(ol,getOutputFileBase(),title);

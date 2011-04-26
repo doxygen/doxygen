@@ -301,6 +301,10 @@ QCString ClassDef::displayName() const
   {
     n="<"+n.left(n.length()-2)+">";
   }
+  else if (n.right(2)=="-g")
+  {
+    n = n.left(n.length()-2);
+  }
   //printf("ClassDef::displayName()=%s\n",n.data());
   return n;
 }
@@ -863,7 +867,7 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
 
 void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
 {
-  if (!briefDescription().isEmpty())
+  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
     ol.startParagraph();
     ol.parseDoc(briefFile(),briefLine(),this,0,
@@ -882,10 +886,6 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
       writeMoreLink(ol,anchor());
     }
 
-    //ol.pushGeneratorState();
-    //ol.disable(OutputGenerator::RTF);
-    //ol.newParagraph(); // FIXME:PARA
-    //ol.popGeneratorState();
     ol.endParagraph();
   }
   ol.writeSynopsis();
@@ -1937,9 +1937,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   startTitle(ol,getOutputFileBase(),this);
-  ol.parseText(pageTitle);
+  ol.parseText(pageTitle,TRUE);
   addGroupListToTitle(ol,this);
-  endTitle(ol,getOutputFileBase(),name());
+  endTitle(ol,getOutputFileBase(),displayName());
   writeDocumentationContents(ol,pageTitle);
     
   if (generateTreeView)
@@ -2073,7 +2073,7 @@ void ClassDef::writeMemberList(OutputList &ol)
     ol.endQuickIndices();
   }
   startTitle(ol,0);
-  ol.parseText(displayName()+" "+theTranslator->trMemberList());
+  ol.parseText(displayName()+" "+theTranslator->trMemberList(),TRUE);
   endTitle(ol,0,0);
   ol.startContents();
   ol.parseText(theTranslator->trThisIsTheListOfAllMembers());

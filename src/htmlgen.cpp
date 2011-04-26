@@ -765,7 +765,10 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
 static QCString getLogoName(const char *projectLogo)
 {
   if (projectLogo==0) return "";
-  if (projectLogo[0]=='$') return projectLogo; // marker is used
+  if (projectLogo[0]=='$') 
+  {
+    return projectLogo; // marker is used
+  }
   QFileInfo fi(projectLogo);
   if (fi.exists())
   {
@@ -1017,8 +1020,8 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
 
   // additional HTML only keywords
   result = substitute(result,"$treeview",treeViewCssJs);
-  result = substitute(result,"$search",searchCssJs);
   result = substitute(result,"$searchbox",searchBox);
+  result = substitute(result,"$search",searchCssJs);
   result = substitute(result,"$mathjax",mathJaxJs);
   result = substitute(result,"$relpath$",relPath); //<-- must be last
   
@@ -1275,7 +1278,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file, const char *cssname)
   t << " <tbody>\n";
   t << " <tr style=\"height: 56px;\">\n";
   t << "  <!--BEGIN PROJECT_LOGO-->\n";
-  t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"$relpath$$projectlogo\"></td>\n";
+  t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"$relpath$$projectlogo\"/></td>\n";
   t << "  <!--END PROJECT_LOGO-->\n";
   t << "  <!--BEGIN PROJECT_NAME-->\n";
   t << "  <td style=\"padding-left: 0.5em;\">\n";
