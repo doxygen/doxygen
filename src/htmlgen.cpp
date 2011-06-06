@@ -60,11 +60,17 @@ static const char search_styleSheet[] =
 static const char search_jquery_script1[]=
 #include "jquery_js.h"
 ;
+
 static const char search_jquery_script2[]=
 #include "sizzle_js.h"
 ;
+
 static const char search_jquery_script3[]=
 #include "jquery_ui_js.h"
+;
+
+static const char svgpan_script[]=
+#include "svgpan_js.h"
 ;
 
 
@@ -1091,6 +1097,16 @@ void HtmlGenerator::init()
     {
       FTextStream t(&f);
       t << search_jquery_script1 << search_jquery_script2 << search_jquery_script3;
+    }
+  }
+
+  if (Config_getBool("INTERACTIVE_SVG"))
+  {
+    QFile f(dname+"/svgpan.js");
+    if (f.open(IO_WriteOnly))
+    {
+      FTextStream t(&f);
+      t << svgpan_script;
     }
   }
 }
@@ -2763,13 +2779,15 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
         {
           if (!serverBasedSearch) // pure client side search
           {
-            t << "      <li id=\"searchli\">\n";
+            //t << "      <li id=\"searchli\">\n";
+            t << "      <li>\n";
             writeClientSearchBox(t,relPath);
             t << "      </li>\n";
           }
           else // if (!generateTreeView) // server based search
           {
-            t << "      <li id=\"searchli\">\n";
+            //t << "      <li id=\"searchli\">\n";
+            t << "      <li>\n";
             writeServerSearchBox(t,relPath,highlightSearch);
             if (!highlightSearch)
             {

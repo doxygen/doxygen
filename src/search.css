@@ -4,13 +4,6 @@
     float: left;
 }
 
-#searchli {
-    float: right;
-    display: block;
-    width: 170px;
-    height: 36px;
-}
-
 #MSearchBox {
     white-space : nowrap;
     position: absolute;

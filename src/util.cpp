@@ -5128,8 +5128,11 @@ QCString stripScope(const char *name)
       switch (c)
       {
         case ':': 
+          // only exit in the case of ::
           //printf("stripScope(%s)=%s\n",name,result.right(l-p-1).data());
-          return result.right(l-p-1);
+          if (p>0 && result.at(p-1)==':') return result.right(l-p-1);
+          p--;
+          break;
         case '>':
           if (skipBracket) // we don't care about brackets
           {
@@ -5480,9 +5483,29 @@ void addMembersToMemberGroup(MemberList *ml,
  *  class \a name and a template argument list \a templSpec. If -1 is returned
  *  there are no more matches.
  */
-int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec)
+int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static const QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
+  static const QRegExp re_norm("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
+  static const QRegExp re_ftn("[a-z_A-Z\\x80-\\xFF][()=_a-z_A-Z0-9:\\x80-\\xFF]*");
+  QRegExp re;
+
+  if (lang == SrcLangExt_F90)
+  {
+    if (type.at(pos)==',') return -1;
+    if (type.left(4).lower()=="type")
+    {
+      re = re_norm;
+    }
+    else
+    {
+      re = re_ftn;
+    }
+  }
+  else
+  {
+    re = re_norm;
+  }
+
   name.resize(0);
   templSpec.resize(0);
   int i,l;
@@ -6471,6 +6494,41 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 
 static QDict<void> aliasesProcessed;
 
+static QCString replaceAliasArgument(const QCString &aliasValue,int paramNum,
+                                     const QCString &paramValue);
+
+static QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList)
+{
+  QCString result = aliasValue;
+  QList<QCString> args;
+  int p=0,i,c=1,l=(int)argList.length();
+  // first count the number of arguments the command has
+  // (= number of unescaped commas plus 1)
+  for (i=0;i<l;i++)
+  {
+    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\')) c++;
+  }
+  // next we substitute the \<number> by the argument values, starting
+  // with the last one. This is needed to avoid that \10 is treated as 
+  // a \1 followed by a 0 and already expanded as the first parameter.
+  p = l;
+  for (i=l-1;i>=0;i--)
+  {
+    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\'))
+    {
+      result = replaceAliasArgument(result,c,argList.mid(i+1,p-i-1));
+      p=i;
+      c--;
+    }
+  }
+  // special case for the first argument, whose value is not preceded by a ,
+  if (p>0)
+  {
+    result = replaceAliasArgument(result,c,argList.left(p));
+  }
+  return result;
+}
+
 QCString expandAliasRec(const QCString s)
 {
   QCString result;
@@ -6492,8 +6550,8 @@ QCString expandAliasRec(const QCString s)
     {
       cmd = value.mid(i+1,l-1);
     }
-    //printf("Found command '%s' args='%s'\n",cmd.data(),args.data());
     QCString *aliasText=Doxygen::aliasDict.find(cmd);
+    //printf("Found command '%s' args='%s' aliasText=%s\n",cmd.data(),args.data(),aliasText?aliasText->data():"<none>");
     if (aliasesProcessed.find(cmd)==0 && aliasText) // expand the alias
     {
       //printf("is an alias!\n");
@@ -6551,29 +6609,8 @@ static QCString replaceAliasArgument(const QCString &aliasValue,int paramNum,
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
   result = expandAliasRec(substitute(result,"\\,",","));
-  //printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
-  //    aliasValue.data(),paramNum,paramValue.data(),result.data());
-  return result;
-}
-
-QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList)
-{
-  QCString result = aliasValue;
-  QList<QCString> args;
-  int p=0,i,c=1;
-  for (i=0;i<(int)argList.length();i++)
-  {
-    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\'))
-    {
-      result = replaceAliasArgument(result,c,argList.mid(p,i-p));
-      p=i+1;
-      c++;
-    }
-  }
-  if (p<(int)argList.length())
-  {
-    result = replaceAliasArgument(result,c,argList.right(argList.length()-p));
-  }
+  printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
+      aliasValue.data(),paramNum,paramValue.data(),result.data());
   return result;
 }
 

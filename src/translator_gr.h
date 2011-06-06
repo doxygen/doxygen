@@ -158,7 +158,7 @@ class TranslatorGreek : public Translator
       }
       else
       {
-        return "Λίστα Συσσωματωμάτων";
+        return "Λίστα Κλάσεων";
       }
     }
 
@@ -171,11 +171,11 @@ class TranslatorGreek : public Translator
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Πεδία Δεδομένων";
+        return "Μέλη Δομών Δεδομένων";
       }
       else
       {
-        return "Μέλη Συσσωματώματα";
+        return "Μέλη Κλάσεων";
       }
     }
 
@@ -206,9 +206,7 @@ class TranslatorGreek : public Translator
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Αυτή η λίστα κληρονομηκότητας είναι μερικώς ταξινομημένη, "
-             "αλλά όχι πλήρως, αλφαβητικά:";
-    }
+    { return "Αυτή η λίστα κληρονομικότητας είναι μερικώς ταξινομημένη αλφαβητικά:"; }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
@@ -229,8 +227,8 @@ class TranslatorGreek : public Translator
       }
       else
       {
-        return "Ακολουθούνε οι κλάσεις, οι δομές, "
-               "τα σώματα και οι διαπροσωπίες με σύντομες περιγραφές:";
+        return "Ακολουθούνε οι κλάσεις, δομές, "
+               "ενώσεις και οι διασυνδέσεις με σύντομες περιγραφές:";
       }
     }
 
@@ -244,7 +242,7 @@ class TranslatorGreek : public Translator
       }
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="πεδίων δομών και σωμάτων ";
+        result+="μελών δομών δεδομένων και ενώσεων ";
       }
       else
       {
@@ -391,7 +389,7 @@ class TranslatorGreek : public Translator
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "Ενχειρίδιο Αναφοράς"; }
+    { return "Εγχειρίδιο Αναφοράς"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
@@ -482,7 +480,7 @@ class TranslatorGreek : public Translator
       }
       else
       {
-        return "Συσσωματώματα";
+        return "Κλάσεις";
       }
     }
 
@@ -551,14 +549,14 @@ class TranslatorGreek : public Translator
 
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "Λίστα Namespace"; }
+    { return "Λίστα Χώρων Ονομάτων"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Ακολουθέι η λίστα όλων των ";
       if (!extractAll) result+="τεκμηριωμένων ";
-      result+="Namespace με σύντομες περιγραφές:";
+      result+="Χώρων Ονομάτων με σύντομες περιγραφές:";
       return result;
     }
 
@@ -587,8 +585,8 @@ class TranslatorGreek : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result=(QCString)clName+" ";
-      result+=" Αναφορά";
+      QCString result=(QCString)"Αναφορά";
+      if (isTemplate) result+=" Προτύπου";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Κλάσης"; break;
@@ -599,24 +597,23 @@ class TranslatorGreek : public Translator
         case ClassDef::Category:   result+=" Κατηγορίας"; break;
         case ClassDef::Exception:  result+=" Εξαίρεσης"; break;
       }
-      if (isTemplate) result+=" Template";
-
+	  result+=clName;
       return result;
     }
 
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result=fileName;
-      result+=" Αναφορά Αρχείου";
+      QCString result="Αναφορά Αρχείου ";
+      result+=fileName;
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result=namespaceName;
-      result+=" Αναφορά Namespace";
+      QCString result="Αναφορά Χώρου Ονομάτων ";
+      result+=namespaceName;
       return result;
     }
 
@@ -635,11 +632,11 @@ class TranslatorGreek : public Translator
     virtual QCString trStaticProtectedMembers()
     { return "Στατικές Προστατευμένες Μέδοδοι"; }
     virtual QCString trPrivateMembers()
-    { return "Ιδιοτικές Μέδοδοι"; }
+    { return "Ιδιωτικές Μέθοδοι"; }
     virtual QCString trPrivateSlots()
     { return "Ιδιοτικά Slots"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Στατικές Ιδιοτικές Μέδοδοι"; }
+    { return "Στατικές Ιδιωτικές Μέθοδοι"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -700,7 +697,7 @@ class TranslatorGreek : public Translator
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "Μέλη Namespace"; }
+    { return "Μέλη Χώρου Ονομάτων"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)

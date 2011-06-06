@@ -383,7 +383,8 @@ void ClassDef::internalInsertMember(MemberDef *md,
     }
   }
 
-  if (!isReference())
+  if (1 /*!isReference()*/) // changed to 1 for showing members of external
+                            // classes when HAVE_DOT and UML_LOOK are enabled.
   {
     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
 
@@ -2865,8 +2866,11 @@ void ClassDef::mergeCategory(ClassDef *category)
 
 //----------------------------------------------------------------------------
 
-void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
+void ClassDef::addUsedClass(ClassDef *cd,const char *accessName,
+               Protection prot)
 {
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  if (prot==Private && !extractPrivate) return;
   //printf("%s::addUsedClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
   if (m_impl->usesImplClassDict==0) 
   {
@@ -2884,8 +2888,11 @@ void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
   ucd->addAccessor(accessName);
 }
 
-void ClassDef::addUsedByClass(ClassDef *cd,const char *accessName)
+void ClassDef::addUsedByClass(ClassDef *cd,const char *accessName,
+               Protection prot)
 {
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  if (prot==Private && !extractPrivate) return;
   //printf("%s::addUsedByClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
   if (m_impl->usedByImplClassDict==0) 
   {
@@ -3852,6 +3859,11 @@ void ClassDef::setCategoryOf(ClassDef *cd)
 void ClassDef::setUsedOnly(bool b)
 {
   m_impl->usedOnly = b;
+}
+
+SrcLangExt ClassDef::getLanguage() const
+{
+  return m_impl->lang;
 }
 
 bool ClassDef::isUsedOnly() const

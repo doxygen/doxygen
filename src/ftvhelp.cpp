@@ -43,18 +43,6 @@ static const char resize_script[]=
 #include "resize_js.h"
 ;
 
-#if 0
-static const char jquery_script1[]=
-#include "jquery_js.h"
-;
-static const char jquery_script2[]=
-#include "sizzle_js.h"
-;
-static const char jquery_script3[]=
-#include "jquery_ui_js.h"
-;
-#endif
-
 static const char navtree_css[]=
 #include "navtree_css.h"
 ;

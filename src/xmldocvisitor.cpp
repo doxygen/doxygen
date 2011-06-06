@@ -421,6 +421,8 @@ void XmlDocVisitor::visitPre(DocSimpleSect *s)
       m_t << "pre"; break;
     case DocSimpleSect::Post:
       m_t << "post"; break;
+    case DocSimpleSect::Copyright:
+      m_t << "copyright"; break;
     case DocSimpleSect::Invar:
       m_t << "invariant"; break;
     case DocSimpleSect::Remark:

@@ -37,3 +37,4 @@
 #define LANG_VI
 #define LANG_TR
 #define LANG_EO
+#define LANG_AM

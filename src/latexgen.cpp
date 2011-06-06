@@ -325,6 +325,7 @@ static void writeDefaultStyleSheetPart1(FTextStream &t)
        "\\RequirePackage{longtable}\n"
        "\\RequirePackage{verbatim}\n"
        "\\RequirePackage{ifthen}\n"
+       "\\RequirePackage{settobox}\n"
        "\\RequirePackage[table]{xcolor}\n\n";
 
   t << "% Use helvetica font instead of times roman\n"
@@ -418,10 +419,32 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "\\fancyfoot[RO]{\\fancyplain{}{}}\n";
 
   t << "%---------- Internal commands used in this style file ----------------\n\n";
+
+  t << "\\newcommand\\tabfill[1]{%\n";
+  t << "  \\dimen@\\linewidth%\n";
+  t << "  \\advance\\dimen@\\@totalleftmargin%\n";
+  t << "  \\advance\\dimen@-\\dimen\\@curtab%\n";
+  t << "  \\parbox[t]\\dimen@{\\raggedright #1\\ifhmode\\strut\\fi}%\n";
+  t << "}\n\n";
+
+  t << "\\newcommand{\\ensurespace}[1]{%\n";
+  t << "  \\begingroup\n";
+  t << "    \\setlength{\\dimen@}{#1}%\n";
+  t << "    \\vskip\\z@\\@plus\\dimen@\n";
+  t << "    \\penalty -100\\vskip\\z@\\@plus -\\dimen@\n";
+  t << "    \\vskip\\dimen@\n";
+  t << "    \\penalty 9999%\n";
+  t << "    \\vskip -\\dimen@\n";
+  t << "    \\vskip\\z@skip % hide the previous |\\vskip| from |\\addvspace|\n";
+  t << "  \\endgroup\n";
+  t << "}\n\n";
+
   t << "% Generic environment used by all paragraph-based environments defined\n"
        "% below. Note that the command \\title{...} needs to be defined inside\n"
        "% those environments!\n"
        "\\newenvironment{DoxyDesc}[1]{%\n"
+       //"  \\filbreak%\n"
+       "  \\ensurespace{4\\baselineskip}%\n"
        "  \\begin{list}{}%\n"
        "  {%\n"
        "    \\settowidth{\\labelwidth}{40pt}%\n"
@@ -559,6 +582,12 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "}{%\n"
        "  \\end{DoxyDesc}%\n"
        "}\n\n";
+  t << "% Used by @copyright\n"
+       "\\newenvironment{DoxyCopyright}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
   t << "% Used by @remark\n"
        "\\newenvironment{DoxyRemark}[1]{%\n"
        "  \\begin{DoxyDesc}{#1}%\n"
@@ -652,9 +681,9 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "  \\begin{DoxyDesc}{#1}%\n"
        "    \\begin{description}%\n"
        "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
-       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
-       "      \\rowcolors{1}{white}{tableShade}%\n"
-       "      \\arrayrulecolor{gray}%\n"
+       //"      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
+       //"      \\rowcolors{1}{white}{tableShade}%\n"
+       //"      \\arrayrulecolor{gray}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
        "                          p{0.77\\textwidth}|}%\n"
@@ -738,6 +767,29 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "    \\renewcommand{\\makelabel}{\\entrylabel}\n";
   t << "  }\n";
   t << "}\n";
+  t << "{\\end{list}}\n";
+
+  t << "\\newsavebox{\\xrefbox}\n";
+  t << "\\newlength{\\xreflength}\n";
+  t << "\\newcommand{\\xreflabel}[1]{%\n";
+  t << "  \\sbox{\\xrefbox}{#1}%\n";
+  t << "  \\settoboxwidth{\\xreflength}{\\xrefbox}%\n";
+  t << "  \\ifthenelse{\\xreflength>\\labelwidth}{%\n";
+  t << "    \\begin{minipage}{\\textwidth}%\n";
+  t << "      \\setlength{\\parindent}{0pt}%\n";
+  t << "      \\hangindent=25pt\\bfseries #1\\vspace{\\itemsep}%\n";
+  t << "    \\end{minipage}%\n";
+  t << "  }{%\n";
+  t << "   \\parbox[b]{\\labelwidth}{\\makebox[0pt][l]{\\textbf{#1}}}%\n";
+  t << "  }}%\n";
+  t << "\\newenvironment{DoxyRefList}{%\n";
+  t << "  \\begin{list}{}{%\n";
+  t << "    \\setlength{\\labelwidth}{75pt}%\n";
+  t << "    \\setlength{\\leftmargin}{\\labelwidth}%\n";
+  t << "    \\addtolength{\\leftmargin}{\\labelsep}%\n";
+  t << "    \\renewcommand{\\makelabel}{\\xreflabel}%\n";
+  t << "    }%\n";
+  t << "  }%\n";
   t << "{\\end{list}}\n";
 
   t << "\\newenvironment{Indent}\n";
@@ -1082,7 +1134,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
           if (!gd->isReference())
           {
             //if (compactLatex) t << "\\input"; else t << "\\include";
-            t << "\\input"; 
+            t << "\\include"; 
             t << "{" << gd->getOutputFileBase() << "}\n";
           }
         }

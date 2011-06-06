@@ -1138,6 +1138,56 @@ static void handleParameterType(DocNode *parent,QList<DocNode> &children,const Q
   g_token->name = name;
 }
 
+static DocInternalRef *handleInternalRef(DocNode *parent)
+{
+  //printf("CMD_INTERNALREF\n");
+  int tok=doctokenizerYYlex();
+  QCString tokenName = g_token->name;
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
+        qPrint(tokenName));
+    return 0;
+  }
+  doctokenizerYYsetStateInternalRef();
+  tok=doctokenizerYYlex(); // get the reference id
+  if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
+        tokToString(tok),qPrint(tokenName));
+    return 0;
+  }
+  return new DocInternalRef(parent,g_token->name);
+}
+
+static DocAnchor *handleAnchor(DocNode *parent)
+{
+  int tok=doctokenizerYYlex();
+  QCString tokenName = g_token->name;
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
+        qPrint(tokenName));
+    return 0;
+  }
+  doctokenizerYYsetStateAnchor();
+  tok=doctokenizerYYlex();
+  if (tok==0)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
+        "argument of command %s",qPrint(tokenName));
+    return 0;
+  }
+  else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
+        tokToString(tok),qPrint(tokenName));
+    return 0;
+  }
+  doctokenizerYYsetStatePara();
+  return new DocAnchor(parent,g_token->name,FALSE);
+}
+
 
 /* Helper function that deals with the most common tokens allowed in
  * title like sections. 
@@ -1284,52 +1334,21 @@ reparsetoken:
           break;
         case CMD_ANCHOR:
           {
-            tok=doctokenizerYYlex();
-            if (tok!=TK_WHITESPACE)
+            DocAnchor *anchor = handleAnchor(parent);
+            if (anchor)
             {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
-                  qPrint(tokenName));
-              break;
+              children.append(anchor);
             }
-            tok=doctokenizerYYlex();
-            if (tok==0)
-            {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
-                  "argument of command %s",qPrint(tokenName));
-              break;
-            }
-            else if (tok!=TK_WORD && tok!=TK_LNKWORD)
-            {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
-                  tokToString(tok),qPrint(tokenName));
-              break;
-            }
-            DocAnchor *anchor = new DocAnchor(parent,g_token->name,FALSE);
-            children.append(anchor);
           }
           break;
         case CMD_INTERNALREF:
           {
-            tok=doctokenizerYYlex();
-            if (tok!=TK_WHITESPACE)
+            DocInternalRef *ref = handleInternalRef(parent);
+            if (ref)
             {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
-                  qPrint(tokenName));
-              break;
+              children.append(ref);
+              ref->parse();
             }
-            doctokenizerYYsetStateInternalRef();
-            tok=doctokenizerYYlex(); // get the reference id
-            DocInternalRef *ref=0;
-            if (tok!=TK_WORD && tok!=TK_LNKWORD)
-            {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
-                  tokToString(tok),qPrint(tokenName));
-              doctokenizerYYsetStatePara();
-              break;
-            }
-            ref = new DocInternalRef(parent,g_token->name);
-            children.append(ref);
-            ref->parse();
             doctokenizerYYsetStatePara();
           }
           break;
@@ -4160,6 +4179,7 @@ QCString DocSimpleSect::typeString() const
     case Warning:    return "warning";
     case Pre:        return "pre";
     case Post:       return "post";
+    case Copyright:  return "copyright";
     case Invar:      return "invariant";
     case Remark:     return "remark";
     case Attention:  return "attention";
@@ -4840,6 +4860,9 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_POST:
       retval = handleSimpleSection(DocSimpleSect::Post);
       break;
+    case CMD_COPYRIGHT:
+      retval = handleSimpleSection(DocSimpleSect::Copyright);
+      break;
     case CMD_INVARIANT:
       retval = handleSimpleSection(DocSimpleSect::Invar);
       break;
@@ -4988,28 +5011,11 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_ANCHOR:
       {
-        int tok=doctokenizerYYlex();
-        if (tok!=TK_WHITESPACE)
+        DocAnchor *anchor = handleAnchor(this);
+        if (anchor)
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
-              qPrint(cmdName));
-          break;
+          m_children.append(anchor);
         }
-        tok=doctokenizerYYlex();
-        if (tok==0)
-        {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
-              "argument of command %s",qPrint(cmdName));
-          break;
-        }
-        else if (tok!=TK_WORD && tok!=TK_LNKWORD)
-        {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
-              tokToString(tok),qPrint(cmdName));
-          break;
-        }
-        DocAnchor *anchor = new DocAnchor(this,g_token->name,FALSE);
-        m_children.append(anchor);
       }
       break;
     case CMD_ADDINDEX:
@@ -5124,7 +5130,16 @@ int DocPara::handleCommand(const QCString &cmdName)
     //  retval = handleLanguageSwitch();
     //  break;
     case CMD_INTERNALREF:
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected command %s",qPrint(g_token->name));
+      //warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected command %s",qPrint(g_token->name));
+      {
+        DocInternalRef *ref = handleInternalRef(this);
+        if (ref)
+        {
+          m_children.append(ref);
+          ref->parse();
+        }
+        doctokenizerYYsetStatePara();
+      }
       break;
     case CMD_INHERITDOC:
       handleInheritDoc();

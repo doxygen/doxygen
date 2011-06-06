@@ -169,6 +169,8 @@ static int               initializerArrayScope;  // number if nested array scope
 static int               initializerScope;  // number if nested function calls in initializer
 static QCString          useModuleName;  // name of module in the use statement
 static Protection        defaultProtection;
+static Protection        typeProtection;
+static int               typeMode = false;
 static InterfaceType     ifType = IF_NONE;
 
 static char              stringStartSymbol; // single or double quote
@@ -519,8 +521,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private; }
-<ModuleBody>public/{BS}(\n|"!")          { defaultProtection = Public; }
+<ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private;
+                                           current->protection = defaultProtection ;
+                                         }
+<ModuleBody>public/{BS}(\n|"!")          { defaultProtection = Public;
+                                           current->protection = defaultProtection ;
+                                         }
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
@@ -533,6 +539,8 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
                                           yy_push_state(Typedef);
                                           current->protection = defaultProtection;
+                                          typeProtection = defaultProtection;
+                                          typeMode = true;
                                         }
 <Typedef>{
 {COMMA}                                 {}
@@ -548,9 +556,11 @@ extends{ARGS}                           {
                                         }
 public                                  {
                                           current->protection = Public;
+                                          typeProtection = Public;
                                         }
 private                                 {
                                           current->protection = Private;
+                                          typeProtection = Private;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -618,6 +628,7 @@ private                                 {
 ^{BS}"end"{BS}"type"({BS_}{ID})?{BS}/(\n|!) { /* end type definition */
                                           if (!endScope(current_root))
                                             yyterminate();
+                                          typeMode = false;
                                           yy_pop_state();
                                         }
 }
@@ -683,6 +694,7 @@ private                                 {
   				       }
 {ID}	                               {
                                        }  
+^{BS}"type"{BS_}"is"                    { }
 }
 <AttributeList>{
 {COMMA}					{}
@@ -779,6 +791,13 @@ private                                 {
 <Variable>";".*"\n"                     { currentModifiers = SymbolModifiers();
                                           yy_pop_state(); // end variable deklaration list
                                           docBlock.resize(0);
+                                          inputStringSemi =(const char*)(yytext+1);
+                                          pushBuffer(inputStringSemi);
+                                        }
+<*>";".*"\n"                            {
+					  if (YY_START == Variable) REJECT; // Just be on the safe side
+                                          if (YY_START == String) REJECT; // ";" ignored in strings
+                                          if (YY_START == StrIgnore) REJECT; // ";" ignored in regular comments
                                           inputStringSemi =(const char*)(yytext+1);
                                           pushBuffer(inputStringSemi);
                                         }
@@ -1225,22 +1244,29 @@ static const char* prepassFixedForm(const char* contents)
       case 'C':
       case 'c':
       case '*':
-	emptyLabel=FALSE;
-        if(column==1)
-	  newContents[j]='!';
-        else
-          newContents[j]=c;
-        break;
+        if (column!=6)
+	{
+	  emptyLabel=FALSE;
+	  if(column==1)
+	    newContents[j]='!';
+	  else
+	    newContents[j]=c;
+	  break;
+	}
       default:
         if(column==6 && emptyLabel) { // continuation
-          newContents[j]=' ';
+          if (c != '0') { // 0 not allowed as continuatioin character, see f95 standard paragraph 3.3.2.3
+            newContents[j]=' ';
 
-          if(prevLineAmpOrExclIndex==-1) { // add & just before end of previous line
-            insertCharacter(newContents, j+1, (j+1)-6-1, '&');
-            j++;
-          } else { // add & just before end of previous line comment
-            insertCharacter(newContents, j+1, (j+1)-6-prevLineLength+prevLineAmpOrExclIndex, '&');
-            j++;
+            if(prevLineAmpOrExclIndex==-1) { // add & just before end of previous line
+              insertCharacter(newContents, j+1, (j+1)-6-1, '&');
+              j++;
+            } else { // add & just before end of previous line comment
+              insertCharacter(newContents, j+1, (j+1)-6-prevLineLength+prevLineAmpOrExclIndex, '&');
+              j++;
+            }
+	  } else {
+	    newContents[j]=c; // , just handle like space
           }
 	} else {
 	  newContents[j]=c;
@@ -1730,7 +1756,14 @@ static void initParser()
 
 static void initEntry()
 {
-  current->protection = defaultProtection ;
+  if (typeMode)
+  {
+    current->protection = typeProtection;
+  }
+  else
+  {
+    current->protection = defaultProtection;
+  }
   current->mtype      = mtype;
   current->virt       = virt;
   current->stat       = gstat;
@@ -1757,7 +1790,7 @@ static void addModule(const char *name, bool isModule)
   //fprintf(stderr, "0=========> got module %s\n", name);
 
   if (isModule)
-    current->section = Entry::NAMESPACE_SEC;
+    current->section = Entry::CLASS_SEC;
   else
     current->section = Entry::FUNCTION_SEC;
 

@@ -3764,7 +3764,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
           }
 
           //printf("      template substitution gives=%s\n",type.data());
-          while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec)!=-1)
+          while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,rootNav->lang())!=-1)
           {
             // find the type (if any) that matches usedClassName
             ClassDef *typeCd = getResolvedClass(masterCd,
@@ -3828,8 +3828,8 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                   {
                     if (isArtificial) usedCd->setArtificial(TRUE);
                     Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
-                    instanceCd->addUsedClass(usedCd,md->name());
-                    usedCd->addUsedByClass(instanceCd,md->name());
+                    instanceCd->addUsedClass(usedCd,md->name(),md->protection());
+                    usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
                   }
                 }
               }
@@ -3845,8 +3845,8 @@ static void findUsedClassesForClass(EntryNav *rootNav,
               {
                 found=TRUE;
                 Debug::print(Debug::Classes,0,"    Adding used class `%s' (2)\n", usedCd->name().data());
-                instanceCd->addUsedClass(usedCd,md->name()); // class exists 
-                usedCd->addUsedByClass(instanceCd,md->name());
+                instanceCd->addUsedClass(usedCd,md->name(),md->protection()); // class exists 
+                usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
               }
             }
             if (delTempNames)
@@ -3875,8 +3875,8 @@ static void findUsedClassesForClass(EntryNav *rootNav,
             {
               if (isArtificial) usedCd->setArtificial(TRUE);
               Debug::print(Debug::Classes,0,"    Adding used class `%s' (3)\n", usedCd->name().data());
-              instanceCd->addUsedClass(usedCd,md->name()); 
-              usedCd->addUsedByClass(instanceCd,md->name());
+              instanceCd->addUsedClass(usedCd,md->name(),md->protection()); 
+              usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
             }
           }
         }

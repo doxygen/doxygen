@@ -77,7 +77,7 @@ enum CommandType
   CMD_PARAM        = 43 | SIMPLESECT_BIT,
   CMD_PERCENT      = 44, 
   CMD_POST         = 45 | SIMPLESECT_BIT,
-  CMD_PRE          = 46 | SIMPLESECT_BIT ,
+  CMD_PRE          = 46 | SIMPLESECT_BIT,
   CMD_REF          = 47,
   CMD_SECREFITEM   = 48,
   CMD_REMARK       = 49 | SIMPLESECT_BIT ,
@@ -115,7 +115,8 @@ enum CommandType
   CMD_COPYDETAILS  = 81,
   CMD_QUOTE        = 82,
   CMD_MSCFILE      = 83,
-  CMD_DCOLON       = 84
+  CMD_DCOLON       = 84,
+  CMD_COPYRIGHT    = 85 | SIMPLESECT_BIT,
 };
 
 enum HtmlTagType

@@ -267,6 +267,8 @@ class ClassDef : public Definition
     QCString anchor() const;
     bool isEmbeddedInGroupDocs() const;
 
+    SrcLangExt getLanguage() const;
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
@@ -286,8 +288,8 @@ class ClassDef : public Definition
     void addInnerCompound(Definition *d);
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,
                                 const QCString &templSpec,bool &freshInstance);
-    void addUsedClass(ClassDef *cd,const char *accessName);
-    void addUsedByClass(ClassDef *cd,const char *accessName);
+    void addUsedClass(ClassDef *cd,const char *accessName,Protection prot);
+    void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot);
     void setIsStatic(bool b);
     void setLanguage(SrcLangExt lang);
     void setCompoundType(CompoundType t);

@@ -886,7 +886,8 @@ void addConfigOptions(Config *cfg)
                  "EXCLUDE",
                  "The EXCLUDE tag can be used to specify files and/or directories that should\n"
                  "excluded from the INPUT source files. This way you can easily exclude a\n"
-                 "subdirectory from a directory tree whose root is specified with the INPUT tag."
+                 "subdirectory from a directory tree whose root is specified with the INPUT tag.\n"
+                 "Note that relative paths are relative to directory from which doxygen is run."
                 );
   cl->setWidgetType(ConfigList::FileAndDir);
   //----
@@ -2267,6 +2268,13 @@ void addConfigOptions(Config *cfg)
   ce->addValue("gif");
   ce->addValue("svg");
   ce->addDependency("HAVE_DOT");
+  //----
+  cb = cfg->addBool(
+                 "INTERACTIVE_SVG",
+                 "",
+                 FALSE
+                );
+  cb->addDependency("HAVE_DOT");
   //----
   cs = cfg->addString(
                  "DOT_PATH",

@@ -235,15 +235,20 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
             md->getOuterScope()->definitionType()==Definition::TypeFile); 
 
-      LockingPtr<ArgumentList> srcMdAl = srcMd->argumentList();
-      LockingPtr<ArgumentList> mdAl    = md->argumentList();
+      LockingPtr<ArgumentList> srcMdAl  = srcMd->argumentList();
+      LockingPtr<ArgumentList> mdAl     = md->argumentList();
+      LockingPtr<ArgumentList> tSrcMdAl = srcMd->templateArguments();
+      LockingPtr<ArgumentList> tMdAl    = md->templateArguments();
       
-      if (srcMd->isFunction() && md->isFunction() && 
+      if (srcMd->isFunction() && md->isFunction() && // both are a function
+          (tSrcMdAl.pointer()==0 && tMdAl.pointer()==0 || 
+           (tSrcMdAl.pointer()!=0 && tMdAl.pointer()!=0 && tSrcMdAl->count()==tMdAl->count())
+          ) &&       // same number of template arguments
           matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMdAl.pointer(),
                           md->getOuterScope(),md->getFileDef(),mdAl.pointer(),
                           TRUE
-                         ) &&
-          sameScope
+                         ) && // matching parameters
+          sameScope // both are found in the same scope
          )
       {
         if (srcMd->getGroupAlias()==0) 

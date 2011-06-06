@@ -445,6 +445,8 @@ void ManDocVisitor::visitPre(DocSimpleSect *s)
       m_t << theTranslator->trPrecondition(); break;
     case DocSimpleSect::Post:
       m_t << theTranslator->trPostcondition(); break;
+    case DocSimpleSect::Copyright:
+      m_t << "Copyright" /*theTranslator->trCopyright()*/; break;
     case DocSimpleSect::Invar:
       m_t << theTranslator->trInvariant(); break;
     case DocSimpleSect::Remark:
