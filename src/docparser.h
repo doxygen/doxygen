@@ -886,7 +886,7 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     enum Type 
     {  
        Unknown, See, Return, Author, Authors, Version, Since, Date,
-       Note, Warning, Pre, Post, Invar, Remark, Attention, User, Rcs
+       Note, Warning, Copyright, Pre, Post, Invar, Remark, Attention, User, Rcs
     };
     DocSimpleSect(DocNode *parent,Type t);
     virtual ~DocSimpleSect();

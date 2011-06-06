@@ -35,6 +35,18 @@ class HtmlAttribList : public QList<HtmlAttrib>
     { operator=(l); }
     HtmlAttribList &operator=(const HtmlAttribList &l)
     { clear(); QList<HtmlAttrib>::operator=(l); return *this; }
+    QCString find(const QCString name) const
+    {
+      HtmlAttribList *that = (HtmlAttribList *)this;
+      QCString result;
+      HtmlAttrib *attr=that->first();
+      while (attr)
+      {
+        if (attr->name==name) return attr->value;
+        attr=that->next();
+      }
+      return result;
+    }
     QCString toString() const
     {
       HtmlAttribList *that = (HtmlAttribList *)this;

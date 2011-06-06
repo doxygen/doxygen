@@ -267,7 +267,7 @@ void addMembersToMemberGroup(/* in */     MemberList *ml,
                              /* in */     Definition *context);
 
 int extractClassNameFromType(const QCString &type,int &pos,
-                              QCString &name,QCString &templSpec);
+                              QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt_Unknown);
 
 QCString substituteTemplateArgumentsInString(
        const QCString &name,
@@ -367,7 +367,7 @@ QCString extractAliasArgs(const QCString &args,int pos);
 
 int countAliasArguments(const QCString argList);
 
-QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList);
+//QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList);
 
 QCString resolveAliasCmd(const QCString aliasCmd);
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);

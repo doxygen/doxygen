@@ -808,6 +808,7 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
   case DocSimpleSect::Warning:		type = "warning"; break;
   case DocSimpleSect::Pre:		type = "pre"; break;
   case DocSimpleSect::Post:		type = "post"; break;
+  case DocSimpleSect::Copyright:	type = "copyright"; break;
   case DocSimpleSect::Invar:		type = "invariant"; break;
   case DocSimpleSect::Remark:		type = "remark"; break;
   case DocSimpleSect::Attention:	type = "attention"; break;

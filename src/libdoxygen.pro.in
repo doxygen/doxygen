@@ -64,6 +64,7 @@ HEADERS      =	bufstr.h \
 		jquery_js.h \
 		jquery_ui_js.h \
 		sizzle_js.h \
+		svgpan_js.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \
@@ -116,6 +117,7 @@ HEADERS      =	bufstr.h \
                 textdocvisitor.h \
 		translator.h \
 		translator_adapter.h \
+		translator_am.h \
 		translator_br.h \
 		translator_ca.h \
 		translator_cn.h \

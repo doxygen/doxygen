@@ -626,6 +626,7 @@ If left blank NO is used.
 The EXCLUDE tag can be used to specify files and/or directories that should 
 excluded from the INPUT source files. This way you can easily exclude a 
 subdirectory from a directory tree whose root is specified with the INPUT tag. 
+Note that relative paths are relative to directory from which doxygen is run.
 '>
     </option>
     <option type='bool' id='EXCLUDE_SYMLINKS' docs='
@@ -1493,6 +1494,12 @@ If left blank png will be used.
       <value name='gif'/>
       <value name='svg'/>
     </option>
+    <option type='bool' id='INTERACTIVE_SVG' doc='
+If DOT_IMAGE_FORMAT is set to svg, then this option can be set to YES to
+enable generation of interactive SVG images that allow zooming and panning. 
+Note that this requires a modern browser. For Internet Explorer you will need 
+at least version 9.
+' defval='0' depends='HAVE_DOT'/>
     <option type='string' id='DOT_PATH' format='dir' docs='
 The tag DOT_PATH can be used to specify the path where the dot tool can be 
 found. If left blank, it is assumed the dot tool can be found in the path. 

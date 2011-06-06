@@ -764,6 +764,7 @@
 "      <xsd:enumeration value=\"warning\" />\n"
 "      <xsd:enumeration value=\"pre\" />\n"
 "      <xsd:enumeration value=\"post\" />\n"
+"      <xsd:enumeration value=\"copyright\" />\n"
 "      <xsd:enumeration value=\"invariant\" />\n"
 "      <xsd:enumeration value=\"remark\" />\n"
 "      <xsd:enumeration value=\"attention\" />\n"

@@ -1793,7 +1793,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Body>(KEYWORD_CPPCLI_DATATYPE|("partial"{B}+)?"class"|"struct"|"union"|"namespace"){B}+ { 
+<Body>(KEYWORD_CPPCLI_DATATYPE|("partial"{B}+)?"class"|"struct"|"union"|"namespace"|"interface"){B}+ { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();

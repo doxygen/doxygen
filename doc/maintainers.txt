@@ -22,6 +22,9 @@ TranslatorArabic
 Moaz Reyad: [resigned] moazreyad at yahoo dot com
 -- searching for the maintainer --: [Please, try to help to find someone.]
 
+TranslatorArmenian
+Armen Tangamyan: armen dot tangamyan at anu dot edu dot au
+
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: jun-chino at uol dot com dot br
 

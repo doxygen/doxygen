@@ -65,6 +65,7 @@ CommandMap cmdMap[] =
   { "param",         CMD_PARAM },
   { "post",          CMD_POST },
   { "pre",           CMD_PRE },
+  { "copyright",     CMD_COPYRIGHT },
   { "ref",           CMD_REF },
   { "refitem",       CMD_SECREFITEM },
   { "remark",        CMD_REMARK },

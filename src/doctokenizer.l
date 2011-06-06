@@ -377,6 +377,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 %x St_IntRef
 %x St_Text
 %x St_SkipTitle
+%x St_Anchor
 
 %x St_Sections
 %s St_SecLabel1
@@ -724,6 +725,14 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
   			 return 0;
                        }
 
+<St_Anchor>{LABELID}{WS}? { // anchor
+  			 g_token->name = QCString(yytext).stripWhiteSpace();
+  			 return TK_WORD;
+  		       }
+<St_Anchor>.	       {
+  			 unput(*yytext);
+			 return 0;
+  		       }
 <St_Ref>{REFWORD}      { // label to refer to
   			 g_token->name=yytext;
 			 return TK_WORD;
@@ -1088,6 +1097,11 @@ void doctokenizerYYsetStateText()
 void doctokenizerYYsetStateSkipTitle()
 {
   BEGIN(St_SkipTitle);
+}
+
+void doctokenizerYYsetStateAnchor()
+{
+  BEGIN(St_Anchor);
 }
 
 void doctokenizerYYcleanup()

@@ -289,6 +289,7 @@ class PrintDocVisitor : public DocVisitor
 	case DocSimpleSect::Warning: printf("warning"); break;
 	case DocSimpleSect::Pre: printf("pre"); break;
 	case DocSimpleSect::Post: printf("post"); break;
+	case DocSimpleSect::Copyright: printf("copyright"); break;
 	case DocSimpleSect::Invar: printf("invar"); break;
 	case DocSimpleSect::Remark: printf("remark"); break;
 	case DocSimpleSect::Attention: printf("attention"); break;

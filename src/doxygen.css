@@ -72,8 +72,6 @@ div.qindex, div.navtab{
 	background-color: ##ee;
 	border: 1px solid ##b0;
 	text-align: center;
-	margin: 2px;
-	padding: 2px;
 }
 
 div.qindex, div.navpath {
@@ -190,8 +188,8 @@ body {
 
 div.contents {
 	margin-top: 10px;
-	margin-left: 10px;
-	margin-right: 5px;
+	margin-left: 8px;
+	margin-right: 8px;
 }
 
 td.indexkey {
@@ -414,7 +412,7 @@ table.memberdecls {
         margin-left: 6px;
 }
 
-.memproto {
+.memproto, dl.reflist dt {
         border-top: 1px solid ##B4;
         border-left: 1px solid ##B4;
         border-right: 1px solid ##B4;
@@ -440,7 +438,7 @@ table.memberdecls {
 
 }
 
-.memdoc {
+.memdoc, dl.reflist dd {
         border-bottom: 1px solid ##B4;      
         border-left: 1px solid ##B4;      
         border-right: 1px solid ##B4; 
@@ -461,6 +459,15 @@ table.memberdecls {
         -webkit-border-bottom-right-radius: 8px;
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
         background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.6,##FF), color-stop(0.60,##FF), color-stop(0.95,##F8), to(##F0));
+}
+
+dl.reflist dt {
+        padding: 5px;
+}
+
+dl.reflist dd {
+        margin: 0px 0px 10px 0px;
+        padding: 5px;
 }
 
 .paramkey {
@@ -701,6 +708,7 @@ div.summary a
 
 div.ingroups
 {
+	margin-left: 5px;
 	font-size: 8pt;
 	padding-left: 5px;
 	width: 50%;
@@ -723,7 +731,7 @@ div.header
 
 div.headertitle
 {
-	padding: 5px 5px 5px 10px;
+	padding: 5px 5px 5px 7px;
 }
 
 dl
@@ -831,5 +839,10 @@ dl.bug
 .caption
 {
 	font-weight: bold;
+}
+
+div.zoom
+{
+	border: 1px solid ##A0;
 }
 

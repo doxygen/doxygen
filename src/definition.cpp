@@ -1069,7 +1069,7 @@ void Definition::addSourceReferencedBy(MemberDef *md)
     }
     if (m_impl->sourceRefByDict->find(name)==0)
     {
-      m_impl->sourceRefByDict->inSort(name,md);
+      m_impl->sourceRefByDict->append(name,md);
     }
   }
 }
@@ -1093,7 +1093,7 @@ void Definition::addSourceReferences(MemberDef *md)
     }
     if (m_impl->sourceRefsDict->find(name)==0)
     {
-      m_impl->sourceRefsDict->inSort(name,md);
+      m_impl->sourceRefsDict->append(name,md);
     }
   }
 }

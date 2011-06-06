@@ -367,16 +367,18 @@ class DotFilePatcher
       bool     urlOnly;
       QCString context;
       QCString label;
+      bool     zoomable;
     };
     DotFilePatcher(const char *patchFile);
     int addMap(const QCString &mapFile,const QCString &relPath,
                bool urlOnly,const QCString &context,const QCString &label);
     int addFigure(const QCString &baseName,
                   const QCString &figureName,bool heightCheck);
-    int addSVGConversion(const QCString &relPath,bool urlOnly,const QCString &context);
+    int addSVGConversion(const QCString &relPath,bool urlOnly,const QCString &context,bool zoomable);
     int addSVGObject(const QCString &baseName, const QCString &figureName,
                      const QCString &relPath);
     bool run();
+    QCString file() const;
 
   private:
     QList<Map> m_maps;
@@ -419,7 +421,7 @@ class DotManager
     int addFigure(const QCString &file,const QCString &baseName,
                   const QCString &figureName,bool heightCheck);
     int addSVGConversion(const QCString &file,const QCString &relPath,
-               bool urlOnly,const QCString &context);
+               bool urlOnly,const QCString &context,bool zoomable);
     int addSVGObject(const QCString &file,const QCString &baseName,
                      const QCString &figureNAme,const QCString &relPath);
     bool run();

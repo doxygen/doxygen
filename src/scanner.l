@@ -2247,10 +2247,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
   					}
 <FindMembers>[*&]+			{ 
-  					  if (current->type.stripWhiteSpace().right(1)!=yytext)
-					  {
-                                            current->name += yytext ;  
-					  }
+                                          current->name += yytext ;  
   					  addType( current );
 					}
 <FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
@@ -4258,7 +4255,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    lastCurlyContext = FindMembers;
 					    if ( *yytext == ',' )
 					    {
-					      current->type = previous->type.data();
+					      current->type = previous->type;
+					      // we need to strip any trailing * and & (see bugs 623023 and 649103 for test cases)
+					      int i=current->type.length(); 
+					      while (i>0 && (current->type[i-1]=='*' || current->type[i-1]=='&' || current->type[i-1]==' ')) i--;
+					      current->type = current->type.left(i);
 					    }
 					    if ( *yytext == '{' )
 					    {

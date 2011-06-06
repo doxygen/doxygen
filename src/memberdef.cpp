@@ -16,6 +16,7 @@
  */
 
 #include <stdio.h>
+#include <qglobal.h>
 #include <qregexp.h>
 #include <assert.h>
 #include "md5.h"
@@ -43,6 +44,11 @@
 
 #define START_MARKER 0x4D454D5B // MEM[
 #define END_MARKER   0x4D454D5D // MEM]
+
+#if defined(_OS_WIN32_)
+#define snprintf _snprintf
+#endif
+
 
 //-----------------------------------------------------------------------------
 
@@ -1011,7 +1017,7 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
   {
     if (isStatic()) ol.docify("+ "); else ol.docify("- ");
   }
-  if (!onlyText) // write link
+  if (!onlyText && isLinkable()) // write link
   {
     if (m_impl->mtype==EnumValue && getGroupDef()==0 &&          // enum value is not grouped
         getEnumScope() && getEnumScope()->getGroupDef()) // but its container is
@@ -2622,14 +2628,26 @@ void MemberDef::setAnchor(const char *a)
   QCString memAnchor = name();
   if (!m_impl->args.isEmpty()) memAnchor+=m_impl->args;
 
-  // include definition as well, to distinguish between two template
+  memAnchor.prepend(definition()); // actually the method name is now included
+            // twice, which is silly, but we keep it this way for backward
+            // compatibility.
+
+  // include number of template arguments as well, 
+  // to distinguish between two template
   // specializations that only differ in the template parameters.
-  memAnchor.prepend(definition());
+  if (m_impl->tArgList) 
+  {
+    char buf[20];
+    snprintf(buf,20,"%d:",m_impl->tArgList->count());
+    buf[19]='\0';
+    memAnchor.prepend(buf);
+  }
   
   // convert to md5 hash
   uchar md5_sig[16];
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)memAnchor.data(),memAnchor.length(),md5_sig);
+  //printf("memAnchor=%s\n",memAnchor.data());
   MD5SigToString(md5_sig,sigStr.data(),33);
   m_impl->anc = "a"+sigStr;
 }

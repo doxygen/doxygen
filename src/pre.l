@@ -2136,7 +2136,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n {
   					  g_condCtx = YY_START;
   					  outputArray(yytext,yyleng);
-  					  BEGIN(CondLine);
   					}
 <CondLine>.				{
   					  unput(*yytext);

@@ -143,3 +143,6 @@ sizzle_js.h: sizzle.js
 navtree_css.h: navtree.css
 	cat navtree.css | $(TO_C_CMD) >navtree_css.h
 
+svgpan_js.h: svgpan.js
+	cat svgpan.js | $(TO_C_CMD) >svgpan_js.h
+
