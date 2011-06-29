@@ -34,9 +34,9 @@ class ManGenerator : public OutputGenerator
     void enable() 
     { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Man) active=TRUE;  }
-    void disableIf(OutputType o) { if (o==Man) active=FALSE; }
-    void disableIfNot(OutputType o) { if (o!=Man) active=FALSE; }
+    void enableIf(OutputType o)  { if (o==Man) enable(); }
+    void disableIf(OutputType o) { if (o==Man) disable(); }
+    void disableIfNot(OutputType o) { if (o!=Man) disable(); }
     bool isEnabled(OutputType o) { return (o==Man && active); } 
     OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
 

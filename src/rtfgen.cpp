@@ -2652,11 +2652,17 @@ void RTFGenerator::endParamList()
 
 void RTFGenerator::startParameterType(bool first,const char *key)
 {
-  DBG_RTF(t << "{\\comment (startParameterList)}"    << endl)
+  DBG_RTF(t << "{\\comment (startParameterType)}"    << endl)
   if (!first && key)
   {
     t << " " << key << " ";
   }
+}
+
+void RTFGenerator::endParameterType()
+{
+  DBG_RTF(t << "{\\comment (endParameterType)}"    << endl)
+  t << " ";
 }
 
 void RTFGenerator::printDoc(DocNode *n,const char *langExt)

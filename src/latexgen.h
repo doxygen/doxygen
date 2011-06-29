@@ -38,9 +38,9 @@ class LatexGenerator : public OutputGenerator
     void enable() 
     { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Latex) active=TRUE;  }
-    void disableIf(OutputType o) { if (o==Latex) active=FALSE; }
-    void disableIfNot(OutputType o) { if (o!=Latex) active=FALSE; }
+    void enableIf(OutputType o)  { if (o==Latex) enable();  }
+    void disableIf(OutputType o) { if (o==Latex) disable(); }
+    void disableIfNot(OutputType o) { if (o!=Latex) disable(); }
     bool isEnabled(OutputType o) { return (o==Latex && active); } 
     OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
 

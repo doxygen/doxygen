@@ -58,6 +58,7 @@ static const char svgZoomHeader[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
 "        <defs>\n"
 "                <circle id=\"rim\" cx=\"0\" cy=\"0\" r=\"7\"/>\n"
+"                <circle id=\"rim2\" cx=\"0\" cy=\"0\" r=\"3.5\"/>\n"
 "                <g id=\"zoomPlus\">\n"
 "                        <use xlink:href=\"#rim\" fill=\"#404040\">\n"
 "                                <set attributeName=\"fill\" to=\"#808080\" begin=\"zoomplus.mouseover\" end=\"zoomplus.mouseout\"/>\n"
@@ -71,11 +72,13 @@ static const char svgZoomHeader[] =
 "                        <path d=\"M-4,0h8\" fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" pointer-events=\"none\"/>\n"
 "                </g>\n"
 "                <g id=\"dirArrow\">\n"
-"                        <use xlink:href=\"#rim\" fill=\"#404040\">\n"
-"                                <set attributeName=\"fill\" to=\"#808080\" begin=\"zoomminus.mouseover\" end=\"zoomminus.mouseout\"/>\n"
-"                        </use>\n"
 "                        <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
+"               <g id=\"resetDef\">\n"
+"                       <use xlink:href=\"#rim2\" fill=\"#404040\">\n"
+"                               <set attributeName=\"fill\" to=\"#808080\" begin=\"reset.mouseover\" end=\"reset.mouseout\"/>\n"
+"                       </use>\n"
+"               </g>\n"
 "        </defs>\n"
 "\n"
 "<script type=\"text/javascript\">\n"
@@ -86,6 +89,7 @@ static const char svgZoomFooter[] =
 "                <rect fill=\"#f2f5e9\" fill-opacity=\"0.5\" stroke=\"#606060\" stroke-width=\".5\" x=\"0\" y=\"0\" width=\"60\" height=\"60\"/>\n"
 "                <use id=\"zoomplus\" xlink:href=\"#zoomPlus\" x=\"17\" y=\"9\" onmousedown=\"handleZoom(evt,'in')\"/>\n"
 "                <use id=\"zoomminus\" xlink:href=\"#zoomMin\" x=\"42\" y=\"9\" onmousedown=\"handleZoom(evt,'out')\"/>\n"
+"                <use id=\"reset\" xlink:href=\"#resetDef\" x=\"30\" y=\"36\" onmousedown=\"handleReset()\"/>\n"
 "                <g id=\"arrowUp\" xlink:href=\"#dirArrow\" transform=\"translate(30 24)\" onmousedown=\"handlePan(0,-1)\">\n"
 "                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
 "                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowUp.mouseover\" end=\"arrowUp.mouseout\"/>\n"
@@ -209,8 +213,14 @@ static int getDotFontSize()
 
 static void writeGraphHeader(FTextStream &t)
 {
+  static bool interactiveSVG = Config_getBool("INTERACTIVE_SVG");
   t << "digraph G" << endl;
   t << "{" << endl;
+  if (interactiveSVG) // insert a comment to force regeneration when this
+                      // option is toggled
+  {
+    t << " // INTERACTIVE_SVG=YES\n";
+  }
   if (Config_getBool("DOT_TRANSPARENT"))
   {
     t << "  bgcolor=\"transparent\";" << endl;
@@ -566,21 +576,24 @@ static bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
   }
   if (width==-1 && height==-1)
   {
-//  out << "<object type=\"image/svg+xml\" data=\"" 
-    out << "<div class=\"zoom\"><iframe src=\"" 
-        << relPath << baseName << ".svg\" width=\"100%\" height=\"600\""
-        << " frameborder=\"0\" scrolling=\"no\">";
+    out << "<div class=\"zoom\">";
+    //out << "<object type=\"image/svg+xml\" data=\"" 
+    //out << "<embed type=\"image/svg+xml\" src=\"" 
+    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
+        << relPath << baseName << ".svg\" width=\"100%\" height=\"600\">";
   }
   else
   {
-//  out << "<object type=\"image/svg+xml\" data=\"" 
-    out << "<iframe src=\"" 
+    //out << "<object type=\"image/svg+xml\" data=\"" 
+    //out << "<embed type=\"image/svg+xml\" src=\"" 
+    out << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" 
         << relPath << baseName << ".svg\" width=\"" 
         << ((width*96+48)/72) << "\" height=\"" 
-        << ((height*96+48)/72) << "\" frameborder=\"0\" scrolling=\"no\">";
+        << ((height*96+48)/72) << "\">";
   }
   writeSVGNotSupported(out);
-//  out << "</object>";
+  //out << "</object>";
+  //out << "</embed>";
   out << "</iframe>";
   if (width==-1 && height==-1)
   {
@@ -824,6 +837,7 @@ int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
   map->context  = context;
   map->label    = label;
   map->zoomable = FALSE;
+  map->graphId  = -1;
   m_maps.append(map);
   return id;
 }
@@ -837,12 +851,14 @@ int DotFilePatcher::addFigure(const QCString &baseName,
   map->urlOnly  = heightCheck;
   map->label    = baseName;
   map->zoomable = FALSE;
+  map->graphId  = -1;
   m_maps.append(map);
   return id;
 }
 
 int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
-                                     const QCString &context,bool zoomable)
+                                     const QCString &context,bool zoomable,
+                                     int graphId)
 {
   int id = m_maps.count();
   Map *map = new Map;
@@ -850,6 +866,7 @@ int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
   map->urlOnly  = urlOnly;
   map->context  = context;
   map->zoomable = zoomable;
+  map->graphId  = graphId;
   m_maps.append(map);
   return id;
 }
@@ -864,6 +881,7 @@ int DotFilePatcher::addSVGObject(const QCString &baseName,
   map->relPath  = relPath;
   map->label    = baseName;
   map->zoomable = FALSE;
+  map->graphId  = -1;
   m_maps.append(map);
   return id;
 }
@@ -873,10 +891,14 @@ bool DotFilePatcher::run()
   //printf("DotFilePatcher::run(): %s\n",m_patchFile.data());
   static bool interactiveSVG = Config_getBool("INTERACTIVE_SVG");
   bool isSVGFile = m_patchFile.right(4)==".svg";
+  int graphId = -1;
+  QCString relPath;
   if (isSVGFile)
   {
     Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
     interactiveSVG = interactiveSVG && map->zoomable;
+    graphId = map->graphId;
+    relPath = map->relPath;
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    m_patchFile.data(),map->zoomable);
   }
@@ -940,8 +962,12 @@ bool DotFilePatcher::run()
             t << svgZoomHeader;
             t << "var viewWidth = " << width << ";\n";
             t << "var viewHeight = " << height << ";\n";
+            if (graphId>=0)
+            {
+              t << "var sectionId = 'dynsection-" << graphId << "';\n";
+            }
             t << "</script>\n";
-            t << "<script xlink:href=\"svgpan.js\"/>\n";
+            t << "<script xlink:href=\"" << relPath << "svgpan.js\"/>\n";
             t << "<svg id=\"graph\" class=\"graph\">\n";
             t << "<g id=\"viewport\">\n";
           }
@@ -1166,7 +1192,8 @@ int DotManager::addFigure(const QCString &file,const QCString &baseName,
 }
 
 int DotManager::addSVGConversion(const QCString &file,const QCString &relPath,
-                       bool urlOnly,const QCString &context,bool zoomable)
+                       bool urlOnly,const QCString &context,bool zoomable,
+                       int graphId)
 {
   DotFilePatcher *map = m_dotMaps.find(file);
   if (map==0)
@@ -1174,7 +1201,7 @@ int DotManager::addSVGConversion(const QCString &file,const QCString &relPath,
     map = new DotFilePatcher(file);
     m_dotMaps.append(file,map);
   }
-  return map->addSVGConversion(relPath,urlOnly,context,zoomable);
+  return map->addSVGConversion(relPath,urlOnly,context,zoomable,graphId);
 }
 
 int DotManager::addSVGObject(const QCString &file,const QCString &baseName,
@@ -2048,7 +2075,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
         if (regenerate)
         {
           DotManager::instance()->addSVGConversion(absImgName,QCString(),
-                                                   FALSE,QCString(),FALSE);
+                                                   FALSE,QCString(),FALSE,0);
         }
         int mapId = DotManager::instance()->addSVGObject(fileName,baseName,
                                                          absImgName,QCString());
@@ -2767,7 +2794,8 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                                const char *fileName,
                                const char *relPath,
                                bool /*isTBRank*/,
-                               bool generateImageMap) const
+                               bool generateImageMap,
+                               int graphId) const
 {
   QDir d(path);
   // store the original directory
@@ -2858,7 +2886,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       {
         if (regenerate)
         {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE);
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
         }
         int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
         out << "<!-- SVG " << mapId << " -->" << endl;
@@ -3098,7 +3126,8 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  const char *path,
                                  const char *fileName,
                                  const char *relPath,
-                                 bool generateImageMap
+                                 bool generateImageMap,
+                                 int graphId
                                 ) const
 {
   QDir d(path);
@@ -3174,7 +3203,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       {
         if (regenerate)
         {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE);
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
         }
         int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
         out << "<!-- SVG " << mapId << " -->" << endl;
@@ -3391,7 +3420,8 @@ DotCallGraph::~DotCallGraph()
 
 QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
                         const char *path,const char *fileName,
-                        const char *relPath,bool generateImageMap) const
+                        const char *relPath,bool generateImageMap,int
+                        graphId) const
 {
   QDir d(path);
   // store the original directory
@@ -3464,7 +3494,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
       {
         if (regenerate)
         {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE);
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
         }
         int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
         out << "<!-- SVG " << mapId << " -->" << endl;
@@ -3527,7 +3557,8 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
                             const char *path,
                             const char *fileName,
                             const char *relPath,
-                            bool generateImageMap) const
+                            bool generateImageMap,
+                            int graphId) const
 {
   QDir d(path);
   // store the original directory
@@ -3608,7 +3639,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
       {
         if (regenerate)
         {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE);
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
         }
         int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
         out << "<!-- SVG " << mapId << " -->" << endl;
@@ -3781,7 +3812,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 void writeDotImageMapFromFile(FTextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
-                            const QCString &context)
+                            const QCString &context,int graphId)
 {
 
   QDir d(outDir);
@@ -3807,7 +3838,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   {
     writeSVGFigureLink(t,relPath,inFile,inFile+".svg");
     DotFilePatcher patcher(inFile+".svg");
-    patcher.addSVGConversion(relPath,TRUE,context,TRUE);
+    patcher.addSVGConversion(relPath,TRUE,context,TRUE,graphId);
     patcher.run();
   }
   else // bitmap graphics
@@ -4040,7 +4071,7 @@ void DotGroupCollaboration::addCollaborationMember(
 
 QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat format,
     const char *path, const char *fileName, const char *relPath,
-    bool writeImageMap) const
+    bool writeImageMap,int graphId) const
 {
   QDir d(path);
   // store the original directory
@@ -4147,7 +4178,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
       {
         if (regenerate)
         {
-          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE);
+          DotManager::instance()->addSVGConversion(absImgName,relPath,FALSE,QCString(),TRUE,graphId);
         }
         int mapId = DotManager::instance()->addSVGObject(fileName,baseName,absImgName,relPath);
         t << "<!-- SVG " << mapId << " -->" << endl;

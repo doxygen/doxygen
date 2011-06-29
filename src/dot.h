@@ -166,7 +166,7 @@ class DotClassGraph
     bool isTooBig() const;
     QCString writeGraph(FTextStream &t,GraphOutputFormat f,const char *path,
                     const char *fileName, const char *relPath, 
-                    bool TBRank=TRUE,bool imageMap=TRUE) const;
+                    bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1) const;
 
     void writeXML(FTextStream &t);
     void writeDEF(FTextStream &t);
@@ -196,7 +196,7 @@ class DotInclDepGraph
    ~DotInclDepGraph();
     QCString writeGraph(FTextStream &t, GraphOutputFormat f,
                     const char *path,const char *fileName,const char *relPath,
-                    bool writeImageMap=TRUE) const;
+                    bool writeImageMap=TRUE,int graphId=-1) const;
     bool isTrivial() const;
     bool isTooBig() const;
     QCString diskName() const;
@@ -223,7 +223,8 @@ class DotCallGraph
    ~DotCallGraph();
     QCString writeGraph(FTextStream &t, GraphOutputFormat f,
                         const char *path,const char *fileName,
-                        const char *relPath,bool writeImageMap=TRUE) const;
+                        const char *relPath,bool writeImageMap=TRUE,
+                        int graphId=-1) const;
     void buildGraph(DotNode *n,MemberDef *md,int distance);
     bool isTrivial() const;
     bool isTooBig() const;
@@ -253,7 +254,8 @@ class DotDirDeps
                         const char *path,
                         const char *fileName,
                         const char *relPath,
-                        bool writeImageMap=TRUE) const;
+                        bool writeImageMap=TRUE,
+                        int graphId=-1) const;
   private:
     DirDef *m_dir;
 };
@@ -299,7 +301,7 @@ class DotGroupCollaboration
     ~DotGroupCollaboration();
     QCString writeGraph(FTextStream &t, GraphOutputFormat format,
                     const char *path,const char *fileName,const char *relPath,
-                    bool writeImageMap=TRUE) const;
+                    bool writeImageMap=TRUE,int graphId=-1) const;
     void buildGraph(GroupDef* gd);
     bool isTrivial() const;
   private :
@@ -368,13 +370,15 @@ class DotFilePatcher
       QCString context;
       QCString label;
       bool     zoomable;
+      int      graphId;
     };
     DotFilePatcher(const char *patchFile);
     int addMap(const QCString &mapFile,const QCString &relPath,
                bool urlOnly,const QCString &context,const QCString &label);
     int addFigure(const QCString &baseName,
                   const QCString &figureName,bool heightCheck);
-    int addSVGConversion(const QCString &relPath,bool urlOnly,const QCString &context,bool zoomable);
+    int addSVGConversion(const QCString &relPath,bool urlOnly,
+                         const QCString &context,bool zoomable,int graphId);
     int addSVGObject(const QCString &baseName, const QCString &figureName,
                      const QCString &relPath);
     bool run();
@@ -421,7 +425,7 @@ class DotManager
     int addFigure(const QCString &file,const QCString &baseName,
                   const QCString &figureName,bool heightCheck);
     int addSVGConversion(const QCString &file,const QCString &relPath,
-               bool urlOnly,const QCString &context,bool zoomable);
+               bool urlOnly,const QCString &context,bool zoomable,int graphId);
     int addSVGObject(const QCString &file,const QCString &baseName,
                      const QCString &figureNAme,const QCString &relPath);
     bool run();
@@ -445,7 +449,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 void writeDotImageMapFromFile(FTextStream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
-                              const QCString& context);
+                              const QCString& context,int graphId=-1);
 
 void writeDotDirDepGraph(FTextStream &t,DirDef *dd);
 

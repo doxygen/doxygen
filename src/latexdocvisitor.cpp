@@ -1304,7 +1304,9 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
 void LatexDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
-  m_t << "\\begin{Desc}" << endl;
+  m_t << "\\begin{DoxyRefDesc}{";
+  filter(x->title());
+  m_t << "}" << endl;
   bool anonymousEnum = x->file()=="@";
   m_t << "\\item[";
   if (Config_getBool("PDF_HYPERLINKS") && !anonymousEnum)
@@ -1324,7 +1326,7 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
 void LatexDocVisitor::visitPost(DocXRefItem *)
 {
   if (m_hide) return;
-  m_t << "\\end{Desc}" << endl;
+  m_t << "\\end{DoxyRefDesc}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocInternalRef *ref)

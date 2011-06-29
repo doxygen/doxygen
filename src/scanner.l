@@ -5064,7 +5064,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
 					  }
-					  if ((current->spec & Entry::Interface) || 
+					  if ((current->spec & (Entry::Interface|Entry::Struct)) || 
 					      insideJava || insidePHP || insideCS || 
 					      insideD || insideObjC)
 					  {

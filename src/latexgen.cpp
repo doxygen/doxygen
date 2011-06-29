@@ -325,7 +325,6 @@ static void writeDefaultStyleSheetPart1(FTextStream &t)
        "\\RequirePackage{longtable}\n"
        "\\RequirePackage{verbatim}\n"
        "\\RequirePackage{ifthen}\n"
-       "\\RequirePackage{settobox}\n"
        "\\RequirePackage[table]{xcolor}\n\n";
 
   t << "% Use helvetica font instead of times roman\n"
@@ -773,25 +772,30 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "\\newlength{\\xreflength}\n";
   t << "\\newcommand{\\xreflabel}[1]{%\n";
   t << "  \\sbox{\\xrefbox}{#1}%\n";
-  t << "  \\settoboxwidth{\\xreflength}{\\xrefbox}%\n";
+  t << "  \\setlength{\\xreflength}{\\wd\\xrefbox}%\n";
   t << "  \\ifthenelse{\\xreflength>\\labelwidth}{%\n";
   t << "    \\begin{minipage}{\\textwidth}%\n";
   t << "      \\setlength{\\parindent}{0pt}%\n";
-  t << "      \\hangindent=25pt\\bfseries #1\\vspace{\\itemsep}%\n";
+  t << "      \\hangindent=15pt\\bfseries #1\\vspace{1.2\\itemsep}%\n";
   t << "    \\end{minipage}%\n";
   t << "  }{%\n";
   t << "   \\parbox[b]{\\labelwidth}{\\makebox[0pt][l]{\\textbf{#1}}}%\n";
   t << "  }}%\n";
   t << "\\newenvironment{DoxyRefList}{%\n";
   t << "  \\begin{list}{}{%\n";
-  t << "    \\setlength{\\labelwidth}{75pt}%\n";
+  t << "    \\setlength{\\labelwidth}{10pt}%\n";
   t << "    \\setlength{\\leftmargin}{\\labelwidth}%\n";
   t << "    \\addtolength{\\leftmargin}{\\labelsep}%\n";
   t << "    \\renewcommand{\\makelabel}{\\xreflabel}%\n";
   t << "    }%\n";
   t << "  }%\n";
   t << "{\\end{list}}\n";
-
+  t << "\\newenvironment{DoxyRefDesc}[1]\n";
+  t << "{\\begin{list}{}{%\n";
+  t << "  \\renewcommand\\makelabel[1]{\\textbf{##1}}\n";
+  t << "  \\settowidth\\labelwidth{\\makelabel{#1}}\n";
+  t << "  \\setlength\\leftmargin{\\labelwidth+\\labelsep}}}\n";
+  t << "{\\end{list}}\n";
   t << "\\newenvironment{Indent}\n";
   t << "  {\\begin{list}{}{\\setlength{\\leftmargin}{0.5cm}}\n";
   t << "      \\item[]\\ignorespaces}\n";

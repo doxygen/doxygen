@@ -58,6 +58,7 @@ void OutputGenerator::startPlainFile(const char *name)
 
 void OutputGenerator::endPlainFile()
 {
+  t.unsetDevice();
   delete file;
   file=0;
   fileName.resize(0);
@@ -66,12 +67,12 @@ void OutputGenerator::endPlainFile()
 void OutputGenerator::pushGeneratorState()
 {
   genStack->push(new bool(isEnabled()));
-  //printf("%p:pushGeneratorState(%d)\n",this,genStack->count());
+  //printf("%p:pushGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
 }
 
 void OutputGenerator::popGeneratorState()
 {
-  //printf("%p:popGeneratorState(%d)\n",this,genStack->count());
+  //printf("%p:popGeneratorState(%d) enabled=%d\n",this,genStack->count(),isEnabled());
   bool *lb = genStack->pop();
   ASSERT(lb!=0);
   if (lb==0) return; // for some robustness against superfluous \endhtmlonly commands.

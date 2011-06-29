@@ -204,7 +204,7 @@ In this case the \c Makefile will only contain a target to build
 \addindex RTF
 Doxygen combines the RTF output to a single file called refman.rtf. This
 file is optimized for importing into the Microsoft Word. Certain information
-is encoded using field. To show the actual value you need to 
+is encoded using so called fields. To show the actual value you need to 
 select all (Edit - select all) and then toggle fields (right click and select
 the option from the drop down menu).
 

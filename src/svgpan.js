@@ -1,5 +1,6 @@
 /**
  * The code below is based on SVGPan Library 1.2 and was modified for doxygen
+ * to support both zooming and panning via the mouse and via embedded bottons.
  *
  * This code is licensed under the following BSD license:
  *
@@ -46,11 +47,10 @@ var maxZoom;
 if (!window) window=this;
 
 /**
- * Register handlers
+ * Show the graph in the middle of the view, scaled to fit 
  */
-function init(evt) 
+function show()
 {
-  svgDoc = evt.target.ownerDocument;
   if (window.innerHeight) // Firefox
   {
     windowWidth = window.innerWidth;
@@ -61,21 +61,39 @@ function init(evt)
     windowWidth = document.documentElement.clientWidth
     windowHeight = document.documentElement.clientHeight
   }
-  else
+  if (!windowWidth || !windowHeight) // failsafe
   {
     windowWidth = 800;
     windowHeight = 600;
   }
-  minZoom = windowHeight/viewHeight;
-  maxZoom = 1.5;
+  minZoom = Math.min(windowHeight/viewHeight,windowWidth/viewWidth);
+  maxZoom = minZoom+1.5;
   zoomInFactor = Math.pow(maxZoom/minZoom,1.0/zoomSteps);
   zoomOutFactor = 1.0/zoomInFactor;
 
   var g = svgDoc.getElementById('viewport');
-  var bb = g.getBBox();
-  var a = 'scale('+minZoom+') rotate(0) translate('+((innerWidth-viewWidth*minZoom)/(2*minZoom))+' '+viewHeight+')';
+  try
+  {
+    var bb = g.getBBox(); // this can throw an exception if css { display: none }
+    var tx = (windowWidth-viewWidth*minZoom+8)/(2*minZoom);
+    var ty = viewHeight+(windowHeight-viewHeight*minZoom)/(2*minZoom);
+    var a = 'scale('+minZoom+') rotate(0) translate('+tx+' '+ty+')';
+    g.setAttribute('transform',a);
+  }
+  catch(e) {}
+}
 
-  g.setAttribute('transform',a);
+/**
+ * Register handlers
+ */
+function init(evt) 
+{
+  svgDoc = evt.target.ownerDocument;
+  if (top.window && top.window.registerShow) // register show function in html doc for dynamic sections
+  {
+    top.window.registerShow(sectionId,show);
+  }
+  show();
 
   setAttributes(root, {
      "onmousedown" : "handleMouseDown(evt)",
@@ -85,36 +103,22 @@ function init(evt)
 
   if (window.addEventListener)
   {
-    if (navigator.userAgent.toLowerCase().indexOf('webkit') >= 0 || navigator.userAgent.toLowerCase().indexOf("opera") >= 0)
-      window.addEventListener('mousewheel', handleMouseWheel, false); // Chrome/Safari
+    if (navigator.userAgent.toLowerCase().indexOf('webkit') >= 0 || 
+        navigator.userAgent.toLowerCase().indexOf("opera") >= 0 || 
+        navigator.appVersion.indexOf("MSIE") != -1)
+    {
+      window.addEventListener('mousewheel', handleMouseWheel, false); // Chrome/Safari/IE9
+    }
     else
+    {
       window.addEventListener('DOMMouseScroll', handleMouseWheel, false); // Others
+    }
   }
 }
 
 window.onresize=function()
 {
-  if (svgDoc)
-  {
-    var newWindowWidth;
-    if (window.innerWidth) // Firefox
-    {
-      newWindowWidth = window.innerWidth;
-    }
-    else if (document.documentElement.clientWidth) // Chrome/Safari
-    {
-      newWindowWidth = document.documentElement.clientWidth
-    }
-    if (newWindowWidth)
-    {
-      var g = svgDoc.getElementById("viewport");
-      var n = g.getCTM();
-      n = n.translate((newWindowWidth-windowWidth)/(2*minZoom),0);
-      setCTM(g, n);
-      stateTf = stateTf.multiply(n.inverse());
-      windowWidth = newWindowWidth;
-    }
-  }
+  if (svgDoc) { show(); }
 }
 
 /**
@@ -178,9 +182,14 @@ function handleMouseWheel(evt)
       {
         delta = evt.wheelDelta / 720; // Opera
       }
+      else if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1 ||
+               navigator.appVersion.indexOf("MSIE") != -1)
+      {
+        delta = evt.wheelDelta / 7200; // Chrome/IE9
+      }
       else
       {
-        delta = evt.wheelDelta / 7200; // Chrome/Safari/Opera
+        delta = evt.wheelDelta / 72000; // Safari
       }
     }
     else
@@ -243,12 +252,6 @@ function handleMouseUp(evt)
   state = '';
 }
 
-function handlePan(x,y)
-{
-  var g = svgDoc.getElementById("viewport");
-  setCTM(g,g.getCTM().translate(x*20/minZoom,y*20/minZoom));
-}
-
 /**
  * Dumps a matrix to a string (useful for debug).
  */
@@ -258,14 +261,35 @@ function dumpMatrix(matrix)
   return s;
 }
 
+/**
+ * Handler for pan buttons
+ */
+function handlePan(x,y)
+{
+  var g = svgDoc.getElementById("viewport");
+  setCTM(g,g.getCTM().translate(x*20/minZoom,y*20/minZoom));
+}
+
+/**
+ * Handle reset button
+ */
+function handleReset()
+{
+  show();
+}
+
+/**
+ * Handler for zoom buttons
+ */
 function handleZoom(evt,direction)
 {
   var g = svgDoc.getElementById("viewport");
   var factor = direction=='in' ? zoomInFactor : zoomOutFactor;
   var m = g.getCTM();
   var p = root.createSVGPoint();
-  p.x = windowWidth/2; 
+  p.x = windowWidth/2;
   p.y = windowHeight/2;
   doZoom(g,p,factor);
 }
+
 
