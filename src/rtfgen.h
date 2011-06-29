@@ -34,9 +34,9 @@ class RTFGenerator : public OutputGenerator
     void enable() 
     { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
-    void enableIf(OutputType o)  { if (o==RTF) active=TRUE;  }
-    void disableIf(OutputType o) { if (o==RTF) active=FALSE; }
-    void disableIfNot(OutputType o) { if (o!=RTF) active=FALSE; }
+    void enableIf(OutputType o)  { if (o==RTF) enable();  }
+    void disableIf(OutputType o) { if (o==RTF) disable(); }
+    void disableIfNot(OutputType o) { if (o!=RTF) disable(); }
     bool isEnabled(OutputType o) { return (o==RTF && active); } 
     OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
@@ -219,7 +219,7 @@ class RTFGenerator : public OutputGenerator
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const char *);
-    void endParameterType() {}
+    void endParameterType();
     void startParameterName(bool) {}
     void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}

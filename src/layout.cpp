@@ -511,10 +511,12 @@ class LayoutParser : public QXmlDefaultHandler
                                         MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation()));
       m_sHandler.insert("file/memberdef/enums", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation()));
+                                        MemberList::docEnumMembers,
+                                        theTranslator->trEnumerationTypeDocumentation()));
       m_sHandler.insert("file/memberdef/functions", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
-                                        MemberList::docFuncMembers,theTranslator->trFunctionDocumentation()));
+                                        MemberList::docFuncMembers,
+                                        fortranOpt ? theTranslator->trSubprogramDocumentation() : theTranslator->trFunctionDocumentation()));
       m_sHandler.insert("file/memberdef/variables", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
                                         MemberList::docVarMembers,theTranslator->trVariableDocumentation()));

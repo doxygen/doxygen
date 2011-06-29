@@ -46,9 +46,9 @@ class HtmlGenerator : public OutputGenerator
     void enable() 
     { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
     void disable() { active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Html) active=TRUE;  }
-    void disableIf(OutputType o) { if (o==Html) active=FALSE; }
-    void disableIfNot(OutputType o) { if (o!=Html) active=FALSE; }
+    void enableIf(OutputType o)  { if (o==Html) enable();  }
+    void disableIf(OutputType o) { if (o==Html) disable(); }
+    void disableIfNot(OutputType o) { if (o!=Html) disable(); }
     bool isEnabled(OutputType o) { return (o==Html && active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
 

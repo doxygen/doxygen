@@ -33,6 +33,7 @@ static QCString makeFileName(const char * withoutExtension)
 
 static QCString makeRef(const char * withoutExtension, const char * anchor)
 {
+  //printf("QHP::makeRef(%s,%s)\n",withoutExtension,anchor);
   if (!withoutExtension) return QCString(); 
   QCString result = makeFileName(withoutExtension);
   if (!anchor) return result;
@@ -191,6 +192,10 @@ void Qhp::addIndexItem(Definition *context,MemberDef *md,
                        const char *word)
 {
   (void)word;
+  //printf("addIndexItem(%s %s %s\n",
+  //       context?context->name().data():"<none>",
+  //       md?md->name().data():"<none>",
+  //       word);
 
   if (md) // member
   {

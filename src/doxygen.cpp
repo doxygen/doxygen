@@ -9261,6 +9261,8 @@ extern void commentScanTest();
 
 void initDoxygen()
 {
+  const char *lang = portable_getenv("LC_ALL");
+  if (lang) portable_setenv("LANG",lang);
   setlocale(LC_ALL,"");
   setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   setlocale(LC_NUMERIC,"C");

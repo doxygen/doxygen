@@ -748,25 +748,72 @@ private                                 {
                                             addCurrentEntry();
                                           } 
 					  else if (!argType.isEmpty())
-					  { // deklaration of parameter list: add type for corr. parameter 
+					  { // declaration of parameter list: add type for corr. parameter 
 					    parameter = getParameter(argName);
-					    if (parameter) {
+					    if (parameter) 
+					    {
 					      v_type= V_PARAMETER;
-      					      if (!argType.isNull())
-        				        parameter->type=argType.stripWhiteSpace();
-					      if (!docBlock.isNull()) {
-					        parameter->docs += "\n";
-					        parameter->docs += docBlock;
-      					      }					    
+					      if (!argType.isNull()) parameter->type=argType.stripWhiteSpace();
+					      if (!docBlock.isNull()) 
+					      {
+						parameter->docs += "\n";
+						parameter->docs += docBlock;
+					      }					    
 					    }
 					    // save, it may be function return type
-					    modifiers[current_root][name.lower()].type = argType;
+					    if (parameter)
+					    {
+					      modifiers[current_root][name.lower()].type = argType;
+					    }
+					    else
+					    {
+					      if ((current_root->name.lower() == argName.lower()) ||
+						  (modifiers[current_root->parent()][current_root->name.lower()].returnName == argName.lower()))
+					      {
+						int strt = current_root->type.find("function");
+						QString lft;
+						QString rght;
+						if (strt != -1)
+						{
+						  lft = "";
+						  rght = "";
+						  if (strt != 0) lft = current_root->type.left(strt).stripWhiteSpace();
+						  if ((current_root->type.length() - strt - strlen("function"))!= 0)
+						  {
+						    rght = current_root->type.right(current_root->type.length() - strt - strlen("function")).stripWhiteSpace();
+						  }
+						  current_root->type = lft;
+						  if (rght.length() > 0)
+						  {
+						    if (current_root->type.length() > 0) current_root->type += " ";
+						    current_root->type += rght;
+						  }
+						  if (argType.stripWhiteSpace().length() > 0)
+						  {
+						    if (current_root->type.length() > 0) current_root->type += " ";
+						    current_root->type += argType.stripWhiteSpace();
+						  }
+						  if (current_root->type.length() > 0) current_root->type += " ";
+						  current_root->type += "function";
+						}
+						else
+						{
+						  current_root->type += " " + argType.stripWhiteSpace();
+						}
+						current_root->type = current_root->type.stripWhiteSpace();
+						modifiers[current_root][name.lower()].type = current_root->type;
+					      }
+					      else
+					      {
+						modifiers[current_root][name.lower()].type = argType;
+					      }
+					    }
 					    // any accumulated doc for argument should be emptied,
 					    // because it is handled other way and this doc can be
 					    // unexpectedly passed to the next member.
 					    current->doc.resize(0);
 					    current->brief.resize(0);
-                                          } 
+					  } 
   					}
 <Variable>{ARGS}			{ /* dimension of the previous entry. */
 					  QCString name(argName);
@@ -784,12 +831,12 @@ private                                 {
 					  BEGIN(Initialization);
                                         }
 <Variable>"\n"	                        { currentModifiers = SymbolModifiers();
-                                          yy_pop_state(); // end variable deklaration list
+                                          yy_pop_state(); // end variable declaration list
 					  newLine();
                                           docBlock.resize(0);
                                         }
 <Variable>";".*"\n"                     { currentModifiers = SymbolModifiers();
-                                          yy_pop_state(); // end variable deklaration list
+                                          yy_pop_state(); // end variable declaration list
                                           docBlock.resize(0);
                                           inputStringSemi =(const char*)(yytext+1);
                                           pushBuffer(inputStringSemi);
@@ -856,12 +903,15 @@ private                                 {
 
 <SubprogPrefix>{BS}{SUBPROG}{BS_}     {
                                          // Fortran subroutine or function found
-                                         addSubprogram(yytext);
+                                         result=yytext;
+                                         result=result.stripWhiteSpace();
+                                         addSubprogram(result);
                                          BEGIN(Subprog);
                                        }
 
 <Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{SUBPROG}{BS_} {
                                          // Fortran subroutine or function found
+                                         v_type = V_IGNORE;
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
                                            addInterface("$interface$", ifType);
@@ -1820,7 +1870,8 @@ static void addSubprogram(const char *text)
   //fprintf(stderr,"1=========> got subprog, type: %s\n",text); 
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
-  if (!current->type) current->type = subtype;
+  current->type += " " + subtype;
+  current->type = current->type.stripWhiteSpace();
   current->fileName  = yyFileName;
   current->bodyLine  = yyLineNr; // used for source reference
   current->startLine = -1; // ??? what is startLine for?
@@ -2062,8 +2113,7 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)
 {
-  return !(extension==".f"||extension==".f90"||
-           extension==".f95"||extension==".f03");
+  return extension!=extension.lower(); // use preprocessor only for upper case extensions
 }
 void FortranLanguageScanner::resetCodeParserState()
 {

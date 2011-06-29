@@ -1109,6 +1109,58 @@ void HtmlGenerator::init()
       t << svgpan_script;
     }
   }
+
+  if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
+  {
+    QFile f(dname+"/dynsections.js");
+    if (f.open(IO_WriteOnly))
+    {
+      FTextStream t(&f);
+      t << 
+        "var showTriggers = new Array();\n"
+        "\n"
+        "function registerShow(sectId,showFunc) {\n"
+        "  showTriggers[sectId] = showFunc;\n"
+        "}\n"
+        "\n"
+        "function hasClass(ele,cls) {\n"
+        "  return ele.className.match(new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)'));\n"
+        "}\n"
+        "\n"
+        "function addClass(ele,cls) {\n"
+        "  if (!this.hasClass(ele,cls)) ele.className += \" \"+cls;\n"
+        "}\n"
+        "\n"
+        "function removeClass(ele,cls) {\n"
+        "  if (hasClass(ele,cls)) {\n"
+        "    var reg = new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)');\n"
+        "    ele.className=ele.className.replace(reg,' ');\n"
+        "  }\n"
+        "}\n"
+        "\n"
+        "function toggleVisibility(linkObj) {\n"
+        " var base = linkObj.getAttribute('id');\n"
+        " var summary = document.getElementById(base + '-summary');\n"
+        " var content = document.getElementById(base + '-content');\n"
+        " var trigger = document.getElementById(base + '-trigger');\n"
+        " if ( hasClass(linkObj,'closed') ) {\n"
+        "   summary.style.display = 'none';\n"
+        "   content.style.display = 'block';\n"
+        "   trigger.src = trigger.src.substring(0,trigger.src.length-10)+'open.png';\n"
+        "   removeClass(linkObj,'closed');\n"
+        "   addClass(linkObj,'opened');\n"
+        "   if (showTriggers[base]) { showTriggers[base](); }\n"
+        " } else if ( hasClass(linkObj,'opened') ) {\n"
+        "   summary.style.display = 'block';\n"
+        "   content.style.display = 'none';\n"
+        "   trigger.src = trigger.src.substring(0,trigger.src.length-8)+'closed.png';\n"
+        "   removeClass(linkObj,'opened');\n"
+        "   addClass(linkObj,'closed');\n"
+        " }\n"
+        " return false;\n"
+        "}\n";
+    }
+  }
 }
 
 /// Additional initialization after indices have been created
@@ -1352,87 +1404,8 @@ static void generateDynamicSections(FTextStream &t,const QCString &relPath)
 {
   if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
   { 
-    t << 
-#if 0
-      "<script type=\"text/javascript\">\n"
-      "<!--\n"
-      "function changeDisplayState (e){\n"
-      "  var num=this.id.replace(/[^[0-9]/g,'');\n"
-      "  var button=this.firstChild;\n"
-      "  var sectionDiv=document.getElementById('dynsection'+num);\n"
-      "  if (sectionDiv.style.display=='none'||sectionDiv.style.display==''){\n"
-      "    sectionDiv.style.display='block';\n"
-      "    button.src='" << relPath << "open.png';\n"
-      "  }else{\n"
-      "    sectionDiv.style.display='none';\n"
-      "    button.src='" << relPath << "closed.png';\n"
-      "  }\n"
-      "}\n"
-      "function initDynSections(){\n"
-      "  var divs=document.getElementsByTagName('div');\n"
-      "  var sectionCounter=1;\n"
-      "  for(var i=0;i<divs.length-1;i++){\n"
-      "    if(divs[i].className=='dynheader'&&divs[i+1].className=='dynsection'){\n"
-      "      var header=divs[i];\n"
-      "      var section=divs[i+1];\n"
-      "      var button=header.firstChild;\n"
-      "      if (button!='IMG'){\n"
-      "        divs[i].insertBefore(document.createTextNode(' '),divs[i].firstChild);\n"
-      "        button=document.createElement('img');\n"
-      "        divs[i].insertBefore(button,divs[i].firstChild);\n"
-      "      }\n"
-      "      header.style.cursor='pointer';\n"
-      "      header.onclick=changeDisplayState;\n"
-      "      header.id='dynheader'+sectionCounter;\n"
-      "      button.src='" << relPath << "closed.png';\n"
-      "      section.id='dynsection'+sectionCounter;\n"
-      "      section.style.display='none';\n"
-      "      section.style.marginLeft='14px';\n"
-      "      sectionCounter++;\n"
-      "    }\n"
-      "  }\n"
-      "}\n"
-      "window.onload = initDynSections;\n"
-      "-->\n"
-      "</script>\n";
-#endif
-    "<script type=\"text/javascript\">\n"
-    "function hasClass(ele,cls) {\n"
-    "  return ele.className.match(new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)'));\n"
-    "}\n"
-    "\n"
-    "function addClass(ele,cls) {\n"
-    "  if (!this.hasClass(ele,cls)) ele.className += \" \"+cls;\n"
-    "}\n"
-    "\n"
-    "function removeClass(ele,cls) {\n"
-    "  if (hasClass(ele,cls)) {\n"
-    "    var reg = new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)');\n"
-    "    ele.className=ele.className.replace(reg,' ');\n"
-    "  }\n"
-    "}\n"
-    "\n"
-    "function toggleVisibility(linkObj) {\n"
-    " var base = linkObj.getAttribute('id');\n"
-    " var summary = document.getElementById(base + '-summary');\n"
-    " var content = document.getElementById(base + '-content');\n"
-    " var trigger = document.getElementById(base + '-trigger');\n"
-    " if ( hasClass(linkObj,'closed') ) {\n"
-    "   summary.style.display = 'none';\n"
-    "   content.style.display = 'block';\n"
-    "   trigger.src = '" << relPath << "open.png';\n"
-    "   removeClass(linkObj,'closed');\n"
-    "   addClass(linkObj,'opened');\n"
-    " } else if ( hasClass(linkObj,'opened') ) {\n"
-    "   summary.style.display = 'block';\n"
-    "   content.style.display = 'none';\n"
-    "   trigger.src = '" << relPath << "closed.png';\n"
-    "   removeClass(linkObj,'opened');\n"
-    "   addClass(linkObj,'closed');\n"
-    " }\n"
-    " return false;\n"
-    "}\n"
-    "</script>\n";
+    t << "<script type=\"text/javascript\" src=\"" << relPath 
+      << "dynsections.js\"></script>\n";
   }
 }
 
@@ -1478,10 +1451,10 @@ void HtmlGenerator::startFile(const char *name,const char *,
   static bool searchEngine = Config_getBool("SEARCHENGINE");
   if (searchEngine /*&& !generateTreeView*/)
   {
-    t << "<script type=\"text/javascript\"><!--\n";
+    t << "<script type=\"text/javascript\">\n";
     t << "var searchBox = new SearchBox(\"searchBox\", \""
       << relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
-    t << "--></script>\n";
+    t << "</script>\n";
   }
   generateDynamicSections(t,relPath);
   m_sectionCount=0;
@@ -2408,7 +2381,7 @@ void HtmlGenerator::endDotGraph(const DotClassGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,fileName,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath,TRUE,TRUE,m_sectionCount);
   if (Config_getBool("GENERATE_LEGEND"))
   {
     t << "<center><span class=\"legend\">[";
@@ -2434,7 +2407,7 @@ void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,fileName,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2452,7 +2425,7 @@ void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,fileName,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2470,7 +2443,7 @@ void HtmlGenerator::endCallGraph(const DotCallGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,fileName,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2488,7 +2461,7 @@ void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,fileName,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath,TRUE,m_sectionCount);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2971,10 +2944,10 @@ void HtmlGenerator::writeSearchPage()
     static bool searchEngine = Config_getBool("SEARCHENGINE");
     if (searchEngine /* && !generateTreeView*/)
     {
-      t << "<script type=\"text/javascript\"><!--\n";
+      t << "<script type=\"text/javascript\">\n";
       t << "var searchBox = new SearchBox(\"searchBox\", \""
         << "search\",false,'" << theTranslator->trSearch() << "');\n";
-      t << "--></script>\n";
+      t << "</script>\n";
     }
     t << "<div id=\"top\">" << endl;
     writeTitleArea(t,"",projectName,projectBrief,projectNumber,projectLogo);

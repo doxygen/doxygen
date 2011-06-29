@@ -64,6 +64,8 @@ static QCString g_blockName;
 static int      g_lastCommentContext;
 static bool     g_inSpecialComment;
 static bool     g_inRoseComment;
+static int      g_stringContext;
+static int      g_charContext;
 static int      g_javaBlock;
 static bool     g_specialComment;
 
@@ -310,10 +312,12 @@ void replaceComment(int offset);
                                    }
 <Scan>"\""                         { /* start of a string */ 
                                      copyToOutput(yytext,yyleng); 
+				     g_stringContext = YY_START;
 				     BEGIN(SkipString); 
                                    }
 <Scan>'				   {
                                      copyToOutput(yytext,yyleng); 
+				     g_charContext = YY_START;
 				     BEGIN(SkipChar);
   				   }
 <Scan>\n                           { /* new line */ 
@@ -506,7 +510,7 @@ void replaceComment(int offset);
                                    }
 <SkipString>"\""       	           { /* end of string */ 
                                      copyToOutput(yytext,yyleng); 
-				     BEGIN(Scan); 
+				     BEGIN(g_stringContext); 
                                    }
 <SkipString>.                      { /* any other string character */ 
                                      copyToOutput(yytext,yyleng); 
@@ -519,7 +523,7 @@ void replaceComment(int offset);
                                    }
 <SkipChar>'                        { /* end of character literal */ 
                                      copyToOutput(yytext,yyleng); 
-                                     BEGIN(Scan);
+                                     BEGIN(g_charContext);
                                    }
 <SkipChar>.                        { /* any other string character */ 
                                      copyToOutput(yytext,yyleng); 
@@ -528,10 +532,10 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
                                    }
 
-<CComment>[^\\!@*\n{]*	           { /* anything that is not a '*' or command */ 
+<CComment>[^\\!@*\n{\"]*           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
-<CComment>"*"+[^*/\\@\n]*          { /* stars without slashes */
+<CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
@@ -592,6 +596,16 @@ void replaceComment(int offset);
 				       copyToOutput(yytext,yyleng);
 				       BEGIN(Scan);
 				     }
+  				   }
+<CComment>"'"			   {
+  			             g_charContext = YY_START;
+				     copyToOutput(yytext,yyleng);
+				     BEGIN(SkipChar);
+  				   }
+<CComment>"\""			   {
+  			             g_stringContext = YY_START;
+				     copyToOutput(yytext,yyleng);
+				     BEGIN(SkipString);
   				   }
 <CComment>.			   {
                                      copyToOutput(yytext,yyleng); 
@@ -733,6 +747,18 @@ void replaceComment(int offset);
 				     BEGIN( ReadAliasArgs );
   				   }
 <ReadAliasArgs>^[ \t]*"//"[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
+  				   }
+<ReadAliasArgs>"*/"		   { // oops, end of comment in the middle of an alias?
+                                     if (g_lang==SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+				     else // abort the alias, restart scanning
+				     {
+				       copyToOutput(g_aliasString,g_aliasString.length());
+				       copyToOutput(yytext,yyleng);
+				       BEGIN(Scan);
+				     }
   				   }
 <ReadAliasArgs>[^{}\n\\\*]+	   {
                                      g_aliasString+=yytext;
