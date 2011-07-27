@@ -44,6 +44,7 @@
 #include "reflist.h"
 #include "debug.h"
 #include "parserintf.h"
+#include "cite.h"
 
 // forward declarations
 static bool handleBrief(const QCString &);
@@ -83,6 +84,7 @@ static bool handleMemberOf(const QCString &);
 static bool handleRefItem(const QCString &);
 static bool handleSection(const QCString &);
 static bool handleAnchor(const QCString &);
+static bool handleCite(const QCString &);
 static bool handleFormatBlock(const QCString &);
 static bool handleAddIndex(const QCString &);
 static bool handleIf(const QCString &);
@@ -161,6 +163,7 @@ static DocCmdMap docCmdMap[] =
   { "relatedalso",     &handleRelatedAlso,      TRUE  },
   { "relatesalso",     &handleRelatedAlso,      TRUE  },
   { "refitem",         &handleRefItem,          TRUE  },
+  { "cite",            &handleCite,             TRUE  },
   { "subpage",         &handleSubpage,          TRUE  },
   { "section",         &handleSection,          TRUE  },
   { "subsection",      &handleSection,          TRUE  },
@@ -602,6 +605,13 @@ static void addSection()
 
 //-----------------------------------------------------------------------------
 
+static void addCite()
+{
+  Doxygen::citeDict->insert(yytext);
+}
+
+//-----------------------------------------------------------------------------
+
 // strip trailing whitespace (excluding newlines) from string s
 static void stripTrailingWhiteSpace(QCString &s)
 {
@@ -780,7 +790,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-DCMD1     ("arg"|"attention"|"author"|"code")
+DCMD1     ("arg"|"attention"|"author"|"cite"|"code")
 DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
@@ -861,6 +871,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x	AnchorLabel
 %x      HtmlComment
 %x      SkipLang
+%x	CiteLabel
 
 %%
 
@@ -1953,6 +1964,29 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <SkipLang>.			   { /* any other character */
                                    }
 
+  /* ----- handle arguments of the cite command ------- */
+
+<CiteLabel>{LABELID}			{ // found argyment
+  					  addCite();
+                                          addOutput(yytext);
+					  BEGIN(Comment);
+  					}
+<CiteLabel>{DOCNL}			{ // missing argument
+  					  warn(yyFileName,yyLineNr,
+					      "warning: \\cite command has no label"
+					      );
+  					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+  					}
+<CiteLabel>.				{ // invalid character for cite label
+  					  warn(yyFileName,yyLineNr,
+					      "warning: Invalid or missing cite label"
+					      );
+					  BEGIN(Comment);
+  					}
+
+
 
 %%
 
@@ -2256,6 +2290,13 @@ static bool handleAnchor(const QCString &s)
 {
   addOutput(" @"+s+" ");
   BEGIN(AnchorLabel);
+  return FALSE;
+}
+
+static bool handleCite(const QCString &s)
+{
+  addOutput(" @"+s+" ");
+  BEGIN(CiteLabel);
   return FALSE;
 }
 

@@ -252,6 +252,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\cite.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\classdef.cpp"
 				>
 				<FileConfiguration
@@ -2003,6 +2007,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\cite.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\classdef.h"
 				>
 			</File>
@@ -2100,6 +2108,10 @@
 			</File>
 			<File
 				RelativePath="..\src\doxygen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\doxygen_bst.h"
 				>
 			</File>
 			<File
@@ -2272,6 +2284,14 @@
 			</File>
 			<File
 				RelativePath="..\src\namespacedef.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\navtree_css.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\navtree_js.h"
 				>
 			</File>
 			<File

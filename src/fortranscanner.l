@@ -496,6 +496,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*------ module handling ------------------------------------------------------------*/ 
 <Start>module|program{BS_}             {  //
+                                         v_type = V_IGNORE;
 					    if(yytext[0]=='m' || yytext[0]=='M')
 					      yy_push_state(Module);
 					    else
@@ -903,6 +904,7 @@ private                                 {
 
 <SubprogPrefix>{BS}{SUBPROG}{BS_}     {
                                          // Fortran subroutine or function found
+                                         v_type = V_IGNORE;
                                          result=yytext;
                                          result=result.stripWhiteSpace();
                                          addSubprogram(result);
@@ -1572,84 +1574,84 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
 {
   if (!mdfs.dimension.isNull()) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += mdfs.dimension;
   }
   if (mdfs.direction!=SymbolModifiers::NONE_D) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += directionStrs[mdfs.direction];
   }
   if (mdfs.optional) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "optional";
   }
   if (mdfs.allocatable) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "allocatable";
   }
   if (mdfs.external) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "external";
   }
   if (mdfs.intrinsic) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "intrinsic";
   }
   if (mdfs.parameter) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "parameter";
   }
   if (mdfs.pointer) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "pointer";
   }
   if (mdfs.target) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "target";
   }
   if (mdfs.save) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "save";
   }
   if (mdfs.deferred) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "deferred";
   }
   if (mdfs.nonoverridable) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "non_overridable";
   }
   if (mdfs.nopass) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "nopass";
   }
   if (mdfs.pass) 
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "pass";
     if (!mdfs.passVar.isEmpty())
       typeName += "(" + mdfs.passVar + ")";
   }
   if (mdfs.protection == SymbolModifiers::PUBLIC)
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "public";
   }
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
   {
-    typeName += ",";
+    typeName += ", ";
     typeName += "private";
   }
 
@@ -1739,8 +1741,11 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
       //cout<<"Search in "<<scope->name<<endl;
       EntryListIterator eli(*scope->children());
       Entry *ce;
+      int count = 0;
+      int found = FALSE;
       for (;(ce=eli.current());++eli) 
       {
+        count++;
         if (ce->section != Entry::FUNCTION_SEC)
           continue;
 
@@ -1751,6 +1756,15 @@ static bool endScope(Entry *scope, bool isGlobalRoot)
 	  arg->name = arg->type;
           arg->type = scope->name;
         }
+        if (ce->name.lower() == scope->name.lower()) found = TRUE;
+      }
+      if ((count == 1) && found)
+      {
+        // clear all modifiers of the scope
+        modifiers.remove(scope);
+        delete scope->parent()->removeSubEntry(scope);
+        scope = 0;
+        return TRUE;
       }
     }
   } 

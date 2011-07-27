@@ -335,8 +335,6 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDocList() = 0;
     virtual void startMemberList() = 0;
     virtual void endMemberList() = 0;
-    virtual void startInlineDescription() = 0;
-    virtual void endInlineDescription() = 0;
     virtual void startInlineHeader() = 0;
     virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
@@ -410,6 +408,15 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startConstraintDocs() = 0;
     virtual void endConstraintDocs() = 0;
     virtual void endConstraintList() = 0;
+
+    virtual void startMemberDocSimple() = 0;
+    virtual void endMemberDocSimple() = 0;
+    virtual void startInlineMemberType() = 0;
+    virtual void endInlineMemberType() = 0;
+    virtual void startInlineMemberName() = 0;
+    virtual void endInlineMemberName() = 0;
+    virtual void startInlineMemberDoc() = 0;
+    virtual void endInlineMemberDoc() = 0;
 
   protected:
     FTextStream t;

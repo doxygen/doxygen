@@ -98,6 +98,7 @@ class NamespaceDef : public Definition
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
     void writeClassDeclarations(OutputList &ol,const QCString &title);
+    void writeInlineClasses(OutputList &ol);
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title);
     void writeMemberGroups(OutputList &ol);
     void writeAuthorSection(OutputList &ol);

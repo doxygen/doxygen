@@ -3808,6 +3808,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param relPath relative path the to root of the output dir
  *  \param baseName the base name of the output files
  *  \param context the scope in which this graph is found (for resolving links)
+ *  \param graphId a unique id for this graph, use for dynamic sections
  */
 void writeDotImageMapFromFile(FTextStream &t,
                             const QCString &inFile, const QCString &outDir,

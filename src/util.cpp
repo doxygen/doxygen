@@ -7030,3 +7030,32 @@ QCString replaceColorMarkers(const char *str)
   return result;
 }
 
+bool copyFile(const QCString &src,const QCString &dest)
+{
+  QFile sf(src);
+  if (sf.open(IO_ReadOnly))
+  {
+    QFileInfo fi(src);
+    QFile df(dest);
+    if (df.open(IO_WriteOnly))
+    {
+      char *buffer = new char[fi.size()];
+      sf.readBlock(buffer,fi.size());
+      df.writeBlock(buffer,fi.size());
+      df.flush();
+      delete[] buffer;
+    }
+    else
+    {
+      err("error: could not write to file %s\n",dest.data());
+      return FALSE;
+    }
+  }
+  else
+  {
+    err("error: could not open user specified file %s\n",src.data());
+    return FALSE;
+  }
+  return TRUE;
+}
+

@@ -329,6 +329,14 @@ void XmlDocVisitor::visit(DocSimpleSectSep *)
   m_t << "<simplesectsep/>";
 }
 
+void XmlDocVisitor::visit(DocCite *cite)
+{
+  if (m_hide) return;
+  if (!cite->file().isEmpty()) startLink(cite->ref(),cite->file(),cite->anchor());
+  filter(cite->text());
+  if (!cite->file().isEmpty()) endLink();
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------

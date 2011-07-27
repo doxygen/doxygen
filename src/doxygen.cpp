@@ -78,6 +78,7 @@
 #include "vhdlscanner.h"
 #include "vhdldocgen.h"
 #include "eclipsehelp.h"
+#include "cite.h"
 
 #include "layout.h"
 
@@ -108,6 +109,7 @@ FormulaDict      Doxygen::formulaNameDict(1009);   // the label name of all form
 PageSDict       *Doxygen::pageSDict = 0;
 PageSDict       *Doxygen::exampleSDict = 0;
 SectionDict      Doxygen::sectionDict(257);        // all page sections
+CiteDict        *Doxygen::citeDict=0;              // database of bibliographic references
 StringDict       Doxygen::aliasDict(257);          // aliases
 FileNameDict    *Doxygen::includeNameDict = 0;     // include names
 FileNameDict    *Doxygen::exampleNameDict = 0;     // examples
@@ -180,6 +182,7 @@ void clearAll()
   Doxygen::formulaDict.clear();      
   Doxygen::formulaNameDict.clear();  
   Doxygen::tagDestinationDict.clear();
+  delete Doxygen::citeDict;
   delete Doxygen::mainPage; Doxygen::mainPage=0;
 }
 
@@ -7408,7 +7411,7 @@ static void generateClassList(ClassSDict &classSDict)
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
     if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
-        ) && !cd->isHidden() && !cd->isEmbeddedInGroupDocs()
+        ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
        ) 
     {
       // skip external references, anonymous compounds and 
@@ -8177,6 +8180,7 @@ static void resolveUserReferences()
 }
 
 
+
 //----------------------------------------------------------------------------
 // generate all separate documentation pages
 
@@ -8348,7 +8352,7 @@ static void generateNamespaceDocs()
              cd->templateMaster()==0
            ) // skip external references, anonymous compounds and 
              // template instances and nested classes
-           && !cd->isHidden()
+           && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
          )
       {
         msg("Generating docs for compound %s...\n",cd->name().data());
@@ -8609,36 +8613,9 @@ static void readTagFile(Entry *root,const char *tl)
     msg("Reading tag file `%s'...\n",fileName.data());
 
   parseTagFile(root,fi.absFilePath(),fi.fileName());
-
 }
 
 //----------------------------------------------------------------------------
-static void copyFile(const QCString &src,const QCString &dest)
-{
-  QFile sf(src);
-  if (sf.open(IO_ReadOnly))
-  {
-    QFileInfo fi(src);
-    QFile df(dest);
-    if (df.open(IO_WriteOnly))
-    {
-      char *buffer = new char[fi.size()];
-      sf.readBlock(buffer,fi.size());
-      df.writeBlock(buffer,fi.size());
-      df.flush();
-      delete[] buffer;
-    }
-    else
-    {
-      err("error: could not write to file %s\n",dest.data());
-    }
-  }
-  else
-  {
-    err("error: could not open user specified file %s\n",src.data());
-  }
-}
-
 static void copyStyleSheet()
 {
   QCString &htmlStyleSheet = Config_getString("HTML_STYLESHEET");
@@ -9231,9 +9208,9 @@ static void usage(const char *name)
   msg("   generated documentation:\n");
   msg("    %s -l layoutFileName.xml\n\n",name);
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
-  msg("    RTF:   %s -w rtf styleSheetFile\n",name);
-  msg("    HTML:  %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
-  msg("    LaTeX: %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",name);
+  msg("    RTF:        %s -w rtf styleSheetFile\n",name);
+  msg("    HTML:       %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
+  msg("    LaTeX:      %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",name);
   msg("6) Use doxygen to generate an rtf extensions file\n");
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments in the config file will be omitted.\n");
@@ -9320,6 +9297,7 @@ void initDoxygen()
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::lookupCache.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
+  Doxygen::citeDict = new CiteDict(256);
 }
 
 void cleanUpDoxygen()
@@ -9578,9 +9556,9 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
-        else 
+        else
         {
-          err("error: Illegal format specifier %s: should be one of rtf, html, or latex\n",formatName);
+          err("error: Illegal format specifier %s: should be one of rtf, html, latex, or bst\n",formatName);
           cleanUpDoxygen();
           exit(1);
         }
@@ -10399,6 +10377,12 @@ void parseInput()
     computeDirDependencies();
   }
 
+  msg("Resolving citations...\n");
+  Doxygen::citeDict->resolve();
+
+  msg("Generating citations page...\n");
+  Doxygen::citeDict->generatePage();
+
   msg("Counting data structures...\n");
   countDataStructures();
  
@@ -10569,7 +10553,7 @@ void generateOutput()
   }
 
   //statistics();
-  
+
   // count the number of documented elements in the lists we have built. 
   // If the result is 0 we do not generate the lists and omit the 
   // corresponding links in the index.

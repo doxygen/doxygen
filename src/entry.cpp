@@ -360,6 +360,12 @@ void Entry::addSpecialListItem(const char *listName,int itemId)
   sli->append(ili);
 }
 
+Entry *Entry::removeSubEntry(Entry *e)
+{
+ int i = m_sublist->find(e);
+ return i!=-1 ? m_sublist->take(i) : 0;
+}
+
 //------------------------------------------------------------------
 
 

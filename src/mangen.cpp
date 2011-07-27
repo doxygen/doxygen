@@ -30,6 +30,7 @@
 #include <string.h>
 #include "docparser.h"
 #include "mandocvisitor.h"
+#include "language.h"
 
 static QCString getExtension()
 {
@@ -715,13 +716,6 @@ void ManGenerator::endConstraintList()
 {
 }
 
-void ManGenerator::startInlineDescription() 
-{
-}
-
-void ManGenerator::endInlineDescription() 
-{
-}
 
 void ManGenerator::startInlineHeader() 
 {
@@ -738,5 +732,54 @@ void ManGenerator::endInlineHeader()
   firstCol = FALSE;
 }
 
+void ManGenerator::startMemberDocSimple()
+{
+  if (!firstCol) 
+  {
+    t << endl << ".PP" << endl;
+  }
+  t << "\\fB";
+  docify(theTranslator->trCompoundMembers());
+  t << ":\\fP" << endl;
+  t << ".RS 4" << endl;
+}
 
+void ManGenerator::endMemberDocSimple()
+{
+  if (!firstCol) t << endl;
+  t << ".RE" << endl;
+  t << ".PP" << endl;
+  firstCol=TRUE;
+}
+
+void ManGenerator::startInlineMemberType()
+{
+}
+
+void ManGenerator::endInlineMemberType()
+{
+  t << " ";
+}
+
+void ManGenerator::startInlineMemberName()
+{
+  t << "\\fI";
+}
+
+void ManGenerator::endInlineMemberName()
+{
+  t << "\\fP ";
+}
+
+void ManGenerator::startInlineMemberDoc()
+{
+}
+
+void ManGenerator::endInlineMemberDoc()
+{
+  if (!firstCol) t << endl;
+  t << ".br" << endl;
+  t << ".PP" << endl;
+  firstCol=TRUE;
+}
 

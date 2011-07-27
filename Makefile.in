@@ -10,7 +10,7 @@ clean: FORCE
 	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
 	cd libmd5 ; $(MAKE) clean
-	cd addon/doxywizard ; $(MAKE) clean
+	-cd addon/doxywizard ; $(MAKE) clean
 	cd addon/doxmlparser/src ; $(MAKE) clean
 	cd addon/doxmlparser/test ; $(MAKE) clean
 	cd addon/doxmlparser/examples/metrics ; $(MAKE) clean
@@ -20,7 +20,7 @@ clean: FORCE
 distclean: clean
 	cd src ; $(MAKE) distclean
 	cd libmd5 ; $(MAKE) distclean
-	cd addon/doxywizard ; $(MAKE) distclean
+	-cd addon/doxywizard ; $(MAKE) distclean
 	cd addon/doxmlparser/src ; $(MAKE) distclean
 	cd addon/doxmlparser/test ; $(MAKE) distclean
 	cd addon/doxmlparser/examples/metrics ; $(MAKE) distclean

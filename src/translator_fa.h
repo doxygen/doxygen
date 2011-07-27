@@ -39,7 +39,7 @@
 #define HtmlDivEnd          QCString("</div>")
 
 
-class TranslatorPersian : public Translator
+class TranslatorPersian : public TranslatorAdapter_1_7_5
 {
   private:
   	/** Converts english digits of an input string to persian equivalents.

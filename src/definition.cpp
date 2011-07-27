@@ -1343,7 +1343,6 @@ void Definition::writePathFragment(OutputList &ol) const
 void Definition::writeNavigationPath(OutputList &ol) const
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  static bool hasCustomFooter = !Config_getString("HTML_FOOTER").isEmpty();
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1356,13 +1355,7 @@ void Definition::writeNavigationPath(OutputList &ol) const
   ol.writeString("  <div id=\"nav-path\" class=\"navpath\">\n");
   ol.writeString("    <ul>\n");
   writePathFragment(ol);
-  if (!hasCustomFooter && generateTreeView) // write the doxygen logo as part of the navigation bar
-  {
-    ol.writeString("      <li class=\"footer\">");
-    ol.writeLogo();
-    ol.writeString("</li>\n");
-  }
-  if (!hasCustomFooter || !generateTreeView)
+  if (!generateTreeView)
   {
     ol.writeString("    </ul>\n");
     ol.writeString("  </div>\n");

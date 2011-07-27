@@ -27,6 +27,7 @@
 #include "parserintf.h"
 #include "msc.h"
 #include "htmlattrib.h"
+#include "cite.h"
 
 static QCString escapeLabelName(const char *s)
 {
@@ -490,6 +491,24 @@ void LatexDocVisitor::visit(DocSimpleSectSep *)
 {
 }
 
+void LatexDocVisitor::visit(DocCite *cite)
+{
+  if (m_hide) return;
+  if (!cite->file().isEmpty()) 
+  {
+    //startLink(cite->ref(),cite->file(),cite->anchor());
+    QCString anchor = cite->anchor();
+    anchor = anchor.mid(CiteConsts::anchorPrefix.length()); // strip prefix
+    m_t << "\\cite{" << anchor << "}";
+  }
+  else
+  {
+    m_t << "{\\bfseries [";
+    filter(cite->text());
+    m_t << "]}";
+  }
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
@@ -603,7 +622,7 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
       break;
     case DocSimpleSect::Copyright:
       m_t << "\\begin{DoxyCopyright}{";
-      filter("Copyright" /*TODO: theTranslator->trCopyright()*/);
+      filter(theTranslator->trCopyright());
       break;
     case DocSimpleSect::Invar:
       m_t << "\\begin{DoxyInvariant}{";

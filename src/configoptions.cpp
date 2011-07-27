@@ -32,8 +32,9 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "PROJECT_NAME",
-                 "The PROJECT_NAME tag is a single word (or a sequence of words surrounded\n"
-                 "by quotes) that should identify the project."
+                 "The PROJECT_NAME tag is a single word (or sequence of words) that should\n"
+                 "identify the project. Note that if you do not use Doxywizard you need\n"
+                 "to put quotes around the project name if it contains spaces."
                 );
   //----
   cs = cfg->addString(
@@ -405,6 +406,17 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "INLINE_SIMPLE_STRUCTS",
+                 "When the INLINE_SIMPLE_STRUCTS tag is set to YES, structs, classes, and\n"
+                 "unions with only public data fields will be shown inline in the documentation\n"
+                 "of the scope in which they are defined (i.e. file, namespace, or group\n"
+                 "documentation), provided this scope is documented. If set to NO (the default),\n"
+                 "structs, classes, and unions are shown on a separate page (for HTML and Man\n"
+                 "pages) or section (for LaTeX and RTF).",
+                 FALSE
+                );
+  //----
+  cb = cfg->addBool(
                  "TYPEDEF_HIDES_STRUCT",
                  "When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum\n"
                  "is documented as struct, union, or enum with the name of the typedef. So\n"
@@ -741,6 +753,17 @@ void addConfigOptions(Config *cfg)
                  "DoxygenLayout.xml will be used as the name of the layout file."
                 );
   cs->setWidgetType(ConfigString::File);
+  //----
+  cl = cfg->addList(
+                 "CITE_BIB_FILES",
+                 "The CITE_BIB_FILES tag can be used to specify one or more bib files\n"
+                 "containing the references data. This must be a list of .bib files. The\n"
+                 ".bib extension is automatically appended if omitted. Using this command\n"
+                 "requires the bibtex tool to be installed. See also\n"
+                 "http://en.wikipedia.org/wiki/BibTeX for more info. For LaTeX the style\n"
+                 "of the bibliography can be controlled using LATEX_BIB_STYLE."
+                );
+  cl->setWidgetType(ConfigList::File);
   //---------------------------------------------------------------------------
   cfg->addInfo("Messages","configuration options related to warning and progress messages");
   //---------------------------------------------------------------------------
@@ -1130,12 +1153,13 @@ void addConfigOptions(Config *cfg)
                  "The HTML_HEADER tag can be used to specify a personal HTML header for\n"
                  "each generated HTML page. If it is left blank doxygen will generate a\n"
                  "standard header. Note that when using a custom header you are responsible\n"
-                 "for the proper inclusion of any scripts and style sheets that doxygen\n"
+                 " for the proper inclusion of any scripts and style sheets that doxygen\n"
                  "needs, which is dependent on the configuration options used.\n"
                  "It is adviced to generate a default header using \"doxygen -w html\n"
                  "header.html footer.html stylesheet.css YourConfigFile\" and then modify\n"
                  "that header. Note that the header is subject to change so you typically\n"
-                 "have to redo this when upgrading to a newer version of doxygen or when changing the value of configuration settings such as GENERATE_TREEVIEW!"
+                 "have to redo this when upgrading to a newer version of doxygen or when\n"
+                 "changing the value of configuration settings such as GENERATE_TREEVIEW!"
                 );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
@@ -1551,6 +1575,13 @@ void addConfigOptions(Config *cfg)
                 );
   cs->setDefaultValue("http://www.mathjax.org/mathjax");
   //----
+  cl = cfg->addList(
+                 "MATHJAX_EXTENSIONS",
+                 "The MATHJAX_EXTENSIONS tag can be used to specify one or MathJax extension\n"
+                 "names that should be enabled during MathJax rendering."
+                );
+  cl->addDependency("USE_MATHJAX");
+  //----
   cb = cfg->addBool(
                  "SEARCHENGINE",
                  "When the SEARCHENGINE tag is enabled doxygen will generate a search box\n"
@@ -1717,6 +1748,14 @@ void addConfigOptions(Config *cfg)
                  FALSE
                 );
   cb->addDependency("GENERATE_LATEX");
+  //----
+  cs = cfg->addString(
+                 "LATEX_BIB_STYLE",
+                 "The LATEX_BIB_STYLE tag can be used to specify the style to use for the\n"
+                 "bibliography, e.g. plainnat, or ieeetr. The default style is \"plain\". See\n"
+                 "http://en.wikipedia.org/wiki/BibTeX for more info."
+                );
+  cs->setDefaultValue("plain");
   //---------------------------------------------------------------------------
   cfg->addInfo("RTF","configuration options related to the RTF output");
   //---------------------------------------------------------------------------
@@ -2123,7 +2162,8 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "DOT_FONTNAME",
-                 "By default doxygen will use the Helvetica font for all dot files that doxygen generates. When you want a differently looking font you can specify\n"
+                 "By default doxygen will use the Helvetica font for all dot files that\n"
+                 "doxygen generates. When you want a differently looking font you can specify\n"
                  "the font name using DOT_FONTNAME. You need to make sure dot is able to find\n"
                  "the font, which can be done by putting it in a standard location or by setting\n"
                  "the DOTFONTPATH environment variable or by setting DOT_FONTPATH to the\n"
@@ -2143,7 +2183,8 @@ void addConfigOptions(Config *cfg)
   cs = cfg->addString(
                  "DOT_FONTPATH",
                  "By default doxygen will tell dot to use the Helvetica font.\n"
-                 "If you specify a different font using DOT_FONTNAME you can use DOT_FONTPATH to set the path where dot can find it."
+                 "If you specify a different font using DOT_FONTNAME you can use DOT_FONTPATH to\n"
+                 "set the path where dot can find it."
                 );
   cs->addDependency("HAVE_DOT");
   //----
@@ -2257,7 +2298,8 @@ void addConfigOptions(Config *cfg)
                  "The DOT_IMAGE_FORMAT tag can be used to set the image format of the images\n"
                  "generated by dot. Possible values are svg, png, jpg, or gif.\n"
                  "If left blank png will be used. If you choose svg you need to set\n"
-                 "HTML_FILE_EXTENSION to xhtml in order to make the SVG files visible in IE 9+ (other browsers do not have this requirement).",
+                 "HTML_FILE_EXTENSION to xhtml in order to make the SVG files\n"
+                 "visible in IE 9+ (other browsers do not have this requirement).",
                  "png"
                 );
   ce->addValue("png");
@@ -2268,7 +2310,12 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "INTERACTIVE_SVG",
-                 "",
+                 "If DOT_IMAGE_FORMAT is set to svg, then this option can be set to YES to\n"
+                 "enable generation of interactive SVG images that allow zooming and panning.\n"
+                 "Note that this requires a modern browser other than Internet Explorer.\n"
+                 "Tested and working are Firefox, Chrome, Safari, and Opera. For IE 9+ you\n"
+                 "need to set HTML_FILE_EXTENSION to xhtml in order to make the SVG files\n"
+                 "visible. Older versions of IE do not have SVG support.",
                  FALSE
                 );
   cb->addDependency("HAVE_DOT");

@@ -29,6 +29,7 @@ CommandMap cmdMap[] =
   { "authors",       CMD_AUTHORS },
   { "b",             CMD_BOLD },
   { "c",             CMD_CODE },
+  { "cite",          CMD_CITE },
   { "code",          CMD_STARTCODE },
   { "copydoc",       CMD_COPYDOC },
   { "copybrief",     CMD_COPYBRIEF },

@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_7_5
 {
   protected:
     friend class TranslatorAdapterBase;

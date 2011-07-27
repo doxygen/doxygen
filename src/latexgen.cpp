@@ -32,6 +32,7 @@
 #include "docparser.h"
 #include "latexdocvisitor.h"
 #include "dirdef.h"
+#include "cite.h"
 
 //static QCString filterTitle(const char *s)
 //{
@@ -73,6 +74,8 @@ LatexGenerator::~LatexGenerator()
 
 void LatexGenerator::init()
 {
+  bool generateBib = !Doxygen::citeDict->isEmpty();
+
   QCString dir=Config_getString("LATEX_OUTPUT");
   QDir d(dir);
   if (!d.exists() && !d.mkdir(dir))
@@ -120,8 +123,15 @@ void LatexGenerator::init()
       << "\techo \"Running latex...\"" << endl
       << "\t" << latex_command << " refman.tex" << endl
       << "\techo \"Running makeindex...\"" << endl
-      << "\t" << mkidx_command << " refman.idx" << endl
-      << "\techo \"Rerunning latex....\"" << endl
+      << "\t" << mkidx_command << " refman.idx" << endl;
+    if (generateBib)
+    {
+      t << "\techo \"Running bibtex...\"" << endl;
+      t << "\tbibtex refman" << endl;
+      t << "\techo \"Rerunning latex....\"" << endl;
+      t << "\tpdflatex refman" << endl;
+    }
+    t << "\techo \"Rerunning latex....\"" << endl
       << "\t" << latex_command << " refman.tex" << endl
       << "\tlatex_count=5 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
@@ -147,14 +157,19 @@ void LatexGenerator::init()
     t << "all: refman.pdf" << endl << endl
       << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: clean refman.tex" << endl;
-    t << "\tpdflatex refman.tex" << endl;
-    t << "\tmakeindex refman.idx" << endl;
-    t << "\tpdflatex refman.tex" << endl
+    t << "\tpdflatex refman" << endl;
+    t << "\tmakeindex refman" << endl;
+    if (generateBib)
+    {
+      t << "\tbibtex refman" << endl;
+      t << "\tpdflatex refman" << endl;
+    }
+    t << "\tpdflatex refman" << endl
       << "\tlatex_count=5 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      pdflatex refman.tex ;\\" << endl
+      << "\t      pdflatex refman ;\\" << endl
       << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
       << "\t    done" << endl << endl;
   }
@@ -166,7 +181,7 @@ void LatexGenerator::init()
 #else
     << "\trm -f " 
 #endif
-    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out refman.pdf" << endl;
+    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf" << endl;
 
   createSubDirs(d);
 }
@@ -189,7 +204,9 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "}\n";
   // the next package is obsolete (see bug 563698)
   //if (paperType=="a4wide") t << "\\usepackage{a4wide}\n";
-  t << "\\usepackage{makeidx}\n"
+  t << 
+    "\\usepackage{makeidx}\n"
+    "\\usepackage{natbib}\n"
     "\\usepackage{graphicx}\n"
     "\\usepackage{multicol}\n"
     "\\usepackage{float}\n"
@@ -272,7 +289,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   {
     // to avoid duplicate page anchors due to reuse of same numbers for
     // the index (be it as roman numbers)
-    t << "\\hypersetup{pageanchor=false}" << endl;
+    t << "\\hypersetup{pageanchor=false,citecolor=blue}" << endl;
   }
   if (theTranslator->idLanguage()=="greek") t << "\\selectlanguage{greek}\n";
   t << "\\begin{titlepage}\n"
@@ -307,7 +324,7 @@ static void writeDefaultHeaderPart3(FTextStream &t)
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   if (pdfHyperlinks && usePDFLatex)
   {
-    t << "\\hypersetup{pageanchor=true}" << endl;
+    t << "\\hypersetup{pageanchor=true,citecolor=blue}" << endl;
   }
 }
 
@@ -645,29 +662,46 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "% Used by parameter lists\n"
        "\\newenvironment{DoxyParams}[2][]{%\n"
        "  \\begin{DoxyDesc}{#2}%\n"
-       "    \\begin{description}%\n"
-       "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
+       //"    \\begin{description}%\n"
+       "    \\item[] \\hspace{\\fill} \\vspace{-40pt}%\n"
        //"      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
        //"      \\rowcolors{1}{white}{tableShade}%\n"
        //"      \\arrayrulecolor{gray}%\n"
-       "      \\settowidth{\\labelwidth}{40pt}%\n"
-       "      \\setlength{\\LTleft}{\\labelwidth}%\n"
-       "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
-       "      \\ifthenelse{\\equal{#1}{}}\n" // default: name, docs columns
-       "      {\\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          p{0.76\\textwidth}|}}%\n"
-       "      {\\ifthenelse{\\equal{#1}{1}}%\n" // inout, name, docs columns, or type, name, docs columns
-       "       {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n"
-       "                          >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          p{0.64\\textwidth}|}}%\n"
-       "       {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n" // inout, type, name, docs columns
-       "                          >{\\centering\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
-       "                          p{0.47\\textwidth}|}}%\n"
-       "       }\\hline%\n"
+       "    \\settowidth{\\labelwidth}{40pt}%\n"
+       //"    \\setlength{\\LTleft}{\\labelwidth}%\n"
+       "    \\setlength{\\LTleft}{0pt}%\n"
+       "    \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
+       "    \\ifthenelse{\\equal{#1}{}}%\n" // default: name, docs columns
+       "    {\\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                        p{0.815\\textwidth}|}}%\n"
+       "    {\\ifthenelse{\\equal{#1}{1}}%\n" // inout, name, docs columns, or type, name, docs columns
+       "      {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n"
+       "                         >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                         p{0.685\\textwidth}|}}%\n"
+       "      {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n" // inout, type, name, docs columns
+       "                         >{\\centering\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                         >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                         p{0.515\\textwidth}|}}%\n"
+       "    }\\hline%\n"
        "}{%\n"
-       "      \\end{longtable}%\n"
-       "    \\end{description}%\n"
+       "    \\end{longtable}%\n"
+       //"    \\end{description}%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used for fields of simple structs\n"
+       "\\newenvironment{DoxyFields}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "    \\item[] \\hspace{\\fill} \\vspace{-40pt}%\n"
+       "    \\settowidth{\\labelwidth}{40pt}%\n"
+       "    \\setlength{\\LTleft}{0pt}%\n"
+       "    \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
+       "    \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                         p{0.15\\textwidth}|%\n"
+       "                         p{0.635\\textwidth}|}%\n"
+       "    \\hline%\n"
+       "}{%\n"
+       "    \\end{longtable}%\n"
+       //"    \\end{description}%\n"
        "  \\end{DoxyDesc}%\n"
        "}\n\n";
   t << "% is used for parameters within a detailed function description\n"
@@ -755,7 +789,8 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "}\n";
   t << "{\\end{tabular*}\\par}\n";
   t << "\\newcommand{\\entrylabel}[1]{\n";
-  t << "   {\\parbox[b]{\\labelwidth-4pt}{\\makebox[0pt][l]{\\textbf{#1}}\\vspace{1.5\\baselineskip}}}}\n";
+  t << "   {\\parbox[b]{\\labelwidth-4pt}{\\makebox[0pt][l]{%\n";
+  t << "   \\usefont{OT1}{phv}{bc}{n}\\color{darkgray}#1}\\vspace{1.5\\baselineskip}}}}\n";
   t << "\\newenvironment{Desc}\n";
   t << "{\\begin{list}{}\n";
   t << "  {\n";
@@ -835,6 +870,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
 
 static void writeDefaultFooter(FTextStream &t)
 {
+  Doxygen::citeDict->writeLatexBibliography(t);
   t << "\\printindex\n";
   t << "\\end{document}\n";
 }
@@ -1020,7 +1056,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() && 
               cd->templateMaster()==0 &&
-              !cd->isEmbeddedInGroupDocs()
+              !cd->isEmbeddedInOuterScope()
              )
           {
             if (compactLatex) t << "\\section"; else t << "\\chapter";
@@ -1202,7 +1238,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() && 
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInGroupDocs()
+             !cd->isEmbeddedInOuterScope()
              )
           {
             t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
@@ -1213,7 +1249,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() && 
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInGroupDocs()
+             !cd->isEmbeddedInOuterScope()
              )
           {
             //if (compactLatex) t << "\\input"; else t << "\\include";
@@ -2438,5 +2474,44 @@ void LatexGenerator::lineBreak(const char *)
   {
     t << "\\*\n";
   }
+}
+
+void LatexGenerator::startMemberDocSimple()
+{
+  t << "\\begin{DoxyFields}{" << endl;
+  docify(theTranslator->trCompoundMembers());
+  t << "}" << endl;
+}
+
+void LatexGenerator::endMemberDocSimple()
+{
+  t << "\\end{DoxyFields}" << endl;
+}
+
+void LatexGenerator::startInlineMemberType()
+{
+}
+
+void LatexGenerator::endInlineMemberType()
+{
+  t << "&" << endl;
+}
+
+void LatexGenerator::startInlineMemberName()
+{
+}
+
+void LatexGenerator::endInlineMemberName()
+{
+  t << "&" << endl;
+}
+
+void LatexGenerator::startInlineMemberDoc()
+{
+}
+
+void LatexGenerator::endInlineMemberDoc()
+{
+  t << "\\\\\n\\hline\n" << endl;
 }
 

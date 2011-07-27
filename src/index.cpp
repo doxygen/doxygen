@@ -317,7 +317,6 @@ void startFile(OutputList &ol,const char *name,const char *manName,
 void endFile(OutputList &ol,bool skipNavIndex)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  static bool hasCustomFooter = !Config_getString("HTML_FOOTER").isEmpty();
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   if (!skipNavIndex)
@@ -328,14 +327,6 @@ void endFile(OutputList &ol,bool skipNavIndex)
       ol.writeString("</div>\n");
       ol.writeString("  <div id=\"nav-path\" class=\"navpath\">\n");
       ol.writeString("    <ul>\n");
-      if (!hasCustomFooter)
-      {
-        ol.writeString("      <li class=\"footer\">");
-        ol.writeLogo();
-        ol.writeString("</li>\n");
-        ol.writeString("    </ul>\n");
-        ol.writeString("  </div>\n");
-      }
     }
   }
   ol.writeFooter(); // write the footer
@@ -1073,7 +1064,7 @@ int countAnnotatedClasses(int *cp)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0) 
     { 
-      if (!cd->isEmbeddedInGroupDocs())
+      if (!cd->isEmbeddedInOuterScope())
       {
         countPrinted++;
       }
@@ -1142,7 +1133,7 @@ void writeAnnotatedClassList(OutputList &ol)
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     ol.pushGeneratorState();
-    if (cd->isEmbeddedInGroupDocs())
+    if (cd->isEmbeddedInOuterScope())
     {
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::RTF);
@@ -1215,12 +1206,49 @@ public:
     ClassDef *c2=(ClassDef *)item2;
 
     QCString n1 = c1->className();
-    n1.remove (0, getPrefixIndex(n1));
     QCString n2 = c2->className();
-    n2.remove (0, getPrefixIndex(n2));
-    
-    return stricmp (n1, n2);
+    return stricmp (n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
   }
+};
+
+class AlphaIndexTableCell
+{
+  public:
+    AlphaIndexTableCell(int row,int col,uchar letter,ClassDef *cd) : 
+      m_letter(letter), m_class(cd), m_row(row), m_col(col) 
+    { //printf("AlphaIndexTableCell(%d,%d,%c,%s)\n",row,col,letter!=0 ? letter: '-',
+      //       cd!=(ClassDef*)0x8 ? cd->name().data() : "<null>"); 
+    }
+
+    ClassDef *classDef() const { return m_class; }
+    uchar letter()       const { return m_letter; }
+    int row()            const { return m_row; }
+    int column()         const { return m_col; }
+
+  private:
+    uchar m_letter;
+    ClassDef *m_class;
+    int m_row;
+    int m_col;
+};
+
+class AlphaIndexTableRows : public QList<AlphaIndexTableCell>
+{
+  public:
+    AlphaIndexTableRows() { setAutoDelete(TRUE); }
+};
+
+class AlphaIndexTableRowsIterator : public QListIterator<AlphaIndexTableCell>
+{
+  public:
+    AlphaIndexTableRowsIterator(const AlphaIndexTableRows &list) : 
+      QListIterator<AlphaIndexTableCell>(list) {}
+};
+
+class AlphaIndexTableColumns : public QList<AlphaIndexTableRows>
+{
+  public:
+    AlphaIndexTableColumns() { setAutoDelete(TRUE); }
 };
 
 // write an alphabetical index of all class with a header for each letter
@@ -1249,7 +1277,7 @@ void writeAlphabeticalClassList(OutputList &ol)
 
   QCString alphaLinks = "<div class=\"qindex\">";
   int l;
-  for (l = 0; l < 256; l++)
+  for (l=0; l<256; l++)
   {
     if (indexLetterUsed[l])
     {
@@ -1264,24 +1292,24 @@ void writeAlphabeticalClassList(OutputList &ol)
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
 
-  ol.writeString("<table align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
 
   // the number of columns in the table
   const int columns = Config_getInt("COLS_IN_ALPHA_INDEX");
 
   int i,j;
-  int totalItems = headerItems + annotatedClasses;            // number of items in the table
-  int rows = (totalItems + columns - 1)/columns;              // number of rows in the table
-  int itemsInLastRow = (totalItems + columns -1)%columns + 1; // number of items in the last row
+  int totalItems = headerItems*2 + annotatedClasses;          // number of items in the table (headers span 2 items)
+  int rows = (totalItems + columns - 1)/columns;          // number of rows in the table
+  //int itemsInLastRow = (totalItems + columns -1)%columns + 1; // number of items in the last row
 
   //printf("headerItems=%d totalItems=%d columns=%d rows=%d itemsInLastRow=%d\n",
   //    headerItems,totalItems,columns,rows,itemsInLastRow);
 
   // Keep a list of classes for each starting letter
   PrefixIgnoreClassList classesByLetter[256];
+  AlphaIndexTableColumns tableColumns;
 
   // fill the columns with the class list (row elements in each column,
-  // expect for the columns with number >= itemsInLastRow, which get on
+  // expect for the columns with number >= itemsInLastRow, which get one
   // item less.
   //int icount=0;
   startLetter=0;
@@ -1293,139 +1321,155 @@ void writeAlphabeticalClassList(OutputList &ol)
       startLetter=toupper(cd->className().at(index))&0xFF;
       // Do some sorting again, since the classes are sorted by name with 
       // prefix, which should be ignored really.
-      classesByLetter[startLetter].inSort (cd);
+      classesByLetter[startLetter].inSort(cd);
     }
   }
 
-  // create one class list for each column 
-  ClassList *colList = new ClassList[columns];
+  #define NEXT_ROW()                           \
+    do                                         \
+    {                                          \
+      if (row>maxRows) maxRows=row;            \
+      if (row>=rows && col<columns)            \
+      {                                        \
+        col++;                                 \
+        row=0;                                 \
+        tableRows = new AlphaIndexTableRows;   \
+        tableColumns.append(tableRows);        \
+      }                                        \
+    }                                          \
+    while(0)                                   \
 
-  // fill the columns with the class list (row elements in each column,
-  // expect for the columns with number >= itemsInLastRow, which get on
-  // item less.
-  int col=0,row=0;
-  //int icount=0;
-  startLetter=0;
-  for (l = 0; l < 256; l++)
+  AlphaIndexTableRows *tableRows = new AlphaIndexTableRows;
+  tableColumns.append(tableRows);
+  int col=0,row=0,maxRows=0;
+  for (l=0; l<256; l++)
   {
-    if (!indexLetterUsed[l]) continue;
-
-    // insert a new header using a dummy class pointer.
-    colList[col].append((ClassDef *)8); // insert dummy for the header
-    row++;
-    if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) 
-    { 
-      // if the header is the last item in the row, we add an extra
-      // row to make it easier to find the text of the header (this
-      // is then contained in the next cell)
-      colList[col].append(classesByLetter[l].at (0)); 
-      col++; 
-      row=0; 
-    }
-    uint i;
-    for (i = 0; i < classesByLetter[l].count(); i++)
+    if (classesByLetter[l].count()>0)
     {
-      // add the class definition to the correct column list
-      colList[col].append (classesByLetter[l].at (i));
+      // add special header cell
+      tableRows->append(new AlphaIndexTableCell(row,col,(uchar)l,(ClassDef*)0x8));
       row++;
-      if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) { col++; row=0; }
+      tableRows->append(new AlphaIndexTableCell(row,col,0,(ClassDef*)0x8));
+      row++;
+      tableRows->append(new AlphaIndexTableCell(row,col,0,classesByLetter[l].at(0)));
+      row++; 
+      NEXT_ROW();
+      for (i=1; i<(int)classesByLetter[l].count(); i++)
+      {
+        // add normal cell
+        tableRows->append(new AlphaIndexTableCell(row,col,0,classesByLetter[l].at(i)));
+        row++;
+        NEXT_ROW();
+      }
     }
   }
 
-  // create iterators for each column
-  ClassListIterator **colIterators = new ClassListIterator*[columns];
+  // create row iterators for each column
+  AlphaIndexTableRowsIterator **colIterators = new AlphaIndexTableRowsIterator*[columns];
   for (i=0;i<columns;i++)
   {
-    colIterators[i] = new ClassListIterator(colList[i]);
+    if (i<(int)tableColumns.count())
+    {
+      colIterators[i] = new AlphaIndexTableRowsIterator(*tableColumns.at(i));
+    }
+    else // empty column
+    {
+      colIterators[i] = 0;
+    }
   }
 
+  ol.writeString("<table style=\"margin: 10px;\" align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
   // generate table
-  for (i=0;i<rows;i++) // foreach table row
+  for (i=0;i<=maxRows;i++) // foreach table row
   {
+    //printf("writing row %d\n",i);
     //ol.nextTableRow();
     ol.writeString("<tr>");
     // the last column may contain less items then the others
-    int colsInRow = (i<rows-1) ? columns : itemsInLastRow; 
+    //int colsInRow = (i<rows-1) ? columns : itemsInLastRow; 
     //printf("row [%d]\n",i);
-    for (j=0;j<colsInRow;j++) // foreach table column
+    for (j=0;j<columns;j++) // foreach table column
     {
-      ol.writeString("<td>");
-      ClassDef *cd = colIterators[j]->current();
-      //printf("columns [%d] cd=%p\n",j,cd);
-      if (cd==(ClassDef *)8) // the class pointer is really a header
+      if (colIterators[j])
       {
-        cd=++(*colIterators[j]); // get the next item
-        if (cd)
+        AlphaIndexTableCell *cell = colIterators[j]->current();
+        if (cell)
         {
-          //printf("head ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
-          int index = getPrefixIndex(cd->className());
-          startLetter=toupper(cd->className().at(index));
-          QCString s = letterToLabel(startLetter);
-          //ol.writeIndexHeading(s);
-          ol.writeString("<a name=\"letter_");
-          ol.writeString(s);
-          ol.writeString("\"></a>");
-          ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
-                           "<tr>"
-                             "<td><div class=\"ah\">&#160;&#160;"); 
-          ol.writeString(s);
-          ol.writeString(         "&#160;&#160;</div>"
-                             "</td>"
-                           "</tr>"
-                         "</table>\n");
+          if (cell->row()==i)
+          {
+            if (cell->letter()!=0)
+            {
+              QCString s = letterToLabel(cell->letter());
+              ol.writeString("<td rowspan=\"2\" valign=\"bottom\">");
+              ol.writeString("<a name=\"letter_");
+              ol.writeString(s);
+              ol.writeString("\"></a>");
+              ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
+                  "<tr>"
+                  "<td><div class=\"ah\">&#160;&#160;"); 
+              ol.writeString(s);
+              ol.writeString(         "&#160;&#160;</div>"
+                  "</td>"
+                  "</tr>"
+                  "</table>\n");
+            }
+            else if (cell->classDef()!=(ClassDef*)0x8)
+            {
+              cd = cell->classDef();
+              ol.writeString("<td valign=\"top\">");
+              QCString namesp,cname;
+              //if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
+              //QCString cname=cd->className();
+              extractNamespaceName(cd->name(),cname,namesp);
+              QCString nsDispName;
+              if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+              {
+                nsDispName=substitute(namesp,"::",".");
+              }
+              else
+              {
+                nsDispName=namesp.copy();
+              }
+              if (cname.right(2)=="-g" || cname.right(2)=="-p")
+              {
+                cname = cname.left(cname.length()-2);
+              }
 
-        }
-      }
-      else if (cd) // a real class, insert a link
-      {
-        QCString namesp,cname;
-        //if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
-        //QCString cname=cd->className();
-        extractNamespaceName(cd->name(),cname,namesp);
-        QCString nsDispName;
-        if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-        {
-          nsDispName=substitute(namesp,"::",".");
+              ol.writeObjectLink(cd->getReference(),
+                  cd->getOutputFileBase(),cd->anchor(),cname);
+              if (!namesp.isEmpty())
+              {
+                ol.docify(" (");
+                NamespaceDef *nd = getResolvedNamespace(namesp);
+                if (nd && nd->isLinkable())
+                {
+                  ol.writeObjectLink(nd->getReference(),
+                      nd->getOutputFileBase(),0,nsDispName);
+                }
+                else
+                {
+                  ol.docify(nsDispName);
+                }
+                ol.docify(")");
+              }
+              ol.writeNonBreakableSpace(3);
+            }
+            ++(*colIterators[j]);
+            if (cell->letter()!=0 || cell->classDef()!=(ClassDef*)0x8)
+            {
+              ol.writeString("</td>");
+            }
+          }
         }
         else
         {
-          nsDispName=namesp.copy();
+          ol.writeString("<td></td>");
         }
-        if (cname.right(2)=="-g" || cname.right(2)=="-p")
-        {
-          cname = cname.left(cname.length()-2);
-        }
-
-        ol.writeObjectLink(cd->getReference(),
-                           cd->getOutputFileBase(),cd->anchor(),cname);
-        if (!namesp.isEmpty())
-        {
-          ol.docify(" (");
-          NamespaceDef *nd = getResolvedNamespace(namesp);
-          if (nd && nd->isLinkable())
-          {
-            ol.writeObjectLink(nd->getReference(),
-                           nd->getOutputFileBase(),0,nsDispName);
-          }
-          else
-          {
-            ol.docify(nsDispName);
-          }
-          ol.docify(")");
-        }
-        ol.writeNonBreakableSpace(3);
-        //printf("item ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
-        ++(*colIterators[j]);
       }
-      //ol.endTableColumn();
-      ol.writeString("</td>");
-      //if (j<colsInRow-1) ol.nextTableColumn();
     }
-    //ol.endTableRow();
-    ol.writeString("</tr>");
+    ol.writeString("</tr>\n");
   }
-  //ol.endAlphabeticalIndexList();
-  ol.writeString("</table>");
+  ol.writeString("</table>\n");
   
   ol.writeString(alphaLinks);
 
@@ -1435,7 +1479,7 @@ void writeAlphabeticalClassList(OutputList &ol)
     delete colIterators[i];
   }
   delete[] colIterators;
-  delete[] colList;
+  //delete[] colList;
 }
 
 //----------------------------------------------------------------------------
@@ -2717,9 +2761,9 @@ void writeJavascriptSearchIndex()
                 << "class=\"SRSymbol\" ";
               t << externalLinkTarget() << "href=\"" << externalRef("../",d->getReference(),TRUE);
               t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
-              if (isMemberDef)
+              if (md)
               {
-                t << "#" << ((MemberDef *)d)->anchor();
+                t << "#" << md->anchor();
               }
               t << "\"";
               static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
@@ -2738,10 +2782,10 @@ void writeJavascriptSearchIndex()
                   << convertToXML(d->getOuterScope()->name()) 
                   << "</span>" << endl;
               }
-              else if (isMemberDef)
+              else if (md)
               {
-                FileDef *fd = ((MemberDef *)d)->getBodyDef();
-                if (fd==0) fd = ((MemberDef *)d)->getFileDef();
+                FileDef *fd = md->getBodyDef();
+                if (fd==0) fd = md->getFileDef();
                 if (fd)
                 {
                   t << "  <span class=\"SRScope\">" 
@@ -4045,6 +4089,13 @@ void writeIndex(OutputList &ol)
            (Doxygen::mainPage==pd->getOuterScope()))  // or inside main page
          )
       {
+        bool isCitationPage = pd->name()=="citelist";
+        if (isCitationPage)
+        {
+          // For LaTeX the bibliograph is already written by \bibliography
+          ol.pushGeneratorState();
+          ol.disable(OutputGenerator::Latex);
+        }
         QCString title = pd->title();
         if (title.isEmpty()) title=pd->name();
         ol.startIndexSection(isPageDocumentation);
@@ -4060,6 +4111,11 @@ void writeIndex(OutputList &ol)
 
         ol.writePageLink(pd->getOutputFileBase(),first);
         first=FALSE;
+
+        if (isCitationPage)
+        {
+          ol.popGeneratorState();
+        }
       }
     }
   }

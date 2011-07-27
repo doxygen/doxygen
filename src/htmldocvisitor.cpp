@@ -551,6 +551,29 @@ void HtmlDocVisitor::visit(DocSimpleSectSep *)
   m_t << "<dd>" << endl;
 }
 
+void HtmlDocVisitor::visit(DocCite *cite)
+{
+  if (m_hide) return;
+  if (!cite->file().isEmpty()) 
+  {
+    startLink(cite->ref(),cite->file(),cite->relPath(),cite->anchor());
+  }
+  else
+  {
+    m_t << "<b>[";
+  }
+  filter(cite->text());
+  if (!cite->file().isEmpty()) 
+  {
+    endLink();
+  }
+  else
+  {
+    m_t << "]</b>";
+  }
+}
+
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
@@ -913,7 +936,7 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::Post:
       m_t << theTranslator->trPostcondition(); break;
     case DocSimpleSect::Copyright:
-      m_t << "Copyright" /* TODO: theTranslator->trCopyright() */; break;
+      m_t << theTranslator->trCopyright(); break;
     case DocSimpleSect::Invar:
       m_t << theTranslator->trInvariant(); break;
     case DocSimpleSect::Remark:

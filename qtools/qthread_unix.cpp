@@ -53,6 +53,7 @@
 #include <sys/sysctl.h>
 #endif
 #include <unistd.h>
+#include <stdio.h>
 
 #include "qthread.h"
 #include "qthread_p.h"

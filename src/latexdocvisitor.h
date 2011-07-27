@@ -53,6 +53,7 @@ class LatexDocVisitor : public DocVisitor
     void visit(DocFormula *);
     void visit(DocIndexEntry *);
     void visit(DocSimpleSectSep *);
+    void visit(DocCite *);
 
     //--------------------------------------
     // visitor functions for compound nodes

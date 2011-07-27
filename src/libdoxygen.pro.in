@@ -17,6 +17,7 @@
 TEMPLATE     =	libdoxygen.t
 CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =	bufstr.h \
+		cite.h \
                 classdef.h \
                 classlist.h \
                 cmdmapper.h \
@@ -41,16 +42,19 @@ HEADERS      =	bufstr.h \
                 docvisitor.h \
 		dot.h \
 		doxygen.h \
+		doxygen_bst.h \
 		doxygen_css.h \
 		eclipsehelp.h \
 		entry.h \
 		example.h \
 		filedef.h \
 		filename.h \
+		footer_html.h \
 		formula.h \
 		ftextstream.h \
 		ftvhelp.h \
 		groupdef.h \
+		header_html.h \
 		htags.h \
 		htmlattrib.h \
                 htmldocvisitor.h \
@@ -109,7 +113,8 @@ HEADERS      =	bufstr.h \
 		searchindex.h \
 		search_css.h \
 		search_js.h \
-		search_php.h \
+		search_functions_php.h \
+		search_opensearch_php.h \
 		section.h \
 		sortdict.h \
                 store.h \
@@ -163,6 +168,7 @@ HEADERS      =	bufstr.h \
 
 SOURCES      =	ce_lex.cpp \
                 ce_parse.cpp \
+		cite.cpp \
 		classdef.cpp \
 		classlist.cpp \
                 cmdmapper.cpp \

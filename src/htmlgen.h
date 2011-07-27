@@ -115,8 +115,6 @@ class HtmlGenerator : public OutputGenerator
     void endMemberDocList();
     void startMemberList();
     void endMemberList();
-    void startInlineDescription();
-    void endInlineDescription();
     void startInlineHeader();
     void endInlineHeader();
     void startAnonTypeScope(int) {}
@@ -194,7 +192,7 @@ class HtmlGenerator : public OutputGenerator
     void endClassDiagram(const ClassDiagram &,const char *,const char *);
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
-    void startQuickIndices();
+    void startQuickIndices() {}
     void endQuickIndices();
     void writeSplitBar(const char *name);
     void writeLogo();
@@ -254,6 +252,15 @@ class HtmlGenerator : public OutputGenerator
     void endConstraintDocs();
     void endConstraintList();
 
+    void startMemberDocSimple();
+    void endMemberDocSimple();
+    void startInlineMemberType();
+    void endInlineMemberType();
+    void startInlineMemberName();
+    void endInlineMemberName();
+    void startInlineMemberDoc();
+    void endInlineMemberDoc();
+
     void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
     void endFontClass() { t << "</span>"; }
 
@@ -276,6 +283,7 @@ class HtmlGenerator : public OutputGenerator
 
     int col;
     int m_sectionCount;
+    bool m_emptySection;
 };
 
 #endif

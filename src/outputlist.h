@@ -191,10 +191,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberList); }
     void endMemberList() 
     { forall(&OutputGenerator::endMemberList); }
-    void startInlineDescription()
-    { forall(&OutputGenerator::startInlineDescription); }
-    void endInlineDescription()
-    { forall(&OutputGenerator::endInlineDescription); }
     void startInlineHeader()
     { forall(&OutputGenerator::startInlineHeader); }
     void endInlineHeader()
@@ -425,6 +421,24 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endConstraintDocs); }
     void endConstraintList()
     { forall(&OutputGenerator::endConstraintList); }
+
+    void startMemberDocSimple()
+    { forall(&OutputGenerator::startMemberDocSimple); }
+    void endMemberDocSimple()
+    { forall(&OutputGenerator::endMemberDocSimple); }
+    void startInlineMemberType()
+    { forall(&OutputGenerator::startInlineMemberType); }
+    void endInlineMemberType()
+    { forall(&OutputGenerator::endInlineMemberType); }
+    void startInlineMemberName()
+    { forall(&OutputGenerator::startInlineMemberName); }
+    void endInlineMemberName()
+    { forall(&OutputGenerator::endInlineMemberName); }
+    void startInlineMemberDoc()
+    { forall(&OutputGenerator::startInlineMemberDoc); }
+    void endInlineMemberDoc()
+    { forall(&OutputGenerator::endInlineMemberDoc); }
+
     void startFontClass(const char *c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()

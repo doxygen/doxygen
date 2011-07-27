@@ -402,6 +402,7 @@ struct ColoredImgDataItem
 
 void writeColoredImgData(const char *dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const char *str);
+bool copyFile(const QCString &src,const QCString &dest);
 
 #endif
 

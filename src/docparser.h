@@ -272,14 +272,36 @@ class DocAnchor : public DocNode
   public:
     DocAnchor(DocNode *parent,const QCString &id,bool newAnchor);
     Kind kind() const          { return Kind_Anchor; }
-    QCString anchor() const     { return m_anchor; }
-    QCString file() const       { return m_file; }
+    QCString anchor() const    { return m_anchor; }
+    QCString file() const      { return m_file; }
     void accept(DocVisitor *v) { v->visit(this); }
 
   private:
     QCString  m_anchor;
     QCString  m_file;
 };
+
+/*! @brief Node representing a citation of some bibliographic reference */
+class DocCite : public DocNode
+{
+  public:
+    DocCite(DocNode *parent,const QCString &target,const QCString &context);
+    Kind kind() const            { return Kind_Ref; }
+    QCString file() const        { return m_file; }
+    QCString relPath() const     { return m_relPath; }
+    QCString ref() const         { return m_ref; }
+    QCString anchor() const      { return m_anchor; }
+    QCString text() const        { return m_text; }
+    void accept(DocVisitor *v) { v->visit(this); }
+
+  private:
+    QCString   m_file;
+    QCString   m_relPath;
+    QCString   m_ref;
+    QCString   m_anchor;
+    QCString   m_text;
+};
+
 
 /*! @brief Node representing a style change */
 class DocStyleChange : public DocNode
@@ -980,6 +1002,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleMscFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
+    void handleCite();
     void handleRef(const QCString &cmdName);
     void handleSection(const QCString &cmdName);
     void handleInheritDoc();

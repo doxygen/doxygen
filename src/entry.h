@@ -289,23 +289,43 @@ class Entry
 
     Entry();
     Entry(const Entry &);
-    ~Entry();
+   ~Entry();
+
+    /*! Returns the static size of the Entry (so excluding any dynamic memory) */
     int getSize();
+
     void addSpecialListItem(const char *listName,int index);
     void createNavigationIndex(EntryNav *rootNav,FileStorage *storage,FileDef *fd);
 
     // while parsing a file these function can be used to navigate/build the tree
     void setParent(Entry *parent) { m_parent = parent; }
+
+    /*! Returns the parent for this Entry or 0 if this entry has no parent. */
     Entry *parent() const { return m_parent; }
+
+    /*! Returns the list of children for this Entry 
+     *  @see addSubEntry() and removeSubEntry()
+     */
     const QList<Entry> *children() const { return m_sublist; }
 
-    /*! Adds entry \e as a child to this entry */
-    void	addSubEntry (Entry* e) ;
+    /*! Adds entry \a e as a child to this entry */
+    void addSubEntry (Entry* e) ;
+
+    /*! Removes entry \a e from the list of children. 
+     *  Returns a pointer to the entry or 0 if the entry was not a child. 
+     *  Note the entry will not be deleted.
+     */ 
+    Entry *removeSubEntry(Entry *e);
+
     /*! Restore the state of this Entry to the default value it has
      *  at construction time. 
      */
     void reset();
+
+    /*! Serialize this entry to a persistent storage stream. */
     void marshall(StorageIntf *);
+
+    /*! Reinitialize this entry from a persistent storage stream. */
     void unmarshall(StorageIntf *);
 
   public:
@@ -365,6 +385,7 @@ class Entry
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;
+
 
     static int  num;          //!< counts the total number of entries
 

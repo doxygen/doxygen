@@ -543,6 +543,30 @@ void RTFDocVisitor::visit(DocSimpleSectSep *)
 {
 }
 
+void RTFDocVisitor::visit(DocCite *cite)
+{
+  if (m_hide) return;
+  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocCite)}\n");
+  if (!cite->file().isEmpty()) 
+  {
+    startLink(cite->ref(),cite->file(),cite->anchor());
+  }
+  else
+  {
+    m_t << "{\\b ";
+  }
+  filter(cite->text());
+  if (!cite->file().isEmpty()) 
+  {
+    endLink(cite->ref());
+  }
+  else
+  {
+    m_t << "}";
+  }
+}
+
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
@@ -664,7 +688,7 @@ void RTFDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::Post:
       m_t << theTranslator->trPostcondition(); break;
     case DocSimpleSect::Copyright:
-      m_t << "Copyright"; /* TODO: theTranslator->trCopyright();*/ break;
+      m_t << theTranslator->trCopyright(); break;
     case DocSimpleSect::Invar:
       m_t << theTranslator->trInvariant(); break;
     case DocSimpleSect::Remark:
@@ -1246,7 +1270,7 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
   { { 2, 25, 100, 100, 100 }, // no inout, no type
     { 3, 14,  35, 100, 100 }, // inout, no type
     { 3, 25,  50, 100, 100 }, // no inout, type
-    { 4, 14,  35, 55,  100 }, // no inout, type
+    { 4, 14,  35, 55,  100 }, // inout, type
   };
   int config=0;
   if (m_hide) return;

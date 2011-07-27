@@ -48,6 +48,7 @@ class ObjCache;
 class Store;
 class QFileInfo;
 class BufStr;
+class CiteDict;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -126,6 +127,7 @@ class Doxygen
     static Store                    *symbolStorage;
     static QCString                  objDBFileName;
     static QCString                  entryDBFileName;
+    static CiteDict                 *citeDict;
     static bool                      gatherDefines;
     static bool                      userComments;
     static IndexList                 indexList;

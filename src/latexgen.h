@@ -108,8 +108,6 @@ class LatexGenerator : public OutputGenerator
     void endMemberDocList() {}
     void startMemberList();
     void endMemberList();
-    void startInlineDescription() {}
-    void endInlineDescription() {}
     void startInlineHeader();
     void endInlineHeader();
     void startAnonTypeScope(int);
@@ -238,6 +236,15 @@ class LatexGenerator : public OutputGenerator
     void startConstraintDocs();
     void endConstraintDocs();
     void endConstraintList();
+
+    void startMemberDocSimple();
+    void endMemberDocSimple();
+    void startInlineMemberType();
+    void endInlineMemberType();
+    void startInlineMemberName();
+    void endInlineMemberName();
+    void startInlineMemberDoc();
+    void endInlineMemberDoc();
 
     void startFontClass(const char *); // {}
     void endFontClass(); // {}

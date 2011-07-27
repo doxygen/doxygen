@@ -88,7 +88,7 @@
 #define TRANSLATOR_DK_H
 
 // class TranslatorDanish : public TranslatorAdapter_1_5_4
-class TranslatorDanish : public Translator
+class TranslatorDanish : public TranslatorAdapter_1_7_5
 {
   public:
 
