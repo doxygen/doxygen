@@ -497,7 +497,13 @@ class Translator
                                 int hour,int minutes,int seconds,
                                 bool includeTime) = 0;
                        
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
 
+    virtual QCString trCiteReferences() = 0;
+    virtual QCString trCopyright() = 0;
+    virtual QCString trDirDepGraph(const char *name) = 0;
 };
 
 #endif

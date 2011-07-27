@@ -106,8 +106,6 @@ class ManGenerator : public OutputGenerator
     void endMemberDocList() {}
     void startMemberList();
     void endMemberList();
-    void startInlineDescription();
-    void endInlineDescription();
     void startInlineHeader();
     void endInlineHeader();
     void startAnonTypeScope(int);
@@ -234,6 +232,16 @@ class ManGenerator : public OutputGenerator
     void startConstraintDocs();
     void endConstraintDocs();
     void endConstraintList();
+
+    void startMemberDocSimple();
+    void endMemberDocSimple();
+    void startInlineMemberType();
+    void endInlineMemberType();
+    void startInlineMemberName();
+    void endInlineMemberName();
+    void startInlineMemberDoc();
+    void endInlineMemberDoc();
+
 
     void writeCodeAnchor(const char *) {}
     void linkableSymbol(int,const char *,Definition *,Definition *) {}

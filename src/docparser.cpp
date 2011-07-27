@@ -41,6 +41,7 @@
 #include "searchindex.h"
 #include "language.h"
 #include "portable.h"
+#include "cite.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -1163,11 +1164,10 @@ static DocInternalRef *handleInternalRef(DocNode *parent)
 static DocAnchor *handleAnchor(DocNode *parent)
 {
   int tok=doctokenizerYYlex();
-  QCString tokenName = g_token->name;
   if (tok!=TK_WHITESPACE)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
-        qPrint(tokenName));
+        qPrint(g_token->name));
     return 0;
   }
   doctokenizerYYsetStateAnchor();
@@ -1175,13 +1175,13 @@ static DocAnchor *handleAnchor(DocNode *parent)
   if (tok==0)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
-        "argument of command %s",qPrint(tokenName));
+        "argument of command %s",qPrint(g_token->name));
     return 0;
   }
   else if (tok!=TK_WORD && tok!=TK_LNKWORD)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(tokenName));
+        tokToString(tok),qPrint(g_token->name));
     return 0;
   }
   doctokenizerYYsetStatePara();
@@ -1688,6 +1688,21 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
   if (newAnchor) // found <a name="label">
   {
     m_anchor = id;
+  }
+  else if (id.left(CiteConsts::anchorPrefix.length()) == CiteConsts::anchorPrefix) 
+  {
+    CiteInfo *cite = Doxygen::citeDict->find(id.mid(CiteConsts::anchorPrefix.length()));
+    if (cite) 
+    {
+      m_file = CiteConsts::fileName;
+      m_anchor = id;
+    }
+    else 
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Invalid cite anchor id `%s'",qPrint(id));
+      m_anchor = "invalid";
+      m_file = "invalid";
+    }
   }
   else // found \anchor label
   {
@@ -2381,6 +2396,33 @@ void DocRef::parse()
   
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
+}
+
+//---------------------------------------------------------------------------
+
+DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //context)
+{
+  static uint numBibFiles = Config_getList("CITE_BIB_FILES").count();
+  m_parent = parent; 
+  QCString     anchor;
+  //printf("DocCite::DocCite(target=%s,context=%s\n",target.data(),context.data());
+  ASSERT(!target.isEmpty());
+  m_relPath = g_relPath;
+  CiteInfo *cite = Doxygen::citeDict->find(target);
+  if (numBibFiles>0 && cite) // ref to citation
+  {
+    m_text         = cite->text;
+    if (m_text.isEmpty()) m_text = cite->label;
+    m_ref          = cite->ref;
+    m_anchor       = CiteConsts::anchorPrefix+cite->label;
+    m_file         = CiteConsts::fileName;
+    //printf("CITE ==> m_text=%s,m_ref=%s,m_file=%s,m_anchor=%s\n",
+    //    m_text.data(),m_ref.data(),m_file.data(),m_anchor.data());
+    return;
+  }
+  m_text = linkToText(target,FALSE);
+  warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unable to resolve reference to `%s' for \\cite command",
+           qPrint(target)); 
 }
 
 //---------------------------------------------------------------------------
@@ -4420,6 +4462,38 @@ int DocPara::handleParamSection(const QCString &cmdName,
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
+void DocPara::handleCite()
+{
+  // get the argument of the cite command.
+  int tok=doctokenizerYYlex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
+        qPrint("cite"));
+    return;
+  }
+  tok=doctokenizerYYlex();
+  if (tok==0)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
+        "argument of command %s\n", qPrint("cite"));
+    return;
+  }
+  else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
+        tokToString(tok),qPrint("cite"));
+    return;
+  }
+  g_token->sectionId = g_token->name;
+  doctokenizerYYsetStateCite();
+  DocCite *cite = new DocCite(this,g_token->name,g_context);
+  m_children.append(cite);
+  //cite->parse();
+
+  doctokenizerYYsetStatePara();
+}
+
 int DocPara::handleXRefItem()
 {
   int retval=doctokenizerYYlex();
@@ -5102,6 +5176,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_JAVALINK:
       handleLink(cmdName,TRUE);
+      break;
+    case CMD_CITE:
+      handleCite();
       break;
     case CMD_REF: // fall through
     case CMD_SUBPAGE:

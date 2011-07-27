@@ -131,9 +131,9 @@ IGNORE_PREFIX          = Q
 #---------------------------------------------------------------------------
 GENERATE_HTML          = YES
 HTML_OUTPUT            =
-HTML_FILE_EXTENSION    = .xhtml
-HTML_HEADER            =
-HTML_FOOTER            =
+HTML_FILE_EXTENSION    = .html
+HTML_HEADER            = 
+HTML_FOOTER            = 
 HTML_STYLESHEET        =
 HTML_EXTRA_FILES       =
 HTML_COLORSTYLE_HUE    = 220
@@ -175,7 +175,7 @@ FORMULA_TRANSPARENT    = YES
 USE_MATHJAX            = NO
 MATHJAX_RELPATH        = http://www.mathjax.org/mathjax
 SEARCHENGINE           = YES
-SERVER_BASED_SEARCH    = NO
+SERVER_BASED_SEARCH    = YES
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------

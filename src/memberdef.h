@@ -349,6 +349,7 @@ class MemberDef : public Definition
                             const char *scopeName,Definition *container,
                             bool inGroup,bool showEnumValues=FALSE,bool
                             showInline=FALSE);
+    void writeMemberDocSimple(OutputList &ol,Definition *container);
     void warnIfUndocumented();
     
     MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,

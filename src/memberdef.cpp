@@ -2132,9 +2132,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
    
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.startParagraph();
-      ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,inbodyDocumentation()+"\n",TRUE,FALSE);
-      ol.endParagraph();
+      ol.parseDoc(inbodyFile(),inbodyLine(),
+                  getOuterScope()?getOuterScope():container,this,
+                  inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
   else if (!brief.isEmpty() && (Config_getBool("REPEAT_BRIEF") ||
@@ -2476,7 +2476,61 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           qPrint(qualifiedName()));
     }
   }
+}
 
+void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
+{
+  Definition *scope  = getOuterScope();
+  QCString doxyName  = name();
+  QCString doxyArgs  = argsString();
+  QCString memAnchor = anchor();
+  QCString cfname    = getOutputFileBase();
+  QCString cname;
+  if (scope) cname   = scope->name();
+
+  ol.startInlineMemberType();
+  ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
+  linkifyText(TextGeneratorOLImpl(ol), // out
+              scope,                   // scope
+              getBodyDef(),            // fileScope
+              doxyName,                // 
+              m_impl->type,            // text
+              TRUE                     // autoBreak
+             ); 
+  ol.endDoxyAnchor(cfname,memAnchor);
+  ol.endInlineMemberType();
+
+  ol.startInlineMemberName();
+  ol.docify(doxyName);
+  ol.endInlineMemberName();
+
+  ol.startInlineMemberDoc();
+
+  QCString brief           = briefDescription();
+  QCString detailed        = documentation();
+
+  /* write brief description */
+  if (!brief.isEmpty() && 
+      (Config_getBool("REPEAT_BRIEF") || 
+       !Config_getBool("BRIEF_MEMBER_DESC")
+      ) 
+     )  
+  { 
+    ol.parseDoc(briefFile(),briefLine(),
+                getOuterScope()?getOuterScope():container,this,
+                brief,FALSE,FALSE,0,TRUE,FALSE);
+  }
+
+  /* write detailed description */
+  if (!detailed.isEmpty())
+  { 
+    ol.parseDoc(docFile(),docLine(),
+                getOuterScope()?getOuterScope():container,this,
+                detailed+"\n",FALSE,FALSE,0,TRUE,FALSE);
+   
+  }
+
+  ol.endInlineMemberDoc();
 }
 
 QCString MemberDef::memberTypeName() const

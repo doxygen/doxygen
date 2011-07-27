@@ -20,9 +20,9 @@
 
 A special documentation block is a C or C++ style comment block with some 
 additional markings, so doxygen knows it is a piece of documentation that
-needs to end up in the generated documentation. For Python and VHDL
-code there are a different comment conventions, which can be found in section 
-\ref pythonblocks and \ref vhdlblocks respectively.
+needs to end up in the generated documentation. For Python, VHDL, and Fortran
+code there are different comment conventions, which can be found in sections
+\ref pythonblocks, \ref vhdlblocks, and \ref fortranblocks respectively.
 
 For each code item there are two (or in some cases three) types of descriptions, 
 which together form the documentation: a \e brief description and \e detailed

@@ -45,12 +45,24 @@
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x) 
 
+static const char defaultHtmlHeader[] =
+#include "header_html.h"
+;
+
+static const char defaultHtmlFooter[] =
+#include "footer_html.h"
+;
+
 static const char defaultStyleSheet[] = 
 #include "doxygen_css.h"
 ;
 
-static const char search_script[]=
-#include "search_php.h"
+static const char search_functions_script[]=
+#include "search_functions_php.h"
+;
+
+static const char search_opensearch_script[]=
+#include "search_opensearch_php.h"
 ;
 
 static const char search_styleSheet[] =
@@ -753,7 +765,7 @@ static void writeClientSearchBox(FTextStream &t,const char *relPath)
 static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlightSearch)
 {
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
-  t << "          <span class=\"left\">\n";
+  t << "          <div class=\"left\">\n";
   t << "            <form id=\"FSearchBox\" action=\"" << relPath << "search.php\" method=\"get\">\n";
   t << "              <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag.png\" alt=\"\"/>\n";
   if (!highlightSearch)
@@ -763,81 +775,8 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
     t << "                     onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
     t << "                     onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
     t << "            </form>\n";
-    t << "          </span><span class=\"right\"></span>\n";
+    t << "          </div><div class=\"right\"></div>\n";
     t << "        </div>\n";
-  }
-}
-
-static QCString getLogoName(const char *projectLogo)
-{
-  if (projectLogo==0) return "";
-  if (projectLogo[0]=='$') 
-  {
-    return projectLogo; // marker is used
-  }
-  QFileInfo fi(projectLogo);
-  if (fi.exists())
-  {
-    return fi.fileName().data();
-  }
-  return "";
-}
-
-static void writeTitleArea(FTextStream &t,const char *relPath,
-            const char *projectName,const char *projectBrief,
-            const char *projectNumber,const char *projectLogo)
-{
-  QCString logoName = getLogoName(projectLogo);
-  static bool disableIndex = Config_getBool("DISABLE_INDEX"); 
-  static bool searchEngine      = Config_getBool("SEARCHENGINE");
-  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-  if (!(logoName.isEmpty() && QCString(projectName).isEmpty() && 
-        QCString(projectBrief).isEmpty()) ||
-      (disableIndex && searchEngine))
-  {
-    t << "<div id=\"titlearea\">" << endl;
-    t << "<table cellspacing=\"0\" cellpadding=\"0\">" << endl;
-    t << " <tbody>" << endl;
-    t << " <tr style=\"height: 56px;\">" << endl;
-    if (!logoName.isEmpty())
-    {
-      t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"" << relPath << logoName << "\"/></td>" << endl;
-    }
-    if (!(QCString(projectName).isEmpty() && QCString(projectBrief).isEmpty()))
-    {
-      t << "  <td style=\"padding-left: 0.5em;\">" << endl;
-      if (!QCString(projectName).isEmpty())
-      {
-        t << "   <div id=\"projectname\">" << projectName;
-        if (!QCString(projectNumber).isEmpty())
-        {
-          t << "&#160;<span id=\"projectnumber\">" << projectNumber << "</span>";
-        }
-        t << "</div>" << endl;
-      }
-      if (!QCString(projectBrief).isEmpty())
-      {
-        t << "   <div id=\"projectbrief\">" << projectBrief << "</div>" << endl;
-      }
-      t << "  </td>" << endl;
-    }
-    if (disableIndex && searchEngine)
-    {
-      t << "  <td>" << endl;
-      if (serverBasedSearch)
-      {
-        writeServerSearchBox(t,relPath,FALSE);
-      }
-      else
-      {
-        writeClientSearchBox(t,relPath);
-      }
-      t << "  </td>" << endl;
-    }
-    t << " </tr>" << endl;
-    t << " </tbody>" << endl;
-    t << "</table>" << endl;
-    t << "</div>" << endl;
   }
 }
 
@@ -877,7 +816,7 @@ QCString substitute(const char *s,const char *src,const char *dst)
 }
 //----------------------------------------------------------------------
 
-/// Clear a text block \a s from \a begin to end \a markers
+/// Clear a text block \a s from \a begin to \a end markers
 QCString clearBlock(const char *s,const char *begin,const char *end)
 {
   if (s==0 || begin==0 || end==0) return s;
@@ -885,17 +824,18 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
   int beginLen = strlen(begin);
   int endLen = strlen(end);
   int resLen = 0;
-  for(p=s; (q=strstr(p,begin))!=0; p=q+endLen)
+  for (p=s; (q=strstr(p,begin))!=0; p=q+endLen)
   {
     resLen+=q-p;
     p=q+beginLen;
-    if((q=strstr(p,end))==0)
+    if ((q=strstr(p,end))==0)
     {
       resLen+=beginLen;
       break;
     }
   }
   resLen+=strlen(p);
+  // resLen is the length of the string without the marked block
 
   QCString result(resLen+1);
   char *r;
@@ -905,7 +845,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
     memcpy(r,p,l);
     r+=l;
     p=q+beginLen;
-    if((q=strstr(p,end))==0)
+    if ((q=strstr(p,end))==0)
     {
       memcpy(r,begin,beginLen);
       r+=beginLen;
@@ -917,7 +857,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
 }
 //----------------------------------------------------------------------
 
-QCString selectBlock(const QCString& s,const QCString &name,bool which)
+QCString selectBlock(const QCString& s,const QCString &name,bool enable)
 {
   const QCString begin = "<!--BEGIN " + name + "-->";
   const QCString end = "<!--END " + name + "-->";
@@ -925,7 +865,7 @@ QCString selectBlock(const QCString& s,const QCString &name,bool which)
   const QCString noend = "<!--END !" + name + "-->";
 
   QCString result = s;
-  if (which)
+  if (enable)
   {
     result = substitute(result, begin, "");
     result = substitute(result, end, "");
@@ -959,20 +899,38 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
                                        const QCString &relPath)
 {
   // Build CSS/Javascript tags depending on treeview, search engine settings
+  QCString cssFile;
+  QCString generatedBy;
   QCString treeViewCssJs;
   QCString searchCssJs;
   QCString searchBox;
   QCString mathJaxJs;
+
+  static QCString projectName = Config_getString("PROJECT_NAME");
+  static bool timeStamp = Config_getBool("HTML_TIMESTAMP");
   static bool treeView = Config_getBool("GENERATE_TREEVIEW");
   static bool searchEngine = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
   static bool mathJax = Config_getBool("USE_MATHJAX");
   static bool disableIndex = Config_getBool("DISABLE_INDEX");
-  static bool hasProjectName = !Config_getString("PROJECT_NAME").isEmpty();
+  static bool hasProjectName = !projectName.isEmpty();
   static bool hasProjectNumber = !Config_getString("PROJECT_NUMBER").isEmpty();
   static bool hasProjectBrief = !Config_getString("PROJECT_BRIEF").isEmpty();
   static bool hasProjectLogo = !Config_getString("PROJECT_LOGO").isEmpty();
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
+
+  cssFile = Config_getString("HTML_STYLESHEET");
+  if (cssFile.isEmpty())
+  {
+    cssFile = "doxygen.css";
+  }
+
+  if (timeStamp) {
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString("PROJECT_NAME"));
+  }
+  else {
+    generatedBy = theTranslator->trGeneratedBy();
+  }
 
   if (treeView)
   {
@@ -1006,7 +964,15 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
                      "  $(document).ready(function() {\n"
                      "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
                      "  });\n"
-                     "</script>";
+                     "</script>\n";
+
+      // OPENSEARCH_PROVIDER {
+      searchCssJs += "<link rel=\"search\" href=\"" + relPath +
+                     "search-opensearch.php?v=opensearch.xml\" "
+                     "type=\"application/opensearchdescription+xml\" title=\"" +
+                     (hasProjectName ? projectName : QCString("Doxygen")) + 
+                     "\"/>";
+      // OPENSEARCH_PROVIDER }
     }
     searchBox = getSearchBox(serverBasedSearch, relPath, FALSE);
   }
@@ -1015,20 +981,30 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
   {
     mathJaxJs = "<script src=\"$relpath$MathJax.js\">\n"
                 "  MathJax.Hub.Config({\n"
-                "    extensions: [\"tex2jax.js\"],\n"
-                "    jax: [\"input/TeX\",\"output/HTML-CSS\"],\n"
-                "});\n"
-                "</script>\n";
+                "    extensions: [\"tex2jax.js\"";
+    QStrList &mathJaxExtensions = Config_getList("MATHJAX_EXTENSIONS");
+    const char *s = mathJaxExtensions.first();
+    while (s)
+    {
+      mathJaxJs+= ", \""+QCString(s)+".js\"";
+      s = mathJaxExtensions.next();
+    }
+    mathJaxJs += "],\n"
+                 "    jax: [\"input/TeX\",\"output/HTML-CSS\"],\n"
+                 "});\n"
+                 "</script>";
   }
 
   // first substitute generic keywords
   QCString result = substituteKeywords(s,title);
 
   // additional HTML only keywords
+  result = substitute(result,"$stylesheet",cssFile);
   result = substitute(result,"$treeview",treeViewCssJs);
   result = substitute(result,"$searchbox",searchBox);
   result = substitute(result,"$search",searchCssJs);
   result = substitute(result,"$mathjax",mathJaxJs);
+  result = substitute(result,"$generatedby",generatedBy);
   result = substitute(result,"$relpath$",relPath); //<-- must be last
   
   // additional HTML only conditional blocks
@@ -1050,6 +1026,7 @@ HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
   dir=Config_getString("HTML_OUTPUT");
   col=0;  
+  m_emptySection=FALSE;
 }
 
 HtmlGenerator::~HtmlGenerator()
@@ -1072,10 +1049,19 @@ void HtmlGenerator::init()
     g_header=fileToString(Config_getString("HTML_HEADER"));
     //printf("g_header='%s'\n",g_header.data());
   }
+  else 
+  {
+    g_header = defaultHtmlHeader;
+  }
+
   if (!Config_getString("HTML_FOOTER").isEmpty()) 
   {
     g_footer=fileToString(Config_getString("HTML_FOOTER"));
     //printf("g_footer='%s'\n",g_footer.data());
+  }
+  else 
+  {
+    g_footer = defaultHtmlFooter;
   }
   createSubDirs(d);
 
@@ -1193,131 +1179,9 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
   t << replaceColorMarkers(defaultStyleSheet);
 }
 
-static void writeDefaultNavTree(FTextStream &t,const char *relPathStr)
-{
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  if (generateTreeView)
-  {
-    t << "<link href=\"" << relPathStr << "navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-    t << "<script type=\"text/javascript\" src=\"" << relPathStr << "jquery.js\"></script>\n";
-    t << "<script type=\"text/javascript\" src=\"" << relPathStr << "navtree.js\"></script>\n";
-    t << "<script type=\"text/javascript\" src=\"" << relPathStr << "resize.js\"></script>\n";
-    t << "<script type=\"text/javascript\">" << endl;
-    t << "$(document).ready(initResizable);" << endl;
-    t << "</script>" << endl;
-  }
-}
-
-static void writeDefaultHeaderFile(FTextStream &t, const char *name,
-                                   const char *title,
-                                   const char *relPath,bool usePathCmd,
-                                   bool searchPage=FALSE)
-{
-  QString relPathStr;
-  if (usePathCmd) 
-    relPathStr="$relpath$";
-  else
-    relPathStr=relPath;
-
-  QCString id = name;
-  if (id.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
-  {
-    id=id.left(id.length()-Doxygen::htmlFileExtension.length());
-  }
-
-  static bool searchEngine = Config_getBool("SEARCHENGINE");
-  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-  //if (searchEngine && !generateTreeView)
-  //{
-  //  t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
-  //}
-  //  t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n";
-  //  t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
-  t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-  t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n"
-       "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n"
-       "<title>"; 
-  t << convertToHtml(title);
-  t << "</title>\n";
-  
-  t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-  if (searchEngine /* && !generateTreeView*/ )
-  {
-    t << "<link href=\"" << relPathStr << "search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-    t << "<script type=\"text/javascript\" src=\"" << relPathStr << "search/search.js\"></script>\n";
-  }
-
-  writeDefaultNavTree(t,relPathStr);
-
-  if (Config_getBool("USE_MATHJAX"))
-  {
-    QCString path = Config_getString("MATHJAX_RELPATH");
-    if (!path.isEmpty() && path.at(path.length()-1)!='/')
-    {
-      path+="/";
-    }
-    if (path.isEmpty() || path.left(2)=="..") // relative path
-    {
-      path.prepend(relPathStr);
-    }
-    t << "<script src=\"" << path << "MathJax.js\">\n";
-    t << "  MathJax.Hub.Config({\n";
-    t << "    extensions: [\"tex2jax.js\"],\n";
-    t << "    jax: [\"input/TeX\",\"output/HTML-CSS\"],\n";
-    t << "});\n";
-    t << "</script>\n";
-  }
-  t << "<link ";
-  t << "href=\"";
-  QCString cssname=Config_getString("HTML_STYLESHEET");
-  if (cssname.isEmpty())
-  {
-    t << relPathStr << "doxygen.css";
-  }
-  else
-  {
-    if (usePathCmd)
-    {
-      t << relPathStr << cssname;
-    }
-    else
-    {
-      QFileInfo cssfi(cssname);
-      if (!cssfi.exists())
-      {
-        err("error: user specified HTML style sheet file does not exist!\n");
-      }
-      t << relPathStr << cssfi.fileName();
-    }
-  }
-  
-  t << "\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-  t << "</head>\n";
-  if (searchEngine && /*!generateTreeView &&*/ !serverBasedSearch)
-  {
-    // for the javascript based search select the default filter
-    t << "<body onload='searchBox.OnSelectItem(0);'>\n";
-  }
-  else
-  {
-    if (searchPage) // keep focus on search result's box when loading 
-                    // search results page
-    {
-      t << "<body onload='searchBox.DOMSearchField().focus()'>\n";
-    }
-    else
-    {
-      t << "<body>\n";
-    }
-  }
-}
-
-
 void HtmlGenerator::writeHeaderFile(QFile &file, const char *cssname)
 {
   FTextStream t(&file);
-  
-  // writeDefaultHeaderFile(t,file.name(),"$title",relativePathToRoot(0),TRUE);
   
   QString relPathStr = "$relpath$";
 
@@ -1327,77 +1191,14 @@ void HtmlGenerator::writeHeaderFile(QFile &file, const char *cssname)
     id=id.left(id.length()-Doxygen::htmlFileExtension.length());
   }
 
-  t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-  t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n"
-       "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n"
-       "<title>$title</title>\n";
-  t << "<link href=\"$relpath$tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-  t << "<link href=\"$relpath$" << cssname << "\" rel=\"stylesheet\" type=\"text/css\" />\n";
-  t << "$treeview\n";
-  t << "$search\n";
-  t << "$mathjax\n";
-  t << "</head>\n";
-  t << "<body>\n";
-  t << "<div id=\"top\"><!-- do not remove this div! -->\n";
-  
-  t << "<!--BEGIN TITLEAREA-->\n";
-  t << "<div id=\"titlearea\">\n";
-  t << "<table cellspacing=\"0\" cellpadding=\"0\">\n";
-  t << " <tbody>\n";
-  t << " <tr style=\"height: 56px;\">\n";
-  t << "  <!--BEGIN PROJECT_LOGO-->\n";
-  t << "  <td id=\"projectlogo\"><img alt=\"Logo\" src=\"$relpath$$projectlogo\"/></td>\n";
-  t << "  <!--END PROJECT_LOGO-->\n";
-  t << "  <!--BEGIN PROJECT_NAME-->\n";
-  t << "  <td style=\"padding-left: 0.5em;\">\n";
-  t << "   <div id=\"projectname\">$projectname\n";
-  t << "   <!--BEGIN PROJECT_NUMBER-->&#160;<span id=\"projectnumber\">$projectnumber</span><!--END PROJECT_NUMBER-->\n";
-  t << "   </div>\n";
-  t << "   <!--BEGIN PROJECT_BRIEF--><div id=\"projectbrief\">$projectbrief</div><!--END PROJECT_BRIEF-->\n";
-  t << "  </td>\n";
-  t << "  <!--END PROJECT_NAME-->\n";
-  t << "  <!--BEGIN !PROJECT_NAME-->\n";
-  t << "   <!--BEGIN PROJECT_BRIEF-->\n";
-  t << "    <td style=\"padding-left: 0.5em;\">\n";
-  t << "    <div id=\"projectbrief\">$projectbrief</div>\n";
-  t << "    </td>\n";
-  t << "   <!--END PROJECT_BRIEF-->\n";
-  t << "  <!--END !PROJECT_NAME-->\n";    
-  t << "  <!--BEGIN DISABLE_INDEX-->\n";
-  t << "   <!--BEGIN SEARCHENGINE-->\n";
-  t << "   <td>$searchbox</td>\n";
-  t << "   <!--END SEARCHENGINE-->\n";
-  t << "  <!--END DISABLE_INDEX-->\n";
-  t << " </tr>\n";
-  t << " </tbody>\n";
-  t << "</table>\n";
-  t << "</div>\n";
-  t << "<!--END TITLEAREA-->\n";
+  t << substitute(defaultHtmlHeader, "$stylesheet", cssname);
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   FTextStream t(&file);
-  
-  t << "<!--BEGIN GENERATE_TREEVIEW-->\n";
-  t << "    <li class=\"footer\">";
-  t << theTranslator->trGeneratedAt( "$datetime", "$projectname" ) << endl;
-  t << "    <a href=\"http://www.doxygen.org/index.html\">\n";
-  t << "    <img class=\"footer\" src=\"doxygen.png\" alt=\"doxygen\"/></a> $doxygenversion </li>\n";
-  t << "   </ul>\n";
-  t << " </div>\n";
-  t << "<!--END GENERATE_TREEVIEW-->\n";
-  t << "<!--BEGIN !GENERATE_TREEVIEW-->\n";
-  t << "<hr class=\"footer\"/><address class=\"footer\"><small>\n";
-  t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
-  t << "&#160;<a href=\"http://www.doxygen.org/index.html\">"
-    << "<img class=\"footer\" src=\"$relpath$doxygen.png\" alt=\"doxygen\"/>"
-    << "</a> $doxygenversion";
-  t << "</small></address>\n";
-  t << "<!--END !GENERATE_TREEVIEW-->\n";
-
-  t << "</body>\n"
-    << "</html>\n";
+  QCString contents(defaultHtmlFooter);
+  t << contents;
 }
 
 static void generateDynamicSections(FTextStream &t,const QCString &relPath)
@@ -1429,22 +1230,9 @@ void HtmlGenerator::startFile(const char *name,const char *,
   //  HtmlHelp::getInstance()->addIndexFile(fileName);
   //}
   
-  QCString dispTitle = title;
-  QCString projName = Config_getString("PROJECT_NAME");
-  if (!projName.isEmpty())
-  {
-    dispTitle.prepend(projName+": ");
-  }
- 
   lastFile = fileName;
-  if (g_header.isEmpty()) 
-  {
-    writeDefaultHeaderFile(t,name,dispTitle,relPath,FALSE);
-  }
-  else
-  {
-    t << substituteHtmlKeywords(g_header,convertToHtml(dispTitle),relPath);
-  }
+  t << substituteHtmlKeywords(g_header,convertToHtml(title),relPath);
+
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;
   //static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
@@ -1512,37 +1300,14 @@ void HtmlGenerator::writeLogo()
 
 void HtmlGenerator::writePageFooter(FTextStream &t,const QCString &lastTitle,const QCString &relPath)
 {
-  static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
   static bool searchEngine      = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
   if (searchEngine /*&& !generateTreeView*/ && !serverBasedSearch)
   {
     HtmlGenerator::writeSearchFooter(t,relPath);
   }
-  if (g_footer.isEmpty())
-  {
-    if (!generateTreeView)
-    {
-      t << "<hr class=\"footer\"/><address class=\"footer\"><small>";
-      t << writeLogoAsString(relPath);
-      t << "</small></address>";
-      if (Debug::isFlagSet(Debug::Validate))
-      {
-        t << "<p><a href=\"http://validator.w3.org/check/referer\">"
-          "<img class=\"footer\" src=\"http://www.w3.org/Icons/valid-html401\""
-          " height=\"31\" width=\"88\" alt=\"This page is Valid HTML 4.01 "
-          "Transitional!\"></a><a href=\"http://jigsaw.w3.org/css-validator/\">"
-          "<img class=\"footer\" style=\"border:0;width:88px;height:31px\" "
-          "src=\"http://jigsaw.w3.org/css-validator/images/vcss\" "
-          "alt=\"This page uses valid CSS!\"/></a></p>";
-      }
-    }
-    t << "\n</body>\n</html>\n";
-  }
-  else
-  {
-    t << substituteHtmlKeywords(g_footer,convertToHtml(lastTitle),relPath);
-  }
+
+  t << substituteHtmlKeywords(g_footer,convertToHtml(lastTitle),relPath);
 }
 
 void HtmlGenerator::writeFooter()
@@ -1944,7 +1709,7 @@ static void startSectionHeader(FTextStream &t,
          "class=\"dynheader closed\" "
          "style=\"cursor:pointer;\">" << endl;
     t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\"" 
-      << relPath << "closed.png\"/> ";
+      << relPath << "closed.png\" alt=\"+\"/> ";
   }
   else
   {
@@ -2067,6 +1832,11 @@ void HtmlGenerator::startMemberItem(int annoType)
   DBG_HTML(t << "<!-- startMemberItem() -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
+    if (m_emptySection)
+    {
+      t << "<table class=\"memberdecls\">" << endl;
+      m_emptySection=FALSE;
+    }
     t << "<tr>";
     switch(annoType)
     {
@@ -2121,6 +1891,11 @@ void HtmlGenerator::startMemberDescription()
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
+    if (m_emptySection)
+    {
+      t << "<table class=\"memberdecls\">" << endl;
+      m_emptySection=FALSE;
+    }
     t << "<tr><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
   }
   else
@@ -2147,9 +1922,9 @@ void HtmlGenerator::startMemberSections()
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<table class=\"memberdecls\">" << endl;
-    // HTML is not recursively decomposable, sorry
-    //t << "<tr><td></td></tr>" << endl;
+    m_emptySection=TRUE; // we postpone writing <table> until we actually
+                         // write a row to prevent empty tables, which 
+                         // are not valid XHTML!
   }
 }
 
@@ -2158,7 +1933,10 @@ void HtmlGenerator::endMemberSections()
   DBG_HTML(t << "<!-- endMemberSections -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "</table>" << endl;
+    if (!m_emptySection)
+    {
+      t << "</table>" << endl;
+    }
   }
 }
 
@@ -2167,6 +1945,11 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
+    if (m_emptySection)
+    {
+      t << "<table class=\"memberdecls\">" << endl;
+      m_emptySection=FALSE;
+    }
     t << "<tr><td colspan=\"2\"><h2>";
   }
   else
@@ -2843,26 +2626,6 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
   }
 }
 
-void HtmlGenerator::startQuickIndices()
-{
-  static bool customHeader = !Config_getString("HTML_HEADER").isEmpty();
-  static QCString projectName = Config_getString("PROJECT_NAME");
-  static QCString projectBrief = Config_getString("PROJECT_BRIEF"); 
-  static QCString projectNumber = Config_getString("PROJECT_NUMBER"); 
-  static QCString projectLogo = Config_getString("PROJECT_LOGO");
-
-  if (!customHeader)
-  {
-    t << "<div id=\"top\"";
-    //if (generateTreeView)
-    //{
-    //  t << " onmouseout=\"return navLeave()\" onmouseover=\"navEnter()\"";
-    //}
-    t << ">" << endl;
-    writeTitleArea(t,relPath,projectName,projectBrief,projectNumber,projectLogo);
-  }
-}
-
 void HtmlGenerator::endQuickIndices()
 {
   t << "</div>" << endl;
@@ -2920,23 +2683,64 @@ void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
 void HtmlGenerator::writeSearchPage()
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static bool disableIndex = Config_getBool("DISABLE_INDEX");
   static QCString projectName = Config_getString("PROJECT_NAME");
   static QCString projectBrief = Config_getString("PROJECT_BRIEF"); 
   static QCString projectNumber = Config_getString("PROJECT_NUMBER"); 
   static QCString projectLogo = Config_getString("PROJECT_LOGO");
+
+  // OPENSEARCH_PROVIDER {
+  QCString configFileName = Config_getString("HTML_OUTPUT")+"/search-config.php";
+  QFile cf(configFileName);
+  if (cf.open(IO_WriteOnly))
+  {
+    FTextStream t(&cf);
+    t << "<script language=\"php\">\n\n";
+    t << "$config = array(\n";
+    t << "  'PROJECT_NAME' => \"" << projectName << "\",\n";
+    t << "  'GENERATE_TREEVIEW' => " << (generateTreeView?"true":"false") << ",\n";
+    t << "  'DISABLE_INDEX' => " << (disableIndex?"true":"false") << ",\n";
+    t << ");\n\n";
+    t << "$translator = array(\n";
+    t << "  'search_results_title' => \"" << theTranslator->trSearchResultsTitle() << "\",\n";
+    t << "  'search_results' => array(\n";  
+    t << "    0 => \"" << theTranslator->trSearchResults(0) << "\",\n";     
+    t << "    1 => \"" << theTranslator->trSearchResults(1) << "\",\n";     
+    t << "    2 => \"" << substitute(theTranslator->trSearchResults(2), "$", "\\$") << "\",\n";     
+    t << "  ),\n";
+    t << "  'search_matches' => \"" << theTranslator->trSearchMatches() << "\",\n";
+    t << "  'search' => \"" << theTranslator->trSearch() << "\",\n";
+    t << "  'split_bar' => \"" << substitute(substitute(writeSplitBarAsString("",""), "\"","\\\""), "\n","\\n") << "\",\n";
+    t << "  'logo' => \"" << substitute(substitute(writeLogoAsString(""), "\"","\\\""), "\n","\\n") << "\",\n";
+    t << ");\n\n";
+    t << "</script>\n";
+  }
+
+  QCString functionsFileName = Config_getString("HTML_OUTPUT")+"/search-functions.php";
+  QFile ff(functionsFileName);
+  if (ff.open(IO_WriteOnly))
+  {
+    FTextStream t(&ff);
+    // Write stuff from search_functions.php source file...
+    t << search_functions_script;
+  }
+
+  QCString opensearchFileName = Config_getString("HTML_OUTPUT")+"/search-opensearch.php";
+  QFile of(opensearchFileName);
+  if (of.open(IO_WriteOnly))
+  {
+    FTextStream t(&of);
+    // Write stuff from search_opensearch.php source file...
+    t << search_opensearch_script;
+  }
+  // OPENSEARCH_PROVIDER }
+
   QCString fileName = Config_getString("HTML_OUTPUT")+"/search.php";
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
-    if (g_header.isEmpty()) 
-    {
-      writeDefaultHeaderFile(t,"search",theTranslator->trSearch().data(),0,FALSE,TRUE);
-    }
-    else
-    {
-      t << substituteHtmlKeywords(g_header,"Search","");
-    }
+    t << substituteHtmlKeywords(g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
       << versionString << " -->" << endl;
@@ -2949,10 +2753,8 @@ void HtmlGenerator::writeSearchPage()
         << "search\",false,'" << theTranslator->trSearch() << "');\n";
       t << "</script>\n";
     }
-    t << "<div id=\"top\">" << endl;
-    writeTitleArea(t,"",projectName,projectBrief,projectNumber,projectLogo);
-    if (!Config_getBool("DISABLE_INDEX")) 
-    { 
+    if (!Config_getBool("DISABLE_INDEX"))
+    {
       writeDefaultQuickLinks(t,TRUE,HLI_Search,"");
     }
     else
@@ -2963,6 +2765,8 @@ void HtmlGenerator::writeSearchPage()
       t << "</div>" << endl;
     }
 
+    // OPENSEARCH_PROVIDER {
+#if 0
     t << "\n<script language=\"php\">\n\n";
     t << "function search_results()\n";
     t << "{\n";
@@ -2998,7 +2802,7 @@ void HtmlGenerator::writeSearchPage()
         << "onfocus=\\\"searchBox.OnSearchFieldFocus(true)\\\" "
         << "onblur=\\\"searchBox.OnSearchFieldFocus(false)\\\"/>\\n"
         << "            </form>\\n"
-        << "          </span><span class=\\\"right\\\"></span>\\n"
+        << "          </div><div class=\\\"right\\\"></div>\\n"
         << "        </div>\\n"
         << "      </li>\\n"
         << "    </ul>\\n"
@@ -3013,28 +2817,25 @@ void HtmlGenerator::writeSearchPage()
     }
     t << "\";\n";
     t << "}\n";
-    t << "function end_page()\n";
-    t << "{\n";
-    t << "  echo \"";
-    if (generateTreeView)
-    {
-      t << "</div>\\n";
-      t << "<div id=\\\"nav-path\\\" class=\\\"navpath\\\">\\n";
-      t << "  <ul>\\n";
-      t << "    <li class=\\\"footer\\\">";
-      t << substitute(substitute(writeLogoAsString(""),
-                                 "\"","\\\""),
-                      "\n","\\n");
-      t << "</li>\\n";
-      t << "  </ul>\\n";
-      t << "</div>\\n";
-    }
-    t << "</body></html>\";\n";
-    t << "}\n";
     t << "\n";
     t << search_script;
     t << "\n";
     t << "</script>\n";
+#endif
+    // OPENSEARCH_PROVIDER }
+
+    t << "<script language=\"php\">\n";
+    t << "require_once \"search-functions.php\";\n";
+    t << "main();\n";
+    t << "</script>\n";
+
+    // Write empty navigation path, to make footer connect properly
+    if (generateTreeView)
+    {
+      t << "</div><div id=\"nav-path\" class=\"navpath\">\n";
+      t << "    <ul>\n";
+    }
+
     writePageFooter(t,"Search","");
   }
   QCString scriptName = Config_getString("HTML_OUTPUT")+"/search/search.js";
@@ -3177,18 +2978,13 @@ void HtmlGenerator::endHeaderSection()
   t << "</div>" << endl;
 }
 
-void HtmlGenerator::startInlineDescription()
-{
-  t << "<tr><td colspan=\"2\">";
-}
-
-void HtmlGenerator::endInlineDescription()
-{
-  t << "</td></tr>" << endl;
-}
-
 void HtmlGenerator::startInlineHeader()
 {
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
   t << "<tr><td colspan=\"2\"><h3>";
 }
 
@@ -3197,4 +2993,52 @@ void HtmlGenerator::endInlineHeader()
   t << "</h3></td></tr>" << endl;
 }
 
+void HtmlGenerator::startMemberDocSimple()
+{
+  DBG_HTML(t << "<!-- startMemberDocSimple -->" << endl;)
+  t << "<table class=\"fieldtable\">" << endl;
+  t << "<tr><th colspan=\"3\">" << theTranslator->trCompoundMembers() << "</th></tr>" << endl;
+}
+
+void HtmlGenerator::endMemberDocSimple()
+{
+  DBG_HTML(t << "<!-- endMemberDocSimple -->" << endl;)
+  t << "</table>" << endl;
+}
+
+void HtmlGenerator::startInlineMemberType()
+{
+  DBG_HTML(t << "<!-- startInlineMemberType -->" << endl;)
+  t << "<tr><td class=\"fieldtype\">" << endl;
+}
+
+void HtmlGenerator::endInlineMemberType()
+{
+  DBG_HTML(t << "<!-- endInlineMemberType -->" << endl;)
+  t << "</td>" << endl;
+}
+
+void HtmlGenerator::startInlineMemberName()
+{
+  DBG_HTML(t << "<!-- startInlineMemberName -->" << endl;)
+  t << "<td class=\"fieldname\">" << endl;
+}
+
+void HtmlGenerator::endInlineMemberName()
+{
+  DBG_HTML(t << "<!-- endInlineMemberName -->" << endl;)
+  t << "</td>" << endl;
+}
+
+void HtmlGenerator::startInlineMemberDoc()
+{
+  DBG_HTML(t << "<!-- startInlineMemberDoc -->" << endl;)
+  t << "<td class=\"fielddoc\">" << endl;
+}
+
+void HtmlGenerator::endInlineMemberDoc()
+{
+  DBG_HTML(t << "<!-- endInlineMemberDoc -->" << endl;)
+  t << "</td></tr>" << endl;
+}
 

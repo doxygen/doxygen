@@ -68,6 +68,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
 \refitem cfg_chm_file CHM_FILE
 \refitem cfg_chm_index_encoding CHM_INDEX_ENCODING
+\refitem cfg_cite_bib_files CITE_BIB_FILES
 \refitem cfg_class_diagrams CLASS_DIAGRAMS 
 \refitem cfg_class_graph CLASS_GRAPH
 \refitem cfg_collaboration_graph COLLABORATION_GRAPH
@@ -187,6 +188,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_internal_docs INTERNAL_DOCS
 \refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
 \refitem cfg_latex_batchmode LATEX_BATCHMODE
+\refitem cfg_latex_bib_style LATEX_BIB_STYLE
 \refitem cfg_latex_cmd_name LATEX_CMD_NAME
 \refitem cfg_latex_footer LATEX_FOOTER
 \refitem cfg_latex_header LATEX_HEADER
@@ -199,6 +201,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_man_extension MAN_EXTENSION
 \refitem cfg_man_links MAN_LINKS
 \refitem cfg_man_output MAN_OUTPUT
+\refitem cfg_mathjax_extensions MATHJAX_EXTENSIONS
 \refitem cfg_mathjax_relpath MATHJAX_RELPATH
 \refitem cfg_max_dot_graph_depth MAX_DOT_GRAPH_DEPTH
 \refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
@@ -950,6 +953,17 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  of the layout file. Note that if you run doxygen from a directory containing 
  a file called DoxygenLayout.xml, doxygen will parse it automatically even if 
  the \c LAYOUT_FILE tag is left empty.
+
+\anchor cfg_cite_bib_files
+<dt>\c CITE_BIB_FILES <dd>
+ \addindex CITE_BIB_FILES
+ The \c CITE_BIB_FILES tag can be used to specify one or more bib files 
+ containing the reference definitions. This must be a list of .bib files. The 
+ .bib extension is automatically appended if omitted. This requires the 
+ bibtex tool to be installed. See also http://en.wikipedia.org/wiki/BibTeX 
+ for more info. For LaTeX the style of the bibliography can be controlled 
+ using \ref cfg_latex_bib_style "LATEX_BIB_STYLE". See 
+ also \ref cmdcite "\\cite" for info how to create references.
 
 </dl>
 
@@ -1782,6 +1796,15 @@ and Class Hierarchy pages using a tree view instead of an ordered list.
  the http://www.mathjax.org site, so you can quickly see the result without installing 
  MathJax, but it is strongly recommended to install a local copy of MathJax 
  before deployment.
+
+\anchor cfg_mathjax_extensions
+<dt>\c MATHJAX_EXTENSIONS <dd>
+ \addindex MATHJAX_EXTENSIONS
+ The MATHJAX_EXTENSIONS tag can be used to specify one or MathJax extension 
+ names that should be enabled during MathJax rendering. For example
+\verbatim
+MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
+\endverbatim
  
 </dl>
 \section latex_output LaTeX related options
@@ -1906,6 +1929,15 @@ EXTRA_PACKAGES = times
  instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of 
  asking the user for help. This option is also used when generating formulas 
  in HTML.
+
+\anchor cfg_latex_bib_style 
+<dt>\c LATEX_BIB_STYLE <dd>
+ \addindex LATEX_BIB_STYLE
+
+ The \c LATEX_BIB_STYLE tag can be used to specify the style to use for the 
+ bibliography, e.g. \c plainnat, or \c ieeetr. The default style is 
+ \c plain. See http://en.wikipedia.org/wiki/BibTeX and \ref cmdcite "\\cite"
+ for more info.
 
 \anchor cfg_latex_hide_indices
 <dt>\c LATEX_HIDE_INDICES <dd>
@@ -2426,7 +2458,7 @@ The default size is 10pt.
  visible in IE 9+ (other browsers do not have this requirement).
 
 \anchor cfg_interactive_svg
-<dt>\c INTERACTIVE_SVG
+<dt>\c INTERACTIVE_SVG <dd>
  If DOT_IMAGE_FORMAT is set to svg, then this option can be set to YES to
  enable generation of interactive SVG images that allow zooming and panning. 
  Note that this requires a modern browser other than Internet Explorer. 

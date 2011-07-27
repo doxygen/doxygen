@@ -63,6 +63,7 @@
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
+      <inlineclasses title=""/>
       <typedefs title=""/>
       <enums title=""/>
       <constructors title=""/>
@@ -90,6 +91,7 @@
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
+      <inlineclasses title=""/>
       <typedefs title=""/>
       <enums title=""/>
       <functions title=""/>
@@ -117,6 +119,7 @@
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
+      <inlineclasses title=""/>
       <defines title=""/>
       <typedefs title=""/>
       <enums title=""/>

@@ -1,3 +1,54 @@
+<script language="PHP">
+require_once "search-config.php";
+
+function end_form($value)
+{
+  global $config;
+  global $translator;
+  if ($config['DISABLE_INDEX'] == false)
+  {
+  echo "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"$value\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n            </form>\n          </div><div class=\"right\"></div>\n        </div>\n      </li>\n    </ul>\n  </div>\n</div>\n";
+  }
+  if ($config['GENERATE_TREEVIEW'])
+  {
+    echo $translator['split_bar'];
+  }
+}
+
+function end_page()
+{
+  global $config;
+  global $translator;
+  if ($config['GENERATE_TREEVIEW'])
+  {
+    echo "</div>\n<div id=\"nav-path\" class=\"navpath\">\n  <ul>\n    <li class=\"footer\">";
+    echo $translator['logo'];
+    echo "</li>\n  </ul>\n</div>";
+  }
+  echo "</body></html>";
+}
+
+function search_results()
+{
+  global $translator;
+  return $translator['search_results_title'];
+}
+
+function matches_text($num)
+{
+  global $translator;
+  $string = $translator['search_results'][($num>2)?2:$num];
+  // The eval is used so that translator strings can contain $num.
+  eval("\$result = \"$string\";");
+  return $result;
+}
+
+function report_matches()
+{
+  global $translator;
+  return $translator['search_matches'];
+}
+
 function readInt($file)
 {
   $b1 = ord(fgetc($file)); $b2 = ord(fgetc($file));
@@ -260,9 +311,10 @@ function report_results(&$docs)
     }
   }
   echo "</table>\n";
+  echo "</div>\n";
 }
 
-function main()
+function run_query($query)
 {
   if(strcmp('4.1.0', phpversion()) > 0) 
   {
@@ -276,12 +328,6 @@ function main()
   {
     die("Error: Header of index file is invalid!");
   }
-  $query="";
-  if (array_key_exists("query", $_GET))
-  {
-    $query=$_GET["query"];
-  }
-  end_form(preg_replace("/[^a-zA-Z0-9\-\_\.]/i", " ", $query ));
   $results = array();
   $requiredWords = array();
   $forbiddenWords = array();
@@ -298,6 +344,7 @@ function main()
     }
     $word=strtok(" ");
   }
+  fclose($file);
   $docs = array();
   combine_results($results,$docs);
   // filter out documents with forbidden word or that do not contain
@@ -306,12 +353,22 @@ function main()
   // sort the results based on rank
   $sorted = array();
   sort_results($filteredDocs,$sorted);
-  // report results to the user
-  report_results($sorted);
-  echo "</div>\n";
-  end_page();
-  fclose($file);
+  return $sorted;
 }
 
-main();
-
+function main()
+{
+  $query = "";
+  if (array_key_exists("query", $_GET))
+  {
+    $query=$_GET["query"];
+  }
+  $sorted = run_query($query);
+  // Now output the HTML stuff...
+  // End the HTML form
+  end_form(preg_replace("/[^a-zA-Z0-9\-\_\.]/i", " ", $query ));
+  // report results to the user
+  report_results($sorted);
+  end_page();
+}
+</script>

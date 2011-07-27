@@ -97,6 +97,7 @@ static DefineDict        *g_fileDefineDict = new DefineDict(1009);
 static DefineDict        *g_expandedDict;
 static int                g_findDefArgContext;
 static bool               g_expectGuard;
+static QCString           g_guardName;
 static QCString           g_lastGuardName;
 static QCString           g_incName;
 static QCString           g_guardExpr;
@@ -1238,7 +1239,7 @@ static void readIncludeFile(const QCString &inc)
     QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
 
     QCString dosExt = incFileName.right(4);
-    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tbl")
+    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tlb")
     {
       // skip imported binary files (e.g. M$ type libraries)
       return;
@@ -1811,7 +1812,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <DefinedExpr1,DefinedExpr2>\\\n		{ g_yyLineNr++; outputChar('\n'); }
 <DefinedExpr1>{ID}			{
-  					  if (isDefined(yytext))
+  					  if (isDefined(yytext) || g_guardName==yytext)
 					    g_guardExpr+=" 1L ";
 					  else
 					    g_guardExpr+=" 0L ";
@@ -1819,7 +1820,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(Guard);
   					}
 <DefinedExpr2>{ID}			{
-  					  if (isDefined(yytext))
+  					  if (isDefined(yytext) || g_guardName==yytext)
 					    g_guardExpr+=" 1L ";
 					  else
 					    g_guardExpr+=" 0L ";
@@ -2019,6 +2020,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else // define is a guard => hide
 					  {
 					    //printf("Found a guard %s\n",yytext);
+					    g_guardName = yytext;
 					    g_lastGuardName.resize(0);
 					    BEGIN(Start);
 					  }
@@ -2645,6 +2647,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   BEGIN( Start );
   
   g_expectGuard = guessSection(fileName)==Entry::HEADER_SEC;
+  g_guardName.resize(0);
   g_lastGuardName.resize(0);
   g_guardExpr.resize(0);
   

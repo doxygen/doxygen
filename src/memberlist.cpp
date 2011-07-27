@@ -542,6 +542,22 @@ void MemberList::writeDocumentation(OutputList &ol,
   ol.endMemberDocList();
 }
 
+void MemberList::writeSimpleDocumentation(OutputList &ol,
+                     Definition *container)
+{
+  countDocMembers(FALSE);
+  if (numDocMembers()==0) return;
+
+  ol.startMemberDocSimple();
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for ( ; (md=mli.current()) ; ++mli)
+  {
+    md->writeMemberDocSimple(ol,container);
+  }
+  ol.endMemberDocSimple();
+}
+
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const char *scopeName, Definition *container)
 {

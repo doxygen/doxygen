@@ -342,6 +342,17 @@ void ManDocVisitor::visit(DocSimpleSectSep *)
 {
 }
 
+void ManDocVisitor::visit(DocCite *cite)
+{
+  if (m_hide) return;
+  m_t << "\\fB";
+  if (cite->file().isEmpty()) m_t << "[";
+  filter(cite->text());
+  if (cite->file().isEmpty()) m_t << "]";
+  m_t << "\\fP";
+}
+
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
@@ -446,7 +457,7 @@ void ManDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::Post:
       m_t << theTranslator->trPostcondition(); break;
     case DocSimpleSect::Copyright:
-      m_t << "Copyright" /*theTranslator->trCopyright()*/; break;
+      m_t << theTranslator->trCopyright(); break;
     case DocSimpleSect::Invar:
       m_t << theTranslator->trInvariant(); break;
     case DocSimpleSect::Remark:

@@ -5,7 +5,6 @@
 
 /*! \brief Base of the translator adapter tree
  *
- 
  *  This abstract class provides access to the english
  *  translations, to be used as a substitute for not implemented
  *  local translations. 
@@ -41,7 +40,23 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_6_3 : public TranslatorAdapterBase
+class TranslatorAdapter_1_7_5 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.7.5"); }
+
+    virtual QCString trCiteReferences()
+    { return english.trCiteReferences(); }
+
+    virtual QCString trCopyright()
+    { return english.trCopyright(); }
+
+    virtual QCString trDirDepGraph(const char *name)
+    { return english.trDirDepGraph(name); }
+};
+
+class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
 {
   public:
     virtual QCString updateNeededMessage()

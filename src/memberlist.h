@@ -143,6 +143,7 @@ class MemberList : public QList<MemberDef>
                const char *title,const char *subtitle,bool showEnumValues=FALSE,bool showInline=FALSE);
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
+    void writeSimpleDocumentation(OutputList &ol,Definition *container);
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, Definition *container);
     bool declVisible() const;

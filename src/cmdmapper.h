@@ -117,6 +117,7 @@ enum CommandType
   CMD_MSCFILE      = 83,
   CMD_DCOLON       = 84,
   CMD_COPYRIGHT    = 85 | SIMPLESECT_BIT,
+  CMD_CITE         = 86,
 };
 
 enum HtmlTagType

@@ -215,6 +215,15 @@ class PrintDocVisitor : public DocVisitor
       indent_leaf();
       printf("<simplesectsep/>");
     }
+    void visit(DocCite *cite)
+    {
+      indent_leaf();
+      printf("<cite ref=\"%s\" file=\"%s\" "
+             "anchor=\"%s\" text=\"%s\""
+             "/>\n",
+             cite->ref().data(),cite->file().data(),cite->anchor().data(),
+             cite->text().data());
+    }
 
     //--------------------------------------
     

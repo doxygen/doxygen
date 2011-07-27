@@ -193,8 +193,7 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
       ol.disable(OutputGenerator::Man);
       //ol.startParagraph();
       ol.startDirDepGraph();
-      //TODO: ol.parseText(theTranslator->trDirDepGraph());
-      ol.parseText((QCString)"Directory dependency graph for "+displayName()+":");
+      ol.parseText(theTranslator->trDirDepGraph(displayName()));
       ol.endDirDepGraph(dirDep);
       //ol.endParagraph();
       ol.enableAll();
@@ -381,6 +380,7 @@ void DirDef::writeDocumentation(OutputList &ol)
         }
         break;
       case LayoutDocEntry::ClassIncludes:
+      case LayoutDocEntry::ClassInlineClasses:
       case LayoutDocEntry::ClassInheritanceGraph:
       case LayoutDocEntry::ClassNestedClasses:
       case LayoutDocEntry::ClassCollaborationGraph:
@@ -388,12 +388,14 @@ void DirDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::ClassUsedFiles:
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::FileClasses:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileIncludes:
       case LayoutDocEntry::FileIncludeGraph:
       case LayoutDocEntry::FileIncludedByGraph: 
       case LayoutDocEntry::FileSourceLink:
+      case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses: 
       case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:

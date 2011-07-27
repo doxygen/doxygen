@@ -38,18 +38,20 @@ struct LayoutDocEntry
               AuthorSection,
               
               // Class specific items
-              ClassIncludes,
+              ClassIncludes, ClassInlineClasses,
               ClassInheritanceGraph, ClassNestedClasses,
               ClassCollaborationGraph, ClassAllMembersLink,
               ClassUsedFiles,
 
               // Namespace specific items
               NamespaceNestedNamespaces, NamespaceClasses,
+              NamespaceInlineClasses,
 
               // File specific items
               FileClasses, FileNamespaces, 
               FileIncludes, FileIncludeGraph, 
               FileIncludedByGraph, FileSourceLink,
+              FileInlineClasses,
 
               // Group specific items
               GroupClasses, GroupInlineClasses, GroupNamespaces,

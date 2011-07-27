@@ -174,6 +174,9 @@ class ClassDefImpl
 
     /** List of titles to use for the summary */
     SDict<QCString> vhdlSummaryTitles;
+
+    /** Is this a simple (non-nested) C structure? */
+    bool isSimple;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -213,6 +216,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   membersMerged = FALSE;
   categoryOf = 0;
   usedOnly = FALSE;
+  isSimple = Config_getBool("INLINE_SIMPLE_STRUCTS");
   //QCString ns;
   //extractNamespaceName(name,className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
@@ -266,7 +270,6 @@ ClassDef::ClassDef(
   m_impl->compType = ct;
   m_impl->lang     = SrcLangExt_Unknown;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
-
 }
 
 // destroy the class definition
@@ -321,6 +324,7 @@ void ClassDef::insertBaseClass(ClassDef *cd,const char *n,Protection p,
     m_impl->inherits->setAutoDelete(TRUE);
   }
   m_impl->inherits->append(new BaseClassDef(cd,n,p,s,t));
+  m_impl->isSimple = FALSE;
 }
 
 // inserts a sub class in the inherited list
@@ -334,6 +338,7 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
     m_impl->inheritedBy->setAutoDelete(TRUE);
   }
   m_impl->inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
+  m_impl->isSimple = FALSE;
 }
 
 void ClassDef::addMembersToMemberGroup()
@@ -387,6 +392,8 @@ void ClassDef::internalInsertMember(MemberDef *md,
                             // classes when HAVE_DOT and UML_LOOK are enabled.
   {
     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+
+    bool isSimple=FALSE;
 
     /********************************************/
     /* insert member in the declaration section */
@@ -484,6 +491,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   break;
                 case Public:    
                   addMemberToList(MemberList::pubAttribs,md,TRUE);
+                  isSimple=TRUE;
                   break;
                 case Private:   
                   addMemberToList(MemberList::priAttribs,md,TRUE);
@@ -529,6 +537,10 @@ void ClassDef::internalInsertMember(MemberDef *md,
           }
           break; 
       }
+    }
+    if (!isSimple) // not a simple field -> not a simple struct
+    {
+      m_impl->isSimple = FALSE;
     }
 
     /*******************************************************/
@@ -1355,8 +1367,17 @@ void ClassDef::writeNestedClasses(OutputList &ol,const QCString &title)
   }
 }
 
+void ClassDef::writeInlineClasses(OutputList &ol)
+{
+  if (m_impl->innerClasses) 
+  {
+    m_impl->innerClasses->writeDocumentation(ol,this);
+  }
+}
+
 void ClassDef::startMemberDocumentation(OutputList &ol)
 {
+  //printf("%s: ClassDef::startMemberDocumentation()\n",name().data());
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.disable(OutputGenerator::Html);
@@ -1366,6 +1387,7 @@ void ClassDef::startMemberDocumentation(OutputList &ol)
 
 void ClassDef::endMemberDocumentation(OutputList &ol)
 {
+  //printf("%s: ClassDef::endMemberDocumentation()\n",name().data());
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.enable(OutputGenerator::Html);
@@ -1375,11 +1397,13 @@ void ClassDef::endMemberDocumentation(OutputList &ol)
 
 void ClassDef::startMemberDeclarations(OutputList &ol)
 {
+  //printf("%s: ClassDef::startMemberDeclarations()\n",name().data());
   ol.startMemberSections();
 }
 
 void ClassDef::endMemberDeclarations(OutputList &ol)
 {
+  //printf("%s: ClassDef::endMemberDeclarations()\n",name().data());
   ol.endMemberSections();
 }
 
@@ -1493,43 +1517,11 @@ void ClassDef::writeTagFileMarker(OutputList &ol)
   }
 }
 
-#if 0
-void ClassDef::writeInlineDeclaration(OutputList &ol,bool first)
-{
-  //printf("ClassDef::writeInlineDeclaration for %s\n",name().data());
-  bool exampleFlag=hasExamples();
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  ol.startMemberHeader(first ? "nested-classes" : 0);
-  //ol.parseText(name()+" "+theTranslator->trClassDocumentation());
-  QCString s = compoundTypeString();
-  if (s.length()>0 && isId(s.at(0))) s[0]=toupper(s[0]);
-  s+=" "+name();
-  ol.parseText(s);
-  ol.endMemberHeader();
-  ol.writeAnchor(getOutputFileBase(),anchor());
-  ol.startInlineDescription();
-  writeBriefDescription(ol,exampleFlag);
-  ol.endInlineDescription();
-  for (eli.toFirst();(lde=eli.current());++eli)
-  {
-    if (lde->kind()==LayoutDocEntry::MemberDecl)
-    {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-      writeMemberDeclarations(ol,lmd->type,lmd->title,lmd->subscript,TRUE);
-    }
-    else if (lde->kind()==LayoutDocEntry::MemberGroups)
-    {
-      writeMemberGroups(ol,TRUE);
-    }
-  }
-}
-#endif
-
 /** Write class documentation inside another container (i.e. a group) */
 void ClassDef::writeInlineDocumentation(OutputList &ol)
 {
+  bool isSimple = m_impl->isSimple;
+
   ol.addIndexItem(name(),0);
   //printf("ClassDef::writeInlineDocumentation(%s)\n",name().data());
   QListIterator<LayoutDocEntry> eli(
@@ -1593,33 +1585,38 @@ void ClassDef::writeInlineDocumentation(OutputList &ol)
         writeCollaborationGraph(ol); 
         break; 
       case LayoutDocEntry::MemberDeclStart: 
-        startMemberDeclarations(ol);
+        if (!isSimple) startMemberDeclarations(ol);
         break; 
       case LayoutDocEntry::MemberDecl:
         {
           LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-          writeMemberDeclarations(ol,lmd->type,lmd->title,lmd->subscript,TRUE);
+          if (!isSimple) writeMemberDeclarations(ol,lmd->type,lmd->title,lmd->subscript,TRUE);
         }
         break;
       case LayoutDocEntry::MemberGroups:
-        {
-          writeMemberGroups(ol,TRUE);
-        }
+        if (!isSimple) writeMemberGroups(ol,TRUE);
         break;
       case LayoutDocEntry::MemberDeclEnd: 
-        endMemberDeclarations(ol);
+        if (!isSimple) endMemberDeclarations(ol);
         break;
       case LayoutDocEntry::MemberDefStart: 
-        startMemberDocumentation(ol);
+        if (!isSimple) startMemberDocumentation(ol);
         break; 
       case LayoutDocEntry::MemberDef: 
         {
           LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
-          writeMemberDocumentation(ol,lmd->type,lmd->title,TRUE);
+          if (isSimple)
+          {
+            writeSimpleMemberDocumentation(ol,lmd->type);
+          }
+          else
+          {
+            writeMemberDocumentation(ol,lmd->type,lmd->title,TRUE);
+          }
         }
         break; 
       case LayoutDocEntry::MemberDefEnd: 
-        endMemberDocumentation(ol);
+        if (!isSimple) endMemberDocumentation(ol);
         break;
       default:
         break;
@@ -1853,6 +1850,9 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTit
       case LayoutDocEntry::MemberDefStart: 
         startMemberDocumentation(ol);
         break; 
+      case LayoutDocEntry::ClassInlineClasses:
+        writeInlineClasses(ol);
+        break;
       case LayoutDocEntry::MemberDef: 
         {
           LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
@@ -1870,12 +1870,14 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTit
         break;
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::FileClasses:
       case LayoutDocEntry::FileNamespaces:
       case LayoutDocEntry::FileIncludes:
       case LayoutDocEntry::FileIncludeGraph:
       case LayoutDocEntry::FileIncludedByGraph: 
       case LayoutDocEntry::FileSourceLink:
+      case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses: 
       case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:
@@ -2039,7 +2041,8 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
     for (cli.toFirst();(innerCd=cli.current());++cli)
     {
       if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
-          (innerCd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE"))
+          (innerCd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
+         !innerCd->isEmbeddedInOuterScope()
          )
       {
         msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
@@ -3163,10 +3166,33 @@ QCString ClassDef::getXmlOutputFileBase() const
 QCString ClassDef::getOutputFileBase() const 
 { 
   static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
+  Definition *scope=0;
   if (inlineGroupedClasses && partOfGroups()!=0)
   {
     // point to the group that embeds this class
     return partOfGroups()->at(0)->getOutputFileBase();
+  }
+  else if (inlineSimpleClasses && m_impl->isSimple && partOfGroups()!=0)
+  {
+    // point to simple struct inside a group
+    return partOfGroups()->at(0)->getOutputFileBase();
+  }
+  else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()) && 
+            (
+              (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkable()) || 
+              scope->isLinkable()
+            )
+          )
+  {
+    if (scope==Doxygen::globalScope) // simple struct embedded in file
+    {
+      return getFileDef()->getOutputFileBase();
+    }
+    else // simple struct embedded in other container (namespace/group/class)
+    {
+      return getOuterScope()->getOutputFileBase();
+    }
   }
   else
   {
@@ -3243,6 +3269,7 @@ void ClassDef::addInnerCompound(Definition *d)
       m_impl->innerClasses = new ClassSDict(17);
     }
     m_impl->innerClasses->inSort(d->localName(),(ClassDef *)d);
+    m_impl->isSimple = FALSE;
   }
 }
 
@@ -3655,6 +3682,7 @@ void ClassDef::sortMemberLists()
 void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
                const char *subTitle,bool showInline)
 {
+  //printf("%s: ClassDef::writeMemberDeclarations\n",name().data());
   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   MemberList * ml = getMemberList(lt);
   if (ml) 
@@ -3672,12 +3700,21 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
 
 void ClassDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title,bool showInline)
 {
+  //printf("%s: ClassDef::writeMemberDocumentation()\n",name().data());
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,name(),this,title,FALSE,showInline);
 }
 
+void ClassDef::writeSimpleMemberDocumentation(OutputList &ol,MemberList::ListType lt)
+{
+  //printf("%s: ClassDef::writeSimpleMemberDocumentation()\n",name().data());
+  MemberList * ml = getMemberList(lt);
+  if (ml) ml->writeSimpleDocumentation(ol,this);
+}
+
 void ClassDef::writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup)
 {
+  //printf("%s: ClassDef::writePlainMemberDeclaration()\n",name().data());
   MemberList * ml = getMemberList(lt);
   if (ml) 
   {
@@ -3871,6 +3908,11 @@ bool ClassDef::isUsedOnly() const
   return m_impl->usedOnly;
 }
 
+bool ClassDef::isSimple() const
+{
+  return m_impl->isSimple;
+}
+
 void ClassDef::reclassifyMember(MemberDef *md,MemberDef::MemberType t)
 {
   md->setMemberType(t);
@@ -3886,7 +3928,7 @@ void ClassDef::reclassifyMember(MemberDef *md,MemberDef::MemberType t)
 QCString ClassDef::anchor() const
 {
   QCString anc;
-  if (isEmbeddedInGroupDocs())
+  if (isEmbeddedInOuterScope())
   {
     if (m_impl->templateMaster)
     {
@@ -3907,10 +3949,28 @@ QCString ClassDef::anchor() const
   return anc;
 }
 
-bool ClassDef::isEmbeddedInGroupDocs() const
+bool ClassDef::isEmbeddedInOuterScope() const
 {
   static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
-  return (inlineGroupedClasses && partOfGroups()!=0);
+  static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
+
+  Definition *container = getOuterScope();
+
+  // inline because of INLINE_GROUPED_CLASSES=YES ?
+  bool b1 = (inlineGroupedClasses && partOfGroups()!=0); // a grouped class
+  // inline because of INLINE_SIMPLE_STRUCTS=YES ?
+  bool b2 = (inlineSimpleClasses && m_impl->isSimple && // a simple class
+             ((container && 
+               (container==Doxygen::globalScope || container->isLinkableInProject())) || // with a documented scope
+               partOfGroups()!=0                                             // or part of a group
+             )
+           );
+  //printf("%s::isEmbeddedInOuterScope(): inlineGroupedClasses=%d "
+  //       "inlineSimpleClasses=%d partOfGroups()=%p m_impl->isSimple=%d "
+  //       "getOuterScope()=%p b1=%d b2=%d\n",
+  //    name().data(),inlineGroupedClasses,inlineSimpleClasses,
+  //    partOfGroups().pointer(),m_impl->isSimple,getOuterScope(),b1,b2);
+  return b1 || b2;  // either reason will do
 }
 
 

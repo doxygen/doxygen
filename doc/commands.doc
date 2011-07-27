@@ -51,6 +51,7 @@ documentation:
 \refitem cmdcallgraph \\callgraph
 \refitem cmdcallergraph \\callergraph
 \refitem cmdcategory \\category
+\refitem cmdcite \\cite
 \refitem cmdclass \\class
 \refitem cmdcode \\code
 \refitem cmdcond \\cond
@@ -1658,6 +1659,18 @@ Commands to create links
   \sa section \ref cmdref "\\ref".
 
 <hr>
+\section cmdcite \\cite <label>
+
+  \addindex \\cite
+  Adds a bibliographic reference in the text and in the list of bibliographic
+  references. The \<label\> must be a valid BibTeX label that can be found 
+  in one of the .bib files listed in \ref cfg_cite_bib_files "CITE_BIB_FILES".  
+  For the LaTeX output the formatting of the reference in the text can be 
+  configured with \ref cfg_latex_bib_style "LATEX_BIB_STYLE". For other
+  output formats a fixed representation is used. Note that using this
+  command requires the \c bibtex tool to be present in the search path.
+
+<hr>
 \section cmdendlink \\endlink
 
   \addindex \\endlink
@@ -2399,11 +2412,13 @@ class Receiver
   \note The second { is optional and is only to help editors (such as Vim) to
   do proper syntax highlighting by making the number of opening and closing braces
   the same.
+  \sa section \ref cmdfcurlyclose "\\f}" and section \ref formulas "formulas".
 
 <hr>
 \section cmdfcurlyclose \\f}
 
   Marks the end of a formula that is in a specific environment.
+  \sa section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
 
 <hr>
 \section cmdhtmlonly \\htmlonly

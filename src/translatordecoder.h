@@ -738,6 +738,16 @@ class TranslatorDecoder : public Translator
                                              hour,minutes,seconds,includeTime)); 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trCiteReferences()
+    { return toUtf8(m_translator->trCiteReferences()); }
+    QCString trCopyright()
+    { return toUtf8(m_translator->trCopyright()); }
+    QCString trDirDepGraph(const char *name)
+    { return toUtf8(m_translator->trDirDepGraph(fromUtf8(name))); }
 
 //////////////////////////////////////////////////////////////////////////
   private:

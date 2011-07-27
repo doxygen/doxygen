@@ -337,7 +337,7 @@ CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=]
 ESCWORD   "%"{ID}(("::"|"."){ID})*
 WORD1     {ESCWORD}|{CHARWORDQ}+|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="
-WORD1NQ   {ESCWORD}|{CHARWORDQ}+
+WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
@@ -372,6 +372,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 %x St_File
 %x St_Pattern
 %x St_Link
+%x St_Cite
 %x St_Ref
 %x St_Ref2
 %x St_IntRef
@@ -733,6 +734,22 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
   			 unput(*yytext);
 			 return 0;
   		       }
+<St_Cite>{LABELID}     { // label to cite
+  			 g_token->name=yytext;
+			 return TK_WORD;
+  		       }
+<St_Cite>{BLANK}       { // white space
+  			 unput(' ');
+  			 return 0;
+                       }
+<St_Cite>\n	       { // new line
+                         unput(*yytext);
+  			 return 0;
+  		       }
+<St_Cite>.	       { // any other character
+                         unput(*yytext);
+  			 return 0;
+  		       }
 <St_Ref>{REFWORD}      { // label to refer to
   			 g_token->name=yytext;
 			 return TK_WORD;
@@ -1077,6 +1094,11 @@ void doctokenizerYYsetStatePattern()
 void doctokenizerYYsetStateLink()
 {
   BEGIN(St_Link);
+}
+
+void doctokenizerYYsetStateCite()
+{
+  BEGIN(St_Cite);
 }
 
 void doctokenizerYYsetStateRef()

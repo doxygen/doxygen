@@ -398,6 +398,11 @@ void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title)
   if (classSDict) classSDict->writeDeclaration(ol,0,title,FALSE);
 }
 
+void FileDef::writeInlineClasses(OutputList &ol)
+{
+  if (classSDict) classSDict->writeDocumentation(ol,this);
+}
+
 void FileDef::startMemberDeclarations(OutputList &ol)
 {
   ol.startMemberSections();
@@ -636,6 +641,9 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDefStart: 
         startMemberDocumentation(ol);
         break; 
+      case LayoutDocEntry::FileInlineClasses:
+        writeInlineClasses(ol);
+        break;
       case LayoutDocEntry::MemberDef: 
         {
           LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
@@ -654,8 +662,10 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::ClassCollaborationGraph:
       case LayoutDocEntry::ClassAllMembersLink:
       case LayoutDocEntry::ClassUsedFiles:
+      case LayoutDocEntry::ClassInlineClasses:
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::GroupClasses: 
       case LayoutDocEntry::GroupInlineClasses: 
       case LayoutDocEntry::GroupNamespaces:
