@@ -279,6 +279,7 @@ void ManGenerator::docify(const char *str)
     {
       switch(c)
       {
+        case '.':  t << "\\&."; break; // see  bug652277
         case '\\': t << "\\\\"; col++; break;
         case '\n': t << "\n"; col=0; break;
         case '\"':  c = '\''; // no break!
@@ -304,6 +305,7 @@ void ManGenerator::codify(const char *str)
       c=*p++;
       switch(c)
       {
+        case '.':   t << "\\&."; break; // see  bug652277
         case '\t':  spacesToNextTabStop =
                           Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
                     t << Doxygen::spaces.left(spacesToNextTabStop); 

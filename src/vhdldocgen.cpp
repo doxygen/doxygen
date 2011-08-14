@@ -209,12 +209,14 @@ ClassDef *VhdlDocGen::getClass(const char *name)
 void VhdlDocGen::computeVhdlComponentRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli)
+  ClassDef *cd;
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
-    cli.current()->visited=FALSE;
-    ClassDef * cd = cli.current();
-    if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS || 
-        (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+    if (cd->getLanguage()==SrcLangExt_VHDL &&
+        ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS || 
+         (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
+        )
+       )
     {
       QCString bName=cd->name();
       int i=bName.find("::");

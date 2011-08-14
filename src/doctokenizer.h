@@ -149,5 +149,6 @@ void doctokenizerYYsetStateSkipTitle();
 void doctokenizerYYsetStateAnchor();
 void doctokenizerYYsetInsidePre(bool b);
 void doctokenizerYYpushBackHtmlTag(const char *tag);
+void doctokenizerYYsetStateSnippet();
 
 #endif

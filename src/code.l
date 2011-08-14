@@ -1264,6 +1264,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   int len=2;
   int i=locFunc.findRev("::");
   if (i==-1) i=locFunc.findRev("."),len=1;
+  if (i==-1) i=locFunc.findRev("\\"),len=1; // for PHP
   if (i>0)
   {
     if (locScope.isEmpty())
@@ -1715,12 +1716,14 @@ static int yyread(char *buf,int max_size)
 B       [ \t]
 BN      [ \t\n\r]
 ID	"$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
-SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+SCOPESEP  ("::"|"\\"){BN}*
+SCOPEPRE  ({SCOPESEP}{ID}{BN}*)*{SCOPESEP}
+SCOPENAME  {SCOPEPRE}?(("~"{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
-SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
-SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
+SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?("::"|"\\"){BN}*)*)((~{BN}*)?{ID})
+SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*("::"|"\\"){BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
@@ -2062,9 +2065,14 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( ClassVar );
 					}
+<ClassName>{ID}("\\"{ID})*		{ // PHP namespace
+                                          g_curClassName=substitute(yytext,"\\","::");
+					  addType();
+					  generateClassOrGlobalLink(*g_code,yytext);
+					  BEGIN( ClassVar );
+  					}
 <PackageName>{ID}("."{ID})*		{
-                                          g_curClassName=yytext;
-					  g_curClassName=substitute(g_curClassName,".","::");
+					  g_curClassName=substitute(yytext,".","::");
 					  //printf("found package: %s\n",g_curClassName.data());
 					  addType();
 					  codifyLines(yytext);
@@ -2124,7 +2132,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    //fprintf(stderr,"***** g_curClassName=%s\n",g_curClassName.data());
 					    if (getResolvedClass(g_currentDefinition,g_sourceFileDef,g_curClassName)==0)
 					    {
-					      //printf("Adding new class %s\n",g_curClassName.data());
+					      //fprintf(stderr,"Adding new class %s\n",g_curClassName.data());
 					      ClassDef *ncd=new ClassDef("<code>",1,
 				 		  g_curClassName,ClassDef::Class,0,0,FALSE);
 					      g_codeClassSDict->append(g_curClassName,ncd);
@@ -2406,11 +2414,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  addType();
   					  g_name=varname; 
 					}
-<Body>{SCOPETNAME}/{BN}*"("		{ // a() or c::a() or t<A,B>::a()
+<Body>{SCOPETNAME}/{BN}*"("		{ // a() or c::a() or t<A,B>::a() or A\B\foo()
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
-					  //printf("---> g_classScope=%s\n",g_classScope.data());
-					  //g_theVarContext.addVariable(g_type,yytext);
   					  g_bracketCount=0;
 					  g_args.resize(0);
   					  g_name+=yytext; 
@@ -2850,6 +2856,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  //g_theCallContext.popScope();
 					  g_parmType.resize(0);g_parmName.resize(0);
 					  int index = g_name.findRev("::");
+					  //fprintf(stderr,"g_name=%s\n",g_name.data());
 					  if (index!=-1) 
 					  {
 					    QCString scope = g_name.left(index);

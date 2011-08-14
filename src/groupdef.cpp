@@ -145,11 +145,42 @@ bool GroupDef::addClass(const ClassDef *cd)
   if (cd->isHidden()) return FALSE;
   if (classSDict->find(cd->qualifiedName())==0)
   {
-    //printf("addClass %s sort=%d\n",cd->qualifiedName().data(),sortBriefDocs);
+    QCString qn = cd->qualifiedName();
+    //printf("--- addClass %s sort=%d\n",qn.data(),sortBriefDocs);
     if (sortBriefDocs)
+    {
       classSDict->inSort(cd->qualifiedName(),cd);
+    }
     else
-      classSDict->append(cd->qualifiedName(),cd);
+    {
+      int i=qn.findRev("::");
+      if (i==-1) i=qn.find('.');
+      bool found=FALSE;
+      //printf("i=%d\n",i);
+      if (i!=-1)
+      {
+        // add nested classes (e.g. A::B, A::C) after their parent (A) in 
+        // order of insertion
+        QCString scope = qn.left(i);
+        int j=classSDict->findAt(scope);
+        if (j!=-1)
+        {
+          while (j<(int)classSDict->count() && 
+              classSDict->at(j)->qualifiedName().left(i)==scope)
+          {
+            //printf("skipping over %s\n",classSDict->at(j)->qualifiedName().data());
+            j++;
+          }
+          //printf("Found scope at index %d\n",j);
+          classSDict->insertAt(j,cd->qualifiedName(),cd);
+          found=TRUE;
+        }
+      }
+      if (!found) // no insertion point found -> just append
+      {
+        classSDict->append(cd->qualifiedName(),cd);
+      }
+    }
     return TRUE;
   }
   return FALSE;

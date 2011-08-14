@@ -207,6 +207,18 @@ class SDict
 #endif
     }
 
+    void insertAt(int i,const char *key,const T *d)
+    {
+      m_list->insert(i,d);
+      m_dict->insert(key,d);
+#if AUTORESIZE
+      if (m_dict->size()>SDict_primes[m_sizeIndex])
+      {
+        m_dict->resize(SDict_primes[++m_sizeIndex]);
+      }
+#endif
+    }
+
     /*! Indicates whether or not the dictionary owns its elements */
     void setAutoDelete(bool val)
     {
@@ -229,6 +241,12 @@ class SDict
     T *find(const QString &key)
     {
       return m_dict->find(key);
+    }
+    int findAt(const QCString &key)
+    {
+      T *item = find(key);
+      if (item==0) return -1;
+      return m_list->find(item);
     }
 
     /*! Equavalent to find(). */

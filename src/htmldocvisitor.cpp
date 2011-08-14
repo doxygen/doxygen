@@ -446,6 +446,25 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       m_t << PREFRAG_END;
       forceStartParagraph(inc);
       break;
+    case DocInclude::Snippet:
+      {
+         forceEndParagraph(inc);
+         m_t << PREFRAG_START;
+         Doxygen::parserManager->getParser(inc->extension())
+                               ->parseCode(m_ci,
+                                           inc->context(),
+                                           extractBlock(inc->text(),inc->blockId()),
+                                           inc->isExample(),
+                                           inc->exampleFile(), 
+                                           0,
+                                           -1,  // startLine
+                                           -1,  // endLine
+                                           TRUE // inlineFragment
+                                          );
+         m_t << PREFRAG_END;
+         forceStartParagraph(inc);
+      }
+      break;
   }
 }
 

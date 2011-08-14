@@ -1123,24 +1123,25 @@ class LayoutParser : public QXmlDefaultHandler
 class LayoutErrorHandler : public QXmlErrorHandler
 {
   public:
+    LayoutErrorHandler(const char *fn) : fileName(fn) {}
     bool warning( const QXmlParseException &exception )
     {
-      err("error: at line %d column %d: %s\n",
-          exception.lineNumber(),exception.columnNumber(),
+      err("warning: at line %d column %d of %s: %s\n",
+          exception.lineNumber(),exception.columnNumber(),fileName.data(),
           exception.message().data());
       return FALSE;
     }
     bool error( const QXmlParseException &exception )
     {
-      err("error: at line %d column %d: %s\n",
-          exception.lineNumber(),exception.columnNumber(),
+      err("error: at line %d column %d of %s: %s\n",
+          exception.lineNumber(),exception.columnNumber(),fileName.data(),
           exception.message().data());
       return FALSE;
     }
     bool fatalError( const QXmlParseException &exception )
     {
-      err("error: at line %d column %d: %s\n",
-          exception.lineNumber(),exception.columnNumber(),
+      err("fatal error: at line %d column %d of %s: %s\n",
+          exception.lineNumber(),exception.columnNumber(),fileName.data(),
           exception.message().data());
       return FALSE;
     }
@@ -1148,6 +1149,7 @@ class LayoutErrorHandler : public QXmlErrorHandler
 
   private:
     QString errorMsg;
+    QString fileName;
 };
 
 //---------------------------------------------------------------------------------
@@ -1175,7 +1177,7 @@ LayoutDocManager::LayoutDocManager()
 void LayoutDocManager::init()
 {
   // parse the default layout
-  LayoutErrorHandler errorHandler;
+  LayoutErrorHandler errorHandler( "layout_default.xml" );
   QXmlInputSource source;
   source.setData( layout_default );
   QXmlSimpleReader reader;
@@ -1216,9 +1218,9 @@ void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
   d->docEntries[(int)p].clear();
 }
 
-void LayoutDocManager::parse(QTextStream &t)
+void LayoutDocManager::parse(QTextStream &t,const char *fileName)
 {
-  LayoutErrorHandler errorHandler;
+  LayoutErrorHandler errorHandler(fileName);
   QXmlInputSource source( t );
   QXmlSimpleReader reader;
   reader.setContentHandler( &LayoutParser::instance() );

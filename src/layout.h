@@ -175,7 +175,7 @@ class LayoutDocManager
     LayoutNavEntry *rootNavEntry() const;
 
     /** Parses a user provided layout */
-    void parse(QTextStream &t);
+    void parse(QTextStream &t,const char *fileName);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);

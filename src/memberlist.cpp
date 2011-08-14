@@ -546,6 +546,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
                      Definition *container)
 {
   countDocMembers(FALSE);
+  //printf("MemberList count=%d\n",numDocMembers());
   if (numDocMembers()==0) return;
 
   ol.startMemberDocSimple();

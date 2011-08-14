@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_7_5
+class TranslatorGreek : public Translator
 {
   protected:
     friend class TranslatorAdapterBase;
@@ -819,7 +819,7 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Διάγραμμα εξάρτησης Include για το αρχείο "+fName+":";
+      return (QCString)"Διάγραμμα εξάρτησης αρχείου συμπερίληψης για το "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -963,8 +963,8 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
     }
     virtual QCString trInclByDepGraph()
     {
-      return "Το γράφημα αυτό παρουσιάζει ποιά αρχεία άμεσα ή "
-             "έμεσα περιλαμβάνουν αυτό το αρχείο:";
+      return "Το διάγραμμα αυτό παρουσιάζει ποιά αρχεία άμεσα ή "
+             "έμμεσα περιλαμβάνουν αυτό το αρχείο:";
     }
     virtual QCString trSince()
     {
@@ -1017,7 +1017,7 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Αυτό οδηγεί στο επόμενο γράφημα:"
+        "Αυτό οδηγεί στο επόμενο διάγραμμα:"
         "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
         "<p>\n"
         "Τα κουτιά στο παραπάνω διάγραμμα έχουν την ακόλουθη σημασία:\n"
@@ -1414,7 +1414,7 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Το γράφημα δείχνει ποιές συναρτήσεις καλούνται από αυτή:";
+      return "Το διάγραμμα δείχνει ποιές συναρτήσεις καλούνται από αυτή:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1546,7 +1546,7 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
     /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
-      return "Το γράφημα δείχνει από ποιές συναρτήσεις καλείται αυτή η συνάρτηση:";
+      return "Το διάγραμμα δείχνει από ποιές συναρτήσεις καλείται αυτή η συνάρτηση:";
     }
 
     /*! This is used in the documentation of a file/namespace before the list 
@@ -1795,7 +1795,7 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
     /*! introduction text for the directory dependency graph */
     virtual QCString trDirDependency(const char *name)
     {
-      return (QCString)"Γράφημα εξάρτησης φακέλου για το "+name;
+      return (QCString)"Διάγραμμα εξάρτησης φακέλου για το "+name;
     }
 
     /*! when clicking a directory dependency label, a page with a
@@ -1842,6 +1842,22 @@ class TranslatorGreek : public TranslatorAdapter_1_7_5
       }
       return sdate;
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Αναφορές Βιβλιογραφίας"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Διάγραμμα εξάρτησης φακέλων για ")+name+":"; }
 
 };
 

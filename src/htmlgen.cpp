@@ -979,7 +979,16 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
 
   if (mathJax)
   {
-    mathJaxJs = "<script src=\"$relpath$MathJax.js\">\n"
+    QCString path = Config_getString("MATHJAX_RELPATH");  
+    if (!path.isEmpty() && path.at(path.length()-1)!='/')  
+    {   
+      path+="/";   
+    }   
+    if (path.isEmpty() || path.left(2)=="..") // relative path  
+    {  
+      path.prepend(relPath);   
+    }  
+    mathJaxJs = "<script src=\"" + path + "MathJax.js\">\n"
                 "  MathJax.Hub.Config({\n"
                 "    extensions: [\"tex2jax.js\"";
     QStrList &mathJaxExtensions = Config_getList("MATHJAX_EXTENSIONS");

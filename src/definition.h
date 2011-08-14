@@ -24,6 +24,7 @@
 #include <sys/types.h>
 
 #include "lockingptr.h"
+#include "util.h"
 
 class FileDef;
 class OutputList;
@@ -240,6 +241,9 @@ class Definition : public DefinitionIntf, public LockableObj
      */
     FileDef *getBodyDef();
 
+    /** Returns the programming language this definition was written in. */
+    SrcLangExt getLanguage() const;
+
     LockingPtr<GroupList> partOfGroups() const;
 
     LockingPtr< QList<ListItemInfo> > xrefListItems() const;
@@ -249,6 +253,7 @@ class Definition : public DefinitionIntf, public LockableObj
 
     LockingPtr<MemberSDict> getReferencesMembers() const;
     LockingPtr<MemberSDict> getReferencedByMembers() const;
+
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -293,6 +298,7 @@ class Definition : public DefinitionIntf, public LockableObj
     virtual void setHidden(bool b);
 
     void setArtificial(bool b);
+    void setLanguage(SrcLangExt lang);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

@@ -99,10 +99,14 @@ enum SrcLangExt
   SrcLangExt_Cpp     = 0x0200,
   SrcLangExt_JS      = 0x0400,
   SrcLangExt_Python  = 0x0800,
-  SrcLangExt_F90     = 0x1000,
+  SrcLangExt_Fortran = 0x1000,
   SrcLangExt_VHDL    = 0x2000,
-  SrcLangExt_XML     = 0x4000
+  SrcLangExt_XML     = 0x4000,
+  SrcLangExt_Tcl     = 0x8000
 };
+
+QCString langToString(SrcLangExt lang);
+QCString getLanguageSpecificSeparator(SrcLangExt lang);
 
 //--------------------------------------------------------------------
 
@@ -310,12 +314,11 @@ void addGroupListToTitle(OutputList &ol,Definition *d);
 void filterLatexString(FTextStream &t,const char *str,
                        bool insideTabbing=FALSE,
                        bool insidePre=FALSE,
-                       bool insideItem=FALSE,
-                       bool forceBreaks=FALSE);
+                       bool insideItem=FALSE);
 
 QCString rtfFormatBmkStr(const char *name);
 
-QCString linkToText(const char *link,bool isFileName);
+QCString linkToText(SrcLangExt lang,const char *link,bool isFileName);
 
 QCString stripExtension(const char *fName);
 
@@ -402,7 +405,9 @@ struct ColoredImgDataItem
 
 void writeColoredImgData(const char *dir,ColoredImgDataItem data[]);
 QCString replaceColorMarkers(const char *str);
+
 bool copyFile(const QCString &src,const QCString &dest);
+QCString extractBlock(const QCString text,const QCString marker);
 
 #endif
 

@@ -267,9 +267,10 @@ class ClassDef : public Definition
     QCString anchor() const;
     bool isEmbeddedInOuterScope() const;
 
-    SrcLangExt getLanguage() const;
-
     bool isSimple() const;
+
+    const ClassList *taggedInnerClasses() const;
+    ClassDef *tagLessReference() const;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----
@@ -293,7 +294,6 @@ class ClassDef : public Definition
     void addUsedClass(ClassDef *cd,const char *accessName,Protection prot);
     void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot);
     void setIsStatic(bool b);
-    void setLanguage(SrcLangExt lang);
     void setCompoundType(CompoundType t);
     void setClassName(const char *name);
 
@@ -305,6 +305,9 @@ class ClassDef : public Definition
     void makeTemplateArgument(bool b=TRUE);
     void setCategoryOf(ClassDef *cd);
     void setUsedOnly(bool b);
+
+    void addTaggedInnerClass(ClassDef *cd);
+    void setTagLessReference(ClassDef *cd);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -328,6 +331,7 @@ class ClassDef : public Definition
     void writeInlineDocumentation(OutputList &ol);
     void writeDeclarationLink(OutputList &ol,bool &found,
                               const char *header,bool localNames);
+    void removeMemberFromLists(MemberDef *md);
     
     bool visited;
 

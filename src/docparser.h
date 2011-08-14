@@ -69,7 +69,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.
  */
-DocNode *validatingParseText(const char *input,bool forceBreaks=FALSE);
+DocNode *validatingParseText(const char *input);
 
 /*! Searches for section and anchor commands in the input */
 void docFindSections(const char *input,
@@ -396,35 +396,39 @@ class DocVerbatim : public DocNode
 class DocInclude : public DocNode
 {
   public:
-    enum Type { Include, DontInclude, VerbInclude, HtmlInclude, IncWithLines };
+    enum Type { Include, DontInclude, VerbInclude, HtmlInclude, IncWithLines, Snippet };
     DocInclude(DocNode *parent,const QCString &file,
                const QCString context, Type t,
-               bool isExample,const QCString exampleFile) : 
+               bool isExample,const QCString exampleFile,
+               const QCString blockId) : 
       m_file(file), m_context(context), m_type(t),
-      m_isExample(isExample), m_exampleFile(exampleFile) { m_parent = parent; }
-    Kind kind() const           { return Kind_Include; }
+      m_isExample(isExample), m_exampleFile(exampleFile),
+      m_blockId(blockId) { m_parent = parent; }
+    Kind kind() const            { return Kind_Include; }
     QCString file() const        { return m_file; }
     QCString extension() const   { int i=m_file.findRev('.'); 
-                                  if (i!=-1) 
-                                    return m_file.right(m_file.length()-i); 
-                                  else 
-                                    return ""; 
-                                }
-    Type type() const           { return m_type; }
+                                   if (i!=-1) 
+                                     return m_file.right(m_file.length()-i); 
+                                   else 
+                                     return ""; 
+                                 }
+    Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
     QCString context() const     { return m_context; }
-    bool isExample() const      { return m_isExample; }
+    QCString blockId() const     { return m_blockId; }
+    bool isExample() const       { return m_isExample; }
     QCString exampleFile() const { return m_exampleFile; }
-    void accept(DocVisitor *v)  { v->visit(this); }
+    void accept(DocVisitor *v)   { v->visit(this); }
     void parse();
 
   private:
     QCString  m_file;
     QCString  m_context;
     QCString  m_text;
-    Type     m_type;
-    bool     m_isExample;
+    Type      m_type;
+    bool      m_isExample;
     QCString  m_exampleFile;
+    QCString  m_blockId;
 };
 
 /*! @brief Node representing a include/dontinclude operator block */
@@ -1218,14 +1222,10 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
 class DocText : public CompAccept<DocText>, public DocNode
 {
   public:
-    DocText(bool forceBreaks) : m_forceBreaks(forceBreaks) {}
+    DocText() {}
     Kind kind() const       { return Kind_Text; }
     void accept(DocVisitor *v) { CompAccept<DocText>::accept(this,v); }
     void parse();
-    bool forceBreaks() const { return m_forceBreaks; }
-
-  private:
-    bool m_forceBreaks;
 };
 
 /*! @brief Root node of documentation tree */

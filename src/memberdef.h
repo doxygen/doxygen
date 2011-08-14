@@ -128,6 +128,7 @@ class MemberDef : public Definition
     bool isEnumValue() const;
     bool isTypedef() const;
     bool isFunction() const;
+    bool isFunctionPtr() const;
     bool isDefine() const;
     bool isFriend() const;
     bool isDCOP() const;
@@ -296,6 +297,7 @@ class MemberDef : public Definition
     void setDeclArgumentList(ArgumentList *al);
     void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
     void setTypeConstraints(ArgumentList *al);
+    void setType(const char *t);
 
     // namespace related members
     void setNamespace(NamespaceDef *nd);
@@ -336,7 +338,7 @@ class MemberDef : public Definition
     void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine);
 
     void setHidden(bool b);
-    
+
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------

@@ -198,52 +198,5 @@ class TranslatorAdapter_1_4_1 : public TranslatorAdapter_1_4_6
     { return english.trOverloadText(); }
 };
 
-class TranslatorAdapter_1_3_9 : public TranslatorAdapter_1_4_1
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.3.9"); }
-    
-    virtual QCString trDirIndex()
-    { return english.trDirIndex(); }
-    virtual QCString trDirDocumentation()
-    { return english.trDirDocumentation(); }
-    virtual QCString trDirectories()
-    { return english.trDirectories(); }
-    virtual QCString trDirDescription()
-    { return english.trDirDescription(); }
-    virtual QCString trDirReference(const char *dirName)
-    { return english.trDirReference(dirName); }
-    virtual QCString trDir(bool first_capital, bool singular)
-    { return english.trDir(first_capital,singular); }
-};
-
-class TranslatorAdapter_1_3_8 : public TranslatorAdapter_1_3_9
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.3.8"); }
-    
-    virtual QCString trSourceFile(QCString& filename)
-    { return english.trSourceFile(filename); }
-};
-
-class TranslatorAdapter_1_3_3 : public TranslatorAdapter_1_3_8
-{
-  public:
-    virtual QCString updateNeededMessage() 
-    { return createUpdateNeededMessage(idLanguage(),"release 1.3.3"); }
-
-    virtual QCString trSearchForIndex()
-    { return english.trSearchForIndex(); }
-    virtual QCString trSearchResultsTitle()
-    { return english.trSearchResultsTitle(); }
-    virtual QCString trSearchResults(int numDocuments)
-    { return english.trSearchResults(numDocuments); }
-    virtual QCString trSearchMatches()
-    { return english.trSearchMatches(); }
-
-};
-
 #endif
 

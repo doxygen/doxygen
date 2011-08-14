@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- * 
- *
- *
  * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -514,7 +511,7 @@ static void writeMemberReference(FTextStream &t,Definition *def,MemberDef *rmd,c
   QCString name = rmd->name();
   if (!scope.isEmpty() && scope!=def->name())
   {
-    name.prepend(scope+"::");
+    name.prepend(scope+getLanguageSpecificSeparator(rmd->getLanguage()));
   }
   t << "        <" << tagName << " refid=\"";
   t << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\"";

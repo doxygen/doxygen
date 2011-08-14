@@ -300,7 +300,7 @@ void replaceComment(int offset);
 				     }
                                    }
 <Scan>"!>"			   {
-  			             if (g_lang!=SrcLangExt_F90)
+  			             if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
 				     }
@@ -384,7 +384,7 @@ void replaceComment(int offset);
 				     }
   				   }
 <Scan>"!>"			   {
-                                     if (g_lang!=SrcLangExt_F90)
+                                     if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
 				     }
@@ -587,7 +587,7 @@ void replaceComment(int offset);
 				     }
   				   }
 <CComment>"\n"/[ \t]*[^!]	   { /* end of Fortran comment */
-  				     if (g_lang!=SrcLangExt_F90)
+  				     if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
 				     }
@@ -690,7 +690,7 @@ void replaceComment(int offset);
 				       //printf("** Adding start of comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
-					   g_lang!=SrcLangExt_F90)
+					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('/');
      				         ADDCHAR('*');
@@ -709,7 +709,7 @@ void replaceComment(int offset);
 				       //printf("** Adding terminator for comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
-					   g_lang!=SrcLangExt_F90)
+					   g_lang!=SrcLangExt_Fortran)
 				       {
  				         ADDCHAR('*');
      				         ADDCHAR('/');

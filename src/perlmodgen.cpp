@@ -683,6 +683,7 @@ void PerlModDocVisitor::visit(DocInclude *inc)
   case DocInclude::DontInclude:	return;
   case DocInclude::HtmlInclude:	type = "htmlonly"; break;
   case DocInclude::VerbInclude:	type = "preformatted"; break;
+  case DocInclude::Snippet: return;
   }
   openItem(type);
   m_output.addFieldQuotedString("content", inc->text());

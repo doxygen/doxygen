@@ -36,21 +36,6 @@ const QCString CiteConsts::anchorPrefix("CITEREF_");
 
 //--------------------------------------------------------------------------
 
-static bool writeBstFile(const QString &fileName)
-{
-  QCString bstData = doxygen_bst;
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly)) 
-  {
-    err("error: could not open file %s for writing\n",fileName.data());
-    return FALSE;
-  }
-  f.writeBlock(bstData, strlen(bstData));
-  return TRUE;
-}
-
-//--------------------------------------------------------------------------
-
 CiteDict::CiteDict(int size) : m_entries(size, FALSE)
 { 
   m_ordering.setAutoDelete(TRUE); 
@@ -119,14 +104,16 @@ bool CiteDict::writeAux()
 bool CiteDict::writeBst()
 {
   //msg("..writing bst file\n");
-  QCString bstFileName = m_baseFileName + ".bst";
-  return writeBstFile(bstFileName);
-}
-
-void CiteDict::writeDefaultBibStyle()
-{
-  writeBstFile("doxygen.bst");
-  msg("wrote doxygen.bst\n");
+  QCString fileName = m_baseFileName + ".bst";
+  QCString bstData = doxygen_bst;
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly)) 
+  {
+    err("error: could not open file %s for writing\n",fileName.data());
+    return FALSE;
+  }
+  f.writeBlock(bstData, bstData.length());
+  return TRUE;
 }
 
 void CiteDict::writeLatexBibliography(FTextStream &t)

@@ -2243,6 +2243,37 @@ void RTFGenerator::endMemberSubtitle()
 //}
 //
 
+bool isLeadBytes(int c)
+{
+  bool result;
+
+  QCString codePage = theTranslator->trRTFansicp();
+
+  if (codePage == "932")       // cp932 (Japanese Shift-JIS)
+  {
+    result = (0x81<=c && c<=0x9f) || (0xe0<=c && c<=0xfc);
+  }
+  else if (codePage == "936")  // cp936 (Simplified Chinese GBK)
+  {
+    result = 0x81<=c && c<=0xFE;
+  }
+  else if (codePage == "949")  // cp949 (Korean)
+  {
+    result = 0x81<=c && c<=0xFE;
+  }
+  else if (codePage == "950")  // cp950 (Traditional Chinese Big5)
+  {
+    result = 0x81<=c && c<=0xFE;
+  }
+  else                         // for SBCS Codepages (cp1252,1251 etc...)
+  {
+    result = false;
+  }
+
+  return result;
+}
+
+
 // note: function is not reentrant!
 static void encodeForOutput(FTextStream &t,const QCString &s)
 {
@@ -2276,14 +2307,26 @@ static void encodeForOutput(FTextStream &t,const QCString &s)
     enc.resize(l);
   }
   uint i;
+  bool multiByte = FALSE;
+
   for (i=0;i<enc.size();i++)
   {
     uchar c = (uchar)enc.at(i);
-    if (c>=0x80)
+
+    if (c>=0x80 || multiByte)
     {
       char esc[10];
-      sprintf(esc,"\\'%X",c);
+      sprintf(esc,"\\'%X",c);        // escape sequence for SBCS and DBCS(1st&2nd bytes).
       t << esc;
+
+      if (!multiByte)
+      {
+        multiByte = isLeadBytes(c);  // It may be DBCS Codepages.
+      }
+      else
+      {
+        multiByte = FALSE;           // end of Double Bytes Character.
+      }
     }
     else
     {

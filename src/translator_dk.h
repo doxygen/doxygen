@@ -87,8 +87,7 @@
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-// class TranslatorDanish : public TranslatorAdapter_1_5_4
-class TranslatorDanish : public TranslatorAdapter_1_7_5
+class TranslatorDanish : public Translator
 {
   public:
 
@@ -1795,6 +1794,25 @@ class TranslatorDanish : public TranslatorAdapter_1_7_5
         sdate+=stime;
       }
       return sdate;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCiteReferences()
+    {
+      return "Bibliografiske referencer"; 
+    }
+
+    virtual QCString trCopyright()
+    {
+      return "Copyright";
+    }
+
+    virtual QCString trDirDepGraph(const char *name)
+    {
+      return QCString("Afhængighedsgraf for katalog ")+name+":"; 
     }
 
 

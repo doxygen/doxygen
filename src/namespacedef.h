@@ -119,7 +119,6 @@ class NamespaceDef : public Definition
     ClassSDict           *classSDict;
     NamespaceSDict       *namespaceSDict;
     bool                  m_subGrouping;
-    bool                  m_isCSharp;
 };
 
 class NamespaceList : public QList<NamespaceDef>

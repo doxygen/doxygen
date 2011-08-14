@@ -184,6 +184,7 @@ class PrintDocVisitor : public DocVisitor
         case DocInclude::DontInclude: printf("dontinclude"); break;
         case DocInclude::HtmlInclude: printf("htmlinclude"); break;
         case DocInclude::VerbInclude: printf("verbinclude"); break;
+        case DocInclude::Snippet: printf("snippet"); break;
       }
       printf("\"/>");
     }

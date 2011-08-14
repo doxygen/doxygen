@@ -379,6 +379,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 %x St_Text
 %x St_SkipTitle
 %x St_Anchor
+%x St_Snippet
 
 %x St_Sections
 %s St_SecLabel1
@@ -961,6 +962,13 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
                          warn(g_fileName,yylineno,"warning: Unexpected character `%s' while looking for section label or title",yytext); 
                        }
+
+<St_Snippet>[^\n]+     |
+<St_Snippet>[^\n]*\n   {
+  			 g_token->name = yytext;
+			 g_token->name = g_token->name.stripWhiteSpace();
+			 return TK_WORD;  
+  		       }
    
      /* Generic rules that work for all states */ 
 <*>\n                  { 
@@ -1124,6 +1132,11 @@ void doctokenizerYYsetStateSkipTitle()
 void doctokenizerYYsetStateAnchor()
 {
   BEGIN(St_Anchor);
+}
+
+void doctokenizerYYsetStateSnippet()
+{
+  BEGIN(St_Snippet);
 }
 
 void doctokenizerYYcleanup()

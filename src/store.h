@@ -109,6 +109,7 @@ class Store : public StorageIntf
     void printFreeList();
     FILE *m_file;
     portable_off_t m_front;
+    portable_off_t m_cur;
     Node *m_head;
     State m_state;
     int m_reads;

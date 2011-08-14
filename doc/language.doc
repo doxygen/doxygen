@@ -68,55 +68,55 @@ when the translator was updated.
     <td>Armenian</td>
     <td>Armen Tangamyan</td>
     <td>armen dot tangamyan at anu dot edu dot au</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Brazilian Portuguese</td>
     <td>Fabio "FJTC" Jun Takada Chino</td>
     <td>jun-chino at uol dot com dot br</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Catalan</td>
     <td>Maximiliano Pin<br/>Albert Mora</td>
     <td>max dot pin at bitroit dot com<br/><span style="color: brown">[unreachable]</span></td>
-    <td>1.6.3</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Chinese</td>
-    <td>Lang Yang<br/>Li Daobing<br/>Wei Liu</td>
+    <td>Lian Yang<br/>Li Daobing<br/>Wei Liu</td>
     <td>lian dot yang dot cn at gmail dot com<br/>lidaobing at gmail dot com<br/>liuwei at asiainfo dot com</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Chinese Traditional</td>
     <td>Daniel YC Lin<br/>Gary Lee</td>
     <td>dlin dot tw at gmail dot com<br/>garywlee at gmail dot com</td>
-    <td>1.6.0</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Croatian</td>
     <td>Boris Bralo</td>
     <td>boris dot bralo at gmail dot com</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Czech</td>
     <td>Petr Přikryl</td>
     <td>prikrylp at skil dot cz</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Danish</td>
     <td>Poul-Erik Hansen<br/>Erik Søe Sørensen</td>
     <td>pouhan at gnotometrics dot dk<br/>eriksoe+doxygen at daimi dot au dot dk</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Dutch</td>
     <td>Dimitri van Heesch</td>
     <td>dimitri at stack dot nl</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>English</td>
@@ -146,13 +146,13 @@ when the translator was updated.
     <td>German</td>
     <td>Peter Grotrian<br/>Jens Seidel</td>
     <td>Peter dot Grotrian at pdv-FS dot de<br/>jensseidel at users dot sf dot net</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Greek</td>
     <td>Paul Gessos</td>
     <td>gessos dot paul at yahoo dot gr</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Hungarian</td>
@@ -188,7 +188,7 @@ when the translator was updated.
     <td>Korean</td>
     <td>Kim Taedong<br/>SooYoung Jung<br/>Richard Kim</td>
     <td>fly1004 at gmail dot com<br/>jung5000 at gmail dot com<br/><span style="color: brown">[unreachable]</span></td>
-    <td>1.7.05</td>
+    <td>1.7.5</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>KoreanEn</td>
@@ -230,7 +230,7 @@ when the translator was updated.
     <td>Portuguese</td>
     <td>Rui Godinho Lopes<br/><span style="color: red; background-color: yellow">-- searching for the maintainer --</span></td>
     <td><span style="color: brown">[resigned]</span><br/><span style="color: brown">[Please, try to help to find someone.]</span></td>
-    <td>1.3.3</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Romanian</td>
@@ -260,7 +260,7 @@ when the translator was updated.
     <td>Slovak</td>
     <td>Kali+Laco Švec<br/>Petr Přikryl</td>
     <td>the Slovak language advisors<br/>prikrylp at skil dot cz</td>
-    <td>1.7.5</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Slovene</td>
@@ -319,28 +319,28 @@ when the translator was updated.
   Arabic & Moaz Reyad & {\tt\tiny [resigned] moazreyad at yahoo dot com} & 1.4.6 \\
   ~ & -- searching for the maintainer -- & {\tt\tiny [Please, try to help to find someone.]} & ~ \\
   \hline
-  Armenian & Armen Tangamyan & {\tt\tiny armen dot tangamyan at anu dot edu dot au} & 1.7.5 \\
+  Armenian & Armen Tangamyan & {\tt\tiny armen dot tangamyan at anu dot edu dot au} & up-to-date \\
   \hline
-  Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt\tiny jun-chino at uol dot com dot br} & 1.7.5 \\
+  Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt\tiny jun-chino at uol dot com dot br} & up-to-date \\
   \hline
-  Catalan & Maximiliano Pin & {\tt\tiny max dot pin at bitroit dot com} & 1.6.3 \\
+  Catalan & Maximiliano Pin & {\tt\tiny max dot pin at bitroit dot com} & up-to-date \\
   ~ & Albert Mora & {\tt\tiny [unreachable] amora at iua dot upf dot es} & ~ \\
   \hline
-  Chinese & Lang Yang & {\tt\tiny lian dot yang dot cn at gmail dot com} & 1.7.5 \\
+  Chinese & Lian Yang & {\tt\tiny lian dot yang dot cn at gmail dot com} & up-to-date \\
   ~ & Li Daobing & {\tt\tiny lidaobing at gmail dot com} & ~ \\
   ~ & Wei Liu & {\tt\tiny liuwei at asiainfo dot com} & ~ \\
   \hline
-  Chinese Traditional & Daniel YC Lin & {\tt\tiny dlin dot tw at gmail dot com} & 1.6.0 \\
+  Chinese Traditional & Daniel YC Lin & {\tt\tiny dlin dot tw at gmail dot com} & up-to-date \\
   ~ & Gary Lee & {\tt\tiny garywlee at gmail dot com} & ~ \\
   \hline
-  Croatian & Boris Bralo & {\tt\tiny boris dot bralo at gmail dot com} & 1.7.5 \\
+  Croatian & Boris Bralo & {\tt\tiny boris dot bralo at gmail dot com} & up-to-date \\
   \hline
-  Czech & Petr Přikryl & {\tt\tiny prikrylp at skil dot cz} & 1.7.5 \\
+  Czech & Petr Přikryl & {\tt\tiny prikrylp at skil dot cz} & up-to-date \\
   \hline
-  Danish & Poul-Erik Hansen & {\tt\tiny pouhan at gnotometrics dot dk} & 1.7.5 \\
+  Danish & Poul-Erik Hansen & {\tt\tiny pouhan at gnotometrics dot dk} & up-to-date \\
   ~ & Erik Søe Sørensen & {\tt\tiny eriksoe+doxygen at daimi dot au dot dk} & ~ \\
   \hline
-  Dutch & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & 1.7.5 \\
+  Dutch & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & up-to-date \\
   \hline
   English & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & up-to-date \\
   \hline
@@ -350,10 +350,10 @@ when the translator was updated.
   \hline
   French & Xavier Outhier & {\tt\tiny xouthier at yahoo dot fr} & 1.6.3 \\
   \hline
-  German & Peter Grotrian & {\tt\tiny Peter dot Grotrian at pdv-FS dot de} & 1.7.5 \\
+  German & Peter Grotrian & {\tt\tiny Peter dot Grotrian at pdv-FS dot de} & up-to-date \\
   ~ & Jens Seidel & {\tt\tiny jensseidel at users dot sf dot net} & ~ \\
   \hline
-  Greek & Paul Gessos & {\tt\tiny gessos dot paul at yahoo dot gr} & 1.7.5 \\
+  Greek & Paul Gessos & {\tt\tiny gessos dot paul at yahoo dot gr} & up-to-date \\
   \hline
   Hungarian & Ákos Kiss & {\tt\tiny akiss at users dot sourceforge dot net} & 1.4.6 \\
   ~ & Földvári György & {\tt\tiny [unreachable] foldvari lost at cyberspace} & ~ \\
@@ -370,7 +370,7 @@ when the translator was updated.
   \hline
   JapaneseEn & see the Japanese language & {\tt\tiny ~} & English based \\
   \hline
-  Korean & Kim Taedong & {\tt\tiny fly1004 at gmail dot com} & 1.7.05 \\
+  Korean & Kim Taedong & {\tt\tiny fly1004 at gmail dot com} & 1.7.5 \\
   ~ & SooYoung Jung & {\tt\tiny jung5000 at gmail dot com} & ~ \\
   ~ & Richard Kim & {\tt\tiny [unreachable] ryk at dspwiz dot com} & ~ \\
   \hline
@@ -391,7 +391,7 @@ when the translator was updated.
   ~ & Grzegorz Kowal & {\tt\tiny [unreachable] g\_kowal at poczta dot onet dot pl} & ~ \\
   ~ & Krzysztof Kral & {\tt\tiny krzysztof dot kral at gmail dot com} & ~ \\
   \hline
-  Portuguese & Rui Godinho Lopes & {\tt\tiny [resigned] rgl at ruilopes dot com} & 1.3.3 \\
+  Portuguese & Rui Godinho Lopes & {\tt\tiny [resigned] rgl at ruilopes dot com} & up-to-date \\
   ~ & -- searching for the maintainer -- & {\tt\tiny [Please, try to help to find someone.]} & ~ \\
   \hline
   Romanian & Ionut Dumitrascu & {\tt\tiny reddumy at yahoo dot com} & 1.6.0 \\
@@ -403,7 +403,7 @@ when the translator was updated.
   \hline
   SerbianCyrilic & Nedeljko Stefanovic & {\tt\tiny stenedjo at yahoo dot com} & 1.6.0 \\
   \hline
-  Slovak & Kali+Laco Švec & {\tt\tiny the Slovak language advisors} & 1.7.5 \\
+  Slovak & Kali+Laco Švec & {\tt\tiny the Slovak language advisors} & up-to-date \\
   ~ & Petr Přikryl & {\tt\tiny prikrylp at skil dot cz} & ~ \\
   \hline
   Slovene & Matjaž Ostroveršnik & {\tt\tiny matjaz dot ostroversnik at ostri dot org} & 1.4.6 \\

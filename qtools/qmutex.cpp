@@ -59,7 +59,7 @@ void QMutex::lock()
 {
     //printf("%p: QMutex::lock(): enter\n",this);
     bool isLocked;
-    isLocked = d->contenders == 0 && d->contenders.testAndSet(0, 1);
+    isLocked = d->contenders.testAndSet(0, 1);
     if (!isLocked)
     {
       isLocked = d->contenders.fetchAndAdd(1)==0;
@@ -78,8 +78,7 @@ void QMutex::lock()
 
 bool QMutex::tryLock()
 {
-    bool isLocked = d->contenders == 0 &&
-                    d->contenders.testAndSet(0, 1);
+    bool isLocked = d->contenders.testAndSet(0, 1);
     return isLocked;
 }
 
