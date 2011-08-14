@@ -54,7 +54,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -156,7 +156,7 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -1836,6 +1836,22 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\tclscanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\tclscanner.l"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PtclScanYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\textdocvisitor.cpp"
 				>
 			</File>
@@ -2400,6 +2416,10 @@
 			</File>
 			<File
 				RelativePath="..\src\tagreader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\tclscanner.h"
 				>
 			</File>
 			<File

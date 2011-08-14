@@ -254,7 +254,14 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,const char *)
   // determine language
   QCString lang;
   SrcLangExt langExt = SrcLangExt_Cpp;
-  if (fd) langExt = getLanguageFromFileName(fd->name());
+  if (md) 
+  {
+    langExt = md->getLanguage();
+  }
+  else if (context) 
+  {
+    langExt = context->getLanguage();
+  }
   switch (langExt)
   {
     case SrcLangExt_Cpp:
@@ -277,9 +284,10 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,const char *)
     case SrcLangExt_Java:    lang="java"; break;       // Java
     case SrcLangExt_JS:      lang="javascript"; break; // Javascript
     case SrcLangExt_Python:  lang="python"; break;     // Python
-    case SrcLangExt_F90:     lang="fortran"; break;    // Fortran
+    case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
     case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL
     case SrcLangExt_XML:     lang="xml"; break;        // DBUS XML
+    case SrcLangExt_Tcl:     lang="tcl"; break;        // Tcl
     case SrcLangExt_Unknown: lang="unknown"; break;   // should not happen!
   }
 

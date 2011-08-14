@@ -78,6 +78,8 @@ class DefinitionImpl
     QCString defFileName;
     int      defLine;
     QCString defFileExt;
+
+    SrcLangExt lang;
 };
 
 DefinitionImpl::DefinitionImpl() 
@@ -135,6 +137,7 @@ void DefinitionImpl::init(const char *df,int dl,
   xrefListItems   = 0;
   hidden          = FALSE;
   isArtificial    = FALSE;
+  lang            = SrcLangExt_Unknown;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -540,13 +543,13 @@ void Definition::setInbodyDocumentation(const char *d,const char *inbodyFile,int
 static bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
-  static bool vhdlOpt           = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
   QCString filter = getFileFilter(fileName,TRUE);
   FILE *f=0;
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
+  SrcLangExt lang = getLanguageFromFileName(fileName);
   if (!usePipe) // no filter given or wanted
   {
     f = portable_fopen(fileName,"r");
@@ -557,7 +560,11 @@ static bool readCodeFragment(const char *fileName,
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
     f = portable_popen(cmd,"r");
   }
-  bool found=vhdlOpt;  // for VHDL no bracket search is possible
+  bool found = lang==SrcLangExt_VHDL   || 
+               lang==SrcLangExt_Tcl    || 
+               lang==SrcLangExt_Python || 
+               lang==SrcLangExt_Fortran;  
+               // for VHDL, TCL, Python, and Fortran no bracket search is possible
   if (f)
   {
     int c=0;
@@ -913,14 +920,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
         //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
         if (!scope.isEmpty() && scope!=scopeName)
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-          {
-            name.prepend(scope+".");
-          }
-          else
-          {
-            name.prepend(scope+"::");
-          }
+          name.prepend(scope+getLanguageSpecificSeparator(m_impl->lang));
         }
         if (!md->isObjCMethod() &&
             (md->isFunction() || md->isSlot() || 
@@ -1557,6 +1557,11 @@ void Definition::setReference(const char *r)
   m_impl->ref=r; 
 }
 
+SrcLangExt Definition::getLanguage() const
+{
+  return m_impl->lang;
+}
+
 void Definition::_setSymbolName(const QCString &name) 
 { 
   m_symbolName=name; 
@@ -1584,6 +1589,10 @@ void Definition::makeResident() const
 {
 }
 
+void Definition::setLanguage(SrcLangExt lang) 
+{ 
+  m_impl->lang=lang; 
+}
 
 void Definition::flushToDisk() const
 {
@@ -1610,6 +1619,7 @@ void Definition::flushToDisk() const
   marshalQCString     (Doxygen::symbolStorage,m_impl->defFileName);
   marshalInt          (Doxygen::symbolStorage,m_impl->defLine);
   marshalQCString     (Doxygen::symbolStorage,m_impl->defFileExt);
+  marshalInt          (Doxygen::symbolStorage,(int)m_impl->lang);
   marshalUInt(Doxygen::symbolStorage,END_MARKER);
   delete that->m_impl;
   that->m_impl = 0;
@@ -1642,6 +1652,7 @@ void Definition::loadFromDisk() const
   m_impl->defFileName     = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->defLine         = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->defFileExt      = unmarshalQCString     (Doxygen::symbolStorage);
+  m_impl->lang            = (SrcLangExt)unmarshalInt(Doxygen::symbolStorage);
   marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==END_MARKER);
 }

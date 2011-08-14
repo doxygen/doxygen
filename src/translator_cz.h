@@ -20,6 +20,7 @@
 
 // Updates:
 // --------
+// 2011/07/28 - Updates for "new since 1.7.5".
 // 2010/06/01 - typo
 // 2010/04/28 - Updates for "new since 1.6.3".
 // 2009/09/02 - Updates for "new since 1.6.0 (mainly for the new search engine)".
@@ -81,7 +82,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public TranslatorAdapter_1_7_5
+class TranslatorCzech : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -1905,5 +1906,21 @@ class TranslatorCzech : public TranslatorAdapter_1_7_5
       return sdate;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Odkazy na literaturu"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Graf závislosti na adresářích pro  ")+name+":"; }
 };
+
 #endif // TRANSLATOR_CZ_H

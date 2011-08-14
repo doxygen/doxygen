@@ -158,7 +158,7 @@ void LatexGenerator::init()
       << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: clean refman.tex" << endl;
     t << "\tpdflatex refman" << endl;
-    t << "\tmakeindex refman" << endl;
+    t << "\t" << mkidx_command << " refman.tex" << endl;
     if (generateBib)
     {
       t << "\tbibtex refman" << endl;
@@ -281,7 +281,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     "\\setcounter{tocdepth}{3}\n"
     "\\renewcommand{\\footrulewidth}{0.4pt}\n"
     "\\renewcommand{\\familydefault}{\\sfdefault}\n"
-    "\\hfuzz=10pt\n"  // allow a bit of overflow to go unnoticed
+    "\\hfuzz=15pt\n"  // allow a bit of overflow to go unnoticed
+    "\\setlength{\\emergencystretch}{15pt}\n"
+    "\\hbadness=750\n"
+    "\\tolerance=750\n"
     "\\begin{document}\n";
   static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
@@ -486,7 +489,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "\\newenvironment{DoxyCode}{%\n";
   if (latexSourceCode)
   {
-    t << "\n\n\\begin{footnotesize}\\begin{alltt}%" << endl;
+    t << "\n\n\\begin{scriptsize}\\begin{alltt}%" << endl;
   }
   else
   {
@@ -496,7 +499,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "}{%\n";
   if (latexSourceCode)
   {
-    t << "\\end{alltt}\\end{footnotesize}%" << endl; 
+    t << "\\end{alltt}\\end{scriptsize}%" << endl; 
   }
   else
   {
@@ -1873,7 +1876,7 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 
 void LatexGenerator::docify(const char *str)
 {
-  filterLatexString(t,str,insideTabbing,FALSE,FALSE,TRUE);
+  filterLatexString(t,str,insideTabbing,FALSE,FALSE);
 }
 
 void LatexGenerator::codify(const char *str)
@@ -1882,62 +1885,82 @@ void LatexGenerator::codify(const char *str)
   { 
     const char *p=str;
     char c;
-    char cs[5];
+    //char cs[5];
     int spacesToNextTabStop;
     static int tabSize = Config_getInt("TAB_SIZE");
-    while (*p)
+    const int maxLineLen = 80;
+    QCString result(4*maxLineLen+1); // worst case for 1 line of 4-byte chars
+    int i;
+    while ((c=*p))
     {
-      //static bool MultiByte = FALSE;
-      c=*p++;
-
       switch(c)
       {
-        case 0x0c: break; // remove ^L
+        case 0x0c: p++;  // remove ^L
+                   break;
         case '\t': spacesToNextTabStop =
                          tabSize - (col%tabSize);
                    t << Doxygen::spaces.left(spacesToNextTabStop); 
                    col+=spacesToNextTabStop;
+                   p++;
                    break; 
-        case '\n': t << '\n'; col=0;                    break;
-        default:   cs[0]=c;
-                   cs[1]=0;
-                   int bytes=1;
-                   if (c<0) // multibyte utf-8 character
-                   {
-                     bytes++;   // 1xxx.xxxx: >=2 byte character
-                     cs[1]=*p;
-                     cs[2]=0;
-                     if (((uchar)c&0xE0)==0xE0)
-                     {
-                       bytes++; // 111x.xxxx: >=3 byte character
-                       cs[2]=*(p+1);
-                       cs[3]=0;
-                     }
-                     if (((uchar)c&0xF0)==0xF0)
-                     {
-                       bytes++; // 1111.xxxx: 4 byte character
-                       cs[2]=*(p+2);
-                       cs[4]=0;
-                     }
-                   }
-                   if (m_prettyCode)
-                   {
-                     filterLatexString(t,cs,insideTabbing,TRUE);
-                   }
-                   else
-                   {
-                     t << cs;
-                   }
-                   if (col>=80)
+        case '\n': t << '\n'; col=0; p++;
+                   break;
+        default:   
+                   i=0;
+
+#undef  COPYCHAR
+// helper macro to copy a single utf8 character, dealing with multibyte chars.
+#define COPYCHAR() do {                                           \
+                     result[i++]=c; p++;                          \
+                     if (c<0) /* multibyte utf-8 character */     \
+                     {                                            \
+                       /* 1xxx.xxxx: >=2 byte character */        \
+                       result[i++]=*p++;                          \
+                       if (((uchar)c&0xE0)==0xE0)                 \
+                       {                                          \
+                         /* 111x.xxxx: >=3 byte character */      \
+                         result[i++]=*p++;                        \
+                       }                                          \
+                       if (((uchar)c&0xF0)==0xF0)                 \
+                       {                                          \
+                         /* 1111.xxxx: 4 byte character */        \
+                         result[i++]=*p++;                        \
+                       }                                          \
+                     }                                            \
+                     col++;                                       \
+                   } while(0)
+
+                   // gather characters until we find whitespace or are at
+                   // the end of a line
+                   COPYCHAR();
+                   if (col>=maxLineLen) // force line break
                    {
                      t << "\n      ";
                      col=0;
                    }
+                   else // copy more characters
+                   {
+                     while (col<maxLineLen && (c=*p) && 
+                            c!=0x0c && c!='\t' && c!='\n' && c!=' '
+                           )
+                     {
+                       COPYCHAR();
+                     }
+                     if (col>=maxLineLen) // force line break
+                     {
+                       t << "\n      ";
+                       col=0;
+                     }
+                   }
+                   result[i]=0; // add terminator
+                   if (m_prettyCode)
+                   {
+                     filterLatexString(t,result,insideTabbing,TRUE);
+                   }
                    else
                    {
-                     col++;
+                     t << result;
                    }
-                   p+=(bytes-1); // skip to next character
                    break;
       }
     }
@@ -2320,66 +2343,73 @@ void LatexGenerator::endConstraintList()
 
 void LatexGenerator::escapeLabelName(const char *s)
 {
+  if (s==0) return;
   const char *p=s;
-  char str[2];
-  str[1]=0;
   char c;
+  QCString result(strlen(s)+1); // worst case allocation
+  int i;
   while ((c=*p++))
   {
     switch (c)
     {
       case '%': t << "\\%";       break;
-      //case '|': t << "\\tt{\"|}"; break;
-      //case '!': t << "\"!";       break;
-      default:  str[0]=c; docify(str); break;
+      // NOTE: adding a case here, means adding it to while below as well!
+      default:  
+        i=0;
+        // collect as long string as possible, before handing it to docify
+        result[i++]=c;
+        while ((c=*p) && c!='%')
+        {
+          result[i++]=c;
+          p++;
+        }
+        result[i]=0;
+        docify(result); 
+        break;
     }
   }
 }
 
 void LatexGenerator::escapeMakeIndexChars(const char *s)
 {
+  if (s==0) return;
   const char *p=s;
-  char str[2];
-  str[1]=0;
   char c;
+  QCString result(strlen(s)+1); // worst case allocation
+  int i;
   while ((c=*p++))
   {
     switch (c)
     {
-      //case '!': t << "\"!"; break;
       case '"': t << "\"\""; break;
       case '@': t << "\"@"; break;
-      //case '|': t << "\\tt{\"|}"; break;
       case '[': t << "["; break;
       case ']': t << "]"; break;
-      default:  str[0]=c; docify(str); break;
+      // NOTE: adding a case here, means adding it to while below as well!
+      default:  
+        i=0;
+        // collect as long string as possible, before handing it to docify
+        result[i++]=c;
+        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']')
+        {
+          result[i++]=c;
+          p++;
+        }
+        result[i]=0;
+        docify(result); 
+        break;
     }
   }
 }
 
 void LatexGenerator::startCodeFragment()
 {
-  //if (m_prettyCode)
-  //{
-  //  t << endl << endl;
-  //  t << "\\begin{footnotesize}\\begin{alltt}\n";
-  //}
-  //else
-  //{
-    t << "\n\\begin{DoxyCode}\n";
-  //}
+  t << "\n\\begin{DoxyCode}\n";
 }
 
 void LatexGenerator::endCodeFragment()
 {
-  //if (m_prettyCode)
-  //{
-  //  t << "\\end{alltt}\\end{footnotesize}" << endl; 
-  //}
-  //else
-  //{
-    t << "\\end{DoxyCode}\n";
-  //}
+  t << "\\end{DoxyCode}\n";
 }
 
 void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)

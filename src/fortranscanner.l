@@ -111,6 +111,10 @@ static const char *directionStrs[] =
 {
    "", "intent(in)", "intent(out)", "intent(inout)"
 };
+static const char *directionParam[] = 
+{
+   "", "[in]", "[out]", "[in,out]"
+};
 
 // }}}
 
@@ -126,6 +130,8 @@ static QCString         inputStringPrepass; ///< Input string for prepass of lin
 static QCString         inputStringSemi; ///< Input string after command separetor ';'
 static unsigned int     inputPositionPrepass;
 static int              lineCountPrepass = 0;
+
+static QList<Entry>  subrCurrent;
 
 struct CommentInPrepass {
   int column;
@@ -185,6 +191,7 @@ static QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
 static int yyread(char *buf,int max_size);
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
+static void subrHandleCommentBlock(const QCString &doc,bool brief);
 static void addCurrentEntry();
 static void addModule(const char *name, bool isModule=FALSE);
 static void addSubprogram(const char *text);
@@ -405,7 +412,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
   					  current->section=Entry::USINGDIR_SEC;
 					  current_root->addSubEntry(current);
 					  current = new Entry;
-                                          current->lang    = SrcLangExt_F90; 
+                                          current->lang = SrcLangExt_Fortran; 
                                           yy_pop_state();
                                         }
 <Use>{ID}/,                             { 
@@ -420,7 +427,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
   					  current->section=Entry::USINGDECL_SEC;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
-                                          current->lang    = SrcLangExt_F90; 
+                                          current->lang = SrcLangExt_Fortran; 
   					}
 <Use,UseOnly>"\n"                       {
 					  yyColNr -= 1;
@@ -430,6 +437,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /* INTERFACE definitions */
 <Start,ModuleBody,SubprogBody>{
+^{BS}interface{IDSYM}+			{ /* variable with interface prefix */ }
 ^{BS}interface                          { ifType = IF_SPECIFIC;
                                           yy_push_state(InterfaceBody);
                                           // do not start a scope here, every
@@ -647,6 +655,7 @@ private                                 {
 
 					   if (!endScope(current_root))
 					     yyterminate();
+                                           subrCurrent.remove(0u);
 					   yy_pop_state() ;
 				        }
 <Start,ModuleBody,TypedefBody,SubprogBody>{
@@ -757,8 +766,7 @@ private                                 {
 					      if (!argType.isNull()) parameter->type=argType.stripWhiteSpace();
 					      if (!docBlock.isNull()) 
 					      {
-						parameter->docs += "\n";
-						parameter->docs += docBlock;
+  					        subrHandleCommentBlock(docBlock,TRUE);
 					      }					    
 					    }
 					    // save, it may be function return type
@@ -769,7 +777,7 @@ private                                 {
 					    else
 					    {
 					      if ((current_root->name.lower() == argName.lower()) ||
-						  (modifiers[current_root->parent()][current_root->name.lower()].returnName == argName.lower()))
+						  (modifiers[current_root->parent()][current_root->name.lower()].returnName.lower() == argName.lower()))
 					      {
 						int strt = current_root->type.find("function");
 						QString lft;
@@ -981,7 +989,7 @@ private                                 {
 
  /*---- documentation comments --------------------------------------------------------------------*/
 
-<Variable,SubprogBody,ModuleBody,TypedefBody>"!<"  { /* backward docu comment (only one line) */
+<Variable,SubprogBody,ModuleBody,TypedefBody>"!<"  { /* backward docu comment */
                                           if (v_type != V_IGNORE) {
 					   current->docLine  = yyLineNr;
  					   docBlockJavaStyle = FALSE;
@@ -992,7 +1000,16 @@ private                                 {
                                           }
   					 }
 <DocBackLine>.*    			 { // contents of current comment line
-                                          docBlock=yytext;
+                                          docBlock+=yytext;
+  					}
+<DocBackLine>"\n"{BS}"!"("<"|"!"+)		{ // comment block (next line is also comment line)
+					  docBlock+="\n"; // \n is necessary for lists
+					  newLine();
+  					}
+<DocBackLine>"\n"        			{ // comment block ends at the end of this line
+                                          //cout <<"3=========> comment block : "<< docBlock << endl;
+					  yyColNr -= 1;
+					  unput(*yytext);                                        
 					  if (v_type == V_VARIABLE) 
 					  {
 					    Entry *tmp_entry = current; 
@@ -1002,11 +1019,12 @@ private                                 {
                                           }
 					  else if (v_type == V_PARAMETER) 
 					  {
-					    parameter->docs+=docBlock;
+					    subrHandleCommentBlock(docBlock,TRUE);
                                           }
-                                          yy_pop_state();
- 					 }
-   
+					  yy_pop_state();
+					  docBlock.resize(0);
+                                        }
+
 <Start,SubprogBody,ModuleBody,TypedefBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains,TypedefBodyContains>"!>"  {
                                           yy_push_state(YY_START);
 					  current->docLine  = yyLineNr;
@@ -1831,7 +1849,7 @@ static void initEntry()
   current->mtype      = mtype;
   current->virt       = virt;
   current->stat       = gstat;
-  current->lang       = SrcLangExt_F90; 
+  current->lang       = SrcLangExt_Fortran; 
   initGroupInfo(current);
 }
 
@@ -1882,6 +1900,7 @@ static void addModule(const char *name, bool isModule)
 static void addSubprogram(const char *text)
 {
   //fprintf(stderr,"1=========> got subprog, type: %s\n",text); 
+  subrCurrent.prepend(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
   current->type += " " + subtype;
@@ -1978,7 +1997,8 @@ static void startCommentBlock(bool brief)
   }
 }
 
-  //----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
   docBlockInBody = FALSE;
@@ -2008,6 +2028,29 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   //fprintf(stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry);
 
   if (needsEntry) addCurrentEntry();
+}
+
+//----------------------------------------------------------------------------
+
+static void subrHandleCommentBlock(const QCString &doc,bool brief)
+{
+  Entry *tmp_entry = current; 
+  current = subrCurrent.first(); // temporarily switch to the entry of the subroutine / function
+  if (docBlock.stripWhiteSpace().find("\\param") == 0)
+  {
+    handleCommentBlock(doc,brief);
+  }
+  else if (docBlock.stripWhiteSpace().find("@param") == 0)
+  {
+    handleCommentBlock(doc,brief);
+  }
+  else 
+  {
+    int dir1 = modifiers[current_root][argName.lower()].direction;
+    handleCommentBlock(QCString("@param ") + directionParam[dir1] + " " + 
+	               argName + " " + doc,brief);
+  }
+  current=tmp_entry;
 }
 
 //----------------------------------------------------------------------------
@@ -2067,13 +2110,13 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     groupEnterFile(yyFileName,yyLineNr);
 
     current          = new Entry;
-    current->lang    = SrcLangExt_F90; 
+    current->lang    = SrcLangExt_Fortran; 
     current->name    = yyFileName;
     current->section = Entry::SOURCE_SEC;
     current_root->addSubEntry(current);
     file_root        = current;
     current          = new Entry;
-    current->lang    = SrcLangExt_F90; 
+    current->lang    = SrcLangExt_Fortran; 
 
     fscanYYrestart( fscanYYin );
     {

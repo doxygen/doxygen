@@ -69,6 +69,9 @@ sub GenerateDep {
 #$ GenerateDep("vhdlcode.cpp","vhdlcode.l");
 	$(LEX) -i -PvhdlcodeYY -t vhdlcode.l | $(INCBUFSIZE) >vhdlcode.cpp
 
+#$ GenerateDep("tclscanner.cpp","tclscanner.l");
+	$(LEX) -i -PtclscanYY -t tclscanner.l | $(INCBUFSIZE) >tclscanner.cpp
+
 #$ GenerateDep("pre.cpp","pre.l");
 	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
 

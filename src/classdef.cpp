@@ -152,9 +152,6 @@ class ClassDefImpl
     /*! Is the class part of an unnamed namespace? */
     bool isStatic;
 
-    /*! Language used for this class */
-    SrcLangExt lang;
-
     /*! TRUE if classes members are merged with those of the base classes. */
     bool membersMerged;
 
@@ -177,6 +174,9 @@ class ClassDefImpl
 
     /** Is this a simple (non-nested) C structure? */
     bool isSimple;
+
+    ClassList *taggedInnerClasses;
+    ClassDef *tagLessRef;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -217,11 +217,15 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   categoryOf = 0;
   usedOnly = FALSE;
   isSimple = Config_getBool("INLINE_SIMPLE_STRUCTS");
+  taggedInnerClasses = 0;
+  tagLessRef = 0;
   //QCString ns;
   //extractNamespaceName(name,className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
 
-  if (getLanguageFromFileName(defFileName)!=SrcLangExt_Java && 
+  // we cannot use getLanguage at this point, as setLanguage has not been called.
+  SrcLangExt lang = getLanguageFromFileName(defFileName);
+  if ((lang==SrcLangExt_Cpp || lang==SrcLangExt_ObjC) && 
       guessSection(defFileName)==Entry::SOURCE_SEC)
   {
     isLocal=TRUE;
@@ -254,6 +258,7 @@ ClassDefImpl::~ClassDefImpl()
   delete templBaseClassNames;
   delete tempArgs;
   delete typeConstraints;
+  delete taggedInnerClasses;
 }
 
 // constructs a new class definition
@@ -268,7 +273,6 @@ ClassDef::ClassDef(
   setReference(lref);
   m_impl = new ClassDefImpl;
   m_impl->compType = ct;
-  m_impl->lang     = SrcLangExt_Unknown;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
 }
 
@@ -285,10 +289,11 @@ QCString ClassDef::getMemberListFileName() const
 
 QCString ClassDef::displayName() const
 {
-  static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
-  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  //static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  SrcLangExt lang = getLanguage();
+  //static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString n;
-  if (vhdlOpt)
+  if (lang==SrcLangExt_VHDL)
   {
     n = VhdlDocGen::getClassName(this);
   }
@@ -296,9 +301,10 @@ QCString ClassDef::displayName() const
   {
     n=qualifiedNameWithTemplateParameters();
   }
-  if (optimizeOutputForJava)
+  QCString sep=getLanguageSpecificSeparator(lang);
+  if (sep!="::")
   {
-    n=substitute(n,"::",".");
+    n=substitute(n,"::",sep);
   }
   if (m_impl->compType==ClassDef::Protocol && n.right(2)=="-p")
   {
@@ -378,8 +384,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
   //printf("insertInternalMember(%s) isHidden()=%d\n",md->name().data(),md->isHidden());
   if (md->isHidden()) return;
 
-  static bool optVhdl    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-  if (optVhdl)
+  if (getLanguage()==SrcLangExt_VHDL)
   {
     QCString title=VhdlDocGen::trVhdlType(md->getMemberSpecifiers(),FALSE);
     if (!m_impl->vhdlSummaryTitles.find(title))
@@ -491,7 +496,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   break;
                 case Public:    
                   addMemberToList(MemberList::pubAttribs,md,TRUE);
-                  isSimple=TRUE;
+                  isSimple=!md->isFunctionPtr();
                   break;
                 case Private:   
                   addMemberToList(MemberList::priAttribs,md,TRUE);
@@ -542,6 +547,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
     {
       m_impl->isSimple = FALSE;
     }
+    //printf("adding %s simple=%d total_simple=%d\n",name().data(),isSimple,m_impl->isSimple);
 
     /*******************************************************/
     /* insert member in the detailed documentation section */
@@ -991,19 +997,19 @@ void ClassDef::showUsedFiles(OutputList &ol)
 {
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
 
+  SrcLangExt lang = getLanguage();
   ol.writeRuler();
-  if (fortranOpt)
+  if (lang==SrcLangExt_Fortran)
   {
     ol.parseText(theTranslator->trGeneratedFromFilesFortran(
-          m_impl->lang==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));
   }
   else
   {
     ol.parseText(theTranslator->trGeneratedFromFiles(
-          m_impl->lang==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));  
   }
 
@@ -1272,7 +1278,7 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
     {
       ol.startParagraph();
       ol.startTypewriter();
-      SrcLangExt lang = getLanguageFromFileName(nm);
+      SrcLangExt lang = getLanguage();
       bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
       if (isIDLorJava)
       {
@@ -1422,7 +1428,6 @@ void ClassDef::writeAuthorSection(OutputList &ol)
 
 void ClassDef::writeSummaryLinks(OutputList &ol)
 {
-  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   QListIterator<LayoutDocEntry> eli(
@@ -1430,7 +1435,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
   LayoutDocEntry *lde;
   bool first=TRUE;
   
-  if (!vhdlOpt)
+  if (getLanguage()!=SrcLangExt_VHDL)
   {
     for (eli.toFirst();(lde=eli.current());++eli)
     {
@@ -1681,11 +1686,12 @@ void ClassDef::writeMoreLink(OutputList &ol,const QCString &anchor)
 
 void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *header,bool localNames)
 {
-  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
   static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
   bool isLink = isLinkable();
+  SrcLangExt lang = getLanguage();
   if (isLink || 
       (!hideUndocClasses && 
        (!isLocal() || extractLocalClasses)
@@ -1699,13 +1705,14 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       {
         ol.parseText(header);
       }
-      else if (vhdlOpt)
+      else if (lang==SrcLangExt_VHDL)
       {
         ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
       }
       else
       {
-        ol.parseText(fortranOpt ? theTranslator->trDataTypes() :
+        ol.parseText(lang==SrcLangExt_Fortran ? 
+            theTranslator->trDataTypes() :
             theTranslator->trCompounds());
       }
       ol.endMemberHeader();
@@ -1734,7 +1741,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       cname = displayName();
     }
 
-    if (!vhdlOpt) // for VHDL we swap the name and the type
+    if (lang!=SrcLangExt_VHDL) // for VHDL we swap the name and the type
     {
       ol.writeString(ctype);
       ol.writeString(" ");
@@ -1754,7 +1761,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       ol.docify(cname);
       ol.endBold();
     }
-    if (vhdlOpt) // now write the type
+    if (lang==SrcLangExt_VHDL) // now write the type
     {
       ol.writeString(" ");
       ol.insertMemberAlign();
@@ -1907,25 +1914,26 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTit
 void ClassDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString pageTitle;
+  SrcLangExt lang = getLanguage();
     
-  if (fortranOpt)
+  if (lang==SrcLangExt_Fortran)
   {
     pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
               m_impl->compType,
               m_impl->tempArgs != 0);  
   }
-  else if (vhdlOpt)
+  else if (lang==SrcLangExt_VHDL)
   {
-    // TODO: translate
+    // TODO: TRANSLATE ME
     pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
   }
   else
   {
     pageTitle = theTranslator->trCompoundReference(displayName(),
-              m_impl->compType == Interface && m_impl->lang==SrcLangExt_ObjC ? Class : m_impl->compType,
+              m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
               m_impl->tempArgs != 0);
   }
   
@@ -1940,7 +1948,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   startTitle(ol,getOutputFileBase(),this);
-  ol.parseText(pageTitle,TRUE);
+  ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
   writeDocumentationContents(ol,pageTitle);
@@ -2058,7 +2066,7 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
 void ClassDef::writeMemberList(OutputList &ol)
 {
   static bool cOpt    = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
-  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  //static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   if (m_impl->allMemberNameInfoSDict==0 || cOpt) return;
   // only for HTML
@@ -2077,7 +2085,7 @@ void ClassDef::writeMemberList(OutputList &ol)
     ol.endQuickIndices();
   }
   startTitle(ol,0);
-  ol.parseText(displayName()+" "+theTranslator->trMemberList(),TRUE);
+  ol.parseText(displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
   ol.startContents();
   ol.parseText(theTranslator->trThisIsTheListOfAllMembers());
@@ -2220,20 +2228,23 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("</td>");
           ol.writeString("<td>");
         }
+        SrcLangExt lang = md->getLanguage();
         if (
-            (prot!=Public || (virt!=Normal && m_impl->lang!=SrcLangExt_ObjC) || 
+            (prot!=Public || (virt!=Normal && getLanguage()!=SrcLangExt_ObjC) || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
-             md->isStatic() || vhdlOpt
+             md->isStatic() || lang==SrcLangExt_VHDL
             )
             && memberWritten)
         {
           ol.startTypewriter();
           ol.docify(" [");
           QStrList sl;
-          if (vhdlOpt) sl.append(VhdlDocGen::trVhdlType(
-                          md->getMemberSpecifiers())); //append vhdl type
+          if (lang==SrcLangExt_VHDL) 
+          {
+            sl.append(VhdlDocGen::trVhdlType(md->getMemberSpecifiers())); //append vhdl type
+          }
           else if (md->isFriend()) sl.append("friend");
           else if (md->isRelated()) sl.append("related");
           else
@@ -2245,8 +2256,8 @@ void ClassDef::writeMemberList(OutputList &ol)
             if (prot==Protected)       sl.append("protected");
             else if (prot==Private)    sl.append("private");
             else if (prot==Package)    sl.append("package");
-            if (virt==Virtual && 
-                m_impl->lang!=SrcLangExt_ObjC)             sl.append("virtual");
+            if (virt==Virtual && getLanguage()!=SrcLangExt_ObjC)             
+                                       sl.append("virtual");
             else if (virt==Pure)       sl.append("pure virtual");
             if (md->isStatic())        sl.append("static");
             if (md->isSignal())        sl.append("signal");
@@ -2575,10 +2586,10 @@ void ClassDef::mergeMembers()
 {
   if (m_impl->membersMerged) return;
 
-  static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
-  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-  QCString sep="::";
-  if (optimizeOutputForJava || vhdlOpt) sep=".";
+  //static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  //static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  SrcLangExt lang = getLanguage();
+  QCString sep=getLanguageSpecificSeparator(lang);
   int sepLen = sep.length();
 
   m_impl->membersMerged=TRUE;
@@ -2821,8 +2832,16 @@ void ClassDef::mergeMembers()
  */
 void ClassDef::mergeCategory(ClassDef *category)
 {
+  static bool extractLocalMethods = Config_getBool("EXTRACT_LOCAL_METHODS");
+  bool makePrivate = category->isLocal();
+  // in case extract local methods is not enabled we don't add the methods
+  // of the category in case it is defined in the .m file.
+  if (makePrivate && !extractLocalMethods) return;
+
   category->setCategoryOf(this);
   category->setArtificial(TRUE);
+  // make methods private for categories defined in the .m file
+  //printf("%s::mergeCategory makePrivate=%d\n",name().data(),makePrivate);
     
   MemberNameInfoSDict *srcMnd  = category->memberNameInfoSDict();
   MemberNameInfoSDict *dstMnd  = m_impl->allMemberNameInfoSDict;
@@ -2836,10 +2855,20 @@ void ClassDef::mergeCategory(ClassDef *category)
       MemberNameInfo *dstMni=dstMnd->find(srcMni->memberName());
       if (dstMni) // method is already defined in the class
       {
+        //printf("Existing member %s\n",srcMni->memberName());
         // TODO: we should remove the other member and insert this one.
+        MemberInfo *mi = dstMni->getFirst();
+        if (mi)
+        {
+          Protection prot = mi->prot;
+          if (makePrivate) prot = Private;
+          removeMemberFromLists(mi->memberDef);
+          internalInsertMember(mi->memberDef,prot,FALSE);
+        }
       }
       else // new method name
       {
+        //printf("New member %s\n",srcMni->memberName());
         // create a deep copy of the list
         MemberNameInfo *newMni = 0;
         newMni = new MemberNameInfo(srcMni->memberName()); 
@@ -2850,14 +2879,16 @@ void ClassDef::mergeCategory(ClassDef *category)
         for (;(mi=mnii.current());++mnii)
         {
           //printf("Adding '%s'\n",mi->memberDef->name().data());
-          MemberInfo *newMi=new MemberInfo(mi->memberDef,mi->prot,mi->virt,mi->inherited);
+          Protection prot = mi->prot;
+          if (makePrivate) prot = Private;
+          MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,mi->virt,mi->inherited);
           newMi->scopePath=mi->scopePath;
           newMi->ambigClass=mi->ambigClass;
           newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope;
           newMni->append(newMi);
           mi->memberDef->moveTo(this);
           mi->memberDef->setCategory(category);
-          internalInsertMember(mi->memberDef,mi->prot,FALSE);
+          internalInsertMember(mi->memberDef,prot,FALSE);
         }
 
         // add it to the dictionary
@@ -3113,8 +3144,8 @@ void ClassDef::determineIntfUsageRelation()
 
 QCString ClassDef::compoundTypeString() const
 {
-  if (m_impl->compType==Interface && m_impl->lang==SrcLangExt_ObjC) return "class";
-  if (Config_getBool("OPTIMIZE_FOR_FORTRAN"))
+  if (m_impl->compType==Interface && getLanguage()==SrcLangExt_ObjC) return "class";
+  if (getLanguage()==SrcLangExt_Fortran)
   {
     switch (m_impl->compType)
     {
@@ -3180,8 +3211,8 @@ QCString ClassDef::getOutputFileBase() const
   }
   else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()) && 
             (
-              (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkable()) || 
-              scope->isLinkable()
+              (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkableInProject()) || 
+              scope->isLinkableInProject()
             )
           )
   {
@@ -3269,7 +3300,6 @@ void ClassDef::addInnerCompound(Definition *d)
       m_impl->innerClasses = new ClassSDict(17);
     }
     m_impl->innerClasses->inSort(d->localName(),(ClassDef *)d);
-    m_impl->isSimple = FALSE;
   }
 }
 
@@ -3478,7 +3508,7 @@ void ClassDef::getTemplateParameterLists(QList<ArgumentList> &lists) const
 QCString ClassDef::qualifiedNameWithTemplateParameters(
     QList<ArgumentList> *actualParams) const
 {
-  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  //static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
   //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
   QCString scName;
@@ -3496,16 +3526,12 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
     }
   }
 
-  QCString scopeSeparator;
-  if (optimizeOutputJava)
-    scopeSeparator=".";
-  else
-    scopeSeparator="::";
-
+  SrcLangExt lang = getLanguage();
+  QCString scopeSeparator = getLanguageSpecificSeparator(lang);
   if (!scName.isEmpty()) scName+=scopeSeparator;
 
   bool isSpecialization = localName().find('<')!=-1;
-  bool isGeneric = m_impl->lang==SrcLangExt_CSharp;
+  bool isGeneric = getLanguage()==SrcLangExt_CSharp;
 
   QCString clName = className();
   if (isGeneric && clName.right(2)=="-g") 
@@ -3556,15 +3582,15 @@ void ClassDef::setClassName(const char *name)
 
 void ClassDef::addListReferences()
 {
-  bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  SrcLangExt lang = getLanguage();
   if (!isLinkableInProject()) return;
   //printf("ClassDef(%s)::addListReferences()\n",name().data());
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
              qualifiedName(),
-             fortranOpt?theTranslator->trType(TRUE,TRUE):
-                        theTranslator->trClass(TRUE,TRUE),
+             lang==SrcLangExt_Fortran ? theTranslator->trType(TRUE,TRUE)
+                                      : theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),
              displayName(),
              0
@@ -3683,11 +3709,11 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
                const char *subTitle,bool showInline)
 {
   //printf("%s: ClassDef::writeMemberDeclarations\n",name().data());
-  static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  //static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   MemberList * ml = getMemberList(lt);
   if (ml) 
   {
-    if (optimizeVhdl) // use specific declarations function
+    if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
     {
       VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0);
     }
@@ -3820,12 +3846,12 @@ bool ClassDef::isAbstract() const
 
 bool ClassDef::isObjectiveC() const 
 { 
-  return m_impl->lang==SrcLangExt_ObjC; 
+  return getLanguage()==SrcLangExt_ObjC; 
 }
 
 bool ClassDef::isCSharp() const 
 { 
-  return m_impl->lang==SrcLangExt_CSharp; 
+  return getLanguage()==SrcLangExt_CSharp; 
 }
 
 ClassDef *ClassDef::categoryOf() const 
@@ -3868,11 +3894,6 @@ void ClassDef::setIsStatic(bool b)
   m_impl->isStatic=b; 
 }
 
-void ClassDef::setLanguage(SrcLangExt lang) 
-{ 
-  m_impl->lang=lang; 
-}
-
 void ClassDef::setCompoundType(CompoundType t) 
 { 
   m_impl->compType = t; 
@@ -3896,11 +3917,6 @@ void ClassDef::setCategoryOf(ClassDef *cd)
 void ClassDef::setUsedOnly(bool b)
 {
   m_impl->usedOnly = b;
-}
-
-SrcLangExt ClassDef::getLanguage() const
-{
-  return m_impl->lang;
 }
 
 bool ClassDef::isUsedOnly() const
@@ -3956,13 +3972,19 @@ bool ClassDef::isEmbeddedInOuterScope() const
 
   Definition *container = getOuterScope();
 
+  bool containerLinkable = 
+    container && 
+       (
+        (container==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkableInProject()) || // global class in documented file
+        container->isLinkableInProject() // class in documented scope
+       ); 
+
   // inline because of INLINE_GROUPED_CLASSES=YES ?
   bool b1 = (inlineGroupedClasses && partOfGroups()!=0); // a grouped class
   // inline because of INLINE_SIMPLE_STRUCTS=YES ?
   bool b2 = (inlineSimpleClasses && m_impl->isSimple && // a simple class
-             ((container && 
-               (container==Doxygen::globalScope || container->isLinkableInProject())) || // with a documented scope
-               partOfGroups()!=0                                             // or part of a group
+             (containerLinkable || // in a documented container
+              partOfGroups()!=0    // or part of a group
              )
            );
   //printf("%s::isEmbeddedInOuterScope(): inlineGroupedClasses=%d "
@@ -3973,4 +3995,37 @@ bool ClassDef::isEmbeddedInOuterScope() const
   return b1 || b2;  // either reason will do
 }
 
+const ClassList *ClassDef::taggedInnerClasses() const
+{
+  return m_impl->taggedInnerClasses;
+}
+
+void ClassDef::addTaggedInnerClass(ClassDef *cd)
+{
+  if (m_impl->taggedInnerClasses==0)
+  {
+    m_impl->taggedInnerClasses = new ClassList;
+  }
+  m_impl->taggedInnerClasses->append(cd);
+}
+
+ClassDef *ClassDef::tagLessReference() const
+{
+  return m_impl->tagLessRef;
+}
+
+void ClassDef::setTagLessReference(ClassDef *cd)
+{
+  m_impl->tagLessRef = cd;
+}
+
+void ClassDef::removeMemberFromLists(MemberDef *md)
+{
+  MemberList *ml = m_impl->memberLists.first();
+  while (ml)
+  {
+    ml->remove(md);
+    ml = m_impl->memberLists.next();
+  }
+}
 

@@ -262,7 +262,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_PT
   else if (L_EQUAL("portuguese"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorPortuguese);
+    theTranslator=new TranslatorPortuguese;
   }
 #endif
 #ifdef LANG_HU
@@ -298,7 +298,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_CN
   else if (L_EQUAL("chinese"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorChinese);
+    theTranslator=new TranslatorChinese;
   }
 #endif
 #ifdef LANG_TW

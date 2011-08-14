@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public TranslatorAdapter_1_7_5
+class TranslatorDutch : public Translator
 {
   public:
     QCString idLanguage()
@@ -1448,7 +1448,21 @@ class TranslatorDutch : public TranslatorAdapter_1_7_5
       return sdate;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
 
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Bibliografie"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Folder afhankelijkheidsgraaf voor ")+name+":"; }
 
 
 };

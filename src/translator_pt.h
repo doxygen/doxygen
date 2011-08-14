@@ -1,7 +1,4 @@
 /******************************************************************************
- *
- * 
- *
  * Copyright (C) 1997-2011 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -13,12 +10,26 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * The translation into Portuguese was provided by
- *   Rui Godinho Lopes <rui@ruilopes.com>
- *     http://www.ruilopes.com
+ * Portuguese translation version 20110428
+ *    Maintainer (from 04/28/2011): 
+ *       Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
+ *    Maintainer (until 04/28/2011):
+ *       Rui Godinho Lopes <rui at ruilopes.com>
+ *
+ * Notes about this translation:
+ *    Since I'm Brazilian, this translation may be odd or even incorect for
+ *    Portuguese (from Portugal) speakers. If you find any errors, feel free
+ *    to contact me.
  *
  * VERSION HISTORY
  * ---------------
+ * History:
+ * 20110628:
+ *	- Updated to 1.7.5; 
+ *      - All obsolete methods have been removed;
+ * 20110428
+ *   - Updated to doxygen 1.6.3 using the Brazilian Portuguese as the base. 
+ *     Requires revision by a Portuguese (Portugal native speaker);
  * 007 09 june 2003
  *   ! Updated for doxygen v1.3.1
  * 006 30 july 2002
@@ -40,7 +51,8 @@
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public TranslatorAdapter_1_3_3
+
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -74,44 +86,44 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
-    { return "iso-8859-1"; }
+    { return "utf-8"; }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions()
-    { return "FunÁıes associadas"; }
+    { return "Fun√ß√µes associadas"; }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript()
-    { return "(Note que n„o s„o funÁıes membro)"; }
+    { return "(Note que n√£o s√£o fun√ß√µes membro)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription()
-    { return "DescriÁ„o detalhada"; }
+    { return "Descri√ß√£o detalhada"; }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation()
-    { return "DocumentaÁ„o das definiÁıes de tipo"; }
+    { return "Documenta√ß√£o das defini√ß√µes de tipo"; }
 
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation()
-    { return "DocumentaÁ„o das enumeraÁıes"; }
+    { return "Documenta√ß√£o das enumera√ß√µes"; }
 
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation()
-    { return "DocumentaÁ„o dos mÈtodos"; }
+    { return "Documenta√ß√£o dos m√©todos"; }
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "DocumentaÁ„o dos campos e atributos"; 
+        return "Documenta√ß√£o dos campos e atributos"; 
       }
       else
       {
-        return "DocumentaÁ„o dos dados membro";
+        return "Documenta√ß√£o dos dados membro";
       }
     }
 
@@ -141,13 +153,13 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     QCString trGeneratedAutomatically(const char *s)
     { QCString result="Gerado automaticamente por Doxygen";
       if (s) result+=(QCString)" para "+s;
-      result+=" a partir do cÛdigo fonte.";
+      result+=" a partir do c√≥digo fonte.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName()
-    { return "enumeraÁ„o"; }
+    { return "enumera√ß√£o"; }
 
     /*! put after an enum value in the list of all members */
     QCString trEnumValue()
@@ -163,7 +175,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      *  compounds or files (see the \\group command).
      */
     QCString trModules()
-    { return "MÛdulos"; }
+    { return "M√≥dulos"; }
 
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy()
@@ -185,10 +197,6 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList()
     { return "Lista de ficheiros"; }
-
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    QCString trHeaderFiles()
-    { return "Ficheiros incluÌdos"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
@@ -218,7 +226,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages()
-    { return "P·ginas relacionadas"; }
+    { return "P√°ginas relacionadas"; }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples()
@@ -230,14 +238,14 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription()
-    { return "Esta lista de heranÁas est· organizada, dentro do possÌvel, por ordem alfabÈtica:"; }
+    { return "Esta lista de heran√ßas est√° organizada, dentro do poss√≠vel, por ordem alfab√©tica:"; }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll)
     {
       QCString result="Lista de todos os ficheiros ";
       if (!extractAll) result+="documentados ";
-      result+="com uma breve descriÁ„o:";
+      result+="com uma breve descri√ß√£o:";
       return result;
     }
 
@@ -246,11 +254,11 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     {       
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Lista das estruturas de dados com uma breve descriÁ„o:";
+        return "Lista das estruturas de dados com uma breve descri√ß√£o:";
       }
       else
       {
-        return "Lista de classes, estruturas, uniıes e interfaces com uma breve descriÁ„o:";
+        return "Lista de classes, estruturas, uni√µes e interfaces com uma breve descri√ß√£o:";
       }
     }
 
@@ -260,7 +268,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
       QCString result="Lista de todas as";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+=" estruturas e campos de uniıes";
+        result+=" estruturas e campos de uni√µes";
       }
       else
       {
@@ -270,23 +278,23 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
       {
         result+=" documentadas";
       }
-      result+=" com referÍncia para ";
+      result+=" com refer√™ncia para ";
       if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="a respectiva documentaÁ„o:";
+          result+="a respectiva documenta√ß√£o:";
         }
         else
         {
-          result+="a documentaÁ„o de cada membro:";
+          result+="a documenta√ß√£o de cada membro:";
         }
       }
       else 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="as estruturas/uniıes a que pertencem:";
+          result+="as estruturas/uni√µes a que pertencem:";
         }
         else
         {
@@ -302,7 +310,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
       QCString result="Lista de ";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="todas as funÁıes, vari·veis, definiÁıes, enumeraÁıes e definiÁıes de tipo ";
+        result+="todas as fun√ß√µes, vari√°veis, defini√ß√µes, enumera√ß√µes e defini√ß√µes de tipo ";
         if (!extractAll) result+="documentadas ";
       }
       else
@@ -310,17 +318,13 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
         result+="todos os ficheiros membro ";
         if (!extractAll) result+="documentados ";
       }
-      result+="com referÍncia para ";
+      result+="com refer√™ncia para ";
       if (extractAll) 
         result+="o ficheiro a que pertecem:";
       else 
-        result+="a respectiva documentaÁ„o:";
+        result+="a respectiva documenta√ß√£o:";
       return result;
     }
-
-    /*! This is an introduction to the page with the list of all header files. */
-    QCString trHeaderFilesDescription()
-    { return "Lista de todos os ficheiros cabeÁalho que constituem a API:"; }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription()
@@ -328,36 +332,30 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription()
-    { return "Lista de documentaÁ„o relacionada:"; }
+    { return "Lista de documenta√ß√£o relacionada:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription()
-    { return "Lista de todos os mÛdulos:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    QCString trNoDescriptionAvailable()
-    { return "Nenhuma descriÁ„o disponÌvel"; }
+    { return "Lista de todos os m√≥dulos:"; }
 
     // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation()
-    { return "DocumentaÁ„o"; }
+    { return "Documenta√ß√£o"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     QCString trModuleIndex()
-    { return "Õndice dos mÛdulos"; }
+    { return "√çndice dos m√≥dulos"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     QCString trHierarchicalIndex()
-    { return "Õndice da hierarquia"; }
+    { return "√çndice da hierarquia"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -366,11 +364,11 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       { 
-        return "Õndice das estruturas de dados";
+        return "√çndice das estruturas de dados";
       }
       else
       {
-        return "Õndice dos componentes";
+        return "√çndice dos componentes";
       }
     }
 
@@ -378,41 +376,41 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      * list of all files.
      */
     QCString trFileIndex()
-    { return "Õndice dos ficheiros"; }
+    { return "√çndice dos ficheiros"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation()
-    { return "DocumentaÁ„o do mÛdulo"; }
+    { return "Documenta√ß√£o do m√≥dulo"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
     QCString trClassDocumentation()
-    { return "DocumentaÁ„o da classe"; }
+    { return "Documenta√ß√£o da classe"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
     QCString trFileDocumentation()
-    { return "DocumentaÁ„o do ficheiro"; }
+    { return "Documenta√ß√£o do ficheiro"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     QCString trExampleDocumentation()
-    { return "DocumentaÁ„o do exemplo"; }
+    { return "Documenta√ß√£o do exemplo"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     QCString trPageDocumentation()
-    { return "DocumentaÁ„o da p·gina"; }
+    { return "Documenta√ß√£o da p√°gina"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
-    { return "Manual de referÍncia"; }
+    { return "Manual de refer√™ncia"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
@@ -424,79 +422,73 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      *  list of function prototypes
      */
     QCString trFuncProtos()
-    { return "ProtÛtipos de funÁıes"; }
+    { return "Prot√≥tipos de fun√ß√µes"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs()
-    { return "DefiniÁıes de tipos"; }
+    { return "Defini√ß√µes de tipos"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     QCString trEnumerations()
-    { return "EnumeraÁıes"; }
+    { return "Enumera√ß√µes"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     QCString trFunctions()
-    { return "FunÁıes"; }
+    { return "Fun√ß√µes"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trVariables()
-    { return "Vari·veis"; }
+    { return "Vari√°veis"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     QCString trEnumerationValues()
-    { return "Valores da enumeraÁ„o"; }
+    { return "Valores da enumera√ß√£o"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation()
-    { return "DocumentaÁ„o das macros"; }
+    { return "Documenta√ß√£o das macros"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     QCString trFunctionPrototypeDocumentation()
-    { return "DocumentaÁ„o dos protÛtipos de funÁıes"; }
+    { return "Documenta√ß√£o dos prot√≥tipos de fun√ß√µes"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation()
-    { return "DocumentaÁ„o dos tipos"; }
+    { return "Documenta√ß√£o dos tipos"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation()
-    { return "DocumentaÁ„o dos valores da enumeraÁ„o"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for enumeration values
-     */
-    QCString trEnumerationValueDocumentation()
-    { return "DocumentaÁ„o dos elementos da enumeraÁ„o"; }
+    { return "Documenta√ß√£o dos valores da enumera√ß√£o"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation()
-    { return "DocumentaÁ„o das funÁıes"; }
+    { return "Documenta√ß√£o das fun√ß√µes"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation()
-    { return "DocumentaÁ„o das vari·veis"; }
+    { return "Documenta√ß√£o das vari√°veis"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -533,29 +525,20 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"Diagrama de heranÁas da classe "+clName;
+      return (QCString)"Diagrama de heran√ßas da classe "+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
     QCString trForInternalUseOnly()
     { return "Apenas para uso interno."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    QCString trReimplementedForInternalReasons()
-    { return "Redefinido por razıes internas; A interface n„o foi afectada.";
-    }
-
     /*! this text is generated when the \\warning command is used. */
     QCString trWarning()
     { return "Aviso"; }
 
-    /*! this text is generated when the \\bug command is used. */
-    QCString trBugsAndLimitations()
-    { return "Bugs e limitaÁıes"; }
-
     /*! this text is generated when the \\version command is used. */
     QCString trVersion()
-    { return "Vers„o"; }
+    { return "Vers√£o"; }
 
     /*! this text is generated when the \\date command is used. */
     QCString trDate()
@@ -567,15 +550,15 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
 
     /*! this text is generated when the \\sa command is used. */
     QCString trSeeAlso()
-    { return "Veja tambÈm"; }
+    { return "Veja tamb√©m"; }
 
     /*! this text is generated when the \\param command is used. */
     QCString trParameters()
-    { return "Par‚metros"; }
+    { return "Par√¢metros"; }
 
     /*! this text is generated when the \\exception command is used. */
     QCString trExceptions()
-    { return "ExcepÁıes"; }
+    { return "Excep√ß√µes"; }
 
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy()
@@ -593,8 +576,8 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Lista ";
-      if (!extractAll) result+="de toda a documentaÁ„o ";
-      result+="dos namespaces com uma breve descriÁ„o:";
+      if (!extractAll) result+="de toda a documenta√ß√£o ";
+      result+="dos namespaces com uma breve descri√ß√£o:";
       return result;
     }
 
@@ -612,7 +595,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "DocumentaÁ„o das classes amigas e funÁıes relacionadas"; }
+    { return "Documenta√ß√£o das classes amigas e fun√ß√µes relacionadas"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -623,16 +606,16 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result="ReferÍncia ";
+      QCString result="Refer√™ncia ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="‡ classe "; break;
-        case ClassDef::Struct:     result+="‡ estrutura "; break;
-        case ClassDef::Union:      result+="‡ uni„o "; break;
+        case ClassDef::Class:      result+="√† classe "; break;
+        case ClassDef::Struct:     result+="√† estrutura "; break;
+        case ClassDef::Union:      result+="√† uni√£o "; break;
         case ClassDef::Interface:  result+="ao interface "; break;
-        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
-        case ClassDef::Category:   result+="category "; break; // translate me!
-        case ClassDef::Exception:  result+="‡ excepÁ„o "; break;
+        case ClassDef::Protocol:   result+="ao protocolo "; break;
+        case ClassDef::Category:   result+="√† categoria "; break;
+        case ClassDef::Exception:  result+="√† excep√ß√£o "; break;
       }
       if (isTemplate) result+="Template ";
       result+=(QCString)clName;
@@ -642,7 +625,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result= "ReferÍncia ao ficheiro ";
+      QCString result= "Refer√™ncia ao ficheiro ";
       result += fileName;
       return result;
     }
@@ -650,32 +633,32 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result= "ReferÍncia ao namespace ";
+      QCString result= "Refer√™ncia ao namespace ";
       result += namespaceName;
       return result;
     }
 
     /* these are for the member sections of a class, struct or union */
     virtual QCString trPublicMembers()
-    { return "Membros p˙blicos"; }
+    { return "Membros p√∫blicos"; }
     virtual QCString trPublicSlots()
-    { return "Slots p˙blicos"; }
+    { return "Slots p√∫blicos"; }
     virtual QCString trSignals()
     { return "Sinais"; }
     virtual QCString trStaticPublicMembers()
-    { return "Membros p˙blicos est·ticos"; }
+    { return "Membros p√∫blicos est√°ticos"; }
     virtual QCString trProtectedMembers()
     { return "Membros protegidos"; }
     virtual QCString trProtectedSlots()
     { return "Slots protegidos"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Membros protegidos est·ticos"; }
+    { return "Membros protegidos est√°ticos"; }
     virtual QCString trPrivateMembers()
     { return "Membros privados"; }
     virtual QCString trPrivateSlots()
     { return "Slots privados"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Membros privados est·ticos"; }
+    { return "Membros privados est√°ticos"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -743,10 +726,10 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     {
       QCString result="Lista ";
       if (extractAll) result+="de todos os ";
-      else result+="de toda a documentaÁ„o dos ";
-      result+="membros do namespace com referÍncia para ";
+      else result+="de toda a documenta√ß√£o dos ";
+      result+="membros do namespace com refer√™ncia para ";
       if (extractAll)
-        result+="a documentaÁ„o de cada membro:";
+        result+="a documenta√ß√£o de cada membro:";
       else
         result+="o namespace correspondente:";
       return result;
@@ -756,13 +739,13 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "Õndice dos namespaces"; }
+    { return "√çndice dos namespaces"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "DocumentaÁ„o dos namespaces"; }
+    { return "Documenta√ß√£o dos namespaces"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -785,16 +768,16 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"A documentaÁ„o para ";
+      QCString result=(QCString)"A documenta√ß√£o para ";
       switch(compType)
       {
         case ClassDef::Class:      result+="esta classe"; break;
         case ClassDef::Struct:     result+="esta estrutura"; break;
-        case ClassDef::Union:      result+="esta uni„o"; break;
+        case ClassDef::Union:      result+="esta uni√£o"; break;
         case ClassDef::Interface:  result+="este interface"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
-        case ClassDef::Exception:  result+="esta excepÁ„o"; break;
+        case ClassDef::Protocol:   result+="este protocolo"; break;
+        case ClassDef::Category:   result+="esta categoria"; break;
+        case ClassDef::Exception:  result+="esta excep√ß√£o"; break;
       }
       result+=" foi gerada a partir ";
       if (single) result+=" do seguinte ficheiro:";
@@ -807,7 +790,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trAlphabeticalList()
     {
-      return "Lista alfabÈtica";
+      return "Lista alfab√©tica";
     }
 
 
@@ -822,7 +805,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "P·gina principal"; }
+    { return "P√°gina principal"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
@@ -834,10 +817,6 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Fontes";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definido na linha @0 do ficheiro @1.";
@@ -863,37 +842,37 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"Diagrama de colaboraÁ„o para "+clName+":";
+      return (QCString)"Diagrama de colabora√ß√£o para "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Diagrama de dependÍncias de inclus„o para "+fName+":";
+      return (QCString)"Diagrama de depend√™ncias de inclus√£o para "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "DocumentaÁ„o dos Construtores & Destrutor";
+      return "Documenta√ß√£o dos Construtores & Destrutor";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return "Ir para o cÛdigo fonte deste ficheiro.";
+      return "Ir para o c√≥digo fonte deste ficheiro.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return "Ir para a documentaÁ„o deste ficheiro.";
+      return "Ir para a documenta√ß√£o deste ficheiro.";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return "PrecondiÁ„o";
+      return "Precondi√ß√£o";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
-      return "PoscondiÁ„o";
+      return "Poscondi√ß√£o";
     }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
@@ -908,23 +887,23 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return "cÛdigo";
+      return "c√≥digo";
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return "RepresentaÁ„o gr·fica da hiearquia da classe";
+      return "Representa√ß√£o gr√°fica da hiearquia da classe";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "Ir para a representaÁ„o gr·fica da hierarquia da classe";
+      return "Ir para a representa√ß√£o gr√°fica da hierarquia da classe";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "Ir para a representaÁ„o textual da hierarquia da classe";
+      return "Ir para a representa√ß√£o textual da hierarquia da classe";
     }
     virtual QCString trPageIndex()
     {
-      return "Õndice da p·gina";
+      return "√çndice da p√°gina";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -937,7 +916,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     }
     virtual QCString trPublicTypes()
     {
-      return "Tipos P˙blicos";
+      return "Tipos P√∫blicos";
     }
     virtual QCString trPublicAttribs()
     {
@@ -947,12 +926,12 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
       }
       else
       {
-        return "Atributos P˙blicos";
+        return "Atributos P√∫blicos";
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return "Atributos P˙blicos Est·ticos";
+      return "Atributos P√∫blicos Est√°ticos";
     }
     virtual QCString trProtectedTypes()
     {
@@ -964,7 +943,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return "Atributos Protegidos Est·ticos";
+      return "Atributos Protegidos Est√°ticos";
     }
     virtual QCString trPrivateTypes()
     {
@@ -976,7 +955,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return "Atributos Privados Est·ticos";
+      return "Atributos Privados Est√°ticos";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1004,15 +983,15 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     }
     virtual QCString trRemarks()
     {
-      return "ObservaÁıes";
+      return "Observa√ß√µes";
     }
     virtual QCString trAttention()
     {
-      return "AtenÁ„o";
+      return "Aten√ß√£o";
     }
     virtual QCString trInclByDepGraph()
     {
-      return "Este grafo mostra quais s„o os ficheiros que incluem directamente ou indirectamente este ficheiro:";
+      return "Este grafo mostra quais s√£o os ficheiros que incluem directamente ou indirectamente este ficheiro:";
     }
     virtual QCString trSince()
     {
@@ -1032,26 +1011,26 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     virtual QCString trLegendDocs()
     {
       return
-        "Esta p·gina explica como interpretar os grafos gerados pelo doxygen.<p>\n"
+        "Esta p√°gina explica como interpretar os grafos gerados pelo doxygen.<p>\n"
         "Considere o seguinte exemplo:\n"
         "\\code\n"
-        "/*! Esta classe vai estar escondida devido ‡ truncaÁ„o */\n"
+        "/*! Esta classe vai estar escondida devido √† trunca√ß√£o */\n"
         "class Invisible { };\n\n"
-        "/*! Esta classe tem a relaÁ„o de heranÁa escondida */\n"
+        "/*! Esta classe tem a rela√ß√£o de heran√ßa escondida */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* Classe n„o documentada por coment·rios doxygen */\n"
+        "/* Classe n√£o documentada por coment√°rios doxygen */\n"
         "class Undocumented { };\n\n"
-        "/*! Classe derivada usando derivaÁ„o p˙blica */\n"
+        "/*! Classe derivada usando deriva√ß√£o p√∫blica */\n"
         "class PublicBase : public Truncated { };\n\n"
         "/*! A template class */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! Classe derivada usando derivaÁ„o protegida */\n"
+        "/*! Classe derivada usando deriva√ß√£o protegida */\n"
         "class ProtectedBase { };\n\n"
-        "/*! Classe derivada usando derivaÁ„o privada */\n"
+        "/*! Classe derivada usando deriva√ß√£o privada */\n"
         "class PrivateBase { };\n\n"
         "/*! Classe usada pela classe Inherited */\n"
         "class Used { };\n\n"
-        "/*! Super classe que deriva de v·rias classes */\n"
+        "/*! Super classe que deriva de v√°rias classes */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -1062,29 +1041,28 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Se no ficheiro de configuraÁ„o estiver a tag \\c MAX_DOT_GRAPH_HEIGHT "
-        "com o valor de 200 ent„o o seguinte grafo ser· gerado:"
+        "Isto ir√° gerar o seguinte gr√°fo:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "As caixas no grafo anterior tÍm as seguintes interpretaÁıes:\n"
+        "As caixas no grafo anterior t√™m as seguintes interpreta√ß√µes:\n"
         "<ul>\n"
         "<li>Uma caixa inteiramente preta representa a estrutura ou a classe para "
         "a qual o grafo foi gerado.\n"
         "<li>Uma caixa com borda preta representa uma estrutura ou classe documentada.\n"
-        "<li>Uma caixa com borda cinzenta representa uma estrutura ou classe n„o documentada.\n"
+        "<li>Uma caixa com borda cinzenta representa uma estrutura ou classe n√£o documentada.\n"
         "<li>Uma caixa com borda vermelha representa uma estrutura ou classe documentada onde "
-        "nem todas as relaÁıes de heranÁa/encapsulamento s„o exibidas. Um grafo È truncado "
-        "quando n„o cabe na sua ·rea predefinida.\n"
+        "nem todas as rela√ß√µes de heran√ßa/encapsulamento s√£o exibidas. Um grafo √© truncado "
+        "quando n√£o cabe na sua √°rea predefinida.\n"
         "</ul>\n"
-        "As setas tÍm a seguinte interpretaÁ„o:\n"
+        "As setas t√™m a seguinte interpreta√ß√£o:\n"
         "<ul>\n"
-        "<li>Uma seta azul escura representa uma relaÁ„o de heranÁa p˙blica entre duas classes.\n"
-        "<li>Uma seta verde escura representa uma relaÁ„o de heranÁa protegida.\n"
-        "<li>Uma seta vermelha escura representa uma relaÁ„o de heranÁa privada.\n"
-        "<li>Uma seta rocha em tracejado representa uma relaÁ„o de encapsulamento ou uso por "
-        "parte de outra classe. A legenda da seta contÈm o nome da vari·vel ou vari·veis da "
-        "relaÁ„o. A seta aponta da classe que estabelece a relaÁ„o para a classe ou estrutura que "
-        "È acessÌvel.\n"
+        "<li>Uma seta azul escura representa uma rela√ß√£o de heran√ßa p√∫blica entre duas classes.\n"
+        "<li>Uma seta verde escura representa uma rela√ß√£o de heran√ßa protegida.\n"
+        "<li>Uma seta vermelha escura representa uma rela√ß√£o de heran√ßa privada.\n"
+        "<li>Uma seta rocha em tracejado representa uma rela√ß√£o de encapsulamento ou uso por "
+        "parte de outra classe. A legenda da seta cont√©m o nome da vari√°vel ou vari√°veis da "
+        "rela√ß√£o. A seta aponta da classe que estabelece a rela√ß√£o para a classe ou estrutura que "
+        "√© acess√≠vel.\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
@@ -1115,7 +1093,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return "MÈtodos DCOP";
+      return "M√©todos DCOP";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1130,18 +1108,13 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "DocumentaÁ„o das propriedades";
+      return "Documenta√ß√£o das propriedades";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Interfaces";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1167,17 +1140,12 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "Lista de pacotes com uma breve descriÁ„o (se disponÌvel):";
+      return "Lista de pacotes com uma breve descri√ß√£o (se dispon√≠vel):";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
       return "Pacotes";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "DocumentaÁ„o do pacote";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1246,7 +1214,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return "Õndice";
+      return "√çndice";
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1299,7 +1267,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trPage(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "P·gina" : "p·gina"));
+      QCString result((first_capital ? "P√°gina" : "p√°gina"));
       if (!singular)  result+="s";
       return result;
     }
@@ -1311,17 +1279,6 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     virtual QCString trMember(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Membro" : "membro"));
-      if (!singular)  result+="s";
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Campo" : "campo"));
       if (!singular)  result+="s";
       return result;
     }
@@ -1358,7 +1315,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trReferences()
     {
-      return "ReferÍncias";
+      return "Refer√™ncias";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1390,7 +1347,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "Õndice";
+      return "√çndice";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1419,7 +1376,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "DocumentaÁ„o dos eventos";
+      return "Documenta√ß√£o dos eventos";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1437,14 +1394,14 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trPackageMembers()
     { 
-      return "FunÁıes do Pacote";
+      return "Fun√ß√µes do Pacote";
     }
     /*! Used as a heading for a list of static Java class functions with 
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     { 
-      return "FunÁıes Est·ticas do Pacote";
+      return "Fun√ß√µes Est√°ticas do Pacote";
     }
     /*! Used as a heading for a list of Java class variables with package 
      * scope.
@@ -1458,7 +1415,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
      */
     virtual QCString trStaticPackageAttribs()
     { 
-      return "Atributos Est·ticos do Pacote";
+      return "Atributos Est√°ticos do Pacote";
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1475,9 +1432,460 @@ class TranslatorPortuguese : public TranslatorAdapter_1_3_3
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Grafo de chamadas desta funÁ„o:";
+      return "Grafo de chamadas desta fun√ß√£o:";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3 - Based on the Brazilian Portuguese Translation
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Procurar por";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Resultado da Busca";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Nenhum documento foi encontrado.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Apenas <b>1</b> documento foi encontrado.";
+      }
+      else
+      {
+        return "<b>$num</b> documentos encontrados. "
+               "Os melhores resultados vem primeiro.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Resultados:";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return  "C√≥digo-Fonte de " + filename;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Hierarquia de Diret√≥rios"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Documenta√ß√£o do Direct√≥rio"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Diret√≥rios"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Esta Hierarquia de Diret√≥rios est√° parcialmente ordenada (ordem alfab√©tica)"; }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    {
+        QCString result = "Refer√™ncia do diret√≥rio ";
+     	result += dirName;
+     	return result;
+    }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Diret√≥rio" : "diret√≥rio"));
+      if (!singular) result+="s";
+      return result; 
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Este √© um m√©todo provido por conveni√™ncia. "
+       		"Ele difere do m√©todo acima apenas na lista de "
+       		"argumentos que devem ser utilizados.";
+    }    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Este √© o diagrama das fun√ß√µes que utilizam esta fun√ß√£o:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Documenta√ß√£o da enumera√ß√£o"; }
+
+  
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Documenta√ß√£o de Fun√ß√£o Membro/Subrotina"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "Lista de Tipos de Dados"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Campos de Dados"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Aqui est√£o os tipos de dados com descri√ß√µes resumidas:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Esta √© a lista de todos os membros ";
+      if (!extractAll) result+="documentados ";
+      result+="dos tipos de dados com links para ";
+      if (extractAll) 
+      {
+        result+="a documenta√ß√£o dos tipos de dados para cada membro:";
+      }
+      else 
+      {
+        result+="os tipos de dados a que pertencem:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "√çndice de Tipos de Dados"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Documenta√ß√£o dos Tipos de Dados"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Fun√ß√µes/Subrotinas"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Documenta√ß√£o da Fun√ß√£o/Subrotina"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Tipos de Dados"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Lista de M√≥dulos"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Esta √© a lista de todos os m√≥dulos ";
+      if (!extractAll) result+="documentados ";
+      result+="com descri√ß√µes resumidas:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result = (QCString)"Refer√™ncia ";
+
+      if (isTemplate) result+="da Template ";
+      
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="do Modulo "; break;
+        case ClassDef::Struct:     result+="do Tipo "; break;
+        case ClassDef::Union:      result+="da Uni√£o "; break;
+        case ClassDef::Interface:  result+="da Interface "; break;
+        case ClassDef::Protocol:   result+="do Protocolo "; break;
+        case ClassDef::Category:   result+="da Categoria "; break;
+        case ClassDef::Exception:  result+="da Exce√ß√£o "; break;
+      }
+      result += clName; 
+     
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result = "Refer√™ncia do M√≥dulo ";
+      result += namespaceName;        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Membros do M√≥dulo"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="Esta √© a lista de todos os membros ";
+      if (!extractAll) result+="documentados ";
+      result+="dos m√≥dulos com links para ";
+      if (extractAll) 
+      {
+        result+="a documenta√ß√£o dos m√≥dulos para cada membro:";
+      }
+      else 
+      {
+        result+="os m√≥dulos a que pertencem:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "√çndice dos M√≥dulos"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "Modulo" : "modulo"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"A documenta√ß√£o para ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="este modulo "; break;
+        case ClassDef::Struct:     result+="este tipo "; break;
+        case ClassDef::Union:      result+="esta uni√£o "; break;
+        case ClassDef::Interface:  result+="esta interface "; break;
+        case ClassDef::Protocol:   result+="esto protocolo "; break;
+        case ClassDef::Category:   result+="esta categoria "; break;
+        case ClassDef::Exception:  result+="esta exce√ß√£o "; break;
+      }
+      
+      result+=" foi gerada a partir do";
+      if (single) 
+    	result+=" seguinte ficheiro:";
+      else
+    	result+="s seguintes ficheiros:";
+      
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Tipo" : "tipo"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Subprograma" : "subprograma"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! C# Type Contraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Restri√ß√µes do Tipo";
+    }    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name
+     */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return "Rela√ß√£o " + QCString(name);
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Carregando...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Namespace global";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Procurando...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Nenhuma entrada encontrada";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Grafo de depend√™ncia de diret√≥rios para " + name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Ficheiro em "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Inclui ficheiro em "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Segunda","Ter√ßa","Quarta","Quinta","Sexta","S√°bado","Domingo" };
+      static const char *months[] = { "Janeiro","Fevereiro","Mar√ßo","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro" };
+      QCString sdate;
+      sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Refer√™ncias Bibliogr√°ficas"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    {
+      // Note: I will left it as is because "Direitos de autor" may not fit
+      // in the text.
+      return "Copyright";
+    }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Grafo de depend√™ncias do direct√≥rio ")+name+":"; }       
 };
 
 #endif

@@ -1672,6 +1672,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
 static void initEntry(Entry *e)
 {
   e->fileName = yyFileName;
+  e->lang     = SrcLangExt_VHDL;
   initGroupInfo(e);
 }
 

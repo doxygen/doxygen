@@ -338,11 +338,9 @@ void endFile(OutputList &ol,bool skipNavIndex)
 
 static bool classHasVisibleChildren(ClassDef *cd)
 {
- bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-
   BaseClassList *bcl;
 
-  if (vhdl) // reverse baseClass/subClass relation
+  if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
   {
     if (cd->baseClasses()==0) return FALSE;
     bcl=cd->baseClasses();
@@ -366,8 +364,6 @@ static bool classHasVisibleChildren(ClassDef *cd)
 
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,FTVHelp* ftv)
 {
-  static bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-
   if (bcl==0) return;
   BaseClassListIterator bcli(*bcl);
   bool started=FALSE;
@@ -375,7 +371,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,F
   {
     ClassDef *cd=bcli.current()->classDef;
     bool b;
-    if (vhdl)
+    if (cd->getLanguage()==SrcLangExt_VHDL)
     {
       b=hasVisibleRoot(cd->subClasses());
     }
@@ -428,7 +424,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,F
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
         bool wasVisited=cd->visited;
         cd->visited=TRUE;
-        if (vhdl)	
+        if (cd->getLanguage()==SrcLangExt_VHDL)	
         {
           writeClassTree(ol,cd->baseClasses(),wasVisited,level+1,ftv);
         }
@@ -494,8 +490,6 @@ void writeClassTree(BaseClassList *cl,int level)
 void writeClassTreeNode(ClassDef *cd,bool &started,int level)
 {
   //printf("writeClassTreeNode(%s) visited=%d\n",cd->name().data(),cd->visited);
-  static bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-
   if (cd->isVisibleInHierarchy() && !cd->visited)
   {
     if (!started)
@@ -510,7 +504,7 @@ void writeClassTreeNode(ClassDef *cd,bool &started,int level)
     }
     if (hasChildren)
     {
-      if (vhdl)
+      if (cd->getLanguage()==SrcLangExt_VHDL)
       {
         writeClassTree(cd->baseClasses(),level+1);
       }
@@ -557,7 +551,6 @@ void writeClassTree(ClassSDict *d,int level)
 
 static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FTVHelp* ftv)
 {
-  static bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   ClassSDict::Iterator cli(*cl);
   for (;cli.current(); ++cli)
   {
@@ -568,7 +561,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
     //              cd->isVisibleInHierarchy()
     //      );
     bool b;
-    if (vhdl)
+    if (cd->getLanguage()==SrcLangExt_VHDL)
     {
       if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS || 
           (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
@@ -621,7 +614,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           if (ftv)
             ftv->addContentsItem(hasChildren,cd->displayName(),0,0,0); 
         }
-        if (vhdl && hasChildren) 
+        if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren) 
         {
           writeClassTree(ol,cd->baseClasses(),cd->visited,1,ftv);
           cd->visited=TRUE;
@@ -1142,8 +1135,7 @@ void writeAnnotatedClassList(OutputList &ol)
     {
       QCString type=cd->compoundTypeString();
       ol.startIndexKey();
-      static bool vhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-      if (vhdl)
+      if (cd->getLanguage()==SrcLangExt_VHDL)
       {
         QCString prot= VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)cd->protection());
         ol.docify(prot.data());
@@ -1422,13 +1414,15 @@ void writeAlphabeticalClassList(OutputList &ol)
               //QCString cname=cd->className();
               extractNamespaceName(cd->name(),cname,namesp);
               QCString nsDispName;
-              if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+              SrcLangExt lang = cd->getLanguage();
+              QCString sep = getLanguageSpecificSeparator(lang);
+              if (sep!="::")
               {
-                nsDispName=substitute(namesp,"::",".");
+                nsDispName=substitute(namesp,"::",sep);
               }
               else
               {
-                nsDispName=namesp.copy();
+                nsDispName=namesp;
               }
               if (cname.right(2)=="-g" || cname.right(2)=="-p")
               {
@@ -1701,10 +1695,10 @@ void initClassMemberIndices()
 void addClassMemberNameToIndex(MemberDef *md)
 {
   static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
-  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   ClassDef *cd=0;
 
-  if (vhdlOpt && (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
+  if (md->getLanguage()==SrcLangExt_VHDL && 
+      (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
   {
     VhdlDocGen::adjustRecordMember(md);
   }
@@ -2068,7 +2062,6 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
 
 void writeClassMemberIndex(OutputList &ol)
 {
-  //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   writeClassMemberIndexFiltered(ol,CMHL_All);
   writeClassMemberIndexFiltered(ol,CMHL_Functions);
   writeClassMemberIndexFiltered(ol,CMHL_Variables);
@@ -2120,7 +2113,6 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
   if (documentedFileMembers[hl]==0) return;
 
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  //static bool fortranOpt       = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
   bool multiPageIndex=FALSE;
@@ -2898,9 +2890,9 @@ void writeJavascriptSearchIndex()
                 else if (md && (md->getClassDef() || md->getNamespaceDef())) 
                   // member in class or namespace scope
                 {
-                  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
-                  t << convertToXML(d->getOuterScope()->qualifiedName()) << (optimizeOutputJava ? "." : "::");
-                  t << prefix;
+                  SrcLangExt lang = md->getLanguage();
+                  t << convertToXML(d->getOuterScope()->qualifiedName()) 
+                    << getLanguageSpecificSeparator(lang) << prefix;
                   found = TRUE;
                 }
                 else if (scope) // some thing else? -> show scope

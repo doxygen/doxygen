@@ -86,10 +86,6 @@ class CiteDict
      */
     void writeLatexBibliography(FTextStream &t);
 
-    /** writes the default bibliography style to the output */
-    static void writeDefaultBibStyle();
-
-
   private:
     bool writeAux();
     bool writeBst();

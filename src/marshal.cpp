@@ -644,8 +644,9 @@ MemberSDict *unmarshalMemberSDict(StorageIntf *s)
     //printf("  unmarshaling key %s\n",key.data());
     MemberDef *md = (MemberDef *)unmarshalObjPointer(s);
     //printf("  unmarshalMemberSDict i=%d key=%s md=%p\n",i,key.data(),md);
-    result->inSort(key,md); // note: this can lead to unmarshalling another object!
+    result->append(key,md); // note: this can lead to unmarshalling another object!
   }
+  result->sort();
   //printf("--- end unmarshalMemberSDict\n");
   return result;
 }

@@ -17,6 +17,7 @@
  
 // Updates:
 // --------
+// 2011/07/28 - Updates for "new since 1.7.5".
 // 2010/06/04 - big leap from 1.2.18 to 1.6.3+
 //
 // Slovak translation started by Stanislav Kudlac (skudlac at pobox dot sk).
@@ -28,7 +29,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public TranslatorAdapter_1_7_5
+class TranslatorSlovak : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -1830,6 +1831,23 @@ class TranslatorSlovak : public TranslatorAdapter_1_7_5
       }
       return sdate;
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Odkazy na literatúru"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Graf závislosti na priečinkoch pre  ")+name+":"; }
+
 
 };
 

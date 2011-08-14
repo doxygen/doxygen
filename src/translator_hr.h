@@ -81,7 +81,7 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_7_5
+class TranslatorCroatian : public Translator
 {
   private:
   
@@ -1549,6 +1549,21 @@ class TranslatorCroatian : public TranslatorAdapter_1_7_5
       }
       return sdate;
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Bibliografija"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Direktoriji o kojima ovisi ")+name+":"; }
 
 };
 

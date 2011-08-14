@@ -434,7 +434,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocInclude)}\n");
   switch(inc->type())
   {
-   case DocInclude::IncWithLines:
+     case DocInclude::IncWithLines:
       { 
          m_t << "{" << endl;
          m_t << "\\par" << endl;
@@ -450,7 +450,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
          m_t << "}" << endl;
       }
       break;
-   case DocInclude::Include: 
+    case DocInclude::Include: 
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
@@ -472,6 +472,19 @@ void RTFDocVisitor::visit(DocInclude *inc)
       filter(inc->text());
       m_t << "\\par";
       m_t << "}" << endl;
+      break;
+    case DocInclude::Snippet:
+      m_t << "{" << endl;
+      if (!m_lastIsPara) m_t << "\\par" << endl;
+      m_t << rtf_Style_Reset << getStyle("CodeExample");
+      Doxygen::parserManager->getParser(inc->extension())
+                            ->parseCode(m_ci,
+                                        inc->context(),
+                                        extractBlock(inc->text(),inc->blockId()),
+                                        inc->isExample(),
+                                        inc->exampleFile()
+                                       );
+      m_t << "}";
       break;
   }
   m_lastIsPara=TRUE;

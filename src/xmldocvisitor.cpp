@@ -265,6 +265,17 @@ void XmlDocVisitor::visit(DocInclude *inc)
       filter(inc->text());
       m_t << "</verbatim>"; 
       break;
+    case DocInclude::Snippet:
+      m_t << "<programlisting>";
+      Doxygen::parserManager->getParser(inc->extension())
+                            ->parseCode(m_ci,
+                                        inc->context(),
+                                        extractBlock(inc->text(),inc->blockId()),
+                                        inc->isExample(),
+                                        inc->exampleFile()
+                                       );
+      m_t << "</programlisting>"; 
+      break;
   }
 }
 

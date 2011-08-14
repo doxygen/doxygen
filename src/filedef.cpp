@@ -92,9 +92,10 @@ FileDef::FileDef(const char *p,const char *nm,
   {
     docname.prepend(stripFromPath(path.copy()));
   }
-  SrcLangExt lang   = getLanguageFromFileName(name());
-  m_isJava          = lang==SrcLangExt_Java;
-  m_isCSharp        = lang==SrcLangExt_CSharp;
+  SrcLangExt lang = getLanguageFromFileName(name());
+  setLanguage(lang);
+  //m_isJava          = lang==SrcLangExt_Java;
+  //m_isCSharp        = lang==SrcLangExt_CSharp;
   memberGroupSDict = 0;
   acquireFileVersion();
   m_subGrouping=Config_getBool("SUBGROUPING");
@@ -264,7 +265,7 @@ void FileDef::writeIncludeFiles(OutputList &ol)
       bool isIDLorJava = FALSE;
       if (fd)
       {
-        SrcLangExt lang   = getLanguageFromFileName(fd->name());
+        SrcLangExt lang   = fd->getLanguage();
         isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
       }
       ol.startTypewriter();
@@ -536,7 +537,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.parseText(pageTitleShort); // Html only
       ol.enableAll();
       ol.disable(OutputGenerator::Html);
-      ol.parseText(pageTitle,TRUE); // other output formats
+      ol.parseText(pageTitle); // other output formats
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
     endTitle(ol,getOutputFileBase(),title);

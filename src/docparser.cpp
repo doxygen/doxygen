@@ -332,6 +332,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
   LockingPtr<ArgumentList> al=g_memberDef->isDocsForDefinition() ? 
 		   g_memberDef->argumentList() :
                    g_memberDef->declArgumentList();
+  SrcLangExt lang = g_memberDef->getLanguage();
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al==0) return; // no argument list
 
@@ -340,6 +341,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
   while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
   {
     QCString aName=name.mid(i,l);
+    if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName=`%s'\n",aName.data());
     ArgumentListIterator ali(*al);
     Argument *a;
@@ -347,6 +349,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
     for (ali.toFirst();(a=ali.current());++ali)
     {
       QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+      if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
       //printf("argName=`%s'\n",argName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
@@ -399,6 +402,7 @@ static void checkUndocumentedParams()
     LockingPtr<ArgumentList> al=g_memberDef->isDocsForDefinition() ? 
       g_memberDef->argumentList() :
       g_memberDef->declArgumentList();
+    SrcLangExt lang = g_memberDef->getLanguage();
     if (al!=0)
     {
       ArgumentListIterator ali(*al);
@@ -407,9 +411,10 @@ static void checkUndocumentedParams()
       for (ali.toFirst();(a=ali.current());++ali)
       {
         QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+        if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-        if (getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python && argName=="self")
+        if (g_memberDef->getLanguage()==SrcLangExt_Python && argName=="self")
         { 
           // allow undocumented self parameter for Python
         }
@@ -430,8 +435,9 @@ static void checkUndocumentedParams()
         for (ali.toFirst();(a=ali.current());++ali)
         {
           QCString argName = g_memberDef->isDefine() ? a->type : a->name;
+          if (lang==SrcLangExt_Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
-          if (getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python && argName=="self")
+          if (g_memberDef->getLanguage()==SrcLangExt_Python && argName=="self")
           { 
             // allow undocumented self parameter for Python
           }
@@ -477,7 +483,7 @@ static void detectNoDocumentedParams()
     LockingPtr<ArgumentList> al     = g_memberDef->argumentList();
     LockingPtr<ArgumentList> declAl = g_memberDef->declArgumentList();
     QCString returnType   = g_memberDef->typeString();
-    bool isPython = getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python;
+    bool isPython = g_memberDef->getLanguage()==SrcLangExt_Python;
 
     if (!g_memberDef->hasDocumentedParams() &&
         g_hasParamCommand)
@@ -1005,7 +1011,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
   Definition *compound=0;
   MemberDef  *member=0;
-  QCString name = linkToText(g_token->name,TRUE);
+  QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
   int len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
@@ -1762,6 +1768,17 @@ void DocInclude::parse()
     case HtmlInclude:
       readTextFileByName(m_file,m_text);
       break;
+    case Snippet:
+      readTextFileByName(m_file,m_text);
+      // check here for the existance of the blockId inside the file, so we
+      // only generate the warning once.
+      int count;
+      if (!m_blockId.isEmpty() && (count=m_text.contains(m_blockId.data()))!=2)
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: block marked with %s for \\snippet should appear twice in file %s, found it %d times\n",
+            m_blockId.data(),m_file.data(),count);
+      }
+      break;
   }
 }
 
@@ -2285,7 +2302,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     bool isFile = compound ? 
                  (compound->definitionType()==Definition::TypeFile ? TRUE : FALSE) : 
                  FALSE;
-    m_text = linkToText(target,isFile);
+    m_text = linkToText(compound?compound->getLanguage():SrcLangExt_Unknown,target,isFile);
     m_anchor = anchor;
     if (compound && compound->isLinkable()) // ref to compound
     {
@@ -2318,7 +2335,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
       return;
     }
   }
-  m_text = linkToText(target,FALSE);
+  m_text = linkToText(SrcLangExt_Unknown,target,FALSE);
   warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unable to resolve reference to `%s' for \\ref command",
            qPrint(target)); 
 }
@@ -2420,7 +2437,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
     //    m_text.data(),m_ref.data(),m_file.data(),m_anchor.data());
     return;
   }
-  m_text = linkToText(target,FALSE);
+  m_text = linkToText(SrcLangExt_Unknown,target,FALSE);
   warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unable to resolve reference to `%s' for \\cite command",
            qPrint(target)); 
 }
@@ -3851,10 +3868,21 @@ int DocHtmlList::parse()
     {
       // ok, we can go on.
     }
+    else if (((m_type==Unordered && tagId==HTML_UL) ||
+              (m_type==Ordered   && tagId==HTML_OL)
+             ) && g_token->endTag
+            ) // found empty list
+    {
+      // add dummy item to obtain valid HTML
+      m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: empty list!");
+      retval = RetVal_EndList;
+      goto endlist;
+    }
     else // found some other tag
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected <li> tag but "
-          "found <%s> instead!",qPrint(g_token->name));
+          "found <%s%s> instead!",g_token->endTag?"/":"",qPrint(g_token->name));
       doctokenizerYYpushBackHtmlTag(g_token->name);
       goto endlist;
     }
@@ -4744,7 +4772,22 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
         tokToString(tok),qPrint(cmdName));
     return;
   }
-  DocInclude *inc = new DocInclude(this,g_token->name,g_context,t,g_isExample,g_exampleName);
+  QCString fileName = g_token->name;
+  QCString blockId;
+  if (t==DocInclude::Snippet)
+  {
+    doctokenizerYYsetStateSnippet();
+    tok=doctokenizerYYlex();
+    doctokenizerYYsetStatePara();
+    if (tok!=TK_WORD)
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected block identifier, but found token %s instead while parsing the %s command",
+          tokToString(tok),qPrint(cmdName));
+      return;
+    }
+    blockId = "["+g_token->name+"]";
+  }
+  DocInclude *inc = new DocInclude(this,fileName,g_context,t,g_isExample,g_exampleName,blockId);
   m_children.append(inc);
   inc->parse();
 }
@@ -5149,6 +5192,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_VERBINCLUDE:
       handleInclude(cmdName,DocInclude::VerbInclude);
+      break;
+    case CMD_SNIPPET:
+      handleInclude(cmdName,DocInclude::Snippet);
       break;
     case CMD_SKIP:
       handleIncludeOperator(cmdName,DocIncOperator::Skip);
@@ -6440,7 +6486,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   //g_token = new TokenInfo;
 
   // store parser state so we can re-enter this function if needed
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   docParserPushContext();
 
   if (ctx && ctx!=Doxygen::globalScope &&
@@ -6471,7 +6517,9 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_searchUrl=md->getOutputFileBase();
     Doxygen::searchIndex->setCurrentDoc(
-        (fortranOpt?theTranslator->trSubprogram(TRUE,TRUE):theTranslator->trMember(TRUE,TRUE))+" "+md->qualifiedName(),
+        (md->getLanguage()==SrcLangExt_Fortran ? 
+         theTranslator->trSubprogram(TRUE,TRUE):
+         theTranslator->trMember(TRUE,TRUE))+" "+md->qualifiedName(),
         g_searchUrl,
         md->anchor());
   }
@@ -6479,10 +6527,14 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_searchUrl=ctx->getOutputFileBase();
     QCString name = ctx->qualifiedName();
-    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+
+    SrcLangExt lang = ctx->getLanguage();
+    QCString sep = getLanguageSpecificSeparator(lang);
+    if (sep!="::")
     {
-      name = substitute(name,"::",".");
+      name = substitute(name,"::",sep);
     }
+
     switch (ctx->definitionType())
     {
       case Definition::TypePage:
@@ -6506,15 +6558,15 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
         break;
       case Definition::TypeNamespace:
         {
-          if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+          if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
           {
             name = theTranslator->trPackage(name);
           }
-          else if(fortranOpt)
+          else if (lang==SrcLangExt_Fortran)
           {
             name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
           }
-            else
+          else
           {
             name.prepend(theTranslator->trNamespace(TRUE,TRUE)+" ");
           }
@@ -6601,7 +6653,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   return root;
 }
 
-DocNode *validatingParseText(const char *input,bool forceBreaks)
+DocNode *validatingParseText(const char *input)
 {
   // store parser state so we can re-enter this function if needed
   docParserPushContext();
@@ -6629,7 +6681,7 @@ DocNode *validatingParseText(const char *input,bool forceBreaks)
   g_paramsFound.clear();
   g_searchUrl="";
 
-  DocText *txt = new DocText(forceBreaks);
+  DocText *txt = new DocText;
 
   if (input)
   {

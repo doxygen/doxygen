@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorCatalan : public TranslatorAdapter_1_6_3
+class TranslatorCatalan : public Translator
 {
   public:
 
@@ -1816,6 +1816,77 @@ class TranslatorCatalan : public TranslatorAdapter_1_6_3
     {
       return "Cap coincidència";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Graf de dependència de directoris per a "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Fitxer a "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Inclou fitxer a "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Dl","Dt","Dc","Dj","Dv","Ds","Dg" };
+      static const char *months[] = { "Gen","Feb","Mar","Abr","Mai","Jun","Jul","Ago","Sep","Oct","Nov","Dec" };
+      QCString sdate;
+      sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Referències Bibliogràfiques"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Graf de dependència de directoris per a ")+name+":"; }
 
 };
 

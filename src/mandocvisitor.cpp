@@ -281,6 +281,22 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << ".PP" << endl;
       m_firstCol=TRUE;
       break;
+    case DocInclude::Snippet:
+      if (!m_firstCol) m_t << endl;
+      m_t << ".PP" << endl;
+      m_t << ".nf" << endl;
+      Doxygen::parserManager->getParser(inc->extension())
+                            ->parseCode(m_ci,
+                                        inc->context(),
+                                        extractBlock(inc->text(),inc->blockId()),
+                                        inc->isExample(),
+                                        inc->exampleFile()
+                                       );
+      if (!m_firstCol) m_t << endl;
+      m_t << ".fi" << endl;
+      m_t << ".PP" << endl;
+      m_firstCol=TRUE;
+      break;
   }
 }
 
@@ -949,6 +965,7 @@ void ManDocVisitor::filter(const char *str)
     {
       switch(c)
       {
+        case '.':  m_t << "'\\&."; break; // see  bug652277
         case '\\': m_t << "\\\\"; break;
         case '"':  c = '\''; // fall through
         default: m_t << c; break;

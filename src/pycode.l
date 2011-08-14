@@ -57,7 +57,7 @@ static Definition *  g_currentDefinition;
 static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 static QCString      g_realScope;
-static bool          g_insideBody;
+//static bool          g_insideBody;
 static int           g_bodyCurlyCount;
 static bool          g_searchingForBody;
 static QCString      g_classScope;
@@ -346,7 +346,7 @@ static void startCodeLine()
     {
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
-      g_insideBody = FALSE;
+      //g_insideBody = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
       g_classScope = d->name().copy();
@@ -473,21 +473,20 @@ static void codifyLines(char *text)
 
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
+  static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
+  static bool callerGraph =  Config_getBool("CALLER_GRAPH");
+  static bool referencesRelation = Config_getBool("REFERENCES_RELATION");
+  static bool callGraph = Config_getBool("CALL_GRAPH");
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if ((Config_getBool("REFERENCED_BY_RELATION") || Config_getBool("CALLER_GRAPH")) && 
-      (src->isFunction() || src->isSlot()) 
-     )
+  if ((referencedByRelation || callerGraph) && (src->isFunction() || src->isSlot()))
   {
     dst->addSourceReferencedBy(src);
   }
-  if ((Config_getBool("REFERENCES_RELATION") || Config_getBool("CALL_GRAPH")) && 
-      (src->isFunction() || src->isSlot())
-     )
+  if ((referencesRelation || callGraph) && (src->isFunction() || src->isSlot()))
   {
     src->addSourceReferences(dst);
   }
-
 }
 
 
@@ -508,21 +507,21 @@ static bool getLinkInScope(const QCString &c,  // scope
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
       md->isLinkable())
   {
-    //printf("Found!\n");
     //Definition *d=0;
     //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
+    //printf("Found! d=%s\n",d?d->name().data():"<none>");
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString()));
-      //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
-      //        g_currentDefinition,g_currentMemberDef,g_insideBody);
+      //printf("g_currentDefinition=%p g_currentMemberDef=%p\n",
+      //        g_currentDefinition,g_currentMemberDef);
 
       if (g_currentDefinition && g_currentMemberDef &&
-	  md!=g_currentMemberDef && g_insideBody)
+	  md!=g_currentMemberDef)
       {
 	addDocCrossReference(g_currentMemberDef,md);
       }
@@ -575,11 +574,11 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   // Don't do anything for empty text
   if (className.isEmpty()) return;
 
+  //printf("generateClassOrGlobalLink(className=%s)\n",className.data());
+
   ClassDef *cd=0,*lcd=0;  /** Class def that we may find */
   MemberDef *md=0;        /** Member def that we may find */
   bool isLocal=FALSE;
-
-  // printf("generateClassOrGlobalLink(className=%s)\n",className.data());
 
   if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
@@ -625,6 +624,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
   else // not a class, maybe a global member
   {
+    //printf("Checking if '%s' is a global function\n",clName);
 
     /*
       This code requires a going-over in order to
@@ -734,6 +734,10 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
     if (sym->definitionType()==Definition::TypeMember)
     {
       anchor=((MemberDef *)sym)->anchor();
+      if (g_currentMemberDef)
+      {
+	addDocCrossReference(g_currentMemberDef,(MemberDef*)sym);
+      }
     }
 
     // TODO: find the nearest base class in case cd is a base class of
@@ -967,6 +971,10 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					codify(yytext);
 					endFontClass();
 				    }
+      "self."{IDENTIFIER}/"("       {
+				        codify("self.");
+				        findMemberLink(*g_code,&yytext[5]);
+	                            }
       "self."{IDENTIFIER}           {
 				        codify("self.");
 				        findMemberLink(*g_code,&yytext[5]);
@@ -1104,9 +1112,12 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
   		                 codify(yytext);
 		                 endFontClass();
                                }
-
+    ({IDENTIFIER}".")*{IDENTIFIER}/"("  {
+				 generateClassOrGlobalLink(*g_code,yytext);
+      			       }
     {IDENTIFIER}               {
   		                 codify(yytext);
+				 //generateClassOrGlobalLink(*g_code,yytext);
 			       }
 }
 

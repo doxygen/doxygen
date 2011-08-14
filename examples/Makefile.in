@@ -24,6 +24,7 @@ all: class/html/index.html \
      memgrp/html/index.html \
      docstring/html/index.html \
      pyexample/html/index.html \
+     tclexample/html/index.html \
      mux/html/index.html \
      manual/html/index.html 
 
@@ -34,7 +35,7 @@ clean:
 	rm -rf  class define enum file func page relates author \
                 par overload example include qtstyle jdstyle structcmd \
 		autolink tag restypedef afterdoc template tag group diagrams \
-		memgrp docstring pyexample mux manual dbusxml
+		memgrp docstring pyexample mux manual dbusxml tclexample
 
 class/html/index.html: class.h class.cfg
 	$(DOXYGEN)/bin/doxygen class.cfg
@@ -106,6 +107,9 @@ memgrp/html/index.html: memgrp.cpp memgrp.cfg
 
 pyexample/html/index.html: pyexample.py pyexample.cfg
 	$(DOXYGEN)/bin/doxygen pyexample.cfg
+
+tclexample/html/index.html: tclexample.tcl tclexample.cfg
+	$(DOXYGEN)/bin/doxygen tclexample.cfg
 
 mux/html/index.html: mux.vhdl mux.cfg
 	$(DOXYGEN)/bin/doxygen mux.cfg

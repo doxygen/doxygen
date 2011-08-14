@@ -309,12 +309,15 @@ int guessSection(const char *name)
       n.right(4)==".cpp"  ||
       n.right(4)==".c++"  ||
       n.right(5)==".java" ||
+      n.right(2)==".m"    ||
+      n.right(2)==".M"    ||
+      n.right(3)==".mm"   ||
       n.right(3)==".ii"   || // inline
       n.right(4)==".ixx"  ||
       n.right(4)==".ipp"  ||
       n.right(4)==".i++"  ||
       n.right(4)==".inl"  ||
-      n.right(4)==".xml"
+      n.right(4)==".xml" 
      ) return Entry::SOURCE_SEC;
   if (n.right(2)==".h"   || // header
       n.right(3)==".hh"  ||
@@ -1475,7 +1478,7 @@ ClassDef *getResolvedClass(Definition *scope,
       (scope->definitionType()!=Definition::TypeClass && 
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
-      (fileScope && fileScope->isJava() && QCString(n).find("::")!=-1)
+      (scope->getLanguage()==SrcLangExt_Java && QCString(n).find("::")!=-1)
      )
   {
     scope=Doxygen::globalScope;
@@ -3716,15 +3719,16 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   QCString scopeName=scName;
+  scopeName = substitute(scopeName,"\\","::"); // for PHP
   //printf("Search for name=%s args=%s in scope=%s forceEmpty=%d\n",
   //          memberName.data(),args,scopeName.data(),forceEmptyScope);
 
   int is,im=0,pm=0;
   // strip common part of the scope from the scopeName
   while ((is=scopeName.findRev("::"))!=-1 && 
-      (im=memberName.find("::",pm))!=-1 &&
-      (scopeName.right(scopeName.length()-is-2)==memberName.mid(pm,im-pm))
-      )
+         (im=memberName.find("::",pm))!=-1 &&
+          (scopeName.right(scopeName.length()-is-2)==memberName.mid(pm,im-pm))
+        )
   {
     scopeName=scopeName.left(is); 
     pm=im+2;
@@ -4300,9 +4304,9 @@ bool resolveRef(/* in */  const char *scName,
   return FALSE;
 }
 
-QCString linkToText(const char *link,bool isFileName)
+QCString linkToText(SrcLangExt lang,const char *link,bool isFileName)
 {
-  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  //static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   QCString result=link;
   if (!result.isEmpty())
   {
@@ -4315,9 +4319,10 @@ QCString linkToText(const char *link,bool isFileName)
     {
       result=result.right(result.length()-2);
     }
-    if (optimizeOutputJava)
+    QCString sep = getLanguageSpecificSeparator(lang);
+    if (sep!="::")
     {
-      result=substitute(result,"::",".");
+      result=substitute(result,"::",sep);
     }
   }
   return result;
@@ -4499,7 +4504,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
   Definition *compound;
   //PageDef *pageDef=0;
-  QCString anchor,linkText=linkToText(lt,FALSE);
+  QCString anchor,linkText=linkToText(SrcLangExt_Unknown,lt,FALSE);
   //printf("generateLink linkText=%s\n",linkText.data());
   if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
   {
@@ -4513,7 +4518,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
       }
       else if (compound->definitionType()==Definition::TypeFile)
       {
-        linkText=linkToText(lt,TRUE); 
+        linkText=linkToText(compound->getLanguage(),lt,TRUE); 
       }
       od.writeObjectLink(compound->getReference(),
           compound->getOutputFileBase(),anchor,linkText);
@@ -4830,6 +4835,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       case ')': strBuf.addStr("_08"); break;
       case '+': strBuf.addStr("_09"); break;
       case '=': strBuf.addStr("_0A"); break;
+      case '$': strBuf.addStr("_0B"); break;
       default: 
                 if (c<0)
                 {
@@ -5273,6 +5279,7 @@ QCString convertToJSString(const char *s)
     switch (c)
     {
       case '"':  strBuf.addStr("\\\""); break;
+      case '\\':  strBuf.addStr("\\\\"); break;
       default:   strBuf.addChar(c);   break;
     }
   }
@@ -5489,7 +5496,7 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
   static const QRegExp re_ftn("[a-z_A-Z\\x80-\\xFF][()=_a-z_A-Z0-9:\\x80-\\xFF]*");
   QRegExp re;
 
-  if (lang == SrcLangExt_F90)
+  if (lang == SrcLangExt_Fortran)
   {
     if (type.at(pos)==',') return -1;
     if (type.left(4).lower()=="type")
@@ -5981,9 +5988,11 @@ void addGroupListToTitle(OutputList &ol,Definition *d)
 }
 
 void filterLatexString(FTextStream &t,const char *str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool forceBreaks)
+    bool insideTabbing,bool insidePre,bool insideItem)
 {
   if (str==0) return;
+  //printf("filterLatexString(%s)\n",str);
+  //if (strlen(str)<2) stackTrace();
   const unsigned char *p=(const unsigned char *)str;
   unsigned char c;
   unsigned char pc='\0';
@@ -6013,7 +6022,8 @@ void filterLatexString(FTextStream &t,const char *str,
         case '^':  t << "$^\\wedge$";    break;
         case '&':  t << "\\&";           break;
         case '*':  t << "$\\ast$";       break;
-        case '_':  t << "\\_"; 
+        case '_':  if (!insideTabbing) t << "\\-";  
+                   t << "\\_"; 
                    if (!insideTabbing) t << "\\-";  
                    break;
         case '{':  t << "\\{";           break;
@@ -6046,7 +6056,10 @@ void filterLatexString(FTextStream &t,const char *str,
                    break;
 
         default:   
-                   if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
+                   //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
+                   if (!insideTabbing && 
+                       ((c>='A' && c<='Z' && pc!=' ') || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                      )
                    {
                      t << "\\-";
                    }
@@ -6239,25 +6252,25 @@ static struct Lang2ExtMap
 g_lang2extMap[] =
 {
 //  language       parser     parser option
-  { "idl",         "c",       SrcLangExt_IDL    },
-  { "java",        "c",       SrcLangExt_Java   },
-  { "javascript",  "c",       SrcLangExt_JS     },
-  { "csharp",      "c",       SrcLangExt_CSharp },
-  { "d",           "c",       SrcLangExt_D      },
-  { "php",         "c",       SrcLangExt_PHP    },
-  { "objective-c", "c",       SrcLangExt_ObjC   },
-  { "c",           "c",       SrcLangExt_Cpp    },
-  { "c++",         "c",       SrcLangExt_Cpp    },
-  { "python",      "python",  SrcLangExt_Python },
-  { "fortran",     "fortran", SrcLangExt_F90    },
-  { "vhdl",        "vhdl",    SrcLangExt_VHDL   },
-  { "dbusxml",     "dbusxml", SrcLangExt_XML    },
-  { 0,             0,        (SrcLangExt)0      }
+  { "idl",         "c",       SrcLangExt_IDL     },
+  { "java",        "c",       SrcLangExt_Java    },
+  { "javascript",  "c",       SrcLangExt_JS      },
+  { "csharp",      "c",       SrcLangExt_CSharp  },
+  { "d",           "c",       SrcLangExt_D       },
+  { "php",         "c",       SrcLangExt_PHP     },
+  { "objective-c", "c",       SrcLangExt_ObjC    },
+  { "c",           "c",       SrcLangExt_Cpp     },
+  { "c++",         "c",       SrcLangExt_Cpp     },
+  { "python",      "python",  SrcLangExt_Python  },
+  { "fortran",     "fortran", SrcLangExt_Fortran },
+  { "vhdl",        "vhdl",    SrcLangExt_VHDL    },
+  { "dbusxml",     "dbusxml", SrcLangExt_XML     },
+  { "tcl",         "tcl",     SrcLangExt_Tcl     },
+  { 0,             0,        (SrcLangExt)0       }
 };
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
 {
-  //getLanguageFromFileName("dummy"); // force initialization of the g_extLookup map
   const Lang2ExtMap *p = g_lang2extMap;
   QCString langName = language.lower();
   while (p->langName)
@@ -6316,6 +6329,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".f90",   "fortran");
   updateLanguageMapping(".vhd",   "vhdl");
   updateLanguageMapping(".vhdl",  "vhdl");
+  updateLanguageMapping(".tcl",   "tcl");
   //updateLanguageMapping(".xml",   "dbusxml");
 }
 
@@ -6609,8 +6623,8 @@ static QCString replaceAliasArgument(const QCString &aliasValue,int paramNum,
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
   result = expandAliasRec(substitute(result,"\\,",","));
-  printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
-      aliasValue.data(),paramNum,paramValue.data(),result.data());
+  //printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
+  //    aliasValue.data(),paramNum,paramValue.data(),result.data());
   return result;
 }
 
@@ -6820,7 +6834,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
   }
 
   int start=0;
-  if (inBuf.size()>=2 &&
+  if (size>=2 &&
       ((inBuf.at(0)==-1 && inBuf.at(1)==-2) || // Litte endian BOM
        (inBuf.at(0)==-2 && inBuf.at(1)==-1)    // big endian BOM
       )
@@ -6829,13 +6843,12 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2","UTF-8");
   }
-  else if (inBuf.size()>=3 &&
+  else if (size>=3 &&
            (uchar)inBuf.at(0)==0xEF &&
            (uchar)inBuf.at(1)==0xBB &&
            (uchar)inBuf.at(2)==0xBF
-     )
+     ) // UTF-8 encoded file
   {
-    // UTF-8 encoded file
     inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
   }
   else // transcode according to the INPUT_ENCODING setting
@@ -6961,6 +6974,9 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   return result;
 }
 
+/** Writes the intensity only bitmap representated by \a data as an image to 
+ *  directory \a dir using the colors defined by HTML_COLORSTYLE_*.
+ */
 void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
 {
   static int hue   = Config_getInt("HTML_COLORSTYLE_HUE");
@@ -6986,6 +7002,11 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
   }
 }
 
+/** Replaces any markers of the form \#\#AA in input string \a str
+ *  by new markers of the form \#AABBCC, where \#AABBCC represents a 
+ *  valid color, based on the intensity represented by hex number AA 
+ *  and the current HTML_COLORSTYLE_* settings.
+ */
 QCString replaceColorMarkers(const char *str)
 {
   QCString result;
@@ -7030,6 +7051,9 @@ QCString replaceColorMarkers(const char *str)
   return result;
 }
 
+/** Copies the contents of file with name \a src to the newly created 
+ *  file with name \a dest. Returns TRUE if successful.
+ */
 bool copyFile(const QCString &src,const QCString &dest)
 {
   QFile sf(src);
@@ -7057,5 +7081,84 @@ bool copyFile(const QCString &src,const QCString &dest)
     return FALSE;
   }
   return TRUE;
+}
+
+/** Returns the section of text, in between a pair of markers. 
+ *  Full lines are returned, excluding the lines on which the markers appear.
+ */
+QCString extractBlock(const QCString text,const QCString marker)
+{
+  QCString result;
+  int p=0,i;
+  bool found=FALSE;
+
+  // find the character positions of the markers
+  int m1 = text.find(marker);
+  if (m1==-1) return result;
+  int m2 = text.find(marker,m1+marker.length());
+  if (m2==-1) return result;
+
+  // find start and end line positions for the markers
+  int l1=-1,l2=-1;
+  while (!found && (i=text.find('\n',p))!=-1)
+  {
+    found = (p<=m1 && m1<i); // found the line with the start marker
+    p=i+1;
+  }
+  l1=p;
+  if (found)
+  {
+    while ((i=text.find('\n',p))!=-1)
+    {
+      if (p<=m2 && m2<i) // found the line with the end marker
+      {
+        l2=p;
+        break;
+      }
+      p=i+1;
+    }
+  }
+  //printf("text=[%s]\n",text.mid(l1,l2-l1).data());
+  return text.mid(l1,l2-l1);
+}
+
+/** Returns a string representation of \a lang. */
+QCString langToString(SrcLangExt lang)
+{
+  switch(lang)
+  {
+    case SrcLangExt_Unknown: return "Unknown";
+    case SrcLangExt_IDL:     return "IDL";
+    case SrcLangExt_Java:    return "Java";
+    case SrcLangExt_CSharp:  return "C#";
+    case SrcLangExt_D:       return "D";
+    case SrcLangExt_PHP:     return "PHP";
+    case SrcLangExt_ObjC:    return "Objective-C";
+    case SrcLangExt_Cpp:     return "C++";
+    case SrcLangExt_JS:      return "Javascript";
+    case SrcLangExt_Python:  return "Python";
+    case SrcLangExt_Fortran: return "Fortran";
+    case SrcLangExt_VHDL:    return "VHDL";
+    case SrcLangExt_XML:     return "XML";
+    case SrcLangExt_Tcl:     return "Tcl";
+  }
+  return "Unknown";
+}
+
+/** Returns the scope separator to use given the programming language \a lang */
+QCString getLanguageSpecificSeparator(SrcLangExt lang)
+{
+  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp || lang==SrcLangExt_VHDL)
+  {
+    return ".";
+  }
+  else if (lang==SrcLangExt_PHP)
+  {
+    return "\\";
+  }
+  else
+  {
+    return "::";
+  }
 }
 
