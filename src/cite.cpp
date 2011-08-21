@@ -72,14 +72,18 @@ bool CiteDict::writeAux()
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
     if (!bibFile.isEmpty())
     {
-      QFileInfo fi(bibFile);
+      QFileInfo fi(bibFile); // open file (with .bib extension)
       if (fi.exists())
       {
         if (!copyFile(bibFile,m_baseFileName+"_"+bibFile))
         {
           return FALSE;
         }
-        t << m_baseFileName+"_"+bibFile;
+        if (bibFile.right(4)==".bib")
+        {
+          bibFile = bibFile.left(bibFile.length()-4);
+        }
+        t << m_baseFileName+"_"+bibFile; // write name (without bib extension)
         bibdata = citeDataList.next();
         if (bibdata)
         {
@@ -128,6 +132,10 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
   while (bibdata)
   {
     QCString bibFile = bibdata;
+    if (bibFile.right(4)==".bib")
+    {
+      bibFile = bibFile.left(bibFile.length()-4);
+    }
     if (!bibFile.isEmpty())
     {
       t << bibFile;
@@ -268,11 +276,7 @@ void CiteDict::resolve()
   QStrList &citeBibFiles = Config_getList("CITE_BIB_FILES");
   if (citeBibFiles.count()==0 || m_entries.count()==0) return; // nothing to cite
 
-  QCString &outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  if (outputDirectory.isEmpty()) 
-  {
-    outputDirectory=QDir::currentDirPath();
-  }
+  QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QDir d(outputDirectory);
   d.mkdir("bib");
 

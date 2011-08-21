@@ -22,6 +22,7 @@
 #include "util.h"
 #include "section.h"
 #include "doxygen.h"
+#include "filestorage.h"
 
 //------------------------------------------------------------------
 

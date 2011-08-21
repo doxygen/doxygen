@@ -1005,7 +1005,10 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
   }
 
   // first substitute generic keywords
-  QCString result = substituteKeywords(s,title);
+  QCString result = substituteKeywords(s,title,
+        convertToHtml(Config_getString("PROJECT_NAME")),
+        convertToHtml(Config_getString("PROJECT_NUMBER")),
+        convertToHtml(Config_getString("PROJECT_BRIEF")));
 
   // additional HTML only keywords
   result = substitute(result,"$stylesheet",cssFile);
@@ -2452,6 +2455,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   switch (kind)
   {
     case LayoutNavEntry::MainPage:         return TRUE; 
+    case LayoutNavEntry::User:             return TRUE;                                           
     case LayoutNavEntry::Pages:            return indexedPages>0;
     case LayoutNavEntry::Modules:          return documentedGroups>0;
     case LayoutNavEntry::Namespaces:       return documentedNamespaces>0;
@@ -2485,8 +2489,12 @@ static void renderQuickLinksAsTree(FTextStream &t,const QCString &relPath,Layout
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
       {
-        startQuickIndexItem(t,entry->baseFile()+Doxygen::htmlFileExtension,
-                            FALSE,FALSE,relPath);
+        QCString url = entry->baseFile();
+        if (entry->kind()!=LayoutNavEntry::User)
+        {
+          url+=Doxygen::htmlFileExtension;
+        }
+        startQuickIndexItem(t,url,FALSE,FALSE,relPath);
         t << fixSpaces(entry->title());
         // recursive into child list
         renderQuickLinksAsTree(t,relPath,entry);
@@ -2525,7 +2533,12 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
       {
         if (entry->visible() && quickLinkVisible(entry->kind()))
         {
-          startQuickIndexItem(t,entry->baseFile()+Doxygen::htmlFileExtension,
+          QCString url = entry->baseFile();
+          if (entry->kind()!=LayoutNavEntry::User)
+          {
+            url+=Doxygen::htmlFileExtension;
+          }
+          startQuickIndexItem(t,url,
               entry==hlEntry  && 
               (entry->children().count()>0 || 
                (entry->kind()==kind && !highlightParent)
@@ -2694,9 +2707,6 @@ void HtmlGenerator::writeSearchPage()
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool disableIndex = Config_getBool("DISABLE_INDEX");
   static QCString projectName = Config_getString("PROJECT_NAME");
-  static QCString projectBrief = Config_getString("PROJECT_BRIEF"); 
-  static QCString projectNumber = Config_getString("PROJECT_NUMBER"); 
-  static QCString projectLogo = Config_getString("PROJECT_LOGO");
 
   // OPENSEARCH_PROVIDER {
   QCString configFileName = Config_getString("HTML_OUTPUT")+"/search-config.php";

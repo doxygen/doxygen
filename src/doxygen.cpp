@@ -81,6 +81,7 @@
 #include "vhdldocgen.h"
 #include "eclipsehelp.h"
 #include "cite.h"
+#include "filestorage.h"
 
 #include "layout.h"
 
@@ -1175,6 +1176,29 @@ static void addClassToContext(EntryNav *rootNav)
         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    cd->setLanguage(root->lang);    
+    cd->setHidden(root->hidden);        
+    cd->setArtificial(root->artificial);        
+    cd->setTypeConstraints(root->typeConstr);   
+    //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());    
+
+    ArgumentList *tArgList =    
+      getTemplateArgumentsFromName(fullName,root->tArgLists);   
+    //printf("class %s template args=%s\n",fullName.data(),     
+    //    tArgList ? tempArgListToString(tArgList).data() : "<none>");          
+    cd->setTemplateArguments(tArgList);         
+    cd->setProtection(root->protection);        
+    cd->setIsStatic(root->stat);        
+
+    // file definition containing the class cd          
+    cd->setBodySegment(root->bodyLine,root->endBodyLine);       
+    cd->setBodyDef(fd);         
+
+    // see if the class is found inside a namespace     
+    //bool found=addNamespace(root,cd);         
+
+    // the empty string test is needed for extract all case     
+    cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);    
     cd->insertUsedFile(root->fileName);
 
     // add class to the list
@@ -1415,7 +1439,7 @@ static void processTagLessClasses(ClassDef *rootCd,
                                   ClassDef *tagParentCd,
                                   const QCString &prefix,int count)
 {
-  printf("%d: processTagLessClasses %s\n",count,cd->name().data());
+  //printf("%d: processTagLessClasses %s\n",count,cd->name().data());
   //printf("checking members for %s\n",cd->name().data());
   if (cd->getInnerClasses())
   {
@@ -1433,7 +1457,7 @@ static void processTagLessClasses(ClassDef *rootCd,
           ClassDef *icd;
           for (it.toFirst();(icd=it.current());++it)
           {
-            printf("  member %s: type='%s'\n",md->name().data(),type.data());
+            //printf("  member %s: type='%s'\n",md->name().data(),type.data());
             //printf("  comparing '%s'<->'%s'\n",type.data(),icd->name().data());
             if (type.find(icd->name())!=-1) // matching tag less struct/union
             {
@@ -8900,6 +8924,7 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
     bool ambig;
     FileDef *fd=findFileDef(Doxygen::inputNameDict,fileName,ambig);
     ASSERT(fd!=0);
+    //printf("root->createNavigationIndex for %s\n",fd->name().data());
     root->createNavigationIndex(rootNav,g_storage,fd);
 
     s=g_inputFiles.next();
@@ -10168,7 +10193,8 @@ void parseInput()
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
   Doxygen::symbolCache   = new ObjCache(16+cacheSize); // 16 -> room for 65536 elements, 
-                                                //       ~2.0 MByte "overhead"
+                                                       //       ~2.0 MByte "overhead"
+  //Doxygen::symbolCache   = new ObjCache(1);  // only to stress test cache behaviour
   Doxygen::symbolStorage = new Store;
 
 #ifdef HAS_SIGNALS
@@ -10331,15 +10357,6 @@ void parseInput()
    *             Parse source files                                         * 
    **************************************************************************/
 
-  parseFiles(root,rootNav);
-  g_storage->close();
-  if (!g_storage->open(IO_ReadOnly))
-  {
-    err("Failed to open temporary storage file %s for reading",
-        Doxygen::entryDBFileName.data());
-    exit(1);
-  }
-
   //printNavTree(rootNav,0);
 
   // we are done with input scanning now, so free up the buffers used by flex
@@ -10352,6 +10369,20 @@ void parseInput()
   //g_storage.close();
   //exit(1);
 
+  if (Config_getBool("BUILTIN_STL_SUPPORT"))
+  {
+    addSTLClasses(rootNav);
+  }
+
+  parseFiles(root,rootNav);
+  g_storage->close();
+  if (!g_storage->open(IO_ReadOnly))
+  {
+    err("Failed to open temporary storage file %s for reading",
+        Doxygen::entryDBFileName.data());
+    exit(1);
+  }
+
   /**************************************************************************
    *             Gather information                                         * 
    **************************************************************************/
@@ -10363,11 +10394,6 @@ void parseInput()
   msg("Building directory list...\n");
   buildDirectories();
   findDirDocumentation(rootNav);
-
-  if (Config_getBool("BUILTIN_STL_SUPPORT"))
-  {
-    addSTLClasses(rootNav);
-  }
 
   msg("Building namespace list...\n");
   buildNamespaceList(rootNav);

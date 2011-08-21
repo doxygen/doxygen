@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #ifndef MARSHAL_H
 #define MARSHAL_H
 
@@ -24,58 +39,6 @@ class ExampleSDict;
 class Entry;
 
 #define NULL_LIST 0xffffffff
-
-class FileStorage : public QFile, public StorageIntf
-{
-  public:
-    FileStorage() : QFile() {}
-    FileStorage( const QString &name) : QFile(name) {}
-    int read(char *buf,uint size)        { return QFile::readBlock(buf,size); }
-    int write(const char *buf,uint size) { return QFile::writeBlock(buf,size); }
-};
-
-class StreamStorage : public StorageIntf
-{
-  public:
-    StreamStorage()
-    {
-      m_data=0;
-      m_offset=0;
-      m_len=0;
-    }
-   ~StreamStorage()
-    {
-      delete m_data;
-    }
-    StreamStorage(char *data,uint len)
-    {
-      m_data=data;
-      m_offset=0;
-      m_len=len;
-    }
-    int read(char *buf,uint size)
-    {
-      int bytesLeft = QMIN((int)size,m_len-m_offset);
-      if (bytesLeft>0) memcpy(buf,m_data,bytesLeft);
-      m_offset+=bytesLeft;
-      return bytesLeft;
-    }
-    int write(const char *buf,uint size)
-    {
-      m_data=(char *)realloc(m_data,m_offset+size);
-      memcpy(m_data+m_offset,buf,size);
-      m_offset+=size;
-      m_len+=size;
-      return size;
-    }
-    void rewind() { m_offset=0; }
-    char *data() const { return m_data; }
-    int size() { return m_len; }
-  private:
-    char *m_data;
-    int m_offset;
-    int m_len;
-};
 
 //----- marshaling function: datatype -> byte stream --------------------
 

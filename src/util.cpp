@@ -4711,7 +4711,8 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
 
 //----------------------------------------------------------------------
 
-QCString substituteKeywords(const QCString &s,const char *title)
+QCString substituteKeywords(const QCString &s,const char *title,
+         const char *projName,const char *projNum,const char *projBrief)
 {
   QCString result = s;
   if (title) result = substitute(result,"$title",title);
@@ -4719,9 +4720,9 @@ QCString substituteKeywords(const QCString &s,const char *title)
   result = substitute(result,"$date",dateToString(FALSE));
   result = substitute(result,"$year",yearToString());
   result = substitute(result,"$doxygenversion",versionString);
-  result = substitute(result,"$projectname",Config_getString("PROJECT_NAME"));
-  result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));
-  result = substitute(result,"$projectbrief",Config_getString("PROJECT_BRIEF"));
+  result = substitute(result,"$projectname",projName);
+  result = substitute(result,"$projectnumber",projNum);
+  result = substitute(result,"$projectbrief",projBrief);
   result = substitute(result,"$projectlogo",stripPath(Config_getString("PROJECT_LOGO")));
   return result;
 }

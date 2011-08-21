@@ -4,7 +4,7 @@
  *  \author    John Doe
  *  \author    Jan Doe
  *  \version   4.1a
- *  \date      1990-2010
+ *  \date      1990-2011
  *  \pre       First initialize the system.
  *  \bug       Not all memory is freed when deleting an object of this class.
  *  \warning   Improper use can crash your application

@@ -808,10 +808,22 @@ void MemberList::setNeedsSorting(bool b)
 
 int MemberSDict::compareItems(GCI item1, GCI item2)
 {
+  // NOTE: this function can be triggered from unmarshalMemberSDict
+  // so it may not result in called to MemberDef::makeResident().
+  // As a result, the data returned by MemberDef::name() and 
+  // MemberDef::getDefLine() will always be kept in memory.
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
+  //printf("MemberSDict::compareItems(%s,%s)\n",c1->name().data(),c2->name().data());
   int cmp = stricmp(c1->name(),c2->name());
-  return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
+  if (cmp)
+  {
+    return cmp;
+  }
+  else
+  {
+    return c1->getDefLine()-c2->getDefLine();
+  }
 }
 
 
