@@ -10,7 +10,7 @@ Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 14 translators are up-to-date, 25 translators are based on
+Of them, 15 translators are up-to-date, 24 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -29,6 +29,7 @@ still may be some details listed even for them:
   TranslatorDanish -- Reimplementation using UTF-8 suggested.
   TranslatorDutch
   TranslatorEnglish
+  TranslatorFrench -- Reimplementation using UTF-8 suggested.
   TranslatorGerman
   TranslatorGreek
   TranslatorPortuguese
@@ -52,9 +53,6 @@ must be implemented to become up-to-date:
   TranslatorItalian               1.7.5 	 3 methods to implement (1 %)
   TranslatorEsperanto             1.7.5 	 3 methods to implement (1 %)
   TranslatorPolish                1.6.3 	 7 methods to implement (3 %)
-  TranslatorFrench                1.6.3 	 6 methods to implement (2 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorVietnamese            1.6.0 	12 methods to implement (5 %)
   TranslatorSwedish               1.6.0 	12 methods to implement (5 %)
 	Note: Reimplementation using UTF-8 suggested.
@@ -253,19 +251,10 @@ TranslatorFinnish   (TranslatorAdapter_1_6_0)  12 methods to implement (5 %)
     virtual QCString trIncludesFileIn(const char * name)
 
 
-TranslatorFrench   (TranslatorAdapter_1_6_3)  6 methods to implement (2 %)
+TranslatorFrench   (Translator)
 ----------------
 
-  Implements 222 of the required methods (97 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
-    virtual QCString trFileIn(const char * name)
-    virtual QCString trDirDepGraph(const char * name)
-    virtual QCString trDirDependency(const char * name)
-    virtual QCString trCopyright()
-    virtual QCString trIncludesFileIn(const char * name)
+  Implements 228 of the required methods (100 %).
 
 
 TranslatorHungarian   (TranslatorAdapter_1_4_6)  36 methods to implement (15 %)

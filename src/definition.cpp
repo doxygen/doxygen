@@ -48,8 +48,7 @@ class DefinitionImpl
   public:
     DefinitionImpl();
    ~DefinitionImpl();
-    void init(const char *df,int dl,
-         const char *n);
+    void init(const char *df, const char *n);
 
     SectionDict *sectionDict;  // dictionary of all sections, not accessible
 
@@ -76,7 +75,6 @@ class DefinitionImpl
 
     // where the item was found
     QCString defFileName;
-    int      defLine;
     QCString defFileExt;
 
     SrcLangExt lang;
@@ -103,8 +101,7 @@ DefinitionImpl::~DefinitionImpl()
   delete inbodyDocs;
 }
 
-void DefinitionImpl::init(const char *df,int dl,
-                          const char *n)
+void DefinitionImpl::init(const char *df, const char *n)
 {
   defFileName = df;
   int lastDot = defFileName.findRev('.');
@@ -112,7 +109,6 @@ void DefinitionImpl::init(const char *df,int dl,
   {
     defFileExt = defFileName.mid(lastDot);
   }
-  defLine = dl;
   QCString name = n;
   if (name!="<globalScope>") 
   {
@@ -280,8 +276,9 @@ Definition::Definition(const char *df,int dl,
                        const char *d,bool isSymbol)
 {
   m_name = name;
+  m_defLine = dl;
   m_impl = new DefinitionImpl;
-  m_impl->init(df,dl,name);
+  m_impl->init(df,name);
   m_isSymbol = isSymbol;
   if (isSymbol) addToMap(name,this);
   _setBriefDescription(b,df,dl);
@@ -892,12 +889,17 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
+  LockingPtr<Definition> lock(this,this); // since this can be a memberDef 
+                                          // accessing other memberDefs prevent
+                                          // it from being flushed to disk
   static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE"); 
   static bool sourceBrowser   = Config_getBool("SOURCE_BROWSER");
   static bool refLinkSource   = Config_getBool("REFERENCES_LINK_SOURCE");
   ol.pushGeneratorState();
   if (members)
   {
+    members->sort();
+
     ol.startParagraph();
     ol.parseText(text);
     ol.docify(" ");
@@ -1118,19 +1120,6 @@ QCString Definition::qualifiedName() const
     count--;
     return m_impl->qualifiedName;
   }
-#if 0
-  if (count>20)
-  {
-    printf("Definition::qualifiedName() Infinite recursion detected! Type=%d\n",definitionType());
-    printf("Trace:\n");
-    Definition *d = (Definition *)this;
-    for (int i=0;d && i<20;i++)
-    {
-      printf("  %s\n",d->name().data());
-      d = d->getOuterScope();
-    }
-  }
-#endif
   
   //printf("start %s::qualifiedName() localName=%s\n",name().data(),m_impl->localName.data());
   if (m_impl->outerScope==0) 
@@ -1400,6 +1389,9 @@ QCString Definition::briefDescription() const
 QCString Definition::briefDescriptionAsTooltip() const
 {
   makeResident();
+  LockingPtr<Definition> lock(this,this); // since this can be a memberDef 
+                                          // accessing other memberDefs prevent
+                                          // it from being flushed to disk
   if (m_impl->brief)
   {
     if (m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.isEmpty())
@@ -1468,12 +1460,6 @@ QCString Definition::getDefFileExtension() const
 { 
   makeResident();
   return m_impl->defFileExt; 
-}
-
-int Definition::getDefLine() const 
-{ 
-  makeResident();
-  return m_impl->defLine; 
 }
 
 bool Definition::isHidden() const
@@ -1559,12 +1545,8 @@ void Definition::setReference(const char *r)
 
 SrcLangExt Definition::getLanguage() const
 {
+  makeResident();
   return m_impl->lang;
-}
-
-void Definition::_setSymbolName(const QCString &name) 
-{ 
-  m_symbolName=name; 
 }
 
 void Definition::setHidden(bool b) 
@@ -1585,13 +1567,21 @@ void Definition::setLocalName(const QCString name)
   m_impl->localName=name; 
 }
 
+void Definition::setLanguage(SrcLangExt lang) 
+{ 
+  makeResident();
+  m_impl->lang=lang; 
+}
+
 void Definition::makeResident() const
 {
 }
 
-void Definition::setLanguage(SrcLangExt lang) 
+//---------------
+
+void Definition::_setSymbolName(const QCString &name) 
 { 
-  m_impl->lang=lang; 
+  m_symbolName=name; 
 }
 
 void Definition::flushToDisk() const
@@ -1617,7 +1607,6 @@ void Definition::flushToDisk() const
   marshalBool         (Doxygen::symbolStorage,m_impl->isArtificial);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->outerScope);
   marshalQCString     (Doxygen::symbolStorage,m_impl->defFileName);
-  marshalInt          (Doxygen::symbolStorage,m_impl->defLine);
   marshalQCString     (Doxygen::symbolStorage,m_impl->defFileExt);
   marshalInt          (Doxygen::symbolStorage,(int)m_impl->lang);
   marshalUInt(Doxygen::symbolStorage,END_MARKER);
@@ -1650,7 +1639,6 @@ void Definition::loadFromDisk() const
   m_impl->isArtificial    = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->outerScope      = (Definition *)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->defFileName     = unmarshalQCString     (Doxygen::symbolStorage);
-  m_impl->defLine         = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->defFileExt      = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->lang            = (SrcLangExt)unmarshalInt(Doxygen::symbolStorage);
   marker = unmarshalUInt(Doxygen::symbolStorage);

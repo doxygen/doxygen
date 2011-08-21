@@ -1843,6 +1843,14 @@
 				RelativePath="..\src\tclscanner.l"
 				>
 				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool

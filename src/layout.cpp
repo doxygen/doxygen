@@ -895,6 +895,13 @@ class LayoutParser : public QXmlDefaultHandler
           theTranslator->trExamplesDescription(),
           "examples"
         },
+        { "user",
+          LayoutNavEntry::User,
+          QCString(),
+          QCString(),
+          QCString(),
+          "user"
+        },
         { 0, // end of list
           (LayoutNavEntry::Kind)0,
           QCString(),
@@ -944,6 +951,11 @@ class LayoutParser : public QXmlDefaultHandler
       if (intro.isEmpty()) // use default intro text
       {
         intro = mapping[i].intro;
+      }
+      QCString url = convertToQCString(attrib.value("url"));
+      if (mapping[i].kind==LayoutNavEntry::User && !url.isEmpty())
+      {
+        baseFile=url;
       }
       // create new item and make it the new root
       m_rootNav = new LayoutNavEntry(m_rootNav,kind,kind==LayoutNavEntry::MainPage?TRUE:isVisible,baseFile,title,intro);

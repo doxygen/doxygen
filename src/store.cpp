@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #define BLOCK_SIZE         512 // should be >8 and a power of 2
 #define BLOCK_POINTER_SIZE sizeof(portable_off_t)
@@ -111,7 +112,7 @@ portable_off_t Store::alloc()
   portable_off_t pos;
   if (m_head==0) // allocate new block
   {
-    //printf("alloc: new block\n");
+    //printf("alloc: new block, pos=%lld\n",(long long)m_front);
     if (portable_fseek(m_file,0,SEEK_END)==-1) // go to end of the file
     {
       fprintf(stderr,"Store::alloc: Error seeking to end of file: %s\n",strerror(errno));
@@ -130,7 +131,7 @@ portable_off_t Store::alloc()
   }
   else // reuse freed block
   {
-    //printf("alloc: reuse block: m_head=%d\n",(int)m_head);
+    //printf("alloc: reuse block: pos=%lld\n",(long long)m_head->pos);
     Node *node = m_head;
     pos = node->pos;
     // point head to next free item
@@ -268,7 +269,7 @@ void Store::end()
 void Store::release(portable_off_t pos)
 {
   STORE_ASSERT(m_state==Reading);
-  //printf("%x: Store::release\n",(int)pos);
+  //printf("release: block pos=%lld\n",(long long)pos);
   STORE_ASSERT(pos>0 && (pos & (BLOCK_SIZE-1))==0);
   // goto end of the block
   portable_off_t cur = pos, next;
@@ -394,6 +395,30 @@ void Store::printStats()
 {
   printf("ObjStore: block size %d bytes, total size %ld blocks, wrote %d blocks, read %d blocks\n",
       BLOCK_SIZE,(long)(m_front/BLOCK_SIZE),m_reads,m_writes);
+}
+
+void Store::dumpBlock(portable_off_t s,portable_off_t e)
+{
+  portable_fseek(m_file,s,SEEK_SET);
+  int size = (int)(e-s);
+  uchar *buf = new uchar[size];
+  fread(buf,size,1,m_file);
+  int i,j;
+  for (i=0;i<size;i+=16)
+  {
+    printf("%08x: ",(int)s+i);
+    for (j=i;j<QMIN(size,i+16);j++)
+    {
+      printf("%02x ",buf[i+j]);
+    }
+    printf("  ");
+    for (j=i;j<QMIN(size,i+16);j++)
+    {
+      printf("%c",(buf[i+j]>=32 && buf[i+j]<128)?buf[i+j]:'.');
+    }
+    printf("\n");
+  }
+  portable_fseek(m_file,m_cur,SEEK_SET);
 }
 
 #ifdef  STORE_TEST

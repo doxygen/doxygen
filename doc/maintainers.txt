@@ -64,6 +64,7 @@ TranslatorFinnish
 Antti Laine: antti dot a dot laine at tut dot fi
 
 TranslatorFrench
+David Martinet: contact at e-concept-applications dot fr
 Xavier Outhier: xouthier at yahoo dot fr
 
 TranslatorGerman  

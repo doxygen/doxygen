@@ -179,7 +179,7 @@ class Definition : public DefinitionIntf, public LockableObj
     QCString getDefFileExtension() const;
 
     /*! returns the line number at which the definition was found */
-    int getDefLine() const;
+    int getDefLine() const { return m_defLine; }
 
     /*! Returns TRUE iff the definition is documented 
      *  (which could be generated documentation) 
@@ -348,7 +348,7 @@ class Definition : public DefinitionIntf, public LockableObj
     QCString m_name;
     bool m_isSymbol;
     QCString m_symbolName;
-
+    int m_defLine;
 };
 
 class DefinitionList : public QList<Definition>, public DefinitionIntf

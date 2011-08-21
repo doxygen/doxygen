@@ -49,6 +49,10 @@
 #define snprintf _snprintf
 #endif
 
+// Put this macro at the start of any method of MemberDef that can directly
+// or indirectly access other MemberDefs. It prevents that the content 
+// pointed to by m_impl gets flushed to disk in the middle of the method call!
+#define KEEP_RESIDENT_DURING_CALL makeResident();LockingPtr<MemberDef> lock(this,this)
 
 //-----------------------------------------------------------------------------
 
@@ -693,6 +697,8 @@ void MemberDef::moveTo(Definition *scope)
 MemberDef::~MemberDef()
 {
   delete m_impl;
+  //printf("%p: ~MemberDef()\n",this);
+  m_impl=0;
   if (m_cacheHandle!=-1)
   {
     Doxygen::symbolCache->del(m_cacheHandle);
@@ -858,7 +864,7 @@ QCString MemberDef::getReference() const
 
 QCString MemberDef::anchor() const
 {
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
   QCString result=m_impl->anc;
   if (m_impl->groupAlias)     return m_impl->groupAlias->anchor();
   if (m_impl->templateMaster) return m_impl->templateMaster->anchor();
@@ -882,7 +888,7 @@ QCString MemberDef::anchor() const
 
 void MemberDef::_computeLinkableInProject()
 {
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
   static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
   static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
   m_isLinkableCached = 2; // linkable
@@ -1018,11 +1024,10 @@ void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
                       FileDef *fd,GroupDef *gd,bool onlyText)
 {
+  KEEP_RESIDENT_DURING_CALL;
+  SrcLangExt lang = getLanguage();
   //static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
-  makeResident();
-  SrcLangExt lang = getLanguage();
-  LockingPtr<MemberDef> lock(this,this);
   QCString sep = getLanguageSpecificSeparator(lang);
   QCString n = name();
   if (!hideScopeNames)
@@ -1069,9 +1074,12 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
  */
 ClassDef *MemberDef::getClassDefOfAnonymousType() 
 {
+  // split KEEP_RESIDENT_DURING_CALL for performance
   makeResident();
   if (m_impl->cachedAnonymousType) return m_impl->cachedAnonymousType;
-  LockingPtr<MemberDef> lock(this,this);
+  LockingPtr<MemberDef> lock(this,this); // since this memberDef can access 
+                                         // other memberDefs prevent it from 
+                                         // being flushed to disk halfway
 
   QCString cname;
   if (getClassDef()!=0) 
@@ -1139,8 +1147,8 @@ bool MemberDef::isBriefSectionVisible() const
   //    "", //getFileDef()->name().data(),
   //    argsString());
 
-  makeResident();
-  LockingPtr<MemberDef> lock(this,this);
+  KEEP_RESIDENT_DURING_CALL;
+
   MemberGroupInfo *info = Doxygen::memGrpInfoDict[m_impl->grpId];
   //printf("name=%s m_impl->grpId=%d info=%p\n",name().data(),m_impl->grpId,info);
   //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
@@ -1232,9 +1240,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   // hide enum value, since they appear already as part of the enum, unless they
   // are explicitly grouped.
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
   if (!inGroup && m_impl->mtype==EnumValue) return;
-  LockingPtr<MemberDef> lock(this,this);
 
   // hide members whose brief section should not be visible
   //if (!isBriefSectionVisible()) return;
@@ -1680,7 +1687,8 @@ bool MemberDef::isDetailedSectionLinkable() const
   static bool extractStatic     = Config_getBool("EXTRACT_STATIC");
   static bool extractPrivate    = Config_getBool("EXTRACT_PRIVATE");
 
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
+
   // the member has details documentation for any of the following reasons
   bool docFilter = 
          // treat everything as documented
@@ -1775,10 +1783,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if ( !hasDocs ) return;
   if (isEnumValue() && !showEnumValues) return;
 
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
+
   SrcLangExt lang = getLanguage();
   bool optVhdl = lang==SrcLangExt_VHDL;
-  LockingPtr<MemberDef> lock(this,this);
 
   QCString scopeName = scName;
   QCString memAnchor = anchor();
@@ -2532,6 +2540,8 @@ static QCString simplifyTypeForTable(const QCString &s)
 
 void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
 {
+  KEEP_RESIDENT_DURING_CALL;
+
   Definition *scope  = getOuterScope();
   QCString doxyName  = name();
   QCString doxyArgs  = argsString();
@@ -2818,8 +2828,7 @@ void MemberDef::setNamespace(NamespaceDef *nd)
 MemberDef *MemberDef::createTemplateInstanceMember(
         ArgumentList *formalArgs,ArgumentList *actualArgs)
 {
-  makeResident();
-  LockingPtr<MemberDef> lock(this,this);
+  KEEP_RESIDENT_DURING_CALL;
   //printf("  Member %s %s %s\n",typeString(),name().data(),argsString());
   ArgumentList *actualArgList = 0;
   if (m_impl->defArgList)
@@ -2896,7 +2905,7 @@ void MemberDef::setInitializer(const char *initializer)
 
 void MemberDef::addListReference(Definition *)
 {
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
   static bool optimizeOutputForC = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
   //static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
   //static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
@@ -2978,6 +2987,7 @@ void MemberDef::setSectionList(Definition *d, MemberList *sl)
 
 Specifier MemberDef::virtualness(int count) const
 {
+  KEEP_RESIDENT_DURING_CALL;
   if (count>25) 
   {
      warn(getDefFileName(),getDefLine(),
@@ -2999,7 +3009,7 @@ Specifier MemberDef::virtualness(int count) const
 
 void MemberDef::_computeIsConstructor()
 {
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
   m_isConstructorCached=1; // FALSE
   if (m_impl->classDef) 
   {
@@ -3055,7 +3065,7 @@ bool MemberDef::isConstructor() const
 
 void MemberDef::_computeIsDestructor()
 {
-  makeResident();
+  KEEP_RESIDENT_DURING_CALL;
   bool isDestructor;
   if (m_impl->isDMember) // for D
   {
@@ -3097,8 +3107,8 @@ bool MemberDef::isDestructor() const
 void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
      ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
 {
-  makeResident();
-  LockingPtr<MemberDef> lock(this,this);
+  KEEP_RESIDENT_DURING_CALL;
+
   int enumMemCount=0;
 
   QList<MemberDef> *fmdl=m_impl->enumFields;
@@ -3752,26 +3762,6 @@ bool MemberDef::hasDocumentedReturnType() const
   return m_impl->hasDocumentedReturnType; 
 }
 
-#if 0
-int MemberDef::inbodyLine() const
-{ 
-  makeResident();
-  return m_impl->inbodyLine; 
-}
-
-QCString MemberDef::inbodyFile() const
-{ 
-  makeResident();
-  return m_impl->inbodyFile; 
-}
-
-const QCString &MemberDef::inbodyDocumentation() const
-{ 
-  makeResident();
-  return m_impl->inbodyDocs; 
-}
-#endif
-
 ClassDef *MemberDef::relatedAlso() const
 { 
   makeResident();
@@ -4175,12 +4165,66 @@ void MemberDef::cacheTypedefVal(ClassDef*val, const QCString & templSpec, const 
   //printf("MemberDef::cacheTypedefVal=%s m_impl=%p\n",m_impl->cachedResolvedType.data(),m_impl);
 }
 
+void MemberDef::copyArgumentNames(MemberDef *bmd)
+{
+  makeResident();
+  {
+    LockingPtr<ArgumentList> arguments = bmd->argumentList();
+    if (m_impl->defArgList && arguments!=0)
+    {
+      ArgumentListIterator aliDst(*m_impl->defArgList);
+      ArgumentListIterator aliSrc(*arguments);
+      Argument *argDst, *argSrc;
+      for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
+      {
+        argDst->name = argSrc->name;
+      }
+    }
+  }
+  {
+    LockingPtr<ArgumentList> arguments = bmd->declArgumentList();
+    if (m_impl->declArgList && arguments!=0)
+    {
+      ArgumentListIterator aliDst(*m_impl->declArgList);
+      ArgumentListIterator aliSrc(*arguments);
+      Argument *argDst, *argSrc;
+      for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
+      {
+        argDst->name = argSrc->name;
+      }
+    }
+  }
+}
+
+static void invalidateCachedTypesInArgumentList(ArgumentList *al)
+{
+  if (al)
+  {
+    ArgumentListIterator ali(*al);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      a->canType.resize(0);
+    }
+  }
+}
+
+void MemberDef::invalidateCachedArgumentTypes()
+{
+  makeResident();
+  invalidateCachedTypesInArgumentList(m_impl->defArgList);
+  invalidateCachedTypesInArgumentList(m_impl->declArgList);
+}
+
+
+//-----------------------------------------------------------------
+
 void MemberDef::flushToDisk() const
 {
   if (isLocked()) return;
   MemberDef *that = (MemberDef*)this;
   that->m_storagePos = Doxygen::symbolStorage->alloc();
-  //printf("%p: MemberDef::flushToDisk()\n",this);
+  //printf("%p: MemberDef::flushToDisk() m_impl=%p\n",this,m_impl);
   // write the definition base class member variables to disk
   Definition::flushToDisk();
 
@@ -4268,10 +4312,10 @@ void MemberDef::flushToDisk() const
 
 void MemberDef::loadFromDisk() const
 {
-  //printf("%p: MemberDef::loadFromDisk()\n",this);
   MemberDef *that = (MemberDef *)this;
   if (isLocked()) 
   {
+    //printf("%p: loadFromDisk() locked: so still in memory\n",this);
     assert(m_impl!=0);
     return;
   }
@@ -4283,6 +4327,7 @@ void MemberDef::loadFromDisk() const
   //printf("%p:   loading specific part\n",this);
 
   that->m_impl = new MemberDefImpl;
+  //printf("%p: MemberDef::loadFromDisk(): m_impl=%p\n",this,m_impl);
 
   uint marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==START_MARKER);
@@ -4358,6 +4403,8 @@ void MemberDef::loadFromDisk() const
   m_impl->category                = (ClassDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==END_MARKER);
+
+  //printf("%p: MemberDef::loadFromDisk(): sorting\n",this);
 }
 
 void MemberDef::makeResident() const
@@ -4371,6 +4418,7 @@ void MemberDef::makeResident() const
     //printf("adding %s to cache, handle=%d\n",m_impl->name.data(),that->m_cacheHandle);
     if (victim)  // cache was full, victim was the least recently used item and has to go
     {
+      //printf("%p: makeResident(): cache full %p::saveToDisk(): m_impl=%p\n",this,victim,victim->m_impl);
       victim->m_cacheHandle=-1; // invalidate cache handle
       victim->saveToDisk();     // store the item on disk
     }
@@ -4404,6 +4452,7 @@ void MemberDef::saveToDisk() const
 {
   assert(m_impl!=0);
   MemberDef *that = (MemberDef *)this;
+  //printf("%p: saveToDisk(): m_impl=%p\n",this,m_impl);
   if (isLocked()) // cannot flush the item as it is locked
   {
     that->m_flushPending=TRUE; // flush when unlocked
@@ -4433,62 +4482,11 @@ void MemberDef::unlock() const
 {
   if (m_flushPending && !isLocked())
   {
+    //printf("%p: flush after unlock\n",this);
     // write a the new (possibly modified) instance to disk
     flushToDisk();
     // end to write sequence (unless nothing was written due to the lock)
     Doxygen::symbolStorage->end();
   }
 }
-
-void MemberDef::copyArgumentNames(MemberDef *bmd)
-{
-  makeResident();
-  {
-    LockingPtr<ArgumentList> arguments = bmd->argumentList();
-    if (m_impl->defArgList && arguments!=0)
-    {
-      ArgumentListIterator aliDst(*m_impl->defArgList);
-      ArgumentListIterator aliSrc(*arguments);
-      Argument *argDst, *argSrc;
-      for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
-      {
-        argDst->name = argSrc->name;
-      }
-    }
-  }
-  {
-    LockingPtr<ArgumentList> arguments = bmd->declArgumentList();
-    if (m_impl->declArgList && arguments!=0)
-    {
-      ArgumentListIterator aliDst(*m_impl->declArgList);
-      ArgumentListIterator aliSrc(*arguments);
-      Argument *argDst, *argSrc;
-      for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
-      {
-        argDst->name = argSrc->name;
-      }
-    }
-  }
-}
-
-static void invalidateCachedTypesInArgumentList(ArgumentList *al)
-{
-  if (al)
-  {
-    ArgumentListIterator ali(*al);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
-    {
-      a->canType.resize(0);
-    }
-  }
-}
-
-void MemberDef::invalidateCachedArgumentTypes()
-{
-  makeResident();
-  invalidateCachedTypesInArgumentList(m_impl->defArgList);
-  invalidateCachedTypesInArgumentList(m_impl->declArgList);
-}
-
 

@@ -123,7 +123,8 @@ struct LayoutNavEntry
       Files, 
       FileGlobals,
       Dirs, 
-      Examples
+      Examples,
+      User
     };
     LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf, 
                    const QCString &tl,const QCString &intro,bool prepend=FALSE) 
