@@ -1,0 +1,17 @@
+
+all clean depend distclean: Makefile.doxyapp 
+	$(MAKE) -f Makefile.doxyapp $@
+
+distclean: clean
+	$(RM) -rf Makefile doxyapp.pro Makefile.doxyapp
+
+tmake:
+	$(ENV) $(PERL) $(TMAKE) doxyapp.pro >Makefile.doxyapp
+
+strip:
+	strip doxyapp
+
+Makefile.doxyapp: doxyapp.pro
+	$(ENV) $(PERL) $(TMAKE) doxyapp.pro >Makefile.doxyapp
+
+install:

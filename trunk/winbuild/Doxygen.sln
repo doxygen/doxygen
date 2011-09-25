@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxygen", "Doxygen.vcproj", "{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64} = {B6BB4771-8A4E-4656-AC08-1EF8AC182F64}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Doxytag", "Doxytag.vcproj", "{EE0E8466-1E25-4FBC-B273-5EA6776EFE95}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64} = {B6BB4771-8A4E-4656-AC08-1EF8AC182F64}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qtools", "qtools.vcproj", "{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "doxywizard", "Doxywizard.vcproj", "{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Debug|Win32.Build.0 = Debug|Win32
+		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|Win32.ActiveCfg = Release|Win32
+		{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}.Release|Win32.Build.0 = Release|Win32
+		{EE0E8466-1E25-4FBC-B273-5EA6776EFE95}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EE0E8466-1E25-4FBC-B273-5EA6776EFE95}.Debug|Win32.Build.0 = Debug|Win32
+		{EE0E8466-1E25-4FBC-B273-5EA6776EFE95}.Release|Win32.ActiveCfg = Release|Win32
+		{EE0E8466-1E25-4FBC-B273-5EA6776EFE95}.Release|Win32.Build.0 = Release|Win32
+		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Debug|Win32.Build.0 = Debug|Win32
+		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Release|Win32.ActiveCfg = Release|Win32
+		{B6BB4771-8A4E-4656-AC08-1EF8AC182F64}.Release|Win32.Build.0 = Release|Win32
+		{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}.Debug|Win32.ActiveCfg = Debug|Win32
+		{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}.Debug|Win32.Build.0 = Debug|Win32
+		{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}.Release|Win32.ActiveCfg = Release|Win32
+		{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

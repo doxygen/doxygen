@@ -1,0 +1,249 @@
+#!/usr/bin/perl
+############################################################################
+# 
+#
+# Generates a tmake project file.
+#
+# Copyright (C) 1996-1998 by Troll Tech AS.  All rights reserved.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose and without fee is hereby granted, provided
+# that this copyright notice appears in all copies.
+# No representations are made about the suitability of this software for any
+# purpose. It is provided "as is" without express or implied warranty.
+#
+############################################################################
+
+# Default project settings
+$project{"TEMPLATE"} = "app";
+$project{"CONFIG"}   = "qt warn_on release";
+
+@project_extra = ();
+
+while ( @ARGV ) {			# parse command line args
+    $_ = shift @ARGV;
+    if ( s/^-// ) {
+	if ( /^o(.*)/ ) {
+	    $outfile = ($1 eq "") ? shift @ARGV : $1;
+	    ($outfile eq "-") && ($outfile = "");
+	} elsif ( /^n(.*)/ ) {
+	    $project{"TARGET"} = ($1 eq "") ? shift @ARGV : $1;
+	} elsif ( /^t(.*)/ ) {
+	    $project{"TEMPLATE"} = ($1 eq "") ? shift @ARGV : $1;
+	    $project{"TEMPLATE"} =~ s/\.t$//i;
+	} elsif ( /lower/ ) {
+	    $tolower = 1;
+	} else {
+	    &progen_usage;
+	}
+    } elsif ( /^\s*(?:[\w\-]+:)?\w+\s*[\+\-\*\/]?=/ ) {	# project override
+	push( @project_extra, $_ );
+    } else {
+	push (@files, $_ );
+    }
+}
+
+$outfile eq "" || open(STDOUT,">" . $outfile) ||
+    &progen_error("Can't create \"$outfile\"");
+
+if ( ! @files ) {
+    @files = &find_files(".",".*",1);
+}
+
+if ( $tolower ) {
+    foreach $f ( @files ) {
+	$f =~ tr/A-Z/a-z/;
+    }
+}
+
+@hdr = sort grep(/\.(h|hh|hpp|hxx)$/i,@files);
+@src = sort grep(/\.(c|cpp|cc|cxx)$/i && ! /moc_/i,@files);
+
+# Remove source files that are included by other source files
+foreach $f ( @src ) {
+    $srcdict{$f} = 1;
+}
+foreach $f ( @src ) {
+    if ( open(F,"< $f") ) {
+	while ( <F> ) {
+	    if ( /^\s*#\s*include\s+\"([^\"]*)\"/ ) {
+		$srcdict{$1} = 0;
+	    }
+	}
+    }
+}
+foreach $f( @src ) {
+    $srcdict{$f} && (push(@src2,$f));
+}
+@src = @src2;
+
+$project{"HEADERS"} = join(" ",sort @hdr);
+$project{"SOURCES"} = join(" ",sort @src);
+
+foreach $p ( @project_extra ) {
+    if ( $p =~ /^\s*((?:[\w\-]+:)?\w+)\s*([\+\-\*\/])?=\s*(.*)/ ) {
+	if ( $project{$1} ne "" ) {
+	    Project($p);
+	}
+    }
+}
+
+$project{"HEADERS"} =~ s/\s+/ \\\n\t\t  /g;
+$project{"SOURCES"} =~ s/\s+/ \\\n\t\t  /g;
+
+print "TEMPLATE\t= " . $project{"TEMPLATE"} . "\n";
+print "CONFIG\t\t= " . $project{"CONFIG"} . "\n";
+print "HEADERS\t\t= " . $project{"HEADERS"} . "\n";
+print "SOURCES\t\t= " . $project{"SOURCES"} . "\n";
+if ( $project{"TARGET"} ne "" ) {
+    print "TARGET\t\t= " . $project{"TARGET"} . "\n";
+}
+
+foreach ( @project_extra ) {
+    if ( /^\s*((?:[\w\-]+:)?\w+)\s*([\+\-\*\/])?=\s*(.*)/ ) {
+	if ( $project{$1} eq "" ) {
+	    $t = $1;
+	    if ( length($t) < 8 ) {
+		$t .= "\t\t";
+	    } elsif ( length($t) < 16 ) {
+		$t .= "\t";
+	    } else {
+		$t .= " ";
+	    }
+	    print "$t$2= $3\n";
+	}
+    }
+}
+
+exit 0;
+
+
+#
+# progen_usage()
+#
+# Prints a message about program usage and exits
+#
+
+sub progen_usage {
+    print STDERR "Usage:\n    progen [options] [files]\n";
+    print STDERR "Options:\n";
+    print STDERR "    -lower   Lower-case letters filenames (useful for non-Unix)\n";
+    print STDERR "    -n name  Specify a project name (= TARGET)\n";
+    print STDERR "    -o file  Write output to \"file\"\n";
+    print STDERR "    -t file  Specify a template file other than qtapp\n";
+    exit 1;
+}
+
+
+#
+# progen_error(msg)
+#
+# Prints the message and exits
+#
+
+sub progen_error {
+    my($msg) = @_;
+    print STDERR "progen error: " . $msg . "\n";
+    exit 1;
+}
+
+
+#
+# Finds files.
+#
+# Examples:
+#   find_files("/usr","\.cpp$",1)   - finds .cpp files in /usr and below
+#   find_files("/tmp","^#",0)	    - finds #* files in /tmp
+#
+
+sub find_files {
+    my($dir,$match,$descend) = @_;
+    my($file,$p,@files);
+    local(*D);
+    $dir =~ s=\\=/=g;
+    ($dir eq "") && ($dir = ".");
+    if ( opendir(D,$dir) ) {
+	if ( $dir eq "." ) {
+	    $dir = "";
+	} else {
+	    ($dir =~ /\/$/) || ($dir .= "/");
+	}
+	foreach $file ( readdir(D) ) {
+	    next if ( $file  =~ /^\.\.?$/ );
+	    $p = $dir . $file;
+	    ($file =~ /$match/i) && (push @files, $p);
+	    if ( $descend && -d $p && ! -l $p ) {
+		push @files, &find_files($p,$match,$descend);
+	    }
+	}
+	closedir(D);
+    }
+    return @files;
+}
+
+
+#
+# strip_project_val(tag)
+#
+# Strips white space from project value strings.
+#
+
+sub strip_project_val {
+    my($v) = @_;
+    $v =~ s/^\s+//;				# trim white space
+    $v =~ s/\s+$//;
+    return $v;
+}
+
+
+#
+# Project(strings)
+#
+# This is a powerful function for setting or reading project variables.
+# Returns the resulting project variables (joined with space between).
+#
+# This is a slightly modified version of the Project function in tmake.
+
+sub Project {
+    my @settings = @_;
+    my($r,$t,$s,$v,$p,$c);
+    $r = "";
+    foreach ( @settings ) {
+	$v = $_;
+	if ( $v =~ s/^\s*((?:[\w\-]+:)?\w+)\s*(\+=|\*=|\-=|\/=|=)\s*// ) {
+	    $t = $1;
+	    $s = $2;
+	    $v = strip_project_val($v);
+	    $p = $project{$t};
+	    if ( $s eq "=" ) {			# set variable
+		$p = $v;
+	    } elsif ( $s eq "+=" ) {		# append
+		if ( $p eq "" ) {
+		    $p = $v;
+		} else {
+		    $p .= " " . $v;
+		}
+	    } elsif ( $s eq "*=" ) {		# append if not contained
+		if ( !($p =~ /(?:^|\s)\Q$v\E(?:\s|$)/) ) {
+		    if ( $p eq "" ) {
+			$p = $v;
+		    } else {
+			$p .= " " . $v;
+		    }
+		}
+	    } elsif ( $s eq "-=" ) {		# subtract
+		$p =~ s/$v//g;
+	    } elsif ( $s eq "/=" ) {		# sed
+		$cmd = '$p =~ ' . $v;
+		eval $cmd;
+	    }
+	    $project{$t} = strip_project_val($p);
+	} else {
+	    $p = strip_project_val($project{$v});
+	}
+	if ( $p ne "" ) {
+	    $r = ($r eq "") ? $p : ($r . " " . $p);
+	}
+    }
+    return $r;
+}

@@ -1,0 +1,463 @@
+<!doctype HTML public "-//W3C//DTD HTML 3.2//EN">
+<html><head><title>
+Reference Manual - tmake
+</title></head><body bgcolor="#ffffff">
+<p><h1 align=center>Reference Manual - tmake</h1>
+
+<hr>
+<h2>Project Variable Reference</h2>
+
+<h4><a name="ALL_DEPS"></a>ALL_DEPS</h4>
+Specifies additional dependencies for the makefile target "all:".<p>
+
+
+<h4><a name="CLEAN_FILES"></a>CLEAN_FILES</h4>
+Specifies additional files to be removed for "make clean".<p>
+Example:<pre>
+  CLEAN_FILES = core *~
+</pre>
+
+
+<h4><a name="CONFIG"></a>CONFIG</h4>
+Sets the make configuration.  It tells the tmake templates what compiler
+options to use and which extra libraries to link in.<p>
+These options control the compilation flags:
+<p>
+<table border="0">
+  <tr>
+    <td>&nbsp;</td>
+    <td>release</td>
+    <td>&nbsp;</td>
+    <td>Compile with optimization enabled, ignored if
+    "debug" is specified.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>debug</td>
+    <td>&nbsp;</td>
+    <td>Compile with debug options enabled.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>warn_on</td>
+    <td>&nbsp;</td>
+    <td>The compiler should emit more warnings than normally, ignored if
+     "warn_off" is specified.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>warn_off</td>
+    <td>&nbsp;</td>
+    <td>The compiler should emit no warnings or as few as possible.</td>
+  </tr>
+</table>
+
+<p>
+These options defines the application/library type:
+<p>
+<table border="0">
+  <tr>
+    <td>&nbsp;</td>
+    <td>qt</td>
+    <td>&nbsp;</td>
+    <td>The target is a Qt application/library and requires Qt header
+     files/library.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>opengl</td>
+    <td>&nbsp;</td>
+    <td>The target requires the OpenGL (or Mesa) headers/libraries.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>x11</td>
+    <td>&nbsp;</td>
+    <td>The target is a X11 application (app.t only).</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>windows</td>
+    <td>&nbsp;</td>
+    <td>The target is a Win32 window application (app.t only).</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>console</td>
+    <td>&nbsp;</td>
+    <td>The target is a Win32 console application (app.t only).</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>dll</td>
+    <td>&nbsp;</td>
+    <td>The target is a shared object/DLL (app.t only).</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>staticlib</td>
+    <td>&nbsp;</td>
+    <td>The target is a static library (lib.t only).</td>
+  </tr>
+</table>
+
+
+<h4><a name="DEFINES"></a>DEFINES</h4>
+Specifies C/C++ macros (-D compiler option). On Windows you need
+to let DEFINES contain "QT_DLL" if you are building a Qt program
+which should link with the Qt DLL.
+
+
+<h4><a name="DEF_FILE"></a>DEF_FILE</h4>
+Win32/app.t only: Specifies a .def file.
+
+
+<h4><a name="DESTDIR"></a>DESTDIR</h4>
+Specifies where to put the target file.
+Example:<pre>
+  DESTDIR = ../../lib
+</pre>
+You must create this directory before running make.
+
+
+<h4><a name="HEADERS"></a>HEADERS</h4>
+Defines the header files of the project.
+
+
+<h4><a name="INCPATH"></a>INCPATH</h4>
+This variable is generated from <code>INCLUDEPATH</code>. The ';' or ':'
+separators have been replaced by ' ' (single space). This makes it
+easier to split. qtapp.t and other templates expand
+<code>INCPATH</code> to set -I options for the C++ compiler.
+
+
+<h4><a name="INCLUDEPATH"></a>INCLUDEPATH</h4>
+This variable specifies the #include directories. It can be set in the
+project file, or by the <a href="#AddIncludePath">AddIncludePath()</a>
+function.<p>
+Example:<pre>
+  INCLUDEPATH = c:\msdev\include d:\stl\include
+</pre>
+Use ';' or space as the directory separator.
+
+
+<h4><a name="LIBS"></a>LIBS</h4>
+Defines additional libraries to be linked in when creating an application
+or a shared library.  You probably want to use a platform qualifier since
+libraries are specified differently on Unix and Win32.<p>
+Example:<pre>
+  unix:LIBS  = -lXext -lm
+  win32:LIBS = ole32.lib
+</pre>
+
+
+<h4><a name="MOC_DIR"></a>MOC_DIR</h4>
+Specifies where to put the temporary moc output files.  By default they
+are stored in the directory where the moc input files are.
+<p>
+Example:<pre>
+  MOC_DIR = tmp
+</pre>
+You must create this directory before running make.
+<p>
+See also: <a href="#OBJECTS_DIR">OBJECTS_DIR</a>.
+
+
+<h4><a name="OBJECTS"></a>OBJECTS</h4>
+This varialble is generated from <code>SOURCES</code> by the StdInit() function.
+The extension of each source file has been replaced by .o (Unix) or .obj
+(Win32).<p>
+Example:<pre>
+  SOURCES = a.x b.y
+</pre>
+Then <code>OBJECTS</code> become "a.o b.o" on Unix and "a.obj b.obj" on
+Win32.
+
+
+<h4><a name="OBJECTS_DIR"></a>OBJECTS_DIR</h4>
+Specifies where to put object files.  By default they are stored in
+the directory where the source files are.<p>
+Example:<pre>
+  OBJECTS_DIR = tmp
+</pre>
+You must create this directory before running make.
+<p>
+See also: <a href="#MOC_DIR">MOC_DIR</a>.
+
+
+<h4><a name="OBJMOC"></a>OBJMOC</h4>
+This variable is generated by the <a href="#StdInit">StdInit()</a> function if
+<code>$moc_aware</code> is true. <code>OBJMOC</code> contains the name of
+all intermediate moc object files.<p>
+Example:<pre>
+  HEADERS = demo.h
+  SOURCES = demo.cpp main.cpp
+</pre>
+If <tt>demo.h</tt> and <tt>main.cpp</tt> define classes that use signals
+and slots (i.e. the <code>Q_OBJECT</code> "keyword" is found in these two
+files), <code>OBJMOC</code> becomes:<pre>
+  OBJMOC  = moc_demo.obj
+</pre>
+See also: <a href="#SRCMOC">SRCMOC</a>.
+
+
+<h4><a name="PROJECT"></a>PROJECT</h4>
+This is the name of the project.  It defaults to the name of the project
+file, excluding the .pro extension.
+
+
+<h4><a name="RC_FILE"></a>RC_FILE</h4>
+Win32/app.t only: Specifies a .rc file.  Cannot be used with the RES_FILE
+variable.
+
+
+<h4><a name="RES_FILE"></a>RES_FILE</h4>
+Win32/app.t only: Specifies a .res file.  You can either specify a
+.rc file or one or more .res files.
+
+
+<h4><a name="SOURCES"></a>SOURCES</h4>
+Defines the source files of the project.
+
+
+<h4><a name="SRCMOC"></a>SRCMOC</h4>
+This variable is generated by the <a href="#StdInit">StdInit()</a> function if
+<code>CONFIG</code> contains "qt". <code>SRCMOC</code> contains the name of
+all intermediate moc files.<p>
+Example:<pre>
+  HEADERS = demo.h
+  SOURCES = demo.cpp main.cpp
+</pre>
+If <tt>demo.h</tt> and <tt>main.cpp</tt> define classes that use signals
+and slots (i.e. the <code>Q_OBJECT</code> "keyword" is found in these two
+files), <code>SRCMOC</code> becomes:<pre>
+  SRCMOC  = moc_demo.cpp main.moc
+</pre>
+See also: <a href="#OBJMOC">OBJMOC</a>.
+
+
+<h4><a name="TARGET"></a>TARGET</h4>
+Sets the makefile target, i.e. what program to build.
+
+
+<h4><a name="TEMPLATE"></a>TEMPLATE</h4>
+Sets the default template. This can be overridden by the tmake -t
+<a href="tmake.html#usage">option</a>.
+
+
+<h4><a name="TMAKE_CC"></a>TMAKE_CC</h4>
+Contains the name of the compiler.
+
+
+<h4><a name="TMAKE_CFLAGS"></a>TMAKE_CFLAGS</h4>
+Contains the default compiler flags.
+
+
+<h4><a name="TMAKE_FILEVARS"></a>TMAKE_FILEVARS</h4>
+Tells tmake which variables contain file names.  This is because tmake
+on Windows replace the directory separator / with \.
+
+
+<hr>
+<h2>Function Reference</h2>
+This section contains a brief description of some important
+tmake functions used by the templates.
+
+
+<h3><a name="AddIncludePath"></a>AddIncludePath(path)</h3>
+Adds <em>path</em> to the include path variable,
+<a href="#INCLUDEPATH">INCLUDEPATH</a>. The include path is used
+for two purposes:<ol>
+<li>Searching files when generating include dependencies.
+<li>Setting -I options for the C/C++ compiler.
+</ol>
+<p>
+Example:<pre>
+  #$ AddIncludePath('$QTDIR/include;/local/include');
+</pre>
+
+
+<h3>BuildMocObj(objects,sources)</h3>
+Creates build rules for moc source files. Generates
+include dependencies.<p>
+Example:<pre>
+  #$ BuildMocObj($project{"OBJMOC"},$project{"SRCMOC"});
+</pre>Output:<pre>
+  moc_hello.o: moc_hello.cpp \
+		hello.h \
+		...
+</pre>
+
+<h3>BuildMocSrc(files)</h3>
+Creates moc source files from C++ files containing classes that
+define signals and slots. For a header file <tt>x.h</tt>, the
+generated moc file is called <tt>moc_x.h</tt>. For a source file
+<tt>y.cpp</tt>, the generates moc file is called <tt>y.moc</tt> and
+should be #include'd by <tt>y.cpp</tt>.<p>
+Example:<pre>
+  #$ BuildMocSrc($project{"HEADERS"});
+  #$ BuildMocSrc($project{"SOURCES"});
+</pre>Output:<pre>
+  moc_hello.cpp: hello.h
+	$(MOC) hello.h -o moc_hello.cpp
+</pre>
+
+
+<h3>BuildObj(objects,sources)</h3>
+Creates build rules for source files. Generates
+include dependencies.<p>
+Example:<pre>
+  #$ BuildObj($project{"OBJECTS"},$project{"SOURCES"});
+</pre>Output:<pre>
+  hello.o: hello.cpp \
+		hello.h \
+		...
+
+  main.o: main.cpp \
+		hello.h \
+		...
+</pre>
+
+
+<h3>Config(string)</h3>
+Returns true if the <code>CONFIG</code> variable contains the given string.
+<p>Example:<pre>
+  #$ if ( Config("release") { }
+</pre>
+
+
+<h3>DisableOutput()</h3>
+Call this function to force tmake to generate no output until
+EnableOutput() is called.
+<p>Example:<pre>
+  #$ Config("debug") && DisableOutput();
+      Anything here is skipped if CONFIG contains "debug".
+  #$ Config("debug") && EnableOutput();
+</pre>
+
+
+<h3>EnableOutput()</h3>
+Enables tmake output after DisableOutput() was called.
+
+
+<h3>Expand(var)</h3>
+Expands a project variable. Equivalent to <code>$text = $project{$var}</code>.
+<p>Example:<pre>
+  VERSION = #$ Expand("VERSION");
+</pre>Output:<pre>
+  VERSION = 1.1
+</pre>
+
+<h3>ExpandGlue(var,prepend,glue,append)</h3>
+Expands a $project{} variable, splits on whitespace
+and joins with $glue. $prepend is put at the start
+of the string and $append is put at the end of the
+string. The resulting string ($text) becomes "" if
+the project variable is empty or not defined.<p>
+Example:<pre>
+  clear:
+          #$ ExpandGlue("OBJECTS","-del","\n\t-del ","");
+</pre>Output (Windows NT):<pre>
+  clear:
+          -del hello.obj
+          -del main.obj
+</pre>
+
+
+<h3>ExpandList(var)</h3>
+This function is suitable for expanding lists of files.
+Equivalent with <code>ExpandGlue($var,""," \\\n\t\t","")</code>.<p>
+Example:<pre>
+  OBJECTS = #$ ExpandList("OBJECTS");
+</pre>Output:<pre>
+  OBJECTS = hello.o \
+	    main.o
+</pre>
+
+
+<h3>ExpandPath(var,prepend,glue,append)</h3>
+Similar to ExpandGlue, except that it splits the items on a semicolon
+instead of space (if the variable contains at least one semicolon).
+
+
+<h3>IncludeTemplate(file)</h3>
+Includes a template file. The ".t" extension is optional.<p>
+Example:<pre>
+  #$ IncludeTemplate("mytemplate");
+</pre>
+
+
+<h3>Now()</h3>
+Sets $text to the current date and time.<p>
+Example:<pre>
+  # Generated at #$ Now()
+</pre>Output:<pre>
+  # Generated at 12:58, 1996/11/19
+</pre>
+
+
+<h3>Project(strings)</h3>
+This is a powerful function for setting and reading project
+variables.  Returns the resulting project variables (joined with space
+between).
+<p>Examples:<pre>
+# Get a project variable:
+    $s = Project("TEMPLATE");	    -> $s = "TEMPLATE"
+
+# Set a project variable:
+    Project("TEMPLATE = lib");	    -> TEMPLATE = lib
+    Project("CONFIG =";)	    -> CONFIG empty
+
+# Append to a project variable:
+    Project("CONFIG = qt");	    -> CONFIG = qt
+    Project("CONFIG += debug");	    -> CONFIG = qt debug
+
+# Append to a project variable if it does not contain the value already:
+    Project("CONFIG = qt release"); -> CONFIG = qt release
+    Project("CONFIG *= qt");	    -> CONFIG = qt release
+    Project("CONFIG *= opengl");    -> CONFIG = qt release opengl
+
+# Subtract from a project variable:
+    Project("THINGS = abc xyz");    -> THINGS = abc xyz
+    Project("THINGS -= abc");	    -> THINGS = xyz
+
+# Search/replace on a project variable:
+    Project("CONFIG = tq opengl");  -> CONFIG = tq opengl
+    Project("CONFIG /= s/tq/qt/");  -> CONFIG = qt opengl
+
+# The operations can be performed on several project variables at a time.
+
+    Project("TEMPLATE = app", "CONFIG *= opengl", "THINGS += klm");
+</pre>
+
+
+<h3><a name="ScanProject"></a>ScanProject(file)</h3>
+Scans a project file and stores the project variables and values in the
+global associative <code>%project</code> array.
+
+
+<h3><a name="StdInit"></a>StdInit()</h3>
+Standard initialization of tmake. StdInit() should be
+called from one of the first lines in the template.<p>
+
+This function creates some new project variables:<ul>
+<li><code><a href="#OBJECTS">OBJECTS</a></code>
+    - Object files corresponding to
+   <code><a href="#SOURCES">SOURCES</a></code>.
+<li><code><a href="#SRCMOC">SRCMOC</a></code> - moc source files.
+<li><code><a href="#OBJMOC">OBJMOC</a></code> - moc object files.
+</ul>
+
+The moc-related variables are created only if <code>CONFIG</code> contains "qt"
+
+
+<h3>Substitute(string)</h3>
+This function takes a string and substitutes any occurrence of $$var
+with the actual content of the variable.  Returns the substituted string.
+Also sets $text.
+<p>
+Important: Use single quotes around the string, otherwise perl will expand
+any $vars it finds.
+<p>Example:<pre>
+    Substitute('Project name: $$PROJECT, uses template $$TEMPLATE');
+</pre>

@@ -1,0 +1,50 @@
+This short howto explains how to add support for a new language to Doxygen:
+
+Just follow these steps:
+
+1) Tell me which language you want to add support for. If no one else
+   is already working on support for that language, you will be 
+   assigned as the maintainer for the language. I'll create a 
+   list on Doxygen's homepage, so everyone knows who is doing what.
+2) Create a copy of translator_en.h and name it 
+   translator_<your_2_letter_country_code>.h
+   I'll use xx in the rest of this document.
+3) Edit language.cpp:
+   - Add a #include<translator_xx.h> 
+   - In setTranslator() add
+     
+     else if (L_EQUAL("your_language_name"))
+     {
+       theTranslator = new TranslatorYourLanguage;
+     }
+   
+     after the if { ... }
+4) Edit libdoxygen.pro.in and add translator_xx.h to the HEADERS line.
+5) Edit translator_xx.h:
+   - Change TRANSLATOR_EN_H to TRANSLATOR_XX_H (in both the #include line and
+     the #define line).
+   - Change TranslatorEnglish to TranslatorYourLanguage 
+   - In the member idLanguage() change "english" into the name of your
+     language (use lower case characters only). Depending on the language you
+     may also wish to change the member functions latexLanguageSupportCommand()
+     and idLanguageCharset().
+   - Edit all the strings that are returned by the members that start
+     with tr. Try to match punctuation and capitals!
+     To enter special characters (with accents) you can:
+        a) Enter them directly if your keyboard supports that and you are 
+           using a Latin-1 font.
+           Doxygen will translate the characters to proper Latex and
+           leave the Html and man output for what it is (which is fine, if
+           idLanguageCharset() is set correctly).
+        b) Use html codes like &auml; for an a with an umlaut (i.e. ä).
+           See the HTML specification for the codes.
+6) Run configure and make again from the root of the distribution, 
+   in order to regenerate the Makefiles.
+7) Now you can use OUTPUT_LANGUAGE = your_language_name 
+   in the config file to generate output in your language.
+8) Send translator_xx.h to me so I can add it to doxygen.
+   Send also your name and e-mail address to be included in the
+   maintainers.txt list.
+
+Good luck, and let me know if there are problems.
+

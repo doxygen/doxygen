@@ -1,0 +1,242 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page arch Doxygen's Internals
+
+<h3>Doxygen's internals</h3>
+
+<B>Note that this section is still under construction!</B>
+
+The following picture shows how source files are processed by doxygen.
+
+\image html archoverview.gif "Data flow overview"
+\image latex archoverview.eps "Data flow overview" width=14cm
+
+The following sections explain the steps above in more detail.
+
+<h3>Config parser</h3>
+
+The configuration file that controls the settings of a project is parsed
+and the settings are stored in the singleton class \c Config 
+in <code>src/config.h</code>. The parser itself is written using \c flex 
+and can be found in <code>src/config.l</code>. This parser is also used 
+directly by \c doxywizard, so it is put in a separate library.
+
+Each configuration option has one of 5 possible types: \c String, 
+\c List, \c Enum, \c Int, or \c Bool. The values of these options are
+available through the global functions \c Config_getXXX(), where \c XXX is the
+type of the option. The argument of these function is a string naming
+the option as it appears in the configuration file. For instance: 
+\c Config_getBool("GENERATE_TESTLIST") returns a reference to a boolean
+value that is \c TRUE if the test list was enabled in the config file. 
+
+The function \c readConfiguration() in \c src/doxygen.cpp 
+reads the command line options and then calls the configuration parser.
+
+<h3>C Preprocessor</h3>
+
+The input files mentioned in the config file are (by default) fed to the
+C Preprocessor (after being piped through a user defined filter if available).
+
+The way the preprocessor works differs somewhat from a standard C Preprocessor.
+By default it does not do macro expansion, although it can be configured to
+expand all macros. Typical usage is to only expand a user specified set
+of macros. This is to allow macro names to appear in the type of 
+function parameters for instance.
+
+Another difference is that the preprocessor parses, but not actually includes 
+code when it encounters a \#include (with the exception of \#include 
+found inside { ... } blocks). The reasons behind this deviation from 
+the standard is to prevent feeding multiple definitions of the 
+same functions/classes to doxygen's parser. If all source files would 
+include a common header file for instance, the class and type 
+definitions (and their documentation) would be present in each 
+translation unit. 
+
+The preprocessor is written using \c flex and can be found in
+\c src/pre.l. For condition blocks (\#if) evaluation of constant expressions 
+is needed. For this a \c yacc based parser is used, which can be found 
+in \c src/constexp.y and \c src/constexp.l.
+
+The preprocessor is invoked for each file using the \c preprocessFile() 
+function declared in \c src/pre.h, and will append the preprocessed result 
+to a character buffer. The format of the character buffer is
+
+\verbatim
+0x06 file name 1 
+0x06 preprocessed contents of file 1
+...
+0x06 file name n
+0x06 preprocessed contents of file n
+\endverbatim
+
+<h3>Language parser</h3>
+
+The preprocessed input buffer is fed to the language parser, which is 
+implemented as a big state machine using \c flex. It can be found 
+in the file \c src/scanner.l. There is one parser for all 
+languages (C/C++/Java/IDL). The state variables \c insideIDL 
+and \c insideJava are uses at some places for language specific choices. 
+
+The task of the parser is to convert the input buffer into a tree of entries 
+(basically an abstract syntax tree). An entry is defined in \c src/entry.h 
+and is a blob of loosely structured information. The most important field 
+is \c section which specifies the kind of information contained in the entry.
+ 
+Possible improvements for future versions:
+ - Use one scanner/parser per language instead of one big scanner.
+ - Move the first pass parsing of documentation blocks to a separate module.
+ - Parse defines (these are currently gathered by the preprocessor, and
+   ignored by the language parser).
+
+<h3>Data organizer</h3>
+
+This step consists of many smaller steps, that build 
+dictionaries of the extracted classes, files, namespaces, 
+variables, functions, packages, pages, and groups. Besides building
+dictionaries, during this step relations (such as inheritance relations),
+between the extracted entities are computed.
+
+Each step has a function defined in \c src/doxygen.cpp, which operates
+on the tree of entries, built during language parsing. Look at the
+"Gathering information" part of \c parseInput() for details.
+
+The result of this step is a number of dictionaries, which can be
+found in the Doxygen "namespace" defined in \c src/doxygen.h. Most
+elements of these dictionaries are derived from the class \c Definition;
+The class \c MemberDef, for instance, holds all information for a member. 
+An instance of such a class can be part of a file ( class \c FileDef ), 
+a class ( class \c ClassDef ), a namespace ( class \c NamespaceDef ), 
+a group ( class \c GroupDef ), or a Java package ( class \c PackageDef ).
+
+<h3>Tag file parser</h3>
+
+If tag files are specified in the configuration file, these are parsed
+by a SAX based XML parser, which can be found in \c src/tagreader.cpp. 
+The result of parsing a tag file is the insertion of \c Entry objects in the
+entry tree. The field \c Entry::tagInfo is used to mark the entry as
+external, and holds information about the tag file.
+
+<h3>Documentation parser</h3>
+
+Special comment blocks are stored as strings in the entities that they
+document. There is a string for the brief description and a string
+for the detailed description. The documentation parser reads these
+strings and executes the commands it finds in it (this is the second pass
+in parsing the documentation). It writes the result directly to the output 
+generators.
+
+The parser is written in C++ and can be found in src/docparser.cpp. The
+tokens that are eaten by the parser come from src/doctokenizer.l.
+Code fragments found in the comment blocks are passed on to the source parser.
+
+The main entry point for the documentation parser is \c validatingParseDoc()
+declared in \c src/docparser.h.  For simple texts with special 
+commands \c validatingParseText() is used.
+
+<h3>Source parser</h3>
+
+If source browsing is enabled or if code fragments are encountered in the
+documentation, the source parser is invoked.
+
+The code parser tries to cross-reference to source code it parses with
+documented entities. It also does syntax highlighting of the sources. The
+output is directly written to the output generators.
+
+The main entry point for the code parser is \c parseCode() 
+declared in \c src/code.h.
+
+<h3>Output generators</h3>
+
+After data is gathered and cross-referenced, doxygen generates 
+output in various formats. For this it uses the methods provided by 
+the abstract class \c OutputGenerator. In order to generate output
+for multiple formats at once, the methods of \c OutputList are called
+instead. This class maintains a list of concrete output generators,
+where each method called is delegated to all generators in the list.
+
+To allow small deviations in what is written to the output for each
+concrete output generator, it is possible to temporarily disable certain
+generators. The OutputList class contains various \c disable() and \c enable()
+methods for this. The methods \c OutputList::pushGeneratorState() and 
+\c OutputList::popGeneratorState() are used to temporarily save the
+set of enabled/disabled output generators on a stack. 
+
+The XML is generated directly from the gathered data structures. In the
+future XML will be used as an intermediate language (IL). The output
+generators will then use this IL as a starting point to generate the
+specific output formats. The advantage of having an IL is that various
+independently developed tools written in various languages, 
+could extract information from the XML output. Possible tools could be:
+- an interactive source browser
+- a class diagram generator
+- computing code metrics.
+
+<h3>Debugging</h3>
+
+Since doxygen uses a lot of \c flex code it is important to understand
+how \c flex works (for this one should read the man page) 
+and to understand what it is doing when \c flex is parsing some input. 
+Fortunately, when flex is used with the -d option it outputs what rules
+matched. This makes it quite easy to follow what is going on for a 
+particular input fragment. 
+
+To make it easier to toggle debug information for a given flex file I
+wrote the following perl script, which automatically adds or removes -d
+from the correct line in the Makefile:
+
+\verbatim
+#!/usr/bin/perl 
+
+$file = shift @ARGV;
+print "Toggle debugging mode for $file\n";
+
+# add or remove the -d flex flag in the makefile
+unless (rename "Makefile.libdoxygen","Makefile.libdoxygen.old") {
+  print STDERR "Error: cannot rename Makefile.libdoxygen!\n";
+  exit 1;
+}
+if (open(F,"<Makefile.libdoxygen.old")) {
+  unless (open(G,">Makefile.libdoxygen")) {
+    print STDERR "Error: opening file Makefile.libdoxygen for writing\n";
+    exit 1; 
+  }
+  print "Processing Makefile.libdoxygen...\n";
+  while (<F>) {
+    if ( s/\(LEX\) (-i )?-P([a-zA-Z]+)YY -t $file/(LEX) -d \1-P\2YY -t $file/g ) {
+      print "Enabling debug info for $file\n";
+    }
+    elsif ( s/\(LEX\) -d (-i )?-P([a-zA-Z]+)YY -t $file/(LEX) \1-P\2YY -t $file/g ) {
+      print "Disabling debug info for $file\n";
+    }
+    print G "$_";
+  }
+  close F;
+  unlink "Makefile.libdoxygen.old";
+}
+else {
+  print STDERR "Warning file Makefile.libdoxygen.old does not exist!\n"; 
+}
+
+# touch the file
+$now = time;
+utime $now, $now, $file
+
+\endverbatim
+
+*/
+
+

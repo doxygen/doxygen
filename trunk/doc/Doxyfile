@@ -1,0 +1,51 @@
+#
+# 
+#
+# Copyright (C) 1997-1999 by Dimitri van Heesch.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+#
+# Documents produced by Doxygen are derivative works derived from the
+# input used in their production; they are not affected by this license.
+
+PROJECT_NAME      = "Doxygen manual"
+OUTPUT_DIRECTORY  = ..
+HTML_HEADER       = 
+HTML_FOOTER       = 
+QUIET             = NO
+WARNINGS          = YES
+DISABLE_INDEX     = YES
+EXTRACT_ALL       = NO
+EXTRACT_PRIVATE   = NO
+GENERATE_MAN      = NO
+GENERATE_LATEX    = YES
+GENERATE_HTML     = YES
+GENERATE_HTMLHELP = YES
+GENERATE_RTF      = NO
+GENERATE_XML      = NO
+ENABLED_SECTIONS  = logo_on
+ENABLE_PREPROCESSING = NO
+CASE_SENSE_NAMES  = NO
+IMAGE_PATH        = .
+INPUT             = index.doc install.doc starting.doc docblocks.doc lists.doc \
+                    grouping.doc formulas.doc diagrams.doc preprocessing.doc \
+                    autolink.doc output.doc searching.doc customize.doc custcmd.doc \
+                    external.doc faq.doc trouble.doc features.doc \
+		    doxygen_usage.doc doxytag_usage.doc \
+                    doxywizard_usage.doc installdox_usage.doc \
+		    config.doc commands.doc htmlcmds.doc xmlcmds.doc language.doc \
+                    perlmod.doc perlmod_tree.doc arch.doc 
+FILE_PATTERNS     = *.cpp *.h *.doc
+EXAMPLE_PATH      = ../examples
+RECURSIVE         = NO
+TAGFILES          =
+ALLEXTERNALS      = NO
+PERL_PATH         = /usr/bin/perl
+SEARCHENGINE      = NO
+PDF_HYPERLINKS    = YES
+USE_PDFLATEX      = YES
+STRIP_CODE_COMMENTS = NO

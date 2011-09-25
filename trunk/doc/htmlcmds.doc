@@ -1,0 +1,151 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page htmlcmds HTML Commands
+
+Here is a list of all HTML commands that may be used inside the
+documentation. Note that although these HTML tags are translated to the
+proper commands for output formats other than HTML, all attributes 
+of a HTML tag are passed on to the HTML output only 
+(the HREF and NAME attributes for the A tag are the only exception).
+
+<ul>
+<li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
+                       (if supported by the output format). 
+<li><tt>\<A NAME="..."\></tt> Starts an named anchor 
+                       (if supported by the output format).
+<li><tt>\</A\></tt>    Ends a link or anchor 
+<li><tt>\<B\></tt>     Starts a piece of text displayed in a bold font.
+<li><tt>\</B\></tt>    Ends a <tt>\<B\></tt> section.
+<li><tt>\<BODY\></tt>  Does not generate any output.
+<li><tt>\</BODY\></tt> Does not generate any output.
+<li><tt>\<BR\></tt>    Forces a line break.
+<li><tt>\<CENTER\></tt> starts a section of centered text.
+<li><tt>\</CENTER\></tt> ends a section of centered text.
+<li><tt>\<CAPTION\></tt> Starts a caption. Use within a table only.
+<li><tt>\</CAPTION\></tt> Ends a caption. Use within a table only.
+<li><tt>\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
+                       Note that for C# code, this command is equivalent to 
+                       \ref cmdcode "\\code".
+<li><tt>\</CODE\></tt> Ends a <tt>\<CODE\></tt> section.
+                       Note that for C# code, this command is equivalent to
+                       \ref cmdendcode "\\endcode".
+<li><tt>\<DD\></tt>    Starts an item description.
+<li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
+<li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
+<li><tt>\<DIV></tt>    Starts a section with a specific style (HTML only)
+<li><tt>\</DIV></tt>   Ends a section with a specific style (HTML only)
+<li><tt>\<DL\></tt>    Starts a description list.
+<li><tt>\</DL\></tt>   Ends a description list.
+<li><tt>\<DT\></tt>    Starts an item title.
+<li><tt>\</DT\></tt>   Ends an item title.
+<li><tt>\<EM\></tt>    Starts a piece of text displayed in an italic font.
+<li><tt>\</EM\></tt>   Ends a <tt>\<EM\></tt> section.
+<li><tt>\<FORM\></tt>  Does not generate any output.
+<li><tt>\</FORM\></tt> Does not generate any output.
+<li><tt>\<HR\></tt>    Writes a horizontal ruler.
+<li><tt>\<H1\></tt>    Starts an unnumbered section.
+<li><tt>\</H1\></tt>   Ends an unnumbered section.
+<li><tt>\<H2\></tt>    Starts an unnumbered subsection.
+<li><tt>\</H2\></tt>   Ends an unnumbered subsection.
+<li><tt>\<H3\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\</H3\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\<I\></tt>     Starts a piece of text displayed in an italic font.
+<li><tt>\<INPUT\></tt> Does not generate any output.
+<li><tt>\</I\></tt>    Ends a <tt>\<I\></tt> section.
+<li><tt>\<IMG\></tt>   This command is written with attributes to the HTML output only.
+<li><tt>\<LI\></tt>    Starts a new list item.
+<li><tt>\</LI\></tt>   Ends a list item.
+<li><tt>\<META\></tt>  Does not generate any output.
+<li><tt>\<MULTICOL\></tt> ignored by doxygen.
+<li><tt>\</MUTLICOL\></tt> ignored by doxygen.
+<li><tt>\<OL\></tt>    Starts a numbered item list.
+<li><tt>\</OL\></tt>   Ends a numbered item list.
+<li><tt>\<P\></tt>     Starts a new paragraph.
+<li><tt>\</P\></tt>    Ends a paragraph.
+<li><tt>\<PRE\></tt>   Starts a preformatted fragment.
+<li><tt>\</PRE\></tt>  Ends a preformatted fragment.
+<li><tt>\<SMALL\></tt> Starts a section of text displayed in a smaller font.
+<li><tt>\</SMALL\></tt> Ends a <tt>\<SMALL\></tt> section.
+<li><tt>\<SPAN></tt>   Starts an inline text fragment with a specific style (HTML only)
+<li><tt>\</SPAN></tt>  Ends an inline text fragment with a specific style (HTML only)
+<li><tt>\<STRONG\></tt> Starts a section of bold text.
+<li><tt>\</STRONG\></tt> Ends a section of bold text.
+<li><tt>\<SUB\></tt>   Starts a piece of text displayed in subscript.
+<li><tt>\</SUB\></tt>  Ends a <tt>\<SUB\></tt> section.
+<li><tt>\<SUP\></tt>   Starts a piece of text displayed in superscript.
+<li><tt>\</SUP\></tt>  Ends a <tt>\</SUP\></tt> section.
+<li><tt>\<TABLE\></tt> starts a table.
+<li><tt>\</TABLE\></tt> ends a table.
+<li><tt>\<TD\></tt>    Starts a new table data element.
+<li><tt>\</TD\></tt>   Ends a table data element.
+<li><tt>\<TH\></tt>    Starts a new table header.
+<li><tt>\</TH\></tt>   Ends a table header.
+<li><tt>\<TR\></tt>    Starts a new table row.
+<li><tt>\</TR\></tt>   Ends a table row.
+<li><tt>\<TT\></tt>    Starts a piece of text displayed in a typewriter font.
+<li><tt>\</TT\></tt>   Ends a <tt>\<TT\></tt> section.
+<li><tt>\<KBD\></tt>   Starts a piece of text displayed in a typewriter font.
+<li><tt>\</KBD\></tt>  Ends a <tt>\<KBD\></tt> section.
+<li><tt>\<UL\></tt>    Starts an unnumbered item list.
+<li><tt>\</UL\></tt>   Ends an unnumbered item list.
+<li><tt>\<VAR\></tt>   Starts a piece of text displayed in an italic font.
+<li><tt>\</VAR\></tt>  Ends a <tt>\<VAR\></tt> section.
+</ul>
+
+The special HTML character entities that are recognized by Doxygen:
+
+<ul>
+<li><tt>\&copy;</tt> the copyright symbol
+<li><tt>\&tm;</tt> the trade mark symbol
+<li><tt>\&reg;</tt> the registered trade mark symbol
+<li><tt>\&lt;</tt> less-than symbol
+<li><tt>\&gt;</tt> greater-than symbol
+<li><tt>\&amp;</tt> ampersand
+<li><tt>\&apos;</tt> single quotation mark (straight)
+<li><tt>\&quot;</tt> double quotation mark (straight)
+<li><tt>\&lsquo;</tt> left single quotation mark
+<li><tt>\&rsquo;</tt> right single quotation mark
+<li><tt>\&ldquo;</tt> left double quotation mark
+<li><tt>\&rdquo;</tt> right double quotation mark
+<li><tt>\&ndash;</tt> n-dash (for numeric ranges, eg. 2&ndash;8)
+<li><tt>\&mdash;</tt> m-dash (for parenthetical punctuation &mdash; like this)
+<li><tt>\&?uml;</tt>   where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y}, 
+       writes a character with a diaeresis accent (like &auml;).
+<li><tt>\&?acute;</tt> where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y},
+       writes a character with a acute accent (like &aacute;). 
+<li><tt>\&?grave;</tt> where ? is one of {A,E,I,O,U,a,e,i,o,u,y},
+       writes a character with a grave accent (like &agrave;).
+<li><tt>\&?circ;</tt>  where ? is one of {A,E,I,O,U,a,e,i,o,u,y},
+       writes a character with a circumflex accent (like &acirc;).
+<li><tt>\&?tilde;</tt> where ? is one of {A,N,O,a,n,o},
+       writes a character with a tilde accent (like &atilde;).
+<li><tt>\&szlig;</tt> write a sharp s (i.e. &szlig;) to the output.
+<li><tt>\&?cedil;</tt> where ? is one of {c,C},
+       writes a c-cedille (like &ccedil;).
+<li><tt>\&?ring;</tt> where ? is one of {a,A},
+       writes an <tt>a</tt> with a ring (like &aring;).
+<li><tt>\&nbsp;</tt> a non breakable space.
+</ul>
+
+Finally, to put invisible comments inside comment blocks, HTML style
+comments can be used:
+\verbatim
+/*! <!-- This is a comment with a comment block --> Visible text */
+\endverbatim
+
+*/
+ 

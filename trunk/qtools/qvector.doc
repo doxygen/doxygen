@@ -1,0 +1,344 @@
+/****************************************************************************
+** 
+**
+** QVector class documentation
+**
+** Copyright (C) 1992-2000 Trolltech AS.  All rights reserved.
+**
+** This file is part of the Qt GUI Toolkit.
+**
+** This file may be distributed under the terms of the Q Public License
+** as defined by Trolltech AS of Norway and appearing in the file
+** LICENSE.QPL included in the packaging of this file.
+**
+** This file may be distributed and/or modified under the terms of the
+** GNU General Public License version 2 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.
+**
+** Licensees holding valid Qt Enterprise Edition or Qt Professional Edition
+** licenses may use this file in accordance with the Qt Commercial License
+** Agreement provided with the Software.
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+** See http://www.trolltech.com/pricing.html or email sales@trolltech.com for
+**   information about Qt Commercial License Agreements.
+** See http://www.trolltech.com/qpl/ for QPL licensing information.
+** See http://www.trolltech.com/gpl/ for GPL licensing information.
+**
+** Contact info@trolltech.com if any conditions of this licensing are
+** not clear to you.
+**
+**********************************************************************/
+
+
+/*****************************************************************************
+  QVector documentation
+ *****************************************************************************/
+
+// BEING REVISED: ettrich
+/*!
+  \class QVector qvector.h
+
+  \brief The QVector class is a template collection class that
+  provides a vector (array).
+
+  \ingroup tools
+
+  QVector is implemented as a template class. Define a template
+  instance QVector\<X\> to create a vector that contains pointers to
+  X, or X*.
+
+  A vector is the same as an array. The main difference between
+  QVector and QArray is that QVector stores pointers to the elements,
+  while QArray stores the elements themselves (i.e. QArray is
+  value-based).
+
+  Unless where otherwise stated, all functions that remove items from
+  the vector will also delete the element pointed to if auto-deletion
+  is enabled - see setAutoDelete(). By default, auto-deletion is
+  disabled. This behaviour can be changed in a subclass by
+  reimplementing the virtual method deleteItem().
+
+  Functions that compares items, e.g. find() and sort(), will do so
+  using the virtual function compareItems(). The default
+  implementation of this function will only compare the absolute
+  pointer values. Reimplement compareItems() in a subclass to get
+  searching and sorting based on the item contents.
+
+  \sa \link collection.html Collection Classes\endlink, QArray
+*/
+
+/*!
+  \fn QVector::QVector()
+
+  Constructs a null vector.
+
+  \sa isNull()
+*/
+
+/*!
+  \fn QVector::QVector( uint size )
+
+  Constructs an vector with room for \a size items.  Makes a null
+  vector if \a size == 0.
+
+  All \a size positions in the vector are initialized to 0.
+
+  \sa size(), resize(), isNull()
+*/
+
+/*!
+  \fn QVector::QVector( const QVector<type> &v )
+
+  Constructs a copy of \a v. Only the pointers are copied (i.e. shallow copy).
+*/
+
+/*!
+  \fn QVector::~QVector()
+
+  Removes all items from the vector, and destroys the vector itself.
+
+  \sa clear()
+*/
+
+/*!
+  \fn QVector<type> &QVector::operator=( const QVector<type> &v )
+
+  Assigns \a v to this vector and returns a reference to this vector.
+
+  This vector is first cleared, then all the items from \a v is copied
+  into this vector. Only the pointers are copied (i.e. shallow copy).
+
+  \sa clear()
+*/
+
+/*!
+  \fn type **QVector::data() const
+  Returns a pointer to the actual vector data, which is an array of type*.
+
+  The vector is a null vector if data() == 0 (null pointer).
+
+  \sa isNull()
+*/
+
+/*!
+  \fn uint QVector::size() const
+
+  Returns the size of the vector, i.e. the number of vector
+  positions. This is also the maximum number of items the vector can
+  hold.
+
+  The vector is a null vector if size() == 0.
+
+  \sa isNull(), resize(), count()
+*/
+
+/*!
+  \fn uint QVector::count() const 
+
+  Returns the number of items in the vector. The vector is empty if
+  count() == 0.
+
+  \sa isEmpty(), size()
+*/
+
+/*!
+  \fn bool QVector::isEmpty() const
+
+  Returns TRUE if the vector is empty, i.e. count() == 0, otherwise FALSE.
+
+  \sa count()
+*/
+
+/*!
+  \fn bool QVector::isNull() const
+
+  Returns TRUE if the vector is null, otherwise FALSE.
+
+  A null vector has size() == 0 and data() == 0.
+
+  \sa size()
+*/
+
+/*!
+  \fn bool QVector::resize( uint size )
+  Resizes (expands or shrinks) the vector to \a size elements. The array
+  becomes a null array if \a size == 0.
+
+  Any items in position \a size or beyond in the vector are removed.
+  New positions are initialized 0.
+
+  Returns TRUE if successful, or FALSE if the memory cannot be allocated.
+
+  \sa size(), isNull()
+*/
+
+/*!
+  \fn bool QVector::insert( uint i, const type *d )
+
+  Sets position \a i in the vector to contain the item \a d. \a i must
+  be less than size(). Any previous element in position \a i is removed.
+
+  \sa at()
+*/
+
+/*!
+  \fn bool QVector::remove( uint i )
+
+  Removes the item at position \a i in the vector, if there is one.
+  \a i must be less than size().
+
+  Returns TRUE unless \a i is out of range.
+
+  \sa take(), at()
+*/
+
+/*!
+  \fn type* QVector::take( uint i )
+
+  Returns the item at position \a i in the vector, and removes that
+  item from the vector. \a i must be less than size(). If there is no
+  item at position \a i, 0 is returned.
+
+  In contrast to remove(), this function does \e not call deleteItem()
+  for the removed item.
+
+  \sa remove(), at()
+*/
+
+/*!
+  \fn void QVector::clear()
+
+  Removes all items from the vector, and destroys the vector
+  itself.
+
+  The vector becomes a null vector.
+
+  \sa isNull()
+*/
+
+/*!
+  \fn bool QVector::fill( const type *d, int size )
+
+  Inserts item \a d in all positions in the vector. Any existing items
+  are removed. If \a d is 0, the vector becomes empty.
+
+  If \a size >= 0, the vector is first resized to \a size. By default,
+  \a size is -1.
+
+  Returns TRUE if successful, or FALSE if the memory cannot be allocated
+  (only if a resize has been requested).
+
+  \sa resize(), insert(), isEmpty()
+*/
+
+/*!
+  \fn void QVector::sort()
+
+  Sorts the items in ascending order. Any empty positions will be put
+  last.
+
+  Compares items using the virtual function compareItems().
+
+  \sa bsearch()
+*/
+
+/*!
+  \fn int QVector::bsearch( const type* d ) const
+
+  In a sorted array, finds the first occurrence of \a d using binary
+  search. For a sorted array, this is generally much faster than
+  find(), which does a linear search.
+
+  Returns the position of \a d, or -1 if \a d could not be found. \a d
+  may not be 0.
+
+  Compares items using the virtual function compareItems().
+
+  \sa sort(), find()
+*/
+
+
+/*!
+  \fn int QVector::findRef( const type *d, uint i ) const
+
+  Finds the first occurrence of the item pointer \a d in the vector,
+  using linear search. The search starts at position \a i, which must
+  be less than size(). \a i is by default 0; i.e. the search starts at
+  the start of the vector.
+
+  Returns the position of \a d, or -1 if \a d could not be found.
+
+  This function does \e not use compareItems() to compare items.
+
+  \sa find(), bsearch()
+*/
+
+/*!
+  \fn int QVector::find( const type *d, uint i ) const
+
+  Finds the first occurrence of item \a d in the vector, using linear
+  search. The search starts at position \a i, which must be less than
+  size(). \a i is by default 0; i.e. the search starts at the start of
+  the vector.
+
+  Returns the position of \e v, or -1 if \e v could not be found.
+
+  Compares items using the virtual function compareItems().
+
+  \sa findRef(), bsearch()
+*/
+
+
+/*!
+  \fn uint QVector::containsRef( const type *d ) const
+
+  Returns the number of occurrences of the item pointer \a d in the
+  vector.
+
+  This function does \e not use compareItems() to compare items.
+
+  \sa findRef()
+*/
+
+/*!
+  \fn uint QVector::contains( const type *d ) const
+
+  Returns the number of occurrences of item \a d in the vector.
+
+  Compares items using the virtual function compareItems().
+
+  \sa containsRef()
+*/
+
+/*!
+  \fn type *QVector::operator[]( int i ) const
+
+  Returns the item at position \a i, or 0 if there is no item at
+  that position. \a i must be less than size().
+
+  Equivalent to at( \a i ).
+
+  \sa at()
+*/
+
+/*!
+  \fn type *QVector::at( uint i ) const
+
+  Returns the item at position \a i, or 0 if there is no item at
+  that position. \a i must be less than size().
+*/
+
+
+/*!
+  \fn void QVector::toList( QGList *list ) const
+
+  Copies all items in this vector to the list \a list. First, \a list
+  is cleared, then all items are appended to \a list.
+
+  \sa QList, QStack, QQueue
+*/
+

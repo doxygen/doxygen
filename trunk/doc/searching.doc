@@ -1,0 +1,158 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page searching Searching
+
+Doxygen indexes your source code in various ways to make it easier 
+to navigate and find what you are looking for. 
+There are also situations however where you want to
+search for something by keyword rather than browse for it.
+
+HTML browsers by default have no search capabilities that work across multiple
+pages, so either doxygen or external tools need to help to facilitate 
+this feature.
+
+Doxygen has 6 different ways to add searching to the HTML output, each of which
+has its own advantages and disadvantages:
+
+<h2>1. Client side searching</h2>
+   The easiest way to enable searching is to enable the built-in client
+   side search engine. This engine is implemented using Javascript and DHTML
+   only and runs entirely on the clients browser. So no additional tooling is
+   required to make it work. 
+ 
+   To enable it set 
+   \ref cfg_searchengine "SEARCHENGINE" to \c YES in the config file
+   and make sure \ref cfg_server_based_search "SERVER_BASED_SEARCH" is set
+   to \c NO.
+
+   An additional advantage of this method is that it provides live 
+   searching, i.e. the search results are presented and adapted as you type.
+
+   This method also has its drawbacks: it is limited to searching for symbols
+   only. It does not provide full text search capabilities, and it does not
+   scale well to very large projects (then searching becomes very slow).
+
+<h2>2. Server side searching</h2>
+   If you plan to put the HTML documentation on a web server, and that
+   web server has the capability to process PHP code, then you can also use 
+   doxygen's built-in server side search engine. 
+
+   To enable this set both
+   \ref cfg_searchengine "SEARCHENGINE" and 
+   \ref cfg_server_based_search "SERVER_BASED_SEARCH" to \c YES in the config
+   file.
+
+   Advantages over the client side search engine are that it provides full
+   text search and it scales well to large projects.
+
+   Disadvantages are that it does not work locally (i.e. using a file:// URL)
+   and that it does not provide live search capabilities.
+
+<h2>3. Windows Compiled HTML Help</h2>
+   If you are running doxygen on Windows, then you can make a 
+   compiled HTML Help file (.chm) out of the HTML files produced by doxygen.
+   This is a single file containing all HTML files and it also includes a
+   search index. There are viewers for this format on many platforms,
+   and Windows even supports it natively.
+
+   To enable this set \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" to \c YES
+   in the config file. To let doxygen compile the HTML Help file for you,
+   you also need to specify the path to the HTML compiler (hhc.exe) using the
+   \ref cfg_hhc_location "HHC_LOCATION" config option and the name of the
+   resulting CHM file using \ref cfg_chm_file "CHM_FILE".
+   
+   An advantage of this method is that the result is a single file that can
+   easily be distributed. It also provides full text search. 
+   
+   Disadvantages are that compiling the CHM file only works on Windows
+   and requires Microsoft's HTML compiler, which is not very actively supported
+   by Microsoft. Although the tool works fine for most people, it can 
+   sometimes crash for no apparent reason (how typical). 
+
+<h2>4. Mac OS X Doc Sets</h2> 
+   If you are running doxygen on Mac OS X 10.5 or higher, 
+   then you can make a "doc set" out of the HTML files produced by doxygen.
+   A doc set consists of a single directory with a special structure 
+   containing the HTML files along with a precompiled search index. 
+   A doc set can be embedded in Xcode (the integrated development environment 
+   provided by Apple).
+
+   To enable the creation of doc sets set \ref cfg_generate_docset "GENERATE_DOCSET"
+   to \c YES in the config file. There are a couple of other doc set related
+   options you may want to set. After doxygen has finished you will find
+   a Makefile in the HTML output directory. Running "make install" on this
+   Makefile will compile and install the doc set.
+   See <a href="http://developer.apple.com/tools/creatingdocsetswithdoxygen.html">this 
+   article</a> for more info.
+
+   Advantage of this method is that it nicely integrates with the Xcode
+   development environment, allowing for instance to click on an identifier 
+   in the editor and jump to the corresponding section in the doxygen 
+   documentation.
+
+   Disadvantage is that it only works in combination with Xcode on MacOSX.
+
+<h2>5. Qt Compressed Help</h2> 
+   If you develop for or want to install the Qt application framework,
+   you will get an application 
+   called <a href="http://doc.trolltech.com/4.6/assistant-manual.html">Qt assistant</a>. 
+   This is a help viewer for Qt Compressed Help files (.qch).
+
+   To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.
+   You also need to fill in the other Qt help related options, such as
+   \ref cfg_qhp_namespace "QHP_NAMESPACE", 
+   \ref cfg_qhg_location "QHG_LOCATION", 
+   \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER".
+   See <a href="http://doc.trolltech.com/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
+   for more info.
+
+   Feature wise the Qt compressed help feature is comparable with the CHM 
+   output, with the additional advantage that compiling the QCH file is 
+   not limited to Windows.
+
+   Disadvantage is that it requires setting up a Qt 4.5 (or better) for
+   each user, or distributing the Qt help assistant along with 
+   the documentation, which is complicated by the fact that it is not
+   available as a separate package at this moment.
+
+<h2>6. Eclipse Help Plugin</h2>
+   If you use eclipse, you can embed the documentation generated by
+   doxygen as a help plugin. It will then appear as a topic in the help 
+   browser that can be started from "Help contents" in the Help menu.
+   Eclipse will generate a search index for the documentation when you
+   first search for an keyword.
+
+   To enable the help plugin set 
+   \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHELP" to \c YES,
+   and define a unique identifier for your project via
+   \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID", i.e:
+\verbatim
+   GENERATE_ECLIPSEHELP = YES
+   ECLIPSE_DOC_ID       = com.yourcompany.yourproject
+\endverbatim
+   then create the \c com.yourcompany.yourproject directory (so with
+   the same name as the value of \c ECLIPSE_DOC_ID) in the 
+   \c plugin directory of eclipse and after doxygen completes copy
+   to contents of the help output directory to 
+   the \c com.yourcompany.yourproject directory.
+   Then restart eclipse to make let it find the new plugin.
+
+   The eclipse help plugin provides similar functionality as the
+   Qt compressed help or CHM output, but it does require that Eclipse is
+   installed and running.
+
+*/

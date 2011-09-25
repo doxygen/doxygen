@@ -1,0 +1,263 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page preprocessing Preprocessing
+
+Source files that are used as input to doxygen can be parsed by doxygen's
+built-in C-preprocessor.
+
+By default doxygen does only partial preprocessing. That is, it 
+evaluates conditional compilation statements (like \#if) and 
+evaluates macro definitions, but it does not perform macro expansion.
+
+So if you have the following code fragment
+\verbatim
+#define VERSION 200
+#define CONST_STRING const char *
+
+#if VERSION >= 200
+  static CONST_STRING version = "2.xx";
+#else
+  static CONST_STRING version = "1.xx";
+#endif
+\endverbatim
+
+Then by default doxygen will feed the following to its parser:
+
+\verbatim
+#define VERSION
+#define CONST_STRING
+
+  static CONST_STRING version = "2.xx";
+\endverbatim
+
+You can disable all preprocessing by setting 
+\ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c 
+NO in the configuration file. In the case above doxygen will then read
+both statements, i.e:
+
+\verbatim
+  static CONST_STRING version = "2.xx";
+  static CONST_STRING version = "1.xx";
+\endverbatim
+
+In case you want to expand the \c CONST_STRING macro, you should set the
+\ref cfg_macro_expansion "MACRO_EXPANSION" tag in the config file 
+to \c YES. Then the result after preprocessing becomes:
+
+\verbatim
+#define VERSION
+#define CONST_STRING
+
+  static const char * version = "1.xx";
+\endverbatim
+
+Note that doxygen will now expand \e all macro definitions 
+(recursively if needed). This is often too much. Therefore, doxygen also 
+allows you to expand only those defines that you explicitly 
+specify. For this you have to set the 
+\ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" tag to \c YES
+and specify the macro definitions after 
+the \ref cfg_predefined "PREDEFINED" or 
+\ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.  
+
+A typically example where some help from the preprocessor is needed is
+when dealing with Microsoft's __declspec language extension. Here is an
+example function.
+
+\verbatim
+extern "C" void __declspec(dllexport) ErrorMsg( String aMessage,...);
+\endverbatim
+
+When nothing is done, doxygen will be confused and see __declspec as
+some sort of function. To help doxygen one typically uses the following
+preprocessor settings:
+
+\verbatim  
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = __declspec(x)=
+\endverbatim
+
+This will make sure the __declspec(dllexport) is removed before doxygen
+parses the source code.
+
+For a more complex example, suppose you have the following obfuscated 
+code fragment of an abstract base class called \c IUnknown:
+
+\verbatim
+/*! A reference to an IID */
+#ifdef __cplusplus
+#define REFIID const IID &
+#else
+#define REFIID const IID *
+#endif
+
+
+/*! The IUnknown interface */
+DECLARE_INTERFACE(IUnknown)
+{
+  STDMETHOD(HRESULT,QueryInterface) (THIS_ REFIID iid, void **ppv) PURE;
+  STDMETHOD(ULONG,AddRef) (THIS) PURE;
+  STDMETHOD(ULONG,Release) (THIS) PURE;
+};
+\endverbatim
+
+without macro expansion doxygen will get confused, but we may not want to 
+expand the REFIID macro, because it is documented and the user that reads 
+the documentation should use it when implementing the interface.
+
+By setting the following in the config file:
+
+\verbatim
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION      = YES
+EXPAND_ONLY_PREDEF   = YES
+PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
+                       "STDMETHOD(result,name)=virtual result name" \
+                       "PURE= = 0" \
+                       THIS_= \
+                       THIS= \
+		       __cplusplus
+\endverbatim
+
+we can make sure that the proper result is fed to doxygen's parser:
+\verbatim
+/*! A reference to an IID */
+#define REFIID
+
+/*! The IUnknown interface */
+class  IUnknown
+{
+  virtual  HRESULT   QueryInterface ( REFIID iid, void **ppv) = 0;
+  virtual  ULONG   AddRef () = 0;
+  virtual  ULONG   Release () = 0;
+};
+\endverbatim
+
+Note that the \ref cfg_predefined "PREDEFINED" tag accepts function 
+like macro definitions
+(like \c DECLARE_INTERFACE ), normal macro 
+substitutions (like \c PURE and \c THIS) and plain 
+defines (like \c __cplusplus).
+
+Note also that preprocessor definitions that are normally defined 
+automatically by the preprocessor (like \c __cplusplus), have to be defined 
+by hand with doxygen's parser (this is done because these defines
+are often platform/compiler specific).
+
+In some cases you may want to substitute a macro name or function by 
+something else without exposing the result to further macro substitution.
+You can do this but using the <code>:=</code> operator instead of 
+<code>=</code>
+
+As an example suppose we have the following piece of code:
+\verbatim
+#define QList QListT
+class QListT
+{
+};
+\endverbatim
+
+Then the only way to get doxygen interpret this as a class definition
+for class QList is to define:
+\verbatim
+PREDEFINED = QListT:=QList
+\endverbatim
+
+Here is an example provided by Valter Minute and Reyes Ponce that helps 
+doxygen to wade through the boilerplate code in Microsoft's ATL \& MFC 
+libraries:
+
+\verbatim
+PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
+                       "STDMETHOD(result,name)=virtual result name" \
+                       "PURE= = 0" \
+                       THIS_= \
+                       THIS= \
+                       DECLARE_REGISTRY_RESOURCEID=// \
+                       DECLARE_PROTECT_FINAL_CONSTRUCT=// \
+                       "DECLARE_AGGREGATABLE(Class)= " \
+                       "DECLARE_REGISTRY_RESOURCEID(Id)= " \
+                       DECLARE_MESSAGE_MAP= \
+                       BEGIN_MESSAGE_MAP=/* \
+                       END_MESSAGE_MAP=*/// \
+                       BEGIN_COM_MAP=/* \
+                       END_COM_MAP=*/// \
+                       BEGIN_PROP_MAP=/* \
+                       END_PROP_MAP=*/// \
+                       BEGIN_MSG_MAP=/* \
+                       END_MSG_MAP=*/// \
+                       BEGIN_PROPERTY_MAP=/* \
+                       END_PROPERTY_MAP=*/// \
+                       BEGIN_OBJECT_MAP=/* \
+                       END_OBJECT_MAP()=*/// \
+                       DECLARE_VIEW_STATUS=// \
+                       "STDMETHOD(a)=HRESULT a" \
+                       "ATL_NO_VTABLE= " \
+                       "__declspec(a)= " \
+                       BEGIN_CONNECTION_POINT_MAP=/* \
+                       END_CONNECTION_POINT_MAP=*/// \
+                       "DECLARE_DYNAMIC(class)= " \
+                       "IMPLEMENT_DYNAMIC(class1, class2)= " \
+                       "DECLARE_DYNCREATE(class)= " \
+                       "IMPLEMENT_DYNCREATE(class1, class2)= " \
+                       "IMPLEMENT_SERIAL(class1, class2, class3)= " \
+                       "DECLARE_MESSAGE_MAP()= " \
+                       TRY=try \
+                       "CATCH_ALL(e)= catch(...)" \
+                       END_CATCH_ALL= \
+                       "THROW_LAST()= throw"\
+                       "RUNTIME_CLASS(class)=class" \
+                       "MAKEINTRESOURCE(nId)=nId" \
+                       "IMPLEMENT_REGISTER(v, w, x, y, z)= " \
+                       "ASSERT(x)=assert(x)" \
+                       "ASSERT_VALID(x)=assert(x)" \
+                       "TRACE0(x)=printf(x)" \
+                       "OS_ERR(A,B)={ #A, B }" \
+                       __cplusplus \
+                       "DECLARE_OLECREATE(class)= " \
+                       "BEGIN_DISPATCH_MAP(class1, class2)= " \
+                       "BEGIN_INTERFACE_MAP(class1, class2)= " \
+                       "INTERFACE_PART(class, id, name)= " \
+                       "END_INTERFACE_MAP()=" \
+                       "DISP_FUNCTION(class, name, function, result, id)=" \
+                       "END_DISPATCH_MAP()=" \
+                       "IMPLEMENT_OLECREATE2(class, name, id1, id2, id3, id4,\
+                        id5, id6, id7, id8, id9, id10, id11)="
+\endverbatim
+
+As you can see doxygen's preprocessor is quite powerful, but if you want
+even more flexibility you can always write an input filter and specify it 
+after the \ref cfg_input_filter "INPUT_FILTER" tag.
+
+If you are unsure what the effect of doxygen's preprocessing will be
+you can run doxygen as follows:
+\verbatim
+  doxygen -d Preprocessor
+\endverbatim
+This will instruct doxygen to dump the input sources to standard output after
+preprocessing has been done (Hint: set <code>QUIET = YES</code> and 
+<code>WARNINGS = NO</code> in the configuration file to disable any other 
+output).
+
+\htmlonly
+Go to the <a href="external.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/

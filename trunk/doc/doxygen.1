@@ -1,0 +1,46 @@
+.TH DOXYGEN "1" "DATE" "doxygen VERSION" "User Commands"
+.SH NAME
+doxygen \- documentation system for various programming languages
+.SH DESCRIPTION
+Doxygen is a documentation system for C++, C, Java, Objective-C, IDL
+(Corba and Microsoft flavors) and to some extent PHP, C#, and D.
+.PP
+You can use doxygen in a number of ways:
+.TP
+1) Use doxygen to generate a template configuration file:
+.IP
+doxygen [-s] \fB\-g\fR [configName]
+.IP
+If - is used for configName doxygen will write to standard output.
+.TP 
+2) Use doxygen to update an old configuration file:
+.IP
+doxygen [-s] \fB\-u\fR [configName]
+.TP
+3) Use doxygen to generate documentation using an existing configuration file:
+.IP
+doxygen [configName]
+.IP
+If - is used for configName doxygen will read from standard input.
+.TP
+4) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.
+.TP
+RTF:
+doxygen \fB\-w\fR rtf styleSheetFile
+.TP
+HTML:
+doxygen \fB\-w\fR html headerFile footerFile styleSheetFile [configFile]
+.TP
+LaTeX: doxygen \fB\-w\fR latex headerFile footerFile styleSheetFile [configFile]
+.TP
+5) Use doxygen to generate an rtf extensions file
+.TP
+RTF:
+doxygen \fB\-e\fR rtf extensionsFile
+.PP
+If \fB\-s\fR is specified the comments in the config file will be omitted.
+If configName is omitted `Doxyfile' will be used as a default.
+.SH AUTHOR
+Doxygen version VERSION, Copyright Dimitri van Heesch 1997-2011
+.SH SEE ALSO
+doxytag(1), doxywizard(1).

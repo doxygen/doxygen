@@ -1,0 +1,263 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page customize Customizing the output
+
+Doxygen provides various levels of customization. 
+The \ref minor_tweaks "first section" discusses what to 
+do if you want to do minor tweaking to the look and feel of the output. 
+The \ref layout "next" section show how to reorder and hide certain 
+information on a page. 
+The \ref xmlgenerator "last" section show how to generate whatever output
+you want based on the XML output produced by doxygen.
+
+\section minor_tweaks Minor Tweaks
+
+To simply tweak things like fonts or colors, margins, or other look \& feel
+expects of the HTML output you can create a different 
+<a href="http://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
+You can also let doxygen use a custom header and footer for each HTML 
+page it generates, for instance to include a logo or to make the 
+doxygen output blend in with the rest of the web site.
+
+To do this first run doxygen as follows:
+\verbatim
+doxygen -w html header.html footer.html customdoxygen.css 
+\endverbatim
+
+This will create 3 files:
+- header.html is a HTML fragment which doxygen normally uses to start
+  a HTML page. Note that the fragment ends with a body tag and that is
+  contains a couple of commands of the form \$word. These will be replaced
+  by doxygen on the fly. 
+- footer.html is a HTML fragment which doxygen normally uses to end 
+  a HTML page. Also here special commands can be used. This file contain the 
+  link to www.doxygen.org and the body and html end tags.
+- customdoxygen.css is the default cascading style sheet
+  used by doxygen. 
+
+You should edit these files and then reference them from the config file.
+\verbatim
+HTML_HEADER      = header.html
+HTML_FOOTER      = footer.html
+HTML_STYLESHEET  = customdoxygen.css
+\endverbatim
+
+See the documentation of the \ref cfg_html_header "HTML_HEADER" tag
+for more information about the possible meta commands.
+
+\note You should not put the style sheet in the HTML output directory. Treat
+it is a source file. Doxygen will copy it for you. 
+
+\note If you use images or other external content in a custom header you
+need to make sure these end up in the HTML output directory yourself,
+for instance by writing a script that runs doxygen can then copies the
+images to the output.
+
+
+\section layout Changing the layout of pages
+
+In some cases you may want to change the way the output is structured.
+A different style sheet or custom headers and footers do not help in such 
+case.
+
+The solution doxygen provides is a layout file, which you can
+modify and doxygen will use to control what information is presented, 
+in which order, and to some extent also how information is presented.
+The layout file is an XML file. 
+
+The default layout can be generated
+by doxygen using the following command:
+\verbatim
+doxygen -l 
+\endverbatim
+optionally the name of the layout file can be specified, if omitted
+\c DoxygenLayout.xml will be used.
+
+The next step is to mention the layout file in the config file
+\verbatim
+LAYOUT_FILE = DoxygenLayout.xml
+\endverbatim
+The change the layout all you need to do is edit the layout file.
+
+The toplevel structure of the file looks as follows:
+\verbatim
+<doxygenlayout version="1.0">
+  <navindex>
+    ...
+  </navindex>
+  <class>
+    ...
+  </class>
+  <namespace>
+    ...
+  </namespace>
+  <file>
+    ...
+  </file>
+  <group>
+    ...
+  </group>
+  <directory>
+    ...
+  </directory>
+</doxygenlayout>
+\endverbatim
+
+The root tag of the XML is \c doxygenlayout, it has an attribute named
+\c version, which will be used in the future to cope with changes that are
+not backward compatible.
+
+The first section, enclosed by \c navindex tags represents the layout of 
+the navigation tabs displayed at the top of each HTML page. 
+Each tab is represented by a \c tab tag in the XML file.
+
+You can hide tabs by setting the \c visible attribute to \c no. 
+You can also override the default title of a tab by specifying it as 
+the value of the \c title attribute. If the title field is the empty string
+(the default) then doxygen will fill in an appropriate title.
+You can reorder the tabs by moving the tab tags in the XML file
+within the \c navindex section and even change the tree structure. 
+Do not change the value of the \c type attribute however. 
+Only a fixed set of types are supported, each representing a link to a 
+specific index.
+
+The sections after \c navindex represent the layout of the different 
+pages generated by doxygen:
+- The \c class section represents the layout of all pages generated for
+  documented classes, structs, unions, and interfaces.
+- The \c namespace section represents the layout of all pages generated for
+  documented namespaces (and also Java packages).
+- The \c file section represents the layout of all pages generated for
+  documented files.
+- The \c group section represents the layout of all pages generated for
+  documented groups (or modules).
+- The \c directory section represents the layout of all pages generated for
+  documented directories.
+
+Each XML tag within one of the above page sections represents a certain
+piece of information. Some pieces can appear in each type of page,
+others are specific for a certain type of page.
+Doxygen will list the pieces in the order in which they appear 
+in the XML file. 
+
+Some tags have a \c visible attribute which can be 
+used to hide the fragment from the generated output, by setting the attribute's
+value to "no". You can also use the value of a configuration option to 
+determine the visibility, by using 
+its name prefixed with a dollar sign, e.g.
+\verbatim
+  ...
+  <includes visible="$SHOW_INCLUDE_FILES"/>
+  ...
+\endverbatim
+This was mainly added for backward compatibility.
+Note that the \c visible attribute is just a hint for doxygen. 
+If no relevant information is available for a certain piece it is 
+omitted even if it is set to \c yes (i.e. no empty sections are generated). 
+
+Some tags have a \c title attribute. This attribute can be used
+to customize the title doxygen will use as a header for the piece.
+
+@warning at the moment you should not remove tags from the layout file
+as a way to hide information. Doing so can cause broken links in the 
+generated output!
+
+At the moment the following generic tags are possible for each page:
+<dl>
+<dt>\c briefdescription
+  <dd>Represents the brief description on a page.
+<dt>\c detaileddescription
+  <dd>Represents the detailed description on a page.
+<dt>\c authorsection
+  <dd>Represents the author section of a page (only used for man pages).
+<dt>\c memberdecl
+  <dd>Represents the quick overview of members on a page (member declarations).
+      This tag has child tags each representing a list of 
+      members of a certain type. 
+      The possible child tags are not listed in detail in the document, 
+      but the name of the tag should be a good indication of the type 
+      of members that the tag represents.
+<dt>\c memberdef
+  <dd>Represents the detailed member list on a page (member definition).
+      Like the \c memberdecl tag, also this tag has a number of 
+      possible child tags. 
+</dl>
+
+The class page has the following specific tags:
+<dl>
+<dt>\c includes
+  <dd>Represents the include file needed to obtain the definition for 
+      this class.
+<dt>\c inheritancegraph
+  <dd>Represents the inheritance relations for a class. 
+      Note that the CLASS_DIAGRAM option determines
+      if the inheritance relation is a list of base and derived classes or
+      a graph. 
+<dt>\c collaborationgraph
+  <dd>Represents the collaboration graph for a class.
+<dt>\c allmemberslink
+  <dd>Represents the link to the list of all members for a class.
+<dt>\c usedfiles
+  <dd>Represents the list of files from which documentation for the class was
+      extracted.
+</dl>
+
+The file page has the following specific tags:
+<dl>
+<dt>\c includes
+  <dd>Represents the list of \#include statements contained in this file.
+<dt>\c includegraph
+  <dd>Represents the include dependency graph for the file.
+<dt>\c includedbygraph
+  <dd>Represents the included by dependency graph for the file.
+<dt>\c sourcelink
+  <dd>Represents the link to the source code of this file.
+</dl>
+
+The group page has a specific \c groupgraph tag which represents the
+graph showing the dependencies between groups.
+
+Similarly, the directory page has a specific \c directorygraph tag 
+which represents the graph showing the dependencies between the directories 
+based on the \#include relations of the files inside the directories.
+
+\section xmlgenerator Using the XML output
+
+If the above two methods still do not provide enough flexibility, you
+can also use the XML output produced by doxygen as a basis to
+generate the output you like. To do this set GENERATE_XML to YES.
+
+The XML output consists of an index file named \c index.xml which
+lists all items extracted by doxygen with references to the other XML files
+for details. The structure of the index is described by a schema file
+\c index.xsd. All other XML files are described by the schema file 
+named \c compound.xsd. If you prefer one big XML file 
+you can combine the index and the other files using the 
+XSLT file \c combine.xslt.
+
+You can use any XML parser to parse the file or use the one that can be found
+in the \c addon/doxmlparser directory of doxygen source distribution. 
+Look at \c addon/doxmlparser/include/doxmlintf.h for the interface of the
+parser and in \c addon/doxmlparser/example for examples.
+
+The advantage of using the doxmlparser is that it
+will only read the index file into memory and then only those XML 
+files that you implicitly load via navigating through the index. As a 
+result this works even for very large projects where reading all XML
+files as one big DOM tree would not fit into memory.
+
+ */
