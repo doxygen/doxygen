@@ -1847,7 +1847,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PtclScanYY [AllOptions] [AdditionalOptions] [inputs]"
+						CommandLine="flex -PtclscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1855,7 +1855,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PtclScanYY [AllOptions] [AdditionalOptions] [inputs]"
+						CommandLine="flex -PtclscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
