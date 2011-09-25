@@ -173,7 +173,8 @@ void Qhp::decContentsDepth()
 
 void Qhp::addContentsItem(bool /*isDir*/, const char * name, 
                           const char * /*ref*/, const char * file, 
-                          const char * /*anchor*/)
+                          const char * /*anchor*/,bool /* separateIndex */,
+                          bool /* addToNavIndex */)
 {
   // Backup difference before modification
   int diff = m_prevSectionLevel - m_sectionLevel;

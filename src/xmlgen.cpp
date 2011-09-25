@@ -1092,7 +1092,7 @@ static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
     {
       if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
       {
-        t << "    <innerclass refid=\"" << cd->getOutputFileBase()
+        t << "    <innerclass refid=\"" << classOutputFileBase(cd)
           << "\" prot=\"";
         switch(cd->protection())
         {
@@ -1327,7 +1327,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
     }
   }
 
-  writeInnerClasses(cd->getInnerClasses(),t);
+  writeInnerClasses(cd->getClassSDict(),t);
 
   writeTemplateList(cd,t);
   if (cd->getMemberGroupSDict())

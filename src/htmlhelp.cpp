@@ -13,9 +13,8 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * The code is this file is largely based on a contribution from
- * Harm van der Heijden <H.v.d.Heijden@phys.tue.nl>
- * Please send thanks to him and bug reports to me :-)
+ * The original version of this file is largely based on a contribution from
+ * Harm van der Heijden.
  */
 
 #include <stdio.h>
@@ -629,12 +628,16 @@ QCString HtmlHelp::recode(const QCString &s)
  *  \param ref  the URL of to the item.
  *  \param file the file in which the item is defined.
  *  \param anchor the anchor of the item.
+ *  \param separateIndex not used.
+ *  \param addToNavIndex not used.
  */
 void HtmlHelp::addContentsItem(bool isDir,
                                const char *name,
                                const char * /*ref*/, 
                                const char *file,
-                               const char *anchor)
+                               const char *anchor,
+                               bool /* separateIndex */,
+                               bool /* addToNavIndex */)
 {
   // If we're using a binary toc then folders cannot have links. 
   if(Config_getBool("BINARY_TOC") && isDir) 

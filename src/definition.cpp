@@ -1329,7 +1329,7 @@ void Definition::writePathFragment(OutputList &ol) const
   ol.writeString("      </li>\n");
 }
 
-void Definition::writeNavigationPath(OutputList &ol) const
+void Definition::writeNavigationPath(OutputList &ol,bool showSearchInfo) const
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
 
@@ -1339,6 +1339,10 @@ void Definition::writeNavigationPath(OutputList &ol) const
   if (generateTreeView)
   {
     ol.writeString("</div>\n");
+  }
+  if (showSearchInfo)
+  {
+    ol.writeSearchInfo();
   }
 
   ol.writeString("  <div id=\"nav-path\" class=\"navpath\">\n");

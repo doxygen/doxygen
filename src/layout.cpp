@@ -832,6 +832,13 @@ class LayoutParser : public QXmlDefaultHandler
           javaOpt    ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
         },
+        { "namespacelist",
+          LayoutNavEntry::NamespaceList,
+          javaOpt    ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          QCString(),
+          javaOpt    ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
+          "namespaces"
+        },
         { "namespacemembers",
           LayoutNavEntry::NamespaceMembers,
           javaOpt    ? theTranslator->trPackageMembers() : fortranOpt ? theTranslator->trModulesMembers() : theTranslator->trNamespaceMembers(),
@@ -840,16 +847,23 @@ class LayoutParser : public QXmlDefaultHandler
           "namespacemembers"
         },
         { "classindex",
-          LayoutNavEntry::Classes,
+          LayoutNavEntry::ClassIndex,
           fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? VhdlDocGen::trDesignUnits() : theTranslator->trCompoundIndex(),
           QCString(),
           QCString(),
           "classes"
         },
         { "classes",
-          LayoutNavEntry::ClassAnnotated,
+          LayoutNavEntry::Classes,
           fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitList() : theTranslator->trClasses(),
           theTranslator->trCompoundList(),
+          fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
+          "annotated"
+        },
+        { "classlist",
+          LayoutNavEntry::ClassList,
+          theTranslator->trCompoundList(),
+          QCString(),
           fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"
         },
@@ -871,6 +885,13 @@ class LayoutParser : public QXmlDefaultHandler
           LayoutNavEntry::Files,
           theTranslator->trFile(TRUE,FALSE),
           theTranslator->trFileList(),
+          theTranslator->trFileListDescription(extractAll),
+          "files"
+        },
+        { "filelist",
+          LayoutNavEntry::FileList,
+          theTranslator->trFileList(),
+          QCString(),
           theTranslator->trFileListDescription(extractAll),
           "files"
         },

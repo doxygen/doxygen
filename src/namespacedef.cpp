@@ -633,7 +633,7 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
           if (createSubDirs) ol.writeString("../../");
           ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
           ol.writeString("\">");
-          ol.writeString(md->localName());
+          ol.writeString(convertToHtml(md->localName()));
           ol.writeString("</a>");
         }
         ol.writeString("</td></tr>\n");

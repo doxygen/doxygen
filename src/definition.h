@@ -311,7 +311,7 @@ class Definition : public DefinitionIntf, public LockableObj
     void writeSourceReffedBy(OutputList &ol,const char *scopeName);
     void makePartOfGroup(GroupDef *gd);
     void writePathFragment(OutputList &ol) const;
-    void writeNavigationPath(OutputList &ol) const;
+    void writeNavigationPath(OutputList &ol,bool showSearchInfo=TRUE) const;
     virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
     virtual void writeSummaryLinks(OutputList &) {}
     QCString pathFragment() const;

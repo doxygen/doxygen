@@ -1333,10 +1333,10 @@ void distributeClassGroupRelations()
   {
     //printf("Checking %s\n",cd->name().data());
     // distribute the group to nested classes as well
-    if (!cd->visited && cd->partOfGroups()!=0 && cd->getInnerClasses())
+    if (!cd->visited && cd->partOfGroups()!=0 && cd->getClassSDict())
     {
       //printf("  Candidate for merging\n");
-      ClassSDict::Iterator ncli(*cd->getInnerClasses());
+      ClassSDict::Iterator ncli(*cd->getClassSDict());
       ClassDef *ncd;
       GroupDef *gd = cd->partOfGroups()->at(0);
       for (ncli.toFirst();(ncd=ncli.current());++ncli)
@@ -1441,7 +1441,7 @@ static void processTagLessClasses(ClassDef *rootCd,
 {
   //printf("%d: processTagLessClasses %s\n",count,cd->name().data());
   //printf("checking members for %s\n",cd->name().data());
-  if (cd->getInnerClasses())
+  if (cd->getClassSDict())
   {
     MemberList *ml = cd->getMemberList(MemberList::pubAttribs);
     if (ml)
@@ -1453,7 +1453,7 @@ static void processTagLessClasses(ClassDef *rootCd,
         QCString type = md->typeString();
         if (type.find("::@")!=-1) // member of tag less struct/union
         {
-          ClassSDict::Iterator it(*cd->getInnerClasses());
+          ClassSDict::Iterator it(*cd->getClassSDict());
           ClassDef *icd;
           for (it.toFirst();(icd=it.current());++it)
           {
@@ -1501,9 +1501,9 @@ static void processTagLessClasses(ClassDef *rootCd,
 
 static void findTagLessClasses(ClassDef *cd)
 {
-  if (cd->getInnerClasses())
+  if (cd->getClassSDict())
   {
-    ClassSDict::Iterator it(*cd->getInnerClasses());
+    ClassSDict::Iterator it(*cd->getClassSDict());
     ClassDef *icd;
     for (it.toFirst();(icd=it.current());++it)
     {
@@ -7626,25 +7626,17 @@ static void generateClassDocs()
     writeInstallScript();
   }
   
-  msg("Generating annotated compound index...\n");
-  writeAnnotatedIndex(*g_outputList);
+  //msg("Generating annotated compound index...\n");
+  //writeAnnotatedIndex(*g_outputList);
 
-  //if (Config_getBool("ALPHABETICAL_INDEX"))
-  //{
-    msg("Generating alphabetical compound index...\n");
-    writeAlphabeticalIndex(*g_outputList);
-  //}
+  //msg("Generating alphabetical compound index...\n");
+  //writeAlphabeticalIndex(*g_outputList);
 
-  msg("Generating hierarchical class index...\n");
-  writeHierarchicalIndex(*g_outputList);
+  //msg("Generating hierarchical class index...\n");
+  //writeHierarchicalIndex(*g_outputList);
 
-  msg("Generating member index...\n");
-  writeClassMemberIndex(*g_outputList);
-
-  if (Doxygen::exampleSDict->count()>0)
-  {
-    msg("Generating example index...\n");
-  }
+  //msg("Generating member index...\n");
+  //writeClassMemberIndex(*g_outputList);
 
   generateClassList(*Doxygen::classSDict);
   generateClassList(*Doxygen::hiddenClasses);
@@ -8516,7 +8508,7 @@ static void generateGroupDocs()
 
 static void generateNamespaceDocs()
 {
-  writeNamespaceIndex(*g_outputList);
+  //writeNamespaceIndex(*g_outputList);
   
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
@@ -10749,11 +10741,11 @@ void generateOutput()
   // count the number of documented elements in the lists we have built. 
   // If the result is 0 we do not generate the lists and omit the 
   // corresponding links in the index.
-  msg("Generating index page...\n"); 
-  writeIndex(*g_outputList);
+  //msg("Generating index page...\n"); 
+  //writeIndex(*g_outputList);
 
-  msg("Generating page index...\n");
-  writePageIndex(*g_outputList);
+  //msg("Generating page index...\n");
+  //writePageIndex(*g_outputList);
   
   msg("Generating example documentation...\n");
   generateExampleDocs();
@@ -10773,23 +10765,23 @@ void generateOutput()
   msg("Generating group documentation...\n");
   generateGroupDocs();
 
-  msg("Generating group index...\n");
-  writeGroupIndex(*g_outputList);
+  //msg("Generating group index...\n");
+  //writeGroupIndex(*g_outputList);
  
   msg("Generating class documentation...\n");
   generateClassDocs();
   
-  if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
-  {
-    msg("Generating graphical class hierarchy...\n");
-    writeGraphicalClassHierarchy(*g_outputList);
-  }
+  //if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
+  //{
+  //  msg("Generating graphical class hierarchy...\n");
+  //  writeGraphicalClassHierarchy(*g_outputList);
+  //}
 
   msg("Generating namespace index...\n");
   generateNamespaceDocs();
   
-  msg("Generating namespace member index...\n");
-  writeNamespaceMemberIndex(*g_outputList);
+  //msg("Generating namespace member index...\n");
+  //writeNamespaceMemberIndex(*g_outputList);
 
   if (Config_getBool("GENERATE_LEGEND"))
   {
@@ -10803,20 +10795,20 @@ void generateOutput()
     generateDirDocs(*g_outputList);
   }
 
-  msg("Generating file index...\n");
-  writeFileIndex(*g_outputList);
+  //msg("Generating file index...\n");
+  //writeFileIndex(*g_outputList);
  
-  if (Config_getBool("SHOW_DIRECTORIES"))
-  {
-    msg("Generating directory index...\n");
-    writeDirIndex(*g_outputList);
-  }
+  //if (Config_getBool("SHOW_DIRECTORIES"))
+  //{
+  //  msg("Generating directory index...\n");
+  //  writeDirIndex(*g_outputList);
+  //}
 
-  msg("Generating example index...\n");
-  writeExampleIndex(*g_outputList);
+  //msg("Generating example index...\n");
+  //writeExampleIndex(*g_outputList);
   
-  msg("Generating file member index...\n");
-  writeFileMemberIndex(*g_outputList);
+  //msg("Generating file member index...\n");
+  //writeFileMemberIndex(*g_outputList);
 
   
   //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
@@ -10836,6 +10828,8 @@ void generateOutput()
   //{
   //  FTVHelp::getInstance()->finalize();
   //}
+
+  writeIndexHierarchy(*g_outputList);
 
   msg("finalizing index lists...\n");
   Doxygen::indexList.finalize();

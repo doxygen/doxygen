@@ -294,6 +294,7 @@ NONWS [^ \t\r\n]
 BLANK [ \t\r]
 ID       "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 LABELID  [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+CITEID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-:/]*
 MAILADR  [a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
@@ -538,6 +539,10 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			  */ 
 			 goto find_rule;
                        }
+<St_Text>({ID}".")+{ID} {
+                          g_token->name = yytext;
+                          return TK_WORD;
+  			}
 <St_Para,St_Text>"operator"/{BLANK}*"<"[a-zA-Z_0-9]+">" { // Special case: word "operator" followed by a HTML command
                                                           // avoid interpretation as "operator <"
                            g_token->name = yytext;
@@ -735,7 +740,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
   			 unput(*yytext);
 			 return 0;
   		       }
-<St_Cite>{LABELID}     { // label to cite
+<St_Cite>{CITEID}      { // label to cite
   			 g_token->name=yytext;
 			 return TK_WORD;
   		       }

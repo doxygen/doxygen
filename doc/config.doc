@@ -1711,7 +1711,9 @@ and does not have live searching capabilities.
  might be necessary to disable the index and replace it with your own.
  The \c DISABLE_INDEX tag can be used to turn on/off the condensed index at
  top of each page. A value of NO (the default) enables the index and the
- value YES disables it.
+ value \c YES disables it. Since the tabs have the same information as the 
+ navigation tree you can set this option to \c NO if you already set 
+ \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
 
 \anchor cfg_enum_values_per_line
 <dt>\c ENUM_VALUES_PER_LINE <dd>

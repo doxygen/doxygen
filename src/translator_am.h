@@ -22,7 +22,7 @@
 #ifndef TRANSLATOR_AM_H
 #define TRANSLATOR_AM_H
 
-class TranslatorArmenian : public TranslatorAdapter_1_7_5
+class TranslatorArmenian : public Translator
 {
   public:
     /*! Used for identification of the language. */

@@ -37,7 +37,7 @@ class HtmlGenerator : public OutputGenerator
     static void writeHeaderFile(QFile &f, const char *cssname);
     static void writeFooterFile(QFile &f);
     static void writeTabData();
-    static void writeSearchFooter(FTextStream &t,const QCString &relPath);
+    static void writeSearchInfo(FTextStream &t,const QCString &relPath);
     static void writeSearchData(const char *dir);
     static void writeSearchPage();
     static QCString writeLogoAsString(const char *path);
@@ -58,6 +58,7 @@ class HtmlGenerator : public OutputGenerator
     void writeFooter();
     void endFile();
     void clearBuffer();
+    void writeSearchInfo();
 
     void startIndexSection(IndexSections) {}
     void endIndexSection(IndexSections) {}

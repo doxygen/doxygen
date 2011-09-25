@@ -1657,7 +1657,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   if (!file.isEmpty()) m_t << file << Doxygen::htmlFileExtension;
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\"";
-  if (!tooltip.isEmpty()) m_t << " title=\"" << tooltip << "\"";
+  if (!tooltip.isEmpty()) m_t << " title=\"" << substitute(tooltip,"\"","&quot;") << "\"";
   m_t << ">";
 }
 

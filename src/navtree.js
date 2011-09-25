@@ -1,3 +1,29 @@
+function getData(varName)
+{
+  var i = varName.lastIndexOf('/');
+  var n = i>=0 ? varName.substring(i+1) : varName;
+  return eval(n);
+}
+
+function stripPath(uri)
+{
+  return uri.substring(uri.lastIndexOf('/')+1);
+}
+
+function getScript(scriptName,func,show)
+{
+  var head = document.getElementsByTagName("head")[0]; 
+  var script = document.createElement('script');
+  script.id = scriptName;
+  script.type = 'text/javascript';
+  script.onload = func; 
+  script.src = scriptName+'.js'; 
+  script.onreadystatechange = function() {
+    if (script.readyState == 'complete') { func(); if (show) showRoot(); }
+  };
+  head.appendChild(script); 
+}
+
 function createIndent(o,domNode,node,level)
 {
   if (node.parentNode && node.parentNode.parentNode)
@@ -5,6 +31,8 @@ function createIndent(o,domNode,node,level)
     createIndent(o,domNode,node.parentNode,level+1);
   }
   var imgNode = document.createElement("img");
+  imgNode.width = 16;
+  imgNode.height = 22;
   if (level==0 && node.childrenData)
   {
     node.plus_img = imgNode;
@@ -27,7 +55,7 @@ function createIndent(o,domNode,node,level)
       } 
       else 
       {
-        expandNode(o, node, false);
+        expandNode(o, node, false, false);
       }
     }
     node.expandToggle.appendChild(imgNode);
@@ -104,10 +132,38 @@ function newNode(o, po, text, link, childrenData, lastNode)
   var a = document.createElement("a");
   node.labelSpan.appendChild(a);
   node.label = document.createTextNode(text);
+  node.expanded = false;
   a.appendChild(node.label);
   if (link) 
   {
-    a.href = node.relpath+link;
+    a.className = stripPath(link.replace('#',':'));
+    if (link.indexOf('#')!=-1)
+    {
+      var aname = '#'+link.split('#')[1];
+      var srcPage = stripPath($(location).attr('pathname'));
+      var targetPage = stripPath(link.split('#')[0]);
+      a.href = srcPage!=targetPage ? node.relpath+link : '#';
+      a.onclick = function(){
+        $('.item').removeClass('selected');
+        $('.item').removeAttr('id');
+        $(a).parent().parent().addClass('selected');
+        $(a).parent().parent().attr('id','selected');
+        var anchor = $(aname);
+        var targetDiv = anchor.next();
+        $(targetDiv).children('.memproto,.memdoc').effect("highlight",{},3000);
+        $("#doc-content").animate({
+          scrollTop: anchor.position().top +
+          $('#doc-content').scrollTop() -
+          $('#doc-content').offset().top
+        },500,function(){
+          $(location).attr('href',aname);
+        });
+      };
+    }
+    else
+    {
+      a.href = node.relpath+link;
+    }
   } 
   else 
   {
@@ -116,7 +172,6 @@ function newNode(o, po, text, link, childrenData, lastNode)
       a.className = "nolink";
       a.href = "javascript:void(0)";
       a.onclick = node.expandToggle.onclick;
-      node.expanded = false;
     }
   }
 
@@ -141,34 +196,128 @@ function showRoot()
   var headerHeight = $("#top").height();
   var footerHeight = $("#nav-path").height();
   var windowHeight = $(window).height() - headerHeight - footerHeight;
-  navtree.scrollTo('#selected',0,{offset:-windowHeight/2});
+  (function (){ // retry until we can scroll to the selected item
+    try {
+      navtree.scrollTo('#selected',0,{offset:-windowHeight/2});
+    } catch (err) {
+      setTimeout(arguments.callee, 0);
+    }
+  })();
 }
 
-function expandNode(o, node, imm)
+function expandNode(o, node, imm, showRoot)
 {
   if (node.childrenData && !node.expanded) 
   {
-    if (!node.childrenVisited) 
+    if (typeof(node.childrenData)==='string')
     {
-      getNode(o, node);
-    }
-    if (imm)
-    {
-      $(node.getChildrenUL()).show();
-    } 
-    else 
-    {
-      $(node.getChildrenUL()).slideDown("fast",showRoot);
-    }
-    if (node.isLast)
-    {
-      node.plus_img.src = node.relpath+"ftv2mlastnode.png";
+      var varName    = node.childrenData;
+      getScript(node.relpath+varName,function(){
+        node.childrenData = getData(varName);
+        expandNode(o, node, imm, showRoot);
+      }, showRoot);
     }
     else
     {
-      node.plus_img.src = node.relpath+"ftv2mnode.png";
+      if (!node.childrenVisited) 
+      {
+        getNode(o, node);
+      }
+      if (imm)
+      {
+        $(node.getChildrenUL()).show();
+      } 
+      else 
+      {
+        $(node.getChildrenUL()).slideDown("fast");
+      }
+      if (node.isLast)
+      {
+        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
+      }
+      else
+      {
+        node.plus_img.src = node.relpath+"ftv2mnode.png";
+      }
+      node.expanded = true;
     }
-    node.expanded = true;
+  }
+}
+
+function showNode(o, node, index)
+{
+  if (node.childrenData && !node.expanded) 
+  {
+    if (typeof(node.childrenData)==='string')
+    {
+      var varName    = node.childrenData;
+      getScript(node.relpath+varName,function(){
+        node.childrenData = getData(varName);
+        showNode(o,node,index);
+      },true);
+    }
+    else
+    {
+      if (!node.childrenVisited) 
+      {
+        getNode(o, node);
+      }
+      $(node.getChildrenUL()).show();
+      if (node.isLast)
+      {
+        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
+      }
+      else
+      {
+        node.plus_img.src = node.relpath+"ftv2mnode.png";
+      }
+      node.expanded = true;
+      var n = node.children[o.breadcrumbs[index]];
+      if (index+1<o.breadcrumbs.length)
+      {
+        showNode(o,n,index+1);
+      }
+      else
+      {
+        if (typeof(n.childrenData)==='string')
+        {
+          var varName = n.childrenData;
+          getScript(n.relpath+varName,function(){
+            n.childrenData = getData(varName);
+            node.expanded=false;
+            showNode(o,node,index); // retry with child node expanded
+          },true);
+        }
+        else
+        {
+          if (o.toroot=="index.html" || n.childrenData)
+          {
+            expandNode(o, n, true, true);
+          }
+          var a;
+          if ($(location).attr('hash'))
+          {
+            var link=stripPath($(location).attr('pathname'))+':'+
+                     $(location).attr('hash').substring(1);
+            a=$('.item a[class*=\""'+link+'"\"]');
+          }
+          if (a && a.length)
+          {
+            a.parent().parent().addClass('selected');
+            a.parent().parent().attr('id','selected');
+            var anchor = $($(location).attr('hash'));
+            var targetDiv = anchor.next();
+            $(targetDiv).children('.memproto,.memdoc').
+                     effect("highlight", {}, 3000);
+          }
+          else
+          {
+            $(n.itemDiv).addClass('selected');
+            $(n.itemDiv).attr('id','selected');
+          }
+        }
+      }
+    }
   }
 }
 
@@ -180,31 +329,8 @@ function getNode(o, po)
   {
     var nodeData = po.childrenData[i];
     po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2],
-        i==l);
+      i==l);
   }
-}
-
-function findNavTreePage(url, data)
-{
-  var nodes = data;
-  var result = null;
-  for (var i in nodes) 
-  {
-    var d = nodes[i];
-    if (d[1] == url) 
-    {
-      return new Array(i);
-    }
-    else if (d[2] != null) // array of children
-    {
-      result = findNavTreePage(url, d[2]);
-      if (result != null) 
-      {
-        return (new Array(i).concat(result));
-      }
-    }
-  }
-  return null;
 }
 
 function initNavTree(toroot,relpath)
@@ -220,26 +346,23 @@ function initNavTree(toroot,relpath)
   o.node.li.appendChild(o.node.childrenUL);
   o.node.depth = 0;
   o.node.relpath = relpath;
+  o.node.expanded = false;
+  o.node.isLast = true;
+  o.node.plus_img = document.createElement("img");
+  o.node.plus_img.src = relpath+"ftv2pnode.png";
+  o.node.plus_img.width = 16;
+  o.node.plus_img.height = 22;
 
-  getNode(o, o.node);
-
-  o.breadcrumbs = findNavTreePage(toroot, NAVTREE);
-  if (o.breadcrumbs == null)
-  {
-    o.breadcrumbs = findNavTreePage("index.html",NAVTREE);
-  }
-  if (o.breadcrumbs != null && o.breadcrumbs.length>0)
-  {
-    var p = o.node;
-    for (var i in o.breadcrumbs) 
-    {
-      var j = o.breadcrumbs[i];
-      p = p.children[j];
-      expandNode(o,p,true);
+  getScript(relpath+"navtreeindex",function(){
+    var navTreeIndex = eval('NAVTREEINDEX');
+    if (navTreeIndex) {
+      o.breadcrumbs = navTreeIndex[toroot];
+      if (o.breadcrumbs==null) o.breadcrumbs = navTreeIndex["index.html"];
+      o.breadcrumbs.unshift(0);
+      showNode(o, o.node, 0);
     }
-    p.itemDiv.className = p.itemDiv.className + " selected";
-    p.itemDiv.id = "selected";
-    $(window).load(showRoot);
-  }
+  },true);
+
+  $(window).load(showRoot);
 }
 

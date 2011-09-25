@@ -48,7 +48,9 @@ class FTVHelp : public IndexIntf
                          const char *name,
                          const char *ref,
                          const char *file,
-                         const char *anchor);
+                         const char *anchor,
+                         bool separateIndex=FALSE,
+                         bool addToNavIndex=FALSE);
     //void addIndexItem(const char *, const char *, 
     //                  const char *, const char *,
     //                  const char *, const MemberDef *) {}
@@ -63,7 +65,8 @@ class FTVHelp : public IndexIntf
   private:
     void generateScript(FTextStream &t);
     void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level);
-    bool generateJSTree(FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
+    bool generateJSTree(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
+    //bool generateJSTreeTopLevel(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
     void generateIndent(FTextStream &t,FTVNode *n,int level);
     void generateLink(FTextStream &t,FTVNode *n);
     void generateJSLink(FTextStream &t,FTVNode *n);

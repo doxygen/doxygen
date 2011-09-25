@@ -45,7 +45,7 @@ SYMBOL_CACHE_SIZE      = 0
 # Build related configuration options
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = YES
 EXTRACT_LOCAL_CLASSES  = YES
 EXTRACT_LOCAL_METHODS  = NO
@@ -129,7 +129,7 @@ IGNORE_PREFIX          = Q
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------
-GENERATE_HTML          = NO
+GENERATE_HTML          = YES
 HTML_OUTPUT            =
 HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = 
@@ -164,10 +164,10 @@ QHP_SECT_FILTER_ATTRS  =
 QHG_LOCATION           =
 GENERATE_ECLIPSEHELP   = YES
 ECLIPSE_DOC_ID         = org.doxygen.qtools
-DISABLE_INDEX          = NO
+DISABLE_INDEX          = YES
 ENUM_VALUES_PER_LINE   = 4
 GENERATE_TREEVIEW      = YES
-USE_INLINE_TREES       = NO
+USE_INLINE_TREES       = YES
 TREEVIEW_WIDTH         = 250
 EXT_LINKS_IN_WINDOW    = NO
 FORMULA_FONTSIZE       = 10
@@ -175,7 +175,7 @@ FORMULA_TRANSPARENT    = YES
 USE_MATHJAX            = NO
 MATHJAX_RELPATH        = http://www.mathjax.org/mathjax
 SEARCHENGINE           = YES
-SERVER_BASED_SEARCH    = YES
+SERVER_BASED_SEARCH    = NO
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------

@@ -2023,7 +2023,7 @@ void ClassDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
             if (createSubDirs) ol.writeString("../../");
             ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
             ol.writeString("\">");
-            ol.writeString(md->name());
+            ol.writeString(convertToHtml(md->name()));
             ol.writeString("</a>");
           }
           ol.writeString("</td></tr>\n");
@@ -2080,7 +2080,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   {
     if (getOuterScope()!=Doxygen::globalScope)
     {
-      writeNavigationPath(ol);
+      writeNavigationPath(ol,FALSE);
     }
     ol.endQuickIndices();
   }
@@ -3209,26 +3209,18 @@ QCString ClassDef::getOutputFileBase() const
     // point to simple struct inside a group
     return partOfGroups()->at(0)->getOutputFileBase();
   }
-  else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()) && 
-            (
-              (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkableInProject()) || 
-              scope->isLinkableInProject()
-            )
-          )
+  else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()))
   {
-    if (scope==Doxygen::globalScope) // simple struct embedded in file
+    if (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkableInProject()) // simple struct embedded in file
     {
       return getFileDef()->getOutputFileBase();
     }
-    else // simple struct embedded in other container (namespace/group/class)
+    else if (scope->isLinkableInProject()) // simple struct embedded in other container (namespace/group/class)
     {
       return getOuterScope()->getOutputFileBase();
     }
   }
-  else
-  {
-    return getXmlOutputFileBase();
-  }
+  return getXmlOutputFileBase();
 }
 
 QCString ClassDef::getInstanceOutputFileBase() const 
@@ -3754,7 +3746,7 @@ bool ClassDef::isLocal() const
   return m_impl->isLocal; 
 }
 
-ClassSDict *ClassDef::getInnerClasses() 
+ClassSDict *ClassDef::getClassSDict() 
 { 
   return m_impl->innerClasses; 
 }

@@ -98,7 +98,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
     {
-      getOuterScope()->writeNavigationPath(ol);
+      getOuterScope()->writeNavigationPath(ol,FALSE);
     }
     ol.endQuickIndices();
   }

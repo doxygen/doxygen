@@ -44,6 +44,7 @@ class ManGenerator : public OutputGenerator
 
     static void init();
     void startFile(const char *name,const char *manName,const char *title);
+    void writeSearchInfo() {}
     void writeFooter() {}
     void endFile();
     void clearBuffer();

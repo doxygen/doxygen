@@ -1474,9 +1474,11 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "DISABLE_INDEX",
-                 "The DISABLE_INDEX tag can be used to turn on/off the condensed index at\n"
-                 "top of each HTML page. The value NO (the default) enables the index and\n"
-                 "the value YES disables it.",
+                 "The DISABLE_INDEX tag can be used to turn on/off the condensed index (tabs)\n"
+                 "at top of each HTML page. The value NO (the default) enables the index and\n"
+                 "the value YES disables it. Since the tabs have the same information as the\n"
+                 "navigation tree you can set this option to NO if you already set\n"
+                 "GENERATE_TREEVIEW to YES.",
                  FALSE
                 );
   cb->addDependency("GENERATE_HTML");
@@ -1499,7 +1501,9 @@ void addConfigOptions(Config *cfg)
                  "containing a tree-like index structure (just like the one that\n"
                  "is generated for HTML Help). For this to work a browser that supports\n"
                  "JavaScript, DHTML, CSS and frames is required (i.e. any modern browser).\n"
-                 "Windows users are probably better off using the HTML help feature.",
+                 "Windows users are probably better off using the HTML help feature.\n"
+                 "Since the tree basically has the same information as the tab index you\n"
+                 "could consider to set DISABLE_INDEX to NO when enabling this option.",
                  FALSE
                 );
   cb->addDependency("GENERATE_HTML");

@@ -1606,7 +1606,7 @@ void LatexGenerator::startTitleHead(const char *fileName)
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   if (usePDFLatex && pdfHyperlinks && fileName)
   {
-    t << "\\hypertarget{" << stripPath(fileName) << "}{" << endl;
+    t << "\\hypertarget{" << stripPath(fileName) << "}{";
   }
   if (Config_getBool("COMPACT_LATEX")) 
   {
@@ -2514,7 +2514,7 @@ void LatexGenerator::lineBreak(const char *)
 
 void LatexGenerator::startMemberDocSimple()
 {
-  t << "\\begin{DoxyFields}{" << endl;
+  t << "\\begin{DoxyFields}{";
   docify(theTranslator->trCompoundMembers());
   t << "}" << endl;
 }

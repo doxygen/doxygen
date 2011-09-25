@@ -1847,7 +1847,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+						CommandLine="flex -PtclScanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration

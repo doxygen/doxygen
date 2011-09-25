@@ -211,7 +211,9 @@ void DocSets::addContentsItem(bool isDir,
                               const char *name, 
                               const char *ref, 
                               const char *file,
-                              const char *anchor)
+                              const char *anchor,
+                              bool /* separateIndex */,
+                              bool /* addToNavIndex */)
 {
   (void)isDir;
   if (file && ref==0)
