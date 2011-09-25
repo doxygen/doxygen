@@ -75,10 +75,11 @@ bool CiteDict::writeAux()
       QFileInfo fi(bibFile); // open file (with .bib extension)
       if (fi.exists())
       {
-        if (!copyFile(bibFile,m_baseFileName+"_"+bibFile))
+        if (!copyFile(bibFile,m_baseFileName+"_"+fi.fileName().data()))
         {
           return FALSE;
         }
+        bibFile = fi.fileName().data();
         if (bibFile.right(4)==".bib")
         {
           bibFile = bibFile.left(bibFile.length()-4);
@@ -300,9 +301,17 @@ void CiteDict::resolve()
     {
       QCString bibFile = bibdata;
       if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-      if (!bibFile.isEmpty())
+      QFileInfo fi(bibFile);
+      if (fi.exists())
       {
-        copyFile(bibFile,latexOutputDir+bibFile);
+        if (!bibFile.isEmpty())
+        {
+          copyFile(bibFile,latexOutputDir+fi.fileName().data());
+        }
+      }
+      else
+      {
+        err("Error: bib file %s not found!\n",bibFile.data());
       }
       bibdata = citeDataList.next();
     }

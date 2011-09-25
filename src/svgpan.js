@@ -173,30 +173,15 @@ function handleMouseWheel(evt)
 
   if (state!='pan')
   {
-
     var delta;
-
-    if(evt.wheelDelta)
+    if (evt.wheelDelta)
     {
-      if (window.opera)
-      {
-        delta = evt.wheelDelta / 720; // Opera
-      }
-      else if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1 ||
-               navigator.appVersion.indexOf("MSIE") != -1)
-      {
-        delta = evt.wheelDelta / 7200; // Chrome/IE9
-      }
-      else
-      {
-        delta = evt.wheelDelta / 72000; // Safari
-      }
+      delta = evt.wheelDelta / 7200; // Opera/Chrome/IE9/Safari
     }
     else
     {
       delta = evt.detail / -180; // Mozilla
     }
-
     var svgDoc = evt.target.ownerDocument;
     var g = svgDoc.getElementById("viewport");
     var p = getEventPoint(evt);

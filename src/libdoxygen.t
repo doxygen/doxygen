@@ -149,6 +149,9 @@ jquery_js.h: jquery.js
 jquery_ui_js.h: jquery_ui.js
 	cat jquery_ui.js | $(TO_C_CMD) >jquery_ui_js.h
 
+jquery_fx_js.h: jquery_fx.js
+	cat jquery_fx.js | $(TO_C_CMD) >jquery_fx_js.h
+
 sizzle_js.h: sizzle.js
 	cat sizzle.js | $(TO_C_CMD) >sizzle_js.h
 

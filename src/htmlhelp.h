@@ -71,9 +71,11 @@ class HtmlHelp  : public IndexIntf
     void decContentsDepth();
     void addContentsItem(bool isDir,
                          const char *name, 
-                         const char *ref = 0, 
-                         const char *file = 0,
-                         const char *anchor = 0);
+                         const char *ref, 
+                         const char *file,
+                         const char *anchor,
+                         bool separateIndex,
+                         bool addToNavIndex);
     //void addIndexItem(const char *level1, const char *level2, 
     //                  const char *contRef, const char *memRef,
     //                  const char *anchor,const MemberDef *md);

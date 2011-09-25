@@ -205,6 +205,13 @@ static bool macroIsAccessible(Define *def)
     //       g_inputFileDef->name().data(),def->name.data(),def->fileDef->name().data(),b);
     return b;
   }
+  if (g_inputFileDef && def && !def->fileName.isEmpty())
+  {
+    bool b = g_inputFileDef->includesByName(def->fileName);
+    //printf("%s: Checking for accessibility of define '%s' (defined in %s): result=%d\n",
+    //       g_inputFileDef->name().data(),def->name.data(),def->fileName.data(),b);
+    return b;
+  }
   //printf("not accessible!\n");
   return FALSE;
 }
@@ -215,11 +222,10 @@ static Define *isDefined(const char *name)
   if (name)
   {
     def=g_globalDefineDict->find(name);
-    //if ((def=fileDefineCache->findDefine(g_yyFileName,name)) && !def->undef) 
-    //	return def;
     if (def && def->undef) def=0;
     if (def && !macroIsAccessible(def)) def=0;
   }
+  //printf("isDefined(%s)=%p\n",name,def);
   return def;
 }
 
@@ -786,20 +792,22 @@ static int getNextId(const QCString &expr,int p,int *l)
     }
     else if (c=='/') // skip C Comment
     {
+      //printf("Found C comment at p=%d\n",p);
       char pc=c;
       if (p<(int)expr.length()) 
       {
-	c=expr.at(++p);
+	c=expr.at(p);
         if (c=='*')  // Start of C comment
         { 
+	  p++;
   	  while (p<(int)expr.length() && !(pc=='*' && c=='/'))
 	  {
 	    pc=c;
-	    c=expr.at(++p);
+	    c=expr.at(p++);
 	  }
-	  p++;
         }
       }
+      //printf("Found end of C comment at p=%d\n",p);
     }
   }
   return -1;
@@ -822,6 +830,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
   {
     bool replaced=FALSE;
     macroName=expr.mid(p,l);
+    //printf("macroName=%s\n",macroName.data());
     if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
     {
       if (g_expandedDict->find(macroName)==0) // expand macro
@@ -1138,8 +1147,8 @@ Define *newDefine()
   def->fileDef    = g_yyFileDef;
   def->lineNr     = g_yyLineNr;
   def->varArgs    = g_defVarArgs;
-  //printf("newDefine: %s->%s\n",def->name.data(),
-  //    def->fileDef ? def->fileDef->name().data() : "<none>");
+  //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
+  //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
   //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
   if (!def->name.isEmpty() && Doxygen::expandAsDefinedDict[def->name])
   {
@@ -1218,7 +1227,8 @@ static inline void outputArray(const char *a,int len)
 
 static void readIncludeFile(const QCString &inc)
 {
-  if (!Config_getBool("SEARCH_INCLUDES")) return; // do not read include files
+  static bool searchIncludes = Config_getBool("SEARCH_INCLUDES");
+  if (!searchIncludes) return; // do not read include files
   uint i=0;
 
   // find the start of the include file name
@@ -1250,6 +1260,22 @@ static void readIncludeFile(const QCString &inc)
     int oldLineNr        = g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
 
+    // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
+    QCString absIncFileName = incFileName;
+    {
+      QFileInfo fi(g_yyFileName);
+      if (fi.exists())
+      {
+	QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+incFileName;
+        QFileInfo fi2(absName);
+        if (fi2.exists())
+        {
+	  absIncFileName=fi2.absFilePath();
+        }
+        //printf( "absIncFileName = %s\n", absIncFileName.data() );
+      }
+    }
+
     // findFile will overwrite g_yyFileDef if found
     FileState *fs;
     bool alreadyIncluded = FALSE;
@@ -1266,15 +1292,19 @@ static void readIncludeFile(const QCString &inc)
       {
         // add include dependency to the file in which the #include was found
 	bool ambig;
-	// change to local name for bug 641336 
-        FileDef *incFd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
-        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,g_isImported);
+	// change to absolute name for bug 641336 
+        FileDef *incFd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
+        oldFileDef->addIncludeDependency(ambig ? 0 : incFd,incFileName,localInclude,g_isImported,FALSE);
         // add included by dependency
         if (g_yyFileDef)
         {
           //printf("Adding include dependency %s->%s\n",oldFileDef->name().data(),incFileName.data());
           g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
         }
+      }
+      else if (g_inputFileDef)
+      {
+        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
       }
       fs->bufState = YY_CURRENT_BUFFER;
       fs->lineNr   = oldLineNr;
@@ -1308,17 +1338,21 @@ static void readIncludeFile(const QCString &inc)
 	//  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
 	//}
 
-	// change to local name for bug 641336 
-	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
+	// change to absolute name for bug 641336 
+	FileDef *fd = findFileDef(Doxygen::inputNameDict,absIncFileName,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
-	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,g_isImported);
+	oldFileDef->addIncludeDependency(ambig ? 0 : fd,incFileName,localInclude,g_isImported,FALSE);
 	// add included by dependency
         if (fd)
         {
           //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
           fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
         }
+      }
+      else if (g_inputFileDef)
+      {
+        g_inputFileDef->addIncludeDependency(0,absIncFileName,localInclude,g_isImported,TRUE);
       }
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
@@ -1957,7 +1991,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defExtraSpacing.resize(0);
 					  BEGIN(DefineArg);
   					}
-<DefName>{ID}{B}+"1"			{ // special case: define with 1 -> can be "guard"
+<DefName>{ID}{B}+"1"/[ \r\t\n]		{ // special case: define with 1 -> can be "guard"
   					  //printf("Define `%s'\n",yytext);
   					  g_argDict = 0;
 					  g_defArgs = -1;
@@ -2340,7 +2374,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    BEGIN(SkipSingleQuote);
 					  }
 					}
-<SkipDoubleQuote>"//"			{ g_defText += yytext; g_defLitText+=yytext; }
+<SkipDoubleQuote>"//"[/]?		{ g_defText += yytext; g_defLitText+=yytext; }
 <SkipDoubleQuote>"/*"			{ g_defText += yytext; g_defLitText+=yytext; }
 <SkipDoubleQuote>\"			{
   					  g_defText += *yytext; g_defLitText+=yytext; 

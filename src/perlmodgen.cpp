@@ -1703,7 +1703,7 @@ void PerlModGenerator::generatePerlModForClass(ClassDef *cd)
     m_output.closeList();
   }
 
-  ClassSDict *cl = cd->getInnerClasses();
+  ClassSDict *cl = cd->getClassSDict();
   if (cl)
   {
     m_output.openList("inner");

@@ -153,8 +153,8 @@ FUNCTION {output.nonnull.original}
 % closeinlinelink to be non-empty.
 FUNCTION {possibly.setup.inlinelink}
 { makeinlinelink
-   { "\rev CITEREF_" quote$ * url * quote$ * " [" * 'openinlinelink :=
-     "]" 'closeinlinelink :=
+   { "<a href=" quote$ * url * quote$ * ">" * 'openinlinelink :=
+     "</a>" 'closeinlinelink :=
      #0 'makeinlinelink := }
    'skip$
  if$ % makeinlinelink

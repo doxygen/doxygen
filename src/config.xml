@@ -1004,9 +1004,11 @@ the directory name containing the HTML and XML files should also have
 this name.
 ' defval='org.doxygen.Project' depends='GENERATE_ECLIPSEHELP'/>
     <option type='bool' id='DISABLE_INDEX' docs='
-The DISABLE_INDEX tag can be used to turn on/off the condensed index at 
-top of each HTML page. The value NO (the default) enables the index and 
-the value YES disables it. 
+The DISABLE_INDEX tag can be used to turn on/off the condensed index (tabs) 
+at top of each HTML page. The value NO (the default) enables the index and 
+the value YES disables it. Since the tabs have the same information as the 
+navigation tree you can set this option to NO if you already set 
+GENERATE_TREEVIEW to YES.
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='int' id='ENUM_VALUES_PER_LINE' docs='
 The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values 
@@ -1021,7 +1023,9 @@ If the tag value is set to YES, a side panel will be generated
 containing a tree-like index structure (just like the one that 
 is generated for HTML Help). For this to work a browser that supports 
 JavaScript, DHTML, CSS and frames is required (i.e. any modern browser). 
-Windows users are probably better off using the HTML help feature.
+Windows users are probably better off using the HTML help feature. 
+Since the tree basically has the same information as the tab index you 
+could consider to set DISABLE_INDEX to NO when enabling this option.
 ' depends='GENERATE_HTML'/>
     <option type='bool' id='USE_INLINE_TREES' defval='0' docs='
 By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, 

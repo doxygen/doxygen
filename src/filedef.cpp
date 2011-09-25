@@ -261,71 +261,74 @@ void FileDef::writeIncludeFiles(OutputList &ol)
     IncludeInfo *ii;
     for (;(ii=ili.current());++ili)
     {
-      FileDef *fd=ii->fileDef;
-      bool isIDLorJava = FALSE;
-      if (fd)
+      if (!ii->indirect)
       {
-        SrcLangExt lang   = fd->getLanguage();
-        isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
-      }
-      ol.startTypewriter();
-      if (isIDLorJava) // IDL/Java include
-      {
-        ol.docify("import ");
-      }
-      else if (ii->imported) // Objective-C include
-      {
-        ol.docify("#import ");
-      }
-      else // C/C++ include
-      {
-        ol.docify("#include ");
-      }
-      if (ii->local || isIDLorJava)
-        ol.docify("\"");
-      else
-        ol.docify("<");
-      ol.disable(OutputGenerator::Html);
-      ol.docify(ii->includeName);
-      ol.enableAll();
-      ol.disableAllBut(OutputGenerator::Html);
-      
-      // Here we use the include file name as it appears in the file.
-      // we could also we the name as it is used within doxygen,
-      // then we should have used fd->docName() instead of ii->includeName
-      if (fd && fd->isLinkable())
-      {
-        ol.writeObjectLink(fd->getReference(),
-            fd->generateSourceFile() ? fd->includeName() : fd->getOutputFileBase(),
-            0,ii->includeName);
-        if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fd->isReference()) 
+        FileDef *fd=ii->fileDef;
+        bool isIDLorJava = FALSE;
+        if (fd)
         {
-          const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
-          const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
-          Doxygen::tagFile << "    <includes id=\"" 
-                           << convertToXML(fd->getOutputFileBase()) << "\" "
-                           << "name=\"" << convertToXML(fd->name()) << "\" "
-                           << "local=\"" << locStr << "\" "
-                           << "imported=\"" << impStr << "\">"
-                           << convertToXML(ii->includeName)
-                           << "</includes>" 
-                           << endl;
+          SrcLangExt lang   = fd->getLanguage();
+          isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
         }
-      }
-      else
-      {
+        ol.startTypewriter();
+        if (isIDLorJava) // IDL/Java include
+        {
+          ol.docify("import ");
+        }
+        else if (ii->imported) // Objective-C include
+        {
+          ol.docify("#import ");
+        }
+        else // C/C++ include
+        {
+          ol.docify("#include ");
+        }
+        if (ii->local || isIDLorJava)
+          ol.docify("\"");
+        else
+          ol.docify("<");
+        ol.disable(OutputGenerator::Html);
         ol.docify(ii->includeName);
+        ol.enableAll();
+        ol.disableAllBut(OutputGenerator::Html);
+        
+        // Here we use the include file name as it appears in the file.
+        // we could also we the name as it is used within doxygen,
+        // then we should have used fd->docName() instead of ii->includeName
+        if (fd && fd->isLinkable())
+        {
+          ol.writeObjectLink(fd->getReference(),
+              fd->generateSourceFile() ? fd->includeName() : fd->getOutputFileBase(),
+              0,ii->includeName);
+          if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fd->isReference()) 
+          {
+            const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
+            const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
+            Doxygen::tagFile << "    <includes id=\"" 
+                             << convertToXML(fd->getOutputFileBase()) << "\" "
+                             << "name=\"" << convertToXML(fd->name()) << "\" "
+                             << "local=\"" << locStr << "\" "
+                             << "imported=\"" << impStr << "\">"
+                             << convertToXML(ii->includeName)
+                             << "</includes>" 
+                             << endl;
+          }
+        }
+        else
+        {
+          ol.docify(ii->includeName);
+        }
+        
+        ol.enableAll();
+        if (ii->local || isIDLorJava)
+          ol.docify("\"");
+        else
+          ol.docify(">");
+        if (isIDLorJava) 
+          ol.docify(";");
+        ol.endTypewriter();
+        ol.lineBreak();
       }
-      
-      ol.enableAll();
-      if (ii->local || isIDLorJava)
-        ol.docify("\"");
-      else
-        ol.docify(">");
-      if (isIDLorJava) 
-        ol.docify(";");
-      ol.endTypewriter();
-      ol.lineBreak();
     }
     ol.endTextBlock();
   }
@@ -758,7 +761,7 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
           if (createSubDirs) ol.writeString("../../");
           ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
           ol.writeString("\">");
-          ol.writeString(md->localName());
+          ol.writeString(convertToHtml(md->localName()));
           ol.writeString("</a>");
         }
         ol.writeString("</td></tr>\n");
@@ -1034,7 +1037,7 @@ void FileDef::addUsingDeclaration(Definition *d)
 }
 
 void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local,
-                                   bool imported)
+                                   bool imported,bool indirect)
 {
   //printf("FileDef::addIncludeDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
@@ -1051,6 +1054,7 @@ void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local,
     ii->includeName = incName;
     ii->local       = local;
     ii->imported    = imported;
+    ii->indirect    = indirect;
     includeList->append(ii);
     includeDict->insert(iName,ii);
   }
@@ -1148,6 +1152,7 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,
     ii->includeName = incName;
     ii->local       = local;
     ii->imported    = imported;
+    ii->indirect    = FALSE;
     includedByList->append(ii);
     includedByDict->insert(iName,ii);
   }
@@ -1647,8 +1652,8 @@ bool FileDef::isLinkableInProject() const
 
 bool FileDef::includes(FileDef *incFile,QDict<FileDef> *includedFiles) const
 {
-  if (incFile==this) return TRUE;
   //printf("%s::includes(%s)\n",name().data(),incFile->name().data());
+  if (incFile==this) return TRUE;
   includedFiles->insert(absFilePath(),this);
   if (includeList)
   {
@@ -1656,12 +1661,30 @@ bool FileDef::includes(FileDef *incFile,QDict<FileDef> *includedFiles) const
     IncludeInfo *ii;
     for (;(ii=ili.current());++ili)
     {
-      if (ii->fileDef && 
-          includedFiles->find(ii->fileDef->absFilePath())==0 &&
-          ii->fileDef->includes(incFile,includedFiles)) return TRUE;
+      //printf("ii=%s\n",ii->includeName.data());
+      if ((ii->fileDef && 
+           includedFiles->find(ii->fileDef->absFilePath())==0 &&
+           ii->fileDef->includes(incFile,includedFiles)
+          ) ||
+          incFile->absFilePath()==ii->includeName
+         ) return TRUE;
     }
   }
   return FALSE;
 }
 
+bool FileDef::includesByName(const QCString &fileName) const
+{
+  if (includeList)
+  {
+    QListIterator<IncludeInfo> ili(*includeList);
+    IncludeInfo *ii;
+    for (;(ii=ili.current());++ili)
+    {
+      //printf("ii=%s\n",ii->includeName.data());
+      if (fileName==ii->includeName) return TRUE;
+    }
+  }
+  return FALSE;
+}
 

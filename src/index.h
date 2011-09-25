@@ -36,8 +36,9 @@ class IndexIntf
     virtual void finalize() = 0;
     virtual void incContentsDepth() = 0;
     virtual void decContentsDepth() = 0;
-    virtual void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
-                                 const char *file = 0, const char *anchor = 0) = 0;
+    virtual void addContentsItem(bool isDir, const char *name, const char *ref, 
+                                 const char *file, const char *anchor, bool separateIndex,
+                                 bool addToNavIndex) = 0;
     virtual void addIndexItem(Definition *context,MemberDef *md,const char *title) = 0;
     virtual void addIndexFile(const char *name) = 0;
     virtual void addImageFile(const char *name) = 0;
@@ -90,6 +91,20 @@ class IndexList : public IndexIntf
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5);
     }
 
+    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6);
+    }
+
+    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6,typename A7>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6,A7),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6,A7 a7)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6,a7);
+    }
+
   public:
     /** Creates a list of indexes */
     IndexList() { m_intfs.setAutoDelete(TRUE); }
@@ -106,10 +121,10 @@ class IndexList : public IndexIntf
     { foreach(&IndexIntf::incContentsDepth); }
     void decContentsDepth()
     { foreach(&IndexIntf::decContentsDepth); }
-    void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
-                         const char *file = 0, const char *anchor = 0)
-    { foreach<bool,const char *,const char *,const char *,const char*>
-             (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor); }
+    void addContentsItem(bool isDir, const char *name, const char *ref, 
+                         const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE)
+    { foreach<bool,const char *,const char *,const char *,const char*,bool,bool>
+             (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex); }
     void addIndexItem(Definition *context,MemberDef *md,const char *title=0)
     { foreach<Definition *,MemberDef *>
              (&IndexIntf::addIndexItem,context,md,title); }
@@ -219,28 +234,8 @@ enum ClassHighlight
   CHL_Total = CHL_Exceptions+1
 };
 
-void writeIndex(OutputList &ol);
-void writeHierarchicalIndex(OutputList &ol);
-void writeAlphabeticalIndex(OutputList &ol);
-void writeClassHierarchy(OutputList &ol);
-void writeAnnotatedIndex(OutputList &ol);
-void writeAnnotatedClassList(OutputList &ol);
-void writeMemberList(OutputList &ol,bool useSections);
-void writeSourceIndex(OutputList &ol);
-void writeHeaderIndex(OutputList &ol);
-void writeHeaderFileList(OutputList &ol);
-void writeExampleIndex(OutputList &ol);
-void writePageIndex(OutputList &ol);
-void writeFileIndex(OutputList &ol);
-void writeNamespaceIndex(OutputList &ol);
-void writeGroupIndex(OutputList &ol);
-void writeDirIndex(OutputList &ol);
-void writePackageIndex(OutputList &ol);
-void writeClassMemberIndex(OutputList &ol);
-void writeFileMemberIndex(OutputList &ol);
-void writeNamespaceMemberIndex(OutputList &ol);
-void writeGraphicalClassHierarchy(OutputList &ol);
 void writeGraphInfo(OutputList &ol);
+void writeIndexHierarchy(OutputList &ol);
 
 void countDataStructures();
 
@@ -253,9 +248,9 @@ extern int indexedPages;
 extern int documentedClassMembers[CMHL_Total];
 extern int documentedFileMembers[FMHL_Total];
 extern int documentedNamespaceMembers[NMHL_Total];
+extern int documentedDirs;
 extern int documentedHtmlFiles;
 extern int documentedPages;
-extern int documentedDirs;
 
 void startTitle(OutputList &ol,const char *fileName,Definition *def=0);
 void endTitle(OutputList &ol,const char *fileName,const char *name);

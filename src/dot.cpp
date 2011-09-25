@@ -609,14 +609,11 @@ static void checkDotResult(const QCString &imgName)
 {
   if (Config_getEnum("DOT_IMAGE_FORMAT")=="png")
   {
-    //QFile f(imgName);
     FILE *f = fopen(imgName,"rb");
-    //if (f.open(IO_ReadOnly))
     if (f)
     {
       char data[4];
       if (fread(data,1,4,f)==4)
-      //if (f.readBlock(data,4)==4)
       {
         if (!(data[1]=='P' && data[2]=='N' && data[3]=='G'))
         {

@@ -85,6 +85,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeStyleInfo,part); }
     void startFile(const char *name,const char *manName,const char *title)
     { forall(&OutputGenerator::startFile,name,manName,title); }
+    void writeSearchInfo()
+    { forall(&OutputGenerator::writeSearchInfo); }
     void writeFooter()
     { forall(&OutputGenerator::writeFooter); }
     void endFile() 

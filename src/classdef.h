@@ -113,7 +113,7 @@ class ClassDef : public Definition
     bool isLocal() const;
 
     /*! returns the classes nested into this class */
-    ClassSDict *getInnerClasses();
+    ClassSDict *getClassSDict();
 
     /*! returns TRUE if this class has documentation */
     bool hasDocumentation() const;

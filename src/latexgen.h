@@ -47,6 +47,7 @@ class LatexGenerator : public OutputGenerator
     void printDoc(DocNode *,const char *);
 
     void startFile(const char *name,const char *manName,const char *title);
+    void writeSearchInfo() {}
     void writeFooter() {}
     void endFile();
     void clearBuffer();

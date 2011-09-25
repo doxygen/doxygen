@@ -542,6 +542,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   ol.endMemberDocList();
 }
 
+// members in a table
 void MemberList::writeSimpleDocumentation(OutputList &ol,
                      Definition *container)
 {
@@ -559,6 +560,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
   ol.endMemberDocSimple();
 }
 
+// separate member pages
 void MemberList::writeDocumentationPage(OutputList &ol,
                      const char *scopeName, Definition *container)
 {
@@ -573,35 +575,36 @@ void MemberList::writeDocumentationPage(OutputList &ol,
               container->getOutputFileBase());
     if (!generateTreeView)
     {
-      container->writeNavigationPath(ol);
+      container->writeNavigationPath(ol,FALSE);
       ol.endQuickIndices();
     }
     ol.startContents();
 
-    ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
-                   "  <tr>\n"
-                   "   <td valign=\"top\">\n");
-
-    container->writeQuickMemberLinks(ol,md);
-
-    ol.writeString("   </td>\n");
-    ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
-    
-    md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
-
-    ol.writeString("    </td>\n");
-    ol.writeString("  </tr>\n");
-    ol.writeString("</table>\n");
-
 
     if (generateTreeView)
     {
+      md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
       ol.endContents();
       container->writeNavigationPath(ol);
       endFile(ol,TRUE);
     }
     else
     {
+      ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
+          "  <tr>\n"
+          "   <td valign=\"top\">\n");
+
+      container->writeQuickMemberLinks(ol,md);
+
+      ol.writeString("   </td>\n");
+      ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
+
+      md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+
+      ol.writeString("    </td>\n");
+      ol.writeString("  </tr>\n");
+      ol.writeString("</table>\n");
+
       endFile(ol);
     }
   }
