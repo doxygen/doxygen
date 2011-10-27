@@ -173,6 +173,7 @@ static QCString         idlProp;
 static bool             g_lexInit = FALSE;
 static bool             externC;
 
+static QCString         g_hereDocId;
 
 //-----------------------------------------------------------------------------
 
@@ -695,6 +696,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	CopyArgComment
 %x	CopyArgCommentLine
 %x	CopyArgVerbatim
+%x	HereDoc
+%x	HereDocEnd
 
 %x      IDLAttribute
 %x      IDLProp
@@ -1822,6 +1825,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    BEGIN( EndTemplate );
   					}
+<EndTemplate>"<<<"			{
+  					  if (!insidePHP) 
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+					    BEGIN(HereDoc);
+					  }
+  					}
 <ClassTemplSpec,EndTemplate>"<<"	{
   					  current->name+=yytext;
   					  // *currentTemplateSpec+=yytext; 
@@ -1901,6 +1914,20 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    REJECT;
 					}
+<HereDoc>{ID}				{ // PHP heredoc
+  					  g_hereDocId = yytext;
+					  BEGIN(HereDocEnd);
+  					}
+<HereDoc>"'"{ID}/"'"			{ // PHP nowdoc
+  					  g_hereDocId = &yytext[1];
+  					}
+<HereDocEnd>^{ID}			{ // id at start of the line could mark the end of the block
+  					  if (g_hereDocId==yytext) // it is the end marker
+					  {
+  					    BEGIN(FindMembers);
+					  }
+  					}
+<HereDocEnd>.				{ }
 <FindMembers>"Q_OBJECT"			{ // Qt object macro
   					}
 <FindMembers>"Q_PROPERTY"		{ // Qt property declaration
@@ -2387,7 +2414,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					  }
   					}
-<FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
+<FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}"[^*]*"*/"	{
   					  closeGroup(current,yyFileName,yyLineNr);
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
@@ -5537,7 +5564,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
 
 <SkipCxxComment>.*"\\\n"		{  // line continuation
-  					  yyLineNr++; 
+  					  if (insideCS) 
+					  {
+					    REJECT;
+					  }
+					  else 
+					  {
+					    yyLineNr++; 
+					  }
   					}
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;

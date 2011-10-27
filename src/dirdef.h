@@ -49,10 +49,11 @@ class DirDef : public Definition
     virtual ~DirDef();
 
     // accessors
-    virtual DefType definitionType() const { return TypeDir; }
-    virtual QCString getOutputFileBase() const;
-    virtual bool isLinkableInProject() const;
-    virtual bool isLinkable() const;
+    DefType definitionType() const { return TypeDir; }
+    QCString getOutputFileBase() const;
+    QCString anchor() const { return QCString(); }
+    bool isLinkableInProject() const;
+    bool isLinkable() const;
     QCString displayName() const { return m_dispName; }
     QCString shortName() const { return m_shortName; }
     void addSubDir(DirDef *subdir);

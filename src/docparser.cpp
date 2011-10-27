@@ -1043,7 +1043,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     }
     else if (compound->isLinkable()) // compound link
     {
-      QCString anchor;
+      QCString anchor = compound->anchor();
       if (compound->definitionType()==Definition::TypeFile)
       {
         name=g_token->name;
@@ -1051,10 +1051,6 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
       else if (compound->definitionType()==Definition::TypeGroup)
       {
         name=((GroupDef*)compound)->groupTitle();
-      }
-      else if (compound->definitionType()==Definition::TypeClass)
-      {
-        anchor=((ClassDef*)compound)->anchor();
       }
       children.append(new 
           DocLinkedWord(parent,name,
@@ -1700,7 +1696,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
     CiteInfo *cite = Doxygen::citeDict->find(id.mid(CiteConsts::anchorPrefix.length()));
     if (cite) 
     {
-      m_file = CiteConsts::fileName;
+      m_file = convertNameToFile(CiteConsts::fileName,FALSE,TRUE);
       m_anchor = id;
     }
     else 
@@ -2422,7 +2418,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
   static uint numBibFiles = Config_getList("CITE_BIB_FILES").count();
   m_parent = parent; 
   QCString     anchor;
-  //printf("DocCite::DocCite(target=%s,context=%s\n",target.data(),context.data());
+  //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   CiteInfo *cite = Doxygen::citeDict->find(target);
@@ -2432,7 +2428,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
     if (m_text.isEmpty()) m_text = cite->label;
     m_ref          = cite->ref;
     m_anchor       = CiteConsts::anchorPrefix+cite->label;
-    m_file         = CiteConsts::fileName;
+    m_file         = convertNameToFile(CiteConsts::fileName,FALSE,TRUE);
     //printf("CITE ==> m_text=%s,m_ref=%s,m_file=%s,m_anchor=%s\n",
     //    m_text.data(),m_ref.data(),m_file.data(),m_anchor.data());
     return;
@@ -3660,6 +3656,13 @@ int DocHtmlDescTitle::parse()
               retval=RetVal_EndDesc;
               goto endtitle;
             }
+            else if (tagId==HTML_A)
+            {
+              if (!g_token->endTag)
+              {
+                handleAHref(this,m_children,g_token->attribs);
+              }
+            }
             else
             {
               warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unexpected html tag <%s%s> found within <dt> context",
@@ -4500,6 +4503,7 @@ void DocPara::handleCite()
         qPrint("cite"));
     return;
   }
+  doctokenizerYYsetStateCite();
   tok=doctokenizerYYlex();
   if (tok==0)
   {
@@ -4514,7 +4518,6 @@ void DocPara::handleCite()
     return;
   }
   g_token->sectionId = g_token->name;
-  doctokenizerYYsetStateCite();
   DocCite *cite = new DocCite(this,g_token->name,g_context);
   m_children.append(cite);
   //cite->parse();

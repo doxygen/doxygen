@@ -10,7 +10,7 @@ http://www.gnu.org/software/libiconv for the list of possible encodings.
     <option type='string' id='PROJECT_NAME' format='string' docs='
 The PROJECT_NAME tag is a single word (or sequence of words) that should 
 identify the project. Note that if you do not use Doxywizard you need 
-to put quotes around the project name if it contains spaces.' defval=''/>
+to put quotes around the project name if it contains spaces.' defval='My Project'/>
     <option type='string' id='PROJECT_NUMBER' format='string' docs='
 The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 This could be handy for archiving the generated documentation or 
@@ -530,7 +530,8 @@ containing the references data. This must be a list of .bib files. The
 .bib extension is automatically appended if omitted. Using this command 
 requires the bibtex tool to be installed. See also 
 http://en.wikipedia.org/wiki/BibTeX for more info. For LaTeX the style 
-of the bibliography can be controlled using LATEX_BIB_STYLE. 
+of the bibliography can be controlled using LATEX_BIB_STYLE. To use this
+feature you need bibtex and perl available in the search path. 
 ' defval=''/>
   </group>
   <group name='Messages' docs='configuration options related to warning and progress messages'>
@@ -1010,12 +1011,6 @@ the value YES disables it. Since the tabs have the same information as the
 navigation tree you can set this option to NO if you already set 
 GENERATE_TREEVIEW to YES.
 ' defval='0' depends='GENERATE_HTML'/>
-    <option type='int' id='ENUM_VALUES_PER_LINE' docs='
-The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values 
-(range [0,1..20]) that doxygen will group on one line in the generated HTML 
-documentation. Note that a value of 0 will completely suppress the enum 
-values from appearing in the overview section.
-' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'/>
     <option type='bool' id='GENERATE_TREEVIEW' defval='0' docs='
 The GENERATE_TREEVIEW tag is used to specify whether a tree-like index 
 structure should be generated to display hierarchical information. 
@@ -1027,6 +1022,12 @@ Windows users are probably better off using the HTML help feature.
 Since the tree basically has the same information as the tab index you 
 could consider to set DISABLE_INDEX to NO when enabling this option.
 ' depends='GENERATE_HTML'/>
+    <option type='int' id='ENUM_VALUES_PER_LINE' docs='
+The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values 
+(range [0,1..20]) that doxygen will group on one line in the generated HTML 
+documentation. Note that a value of 0 will completely suppress the enum 
+values from appearing in the overview section.
+' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'/>
     <option type='bool' id='USE_INLINE_TREES' defval='0' docs='
 By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, 
 and Class Hierarchy pages using a tree view instead of an ordered list.

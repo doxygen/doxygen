@@ -730,10 +730,9 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
   {
     ClassDef *cd = (ClassDef*)sym->getOuterScope();
     ClassDef *thisCd = (ClassDef *)g_currentDefinition;
-    QCString anchor;
+    QCString anchor=sym->anchor();
     if (sym->definitionType()==Definition::TypeMember)
     {
-      anchor=((MemberDef *)sym)->anchor();
       if (g_currentMemberDef)
       {
 	addDocCrossReference(g_currentMemberDef,(MemberDef*)sym);

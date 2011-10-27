@@ -246,7 +246,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
          ( // look for class definitions inside the code block
 	   (varType=g_codeClassSDict->find(typeName)) ||
            // otherwise look for global class definitions
-           (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,typeName))
+           (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,typeName,0,0,TRUE,TRUE))
 	 ) && // and it must be a template
          varType->templateArguments())
     {
@@ -477,7 +477,8 @@ static void startCodeLine()
       //printf("->startCodeLine(%s)=%p\n",d->name().data(),g_currentMemberDef);
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
-      g_realScope = d->name().copy();
+      g_realScope = d->name();
+      //g_classScope = "";
       g_type.resize(0);
       g_name.resize(0);
       g_args.resize(0);
@@ -724,7 +725,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
   ClassDef *mcd = g_theVarContext.findVariable(name);
   if (mcd) // local variable
   {
-    //fprintf(stderr,"local variable\n");
+    //fprintf(stderr,"local variable?\n");
     if (mcd!=VariableContext::dummyContext)
     {
       //fprintf(stderr,"local var `%s' mcd=%s\n",name.data(),mcd->name().data());
@@ -733,6 +734,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
   }
   else
   {
+    //fprintf(stderr,"class member? scope=%s\n",g_classScope.data());
     // look for a class member 
     mcd = getClass(g_classScope);
     if (mcd)
@@ -790,6 +792,22 @@ static MemberDef *setCallContextForVar(const QCString &name)
     }
   }
   return 0;
+}
+
+static void updateCallContextForSmartPointer()
+{
+  ClassDef *cd = g_theCallContext.getClass();
+  //printf("updateCallContextForSmartPointer() cd=%s\n",cd ? cd->name().data() : "<none>");
+  MemberDef *md;
+  if (cd && (md=cd->isSmartPointer()))
+  {
+    ClassDef *ncd = stripClassName(md->typeString());
+    if (ncd)
+    {
+      g_theCallContext.setClass(ncd);
+      //printf("Found smart pointer call %s->%s!\n",cd->name().data(),ncd->name().data());
+    }
+  }
 }
 
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
@@ -942,11 +960,11 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
     Definition *d = g_currentDefinition;
-    //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
+    //printf("d=%s g_sourceFileDef=%s\n",d?d->name().data():"<none>",g_sourceFileDef?g_sourceFileDef->name().data():"<none>");
     cd = getResolvedClass(d,g_sourceFileDef,className,&md);
     //fprintf(stderr,"non-local variable name=%s context=%d cd=%s md=%s!\n",
     //	className.data(),g_theVarContext.count(),cd?cd->name().data():"<none>",
-    //	md?md->name().data():"<none>");
+    //    md?md->name().data():"<none>");
     if (cd==0 && md==0 && (i=className.find('<'))!=-1)
     {
       QCString bareName = className.left(i); //stripTemplateSpecifiersFromScope(className);
@@ -2501,6 +2519,10 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  endFontClass();
   					}
 <Body>"."|"->"				{ 
+  				          if (yytext[0]=='-') // -> could be overloaded
+					  {
+					    updateCallContextForSmartPointer();
+					  }
   					  g_code->codify(yytext);
 					  g_memCallContext = YY_START;
   					  BEGIN( MemberCall ); 
@@ -3007,6 +3029,10 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  BEGIN( MemberCall2 ); 
     					}
 <MemberCall2>"->"|"."			{
+  				          if (yytext[0]=='-') // -> could be overloaded
+					  {
+					    updateCallContextForSmartPointer();
+					  }
   					  g_code->codify(yytext);
 					  g_memCallContext = YY_START;
   					  BEGIN( MemberCall ); 

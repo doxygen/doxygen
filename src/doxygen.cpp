@@ -149,6 +149,7 @@ IndexList        Doxygen::indexList;
 int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
+bool             Doxygen::generatingXmlOutput = FALSE;
 
 // locally accessible globals
 static QDict<EntryNav>  g_classEntries(1009);
@@ -252,8 +253,11 @@ static STLInfo g_stlinfo[] =
 {
   // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
   { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
-  { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE },
-  { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // deprecated
+  { "smart_ptr",            0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
+  { "unique_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
+  { "weak_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
+  { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
   { "basic_ios",            "ios_base",                     0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
   { "basic_istream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
   { "basic_ostream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
@@ -321,7 +325,7 @@ static void addSTLMember(EntryNav *rootNav,const char *type,const char *name)
   Entry *memEntry = new Entry;
   memEntry->name       = name;
   memEntry->type       = type;
-  memEntry->protection = Private;
+  memEntry->protection = Public;
   memEntry->section    = Entry::VARIABLE_SEC;
   memEntry->brief      = "STL member";
   memEntry->hidden     = FALSE; 
@@ -414,6 +418,22 @@ static void addSTLClasses(EntryNav *rootNav)
     if (info->templName2)
     {
       addSTLMember(classEntryNav,info->templType2,info->templName2);
+    }
+    if (fullName=="std::auto_ptr" || fullName=="std::smart_ptr" ||
+        fullName=="std::unique_ptr" || fullName=="std::weak_ptr")
+    {
+      Entry *memEntry = new Entry;
+      memEntry->name       = "operator->";
+      memEntry->args       = "()";
+      memEntry->type       = "T*";
+      memEntry->protection = Public;
+      memEntry->section    = Entry::FUNCTION_SEC;
+      memEntry->brief      = "STL member";
+      memEntry->hidden     = FALSE; 
+      memEntry->artificial = FALSE;
+      EntryNav *memEntryNav = new EntryNav(classEntryNav,memEntry);
+      memEntryNav->setEntry(memEntry);
+      classEntryNav->addChild(memEntryNav);
     }
     if (info->baseClass1)
     {
@@ -10561,8 +10581,8 @@ void parseInput()
     computeDirDependencies();
   }
 
-  msg("Resolving citations...\n");
-  Doxygen::citeDict->resolve();
+  //msg("Resolving citations...\n");
+  //Doxygen::citeDict->resolve();
 
   msg("Generating citations page...\n");
   Doxygen::citeDict->generatePage();
@@ -10853,7 +10873,9 @@ void generateOutput()
   if (Config_getBool("GENERATE_XML"))
   {
     msg("Generating XML output...\n");
+    Doxygen::generatingXmlOutput=TRUE;
     generateXML();
+    Doxygen::generatingXmlOutput=FALSE;
   }
   if (Config_getBool("GENERATE_AUTOGEN_DEF"))
   {

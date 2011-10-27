@@ -88,6 +88,8 @@ class FileDef : public Definition
     
     QCString getOutputFileBase() const 
     { return convertNameToFile(diskname); }
+    QCString anchor() const
+    { return QCString(); }
 
     QCString getFileBase() const
     { return diskname; }
@@ -168,8 +170,8 @@ class FileDef : public Definition
 
     void addListReferences();
     bool isDocumentationFile() const;
-    bool includes(FileDef *incFile,QDict<FileDef> *includedFiles) const;
-    bool includesByName(const QCString &name) const;
+    //bool includes(FileDef *incFile,QDict<FileDef> *includedFiles) const;
+    //bool includesByName(const QCString &name) const;
 
     MemberList *getMemberList(MemberList::ListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }

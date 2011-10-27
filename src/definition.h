@@ -132,6 +132,9 @@ class Definition : public DefinitionIntf, public LockableObj
      */
     virtual QCString getOutputFileBase() const = 0;
 
+    /*! Returns the anchor within a page where this item can be found */
+    virtual QCString anchor() const = 0;
+
     /*! Returns the name of the source listing of this file. */
     virtual QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
 

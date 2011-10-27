@@ -1503,7 +1503,7 @@ bool FileDef::isDocumentationFile() const
 void FileDef::acquireFileVersion()
 {
   QCString vercmd = Config_getString("FILE_VERSION_FILTER");
-  if (!vercmd.isEmpty() && filepath!="generated") 
+  if (!vercmd.isEmpty() && !filepath.isEmpty() && filepath!="generated") 
   {
     msg("Version of %s : ",filepath.data());
     QCString cmd = vercmd+" \""+filepath+"\"";
@@ -1518,9 +1518,8 @@ void FileDef::acquireFileVersion()
     char buf[bufSize];
     int numRead = fread(buf,1,bufSize,f);
     portable_pclose(f);
-    if (numRead > 0) 
+    if (numRead>0 && !(fileVersion=QCString(buf,numRead).stripWhiteSpace()).isEmpty())
     {
-      fileVersion = QCString(buf,numRead).stripWhiteSpace();
       msg("%s\n",fileVersion.data());
     }
     else 
@@ -1650,6 +1649,7 @@ bool FileDef::isLinkableInProject() const
   return hasDocumentation() && !isReference() && showFiles;
 }
 
+#if 0
 bool FileDef::includes(FileDef *incFile,QDict<FileDef> *includedFiles) const
 {
   //printf("%s::includes(%s)\n",name().data(),incFile->name().data());
@@ -1687,4 +1687,4 @@ bool FileDef::includesByName(const QCString &fileName) const
   }
   return FALSE;
 }
-
+#endif

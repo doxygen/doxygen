@@ -24,7 +24,6 @@
 
 class BufStr;
 
-DefineDict* getGlobalDefineDict();
 void initPreprocessor();
 void cleanUpPreprocessor();
 void addSearchDir(const char *dir);

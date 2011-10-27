@@ -36,6 +36,7 @@ void addConfigOptions(Config *cfg)
                  "identify the project. Note that if you do not use Doxywizard you need\n"
                  "to put quotes around the project name if it contains spaces."
                 );
+  cs->setDefaultValue("My Project");
   //----
   cs = cfg->addString(
                  "PROJECT_NUMBER",
@@ -761,7 +762,7 @@ void addConfigOptions(Config *cfg)
                  ".bib extension is automatically appended if omitted. Using this command\n"
                  "requires the bibtex tool to be installed. See also\n"
                  "http://en.wikipedia.org/wiki/BibTeX for more info. For LaTeX the style\n"
-                 "of the bibliography can be controlled using LATEX_BIB_STYLE."
+                 "of the bibliography can be controlled using LATEX_BIB_STYLE. To use this feature you need bibtex and perl available in the search path."
                 );
   cl->setWidgetType(ConfigList::File);
   //---------------------------------------------------------------------------
@@ -1483,16 +1484,6 @@ void addConfigOptions(Config *cfg)
                 );
   cb->addDependency("GENERATE_HTML");
   //----
-  ci = cfg->addInt(
-                 "ENUM_VALUES_PER_LINE",
-                 "The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values\n"
-                 "(range [0,1..20]) that doxygen will group on one line in the generated HTML\n"
-                 "documentation. Note that a value of 0 will completely suppress the enum\n"
-                 "values from appearing in the overview section.",
-                 0,20,4
-                );
-  ci->addDependency("GENERATE_HTML");
-  //----
   cb = cfg->addBool(
                  "GENERATE_TREEVIEW",
                  "The GENERATE_TREEVIEW tag is used to specify whether a tree-like index\n"
@@ -1507,6 +1498,16 @@ void addConfigOptions(Config *cfg)
                  FALSE
                 );
   cb->addDependency("GENERATE_HTML");
+  //----
+  ci = cfg->addInt(
+                 "ENUM_VALUES_PER_LINE",
+                 "The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values\n"
+                 "(range [0,1..20]) that doxygen will group on one line in the generated HTML\n"
+                 "documentation. Note that a value of 0 will completely suppress the enum\n"
+                 "values from appearing in the overview section.",
+                 0,20,4
+                );
+  ci->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
                  "USE_INLINE_TREES",

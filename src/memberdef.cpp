@@ -2522,7 +2522,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 }
 
 // strip scope and field name from the type
-// example: "struct N::S.v.c" will become "struct S.v"
+// example: "struct N::S.v.c" will become "struct v"
 static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
@@ -2535,6 +2535,9 @@ static QCString simplifyTypeForTable(const QCString &s)
   }
   i=ts.findRev('.');
   if (i!=-1) ts = ts.left(i);
+  i=ts.findRev('.');
+  if (i!=-1) ts = ts.right(ts.length()-i-1);
+  //printf("simplifyTypeForTable(%s)->%s\n",s.data(),ts.data());
   return ts;
 }
 

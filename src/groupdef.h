@@ -48,6 +48,7 @@ class GroupDef : public Definition
    ~GroupDef();
     DefType definitionType() const { return TypeGroup; }
     QCString getOutputFileBase() const;
+    QCString anchor() const { return QCString(); }
     const char *groupTitle() const { return title; }
     void setGroupTitle( const char *newtitle );
     bool hasGroupTitle( ) { return titleSet; }

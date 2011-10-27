@@ -61,8 +61,8 @@ class CiteDict
     /** Create the database, with an expected maximum of \a size entries */
     CiteDict(int size);
 
-    /** Resolve references to citations */
-    void resolve();
+//    /** Resolve references to citations */
+//    void resolve();
 
     /** Insert a citation identified by \a label into the database */
     void insert(const char *label);
@@ -87,13 +87,13 @@ class CiteDict
     void writeLatexBibliography(FTextStream &t);
 
   private:
-    bool writeAux();
-    bool writeBst();
-    bool execute();
-    void parse();
-    void clean();
+//    bool writeAux();
+//    bool writeBst();
+//    bool execute();
+//    void parse();
+//    void clean();
     QDict<CiteInfo> m_entries;
-    QList<QCString> m_ordering;
+//    QList<QCString> m_ordering;
     QCString m_baseFileName;
 };
 
