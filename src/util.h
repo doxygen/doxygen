@@ -354,6 +354,8 @@ bool updateLanguageMapping(const QCString &extension,const QCString &parser);
 SrcLangExt getLanguageFromFileName(const QCString fileName);
 void initDefaultExtensionMapping();
 
+MemberDef *getMemberFromSymbol(Definition *scope,FileDef *fileScope, 
+                                const char *n);
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
 
 ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,

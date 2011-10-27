@@ -51,9 +51,6 @@ static const char search_script[]=
 #include "search_js.h"
 ;
 
-//static const char navindex_script[]=
-//#include "navindex_js.h"
-//;
 
 int annotatedClasses;
 int annotatedClassesPrinted;
@@ -70,15 +67,11 @@ int documentedPages;
 int documentedDirs;
 
 static int countClassHierarchy();
-//static int countClassMembers(int filter=CMHL_All);
-//static int countFileMembers(int filter=FMHL_All);
 static void countFiles(int &htmlFiles,int &files);
 static int countGroups();
 static int countDirs();
 static int countNamespaces();
 static int countAnnotatedClasses(int *cp);
-//static int countNamespaceMembers(int filter=NMHL_All);
-//static int countIncludeFiles();
 static void countRelatedPages(int &docPages,int &indexPages);
 
 void countDataStructures()
@@ -142,7 +135,7 @@ static MemberIndexList g_memberIndexLetterUsed[CMHL_Total][MEMBER_INDEX_ENTRIES]
 static MemberIndexList g_fileIndexLetterUsed[FMHL_Total][MEMBER_INDEX_ENTRIES];
 static MemberIndexList g_namespaceIndexLetterUsed[NMHL_Total][MEMBER_INDEX_ENTRIES];
 
-static bool g_classIndexLetterUsed[CHL_Total][256];
+//static bool g_classIndexLetterUsed[CHL_Total][256];
 
 const int maxItemsBeforeQuickIndex = MAX_ITEMS_BEFORE_QUICK_INDEX;
 
@@ -269,12 +262,12 @@ static void endQuickIndexItem(OutputList &ol)
   if (fancyTabs) ol.writeString("</li>\n");
 }
 
-
-static QCString fixSpaces(const QCString &s)
+// don't make this static as it is called from a template function and some
+// old compilers don't support calls to static functions from a template.
+QCString fixSpaces(const QCString &s)
 {
   return substitute(s," ","&#160;");
 }
-
 
 void startTitle(OutputList &ol,const char *fileName,Definition *def)
 {
@@ -539,71 +532,6 @@ static void writeClassTree(BaseClassList *cl,int level)
     Doxygen::indexList.decContentsDepth();
   }
 }
-
-#if 0
-//----------------------------------------------------------------------------
-/*! Generates HTML Help tree of classes */
-
-static void writeClassTreeNode(ClassDef *cd,bool &started,int level)
-{
-  //printf("writeClassTreeNode(%s) visited=%d\n",cd->name().data(),cd->visited);
-  if (cd->isVisibleInHierarchy() && !cd->visited)
-  {
-    if (!started)
-    {
-      started=TRUE;
-    }
-    bool hasChildren = classHasVisibleChildren(cd);
-    //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
-    if (cd->isLinkable())
-    {
-      Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor());
-    }
-    if (hasChildren)
-    {
-      if (cd->getLanguage()==SrcLangExt_VHDL)
-      {
-        writeClassTree(cd->baseClasses(),level+1);
-      }
-      else
-      {
-        writeClassTree(cd->subClasses(),level+1);
-      }
-    }
-    cd->visited=TRUE;
-  }
-}
-
-static void writeClassTree(ClassList *cl,int level)
-{
-  if (cl==0) return;
-  ClassListIterator cli(*cl);
-  bool started=FALSE;
-  for ( cli.toFirst() ; cli.current() ; ++cli)
-  {
-    cli.current()->visited=FALSE;
-  }
-  for ( cli.toFirst() ; cli.current() ; ++cli)
-  {
-    writeClassTreeNode(cli.current(),started,level);
-  }
-}
-
-static void writeClassTree(ClassSDict *d,int level)
-{
-  if (d==0) return;
-  ClassSDict::Iterator cli(*d);
-  bool started=FALSE;
-  for ( cli.toFirst() ; cli.current() ; ++cli)
-  {
-    cli.current()->visited=FALSE;
-  }
-  for ( cli.toFirst() ; cli.current() ; ++cli)
-  {
-    writeClassTreeNode(cli.current(),started,level);
-  }
-}
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -1129,6 +1057,7 @@ static void writeAnnotatedClassList(OutputList &ol)
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   
+#if 0
   // clear index
   int x,y;
   for (y=0;y<CHL_Total;y++)
@@ -1174,6 +1103,7 @@ static void writeAnnotatedClassList(OutputList &ol)
       }
     }
   }
+#endif
   
   for (cli.toFirst();(cd=cli.current());++cli)
   {
@@ -1298,7 +1228,6 @@ class AlphaIndexTableColumns : public QList<AlphaIndexTableRows>
 // write an alphabetical index of all class with a header for each letter
 static void writeAlphabeticalClassList(OutputList &ol)
 {
-  //ol.startAlphabeticalIndexList(); 
   // What starting letters are used
   bool indexLetterUsed[256];
   memset (indexLetterUsed, 0, sizeof (indexLetterUsed));
@@ -1319,6 +1248,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     }
   }
 
+  // write quick link index (row of letters)
   QCString alphaLinks = "<div class=\"qindex\">";
   int l;
   for (l=0; l<256; l++)
@@ -1332,7 +1262,6 @@ static void writeAlphabeticalClassList(OutputList &ol)
                     (char)l + "</a>";
     }
   }
-
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
 
@@ -1341,9 +1270,8 @@ static void writeAlphabeticalClassList(OutputList &ol)
   const int columns = Config_getInt("COLS_IN_ALPHA_INDEX");
 
   int i,j;
-  int totalItems = headerItems*2 + annotatedClasses;          // number of items in the table (headers span 2 items)
+  int totalItems = headerItems*2 + annotatedClasses;      // number of items in the table (headers span 2 items)
   int rows = (totalItems + columns - 1)/columns;          // number of rows in the table
-  //int itemsInLastRow = (totalItems + columns -1)%columns + 1; // number of items in the last row
 
   //printf("headerItems=%d totalItems=%d columns=%d rows=%d itemsInLastRow=%d\n",
   //    headerItems,totalItems,columns,rows,itemsInLastRow);
@@ -1422,7 +1350,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     }
   }
 
-  ol.writeString("<table style=\"margin: 10px;\" align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
+  ol.writeString("<table style=\"margin: 10px; white-space: nowrap;\" align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
   // generate table
   for (i=0;i<=maxRows;i++) // foreach table row
   {
@@ -1525,7 +1453,6 @@ static void writeAlphabeticalClassList(OutputList &ol)
     delete colIterators[i];
   }
   delete[] colIterators;
-  //delete[] colList;
 }
 
 //----------------------------------------------------------------------------
@@ -1538,18 +1465,16 @@ static void writeAlphabeticalIndex(OutputList &ol)
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::ClassIndex);
   QCString title = lne ? lne->title() : theTranslator->trCompoundIndex();
   startFile(ol,"classes",0,title,HLI_Classes); 
+
   startTitle(ol,0);
   ol.parseText(title);
   Doxygen::indexList.addContentsItem(TRUE,title,0,"classes",0,TRUE,TRUE); 
-  //ol.parseText(/*Config_getString("PROJECT_NAME")+" "+*/
-  //             (fortranOpt ? theTranslator->trCompoundIndexFortran() :
-  //              vhdlOpt    ? VhdlDocGen::trDesignUnitIndex()             :
-  //                           theTranslator->trCompoundIndex()
-  //             ));
   endTitle(ol,0,0);
+
   ol.startContents();
   writeAlphabeticalClassList(ol);
-  endFile(ol);
+
+  endFile(ol); // contains ol.endContents()
   ol.popGeneratorState();
 }
 
@@ -1572,15 +1497,13 @@ static void writeAnnotatedIndex(OutputList &ol)
   if (lne==0) lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Classes); // fall back
   QCString title = lne ? lne->title() : theTranslator->trCompoundList();
   startFile(ol,"annotated",0,title,HLI_Annotated);
+
   startTitle(ol,0);
-  //QCString longTitle = title;
-  //if (!Config_getString("PROJECT_NAME").isEmpty()) 
-  //{
-  //  longTitle.prepend(Config_getString("PROJECT_NAME")+" ");
-  //}
   ol.parseText(title);
   endTitle(ol,0,0);
+
   ol.startContents();
+
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(TRUE,title,0,"annotated",0,TRUE,TRUE); 
   Doxygen::indexList.incContentsDepth();
@@ -1589,7 +1512,7 @@ static void writeAnnotatedIndex(OutputList &ol)
   writeAnnotatedClassList(ol);
   Doxygen::indexList.decContentsDepth();
   
-  endFile(ol);
+  endFile(ol); // contains ol.endContents()
   ol.popGeneratorState();
 }
 
@@ -2862,17 +2785,16 @@ void writeJavascriptSearchIndex()
                 << "class=\"SRSymbol\" ";
               t << externalLinkTarget() << "href=\"" << externalRef("../",d->getReference(),TRUE);
               t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
-              if (md)
+              QCString anchor = d->anchor();
+              if (!anchor.isEmpty())
               {
-                t << "#" << md->anchor();
+                t << "#" << anchor;
               }
               t << "\"";
               static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
               if (!extLinksInWindow || d->getReference().isEmpty())
               {
-                t << " target=\""; 
-                /*if (treeView) t << "basefrm"; else*/ t << "_parent"; 
-                t << "\"";
+                t << " target=\"_parent\"";
               }
               t << ">";
               t << convertToXML(d->localName());
@@ -2943,17 +2865,16 @@ void writeJavascriptSearchIndex()
                 }
                 t << "href=\"" << externalRef("../",d->getReference(),TRUE);
                 t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
-                if (isMemberDef)
+                QCString anchor = d->anchor();
+                if (!anchor.isEmpty())
                 {
-                  t << "#" << ((MemberDef *)d)->anchor();
+                  t << "#" << anchor;
                 }
                 t << "\"";
                 static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
                 if (!extLinksInWindow || d->getReference().isEmpty())
                 {
-                  t << " target=\"";
-                  /*if (treeView) t << "basefrm"; else*/ t << "_parent"; 
-                  t << "\"";
+                  t << " target=\"_parent\"";
                 }
                 t << ">";
                 bool found=FALSE;
@@ -4466,6 +4387,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
           writeExampleIndex(ol);
           break;
         case LayoutNavEntry::User: 
+          Doxygen::indexList.addContentsItem(TRUE,lne->title(),0,lne->baseFile(),0); 
           break;
       }
       indexWritten.at(index)=TRUE;

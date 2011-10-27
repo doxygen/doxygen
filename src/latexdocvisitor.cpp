@@ -1512,8 +1512,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString("LATEX_OUTPUT");
-  QCString name = fileName;
-  writeMscGraphFromFile(name,outDir,baseName,MSC_EPS); 
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS); 
   if (hasCaption)
   {
     m_t << "\n\\begin{DoxyImage}\n";
@@ -1568,7 +1567,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName)
     shortName=shortName.right(shortName.length()-i-1);
   } 
   QCString outDir = Config_getString("LATEX_OUTPUT");
-  writeMscGraphFromFile(baseName,outDir,shortName,MSC_EPS);
+  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS);
   m_t << "\n\\begin{DoxyImageNoCaption}"
          "  \\mbox{\\includegraphics";
   m_t << "{" << shortName << "}";

@@ -1672,7 +1672,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName)
     baseName=baseName.right(baseName.length()-i-1);
   } 
   QCString outDir = Config_getString("RTF_OUTPUT");
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
+  writeMscGraphFromFile(fileName+".msc",outDir,baseName,MSC_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;

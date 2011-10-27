@@ -495,12 +495,18 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
   ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
   pIntf->resetCodeParserState();
   XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
-  pIntf->parseCode(*xmlGen,
-                0,
+  pIntf->parseCode(*xmlGen,  // codeOutIntf
+                0,           // scopeName
                 fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
-                FALSE,
-                0,
-                fd);
+                FALSE,       // isExampleBlock
+                0,           // exampleName
+                fd,          // fileDef
+                -1,          // startLine
+                -1,          // endLine
+                FALSE,       // inlineFragement
+                0,           // memberDef
+                TRUE         // showLineNumbers
+                );
   xmlGen->finish();
   delete xmlGen;
 }
@@ -543,20 +549,21 @@ static void stripQualifiers(QCString &typeStr)
 
 static QCString classOutputFileBase(ClassDef *cd)
 {
-  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
-  if (inlineGroupedClasses && cd->partOfGroups()!=0) 
-    return cd->getXmlOutputFileBase();
-  else 
-    return cd->getOutputFileBase();
+  //static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  //if (inlineGroupedClasses && cd->partOfGroups()!=0) 
+  return cd->getOutputFileBase();
+  //else 
+  //  return cd->getOutputFileBase();
 }
 
 static QCString memberOutputFileBase(MemberDef *md)
 {
-  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
-  if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0) 
-    return md->getClassDef()->getXmlOutputFileBase();
-  else 
-    return md->getOutputFileBase();
+  //static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  //if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0) 
+  //  return md->getClassDef()->getXmlOutputFileBase();
+  //else 
+  //  return md->getOutputFileBase();
+  return md->getOutputFileBase();
 }
 
 

@@ -133,6 +133,7 @@ class Doxygen
     static IndexList                 indexList;
     static int                       subpageNestingLevel;
     static QCString                  spaces;
+    static bool                      generatingXmlOutput;
 };
 
 void initDoxygen();

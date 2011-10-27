@@ -1408,32 +1408,30 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<dl><dt><b>";
   QCString className;
+  QCString heading;
   switch(s->type())
   {
     case DocParamSect::Param: 
-      m_t << theTranslator->trParameters(); 
+      heading=theTranslator->trParameters(); 
       className="params";
       break;
     case DocParamSect::RetVal: 
-      m_t << theTranslator->trReturnValues(); 
+      heading=theTranslator->trReturnValues(); 
       className="retval";
       break;
     case DocParamSect::Exception: 
-      m_t << theTranslator->trExceptions(); 
+      heading=theTranslator->trExceptions(); 
       className="exception";
       break;
     case DocParamSect::TemplateParam: 
-      /* TODO: add this 
-      m_t << theTranslator->trTemplateParam(); break;
-      */
-      m_t << "Template Parameters"; break;
+      heading="Template Parameters"; break; // TODO: translate me
       className="tparams";
     default:
       ASSERT(0);
   }
-  m_t << ":";
+  m_t << "<dl class=\"" << className << "\"><dt><b>";
+  m_t << heading << ":";
   m_t << "</b></dt><dd>" << endl;
   m_t << "  <table class=\"" << className << "\">" << endl;
 }
@@ -1698,7 +1696,8 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context);
 }
 
-void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
+void HtmlDocVisitor::writeMscFile(const QCString &fileName,
+                                  const QCString &relPath,
                                   const QCString &context)
 {
   QCString baseName=fileName;

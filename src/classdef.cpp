@@ -175,6 +175,9 @@ class ClassDefImpl
     /** Is this a simple (non-nested) C structure? */
     bool isSimple;
 
+    /** Does this class overloaded the -> operator? */
+    MemberDef *arrowOperator;
+
     ClassList *taggedInnerClasses;
     ClassDef *tagLessRef;
 };
@@ -217,6 +220,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   categoryOf = 0;
   usedOnly = FALSE;
   isSimple = Config_getBool("INLINE_SIMPLE_STRUCTS");
+  arrowOperator = 0;
   taggedInnerClasses = 0;
   tagLessRef = 0;
   //QCString ns;
@@ -634,6 +638,11 @@ void ClassDef::internalInsertMember(MemberDef *md,
   if (md->virtualness()==Pure)
   {
     m_impl->isAbstract=TRUE;
+  }
+
+  if (md->name()=="operator->")
+  {
+    m_impl->arrowOperator=md;
   }
 
   //::addClassMemberNameToIndex(md);
@@ -3175,8 +3184,35 @@ QCString ClassDef::compoundTypeString() const
   }
 }
 
-QCString ClassDef::getXmlOutputFileBase() const
-{
+QCString ClassDef::getOutputFileBase() const 
+{ 
+  if (!Doxygen::generatingXmlOutput)
+  {
+    static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+    static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
+    Definition *scope=0;
+    if (inlineGroupedClasses && partOfGroups()!=0)
+    {
+      // point to the group that embeds this class
+      return partOfGroups()->at(0)->getOutputFileBase();
+    }
+    else if (inlineSimpleClasses && m_impl->isSimple && partOfGroups()!=0)
+    {
+      // point to simple struct inside a group
+      return partOfGroups()->at(0)->getOutputFileBase();
+    }
+    else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()))
+    {
+      if (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkableInProject()) // simple struct embedded in file
+      {
+        return getFileDef()->getOutputFileBase();
+      }
+      else if (scope->isLinkableInProject()) // simple struct embedded in other container (namespace/group/class)
+      {
+        return getOuterScope()->getOutputFileBase();
+      }
+    }
+  }
   if (m_impl->templateMaster)
   {
     // point to the template of which this class is an instance
@@ -3192,35 +3228,6 @@ QCString ClassDef::getXmlOutputFileBase() const
     // normal locally defined class
     return convertNameToFile(m_impl->fileName); 
   }
-}
-
-QCString ClassDef::getOutputFileBase() const 
-{ 
-  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
-  static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
-  Definition *scope=0;
-  if (inlineGroupedClasses && partOfGroups()!=0)
-  {
-    // point to the group that embeds this class
-    return partOfGroups()->at(0)->getOutputFileBase();
-  }
-  else if (inlineSimpleClasses && m_impl->isSimple && partOfGroups()!=0)
-  {
-    // point to simple struct inside a group
-    return partOfGroups()->at(0)->getOutputFileBase();
-  }
-  else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()))
-  {
-    if (scope==Doxygen::globalScope && getFileDef() && getFileDef()->isLinkableInProject()) // simple struct embedded in file
-    {
-      return getFileDef()->getOutputFileBase();
-    }
-    else if (scope->isLinkableInProject()) // simple struct embedded in other container (namespace/group/class)
-    {
-      return getOuterScope()->getOutputFileBase();
-    }
-  }
-  return getXmlOutputFileBase();
 }
 
 QCString ClassDef::getInstanceOutputFileBase() const 
@@ -3921,6 +3928,11 @@ bool ClassDef::isSimple() const
   return m_impl->isSimple;
 }
 
+MemberDef *ClassDef::isSmartPointer() const
+{
+  return m_impl->arrowOperator;
+}
+
 void ClassDef::reclassifyMember(MemberDef *md,MemberDef::MemberType t)
 {
   md->setMemberType(t);
@@ -3936,7 +3948,7 @@ void ClassDef::reclassifyMember(MemberDef *md,MemberDef::MemberType t)
 QCString ClassDef::anchor() const
 {
   QCString anc;
-  if (isEmbeddedInOuterScope())
+  if (isEmbeddedInOuterScope() && !Doxygen::generatingXmlOutput)
   {
     if (m_impl->templateMaster)
     {

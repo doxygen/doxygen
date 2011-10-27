@@ -701,6 +701,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "    \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
        "                         p{0.15\\textwidth}|%\n"
        "                         p{0.635\\textwidth}|}%\n"
+       //"\\hline{\\sf\\textbf{Type}} & {\\sf\\textbf{Name}} & {\\sf\\textbf{Description}}\\endhead%\n"
        "    \\hline%\n"
        "}{%\n"
        "    \\end{longtable}%\n"
@@ -1772,7 +1773,7 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
     t << "\\hypertarget{";
     if (fName) t << stripPath(fName);
     if (anchor) t << "_" << anchor;
-    t << "}{" << endl;
+    t << "}{";
   }
 }
 
@@ -1782,7 +1783,7 @@ void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   if (usePDFLatex && pdfHyperlinks)
   {
-    t << "}" << endl;
+    t << "}";
   }
   t << "\\label{";
   if (fName) t << fName;
@@ -2112,19 +2113,23 @@ void LatexGenerator::endMemberList()
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
   if (hasHeader) t << "\\begin{Indent}";
-  if (Config_getBool("COMPACT_LATEX")) 
-  {
-    t << "\\subparagraph*{";
-  }
-  else
-  {
-    t << "\\paragraph*{";
-  }
+  t << "{\\bf ";
+  // changed back to rev 756 due to bug 660501
+  //if (Config_getBool("COMPACT_LATEX")) 
+  //{
+  //  t << "\\subparagraph*{";
+  //}
+  //else
+  //{
+  //  t << "\\paragraph*{";
+  //}
 }
 
 void LatexGenerator::endMemberGroupHeader()
 {
-  t << "}" << endl;
+  // changed back to rev 756 due to bug 660501
+  t << "}\\par" << endl;
+  //t << "}" << endl;
 }
 
 void LatexGenerator::startMemberGroupDocs()

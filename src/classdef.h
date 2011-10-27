@@ -95,8 +95,7 @@ class ClassDef : public Definition
     DefType definitionType() const { return TypeClass; }
 
     /*! Returns the unique base name (without extension) of the class's file on disk */
-    QCString getOutputFileBase() const; 
-    QCString getXmlOutputFileBase() const;
+    QCString getOutputFileBase() const;
     QCString getInstanceOutputFileBase() const; 
     QCString getFileBase() const;
 
@@ -271,6 +270,8 @@ class ClassDef : public Definition
 
     const ClassList *taggedInnerClasses() const;
     ClassDef *tagLessReference() const;
+
+    MemberDef *isSmartPointer() const;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----

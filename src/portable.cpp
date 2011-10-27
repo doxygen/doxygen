@@ -121,6 +121,14 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
   }
   else
   {
+    // Because ShellExecuteEx can delegate execution to Shell extensions 
+    // (data sources, context menu handlers, verb implementations) that 
+    // are activated using Component Object Model (COM), COM should be 
+    // initialized before ShellExecuteEx is called. Some Shell extensions 
+    // require the COM single-threaded apartment (STA) type. 
+    // For that case COM is initialized as follows
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
     // gswin32 is a GUI api which will pop up a window and run
     // asynchronously. To prevent both, we use ShellExecuteEx and
     // WaitForSingleObject (thanks to Robert Golias for the code)

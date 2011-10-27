@@ -164,3 +164,7 @@ svgpan_js.h: svgpan.js
 doxygen_bst.h: doxygen.bst
 	cat doxygen.bst | $(TO_C_CMD) >doxygen_bst.h
 
+bib2xhtml.h: bib2xhtml.pl
+	cat bib2xhtml.pl | $(TO_C_CMD) >bib2xhtml.h
+
+

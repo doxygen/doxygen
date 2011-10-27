@@ -629,8 +629,7 @@ Structural indicators
  */
 \endverbatim
 
- You can refer to the main page using \\ref index (if the treeview
- is disabled, otherwise you should use \\ref main).
+ You can refer to the main page using \\ref index.
 
  \sa section \ref cmdsection "\\section",
      section \ref cmdsubsection "\\subsection", and

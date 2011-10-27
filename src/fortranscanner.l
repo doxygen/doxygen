@@ -202,7 +202,7 @@ static void scanner_abort();
 static void startScope(Entry *scope);
 static bool endScope(Entry *scope, bool isGlobalRoot=FALSE);
 static QCString getFullName(Entry *e);
-static bool isTypeName(QCString name);
+//static bool isTypeName(QCString name);
 static void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root);
 static int getAmpersandAtTheStart(const char *buf, int length);
 static int getAmpOrExclAtTheEnd(const char *buf, int length);
@@ -669,10 +669,11 @@ private                                 {
 					  argType = QCString(yytext).simplifyWhiteSpace();
 					  yy_push_state(AttributeList);
                                         }
-^{BS}{PP_ID}{KIND}?			{ /* check for preprocessor symbol expand to type */
+  /*  Dimitri: macro expansion should already be done during preprocessing not here!
+^{BS}{PP_ID}{KIND}?			{ // check for preprocessor symbol expand to type
 					  QCString str = yytext;
 					  str = str.stripWhiteSpace();
-					  DefineDict* defines = getGlobalDefineDict();
+					  //DefineDict* defines = getGlobalDefineDict();
 					  QCString name;
 					  int index = str.find("(");
 					  if (index != -1)
@@ -680,7 +681,7 @@ private                                 {
 					  else
 					    name = str;
 
-					  Define *define = (*defines)[name];
+					  Define *define = 0; //(*defines)[name];
 					  if (define != 0 && isTypeName(define->definition)) 
 					  {
 					    argType = str;
@@ -692,6 +693,7 @@ private                                 {
 					    REJECT;
 					  }
 					}
+  */
 {ATTR_STMT}/{BS_}{ID}		       |
 {ATTR_STMT}/{BS}"::"                   { 
                                           /* attribute statement starts */
@@ -1406,12 +1408,14 @@ void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root
   moduleProcedures.clear();
 }
 
+#if 0
 static bool isTypeName(QCString name)
 {
   name = name.lower();
   return name=="integer" || name == "real" || 
-    name=="complex" || name == "logical";
+         name=="complex" || name == "logical";
 }
+#endif
 
 /*! Extracts string which resides within parentheses of provided string. */
 static QCString extractFromParens(const QCString name)

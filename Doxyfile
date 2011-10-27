@@ -121,6 +121,7 @@ EXCLUDE                = src/code.cpp \
                          src/doxygen_php.h \
                          src/compound_xsd.h \
                          src/layout_default.h \
+			 src/bib2xhtml.h
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        =

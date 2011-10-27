@@ -258,7 +258,6 @@ win32:TMAKE_CXXFLAGS       += -DQT_NODLL
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
 linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions -fno-rtti
-TMAKE_CXXFLAGS += -DYY_TYPEDEF_YY_SIZE_T -Dyy_size_t=int
 INCLUDEPATH                += ../qtools
 #INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5

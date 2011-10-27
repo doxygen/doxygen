@@ -825,6 +825,7 @@ FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+CITEID    [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-:/]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
@@ -1966,7 +1967,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the cite command ------- */
 
-<CiteLabel>{LABELID}			{ // found argyment
+<CiteLabel>{CITEID}			{ // found argyment
   					  addCite();
                                           addOutput(yytext);
 					  BEGIN(Comment);
