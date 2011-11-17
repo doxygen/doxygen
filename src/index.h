@@ -258,6 +258,7 @@ void startFile(OutputList &ol,const char *name,const char *manName,
                const char *title,HighlightedItem hli=HLI_None,
                bool additionalIndices=FALSE,const char *altSidebarName=0);
 void endFile(OutputList &ol,bool skipNavIndex=FALSE);
+void endFileWithNavPath(Definition *d,OutputList &ol);
 
 void initClassMemberIndices();
 void initFileMemberIndices();
@@ -265,9 +266,5 @@ void initNamespaceMemberIndices();
 void addClassMemberNameToIndex(MemberDef *md);
 void addFileMemberNameToIndex(MemberDef *md);
 void addNamespaceMemberNameToIndex(MemberDef *md);
-
-// search engine
-void writeJavascriptSearchIndex();
-void writeSearchCategories(FTextStream &t);
 
 #endif

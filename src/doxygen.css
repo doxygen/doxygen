@@ -2,7 +2,8 @@
 
 body, table, div, p, dl {
 	font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
-	font-size: 12px;
+	font-size: 13px;
+	line-height: 1.5;
 }
 
 /* @group Heading Levels */
@@ -126,7 +127,7 @@ a.code {
 }
 
 a.codeRef {
-	color: ##60;
+	color: #4665A2; 
 }
 
 /* @end */

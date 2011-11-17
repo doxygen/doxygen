@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -25,7 +25,7 @@
 
 #include <qdict.h>
 #include <qcstring.h>
-
+#include "layout.h"
 #include "memberlist.h"
 
 class QStringList;
@@ -35,6 +35,19 @@ class FileStorage;
 class EntryNav;
 class ClassDef;
 class MemberDef;
+
+// wrapper class for the vhdl parser
+class MyParserVhdl 
+{
+  public:
+  uint iFileSize; 
+
+  ~MyParserVhdl(){}
+  MyParserVhdl(){}
+  
+ int parse(MyParserVhdl*);
+ int doLex();
+ }; 
 
 class VhdlDocGen  
 {
@@ -47,6 +60,7 @@ class VhdlDocGen
       ARCHITECTURECLASS,   // Overlays: Private
       PACKAGECLASS         // Overlays: Package
     };
+
     enum VhdlKeyWords
     {
       LIBRARY=1,
@@ -66,36 +80,31 @@ class VhdlDocGen
       USE,
       PROCESS,
       PORT,
-      DOCUMENT, //18 0x12
       UNITS,	  
       GENERIC,
-      PORTMAP, // obsolete
       COMPONENT_INST,
       GROUP,
       VFILE,   
       SHAREDVARIABLE,
       CONFIG,
       ALIAS,
-      MISCELLANEOUS
+	  MISCELLANEOUS,
+	  UCF_CONST
     };
+
+
+
 
     VhdlDocGen();
     virtual ~VhdlDocGen();
     static void init();
-
+ static QCString convertFileNameToClassName(QCString name);
     // --- used by vhdlscanner.l -----------
+    
     static QCString getIndexWord(const char* ,int index);
     static  bool    foundInsertedComponent(const QCString& name,Entry* root);
     static bool     deleteCharRev(QCString &s,char c);
-    static bool     isFunctionProto(QCString& ss);
-    static Entry*   findFunction(Entry* func);
     static void     deleteAllChars(QCString &s,char c);
-    static bool     getSigName(QList<QCString>& ql, 
-                               const char* str,
-                               QCString& buffer);
-    static bool     getSigTypeName(QList<QCString>& ql, 
-                                   const char* str,
-                                   QCString& buffer);
     static void     parseFuncProto(const char* text,
                                    QList<Argument>& , 
                                    QCString& name,
@@ -103,21 +112,13 @@ class VhdlDocGen
                                    bool doc=false);
     // -----------------------------------
 
-    static void debugClassName(ClassSDict*);
-    //static void MergeFuncDoc(Entry* p,Entry* root);
 
     static void computeVhdlComponentRelations();
 
-    //static void  addVariableToComponents(EntryNav *rootNav,ClassDef *cd, MemberDef::MemberType mtype, const QCString &name, bool fromAnnScope,MemberDef *fromAnnMemb,Protection prot,bool related);
 
     static QCString* findKeyWord(const QCString& word);
-    static void addFuncDoc(EntryNav* root);
 
-    //static void MapArchitecturesToEntity(Entry* cur_root);
 
-    //static void MapComponentToEntity(const ClassSDict*);
-
-    static ClassDef* findComponent(int type);
     static ClassDef* getPackageName(const QCString& name);
     static MemberDef* findMember(const QCString& className, 
                                  const QCString& memName);
@@ -127,7 +128,6 @@ class VhdlDocGen
                                 const QCString& key,
                                 MemberList::ListType type);
     static ClassDef *getClass(const char *name);
-    static Entry* findFunction(Entry* root,Entry* func);
     static MemberDef* findFunction(const QList<Argument> &ql,
                                    const QCString& name,
                                    const QCString& package, bool type);
@@ -137,9 +137,9 @@ class VhdlDocGen
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
 
-    //static void writeVhdlComponentList(OutputList &ol,int type);
-     static bool isMisc(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }   
+
+    static bool isConstraint(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::UCF_CONST; }   
     static bool isConfig(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::CONFIG; }
     static bool isAlias(const MemberDef *mdef) 
@@ -190,6 +190,8 @@ class VhdlDocGen
     { return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
     static bool isCompInst(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::COMPONENT_INST; }
+static bool isMisc(const MemberDef *mdef) 
+{ return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }
 
     //-----------------------------------------------------
     // translatable items
@@ -222,12 +224,9 @@ class VhdlDocGen
     //-----------------------------------------------------
 
     static void prepareComment(QCString&);
-    static QCString getpackname(const char* text,
-                                const char* word,
-                                const char* patter);
-    static void parseProcessProto(const char* text,
-                                  QCString&,
-                                  QStringList&);
+    
+	
+ 
     static void formatString(QCString&,OutputList& ol,const MemberDef*);
 
     static void writeFormatString(QCString&,OutputList& ol,const MemberDef*);
@@ -237,13 +236,11 @@ class VhdlDocGen
     static void writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList* al,bool type=false);
     static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList *al);
 
-    static QCString convertArgumentListToString(const ArgumentList* al,bool f);
-    static QCString getProcessNumber();
-    static QCString getRecordNumber();
+
 
     static void writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
-    static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*,FileDef*);
+    static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*,FileDef*,NamespaceDef*);
 
     static void writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
         ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
@@ -256,10 +253,15 @@ class VhdlDocGen
         ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
         const char *title,const char *subtitle,bool showEnumValues,int type);
 
+    static bool writeClassType(ClassDef *&,OutputList &ol ,QCString & cname);
+   
+
+    static QCString convertArgumentListToString(const ArgumentList* al,bool f);
+    static QCString getProcessNumber();
+    static QCString getRecordNumber();
+   
     static QCString getClassName(const ClassDef*);
-    static bool writeClassType(ClassDef *,OutputList &ol ,QCString & cname);
     static void adjustRecordMember(MemberDef *mdef);
-    static bool writeDoc(EntryNav* rootNav);
 
     static void writeLink(const MemberDef* mdef,OutputList &ol);
     static void adjustMemberName(QCString& nn);
@@ -267,15 +269,29 @@ class VhdlDocGen
     static void startFonts(const QCString& q, const char *keyword,OutputList& ol);
     static bool isNumber(const QCString& s);
     static QCString getProtectionName(int prot);
-	static void writeSource(MemberDef *mdef,OutputList& ol,QCString &);
+    static QCString splitString(QCString & str,  char c);
+    static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
+	
+	
+    static bool findConstraintFile( LayoutNavEntry *lne);
+
+    static ClassDef*  findArchitecture(const ClassDef *cd);
+    static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
+
+    static void writeCodeFragment( MemberDef *mdef,OutputList& ol);
+    static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
+    static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
+
+
+	static QCString  parseForConfig(QCString & entity,QCString & arch);
+	static QCString  parseForBinding(QCString & entity,QCString & arch);
   private:
-    static void getFuncParams(QList<Argument>&, const char* str);
+    static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
     static bool compareArgList(ArgumentList*,ArgumentList*);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
-    static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
-     static void writeCodeFragment(MemberDef *mdef,OutputList& ol);
-
+	static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
+	static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
 };
 
 #endif

@@ -2,6 +2,7 @@
 "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
 "<head>\n"
 "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n"
+"<meta http-equiv=\"X-UA-Compatible\" content=\"IE=9\"/>\n"
 "<!--BEGIN PROJECT_NAME--><title>$projectname: $title</title><!--END PROJECT_NAME-->\n"
 "<!--BEGIN !PROJECT_NAME--><title>$title</title><!--END !PROJECT_NAME-->\n"
 "<link href=\"$relpath$tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"

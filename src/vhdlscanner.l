@@ -1,1557 +1,513 @@
+/************** VHDL scanner in LEX format **********
+ *
+ * Version 0.2 Wed Aug 11, 1993
+ *
+ * This scanner is derived from a scanner of the ALLIANCE CAD toolset,
+ * release 1.1. That toolset was written from:
+ *   MASI/CAO-VLSI CAD Team
+ *   Laboratoire MASI/CAO-VLSI
+ *   Tour 55-65, 2eme etage, Porte 13
+ *   Universite Pierre et Marie Curie (PARIS VI)
+ *   4, place Jussieu 75252 PARIS Cedex 05, FRANCE
+ * The ALLIANCE CAD Toolset can be obtained from ftp site : ftp-masi.ibp.fr    
+ *
+ * This scanner is avail at: ftp.cs.utwente.nl in pub/src/VHDL/Grammar
+ * A corresponding Yacc grammar is available at the same site
+ *
+ * author of this derived scanner version:
+ * Thomas Dettmer
+ * Dortmund University
+ * Dept. of Computer Scienc, LS1
+ * PB 500 500
+ * D-44221 Dortmund (Germany)
+ * Phone: +49-231-755-6464
+ * e-mail: dettmer@ls1.informatik.uni-dortmund.de
+ *
+ *
+ ****************************************************************
+ * 
+ * This file is intended not to be used for commercial purposes
+ * without permission of the University of Dortmund
+ *
+ * NOTE THAT THERE IS NO WARRANTY FOR CORRECTNES, COMPLETENESS, SUPPORT
+ * OR ANYTHING ELSE.
+ *******************************************************/
 /******************************************************************************
- *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
- * for any purpose. It is provided "as is" without express or implied warranty.
- * See the GNU General Public License for more details.
- *
- * Documents produced by Doxygen are derivative works derived from the
- * input used in their production; they are not affected by this license.
- *
- */
-/******************************************************************************
- * Parser for VHDL subset
- * written by M. Kreis
- * supports VHDL-87/93
- * does not support VHDL-AMS 
+ * modified for doxygen by M. Kreis
+ * extended to VHDL 93/2002/2008 
  ******************************************************************************/
 %{
 
-// global includes
+#ifndef YYSTYPE
+	typedef int YYSTYPE;
+#endif
+
+#include <ctype.h>
+#include <search.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <qcstring.h>
-#include <qfileinfo.h>
-#include <qstringlist.h>
-
-/* --------------------------------------------------------------- */
-
-// local includes
-#include "vhdlscanner.h"
-#include "vhdlcode.h"
-#include "vhdldocgen.h"
-#include "message.h"
-#include "config.h"
-#include "doxygen.h"
-#include "util.h"
-#include "language.h"
+#include <ctype.h>
 #include "commentscan.h"
-#include "index.h"
-#include "definition.h"
+#include "vhdlparser.h"
+#include "vhdlscanner.h"
+
+#include "doxygen.h"
 #include "searchindex.h"
-#include "outputlist.h"
+#include <ctype.h>
+#include "scanner.h"
+#include "vhdldocgen.h"
+#include "util.h"
+#include "bufstr.h"
+#include "message.h"
+#include "vhdlcode.h"
+#include <qmap.h>
+#include "entry.h"
 
-/* --------------------------------------------------------------- */
+static MyParserVhdl *pconv;
 
-//#define theTranslator_vhdlType theTranslator->trVhdlType
-#define theTranslator_vhdlType VhdlDocGen::getVhdlType
-
-static QStringList      qrl;
-static int              openGroups;
+static bool          g_lexInit = FALSE;
 static ParserInterface *g_thisParser;
-static const char *     inputString;
+static struct s_contVhdl* yycont=NULL;
+static Entry* current_root;
+static Entry   gBlock;
+
+static int yyLineNr =1;
+//static int yyPrevLine=1;
+//static int yyEndLine=1;
+static int   g_lastCommentContext;
 static int              inputPosition;
-static int              inputLen;
-static int              startComment  = 0;
+//static int defineLineContinue=0;
+static int startComment;
+//static int iSize=0;
+static QCString inputVhdlString;
 static QFile            inputFile;
-static QCString         inbuf;
-static Entry*           global_root   = 0;
-static Entry*           current_root  = 0;
-static Entry*           current       = 0;
-static Entry*           previous      = 0;
-static Entry*           functionEntry = 0;
-static Entry*           lastEntity    = 0;
-static Entry*           lastCompound  = 0;
-static int              genPort       = 0;
 static QCString         yyFileName;
-static int              iFuncLine     = 1;
-static bool             g_inputFromFile ;
-static bool             g_lexInit     = FALSE;
-static int              isBody=0;
-static int              isFunc=0;
-static int              yyLineNr      = 1;
-static char *           g_buf         = 0;
-static uint             g_bufSize     = 0;
-static int              iTextCounter  = 0;
-static int              iCounter      = 0;
-static int              bropen        = 0;
-static int              scantype      = 0;
-static int              g_lastCommentContext = 0;
-static bool             docBlockAutoBrief;
-static char             docBlockTerm;
-static int              iDocLine      = -1;
-static Entry            gBlock;
-static int              num_chars;
+static QList<QCString> qlist;
 
-//#define YY_A_INTERACTIVE 1
-#define YY_NEVER_INTERACTIVE 1
-//-----------------------------------------------------------------------------
-#define YY_USER_ACTION num_chars += yyleng;
-static void parserInit();
-static void deleteSpecChars(char* str,char *buf);
-static void handleCommentBlock(const QCString &doc,bool brief);
-static void newEntry();
-static void initEntry(Entry *e);
+static QCString lastLetter;
+//static int totLines=0;
 
+//static bool multLineComment=FALSE;
+static bool doxComment=FALSE; // doxygen comment ? 
+static QCString strComment;
+static int iDocLine=-1;
+static int* lineIndex=NULL;
+static int num_chars;
+static  int prevToken;
 static int iCodeLen;
 
-static void makeInline()
+//static const char *  g_inputString;       //!< the    code fragment as text
+//static int           g_inputLines=0;      //!<number of line in the code fragment
+//static bool          g_needsTermination;
+static	QMap<QCString, int> keyMap;
+
+static void handleCommentBlock(const QCString &doc,bool brief);
+static void mapLibPackage(const Entry* ce);
+static Entry* getEntryAtLine(const Entry* ce,int line);
+
+
+#define YY_NEVER_INTERACTIVE 1
+#define YY_USER_ACTION num_chars += vhdlScanYYleng;
+
+#define MAX_KEYWORD_LEN 20
+
+typedef struct 
 {
-  int diff=num_chars-iCodeLen;
-  assert(inputLen>iCodeLen+diff);
-  QCString par(&inputString[iCodeLen],diff);
-  int index=par.findRev("\\endcode");
-  int tt=par.length()-par.find("\n",index);
-  QCString qc(&inputString[iCodeLen-tt],diff);
-  index=qc.findRev("--!");
-  if (index<=0) return;
-  par=qc.left(index);
-  /*
-     fprintf(stderr,"\n-------------------------------------------------------------------------------- ");
-     fprintf(stderr,"\n bytes since %d %d \n %s",num_chars,iCodeLen,par.data());
-     fprintf(stderr,"\n-------------------------------------------------------------------------------- ");
-   */
-  gBlock.doc=par;
-  gBlock.section=Entry::VARIABLE_SEC;
-  gBlock.spec=VhdlDocGen::MISCELLANEOUS;
-  gBlock.fileName = yyFileName;
-  gBlock.endBodyLine=yyLineNr-1;
-  Entry *temp=new Entry(gBlock);
-  if (lastCompound)
-    lastCompound->addSubEntry(temp);
-  else if (lastEntity)
-    lastEntity->addSubEntry(temp);
-  else
-  {
-    temp->type="misc"; // global code
-    current_root->addSubEntry(temp);
-  }
+  char nom[MAX_KEYWORD_LEN];
+  int kval;
+} el_mc;
 
-  gBlock.reset();
-
-}// makeInline
-
-static void addSubEntry(Entry* root, Entry* e)
+static el_mc tab_mc []=
 {
-  if (e==0 || root==0) return;
-  //if (isPrevDoc) 
-  //{
-  //  e->brief=prevDocEntry.brief;
-  //  e->briefLine=prevDocEntry.briefLine;
-  //  prevDocEntry.reset();
-  //  isPrevDoc=FALSE;
-  //}
-  root->addSubEntry(e);
-} 
+    { "abs",                t_ABS                },
+    { "access",             t_ACCESS             },
+    { "after",              t_AFTER              },
+    { "alias",              t_ALIAS              },
+    { "all",                t_ALL                },
+    { "and",                t_AND                },
+    { "architecture",       t_ARCHITECTURE       },
+    { "array",              t_ARRAY              },
+    { "assert",             t_ASSERT             },
+    { "assume",             t_ASSUME             },
+    { "assume_guarantee",   t_ASSUME_GUARANTEE   },
+    { "attribute",          t_ATTRIBUTE          },
 
-static void bufferClear()
+    { "begin",              t_BEGIN              },
+    { "block",              t_BLOCK              },
+    { "body",               t_BODY               },
+    { "buffer",             t_BUFFER             },
+    { "bus",                t_BUS                },
+
+    { "case",               t_CASE               },
+    { "component",          t_COMPONENT          },
+    { "configuration",      t_CONFIGURATION      },
+    { "constant",           t_CONSTANT           },
+    { "context",            t_CONTEXT            },
+    { "cover",              t_COVER              },
+
+    { "default",            t_DEFAULT            },
+    { "disconnect",         t_DISCONNECT         },
+    { "downto",             t_DOWNTO             },
+
+    { "else",               t_ELSE               },
+    { "elsif",              t_ELSIF              },
+    { "end",                t_END                },
+    { "entity",             t_ENTITY             },
+    { "exit",               t_EXIT               },
+
+    { "fairness",           t_FAIRNESS           },
+    { "file",               t_FILE               },
+    { "for",                t_FOR                },
+    { "force",              t_FORCE              },
+    { "function",           t_FUNCTION           },
+
+    { "generate",           t_GENERATE           },
+    { "generic",            t_GENERIC            },
+    { "group",              t_GROUP              },
+    { "guarded",            t_GUARDED            },
+
+    { "if",                 t_IF                 },
+    { "impure",             t_IMPURE             },
+    { "in",                 t_IN                 },
+    { "inertial",           t_INERTIAL           },
+    { "inout",              t_INOUT              },
+    { "is",                 t_IS                 },
+  
+    { "label",              t_LABEL              },
+    { "library",            t_LIBRARY            },
+    { "linkage",            t_LINKAGE            },
+    { "literal",            t_LITERAL            },
+    { "loop",               t_LOOP               },
+
+    { "map",                t_MAP                },
+    { "mod",                t_MOD                },
+
+    { "nand",               t_NAND               },
+    { "new",                t_NEW                },
+    { "next",               t_NEXT               },
+    { "nor",                t_NOR                },
+    { "not",                t_NOT                },
+    { "null",               t_NULL               },
+
+    { "of",                 t_OF                 },
+    { "on",                 t_ON                 },
+    { "open",               t_OPEN               },
+    { "or",                 t_OR                 },
+    { "others",             t_OTHERS             },
+    { "out",                t_OUT                },
+
+    { "package",            t_PACKAGE            },
+    { "parameter",          t_PARAMETER          },
+    { "port",               t_PORT               },
+    { "postponed",          t_POSTPONED          },
+    { "procedure",          t_PROCEDURE          },
+    { "process",            t_PROCESS            },
+    { "property",           t_PROPERTY           },
+    { "protected",          t_PROTECTED          },
+    { "pure",               t_PURE               },
+  
+    { "range",              t_RANGE              },
+    { "record",             t_RECORD             },
+    { "register",           t_REGISTER           },
+    { "reject",             t_REJECT             },
+    { "release",            t_RELEASE            },
+    { "restrict",           t_RESTRICT           },
+    { "restrict_guarantee", t_RESTRICT_GUARANTEE },
+    { "rem",                t_REM                },
+    { "report",             t_REPORT             },
+    { "rol",                t_ROL                },
+    { "ror",                t_ROR                },
+    { "return",             t_RETURN             },
+
+    { "select",             t_SELECT             },
+    { "sequence",           t_SEQUENCE           },
+    { "severity",           t_SEVERITY           },
+    { "signal",             t_SIGNAL             },
+    { "shared",             t_SHARED             },
+    { "sla",                t_SLA                },
+    { "sll",                t_SLL                },
+    { "sra",                t_SRA                },
+    { "srl",                t_SRL                },
+    { "strong",             t_STRONG             },
+    { "subtype",            t_SUBTYPE            },
+
+    { "then",               t_THEN               },
+    { "to",                 t_TO                 },
+    { "transport",          t_TRANSPORT          },
+    { "type",               t_TYPE               },
+
+    { "unaffected",         t_UNAFFECTED         },
+    { "units",              t_UNITS              },
+    { "until",              t_UNTIL              },
+    { "use",                t_USE                },
+
+    { "variable",           t_VARIABLE           },
+    { "vmode",              t_VMODE              },
+    { "vprop",              t_VPROP              },
+    { "vunit",              t_VUNIT              },
+
+    { "wait",               t_WAIT               },
+    { "when",               t_WHEN               },
+    { "while",              t_WHILE              },
+    { "with",               t_WITH               },
+
+    { "xor",                t_XOR                },
+    { "xnor",               t_XNOR               },
+    { "zz",                 -1                   } // list end
+};
+
+   
+static int find_keyword(char *s)
 {
-  int j;
-  for (j=0;j<iCounter+1;j++)
-  {
-    g_buf[j]=0;
-  }
+  QCString word(s);
+  // keyword ?
+  if (word.length() >  MAX_KEYWORD_LEN) 
+	return -1;
 
-  iCounter=0;
+  word=word.lower();
+  QMap<QCString, int>::Iterator it = keyMap.find(word);
+  if (it.key())
+	return it.data();
+
+  return -1;
 }
 
-static void  addText (char *word, int llen)
-{
-  if ((uint)(iCounter + llen) > g_bufSize)
-  {
-    char *pTmp = (char*)realloc(g_buf,iCounter+llen+2048);
-    if (pTmp)
-    {
-      g_buf = pTmp;
-    }
-    else
-    {
-      fprintf(stderr,"\n not enough memory for realloc\n");
-      return; 
-    }
-  }
-  while (llen>0)
-  {
-    g_buf[iCounter]=*word++;
-    iCounter++;
-    llen--;
-  }    
-  g_buf[iCounter]='\0'; 
-} 
-
-static void getBufText(QCString& qc,int start)
-{
-  while (start < iCounter)
-  {
-    qc+=(g_buf[start]);
-    start++;
-  }
-}
-
+// update current line
 static void lineCount()
 {
-  for ( const char* c = yytext ; *c ; ++c )
+  for (const char* c=vhdlScanYYtext ; *c ; ++c )
   {
     yyLineNr += (*c == '\n') ;
   }
 }
 
-static void deleteSpecChars(char* str,char *buf)
+
+static void makeInlineDoc(int endCode)
 {
-  while (*str)
-  {
-    if ((*str == '\t') || (*str == '\n') || (*str == '\r') || (*str == ' ')) 
-    {
-      str++;
-    }
-    else
-    {
-      *buf++ = *str++;
-    }
-  }
-  *buf='\0';
-}
+  int len=endCode-iCodeLen;
+  QCString par=inputVhdlString.mid(iCodeLen,len);
+  gBlock.doc=par;
+  gBlock.inbodyDocs=par;
+  gBlock.section=Entry::VARIABLE_SEC;
+  gBlock.spec=VhdlDocGen::MISCELLANEOUS;
+  gBlock.fileName = yyFileName;
+  gBlock.endBodyLine=yyLineNr-1;
+  gBlock.lang=SrcLangExt_VHDL;
+  Entry *temp=new Entry(gBlock);
 
-static void getType(Entry* p,char* text)
-{
-  QCString name(text);
-  name=name.stripWhiteSpace();           
-  if (stricmp(name.data(),"signal" )==0)
-  {
-    p->spec=VhdlDocGen::SIGNAL;
-  }
-  else if (stricmp(name.data(),"type" )==0)
-  {
-    p->spec=VhdlDocGen::TYPE; 
-  }
-  else if (stricmp(name.data(),"subtype" )==0)
-  {
-    p->spec=VhdlDocGen::SUBTYPE;   
-  }
-  else if (stricmp(name.data(),"constant" )==0)
-  {
-    p->spec=VhdlDocGen::CONSTANT;    
-  }
-  else if (stricmp(name.data(),"attribute" )==0)
-  {
-    p->spec=VhdlDocGen::ATTRIBUTE;
-  }
-  else if (stricmp(name.data(),"function" )==0)
-  {
-    p->spec=VhdlDocGen::FUNCTION;    
-  }
-  else if (stricmp(name.data(),"procedure" )==0)
-  {
-    p->spec=VhdlDocGen::PROCEDURE;
-  }
-  else if (stricmp(name.data(),"units" )==0)
-  {
-    p->spec=VhdlDocGen::UNITS;
-  }
-  else if (name.contains("shared",false) && name.contains("variable",false))
-  {
-    p->spec=VhdlDocGen::SHAREDVARIABLE;
-  }
-  else if (stricmp(name.data(),"file" )==0) 
-  {
-    p->spec=VhdlDocGen::VFILE;
-  }
-  else if (stricmp(name.data(),"group" )==0) 
-  {
-    p->spec=VhdlDocGen::GROUP; 
-  }
-  else if (stricmp(name.data(),"alias" )==0) 
-  {
-    p->spec=VhdlDocGen::ALIAS; 
-  }
-  else 
-  {
-    err("wrong type");
-  }
-  p->section=Entry::VARIABLE_SEC;
-}
+  Entry* compound=getVhdlCompound();
 
-//-------------------------------------------------------------------------
-
-/*
- * adds signals found in entities|records|units
- */
-
-static void addSignals(const char* str,int line, Entry *e,const char *comment=0)
-{
-  //printf("===> addSignals (%s) comment='%s'\n",str,comment);
-  QList<QCString> ql;
-  QCString bufio;
-  ql.setAutoDelete(TRUE);
-
-  VhdlDocGen::getSigName(ql,str,bufio);
-  int count = ql.count();
-
-  QCString brief  = current->brief;
-  QCString doc    = current->doc;
-  Entry *tmpEntry = current;
-  current = new Entry;
-  initEntry(current);
-  handleCommentBlock(comment,TRUE);
-  if (!current->brief.isEmpty())
+  if (compound)
   {
-    if (doc.isEmpty())
-    {
-      doc = brief;
-    }
-    else if (!brief.isEmpty())
-    {
-      doc = brief + "<p>" + doc;
-    }
-    brief = current->brief;
-  }
-  delete current;
-  current = tmpEntry;
-  current->brief.resize(0);
-  current->doc.resize(0);
- 
-  if (genPort!=3) // not a unit
-  {
-    for (int k=1;k<count;k++)
-    {
-      //printf("adding '%s' '%s'\n",ql.at(0)->data(),ql.at(k)->data());
-      Entry *pTemp=new Entry;
-      initEntry(pTemp);
-      pTemp->startLine = line;
-      pTemp->bodyLine  = line;
-      pTemp->name      = ql.at(k)->data();
-      pTemp->section   = Entry::VARIABLE_SEC;
-      pTemp->brief     = brief;
-      pTemp->doc       = doc;
-      pTemp->mGrpId    = current->mGrpId; // copy member group id
-      QCString stSpec  = ql.at(0)->data();
-      if (genPort==1) // found port
-      {
-	pTemp->spec    = VhdlDocGen::PORT;
-	stSpec.stripPrefix(bufio.data()); 
-	stSpec=stSpec.stripWhiteSpace();
-	pTemp->args    = stSpec;
-	pTemp->type    = bufio;
-	addSubEntry(e,pTemp);
-      }
-      else if (genPort==2) // found record
-      {
-	pTemp->spec    = VhdlDocGen::RECORD;
-	pTemp->type    = stSpec;
-	pTemp->name.prepend(VhdlDocGen::getRecordNumber());
-	delete current;
-	current = new Entry(*pTemp); // make a deep copy of pTemp
-	newEntry();                  // add it to lastCompound and make a new current
-	delete pTemp;
-      }
-      else 
-      {
-	pTemp->spec    = VhdlDocGen::GENERIC;
-	pTemp->type    = stSpec;
-	addSubEntry(e,pTemp);
-      }
-    }// for
-  }
-  else // found a unit 
-  {
-    Entry *pTemp=new Entry;
-    initEntry(pTemp);
-    QCString tt(str);
-    QStringList ql=QStringList::split("=",tt,FALSE);
-    pTemp->spec      = VhdlDocGen::UNITS;
-    pTemp->section   = Entry::VARIABLE_SEC;
-    pTemp->startLine = line;
-    pTemp->bodyLine  = line;
-    pTemp->brief     = brief; // adds brief description to the unit member
-    pTemp->doc       = doc;   // adds doc to the unit member
-    pTemp->type      = ql[1];
-    pTemp->name      = ql[0].stripWhiteSpace();
-    pTemp->name.prepend(VhdlDocGen::getRecordNumber());
-    delete current;
-    current = new Entry(*pTemp); // make a deep copy
-    newEntry();                  // add it to lastCompound
-    delete pTemp;
-  }
-}                                              
-
-/*
- * this function parses a process prototype
- * and adds the signal to the process
- */
-
-static void parseProcessProto()
-{
-  QStringList ql;
-  QCString qcs;
-  bool sem=FALSE;
-  //Entry* ppEntry=new Entry;
-  //ppEntry->fileName=yyFileName;
-  //processEntry=ppEntry;
-  QCString name; 
-  scantype=0;
-  getBufText(qcs,0);
-  if (qcs.contains('(') != qcs.contains(')')) return; 
-  VhdlDocGen::deleteAllChars(qcs,'\n');
-  VhdlDocGen::parseProcessProto(qcs,name,ql);
-  current->section=Entry::FUNCTION_SEC;
-  //current->stat=TRUE;
-  current->spec=VhdlDocGen::PROCESS;
-  current->startLine=iFuncLine;
-  current->bodyLine=iFuncLine;
-  current->fileName=yyFileName;
-  if (!name.isEmpty())
-  {
-    current->name=name.stripWhiteSpace();
-  }
-  else // found an anonymous process, so we add a generated name  
-  {
-    current->name=VhdlDocGen::getProcessNumber(); 
-  }
-
-  current->args+=" ( "; 
-  if (!ql.isEmpty())
-  {
-    QValueList<QString>::Iterator iter = ql.begin();
-    for ( ; iter != ql.end(); ++iter)
-    {
-      if (sem)
-      {
-        current->args+=',';
-      }
-      Argument *arg=new Argument;
-      arg->name=((QCString)*iter).stripWhiteSpace();    
-      current->argList->append(arg);
-      current->args+=(QCString)*iter; 
-      sem = TRUE;
-    }    
-  }
-  current->args+=" ) ";
-  bufferClear();
-}//parseProcessProto
-
-
-/*
- * parses a function|procedure protoype
- */
-
-static void parseFunctionProto()
-{
-  QCString name,ret,qcs,temp;
-  bool sem=FALSE;
-  QList<Argument> ql;
-  ql.setAutoDelete(TRUE);
-  getBufText(qcs,0);
-  if (qcs.contains('(') != qcs.contains(')')) 
-    return; // function without a prototype 
-  if (qcs.contains("function",FALSE)==0 && qcs.contains("procedure",FALSE)==0) 
-    return; 
-  qcs=qcs.stripWhiteSpace();
-  temp=qcs.lower();
-  if (temp.stripPrefix("impure"))
-  {
-    current->exception="impure";
-    qcs=qcs.remove(0,6);
-  }
-  else if (temp.stripPrefix("pure")) 
-  {
-    current->exception="pure";
-    qcs=qcs.remove(0,4);
-  }
-
-  VhdlDocGen::parseFuncProto(qcs.data(),ql,name,ret); 
-  //printf("parseFuncProto(%s)=%s,%s\n",qcs.data(),name.data(),ret.data());
-  VhdlDocGen::deleteAllChars(name,';');
-  current->name=name;
-  current->startLine=iFuncLine;
-  current->bodyLine=iFuncLine;
-
-  int count = ql.count(); 
-
-  current->args+" ( "; 
-  for (int k=0;k<count;k++)
-  {
-    if (sem)
-    {
-      current->args+=",";
-    }
-    Argument *arg=new Argument;
-    Argument *hh=(Argument*)ql.at(k);
-    arg->name=hh->name;
-    arg->type=hh->type;
-    arg->defval=hh->defval;
-    arg->attrib=hh->attrib;
-    current->argList->append(arg);
-    current->args+=hh->name;
-    sem=TRUE;
-  }
-  current->args+" )";
-
-  if (!ret.isEmpty()) 
-    current->spec=VhdlDocGen::FUNCTION;
-  else
-    current->spec=VhdlDocGen::PROCEDURE;
-
-  current->section=Entry::FUNCTION_SEC;
-  current->type=ret;
-  //addSubEntry(ee,ppEntry); 
-  if (lastCompound)
-  {
-    lastCompound->addSubEntry(current);
-    current = new Entry;
-    initEntry(current);
+	compound->addSubEntry(temp);
   }
   else
   {
-    newEntry();
+	temp->type="misc"; // global code like library ieee...
+	current_root->addSubEntry(temp);
   }
-  bufferClear();
-}//parseFunctionProto
 
-static Entry* getEntryAtLine(const Entry* ce,int line)
+  gBlock.reset();
+
+
+}// makeInlineDoc
+
+static bool isConstraintFile(const QCString &fileName,const QCString &ext)
 {
-  EntryListIterator eli(*ce->children());
-  Entry *found=0;
-  Entry *rt;
-  for (;(rt=eli.current());++eli)
-  {
-    if (rt->bodyLine==line)
-    {
-      found=rt;
-    } // if
-    if (!found) 
-    {
-      found=getEntryAtLine(rt,line);
-    }
-  }
-  return found;
-}// getEntryAtLine
-
-//-------------------------------------------------------------------------
-
-static void parserInit()
-{
-  iCounter=0; 
-  iTextCounter=0;
-  yyLineNr=1;
-  current=0;
-  previous=0;
-  isFunc=0;
-  isBody=0;
-  scantype=0;
-  lastCompound=0;
-  lastEntity=0;
-  bropen=0;
-  openGroups=0;
-  iDocLine=-1;
-  qrl.clear();
-  num_chars=0;
-
-  if (!g_lexInit) 
-  {
-    VhdlDocGen::init();
-  }
-
-  g_bufSize=inputFile.size()+1024;
-  if (g_buf==0) free(g_buf);
-  g_buf=(char*)(calloc(g_bufSize,sizeof(char)));
-
-  if (g_buf==0)
-  {
-    fprintf(stderr,"\n not enough memory");
-    return;
-  }
-  g_buf[g_bufSize-1]='\0';
+  return fileName.right(ext.length())==ext;
 }
 
-bool VHDLLanguageScanner::needsPreprocessing(const QCString &)
-{
-  return FALSE;
-}
+//static void resetScanner(const char* s,MyParserVhdl* parse);
+
+#undef  YY_INPUT
+#define	YY_INPUT(buf,result,max_size) result=vhdlScanYYread(buf,max_size);
 
 
-void VHDLLanguageScanner::resetCodeParserState()
-{
-
-}
-
-#undef    YY_INPUT
-#define    YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static int yyread(char *buf,int max_size)
+static int vhdlScanYYread(char *buf,int max_size)
 {
   int c=0;
-  if (g_inputFromFile)
+  while ( c < max_size && inputVhdlString.at(inputPosition) )
   {
-    c = inputFile.readBlock(buf,max_size);
-    if (c==-1) yy_fatal_error("input in flex scanner failed");
-  }
-  else
-  {
-    while ( c < max_size && inputString[inputPosition] )
-    {
-      *buf = inputString[inputPosition++] ;
-      c++; 
-      buf++;
-    }
+	*buf = inputVhdlString.at(inputPosition++) ;
+	c++; buf++;
   }
   return c;
 }
 
-
-
 %}
 
+upper_case_letter          [A-Z]
+digit                      [0-9]
+special_character          [\#\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\_\|]
+space_character            [ \t]
+format_effector            [\t\v\r\l\f]
+end_of_line                \n
+lower_case_letter          [a-z]
+other_special_character    [\!\$\@\?\[\\\]\^\`\{\}\~]
 
-  /* start command character */
-  /* -------------- VHDL SECTION -----------------------------------*/
+graphic_character          ({basic_graphic_character}|{lower_case_letter}|{other_special_character})
+basic_graphic_character    ({upper_case_letter}|{digit}|{special_character}|{space_character})
+letter                     ({upper_case_letter}|{lower_case_letter})
+letter_or_digit            ({letter}|{digit})
+decimal_literal            {integer}(\.{integer})?({exponent})?
+integer                    {digit}(_?{digit})*
+exponent                   ([eE][-+]?{integer})
+base                       {integer}
+based_integer              {extended_digit}(_?{extended_digit})*
+extended_digit             ({digit}|[a-fA-F])
 
-B                       [ \t]
-CR                      [\r\n]
-BR                      [ \t\n\r]
-DIGIT                   [0-9]
-LOWER_CASE_LETTER       [a-z]
-UPPER_CASE_LETTER       [A-Z]
-LETTER                  [a-zA-Z_0-9]
-SPACE_CHARACTER         [ \t]
-SPECIAL_CHARACTER       [#&'()*+,\-\./:;<=>_|]
-OTHER_SPECIAL_CHARACTER [~!$§%?@\[\\\]^{}]
-BASIC_GRAPHIC_CHARACTER {UPPER_CASE_LETTER}|{DIGIT}|{SPECIAL_CHARACTER}|{SPACE_CHARACTER}
-GRAPHIC_CHARACTER       {BASIC_GRAPHIC_CHARACTER}|{LOWER_CASE_LETTER}|{OTHER_SPECIAL_CHARACTER}
-EXTENDED_CHARACTER      [\\]{GRAPHIC_CHARACTER}*[\\] 
+extended_character         [\\]{graphic_character}*[\\] 
 
-NAME                    ({LETTER}[a-zA-Z0-9_.]*)|{EXTENDED_CHARACTER}
-STRING_LITERAL          \"{GRAPHIC_CHARACTER}*\"
-FUNCNAME                ([a-zA-Z"][*+\-_a-zA-Z0-9"\/=<>]*)|{EXTENDED_CHARACTER}
-DIGITS                  [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
-COMMENT                 "--"[^\n]*
-LABELID                 [a-z_A-Z][^\;]*";"({B}*{COMMENT})*
-PROTO                   [ (]*
-TEXTT                   "--"[^\/\@\*\#][^\n]*
-PROC                    ("function"|"procedure")
-ENDE                    ({BR}*("end"){BR}*{PROC}*{BR}*[;]{1})
-ENDEFF                  ("if"|"case"|"loop"|"generate"){BR}*[;]
-ENDE3                   ({BR}*("end"){BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;])|{ENDE}
-ENDFUNC                 {B}*"end"{BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;]
-FUNCIMPURE              "impure"|"pure"
-FUNCPROC                ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
-ARCHITECTURE            ("architecture"){BR}+{NAME}{BR}*("of")
-   /* Removed due to bug 538239
-      POST         "postponed"
-      PROCESS      ({BR}*{FUNCNAME}{B}*[:]{BR}*({POST}{BR}+)?("process"){BR}*{PROTO})|("process"){BR}*("("){BR}*{PROTO}|[^a-zA-Z]("process"){CR}|[^a-zA-Z]("process"){BR}+("is")
-   */
-PROCESS                 ({B}*{FUNCNAME}{B}*:{BR}*)?({B}*("postponed"){BR}+)?{B}*("process"){BR}*{PROTO}
+base_specifier             {digit}*(B|b|D|O|o|X|x|"UB"|"UO"|"UX"|"SB"|"SO"|"SX")
 
-ENDPROCESS              ("end"){BR}*("postponed")*("process"){BR}*{FUNCNAME}*{BR}*[;]
-LIBUSE                  ^{B}*("use"|"library"){BR}+
-ENTITY                  ^{B}*("component"|"entity"|"package"){BR}+
-PBODY                   ("package"){B}+("body"){BR}+{NAME}
-SHARED                  ("shared"){BR}+("variable")
-SIGTYPES                ^{B}*({SHARED}|"alias"|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
-CONFIG                  ("configuration"){BR}+{NAME}{BR}*("of"){BR}+{NAME}{BR}+"is"
+vhdl2008tooldir            `{graphic_character}+
 
-ALLTYPESMAP             {B}*[_a-zA-ZA_Z0-9.() ]*{B}*
-MAPCOMPONENT            ({ALLTYPESMAP}{BR}*[:]{BR}*("component"|"configuration")*{ALLTYPESMAP}{BR}*{TEXTT}*{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
-MAPCOMPONENT1           ({ALLTYPESMAP}{BR}*[:]{BR}*("entity"){BR}*{ALLTYPESMAP}{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
-
-BRACEOPEN               [(]{1}
-BRACECLOSE              [)]{1}
-
-ALLID                   [^;()\t ]
-
-/* VHDL 2001 */
-ENDPROTECTED            ("end"{BR}+"protected"{BR}+{NAME}{BR}*";")|("end"{BR}+"protected"{BR}*";")
-ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
+B                          [ \t]
+BR                         [ \t\n\r]
 
 
 %option noyywrap
-
-  /* language parsing states */
-
-%x Start
 %x Comment
-%x FindTypeName
-%x ParseType 
-%x ParseRecord
-%x ParseUnits
-%x ParseProcess
-%x ParseFunc
-%x FindName
-%x FindEntityName
-%x FindGenPort
-%x FindTypes
-%x FindSigName
-%x FindFuncName
-%x FindBegin
-
+%x Vhdl2008Comment
+%x EndVhdl2008Comment
 %%
 
-<Start>{ENDPROTECTED}|{ENDPROTECEDBODY}  {
- lineCount();
-}
+{space_character}  { /* nothing */ }
+\&                 { return(t_Ampersand); }
+\'                 { return(t_Apostrophe); }
+\(                 { return(t_LeftParen); }
+\)                 { return(t_RightParen); }
+"**"               { return(t_DoubleStar); }
+\*                 { return(t_Star); }
+\+                 { return(t_Plus); }
+\,                 { return(t_Comma); }
+\-                 { return(t_Minus); }
+":="               { return(t_VarAsgn); }
+\:                 { return(t_Colon); }
+\;                 { return(t_Semicolon); }
+"<="               { return(t_LESym); }
+">="               { return(t_GESym); }
+\<                 { return(t_LTSym); }
+\>                 { return(t_GTSym); }
+\=                 { return(t_EQSym); }
+\/=                { return(t_NESym); }
+"=>"               { return(t_Arrow); }
+"<>"               { return(t_Box); }
+"<<"               { return(t_SLSL); }
+">>"               { return(t_SRSR); }
+"??"               { return(t_QQ); }
+"?>="              { return(t_QGT); }
+"?<="              { return(t_QLT); }
+"?>"               { return(t_QG); }
+"?<"               { return(t_QL); }
+"?="               { return(t_QEQU); }
+"?/="              { return(t_QNEQU); }
+\?                 { return(t_Q); }
+\|                 { return(t_Bar); }
+\.                 { return(t_Dot); }
+\/                 { return(t_Slash); }
+\@                 { return(t_At); }
+\^                 { return(t_Neg); }
+\[                 { return(t_LEFTBR); }
+\]                 { return(t_RIGHTBR); }
 
 
-
-<Start>{CONFIG} { // found configuration
- 
-  QCString qcs(vhdlscanYYtext);
-  current->name=VhdlDocGen::getIndexWord(qcs,1);
-  current->type=VhdlDocGen::getIndexWord(qcs,3);
-  current->startLine=yyLineNr;
-  current->bodyLine=yyLineNr;
-  current->section=Entry::VARIABLE_SEC; 
-  current->spec=VhdlDocGen::CONFIG;
-  current->args="configuration";
-  newEntry();
-  BEGIN(Start);
-}
-
-<Start>{SIGTYPES}  { // found type constant|type|attribute and so on..
-    bropen=0;
-    lineCount();
-
-    bufferClear();
-    //pEntry=current;
-    getType(current,yytext);
-    current->bodyLine=yyLineNr;
-    if (current->spec==VhdlDocGen::UNITS)
-    {
-      //addSubEntry(current,pEntry);
-      current->startLine=yyLineNr;
-      current->bodyLine=yyLineNr;
-      newEntry(); // adds the unit to the lastCompound
-      genPort=3;
-      BEGIN(ParseRecord);
-    }
-    else    
-    {
-      BEGIN(FindTypeName);
-    }
-  }
-
-<Start>{ARCHITECTURE} {     //found architecure
-  lineCount();
-  bropen=0;
-  bufferClear();
-  isBody=0;
-  lastCompound = current;
-  QCString curName=VhdlDocGen::getIndexWord(yytext,1);
-  current->section=Entry::CLASS_SEC; //Entry::CLASS_SEC;
-  current->spec=VhdlDocGen::ARCHITECTURE;
-  current->protection=Private;
-  current->name=curName;
-  current->fileName=yyFileName;
-  current->startLine=yyLineNr;
-  current->bodyLine=yyLineNr;      
-  //printf("-> Architecture at line %d\n",yyLineNr);
-  BEGIN(FindName);
-}
-
-
-<Start>{PROCESS} {          //found process
-  lineCount();
-  iFuncLine=yyLineNr;
-  bropen=0;
-  //printf("--> Process: line=%d\n",yyLineNr);
-  bufferClear();
-  addText(yytext,yyleng);
-  QCString qcs(yytext);
-  if (qcs.contains('('))
-  {
-    bropen=1;
-    scantype=2;
-    BEGIN(ParseType);
-  }
-  else 
-  {
-    //                      iFuncLine--;
-    parseProcessProto();  
-    BEGIN(ParseProcess);
-  }
-}                                                                               
-
-<Start>{LIBUSE}{BR}*       {      //  found library or package
-  bropen=0;
-  bufferClear();
-  isBody=0;
-  QCString qcs=QCString(yytext);
-  // lowerString(qcs);
-  qcs=qcs.stripWhiteSpace();
-  if (stricmp(qcs.data(),"use")==0)
-  {
-    current->spec=VhdlDocGen::USE;
-    current->type="package";
-  }
-  else 
-  {
-    current->spec=VhdlDocGen::LIBRARY;
-    current->type="library";
-  }
-  current->section=Entry::VARIABLE_SEC;
-  current->bodyLine=yyLineNr;
-  lineCount();
-  BEGIN(FindName);
-}
-
-<Start>{FUNCPROC}       {   // found a new function|procedure
-  lineCount();
-  iFuncLine=yyLineNr;
-  bropen=0;
-  bufferClear();
-  isFunc=1;
-  addText(yytext,yyleng);
-  BEGIN(FindFuncName);
-}
-
-<Start>{ENTITY}  {     // found entity|component|package
-  lineCount();
-  //printf("--> Entity at line %d\n",yyLineNr);
-
-  bropen=0;  
-  bufferClear();
-  QCString word(yytext);
-  word=word.lower();  
-  word=word.stripWhiteSpace();
-
-  if (strcmp(word.data(),"entity")==0)
-  {
-    isBody=0;
-    scantype=0;                                    
-    lastCompound=0;
-    current->section=Entry::CLASS_SEC;
-    current->spec=VhdlDocGen::ENTITY;
-    current->protection=Public;
-    current->bodyLine=yyLineNr;
-    current->fileName=yyFileName;
-    lastEntity = current;
-  }
-  else if (strcmp(word.data(),"component")==0)
-  {
-    current->section=Entry::VARIABLE_SEC;
-   // current->stat=TRUE;
-    current->spec=VhdlDocGen::COMPONENT;
-    current->bodyLine=yyLineNr;
-    scantype=1;  
-  }
-  else if (strcmp(word,"package")==0)
-  {
-    isBody=0;
-    scantype=0;
-    lastCompound = current;
-    current->section=Entry::CLASS_SEC;
-    current->spec=VhdlDocGen::PACKAGE;
-    current->protection=Package; //VhdlDocGen::PACKAGE;
-    current->bodyLine=yyLineNr;
-    current->fileName=yyFileName;
-  }
-  else
-    err("\n found wrong component at line [%d]",yyLineNr); 
-
-  BEGIN(FindEntityName);
-}
-
-<Start>{MAPCOMPONENT}|{MAPCOMPONENT1}  { // found component instantiation 
-
- // lineCount();
-  QCString type;
-  QCString tt(yytext);
-  QRegExp regg("[\\s:.()-]");
-  QStringList qsl=QStringList::split(regg,tt,false);
-
-  // consider upper/lower-case letters
-  QStringList qsltemp=QStringList::split(regg,tt.lower(),false);
-  int index=qsltemp.findIndex(QCString("entity"))+1;
-  index+=qsltemp.findIndex(QCString("component"))+1;
-  index+=qsltemp.findIndex(QCString("configuration"))+1;
-  int len=qsltemp.count();
-
-  current->spec=VhdlDocGen::COMPONENT_INST;
-  current->section=Entry::VARIABLE_SEC;
-  current->startLine=yyLineNr;
-  current->bodyLine=yyLineNr;
-
-  if (index!=0 && tt.contains(')')==0)     // found component instantiation xxx: configuration/component/entity yyy
-  {
-    current->type=(QCString)qsl[len-3];
-  }
-  else if (index!=0 && tt.contains(')'))   // found component instantiation xxx: entity www.yyy(zzz)
-  {
-    current->type=(QCString)qsl[len-4];
-  }
-  else
-  {
-    current->type=(QCString)qsl[1];          // found component instantiation xxx:yyy
-  }
-
-  current->name=QCString(qsl[0]);
-  if (lastCompound)
-  {
-    if (!VhdlDocGen::foundInsertedComponent(current->type,lastCompound))
-    {   
-      BaseInfo *bb=new BaseInfo(current->type,Public,Normal);
-      lastCompound->extends->append(bb);
-    }
-    lastCompound->addSubEntry(current);
-    current = new Entry;
-    initEntry(current);
-  }
-  else
-  {
-    newEntry();
-  }
- lineCount();
-
-} 
-
-<Start>{CR}*    {
-  lineCount();
-  addText(yytext,yyleng);
-  BEGIN(Start); 
-}
-
-<ParseProcess>[^;()] {
-  // eat process body
-  lineCount();
-  BEGIN(ParseProcess);
-}
-
-<ParseProcess,ParseType>{ENDPROCESS} {  // find end of process
-  lineCount();
-  current->endBodyLine=yyLineNr;
-  //printf("Process: start=%d end=%d\n",current->bodyLine,current->endBodyLine);
-  if (lastCompound)
-  {
-    lastCompound->addSubEntry(current);
-    current = new Entry;
-    initEntry(current);
-  }
-  else
-  {
-    newEntry();
-  }
-  BEGIN(Start);
-}
-
-
-<ParseUnits>{BR}* { 
-  lineCount();
-}
-
-<ParseUnits>{B}*[a-z_][^\n;]* { // parse record|unit body
-  lineCount();
-  QCString zz(yytext);
-  addSignals(zz.data(),yyLineNr,current);
-  BEGIN(ParseUnits);
-}
-
-<FindName>{NAME} {  // found entity|architecture|component name
-  lineCount();
-
-  QCString qcs(yytext);
-  qcs=qcs.stripWhiteSpace();
-  if (current->spec==VhdlDocGen::USE || current->spec==VhdlDocGen::LIBRARY)
-  {
-    int j=qcs.length();
-    int i=qcs.find(".");
-    if (i>0)
-      qcs=qcs.right(j-i-1);
-    i=qcs.find(".");
-    if (i>0)
-      qcs=qcs.left(i);            
-  /*  
-    -- Consider the case we have more than one entity in one file.Each entity has its own package/library
-    -- declaration. In this case package yyy will be added [with newEntry()] to architecture aaa !! instead to entity
-    -- bbb. We must place these constructs to current_root and the function mapLibPackage() will finish the rest.
-    
-    -- package xxx;
-    -- entity aaa
-    --  ....
-    -- end entity aaa;
-    -- architecture aaa
-    --     ...
-    -- end architecture aaa;
-    -- package yyy;
-    -- entity bbb;
-    */
-      
-    current->name=qcs;                 
-    Entry *copy=new Entry(*current);
-    current->reset();
-    addSubEntry(current_root,copy);   //  insert into entry list  with mapLibPackage()           
-  }
-  else if (current->spec==VhdlDocGen::ARCHITECTURE)
-  {
-    //current->name+=qcs.lower();
-    current->name.prepend(qcs+"::");
-
-    //if (lastEntity)
-    //{
-      // inherit private inheritance relation between entity and architecture
-      //if (!VhdlDocGen::foundInsertedComponent(current->name,lastEntity))
-      //{
-	//	BaseInfo *bb=new BaseInfo(current->name,Private,Normal);
-	//	lastEntity->extends->append(bb);    
-      //}
-    //}
-
-  }
-  else if (current->spec==VhdlDocGen::PACKAGE_BODY)
-  {
-    current->name+=qcs;
-  }
-  else
-  {
-    current->name+=qcs;
-  }
-  if (!(current->spec==VhdlDocGen::USE || current->spec==VhdlDocGen::LIBRARY))
-  newEntry();
-
-  BEGIN(Start);
-}
-
-<FindFuncName>{FUNCNAME}    { // found name of a process|function|procedure
-  lineCount();
-
-  addText(yytext,yyleng);
-  BEGIN(ParseType);
-}
-
-<FindTypeName>{NAME}{BR}* {
-  lineCount();                                                            
-  current->name=QCString(yytext);
-  BEGIN(ParseType);
-}
-
-
-<ParseType>("is"){BR}+("protected"){BR}+("body") {lineCount(); BEGIN(Start); }
-
-<ParseType>("is"){BR}+("protected"){BR}+ { 
- lineCount();
- current->section=Entry::VARIABLE_SEC;
- current->spec=VhdlDocGen::TYPE;
- current->type="protected"; 
- newEntry(); 
-  BEGIN(Start);
-}
-
-
-
-
-<ParseType>("is"){BR}*("record") { // find record
-  lineCount();
-  if (isFunc)
-  {
-    BEGIN(Start);
-  }
-
-  genPort=2;
-  current->section=Entry::VARIABLE_SEC;
-  current->spec=VhdlDocGen::RECORD;
-  addText(yytext,yyleng); 
-  newEntry(); // adds the record to the last compound
-  BEGIN(ParseRecord);
-}
-
-<ParseRecord>{BR}* {
-  lineCount();
- }
-
-<ParseRecord>("end"){BR}*("record"){BR}*{LETTER}*{BR}*[;]|("end"){BR}*("units"){BR}*[;]  {
-  lineCount();
-  genPort=0;
-  bufferClear();
-  BEGIN(Start);
-}
-
-<ParseRecord>[a-z_A-Z0-9][^\n;]*";"({B}*{COMMENT})* { // parse record body
-  lineCount();
-  QCString comment;
-  QCString zz(yytext);
-  VhdlDocGen::deleteAllChars(zz,';'); //delete ; in unit construct
-  if (zz.contains("--!"))
-  {
-    QStringList ql=QStringList::split("--!",zz,FALSE);
-    comment = ql[1];
-    zz = ql[0];
-  }
-  else if (zz.contains("--"))
-  {
-    QStringList ql=QStringList::split("--",zz,FALSE);
-    zz = ql[0];
-  }
-  initEntry(current);
-  addSignals(zz,yyLineNr,current,comment);
-  addText(yytext,yyleng); 
-  BEGIN(ParseRecord);
-}
-
-<ParseType>{BR}+("is"){BR}+|{BR}+("is"){B}*"--" { // found a new function  in an architecture ?
-  addText(yytext,yyleng);
-  lineCount();
-  QCString ttt;
-  bool bb=TRUE;
-  getBufText(ttt,0);
-  if (ttt.contains("--"))
-  { 
-    unput('-');unput('-'); 
-    VhdlDocGen::deleteCharRev(ttt,'-');
-    VhdlDocGen::deleteCharRev(ttt,'-');
-  }
-  if (ttt.contains('(') != ttt.contains(')'))
-  {
-    bb=FALSE;
-  }
-  bool ss = VhdlDocGen::isFunctionProto(ttt);
-  //printf("VhdlDocGen::isFunctionProto(%s)=%d\n",ttt.data(),ss);
-  if (ss && bb)
-  {
-    bufferClear();
-    addText(ttt.data(),ttt.length());
-    functionEntry=0;
-    //eFuncBody=new Entry;
-    ::parseFunctionProto();
-  }
-  bufferClear();  
-  BEGIN(ParseType);
-}
-
-
-<ParseType>[^;()\t ] {
-  lineCount();      
-  addText(yytext,yyleng); 
-  BEGIN(ParseType);
-}
-
-<ParseType>{BRACEOPEN} {
-  lineCount();
-  bropen++;
-  addText(yytext,yyleng);
-  BEGIN(ParseType);
-}
-
-<ParseType>{BRACECLOSE} {
-  lineCount();
-  bropen--;
-  addText(yytext,yyleng);
-  if (bropen==0 && scantype==2) // process
-  {
-    ::parseProcessProto();
-    BEGIN(ParseProcess);
-  } // if
-  else
-  {
-    BEGIN(ParseType);
-  }
-}
-
-
-<ParseType>{ENDE}|{ENDFUNC} { // found end of function|process
-  QRegExp regg("[\\s;]");
-  lineCount();
-  QCString tt(yytext);
-  tt=tt.lower();
-  QStringList ql=QStringList::split(regg,tt,FALSE);
-  int index=ql.findIndex(QCString("if"))+1;
-  index+=ql.findIndex(QCString("case"))+1;
-  index+=ql.findIndex(QCString("loop"))+1;
-  index+=ql.findIndex(QCString("generate"))+1;
-  bufferClear();
-  if (index==0)
-  {
-    if (isFunc)
-    {
-      Entry* pFunc=getEntryAtLine(current_root,iFuncLine);
-      if (pFunc && pFunc->section==Entry::FUNCTION_SEC)
-      {
-	pFunc->endBodyLine=yyLineNr;
-      }
-      isFunc=0;
-      BEGIN(Start);
-    }
-  }
-}
-
-<ParseFunc>[^;()] {
-  // eat process body
-  lineCount();
-  BEGIN(ParseFunc);
- }
-
-<ParseFunc>{ENDE3} {
-  QRegExp regg("[\\s;]");
-  lineCount();
-  QCString tt(yytext);
-  tt=tt.lower();
-  QStringList ql=QStringList::split(regg,tt,FALSE);
-  int index=ql.findIndex(QCString("if"))+1;
-  index+=ql.findIndex(QCString("case"))+1;
-  index+=ql.findIndex(QCString("loop"))+1;
-  index+=ql.findIndex(QCString("generate"))+1;
-  bufferClear();
-  if (index==0 && isFunc)
-  {
-    Entry* pFunc=getEntryAtLine(current_root,iFuncLine);
-    if (pFunc && pFunc->section==Entry::FUNCTION_SEC)
-    {
-      pFunc->endBodyLine=yyLineNr;
-    }
-    isFunc=0;
-    BEGIN(Start);
-  }
-}
-
-<ParseType>";" {
-  lineCount();
-  addText(yytext,yyleng);    
-  if (bropen==0 && !(isFunc==1 && isBody==1) )
-  {
-    if (isFunc)
-    {
-      parseFunctionProto();
-      bufferClear();
-      if (lastCompound && lastCompound->spec==VhdlDocGen::PACKAGE) 
-      {
-        isFunc=0;
-        BEGIN(Start);
-      }
-      else
-      {
-        BEGIN(ParseFunc); 
-      }
-    }//if
-    else
-    {
-      QCString qcs;
-      getBufText(qcs,0);
-      qcs=qcs.stripWhiteSpace();
-      current->section=Entry::VARIABLE_SEC;
-      current->type+=qcs.data();  
-
-      if ((current->spec==VhdlDocGen::SIGNAL   || 
-	   current->spec==VhdlDocGen::CONSTANT || 
-	   current->spec==VhdlDocGen::TYPE     || 
-	   current->spec==VhdlDocGen::SUBTYPE  ||
-	   current->spec==VhdlDocGen::SHAREDVARIABLE
-	  ) &&  
-	  qcs.stripPrefix(","))
-      {
-	QList<QCString> ql;
-	ql.setAutoDelete(TRUE);
-	QCString buffer;
-	if (current->spec==VhdlDocGen::SUBTYPE || 
-	    current->spec==VhdlDocGen::TYPE
-	   )
-	{
-	  VhdlDocGen::getSigTypeName(ql,qcs.data(),buffer);
-	}
-	else
-	{
-	  VhdlDocGen::getSigName(ql,qcs.data(),buffer);
-	}
-	QCString doc = current->doc;
-	QCString brief = current->brief;
-	if (ql.count()>0) 
-	{
-	  for (uint j=1;j<ql.count();j++)
+{letter}(_?{letter_or_digit})*|{extended_character} 	{
+          int itoken=find_keyword(vhdlScanYYtext);
+        
+          //	fprintf(stderr,"\n <<<< search tok:  %s %d %d>>>\n",vhdlScanYYtext,itoken,yyLineNr);
+        
+          // tokens in vhdlparser.hpp 258..412
+	  if (itoken>200  && itoken<500 && prevToken!=t_END)
 	  {
-	    Entry *ppt = new Entry;
-            initEntry(ppt);
-	    ppt->type     += ql.at(0)->data();  
-	    ppt->section   = Entry::VARIABLE_SEC;
-	    ppt->spec      = current->spec;        
-	    ppt->name     += ql.at(j)->data();
-	    ppt->bodyLine  = yyLineNr;
-	    ppt->startLine = yyLineNr;
-	    ppt->brief     = brief;
-	    ppt->doc       = doc;
-	    if (lastCompound)
-	    {
-	      lastCompound->addSubEntry(ppt);
-	    }
-	    else
-	    {
-	      current->addSubEntry(ppt);
-	    }
+	    //  	printf("\n <<<< insert tok:  %s %d %d>>>\n",vhdlScanYYtext,itoken,yyLineNr);
+	    lineIndex[itoken]=yyLineNr;
 	  }
-	  current->type=ql.at(0)->data(); 
-	  ql.clear();   
-	}
-      }
-      if (lastCompound)
-      {
-	lastCompound->addSubEntry(current);
-	current = new Entry;
-	initEntry(current);
-      }
-      else
-      {
-	newEntry();
-      }
-      isFunc=0;
-      bufferClear();
-      BEGIN(Start);
-    }
-  }
-  else
-  {
-    BEGIN(ParseType);
-  }
-}
-
-<ParseType>{BR}* {
-  lineCount();
-  addText(yytext,yyleng);
-  BEGIN(ParseType);
-}
-
-<FindEntityName>{NAME} {    // found name of an entity/architecture/package
-  lineCount();
-  QCString qcs(yytext);
-  qcs=qcs.stripWhiteSpace();
-  qcs=qcs.lower();
-  if (strcmp(qcs.data(),"body")==0) // found package body
-  {
-    current->spec=VhdlDocGen::PACKAGE_BODY;
-    current->section=Entry::CLASS_SEC;
-    current->protection=Protected;
-    current->name+=QCString("_");
-    isBody=1;
-    BEGIN(FindName);
-  }
-  else if (scantype==1) // found a component
-  {
-    QCString qq(yytext);
-    qq=qq.stripWhiteSpace();
-    //qq=qq.lower();
-
-    current->name=qq;
-    qq=qq.lower();
-    if (lastCompound)
-    {
-      if (lastCompound->spec==VhdlDocGen::PACKAGE)
-      {
-        if (!VhdlDocGen::foundInsertedComponent(qq,lastCompound))
-        {  
-	  BaseInfo *bb=new BaseInfo(qq,Private,Normal);
-	  lastCompound->extends->append(bb);    
+	  prevToken=itoken;
+        
+          yycont->qstr=vhdlScanYYtext;
+          yycont->yyLineNr=yyLineNr;
+          if (itoken== -1)  
+          {
+            yycont->iLine=yyLineNr;
+            return ( t_LETTER );
+          }
+          else 
+          {
+            return ( itoken );
+          }
         }
-      } 
 
-      lastCompound->addSubEntry(current);
-      current = new Entry;
-      initEntry(current);
-    }
-    else
-    {
-      newEntry();
-    }
-    BEGIN(Start);
-  } 
-  else
-  {
-    QCString qq(yytext);
-    qq=qq.stripWhiteSpace();
-    current->name=qq;
-    newEntry();
-    //QCString qreal=QCString(yytext);
-    BEGIN(Start);
-  }
-}
+({decimal_literal})|({base}#{based_integer}(\.{based_integer})?#({exponent})?)|({base}:{based_integer}(\.{based_integer})?:({exponent})?) {
+          yycont->qstr=vhdlScanYYtext;
+          return ( t_ABSTRLIST );
+        }
 
-<Start>{B}*("generic"|"port"){BR}*[(]+ { // found generic|port in entity
-    QCString genp(yyleng+1);
-    deleteSpecChars(yytext,genp.data());
-    VhdlDocGen::deleteCharRev(genp,'(');
+'({graphic_character}|\"|\%)' 	{
+          QCString q(vhdlScanYYtext);	       
+          yycont->qstr=vhdlScanYYtext; 
+        
+          if (q=="'('") // std_logic'('1') ?
+          {
+            char c=yy_hold_char;
+            if (isalpha(c) || isdigit(c))
+            {
+              unput('\'');
+              unput('(');
+              return(t_Apostrophe);
+            }
+            else
+	    {
+              return ( t_CHARLIST );
+	    }
+          }
+          return ( t_CHARLIST );
+        }
 
-    if (stricmp(genp.data(),"port" )==0)
-    {
-      genPort=1;
-    }
-    else 
-    {
-      genPort=0;
-    }
+(\"({graphic_character}|(\"\")|\%)*\")|(\%({graphic_character}|(\%\%)|\")*\%) {
+          yycont->qstr=vhdlScanYYtext;
+          yycont->iLine=yyLineNr;
+	  return ( t_STRING );
+        } 
 
-    bropen=1;
-    bufferClear();
-    lineCount();
-    BEGIN(FindSigName);
-}
+{base_specifier}(\"{extended_digit}(_?{extended_digit})*\"|\%{extended_digit}(_?{extended_digit})*\%) 							{
+	  yycont->qstr=vhdlScanYYtext;
+	  yycont->iLine=yyLineNr;
+	  return ( t_DIGIT );
+        }
 
-<FindSigName>{BRACECLOSE} { 
-    lineCount();
-    bropen--;
-    addText(yytext,yyleng); 
-    if (bropen==0)
-    {
-      bufferClear();
-      BEGIN(Start);
-    }
-    else
-    {
-      BEGIN(FindSigName);
-    }
-}
+{vhdl2008tooldir} {
+	  yycont->qstr=vhdlScanYYtext;
+	  yycont->iLine=yyLineNr;
+	  return(t_ToolDir);
+        }	
 
-<FindSigName>{LABELID} {  // found signals in entity
-  QCString line(yytext);
+\n	{
+	  yyLineNr++;
+          yycont->yyLineNr=yyLineNr;
+        }
 
-  // note that line can be something like:
-  // "var1, var2, var3 : in std_logic_vector(8 downto 0); --! Some comment"
-
-  // but also
-  // "var4 --! Some comment
-  // );"
-  // which marks the end of a port
-
-  // and also
-  // "-- Some comment
-  // var1 : in std_logic;"
-
-  //printf("--> labelid='%s'\n",line.data());
-  QStringList ql;
-  QCString comment;
-  int openCount=line.contains('(');
-  int closeCount=line.contains(')');
-  int semi = line.find(';');
-  int pos  = line.find("--");
-  int pos1 = line.find("--!");
-  if (pos!=-1 && pos<pos1) // strip normal comment before special one
-  {
-    line = line.remove(pos,pos1-pos);
-  }
-  //printf("=> signal: line='%s'\n",line.data());
-  if (semi!=-1 && pos!=-1)
-  {
-    int eol = line.findRev('\n');
-    //printf("pos=%d eol=%d\n",pos,eol);
-    if (eol>=pos+2)
-    {
-      QRegExp re("\\n[\\s]*--!"); // comment continuation
-      comment=line.mid(pos+2,eol-pos-2);
-      //printf("Comment: '%s'\n",comment.data());
-      int p,l;
-      while ((p=re.match(comment,0,&l))!=-1)
-      {
-	comment.remove(p,l);
-      }
-      line=line.left(pos)+line.right(line.length()-eol);
-    }
-    else
-    {
-      comment=line.mid(pos+2);
-      line=line.left(pos);
-    }
-    comment.stripWhiteSpace();
-    // must subtract "(" and ")" in comments because they are used for determining the
-    // end of a port/generic construct
-    openCount-=comment.contains('(');
-    closeCount-=comment.contains(')');
-    if (!comment.stripPrefix("!")) // not a special comment
-    {
-      comment.resize(0);
-    }
-  }
-  else
-  {
-    //printf("no ; or --: pos=%d semi=%d\n",pos,semi);
-  }
-  int diff=openCount-closeCount;
-  if (diff<0)
-  {
-    VhdlDocGen::deleteCharRev(line,')');
-  }
-
-  if (scantype!=1) // not a component
-  {  
-    addText(yytext,yyleng);
-    addSignals(line,yyLineNr,lastEntity,comment);
-  } 
-
-  lineCount();
-
-  if ((bropen+openCount-closeCount)==0)
-  {
-    bufferClear();
-    BEGIN(Start);
-  }
-}
-
-
-<FindSigName>{BRACEOPEN} { 
-  lineCount();
-  bropen++;
-  addText(yytext,yyleng);
-}
-
-
-<FindSigName>{CR}        { 
-  lineCount();
-  addText(yytext,yyleng);
-  //BEGIN(FindSigName);
-}
-
-
-<*>^{B}*("for ")[^;]* {
-  //printf("\n found for[%s] [%d]",yytext,yyLineNr);
-  lineCount();
-}
-
-<*>{DIGITS}                {   // found digit
-  addText(yytext,yyleng);
-  lineCount();
-}
-
-<*>{STRING_LITERAL} {
-  // Make sure string literals get transfered to the output
-  // We have to match these because the comment characters (--)
-  // can exist inside a string literal.
-  // We shouldn't have to call lineCount because newlines
-  // are not allowed inside string literals
-  addText(yytext,yyleng);
-}
-
-   /*
-<*>{BR}*"--!"{B}*"@}"    { // end group
-  if (current) 
-  {
-    Entry *pg=new Entry;  
-    addSubEntry(current,pg);
-    pg->startLine=yyLineNr;
-    pg->name="endgroup";
-  }
-  lineCount();
-}
-
-<*>{BR}*"--!"{B}*"@{"     {  // start group
-  if (current) 
-  {
-    Entry *pg=new Entry;  
-    addSubEntry(current,pg);
-    pg->startLine=yyLineNr;
-    pg->name="startgroup";
-  }
-  lineCount();
-}
-   */
+<*>"--"[^\n]* {
+          /* comment */
+	  QCString qcs(vhdlScanYYtext);
+	  //  vhdl comment ?
+	  if (qcs.stripPrefix("--!"))
+	  {
+	    REJECT;
+	  }
+        }               
+.	{ /* unknown characters */ }
+									
 
 <*>{BR}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
-  // signal clk :in std_logic; --!@brief global clock
-  // --!@brief  global reset
-  // signal reset:in std_logic;
-  // these two comments are detected as a multi line comment
-  QCString qc(yytext);
+  QCString qc(vhdlScanYYtext);
   int len=qc.contains('\n')+yyLineNr-1;
-
   if (YY_START!=Comment) // Start of the comment block
   {
-    bufferClear();
-    iTextCounter=0;
     startComment=yyLineNr;
     g_lastCommentContext=YY_START;
   }
@@ -1560,12 +516,13 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
   if (pTemp)
   { // found one line comment, add it to the entry on this line
     pTemp->briefLine=yyLineNr;
-    pTemp->brief+=yytext;
+    pTemp->brief+=vhdlScanYYtext;
+    pTemp->briefFile=yyFileName;
     VhdlDocGen::prepareComment(pTemp->brief);
   }
   else 
   {
-    addText(yytext,yyleng);
+    strComment+=vhdlScanYYtext;
   }
   lineCount();
   BEGIN(Comment);
@@ -1573,237 +530,260 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
 
 <Comment>^{B}*"--!"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
-  addText(yytext,yyleng);
+  strComment+=vhdlScanYYtext;
+      
   lineCount();
 }
 
 <Comment>.|\n {
-  // found end of comment block
-  QCString qcs;
-  getBufText(qcs,iTextCounter);
-  VhdlDocGen::prepareComment(qcs);
-  int ii =qcs.find("\\code");
-  if (ii>0)
-  {
-    iCodeLen=num_chars;
-
-    gBlock.reset();
-    int len=qcs.length();
-    QCString name=qcs.right(len-ii);
-    name=VhdlDocGen::getIndexWord(name.data(),1);
-    if (!name)
-      gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
-    else
-      gBlock.name=name;
-    qcs=qcs.left(ii);
-    gBlock.startLine=yyLineNr+1;
-    gBlock.bodyLine=yyLineNr+1;
-    gBlock.brief+=qcs;
-    iTextCounter=0;
-  }
-
-  if (ii==-1)
-  {
-    handleCommentBlock(qcs,FALSE);
-  }
-  bufferClear();
-  unput(*yytext);
-  BEGIN(g_lastCommentContext);
-}
-
+          // found end of comment block
+          
+          int index =strComment.find("\\code");
+          if (index>0)
+          {
+            int ll=strComment.length();
+            iCodeLen=inputVhdlString.findRev(strComment.data(),num_chars)+ll;
+        
+            gBlock.reset();
+            int len=strComment.length();
+            QCString name=strComment.right(len-index);// 
+            name=VhdlDocGen::getIndexWord(name.data(),1);
+            if (!name)
+              gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
+            else
+              gBlock.name=name;
+            strComment=strComment.left(index);
+            gBlock.startLine=yyLineNr+1;
+            gBlock.bodyLine=yyLineNr+1;
+            VhdlDocGen::prepareComment(strComment);
+            gBlock.brief+=strComment;
+          }
+        
+          VhdlDocGen::prepareComment(strComment);
+        
+        
+          if (index==-1) 
+            handleCommentBlock(strComment,FALSE);
+          strComment.resize(0);;
+          unput(*vhdlScanYYtext);
+          BEGIN(g_lastCommentContext);
+        }
+        
 <*>"--!"[^\n]* { // one line comment
-  if (iDocLine==-1) iDocLine=yyLineNr;
-  QCString qcs(yytext);
-  int j=qcs.find("--!");
-  qcs=qcs.right(qcs.length()-3-j);
-  bool isEndCode=qcs.contains("\\endcode");
+          if (iDocLine==-1) iDocLine=yyLineNr;
+          QCString qcs(vhdlScanYYtext);
 
-  if (isEndCode)
-    makeInline();
-  //printf("--> handleCommentBlock line %d\n",yyLineNr);
-  Entry* pTemp=getEntryAtLine(current_root,yyLineNr);
+	  bool isEndCode=qcs.contains("\\endcode");
 
-  if (!isEndCode)
-  {
-    if (pTemp)
-    {
-      pTemp->briefLine=yyLineNr;
-      pTemp->brief+=qcs;
-      iDocLine=-1;
-    }
-    else
-    {
-      handleCommentBlock(qcs,TRUE);
-    }
-  } 
+	  if (isEndCode)
+	  {
+	    int end=inputVhdlString.find(qcs.data(),iCodeLen);
+	    makeInlineDoc(end);
+	  }
 
-  bufferClear();
-}// one line
+	  //printf("--> handleCommentBlock line %d\n",yyLineNr);
+	  Entry* pTemp=getEntryAtLine(current_root,yyLineNr);
 
+	  if (!isEndCode)
+	  {
+	    int j=qcs.find("--!");
+	    qcs=qcs.right(qcs.length()-3-j);
 
-<*>{COMMENT} {
-}
+	    if (pTemp)
+	    {
+	      pTemp->briefLine=yyLineNr;
+	      qcs=qcs.stripWhiteSpace();
+	      pTemp->brief+=qcs;
 
-<*>\n                    {
-  lineCount();
-  addText(yytext,yyleng);
-  //         printf("\n new-line [%d]",yyLineNr);
-  BEGIN(Start);
-}
+	      pTemp->briefFile=yyFileName;
+	      iDocLine=-1;
+	    }
+	    else
+	    {
+	      handleCommentBlock(qcs,TRUE);
+	    }
+	  }//endcode
+        }
 
-<*>{NAME} {
-  addText(yytext,yyleng);
-  lineCount();
-}
+<*>"/*" {
+	  strComment+=vhdlScanYYtext;
+	  if (yy_hold_char=='!') // found  comment starting with "/*!"
+  	  {
+	    doxComment=TRUE;
+	  }
+	  BEGIN(Vhdl2008Comment); 
+        }
 
-<*>{B}*	{
-  addText(yytext,yyleng);
-  lineCount();
-}
+<Vhdl2008Comment>[^*]*[*]+    {
+    	  QCString tt(vhdlScanYYtext);
+	  int len=tt.length();
+	  yyLineNr+=tt.contains('\n');
 
-<*>.                    {
-  addText(yytext,yyleng);
-  lineCount();
-}
+	  // delete * from comments 
+	  // /*! 
+	  // *   see vim !
+	  // */
+
+	  if (yytext[len-1]=='*' && tt.contains('\n'))
+	  {
+	    QCString ss=tt;
+	    VhdlDocGen::deleteAllChars(ss,' ');
+	    VhdlDocGen::deleteAllChars(ss,'\t');
+	    if (ss.data()  && ss.at(ss.length()-2)=='\n')
+	    {
+	      tt=tt.left(len-1);
+	      len--;
+	    }
+	  }
+
+	  //	   fprintf(stderr,"\n << %s  >>",tt.data());
+	  strComment+=tt;
+	  char c=yy_hold_char;
+	  if (c =='/')
+	  {
+	    unput('*');
+	    BEGIN(Vhdl2008Comment);
+	  }
+	  else 
+	  {
+	    BEGIN(EndVhdl2008Comment);
+	  }
+        }
+
+<EndVhdl2008Comment>"*/" {	 
+          if (doxComment)
+          {  
+            strComment.stripPrefix("/*!");
+            strComment= strComment.left(  strComment.length()-1);
+            handleCommentBlock( strComment,TRUE);
+          }
+          doxComment=FALSE;
+          strComment.resize(0);
+          BEGIN(INITIAL);
+        }
 
 
 %%
 
-static void initEntry(Entry *e)
+static void parserInit()
 {
-  e->fileName = yyFileName;
-  e->lang     = SrcLangExt_VHDL;
-  initGroupInfo(e);
+  num_chars=0;
+  lineIndex=(int*)malloc(500*sizeof(int));
+
+  if (!g_lexInit) 
+  {
+    VhdlDocGen::init();
+    el_mc oop;
+    int p=0;
+    while ((oop=tab_mc[p++]).kval!=-1)
+    {
+      QCString q(&oop.nom[0]);
+      keyMap.insert(q,oop.kval);
+    }
+  }
 }
 
-static void newEntry()
+void vhdlscanFreeScanner()
 {
-  // Add only enties/architectures/packages to root 
-  // and signals to  classes where they were found
-  // ENTITY dlatch_93 IS -- VHDL'93-Syntax !!!
-  //      PORT (d, clk : IN bit;
-  //      q, qbar : OUT bit);
-  //      GROUP path IS (SIGNAL, SIGNAL);
-  //      GROUP d_to_q : path (d, q);
-  //      ATTRIBUTE propagation : time;
-  //  END dlatch_93;
-
-  if (current->spec==VhdlDocGen::ENTITY || 
-      current->spec==VhdlDocGen::PACKAGE || 
-      current->spec==VhdlDocGen::ARCHITECTURE || 
-      current->spec==VhdlDocGen::PACKAGE_BODY)
+#if defined(YY_FLEX_SUBMINOR_VERSION)
+  if (g_lexInit)
   {
-    current_root->addSubEntry(current);
+    vhdlScanYYlex_destroy();
   }
-  else
-  {
-    if (lastCompound) 
-    {
-      lastCompound->addSubEntry(current);
-    }
-    else
-    {
-      if (lastEntity)
-      {
-	lastEntity->addSubEntry(current);
-      }
-      else 
-      {
-	current_root->addSubEntry(current); // should not happen!
-      }
-    }
-  }
-  previous = current;
-  current = new Entry ;
-  initEntry(current);
-}
-
-static void handleCommentBlock(const QCString &doc,bool brief)
-{
-  int position=0;
-  bool needsEntry=FALSE;
-  Protection protection=Public;
-  int lineNr = iDocLine;
-  if (brief) 
-    current->briefLine = iDocLine; 
-  else 
-    current->docLine = iDocLine;
-
-  //printf("parseCommentBlock %p [%s]\n",current,doc.data());
-  while (parseCommentBlock(
-	g_thisParser,
-	current,
-	doc,        // text
-	yyFileName, // file
-	lineNr,     // line of block start
-	brief, 
-	docBlockAutoBrief,
-	FALSE,
-	protection,
-        position,
-        needsEntry
-        )
-     ) 
-  {
-    //printf("parseCommentBlock position=%d [%s]\n",position,doc.data()+position);
-    if (needsEntry) newEntry();
-  }
-  if (needsEntry)
-  {
-    newEntry();
-  }
-
-  if (docBlockTerm)
-  {
-    unput(docBlockTerm);
-    docBlockTerm=0;
-  }
-  iDocLine=-1;
-}
-
-#if 0
-/*!
- * adds grouping to the entries
- */
-static void mergeGrouping(const Entry* ce,int)
-{
-  EntryListIterator eli(*ce->children());
-  Entry *rt;
-  for (;(rt=eli.current());++eli)
-  {
-    if (rt->section==Entry::GROUPDOC_SEC)
-    {
-      if (openGroups)
-      {
-	QCString tt=(QCString)qrl.last();
-	if (!tt.isEmpty()) 
-	{
-	  rt->groups->append(new Grouping(tt.data(),Grouping::GROUPING_LOWEST));
-	}
-      }
-      qrl.append(rt->name);    
-    }
-
-    if ((strcmp(rt->name.data(),"endgroup")==0) && !qrl.isEmpty())
-    {
-      qrl.remove((QCString)qrl.last());
-      openGroups--;
-    }
-
-    if ((strcmp(rt->name.data(),"startgroup")==0))
-    {
-      openGroups++;
-    }
-
-    if (rt->section!=Entry::GROUPDOC_SEC && openGroups && !qrl.isEmpty())
-    {
-      rt->groups->append(new Grouping(qrl.last().data(),Grouping::GROUPING_LOWEST));
-    }
-
-    mergeGrouping(rt,openGroups);
-  }
-}
 #endif
+}
+
+void VHDLLanguageScanner::resetCodeParserState()
+{
+}
+
+bool VHDLLanguageScanner::needsPreprocessing(const QCString & /*extension*/)
+{ 
+  return TRUE; 
+}
+
+void VHDLLanguageScanner::parsePrototype(const char * /*text*/)
+{ 
+  assert(FALSE); 
+}
+
+// do parsing
+int MyParserVhdl::doLex()
+{
+  int token=vhdlScanYYlex();
+  //fprintf(stderr,"\ntoken: %d at line: %d",token,yyLineNr);
+  return token;
+}
+
+void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
+{
+  yyFileName=QCString(fileName);
+
+  bool xilinx_ucf=isConstraintFile(yyFileName,".ucf");
+  bool altera_qsf=isConstraintFile(yyFileName,".qsf");
+
+  // support XILINX(ucf) and ALTERA (qsf) file
+
+  if (xilinx_ucf) 
+  { 
+    VhdlDocGen::parseUCF(fileBuf,root,yyFileName,FALSE);  
+    return; 
+  }
+  if (altera_qsf) 
+  { 
+    VhdlDocGen::parseUCF(fileBuf,root,yyFileName,TRUE); 
+    return; 
+  }
+
+  ::parserInit();
+  yycont=getVhdlCont();
+  yycont->root=root;
+  yycont->fileName=fileName;
+  initVhdlParser();
+  QCString pPuffer(" ");
+  pPuffer+=fileBuf;
+
+  inputFile.setName(fileName);
+  if (g_lexInit)
+  {
+    vhdlScanYYrestart( vhdlScanYYin );
+  }
+  g_lexInit=TRUE;
+  g_thisParser=this;
+  inputPosition=0;
+  inputVhdlString=fileBuf;
+  yyLineNr=1;
+  current_root=root;
+  pconv=new MyParserVhdl();
+  groupEnterFile(fileName,yyLineNr);
+  pconv->parse(pconv);
+  //    resetScanner(NULL,pconv);
+  delete pconv;	  	  
+  Entry* curr=getCurrentVhdlEntry(); // delete last current
+  delete curr;
+  curr=0;
+  free(lineIndex);
+  inputFile.close();
+  mapLibPackage(root);
+}
+
+void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
+    const char *scopeName,
+    const QCString &input,
+    bool isExampleBlock,
+    const char *exampleName,
+    FileDef *fileDef,
+    int startLine,
+    int endLine,
+    bool inlineFragment,
+    MemberDef *memberDef,
+    bool showLineNumbers
+    )
+{
+  ::parseVhdlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                  fileDef,startLine,endLine,inlineFragment,memberDef,
+                  showLineNumbers);
+}
 
 /*
  * adds the library|use statements to the next class (entity|package|architecture|package body
@@ -1816,7 +796,6 @@ static void mergeGrouping(const Entry* ce,int)
  * .....
  * and so on..
  */
-
 static void mapLibPackage(const Entry* ce)
 {
   Entry *lastComp=0;
@@ -1830,7 +809,7 @@ static void mapLibPackage(const Entry* ce)
     for (;(rt=eli.current()),eli1=eli;++eli)
     {
       if (rt->spec==VhdlDocGen::LIBRARY || rt->spec==VhdlDocGen::USE)
-        // top level library or use statement
+	// top level library or use statement
       {
 	Entry *temp=0;
 	for (;(temp=eli1.current());++eli1) // find next entity
@@ -1863,180 +842,72 @@ static void mapLibPackage(const Entry* ce)
   }//while
 }//MapLib
 
-#if 0
-/*!
- * merges a brief descriptions to the next entry
- */
-void mergeBrief(const Entry* ce)
+static void handleCommentBlock(const QCString &doc,bool brief)
+{
+  int position=0;
+  bool needsEntry=FALSE;
+  Protection protection=Public;
+  int lineNr = iDocLine;
+
+  Entry* current=getCurrentVhdlEntry();
+
+  if (brief) 
+    current->briefLine = iDocLine; 
+  else 
+    current->docLine = iDocLine;
+
+  //printf("parseCommentBlock %p [%s]\n",current,doc.data());
+  while (parseCommentBlock(
+	g_thisParser,
+	current,
+	doc,        // text
+	yyFileName, // file
+	lineNr,     // line of block start
+	brief, 
+	0,
+	FALSE,
+	protection,
+        position,
+        needsEntry
+        )
+     ) 
+  {
+ //printf("parseCommentBlock position=%d [%s]\n",position,doc.data()+position);
+    if (needsEntry) newVhdlEntry();
+  }
+  if (needsEntry)
+  {
+    newVhdlEntry();
+  }
+  iDocLine=-1;
+  strComment.resize(0);
+}
+
+// returns the vhdl type parsed at line xxx
+static Entry* getEntryAtLine(const Entry* ce,int line)
 {
   EntryListIterator eli(*ce->children());
+  Entry *found=0;
   Entry *rt;
   for (;(rt=eli.current());++eli)
   {
-
-    if (found && (!eMerge.brief.isEmpty() || !eMerge.doc.isEmpty()))
+    if (rt->bodyLine==line)
     {
-      rt->doc+=eMerge.doc.data();
-      rt->docLine=eMerge.docLine;
-      rt->brief+=eMerge.brief.data();
-      rt->briefLine=eMerge.briefLine;
-      found=FALSE;
-    }
-
-    if ((strcmp(rt->name.data(),"string")==0))
+      found=rt;
+    } // if
+    if (!found) 
     {
-      eMerge.reset();
-      eMerge.doc+=rt->doc.data();
-      eMerge.docLine=rt->docLine;
-      eMerge.brief+=rt->brief.data();
-      eMerge.briefLine=rt->briefLine;
-
-      found=TRUE;
+      found=getEntryAtLine(rt,line);
     }
-    MergeBrief(rt);
   }
-}
-#endif
+  return found;
+}// getEntryAtLine
 
-
-
-void vhdlscanFreeScanner()
+// token index in vhdlparser.hpp 258..416
+int getParsedLine(int object)
 {
-#if defined(YY_FLEX_SUBMINOR_VERSION)
-  if (g_lexInit)
-  {
-    vhdlscanYYlex_destroy();
-  }
-
-  if (g_buf)
-  {
-    free(g_buf);
-  }
-
-  g_buf=0;
-#endif
-
+  //assert(object>254 && object <416);
+  return lineIndex [object];
 }
 
-void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
-{
-  inputFile.setName(fileName);
-  //uint jfile=inputFile.size();
-  ::parserInit(); 
-  yyFileName=QCString(fileName);
-  groupEnterFile(fileName,yyLineNr);
-  g_thisParser = this;
-  g_inputFromFile = FALSE;
-  inputPosition = 0;
-  assert(root!=0);
-
-  inputString=fileBuf;
-  inputLen=strlen(fileBuf);
-  current_root  = root;
-  global_root   = root;
-  current=new Entry;
-  initEntry(current);
-  //current_root->name=QCString("XXX"); // dummy name for root
-  if (!inputFile.open(IO_ReadOnly))
-  {
-    err("\n\n could not open file: %s !!\n\n",yyFileName.data());
-    return ;
-  }
-
-  if (g_lexInit)
-  {
-    vhdlscanYYrestart(vhdlscanYYin);     
-    unput(' ');
-    BEGIN(Start);
-  }
-  vhdlscanYYlex();
-  g_lexInit=TRUE;
-
-  free(g_buf);
-  g_buf=0;
-
-  delete current;
-  current=0;
-
-  groupLeaveFile(yyFileName,yyLineNr);
-  inputFile.close();
-
-  //mergeBrief(current_root);
-  //mergeGrouping(current_root,0);
-  mapLibPackage(current_root);
-}
-
-
-void VHDLLanguageScanner::parsePrototype(const char *text)
-{
-  // will be called when a \fn command is found in a comment block
-
-  QCString ss,ret;
-  bool sem=FALSE;
-  bool func=FALSE;
-  QList<Argument> qs;
-  qs.setAutoDelete(TRUE);
-  VhdlDocGen::parseFuncProto(text,qs,ss,ret,TRUE);
-  int count=qs.count();
-  if (stricmp(ret.data(),"function")==0)
-  {
-    func=TRUE;
-  }
-  if (count<1 && !func)
-  {
-    return;
-  }
-  Entry *pp = new Entry;
-  initEntry(pp);
-  pp->name=ss.stripWhiteSpace();
-  pp->args+='(';
-  for (int j=0;j<count;j++)
-  {
-    if (sem)
-    {
-      pp->args+=','; 
-    }
-
-    Argument *ars=(Argument*)(qs.at(j));
-    Argument *arg=new Argument;
-    arg->attrib = ars->attrib;
-    arg->name = ars->name;
-    arg->type = ars->type;
-    pp->args+=ars->name.data();
-    pp->args+=" ";
-    pp->args+=ars->type.data();
-    pp->argList->append(arg);
-    sem=TRUE;
-  }
-  pp->args+=')';
-
-  if (!ret.isEmpty()) 
-    pp->spec=VhdlDocGen::FUNCTION;
-  else
-    pp->spec=VhdlDocGen::PROCEDURE;
-
-  if (pp->section == Entry::MEMBERDOC_SEC && pp->args.isEmpty())
-    pp->section = Entry::VARIABLEDOC_SEC;
-
-  pp->type=ret;
-  current_root->addSubEntry(pp);
-}
-
-void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
-    const char *scopeName,
-    const QCString &input,
-    bool isExampleBlock,
-    const char *exampleName,
-    FileDef *fileDef,
-    int startLine,
-    int endLine,
-    bool inlineFragment,
-    MemberDef *memberDef,
-    bool showLineNumbers
-    )
-{
-  ::parseVhdlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                  fileDef,startLine,endLine,inlineFragment,memberDef,
-                  showLineNumbers);
-}
 

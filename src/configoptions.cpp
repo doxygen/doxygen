@@ -294,6 +294,14 @@ void addConfigOptions(Config *cfg)
                  "You can put \\n's in the value part of an alias to insert newlines."
                 );
   //----
+  cl = cfg->addList(
+                 "TCL_SUBST",
+                 "This tag can be used to specify a number of word-keyword mappings (TCL only).\n"
+                 "A mapping has the form \"name=value\". For example adding\n"
+                 "\"class=itcl::class\" will allow you to use the command class in the\n"
+                 "itcl::class meaning."
+                );
+  //----
   cb = cfg->addBool(
                  "OPTIMIZE_OUTPUT_FOR_C",
                  "Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C\n"
@@ -1156,7 +1164,7 @@ void addConfigOptions(Config *cfg)
                  "standard header. Note that when using a custom header you are responsible\n"
                  " for the proper inclusion of any scripts and style sheets that doxygen\n"
                  "needs, which is dependent on the configuration options used.\n"
-                 "It is adviced to generate a default header using \"doxygen -w html\n"
+                 "It is advised to generate a default header using \"doxygen -w html\n"
                  "header.html footer.html stylesheet.css YourConfigFile\" and then modify\n"
                  "that header. Note that the header is subject to change so you typically\n"
                  "have to redo this when upgrading to a newer version of doxygen or when\n"
@@ -1181,7 +1189,7 @@ void addConfigOptions(Config *cfg)
                  "fine-tune the look of the HTML output. If the tag is left blank doxygen\n"
                  "will generate a default style sheet. Note that doxygen will try to copy\n"
                  "the style sheet file to the HTML output directory, so don't put your own\n"
-                 "stylesheet in the HTML output directory as well, or it will be erased!"
+                 "style sheet in the HTML output directory as well, or it will be erased!"
                 );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
@@ -1201,7 +1209,7 @@ void addConfigOptions(Config *cfg)
   ci = cfg->addInt(
                  "HTML_COLORSTYLE_HUE",
                  "The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.\n"
-                 "Doxygen will adjust the colors in the stylesheet and background images\n"
+                 "Doxygen will adjust the colors in the style sheet and background images\n"
                  "according to this color. Hue is specified as an angle on a colorwheel,\n"
                  "see http://en.wikipedia.org/wiki/Hue for more information.\n"
                  "For instance the value 0 represents red, 60 is yellow, 120 is green,\n"
@@ -1807,7 +1815,7 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "RTF_STYLESHEET_FILE",
-                 "Load stylesheet definitions from file. Syntax is similar to doxygen's\n"
+                 "Load style sheet definitions from file. Syntax is similar to doxygen's\n"
                  "config file, i.e. a series of assignments. You only have to provide\n"
                  "replacements, missing definitions are set to their default value."
                 );
@@ -2198,7 +2206,7 @@ void addConfigOptions(Config *cfg)
                  "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen\n"
                  "will generate a graph for each documented class showing the direct and\n"
                  "indirect inheritance relations. Setting this tag to YES will force the\n"
-                 "the CLASS_DIAGRAMS tag to NO.",
+                 "CLASS_DIAGRAMS tag to NO.",
                  TRUE
                 );
   cb->addDependency("HAVE_DOT");

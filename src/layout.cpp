@@ -255,7 +255,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
       m_sHandler.insert("class/memberdecl/nestedclasses", 
           new StartElementHandlerSection(this,LayoutDocEntry::ClassNestedClasses,&LayoutParser::startSectionEntry,
-                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE) :
+                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE) :
                                          fortranOpt ? theTranslator->trDataTypes() :
                                          theTranslator->trCompounds() 
                                          ));
@@ -400,13 +400,13 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandler(this,&LayoutParser::startMemberDecl));
       m_sHandler.insert("namespace/memberdecl/nestednamespaces", 
           new StartElementHandlerSection(this,LayoutDocEntry::NamespaceNestedNamespaces,&LayoutParser::startSectionEntry,
-                                         javaOpt ? theTranslator->trPackages() :
+                                         javaOpt || vhdlOpt ? theTranslator->trPackages() :
                                          fortranOpt ? theTranslator->trModules() :
                                          theTranslator->trNamespaces()
                                          ));
       m_sHandler.insert("namespace/memberdecl/classes", 
           new StartElementHandlerSection(this,LayoutDocEntry::NamespaceClasses,&LayoutParser::startSectionEntry,
-                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE) :
+                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE) :
                                          fortranOpt ? theTranslator->trDataTypes() :
                                          theTranslator->trCompounds() 
                                          ));
@@ -480,7 +480,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandler(this,&LayoutParser::startMemberDecl));
       m_sHandler.insert("file/memberdecl/classes", 
           new StartElementHandlerSection(this,LayoutDocEntry::FileClasses,&LayoutParser::startSectionEntry,
-                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE) :
+                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE) :
                                          fortranOpt ? theTranslator->trDataTypes() :
                                          theTranslator->trCompounds() 
                                          ));
@@ -558,7 +558,7 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandler(this,&LayoutParser::startMemberDecl));
       m_sHandler.insert("group/memberdecl/classes", 
           new StartElementHandlerSection(this,LayoutDocEntry::GroupClasses,&LayoutParser::startSectionEntry,
-                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE) :
+                                         vhdlOpt ? VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE) :
                                          fortranOpt ? theTranslator->trDataTypes() :
                                          theTranslator->trCompounds() 
                                          ));
@@ -827,21 +827,21 @@ class LayoutParser : public QXmlDefaultHandler
         },
         { "namespaces",
           LayoutNavEntry::Namespaces,
-          javaOpt    ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
-          javaOpt    ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
-          javaOpt    ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
+          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModules() : theTranslator->trNamespaces(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
         },
         { "namespacelist",
           LayoutNavEntry::NamespaceList,
-          javaOpt    ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackages() : fortranOpt ? theTranslator->trModulesList() : theTranslator->trNamespaceList(),
           QCString(),
-          javaOpt    ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageListDescription() : fortranOpt ? theTranslator->trModulesListDescription(extractAll) : theTranslator->trNamespaceListDescription(extractAll),
           "namespaces"
         },
         { "namespacemembers",
           LayoutNavEntry::NamespaceMembers,
-          javaOpt    ? theTranslator->trPackageMembers() : fortranOpt ? theTranslator->trModulesMembers() : theTranslator->trNamespaceMembers(),
+          javaOpt || vhdlOpt   ? theTranslator->trPackageMembers() : fortranOpt ? theTranslator->trModulesMembers() : theTranslator->trNamespaceMembers(),
           QCString(),
           fortranOpt ? theTranslator->trModulesMemberDescription(extractAll) : theTranslator->trNamespaceMemberDescription(extractAll),
           "namespacemembers"
@@ -862,7 +862,7 @@ class LayoutParser : public QXmlDefaultHandler
         },
         { "classlist",
           LayoutNavEntry::ClassList,
-          theTranslator->trCompoundList(),
+          fortranOpt ? theTranslator->trCompoundListFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitList() : theTranslator->trCompoundList(),
           QCString(),
           fortranOpt ? theTranslator->trCompoundListDescriptionFortran() : vhdlOpt ? VhdlDocGen::trDesignUnitListDescription() : theTranslator->trCompoundListDescription(),
           "annotated"

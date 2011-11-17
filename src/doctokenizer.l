@@ -301,7 +301,7 @@ LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
 ENDLIST  {BLANK}*{OPTSTARS}"."{BLANK}*\n
 ATTRIB   {ID}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
-URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)*
+URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
@@ -469,6 +469,11 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			 }
 			 return TK_COMMAND;
   		       }
+<St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK}/\. { // URL.
+                         g_token->name=yytext;
+			 g_token->isEMailAddr=FALSE;
+			 return TK_URL;
+                       }
 <St_Para>("http:"|"https:"|"ftp:"|"file:"|"news:"){URLMASK} { // URL
                          g_token->name=yytext;
 			 g_token->isEMailAddr=FALSE;

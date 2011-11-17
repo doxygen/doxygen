@@ -697,12 +697,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  if (generateTreeView)
-  {
-    writeNavigationPath(ol);
-  }
-
-  endFile(ol,TRUE);
+  endFileWithNavPath(this,ol);
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -831,15 +826,7 @@ void FileDef::writeSource(OutputList &ol)
            );
   ol.endCodeFragment();
   ol.endContents();
-  if (generateTreeView)
-  {
-    writeNavigationPath(ol);
-    endFile(ol,TRUE);
-  }
-  else
-  {
-    endFile(ol);
-  }
+  endFileWithNavPath(this,ol);
   ol.enableAll();
 }
 
@@ -1628,7 +1615,8 @@ void FileDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,con
   {
     if (optVhdl) // use specific declarations function
     {
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,0,this);
+
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,0,this,0);
     }
     else
     {

@@ -655,7 +655,7 @@ static void setParameterList(MemberDef *md)
   }
 }
 
-static ClassDef *stripClassName(const char *s)
+static ClassDef *stripClassName(const char *s,Definition *d=g_currentDefinition)
 {
   int pos=0;
   QCString type = s;
@@ -667,11 +667,11 @@ static ClassDef *stripClassName(const char *s)
     ClassDef *cd=0;
     if (!g_classScope.isEmpty())
     {
-      cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,g_classScope+"::"+clName);
+      cd=getResolvedClass(d,g_sourceFileDef,g_classScope+"::"+clName);
     }
     if (cd==0)
     {
-      cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,clName);
+      cd=getResolvedClass(d,g_sourceFileDef,clName);
     }
     //printf("stripClass trying `%s' = %p\n",clName.data(),cd);
     if (cd)
@@ -701,7 +701,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
       if (md)
       {
         //printf("name=%s scope=%s\n",locName.data(),scope.data());
-        g_theCallContext.setClass(stripClassName(md->typeString()));
+        g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
         return md;
       }
     }
@@ -714,7 +714,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	if (md)
 	{
 	  //printf("name=%s scope=%s\n",locName.data(),scope.data());
-	  g_theCallContext.setClass(stripClassName(md->typeString()));
+	  g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
 	  return md;
 	}
       }
@@ -747,7 +747,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	if (g_scopeStack.top()!=CLASSBLOCK)
 	{
           //fprintf(stderr,"class member `%s' mcd=%s\n",name.data(),mcd->name().data());
-	  g_theCallContext.setClass(stripClassName(md->typeString()));
+	  g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
 	}
 	return md;
       }
@@ -763,7 +763,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
       MemberDef *md=mn->getFirst();
       if (!md->isStatic() || md->getBodyDef()==g_sourceFileDef)
       {
-        g_theCallContext.setClass(stripClassName(md->typeString()));
+        g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
         return md;
       }
       return 0;
@@ -782,7 +782,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	// defined as external.
         if (!md->isStatic() || md->getBodyDef()==g_sourceFileDef)
         {
-          g_theCallContext.setClass(stripClassName(md->typeString()));
+          g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
 	  //printf("returning member %s in source file %s\n",md->name().data(),g_sourceFileDef->name().data());
           return md;
         }
@@ -801,7 +801,7 @@ static void updateCallContextForSmartPointer()
   MemberDef *md;
   if (cd && (md=cd->isSmartPointer()))
   {
-    ClassDef *ncd = stripClassName(md->typeString());
+    ClassDef *ncd = stripClassName(md->typeString(),md->getOuterScope());
     if (ncd)
     {
       g_theCallContext.setClass(ncd);
@@ -890,7 +890,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     //fprintf(stderr,"d=%p linkable=%d\n",d,d?d->isLinkable():0);
     if (d && d->isLinkable())
     {
-      g_theCallContext.setClass(stripClassName(md->typeString()));
+      g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
       //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
       //        g_currentDefinition,g_currentMemberDef,g_insideBody);
 
@@ -1106,7 +1106,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
     }
   }
 
-  ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()));
+  ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()),xmd->getOuterScope());
   //fprintf(stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass);
   g_theCallContext.setClass(typeClass);
 
@@ -1219,7 +1219,7 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 		  vmd->getClassDef()==jcd)
 	      {
 		//printf("Found variable type=%s\n",vmd->typeString());
-		ClassDef *mcd=stripClassName(vmd->typeString());
+		ClassDef *mcd=stripClassName(vmd->typeString(),vmd->getOuterScope());
 		if (mcd && mcd->isLinkable())
 		{
 		  if (generateClassMemberLink(ol,mcd,memName)) return;
@@ -1240,7 +1240,7 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 	      vmd->getClassDef()==vcd)
 	  {
 	    //printf("Found variable type=%s\n",vmd->typeString());
-	    ClassDef *mcd=stripClassName(vmd->typeString());
+	    ClassDef *mcd=stripClassName(vmd->typeString(),vmd->getOuterScope());
 	    if (mcd && mcd->isLinkable())
 	    {
 	      if (generateClassMemberLink(ol,mcd,memName)) return;

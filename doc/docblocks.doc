@@ -414,7 +414,7 @@ Here is the same example again but now using doxygen style comments:
  \endhtmlonly
 
 Since python looks more like Java than like C or C++, you should set 
-\ref cfg_optimize_output_java "OPTMIZE_OUTPUT_JAVA" to \c YES in the
+\ref cfg_optimize_output_java "OPTIMIZE_OUTPUT_JAVA" to \c YES in the
 config file. 
 
 

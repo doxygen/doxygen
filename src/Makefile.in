@@ -49,6 +49,7 @@ distclean: clean
                ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp commentscan.cpp \
 	       declinfo.cpp defargs.cpp commentcnv.cpp doctokenizer.cpp \
 	       pycode.cpp pyscanner.cpp fortrancode.cpp fortranscanner.cpp \
-	       vhdlscanner.cpp vhdlcode.cpp tclscanner.cpp
+	       vhdlscanner.cpp vhdlcode.cpp tclscanner.cpp vhdlparser.h \
+	       vhdlparser.cpp
 
 FORCE:

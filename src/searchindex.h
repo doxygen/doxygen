@@ -25,6 +25,10 @@
 #include <qintdict.h>
 #include <qvector.h>
 
+class FTextStream;
+
+//------- server side search index ----------------------
+
 struct URL
 {
   URL(const char *n,const char *u) : name(n), url(u) {} 
@@ -67,5 +71,9 @@ class SearchIndex
     int m_urlIndex;
 };
 
+//------- client side search index ----------------------
+
+void writeJavascriptSearchIndex();
+void writeSearchCategories(FTextStream &t);
 
 #endif

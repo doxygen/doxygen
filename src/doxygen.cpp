@@ -5890,15 +5890,15 @@ static void findMember(EntryNav *rootNav,
           if (count==0 && !(isFriend && funcType=="class"))
           {
             int candidates=0;
-            ClassDef *ccd = 0, *ecd = 0;
-            MemberDef *cmd = 0, *emd = 0;
+            ClassDef *ecd = 0, *ucd = 0;
+            MemberDef *emd = 0, *umd = 0;
             if (mn->count()>0)
             {
               //printf("Assume template class\n");
               for (mni.toFirst();(md=mni.current());++mni)
               {
-                ccd=md->getClassDef();
-                cmd=md;
+                ClassDef *ccd=md->getClassDef();
+                MemberDef *cmd=md;
                 //printf("ccd->name()==%s className=%s\n",ccd->name().data(),className.data());
                 if (ccd!=0 && rightScopeMatch(ccd->name(),className)) 
                 {
@@ -5911,8 +5911,19 @@ static void findMember(EntryNav *rootNav,
                   }
                   if (md->argsString()==argListToString(root->argList,TRUE,FALSE))
                   { // exact argument list match -> remember
-                    ecd = ccd;
-                    emd = cmd;
+                    ucd = ecd = ccd;
+                    umd = emd = cmd;
+                    Debug::print(Debug::FindMembers,0,
+                     "7. new candidate className=%s scope=%s args=%s exact match\n",
+                         className.data(),ccd->name().data(),md->argsString());
+                  }
+                  else // arguments do not match, but member name and scope do -> remember
+                  {
+                    ucd = ccd;
+                    umd = cmd;
+                    Debug::print(Debug::FindMembers,0,
+                     "7. new candidate className=%s scope=%s args=%s no match\n",
+                         className.data(),ccd->name().data(),md->argsString());
                   }
                   candidates++;
                 }
@@ -5921,11 +5932,11 @@ static void findMember(EntryNav *rootNav,
             static bool strictProtoMatching = Config_getBool("STRICT_PROTO_MATCHING");
             if (!strictProtoMatching)
             {
-              if (candidates==1 && ccd && cmd)
+              if (candidates==1 && ucd && umd)
               {
                 // we didn't find an actual match on argument lists, but there is only 1 member with this
                 // name in the same scope, so that has to be the one. 
-                addMemberDocs(rootNav,cmd,funcDecl,0,overloaded,0);
+                addMemberDocs(rootNav,umd,funcDecl,0,overloaded,0);
                 return;
               }
               else if (candidates>1 && ecd && emd)
@@ -8587,120 +8598,6 @@ static QCString fixSlashes(QCString &s)
 
 
 //----------------------------------------------------------------------------
-// generate files for the search engine
-
-//static void generateSearchIndex()
-//{
-//  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTML"))
-//  {
-//    // create search index
-//    QCString fileName;
-//    writeSearchButton(Config_getString("HTML_OUTPUT"));
-//
-//#if !defined(_WIN32)
-//    // create cgi script
-//    fileName = Config_getString("HTML_OUTPUT")+"/"+Config_getString("CGI_NAME");
-//    QFile f(fileName);
-//    if (f.open(IO_WriteOnly))
-//    {
-//      QTextStream t(&f);
-//      t << "#!/bin/sh"   << endl
-//        << "DOXYSEARCH=" << Config_getString("BIN_ABSPATH") << "/doxysearch" << endl
-//        << "DOXYPATH=\"" << Config_getString("DOC_ABSPATH") << " ";
-//
-//      QStrList &extDocPaths=Config_getList("EXT_DOC_PATHS");
-//      char *s= extDocPaths.first();
-//      while (s)
-//      {
-//        t << s << " ";
-//        s=extDocPaths.next();
-//      }
-//
-//      t << "\"" << endl 
-//        << "if [ -f $DOXYSEARCH ]" << endl
-//        << "then" << endl
-//        << "  $DOXYSEARCH $DOXYPATH" << endl 
-//        << "else" << endl
-//        << "  echo \"Content-Type: text/html\"" << endl
-//        << "  echo \"\"" << endl
-//        << "  echo \"<h2>error: $DOXYSEARCH not found. Check cgi script!</h2>\"" << endl
-//        << "fi" << endl;
-//
-//      f.close();
-//      struct stat stat_struct;
-//      stat(fileName,&stat_struct);
-//      chmod(fileName,stat_struct.st_mode|S_IXUSR|S_IXGRP|S_IXOTH);
-//    }
-//    else
-//    {
-//      err("error: Cannot open file %s for writing\n",fileName.data());
-//    }
-//#else /* Windows platform */
-//    // create cgi program
-//    fileName = Config_getString("CGI_NAME").copy();
-//    if (fileName.right(4)==".cgi") 
-//      fileName=fileName.left(fileName.length()-4);
-//    fileName+=".c";
-//    fileName.prepend(Config_getString("HTML_OUTPUT")+"/");
-//    QFile f(fileName);
-//    if (f.open(IO_WriteOnly))
-//    {
-//      QTextStream t(&f);
-//      t << "#include <stdio.h>" << endl;
-//      t << "#include <stdlib.h>" << endl;
-//      t << "#include <process.h>" << endl;
-//      t << endl;
-//      t << "const char *DOXYSEARCH = \"" << 
-//           fixSlashes(Config_getString("BIN_ABSPATH")) << "\\\\doxysearch.exe\";" << endl;
-//      t << "const char *DOXYPATH = \"" << 
-//           fixSlashes(Config_getString("DOC_ABSPATH")) << "\";" << endl;
-//      t << endl;
-//      t << "int main(void)" << endl;
-//      t << "{" << endl;
-//      t << "  char buf[1024];" << endl;
-//      t << "  sprintf(buf,\"%s %s\",DOXYSEARCH,DOXYPATH);" << endl; 
-//      t << "  if (system(buf))" << endl;
-//      t << "  {" << endl;
-//      t << "    printf(\"Content-Type: text/html\\n\\n\");" << endl;
-//      t << "    printf(\"<h2>error: failed to execute %s</h2>\\n\",DOXYSEARCH);" << endl;
-//      t << "    exit(1);" << endl;
-//      t << "  }" << endl;
-//      t << "  return 0;" << endl;
-//      t << "}" << endl;
-//      f.close();
-//    }
-//    else
-//    {
-//      err("error: Cannot open file %s for writing\n",fileName.data());
-//    }
-//#endif /* !defined(_WIN32) */
-//    
-//    // create config file
-//    fileName = Config_getString("HTML_OUTPUT")+"/search.cfg";
-//    f.setName(fileName);
-//    if (f.open(IO_WriteOnly))
-//    {
-//      QTextStream t(&f);
-//      t << Config_getString("DOC_URL") << "/" << endl 
-//        << Config_getString("CGI_URL") << "/" << Config_getString("CGI_NAME") << endl;
-//      f.close();
-//    }
-//    else
-//    {
-//      err("error: Cannot open file %s for writing\n",fileName.data());
-//    }
-//    //g_outputList->generateExternalIndex();
-//    g_outputList->pushGeneratorState();
-//    g_outputList->disableAllBut(OutputGenerator::Html);
-//    startFile(*g_outputList,"header"+Doxygen::htmlFileExtension,0,"Search Engine",TRUE);
-//    g_outputList->endPlainFile();
-//    g_outputList->startPlainFile("footer"+Doxygen::htmlFileExtension);
-//    endFile(*g_outputList,TRUE);
-//    g_outputList->popGeneratorState();
-//  }
-//}
-
-//----------------------------------------------------------------------------
 
 static bool openOutputFile(const char *outFile,QFile &f)
 {
@@ -10490,7 +10387,7 @@ void parseInput()
   computeTemplateClassRelations(); 
   flushUnresolvedRelations();
   computeClassRelations();        
-  VhdlDocGen::computeVhdlComponentRelations();
+  //VhdlDocGen::computeVhdlComponentRelations(); // @MARTIN: removed because it breaks non-vhdl code
   g_classEntries.clear();          
 
   msg("Add enum values to enums...\n");

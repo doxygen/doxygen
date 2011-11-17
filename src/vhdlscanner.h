@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -68,8 +68,64 @@ class VHDLLanguageScanner : public ParserInterface
     void parsePrototype(const char *text);
 };
 
+// container for vhdlscanner 
+struct  s_contVhdl
+{
+  int yyLineNr;          // current line no
+  int iLine;             // line no of last t_identifier  
+  QCString qstr;         //  t_identifier 
+  QCString fileName;     // current file
+  Entry*  root;          // root
+};   
+
+struct ConfNode
+{ 
+  ConfNode *prevNode;
+  ConfNode(const char*  a,const char*  b,const char* config) 
+  { 
+    arch=a;              // architecture  e.g. for iobuffer
+    binding=b;           // binding e.g.  use entiy work.xxx(bev)
+    confVhdl=config;     // configuration foo is bar
+    isBind=false;
+    prevNode=NULL;
+    isRoot=false;          
+    isInlineConf=false;  // primary configuration?
+  };
+
+  QCString confVhdl;
+  QCString arch;
+  QCString binding;
+  QList<ConfNode> confN;
+  bool isBind;
+  bool isInlineConf;
+  bool isRoot;
+
+  void addNode(ConfNode* n) { confN.append(n); }
+  bool isBinding()          { return binding.isEmpty(); }
+} ;
+
+// returns the current conpound entity,architecture, package,package body 
+Entry* getVhdlCompound();
+
+// return the current parsed entry
+Entry* getCurrentVhdlEntry();
+
+void newVhdlEntry();
+
+void initVhdlParser();
+
+struct s_contVhdl*    getVhdlCont();
+
+// returns the  parsed line 
+// @ param object index of vhdl keyword like t_Identifier t_Entity 
+int getParsedLine(int object);
+
 void vhdlscanFreeScanner();
 
-//---------------------------------------------------------------------------------
+// return the list of component instantiations e.g. foo: component bar 
+QList<Entry> &  getVhdlInstList();
+
+// returns the list of found configurations
+QList<ConfNode>& getVhdlConfiguration();
 
 #endif
