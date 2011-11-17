@@ -1,4 +1,4 @@
-(1.7.4)
+(1.7.5)
 
 Doxygen supports the following 39 languages (sorted alphabetically):
 

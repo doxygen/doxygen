@@ -212,7 +212,7 @@ static void initEntry()
 {
   if (insideJava) 
   {
-    protection = (current_root->spec & Entry::Interface) ?  Public : Package;
+    protection = (current_root->spec & (Entry::Interface|Entry::Enum)) ?  Public : Package;
   }
   current->protection = protection ;
   current->mtype      = mtype;
@@ -1592,7 +1592,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?"{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
-  					  current->section = Entry::ENUM_SEC ;
+					  if (insideJava)
+					  {
+					    current->section = Entry::CLASS_SEC;
+					    current->spec    = Entry::Enum;
+					  }
+					  else
+					  {
+  					    current->section = Entry::ENUM_SEC ;
+					  }
 					  addType( current ) ;
 					  current->type += " enum" ;
 					  current->fileName  = yyFileName;
@@ -2440,7 +2448,19 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <ReadInitializer>[;,]			{
   					  //printf(">> initializer `%s' <<\n",current->initializer.data());
-  					  if (*yytext==';' || lastInitializerContext==FindFields)
+                                          if (*yytext==';' && (current_root->spec&Entry::Enum))
+					  {
+					    current->fileName   = yyFileName;
+					    current->startLine  = yyLineNr;
+  					    current->args       = current->args.simplifyWhiteSpace();
+  					    current->name       = current->name.stripWhiteSpace();
+					    current->section    = Entry::VARIABLE_SEC;
+					    current_root->addSubEntry(current);
+					    current = new Entry;
+					    initEntry();
+					    BEGIN(FindMembers);
+					  }
+					  else if (*yytext==';' || lastInitializerContext==FindFields)
 					  {
   					    unput(*yytext);
   					    BEGIN(lastInitializerContext);
@@ -2878,7 +2898,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					    initEntry();
 					  }
-					  BEGIN( FindMembers ) ;
 					}
 
 <FindMembers>"["			{ 
@@ -3058,8 +3077,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      initEntry();
 					    }
 
-					    // TODO: skip until the end of the scope
-					    BEGIN( SkipRemainder );
+					    BEGIN( FindMembers );
 					  }
 					  else
 					  {
@@ -3078,7 +3096,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    current->fileName   = yyFileName;
 					    current->startLine  = yyLineNr;
-					    current->type       = "@"; // enum marker
+					    if (!(current_root->spec&Entry::Enum))
+					    {
+					      current->type       = "@"; // enum marker
+					    }
   					    current->args       = current->args.simplifyWhiteSpace();
   					    current->name       = current->name.stripWhiteSpace();
 					    current->section    = Entry::VARIABLE_SEC;
@@ -5772,7 +5793,7 @@ static void parseCompounds(Entry *rt)
       inputString = ce->program;
       inputPosition = 0;
       scanYYrestart( scanYYin ) ;
-      if (ce->section==Entry::ENUM_SEC)
+      if (ce->section==Entry::ENUM_SEC || (ce->spec&Entry::Enum))
 	BEGIN( FindFields ) ;
       else
 	BEGIN( FindMembers ) ;
@@ -5798,7 +5819,7 @@ static void parseCompounds(Entry *rt)
 	}
 	else if (insideJava)
 	{
-          current->protection = protection = Package ; 
+          current->protection = protection = (ce->spec & (Entry::Interface|Entry::Enum)) ?  Public : Package;
 	}
 	else if (ce->spec&(Entry::Interface | Entry::Ref | Entry::Value | Entry::Struct | Entry::Union))
 	{

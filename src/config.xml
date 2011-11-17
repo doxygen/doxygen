@@ -209,8 +209,13 @@ For example adding &quot;sideeffect=\par Side Effects:\n&quot; will allow you to
 put the command \sideeffect (or @sideeffect) in the documentation, which 
 will result in a user-defined paragraph with heading &quot;Side Effects:&quot;. 
 You can put \n&apos;s in the value part of an alias to insert newlines. 
-'>
-    </option>
+'/>
+    <option type='list' id='TCL_SUBST' format='string' docs='
+This tag can be used to specify a number of word-keyword mappings (TCL only). 
+A mapping has the form &quot;name=value&quot;. For example adding 
+&quot;class=itcl::class&quot; will allow you to use the command class in the 
+itcl::class meaning.
+'/>
     <option type='bool' id='OPTIMIZE_OUTPUT_FOR_C' docs='
 Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C 
 sources only. Doxygen will then generate output that is more tailored for C. 
@@ -809,7 +814,7 @@ each generated HTML page. If it is left blank doxygen will generate a
 standard header. Note that when using a custom header you are responsible  
 for the proper inclusion of any scripts and style sheets that doxygen 
 needs, which is dependent on the configuration options used. 
-It is adviced to generate a default header using "doxygen -w html 
+It is advised to generate a default header using "doxygen -w html 
 header.html footer.html stylesheet.css YourConfigFile" and then modify 
 that header. Note that the header is subject to change so you typically 
 have to redo this when upgrading to a newer version of doxygen or when 
@@ -826,7 +831,7 @@ style sheet that is used by each HTML page. It can be used to
 fine-tune the look of the HTML output. If the tag is left blank doxygen 
 will generate a default style sheet. Note that doxygen will try to copy 
 the style sheet file to the HTML output directory, so don&apos;t put your own 
-stylesheet in the HTML output directory as well, or it will be erased! 
+style sheet in the HTML output directory as well, or it will be erased! 
 ' defval='' depends='GENERATE_HTML'/>
     <option type='list' id='HTML_EXTRA_FILES' format='file' docs='
 The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
@@ -838,7 +843,7 @@ the files will be copied as-is; there are no commands or markers available.
 ' depends='GENERATE_HTML'/>
     <option type='int' id='HTML_COLORSTYLE_HUE' docs='
 The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. 
-Doxygen will adjust the colors in the stylesheet and background images 
+Doxygen will adjust the colors in the style sheet and background images 
 according to this color. Hue is specified as an angle on a colorwheel, 
 see http://en.wikipedia.org/wiki/Hue for more information. 
 For instance the value 0 represents red, 60 is yellow, 120 is green, 
@@ -1211,7 +1216,7 @@ programs which support those fields.
 Note: wordpad (write) and others do not support links. 
 ' defval='0' depends='GENERATE_RTF'/>
     <option type='string' id='RTF_STYLESHEET_FILE' format='file' docs='
-Load stylesheet definitions from file. Syntax is similar to doxygen&apos;s 
+Load style sheet definitions from file. Syntax is similar to doxygen&apos;s 
 config file, i.e. a series of assignments. You only have to provide 
 replacements, missing definitions are set to their default value. 
 ' defval='' depends='GENERATE_RTF'/>
@@ -1456,7 +1461,7 @@ set the path where dot can find it.
 If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen 
 will generate a graph for each documented class showing the direct and 
 indirect inheritance relations. Setting this tag to YES will force the 
-the CLASS_DIAGRAMS tag to NO. 
+CLASS_DIAGRAMS tag to NO. 
 ' defval='1' depends='HAVE_DOT'/>
     <option type='bool' id='COLLABORATION_GRAPH' docs='
 If the COLLABORATION_GRAPH and HAVE_DOT tags are set to YES then doxygen 

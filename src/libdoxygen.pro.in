@@ -250,6 +250,7 @@ SOURCES      =	ce_lex.cpp \
 		version.cpp \
 		vhdlcode.cpp \
 		vhdldocgen.cpp \
+		vhdlparser.cpp \
 		vhdlscanner.cpp \
 		xmldocvisitor.cpp \
                 xmlgen.cpp

@@ -1954,6 +1954,28 @@
 				>
 			</File>
 			<File
+                                RelativePath="..\src\vhdlparser.cpp"
+                                >
+                        </File>
+                        <File
+                                RelativePath="..\src\vhdlparser.hpp"
+                                >
+                        </File>
+                        <File
+                                RelativePath="..\src\vhdlparser.y"
+                                >
+                                <FileConfiguration
+                                       Name="Debug|Win32"
+                                       >
+                                       <Tool
+                                               Name="VCCustomBuildTool"
+                                               Description="Running bison on vhdlparser.y"
+                                               CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
+                                               Outputs="$(InputDir)\..\src\vhdlparser.cpp"
+                                       />
+                               </FileConfiguration>
+                        </File>
+                        <File
 				RelativePath="..\src\vhdlscanner.l"
 				>
 				<FileConfiguration

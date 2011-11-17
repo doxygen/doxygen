@@ -6274,6 +6274,10 @@ g_lang2extMap[] =
   { "python",      "python",  SrcLangExt_Python  },
   { "fortran",     "fortran", SrcLangExt_Fortran },
   { "vhdl",        "vhdl",    SrcLangExt_VHDL    },
+  { "vhd",         "vhd",     SrcLangExt_VHDL    },
+  { "ucf",         "vhd",     SrcLangExt_VHDL    },
+  { "qsf",         "vhd",     SrcLangExt_VHDL    },
+  
   { "dbusxml",     "dbusxml", SrcLangExt_XML     },
   { "tcl",         "tcl",     SrcLangExt_Tcl     },
   { 0,             0,        (SrcLangExt)0       }
@@ -6340,6 +6344,9 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".vhd",   "vhdl");
   updateLanguageMapping(".vhdl",  "vhdl");
   updateLanguageMapping(".tcl",   "tcl");
+  updateLanguageMapping(".ucf",   "vhdl");
+  updateLanguageMapping(".qsf",   "vhdl");
+
   //updateLanguageMapping(".xml",   "dbusxml");
 }
 

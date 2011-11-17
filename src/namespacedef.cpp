@@ -564,12 +564,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   ol.endContents();
 
-  if (generateTreeView)
-  {
-    writeNavigationPath(ol);
-  }
-
-  endFile(ol,TRUE);
+  endFileWithNavPath(this,ol);
 
   if (generateTagFile)
   {
@@ -813,7 +808,12 @@ bool NamespaceSDict::declVisible() const
 
 void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool localName)
 {
+ 
+
   if (count()==0) return; // no namespaces in the list
+
+  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL")) return;
+ 
 
   SDict<NamespaceDef>::Iterator ni(*this);
   NamespaceDef *nd;

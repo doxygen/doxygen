@@ -33,7 +33,7 @@
 #include "htmlhelp.h"
 #include "docparser.h"
 #include "htmldocvisitor.h"
-#include "index.h"
+#include "searchindex.h"
 #include "pagedef.h"
 #include "debug.h"
 #include "dirdef.h"
@@ -992,7 +992,7 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
     {  
       path.prepend(relPath);   
     }  
-    mathJaxJs = "<script src=\"" + path + "MathJax.js\">\n"
+    mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
                 "  MathJax.Hub.Config({\n"
                 "    extensions: [\"tex2jax.js\"";
     QStrList &mathJaxExtensions = Config_getList("MATHJAX_EXTENSIONS");
@@ -1006,6 +1006,7 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
                  "    jax: [\"input/TeX\",\"output/HTML-CSS\"],\n"
                  "});\n"
                  "</script>";
+    mathJaxJs += "<script src=\"" + path + "MathJax.js\"></script>\n";
   }
 
   // first substitute generic keywords

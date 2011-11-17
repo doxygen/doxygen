@@ -63,9 +63,6 @@ sub GenerateDep {
 #$ GenerateDep("fortrancode.cpp","fortrancode.l");
 	$(LEX) -i -PfcodeYY -t fortrancode.l | $(INCBUFSIZE) >fortrancode.cpp
 
-#$ GenerateDep("vhdlscanner.cpp","vhdlscanner.l");
-	$(LEX) -i -PvhdlscanYY -t vhdlscanner.l | $(INCBUFSIZE) >vhdlscanner.cpp
-
 #$ GenerateDep("vhdlcode.cpp","vhdlcode.l");
 	$(LEX) -i -PvhdlcodeYY -t vhdlcode.l | $(INCBUFSIZE) >vhdlcode.cpp
 
@@ -98,8 +95,18 @@ sub GenerateDep {
 
 #$ GenerateDep("ce_parse.h","constexp.y");
 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
-	-rm ce_parse.c	
+	-rm ce_parse.c
 
+#$ GenerateDep("vhdlscanner.cpp","vhdlscanner.l","vhdlparser.h");
+	$(LEX) -i -PvhdlScanYY -t vhdlscanner.l | $(INCBUFSIZE) >vhdlscanner.cpp
+
+#$ GenerateDep("vhdlparser.cpp","vhdlparser.y");
+	$(YACC) -l -p vhdlScanYY vhdlparser.y -o vhdlparser.cpp 	
+
+#$ GenerateDep("vhdlparser.h","vhdlparser.y");
+	$(YACC) -l -d -p vhdlScanYY vhdlparser.y -o vhdlparser.c 
+	-rm vhdlparser.c	
+	
 #$ GenerateDep("layout.cpp","layout_default.h");
 
 TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"

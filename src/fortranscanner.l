@@ -178,6 +178,7 @@ static Protection        defaultProtection;
 static Protection        typeProtection;
 static int               typeMode = false;
 static InterfaceType     ifType = IF_NONE;
+static bool              functionLine = FALSE;
 
 static char              stringStartSymbol; // single or double quote
 
@@ -246,7 +247,7 @@ NOARGS    {BS}"\n"
 NUM_TYPE  (complex|integer|logical|real)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE)
@@ -303,6 +304,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
  /*-----------------------------------------------------------------------------------*/
 
 <*>^.*\n                                { // prepass: look for line continuations
+  					  functionLine = FALSE;
 
                                           //fprintf(stderr, "---%s", yytext);
 
@@ -982,10 +984,13 @@ private                                 {
 					   BEGIN(SubprogBody);				           
 }
 <SubprogBody>result{BS}\({BS}{ID}      {  
-                                           result= yytext;
-                                           result= result.right(result.length()-result.find("(")-1);
-                                           result= result.stripWhiteSpace();
- 					   modifiers[current_root->parent()][current_root->name.lower()].returnName = result;
+  					   if (functionLine)
+					   {
+                                             result= yytext;
+                                             result= result.right(result.length()-result.find("(")-1);
+                                             result= result.stripWhiteSpace();
+ 					     modifiers[current_root->parent()][current_root->name.lower()].returnName = result;
+					   }
                                            //cout << "=====> got result " <<  result << endl;
  				       } 
 
@@ -1907,6 +1912,7 @@ static void addSubprogram(const char *text)
   subrCurrent.prepend(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
+  functionLine = subtype=="function";
   current->type += " " + subtype;
   current->type = current->type.stripWhiteSpace();
   current->fileName  = yyFileName;

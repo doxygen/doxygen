@@ -278,7 +278,8 @@ class Entry
       Protocol       = 0x0100,
       Category       = 0x0200,
       SealedClass    = 0x0400,
-      AbstractClass  = 0x0800
+      AbstractClass  = 0x0800,
+      Enum           = 0x1000  // for Java-style enums
     };
     enum GroupDocType
     {

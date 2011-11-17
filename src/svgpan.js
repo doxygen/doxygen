@@ -66,7 +66,7 @@ function show()
     windowWidth = 800;
     windowHeight = 600;
   }
-  minZoom = Math.min(windowHeight/viewHeight,windowWidth/viewWidth);
+  minZoom = Math.min(Math.min(viewHeight,windowHeight)/viewHeight,Math.min(viewWidth,windowWidth)/viewWidth);
   maxZoom = minZoom+1.5;
   zoomInFactor = Math.pow(maxZoom/minZoom,1.0/zoomSteps);
   zoomOutFactor = 1.0/zoomInFactor;
@@ -168,6 +168,7 @@ function doZoom(g,point,zoomFactor)
 function handleMouseWheel(evt) 
 {
   if (!evt) evt = window.evt;
+  if (!evt.shiftKey) return; // only zoom when shift is pressed
   if (evt.preventDefault) evt.preventDefault();
   evt.returnValue = false;
 

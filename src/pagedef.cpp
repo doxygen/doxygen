@@ -147,8 +147,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
   {
     ol.endContents();
-    getOuterScope()->writeNavigationPath(ol);
-    endFile(ol,TRUE);
+    endFileWithNavPath(getOuterScope(),ol);
   }
   else
   {

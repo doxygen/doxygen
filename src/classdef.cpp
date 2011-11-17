@@ -1774,7 +1774,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
     {
       ol.writeString(" ");
       ol.insertMemberAlign();
-      VhdlDocGen::writeClassType(this,ol,cname);
+      ol.writeString(VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)protection()));
     }
     ol.endMemberItem();
 
@@ -1962,12 +1962,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   endTitle(ol,getOutputFileBase(),displayName());
   writeDocumentationContents(ol,pageTitle);
     
-  if (generateTreeView)
-  {
-    writeNavigationPath(ol);
-  }
- 
-  endFile(ol,TRUE);
+  endFileWithNavPath(this,ol);
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -3153,7 +3148,6 @@ void ClassDef::determineIntfUsageRelation()
 
 QCString ClassDef::compoundTypeString() const
 {
-  if (m_impl->compType==Interface && getLanguage()==SrcLangExt_ObjC) return "class";
   if (getLanguage()==SrcLangExt_Fortran)
   {
     switch (m_impl->compType)
@@ -3175,7 +3169,7 @@ QCString ClassDef::compoundTypeString() const
       case Class:     return "class";
       case Struct:    return "struct";
       case Union:     return "union";
-      case Interface: return "interface";
+      case Interface: return getLanguage()==SrcLangExt_ObjC ? "class" : "interface";
       case Protocol:  return "protocol";
       case Category:  return "category";
       case Exception: return "exception";
@@ -3714,7 +3708,7 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
   {
     if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
     {
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0);
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0,0);
     }
     else // use generic declaration function
     {

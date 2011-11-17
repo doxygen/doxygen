@@ -305,3 +305,774 @@ void SearchIndex::write(const char *fileName)
   delete[] wordStatOffsets;
 }
 
+//---------------------------------------------------------------------------
+// the following part is for the javascript based search engine
+
+#include "memberdef.h"
+#include "namespacedef.h"
+#include "classdef.h"
+#include "filedef.h"
+#include "language.h"
+#include "doxygen.h"
+#include "message.h"
+
+static const char search_script[]=
+#include "search_js.h"
+;
+
+#define MEMBER_INDEX_ENTRIES   256
+#define NUM_SEARCH_INDICES      13
+#define SEARCH_INDEX_ALL         0
+#define SEARCH_INDEX_CLASSES     1
+#define SEARCH_INDEX_NAMESPACES  2
+#define SEARCH_INDEX_FILES       3
+#define SEARCH_INDEX_FUNCTIONS   4
+#define SEARCH_INDEX_VARIABLES   5
+#define SEARCH_INDEX_TYPEDEFS    6
+#define SEARCH_INDEX_ENUMS       7
+#define SEARCH_INDEX_ENUMVALUES  8
+#define SEARCH_INDEX_PROPERTIES  9
+#define SEARCH_INDEX_EVENTS     10
+#define SEARCH_INDEX_RELATED    11
+#define SEARCH_INDEX_DEFINES    12
+
+class SearchIndexList : public SDict< QList<Definition> >
+{
+  public:
+    SearchIndexList(int size=17) : SDict< QList<Definition> >(size,FALSE) 
+    {
+      setAutoDelete(TRUE);
+    }
+   ~SearchIndexList() {}
+    void append(Definition *d)
+    {
+      QList<Definition> *l = find(d->name());
+      if (l==0)
+      {
+        l=new QList<Definition>;
+        SDict< QList<Definition> >::append(d->name(),l);
+      }
+      l->append(d);
+    }
+    int compareItems(GCI item1, GCI item2)
+    {
+      QList<Definition> *md1=(QList<Definition> *)item1;
+      QList<Definition> *md2=(QList<Definition> *)item2;
+      QCString n1 = md1->first()->localName();
+      QCString n2 = md2->first()->localName();
+      return stricmp(n1.data(),n2.data());
+    }
+};
+
+static void addMemberToSearchIndex(
+         SearchIndexList symbols[NUM_SEARCH_INDICES][MEMBER_INDEX_ENTRIES],
+         int symbolCount[NUM_SEARCH_INDICES],
+         MemberDef *md)
+{
+  static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
+  bool isLinkable = md->isLinkable();
+  ClassDef *cd=0;
+  NamespaceDef *nd=0;
+  FileDef *fd=0;
+  if (isLinkable             && 
+      (cd=md->getClassDef()) && 
+      cd->isLinkable()       &&
+      cd->templateMaster()==0)
+  {
+    QCString n = md->name();
+    uchar charCode = (uchar)n.at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    if (!n.isEmpty()) 
+    {
+      bool isFriendToHide = hideFriendCompounds &&
+        (QCString(md->typeString())=="friend class" || 
+         QCString(md->typeString())=="friend struct" ||
+         QCString(md->typeString())=="friend union");
+      if (!(md->isFriend() && isFriendToHide))
+      {
+        symbols[SEARCH_INDEX_ALL][letter].append(md);
+        symbolCount[SEARCH_INDEX_ALL]++;
+      }
+      if (md->isFunction() || md->isSlot() || md->isSignal())
+      {
+        symbols[SEARCH_INDEX_FUNCTIONS][letter].append(md);
+        symbolCount[SEARCH_INDEX_FUNCTIONS]++;
+      } 
+      else if (md->isVariable())
+      {
+        symbols[SEARCH_INDEX_VARIABLES][letter].append(md);
+        symbolCount[SEARCH_INDEX_VARIABLES]++;
+      }
+      else if (md->isTypedef())
+      {
+        symbols[SEARCH_INDEX_TYPEDEFS][letter].append(md);
+        symbolCount[SEARCH_INDEX_TYPEDEFS]++;
+      }
+      else if (md->isEnumerate())
+      {
+        symbols[SEARCH_INDEX_ENUMS][letter].append(md);
+        symbolCount[SEARCH_INDEX_ENUMS]++;
+      }
+      else if (md->isEnumValue())
+      {
+        symbols[SEARCH_INDEX_ENUMVALUES][letter].append(md);
+        symbolCount[SEARCH_INDEX_ENUMVALUES]++;
+      }
+      else if (md->isProperty())
+      {
+        symbols[SEARCH_INDEX_PROPERTIES][letter].append(md);
+        symbolCount[SEARCH_INDEX_PROPERTIES]++;
+      }
+      else if (md->isEvent())
+      {
+        symbols[SEARCH_INDEX_EVENTS][letter].append(md);
+        symbolCount[SEARCH_INDEX_EVENTS]++;
+      }
+      else if (md->isRelated() || md->isForeign() ||
+               (md->isFriend() && !isFriendToHide))
+      {
+        symbols[SEARCH_INDEX_RELATED][letter].append(md);
+        symbolCount[SEARCH_INDEX_RELATED]++;
+      }
+    }
+  }
+  else if (isLinkable && 
+      (((nd=md->getNamespaceDef()) && nd->isLinkable()) || 
+       ((fd=md->getFileDef())      && fd->isLinkable())
+      )
+     )
+  {
+    QCString n = md->name();
+    uchar charCode = (uchar)n.at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    if (!n.isEmpty()) 
+    {
+      symbols[SEARCH_INDEX_ALL][letter].append(md);
+      symbolCount[SEARCH_INDEX_ALL]++;
+
+      if (md->isFunction()) 
+      {
+        symbols[SEARCH_INDEX_FUNCTIONS][letter].append(md);
+        symbolCount[SEARCH_INDEX_FUNCTIONS]++;
+      }
+      else if (md->isVariable()) 
+      {
+        symbols[SEARCH_INDEX_VARIABLES][letter].append(md);
+        symbolCount[SEARCH_INDEX_VARIABLES]++;
+      }
+      else if (md->isTypedef())
+      {
+        symbols[SEARCH_INDEX_TYPEDEFS][letter].append(md);
+        symbolCount[SEARCH_INDEX_TYPEDEFS]++;
+      }
+      else if (md->isEnumerate())
+      {
+        symbols[SEARCH_INDEX_ENUMS][letter].append(md);
+        symbolCount[SEARCH_INDEX_ENUMS]++;
+      }
+      else if (md->isEnumValue())
+      {
+        symbols[SEARCH_INDEX_ENUMVALUES][letter].append(md);
+        symbolCount[SEARCH_INDEX_ENUMVALUES]++;
+      }
+      else if (md->isDefine())
+      {
+        symbols[SEARCH_INDEX_DEFINES][letter].append(md);
+        symbolCount[SEARCH_INDEX_DEFINES]++;
+      }
+    }
+  }
+}
+
+static QCString searchId(const QCString &s)
+{
+  int c;
+  uint i;
+  QCString result;
+  for (i=0;i<s.length();i++)
+  {
+    c=s.at(i);
+    if ((c>='0' && c<='9') || (c>='A' && c<='Z') || (c>='a' && c<='z'))
+    {
+      result+=(char)tolower(c);
+    }
+    else
+    {
+      char val[4];
+      sprintf(val,"_%02x",(uchar)c);
+      result+=val;
+    }
+  }
+  return result;
+}
+
+static int g_searchIndexCount[NUM_SEARCH_INDICES];
+static SearchIndexList g_searchIndexSymbols[NUM_SEARCH_INDICES][MEMBER_INDEX_ENTRIES];
+static const char *g_searchIndexName[NUM_SEARCH_INDICES] = 
+{ 
+    "all",
+    "classes",
+    "namespaces",
+    "files",
+    "functions",
+    "variables",
+    "typedefs", 
+    "enums", 
+    "enumvalues",
+    "properties", 
+    "events", 
+    "related",
+    "defines"
+};
+
+
+class SearchIndexCategoryMapping
+{
+  public:
+    SearchIndexCategoryMapping()
+    {
+      categoryLabel[SEARCH_INDEX_ALL]        = theTranslator->trAll();
+      categoryLabel[SEARCH_INDEX_CLASSES]    = theTranslator->trClasses();
+      categoryLabel[SEARCH_INDEX_NAMESPACES] = theTranslator->trNamespace(TRUE,FALSE);
+      categoryLabel[SEARCH_INDEX_FILES]      = theTranslator->trFile(TRUE,FALSE);
+      categoryLabel[SEARCH_INDEX_FUNCTIONS]  = theTranslator->trFunctions();
+      categoryLabel[SEARCH_INDEX_VARIABLES]  = theTranslator->trVariables();
+      categoryLabel[SEARCH_INDEX_TYPEDEFS]   = theTranslator->trTypedefs();
+      categoryLabel[SEARCH_INDEX_ENUMS]      = theTranslator->trEnumerations();
+      categoryLabel[SEARCH_INDEX_ENUMVALUES] = theTranslator->trEnumerationValues();
+      categoryLabel[SEARCH_INDEX_PROPERTIES] = theTranslator->trProperties();
+      categoryLabel[SEARCH_INDEX_EVENTS]     = theTranslator->trEvents();
+      categoryLabel[SEARCH_INDEX_RELATED]    = theTranslator->trFriends();
+      categoryLabel[SEARCH_INDEX_DEFINES]    = theTranslator->trDefines();
+    }
+    QCString categoryLabel[NUM_SEARCH_INDICES];
+};
+
+void writeJavascriptSearchIndex()
+{
+  if (!Config_getBool("GENERATE_HTML")) return;
+
+  // index classes
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd;
+  for (;(cd=cli.current());++cli)
+  {
+    uchar charCode = (uchar)cd->localName().at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    if (cd->isLinkable() && isId(letter))
+    {
+      g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(cd);
+      g_searchIndexSymbols[SEARCH_INDEX_CLASSES][letter].append(cd);
+      g_searchIndexCount[SEARCH_INDEX_ALL]++;
+      g_searchIndexCount[SEARCH_INDEX_CLASSES]++;
+    }
+  }
+
+  // index namespaces
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for (;(nd=nli.current());++nli)
+  {
+    uchar charCode = (uchar)nd->name().at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    if (nd->isLinkable() && isId(letter))
+    {
+      g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(nd);
+      g_searchIndexSymbols[SEARCH_INDEX_NAMESPACES][letter].append(nd);
+      g_searchIndexCount[SEARCH_INDEX_ALL]++;
+      g_searchIndexCount[SEARCH_INDEX_NAMESPACES]++;
+    }
+  }
+
+  // index files
+  FileNameListIterator fnli(*Doxygen::inputNameList);
+  FileName *fn;
+  for (;(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      uchar charCode = (uchar)fd->name().at(0);
+      uint letter = charCode<128 ? tolower(charCode) : charCode;
+      if (fd->isLinkable() && isId(letter))
+      {
+        g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(fd);
+        g_searchIndexSymbols[SEARCH_INDEX_FILES][letter].append(fd);
+        g_searchIndexCount[SEARCH_INDEX_ALL]++;
+        g_searchIndexCount[SEARCH_INDEX_FILES]++;
+      }
+    }
+  }
+
+  // index class members
+  {
+    MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
+    MemberName *mn;
+    // for each member name
+    for (mnli.toFirst();(mn=mnli.current());++mnli)
+    {
+      MemberDef *md;
+      MemberNameIterator mni(*mn);
+      // for each member definition
+      for (mni.toFirst();(md=mni.current());++mni)
+      {
+        addMemberToSearchIndex(g_searchIndexSymbols,g_searchIndexCount,md);
+      }
+    }
+  }
+
+  // index file/namespace members
+  {
+    MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
+    MemberName *mn;
+    // for each member name
+    for (fnli.toFirst();(mn=fnli.current());++fnli)
+    {
+      MemberDef *md;
+      MemberNameIterator mni(*mn);
+      // for each member definition
+      for (mni.toFirst();(md=mni.current());++mni)
+      {
+        addMemberToSearchIndex(g_searchIndexSymbols,g_searchIndexCount,md);
+      }
+    }
+  }
+  
+  // sort all lists
+  int i,p;
+  for (i=0;i<NUM_SEARCH_INDICES;i++)
+  {
+    for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
+    {
+      if (g_searchIndexSymbols[i][p].count()>0)
+      {
+        g_searchIndexSymbols[i][p].sort();
+      }
+    }
+  }
+
+  // write index files
+  QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
+
+  for (i=0;i<NUM_SEARCH_INDICES;i++)
+  {
+    for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
+    {
+      if (g_searchIndexSymbols[i][p].count()>0)
+      {
+        QCString baseName;
+        baseName.sprintf("%s_%02x",g_searchIndexName[i],p);
+
+        QCString fileName = searchDirName + "/"+baseName+".html";
+        QCString dataFileName = searchDirName + "/"+baseName+".js";
+
+        QFile outFile(fileName);
+        QFile dataOutFile(dataFileName);
+        if (outFile.open(IO_WriteOnly) && dataOutFile.open(IO_WriteOnly))
+        {
+          {
+            FTextStream t(&outFile);
+
+            t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
+              " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+            t << "<html><head><title></title>" << endl;
+            t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
+            t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
+            t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
+            t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
+            t << "</head>" << endl;
+            t << "<body class=\"SRPage\">" << endl;
+            t << "<div id=\"SRIndex\">" << endl;
+            t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
+            t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
+            t << "<script type=\"text/javascript\"><!--" << endl;
+            t << "createResults();" << endl; // this function will insert the results
+            t << "--></script>" << endl;
+            t << "<div class=\"SRStatus\" id=\"Searching\">" 
+              << theTranslator->trSearching() << "</div>" << endl;
+            t << "<div class=\"SRStatus\" id=\"NoMatches\">"
+              << theTranslator->trNoMatches() << "</div>" << endl;
+
+            t << "<script type=\"text/javascript\"><!--" << endl;
+            t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
+            t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
+            t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
+            t << "searchResults.Search();" << endl;
+            t << "--></script>" << endl;
+            t << "</div>" << endl; // SRIndex
+            t << "</body>" << endl;
+            t << "</html>" << endl;
+          }
+          FTextStream ti(&dataOutFile);
+
+          ti << "var searchData=" << endl;
+          // format
+          // searchData[] = array of items
+          // searchData[x][0] = id
+          // searchData[x][1] = [ name + child1 + child2 + .. ]
+          // searchData[x][1][0] = name as shown
+          // searchData[x][1][y+1] = info for child y
+          // searchData[x][1][y+1][0] = url
+          // searchData[x][1][y+1][1] = 1 => target="_parent"
+          // searchData[x][1][y+1][2] = scope
+
+          ti << "[" << endl;
+          bool firstEntry=TRUE;
+
+          SDict<QList<Definition> >::Iterator li(g_searchIndexSymbols[i][p]);
+          QList<Definition> *dl;
+          int itemCount=0;
+          for (li.toFirst();(dl=li.current());++li)
+          {
+            Definition *d = dl->first();
+            QCString id = d->localName();
+//            t << "<div class=\"SRResult\" id=\"SR_"
+//              << searchId(d->localName()) << "\">" << endl;
+//            t << " <div class=\"SREntry\">\n";
+
+            if (!firstEntry)
+            {
+              ti << "," << endl;
+            }
+            firstEntry=FALSE;
+
+            ti << "  ['" << searchId(d->localName()) << "',['" 
+               << d->localName() << "',[";
+
+            if (dl->count()==1) // item with a unique name
+            {
+              MemberDef  *md   = 0;
+              bool isMemberDef = d->definitionType()==Definition::TypeMember;
+              if (isMemberDef) md = (MemberDef*)d;
+//              t << "  <a id=\"Item" << itemCount << "\" "
+//                << "onkeydown=\""
+//                << "return searchResults.Nav(event," << itemCount << ")\" "
+//                << "onkeypress=\""
+//                << "return searchResults.Nav(event," << itemCount << ")\" "
+//                << "onkeyup=\""
+//                << "return searchResults.Nav(event," << itemCount << ")\" "
+//                << "class=\"SRSymbol\" ";
+//              t << externalLinkTarget() << "href=\"" << externalRef("../",d->getReference(),TRUE);
+//              t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+              QCString anchor = d->anchor();
+//              if (!anchor.isEmpty())
+//              {
+//                t << "#" << anchor;
+//              }
+//              t << "\"";
+
+              ti << "'" << externalRef("../",d->getReference(),TRUE)
+                 << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+              if (!anchor.isEmpty())
+              {
+                ti << "#" << anchor;
+              }
+              ti << "',";
+
+              static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+              if (!extLinksInWindow || d->getReference().isEmpty())
+              {
+//                t << " target=\"_parent\"";
+                ti << "1,";
+              }
+              else
+              {
+                ti << "0,";
+              }
+//              t << ">";
+//              t << convertToXML(d->localName());
+//              t << "</a>" << endl;
+
+
+              if (d->getOuterScope()!=Doxygen::globalScope)
+              {
+//                t << "  <span class=\"SRScope\">" 
+//                  << convertToXML(d->getOuterScope()->name()) 
+//                  << "</span>" << endl;
+
+                ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
+              }
+              else if (md)
+              {
+                FileDef *fd = md->getBodyDef();
+                if (fd==0) fd = md->getFileDef();
+                if (fd)
+                {
+//                  t << "  <span class=\"SRScope\">" 
+//                    << convertToXML(fd->localName())
+//                    << "</span>" << endl;
+                 
+                  ti << "'" << convertToXML(fd->localName()) << "'";
+                }
+              }
+              else
+              {
+                ti << "''";
+              }
+              ti << "]]";
+            }
+            else // multiple items with the same name
+            {
+//              t << "  <a id=\"Item" << itemCount << "\" "
+//                << "onkeydown=\""
+//                << "return searchResults.Nav(event," << itemCount << ")\" "
+//                << "onkeypress=\""
+//                << "return searchResults.Nav(event," << itemCount << ")\" "
+//                << "onkeyup=\""
+//                << "return searchResults.Nav(event," << itemCount << ")\" "
+//                << "class=\"SRSymbol\" "
+//                << "href=\"javascript:searchResults.Toggle('SR_"
+//                << searchId(d->localName()) << "')\">" 
+//                << convertToXML(d->localName()) << "</a>" << endl;
+//              t << "  <div class=\"SRChildren\">" << endl;
+
+              QListIterator<Definition> di(*dl);
+              bool overloadedFunction = FALSE;
+              Definition *prevScope = 0;
+              int childCount=0;
+              for (di.toFirst();(d=di.current());)
+              {
+                ++di;
+                Definition *scope     = d->getOuterScope();
+                Definition *next      = di.current();
+                Definition *nextScope = 0;
+                MemberDef  *md        = 0;
+                bool isMemberDef = d->definitionType()==Definition::TypeMember;
+                if (isMemberDef) md = (MemberDef*)d;
+                if (next) nextScope = next->getOuterScope();
+
+//                t << "    <a id=\"Item" << itemCount << "_c" 
+//                  << childCount << "\" "
+//                  << "onkeydown=\""
+//                  << "return searchResults.NavChild(event," 
+//                  << itemCount << "," << childCount << ")\" "
+//                  << "onkeypress=\""
+//                  << "return searchResults.NavChild(event," 
+//                  << itemCount << "," << childCount << ")\" "
+//                  << "onkeyup=\""
+//                  << "return searchResults.NavChild(event," 
+//                  << itemCount << "," << childCount << ")\" "
+//                  << "class=\"SRScope\" ";
+//                if (!d->getReference().isEmpty())
+//                {
+//                  t << externalLinkTarget() << externalRef("../",d->getReference(),FALSE);
+//                }
+//                t << "href=\"" << externalRef("../",d->getReference(),TRUE);
+//                t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                QCString anchor = d->anchor();
+//                if (!anchor.isEmpty())
+//                {
+//                  t << "#" << anchor;
+//                }
+//                t << "\"";
+
+                if (childCount>0)
+                {
+                  ti << "],[";
+                }
+                ti << "'" << externalRef("../",d->getReference(),TRUE)
+                   << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                if (!anchor.isEmpty())
+                {
+                  ti << "#" << anchor;
+                }
+                ti << "',";
+
+                static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+                if (!extLinksInWindow || d->getReference().isEmpty())
+                {
+//                  t << " target=\"_parent\"";
+                  ti << "1,";
+                }
+                else
+                {
+                  ti << "0,";
+                }
+//                t << ">";
+                bool found=FALSE;
+                overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
+                                      (scope && scope==nextScope)
+                                     ) && md && 
+                                     (md->isFunction() || md->isSlot());
+                QCString prefix;
+                if (md) prefix=convertToXML(md->localName());
+                if (overloadedFunction) // overloaded member function
+                {
+                  prefix+=convertToXML(md->argsString()); 
+                          // show argument list to disambiguate overloaded functions
+                }
+                else if (md) // unique member function
+                {
+                  prefix+="()"; // only to show it is a function
+                }
+                QCString name;
+                if (d->definitionType()==Definition::TypeClass)
+                {
+                  name = convertToXML(((ClassDef*)d)->displayName());
+                  found = TRUE;
+                }
+                else if (d->definitionType()==Definition::TypeNamespace)
+                {
+                  name = convertToXML(((NamespaceDef*)d)->displayName());
+                  found = TRUE;
+                }
+                else if (scope==0 || scope==Doxygen::globalScope) // in global scope
+                {
+                  if (md)
+                  {
+                    FileDef *fd = md->getBodyDef();
+                    if (fd==0) fd = md->getFileDef();
+                    if (fd)
+                    {
+                      if (!prefix.isEmpty()) prefix+=":&#160;";
+                      name = prefix + convertToXML(fd->localName());
+                      found = TRUE;
+                    }
+                  }
+                }
+                else if (md && (md->getClassDef() || md->getNamespaceDef())) 
+                  // member in class or namespace scope
+                {
+                  SrcLangExt lang = md->getLanguage();
+                  name = convertToXML(d->getOuterScope()->qualifiedName()) 
+                       + getLanguageSpecificSeparator(lang) + prefix;
+                  found = TRUE;
+                }
+                else if (scope) // some thing else? -> show scope
+                {
+                  name = prefix + convertToXML(scope->name());
+                  found = TRUE;
+                }
+                if (!found) // fallback
+                {
+                  name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+                }
+//                t << name;
+//                t << "</a>" << endl;
+
+                ti << "'" << name << "'";
+
+                prevScope = scope;
+                childCount++;
+              }
+//              t << "  </div>" << endl; // SRChildren
+
+              ti << "]]";
+            }
+            ti << "]";
+//            t << " </div>" << endl; // SREntry
+//            t << "</div>" << endl; // SRResult
+            itemCount++;
+          }
+          if (!firstEntry)
+          {
+            ti << endl;
+          }
+
+          ti << "];" << endl;
+
+        }
+        else
+        {
+          err("Failed to open file '%s' for writing...\n",fileName.data());
+        }
+      }
+    }
+  }
+  //ol.popGeneratorState();
+
+  {
+    QFile f(searchDirName+"/search.js");
+    if (f.open(IO_WriteOnly))
+    {
+      FTextStream t(&f);
+      t << "// Search script generated by doxygen" << endl;
+      t << "// Copyright (C) 2009 by Dimitri van Heesch." << endl << endl;
+      t << "// The code in this file is loosly based on main.js, part of Natural Docs," << endl;
+      t << "// which is Copyright (C) 2003-2008 Greg Valure" << endl;
+      t << "// Natural Docs is licensed under the GPL." << endl << endl;
+      t << "var indexSectionsWithContent =" << endl;
+      t << "{" << endl;
+      bool first=TRUE;
+      int j=0;
+      for (i=0;i<NUM_SEARCH_INDICES;i++)
+      {
+        if (g_searchIndexCount[i]>0)
+        {
+          if (!first) t << "," << endl;
+          t << "  " << j << ": \"";
+          for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
+          {
+            t << (g_searchIndexSymbols[i][p].count()>0 ? "1" : "0");
+          }
+          t << "\"";
+          first=FALSE;
+          j++;
+        }
+      }
+      if (!first) t << "\n";
+      t << "};" << endl << endl;
+      t << "var indexSectionNames =" << endl;
+      t << "{" << endl;
+      first=TRUE;
+      j=0;
+      for (i=0;i<NUM_SEARCH_INDICES;i++)
+      {
+        if (g_searchIndexCount[i]>0)
+        {
+          if (!first) t << "," << endl;
+          t << "  " << j << ": \"" << g_searchIndexName[i] << "\"";
+          first=FALSE;
+          j++;
+        }
+      }
+      if (!first) t << "\n";
+      t << "};" << endl << endl;
+      t << search_script;
+    }
+  }
+  {
+    QFile f(searchDirName+"/nomatches.html");
+    if (f.open(IO_WriteOnly))
+    {
+      FTextStream t(&f);
+      t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
+           "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+      t << "<html><head><title></title>" << endl;
+      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
+      t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
+      t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
+      t << "</head>" << endl;
+      t << "<body class=\"SRPage\">" << endl;
+      t << "<div id=\"SRIndex\">" << endl;
+      t << "<div class=\"SRStatus\" id=\"NoMatches\">"
+        << theTranslator->trNoMatches() << "</div>" << endl;
+      t << "</div>" << endl;
+      t << "</body>" << endl;
+      t << "</html>" << endl;
+    }
+  }
+  Doxygen::indexList.addStyleSheetFile("search/search.js");
+}
+
+void writeSearchCategories(FTextStream &t)
+{
+  static SearchIndexCategoryMapping map;
+  int i,j=0;
+  for (i=0;i<NUM_SEARCH_INDICES;i++)
+  {
+    if (g_searchIndexCount[i]>0)
+    {
+      t << "<a class=\"SelectItem\" href=\"javascript:void(0)\" "
+        << "onclick=\"searchBox.OnSelectItem(" << j << ")\">"
+        << "<span class=\"SelectionMark\">&#160;</span>"
+        << convertToXML(map.categoryLabel[i])
+        << "</a>";
+      j++;
+    }
+  }
+}
+
+
+

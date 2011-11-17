@@ -464,7 +464,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   // 2. This might need to be repeated below for memberGroupLists
   if (optimizeVhdl) // use specific declarations function
   {
-    VhdlDocGen::writeVhdlDeclarations(this,ol,0,cd,0);
+    VhdlDocGen::writeVhdlDeclarations(this,ol,0,cd,0,0);
   }
   else
   {
@@ -585,8 +585,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     {
       md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
       ol.endContents();
-      container->writeNavigationPath(ol);
-      endFile(ol,TRUE);
+      endFileWithNavPath(container,ol);
     }
     else
     {

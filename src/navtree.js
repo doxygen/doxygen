@@ -149,14 +149,12 @@ function newNode(o, po, text, link, childrenData, lastNode)
         $(a).parent().parent().addClass('selected');
         $(a).parent().parent().attr('id','selected');
         var anchor = $(aname);
-        var targetDiv = anchor.next();
-        $(targetDiv).children('.memproto,.memdoc').effect("highlight",{},3000);
         $("#doc-content").animate({
           scrollTop: anchor.position().top +
           $('#doc-content').scrollTop() -
           $('#doc-content').offset().top
         },500,function(){
-          $(location).attr('href',aname);
+          window.location.replace(aname);
         });
       };
     }
@@ -308,7 +306,7 @@ function showNode(o, node, index)
             var anchor = $($(location).attr('hash'));
             var targetDiv = anchor.next();
             $(targetDiv).children('.memproto,.memdoc').
-                     effect("highlight", {}, 3000);
+                     effect("highlight", {}, 1500);
           }
           else
           {
@@ -362,6 +360,36 @@ function initNavTree(toroot,relpath)
       showNode(o, o.node, 0);
     }
   },true);
+
+  $(window).bind('hashchange', function(){
+     if (window.location.hash && window.location.hash.length>1){
+       var anchor = $(window.location.hash);
+       var targetDiv = anchor.next();
+       $(targetDiv).children('.memproto,.memdoc').effect("highlight",{},1500);
+       var docContent = $('#doc-content');
+       if (docContent && anchor && anchor[0] && anchor[0].ownerDocument){
+         docContent.scrollTop(anchor.position().top+docContent.scrollTop()-docContent.offset().top);
+       }
+       var a;
+       if ($(location).attr('hash')){
+         var link=stripPath($(location).attr('pathname'))+':'+
+                  $(location).attr('hash').substring(1);
+         a=$('.item a[class*=\""'+link+'"\"]');
+       }
+       if (a && a.length){
+         $('.item').removeClass('selected');
+         $('.item').removeAttr('id');
+         a.parent().parent().addClass('selected');
+         a.parent().parent().attr('id','selected');
+         var anchor = $($(location).attr('hash'));
+         var targetDiv = anchor.next();
+         showRoot();
+       }
+     } else {
+       var docContent = $('#doc-content');
+       if (docContent){ docContent.scrollTop(0); }
+     }
+  })
 
   $(window).load(showRoot);
 }
