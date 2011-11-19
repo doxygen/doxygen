@@ -199,6 +199,8 @@
 "	border: 1px solid ##cc;\n"
 "	margin: 2px 0px 2px 0;\n"
 "	padding: 2px 10px;\n"
+"        white-space: nowrap;\n"
+"        vertical-align: top;\n"
 "}\n"
 "\n"
 "td.indexvalue {\n"

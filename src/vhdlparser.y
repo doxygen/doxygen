@@ -363,7 +363,7 @@ physical_literal_1    : /* empty */        {$$="";}
 physical_literal_no_default    : t_AbstractLit t_Identifier   {$$=$1+" "+$2;}  
 
 idf_list : t_Identifier {$$=$1;}
-            | idf_list t_Comma t_Identifier {$$=$1+","+$3};
+            | idf_list t_Comma t_Identifier {$$=$1+","+$3}
             ;
 
 /*------------------------------------------
