@@ -86,10 +86,10 @@ static int currP=0;
 
 //---------------------------- function --------------------------------------------------------------------------------
 
-int vhdlScanYYlex (void);
+int vhdlScanYYlex ();
 void vhdlScanYYerror (char const *);
 
-static void addVhdlType(QCString name,int startLine,
+static void addVhdlType(const QCString &name,int startLine,
                         int section,int spec,
 			const char* args,const char* type,
 			Protection prot=Public);
@@ -99,105 +99,27 @@ static void newEntry();
 static void initEntry(Entry *e);
 static bool isFuncProcProced();
 static void popConfig();
-
-void pushLabel(QCString label)
-{
-  genLabels+="|"+label;
-}
-
-void popLabel()
-{
-  int u=genLabels.findRev("|");
-  if (u<0) return;
-  genLabels=genLabels.left(u); 
-}
-
-static void popConfig()
-{ 
-  assert(currNode);
-  currNode=currNode->prevNode;
-  // printf("\n pop arch %s ",currNode->arch.data());
-}
-
-static void addConfigureNode(char* a,char*b, bool isRoot,bool isLeave,bool inlineConf=false)
-{
-  struct ConfNode* co;
-  QCString ent,arch,lab;
-  ent=a;
-  lab =  VhdlDocGen::parseForConfig(ent,arch);
-
-  if (b)
-  {
-    ent=b;
-    lab=VhdlDocGen::parseForBinding(ent,arch);
-  }
-
-  co=new ConfNode(a,b,confName.data());
-  if (inlineConf)
-  {
-    co->isInlineConf=TRUE;
-  }
-
-  if (isRoot)
-  {
-    co->isRoot=true;
-    configL.append(co);
-    currNode=co;
-    currNode->prevNode=currNode;
-  }
-  else if (!isLeave)
-  {
-    currNode->addNode(co);
-    co->prevNode=currNode;
-    currNode=co;
-  }
-  else
-  {
-    assert(0);
-    co=new ConfNode(a,b,confName.data());
-    currNode->addNode(co);
-  }
-}// addConfigure
-
-
-
-//------------------------------------------------------------------------------------------------------------
-static bool addLibUseClause(QCString type)
-{
-  static bool show=Config_getBool("SHOW_INCLUDE_FILES");
-  static bool showIEEESTD=Config_getBool("FORCE_LOCAL_INCLUDES");
-
-  if (!show)  // all libraries and included packages are not shown
-  {
-    return false;
-  }
-
-  if (!showIEEESTD) // all standard packages and libraries are not shown
-  {  
-    type=type.lower();
-    if (type.stripPrefix("ieee")) return false;
-    if (type.stripPrefix("std")) return false;
-  }  
-  return true;
-}
-
-
-static bool isFuncProcProced()
-{
-  if (currP==VhdlDocGen::FUNCTION || 
-      currP==VhdlDocGen::PROCEDURE ||  
-      currP==VhdlDocGen::PROCESS
-     )
-  {
-    return true;
-  }
-  return false;
-}
-
+static void pushLabel(QCString label);
+static void popLabel();
+static void addConfigureNode(const char* a,const char*b, 
+                         bool isRoot,bool isLeave,bool inlineConf=FALSE);
+static bool addLibUseClause(const QCString &type);
+static bool isFuncProcProced();
+static void initEntry(Entry *e);
+static void addProto(const char *s1,const char *s2,const char *s3,
+                     const char *s4,const char *s5,const char *s6);
+static bool findInstant(QCString inst);
+static void createFunction(const QCString &impure,int spec,
+                           const QCString &fname);
 
 void newVhdlEntry()
 {
   newEntry();
+}
+
+Entry* getCurrentVhdlEntry()
+{
+  return current;
 }
 
 void initVhdlParser()
@@ -211,169 +133,11 @@ void initVhdlParser()
   initEntry(current);
 }
 
-Entry* getCurrentVhdlEntry()
-{
-  return current;
-}
-static void initEntry(Entry *e)
-{
-  e->fileName = s_str.fileName;
-  e->lang=SrcLangExt_VHDL;
-  initGroupInfo(e);
-}
-
-static void addProto(char *s1,char *s2,char *s3,char *s4,char *s5, char *s6)
-{
-  (void)s3; // avoid unused warning
-  (void)s5; // avoid unused warning
-  static QRegExp reg("[\\s]");
-  QCString name=s2;
-  QStringList ql=QStringList::split(",",name,FALSE);
-
-  for (uint u=0;u<ql.count();u++)
-  {
-    Argument *arg=new Argument;
-    arg->name=(QCString)ql[u];
-    arg->type=s4;
-    arg->defval=s1;
-    arg->attrib=s6;
-    current->argList->append(arg);
-    current->args+=s2;
-    current->args+=",";
-  }
-}
-
-static bool findInstant(QCString inst)
-{
-  QListIterator<Entry> eli(instFiles);
-  Entry *cur;
-
-  for (eli.toFirst();(cur=eli.current());++eli)
-  {
-    if (stricmp(inst.data(),cur->type.data())==0)
-    {
-      return true;
-    }
-  }
-  return false;
-}//findInst
-
 QList<Entry> & getVhdlInstList()
 {
   return instFiles;
 }
 
-static void createFunction(QCString impure,int spec,QCString fname)
-{
-  int it=0;
-  current->bodyLine=getParsedLine(spec);
-  current->spec=spec; 
-  current->section=Entry::FUNCTION_SEC;
-  current->exception=impure;
-  if (currP==VhdlDocGen::PROCEDURE)
-  {
-    current->name=impure;
-    it=t_PROCEDURE;
-  }
-  else
-  {
-    current->name=fname;
-    it=t_FUNCTION;
-  }
-
-  if (spec==VhdlDocGen::PROCESS)
-  {
-    it=t_PROCESS;
-    current->args=fname;
-    current->name=impure;
-    if (!fname.isEmpty())
-    { 
-      QStringList q1=QStringList::split(',',fname);
-      for (uint ii=0;ii<q1.count();ii++)
-      {
-	Argument *arg=new Argument;
-	arg->name=(QCString)q1[ii];    
-	current->argList->append(arg);
-      }
-    }
-  }  
-
-  current->startLine=getParsedLine(it);
-  current->bodyLine=getParsedLine(it);
-}
-
-static void addVhdlType(QCString name,int startLine,int section,int spec,
-                        const char* args,const char* type,Protection prot)
-{
-  static QRegExp reg("[\\s]");
-
-  //int startLine=getParsedLine(spec);
-
-  if (isFuncProcProced())
-  {
-    return;
-  }
-
-  // more than one name   ?
-  QStringList ql=QStringList::split(",",name,FALSE);
-
-  for (uint u=0;u<ql.count();u++)
-  {
-    current->name=(QCString)ql[u];
-    if (section==Entry::VARIABLE_SEC && 
-	!(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) 
-       )
-    {
-      current->name.prepend(VhdlDocGen::getRecordNumber());
-    }
-    current->startLine=startLine;
-    current->bodyLine=startLine;
-    current->section=section; 
-    current->spec=spec;
-    current->fileName=s_str.fileName;
-    if (current->args.isEmpty())
-    {
-      current->args=args;
-      current->args.replace(reg,"%"); // insert dummy chars because wihte spaces are removed
-    }
-    current->type=type;
-    current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
-    current->protection=prot;
-    newEntry();
-  }
-}
-
-static void newEntry()
-{
-  if (current->spec==VhdlDocGen::ENTITY       || 
-      current->spec==VhdlDocGen::PACKAGE      || 
-      current->spec==VhdlDocGen::ARCHITECTURE || 
-      current->spec==VhdlDocGen::PACKAGE_BODY
-     )
-  {
-    current_root->addSubEntry(current);
-  }
-  else
-  {
-    if (lastCompound) 
-    {
-      lastCompound->addSubEntry(current);
-    }
-    else
-    {
-      if (lastEntity)
-      {
-	lastEntity->addSubEntry(current);
-      }
-      else 
-      {
-	current_root->addSubEntry(current); 
-      }
-    }
-  }
-  current = new Entry ;
-  initEntry(current);
-}
 
 %}
 
@@ -2268,3 +2032,254 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
   }
 }
  
+static void pushLabel(QCString label)
+{
+  genLabels+="|"+label;
+}
+
+static void popLabel()
+{
+  int u=genLabels.findRev("|");
+  if (u<0) return;
+  genLabels=genLabels.left(u); 
+}
+
+static void popConfig()
+{ 
+  assert(currNode);
+  currNode=currNode->prevNode;
+  // printf("\n pop arch %s ",currNode->arch.data());
+}
+
+static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeave,bool inlineConf)
+{
+  struct ConfNode* co;
+  QCString ent,arch,lab;
+  ent=a;
+  lab =  VhdlDocGen::parseForConfig(ent,arch);
+
+  if (b)
+  {
+    ent=b;
+    lab=VhdlDocGen::parseForBinding(ent,arch);
+  }
+
+  co=new ConfNode(a,b,confName.data());
+  if (inlineConf)
+  {
+    co->isInlineConf=TRUE;
+  }
+
+  if (isRoot)
+  {
+    co->isRoot=TRUE;
+    configL.append(co);
+    currNode=co;
+    currNode->prevNode=currNode;
+  }
+  else if (!isLeave)
+  {
+    currNode->addNode(co);
+    co->prevNode=currNode;
+    currNode=co;
+  }
+  else
+  {
+    assert(0);
+    co=new ConfNode(a,b,confName.data());
+    currNode->addNode(co);
+  }
+}// addConfigure
+
+
+
+//------------------------------------------------------------------------------------------------------------
+static bool addLibUseClause(const QCString &type)
+{
+  static bool show=Config_getBool("SHOW_INCLUDE_FILES");
+  static bool showIEEESTD=Config_getBool("FORCE_LOCAL_INCLUDES");
+
+  if (!show)  // all libraries and included packages are not shown
+  {
+    return FALSE;
+  }
+
+  if (!showIEEESTD) // all standard packages and libraries are not shown
+  {  
+    if (type.lower().stripPrefix("ieee")) return FALSE;
+    if (type.lower().stripPrefix("std")) return FALSE;
+  }  
+  return TRUE;
+}
+
+
+static bool isFuncProcProced()
+{
+  if (currP==VhdlDocGen::FUNCTION || 
+      currP==VhdlDocGen::PROCEDURE ||  
+      currP==VhdlDocGen::PROCESS
+     )
+  {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+static void initEntry(Entry *e)
+{
+  e->fileName = s_str.fileName;
+  e->lang=SrcLangExt_VHDL;
+  initGroupInfo(e);
+}
+
+static void addProto(const char *s1,const char *s2,const char *s3,
+                     const char *s4,const char *s5,const char *s6)
+{
+  (void)s3; // avoid unused warning
+  (void)s5; // avoid unused warning
+  static QRegExp reg("[\\s]");
+  QCString name=s2;
+  QStringList ql=QStringList::split(",",name,FALSE);
+
+  for (uint u=0;u<ql.count();u++)
+  {
+    Argument *arg=new Argument;
+    arg->name=(QCString)ql[u];
+    arg->type=s4;
+    arg->defval=s1;
+    arg->attrib=s6;
+    current->argList->append(arg);
+    current->args+=s2;
+    current->args+=",";
+  }
+}
+
+static bool findInstant(QCString inst)
+{
+  QListIterator<Entry> eli(instFiles);
+  Entry *cur;
+
+  for (eli.toFirst();(cur=eli.current());++eli)
+  {
+    if (stricmp(inst.data(),cur->type.data())==0)
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}//findInst
+
+static void createFunction(const QCString &impure,int spec,
+                           const QCString &fname)
+{
+  int it=0;
+  current->bodyLine=getParsedLine(spec);
+  current->spec=spec; 
+  current->section=Entry::FUNCTION_SEC;
+  current->exception=impure;
+  if (currP==VhdlDocGen::PROCEDURE)
+  {
+    current->name=impure;
+    it=t_PROCEDURE;
+  }
+  else
+  {
+    current->name=fname;
+    it=t_FUNCTION;
+  }
+
+  if (spec==VhdlDocGen::PROCESS)
+  {
+    it=t_PROCESS;
+    current->args=fname;
+    current->name=impure;
+    if (!fname.isEmpty())
+    { 
+      QStringList q1=QStringList::split(',',fname);
+      for (uint ii=0;ii<q1.count();ii++)
+      {
+	Argument *arg=new Argument;
+	arg->name=(QCString)q1[ii];    
+	current->argList->append(arg);
+      }
+    }
+  }  
+
+  current->startLine=getParsedLine(it);
+  current->bodyLine=getParsedLine(it);
+}
+
+static void addVhdlType(const QCString &name,int startLine,int section,int spec,
+                        const char* args,const char* type,Protection prot)
+{
+  static QRegExp reg("[\\s]");
+
+  //int startLine=getParsedLine(spec);
+
+  if (isFuncProcProced())
+  {
+    return;
+  }
+
+  // more than one name   ?
+  QStringList ql=QStringList::split(",",name,FALSE);
+
+  for (uint u=0;u<ql.count();u++)
+  {
+    current->name=(QCString)ql[u];
+    if (section==Entry::VARIABLE_SEC && 
+	!(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) 
+       )
+    {
+      current->name.prepend(VhdlDocGen::getRecordNumber());
+    }
+    current->startLine=startLine;
+    current->bodyLine=startLine;
+    current->section=section; 
+    current->spec=spec;
+    current->fileName=s_str.fileName;
+    if (current->args.isEmpty())
+    {
+      current->args=args;
+      current->args.replace(reg,"%"); // insert dummy chars because wihte spaces are removed
+    }
+    current->type=type;
+    current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
+    current->protection=prot;
+    newEntry();
+  }
+}
+
+static void newEntry()
+{
+  if (current->spec==VhdlDocGen::ENTITY       || 
+      current->spec==VhdlDocGen::PACKAGE      || 
+      current->spec==VhdlDocGen::ARCHITECTURE || 
+      current->spec==VhdlDocGen::PACKAGE_BODY
+     )
+  {
+    current_root->addSubEntry(current);
+  }
+  else
+  {
+    if (lastCompound) 
+    {
+      lastCompound->addSubEntry(current);
+    }
+    else
+    {
+      if (lastEntity)
+      {
+	lastEntity->addSubEntry(current);
+      }
+      else 
+      {
+	current_root->addSubEntry(current); 
+      }
+    }
+  }
+  current = new Entry ;
+  initEntry(current);
+}
+
