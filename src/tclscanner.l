@@ -969,14 +969,21 @@ D
   unput('#');
   yy_push_state(COMMENTLINE);
 }
-<COMMAND>\x1A {
+<COMMAND>{ws}*\x1A {
 D
   tcl.string_commentcodify = "";
   tcl.string_commentline = "";
-  tcl.line_body1=yylineno-1;
+  tcl.line_body1=yylineno;
   tcl_command(-1,"");
 }
-<COMMAND>{ws}*[;\n] {
+<COMMAND>{ws}*; {
+D
+  tcl.string_commentcodify = "";
+  tcl.string_commentline = "";
+  tcl.line_body1=yylineno;
+  tcl_command(-1,yytext);
+}
+<COMMAND>{ws}*\n {
 D
   tcl.string_commentcodify = "";
   tcl.string_commentline = "";
