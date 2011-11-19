@@ -199,6 +199,8 @@ td.indexkey {
 	border: 1px solid ##cc;
 	margin: 2px 0px 2px 0;
 	padding: 2px 10px;
+        white-space: nowrap;
+        vertical-align: top;
 }
 
 td.indexvalue {

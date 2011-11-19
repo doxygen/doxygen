@@ -1983,7 +1983,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlscanYY [AllOptions] [AdditionalOptions] [inputs]"
+						CommandLine="flex -i -PvhdlScanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1991,7 +1991,7 @@
 					>
 					<Tool
 						Name="Lex"
-						CommandLine="flex -i -PvhdlscanYY [AllOptions] [AdditionalOptions] [inputs]"
+						CommandLine="flex -i -PvhdlScanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
