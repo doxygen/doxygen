@@ -79,11 +79,14 @@ class ClassDef : public Definition
      *                   generates based on the compound type & name.
      *  \param isSymbol  If TRUE this class name is added as a publicly 
      *                   visible (and referencable) symbol.
+     *  \param isJavaEnum If TRUE this class is actually a Java enum.
+     *                    I didn't add this to CompoundType to avoid having
+     *                    to adapt all translators.
      */
     ClassDef(const char *fileName,int startLine,
              const char *name,CompoundType ct,
              const char *ref=0,const char *fName=0,
-             bool isSymbol=TRUE);
+             bool isSymbol=TRUE,bool isJavaEnum=FALSE);
     /*! Destroys a compound definition. */
    ~ClassDef();
 
@@ -272,6 +275,8 @@ class ClassDef : public Definition
     ClassDef *tagLessReference() const;
 
     MemberDef *isSmartPointer() const;
+
+    bool isJavaEnum() const;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----

@@ -204,7 +204,7 @@ DefineManager *DefineManager::theInstance = 0;
 
 void DefineManager::DefinesPerFile::collectDefines(DefineDict *dict,QDict<void> &includeStack)
 {
-  //printf("DefinesPerFile::collectDefines\n");
+  //printf("DefinesPerFile::collectDefines #defines=%d\n",m_defines.count());
   {
     QDictIterator<void> di(m_includedFiles);
     for (di.toFirst();(di.current());++di)
@@ -1439,6 +1439,7 @@ static void readIncludeFile(const QCString &inc)
     // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
     QCString absIncFileName = incFileName;
     {
+      static bool searchIncludes = Config_getBool("SEARCH_INCLUDES");
       QFileInfo fi(g_yyFileName);
       if (fi.exists())
       {
@@ -1447,8 +1448,29 @@ static void readIncludeFile(const QCString &inc)
         if (fi2.exists())
         {
 	  absIncFileName=fi2.absFilePath();
-        }
-        //printf( "absIncFileName = %s\n", absIncFileName.data() );
+	}
+	else if (searchIncludes) // search in INCLUDE_PATH as well
+	{
+	  QStrList &includePath = Config_getList("INCLUDE_PATH");
+	  char *s=includePath.first();
+	  while (s)
+	  {
+	    QFileInfo fi(s);
+	    if (fi.exists() && fi.isDir())
+	    {
+	      QCString absName = QCString(fi.absFilePath())+"/"+incFileName;
+	      //printf("trying absName=%s\n",absName.data());
+	      QFileInfo fi2(absName);
+	      if (fi2.exists())
+	      {
+		absIncFileName=fi2.absFilePath();
+		break;
+	      }
+	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
+	    }
+	  }
+	}
+	//printf( "absIncFileName = %s\n", absIncFileName.data() );
       }
     }
     DefineManager::instance().addInclude(g_yyFileName,absIncFileName);
@@ -2185,6 +2207,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defName = yytext;
 					  g_defName = g_defName.left(g_defName.length()-1).stripWhiteSpace();
 					  g_defVarArgs = FALSE;
+					  //printf("Guard check: %s!=%s || %d\n",
+					  //    g_defName.data(),g_lastGuardName.data(),g_expectGuard);
 					  if ( g_defName!=g_lastGuardName || !g_expectGuard)
 					  { // define may appear in the output
 					    QCString tmp=(QCString)"#define "+g_defName;
@@ -2198,25 +2222,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else // define is a guard => hide
 					  {
+					    //printf("Found a guard %s\n",yytext);
 					    g_defText.resize(0);
 					    g_defLitText.resize(0);
 					    BEGIN(Start);
 					  }
-  					}
-<DefName>{ID}/{B}*			{ // define with content
-  					  //printf("Define `%s'\n",yytext);
-  					  g_argDict = 0;
-					  g_defArgs = -1;
-                                          g_defArgsStr.resize(0);
-					  g_defText.resize(0);
-					  g_defLitText.resize(0);
-					  g_defName = yytext;
-					  g_defVarArgs = FALSE;
-					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
-					  outputArray(tmp.data(),tmp.length());
-					  g_quoteArg=FALSE;
-					  g_insideComment=FALSE;
-					  BEGIN(DefineText); 
+					  g_expectGuard=FALSE;
   					}
 <DefName>{ID}/{B}*"\n"			{ // empty define
   					  g_argDict = 0;
@@ -2245,6 +2256,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(Start);
 					  }
 					  g_expectGuard=FALSE;
+  					}
+<DefName>{ID}/{B}*			{ // define with content
+  					  //printf("Define `%s'\n",yytext);
+  					  g_argDict = 0;
+					  g_defArgs = -1;
+                                          g_defArgsStr.resize(0);
+					  g_defText.resize(0);
+					  g_defLitText.resize(0);
+					  g_defName = yytext;
+					  g_defVarArgs = FALSE;
+					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
+					  outputArray(tmp.data(),tmp.length());
+					  g_quoteArg=FALSE;
+					  g_insideComment=FALSE;
+					  BEGIN(DefineText); 
   					}
 <DefineArg>"\\\n"                       {
   					  g_defExtraSpacing+="\n";

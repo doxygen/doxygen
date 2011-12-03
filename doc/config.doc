@@ -1075,15 +1075,15 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 \anchor cfg_exclude
 <dt>\c EXCLUDE <dd>
  \addindex EXCLUDE
- The \c EXCLUDE tag can be used to specify files and/or directories that should
+ The \c EXCLUDE tag can be used to specify files and/or directories that should be
  excluded from the \c INPUT source files. This way you can easily exclude a
  subdirectory from a directory tree whose root is specified with the \c INPUT tag.
- Note that relative paths are relative to directory from which doxygen is run.
+ Note that relative paths are relative to the directory from which doxygen is run.
 
 \anchor cfg_exclude_symlinks
 <dt>\c EXCLUDE_SYMLINKS <dd>
  \addindex EXCLUDE_SYMLINKS
- The \c EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
+ The \c EXCLUDE_SYMLINKS tag can be used to select whether or not files or directories 
  that are symbolic links (a Unix file system feature) are excluded from the input.
 
 \anchor cfg_exclude_patterns

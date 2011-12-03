@@ -1223,20 +1223,28 @@ void Config::check()
   QCString &dotPath = Config_getString("DOT_PATH");
   if (!dotPath.isEmpty())
   {
-    QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
-    if (!dp.exists() || !dp.isFile())
+    QFileInfo fi(dotPath);
+    if (fi.exists() && fi.isFile()) // user specified path + exec
     {
-      config_err("warning: the dot tool could not be found at %s\n",dotPath.data());
-      dotPath="";
+      dotPath=fi.dirPath(TRUE);
     }
     else
     {
-      dotPath=dp.dirPath(TRUE)+"/";
-#if defined(_WIN32) // convert slashes
-      uint i=0,l=dotPath.length();
-      for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
-#endif
+      QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
+      if (!dp.exists() || !dp.isFile())
+      {
+	config_err("warning: the dot tool could not be found at %s\n",dotPath.data());
+	dotPath="";
+      }
+      else
+      {
+	dotPath=dp.dirPath(TRUE)+"/";
+      }
     }
+#if defined(_WIN32) // convert slashes
+    uint i=0,l=dotPath.length();
+    for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
+#endif
   }
   else // make sure the string is empty but not null!
   {

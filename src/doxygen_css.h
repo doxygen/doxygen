@@ -123,7 +123,7 @@
 "}\n"
 "\n"
 "a.code {\n"
-"	color: ##60;\n"
+"	color: #4665A2; \n"
 "}\n"
 "\n"
 "a.codeRef {\n"
