@@ -962,7 +962,7 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
       // and remove the href attribute
       bool result = attrList.remove(index);
       ASSERT(result);
-      DocHRef *href = new DocHRef(parent,attrList,opt->value);
+      DocHRef *href = new DocHRef(parent,attrList,opt->value,g_relPath);
       children.append(href);
       g_insideHtmlLink=TRUE;
       retval = href->parse();
@@ -2740,9 +2740,11 @@ void DocMscFile::parse()
 
 //---------------------------------------------------------------------------
 
-DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString &name,Type t) : 
+DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString &name,
+                   Type t,const QCString &url) : 
       m_attribs(attribs), m_name(name), 
-      m_type(t), m_relPath(g_relPath)
+      m_type(t), m_relPath(g_relPath),
+      m_url(url)
 {
   m_parent = parent;
 }
@@ -5463,7 +5465,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
             // and remove the src attribute
             bool result = attrList.remove(index);
             ASSERT(result);
-            DocImage *img = new DocImage(this,attrList,opt->value,DocImage::Html);
+            DocImage *img = new DocImage(this,attrList,opt->value,DocImage::Html,opt->value);
             m_children.append(img);
             found = TRUE;
           }

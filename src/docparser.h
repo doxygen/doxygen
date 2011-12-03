@@ -590,14 +590,16 @@ class DocImage : public CompAccept<DocImage>, public DocNode
 {
   public:
     enum Type { Html, Latex, Rtf };
-    DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString &name,Type t);
-    Kind kind() const          { return Kind_Image; }
-    Type type() const          { return m_type; }
+    DocImage(DocNode *parent,const HtmlAttribList &attribs,
+             const QCString &name,Type t,const QCString &url=QCString());
+    Kind kind() const           { return Kind_Image; }
+    Type type() const           { return m_type; }
     QCString name() const       { return m_name; }
-    bool hasCaption() const    { return !m_children.isEmpty(); }
+    bool hasCaption() const     { return !m_children.isEmpty(); }
     QCString width() const      { return m_width; }
     QCString height() const     { return m_height; }
     QCString relPath() const    { return m_relPath; }
+    QCString url() const        { return m_url; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     void accept(DocVisitor *v) { CompAccept<DocImage>::accept(this,v); }
     void parse();
@@ -609,6 +611,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
     QCString  m_width;
     QCString  m_height;
     QCString  m_relPath;
+    QCString  m_url;
 };
 
 /*! @brief Node representing a dot file */
@@ -747,17 +750,20 @@ class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
 class DocHRef : public CompAccept<DocHRef>, public DocNode
 {
   public:
-    DocHRef(DocNode *parent,const HtmlAttribList &attribs,const QCString &url) : 
-      m_attribs(attribs), m_url(url) { m_parent = parent; }
+    DocHRef(DocNode *parent,const HtmlAttribList &attribs,const QCString &url,
+           const QCString &relPath) : 
+      m_attribs(attribs), m_url(url), m_relPath(relPath) { m_parent = parent; }
     int parse();
     QCString url() const        { return m_url; }
-    Kind kind() const          { return Kind_HRef; }
-    void accept(DocVisitor *v) { CompAccept<DocHRef>::accept(this,v); }
+    QCString relPath() const    { return m_relPath; }
+    Kind kind() const           { return Kind_HRef; }
+    void accept(DocVisitor *v)  { CompAccept<DocHRef>::accept(this,v); }
     const HtmlAttribList &attribs() const { return m_attribs; }
 
   private:
     HtmlAttribList m_attribs;
     QCString   m_url;
+    QCString   m_relPath;
 };
 
 /*! @brief Node Html heading */

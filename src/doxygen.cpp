@@ -1191,7 +1191,7 @@ static void addClassToContext(EntryNav *rootNav)
       refFileName = rootNav->tagInfo()->fileName;
     }
     cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
-        tagName,refFileName);
+        tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition

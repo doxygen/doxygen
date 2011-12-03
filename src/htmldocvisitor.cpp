@@ -1209,7 +1209,12 @@ void HtmlDocVisitor::visitPost(DocInternal *)
 void HtmlDocVisitor::visitPre(DocHRef *href)
 {
   if (m_hide) return;
-  m_t << "<a href=\"" << convertToXML(href->url())  << "\""
+  QCString url = href->url();
+  if (url.left(5)!="http:" && url.left(6)!="https:" && url.left(4)!="ftp:")
+  {
+    url.prepend(href->relPath());
+  }
+  m_t << "<a href=\"" << convertToXML(url)  << "\""
       << htmlAttribsToString(href->attribs()) << ">";
 }
 
@@ -1247,9 +1252,23 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       baseName=baseName.right(baseName.length()-i-1);
     }
     m_t << "<div class=\"image\">" << endl;
-    m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\"" 
-        << baseName << "\"" << htmlAttribsToString(img->attribs()) 
-        << "/>" << endl;
+    QCString url = img->url();
+    if (url.isEmpty())
+    {
+      m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\"" 
+          << baseName << "\"" << htmlAttribsToString(img->attribs()) 
+          << "/>" << endl;
+    }
+    else
+    {
+      if (url.left(5)!="http:" && url.left(6)!="https:" && url.left(4)!="ftp:")
+      {
+        url.prepend(img->relPath());
+      }
+      m_t << "<img src=\"" << url << "\" " 
+          << htmlAttribsToString(img->attribs())
+          << "/>" << endl;
+    }
     if (img->hasCaption())
     {
       m_t << "<div class=\"caption\">" << endl;
@@ -1425,7 +1444,7 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
       className="exception";
       break;
     case DocParamSect::TemplateParam: 
-      heading="Template Parameters"; break; // TODO: translate me
+      heading="Template Parameters"; break; // TODO: TRANSLATE ME
       className="tparams";
     default:
       ASSERT(0);

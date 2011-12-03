@@ -916,16 +916,17 @@ void addConfigOptions(Config *cfg)
   //----
   cl = cfg->addList(
                  "EXCLUDE",
-                 "The EXCLUDE tag can be used to specify files and/or directories that should\n"
+                 "The EXCLUDE tag can be used to specify files and/or directories that should be\n"
                  "excluded from the INPUT source files. This way you can easily exclude a\n"
                  "subdirectory from a directory tree whose root is specified with the INPUT tag.\n"
-                 "Note that relative paths are relative to directory from which doxygen is run."
+                 "Note that relative paths are relative to the directory from which doxygen is\n"
+                 "run."
                 );
   cl->setWidgetType(ConfigList::FileAndDir);
   //----
   cb = cfg->addBool(
                  "EXCLUDE_SYMLINKS",
-                 "The EXCLUDE_SYMLINKS tag can be used select whether or not files or\n"
+                 "The EXCLUDE_SYMLINKS tag can be used to select whether or not files or\n"
                  "directories that are symbolic links (a Unix file system feature) are excluded\n"
                  "from the input.",
                  FALSE

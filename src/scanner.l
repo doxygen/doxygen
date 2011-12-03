@@ -2871,11 +2871,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  if ( *yytext == ',')
 					  {
+					    bool stat = current->stat;
 					    if (needNewCurrent)
 					    {
 					      current = new Entry(*current);
 					      initEntry();
 					    }
+					    current->stat = stat; // the static attribute holds for all variables
 					    current->name.resize(0);
 					    current->args.resize(0);
 					    current->brief.resize(0);

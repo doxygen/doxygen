@@ -180,6 +180,9 @@ class ClassDefImpl
 
     ClassList *taggedInnerClasses;
     ClassDef *tagLessRef;
+
+    /** Does this class represent a Java style enum? */
+    bool isJavaEnum;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -270,13 +273,14 @@ ClassDef::ClassDef(
     const char *defFileName,int defLine,
     const char *nm,CompoundType ct,
     const char *lref,const char *fName,
-    bool isSymbol) 
+    bool isSymbol,bool isJavaEnum) 
  : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm),0,0,isSymbol) 
 {
   visited=FALSE;
   setReference(lref);
   m_impl = new ClassDefImpl;
   m_impl->compType = ct;
+  m_impl->isJavaEnum = isJavaEnum;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
 }
 
@@ -1014,6 +1018,13 @@ void ClassDef::showUsedFiles(OutputList &ol)
     ol.parseText(theTranslator->trGeneratedFromFilesFortran(
           getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));
+  }
+  else if (isJavaEnum())
+  {
+    // TODO: TRANSLATE ME
+    QCString s;
+    if (m_impl->files.count()!=1) s="s";
+    ol.parseText("The documentation for this enum was generated from the following file"+s+":");
   }
   else
   {
@@ -1938,6 +1949,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     // TODO: TRANSLATE ME
     pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
+  }
+  else if (isJavaEnum())
+  {
+    // TODO: TRANSLATE ME
+    pageTitle = displayName()+" Enum Reference";
   }
   else
   {
@@ -3166,7 +3182,7 @@ QCString ClassDef::compoundTypeString() const
   {
     switch (m_impl->compType)
     {
-      case Class:     return "class";
+      case Class:     return isJavaEnum() ? "enum" : "class";
       case Struct:    return "struct";
       case Union:     return "union";
       case Interface: return getLanguage()==SrcLangExt_ObjC ? "class" : "interface";
@@ -4027,3 +4043,7 @@ void ClassDef::removeMemberFromLists(MemberDef *md)
   }
 }
 
+bool ClassDef::isJavaEnum() const
+{
+  return m_impl->isJavaEnum;
+}

@@ -1524,15 +1524,35 @@ static void writeBoxMemberList(FTextStream &t,
   {
     MemberListIterator mlia(*ml);
     MemberDef *mma;
+    int totalCount=0;
     for (mlia.toFirst();(mma = mlia.current());++mlia)
     {
       if (mma->getClassDef() == scope)
       {
-        t << prot << " ";
-        t << convertLabel(mma->name());
-        if (!mma->isObjCMethod() && 
-            (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << "()";
-        t << "\\l";
+        totalCount++;
+      }
+    }
+
+    int count=0;
+    for (mlia.toFirst();(mma = mlia.current());++mlia)
+    {
+      if (mma->getClassDef() == scope)
+      {
+        if (totalCount>=15 && count>=10)
+        {
+          t << "and " << (totalCount-count-1) << " more...";
+          // TODO: TRANSLATE ME
+          break;
+        }
+        else
+        {
+          t << prot << " ";
+          t << convertLabel(mma->name());
+          if (!mma->isObjCMethod() && 
+              (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << "()";
+          t << "\\l";
+          count++;
+        }
       }
     }
     // write member groups within the memberlist
@@ -1564,9 +1584,9 @@ void DotNode::writeBox(FTextStream &t,
             (hasNonReachableChildren) ? "red" : "black"
            );
   t << "  Node" << reNumberNode(m_number,reNumber) << " [label=\"";
+  static bool umlLook = Config_getBool("UML_LOOK");
 
-  if (m_classDef && Config_getBool("UML_LOOK") && 
-      (gt==Inheritance || gt==Collaboration))
+  if (m_classDef && umlLook && (gt==Inheritance || gt==Collaboration))
   {
     //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");

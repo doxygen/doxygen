@@ -811,7 +811,8 @@ OL	  [oO][lL]
 DL	  [dD][lL]
 IMG       [iI][mM][gG]
 HR        [hH][rR]
-DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}
+PARA      [pP][aA][rR][aA]
+DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]

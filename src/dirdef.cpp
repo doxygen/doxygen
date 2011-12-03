@@ -184,7 +184,7 @@ void DirDef::writeBriefDescription(OutputList &ol)
 void DirDef::writeDirectoryGraph(OutputList &ol)
 {
   // write graph dependency graph
-  if (/*Config_getBool("DIRECTORY_GRAPH") &&*/ Config_getBool("HAVE_DOT"))
+  if (Config_getBool("DIRECTORY_GRAPH") && Config_getBool("HAVE_DOT"))
   {
     DotDirDeps dirDep(this);
     if (!dirDep.isTrivial())
