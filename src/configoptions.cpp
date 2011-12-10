@@ -451,7 +451,20 @@ void addConfigOptions(Config *cfg)
                  "a logarithmic scale so increasing the size by one will roughly double the\n"
                  "memory usage. The cache size is given by this formula:\n"
                  "2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0,\n"
-                 "corresponding to a cache size of 2^16 = 65536 symbols",
+                 "corresponding to a cache size of 2^16 = 65536 symbols.",
+                 0,9,0
+                );
+  //----
+  ci = cfg->addInt(
+                 "LOOKUP_CACHE_SIZE",
+                 "Similar to the SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be\n"
+                 "set using LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given\n"
+                 "their name and scope. Since this can be an expensive process and often the\n"
+                 "same symbol appear multiple times in the code, doxygen keeps a cache of\n"
+                 "pre-resolved symbols. If the cache is too small doxygen will become slower.\n"
+                 "If the cache is too large, memory is wasted. The cache size is given by this\n"
+                 "formula: 2^(16+LOOKUP_CACHE_SIZE). The valid range is 0..9, the default is 0,\n"
+                 "corresponding to a cache size of 2^16 = 65536 symbols.",
                  0,9,0
                 );
   //---------------------------------------------------------------------------
@@ -770,7 +783,8 @@ void addConfigOptions(Config *cfg)
                  ".bib extension is automatically appended if omitted. Using this command\n"
                  "requires the bibtex tool to be installed. See also\n"
                  "http://en.wikipedia.org/wiki/BibTeX for more info. For LaTeX the style\n"
-                 "of the bibliography can be controlled using LATEX_BIB_STYLE. To use this feature you need bibtex and perl available in the search path."
+                 "of the bibliography can be controlled using LATEX_BIB_STYLE. To use this\n"
+                 "feature you need bibtex and perl available in the search path."
                 );
   cl->setWidgetType(ConfigList::File);
   //---------------------------------------------------------------------------

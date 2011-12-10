@@ -2460,7 +2460,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    initEntry();
 					    BEGIN(FindMembers);
 					  }
-					  else if (*yytext==';' || lastInitializerContext==FindFields)
+					  else if (*yytext==';' || (lastInitializerContext==FindFields && initBracketCount==0)) // initBracketCount==0 was added for bug 665778
 					  {
   					    unput(*yytext);
   					    BEGIN(lastInitializerContext);

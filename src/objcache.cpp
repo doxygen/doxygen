@@ -22,16 +22,10 @@
 
 //----------------------------------------------------------------------
 
-#ifdef CACHE_STATS
-int ObjCache::misses = 0;
-int ObjCache::hits   = 0;
-#endif
-
-//----------------------------------------------------------------------
-
 ObjCache::ObjCache(unsigned int logSize) 
   : m_head(-1), m_tail(-1), //m_numEntries(0), 
-    m_size(1<<logSize), m_freeHashNodes(0), m_freeCacheNodes(0), m_lastHandle(-1)
+    m_size(1<<logSize), m_count(0), m_freeHashNodes(0), m_freeCacheNodes(0), 
+    m_lastHandle(-1)
 {
   int i;
   m_cache = new CacheNode[m_size];
@@ -42,6 +36,8 @@ ObjCache::ObjCache(unsigned int logSize)
     m_hash[i].nextHash = i+1;
     m_cache[i].next    = i+1;
   }
+  m_misses = 0;
+  m_hits   = 0;
 }
 
 ObjCache::~ObjCache()
@@ -61,9 +57,7 @@ int ObjCache::add(void *obj,void **victim)
   {
     //printf("moveToFront=%d\n",hnode->index);
     moveToFront(hnode->index);
-#ifdef CACHE_STATS
-    hits++;
-#endif
+    m_hits++;
   }
   else // object not in the cache.
   {
@@ -86,6 +80,7 @@ int ObjCache::add(void *obj,void **victim)
         m_cache[m_head].prev = index;
       }
       m_head = index;
+      m_count++;
     }
     else // cache full -> replace element in the cache
     {
@@ -99,9 +94,7 @@ int ObjCache::add(void *obj,void **victim)
     hnode = hashInsert(obj);
     hnode->index = m_head;
     *victim = lruObj;
-#ifdef CACHE_STATS
-    misses++;
-#endif
+    m_misses++;
   }
   return m_head;
 }
@@ -121,6 +114,7 @@ void ObjCache::del(int index)
   m_cache[index].prev=-1;
   m_cache[index].next = m_freeCacheNodes;
   m_freeCacheNodes = index;
+  m_count--;
 }
 
 #ifdef CACHE_DEBUG
@@ -151,7 +145,7 @@ void ObjCache::printLRU()
 #define cache_stats_printf printf
 void ObjCache::printStats()
 {
-  cache_stats_printf("ObjCache: hits=%d misses=%d hit ratio=%f\n",hits,misses,hits*100.0/(hits+misses));
+  cache_stats_printf("ObjCache: hits=%d misses=%d hit ratio=%f\n",m_hits,m_misses,m_hits*100.0/(m_hits+m_misses));
 }
 #endif
 

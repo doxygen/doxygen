@@ -83,6 +83,8 @@ protected:
     QCollection::Item find_other( const char *key, bool ref=TRUE ) const;
 
     void    statistics() const;
+    int     hits() const;
+    int     misses() const;
 
 private:
     bool    makeRoomFor( int cost, int priority = -1 );

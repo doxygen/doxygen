@@ -492,7 +492,7 @@ static QDict<MemberDef> g_resolvedTypedefs;
 static QDict<Definition> g_visitedNamespaces;
 
 // forward declaration
-ClassDef *getResolvedClassRec(Definition *scope,
+static ClassDef *getResolvedClassRec(Definition *scope,
                               FileDef *fileScope,
                               const char *n,
                               MemberDef **pTypeDef,
@@ -1276,7 +1276,7 @@ static void getResolvedSymbol(Definition *scope,
  * match against the input name. Can recursively call itself when 
  * resolving typedefs.
  */
-ClassDef *getResolvedClassRec(Definition *scope,
+static ClassDef *getResolvedClassRec(Definition *scope,
     FileDef *fileScope,
     const char *n,
     MemberDef **pTypeDef,
@@ -1374,7 +1374,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
   *p='\0';
 
-  LookupInfo *pval=Doxygen::lookupCache.find(key);
+  LookupInfo *pval=Doxygen::lookupCache->find(key);
   //printf("Searching for %s result=%p\n",key.data(),pval);
   if (pval)
   {
@@ -1393,7 +1393,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   else // not found yet; we already add a 0 to avoid the possibility of 
     // endless recursion.
   {
-    Doxygen::lookupCache.insert(key,new LookupInfo);
+    Doxygen::lookupCache->insert(key,new LookupInfo);
   }
 
   ClassDef *bestMatch=0;
@@ -1439,7 +1439,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
   //    bestMatch,bestResolvedType.data());
 
-  pval=Doxygen::lookupCache.find(key);
+  pval=Doxygen::lookupCache->find(key);
   if (pval)
   {
     pval->classDef     = bestMatch;
@@ -1449,7 +1449,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
   else
   {
-    Doxygen::lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
+    Doxygen::lookupCache->insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
@@ -7203,7 +7203,7 @@ QCString langToString(SrcLangExt lang)
 /** Returns the scope separator to use given the programming language \a lang */
 QCString getLanguageSpecificSeparator(SrcLangExt lang)
 {
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp || lang==SrcLangExt_VHDL)
+  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp || lang==SrcLangExt_VHDL || lang==SrcLangExt_Python)
   {
     return ".";
   }

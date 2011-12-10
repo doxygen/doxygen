@@ -800,7 +800,7 @@ void FileDef::writeSource(OutputList &ol)
   else
   {
     startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,
-        !generateTreeView,getOutputFileBase());
+        FALSE,getOutputFileBase());
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);
     endTitle(ol,getSourceFileBase(),0);

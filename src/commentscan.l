@@ -402,6 +402,8 @@ static int              g_condCount;
 static int              g_sectionLevel;
 
 static int              g_commentCount;
+static bool             g_spaceBeforeCmd;
+static bool             g_spaceBeforeIf;
 
 //-----------------------------------------------------------------------------
 
@@ -955,6 +957,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           // the {B}* in the front was added for bug620924
   					  QCString cmdName = QCString(yytext).stripWhiteSpace().data()+1;
 					  DocCmdMapper::Cmd *cmdPtr = DocCmdMapper::map(cmdName);
+					  g_spaceBeforeCmd = yytext[0]==' ' || yytext[0]=='\t';
 					  if (cmdPtr) // special action is required
 					  {
 					    if (cmdPtr->endsBrief)
@@ -1675,9 +1678,15 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <GuardParamEnd>{B}*{DOCNL}		{
+  					  g_spaceBeforeIf=FALSE;
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>{B}*			{
+  					  if (g_spaceBeforeIf) // needed for 665313 in combation with bug620924
+					  {
+					    addOutput(" ");
+					  }
+  					  g_spaceBeforeIf=FALSE;
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>.			{
@@ -2323,6 +2332,7 @@ static bool handleIf(const QCString &)
 {
   enabledSectionFound=FALSE;
   guardType = Guard_If;
+  g_spaceBeforeIf = g_spaceBeforeCmd;
   BEGIN(GuardParam);
   return FALSE;
 }
@@ -2331,6 +2341,7 @@ static bool handleIfNot(const QCString &)
 {
   enabledSectionFound=FALSE;
   guardType = Guard_IfNot;
+  g_spaceBeforeIf = g_spaceBeforeCmd;
   BEGIN(GuardParam);
   return FALSE;
 }
@@ -2557,6 +2568,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   briefEndsAtDot = isAutoBriefOn;
   g_condCount    = 0;
   g_sectionLevel = 0;
+  g_spaceBeforeCmd = FALSE;
+  g_spaceBeforeIf  = FALSE;
 
   if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {

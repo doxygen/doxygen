@@ -957,9 +957,9 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
   {
     ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
     ol.startDescForItem();
-    ol.startParagraph();
+    //ol.startParagraph();
     writeExample(ol,m_impl->exampleSDict);
-    ol.endParagraph();
+    //ol.endParagraph();
     ol.endDescForItem();
     ol.endSimpleSect();
   }

@@ -2707,7 +2707,7 @@ void HtmlGenerator::startContents()
 
 void HtmlGenerator::endContents()
 {
-  t << "</div>" << endl;
+  t << "</div><!-- contents -->" << endl;
 }
 
 void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
@@ -2927,7 +2927,7 @@ void HtmlGenerator::endTitleHead(const char *,const char *)
 
 void HtmlGenerator::endHeaderSection()
 {
-  t << "</div>" << endl;
+  t << "</div><!--header-->" << endl;
 }
 
 void HtmlGenerator::startInlineHeader()

@@ -1741,8 +1741,11 @@ bool MemberDef::isDetailedSectionLinkable() const
                                  m_impl->type=="friend union"
                                 )
                                );
+ 
   
-  return ((docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden()) /*|| inAnonymousScope*/);
+  bool result = ((docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden()));
+  //printf("%s::isDetailedSectionLinkable: %d\n",name().data(),result);
+  return result;
 }
 
 bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const          
@@ -1757,8 +1760,10 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const
 
   bool visible = isDetailedSectionLinkable() && groupFilter && fileFilter && 
                  !isReference();
-  //printf("MemberDef::isDetailedSectionVisible() %d\n",visible);
-  return visible || simpleFilter;
+  bool result = visible || simpleFilter;
+  //printf("%s::isDetailedSectionVisble: %d groupFilter=%d fileFilter=%d\n",
+  //    name().data(),result,groupFilter,fileFilter);
+  return result;
 }
 
 /*! Writes the "detailed documentation" section of this member to

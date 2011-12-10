@@ -73,6 +73,8 @@ public:
     type *operator[]( const QString &k ) const
 			{ return (type *)QGCache::find_string(k);}
     void  statistics() const	      { QGCache::statistics(); }
+    int   hits() const                { return QGCache::hits(); }
+    int   misses() const              { return QGCache::misses(); }
 private:
     void  deleteItem( Item d )	      { if ( del_item ) delete (type *)d; }
 };
@@ -107,6 +109,8 @@ public:
     type *operator[]( const char *k ) const
 			{ return (type *)QGCache::find_other(k);}
     void  statistics() const	      { QGCache::statistics(); }
+    int   hits() const                { return QGCache::hits(); }
+    int   misses() const              { return QGCache::misses(); }
 private:
     void  deleteItem( Item d )	      { if ( del_item ) delete (type *)d; }
 };
