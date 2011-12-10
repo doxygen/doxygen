@@ -3,7 +3,7 @@
 body, table, div, p, dl {
 	font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
 	font-size: 13px;
-	line-height: 1.5;
+	line-height: 1.3;
 }
 
 /* @group Heading Levels */
@@ -122,11 +122,11 @@ a.el {
 a.elRef {
 }
 
-a.code {
+a.code, a.code:visited {
 	color: #4665A2; 
 }
 
-a.codeRef {
+a.codeRef, a.codeRef:visited {
 	color: #4665A2; 
 }
 

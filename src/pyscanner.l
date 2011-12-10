@@ -135,6 +135,7 @@ static void initEntry()
   current->lang       = SrcLangExt_Python; 
   current->setParent(current_root);
   initGroupInfo(current);
+  gstat = FALSE;
 }
 
 static void newEntry()
@@ -333,6 +334,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 
 static void endOfDef(int correction=0)
 {
+  //printf("endOfDef at=%d\n",yyLineNr);
   if (bodyEntry)
   {
     bodyEntry->endBodyLine  = yyLineNr-correction;
@@ -388,13 +390,15 @@ static void searchFoundDef()
   current->protection = protection = Public;
   current->lang = SrcLangExt_Python;
   current->virt = Normal;
-  current->stat = FALSE;
+  current->stat = gstat;
   current->mtype = mtype = Method;
   current->type.resize(0);
   current->name.resize(0);
   current->args.resize(0);
   current->argList->clear();
   g_packageCommentAllowed = FALSE;
+  gstat=FALSE;
+  //printf("searchFoundDef at=%d\n",yyLineNr);
 }
 
 static void searchFoundClass()
@@ -583,7 +587,9 @@ STARTDOCSYMS      "##"
 			g_packageCommentAllowed = FALSE;
                         BEGIN( DoubleQuoteString );
                       }
-
+    "@staticmethod"  {
+       			gstat=TRUE;
+      		      }
     {POUNDCOMMENT}    { // normal comment 
 			g_packageCommentAllowed = FALSE;
       		      }

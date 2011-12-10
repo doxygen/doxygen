@@ -71,9 +71,9 @@ class ObjCache
      */
     void use(int handle)
     {
-      hits++;
       if (handle==m_lastHandle) return;
       m_lastHandle = handle;
+      m_hits++;
       moveToFront(handle);
     }
 
@@ -87,6 +87,22 @@ class ObjCache
     /*! Print miss/hits statistics */
     void printStats();
 
+    /*! total size of the cache */
+    int size() const { return m_size; }
+
+    /*! number of elements in the cache */
+    int count() const { return m_count; }
+
+    int hits() const 
+    { 
+      return m_hits; 
+    }
+    int misses() const 
+    { 
+      return m_misses; 
+    }
+
+
   private:
     void moveToFront(int index);
     unsigned int hash(void *addr);
@@ -99,14 +115,12 @@ class ObjCache
     int        m_head;
     int        m_tail;
     int        m_size;
+    int        m_count;
     int        m_freeHashNodes;
     int        m_freeCacheNodes;
     int        m_lastHandle;
-
-#ifdef CACHE_STATS
-    static int misses;
-    static int hits;
-#endif
+    int        m_misses;
+    int        m_hits;
 };
 
 #endif // OBJCACHE_H

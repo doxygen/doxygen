@@ -118,7 +118,7 @@ class Doxygen
     static QDict<DefinitionIntf>    *symbolMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
-    static QCache<LookupInfo>        lookupCache;
+    static QCache<LookupInfo>       *lookupCache;
     static DirSDict                 *directories;
     static SDict<DirRelation>        dirRelations;
     static ParserManager            *parserManager;

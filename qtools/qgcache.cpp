@@ -655,6 +655,16 @@ void QGCache::statistics() const
 #endif
 }
 
+int QGCache::hits() const
+{
+  return lruList->hits;
+}
+
+int QGCache::misses() const
+{
+  return lruList->finds - lruList->hits;
+}
+
 
 /*****************************************************************************
   QGCacheIterator member functions

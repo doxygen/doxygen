@@ -196,6 +196,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_latex_output LATEX_OUTPUT
 \refitem cfg_latex_source_code LATEX_SOURCE_CODE
 \refitem cfg_layout_file LAYOUT_FILE
+\refitem cfg_lookup_cache_size LOOKUP_CACHE_SIZE
 \refitem cfg_macro_expansion MACRO_EXPANSION
 \refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
 \refitem cfg_man_extension MAN_EXTENSION
@@ -643,6 +644,18 @@ combination with \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".
  memory usage. The cache size is given by this formula: 
  \f$2^{(16+\mbox{SYMBOL\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
  corresponding to a cache size of \f$2^{16} = 65536\f$ symbols.
+
+\anchor cfg_lookup_cache_size
+<dt>\c LOOKUP_CACHE_SIZE <dd>
+ \addindex LOOKUP_CACHE_SIZE
+ Similar to the \c SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be 
+ set using \c LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given 
+ their name and scope. Since this can be an expensive process and often the 
+ same symbol appear multiple times in the code, doxygen keeps a cache of 
+ pre-resolved symbols. If the cache is too small doxygen will become slower. 
+ If the cache is too large, memory is wasted. The cache size is given by this 
+ formula: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
+ corresponding to a cache size of \f$2^{16} = 65536\f$ symbols. 
 
 </dl>
 

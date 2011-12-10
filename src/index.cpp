@@ -303,14 +303,14 @@ void startFile(OutputList &ol,const char *name,const char *manName,
   }
 }
 
-void endFile(OutputList &ol,bool skipNavIndex)
+void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   if (!skipNavIndex)
   {
-    ol.endContents();
+    if (!skipEndContents) ol.endContents();
     ol.writeSearchInfo();
     if (generateTreeView)
     {
@@ -331,7 +331,7 @@ void endFileWithNavPath(Definition *d,OutputList &ol)
   {
     d->writeNavigationPath(ol);
   }
-  endFile(ol,generateTreeView);
+  endFile(ol,generateTreeView,TRUE);
 }
 
 //----------------------------------------------------------------------

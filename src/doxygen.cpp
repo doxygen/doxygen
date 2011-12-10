@@ -134,7 +134,7 @@ SearchIndex *    Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap;
 bool             Doxygen::outputToWizard=FALSE;
 QDict<int> *     Doxygen::htmlDirMap = 0;
-QCache<LookupInfo> Doxygen::lookupCache(50000,50000);
+QCache<LookupInfo> *Doxygen::lookupCache;
 DirSDict        *Doxygen::directories;
 SDict<DirRelation> Doxygen::dirRelations(257);
 ParserManager   *Doxygen::parserManager = 0;
@@ -7881,13 +7881,13 @@ static void flushCachedTemplateRelations()
   // as there can be new template instances in the inheritance path
   // to this class. Optimization: only remove those classes that
   // have inheritance instances as direct or indirect sub classes.
-  QCacheIterator<LookupInfo> ci(Doxygen::lookupCache);
+  QCacheIterator<LookupInfo> ci(*Doxygen::lookupCache);
   LookupInfo *li=0;
   for (ci.toFirst();(li=ci.current());++ci)
   {
     if (li->classDef)
     {
-      Doxygen::lookupCache.remove(ci.currentKey());
+      Doxygen::lookupCache->remove(ci.currentKey());
     }
   }
   // remove all cached typedef resolutions whose target is a
@@ -7937,13 +7937,13 @@ static void flushUnresolvedRelations()
   // class B : public A {};
   // class C : public B::I {};
   //
-  QCacheIterator<LookupInfo> ci(Doxygen::lookupCache);
+  QCacheIterator<LookupInfo> ci(*Doxygen::lookupCache);
   LookupInfo *li=0;
   for (ci.toFirst();(li=ci.current());++ci)
   {
     if (li->classDef==0 && li->typeDef==0)
     {
-      Doxygen::lookupCache.remove(ci.currentKey());
+      Doxygen::lookupCache->remove(ci.currentKey());
     }
   }
 
@@ -9393,7 +9393,6 @@ void initDoxygen()
   Doxygen::sectionDict.setAutoDelete(TRUE);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
-  Doxygen::lookupCache.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::citeDict = new CiteDict(256);
 }
@@ -9451,6 +9450,18 @@ void cleanUpDoxygen()
   //                              (such as Doxygen::namespaceSDict)
   //                              with objects based on Definition are made
   //                              dynamic first
+}
+
+static int computeIdealCacheParam(uint v)
+{
+  //printf("computeIdealCacheParam(v=%u)\n",v);
+
+  int r=0;
+  while (v!=0) v>>=1,r++; 
+  // r = log2(v)
+
+  // convert to a valid cache size value
+  return QMAX(0,QMIN(r-16,9));
 }
 
 void readConfiguration(int argc, char **argv)
@@ -10106,6 +10117,14 @@ void parseInput()
   //Doxygen::symbolCache   = new ObjCache(1);  // only to stress test cache behaviour
   Doxygen::symbolStorage = new Store;
 
+  // also scale lookup cache with SYMBOL_CACHE_SIZE
+  cacheSize = Config_getInt("LOOKUP_CACHE_SIZE");
+  if (cacheSize<0) cacheSize=0;
+  if (cacheSize>9) cacheSize=9;
+  uint lookupSize = 65536 << cacheSize;
+  Doxygen::lookupCache = new QCache<LookupInfo>(lookupSize,lookupSize);
+  Doxygen::lookupCache->setAutoDelete(TRUE);
+
 #ifdef HAS_SIGNALS
   signal(SIGINT, stopDoxygen);
 #endif
@@ -10328,7 +10347,7 @@ void parseInput()
   // calling buildClassList may result in cached relations that
   // become invalid after resolveClassNestingRelations(), that's why
   // we need to clear the cache here
-  Doxygen::lookupCache.clear();
+  Doxygen::lookupCache->clear();
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
 
@@ -10840,6 +10859,27 @@ void generateOutput()
     QDir::setCurrent(oldDir);
   }
 
+  int cacheParam;
+  msg("symbol cache used %d/%d hits=%d misses=%d\n",
+      Doxygen::symbolCache->count(),
+      Doxygen::symbolCache->size(),
+      Doxygen::symbolCache->hits(),
+      Doxygen::symbolCache->misses());
+  cacheParam = computeIdealCacheParam(Doxygen::symbolCache->misses());
+  if (cacheParam>Config_getInt("SYMBOL_CACHE_SIZE"))
+  {
+    msg("Note: based on cache misses the ideal setting for SYMBOL_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
+  }
+  msg("lookup cache used %d/%d hits=%d misses=%d\n",
+      Doxygen::lookupCache->count(),
+      Doxygen::lookupCache->size(),
+      Doxygen::lookupCache->hits(),
+      Doxygen::lookupCache->misses());
+  cacheParam = computeIdealCacheParam(Doxygen::lookupCache->misses()*2/3); // part of the cache is flushed, hence the 2/3 correction factor
+  if (cacheParam>Config_getInt("LOOKUP_CACHE_SIZE"))
+  {
+    msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
+  }
 
   if (Debug::isFlagSet(Debug::Time))
   {

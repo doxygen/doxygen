@@ -139,19 +139,19 @@ class DefineManager
     {
       if (fileName==0) return;
       //printf("DefineManager::addDefine(%s,%s)\n",fileName,def->name.data());
-      DefinesPerFile *dpf = m_fileMap.find(fileName);
-      if (dpf==0)
-      {
-	dpf = new DefinesPerFile;
-      }
-      dpf->addDefine(def);
-
       Define *d = m_contextDefines.find(def->name);
       if (d!=0) // redefine
       {
 	m_contextDefines.remove(d->name);
       }
       m_contextDefines.insert(def->name,def);
+
+      DefinesPerFile *dpf = m_fileMap.find(fileName);
+      if (dpf==0)
+      {
+	dpf = new DefinesPerFile;
+      }
+      dpf->addDefine(def);
     }
     void addInclude(const char *fromFileName,const char *toFileName)
     {
@@ -1468,6 +1468,7 @@ static void readIncludeFile(const QCString &inc)
 	      }
 	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
 	    }
+	    s=includePath.next();
 	  }
 	}
 	//printf( "absIncFileName = %s\n", absIncFileName.data() );

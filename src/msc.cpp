@@ -191,7 +191,7 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
   QCString mapName = baseName+".map";
   QCString mapFile = inFile+".map";
   t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
-    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
+    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
   QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context);
   t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
