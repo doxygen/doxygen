@@ -1857,7 +1857,7 @@ void HtmlGenerator::endMemberList()
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
-void HtmlGenerator::startMemberItem(int annoType) 
+void HtmlGenerator::startMemberItem(const char *anchor,int annoType) 
 { 
   DBG_HTML(t << "<!-- startMemberItem() -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
@@ -1867,7 +1867,7 @@ void HtmlGenerator::startMemberItem(int annoType)
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr>";
+    t << "<tr class=\"memitem:" << anchor << "\">";
     switch(annoType)
     {
       case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
@@ -1896,12 +1896,12 @@ void HtmlGenerator::startMemberTemplateParams()
 {
 }
 
-void HtmlGenerator::endMemberTemplateParams()
+void HtmlGenerator::endMemberTemplateParams(const char *anchor)
 {
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "</td></tr>" << endl;
-    t << "<tr><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
+    t << "<tr class=\"memitem:" << anchor << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
   }
 }
 
@@ -1916,7 +1916,7 @@ void HtmlGenerator::insertMemberAlign(bool templ)
   }
 }
 
-void HtmlGenerator::startMemberDescription() 
+void HtmlGenerator::startMemberDescription(const char *anchor) 
 { 
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
@@ -1926,7 +1926,7 @@ void HtmlGenerator::startMemberDescription()
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
+    t << "<tr class=\"memdesc:" << anchor << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
   }
   else
   {
@@ -2446,15 +2446,15 @@ static void startQuickIndexItem(FTextStream &t,const char *l,
   {
     t << " class=\"current\"";
   }
-  t << "><a ";
-  t << "href=\"" << relPath << l << "\">";
+  t << ">";
+  if (l) t << "<a href=\"" << correctURL(l,relPath) << "\">";
   t << "<span>";
 }
 
-static void endQuickIndexItem(FTextStream &t)
+static void endQuickIndexItem(FTextStream &t,const char *l)
 {
   t << "</span>";
-  t << "</a>";
+  if (l) t << "</a>";
   t << "</li>\n";
 }
 
@@ -2469,6 +2469,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   {
     case LayoutNavEntry::MainPage:         return TRUE; 
     case LayoutNavEntry::User:             return TRUE;                                           
+    case LayoutNavEntry::UserGroup:        return TRUE;                                           
     case LayoutNavEntry::Pages:            return indexedPages>0;
     case LayoutNavEntry::Modules:          return documentedGroups>0;
     case LayoutNavEntry::Namespaces:       return documentedNamespaces>0;
@@ -2505,18 +2506,10 @@ static void renderQuickLinksAsTree(FTextStream &t,const QCString &relPath,Layout
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
       {
-        QCString url = entry->baseFile();
-        if (entry->kind()!=LayoutNavEntry::User)
-        {
-          url+=Doxygen::htmlFileExtension;
-        }
-        t << "<li"; 
-        t << "><a ";
-        t << "href=\"" << relPath << url << "\">";
-        t << "<span>";
+        QCString url = entry->url();
+        t << "<li><a href=\"" << relPath << url << "\"><span>";
         t << fixSpaces(entry->title());
-        t << "</span>";
-        t << "</a>\n";
+        t << "</span></a>\n";
         // recursive into child list
         renderQuickLinksAsTree(t,relPath,entry);
         t << "</li>";
@@ -2531,7 +2524,6 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
                              LayoutNavEntry *hlEntry,LayoutNavEntry::Kind kind,
                              bool highlightParent,bool highlightSearch)
 {
-  //static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   if (hlEntry->parent()) // first draw the tabs for the parent of hlEntry
   {
     renderQuickLinksAsTabs(t,relPath,hlEntry->parent(),kind,highlightParent,highlightSearch);
@@ -2554,11 +2546,7 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
       {
         if (entry->visible() && quickLinkVisible(entry->kind()))
         {
-          QCString url = entry->baseFile();
-          if (entry->kind()!=LayoutNavEntry::User)
-          {
-            url+=Doxygen::htmlFileExtension;
-          }
+          QCString url = entry->url();
           startQuickIndexItem(t,url,
               entry==hlEntry  && 
               (entry->children().count()>0 || 
@@ -2566,27 +2554,23 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
               ),
               TRUE,relPath);
           t << fixSpaces(entry->title());
-          endQuickIndexItem(t);
+          endQuickIndexItem(t,url);
         }
       }
-      if (hlEntry->parent()==LayoutDocManager::instance().rootNavEntry()) // first row
+      if (hlEntry->parent()==LayoutDocManager::instance().rootNavEntry()) // first row is special as it contains the search box
       {
-        //static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
         static bool searchEngine      = Config_getBool("SEARCHENGINE");
         static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-        if (searchEngine /* && !generateTreeView */)
+        if (searchEngine)
         {
+          t << "      <li>\n";
           if (!serverBasedSearch) // pure client side search
           {
-            //t << "      <li id=\"searchli\">\n";
-            t << "      <li>\n";
             writeClientSearchBox(t,relPath);
             t << "      </li>\n";
           }
-          else // if (!generateTreeView) // server based search
+          else // server based search
           {
-            //t << "      <li id=\"searchli\">\n";
-            t << "      <li>\n";
             writeServerSearchBox(t,relPath,highlightSearch);
             if (!highlightSearch)
             {
@@ -2594,13 +2578,13 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
             }
           }
         }
-        if (!highlightSearch) // on the search page the page will be ended by the
+        if (!highlightSearch) // on the search page the index will be ended by the
           // page itself
         {
           endQuickIndexList(t,TRUE);
         }
       }
-      else // normal case
+      else // normal case for other rows than first one
       {
         endQuickIndexList(t,TRUE);
       }
@@ -2609,7 +2593,9 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
 }
 
 static void writeDefaultQuickLinks(FTextStream &t,bool compact,
-                                   HighlightedItem hli,const QCString &relPath)
+                                   HighlightedItem hli,
+                                   const char *file,
+                                   const QCString &relPath)
 {
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
   LayoutNavEntry::Kind kind = (LayoutNavEntry::Kind)-1;
@@ -2630,6 +2616,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
     case HLI_Globals:          kind = LayoutNavEntry::FileGlobals;      break;
     case HLI_Pages:            kind = LayoutNavEntry::Pages;            break;
     case HLI_Examples:         kind = LayoutNavEntry::Examples;         break;
+    case HLI_UserGroup:        kind = LayoutNavEntry::UserGroup;        break;
     case HLI_ClassVisible:     kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;          
                                highlightParent = TRUE; break;
     case HLI_NamespaceVisible: kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;       
@@ -2643,7 +2630,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
   if (compact)
   {
     // find highlighted index item
-    LayoutNavEntry *hlEntry = root->find(kind);
+    LayoutNavEntry *hlEntry = root->find(kind,kind==LayoutNavEntry::UserGroup ? file : 0);
     if (!hlEntry && altKind!=(LayoutNavEntry::Kind)-1) { hlEntry=root->find(altKind); kind=altKind; }
     if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
     {
@@ -2652,6 +2639,14 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
       if (hlEntry==0) 
       {
         return; // argl, empty index!
+      }
+    }
+    if (kind==LayoutNavEntry::UserGroup)
+    {
+      LayoutNavEntry *e = hlEntry->children().getFirst();
+      if (e)
+      {
+        hlEntry = e; 
       }
     }
     renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HLI_Search);
@@ -2710,9 +2705,9 @@ void HtmlGenerator::endContents()
   t << "</div><!-- contents -->" << endl;
 }
 
-void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
+void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const char *file)
 {
-  writeDefaultQuickLinks(t,compact,hli,relPath);
+  writeDefaultQuickLinks(t,compact,hli,file,relPath);
 }
 
 // PHP based search script
@@ -2788,7 +2783,7 @@ void HtmlGenerator::writeSearchPage()
     }
     if (!Config_getBool("DISABLE_INDEX"))
     {
-      writeDefaultQuickLinks(t,TRUE,HLI_Search,"");
+      writeDefaultQuickLinks(t,TRUE,HLI_Search,0,"");
     }
     else
     {

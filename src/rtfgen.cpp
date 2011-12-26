@@ -1571,7 +1571,7 @@ void RTFGenerator::endDescItem()
   newParagraph();
 }
 
-void RTFGenerator::startMemberDescription()
+void RTFGenerator::startMemberDescription(const char *)
 {
   DBG_RTF(t << "{\\comment (startMemberDescription)}"    << endl)
   t << "{" << endl;
@@ -1837,7 +1837,7 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
 //  t << text;
 //}
 
-void RTFGenerator::startMemberItem(int)
+void RTFGenerator::startMemberItem(const char *,int)
 {
   DBG_RTF(t <<"{\\comment startMemberItem }" << endl)
   t << rtf_Style_Reset << rtf_BList_DepthStyle() << endl; // set style to apropriate depth

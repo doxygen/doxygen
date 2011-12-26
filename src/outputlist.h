@@ -201,14 +201,14 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startAnonTypeScope,i1); }
     void endAnonTypeScope(int i1) 
     { forall(&OutputGenerator::endAnonTypeScope,i1); }
-    void startMemberItem(int i1) 
-    { forall(&OutputGenerator::startMemberItem,i1); }
+    void startMemberItem(const char *anchor,int i1) 
+    { forall(&OutputGenerator::startMemberItem,anchor,i1); }
     void endMemberItem() 
     { forall(&OutputGenerator::endMemberItem); }
     void startMemberTemplateParams() 
     { forall(&OutputGenerator::startMemberTemplateParams); }
-    void endMemberTemplateParams() 
-    { forall(&OutputGenerator::endMemberTemplateParams); }
+    void endMemberTemplateParams(const char *anchor) 
+    { forall(&OutputGenerator::endMemberTemplateParams,anchor); }
     void startMemberGroupHeader(bool b) 
     { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()
@@ -295,8 +295,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startBold); }
     void endBold() 
     { forall(&OutputGenerator::endBold); }
-    void startMemberDescription() 
-    { forall(&OutputGenerator::startMemberDescription); }
+    void startMemberDescription(const char *anchor) 
+    { forall(&OutputGenerator::startMemberDescription,anchor); }
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
     void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
@@ -338,8 +338,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeSplitBar,name); }
     void writeLogo()
     { forall(&OutputGenerator::writeLogo); }
-    void writeQuickLinks(bool compact,HighlightedItem hli)
-    { forall(&OutputGenerator::writeQuickLinks,compact,hli); }
+    void writeQuickLinks(bool compact,HighlightedItem hli,const char *file)
+    { forall(&OutputGenerator::writeQuickLinks,compact,hli,file); }
     void startContents()
     { forall(&OutputGenerator::startContents); }
     void endContents()
@@ -489,15 +489,16 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);
     FORALLPROTO2(bool,bool);
+    FORALLPROTO2(const char *,bool);
     FORALLPROTO4(const char *,const char *,const char *,int);
 #endif
     FORALLPROTO2(int,bool);
-    FORALLPROTO2(bool,HighlightedItem);
     FORALLPROTO2(bool,const char *);
     FORALLPROTO2(ParamListTypes,const char *);
     FORALLPROTO2(const char *,const char *);
-    FORALLPROTO2(const char *,bool);
+    FORALLPROTO2(const char *,int);
     FORALLPROTO2(const char *,SectionInfo::SectionType);
+    FORALLPROTO3(bool,HighlightedItem,const char *);
     FORALLPROTO3(bool,bool,bool);
     FORALLPROTO3(const char *,const char *,bool);
     FORALLPROTO3(const char *,const char *,SectionInfo::SectionType);

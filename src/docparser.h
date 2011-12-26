@@ -1244,6 +1244,7 @@ class DocRoot : public CompAccept<DocRoot>, public DocNode
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }
+    const QList<DocNode> &children() const { return m_children; }
 
   private:
     bool m_indent;

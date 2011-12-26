@@ -111,10 +111,10 @@ class RTFGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(int);
+    void startMemberItem(const char *,int);
     void endMemberItem();
     void startMemberTemplateParams() {}
-    void endMemberTemplateParams() {}
+    void endMemberTemplateParams(const char *) {}
     void insertMemberAlign(bool) {}
 
     void writeRuler() { rtfwriteRuler_thin(); }
@@ -154,7 +154,7 @@ class RTFGenerator : public OutputGenerator
     void startSmall()       { t << "{\\sub "; }
     void endSmall()         { t << "}"; }
 
-    void startMemberDescription();
+    void startMemberDescription(const char *);
     void endMemberDescription();
     void startDescList(SectionTypes);
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
@@ -178,7 +178,7 @@ class RTFGenerator : public OutputGenerator
     void endQuickIndices() {}
     void writeSplitBar(const char *) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem) {}
+    void writeQuickLinks(bool,HighlightedItem,const char *) {}
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int);

@@ -28,7 +28,7 @@
  * 
  * This file is intended not to be used for commercial purposes
  * without permission of the University of Dortmund
- *
+ *   
  * NOTE THAT THERE IS NO WARRANTY FOR CORRECTNES, COMPLETENESS, SUPPORT
  * OR ANYTHING ELSE.
  *******************************************************/
@@ -285,6 +285,25 @@ static void lineCount()
 }
 
 
+static void startCodeBlock(int index){
+  int ll=strComment.length();
+  iCodeLen=inputVhdlString.findRev(strComment.data(),num_chars)+ll;
+  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+  //assert(false);
+  gBlock.reset();
+  int len=strComment.length();
+  QCString name=strComment.right(len-index);// 
+  name=VhdlDocGen::getIndexWord(name.data(),1);
+  if (!name)
+    gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
+  else
+    gBlock.name=name;
+  strComment=strComment.left(index);
+  gBlock.startLine=yyLineNr+1;
+  gBlock.bodyLine=yyLineNr+1;
+  VhdlDocGen::prepareComment(strComment);
+  gBlock.brief+=strComment;
+}
 static void makeInlineDoc(int endCode)
 {
   int len=endCode-iCodeLen;
@@ -309,7 +328,7 @@ static void makeInlineDoc(int endCode)
 	temp->type="misc"; // global code like library ieee...
 	current_root->addSubEntry(temp);
   }
-
+  strComment.resize(0);
   gBlock.reset();
 
 
@@ -531,7 +550,11 @@ BR                         [ \t\n\r]
 <Comment>^{B}*"--!"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
   strComment+=vhdlScanYYtext;
-      
+  int index=strComment.find("\\code");
+  if (index>0)
+  {
+    startCodeBlock(index);
+  }
   lineCount();
 }
 
@@ -541,22 +564,7 @@ BR                         [ \t\n\r]
           int index =strComment.find("\\code");
           if (index>0)
           {
-            int ll=strComment.length();
-            iCodeLen=inputVhdlString.findRev(strComment.data(),num_chars)+ll;
-        
-            gBlock.reset();
-            int len=strComment.length();
-            QCString name=strComment.right(len-index);// 
-            name=VhdlDocGen::getIndexWord(name.data(),1);
-            if (!name)
-              gBlock.name="misc"+ VhdlDocGen::getRecordNumber(); 
-            else
-              gBlock.name=name;
-            strComment=strComment.left(index);
-            gBlock.startLine=yyLineNr+1;
-            gBlock.bodyLine=yyLineNr+1;
-            VhdlDocGen::prepareComment(strComment);
-            gBlock.brief+=strComment;
+            startCodeBlock(index);
           }
         
           VhdlDocGen::prepareComment(strComment);
@@ -575,10 +583,18 @@ BR                         [ \t\n\r]
 
 	  bool isEndCode=qcs.contains("\\endcode");
 
+	  int index = qcs.find("\\code");
 	  if (isEndCode)
 	  {
 	    int end=inputVhdlString.find(qcs.data(),iCodeLen);
 	    makeInlineDoc(end);
+	  }
+	  else if (index > 0 ) 
+	  {
+	    // assert(false);
+	    strComment=qcs;
+	    startCodeBlock(index);
+	    strComment.resize(0);
 	  }
 
 	  //printf("--> handleCommentBlock line %d\n",yyLineNr);

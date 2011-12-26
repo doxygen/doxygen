@@ -340,10 +340,10 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
-    virtual void startMemberItem(int) = 0;
+    virtual void startMemberItem(const char *,int) = 0;
     virtual void endMemberItem() = 0;
     virtual void startMemberTemplateParams() = 0;
-    virtual void endMemberTemplateParams() = 0;
+    virtual void endMemberTemplateParams(const char *) = 0;
     virtual void startMemberGroupHeader(bool) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;
@@ -362,7 +362,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeStartAnnoItem(const char *type,const char *file,
                                     const char *path,const char *name) = 0;
     virtual void writeEndAnnoItem(const char *name) = 0;
-    virtual void startMemberDescription() = 0;
+    virtual void startMemberDescription(const char *anchor) = 0;
     virtual void endMemberDescription() = 0;
     virtual void startIndent() = 0;
     virtual void endIndent() = 0;
@@ -384,7 +384,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endQuickIndices() = 0;
     virtual void writeSplitBar(const char *) = 0;
     virtual void writeLogo() = 0;
-    virtual void writeQuickLinks(bool compact,HighlightedItem hli) = 0;
+    virtual void writeQuickLinks(bool compact,HighlightedItem hli,const char *file) = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;
     virtual void startTextBlock(bool) = 0;
@@ -394,7 +394,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDocPrefixItem() = 0;
     virtual void startMemberDocName(bool) = 0;
     virtual void endMemberDocName() = 0;
-    virtual void startParameterType(bool,const char *) = 0;
+    virtual void startParameterType(bool,const char *key) = 0;
     virtual void endParameterType() = 0;
     virtual void startParameterName(bool) = 0;
     virtual void endParameterName(bool,bool,bool) = 0;

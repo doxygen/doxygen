@@ -319,14 +319,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.startMemberList();
                 first=FALSE;
               }
-              ol.startMemberItem(0);
+              ol.startMemberItem(md->anchor(),0);
               ol.writeString("enum ");
               ol.insertMemberAlign();
               md->writeEnumDeclaration(ol,cd,nd,fd,gd);
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
               {
-                ol.startMemberDescription();
+                ol.startMemberDescription(md->anchor());
                 ol.parseDoc(
                     md->briefFile(),md->briefLine(),
                     cd,md,

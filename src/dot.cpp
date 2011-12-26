@@ -1517,7 +1517,7 @@ static QCString escapeTooltip(const QCString &tooltip)
 
 static void writeBoxMemberList(FTextStream &t,
             char prot,MemberList *ml,ClassDef *scope,
-            bool isStatic=FALSE)
+            bool isStatic=FALSE,const QDict<void> *skipNames=0)
 {
   (void)isStatic;
   if (ml)
@@ -1527,7 +1527,8 @@ static void writeBoxMemberList(FTextStream &t,
     int totalCount=0;
     for (mlia.toFirst();(mma = mlia.current());++mlia)
     {
-      if (mma->getClassDef() == scope)
+      if (mma->getClassDef()==scope && 
+          (skipNames==0 || skipNames->find(mma->name())==0))
       {
         totalCount++;
       }
@@ -1536,7 +1537,8 @@ static void writeBoxMemberList(FTextStream &t,
     int count=0;
     for (mlia.toFirst();(mma = mlia.current());++mlia)
     {
-      if (mma->getClassDef() == scope)
+      if (mma->getClassDef() == scope &&
+          (skipNames==0 || skipNames->find(mma->name())==0))
       {
         if (totalCount>=15 && count>=10)
         {
@@ -1565,7 +1567,7 @@ static void writeBoxMemberList(FTextStream &t,
       {
         if (mg->members())
         {
-          writeBoxMemberList(t,prot,mg->members(),scope);
+          writeBoxMemberList(t,prot,mg->members(),scope,isStatic,skipNames);
         }
       }
     }
@@ -1588,21 +1590,34 @@ void DotNode::writeBox(FTextStream &t,
 
   if (m_classDef && umlLook && (gt==Inheritance || gt==Collaboration))
   {
+    // add names shown as relation to a dictionary, so we don't show
+    // them as attributes as well
+    QDict<void> arrowNames(17);
+    QListIterator<EdgeInfo> li(*m_edgeInfo);
+    EdgeInfo *ei;
+    for (li.toFirst();(ei=li.current());++li)
+    {
+      if (!ei->m_label.isEmpty())
+      {
+        arrowNames.insert(ei->m_label,(void*)0x8);
+      }
+    }
+
     //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
     t << "{" << convertLabel(m_label);
     t << "\\n|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubAttribs),m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubStaticAttribs),m_classDef,TRUE);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::properties),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacAttribs),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacStaticAttribs),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proAttribs),m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proStaticAttribs),m_classDef,TRUE);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubAttribs),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubStaticAttribs),m_classDef,TRUE,&arrowNames);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::properties),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacAttribs),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacStaticAttribs),m_classDef,TRUE,&arrowNames);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proAttribs),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proStaticAttribs),m_classDef,TRUE,&arrowNames);
     if (extractPrivate)
     {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priAttribs),m_classDef);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priStaticAttribs),m_classDef,TRUE);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priStaticAttribs),m_classDef,TRUE,&arrowNames);
     }
     t << "|";
     writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubMethods),m_classDef);
@@ -1628,7 +1643,7 @@ void DotNode::writeBox(FTextStream &t,
       {
         if (mg->members())
         {
-          writeBoxMemberList(t,'*',mg->members(),m_classDef);
+          writeBoxMemberList(t,'*',mg->members(),m_classDef,FALSE,&arrowNames);
         }
       }
     }

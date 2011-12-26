@@ -922,7 +922,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
     else if (nd==0 && cd==0) // scope is not known!
     {
       // introduce bogus namespace
-      //printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
+      printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
       nd=new NamespaceDef(
         "[generated]",1,fullScope);
 
@@ -2226,13 +2226,14 @@ static MemberDef *addVariableToFile(
   Entry *root = rootNav->entry();
   Debug::print(Debug::Variables,0,
       "  global variable:\n"
-      "    type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d mtype=%d\n",
+      "    type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d mtype=%d lang=%d\n",
       root->type.data(),
       scope.data(), 
       name.data(),
       root->args.data(),
       root->protection,
-      mtype
+      mtype,
+      root->lang
               );
 
   FileDef *fd = rootNav->fileDef();
@@ -2421,18 +2422,21 @@ static MemberDef *addVariableToFile(
 
 /*! See if the return type string \a type is that of a function pointer 
  *  \returns -1 if this is not a function pointer variable or
- *           the index at which the brace of (...*name) was found.
+ *           the index at which the closing brace of (...*name) was found.
  */
 static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
 {
   if (lang == SrcLangExt_Fortran) return -1; // Fortran does not have function pointers
   static const QRegExp re("([^)]*[\\*\\^][^)]*)");
   int i=-1,l;
+  int bb=type.find('<');
+  int be=type.findRev('>');
   if (!type.isEmpty() &&             // return type is non-empty
       (i=re.match(type,0,&l))!=-1 && // contains (...*...)
       type.find("operator")==-1 &&   // not an operator
-      (type.find(")(")==-1 || type.find("typedef ")!=-1)
+      (type.find(")(")==-1 || type.find("typedef ")!=-1) &&
                                     // not a function pointer return type
+      !(bb<i && i<be) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
      )
   {
     if (pLength) *pLength=l;
@@ -2610,6 +2614,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
     {
       int i=isFuncPtr;
       if (i==-1) i=findFunctionPtr(root->type,root->lang); // for typedefs isFuncPtr is not yet set
+      Debug::print(Debug::Variables,0,"  functionPtr? %s\n",i!=-1?"yes":"no");
       if (i!=-1) // function pointer
       {
         int ai = root->type.find('[',i);
@@ -10212,7 +10217,7 @@ void parseInput()
    **************************************************************************/
 
   LayoutDocManager::instance().init();
-  QCString layoutFileName = Config_getString("LAYOUT_FILE");
+  QCString &layoutFileName = Config_getString("LAYOUT_FILE");
   bool defaultLayoutUsed = FALSE;
   if (layoutFileName.isEmpty())
   {
@@ -10406,7 +10411,10 @@ void parseInput()
   computeTemplateClassRelations(); 
   flushUnresolvedRelations();
   computeClassRelations();        
-  //VhdlDocGen::computeVhdlComponentRelations(); // @MARTIN: removed because it breaks non-vhdl code
+  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
+  {
+    VhdlDocGen::computeVhdlComponentRelations(); 
+  }
   g_classEntries.clear();          
 
   msg("Add enum values to enums...\n");
@@ -10528,19 +10536,6 @@ void generateOutput()
    **************************************************************************/
 
   //// dump all symbols
-  //SDict<DefinitionList>::Iterator sdi(Doxygen::symbolMap);
-  //DefinitionList *dl;
-  //for (sdi.toFirst();(dl=sdi.current());++sdi)
-  //{
-  //  DefinitionListIterator dli(*dl);
-  //  Definition *d;
-  //  printf("Symbol: ");
-  //  for (dli.toFirst();(d=dli.current());++dli)
-  //  {
-  //    printf("%s ",d->qualifiedName().data());
-  //  }
-  //  printf("\n");
-  //}
   if (g_dumpSymbolMap)
   {
     dumpSymbolMap();
@@ -10555,11 +10550,12 @@ void generateOutput()
     g_outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
 
-    bool generateHtmlHelp = Config_getBool("GENERATE_HTMLHELP");
+    // add HTML indexers that are enabled
+    bool generateHtmlHelp    = Config_getBool("GENERATE_HTMLHELP");
     bool generateEclipseHelp = Config_getBool("GENERATE_ECLIPSEHELP");
-    bool generateQhp      = Config_getBool("GENERATE_QHP");
-    bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-    bool generateDocSet   = Config_getBool("GENERATE_DOCSET");
+    bool generateQhp         = Config_getBool("GENERATE_QHP");
+    bool generateTreeView    = Config_getBool("GENERATE_TREEVIEW");
+    bool generateDocSet      = Config_getBool("GENERATE_DOCSET");
     if (generateEclipseHelp) Doxygen::indexList.addIndex(new EclipseHelp);
     if (generateHtmlHelp) Doxygen::indexList.addIndex(new HtmlHelp);
     if (generateQhp)      Doxygen::indexList.addIndex(new Qhp);
@@ -10568,10 +10564,7 @@ void generateOutput()
     Doxygen::indexList.initialize();
     HtmlGenerator::writeTabData();
 
-#if 0
-    if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
-#endif
-    //if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
+    // copy static stuff
     copyStyleSheet();
     copyLogo();
     copyExtraFiles();
@@ -10672,17 +10665,6 @@ void generateOutput()
     }
   }
 
-  //statistics();
-
-  // count the number of documented elements in the lists we have built. 
-  // If the result is 0 we do not generate the lists and omit the 
-  // corresponding links in the index.
-  //msg("Generating index page...\n"); 
-  //writeIndex(*g_outputList);
-
-  //msg("Generating page index...\n");
-  //writePageIndex(*g_outputList);
-  
   msg("Generating example documentation...\n");
   generateExampleDocs();
 
@@ -10701,24 +10683,12 @@ void generateOutput()
   msg("Generating group documentation...\n");
   generateGroupDocs();
 
-  //msg("Generating group index...\n");
-  //writeGroupIndex(*g_outputList);
- 
   msg("Generating class documentation...\n");
   generateClassDocs();
   
-  //if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
-  //{
-  //  msg("Generating graphical class hierarchy...\n");
-  //  writeGraphicalClassHierarchy(*g_outputList);
-  //}
-
   msg("Generating namespace index...\n");
   generateNamespaceDocs();
   
-  //msg("Generating namespace member index...\n");
-  //writeNamespaceMemberIndex(*g_outputList);
-
   if (Config_getBool("GENERATE_LEGEND"))
   {
     msg("Generating graph info page...\n");
@@ -10731,24 +10701,6 @@ void generateOutput()
     generateDirDocs(*g_outputList);
   }
 
-  //msg("Generating file index...\n");
-  //writeFileIndex(*g_outputList);
- 
-  //if (Config_getBool("SHOW_DIRECTORIES"))
-  //{
-  //  msg("Generating directory index...\n");
-  //  writeDirIndex(*g_outputList);
-  //}
-
-  //msg("Generating example index...\n");
-  //writeExampleIndex(*g_outputList);
-  
-  //msg("Generating file member index...\n");
-  //writeFileMemberIndex(*g_outputList);
-
-  
-  //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
-  
   if (Doxygen::formulaList.count()>0 && Config_getBool("GENERATE_HTML")
       && !Config_getBool("USE_MATHJAX"))
   {
@@ -10756,15 +10708,6 @@ void generateOutput()
     Doxygen::formulaList.generateBitmaps(Config_getString("HTML_OUTPUT"));
   }
   
-  //if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))  
-  //{
-  //  HtmlHelp::getInstance()->finalize();
-  //}
-  //if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_TREEVIEW"))  
-  //{
-  //  FTVHelp::getInstance()->finalize();
-  //}
-
   writeIndexHierarchy(*g_outputList);
 
   msg("finalizing index lists...\n");
@@ -10897,8 +10840,6 @@ void generateOutput()
    *                        Start cleaning up                               *
    **************************************************************************/
 
-  //Doxygen::symbolCache->printStats();
-  //Doxygen::symbolStorage->printStats();
   cleanUpDoxygen();
 
   finializeDocParser();

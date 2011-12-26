@@ -127,7 +127,8 @@ struct LayoutNavEntry
       FileGlobals,
       Dirs, 
       Examples,
-      User
+      User,
+      UserGroup
     };
     LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf, 
                    const QCString &tl,const QCString &intro,bool prepend=FALSE) 
@@ -140,12 +141,13 @@ struct LayoutNavEntry
     QCString baseFile() const        { return m_baseFile; }
     QCString title() const           { return m_title; }
     QCString intro() const           { return m_intro; }
+    QCString url() const;
     bool visible()                   { return m_visible; }
     void clear()                     { m_children.clear(); }
     void addChild(LayoutNavEntry *e) { m_children.append(e); }
     void prependChild(LayoutNavEntry *e) { m_children.prepend(e); }
     const QList<LayoutNavEntry> &children() const { return m_children; }
-    LayoutNavEntry *find(LayoutNavEntry::Kind k) const;
+    LayoutNavEntry *find(LayoutNavEntry::Kind k,const char *file=0) const;
 
   private:
     LayoutNavEntry() : m_parent(0) {}

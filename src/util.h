@@ -137,7 +137,8 @@ bool getDefs(const QCString &scopeName,
                     GroupDef *&gd,
                     bool forceEmptyScope=FALSE,
                     FileDef *currentFile=0,
-                    bool checkCV=FALSE
+                    bool checkCV=FALSE,
+                    const char *forceTagFile=0
                    );
 
 QCString getFileFilter(const char* name,bool isSourceCode);
@@ -411,6 +412,8 @@ QCString replaceColorMarkers(const char *str);
 
 bool copyFile(const QCString &src,const QCString &dest);
 QCString extractBlock(const QCString text,const QCString marker);
+
+QCString correctURL(const QCString &url,const QCString &relPath);
 
 #endif
 

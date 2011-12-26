@@ -80,11 +80,8 @@ class FileDef : public Definition
       else 
         return Definition::name(); 
     } 
-
-    QCString fileName() const
-    {
-      return filename;
-    }
+    QCString displayName() const { return name(); }
+    QCString fileName() const { return filename; }
     
     QCString getOutputFileBase() const 
     { return convertNameToFile(diskname); }

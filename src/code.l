@@ -140,6 +140,7 @@ static int g_braceCount=0;
 static void saveObjCContext();
 static void restoreObjCContext();
 
+static QCString g_forceTagReference;
 
 
 //-------------------------------------------------------------------
@@ -780,7 +781,9 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	// in case there are multiple members we could link to, we 
 	// only link to members if defined in the same file or 
 	// defined as external.
-        if (!md->isStatic() || md->getBodyDef()==g_sourceFileDef)
+        if ((!md->isStatic() || md->getBodyDef()==g_sourceFileDef) &&
+	    (g_forceTagReference.isEmpty() || g_forceTagReference==md->getReference())
+	   )
         {
           g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
 	  //printf("returning member %s in source file %s\n",md->name().data(),g_sourceFileDef->name().data());
@@ -868,7 +871,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   NamespaceDef *nd;
   GroupDef     *gd;
   //fprintf(stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly);
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
+  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
       md->isLinkable() && (!varOnly || md->isVariable()))
   {
     if (g_exampleBlock)
@@ -887,7 +890,6 @@ static bool getLinkInScope(const QCString &c,  // scope
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
     if (md->getGroupDef()) d = md->getGroupDef();
-    //fprintf(stderr,"d=%p linkable=%d\n",d,d?d->isLinkable():0);
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
@@ -1062,9 +1064,26 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
         //fprintf(stderr,"is a global md=%p g_currentDefinition=%s linkable=%d\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>",md->isLinkable());
 	if (md->isLinkable())
 	{
+	  QCString text;
+	  if (!g_forceTagReference.isEmpty()) // explicit reference to symbol in tag file
+	  {
+	    text=g_forceTagReference;
+	    if (text.right(4)==".tag") // strip .tag if present
+	    {
+	      text=text.left(text.length()-4);
+	    }
+	    text+=getLanguageSpecificSeparator(md->getLanguage());
+	    text+=clName;
+	    md->setName(text);
+	    md->setLocalName(text);
+	  }
+	  else // normal reference
+	  {
+	    text=clName;
+	  }
           ol.linkableSymbol(g_yyLineNr,md->name(),md,
 	                    g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
-	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName,md->briefDescriptionAsTooltip());
+	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),text,md->briefDescriptionAsTooltip());
           addToSearchIndex(clName);
 	  if (g_currentMemberDef)
 	  {
@@ -1260,6 +1279,13 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 
 static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
 {
+  //CodeClassDef *ccd=0;
+  ClassDef *ccd=0;
+  QCString locScope=g_classScope;
+  QCString locFunc=removeRedundantWhiteSpace(funcName);
+  //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
+  int len=2;
+  int i=locFunc.findRev("::");
   if (g_currentMemberDef && g_currentMemberDef->getClassDef() &&
       funcName==g_currentMemberDef->localName() && 
       g_currentMemberDef->getDefLine()==g_yyLineNr &&
@@ -1272,15 +1298,8 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
     // in case of overloaded methods, this will make sure that we link to
     // the correct method, and thereby get the correct reimplemented relations.
     // See also bug 549022.
-    return;
+    goto exit;
   }
-  //CodeClassDef *ccd=0;
-  ClassDef *ccd=0;
-  QCString locScope=g_classScope;
-  QCString locFunc=removeRedundantWhiteSpace(funcName);
-  //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
-  int len=2;
-  int i=locFunc.findRev("::");
   if (i==-1) i=locFunc.findRev("."),len=1;
   if (i==-1) i=locFunc.findRev("\\"),len=1; // for PHP
   if (i>0)
@@ -1314,7 +1333,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
       {
 	if (getLink(bcli.current()->classDef->name(),locFunc,ol,funcName)) 
 	{
-	  return;
+	  goto exit;
 	}
       }
     }
@@ -1323,6 +1342,8 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   {
     generateClassOrGlobalLink(ol,funcName);
   }
+exit:  
+  g_forceTagReference.resize(0);
   return;
 }
 
@@ -3216,6 +3237,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    endFontClass();
 					  }
   					}
+<*>"/*[tag:"[^\]\n]*"]*/"{B}*		{ // special pattern /*[tag:filename]*/ to force linking to a tag file
+  					  g_forceTagReference=yytext;
+					  int s=g_forceTagReference.find(':');
+					  int e=g_forceTagReference.findRev(']');
+					  g_forceTagReference = g_forceTagReference.mid(s+1,e-s-1);
+  					}
 <*>\n{B}*"/*"[!*]/[^/*] 		{
 					  if (Config_getBool("STRIP_CODE_COMMENTS"))
   					  {
@@ -3381,6 +3408,7 @@ static void restoreObjCContext()
 void resetCCodeParserState()
 {
   //printf("***initParseCodeContext()\n");
+  g_forceTagReference.resize(0);
   g_theVarContext.clear();
   g_classScopeLengthStack.setAutoDelete(TRUE);
   g_classScopeLengthStack.clear();

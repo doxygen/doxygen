@@ -183,7 +183,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   {
     if (isDefine || first) 
     {
-      ol.startParameterType(first,md->isObjCMethod()?"dummy":0);
+      ol.startParameterType(first,0);
       paramTypeStarted=TRUE;
       if (isDefine)
       {
@@ -1306,6 +1306,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   QCString cname  = d->name();
+  QCString cdname = d->displayName();
   QCString cfname = getOutputFileBase();
   //QCString osname = cname;
   // in case of class members that are put in a group the name of the outerscope
@@ -1322,14 +1323,17 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
-  ol.startMemberItem( isAnonymous ? 1 : m_impl->tArgList ? 3 : 0);
+  ol.startMemberItem( anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = isDetailedSectionLinkable();
   if (!detailsVisible && !m_impl->annMemb)
   {
     QCString doxyName=name().copy();
-    if (!cname.isEmpty()) doxyName.prepend(cname+"::");
+    if (!cname.isEmpty()) 
+    {
+      doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
+    }
     QCString doxyArgs=argsString();
     ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
 
@@ -1354,7 +1358,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   {
     if (!isAnonymous) ol.startMemberTemplateParams();
     writeTemplatePrefix(ol,m_impl->tArgList);
-    if (!isAnonymous) ol.endMemberTemplateParams();
+    if (!isAnonymous) ol.endMemberTemplateParams(anchor());
   }
 
   // *** write type
@@ -1378,7 +1382,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.startAnonTypeScope(s_indentLevel++);
       annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      ol.startMemberItem(2);
+      ol.startMemberItem(anchor(),2);
       int j;
       for (j=0;j< s_indentLevel-1;j++) 
       {
@@ -1644,7 +1648,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       /* && !annMemb */
      )
   {
-    ol.startMemberDescription();
+    ol.startMemberDescription(anchor());
     ol.parseDoc(briefFile(),briefLine(),
                 getOuterScope()?getOuterScope():d,this,briefDescription(),
                 TRUE,FALSE,0,TRUE,FALSE);
@@ -1791,16 +1795,18 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   KEEP_RESIDENT_DURING_CALL;
 
   SrcLangExt lang = getLanguage();
+  //printf("member=%s lang=%d\n",name().data(),lang);
   bool optVhdl = lang==SrcLangExt_VHDL;
+  QCString sep = getLanguageSpecificSeparator(lang);
 
   QCString scopeName = scName;
   QCString memAnchor = anchor();
   QCString ciname = container->name();
   if (container->definitionType()==TypeGroup)
   {
-    if (getClassDef())          scopeName=getClassDef()->name();
-    else if (getNamespaceDef()) scopeName=getNamespaceDef()->name();
-    else if (getFileDef())      scopeName=getFileDef()->name();
+    if (getClassDef())          scopeName=getClassDef()->displayName();
+    else if (getNamespaceDef()) scopeName=getNamespaceDef()->displayName();
+    else if (getFileDef())      scopeName=getFileDef()->displayName();
     ciname = ((GroupDef *)container)->groupTitle();
   }
   else if (container->definitionType()==TypeFile && getNamespaceDef())
@@ -1809,14 +1815,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     memAnchor.prepend("file_");
   }
 
-  QCString cname  = container->name();
-  QCString cfname = getOutputFileBase();
+  QCString cname   = container->name();
+  QCString cfname  = getOutputFileBase();
   QCString cfiname = container->getOutputFileBase();
 
   // get member name
   QCString doxyName=name();
   // prepend scope if there is any. TODO: make this optional for C only docs
-  if (scopeName) doxyName.prepend((QCString)scopeName+"::");
+  if (!scopeName.isEmpty())
+  {
+    doxyName.prepend(scopeName+sep);
+  }
   QCString doxyArgs=argsString();
 
   QCString ldef = definition();
@@ -1985,7 +1994,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef);
+      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),substitute(ldef,"::",sep));
       hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
     }
 

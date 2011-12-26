@@ -2024,7 +2024,7 @@ void LatexGenerator::startMemberTemplateParams()
   }
 }
 
-void LatexGenerator::endMemberTemplateParams()
+void LatexGenerator::endMemberTemplateParams(const char *)
 {
   if (templateMemberItem)
   {
@@ -2032,7 +2032,7 @@ void LatexGenerator::endMemberTemplateParams()
   }
 }
 
-void LatexGenerator::startMemberItem(int annoType) 
+void LatexGenerator::startMemberItem(const char *,int annoType) 
 { 
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!insideTabbing)
@@ -2052,7 +2052,7 @@ void LatexGenerator::endMemberItem()
   t << endl; 
 }
 
-void LatexGenerator::startMemberDescription() 
+void LatexGenerator::startMemberDescription(const char *) 
 {
   if (!insideTabbing)
   { 
@@ -2271,15 +2271,10 @@ void LatexGenerator::endParameterList()
 {
 }
 
-
-void LatexGenerator::startParameterType(bool /*first*/,const char *key)
+void LatexGenerator::startParameterType(bool first,const char *key)
 {
   t << "\\item[{";
-  t << key;
-//  if (!first)
-//  {
-//    t << "\\/ " << key << " ";
-//  }
+  if (!first && key) t << key;
 }
 
 void LatexGenerator::endParameterType()

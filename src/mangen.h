@@ -111,10 +111,10 @@ class ManGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(int);
+    void startMemberItem(const char *,int);
     void endMemberItem();
     void startMemberTemplateParams() {}
-    void endMemberTemplateParams() {}
+    void endMemberTemplateParams(const char *) {}
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -158,7 +158,7 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription() { t << "\n.RI \"\\fI"; firstCol=FALSE; }
+    void startMemberDescription(const char *) { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
     void startDescList(SectionTypes);
     void endDescList()        {}
@@ -183,7 +183,7 @@ class ManGenerator : public OutputGenerator
     void endQuickIndices() {}
     void writeSplitBar(const char *) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem) {}
+    void writeQuickLinks(bool,HighlightedItem,const char *) {}
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }

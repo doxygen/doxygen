@@ -296,7 +296,7 @@ static void addToSearchIndex(const char *text)
 }
 
 
-static ClassDef *stripClassName(const char *s)
+static ClassDef *stripClassName(const char *s,Definition *d=g_currentDefinition)
 {
   int pos=0;
   QCString type = s;
@@ -309,11 +309,11 @@ static ClassDef *stripClassName(const char *s)
     ClassDef *cd=0;
     if (!g_classScope.isEmpty())
     {
-      cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,g_classScope+"::"+clName);
+      cd=getResolvedClass(d,g_sourceFileDef,g_classScope+"::"+clName);
     }
     if (cd==0)
     {
-      cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,clName);
+      cd=getResolvedClass(d,g_sourceFileDef,clName);
     }
     if (cd)
     {
@@ -516,7 +516,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
-      g_theCallContext.setClass(stripClassName(md->typeString()));
+      g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
       //printf("g_currentDefinition=%p g_currentMemberDef=%p\n",
       //        g_currentDefinition,g_currentMemberDef);
 
@@ -563,18 +563,16 @@ static bool getLink(const char *className,
 /*
   For a given string in the source code,
   finds its class or global id and links to it.
-
-  As of June 1, '05, this ONLY finds classes
 */
 static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
-                                      bool /*typeOnly*/=FALSE)
+                                      bool typeOnly=FALSE)
 {
   QCString className=clName;
 
   // Don't do anything for empty text
   if (className.isEmpty()) return;
 
-  //printf("generateClassOrGlobalLink(className=%s)\n",className.data());
+  //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
 
   ClassDef *cd=0,*lcd=0;  /** Class def that we may find */
   MemberDef *md=0;        /** Member def that we may find */
@@ -583,15 +581,25 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
     Definition *d = g_currentDefinition;
+    QCString scope = substitute(className,".","::");
 
-    cd = getResolvedClass(d,g_sourceFileDef,className,&md);
+    cd = getResolvedClass(d,g_sourceFileDef,substitute(className,".","::"),&md);
 
-    //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
-    //printf("is found as a type %s\n",cd?cd->name().data():"<null>");
+    //fprintf(stderr,"d=%s g_sourceFileDef=%s\n",
+    //	d?d->displayName().data():"<null>",
+    //	g_currentDefinition?g_currentDefinition->displayName().data():"<null>");
+    //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
 
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
-      if (getLink(g_classScope,clName,ol,clName))
+      NamespaceDef *nd = getResolvedNamespace(scope);
+      if (nd)
+      {
+        writeMultiLineCodeLink(ol,nd->getReference(),nd->getOutputFileBase(),nd->anchor(),clName,nd->briefDescriptionAsTooltip());
+        addToSearchIndex(className);
+        return;
+      }
+      else if (getLink(g_classScope,clName,ol,clName))
       {
 	return;
       }
@@ -624,50 +632,55 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
   else // not a class, maybe a global member
   {
-    //printf("Checking if '%s' is a global function\n",clName);
-
-    /*
-      This code requires a going-over in order to
-      make it work for Python
-
-    //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
-    if (!isLocal && (md!=0 || (cd==0 && !typeOnly))) // not a class, see if it is a global enum/variable/typedef.
+    int scopeEnd = className.findRev(".");
+    if (scopeEnd!=-1 && !typeOnly) // name with explicit scope
     {
-      if (md==0) // not found as a typedef
+      QCString scope = substitute(className.left(scopeEnd),".","::");
+      QCString locName = className.right(className.length()-scopeEnd-1);
+      ClassDef *mcd = getClass(scope);
+      //fprintf(stderr,"scope=%s locName=%s mcd=%p\n",scope.data(),locName.data(),mcd);
+      if (mcd)
       {
-	md = setCallContextForVar(clName);
-	//printf("setCallContextForVar(%s) md=%p g_currentDefinition=%p\n",clName,md,g_currentDefinition);
-	if (md && g_currentDefinition)
+	MemberDef *md = mcd->getMemberByName(locName);
+	if (md)
 	{
-	  //fprintf(stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
-	  //    md->name().data(),g_currentDefinition->name().data(),
-	  //    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md),
-	  //    md->getOuterScope()->name().data());
-	}
-	     
-        if (md && g_currentDefinition && 
-	    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
-	{
-	  md=0; // variable not accessible
-	}
-      }
-      if (md)
-      {
-        //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
-	if (md->isLinkable())
-	{
-	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName,md->briefDescriptionAsTooltip());
-          addToSearchIndex(clName);
-	  if (g_currentMemberDef)
+          g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+          writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName,md->briefDescriptionAsTooltip());
+          addToSearchIndex(className);
+	  Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+	                  md->getBodyDef() : md->getOuterScope();
+	  if (md->getGroupDef()) d = md->getGroupDef();
+	  if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
 	  {
 	    addDocCrossReference(g_currentMemberDef,md);
 	  }
 	  return;
 	}
       }
+      else // check namespace as well
+      {
+        NamespaceDef *mnd = getResolvedNamespace(scope);
+        if (mnd)
+        {
+  	  MemberDef *md=mnd->getMemberByName(locName);
+	  if (md)
+          {
+	    //printf("name=%s scope=%s\n",locName.data(),scope.data());
+	    g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+            writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName,md->briefDescriptionAsTooltip());
+            addToSearchIndex(className);
+	    Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+	                    md->getBodyDef() : md->getOuterScope();
+	    if (md->getGroupDef()) d = md->getGroupDef();
+	    if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
+	    {
+	      addDocCrossReference(g_currentMemberDef,md);
+	    }
+	    return;
+          }
+        }
+      }
     }
-
-    */
     
     // nothing found, just write out the word
     codifyLines(clName);
@@ -738,10 +751,11 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
 	addDocCrossReference(g_currentMemberDef,(MemberDef*)sym);
       }
     }
+    //fprintf(stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>");
 
     // TODO: find the nearest base class in case cd is a base class of
     // thisCd 
-    if (cd==thisCd) 
+    if (cd==thisCd || (thisCd && thisCd->isBaseClass(cd,TRUE)))
     {
       writeMultiLineCodeLink(ol,sym->getReference(),
           sym->getOutputFileBase(),
@@ -994,7 +1008,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					codify(yytext);
                                     }
 
-   {IDENTIFIER}                     {
+   ({IDENTIFIER}".")*{IDENTIFIER}   {
                                         // The parser
 					// is assuming
 					// that ALL identifiers
@@ -1114,10 +1128,11 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     ({IDENTIFIER}".")*{IDENTIFIER}/"("  {
 				 generateClassOrGlobalLink(*g_code,yytext);
       			       }
-    {IDENTIFIER}               {
-  		                 codify(yytext);
-				 //generateClassOrGlobalLink(*g_code,yytext);
+    ({IDENTIFIER}".")+{IDENTIFIER} {
+				 generateClassOrGlobalLink(*g_code,yytext,TRUE);
 			       }
+    {IDENTIFIER}               { codify(yytext); }
+		   	
 }
 
 
@@ -1127,6 +1142,12 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
     {BB}                               {
                                          codify(yytext);
                                        }
+    "pass"			       {
+                                          startFontClass("keyword");
+					  codifyLines(yytext);
+		                          endFontClass();
+					  BEGIN(Body);
+      				       }
     {KEYWORD}                          {
                                           startFontClass("keyword");
 					  codifyLines(yytext);

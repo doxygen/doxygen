@@ -237,6 +237,8 @@ class MemberDef : public Definition
 
     ClassDef *category() const;
 
+    QCString displayName() const { return Definition::name(); }
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------

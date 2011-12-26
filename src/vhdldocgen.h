@@ -279,6 +279,8 @@ static bool isMisc(const MemberDef *mdef)
     static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
     static void writeCodeFragment( MemberDef *mdef,OutputList& ol);
+    static void writeCodeFragment (OutputList& ol,int start, QCString & codeFragment,const MemberDef* mdef);
+
     static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
     static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
