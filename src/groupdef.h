@@ -49,9 +49,10 @@ class GroupDef : public Definition
     DefType definitionType() const { return TypeGroup; }
     QCString getOutputFileBase() const;
     QCString anchor() const { return QCString(); }
+    QCString displayName() const { return hasGroupTitle() ? title : Definition::name(); }
     const char *groupTitle() const { return title; }
     void setGroupTitle( const char *newtitle );
-    bool hasGroupTitle( ) { return titleSet; }
+    bool hasGroupTitle( ) const { return titleSet; }
     void addFile(const FileDef *def); 
     bool addClass(const ClassDef *def);
     bool addNamespace(const NamespaceDef *def);
@@ -87,7 +88,7 @@ class GroupDef : public Definition
 
     bool visited;    // number of times accessed for output - KPW
 
-    friend void writeGroupTreeNode(OutputList&, GroupDef*, int, FTVHelp*);      
+    //friend void writeGroupTreeNode(OutputList&, GroupDef*, int, FTVHelp*);      
                     // make accessible for writing tree view of group in index.cpp - KPW
 
     void setGroupScope(Definition *d) { groupScope = d; }
@@ -105,7 +106,9 @@ class GroupDef : public Definition
     GroupList *     getSubGroups() const    { return groupList; }
     PageSDict *     getPages() const        { return pageDict; }
     DirList *       getDirs() const         { return dirList; }
+    PageSDict *     getExamples() const     { return exampleDict; }
     //MemberList*     getMembers() const      { return allMemberList; }
+    void sortSubGroups();
     
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);

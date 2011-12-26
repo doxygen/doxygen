@@ -83,8 +83,8 @@ static bool mustBeOutsideParagraph(DocNode *n)
           /* \internal */
         case DocNode::Kind_Internal:
           /* <div> */
-        case DocNode::Kind_Verbatim:
         case DocNode::Kind_Include:
+        case DocNode::Kind_Verbatim:
         case DocNode::Kind_Image:
         case DocNode::Kind_SecRefList:
           /* <hr> */
@@ -106,8 +106,6 @@ static bool mustBeOutsideParagraph(DocNode *n)
   }
   return FALSE;
 }
-
-
 
 static QString htmlAttribsToString(const HtmlAttribList &attribs)
 {
@@ -849,16 +847,6 @@ void HtmlDocVisitor::visitPre(DocPara *p)
 
 void HtmlDocVisitor::visitPost(DocPara *p)
 {
-//  if (m_hide) return;
-//  if (!p->isLast() &&            // omit <p> for last paragraph
-//      !(p->parent() &&           // and for parameter sections
-//        p->parent()->kind()==DocNode::Kind_ParamSect
-//       ) 
-//     ) 
-//  {
-//    m_t << "<p>\n";
-//  }
-
   bool needsTag = FALSE;
   if (p && p->parent()) 
   {
@@ -1209,11 +1197,7 @@ void HtmlDocVisitor::visitPost(DocInternal *)
 void HtmlDocVisitor::visitPre(DocHRef *href)
 {
   if (m_hide) return;
-  QCString url = href->url();
-  if (url.left(5)!="http:" && url.left(6)!="https:" && url.left(4)!="ftp:")
-  {
-    url.prepend(href->relPath());
-  }
+  QCString url = correctURL(href->url(),href->relPath());
   m_t << "<a href=\"" << convertToXML(url)  << "\""
       << htmlAttribsToString(href->attribs()) << ">";
 }
@@ -1261,11 +1245,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     else
     {
-      if (url.left(5)!="http:" && url.left(6)!="https:" && url.left(4)!="ftp:")
-      {
-        url.prepend(img->relPath());
-      }
-      m_t << "<img src=\"" << url << "\" " 
+      m_t << "<img src=\"" << correctURL(url,img->relPath()) << "\" " 
           << htmlAttribsToString(img->attribs())
           << "/>" << endl;
     }

@@ -113,7 +113,7 @@ or
 
 </ol>
 
-For the brief description there are also several posibilities:
+For the brief description there are also several possibilities:
 <ol>
 <li>One could use the \ref cmdbrief "\\brief" command with one of the 
 above comment blocks. This command ends at the end of a paragraph, 

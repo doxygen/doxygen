@@ -120,10 +120,10 @@ class HtmlGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(int);
+    void startMemberItem(const char *anchor,int);
     void endMemberItem();
     void startMemberTemplateParams();
-    void endMemberTemplateParams();
+    void endMemberTemplateParams(const char *anchor);
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -133,7 +133,7 @@ class HtmlGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void insertMemberAlign(bool);
-    void startMemberDescription();
+    void startMemberDescription(const char *anchor);
     void endMemberDescription();
 
     void writeRuler()    { t << "<hr/>"; }
@@ -197,7 +197,7 @@ class HtmlGenerator : public OutputGenerator
     void endQuickIndices();
     void writeSplitBar(const char *name);
     void writeLogo();
-    void writeQuickLinks(bool compact,HighlightedItem hli);
+    void writeQuickLinks(bool compact,HighlightedItem hli,const char *file);
     void startContents();
     void endContents();
     void writeNonBreakableSpace(int);

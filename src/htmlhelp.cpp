@@ -60,7 +60,7 @@ class IndexFieldSDict : public SDict<IndexField>
 class HtmlHelpIndex
 {
   public:
-    HtmlHelpIndex();
+    HtmlHelpIndex(HtmlHelp *help);
    ~HtmlHelpIndex();
     void addItem(const char *first,const char *second, 
                  const char *url, const char *anchor,
@@ -68,10 +68,11 @@ class HtmlHelpIndex
     void writeFields(FTextStream &t);
   private:
     IndexFieldSDict *dict;   
+    HtmlHelp *m_help;
 };
 
 /*! Constructs a new HtmlHelp index */
-HtmlHelpIndex::HtmlHelpIndex()
+HtmlHelpIndex::HtmlHelpIndex(HtmlHelp *help) : m_help(help)
 {
   dict = new IndexFieldSDict;
   dict->setAutoDelete(TRUE);
@@ -198,7 +199,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
         t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
         if (!f->anchor.isEmpty() && f->reversed) t << "#" << f->anchor;  
         t << "\">";
-        t << "<param name=\"Name\" value=\"" << level1 << "\">"
+        t << "<param name=\"Name\" value=\"" << m_help->recode(level1) << "\">"
            "</OBJECT>\n";
       }
       else
@@ -209,14 +210,14 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
           t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
           if (!f->anchor.isEmpty() && f->reversed) t << "#" << f->anchor;  
           t << "\">";
-          t << "<param name=\"Name\" value=\"" << level1 << "\">"
+          t << "<param name=\"Name\" value=\"" << m_help->recode(level1) << "\">"
                "</OBJECT>\n";
         }
         else
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"See Also\" value=\"" << level1 << "\">";
-          t << "<param name=\"Name\" value=\"" << level1 << "\">"
+          t << "<param name=\"See Also\" value=\"" << m_help->recode(level1) << "\">";
+          t << "<param name=\"Name\" value=\"" << m_help->recode(level1) << "\">"
                "</OBJECT>\n";
         }
       }
@@ -237,7 +238,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
       t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
       if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
       t << "\">";
-      t << "<param name=\"Name\" value=\"" << level2 << "\">"
+      t << "<param name=\"Name\" value=\"" << m_help->recode(level2) << "\">"
          "</OBJECT>\n";
     }
     lastLevel1 = level1.copy();
@@ -258,7 +259,7 @@ HtmlHelp::HtmlHelp() : indexFileDict(1009)
   /* initial depth */
   dc = 0;
   cf = kf = 0;
-  index = new HtmlHelpIndex;
+  index = new HtmlHelpIndex(this);
   m_fromUtf8 = (void *)(-1);
 }
 

@@ -1745,7 +1745,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       Doxygen::tagFile << "    <class kind=\"" << compoundTypeString() 
         << "\">" << convertToXML(name()) << "</class>" << endl;
     }
-    ol.startMemberItem(FALSE);
+    ol.startMemberItem(anchor(),FALSE);
     QCString ctype = compoundTypeString();
     QCString cname;
     if (localNames)
@@ -1792,7 +1792,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
     // add the brief description if available
     if (!briefDescription().isEmpty())
     {
-      ol.startMemberDescription();
+      ol.startMemberDescription(anchor());
       ol.parseDoc(briefFile(),briefLine(),this,0,
           briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
       if (isLinkableInProject())
@@ -2001,7 +2001,7 @@ void ClassDef::writeMemberPages(OutputList &ol)
   {
     if (ml->listType()&MemberList::detailedLists)
     {
-      ml->writeDocumentationPage(ol,name(),this);
+      ml->writeDocumentationPage(ol,displayName(),this);
     }
   }
 
@@ -3737,7 +3737,7 @@ void ClassDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,c
 {
   //printf("%s: ClassDef::writeMemberDocumentation()\n",name().data());
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,name(),this,title,FALSE,showInline);
+  if (ml) ml->writeDocumentation(ol,displayName(),this,title,FALSE,showInline);
 }
 
 void ClassDef::writeSimpleMemberDocumentation(OutputList &ol,MemberList::ListType lt)

@@ -2,6 +2,7 @@
 #include <ctype.h>
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #undef UNICODE
+#define _WIN32_DCOM
 #include <windows.h>
 #else
 #include <unistd.h>

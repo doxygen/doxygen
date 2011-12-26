@@ -116,6 +116,9 @@ class Definition : public DefinitionIntf, public LockableObj
     /*! Returns the name of the definition */
     const QCString& name() const { return m_name; }
 
+    /*! Returns the name of the definition as it appears in the output */
+    virtual QCString displayName() const = 0;
+
     /*! Returns the local name without any scope qualifiers. */
     QCString localName() const;
 
@@ -323,9 +326,9 @@ class Definition : public DefinitionIntf, public LockableObj
      *  the Doxygen::tagFile stream.
      */
     void writeDocAnchorsToTagFile();
+    void setLocalName(const QCString name);
 
   protected:
-    void setLocalName(const QCString name);
 
     virtual void flushToDisk() const;
     virtual void loadFromDisk() const;

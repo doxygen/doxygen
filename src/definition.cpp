@@ -37,6 +37,7 @@
 #include "parserintf.h"
 #include "marshal.h"
 #include "debug.h"
+#include "vhdldocgen.h"
 
 #define START_MARKER 0x4445465B // DEF[
 #define END_MARKER   0x4445465D // DEF]
@@ -864,6 +865,14 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       //printf("Read:\n`%s'\n\n",codeFragment.data());
       MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
+
+      // vhdl  parser can' t start at an arbitrary point in the source code
+      if(this->getLanguage()==SrcLangExt_VHDL)
+      {
+        if (thisMd) VhdlDocGen::writeCodeFragment(ol,actualStart,codeFragment,thisMd);
+        return;
+      }
+
       ol.startCodeFragment();
       pIntf->parseCode(ol,               // codeOutIntf
                        scopeName,        // scope
@@ -1112,12 +1121,12 @@ void Definition::addInnerCompound(Definition *)
 
 QCString Definition::qualifiedName() const
 {
-  static int count=0;
-  count++;
+  //static int count=0;
+  //count++;
   makeResident();
   if (!m_impl->qualifiedName.isEmpty()) 
   {
-    count--;
+    //count--;
     return m_impl->qualifiedName;
   }
   
@@ -1126,12 +1135,12 @@ QCString Definition::qualifiedName() const
   {
     if (m_impl->localName=="<globalScope>") 
     {
-      count--;
+      //count--;
       return "";
     }
     else 
     {
-      count--;
+      //count--;
       return m_impl->localName; 
     }
   }
@@ -1142,10 +1151,12 @@ QCString Definition::qualifiedName() const
   }
   else
   {
-    m_impl->qualifiedName = m_impl->outerScope->qualifiedName()+"::"+m_impl->localName;
+    m_impl->qualifiedName = m_impl->outerScope->qualifiedName()+
+           getLanguageSpecificSeparator(getLanguage())+
+           m_impl->localName;
   }
   //printf("end %s::qualifiedName()=%s\n",name().data(),m_impl->qualifiedName.data());
-  count--;
+  //count--;
   return m_impl->qualifiedName;
 };
 

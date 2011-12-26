@@ -5771,6 +5771,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_P:
       // ignore </p> tag
+      retval=TK_NEWPARA;
       break;
     case HTML_DL:
       retval=RetVal_EndDesc;

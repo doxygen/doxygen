@@ -591,7 +591,7 @@ void NamespaceDef::writeMemberPages(OutputList &ol)
   {
     if (ml->listType()&MemberList::documentationLists)
     {
-      ml->writeDocumentationPage(ol,name(),this);
+      ml->writeDocumentationPage(ol,displayName(),this);
     }
   }
   ol.popGeneratorState();
@@ -836,7 +836,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
     if (nd->isLinkable())
     {
       SrcLangExt lang = nd->getLanguage();
-      ol.startMemberItem(0);
+      ol.startMemberItem(nd->getOutputFileBase(),0);
       if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
       {
         ol.docify("package ");
@@ -867,8 +867,8 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
       ol.endMemberItem();
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startMemberDescription();
-        ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE);
+        ol.startMemberDescription(nd->getOutputFileBase());
+        ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE,0,TRUE);
         ol.endMemberDescription();
       }
     }
@@ -950,7 +950,7 @@ void NamespaceDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType l
 void NamespaceDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDocumentation(ol,name(),this,title);
+  if (ml) ml->writeDocumentation(ol,displayName(),this,title);
 }
 
 

@@ -178,6 +178,7 @@ enum HighlightedItem
   HLI_Pages,
   HLI_Examples,
   HLI_Search,
+  HLI_UserGroup,
 
   HLI_ClassVisible,
   HLI_NamespaceVisible,

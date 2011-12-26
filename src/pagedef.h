@@ -52,6 +52,7 @@ class PageDef : public Definition
     bool hasParentPage() const;
     void setPageScope(Definition *d){ m_pageScope = d; }
     Definition *getPageScope() const { return m_pageScope; }
+    QCString displayName() const { return !m_title.isEmpty() ? m_title : Definition::name(); }
 
   private:
     void setNestingLevel(int l);

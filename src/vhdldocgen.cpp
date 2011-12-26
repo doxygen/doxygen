@@ -1540,7 +1540,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
-  ol.startMemberItem( isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
+  ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = mdef->isDetailedSectionLinkable();
@@ -1772,7 +1772,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   ol.endMemberItem();
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
-    ol.startMemberDescription();
+    ol.startMemberDescription(mdef->anchor());
     ol.parseDoc(mdef->briefFile(),mdef->briefLine(),
         mdef->getOuterScope()?mdef->getOuterScope():d,
         mdef,mdef->briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
@@ -2159,34 +2159,26 @@ void VhdlDocGen::writeCodeFragment( MemberDef *mdef,OutputList& ol)
 
 void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
 {
-  //  Definition d=(Definition)mdef;
-  QCString fdd=mdef->getDefFileExtension();
-  QCString scope=mdef->getScopeString();
   QCString codeFragment=mdef->documentation();
-  FileDef *fd=mdef->getFileDef();
   int start=mdef->getStartBodyLine();
-  int end=mdef->getEndBodyLine();
   QStringList qsl=QStringList::split("\n",codeFragment);
-
-  ParserInterface *pIntf = Doxygen::parserManager->getParser(fdd.data());
-  pIntf->resetCodeParserState();
-
-  ol.startParagraph();
   ol.startCodeFragment();
-  pIntf->parseCode(ol,               // codeOutIntf
-      scope,            // scope
-      codeFragment,     // input
-      FALSE,            // isExample
-      0,                // exampleName
-      fd,               // fileDef
-      start,            // startLine
-      end,              // endLine
-      TRUE,             // inlineFragment
-      mdef,             // memberDef
-      FALSE             // show line numbers
-      );
+  int len = qsl.count();  
+  QCString lineNumber;
+  int j;
+  for (j=0;j<len;j++)
+  {
+    lineNumber.sprintf("%05d",start++);
+    lineNumber+=" ";
+    ol.startBold();
+    ol.docify(lineNumber.data());
+    ol.endBold();
+    ol.insertMemberAlign();
+    QCString q=(QCString)qsl[j];
+    VhdlDocGen::writeFormatString(q,ol,mdef);
+    ol.docify("\n"); 
+  }
   ol.endCodeFragment();
-  ol.endParagraph();
 
   mdef->writeSourceDef(ol,cname);
   mdef->writeSourceRefs(ol,cname);
@@ -2219,8 +2211,8 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
 {
   QCString ucFile(input);
   int lineNo=0;
-  QCString  newLine="\n";
-  QCString comment("##");
+  QCString newLine="\n";
+  QCString comment("#!");
   QCString brief;
 
   while(!ucFile.isEmpty())
@@ -2230,14 +2222,16 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
     lineNo++;
     QCString temp=ucFile.left(i);
     temp=temp.stripWhiteSpace();
+    bool bb=temp.stripPrefix("//");
+
     if (!temp.isEmpty())
     {
-      if (temp.stripPrefix("##") || temp.stripPrefix("//") )
+      if (temp.stripPrefix(comment) )
       {
         brief+=temp;
         brief.append("\\n");
       }
-      else if (!temp.stripPrefix("#"))
+      else if (!temp.stripPrefix("#") && !bb)
       {	      
         if (altera)
         {
@@ -2372,7 +2366,7 @@ bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
   LayoutNavEntry *kk = lne->parent();//   find(LayoutNavEntry::Files);
   // LayoutNavEntry *kks = kk->parent();//   find(LayoutNavEntry::Files);
   QCString file;
-  QCString co("Constraints");
+  QCString co("Constraint File");
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -2381,7 +2375,7 @@ bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
       file = convertNameToFile(fd->name().data(),FALSE,FALSE);
       LayoutNavEntry *ucf=new LayoutNavEntry(lne,LayoutNavEntry::MainPage,TRUE,file,co,"");  
       kk->addChild(ucf); 
-      //   break;
+      break;
     }
     fn=Doxygen::inputNameList->next();
   }
@@ -2600,18 +2594,11 @@ void assignConfiguration(ConfNode* rootNode,QCString label)
  */
 void VhdlDocGen::computeVhdlComponentRelations()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cl;
-  for ( cli.toFirst() ; (cl=cli.current()) ; ++cli)
-  {
-    // @MARTIN: THE FOLLOWING IS DONE FOR ALL LANGUAGES, WHICH IS WRONG!!!
-    cl->setLanguage(SrcLangExt_VHDL);
-  }
-
+ 
   QCString entity,inst,arch,vhd;
 
   QList<ConfNode> confList =  getVhdlConfiguration();
-  for(uint iter=0;iter<confList.count(); iter++)
+  for (uint iter=0;iter<confList.count(); iter++)
   {
     ConfNode* conf= (ConfNode *)confList.at(iter);
     assignConfiguration(conf,"");
@@ -2635,11 +2622,10 @@ void VhdlDocGen::computeVhdlComponentRelations()
     {
       entity=cur->type;
     }
-    ClassDef *classEntity=Doxygen::classSDict->find(entity.data());
+    ClassDef *classEntity=Doxygen::classSDict->find(entity);
     inst=VhdlDocGen::getIndexWord(cur->args.data(),0);  
-    ClassDef *cd=Doxygen::classSDict->find(inst.data());
-    ClassDef *ar=Doxygen::classSDict->find(cur->args.data());
-
+    ClassDef *cd=Doxygen::classSDict->find(inst);
+    ClassDef *ar=Doxygen::classSDict->find(cur->args);
 
     if (cd==0 || classEntity==0 ) 
       continue;
@@ -2728,5 +2714,27 @@ void VhdlDocGen::writeRecUnitDocu(
 
     first=FALSE;
   }
-}//
+}//#
+
+void VhdlDocGen::writeCodeFragment(OutputList& ol,int start, QCString & codeFragment,const MemberDef* mdef)
+{
+  QStringList qsl=QStringList::split("\n",codeFragment);
+  ol.startCodeFragment();
+  int len = qsl.count();  
+  QCString lineNumber;
+  int j;
+  for (j=0;j<len;j++)
+  {
+    lineNumber.sprintf("%05d",start++);
+    lineNumber+=" ";
+    ol.startBold();
+    ol.docify(lineNumber.data());
+    ol.endBold();
+    ol.insertMemberAlign();
+    QCString q=(QCString)qsl[j];
+    VhdlDocGen::writeFormatString(q,ol,mdef);
+    ol.docify("\n"); 
+  }
+  ol.endCodeFragment();
+}
 

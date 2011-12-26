@@ -3651,6 +3651,7 @@ static void findMembersWithSpecificName(MemberName *mn,
                                         bool checkStatics,
                                         FileDef *currentFile,
                                         bool checkCV,
+                                        const char *forceTagFile,
                                         QList<MemberDef> &members)
 {
   //printf("  Function with global scope name `%s' args=`%s'\n",
@@ -3661,16 +3662,15 @@ static void findMembersWithSpecificName(MemberName *mn,
   {
     FileDef  *fd=md->getFileDef();
     GroupDef *gd=md->getGroupDef();
-    //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p current=%p\n",
-    //    md->name().data(),args,fd,gd,currentFile);
+    //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p current=%p ref=%s\n",
+    //    md->name().data(),args,fd,gd,currentFile,md->getReference().data());
     if (
         ((gd && gd->isLinkable()) || (fd && fd->isLinkable()) || md->isReference()) && 
         md->getNamespaceDef()==0 && md->isLinkable() &&
         (!checkStatics || (!md->isStatic() && !md->isDefine()) || 
          currentFile==0 || fd==currentFile) // statics must appear in the same file
-       )
+       ) 
     {
-      //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
       bool match=TRUE;
       ArgumentList *argList=0;
       if (args && !md->isDefine() && strcmp(args,"()")!=0)
@@ -3684,7 +3684,7 @@ static void findMembersWithSpecificName(MemberName *mn,
             checkCV); 
         delete argList; argList=0;
       }
-      if (match) 
+      if (match && (forceTagFile==0 || md->getReference()==forceTagFile)) 
       {
         //printf("Found match!\n");
         members.append(md);
@@ -3721,7 +3721,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
     ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd,
     bool forceEmptyScope,
     FileDef *currentFile,
-    bool checkCV
+    bool checkCV,
+    const char *forceTagFile
     )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
@@ -4030,12 +4031,13 @@ bool getDefs(const QCString &scName,const QCString &memberName,
     {
       QList<MemberDef> members;
       // search for matches with strict static checking
-      findMembersWithSpecificName(mn,args,TRUE,currentFile,checkCV,members);
+      findMembersWithSpecificName(mn,args,TRUE,currentFile,checkCV,forceTagFile,members);
       if (members.count()==0) // nothing found
       {
         // search again without strict static checking
-        findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,members);
+        findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,forceTagFile,members);
       }
+      //printf("found %d members\n",members.count());
       if (members.count()!=1 && args && !strcmp(args,"()"))
       {
         // no exact match found, but if args="()" an arbitrary 
@@ -4645,7 +4647,12 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     if (fn->count()==1)
     {
       FileDef *fd = fn->getFirst();
-      if (path.isEmpty() || fd->getPath().right(path.length())==path)
+#if defined(_WIN32) || defined(__MACOSX__) // Windows or MacOSX
+      bool isSamePath = fd->getPath().right(path.length()).lower()==path.lower();
+#else // Unix
+      bool isSamePath = fd->getPath().right(path.length())==path;
+#endif
+      if (path.isEmpty() || isSamePath)
       {
         cachedResult->fileDef = fd;
         g_findFileDefCache.insert(key,cachedResult);
@@ -5760,7 +5767,7 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     if (getClass(result+fullName.mid(i,e-i))!=0)
     {
       result+=fullName.mid(i,e-i);
-      //printf("  2:result+=%s cd=%s\n",fullName.mid(i,e-i-1).data(),cd->name().data());
+      //printf("  2:result+=%s\n",fullName.mid(i,e-i-1).data());
     }
     else if (pLastScopeStripped)
     {
@@ -6068,7 +6075,7 @@ void filterLatexString(FTextStream &t,const char *str,
         default:   
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing && 
-                       ((c>='A' && c<='Z' && pc!=' ') || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0') || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\-";
@@ -7215,5 +7222,20 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang)
   {
     return "::";
   }
+}
+
+/** Corrects URL \a url according to the relative path \a relPath.
+ *  Returns the corrected URL. For absolute URLs no correction will be done.
+ */
+QCString correctURL(const QCString &url,const QCString &relPath)
+{
+  QCString result = url;
+  if (!relPath.isEmpty() && 
+      url.left(5)!="http:" && url.left(6)!="https:" && 
+      url.left(4)!="ftp:" && url.left(5)!="file:")
+  {
+    result.prepend(relPath);
+  }
+  return result;
 }
 

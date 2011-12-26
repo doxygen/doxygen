@@ -578,6 +578,26 @@ void FTVHelp::addContentsItem(bool isDir,
   
 }
 
+static QCString node2URL(FTVNode *n)
+{
+  QCString url = n->file;
+  if (!url.isEmpty() && url.at(0)=='!')  // relative URL
+  {
+    // remove leading !
+    url = url.mid(1);
+  }
+  else if (!url.isEmpty() && url.at(0)=='^') // absolute URL
+  {
+    // skip, keep ^ in the output
+  }
+  else // local file (with optional anchor)
+  {
+    url+=Doxygen::htmlFileExtension;
+    if (!n->anchor.isEmpty()) url+="#"+n->anchor;
+  }
+  return url;
+}
+
 
 void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
 {
@@ -645,8 +665,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
     }
     t << "href=\"";
     t << externalRef("",n->ref,TRUE);
-    t << n->file << Doxygen::htmlFileExtension;
-    if (!n->anchor.isEmpty()) t << "#" << n->anchor;
+    t << node2URL(n);
     if (m_topLevelIndex)
       t << "\" target=\"basefrm\">";
     else
@@ -672,8 +691,7 @@ void FTVHelp::generateJSLink(FTextStream &t,FTVNode *n)
     // TODO: use m_topLevelIndex
     t << "\"" << convertToJSString(n->name) << "\", \"";
     t << externalRef("",n->ref,TRUE);
-    t << n->file << Doxygen::htmlFileExtension;
-    if (!n->anchor.isEmpty()) t << "#" << n->anchor;
+    t << node2URL(n);
     t << "\", ";
   }
 }
@@ -756,9 +774,7 @@ bool FTVHelp::generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNo
     //if (!n->file.isEmpty() && !childOfHierarchy(n->parent))
     if (n->addToNavIndex)
     {
-      tidx << "," << endl << "\"" << n->file << Doxygen::htmlFileExtension;
-      if (!n->anchor.isEmpty()) tidx << "#" << n->anchor;
-      tidx << "\":[";
+      tidx << "," << endl << "\"" << node2URL(n) << "\":[";
       writePathToNode(tidx,n,n);
       tidx << "]";
     }
@@ -847,9 +863,11 @@ void FTVHelp::generateTreeViewScripts()
 
       bool first=TRUE;
       generateJSTree(tidx,t,m_indentNodes[0],1,first);
-      if (first) t << "]";
 
-      t << endl << "  ] ]" << endl;
+      if (first) 
+        t << "]" << endl;
+      else 
+        t << endl << "  ] ]" << endl;
       t << "];" << endl;
       t << endl << navtree_script;
 

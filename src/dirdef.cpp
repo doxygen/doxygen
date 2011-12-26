@@ -213,7 +213,7 @@ void DirDef::writeSubDirList(OutputList &ol)
     DirDef *dd=m_subdirs.first();
     while (dd)
     {
-      ol.startMemberItem(0);
+      ol.startMemberItem(dd->getOutputFileBase(),0);
       ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
@@ -224,7 +224,7 @@ void DirDef::writeSubDirList(OutputList &ol)
       }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startMemberDescription();
+        ol.startMemberDescription(dd->getOutputFileBase());
         ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
             FALSE, // indexWords
             FALSE, // isExample
@@ -253,7 +253,7 @@ void DirDef::writeFileList(OutputList &ol)
     FileDef *fd=m_fileList->first();
     while (fd)
     {
-      ol.startMemberItem(0);
+      ol.startMemberItem(fd->getOutputFileBase(),0);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       if (fd->isLinkable())
@@ -285,7 +285,7 @@ void DirDef::writeFileList(OutputList &ol)
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
-        ol.startMemberDescription();
+        ol.startMemberDescription(fd->getOutputFileBase());
         ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
             FALSE, // indexWords
             FALSE, // isExample

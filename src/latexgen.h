@@ -113,10 +113,10 @@ class LatexGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(int);
+    void startMemberItem(const char *,int);
     void endMemberItem();
     void startMemberTemplateParams();
-    void endMemberTemplateParams();
+    void endMemberTemplateParams(const char *);
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -162,7 +162,7 @@ class LatexGenerator : public OutputGenerator
     void endCenter()        { t << "\\end{center}" << endl; }
     void startSmall()       { t << "\\footnotesize "; }
     void endSmall()         { t << "\\normalsize "; }
-    void startMemberDescription();
+    void startMemberDescription(const char *);
     void endMemberDescription();
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
@@ -186,7 +186,7 @@ class LatexGenerator : public OutputGenerator
     void endQuickIndices() {}
     void writeSplitBar(const char *) {}
     void writeLogo() {}
-    void writeQuickLinks(bool,HighlightedItem) {}
+    void writeQuickLinks(bool,HighlightedItem,const char*) {}
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int);

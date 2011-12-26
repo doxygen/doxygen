@@ -85,6 +85,7 @@ class HtmlHelp  : public IndexIntf
     void addStyleSheetFile(const char *) {}
 
   private:
+    friend class HtmlHelpIndex;
     void createProjectFile();
 
     QFile *cf,*kf; 

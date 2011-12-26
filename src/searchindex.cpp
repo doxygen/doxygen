@@ -374,10 +374,13 @@ static void addMemberToSearchIndex(
   ClassDef *cd=0;
   NamespaceDef *nd=0;
   FileDef *fd=0;
+  GroupDef *gd=0;
   if (isLinkable             && 
-      (cd=md->getClassDef()) && 
-      cd->isLinkable()       &&
-      cd->templateMaster()==0)
+      (
+       ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==0) ||
+       ((gd=md->getGroupDef()) && gd->isLinkable())
+      )
+     )
   {
     QCString n = md->name();
     uchar charCode = (uchar)n.at(0);
