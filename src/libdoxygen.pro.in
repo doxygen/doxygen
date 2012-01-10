@@ -64,7 +64,6 @@ HEADERS      =	bufstr.h \
 		image.h \
 		index.h \
                 index_xsd.h \
-		instdox.h \
 		jquery_js.h \
 		jquery_ui_js.h \
 		sizzle_js.h \
@@ -78,6 +77,7 @@ HEADERS      =	bufstr.h \
 		logos.h \
 		mandocvisitor.h \
 		mangen.h \
+		markdown.h \
                 marshal.h \
 		memberdef.h \
 		membergroup.h \
@@ -208,7 +208,6 @@ SOURCES      =	ce_lex.cpp \
 		indexlog.cpp \
 		image.cpp \
 		index.cpp \
-		instdox.cpp \
 		language.cpp \
                 latexdocvisitor.cpp \
 		latexgen.cpp \
@@ -217,6 +216,7 @@ SOURCES      =	ce_lex.cpp \
 		logos.cpp \
 		mandocvisitor.cpp \
 		mangen.cpp \
+		markdown.cpp \
                 marshal.cpp \
 		memberdef.cpp \
 		membergroup.cpp \

@@ -375,6 +375,8 @@ public:
   void visitPost(DocCopy *);
   void visitPre(DocText *);
   void visitPost(DocText *);
+  void visitPre(DocHtmlBlockQuote *);
+  void visitPost(DocHtmlBlockQuote *);
 
 private:
 
@@ -1298,6 +1300,18 @@ void PerlModDocVisitor::visitPre(DocText *)
 
 void PerlModDocVisitor::visitPost(DocText *)
 {
+}
+
+void PerlModDocVisitor::visitPre(DocHtmlBlockQuote *)
+{
+  openItem("blockquote");
+  openSubBlock("content");
+}
+
+void PerlModDocVisitor::visitPost(DocHtmlBlockQuote *)
+{
+  closeSubBlock();
+  closeItem();
 }
 
 static void addTemplateArgumentList(ArgumentList *al,PerlModOutput &output,const char *)

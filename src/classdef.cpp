@@ -1493,30 +1493,8 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ClassDef::writeTagFileMarker(OutputList &ol)
+void ClassDef::writeTagFileMarker()
 {
-  // write markers for tag file processing to the output
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-  ol.writeString("<!-- doxytag: class=\"");
-  ol.docify(name());
-  ol.writeString("\" -->");
-  if (m_impl->inherits && m_impl->inherits->count()>0)
-  {
-    BaseClassListIterator bli(*m_impl->inherits);
-    ol.writeString("<!-- doxytag: inherits=\"");
-    BaseClassDef *bcd=0;
-    bool first=TRUE;
-    for (bli.toFirst();(bcd=bli.current());++bli)
-    {
-      if (!first) ol.writeString(",");
-      ol.docify(bcd->classDef->name());
-      first=FALSE;
-    }
-    ol.writeString("\" -->");
-  }
-  ol.popGeneratorState();
-
   // write section to the tag file
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
@@ -1657,7 +1635,7 @@ void ClassDef::writeInlineDocumentation(OutputList &ol)
   ol.popGeneratorState();
 
   // part 4: write tag file information
-  writeTagFileMarker(ol);
+  writeTagFileMarker();
 }
 
 void ClassDef::writeMoreLink(OutputList &ol,const QCString &anchor)
@@ -1812,7 +1790,7 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTit
   pageType += compoundTypeString();
   toupper(pageType.at(1));
 
-  writeTagFileMarker(ol);
+  writeTagFileMarker();
 
   Doxygen::indexList.addIndexItem(this,0);
 
@@ -2100,7 +2078,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   {
     if (getOuterScope()!=Doxygen::globalScope)
     {
-      writeNavigationPath(ol,FALSE);
+      writeNavigationPath(ol);
     }
     ol.endQuickIndices();
   }

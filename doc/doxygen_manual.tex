@@ -12,30 +12,55 @@
 % Documents produced by Doxygen are derivative works derived from the
 % input used in their production; they are not affected by this license.
 
-\documentclass[a4paper]{report}
+\documentclass[a4paper]{book}
 \usepackage{makeidx}
-\usepackage{fancyhdr}
-\usepackage{float}
-\usepackage{longtable}
+\usepackage{natbib}
 \usepackage{graphicx}
-\usepackage{epsf}
-\usepackage{doxygen}
 \usepackage{multicol}
-\usepackage{times}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{ifthen}
+\usepackage[table]{xcolor}
+\usepackage{textcomp}
 \usepackage{alltt}
-\usepackage{tocloft}
+\usepackage{ifpdf}
+\ifpdf
 \usepackage[pdftex,
             pagebackref=true,
             colorlinks=true,
-            linkcolor=blue
+            linkcolor=blue,
+            unicode
            ]{hyperref}
+\else
+\usepackage[ps2pdf,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue,
+            unicode
+           ]{hyperref}
+\usepackage{pspicture}
+\fi
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage{sectsty}
+\usepackage[titles]{tocloft}
+\usepackage{doxygen}
+\lstset{language=C++,inputencoding=utf8,basicstyle=\footnotesize,breaklines=true,breakatwhitespace=true,tabsize=8,numbers=left }
 \makeindex
-\setcounter{tocdepth}{1}
+\setcounter{tocdepth}{3}
 \renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\familydefault}{\sfdefault}
 \renewcommand{\cftsecindent}{0 em}
 \renewcommand{\cftsecnumwidth}{3.2 em}
 \renewcommand{\cftsubsecindent}{3.2 em}
 \newcommand{\thisyear}{\the\year}
+\hfuzz=15pt
+\setlength{\emergencystretch}{15pt}
+\hbadness=750
+\tolerance=750
 \begin{document}
 \begin{titlepage}
 \includegraphics[width=\textwidth]{doxygen_logo}
@@ -70,9 +95,7 @@ Written by Dimitri van Heesch\\[2ex]
 \part{Reference Manual}
 \chapter{Features}\label{features}\hypertarget{features}{}\input{features}
 \chapter{Doxygen usage}\label{doxygen_usage}\hypertarget{doxygen_usage}{}\input{doxygen_usage}
-\chapter{Doxytag usage}\label{doxytag_usage}\hypertarget{doxytag_usage}{}\input{doxytag_usage}
 \chapter{Doxywizard usage}\label{doxywizard_usage}\hypertarget{doxywizard_usage}{}\input{doxywizard_usage}
-\chapter{Installdox usage}\label{installdox_usage}\hypertarget{installdox_usage}{}\input{installdox_usage}
 \chapter{Configuration}\label{config}\hypertarget{config}{}\input{config}
 \chapter{Special Commands}\label{commands}\hypertarget{commands}{}\input{commands}
 \chapter{HTML commands}\label{htmlcmds}\hypertarget{htmlcmds}{}\input{htmlcmds}

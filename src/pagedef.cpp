@@ -98,7 +98,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
     {
-      getOuterScope()->writeNavigationPath(ol,FALSE);
+      getOuterScope()->writeNavigationPath(ol);
     }
     ol.endQuickIndices();
   }
@@ -183,6 +183,13 @@ void PageDef::writeDocumentation(OutputList &ol)
 
 void PageDef::writePageDocumentation(OutputList &ol)
 {
+
+  bool markdownEnabled = Doxygen::markdownSupport;
+  if (getLanguage()==SrcLangExt_Markdown)
+  {
+    Doxygen::markdownSupport = TRUE;
+  }
+
   ol.startTextBlock();
   ol.parseDoc(
       docFile(),           // fileName
@@ -194,6 +201,8 @@ void PageDef::writePageDocumentation(OutputList &ol)
       FALSE                // not an example
       );
   ol.endTextBlock();
+
+  Doxygen::markdownSupport = markdownEnabled;
 
   if (hasSubPages())
   {

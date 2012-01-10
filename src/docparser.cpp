@@ -1605,6 +1605,9 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
   } while (retval==TK_NEWPARA);
   if (lastPar) lastPar->markLast();
 
+  //printf("internalValidateParsingDoc: %p: isFirst=%d isLast=%d\n",
+  //   lastPar,lastPar?lastPar->isFirst():-1,lastPar?lastPar->isLast():-1);
+
   return retval;
 }
 
@@ -1900,7 +1903,7 @@ void DocIncOperator::parse()
 
 //---------------------------------------------------------------------------
 
-void DocCopy::parse()
+void DocCopy::parse(QList<DocNode> &children)
 {
   QCString doc,brief;
   Definition *def;
@@ -1938,7 +1941,7 @@ void DocCopy::parse()
       if (m_copyBrief)
       {
         brief+='\n';
-        internalValidatingParseDoc(this,m_children,brief);
+        internalValidatingParseDoc(m_parent,children,brief);
 
         //printf("..2 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
         //    g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
@@ -1954,7 +1957,7 @@ void DocCopy::parse()
       if (m_copyDetails)
       {
         doc+='\n';
-        internalValidatingParseDoc(this,m_children,doc);
+        internalValidatingParseDoc(m_parent,children,doc);
 
         //printf("..3 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
         //    g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
@@ -3990,6 +3993,33 @@ endlist:
          RetVal_OK : retval;
 }
 
+//--------------------------------------------------------------------------
+
+int DocHtmlBlockQuote::parse()
+{
+  DBG(("DocHtmlBlockQuote::parse() start\n"));
+  int retval=0;
+  g_nodeStack.push(this);
+
+  // parse one or more paragraphs 
+  bool isFirst=TRUE;
+  DocPara *par=0;
+  do
+  {
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    m_children.append(par);
+    retval=par->parse();
+  }
+  while (retval==TK_NEWPARA);
+  if (par) par->markLast();
+
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  DBG(("DocHtmlBlockQuote::parse() end retval=%x\n",retval));
+  return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
+}
+
 //---------------------------------------------------------------------------
 
 int DocSimpleListItem::parse()
@@ -4026,11 +4056,37 @@ int DocAutoListItem::parse()
 {
   int retval = RetVal_OK;
   g_nodeStack.push(this);
-  retval=m_paragraph->parse();
-  m_paragraph->markFirst();
-  m_paragraph->markLast();
+  
+  //retval=m_paragraph->parse();
+  //m_paragraph->markFirst();
+  //m_paragraph->markLast();
+
+  // first parse any number of paragraphs
+  bool isFirst=TRUE;
+  DocPara *lastPar=0;
+  do
+  {
+    DocPara *par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    retval=par->parse();
+    if (!par->isEmpty()) 
+    {
+      m_children.append(par);
+      if (lastPar) lastPar->markLast(FALSE);
+      lastPar=par;
+    }
+    else
+    {
+      delete par;
+    }
+    // next paragraph should be more indented than the - marker to belong
+    // to this item
+  } while (retval==TK_NEWPARA && g_token->indent>m_indent);
+  if (lastPar) lastPar->markLast();
+
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
+  //printf("DocAutoListItem: retval=%d indent=%d\n",retval,g_token->indent);
   return retval;
 }
 
@@ -4044,7 +4100,7 @@ int DocAutoList::parse()
 	  // first item or sub list => create new list
   do
   {
-    DocAutoListItem *li = new DocAutoListItem(this,num++);
+    DocAutoListItem *li = new DocAutoListItem(this,m_indent,num++);
     m_children.append(li);
     retval=li->parse();
   } 
@@ -5179,8 +5235,9 @@ int DocPara::handleCommand(const QCString &cmdName)
         DocCopy *cpy = new DocCopy(this,g_token->name,
             cmdId==CMD_COPYDOC || cmdId==CMD_COPYBRIEF,
             cmdId==CMD_COPYDOC || cmdId==CMD_COPYDETAILS);
-        m_children.append(cpy);
-        cpy->parse();
+        //m_children.append(cpy);
+        cpy->parse(m_children);
+        delete cpy;
       }
       break;
     case CMD_INCLUDE:
@@ -5476,6 +5533,13 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         }
       }
       break;
+    case HTML_BLOCKQUOTE:
+      {
+        DocHtmlBlockQuote *block = new DocHtmlBlockQuote(this,tagHtmlAttribs);
+        m_children.append(block);
+        retval = block->parse();
+      }
+      break;
 
     case XML_SUMMARY:
     case XML_REMARKS:
@@ -5727,6 +5791,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
         // ignore </li> tags
       }
       break;
+    case HTML_BLOCKQUOTE:
+      retval=RetVal_EndBlockQuote;
+      break;
     //case HTML_PRE:
     //  if (!insidePRE(this))
     //  {
@@ -5770,7 +5837,6 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       //doctokenizerYYsetInsidePre(FALSE);
       break;
     case HTML_P:
-      // ignore </p> tag
       retval=TK_NEWPARA;
       break;
     case HTML_DL:
@@ -5909,6 +5975,7 @@ reparsetoken:
                k!=DocNode::Kind_SimpleList &&
                /*k!=DocNode::Kind_Verbatim &&*/
                k!=DocNode::Kind_HtmlHeader &&
+               k!=DocNode::Kind_HtmlBlockQuote &&
                k!=DocNode::Kind_ParamSect &&
                k!=DocNode::Kind_XRefItem
               )
@@ -5940,7 +6007,8 @@ reparsetoken:
           n=parent();
           while(n) 
           {
-            if(n->kind() == DocNode::Kind_AutoList) ++depth;
+            if (n->kind() == DocNode::Kind_AutoList && 
+                ((DocAutoList*)n)->isEnumList()) depth++;
             n=n->parent();
           }
 
@@ -5948,8 +6016,7 @@ reparsetoken:
           DocAutoList *al=0;
           do
           {
-            al = new DocAutoList(this,g_token->indent,g_token->isEnumList,
-                depth);
+            al = new DocAutoList(this,g_token->indent,g_token->isEnumList, depth);
             m_children.append(al);
             retval = al->parse();
           } while (retval==TK_LISTITEM &&         // new list
@@ -6640,7 +6707,6 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
     root->accept(v);
     delete v;
   }
-
 
   checkUndocumentedParams();
   detectNoDocumentedParams();

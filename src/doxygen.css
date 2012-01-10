@@ -293,6 +293,13 @@ span.vhdllogic {
 	color: #ff0000 
 }
 
+blockquote {
+        background-color: ##F8;
+        border-left: 2px solid ##AA;
+        margin: 0 24px 0 4px;
+        padding: 0 12px 0 16px;
+}
+
 /* @end */
 
 /*
@@ -616,6 +623,8 @@ address {
 
 table.doxtable {
 	border-collapse:collapse;
+        margin-top: 4px;
+        margin-bottom: 4px;
 }
 
 table.doxtable td, table.doxtable th {

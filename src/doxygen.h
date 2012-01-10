@@ -134,6 +134,7 @@ class Doxygen
     static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
+    static bool                      markdownSupport;
 };
 
 void initDoxygen();

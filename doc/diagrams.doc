@@ -115,7 +115,7 @@
        edge of the arrow is labeled with the variable(s) responsible for the
        relation.
        Class \c A uses class \c B, if class \c A has a member variable \c m 
-       of type C, where B is a subtype of C (e.g. C could be \c B, \c B*, <code>T\<B\>*</code> ). 
+       of type C, where B is a subtype of C (e.g. `C` could be `B`, `B*`, `T\<B\>*`). 
   </ul>
 
 

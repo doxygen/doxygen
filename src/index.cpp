@@ -286,7 +286,6 @@ void startFile(OutputList &ol,const char *name,const char *manName,
                const char *altSidebarName)
 {
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.startFile(name,manName,title);
   ol.startQuickIndices();
   if (!disableIndex)
@@ -297,10 +296,8 @@ void startFile(OutputList &ol,const char *name,const char *manName,
   {
     ol.endQuickIndices();
   }
-  if (generateTreeView)
-  {
-    ol.writeSplitBar(altSidebarName ? altSidebarName : name);
-  }
+  ol.writeSplitBar(altSidebarName ? altSidebarName : name);
+  ol.writeSearchInfo();
 }
 
 void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents)
@@ -311,7 +308,6 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents)
   if (!skipNavIndex)
   {
     if (!skipEndContents) ol.endContents();
-    ol.writeSearchInfo();
     if (generateTreeView)
     {
       ol.writeString("</div>\n");
@@ -1980,7 +1976,6 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
 {
   if (documentedClassMembers[hl]==0) return;
   
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
   bool multiPageIndex=FALSE;
@@ -2067,11 +2062,8 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
         }
       }
       ol.endQuickIndices();
-
-      if (generateTreeView)
-      {
-        ol.writeSplitBar(fileName);
-      }
+      ol.writeSplitBar(fileName);
+      ol.writeSearchInfo();
 
       ol.startContents();
 
@@ -2161,7 +2153,6 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
 {
   if (documentedFileMembers[hl]==0) return;
 
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
   bool multiPageIndex=FALSE;
@@ -2245,11 +2236,8 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
         }
       }
       ol.endQuickIndices();
-
-      if (generateTreeView)
-      {
-        ol.writeSplitBar(fileName);
-      }
+      ol.writeSplitBar(fileName);
+      ol.writeSearchInfo();
 
       ol.startContents();
 
@@ -2337,7 +2325,6 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 {
   if (documentedNamespaceMembers[hl]==0) return;
 
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
 
@@ -2423,11 +2410,8 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
       }
       ol.endQuickIndices();
-
-      if (generateTreeView)
-      {
-        ol.writeSplitBar(fileName);
-      }
+      ol.writeSplitBar(fileName);
+      ol.writeSearchInfo();
 
       ol.startContents();
 
@@ -3456,7 +3440,6 @@ static void writeIndex(OutputList &ol)
     title = filterTitle(Doxygen::mainPage->title());
   }
 
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   QCString indexName="index";
   ol.startFile(indexName,0,title);
   
@@ -3476,10 +3459,8 @@ static void writeIndex(OutputList &ol)
     ol.writeQuickLinks(TRUE,HLI_Main,0);
   }
   ol.endQuickIndices();
-  if (generateTreeView)
-  {
-    ol.writeSplitBar(indexName);
-  }
+  ol.writeSplitBar(indexName);
+  ol.writeSearchInfo();
   bool headerWritten=FALSE;
   if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty())
   {

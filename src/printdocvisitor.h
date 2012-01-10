@@ -668,6 +668,16 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</text>\n");
     }
+    void visitPre(DocHtmlBlockQuote *)
+    {
+      indent_pre();
+      printf("<blockquote>\n");
+    }
+    void visitPost(DocHtmlBlockQuote *)
+    {
+      indent_post();
+      printf("</blockquote>\n");
+    }
 
   private:
     // helper functions

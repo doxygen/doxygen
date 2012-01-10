@@ -44,6 +44,7 @@ static LabelMap s_labels[] =
   { "printtree",    Debug::PrintTree    },
   { "time",         Debug::Time         },
   { "extcmd",       Debug::ExtCmd       },
+  { "markdown",     Debug::Markdown     },
   { 0,             (Debug::DebugMask)0  }
 };
 

@@ -350,6 +350,17 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "MARKDOWN_SUPPORT",
+                 "If MARKDOWN_SUPPORT is enabled (the default) then doxygen pre-processes all\n"
+                 "comments according to the Markdown format, which allows for more readable\n"
+                 "documentation. See http://daringfireball.net/projects/markdown/ for details.\n"
+                 "The output of markdown processing is further processed by doxygen, so you\n"
+                 "can mix doxygen, HTML, and XML commands with Markdown formatting.\n"
+                 "Disable only in case of backward compatibilities issues.",
+                 TRUE
+                );
+  //----
+  cb = cfg->addBool(
                  "BUILTIN_STL_SUPPORT",
                  "If you use STL classes (i.e. std::string, std::vector, etc.) but do not want\n"
                  "to include (a tag file for) the STL sources as input, then you should\n"
@@ -2087,22 +2098,18 @@ void addConfigOptions(Config *cfg)
   //----
   cl = cfg->addList(
                  "TAGFILES",
-                 "The TAGFILES option can be used to specify one or more tagfiles.\n"
-                 "Optionally an initial location of the external documentation\n"
-                 "can be added for each tagfile. The format of a tag file without\n"
-                 "this location is as follows:\n"
+                 "The TAGFILES option can be used to specify one or more tagfiles. For each\n"
+                 "tag file the location of the external documentation should be added. The\n"
+                 "format of a tag file without this location is as follows:\n"
                  "\n"
                  "TAGFILES = file1 file2 ...\n"
                  "Adding location for the tag files is done as follows:\n"
                  "\n"
                  "TAGFILES = file1=loc1 \"file2 = loc2\" ...\n"
-                 "where \"loc1\" and \"loc2\" can be relative or absolute paths or\n"
-                 "URLs. If a location is present for each tag, the installdox tool\n"
-                 "does not have to be run to correct the links.\n"
-                 "Note that each tag file must have a unique name\n"
-                 "(where the name does NOT include the path)\n"
-                 "If a tag file is not located in the directory in which doxygen\n"
-                 "is run, you must also specify the path to the tagfile here."
+                 "where \"loc1\" and \"loc2\" can be relative or absolute paths\n"
+                 "or URLs. Note that each tag file must have a unique name (where the name does\n"
+                 "NOT include the path). If a tag file is not located in the directory in which\n"
+                 "doxygen is run, you must also specify the path to the tagfile here."
                 );
   cl->setWidgetType(ConfigList::File);
   //----

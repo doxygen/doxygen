@@ -33,7 +33,8 @@ class Debug
                      Validate     = 0x00000080,
                      PrintTree    = 0x00000100,
                      Time         = 0x00000200,
-                     ExtCmd       = 0x00000400
+                     ExtCmd       = 0x00000400,
+                     Markdown     = 0x00000800
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
     static void setFlag(const char *label);

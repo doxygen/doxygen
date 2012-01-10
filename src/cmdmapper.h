@@ -156,6 +156,7 @@ enum HtmlTagType
   HTML_H6        = 30,
   HTML_SPAN      = 31,
   HTML_DIV       = 32,
+  HTML_BLOCKQUOTE= 33,
 
   XML_CmdMask    = 0x100,
 

@@ -2449,7 +2449,7 @@ bool QXmlSimpleReader::parseElement()
 		    d->error = XMLERR_ERRORPARSINGNAME;
 		    goto parseError;
 		}
-		if ( !parseElementETagBegin2() )
+		if ( !parseElementETagBegin2( uri, lname ) )
 		    goto parseError;
 		break;
 	    case Attribute:
@@ -2495,10 +2495,17 @@ bool QXmlSimpleReader::parseElementEmptyTag( bool &t, QString &uri, QString &lna
 	    return FALSE;
 	}
 	// ... followed by endElement
-	// ### missing namespace support!
-	if ( !contentHnd->endElement( "","",tags.pop() ) ) {
-	    d->error = contentHnd->errorString();
-	    return FALSE;
+	if ( d->useNamespaces ) {
+	    if ( !contentHnd->endElement( uri, lname,tags.pop() ) ) {
+	        d->error = contentHnd->errorString();
+	        return FALSE;
+	    }
+	}
+	else {
+	    if ( !contentHnd->endElement( "","",tags.pop() ) ) {
+	        d->error = contentHnd->errorString();
+	        return FALSE;
+	    }
 	}
 	// namespace support?
 	if ( d->useNamespaces ) {
@@ -2529,7 +2536,7 @@ bool QXmlSimpleReader::parseElementEmptyTag( bool &t, QString &uri, QString &lna
   Helper to break down the size of the code in the case statement.
   Return FALSE on error, otherwise TRUE.
 */
-bool QXmlSimpleReader::parseElementETagBegin2()
+bool QXmlSimpleReader::parseElementETagBegin2( QString &uri, QString &lname )
 {
 
     // pop the stack and compare it with the name
@@ -2538,11 +2545,19 @@ bool QXmlSimpleReader::parseElementETagBegin2()
 	return FALSE;
     }
     // call the handler
-    // ### missing namespace support!
     if ( contentHnd ) {
-	if ( !contentHnd->endElement("","",name()) ) {
-	    d->error = contentHnd->errorString();
-	    return FALSE;
+	if ( d->useNamespaces ) {
+		d->namespaceSupport.processName( name(), FALSE, uri, lname );
+		if ( !contentHnd->endElement(uri,lname,name()) ) {
+		    d->error = contentHnd->errorString();
+		    return FALSE;
+		}
+	}
+	else {
+		if ( !contentHnd->endElement("","",name()) ) {
+		    d->error = contentHnd->errorString();
+		    return FALSE;
+		}
 	}
     }
     // namespace support?

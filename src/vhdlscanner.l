@@ -4,7 +4,7 @@
  *
  * This scanner is derived from a scanner of the ALLIANCE CAD toolset,
  * release 1.1. That toolset was written from:
- *   MASI/CAO-VLSI CAD Team
+ *   MASI/CAO-VLSI CAD Team  
  *   Laboratoire MASI/CAO-VLSI
  *   Tour 55-65, 2eme etage, Porte 13
  *   Universite Pierre et Marie Curie (PARIS VI)
@@ -107,6 +107,7 @@ static	QMap<QCString, int> keyMap;
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void mapLibPackage(const Entry* ce);
 static Entry* getEntryAtLine(const Entry* ce,int line);
+static bool addLibUseClause(const QCString &type);
 
 
 #define YY_NEVER_INTERACTIVE 1
@@ -321,12 +322,12 @@ static void makeInlineDoc(int endCode)
 
   if (compound)
   {
-	compound->addSubEntry(temp);
+    compound->addSubEntry(temp);
   }
   else
   {
-	temp->type="misc"; // global code like library ieee...
-	current_root->addSubEntry(temp);
+    temp->type="misc"; // global code like library ieee...
+    current_root->addSubEntry(temp);
   }
   strComment.resize(0);
   gBlock.reset();
@@ -445,6 +446,19 @@ BR                         [ \t\n\r]
 	    //  	printf("\n <<<< insert tok:  %s %d %d>>>\n",vhdlScanYYtext,itoken,yyLineNr);
 	    lineIndex[itoken]=yyLineNr;
 	  }
+	 
+	 // global members
+	 if (( itoken==t_ARCHITECTURE )  || 
+             ( itoken==t_ENTITY)         || 
+             ( itoken==t_PACKAGE )       || 
+             ( itoken==t_LIBRARY )       ||  
+             ( itoken==t_USE )           ||  
+             ( itoken==t_CONFIGURATION ) ||  
+             ( itoken==t_CONTEXT ) )
+         {
+	   lineIndex[itoken]=yyLineNr;
+         }
+	 
 	  prevToken=itoken;
         
           yycont->qstr=vhdlScanYYtext;
@@ -521,7 +535,7 @@ BR                         [ \t\n\r]
 .	{ /* unknown characters */ }
 									
 
-<*>{BR}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
+<*>{B}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qc(vhdlScanYYtext);
   int len=qc.contains('\n')+yyLineNr-1;
@@ -556,6 +570,7 @@ BR                         [ \t\n\r]
     startCodeBlock(index);
   }
   lineCount();
+  BEGIN(Comment);
 }
 
 <Comment>.|\n {
@@ -566,12 +581,14 @@ BR                         [ \t\n\r]
           {
             startCodeBlock(index);
           }
-        
+
           VhdlDocGen::prepareComment(strComment);
-        
-        
+
+
           if (index==-1) 
+          {
             handleCommentBlock(strComment,FALSE);
+          }
           strComment.resize(0);;
           unput(*vhdlScanYYtext);
           BEGIN(g_lastCommentContext);
@@ -658,11 +675,11 @@ BR                         [ \t\n\r]
 	  if (c =='/')
 	  {
 	    unput('*');
-	    BEGIN(Vhdl2008Comment);
+	    BEGIN(EndVhdl2008Comment);
 	  }
 	  else 
 	  {
-	    BEGIN(EndVhdl2008Comment);
+	    BEGIN(Vhdl2008Comment);
 	  }
         }
 
@@ -825,30 +842,40 @@ static void mapLibPackage(const Entry* ce)
     for (;(rt=eli.current()),eli1=eli;++eli)
     {
       if (rt->spec==VhdlDocGen::LIBRARY || rt->spec==VhdlDocGen::USE)
-	// top level library or use statement
+        // top level library or use statement
       {
-	Entry *temp=0;
-	for (;(temp=eli1.current());++eli1) // find next entity
-	{
-	  if (temp->spec==VhdlDocGen::ENTITY || temp->spec==VhdlDocGen::PACKAGE || temp->spec==VhdlDocGen::ARCHITECTURE || temp->spec==VhdlDocGen::PACKAGE_BODY)
-	  {
-	    Entry *ee=new Entry(*rt); //append a copy to entries sublist
-	    temp->addSubEntry(ee);
-	    found=TRUE;
-	    rt->spec=-1; //nullify entry
-	    rt->section=0;
-	    lastComp=temp;
-	    break;
-	  }
-	}//for
-	if (lastComp && rt->spec!=-1)
-	{
-	  Entry *ee=new Entry(*rt); //append a copy to entries sublist
-	  lastComp->addSubEntry(ee);
-	  found=TRUE;
-	  rt->spec=-1; //nullify entry
-	  rt->section=0;
-	}
+        Entry *temp=0;
+        if(!addLibUseClause(rt->name))
+        {
+          rt->spec=-1;
+          rt->section=0;
+          //  continue;
+        }
+
+        for (;(temp=eli1.current());++eli1) // find next entity
+        {
+          if (temp->spec==VhdlDocGen::ENTITY || 
+              temp->spec==VhdlDocGen::PACKAGE || 
+              temp->spec==VhdlDocGen::ARCHITECTURE || 
+              temp->spec==VhdlDocGen::PACKAGE_BODY)
+          {
+            Entry *ee=new Entry(*rt); //append a copy to entries sublist
+            temp->addSubEntry(ee);
+            found=TRUE;
+            rt->spec=-1; //nullify entry
+            rt->section=0;
+            lastComp=temp;
+            break;
+          }
+        }//for
+        if (lastComp && rt->spec!=-1)
+        {
+          Entry *ee=new Entry(*rt); //append a copy to entries sublist
+          lastComp->addSubEntry(ee);
+          found=TRUE;
+          rt->spec=-1; //nullify entry
+          rt->section=0;
+        }
       }//if
     }//for
     if (!found) // nothing left to do
@@ -857,6 +884,24 @@ static void mapLibPackage(const Entry* ce)
     }
   }//while
 }//MapLib
+
+static bool addLibUseClause(const QCString &type)
+{
+  static bool show=Config_getBool("SHOW_INCLUDE_FILES");
+  static bool showIEEESTD=Config_getBool("FORCE_LOCAL_INCLUDES");
+
+  if (!show)  // all libraries and included packages will not  be shown
+  {
+    return FALSE;
+  }
+
+  if (!showIEEESTD) // all standard packages and libraries will not be shown
+  {  
+    if (type.lower().stripPrefix("ieee")) return FALSE;
+    if (type.lower().stripPrefix("std")) return FALSE;
+  }  
+  return TRUE;
+}
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {

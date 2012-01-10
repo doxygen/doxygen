@@ -1,40 +1,74 @@
-%
-% 
-%
-% Copyright (C) 1997-2011 by Dimitri van Heesch.
-%
-% Permission to use, copy, modify, and distribute this software and its
-% documentation under the terms of the GNU General Public License is hereby 
-% granted. No representations are made about the suitability of this software 
-% for any purpose. It is provided "as is" without express or implied warranty.
-% See the GNU General Public License for more details.
-%
-% Documents produced by Doxygen are derivative works derived from the
-% input used in their production; they are not affected by this license.
-
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{doxygen}
-\RequirePackage{calc}
-\RequirePackage{array}
-\RequirePackage{verbatim}
-\pagestyle{fancyplain}
-\addtolength{\headwidth}{\marginparsep}
-\addtolength{\headwidth}{\marginparwidth}
-\newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}\cleardoublepage}}
-\lhead[\fancyplain{}{\bfseries\thepage}]
-        {\fancyplain{}{\bfseries\rightmark}}
-\rhead[\fancyplain{}{\bfseries\leftmark}]
-        {\fancyplain{}{\bfseries\thepage}}
-\rfoot[\fancyplain{}{\bfseries\scriptsize User Manual for Doxygen $VERSION, written by Dimitri van Heesch \copyright 1997-2011}]{}
-\lfoot[]{\fancyplain{}{\bfseries\scriptsize User Manual for Doxygen $VERSION, written by Dimitri van Heesch \copyright 1997-2011}}
-\cfoot{}
 
+% Packages used by this style file
+\RequirePackage{alltt}
+\RequirePackage{array}
+\RequirePackage{calc}
+\RequirePackage{color}
+\RequirePackage{fancyhdr}
+\RequirePackage{longtable}
+\RequirePackage{verbatim}
+\RequirePackage{ifthen}
+\RequirePackage[table]{xcolor}
+
+% Use helvetica font instead of times roman
+\RequirePackage{helvet}
+\RequirePackage{sectsty}
+\RequirePackage{tocloft}
+\providecommand{\rmdefault}{phv}
+\providecommand{\bfdefault}{bc}
+
+
+% Setup fancy headings
+\pagestyle{fancyplain}
+\newcommand{\clearemptydoublepage}{%
+  \newpage{\pagestyle{empty}\cleardoublepage}%
+}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
+\fancyhead[LE]{\fancyplain{}{\bfseries\thepage}}
+\fancyhead[CE]{\fancyplain{}{}}
+\fancyhead[RE]{\fancyplain{}{\bfseries\leftmark}}
+\fancyhead[LO]{\fancyplain{}{\bfseries\rightmark}}
+\fancyhead[CO]{\fancyplain{}{}}
+\fancyhead[RO]{\fancyplain{}{\bfseries\thepage}}
+\fancyfoot[LE]{\fancyplain{}{}}
+\fancyfoot[CE]{\fancyplain{}{}}
+\fancyfoot[RE]{\fancyplain{}{\bfseries\scriptsize Generated on Fri Dec 16 2011 21\-:40\-:27 for My Project by Doxygen }}
+\fancyfoot[LO]{\fancyplain{}{\bfseries\scriptsize Generated on Fri Dec 16 2011 21\-:40\-:27 for My Project by Doxygen }}
+\fancyfoot[CO]{\fancyplain{}{}}
+\fancyfoot[RO]{\fancyplain{}{}}
 %---------- Internal commands used in this style file ----------------
+
+\newcommand\tabfill[1]{%
+  \dimen@\linewidth%
+  \advance\dimen@\@totalleftmargin%
+  \advance\dimen@-\dimen\@curtab%
+  \parbox[t]\dimen@{\raggedright #1\ifhmode\strut\fi}%
+}
+
+\newcommand{\ensurespace}[1]{%
+  \begingroup
+    \setlength{\dimen@}{#1}%
+    \vskip\z@\@plus\dimen@
+    \penalty -100\vskip\z@\@plus -\dimen@
+    \vskip\dimen@
+    \penalty 9999%
+    \vskip -\dimen@
+    \vskip\z@skip % hide the previous |\vskip| from |\addvspace|
+  \endgroup
+}
 
 % Generic environment used by all paragraph-based environments defined
 % below. Note that the command \title{...} needs to be defined inside
 % those environments!
 \newenvironment{DoxyDesc}[1]{%
+  \ensurespace{4\baselineskip}%
   \begin{list}{}%
   {%
     \settowidth{\labelwidth}{40pt}%
@@ -43,7 +77,7 @@
     \setlength{\itemsep}{-4pt}%
     \renewcommand{\makelabel}{\entrylabel}%
   }%
-  \item[#1:]%
+  \item[#1]%
 }{%
   \end{list}%
 }
@@ -177,6 +211,13 @@
   \end{DoxyDesc}%
 }
 
+% Used by @copyright
+\newenvironment{DoxyCopyright}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
 % Used by @remark
 \newenvironment{DoxyRemark}[1]{%
   \begin{DoxyDesc}{#1}%
@@ -221,9 +262,8 @@
 
 % Used by @internal
 \newenvironment{DoxyInternal}[1]{%
-  \begin{DoxyDesc}{#1}%
+  \paragraph*{#1}%
 }{%
-  \end{DoxyDesc}%
 }
 
 % Used by @par and @paragraph
@@ -242,19 +282,62 @@
 }
 
 % Used by parameter lists
-\newenvironment{DoxyParams}[1]{%
-  \begin{DoxyDesc}{#1}%
-    \begin{description}%
+\newenvironment{DoxyParams}[2][]{%
+  \begin{DoxyDesc}{#2}%
+    \item[] \hspace{\fill} \vspace{-40pt}%
+    \settowidth{\labelwidth}{40pt}%
+    \setlength{\LTleft}{0pt}%
+    \setlength{\tabcolsep}{0.01\textwidth}%
+    \ifthenelse{\equal{#1}{}}%
+    {\begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                        p{0.815\textwidth}|}}%
+    {\ifthenelse{\equal{#1}{1}}%
+      {\begin{longtable}{|>{\centering}p{0.10\textwidth}|%
+                         >{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                         p{0.685\textwidth}|}}%
+      {\begin{longtable}{|>{\centering}p{0.10\textwidth}|%
+                         >{\centering\hspace{0pt}}p{0.15\textwidth}|%
+                         >{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                         p{0.515\textwidth}|}}%
+    }\hline%
 }{%
-    \end{description}%
+    \end{longtable}%
   \end{DoxyDesc}%
+}
+
+% Used for fields of simple structs
+\newenvironment{DoxyFields}[1]{%
+  \begin{DoxyDesc}{#1}%
+    \item[] \hspace{\fill} \vspace{-40pt}%
+    \settowidth{\labelwidth}{40pt}%
+    \setlength{\LTleft}{0pt}%
+    \setlength{\tabcolsep}{0.01\textwidth}%
+    \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                         p{0.15\textwidth}|%
+                         p{0.635\textwidth}|}%
+    \hline%
+}{%
+    \end{longtable}%
+  \end{DoxyDesc}%
+}
+
+% is used for parameters within a detailed function description
+\newenvironment{DoxyParamCaption}{%
+  \renewcommand{\item}[2][]{##1 {\em ##2}}%
+  }{%
 }
 
 % Used by return value lists
 \newenvironment{DoxyRetVals}[1]{%
   \begin{DoxyDesc}{#1}%
     \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
+                          p{0.77\textwidth}|}%
+      \hline%
 }{%
+      \end{longtable}%
     \end{description}%
   \end{DoxyDesc}%
 }
@@ -263,7 +346,16 @@
 \newenvironment{DoxyExceptions}[1]{%
   \begin{DoxyDesc}{#1}%
     \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \definecolor{tableShade}{HTML}{F8F8F8}%
+      \rowcolors{1}{white}{tableShade}%
+      \arrayrulecolor{gray}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
+                          p{0.77\textwidth}|}%
+      \hline%
 }{%
+      \end{longtable}%
     \end{description}%
   \end{DoxyDesc}%
 }
@@ -272,7 +364,16 @@
 \newenvironment{DoxyTemplParams}[1]{%
   \begin{DoxyDesc}{#1}%
     \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \definecolor{tableShade}{HTML}{F8F8F8}%
+      \rowcolors{1}{white}{tableShade}%
+      \arrayrulecolor{gray}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
+                          p{0.77\textwidth}|}%
+      \hline%
 }{%
+      \end{longtable}%
     \end{description}%
   \end{DoxyDesc}%
 }
@@ -284,12 +385,12 @@
   \setlength{\itemsep}{0pt}
   \setlength{\parsep}{0pt}
   \setlength{\topsep}{0pt}
-  \renewcommand{\makelabel}{}}}
+  \renewcommand{\makelabel}{\hfill}}}
 {\end{list}}
 \newenvironment{DoxyCompactItemize}
 {
   \begin{itemize}
-  \setlength{\itemsep}{-4pt}
+  \setlength{\itemsep}{-3pt}
   \setlength{\parsep}{0pt}
   \setlength{\topsep}{0pt}
   \setlength{\partopsep}{0pt}
@@ -306,7 +407,8 @@
 }
 {\end{tabular*}\par}
 \newcommand{\entrylabel}[1]{
-   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{\textbf{#1}}\\}}}
+   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{%
+   \usefont{OT1}{phv}{bc}{n}\color{darkgray}#1}\vspace{1.5\baselineskip}}}}
 \newenvironment{Desc}
 {\begin{list}{}
   {
@@ -318,6 +420,63 @@
   }
 }
 {\end{list}}
+\newsavebox{\xrefbox}
+\newlength{\xreflength}
+\newcommand{\xreflabel}[1]{%
+  \sbox{\xrefbox}{#1}%
+  \setlength{\xreflength}{\wd\xrefbox}%
+  \ifthenelse{\xreflength>\labelwidth}{%
+    \begin{minipage}{\textwidth}%
+      \setlength{\parindent}{0pt}%
+      \hangindent=15pt\bfseries #1\vspace{1.2\itemsep}%
+    \end{minipage}%
+  }{%
+   \parbox[b]{\labelwidth}{\makebox[0pt][l]{\textbf{#1}}}%
+  }}%
+\newenvironment{DoxyRefList}{%
+  \begin{list}{}{%
+    \setlength{\labelwidth}{10pt}%
+    \setlength{\leftmargin}{\labelwidth}%
+    \addtolength{\leftmargin}{\labelsep}%
+    \renewcommand{\makelabel}{\xreflabel}%
+    }%
+  }%
+{\end{list}}
+\newenvironment{DoxyRefDesc}[1]
+{\begin{list}{}{%
+  \renewcommand\makelabel[1]{\textbf{##1}}
+  \settowidth\labelwidth{\makelabel{#1}}
+  \setlength\leftmargin{\labelwidth+\labelsep}}}
+{\end{list}}
+\newenvironment{Indent}
+  {\begin{list}{}{\setlength{\leftmargin}{0.5cm}}
+      \item[]\ignorespaces}
+  {\unskip\end{list}}
 \setlength{\parindent}{0cm}
 \setlength{\parskip}{0.2cm}
-\sloppy
+\addtocounter{secnumdepth}{2}
+\usepackage[T1]{fontenc}
+\makeatletter
+\renewcommand{\paragraph}{\@startsection{paragraph}{4}{0ex}%
+   {-1.0ex}%
+   {1.0ex}%
+   {\usefont{OT1}{phv}{bc}{n}\color{darkgray}}}
+\renewcommand{\subparagraph}{\@startsection{subparagraph}{5}{0ex}%
+   {-1.0ex}%
+   {1.0ex}%
+   {\usefont{OT1}{phv}{bc}{n}\color{darkgray}}}
+\makeatother
+\allsectionsfont{\usefont{OT1}{phv}{bc}{n}\selectfont\color{darkgray}}
+\stepcounter{secnumdepth}
+\stepcounter{tocdepth}
+\definecolor{comment}{rgb}{0.5,0.0,0.0}
+\definecolor{keyword}{rgb}{0.0,0.5,0.0}
+\definecolor{keywordtype}{rgb}{0.38,0.25,0.125}
+\definecolor{keywordflow}{rgb}{0.88,0.5,0.0}
+\definecolor{preprocessor}{rgb}{0.5,0.38,0.125}
+\definecolor{stringliteral}{rgb}{0.0,0.125,0.25}
+\definecolor{charliteral}{rgb}{0.0,0.5,0.5}
+\definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}
+\definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
+\definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}
+\definecolor{vhdlchar}{rgb}{0.0,0.0,0.0}

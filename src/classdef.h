@@ -348,7 +348,7 @@ class ClassDef : public Definition
     void showUsedFiles(OutputList &ol);
 
   private: 
-    void writeTagFileMarker(OutputList &ol);
+    void writeTagFileMarker();
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     QCString getMemberListFileName() const;

@@ -1334,6 +1334,8 @@ void Config::check()
     filePatternList.append("*.vhd");
     filePatternList.append("*.vhdl");
     filePatternList.append("*.tcl");
+    filePatternList.append("*.md");
+    filePatternList.append("*.markdown");
     if (portable_fileSystemIsCaseSensitive())
     {
       // unix => case sensitive match => also include useful uppercase versions
@@ -1356,6 +1358,8 @@ void Config::check()
       filePatternList.append("*.VHD");
       filePatternList.append("*.VHDL");
       filePatternList.append("*.TCL");
+      filePatternList.append("*.MD");
+      filePatternList.append("*.MARKDOWN");
     }
   }
 
@@ -1477,21 +1481,24 @@ void Config::check()
     bool b2 = Config_getBool("INHERIT_DOCS");
     bool b3 = Config_getBool("HIDE_SCOPE_NAMES");
     bool b4 = Config_getBool("EXTRACT_PRIVATE");
-    const char *s1,*s2,*s3,*s4;
+    bool b5 = Config_getBool("SKIP_FUNCTION_MACROS");
+    const char *s1,*s2,*s3,*s4,*s5;
     if (b1)  s1="  INLINDE_INHERITED_MEMB = NO (was YES)\n"; else s1="";
     if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
     if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
     if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
+    if (b5)  s5="  ENABLE_PREPROCESSING   = NO (was YES)\n"; else s5="";
 
     config_err("warning: enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
-	       "%s%s%s%s",s1,s2,s3,s4
+	       "%s%s%s%s%s",s1,s2,s3,s4,s5
 	      );
 
     Config_getBool("INLINE_INHERITED_MEMB") = FALSE;
     Config_getBool("INHERIT_DOCS")          = FALSE;
     Config_getBool("HIDE_SCOPE_NAMES")      = TRUE;
     Config_getBool("EXTRACT_PRIVATE")       = TRUE;
-  }
+    Config_getBool("ENABLE_PREPROCESSING")  = FALSE;
+  }                               
 
 }
 

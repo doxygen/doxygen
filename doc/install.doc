@@ -130,8 +130,8 @@ Compilation is now done by performing the following steps:
     make
 \endverbatim
 
-    The program should compile without problems and three binaries 
-    (<code>doxygen</code> and <code>doxytag</code>) 
+    The program should compile without problems and the binaries 
+    (<code>doxygen</code> and optionally <code>doxywizard</code>) 
     should be available in the bin directory of the distribution.
 
 <li>Optional: Generate the user manual.
@@ -319,8 +319,7 @@ dlopen                              /usr/lib/libc.a(nss_deffinder.o)
 \endverbatim
 
 Manually adding <code>-Bdynamic</code> after the target rule in 
-<code>Makefile.doxygen</code> and <code>Makefile.doxytag</code> 
-will fix this:
+<code>Makefile.doxygen</code> will fix this:
 
 \verbatim
 $(TARGET): $(OBJECTS) $(OBJMOC) 
@@ -395,7 +394,7 @@ tar xvf doxygen-x.y.z.src.tar
 \endverbatim
 to unpack the sources.
 
-Now your environment is setup to build \c doxygen and \c doxytag.
+Now your environment is setup to build \c doxygen.
 
 Inside the \c doxygen-x.y.z directory you will find a \c winbuild directory 
 containing a \c Doxygen.sln file. Open this file in Visual Studio. 
@@ -487,10 +486,10 @@ Here is what is required:
     steps.
 
 <li>From Doxygen-1.2.2-20001015 onwards, the distribution includes the part
-    of Qt that is needed for to compile doxygen and doxytag,
+    of Qt that is needed for to compile doxygen.
     The Windows specific part were also created.
     As a result doxygen (without the wizard) can be compiled on systems 
-    without X11 or the (commerical) version of Qt. 
+    without X11 or (the commerical version of) Qt. 
 
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders
@@ -521,9 +520,8 @@ Compilation is now done by performing the following steps:
     make.bat msvc
 \endverbatim
 
-    This should build the executables 
-    <code>doxygen.exe</code> and <code>doxytag.exe</code>
-    using Microsoft's Visual C++ compiler
+    This should build the executable
+    <code>doxygen.exe</code> using Microsoft's Visual C++ compiler
     (The compiler should not produce any serious warnings or errors).
 
     You can use also the <code>bcc</code> argument to build

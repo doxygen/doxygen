@@ -45,6 +45,7 @@
 #include "debug.h"
 #include "parserintf.h"
 #include "cite.h"
+#include "markdown.h"
 
 // forward declarations
 static bool handleBrief(const QCString &);
@@ -110,6 +111,7 @@ static bool handlePublic(const QCString &s);
 static bool handlePublicSection(const QCString &s);
 static bool handleInherit(const QCString &);
 static bool handleExtends(const QCString &);
+static bool handleCopyDoc(const QCString &);
 
 typedef bool (*DocCmdFunc)(const QCString &name);
 
@@ -209,7 +211,7 @@ static DocCmdMap docCmdMap[] =
   { "attention",       0,                       TRUE  },
   { "author",          0,                       TRUE  },
   { "authors",         0,                       TRUE  },
-  { "copydoc",         0,                       TRUE  },
+  { "copydoc",         &handleCopyDoc,          TRUE  },
   { "copybrief",       0,                       FALSE },
   { "copydetails",     0,                       TRUE  },
   { "date",            0,                       TRUE  },
@@ -404,6 +406,7 @@ static int              g_sectionLevel;
 static int              g_commentCount;
 static bool             g_spaceBeforeCmd;
 static bool             g_spaceBeforeIf;
+static QCString         g_copyDocArg;
 
 //-----------------------------------------------------------------------------
 
@@ -749,6 +752,7 @@ static inline void setOutput(OutputContext ctx)
 // add a string to the output
 static inline void addOutput(const char *s)
 {
+  //printf("addOutput(%s)\n",s);
   *pOutputString+=s;
 }
 
@@ -876,6 +880,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x      HtmlComment
 %x      SkipLang
 %x	CiteLabel
+%x	CopyDoc
 
 %%
 
@@ -1055,7 +1060,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>^{B}*"."{B}*/\n                { // explicit end autolist: e.g "  ."
   				          addOutput(yytext); 
 					}
-<Comment>^{B}*"-"			{ // start of autolist
+<Comment>^{B}*[1-9][0-9]*"."{B}+        |
+<Comment>^{B}*[*+-]{B}+			{ // start of autolist
 					  if (inContext!=OutputXRef) 
 					  {
 					    briefEndsAtDot=FALSE;
@@ -1997,6 +2003,26 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  BEGIN(Comment);
   					}
 
+  /* ----- handle argument of the copydoc command ------- */
+
+<CopyDoc><<EOF>>			|
+<CopyDoc>{DOCNL}			{
+  					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  setOutput(OutputDoc);
+                                          addOutput("\\copydetails ");
+					  addOutput(g_copyDocArg);
+					  addOutput("\n");
+					  BEGIN(Comment);
+  					}
+<CopyDoc>[^\n\\]+			{
+  					  g_copyDocArg+=yytext;
+					  addOutput(yytext);
+  					}
+<CopyDoc>.				{
+  					  g_copyDocArg+=yytext;
+					  addOutput(yytext);
+  					}
 
 
 %%
@@ -2517,6 +2543,15 @@ static bool handleExtends(const QCString &)
   return FALSE;
 }
 
+static bool handleCopyDoc(const QCString &)
+{
+  setOutput(OutputBrief);
+  addOutput("\\copybrief ");
+  g_copyDocArg.resize(0);
+  BEGIN(CopyDoc);
+  return FALSE;
+}
+
 //----------------------------------------------------------------------------
 
 static void checkFormula()
@@ -2609,6 +2644,13 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
     openGroup(current,yyFileName,yyLineNr);
   }
 
+  if (Doxygen::markdownSupport)
+  {
+    current->brief      = processMarkdown(current->brief);
+    current->doc        = processMarkdown(current->doc);
+    current->inbodyDocs = processMarkdown(current->inbodyDocs);
+  }
+
   Debug::print(Debug::CommentScan,0,
                "brief=[%s]\ndocs=[%s]\ninbody=[%s]\n===========\n",
 	       current->brief.data(),current->doc.data(),current->inbodyDocs.data()
@@ -2630,7 +2672,6 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   lineNr = yyLineNr;
   //printf("position=%d parseMore=%d\n",position,parseMore);
-
 
   return parseMore;
 }

@@ -30,6 +30,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</A\></tt>    Ends a link or anchor 
 <li><tt>\<B\></tt>     Starts a piece of text displayed in a bold font.
 <li><tt>\</B\></tt>    Ends a <tt>\<B\></tt> section.
+<li><tt>\<BLOCKQUOTE\></tt> Starts a quotation block.
+<li><tt>\</BLOCKQUOTE\></tt> Ends the quotation block.
 <li><tt>\<BODY\></tt>  Does not generate any output.
 <li><tt>\</BODY\></tt> Does not generate any output.
 <li><tt>\<BR\></tt>    Forces a line break.
