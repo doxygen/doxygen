@@ -354,7 +354,7 @@ public:
         // Interface:
         if (DBUS("interface"))
         {
-            CONDITION(m_currentInterface, "end of interface found without start.");
+            CONDITION(!m_currentInterface, "end of interface found without start.");
             m_currentInterface->endBodyLine = lineNumber();
             closeScopes();
             m_currentInterface = 0;
@@ -362,8 +362,8 @@ public:
 
         if (DBUS("method") || DBUS("signal"))
         {
-            CONDITION(m_currentMethod, "end of method found without start.");
-            CONDITION(m_currentInterface, "end of method found outside interface.");
+            CONDITION(!m_currentMethod, "end of method found without start.");
+            CONDITION(!m_currentInterface, "end of method found outside interface.");
             m_currentMethod->endBodyLine = lineNumber();
             m_currentInterface->addSubEntry(m_currentMethod);
             m_currentMethod = 0;
@@ -371,8 +371,8 @@ public:
 
         if (DBUS("property"))
         {
-            CONDITION(m_currentMethod, "end of property found without start.");
-            CONDITION(m_currentInterface, "end of property found outside interface.");
+            CONDITION(!m_currentProperty, "end of property found without start.");
+            CONDITION(!m_currentInterface, "end of property found outside interface.");
             m_currentProperty->endBodyLine = lineNumber();
             m_currentInterface->addSubEntry(m_currentProperty);
             m_currentProperty = 0;
@@ -380,7 +380,7 @@ public:
 
         if (DBUS("arg"))
         {
-            CONDITION(m_currentMethod, "end of arg found outside method.");
+            CONDITION(!m_currentMethod, "end of arg found outside method.");
             m_currentMethod->argList->append(m_currentArgument);
             m_currentArgument = 0;
         }
@@ -388,7 +388,7 @@ public:
         if (EXTENSION("namespace"))
         {
             Entry * current = m_namespaceStack.last();
-            CONDITION(current, "end of namespace without start.");
+            CONDITION(!current, "end of namespace without start.");
             m_namespaceStack.removeLast();
 
             current->endBodyLine = lineNumber();
@@ -398,7 +398,7 @@ public:
         if (EXTENSION("struct"))
         {
             StructData * data = m_structStack.last();
-            CONDITION(data, "end of struct without start.");
+            CONDITION(!data, "end of struct without start.");
 
             data->entry->endBodyLine = lineNumber();
 
@@ -417,13 +417,13 @@ public:
         if (EXTENSION("member"))
         {
            StructData * data = m_structStack.last();
-           CONDITION(data, "end of struct without start");
+           CONDITION(!data, "end of member outside struct.");
            data->entry->addSubEntry(m_currentEntry);
         }
 
         if (EXTENSION("enum") || EXTENSION("flagset"))
         {
-            CONDITION(m_currentEnum, "end of enum without start");
+            CONDITION(!m_currentEnum, "end of enum without start.");
             m_currentEnum->endBodyLine = lineNumber();
             closeScopes();
 
@@ -432,7 +432,7 @@ public:
 
         if (EXTENSION("value"))
         {
-            CONDITION(m_currentEntry, "end of value without start");
+            CONDITION(!m_currentEntry, "end of value without start");
             m_currentEntry->endBodyLine = lineNumber();
 
             m_currentEnum->addSubEntry(m_currentEntry);
@@ -451,7 +451,7 @@ public:
 
         m_currentComment = new CommentData(m_fileName, lineNumber(), comment_);
 
-        if (!m_currentComment->shouldIgnore)
+        if (m_currentComment->shouldIgnore)
         {
             delete m_currentComment;
             m_currentComment = 0;
@@ -532,21 +532,7 @@ private:
                             const QString & qName,
                             const QString & element)
     {
-        // isNull happens in startelement if no URI is used.
-        if (namespaceURI.isNull())
-        { return false; }
-
-        // We are in a endElement: URI is always empty there:-(
-        if (namespaceURI.isEmpty())
-        { return qName == m_scopeStack.last()->extensionPrefix + element; }
-
-        // startElemennt: We need to save the qName prefix
-        // since endElement will forget about the namespaceURi:-(
-        if (namespaceURI == EXTENSION_URI)
-        {
-            int pos = qName.find(':');
-            m_scopeStack.last()->extensionPrefix = qName.left(pos + 1);
-        }
+        (void)qName;
 
         return namespaceURI == EXTENSION_URI && localName == element;
     }
@@ -756,7 +742,6 @@ private:
         ~ElementData() { }
 
         QString element; //*< The element name
-        QString extensionPrefix; //*< The prefix used for our extension.
         QString text; //*< The actual xml code.
     };
     QList<ElementData> m_elementStack;
@@ -789,7 +774,6 @@ private:
         ~ScopeData() { }
 
         Entry * scope;
-        QString extensionPrefix;
         int count;
     };
     QList<ScopeData> m_scopeStack; // Scopes are nested.
@@ -846,7 +830,6 @@ void DBusXMLScanner::parseInput(const char * fileName,
                                 const char * /* fileBuf */,
                                 Entry * root)
 {
-    err("Note that the dbusxml parser seems to be broken :-(\nPlease help me to fix it!\n");
     QFile inputFile(fileName);
 
     QXmlInputSource inputSource(inputFile);
@@ -861,7 +844,7 @@ void DBusXMLScanner::parseInput(const char * fileName,
     handler.setSection();
     reader.parse(inputSource);
 
-    if (handler.errorString())
+    if (!handler.errorString().isEmpty())
     { err("DBus XML Parser: Error at line %d: %s\n", 
         handler.locator()->lineNumber(),handler.errorString().utf8().data()); }
 

@@ -52,6 +52,7 @@
 #include "parserintf.h"
 #include "bufstr.h"
 #include "image.h"
+#include "growbuf.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1539,43 +1540,18 @@ static bool findOperator2(const QCString &s,int i)
 static const char constScope[]   = { 'c', 'o', 'n', 's', 't', ':' };
 static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 
-
-class StrBuf
-{
-  public:
-    StrBuf() : str(0), pos(0), len(0) {}
-   ~StrBuf()          { free(str); str=0; pos=0; len=0; }
-    void clear()      { pos=0; }
-    void addChar(char c)  { if (pos>=len) { len+=1024; str = (char*)realloc(str,len); } 
-                        str[pos++]=c; 
-                      }
-    void addStr(const char *s) {
-                        int l=strlen(s);
-                        if (pos+l>=len) { len+=l+1024; str = (char*)realloc(str,len); }
-                        strcpy(&str[pos],s);
-                        pos+=l;
-                      }
-    const char *get() { return str; }
-    int getPos() const   { return pos; }
-    char at(int i) const   { return str[i]; }
-  private:
-    char *str;
-    int pos;
-    int len;
-};
-
 // Note: this function is not reentrant due to the use of static buffer!
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
   static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
   if (s.isEmpty()) return s;
-  static StrBuf strBuf;
+  static GrowBuf growBuf;
   //int resultLen = 1024;
   //int resultPos = 0;
   //QCString result(resultLen);
-  // we use strBuf.addChar(c) instead of result+=c to 
+  // we use growBuf.addChar(c) instead of result+=c to 
   // improve the performance of this function
-  strBuf.clear();
+  growBuf.clear();
   uint i;
   uint l=s.length();
   uint csp=0;
@@ -1610,14 +1586,14 @@ nextChar:
     if (c=='"') // quoted string
     {
       i++;
-      strBuf.addChar(c);
+      growBuf.addChar(c);
       while (i<l)
       {
         char cc=s.at(i);
-        strBuf.addChar(cc);
+        growBuf.addChar(cc);
         if (cc=='\\') // escaped character
         { 
-          strBuf.addChar(s.at(i+1));
+          growBuf.addChar(s.at(i+1));
           i+=2; 
         }
         else if (cc=='"') // end of string
@@ -1631,24 +1607,24 @@ nextChar:
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
-      strBuf.addChar('<');
-      strBuf.addChar(' ');
+      growBuf.addChar('<');
+      growBuf.addChar(' ');
     }
     else if (i>0 && c=='>' && // current char is a >
         (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
-      strBuf.addChar(' ');
-      strBuf.addChar('>');
+      growBuf.addChar(' ');
+      growBuf.addChar('>');
     }
     else if (i>0 && c==',' && !isspace((uchar)s.at(i-1))
         && ((i<l-1 && isId(s.at(i+1)))
           || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
           || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
     {
-      strBuf.addChar(',');
-      strBuf.addChar(' ');
+      growBuf.addChar(',');
+      growBuf.addChar(' ');
     }
     else if (i>0 && 
          ((isId(s.at(i)) && s.at(i-1)==')') || 
@@ -1656,8 +1632,8 @@ nextChar:
          )
         )
     {
-      strBuf.addChar(' ');
-      strBuf.addChar(s.at(i));
+      growBuf.addChar(' ');
+      growBuf.addChar(s.at(i));
     }
     else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
              !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
@@ -1668,16 +1644,16 @@ nextChar:
             ) 
       // prevent const ::A from being converted to const::A
     {
-      strBuf.addChar('t');
-      strBuf.addChar(' ');
+      growBuf.addChar('t');
+      growBuf.addChar(' ');
       if (s.at(i+1)==' ') i++;
       csp=0;
     }
     else if (c==':' && csp==6 /*&& (i<6 || !isId(s.at(i-6)))*/) 
       // replace const::A by const ::A
     {
-      strBuf.addChar(' ');
-      strBuf.addChar(':');
+      growBuf.addChar(' ');
+      growBuf.addChar(':');
       csp=0;
     }
     else if (c=='l' && vsp==7 /*&& (i<7 || !isId(s.at(i-7)))*/ &&
@@ -1689,16 +1665,16 @@ nextChar:
             ) 
       // prevent virtual ::A from being converted to virtual::A
     {
-      strBuf.addChar('l');
-      strBuf.addChar(' ');
+      growBuf.addChar('l');
+      growBuf.addChar(' ');
       if (s.at(i+1)==' ') i++;
       vsp=0;
     }
     else if (c==':' && vsp==8 /*&& (i<8 || !isId(s.at(i-8)))*/) 
       // replace virtual::A by virtual ::A
     {
-      strBuf.addChar(' ');
-      strBuf.addChar(':');
+      growBuf.addChar(' ');
+      growBuf.addChar(':');
       vsp=0;
     }
     else if (!isspace((uchar)c) || // not a space
@@ -1712,28 +1688,28 @@ nextChar:
       if (c=='*' || c=='&' || c=='@' || c=='$')
       {  
         //uint rl=result.length();
-        uint rl=strBuf.getPos();
-        if ((rl>0 && (isId(strBuf.at(rl-1)) || strBuf.at(rl-1)=='>')) &&
+        uint rl=growBuf.getPos();
+        if ((rl>0 && (isId(growBuf.at(rl-1)) || growBuf.at(rl-1)=='>')) &&
             ((c!='*' && c!='&') || !findOperator2(s,i)) // avoid splitting operator* and operator->* and operator&
            ) 
         {
-          strBuf.addChar(' ');
+          growBuf.addChar(' ');
         }
       }
-      strBuf.addChar(c);
+      growBuf.addChar(c);
       if (cliSupport &&
           (c=='^' || c=='%') && i>1 && isId(s.at(i-1)) &&
           !findOperator(s,i)
          ) 
       {
-        strBuf.addChar(' '); // C++/CLI: Type^ name and Type% name
+        growBuf.addChar(' '); // C++/CLI: Type^ name and Type% name
       }
     }
   }
   //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),result.data());
-  strBuf.addChar(0);
+  growBuf.addChar(0);
   //result.resize(resultPos);
-  return strBuf.get();
+  return growBuf.get();
 }  
 
 bool rightScopeMatch(const QCString &scope, const QCString &name)
@@ -4080,17 +4056,17 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
 /*!
  * Searches for a scope definition given its name as a string via parameter
- * `scope'. 
+ * `scope`. 
  *
- * The parameter `docScope' is a string representing the name of the scope in 
- * which the `scope' string was found.
+ * The parameter `docScope` is a string representing the name of the scope in 
+ * which the `scope` string was found.
  *
  * The function returns TRUE if the scope is known and documented or
  * FALSE if it is not.
- * If TRUE is returned exactly one of the parameter `cd', `nd' 
+ * If TRUE is returned exactly one of the parameter `cd`, `nd` 
  * will be non-zero:
- *   - if `cd' is non zero, the scope was a class pointed to by cd.
- *   - if `nd' is non zero, the scope was a namespace pointed to by nd.
+ *   - if `cd` is non zero, the scope was a class pointed to by cd.
+ *   - if `nd` is non zero, the scope was a namespace pointed to by nd.
  */
 static bool getScopeDefs(const char *docScope,const char *scope,
     ClassDef *&cd, NamespaceDef *&nd)
@@ -4818,41 +4794,41 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 //----------------------------------------------------------------------
 
-// note that this function is not reentrant due to the use of static strBuf!
+// note that this function is not reentrant due to the use of static growBuf!
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
   static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
-  static StrBuf strBuf;
-  strBuf.clear();
+  static GrowBuf growBuf;
+  growBuf.clear();
   char c;
   const char *p=name;
   while ((c=*p++)!=0)
   {
     switch(c)
     {
-      case '_': if (allowUnderscore) strBuf.addChar('_'); else strBuf.addStr("__"); break;
-      case '-': strBuf.addChar('-');  break;
-      case ':': strBuf.addStr("_1"); break;
-      case '/': strBuf.addStr("_2"); break;
-      case '<': strBuf.addStr("_3"); break;
-      case '>': strBuf.addStr("_4"); break;
-      case '*': strBuf.addStr("_5"); break;
-      case '&': strBuf.addStr("_6"); break;
-      case '|': strBuf.addStr("_7"); break;
-      case '.': if (allowDots) strBuf.addChar('.'); else strBuf.addStr("_8"); break;
-      case '!': strBuf.addStr("_9"); break;
-      case ',': strBuf.addStr("_00"); break;
-      case ' ': strBuf.addStr("_01"); break;
-      case '{': strBuf.addStr("_02"); break;
-      case '}': strBuf.addStr("_03"); break;
-      case '?': strBuf.addStr("_04"); break;
-      case '^': strBuf.addStr("_05"); break;
-      case '%': strBuf.addStr("_06"); break;
-      case '(': strBuf.addStr("_07"); break;
-      case ')': strBuf.addStr("_08"); break;
-      case '+': strBuf.addStr("_09"); break;
-      case '=': strBuf.addStr("_0A"); break;
-      case '$': strBuf.addStr("_0B"); break;
+      case '_': if (allowUnderscore) growBuf.addChar('_'); else growBuf.addStr("__"); break;
+      case '-': growBuf.addChar('-');  break;
+      case ':': growBuf.addStr("_1"); break;
+      case '/': growBuf.addStr("_2"); break;
+      case '<': growBuf.addStr("_3"); break;
+      case '>': growBuf.addStr("_4"); break;
+      case '*': growBuf.addStr("_5"); break;
+      case '&': growBuf.addStr("_6"); break;
+      case '|': growBuf.addStr("_7"); break;
+      case '.': if (allowDots) growBuf.addChar('.'); else growBuf.addStr("_8"); break;
+      case '!': growBuf.addStr("_9"); break;
+      case ',': growBuf.addStr("_00"); break;
+      case ' ': growBuf.addStr("_01"); break;
+      case '{': growBuf.addStr("_02"); break;
+      case '}': growBuf.addStr("_03"); break;
+      case '?': growBuf.addStr("_04"); break;
+      case '^': growBuf.addStr("_05"); break;
+      case '%': growBuf.addStr("_06"); break;
+      case '(': growBuf.addStr("_07"); break;
+      case ')': growBuf.addStr("_08"); break;
+      case '+': growBuf.addStr("_09"); break;
+      case '=': growBuf.addStr("_0A"); break;
+      case '$': growBuf.addStr("_0B"); break;
       default: 
                 if (c<0)
                 {
@@ -4864,22 +4840,22 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                   ids[2]=map[id>>4];
                   ids[3]=map[id&0xF];
                   ids[4]=0;
-                  strBuf.addStr(ids);
+                  growBuf.addStr(ids);
                 }
                 else if (caseSenseNames || !isupper(c))
                 {
-                  strBuf.addChar(c);
+                  growBuf.addChar(c);
                 }
                 else
                 {
-                  strBuf.addChar('_');
-                  strBuf.addChar(tolower(c)); 
+                  growBuf.addChar('_');
+                  growBuf.addChar(tolower(c)); 
                 }
                 break;
     }
   }
-  strBuf.addChar(0);
-  return strBuf.get();
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 /*! This function determines the file name on disk of an item
@@ -5216,8 +5192,8 @@ QCString stripScope(const char *name)
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
 {
-  static StrBuf strBuf;
-  strBuf.clear();
+  static GrowBuf growBuf;
+  growBuf.clear();
   if (s==0) return "";
   const char *p=s;
   char c;
@@ -5225,23 +5201,23 @@ QCString convertToXML(const char *s)
   {
     switch (c)
     {
-      case '<':  strBuf.addStr("&lt;");   break;
-      case '>':  strBuf.addStr("&gt;");   break;
-      case '&':  strBuf.addStr("&amp;");  break;
-      case '\'': strBuf.addStr("&apos;"); break; 
-      case '"':  strBuf.addStr("&quot;"); break;
-      default:   strBuf.addChar(c);       break;
+      case '<':  growBuf.addStr("&lt;");   break;
+      case '>':  growBuf.addStr("&gt;");   break;
+      case '&':  growBuf.addStr("&amp;");  break;
+      case '\'': growBuf.addStr("&apos;"); break; 
+      case '"':  growBuf.addStr("&quot;"); break;
+      default:   growBuf.addChar(c);       break;
     }
   }
-  strBuf.addChar(0);
-  return strBuf.get();
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const char *s,bool keepEntities)
 {
-  static StrBuf strBuf;
-  strBuf.clear();
+  static GrowBuf growBuf;
+  growBuf.clear();
   if (s==0) return "";
   const char *p=s;
   char c;
@@ -5249,8 +5225,8 @@ QCString convertToHtml(const char *s,bool keepEntities)
   {
     switch (c)
     {
-      case '<':  strBuf.addStr("&lt;");   break;
-      case '>':  strBuf.addStr("&gt;");   break;
+      case '<':  growBuf.addStr("&lt;");   break;
+      case '>':  growBuf.addStr("&gt;");   break;
       case '&':  if (keepEntities)
                  {
                    const char *e=p;
@@ -5262,32 +5238,32 @@ QCString convertToHtml(const char *s,bool keepEntities)
                    if (ce==';') // found end of an entity
                    {
                      // copy entry verbatim
-                     strBuf.addChar(c);
-                     while (p<e) strBuf.addChar(*p++);
+                     growBuf.addChar(c);
+                     while (p<e) growBuf.addChar(*p++);
                    }
                    else
                    {
-                     strBuf.addStr("&amp;");
+                     growBuf.addStr("&amp;");
                    }
                  }
                  else
                  {
-                   strBuf.addStr("&amp;");  
+                   growBuf.addStr("&amp;");  
                  }
                  break;
-      case '\'': strBuf.addStr("&#39;");  break; 
-      case '"':  strBuf.addStr("&quot;"); break;
-      default:   strBuf.addChar(c);       break;
+      case '\'': growBuf.addStr("&#39;");  break; 
+      case '"':  growBuf.addStr("&quot;"); break;
+      default:   growBuf.addChar(c);       break;
     }
   }
-  strBuf.addChar(0);
-  return strBuf.get();
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 QCString convertToJSString(const char *s)
 {
-  static StrBuf strBuf;
-  strBuf.clear();
+  static GrowBuf growBuf;
+  growBuf.clear();
   if (s==0) return "";
   const char *p=s;
   char c;
@@ -5295,13 +5271,13 @@ QCString convertToJSString(const char *s)
   {
     switch (c)
     {
-      case '"':  strBuf.addStr("\\\""); break;
-      case '\\':  strBuf.addStr("\\\\"); break;
-      default:   strBuf.addChar(c);   break;
+      case '"':  growBuf.addStr("\\\""); break;
+      case '\\': growBuf.addStr("\\\\"); break;
+      default:   growBuf.addChar(c);   break;
     }
   }
-  strBuf.addChar(0);
-  return strBuf.get();
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 
@@ -5879,7 +5855,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const char *fileName,int startLine,
     const QList<ListItemInfo> *sli,
     GroupDef *gd,
-    TagInfo *tagInfo
+    TagInfo *tagInfo,
+    SrcLangExt lang
     )
 {
   PageDef *pd=0;
@@ -5902,6 +5879,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     pd=new PageDef(fileName,startLine,baseName,doc,title);
 
     pd->setRefItems(sli);
+    pd->setLanguage(lang);
 
     if (tagInfo)
     {
@@ -6269,25 +6247,22 @@ static struct Lang2ExtMap
 g_lang2extMap[] =
 {
 //  language       parser     parser option
-  { "idl",         "c",       SrcLangExt_IDL     },
-  { "java",        "c",       SrcLangExt_Java    },
-  { "javascript",  "c",       SrcLangExt_JS      },
-  { "csharp",      "c",       SrcLangExt_CSharp  },
-  { "d",           "c",       SrcLangExt_D       },
-  { "php",         "c",       SrcLangExt_PHP     },
-  { "objective-c", "c",       SrcLangExt_ObjC    },
-  { "c",           "c",       SrcLangExt_Cpp     },
-  { "c++",         "c",       SrcLangExt_Cpp     },
-  { "python",      "python",  SrcLangExt_Python  },
-  { "fortran",     "fortran", SrcLangExt_Fortran },
-  { "vhdl",        "vhdl",    SrcLangExt_VHDL    },
-  { "vhd",         "vhd",     SrcLangExt_VHDL    },
-  { "ucf",         "vhd",     SrcLangExt_VHDL    },
-  { "qsf",         "vhd",     SrcLangExt_VHDL    },
-  
-  { "dbusxml",     "dbusxml", SrcLangExt_XML     },
-  { "tcl",         "tcl",     SrcLangExt_Tcl     },
-  { 0,             0,        (SrcLangExt)0       }
+  { "idl",         "c",       SrcLangExt_IDL      },
+  { "java",        "c",       SrcLangExt_Java     },
+  { "javascript",  "c",       SrcLangExt_JS       },
+  { "csharp",      "c",       SrcLangExt_CSharp   },
+  { "d",           "c",       SrcLangExt_D        },
+  { "php",         "c",       SrcLangExt_PHP      },
+  { "objective-c", "c",       SrcLangExt_ObjC     },
+  { "c",           "c",       SrcLangExt_Cpp      },
+  { "c++",         "c",       SrcLangExt_Cpp      },
+  { "python",      "python",  SrcLangExt_Python   },
+  { "fortran",     "fortran", SrcLangExt_Fortran  },
+  { "vhdl",        "vhdl",    SrcLangExt_VHDL     },
+  { "dbusxml",     "dbusxml", SrcLangExt_XML      },
+  { "tcl",         "tcl",     SrcLangExt_Tcl      },
+  { "md",          "md",      SrcLangExt_Markdown },
+  { 0,             0,        (SrcLangExt)0        }
 };
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
@@ -6328,31 +6303,33 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
 void initDefaultExtensionMapping()
 {
   g_extLookup.setAutoDelete(TRUE);
-  updateLanguageMapping(".idl",   "idl"); 
-  updateLanguageMapping(".ddl",   "idl"); 
-  updateLanguageMapping(".odl",   "idl"); 
-  updateLanguageMapping(".java",  "java");
-  updateLanguageMapping(".as",    "javascript"); 
-  updateLanguageMapping(".js",    "javascript");
-  updateLanguageMapping(".cs",    "csharp");
-  updateLanguageMapping(".d",     "d");
-  updateLanguageMapping(".php",   "php"); 
-  updateLanguageMapping(".php4",  "php");
-  updateLanguageMapping(".php5",  "php");
-  updateLanguageMapping(".inc",   "php");
-  updateLanguageMapping(".phtml", "php");
-  updateLanguageMapping(".m",     "objective-c");
-  updateLanguageMapping(".M",     "objective-c");
-  updateLanguageMapping(".mm",    "objective-c");
-  updateLanguageMapping(".py",    "python");
-  updateLanguageMapping(".f",     "fortran");
-  updateLanguageMapping(".for",   "fortran");
-  updateLanguageMapping(".f90",   "fortran");
-  updateLanguageMapping(".vhd",   "vhdl");
-  updateLanguageMapping(".vhdl",  "vhdl");
-  updateLanguageMapping(".tcl",   "tcl");
-  updateLanguageMapping(".ucf",   "vhdl");
-  updateLanguageMapping(".qsf",   "vhdl");
+  updateLanguageMapping(".idl",      "idl"); 
+  updateLanguageMapping(".ddl",      "idl"); 
+  updateLanguageMapping(".odl",      "idl"); 
+  updateLanguageMapping(".java",     "java");
+  updateLanguageMapping(".as",       "javascript"); 
+  updateLanguageMapping(".js",       "javascript");
+  updateLanguageMapping(".cs",       "csharp");
+  updateLanguageMapping(".d",        "d");
+  updateLanguageMapping(".php",      "php"); 
+  updateLanguageMapping(".php4",     "php");
+  updateLanguageMapping(".php5",     "php");
+  updateLanguageMapping(".inc",      "php");
+  updateLanguageMapping(".phtml",    "php");
+  updateLanguageMapping(".m",        "objective-c");
+  updateLanguageMapping(".M",        "objective-c");
+  updateLanguageMapping(".mm",       "objective-c");
+  updateLanguageMapping(".py",       "python");
+  updateLanguageMapping(".f",        "fortran");
+  updateLanguageMapping(".for",      "fortran");
+  updateLanguageMapping(".f90",      "fortran");
+  updateLanguageMapping(".vhd",      "vhdl");
+  updateLanguageMapping(".vhdl",     "vhdl");
+  updateLanguageMapping(".tcl",      "tcl");
+  updateLanguageMapping(".ucf",      "vhdl");
+  updateLanguageMapping(".qsf",      "vhdl");
+  updateLanguageMapping(".md",       "md");
+  updateLanguageMapping(".markdown", "md");
 
   //updateLanguageMapping(".xml",   "dbusxml");
 }
@@ -7239,3 +7216,4 @@ QCString correctURL(const QCString &url,const QCString &relPath)
   return result;
 }
 
+//---------------------------------------------------------------------------

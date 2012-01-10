@@ -451,7 +451,14 @@ static void generateFuncLink(CodeOutputInterface &ol,MemberDef* mdef)
 
 static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& memberName)
 {
-  if (clName.isEmpty() || memberName.isEmpty()) return; 
+  if (memberName.isEmpty()) return; 
+  if (clName.isEmpty())
+  {
+    codifyLines(memberName.data());
+
+   return;
+  }
+  
   QCString className=clName;
 
   MemberDef *md=0;
@@ -826,7 +833,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			    cc=t1.at(index);
 			  }        
 
-			  QCString s1=(QCString)ql[0];
+			  QCString s1=t1;
 			  s1=s1.stripWhiteSpace();
 
 			  //         if (!g_PortMapComp.isEmpty())

@@ -89,20 +89,21 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 enum SrcLangExt
 {
-  SrcLangExt_Unknown = 0x0000,
-  SrcLangExt_IDL     = 0x0008,
-  SrcLangExt_Java    = 0x0010,
-  SrcLangExt_CSharp  = 0x0020,
-  SrcLangExt_D       = 0x0040,
-  SrcLangExt_PHP     = 0x0080,
-  SrcLangExt_ObjC    = 0x0100,
-  SrcLangExt_Cpp     = 0x0200,
-  SrcLangExt_JS      = 0x0400,
-  SrcLangExt_Python  = 0x0800,
-  SrcLangExt_Fortran = 0x1000,
-  SrcLangExt_VHDL    = 0x2000,
-  SrcLangExt_XML     = 0x4000,
-  SrcLangExt_Tcl     = 0x8000
+  SrcLangExt_Unknown  = 0x00000,
+  SrcLangExt_IDL      = 0x00008,
+  SrcLangExt_Java     = 0x00010,
+  SrcLangExt_CSharp   = 0x00020,
+  SrcLangExt_D        = 0x00040,
+  SrcLangExt_PHP      = 0x00080,
+  SrcLangExt_ObjC     = 0x00100,
+  SrcLangExt_Cpp      = 0x00200,
+  SrcLangExt_JS       = 0x00400,
+  SrcLangExt_Python   = 0x00800,
+  SrcLangExt_Fortran  = 0x01000,
+  SrcLangExt_VHDL     = 0x02000,
+  SrcLangExt_XML      = 0x04000,
+  SrcLangExt_Tcl      = 0x08000,
+  SrcLangExt_Markdown = 0x10000
 };
 
 QCString langToString(SrcLangExt lang);
@@ -306,7 +307,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
                            GroupDef *gd=0,
-                           TagInfo *tagInfo=0
+                           TagInfo *tagInfo=0,
+                           SrcLangExt lang=SrcLangExt_Unknown
                           );
 
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore=FALSE);
@@ -414,6 +416,8 @@ bool copyFile(const QCString &src,const QCString &dest);
 QCString extractBlock(const QCString text,const QCString marker);
 
 QCString correctURL(const QCString &url,const QCString &relPath);
+
+QCString processMarkup(const QCString &s);
 
 #endif
 

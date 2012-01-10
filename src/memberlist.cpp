@@ -575,7 +575,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
               container->getOutputFileBase());
     if (!generateTreeView)
     {
-      container->writeNavigationPath(ol,FALSE);
+      container->writeNavigationPath(ol);
       ol.endQuickIndices();
     }
     ol.startContents();

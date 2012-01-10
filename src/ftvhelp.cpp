@@ -687,7 +687,6 @@ void FTVHelp::generateJSLink(FTextStream &t,FTVNode *n)
   }
   else // link into other page
   {
-    // TODO: external links with installdox
     // TODO: use m_topLevelIndex
     t << "\"" << convertToJSString(n->name) << "\", \"";
     t << externalRef("",n->ref,TRUE);

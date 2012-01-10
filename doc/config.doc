@@ -202,6 +202,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_man_extension MAN_EXTENSION
 \refitem cfg_man_links MAN_LINKS
 \refitem cfg_man_output MAN_OUTPUT
+\refitem cfg_markdown_support MARKDOWN_SUPPORT
 \refitem cfg_mathjax_extensions MATHJAX_EXTENSIONS
 \refitem cfg_mathjax_relpath MATHJAX_RELPATH
 \refitem cfg_max_dot_graph_depth MAX_DOT_GRAPH_DEPTH
@@ -458,6 +459,16 @@ followed by the descriptions of the tags grouped by category.
   comment as the brief description. If set to NO (the default), the
   Qt-style will behave just like regular Qt-style comments (thus
   requiring an explicit \\brief command for a brief description.)
+
+\anchor cfg_markdown_support
+<dt>\c MARKDOWN_SUPPORT <dd>
+ \addindex MARKDOWN_SUPPORT
+ If \c MARKDOWN_SUPPORT is enabled (the default) then doxygen pre-processes all 
+ comments according to the Markdown format, which allows for more readable 
+ documentation. See http://daringfireball.net/projects/markdown/ for details. 
+ The output of markdown processing is further processed by doxygen, so you 
+ can mix doxygen, HTML, and XML commands with Markdown formatting. 
+ Disable only in case of backward compatibilities issues. 
 
 \anchor cfg_builtin_stl_support
 <dt>\c BUILTIN_STL_SUPPORT <dd>
@@ -1116,7 +1127,7 @@ AClass::ANamespace, ANamespace::*Test
 
  Note that the wildcards are matched against the file with absolute path, 
  so to exclude all test directories use the pattern 
- <code>*</code><code>/test/</code><code>*</code>
+ `*``/test/``*`
 
 \anchor cfg_example_path
 <dt>\c EXAMPLE_PATH <dd>
@@ -1137,8 +1148,8 @@ AClass::ANamespace, ANamespace::*Test
 <dt>\c EXAMPLE_PATTERNS <dd>
  \addindex EXAMPLE_PATTERNS
  If the value of the \c EXAMPLE_PATH tag contains directories, you can use the
- \c EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp
- and *.h) to filter out the source-files in the directories. If left
+ \c EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like `*.cpp`
+ and `*.h`) to filter out the source-files in the directories. If left
  blank all files are included.
 
 \anchor cfg_image_path
@@ -1168,7 +1179,7 @@ AClass::ANamespace, ANamespace::*Test
  The \c FILTER_PATTERNS tag can be used to specify filters on a per file pattern
  basis.  Doxygen will compare the file name with each pattern and apply the
  filter if there is a match.  The filters are a list of the form:
- pattern=filter (like <code>*.cpp=my_cpp_filter</code>). See \c INPUT_FILTER for further
+ pattern=filter (like `*.cpp=my_cpp_filter`). See \c INPUT_FILTER for further
  info on how filters are used. If \c FILTER_PATTERNS is empty or if
  non of the patterns match the file name, \c INPUT_FILTER is applied.
 
@@ -1186,7 +1197,7 @@ AClass::ANamespace, ANamespace::*Test
  The \c FILTER_SOURCE_PATTERNS tag can be used to specify source filters per 
  file pattern. A pattern will override the setting for \c FILTER_PATTERN (if any) 
  and it is also possible to disable source filtering for a specific pattern 
- using *.ext= (so without naming a filter). This option only has effect when 
+ using `*.ext=` (so without naming a filter). This option only has effect when 
  \c FILTER_SOURCE_FILES is enabled.
 
 </dl>
@@ -1308,7 +1319,7 @@ AClass::ANamespace, ANamespace::*Test
  \addindex HTML_OUTPUT
  The \c HTML_OUTPUT tag is used to specify where the HTML docs will be put.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
- put in front of it. If left blank `html' will be used as the default path.
+ put in front of it. If left blank 'html' will be used as the default path.
 
 \anchor cfg_html_file_extension
 <dt>\c HTML_FILE_EXTENSION <dd>
@@ -1778,7 +1789,7 @@ and Class Hierarchy pages using a tree view instead of an ordered list.
  Use this tag to change the font size of Latex formulas included
  as images in the HTML documentation. The default is 10.
  when you change the font size after a successful doxygen run you need
- to manually remove any <code>form_*.png</code> images from the HTML 
+ to manually remove any `form_*.png` images from the HTML 
  output directory to force them to be regenerated.
 
 \anchor cfg_formula_transparent
@@ -1787,7 +1798,7 @@ and Class Hierarchy pages using a tree view instead of an ordered list.
  Use the \c FORMULA_TRANPARENT tag to determine whether or not the images 
  generated for formulas are transparent PNGs. Transparent PNGs are 
  not supported properly for IE 6.0, but are supported on all modern browsers. 
- Note that when changing this option you need to delete any form_*.png files 
+ Note that when changing this option you need to delete any `form_*.png` files 
  in the HTML output before the changes have effect. 
 
 \anchor cfg_use_mathjax
@@ -1837,13 +1848,13 @@ MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
  The \c LATEX_OUTPUT tag is used to specify where the \f$\mbox{\LaTeX}\f$ 
  docs will be put.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
- put in front of it. If left blank `latex' will be used as the default path.
+ put in front of it. If left blank 'latex' will be used as the default path.
 
 \anchor cfg_latex_cmd_name
 <dt>\c LATEX_CMD_NAME <dd>
  \addindex LATEX_CMD_NAME
  The \c LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be invoked. 
- If left blank `latex' will be used as the default command name.
+ If left blank 'latex' will be used as the default command name.
  Note that when enabling USE_PDFLATEX this option is only used for
  generating bitmaps for formulas in the HTML output, but not in the
  Makefile that is written to the output directory.
@@ -1852,7 +1863,7 @@ MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
 <dt>\c MAKEINDEX_CMD_NAME <dd>
  \addindex MAKEINDEX_CMD_NAME
  The MAKEINDEX_CMD_NAME tag can be used to specify the command name to 
- generate index for LaTeX. If left blank `makeindex' will be used as the 
+ generate index for LaTeX. If left blank 'makeindex' will be used as the 
  default command name.
 
 \anchor cfg_compact_latex
@@ -2039,7 +2050,7 @@ EXTRA_PACKAGES = times
  \addindex MAN_OUTPUT
  The \c MAN_OUTPUT tag is used to specify where the man pages will be put.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
- put in front of it. If left blank `man' will be used as the default path.
+ put in front of it. If left blank 'man' will be used as the default path.
  A directory man3 will be created inside the directory specified by 
  \c MAN_OUTPUT.
 
@@ -2195,7 +2206,7 @@ EXTRA_PACKAGES = times
 <dt>\c INCLUDE_FILE_PATTERNS <dd>
  \addindex INCLUDE_FILE_PATTERNS
  You can use the \c INCLUDE_FILE_PATTERNS tag to specify one or more wildcard 
- patterns (like *.h and *.hpp) to filter out the header-files in the 
+ patterns (like `*.h` and `*.hpp`) to filter out the header-files in the 
  directories. If left blank, the patterns specified with \c FILE_PATTERNS will 
  be used. 
 
@@ -2234,27 +2245,13 @@ EXTRA_PACKAGES = times
 
 <dt>\c TAGFILES <dd> 
  \addindex TAGFILES
- The \c TAGFILES tag can be used to specify one or more tagfiles. 
- 
- See section \ref doxytag_usage for more information about the usage of 
- tag files.
- 
- Optionally an initial location of the external documentation 
- can be added for each tagfile.
- The format of a tag file without this location is as follows:
- <pre>
-TAGFILES = file1 file2 ... </pre>
- Adding location for the tag files is done as follows:
- <pre>
-TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
- where \c loc1 and \c loc2 can be relative or absolute paths or URLs, 
- If a location is present for each tag, the installdox tool (see 
- section \ref installdox_usage for more information) does not
- have to be run to correct the links.
+ The \c TAGFILES tag can be used to specify one or more tag files. 
 
- \par Note:
+ See \ref external for more information about the use of tag files.
+
+ \note
   Each tag file must have a unique name 
-  (where the name does \e not include the path)
+  (where the name does \e not include the path).
   If a tag file is not located in the directory in which doxygen 
   is run, you must also specify the path to the tagfile here.
 
@@ -2263,7 +2260,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex GENERATE_TAGFILE
  When a file name is specified after \c GENERATE_TAGFILE, doxygen will create
  a tag file that is based on the input files it reads.
- See section \ref doxytag_usage for more information about the usage of 
+ See section \ref external for more information about the usage of 
  tag files.
 
 \anchor cfg_allexternals
@@ -2284,7 +2281,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 <dt>\c PERL_PATH <dd>
  \addindex PERL_PATH
  The \c PERL_PATH should be the absolute path and name of the perl script
- interpreter (i.e. the result of `<tt>which perl</tt>').
+ interpreter (i.e. the result of '<tt>which perl</tt>').
 
 </dl>
 \section config_dot Dot options

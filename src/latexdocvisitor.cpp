@@ -1367,6 +1367,18 @@ void LatexDocVisitor::visitPost(DocText *)
 {
 }
 
+void LatexDocVisitor::visitPre(DocHtmlBlockQuote *)
+{
+  if (m_hide) return;
+  m_t << "\\begin{quotation}" << endl;
+}
+
+void LatexDocVisitor::visitPost(DocHtmlBlockQuote *)
+{
+  if (m_hide) return;
+  m_t << "\\end{quotation}" << endl;
+}
+
 void LatexDocVisitor::filter(const char *str)
 { 
   filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);

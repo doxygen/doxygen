@@ -192,7 +192,7 @@ documentation:
 \refitem cmdhash \\\#
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
-\refitem cmddcolon \\\::
+\refitem cmddcolon \::
 \endsecreflist
 
 The following subsections provide a list of all commands that are recognized by
@@ -219,7 +219,7 @@ Structural indicators
 
 \verbatim
   /*! \addtogroup mygrp
-   *  Additional documentation for group `mygrp'
+   *  Additional documentation for group 'mygrp'
    *  @{
    */
 
@@ -699,8 +699,8 @@ Structural indicators
   This command can be used to generate the following
   standard text for an overloaded member function:
 
-   `This is an overloaded member function, provided for convenience.
-    It differs from the above function only in what argument(s) it accepts.'
+  > This is an overloaded member function, provided for convenience.
+  > It differs from the above function only in what argument(s) it accepts.
 
   If the documentation for the overloaded member function is not located
   in front of the function declaration or definition, the optional
@@ -738,7 +738,7 @@ Structural indicators
   not directly related to one specific class, file or member.
   The HTML generator creates a page containing the documentation. The
   \f$\mbox{\LaTeX}\f$ generator
-  starts a new section in the chapter `Page documentation'.
+  starts a new section in the chapter 'Page documentation'.
 
   \par Example:
   \verbinclude page.doc
@@ -878,7 +878,7 @@ Structural indicators
 
   \addindex \\relates
   This command can be used in the documentation of a non-member function
-  \<name\>. It puts the function inside the `related function' section
+  \<name\>. It puts the function inside the 'related function' section
   of the class documentation. This command is useful for documenting
   non-friend functions that are nevertheless strongly coupled to a certain
   class. It prevents the need of having to document a file, but
@@ -902,7 +902,7 @@ Structural indicators
 
   \addindex \\relatesalso
   This command can be used in the documentation of a non-member function
-  \<name\>. It puts the function both inside the `related function' section
+  \<name\>. It puts the function both inside the 'related function' section
   of the class documentation as well as leaving it at its normal file documentation
   location. This command is useful for documenting
   non-friend functions that are nevertheless strongly coupled to a certain
@@ -1845,7 +1845,7 @@ Commands for displaying examples
   tag of doxygen's configuration file.
 
   The class and member declarations and definitions inside the code fragment
-  are `remembered' during the parsing of the comment block that contained
+  are 'remembered' during the parsing of the comment block that contained
   the \\dontinclude command.
 
   For line by line descriptions of source files, one or more lines
@@ -2167,7 +2167,7 @@ Commands for visual enhancements
   should also be documented for the copying to work.
 
   To copy the documentation for a member of a
-  class for instance one can put the following in the documentation
+  class one can, for instance, put the following in the documentation:
 
 \verbatim
   /*! @copydoc MyClass::myfunction()
@@ -2179,7 +2179,7 @@ Commands for visual enhancements
   explicitly (without spaces!), like in the following:
 
 \verbatim
-  /*! @copydoc MyClass::myfunction(type1,type2) */
+  //! @copydoc MyClass::myfunction(type1,type2)
 \endverbatim
 
   Qualified names are only needed if the context in which the documentation
@@ -2188,12 +2188,14 @@ Commands for visual enhancements
   The \\copydoc command can be used recursively, but cycles in the \\copydoc
   relation will be broken and flagged as an error.
 
-  Note that both the brief description and the detailed documentation
-  will be copied. See \ref cmdcopybrief "\\copybrief" and
+  Note that <code>\\copydoc foo()</code> is roughly equivalent to doing:
+\verbatim
+  \brief \copybrief foo()
+  \details \copydetails foo()
+\endverbatim
+  See \ref cmdcopybrief "\\copybrief" and
   \ref cmdcopydetails "\\copydetails" for copying only the brief or
   detailed part of the comment block.
-
-  \sa sections \ref cmdcopybrief "\\copybrief" and \ref cmdcopydetails "\\copydetails"
 
 <hr>
 \section cmdcopybrief \\copybrief <link-object>

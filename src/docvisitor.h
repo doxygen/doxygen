@@ -72,14 +72,14 @@ class DocRef;
 class DocFormula;
 class DocSecRefItem;
 class DocSecRefList;
-//class DocLanguage;
 class DocLinkedWord;
 class DocParamSect;
 class DocParamList;
 class DocInternalRef;
-class DocCopy;
+class DocCopy; // TODO: no longer generated => remove
 class DocText;
 class DocSimpleSectSep;
+class DocHtmlBlockQuote;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
  */
@@ -171,8 +171,6 @@ class DocVisitor
     virtual void visitPost(DocSecRefItem *) = 0;
     virtual void visitPre(DocSecRefList *) = 0;
     virtual void visitPost(DocSecRefList *) = 0;
-    //virtual void visitPre(DocLanguage *) = 0;
-    //virtual void visitPost(DocLanguage *) = 0;
     virtual void visitPre(DocParamSect *) = 0;
     virtual void visitPost(DocParamSect *) = 0;
     virtual void visitPre(DocParamList *) = 0;
@@ -185,6 +183,8 @@ class DocVisitor
     virtual void visitPost(DocCopy *) = 0;
     virtual void visitPre(DocText *) = 0;
     virtual void visitPost(DocText *) = 0;
+    virtual void visitPre(DocHtmlBlockQuote *) = 0;
+    virtual void visitPost(DocHtmlBlockQuote *) = 0;
     /*! @} */
 };
 

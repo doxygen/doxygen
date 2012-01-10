@@ -94,6 +94,8 @@ static bool mustBeOutsideParagraph(DocNode *n)
            * preserve formatting.
            */
         case DocNode::Kind_Copy:
+          /* <blockquote> */
+        case DocNode::Kind_HtmlBlockQuote:
           return TRUE;
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
@@ -211,11 +213,37 @@ void HtmlDocVisitor::visit(DocSymbol *s)
 void HtmlDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
-  m_t << "<a href=\"";
-  if (u->isEmail()) m_t << "mailto:";
-  m_t << u->url() << "\">";
-  filter(u->url());
-  m_t << "</a>";
+  if (u->isEmail()) // mail address
+  {
+    // do obfuscation via javascript
+    m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
+    QCString url = u->url();     
+    uint i;
+    int size=3;
+    for (i=0;i<url.length();)
+    {
+      m_t << "+'" << url.mid(i,size) << "'";
+      i+=size;
+      if (size==3) size=2; else size=3;
+    }
+    m_t << "; return false;\">";
+    size=5;
+    for (i=0;i<url.length();)
+    {
+      filter(url.mid(i,size));
+      if (i<url.length()-size) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
+      i+=size;
+      if (size==5) size=4; else size=5;
+    }
+    m_t << "</a>";
+  }
+  else // web address
+  {
+    m_t << "<a href=\"";
+    m_t << u->url() << "\">";
+    filter(u->url());
+    m_t << "</a>";
+  }
 }
 
 void HtmlDocVisitor::visit(DocLineBreak *)
@@ -702,8 +730,10 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
     switch (p->parent()->kind()) 
     {
       case DocNode::Kind_AutoListItem:
-        isFirst=TRUE;
-        isLast =TRUE;
+        //isFirst=TRUE;
+        //isLast =TRUE;
+        isFirst=isFirstChildNode((DocAutoListItem*)p->parent(),p);
+        isLast =isLastChildNode ((DocAutoListItem*)p->parent(),p);
         t=1; // not used
         break;
       case DocNode::Kind_SimpleListItem:
@@ -790,6 +820,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       case DocNode::Kind_SimpleSect:
       case DocNode::Kind_XRefItem:
       case DocNode::Kind_Copy:
+      case DocNode::Kind_HtmlBlockQuote:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -862,6 +893,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
       case DocNode::Kind_SimpleSect:
       case DocNode::Kind_XRefItem:
       case DocNode::Kind_Copy:
+      case DocNode::Kind_HtmlBlockQuote:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -1579,6 +1611,29 @@ void HtmlDocVisitor::visitPre(DocText *)
 
 void HtmlDocVisitor::visitPost(DocText *)
 {
+}
+
+void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
+{
+  if (m_hide) return;
+  forceEndParagraph(b);
+
+  QString attrs = htmlAttribsToString(b->attribs());
+  if (attrs.isEmpty())
+  {
+    m_t << "<blockquote class=\"doxtable\">\n";
+  }
+  else
+  {
+    m_t << "<blockquote " << htmlAttribsToString(b->attribs()) << ">\n";
+  }
+}
+
+void HtmlDocVisitor::visitPost(DocHtmlBlockQuote *b)
+{
+  if (m_hide) return;
+  m_t << "</blockquote>" << endl;
+  forceStartParagraph(b);
 }
 
 void HtmlDocVisitor::filter(const char *str)

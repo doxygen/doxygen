@@ -250,6 +250,14 @@ doxygen treat .inc files as Fortran files (default is PHP), and .f files as C
 you also need to set FILE_PATTERNS otherwise the files are not read by doxygen.
 '>
     </option>
+    <option type='bool' id='MARKDOWN_SUPPORT' docs='
+If MARKDOWN_SUPPORT is enabled (the default) then doxygen pre-processes all 
+comments according to the Markdown format, which allows for more readable 
+documentation. See http://daringfireball.net/projects/markdown/ for details. 
+The output of markdown processing is further processed by doxygen, so you 
+can mix doxygen, HTML, and XML commands with Markdown formatting. 
+Disable only in case of backward compatibilities issues. 
+' defval='1'/>
     <option type='bool' id='BUILTIN_STL_SUPPORT' docs='
 If you use STL classes (i.e. std::string, std::vector, etc.) but do not want 
 to include (a tag file for) the STL sources as input, then you should 
@@ -1382,20 +1390,16 @@ semicolon, because these will confuse the parser if not removed.
   </group>
   <group name='External' docs='Configuration::additions related to external references'>
     <option type='list' id='TAGFILES' format='file' docs='
-The TAGFILES option can be used to specify one or more tagfiles. 
-Optionally an initial location of the external documentation 
-can be added for each tagfile. The format of a tag file without 
-this location is as follows: 
+The TAGFILES option can be used to specify one or more tagfiles. For each 
+tag file the location of the external documentation should be added. The 
+format of a tag file without this location is as follows: 
   TAGFILES = file1 file2 ... 
 Adding location for the tag files is done as follows: 
   TAGFILES = file1=loc1 &quot;file2 = loc2&quot; ... 
-where &quot;loc1&quot; and &quot;loc2&quot; can be relative or absolute paths or 
-URLs. If a location is present for each tag, the installdox tool 
-does not have to be run to correct the links. 
-Note that each tag file must have a unique name 
-(where the name does NOT include the path) 
-If a tag file is not located in the directory in which doxygen 
-is run, you must also specify the path to the tagfile here. 
+where &quot;loc1&quot; and &quot;loc2&quot; can be relative or absolute paths 
+or URLs. Note that each tag file must have a unique name (where the name does 
+NOT include the path). If a tag file is not located in the directory in which 
+doxygen is run, you must also specify the path to the tagfile here. 
 '>
     </option>
     <option type='string' id='GENERATE_TAGFILE' format='file' docs='

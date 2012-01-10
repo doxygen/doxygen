@@ -5401,7 +5401,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   				          handleCommentBlock(docBlock.data(),FALSE);
 					  BEGIN(docBlockContext);
   					}
-<DocBlock>^{B}*("//")?{B}*"*"+/[^//]	{ // start of a comment line
+<DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*]	{ // start of a comment line
   					}
 <DocBlock>^{B}*("//"){B}*		{ // strip embedded C++ comments if at the start of a line
   					}

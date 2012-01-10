@@ -129,6 +129,8 @@ class ManDocVisitor : public DocVisitor
     void visitPost(DocCopy *);
     void visitPre(DocText *);
     void visitPost(DocText *);
+    void visitPre(DocHtmlBlockQuote *);
+    void visitPost(DocHtmlBlockQuote *);
 
   private:
 

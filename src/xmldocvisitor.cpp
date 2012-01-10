@@ -953,6 +953,19 @@ void XmlDocVisitor::visitPost(DocText *)
 {
 }
 
+void XmlDocVisitor::visitPre(DocHtmlBlockQuote *)
+{
+  if (m_hide) return;
+  m_t << "<blockquote>";
+}
+
+void XmlDocVisitor::visitPost(DocHtmlBlockQuote *)
+{
+  if (m_hide) return;
+  m_t << "</blockquote>";
+}
+
+
 void XmlDocVisitor::filter(const char *str)
 { 
   m_t << convertToXML(str);

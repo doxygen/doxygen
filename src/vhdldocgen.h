@@ -82,23 +82,20 @@ class VhdlDocGen
       PORT,
       UNITS,	  
       GENERIC,
-      COMPONENT_INST,
+      INSTANTIATION,
       GROUP,
       VFILE,   
       SHAREDVARIABLE,
       CONFIG,
       ALIAS,
-	  MISCELLANEOUS,
-	  UCF_CONST
+      MISCELLANEOUS,
+      UCF_CONST
     };
-
-
-
 
     VhdlDocGen();
     virtual ~VhdlDocGen();
     static void init();
- static QCString convertFileNameToClassName(QCString name);
+    static QCString convertFileNameToClassName(QCString name);
     // --- used by vhdlscanner.l -----------
     
     static QCString getIndexWord(const char* ,int index);
@@ -112,12 +109,9 @@ class VhdlDocGen
                                    bool doc=false);
     // -----------------------------------
 
-
     static void computeVhdlComponentRelations();
 
-
     static QCString* findKeyWord(const QCString& word);
-
 
     static ClassDef* getPackageName(const QCString& name);
     static MemberDef* findMember(const QCString& className, 
@@ -136,7 +130,6 @@ class VhdlDocGen
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
-
 
     static bool isConstraint(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::UCF_CONST; }   
@@ -189,9 +182,9 @@ class VhdlDocGen
     static bool isGroup(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
     static bool isCompInst(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::COMPONENT_INST; }
-static bool isMisc(const MemberDef *mdef) 
-{ return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::INSTANTIATION; }
+    static bool isMisc(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }
 
     //-----------------------------------------------------
     // translatable items
@@ -220,23 +213,17 @@ static bool isMisc(const MemberDef *mdef)
     // trFunctions
     static QCString trFunctionAndProc();
 
-
     //-----------------------------------------------------
 
     static void prepareComment(QCString&);
-    
-	
- 
-    static void formatString(QCString&,OutputList& ol,const MemberDef*);
+    static void formatString(const QCString&,OutputList& ol,const MemberDef*);
 
-    static void writeFormatString(QCString&,OutputList& ol,const MemberDef*);
+    static void writeFormatString(const QCString&,OutputList& ol,const MemberDef*);
     static void writeFunctionProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
     static void writeProcessProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
     static void writeProcedureProto(OutputList& ol, const ArgumentList *al,const MemberDef*);
     static void writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList* al,bool type=false);
     static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList *al);
-
-
 
     static void writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
@@ -272,7 +259,6 @@ static bool isMisc(const MemberDef *mdef)
     static QCString splitString(QCString & str,  char c);
     static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
 	
-	
     static bool findConstraintFile( LayoutNavEntry *lne);
 
     static ClassDef*  findArchitecture(const ClassDef *cd);
@@ -284,16 +270,16 @@ static bool isMisc(const MemberDef *mdef)
     static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
     static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
+    static QCString  parseForConfig(QCString & entity,QCString & arch);
+    static QCString  parseForBinding(QCString & entity,QCString & arch);
 
-	static QCString  parseForConfig(QCString & entity,QCString & arch);
-	static QCString  parseForBinding(QCString & entity,QCString & arch);
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
     static bool compareArgList(ArgumentList*,ArgumentList*);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
-	static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
-	static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
+    static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
+    static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
 };
 
 #endif

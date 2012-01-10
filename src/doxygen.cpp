@@ -34,7 +34,6 @@
 #include "entry.h"
 #include "index.h"
 #include "logos.h"
-#include "instdox.h"
 #include "message.h"
 #include "config.h"
 #include "util.h"
@@ -82,6 +81,7 @@
 #include "eclipsehelp.h"
 #include "cite.h"
 #include "filestorage.h"
+#include "markdown.h"
 
 #include "layout.h"
 
@@ -150,6 +150,7 @@ int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
+bool             Doxygen::markdownSupport = TRUE;
 
 // locally accessible globals
 static QDict<EntryNav>  g_classEntries(1009);
@@ -502,7 +503,8 @@ static void addRelatedPage(EntryNav *rootNav)
   PageDef *pd = addRelatedPage(root->name,root->args,doc,root->anchors,
       root->fileName,root->startLine,
       root->sli,
-      gd,rootNav->tagInfo()
+      gd,rootNav->tagInfo(),
+      root->lang
      );
   if (pd)
   {
@@ -7652,28 +7654,6 @@ static void generateClassList(ClassSDict &classSDict)
 
 static void generateClassDocs()
 {
-  // write the installdox script if necessary
-  if (Config_getBool("GENERATE_HTML") && 
-      (Config_getList("TAGFILES").count()>0 || 
-       Config_getBool("SEARCHENGINE")
-      )
-     ) 
-  {
-    writeInstallScript();
-  }
-  
-  //msg("Generating annotated compound index...\n");
-  //writeAnnotatedIndex(*g_outputList);
-
-  //msg("Generating alphabetical compound index...\n");
-  //writeAlphabeticalIndex(*g_outputList);
-
-  //msg("Generating hierarchical class index...\n");
-  //writeHierarchicalIndex(*g_outputList);
-
-  //msg("Generating member index...\n");
-  //writeClassMemberIndex(*g_outputList);
-
   generateClassList(*Doxygen::classSDict);
   generateClassList(*Doxygen::hiddenClasses);
 }
@@ -8442,6 +8422,7 @@ static void buildExampleList(EntryNav *rootNav)
           root->name,root->brief+root->doc+root->inbodyDocs,root->args);
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
+      pd->setLanguage(root->lang);
       //pi->addSections(root->anchors);
 
       Doxygen::exampleSDict->inSort(root->name,pd);
@@ -8500,8 +8481,7 @@ static void generateExampleDocs()
                          TRUE,                                     // is example
                          pd->name()
                         );
-    g_outputList->endContents();
-    endFile(*g_outputList);
+    endFile(*g_outputList); // contains g_outputList->endContents()
   }
   g_outputList->enable(OutputGenerator::Man);
 }
@@ -9358,6 +9338,7 @@ void initDoxygen()
   Doxygen::parserManager->registerParser("vhdl",    new VHDLLanguageScanner);
   Doxygen::parserManager->registerParser("dbusxml", new DBusXMLScanner);
   Doxygen::parserManager->registerParser("tcl",     new TclLanguageScanner);
+  Doxygen::parserManager->registerParser("md",      new MarkdownFileParser);
 
   // register any additional parsers here...
 
@@ -9830,6 +9811,8 @@ void adjustConfiguration()
                                 Config_getBool("CALLER_GRAPH") ||
                                 Config_getBool("REFERENCES_RELATION") ||
                                 Config_getBool("REFERENCED_BY_RELATION");
+
+  Doxygen::markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
   
   /**************************************************************************
    *            Add custom extension mappings

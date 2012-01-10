@@ -119,8 +119,8 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
     {
       case '\t': 
       { 
-	int spacesToNextTabStop = 
-          Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE")); 
+        static int tabSize = Config_getInt("TAB_SIZE");
+	int spacesToNextTabStop = tabSize - (col%tabSize); 
 	col+=spacesToNextTabStop;
 	while (spacesToNextTabStop--) t << "<sp/>";
 	break;

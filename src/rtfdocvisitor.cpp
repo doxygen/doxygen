@@ -1519,23 +1519,48 @@ void RTFDocVisitor::visitPost(DocInternalRef *)
 
 void RTFDocVisitor::visitPre(DocCopy *)
 {
+  if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocCopy)}\n");
 }
 
 void RTFDocVisitor::visitPost(DocCopy *)
 {
+  if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocCopy)}\n");
 }
 
 void RTFDocVisitor::visitPre(DocText *)
 {
+  if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocText)}\n");
 }
 
 void RTFDocVisitor::visitPost(DocText *)
 {
+  if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocText)}\n");
 }
+
+void RTFDocVisitor::visitPre(DocHtmlBlockQuote *)
+{
+  if (m_hide) return;
+  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlBlockQuote)}\n");
+  if (!m_lastIsPara) m_t << "\\par" << endl;
+  m_t << "{"; // start desc
+  incIndentLevel();
+  m_t << rtf_Style_Reset << getStyle("DescContinue"); 
+}
+
+void RTFDocVisitor::visitPost(DocHtmlBlockQuote *)
+{
+  if (m_hide) return;
+  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocHtmlBlockQuote)}\n");
+  if (!m_lastIsPara) m_t << "\\par" << endl;
+  decIndentLevel();
+  m_t << "}"; // end desc
+  m_lastIsPara=TRUE;
+}
+
 
 //static char* getMultiByte(int c)
 //{

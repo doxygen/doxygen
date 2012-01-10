@@ -158,7 +158,7 @@ void LatexGenerator::init()
       << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: clean refman.tex" << endl;
     t << "\tpdflatex refman" << endl;
-    t << "\t" << mkidx_command << " refman.tex" << endl;
+    t << "\t" << mkidx_command << " refman.idx" << endl;
     if (generateBib)
     {
       t << "\tbibtex refman" << endl;
