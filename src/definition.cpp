@@ -320,10 +320,11 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
     //printf("Add section `%s' to definition `%s'\n",
     //    si->label.data(),name().data());
     SectionInfo *gsi=Doxygen::sectionDict.find(si->label);
+    //printf("===== label=%s gsi=%p\n",si->label.data(),gsi);
     if (gsi==0)
     {
       gsi = new SectionInfo(*si);
-      Doxygen::sectionDict.insert(si->label,gsi);
+      Doxygen::sectionDict.append(si->label,gsi);
     }
     if (m_impl->sectionDict==0) 
     {
@@ -331,10 +332,72 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
     }
     if (m_impl->sectionDict->find(gsi->label)==0)
     {
-      m_impl->sectionDict->insert(gsi->label,gsi);
+      m_impl->sectionDict->append(gsi->label,gsi);
       gsi->definition = this;
     }
     si=anchorList->next();
+  }
+}
+
+bool Definition::hasSections() const
+{
+  makeResident();
+  //printf("Definition::hasSections(%s) #sections=%d\n",name().data(),
+  //    m_impl->sectionDict ? m_impl->sectionDict->count() : 0);
+  if (m_impl->sectionDict==0) return FALSE;
+  SDict<SectionInfo>::Iterator li(*m_impl->sectionDict);
+  SectionInfo *si;
+  for (li.toFirst();(si=li.current());++li)
+  {
+    if (si->type==SectionInfo::Section || 
+        si->type==SectionInfo::Subsection || 
+        si->type==SectionInfo::Subsubsection ||
+        si->type==SectionInfo::Paragraph)
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void Definition::addSectionsToIndex()
+{
+  makeResident();
+  if (m_impl->sectionDict==0) return;
+  //printf("Definition::addSectionsToIndex()\n");
+  SDict<SectionInfo>::Iterator li(*m_impl->sectionDict);
+  SectionInfo *si;
+  int level=0;
+  for (li.toFirst();(si=li.current());++li)
+  {
+    if (si->type==SectionInfo::Section       || 
+        si->type==SectionInfo::Subsection    || 
+        si->type==SectionInfo::Subsubsection ||
+        si->type==SectionInfo::Paragraph)
+    {
+      //printf("  level=%d title=%s\n",level,si->title.data());
+      int nextLevel = (int)si->type;
+      if (nextLevel>level)
+      {
+        Doxygen::indexList.incContentsDepth();
+      }
+      else if (nextLevel<level)
+      {
+        Doxygen::indexList.decContentsDepth();
+      }
+      Doxygen::indexList.addContentsItem(TRUE,si->title,
+                                         getReference(),
+                                         getOutputFileBase(),
+                                         si->label,
+                                         FALSE,
+                                         TRUE);
+      level = nextLevel;
+    }
+  }
+  while (level>0)
+  {
+    Doxygen::indexList.decContentsDepth();
+    level--;
   }
 }
 
@@ -344,7 +407,7 @@ void Definition::writeDocAnchorsToTagFile()
   if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_impl->sectionDict)
   {
     //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_sectionDict->count());
-    QDictIterator<SectionInfo> sdi(*m_impl->sectionDict);
+    SDict<SectionInfo>::Iterator sdi(*m_impl->sectionDict);
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {

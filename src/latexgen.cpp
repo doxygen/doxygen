@@ -72,18 +72,10 @@ LatexGenerator::~LatexGenerator()
 {
 }
 
-void LatexGenerator::init()
+static void writeLatexMakefile()
 {
   bool generateBib = !Doxygen::citeDict->isEmpty();
-
   QCString dir=Config_getString("LATEX_OUTPUT");
-  QDir d(dir);
-  if (!d.exists() && !d.mkdir(dir))
-  {
-    err("Could not create output directory %s\n",dir.data());
-    exit(1);
-  }
-  
   QCString fileName=dir+"/Makefile";
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
@@ -182,6 +174,66 @@ void LatexGenerator::init()
     << "\trm -f " 
 #endif
     << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf" << endl;
+}
+
+static void writeMakePdfBat()
+{
+#if defined(_MSC_VER)
+  if (Config_getBool("USE_PDFLATEX")) // use plain old latex
+  {
+    bool generateBib = !Doxygen::citeDict->isEmpty();
+    QCString mkidx_command = Config_getString("MAKEINDEX_CMD_NAME");
+    QCString dir=Config_getString("LATEX_OUTPUT");
+    QCString fileName=dir+"/makepdf.bat";
+    QFile file(fileName);
+    if (!file.open(IO_WriteOnly))
+    {
+      err("Could not open file %s for writing\n",fileName.data());
+      exit(1);
+    }
+    FTextStream t(&file);
+    t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
+    t << "pdflatex refman\n";
+    t << "echo ----\n";
+    t << mkidx_command << " refman.idx\n";
+    if (generateBib)
+    {
+      t << "\tbibtex refman" << endl;
+      t << "\tpdflatex refman" << endl;
+    }
+    t << "echo ----\n";
+    t << "pdflatex refman\n\n";
+    t << "setlocal enabledelayedexpansion\n";
+    t << "set count=5\n";
+    t << ":repeat\n";
+    t << "set content=X\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\n";
+    t << "if !content! == X goto :skip\n";
+    t << "set /a count-=1\n";
+    t << "if !count! EQU 0 goto :skip\n\n";
+    t << "echo ----\n";
+    t << "pdflatex refman\n";
+    t << "goto :repeat\n";
+    t << ":skip\n";
+    t << "endlocal\n";
+  }
+#endif
+}
+
+void LatexGenerator::init()
+{
+
+  QCString dir=Config_getString("LATEX_OUTPUT");
+  QDir d(dir);
+  if (!d.exists() && !d.mkdir(dir))
+  {
+    err("Could not create output directory %s\n",dir.data());
+    exit(1);
+  }
+
+  writeLatexMakefile();
+  writeMakePdfBat();
 
   createSubDirs(d);
 }
@@ -345,6 +397,7 @@ static void writeDefaultStyleSheetPart1(FTextStream &t)
        "\\RequirePackage{longtable}\n"
        "\\RequirePackage{verbatim}\n"
        "\\RequirePackage{ifthen}\n"
+       "\\RequirePackage{xtab}\n"
        "\\RequirePackage[table]{xcolor}\n\n";
 
   t << "% Use helvetica font instead of times roman\n"
@@ -788,10 +841,10 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
   t << "{\n";
   t << "\\setlength{\\tmplength}\n";
   t << "     {\\linewidth/(#1)-\\tabcolsep*2-\\arrayrulewidth*(#1+1)/(#1)}\n";
-  t << "      \\par\\begin{tabular*}{\\linewidth}\n";
+  t << "      \\par\\begin{xtabular*}{\\linewidth}\n";
   t << "             {*{#1}{|>{\\PBS\\raggedright\\hspace{0pt}}p{\\the\\tmplength}}|}\n";
   t << "}\n";
-  t << "{\\end{tabular*}\\par}\n";
+  t << "{\\end{xtabular*}\\par}\n";
   t << "\\newcommand{\\entrylabel}[1]{\n";
   t << "   {\\parbox[b]{\\labelwidth-4pt}{\\makebox[0pt][l]{%\n";
   t << "   \\usefont{OT1}{phv}{bc}{n}\\color{darkgray}#1}\\vspace{1.5\\baselineskip}}}}\n";

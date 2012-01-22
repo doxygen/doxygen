@@ -69,6 +69,7 @@ static int              lastPreLineCtrlContext;
 static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
 static int              lastCSConstraint;
+static int              lastHereDocContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -138,6 +139,7 @@ static QCString         *pCopyCurlyString;
 static QGString         *pCopyCurlyGString;
 static QGString         *pCopyRoundGString;
 static QGString         *pCopyQuotedGString;
+static QGString         *pCopyHereDocGString;
 static QGString         *pSkipVerbString;
 static QStack<Grouping> autoGroupStack;
 
@@ -698,6 +700,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	CopyArgVerbatim
 %x	HereDoc
 %x	HereDocEnd
+%x	CopyHereDoc
+%x	CopyHereDocEnd
 
 %x      IDLAttribute
 %x      IDLProp
@@ -1833,13 +1837,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    BEGIN( EndTemplate );
   					}
-<EndTemplate>"<<<"			{
+<EndTemplate>"<<<"	                {
   					  if (!insidePHP) 
 					  {
 					    REJECT;
 					  }
 					  else
 					  {
+                                            lastHereDocContext = YY_START;
 					    BEGIN(HereDoc);
 					  }
   					}
@@ -1922,20 +1927,44 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    REJECT;
 					}
+<CopyHereDoc>{ID}                       { // PHP heredoc
+  					  g_hereDocId = yytext;
+                                          *pCopyHereDocGString += yytext;
+					  BEGIN(CopyHereDocEnd);
+                                        }
+<CopyHereDoc>"'"{ID}/"'"		{ // PHP nowdoc
+  					  g_hereDocId = &yytext[1];
+                                          *pCopyHereDocGString += yytext;
+					  BEGIN(CopyHereDocEnd);
+                                        }
 <HereDoc>{ID}				{ // PHP heredoc
   					  g_hereDocId = yytext;
 					  BEGIN(HereDocEnd);
   					}
 <HereDoc>"'"{ID}/"'"			{ // PHP nowdoc
   					  g_hereDocId = &yytext[1];
+					  BEGIN(HereDocEnd);
   					}
 <HereDocEnd>^{ID}			{ // id at start of the line could mark the end of the block
   					  if (g_hereDocId==yytext) // it is the end marker
 					  {
-  					    BEGIN(FindMembers);
+  					    BEGIN(lastHereDocContext);
 					  }
   					}
 <HereDocEnd>.				{ }
+<CopyHereDocEnd>^{ID}			{ // id at start of the line could mark the end of the block
+                                          *pCopyHereDocGString += yytext;
+  					  if (g_hereDocId==yytext) // it is the end marker
+					  {
+  					    BEGIN(lastHereDocContext);
+					  }
+  					}
+<CopyHereDocEnd>\n			{ 
+                                          *pCopyHereDocGString += yytext;
+                                        }
+<CopyHereDocEnd>.			{ 
+                                          *pCopyHereDocGString += yytext;
+                                        }
 <FindMembers>"Q_OBJECT"			{ // Qt object macro
   					}
 <FindMembers>"Q_PROPERTY"		{ // Qt property declaration
@@ -3130,7 +3159,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/]*	{ current->program += yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<]*	{ current->program += yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"//".*		{ current->program += yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"#".*	{ if (!insidePHP) 
 					    REJECT;
@@ -3141,6 +3170,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           pSkipVerbString = &current->program;
                                           lastSkipVerbStringContext=YY_START;
                                           BEGIN( SkipVerbString );
+					}
+<ReadBody,ReadNSBody,ReadBodyIntf>"<<<"	{ if (insidePHP)
+                                          {
+                                            current->program += yytext ; 
+                                            pCopyHereDocGString = &current->program;
+                                            lastHereDocContext=YY_START;
+                                            BEGIN( CopyHereDoc );
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
 					}
 <ReadBody,ReadNSBody,ReadBodyIntf>\"	{ current->program += yytext ; 
                                           pCopyQuotedGString = &current->program;
@@ -4470,7 +4511,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  yyLineNr++;
   				          //addToBody(yytext);
   					}
-<SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}]+	{
+<SkipCurly,SkipCurlyCpp>"<<<"	        {
+  					  if (!insidePHP) 
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+                                            lastHereDocContext = YY_START;
+					    BEGIN(HereDoc);
+					  }
+  					}
+<SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}<]+ {
   				          //addToBody(yytext);
   					}
 <SkipCurlyCpp>\n			{ 

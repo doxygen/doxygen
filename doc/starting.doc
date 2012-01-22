@@ -30,7 +30,7 @@ The following figure shows the relation between the tools and the flow
 of information between them (it looks complex but that's only because it
 tries to be complete):
 
-\image html infoflow.gif "Doxygen information flow" 
+\image html infoflow.png "Doxygen information flow" 
 \image latex infoflow.eps "Doxygen information flow" width=14cm
 
 \section step0 Step 0: Check if doxygen supports your programming language
@@ -90,26 +90,50 @@ If you have a larger project consisting of a source directory or tree
 you should assign the root directory or 
 directories to the \ref cfg_input "INPUT" tag, and add one or more file 
 patterns to the \ref cfg_file_patterns "FILE_PATTERNS" tag 
-(for instance <code>*.cpp *.h</code>). Only files that match one of the 
+(for instance `*.cpp *.h`). Only files that match one of the 
 patterns will be parsed (if the patterns are omitted a list of 
-source extensions is used).
+typical patterns is used for the types of files doxygen supports).
 For recursive parsing of a source tree you must set 
 the \ref cfg_recursive "RECURSIVE" tag to \c YES. To further fine-tune the 
 list of files that is parsed the \ref cfg_exclude "EXCLUDE" and 
 \ref cfg_exclude_patterns "EXCLUDE_PATTERNS" tags can be used.
 To omit all \c test directories from a source tree for instance, one could use:
+
 \verbatim EXCLUDE_PATTERNS = */test/* 
 \endverbatim
 
-Doxygen looks at the file's extension to determine how to parse a file.
-If a file has an <code>.idl</code> or <code>.odl</code> extension it is 
-treated as an IDL file. If it has a <code>.java</code> extension it is 
-treated as a file written in Java. Files ending with <code>.cs</code> are 
-treated as C# files and the <code>.py</code> extension selects the 
-Python parser. Finally, files with the extensions <code>.php</code>, <code>.php4</code>,
-<code>.inc</code> or <code>.phtml</code> are treated as PHP sources.
-Any other extension is parsed as if it is a C/C++ file, where files that
-end with <code>.m</code> are treated as Objective-C source files.
+Doxygen looks at the file's extension to determine how to parse a file,
+using the following table:
+
+Extension | Language
+---------:|---------
+.idl      |IDL
+.ddl      |IDL
+.odl      |IDL
+.java     |Java
+.cs       |C#
+.d        |D
+.php      |PHP
+.php4     |PHP
+.php5     |PHP
+.inc      |PHP
+.phtml    |PHP
+.m        |Objective-C
+.M        |Objective-C
+.mm       |Objective-C
+.py       |Python
+.f        |Fortran
+.for      |Fortran
+.f90      |Fortran
+.vhd      |VHDL
+.vhdl     |VHDL
+.tcl      |TCL
+.ucf      |VHDL
+.qsf      |VHDL
+.md       |Markdown
+.markdown |Markdown
+
+Any other extension is parsed as if it is a C/C++ file.
 
 \anchor extract_all
 If you start using doxygen for an existing project (thus without any 
@@ -159,12 +183,12 @@ a whole path recursively, like <code>mkdir -p</code> does).
 The generated HTML documentation can be viewed by pointing a HTML browser
 to the \c index.html file in the \c html directory. For the best results
 a browser that supports cascading style sheets (CSS) should be used
-(I'm using Mozilla, Safari, Konqueror, and sometimes IE6 to test the 
-generated output). 
+(I'm using Mozilla Firefox, Google Chrome, Safari, and sometimes 
+IE8, IE9, and Opera to test the generated output). 
 
 Some of the features the HTML section (such as 
 \ref cfg_generate_treeview "GENERATE_TREEVIEW" or the search engine) 
-require a browser that supports DHTML and Javascript. 
+require a browser that supports Dynamic HTML and Javascript enabled. 
 
 \subsection latex_out LaTeX output
 \addindex LaTeX
@@ -176,18 +200,18 @@ documentation, \c doxygen writes a \c Makefile into the \c latex directory.
 
 The contents and targets in the \c Makefile depend on the setting of
 \ref cfg_use_pdflatex "USE_PDFLATEX". If it is disabled (set to \c NO), then
-typing \c make in the \c latex directory a dvi file called \c refman.dvi
+typing \c make in the \c latex directory a \c dvi file called \c refman.dvi
 will be generated. This file can then be viewed using \c xdvi or 
 converted into a PostScript file \c refman.ps by 
-typing <code>make ps</code> (this requires <code>dvips</code>).  
+typing `make ps` (this requires `dvips`).  
 
-To put 2 pages on one physical page use <code>make ps_2on1</code> instead.
+To put 2 pages on one physical page use `make ps_2on1` instead.
 The resulting PostScript file can be send to a PostScript
 printer. If you do not have a PostScript printer, you can try to use 
 ghostscript to convert PostScript into something your printer understands.
 
 Conversion to PDF is also possible if you have installed the ghostscript
-interpreter; just type <code>make pdf</code> (or <code>make pdf_2on1</code>). 
+interpreter; just type `make pdf` (or `make pdf_2on1`). 
 
 To get the best results for PDF output you should set 
 the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" 
@@ -207,21 +231,21 @@ the option from the drop down menu).
 \addindex XML
 The XML output consists of a structured "dump" of the information gathered 
 by doxygen. Each compound (class/namespace/file/...) has its own XML file 
-and there is also an index file called index.xml. 
+and there is also an index file called `index.xml`. 
 
-A file called combine.xslt
+A file called `combine.xslt`
 XSLT script is also generated and can be used to combine all XML files 
 into a single file. 
 
-Doxygen also generates two XML schema files index.xsd
-(for the index file) and compound.xsd (for the compound files).
+Doxygen also generates two XML schema files `index.xsd`
+(for the index file) and `compound.xsd` (for the compound files).
 This schema file describes the possible elements, their attributes and 
 how they are structured, i.e. it the describes the grammar of the XML 
 files and can be used for validation or to steer XSLT scripts.
 
-In the addon/doxmlparser directory you can find a parser library for reading
+In the `addon/doxmlparser` directory you can find a parser library for reading
 the XML output produced by doxygen in an incremental way 
-(see addon/doxmlparser/include/doxmlintf.h for the interface of the library)
+(see `addon/doxmlparser/include/doxmlintf.h` for the interface of the library)
 
 \subsection man_out Man page output
 The generated man pages can be viewed using the \c man program. You do need
@@ -235,56 +259,63 @@ capabilities of the man page format, so some information
 Although documenting the sources is presented as step 3, in a new project 
 this should of course be step 1. Here I assume
 you already have some code and you want doxygen to generate a nice document 
-describing the API and maybe the internals as well.
+describing the API and maybe the internals and some related design
+documentation as well.
 
 If the \ref cfg_extract_all "EXTRACT_ALL" option is set to \c NO in the 
 configuration file (the default), then doxygen will only generate 
-documentation for \e documented members, files, classes and namespaces. So 
+documentation for \e documented entities. So 
 how do you document these? For members, classes and namespaces there are 
 basically two options:
-<ol>
-<li>Place a \e special documentation block in front of the declaration or
+1.  Place a \e special documentation block in front of the declaration or
     definition of the member, class or namespace. For file, class and namespace
     members it is also allowed to place the documentation directly after the 
-    member. See section \ref specialblock to learn more about special 
+    member. 
+    
+    See section \ref specialblock to learn more about special 
     documentation blocks.
-<li>Place a special documentation block somewhere else (another file or 
+2.  Place a special documentation block somewhere else (another file or 
     another location) \e and put a <em>structural command</em> in the 
     documentation block. A structural command links a documentation block 
     to a certain entity that can be documented (e.g. a member, class, 
-    namespace or file). See section \ref structuralcommands to learn more 
+    namespace or file). 
+   
+    See section \ref structuralcommands to learn more 
     about structural commands.
-</ol>
+
+The advantage of the first option is that you do not have to repeat the
+name of the entity.
+
 Files can only be documented using the second option, since there is
 no way to put a documentation block before a file. Of course, file members 
 (functions, variables, typedefs, defines) do not need an explicit 
 structural command; just putting a special documentation block in front or 
-behind them will do. 
+behind them will work fine. 
 
 The text inside a special documentation block is parsed
 before it is written to the HTML and/or \f$\mbox{\LaTeX}\f$ output files.
 
 \addindex parsing
 During parsing the following steps take place:
-<ul>
-<li> The special commands inside the documentation are executed. See
-     section \ref commands for an overview of all commands.
-<li> If a line starts with some whitespace followed by one or more asterisks 
-     (<tt>*</tt>) and then optionally more whitespace, 
-     then all whitespace and asterisks are removed.
-<li> All resulting blank lines are treated as a paragraph separators.
-     This saves you from placing new-paragraph commands yourself 
-     in order to make the generated documentation readable.
-<li> Links are created for words corresponding to documented classes
-     (unless the word is preceded by a \%; then the word will not be linked and
-     the \% sign is removed). 
-<li> Links to members are created when certain patterns are found in the
-     text. See section \ref autolink
-     for more information on how the automatic link generation works.
-<li> HTML tags that are in the documentation are interpreted and converted 
-     to \f$\mbox{\LaTeX}\f$ equivalents for the \f$\mbox{\LaTeX}\f$ output. 
-     See section \ref htmlcmds for an overview of all supported HTML tags.
-</ul>
+- Markdown formatting is replaced by corresponding HTML or special 
+  commands.
+- The special commands inside the documentation are executed. See
+  section \ref commands for an overview of all commands.
+- If a line starts with some whitespace followed by one or more asterisks 
+  (`*`) and then optionally more whitespace, 
+  then all whitespace and asterisks are removed.
+- All resulting blank lines are treated as a paragraph separators.
+  This saves you from placing new-paragraph commands yourself 
+  in order to make the generated documentation readable.
+- Links are created for words corresponding to documented classes
+  (unless the word is preceded by a \%; then the word will not be linked and
+  the \% sign is removed). 
+- Links to members are created when certain patterns are found in the
+  text. See section \ref autolink
+  for more information on how the automatic link generation works.
+- HTML tags that are in the documentation are interpreted and converted 
+  to \f$\mbox{\LaTeX}\f$ equivalents for the \f$\mbox{\LaTeX}\f$ output. 
+  See section \ref htmlcmds for an overview of all supported HTML tags.
 
 \htmlonly
 Go to the <a href="docblocks.html">next</a> section or return to the

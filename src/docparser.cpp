@@ -1720,7 +1720,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
       if (g_sectionDict && g_sectionDict->find(id)==0)
       {
         //printf("Inserting in dictionary!\n");
-        g_sectionDict->insert(id,sec);
+        g_sectionDict->append(id,sec);
       }
     }
     else
@@ -1736,9 +1736,10 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
 
 DocVerbatim::DocVerbatim(DocNode *parent,const QCString &context,
     const QCString &text, Type t,bool isExample,
-    const QCString &exampleFile) 
+    const QCString &exampleFile,const QCString &lang) 
   : m_context(context), m_text(text), m_type(t),
-    m_isExample(isExample), m_exampleFile(exampleFile), m_relPath(g_relPath) 
+    m_isExample(isExample), m_exampleFile(exampleFile), 
+    m_relPath(g_relPath), m_lang(lang)
 { 
   m_parent = parent; 
 }
@@ -2134,7 +2135,7 @@ void DocSecRefItem::parse()
       m_anchor = sec->label;
       if (g_sectionDict && g_sectionDict->find(m_target)==0)
       {
-        g_sectionDict->insert(m_target,sec);
+        g_sectionDict->append(m_target,sec);
       }
     }
     else
@@ -2278,7 +2279,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   m_parent = parent; 
   Definition  *compound = 0;
   QCString     anchor;
-  //printf("DocRef::DocRef(target=%s,context=%s\n",target.data(),context.data());
+  //printf("DocRef::DocRef(target=%s,context=%s)\n",target.data(),context.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   SectionInfo *sec = Doxygen::sectionDict[target];
@@ -2299,7 +2300,8 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   else if (resolveLink(context,target,TRUE,&compound,anchor))
   {
     bool isFile = compound ? 
-                 (compound->definitionType()==Definition::TypeFile ? TRUE : FALSE) : 
+                 (compound->definitionType()==Definition::TypeFile ||
+                  compound->definitionType()==Definition::TypePage ? TRUE : FALSE) : 
                  FALSE;
     m_text = linkToText(compound?compound->getLanguage():SrcLangExt_Unknown,target,isFile);
     m_anchor = anchor;
@@ -2323,6 +2325,8 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
 
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
+      //printf("isFile=%d compound=%s (%d)\n",isFile,compound->name().data(),
+      //    compound->definitionType());
       return;
     }
     else if (compound->definitionType()==Definition::TypeFile && 
@@ -2334,7 +2338,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
       return;
     }
   }
-  m_text = linkToText(SrcLangExt_Unknown,target,FALSE);
+  m_text = target;
   warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unable to resolve reference to `%s' for \\ref command",
            qPrint(target)); 
 }
@@ -4902,6 +4906,11 @@ bool DocPara::injectToken(int tok,const QCString &tokText)
 int DocPara::handleStartCode()
 {
   int retval = doctokenizerYYlex();
+  QCString lang = g_token->name;
+  if (!lang.isEmpty() && lang.at(0)!='.')
+  {
+    lang="."+lang;
+  }
   // search for the first non-whitespace line, index is stored in li
   int i=0,li=0,l=g_token->verb.length();
   while (i<l && (g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n'))
@@ -4909,7 +4918,7 @@ int DocPara::handleStartCode()
     if (g_token->verb.at(i)=='\n') li=i+1;
     i++;
   }
-  m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_exampleName));
+  m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_exampleName,lang));
   if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: code section ended without end marker");
   doctokenizerYYsetStatePara();
   return retval;
@@ -6264,7 +6273,7 @@ int DocSection::parse()
       if (m_title.isEmpty()) m_title = sec->label;
       if (g_sectionDict && g_sectionDict->find(m_id)==0)
       {
-        g_sectionDict->insert(m_id,sec);
+        g_sectionDict->append(m_id,sec);
       }
     }
   }

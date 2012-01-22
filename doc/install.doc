@@ -19,7 +19,6 @@
 \addindex installation
 First go to the 
 <a href="http://www.doxygen.org/download.html">download</a> page
-\latexonly({\tt http://www.doxygen.org/download.html})\endlatexonly
 to get the latest distribution, if you did not have it already.
 
 This section is divided into the following sections:
@@ -45,7 +44,6 @@ following to build the executable:
     \addindex strip
 <li>In order to generate a Makefile for your platform, you need 
     <a href="http://www.perl.com/">perl</a>
-    \latexonly(see {\tt http://www.perl.com/})\endlatexonly.
     \addindex perl
 <li>The configure script assume the availability of standard UNIX tools such 
     as sed, date, find, uname, mv, cp, cat, echo, tr, cd, and rm.
@@ -57,17 +55,14 @@ tools should be installed.
 <ul>
 <li>Qt Software's GUI toolkit 
     <a href="http://qt.nokia.com/">Qt</A>
-    \latexonly(see {\tt http://qt.nokia.com/})\endlatexonly
     \addindex Qt
     version 4.3 or higher.
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
-    \latexonly (see {\tt http://www.tug.org/interest.html\#free})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10 or higher</a>
-    \latexonly (see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
     If you compile graphviz yourself, make sure you do include
@@ -83,18 +78,14 @@ tools should be installed.
 Compilation is now done by performing the following steps:
 
 <ol>
-<li> Unpack the archive, unless you already have done that:
+<li>Unpack the archive, unless you already have done that:
    
-\verbatim
-    gunzip doxygen-$VERSION.src.tar.gz    # uncompress the archive
-    tar xf doxygen-$VERSION.src.tar       # unpack it
-\endverbatim
+        gunzip doxygen-$VERSION.src.tar.gz    # uncompress the archive
+        tar xf doxygen-$VERSION.src.tar       # unpack it
 
 <li>Run the configure script:
  
-\verbatim
-    sh ./configure
-\endverbatim
+        sh ./configure
 
     The script tries to determine the platform you use, the make tool 
     (which \e must be GNU make) and the perl 
@@ -103,9 +94,7 @@ Compilation is now done by performing the following steps:
     To override the auto detected platform and compiler you can run
     configure as follows:
 
-\verbatim
-    configure --platform platform-type
-\endverbatim
+        configure --platform platform-type
 
     See the <code>PLATFORMS</code> file for a list of possible platform
     options.
@@ -114,21 +103,15 @@ Compilation is now done by performing the following steps:
     front-end, you should run the configure script with 
     the <code>--with-doxywizard</code> option:
 
-\verbatim
-    configure --with-doxywizard
-\endverbatim
+        configure --with-doxywizard
 
     For an overview of other configuration options use
 
-\verbatim
-    configure --help
-\endverbatim
+        configure --help
 
 <li>Compile the program by running make:
 
-\verbatim
-    make
-\endverbatim
+        make
 
     The program should compile without problems and the binaries 
     (<code>doxygen</code> and optionally <code>doxywizard</code>) 
@@ -136,9 +119,7 @@ Compilation is now done by performing the following steps:
 
 <li>Optional: Generate the user manual.
     
-\verbatim
-    make docs
-\endverbatim
+        make docs
 
     To let doxygen generate the HTML documentation.
     
@@ -152,9 +133,7 @@ Compilation is now done by performing the following steps:
     (you will need <code>pdflatex</code>, <code>makeindex</code>, and
      <code>egrep</code> for this).
 
-\verbatim
-    make pdf
-\endverbatim
+        make pdf
 
     The PDF manual <code>doxygen_manual.pdf</code> will be located 
     in the latex directory of the distribution. Just 
@@ -168,10 +147,8 @@ Compilation is now done by performing the following steps:
     to install doxygen. If you downloaded the binary distribution for UNIX,
     type:
 
-\verbatim
-    ./configure
-    make install
-\endverbatim   
+        ./configure
+        make install
 
     Binaries are installed into the directory <code>\<prefix\>/bin</code>.
     Use <code>make install_docs</code> to install the
@@ -204,14 +181,13 @@ directory pointed to by QTDIR on some systems
 libs are in /usr/lib).
   
 The solution: go to the root of the doxygen distribution and do:
-\verbatim
-   mkdir qt
-   cd qt
-   ln -s your-qt-include-dir-here include
-   ln -s your-qt-lib-dir-here lib
-   ln -s your-qt-bin-dir-here bin
-   export QTDIR=$PWD
-\endverbatim 
+
+    mkdir qt
+    cd qt
+    ln -s your-qt-include-dir-here include
+    ln -s your-qt-lib-dir-here lib
+    ln -s your-qt-bin-dir-here bin
+    export QTDIR=$PWD
 
 If you have a csh-like shell you should use <code>setenv QTDIR \$PWD</code>
 instead of the <code>export</code> command above.
@@ -239,24 +215,23 @@ config file).
 <b>HP-UX \& Digital UNIX problems</b>
 
 If you are compiling for HP-UX with aCC and you get this error:
-\verbatim
+
     /opt/aCC/lbin/ld: Unsatisfied symbols:
     alloca (code)
-\endverbatim
-  then you should (according to Anke Selig) edit <code>ce_parse.cpp</code> 
-  and replace
-\verbatim
+
+then you should (according to Anke Selig) edit <code>ce_parse.cpp</code> 
+and replace
+
     extern "C" {
       void *alloca (unsigned int);
     };
-\endverbatim
-  with
-\verbatim
-    #include <alloca.h>  
-\endverbatim
 
-  If that does not help, try removing <code>ce_parse.cpp</code> and let 
-  bison rebuild it (this worked for me).
+with
+
+    #include <alloca.h>  
+
+If that does not help, try removing <code>ce_parse.cpp</code> and let 
+bison rebuild it (this worked for me).
 
 If you are compiling for Digital UNIX, the same problem can be solved
 (according to Barnard Schmallhof) by replacing the following in 
@@ -308,7 +283,7 @@ not have access to a Solaris machine with this compiler. With GNU compiler
 it does work and installing Sun patch 111679-13 has also been reported 
 as a way to fix the problem.
 
-when configuring with <code>--static</code> I got:
+when configuring with `--static` I got:
 
 \verbatim
 Undefined                       first referenced
@@ -318,13 +293,11 @@ dlsym                               /usr/lib/libc.a(nss_deffinder.o)
 dlopen                              /usr/lib/libc.a(nss_deffinder.o)
 \endverbatim
 
-Manually adding <code>-Bdynamic</code> after the target rule in 
-<code>Makefile.doxygen</code> will fix this:
+Manually adding `-Bdynamic` after the target rule in 
+`Makefile.doxygen` will fix this:
 
-\verbatim
-$(TARGET): $(OBJECTS) $(OBJMOC) 
-        $(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJMOC) $(LIBS) -Bdynamic
-\endverbatim
+    $(TARGET): $(OBJECTS) $(OBJMOC) 
+            $(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJMOC) $(LIBS) -Bdynamic
 
 <b>GCC compiler problems</b>
 
@@ -456,11 +429,9 @@ Here is what is required:
 <li>The GNU tools flex, bison, and sed.
     To get these working on Windows you should install the 
     <a href="http://sources.redhat.com/cygwin/">cygwin tools</a>
-    \latexonly(see {\tt http://sources.redhat.com/cygwin/})\endlatexonly
     
     Alternatively, you can also choose to 
     download only a <a href="http://www.doxygen.org/dl/cygwin_tools.zip">small subset</a> 
-    \latexonly(see {\tt http://www.doxygen.org/dl/cygwin\_tools.zip})\endlatexonly
     of the cygwin tools that I put together just to compile doxygen.
 
     As a third alternative one could use the GNUWin32 tools that can be
@@ -648,7 +619,6 @@ features:
 
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10</a><br>
-    \latexonly(see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.
 </ul>

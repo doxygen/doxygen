@@ -638,7 +638,6 @@
 "	font-size: 110%;\n"
 "	padding-bottom: 4px;\n"
 "	padding-top: 5px;\n"
-"	text-align:left;\n"
 "}\n"
 "\n"
 "table.fieldtable {\n"

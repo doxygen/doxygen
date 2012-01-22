@@ -31,6 +31,7 @@
 #include "language.h"
 #include "htmlgen.h"
 #include "layout.h"
+#include "pagedef.h"
 
 #define MAX_INDENT 1024
 
@@ -849,10 +850,17 @@ void FTVHelp::generateTreeViewScripts()
       QCString &projName = Config_getString("PROJECT_NAME");
       if (projName.isEmpty())
       {
-        LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::MainPage);
-        t << "\"" << convertToJSString(lne->title()) << "\", ";
+        if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty()) // Use title of main page as root
+        {
+          t << "\"" << convertToJSString(Doxygen::mainPage->title()) << "\", ";
+        }
+        else // Use default section title as root
+        {
+          LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::MainPage);
+          t << "\"" << convertToJSString(lne->title()) << "\", ";
+        }
       }
-      else
+      else // use PROJECT_NAME as root tree element
       {
         t << "\"" << convertToJSString(projName) << "\", ";
       }

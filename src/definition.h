@@ -260,6 +260,7 @@ class Definition : public DefinitionIntf, public LockableObj
     LockingPtr<MemberSDict> getReferencesMembers() const;
     LockingPtr<MemberSDict> getReferencedByMembers() const;
 
+    bool hasSections() const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -327,6 +328,8 @@ class Definition : public DefinitionIntf, public LockableObj
      */
     void writeDocAnchorsToTagFile();
     void setLocalName(const QCString name);
+
+    void addSectionsToIndex();
 
   protected:
 

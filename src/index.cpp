@@ -2765,7 +2765,7 @@ static void writePageIndex(OutputList &ol)
   ol.startContents();
   ol.startTextBlock();
   bool addToIndex = lne==0 || lne->visible();
-  if (addToIndex)
+  if (0 /*addToIndex*/) // skip Related Pages section in navigation index
   {
     Doxygen::indexList.addContentsItem(TRUE,title,0,"pages",0,TRUE,TRUE); 
     Doxygen::indexList.incContentsDepth();
@@ -2777,7 +2777,7 @@ static void writePageIndex(OutputList &ol)
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if ( pd->visibleInIndex())
+    if (pd->visibleInIndex())
     {
       QCString pageTitle;
 
@@ -2787,6 +2787,7 @@ static void writePageIndex(OutputList &ol)
         pageTitle=pd->title();
 
       bool hasSubPages = pd->hasSubPages();
+      bool hasSections = pd->hasSections();
 
       ol.startIndexListItem();
       ol.startIndexItem(pd->getReference(),pd->getOutputFileBase());
@@ -2801,14 +2802,25 @@ static void writePageIndex(OutputList &ol)
       ol.writeString("\n");
       if (addToIndex)
       {
-        Doxygen::indexList.addContentsItem(hasSubPages,filterTitle(pageTitle),pd->getReference(),pd->getOutputFileBase(),0,hasSubPages,TRUE);
+        Doxygen::indexList.addContentsItem(
+               hasSubPages || hasSections,   // isDir
+               filterTitle(pageTitle),       // name
+               pd->getReference(),           // ref
+               pd->getOutputFileBase(),      // file
+               0,                            // anchor
+               hasSubPages || hasSections,   // separateIndex
+               TRUE);                        // addToNavIndex
+        if (hasSections)
+        {
+          pd->addSectionsToIndex();
+        }
       }
       writeSubPages(pd);
       ol.endIndexListItem();
     }
   }
   endIndexHierarchy(ol,0);
-  if (addToIndex)
+  if (0 /*addToIndex*/) // skip Related Pages section in navigation index
   {
     Doxygen::indexList.decContentsDepth();
   }
@@ -3445,8 +3457,12 @@ static void writeIndex(OutputList &ol)
   
   if (Doxygen::mainPage)
   {
-    Doxygen::indexList.addContentsItem(Doxygen::mainPage->hasSubPages(),title,0,indexName,0,Doxygen::mainPage->hasSubPages(),TRUE); 
-
+    if (Doxygen::mainPage->hasSubPages() || 
+        (!Config_getString("PROJECT_NAME").isEmpty() && mainPageHasTitle())
+       ) // to avoid duplicate entries in the treeview
+    {
+      Doxygen::indexList.addContentsItem(Doxygen::mainPage->hasSubPages(),title,0,indexName,0,Doxygen::mainPage->hasSubPages(),TRUE); 
+    }
     if (Doxygen::mainPage->hasSubPages())
     {
       writeSubPages(Doxygen::mainPage);

@@ -328,13 +328,18 @@ void RTFDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocVerbatim)}\n");
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
       //m_t << "\\par" << endl; 

@@ -210,6 +210,21 @@ function expandNode(o, node, imm, showRoot)
   }
 }
 
+function highlightAnchor()
+{
+  var anchor = $($(location).attr('hash'));
+  if (anchor.parent().attr('class')=='memItemLeft'){
+    var rows = $('.memberdecls tr[class$=\""'+
+        window.location.hash.substring(1)+'"\"]').children();
+    rows.effect('highlight',{},1500);
+  } else if (anchor.parent().is(":header")) {
+    anchor.parent().effect('highlight',{},1500);
+  } else {
+    var targetDiv = anchor.next();
+    $(targetDiv).children('.memproto,.memdoc').effect("highlight",{},1500);
+  }
+}
+
 function showNode(o, node, index)
 {
   if (node.childrenData && !node.expanded) {
@@ -249,15 +264,12 @@ function showNode(o, node, index)
           if ($(location).attr('hash')) {
             var link=stripPath($(location).attr('pathname'))+':'+
                      $(location).attr('hash').substring(1);
-            a=$('.item a[class*=\""'+link+'"\"]');
+            a=$('.item a[class$=\""'+link+'"\"]');
           }
           if (a && a.length) {
             a.parent().parent().addClass('selected');
             a.parent().parent().attr('id','selected');
-            var anchor = $($(location).attr('hash'));
-            var targetDiv = anchor.next();
-            $(targetDiv).children('.memproto,.memdoc').
-                     effect("highlight", {}, 1500);
+            highlightAnchor();
           } else {
             $(n.itemDiv).addClass('selected');
             $(n.itemDiv).attr('id','selected');
@@ -302,7 +314,8 @@ function initNavTree(toroot,relpath)
   getScript(relpath+"navtreeindex",function(){
     var navTreeIndex = eval('NAVTREEINDEX');
     if (navTreeIndex) {
-      o.breadcrumbs = navTreeIndex[toroot];
+      var nti = navTreeIndex[toroot+window.location.hash];
+      o.breadcrumbs = nti ? nti : navTreeIndex[toroot];
       if (o.breadcrumbs==null) o.breadcrumbs = navTreeIndex["index.html"];
       o.breadcrumbs.unshift(0);
       showNode(o, o.node, 0);
@@ -311,20 +324,12 @@ function initNavTree(toroot,relpath)
 
   $(window).bind('hashchange', function(){
      if (window.location.hash && window.location.hash.length>1){
-       var anchor = $(window.location.hash);
-       if (anchor.parent().attr('class')=='memItemLeft'){
-         var rows = $('.memberdecls tr[class$=\""'+
-                    window.location.hash.substring(1)+'"\"]').children();
-         rows.effect('highlight',{},1500);
-       } else {
-         var targetDiv = anchor.next();
-         $(targetDiv).children('.memproto,.memdoc').effect("highlight",{},1500);
-       }
+       highlightAnchor();
        var a;
        if ($(location).attr('hash')){
          var link=stripPath($(location).attr('pathname'))+':'+
                   $(location).attr('hash').substring(1);
-         a=$('.item a[class*=\""'+link+'"\"]');
+         a=$('.item a[class$=\""'+link+'"\"]');
        }
        if (a && a.length){
          $('.item').removeClass('selected');
