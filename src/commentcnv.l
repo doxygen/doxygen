@@ -285,7 +285,7 @@ void replaceComment(int offset);
 %%
 
 <Scan>[^"'!\/\n\\#\\-]*           { /* eat anything that is not " / or \n */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				   }
 <Scan>"\"\"\""!                     { /* start of python long comment */
                                      if (g_lang!=SrcLangExt_Python)
@@ -295,7 +295,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        g_pythonDocString = TRUE;
-                                       copyToOutput(yytext,yyleng); 
+                                       copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
 				     }
                                    }
@@ -306,22 +306,22 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       copyToOutput(yytext,yyleng); 
+                                       copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
 				     }
                                    }
 <Scan>"\""                         { /* start of a string */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				     g_stringContext = YY_START;
 				     BEGIN(SkipString); 
                                    }
 <Scan>'				   {
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				     g_charContext = YY_START;
 				     BEGIN(SkipChar);
   				   }
 <Scan>\n                           { /* new line */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <Scan>("//!"|"///").*/\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
   				     if (g_mlBrief) 
@@ -352,13 +352,13 @@ void replaceComment(int offset);
 				     BEGIN(SComment);
   				   }
 <Scan>"//"/.*\n	                   { /* one line C++ comment */ 
-  				     copyToOutput(yytext,yyleng); 
+  				     copyToOutput(yytext,(int)yyleng); 
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
 				   }
 <Scan>"/*"[*!]?			   { /* start of a C comment */
-  			             g_specialComment=yyleng==3;
-                                     copyToOutput(yytext,yyleng); 
+  			             g_specialComment=(int)yyleng==3;
+                                     copyToOutput(yytext,(int)yyleng); 
 				     BEGIN(CComment); 
                                    }
 <Scan>"#"("#")?		           {
@@ -368,7 +368,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       copyToOutput(yytext,yyleng); 
+                                       copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
 				     }
   				   }
@@ -379,7 +379,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       copyToOutput(yytext,yyleng); 
+                                       copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
 				     }
   				   }
@@ -390,7 +390,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       copyToOutput(yytext,yyleng); 
+                                       copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
 				     }
   				   }
@@ -402,14 +402,14 @@ void replaceComment(int offset);
                                      BEGIN(VerbatimCode);
   				   }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc")/[^a-z_A-Z0-9] { /* start of a verbatim block */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				     g_lastCommentContext = YY_START;
 				     g_javaBlock=0;
 				     g_blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
 <CComment,ReadLine>[\\@]("f$"|"f["|"f{"[a-z]*) {
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				     g_blockName=&yytext[1];
 				     if (g_blockName.at(1)=='[')
 				     {
@@ -423,16 +423,16 @@ void replaceComment(int offset);
 				     BEGIN(Verbatim);
   			           }
 <CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				     g_blockName=&yytext[1];
 				     g_lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }
 <Scan>.                            { /* any other character */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
-                                     copyToOutput(yytext,yyleng);
+                                     copyToOutput(yytext,(int)yyleng);
 				     if (yytext[1]=='f') // end of formula
 				     {
 				       BEGIN(g_lastCommentContext);
@@ -450,7 +450,7 @@ void replaceComment(int offset);
 				     else
 				     {
 				       g_javaBlock++;
-                                       copyToOutput(yytext,yyleng);
+                                       copyToOutput(yytext,(int)yyleng);
 				     }
                                    }
 <VerbatimCode>"}"		   {
@@ -468,12 +468,12 @@ void replaceComment(int offset);
 				       }
 				       else
 				       {
-                                         copyToOutput(yytext,yyleng);
+                                         copyToOutput(yytext,(int)yyleng);
 				       }
 				     }
   				   }
 <VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc") { /* end of verbatim block */
-                                     copyToOutput(yytext,yyleng);
+                                     copyToOutput(yytext,(int)yyleng);
 				     if (&yytext[4]==g_blockName)
 				     {
 				       BEGIN(g_lastCommentContext);
@@ -482,14 +482,14 @@ void replaceComment(int offset);
 <VerbatimCode>^[ \t]*"//"[\!\/]?   { /* skip leading comments */
   				     if (!g_inSpecialComment)
 				     {
-                                       copyToOutput(yytext,yyleng); 
+                                       copyToOutput(yytext,(int)yyleng); 
 				     }
   				   }
 <Verbatim,VerbatimCode>[^@\/\\\n{}]* { /* any character not a backslash or new line or } */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <Verbatim,VerbatimCode>^[ \t]*"///"  {
   				     if (g_blockName=="dot" || g_blockName=="msc" || g_blockName.at(0)=='f')
@@ -503,40 +503,40 @@ void replaceComment(int offset);
 				     }
   				   }
 <Verbatim,VerbatimCode>.	   { /* any other character */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipString>\\.                    { /* escaped character in string */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipString>"\""       	           { /* end of string */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
 				     BEGIN(g_stringContext); 
                                    }
 <SkipString>.                      { /* any other string character */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipString>\n                     { /* new line inside string (illegal for some compilers) */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipChar>\\.		           { /* escaped character */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipChar>'                        { /* end of character literal */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                      BEGIN(g_charContext);
                                    }
 <SkipChar>.                        { /* any other string character */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <SkipChar>\n                       { /* new line character */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 
 <CComment>[^\\!@*\n{\"]*           { /* anything that is not a '*' or command */ 
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
                                      if (g_lang!=SrcLangExt_Python)
@@ -546,12 +546,12 @@ void replaceComment(int offset);
 				     else
 				     {
                                        g_pythonDocString = FALSE;
-				       copyToOutput(yytext,yyleng);
+				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
   				   }
 <CComment>\n                       { /* new line in comment */
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
                                      if (g_lang==SrcLangExt_Python)
@@ -560,7 +560,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-				       copyToOutput(yytext,yyleng);
+				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
                                    }
@@ -571,7 +571,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-				       copyToOutput(yytext,yyleng);
+				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
   				   }
@@ -582,7 +582,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-				       copyToOutput(yytext,yyleng);
+				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
   				   }
@@ -593,22 +593,22 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-				       copyToOutput(yytext,yyleng);
+				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
   				   }
 <CComment>"'"			   {
   			             g_charContext = YY_START;
-				     copyToOutput(yytext,yyleng);
+				     copyToOutput(yytext,(int)yyleng);
 				     BEGIN(SkipChar);
   				   }
 <CComment>"\""			   {
   			             g_stringContext = YY_START;
-				     copyToOutput(yytext,yyleng);
+				     copyToOutput(yytext,(int)yyleng);
 				     BEGIN(SkipString);
   				   }
 <CComment>.			   {
-                                     copyToOutput(yytext,yyleng); 
+                                     copyToOutput(yytext,(int)yyleng); 
   				   }
 <SComment>^[ \t]*"///"[\/]*/\n     {
   				     replaceComment(0);
@@ -666,17 +666,17 @@ void replaceComment(int offset);
                                    }
 <SComment>\n			   { /* end of special comment */
                                      copyToOutput(" */",3); 
-				     copyToOutput(yytext,yyleng); 
+				     copyToOutput(yytext,(int)yyleng); 
 				     g_inSpecialComment=FALSE;
 				     g_inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
 <ReadLine>[^\\@\n]*/\n		   {
-  				     copyToOutput(yytext,yyleng);
+  				     copyToOutput(yytext,(int)yyleng);
                                      BEGIN(g_readLineCtx);
   				   }
 <CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
-				     copyToOutput(yytext,yyleng);
+				     copyToOutput(yytext,(int)yyleng);
   				   }
 <CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
   				     g_condCtx = YY_START; 
@@ -756,7 +756,7 @@ void replaceComment(int offset);
 				     else // abort the alias, restart scanning
 				     {
 				       copyToOutput(g_aliasString,g_aliasString.length());
-				       copyToOutput(yytext,yyleng);
+				       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
   				   }
@@ -794,7 +794,7 @@ void replaceComment(int offset);
 				     g_lastEscaped=FALSE;
   				   }
 <ReadLine>.			   {
-  				     copyToOutput(yytext,yyleng);
+  				     copyToOutput(yytext,(int)yyleng);
   				   }
 
 %%
@@ -803,7 +803,7 @@ void replaceComment(int offset)
 {
   if (g_mlBrief)
   {
-    copyToOutput(yytext,yyleng);
+    copyToOutput(yytext,(int)yyleng);
   }
   else
   {
@@ -811,12 +811,12 @@ void replaceComment(int offset)
     int i=computeIndent(&yytext[offset]);
     if (i==g_blockHeadCol)
     {
-      replaceCommentMarker(yytext,yyleng);
+      replaceCommentMarker(yytext,(int)yyleng);
     }
     else
     {
       copyToOutput(" */",3);
-      int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+      int i;for (i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
       g_inSpecialComment=FALSE;
       BEGIN(Scan);                                            
     }                                                         

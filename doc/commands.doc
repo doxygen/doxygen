@@ -2140,13 +2140,35 @@ Commands for visual enhancements
   To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
 
 <hr>
-\section cmdcode \\code
+\section cmdcode \\code [ '{'<word>'}']
 
   \addindex \\code
   Starts a block of code. A code block is treated differently
-  from ordinary text. It is interpreted as C/C++ code. The names of the
-  classes and members that are documented are automatically replaced by
-  links to the documentation.
+  from ordinary text. It is interpreted as source code. The names of 
+  classes and members and other documented entities are automatically 
+  replaced by links to the documentation.
+
+  By default the language that is assumed for syntax highlighting is based
+  on the location where the \\code block was found. If this part of
+  a Python file for instance, the syntax highlight will be done according
+  to the Python syntax. 
+
+  If it unclear from the context which language is meant (for instance the
+  comment is in a .txt or .markdown file) then you can also explicitly
+  indicate the language, by putting the file extension typically
+  that doxygen associated with the language in curly brackets after the
+  code block. Here is an example:
+
+\verbatim
+  \code{.py}
+  class Python:
+     pass
+  \endcode
+
+  \code{.cpp}
+  class Cpp {};
+  \endcode
+\endverbatim
 
   \sa section \ref cmdendcode "\\endcode" and section \ref cmdverbatim "\\verbatim".
 

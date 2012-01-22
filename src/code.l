@@ -3031,7 +3031,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}*{B}*")"{B}*)/("."|"->") { 
   					  g_code->codify(yytext);
 					  int s=0;while (!isId(yytext[s])) s++;
-                                          int e=yyleng-1;while (!isId(yytext[e])) e--;
+                                          int e=(int)yyleng-1;while (!isId(yytext[e])) e--;
 					  g_name=((QCString)yytext).mid(s,e-s+1); 
 					  BEGIN( MemberCall2 ); 
 					}

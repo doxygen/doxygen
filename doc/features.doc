@@ -19,25 +19,26 @@
 \addindex features
 <UL>
 <li>Requires very little overhead from the writer of the documentation. 
-    Plain text will do, but for more fancy or structured output HTML tags 
-    and/or some of doxygen's special commands can be used.
-<li>Cross platform: works on Windows and many Unices (including Linux and
+    Plain text will do, Markdown is support, and for more fancy or 
+    structured output HTML tags and/or some of doxygen's special commands 
+    can be used.
+<li>Cross platform: works on Windows and many Unix flavors (including Linux and
     MacOSX).
 <li>Indexes, organizes and generates browsable and cross-referenced 
     output even from undocumented code.
 <li>Generates structured XML output for parsed sources, which can be 
     used by external tools.
 <li>Supports C/C++, Java, (Corba and Microsoft) Java, Python, VHDL, PHP
-    IDL, C#, Objective-C 2.0, and to some extent D and Fortran sources.
+    IDL, C#, Fortran, TCL, Objective-C 2.0, and to some extent D sources.
 <li>Supports documentation of files, namespaces, packages, classes, 
     structs, unions, templates, variables, functions, typedefs, enums and 
     defines. 
 <li>JavaDoc (1.1), qdoc3 (partially), and ECMA-334 (C# spec.) compatible.
-<li>Comes with a GUI frontend (Doxywizard) to ease editing the options and run doxygen.
-    The GUI is available on Windows, Linux, and MacOSX.
+<li>Comes with a GUI frontend (Doxywizard) to ease editing the options and 
+    run doxygen. The GUI is available on Windows, Linux, and MacOSX.
 <li>Automatically generates class and collaboration diagrams in HTML (as clickable 
     image maps) and \f$\mbox{\LaTeX}\f$ (as Encapsulated PostScript images).
-<li>Uses the dot tool of the Graphviz tool kit to generate
+<li>Uses the `dot` tool of the Graphviz tool kit to generate
     include dependency graphs, collaboration diagrams, call graphs, directory structure
     graphs, and graphical class hierarchy graphs. 
 <li>Allows grouping of entities in modules and creating a hierarchy of modules.

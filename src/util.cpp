@@ -5908,13 +5908,13 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
         file=pd->getOutputFileBase();
       }
       SectionInfo *si=new SectionInfo(
-          file,pd->name(),pd->title(),SectionInfo::Page,pd->getReference());
+          file,pd->name(),pd->title(),SectionInfo::Page,0,pd->getReference());
       //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
       //      si->label.data(),si->definition?si->definition->name().data():"<none>",
       //      si->fileName.data());
       //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
       //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
-      Doxygen::sectionDict.insert(pd->name(),si);
+      Doxygen::sectionDict.append(pd->name(),si);
     }
   }
   return pd;
@@ -6303,6 +6303,7 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
 void initDefaultExtensionMapping()
 {
   g_extLookup.setAutoDelete(TRUE);
+  //                  extension      parser id
   updateLanguageMapping(".idl",      "idl"); 
   updateLanguageMapping(".ddl",      "idl"); 
   updateLanguageMapping(".odl",      "idl"); 
@@ -7166,20 +7167,21 @@ QCString langToString(SrcLangExt lang)
 {
   switch(lang)
   {
-    case SrcLangExt_Unknown: return "Unknown";
-    case SrcLangExt_IDL:     return "IDL";
-    case SrcLangExt_Java:    return "Java";
-    case SrcLangExt_CSharp:  return "C#";
-    case SrcLangExt_D:       return "D";
-    case SrcLangExt_PHP:     return "PHP";
-    case SrcLangExt_ObjC:    return "Objective-C";
-    case SrcLangExt_Cpp:     return "C++";
-    case SrcLangExt_JS:      return "Javascript";
-    case SrcLangExt_Python:  return "Python";
-    case SrcLangExt_Fortran: return "Fortran";
-    case SrcLangExt_VHDL:    return "VHDL";
-    case SrcLangExt_XML:     return "XML";
-    case SrcLangExt_Tcl:     return "Tcl";
+    case SrcLangExt_Unknown:  return "Unknown";
+    case SrcLangExt_IDL:      return "IDL";
+    case SrcLangExt_Java:     return "Java";
+    case SrcLangExt_CSharp:   return "C#";
+    case SrcLangExt_D:        return "D";
+    case SrcLangExt_PHP:      return "PHP";
+    case SrcLangExt_ObjC:     return "Objective-C";
+    case SrcLangExt_Cpp:      return "C++";
+    case SrcLangExt_JS:       return "Javascript";
+    case SrcLangExt_Python:   return "Python";
+    case SrcLangExt_Fortran:  return "Fortran";
+    case SrcLangExt_VHDL:     return "VHDL";
+    case SrcLangExt_XML:      return "XML";
+    case SrcLangExt_Tcl:      return "Tcl";
+    case SrcLangExt_Markdown: return "Markdown";
   }
   return "Unknown";
 }

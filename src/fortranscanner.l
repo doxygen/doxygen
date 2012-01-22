@@ -230,6 +230,7 @@ IDSYM	  [a-z_A-Z0-9]
 NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
 ID        [a-z_A-Z%]+{IDSYM}*
+ID_       [a-z_A-Z%]*{IDSYM}*
 PP_ID     {ID}
 LABELID   [a-z_A-Z]+[a-z_A-Z0-9\-]*
 SUBPROG   (subroutine|function)
@@ -299,6 +300,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 %x	DocBackLine
 %x	EndDoc
 
+%x      BlockData
 %%
 
  /*-----------------------------------------------------------------------------------*/
@@ -505,6 +507,11 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <TypedefBody>^{BS}{CONTAINS}/({BS}|\n|!)  { BEGIN(TypedefBodyContains); }
 
  /*------ module handling ------------------------------------------------------------*/ 
+<Start>block{BS}data{BS}{ID_}        {  //
+                                         v_type = V_IGNORE;
+					    yy_push_state(BlockData);
+                                            defaultProtection = Public;
+                                       }
 <Start>module|program{BS_}             {  //
                                          v_type = V_IGNORE;
 					    if(yytext[0]=='m' || yytext[0]=='M')
@@ -512,6 +519,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    else
 					      yy_push_state(Program);
                                             defaultProtection = Public;
+                                       }
+<BlockData>^{BS}"end"({BS}(block{BS}data)({BS_}{ID})?)?{BS}/(\n|!) { // end block data
+					    //if (!endScope(current_root))
+					    //  yyterminate();
+                                            defaultProtection = Public;
+					    yy_pop_state();
                                        }
 <Start,ModuleBody,ModuleBodyContains>^{BS}"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!) { // end module	
 					    resolveModuleProcedures(moduleProcedures, current_root);
@@ -660,6 +673,10 @@ private                                 {
                                            subrCurrent.remove(0u);
 					   yy_pop_state() ;
 				        }
+<BlockData>{
+{ID}                                    {
+                                        }
+}
 <Start,ModuleBody,TypedefBody,SubprogBody>{
 ^{BS}{TYPE_SPEC}/{SEPARATE}             {
                                           /* variable declaration starts */

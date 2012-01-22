@@ -70,8 +70,8 @@ h3.version {
 }
 
 div.qindex, div.navtab{
-	background-color: ##ee;
-	border: 1px solid ##b0;
+	background-color: #F1F1F1;
+	border: 1px solid #BDBDBD;
 	text-align: center;
 }
 
@@ -87,13 +87,13 @@ div.navtab {
 /* @group Link Styling */
 
 a {
-	color: ##50;
+	color: #646494;
 	font-weight: normal;
 	text-decoration: none;
 }
 
 .contents a:visited {
-	color: ##60;
+	color: #7474A4;
 }
 
 a:hover {
@@ -106,9 +106,9 @@ a.qindex {
 
 a.qindexHL {
 	font-weight: bold;
-	background-color: ##AA;
+	background-color: #B8B8B8;
 	color: #ffffff;
-	border: 1px double ##98;
+	border: 1px double #A8A8A8;
 }
 
 .contents a.qindexHL:visited {
@@ -142,8 +142,8 @@ dl.el {
 }
 
 pre.fragment {
-	border: 1px solid ##CC;
-	background-color: ##FC;
+	border: 1px solid #D5D5D5;
+	background-color: #FCFCFC;
 	padding: 4px 6px;
 	margin: 4px 8px 4px 2px;
 	overflow: auto;
@@ -182,21 +182,30 @@ div.groupText {
 }
 
 body {
-	background-color: white;
+	background-color: #CCCCCC;
 	color: black;
         margin: 0;
 }
 
 div.contents {
-	margin-top: 10px;
-	margin-left: 8px;
-	margin-right: 8px;
+	margin-bottom: 10px;
+	padding: 8px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 800px;
+	background-color: white;
+        -moz-border-radius-bottomleft: 8px;
+        -moz-border-radius-bottomright: 8px;
+        /* firefox specific markup */
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 5px;
+        /* webkit specific markup */
+        -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.15);
 }
 
 td.indexkey {
-	background-color: ##ee;
+	background-color: #F1F1F1;
 	font-weight: bold;
-	border: 1px solid ##cc;
+	border: 1px solid #D5D5D5;
 	margin: 2px 0px 2px 0;
 	padding: 2px 10px;
         white-space: nowrap;
@@ -204,14 +213,14 @@ td.indexkey {
 }
 
 td.indexvalue {
-	background-color: ##ee;
-	border: 1px solid ##cc;
+	background-color: #F1F1F1;
+	border: 1px solid #D5D5D5;
 	padding: 2px 10px;
 	margin: 2px 0px;
 }
 
 tr.memlist {
-	background-color: ##f0;
+	background-color: #F2F2F2;
 }
 
 p.formulaDsp {
@@ -240,6 +249,8 @@ div.center img {
 address.footer {
 	text-align: right;
 	padding-right: 12px;
+	background-color: #8080A0;
+	color: white;
 }
 
 img.footer {
@@ -294,8 +305,8 @@ span.vhdllogic {
 }
 
 blockquote {
-        background-color: ##F8;
-        border-left: 2px solid ##AA;
+        background-color: #F9F9F9;
+        border-left: 2px solid #B8B8B8;
         margin: 0 24px 0 4px;
         padding: 0 12px 0 16px;
 }
@@ -328,22 +339,22 @@ td.tiny {
 .dirtab {
 	padding: 4px;
 	border-collapse: collapse;
-	border: 1px solid ##b0;
+	border: 1px solid #BDBDBD;
 }
 
 th.dirtab {
-	background: ##ee;
+	background: #F1F1F1;
 	font-weight: bold;
 }
 
 hr {
 	height: 0px;
 	border: none;
-	border-top: 1px solid ##66;
+	border-top: 1px solid #7A7A7A;
 }
 
 hr.footer {
-	height: 1px;
+	display: none;
 }
 
 /* @group Member Descriptions */
@@ -356,7 +367,7 @@ table.memberdecls {
 .mdescLeft, .mdescRight,
 .memItemLeft, .memItemRight,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
-	background-color: ##FA;
+	background-color: #FAFAFA;
 	border: none;
 	margin: 4px;
 	padding: 1px 0 0 8px;
@@ -368,7 +379,7 @@ table.memberdecls {
 }
 
 .memItemLeft, .memItemRight, .memTemplParams {
-	border-top: 1px solid ##cc;
+	border-top: 1px solid #D5D5D5;
 }
 
 .memItemLeft, .memTemplItemLeft {
@@ -380,7 +391,7 @@ table.memberdecls {
 }
 
 .memTemplParams {
-	color: ##60;
+	color: #747474;
         white-space: nowrap;
 }
 
@@ -392,14 +403,14 @@ table.memberdecls {
 
 .memtemplate {
 	font-size: 80%;
-	color: ##60;
+	color: #747474;
 	font-weight: normal;
 	margin-left: 9px;
 }
 
 .memnav {
-	background-color: ##ee;
-	border: 1px solid ##b0;
+	background-color: #F1F1F1;
+	border: 1px solid #BDBDBD;
 	text-align: center;
 	margin: 2px;
 	margin-right: 15px;
@@ -423,11 +434,11 @@ table.memberdecls {
 }
 
 .memproto, dl.reflist dt {
-        border-top: 1px solid ##B4;
-        border-left: 1px solid ##B4;
-        border-right: 1px solid ##B4;
+        border-top: 1px solid #C0C0C0;
+        border-left: 1px solid #C0C0C0;
+        border-right: 1px solid #C0C0C0;
         padding: 6px 0px 6px 0px;
-        color: ##2b;
+        color: #3D3D3D;
         font-weight: bold;
         text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
         /* opera specific markup */
@@ -444,16 +455,16 @@ table.memberdecls {
         -webkit-border-top-left-radius: 8px;
         background-image:url('nav_f.png');
         background-repeat:repeat-x;
-        background-color: ##E6;
+        background-color: #EAEAEA;
 
 }
 
 .memdoc, dl.reflist dd {
-        border-bottom: 1px solid ##B4;      
-        border-left: 1px solid ##B4;      
-        border-right: 1px solid ##B4; 
+        border-bottom: 1px solid #C0C0C0;      
+        border-left: 1px solid #C0C0C0;      
+        border-right: 1px solid #C0C0C0; 
         padding: 2px 5px;
-        background-color: ##FC;
+        background-color: #FCFCFC;
         border-top-width: 0;
         /* opera specific markup */
         border-bottom-left-radius: 8px;
@@ -463,12 +474,12 @@ table.memberdecls {
         -moz-border-radius-bottomleft: 8px;
         -moz-border-radius-bottomright: 8px;
         -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
-        background-image: -moz-linear-gradient(center top, ##FF 0%, ##FF 60%, ##F8 95%, ##F0);
+        background-image: -moz-linear-gradient(center top, #FFFFFF 0%, #FFFFFF 60%, #F9F9F9 95%, #F2F2F2);
         /* webkit specific markup */
         -webkit-border-bottom-left-radius: 8px;
         -webkit-border-bottom-right-radius: 8px;
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-        background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.6,##FF), color-stop(0.60,##FF), color-stop(0.95,##F8), to(##F0));
+        background-image: -webkit-gradient(linear,center top,center bottom,from(#FFFFFF), color-stop(0.6,#FFFFFF), color-stop(0.60,#FFFFFF), color-stop(0.95,#F9F9F9), to(#F2F2F2));
 }
 
 dl.reflist dt {
@@ -618,7 +629,7 @@ div.dynheader {
 
 address {
 	font-style: normal;
-	color: ##33;
+	color: #464646;
 }
 
 table.doxtable {
@@ -628,22 +639,23 @@ table.doxtable {
 }
 
 table.doxtable td, table.doxtable th {
-	border: 1px solid ##37;
+	border: 1px solid #4A4A4A;
 	padding: 3px 7px 2px;
 }
 
 table.doxtable th {
-	background-color: ##47;
+	background-color: #5B5B5B;
 	color: #FFFFFF;
 	font-size: 110%;
 	padding-bottom: 4px;
 	padding-top: 5px;
+	text-align:left;
 }
 
 table.fieldtable {
         width: 100%;
         margin-bottom: 10px;
-        border: 1px solid ##B4;
+        border: 1px solid #C0C0C0;
         border-spacing: 0px;
         -moz-border-radius: 4px;
         -webkit-border-radius: 4px;
@@ -659,13 +671,13 @@ table.fieldtable {
 
 .fieldtable td.fieldtype, .fieldtable td.fieldname {
         white-space: nowrap;
-        border-right: 1px solid ##B4;
-        border-bottom: 1px solid ##B4;
+        border-right: 1px solid #C0C0C0;
+        border-bottom: 1px solid #C0C0C0;
         vertical-align: top;
 }
 
 .fieldtable td.fielddoc {
-        border-bottom: 1px solid ##B4;
+        border-bottom: 1px solid #C0C0C0;
         width: 100%;
 }
 
@@ -676,9 +688,9 @@ table.fieldtable {
 .fieldtable th {
         background-image:url('nav_f.png');
         background-repeat:repeat-x;
-        background-color: ##E6;
+        background-color: #EAEAEA;
         font-size: 90%;
-        color: ##2B;
+        color: #3D3D3D;
         padding-bottom: 4px;
         padding-top: 5px;
         text-align:left;
@@ -688,7 +700,7 @@ table.fieldtable {
         -webkit-border-top-right-radius: 4px;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
-        border-bottom: 1px solid ##B4;
+        border-bottom: 1px solid #C0C0C0;
 }
 
 
@@ -709,8 +721,8 @@ table.fieldtable {
 	background-repeat:repeat-x;
 	height:30px;
 	line-height:30px;
-	color:##9b;
-	border:solid 1px ##ca;
+	color:#ABABAB;
+	border:solid 1px #D3D3D3;
 	overflow:hidden;
 	margin:0px;
 	padding:0px;
@@ -725,7 +737,7 @@ table.fieldtable {
 	background-image:url('bc_s.png');
 	background-repeat:no-repeat;
 	background-position:right;
-	color:##45;
+	color:#595959;
 }
 
 .navpath li.navelem a
@@ -738,7 +750,7 @@ table.fieldtable {
 
 .navpath li.navelem a:hover
 {
-	color:##80;
+	color:#929292;
 }
 
 .navpath li.footer
@@ -750,7 +762,7 @@ table.fieldtable {
         background-image:none;
         background-repeat:no-repeat;
         background-position:right;
-        color:##45;
+        color:#595959;
         font-size: 8pt;
 }
 
@@ -787,9 +799,17 @@ div.header
 {
         background-image:url('nav_h.png');
         background-repeat:repeat-x;
-	background-color: ##FA;
-	margin:  0px;
-	border-bottom: 1px solid ##CC;
+	background-color: #FAFAFA;
+	border-bottom: 1px solid #D5D5D5;
+ 	margin-left: auto;
+ 	margin-right: auto;
+ 	width: 800px;
+ 	padding-left: 8px;
+ 	padding-right: 8px;
+         /* firefox specific markup */
+         -moz-box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 5px;
+         /* webkit specific markup */
+         -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.15);
 }
 
 div.headertitle
@@ -881,7 +901,7 @@ dl.bug
 	padding: 0px;
 	margin: 0px;
 	width: 100%;
-	border-bottom: 1px solid ##70;
+	border-bottom: 1px solid #848484;
 }
 
 .image
@@ -906,7 +926,7 @@ dl.bug
 
 div.zoom
 {
-	border: 1px solid ##A0;
+	border: 1px solid #AFAFAF;
 }
 
 dl.citelist {
@@ -914,7 +934,7 @@ dl.citelist {
 }
 
 dl.citelist dt {
-        color:##40;
+        color:#545454;
         float:left;
         font-weight:bold;
         margin-right:10px;

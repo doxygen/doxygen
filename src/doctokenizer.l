@@ -389,6 +389,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 %x St_TitleA
 %x St_TitleV
 %x St_Code
+%x St_CodeOpt
 %x St_XmlCode
 %x St_HtmlOnly
 %x St_ManOnly
@@ -695,6 +696,16 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                            // start of a new paragraph
   		           return TK_NEWPARA;
 			 }
+                       }
+<St_CodeOpt>"{"{LABELID}"}" {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.mid(1,g_token->name.length()-2);
+                         BEGIN(St_Code);
+                       }
+<St_CodeOpt>\n         |
+<St_CodeOpt>.          {
+                         unput(*yytext);
+                         BEGIN(St_Code);
                        }
 <St_Code>{WS}*{CMD}"endcode" {
                          return RetVal_OK;
@@ -1154,12 +1165,14 @@ void doctokenizerYYsetStateTitleAttrValue()
 void doctokenizerYYsetStateCode()
 {
   g_token->verb="";
-  BEGIN(St_Code);
+  g_token->name="";
+  BEGIN(St_CodeOpt);
 }
 
 void doctokenizerYYsetStateXmlCode()
 {
   g_token->verb="";
+  g_token->name="";
   BEGIN(St_XmlCode);
 }
 

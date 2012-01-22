@@ -661,7 +661,7 @@ ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL
 ACCESS_SPEC (PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
-COMMANDS  (BLOCK{BS}DATA|DO|SELECT|CASE|WHERE|IF|THEN|ELSE|MODULE{BS_}PROCEDURE|CONTAINS|IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|DEALLOCATE|SIZE|END{BS}IF|END{BS}DO|WHILE|INQUIRE|OPEN|CLOSE|DATA)
+COMMANDS  (DO|SELECT|CASE|WHERE|IF|THEN|ELSE|MODULE{BS_}PROCEDURE|CONTAINS|IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|DEALLOCATE|SIZE|END{BS}IF|END{BS}DO|WHILE|INQUIRE|OPEN|CLOSE|DATA)
 IGNORE (CALL)
 
 /* |  */
@@ -741,7 +741,7 @@ IGNORE (CALL)
                                         }
        
  /*-------- fortran module  -----------------------------------------*/
-<Start>("program"|"module"|"type"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
+<Start>("block"{BS}"data"|"program"|"module"|"type"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
 					  startScope();
   					  startFontClass("keyword"); 
   					  codifyLines(yytext);

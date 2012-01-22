@@ -38,7 +38,7 @@
   \verbatim <a href="linkURL">link text</a> \endverbatim
   which will be automatically translated to other output formats by Doxygen.
 
-  \section linkclass Links to classes.
+  \section linkclass Links to classes
 
   All words in the documentation that correspond to a documented class and
   contain at least one non-lower case character will automatically be 
@@ -48,14 +48,14 @@
   should put a \% in front of the word.
   To link to an all lower case symbol, use \ref cmdref "\\ref".
 
-  \section linkfile Links to files.
+  \section linkfile Links to files
 
   All words that contain a dot (<tt>.</tt>) that is not the last character
   in the word are considered to be file names.
   If the word is indeed the name of a documented input file, a link will 
   automatically be created to the documentation of that file.
 
-  \section linkfunc Links to functions.
+  \section linkfunc Links to functions
 
   Links to functions are created if one of the following patterns is 
   encountered:
@@ -101,7 +101,7 @@
       that matches the pattern.
   </ol>
 
-  \section linkother Links to variables, typedefs, enum types, enum values and defines.
+  \section linkother Links to other members
 
   All of these entities can be linked to in the same way as described in the 
   previous section. For sake of clarity it is advised to only use 

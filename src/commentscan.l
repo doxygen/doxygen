@@ -387,8 +387,9 @@ static Entry*		current      = 0 ;   // working entry
 //static Entry*		previous     = 0 ;   // TODO: remove need for this
 static bool             needNewEntry;
 
-static QCString         sectionLabel;
-static QCString		sectionTitle;
+static QCString         g_sectionLabel;
+static QCString		g_sectionTitle;
+static int              g_sectionLevel;
 static QCString         xrefItemKey;
 static QCString         newXRefItemKey;
 static QCString         xrefItemTitle;
@@ -401,7 +402,6 @@ static int              braceCount;
 static bool             insidePre;
 static bool             parseMore;
 static int              g_condCount;
-static int              g_sectionLevel;
 
 static int              g_commentCount;
 static bool             g_spaceBeforeCmd;
@@ -421,38 +421,40 @@ static QCString         g_compoundName;
 
 static void initParser()
 {
-  sectionLabel.resize(0);
-  sectionTitle.resize(0);
+  g_sectionLabel.resize(0);
+  g_sectionTitle.resize(0);
   g_memberGroupHeader.resize(0);
 }
 
 //-----------------------------------------------------------------------------
 
-static QCString getDocSectionName(int s)
+static bool getDocSectionName(int s)
 {
   switch(s)
   {
-    case Entry::CLASSDOC_SEC:       return "\\class";
-    case Entry::STRUCTDOC_SEC:      return "\\struct";
-    case Entry::UNIONDOC_SEC:       return "\\union";
-    case Entry::EXCEPTIONDOC_SEC:   return "\\exception";
-    case Entry::NAMESPACEDOC_SEC:   return "\\namespace";
-    case Entry::PROTOCOLDOC_SEC:    return "\\protocol";
-    case Entry::CATEGORYDOC_SEC:    return "\\category";
-    case Entry::ENUMDOC_SEC:        return "\\enum";
-    case Entry::PAGEDOC_SEC:        return "\\page";
-    case Entry::VARIABLEDOC_SEC:    return "\\var";
-    case Entry::MEMBERDOC_SEC:      return "\\fn";
-    case Entry::OVERLOADDOC_SEC:    return "\\overload";
-    case Entry::FILEDOC_SEC:        return "\\file";
-    case Entry::DEFINEDOC_SEC:      return "\\def";
-    case Entry::GROUPDOC_SEC:       return "\\defgroup";
-    case Entry::MAINPAGEDOC_SEC:    return "\\mainpage";
-    case Entry::PACKAGEDOC_SEC:     return "\\package";
-    case Entry::DIRDOC_SEC:         return "\\dir";
-    case Entry::EXAMPLE_SEC:        return "\\example";
-    case Entry::MEMBERGRP_SEC:      return "\\name";
-    default: return "";
+    case Entry::CLASSDOC_SEC:
+    case Entry::STRUCTDOC_SEC:
+    case Entry::UNIONDOC_SEC:
+    case Entry::EXCEPTIONDOC_SEC:
+    case Entry::NAMESPACEDOC_SEC:
+    case Entry::PROTOCOLDOC_SEC:
+    case Entry::CATEGORYDOC_SEC:
+    case Entry::ENUMDOC_SEC:
+    case Entry::PAGEDOC_SEC:
+    case Entry::VARIABLEDOC_SEC:
+    case Entry::MEMBERDOC_SEC:
+    case Entry::OVERLOADDOC_SEC:
+    case Entry::FILEDOC_SEC:
+    case Entry::DEFINEDOC_SEC:
+    case Entry::GROUPDOC_SEC:
+    case Entry::MAINPAGEDOC_SEC:
+    case Entry::PACKAGEDOC_SEC:
+    case Entry::DIRDOC_SEC:
+    case Entry::EXAMPLE_SEC:
+    case Entry::MEMBERGRP_SEC:
+      return TRUE;
+    default: 
+      return FALSE;
   }
 }
 
@@ -461,7 +463,7 @@ static QCString getDocSectionName(int s)
 static bool makeStructuralIndicator(Entry::Sections s)
 {
   //printf("current->section=%x\n",current->section);
-  if (!getDocSectionName(current->section).isEmpty())
+  if (getDocSectionName(current->section))
   {
     return TRUE;
   }
@@ -558,8 +560,9 @@ static void addXRefItem(const char *listName,const char *itemTitle,
       docEntry->doc += cmdString;
     }
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
-	                            sectionTitle,SectionInfo::Anchor);
-    Doxygen::sectionDict.insert(anchorLabel,si);
+	                            g_sectionTitle,SectionInfo::Anchor,
+                                    g_sectionLevel);
+    Doxygen::sectionDict.append(anchorLabel,si);
     docEntry->anchors->append(si);
   }
   outputXRef.resize(0);
@@ -598,14 +601,26 @@ static QCString addFormula()
 static void checkFormula();
 //-----------------------------------------------------------------------------
 
+static SectionInfo::SectionType sectionLevelToType(int level)
+{
+  if (level>=0 && level<5) return (SectionInfo::SectionType)level;
+  return SectionInfo::Anchor;
+}
+
 static void addSection()
 {
-  sectionTitle+=yytext;
-  sectionTitle=sectionTitle.stripWhiteSpace();
-  //printf("Adding new section file=%s label=%s title=%s\n",yyFileName,sectionLabel.data(),sectionTitle.data()); 
-  SectionInfo *si = new SectionInfo(yyFileName,sectionLabel,sectionTitle,SectionInfo::Anchor);
+  // create a new section element
+  g_sectionTitle+=yytext;
+  g_sectionTitle=g_sectionTitle.stripWhiteSpace();
+  SectionInfo *si = new SectionInfo(yyFileName,g_sectionLabel,
+                          g_sectionTitle,sectionLevelToType(g_sectionLevel),g_sectionLevel);
+
+  // add section to this entry
   current->anchors->append(si);
-  Doxygen::sectionDict.insert(yytext,si);
+
+  // add section to the global dictionary
+  Doxygen::sectionDict.append(g_sectionLabel,si);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1061,7 +1076,22 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   				          addOutput(yytext); 
 					}
 <Comment>^{B}*[1-9][0-9]*"."{B}+        |
-<Comment>^{B}*[*+-]{B}+			{ // start of autolist
+<Comment>^{B}*[*+]{B}+			{ // start of autolist
+                                          if (!Doxygen::markdownSupport)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            if (inContext!=OutputXRef) 
+                                            {
+                                              briefEndsAtDot=FALSE;
+                                              setOutput(OutputDoc);
+                                            }
+                                            addOutput(yytext); 
+                                          }
+  					}
+<Comment>^{B}*"-"{B}+			{ // start of autolist
 					  if (inContext!=OutputXRef) 
 					  {
 					    briefEndsAtDot=FALSE;
@@ -1492,9 +1522,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle arguments of the section/subsection/.. commands ------- */
 
 <SectionLabel>{LABELID}			{ // first argyment
-  					  sectionLabel=yytext;
+  					  g_sectionLabel=yytext;
                                           addOutput(yytext);
-					  sectionTitle.resize(0);
+					  g_sectionTitle.resize(0);
 					  BEGIN(SectionTitle);
   					}
 <SectionLabel>{DOCNL}			{ // missing argument
@@ -1511,8 +1541,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					      );
 					  BEGIN(Comment);
   					}
-
-<SectionTitle>[^\n@\\*]*/"\n"            { // end of section title
+<SectionTitle>[^\n@\\*]*/"\n"           { // end of section title
   					  addSection();
                                           addOutput(yytext);
 					  BEGIN( Comment );
@@ -1527,19 +1556,19 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  addOutput('\n');
   					}
 <SectionTitle>[^\n@\\]*			{ // any character without special meaning
-  					  sectionTitle+=yytext;
+  					  g_sectionTitle+=yytext;
 					  addOutput(yytext);
   					}
 <SectionTitle>("\\\\"|"@@"){ID}		{ // unescape escaped command
-  					  sectionTitle+=&yytext[1];
+  					  g_sectionTitle+=&yytext[1];
 					  addOutput(yytext);
   					}
 <SectionTitle>{CMD}[$@\\&~<>#%]		{ // unescape escaped character
-  					  sectionTitle+=yytext[1];
+  					  g_sectionTitle+=yytext[1];
   					  addOutput(yytext);
   					}
 <SectionTitle>.				{ // anything else
-  					  sectionTitle+=yytext;
+  					  g_sectionTitle+=yytext;
 					  addOutput(*yytext);
   					}
 
@@ -1576,8 +1605,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel>{LABELID}			{ // found argument
-                                          SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor);
-                                          Doxygen::sectionDict.insert(yytext,si);
+                                          SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor,0);
+                                          Doxygen::sectionDict.append(yytext,si);
   					  current->anchors->append(si);
 					  addOutput(yytext);
 					  BEGIN( Comment );
@@ -2646,9 +2675,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   if (Doxygen::markdownSupport)
   {
-    current->brief      = processMarkdown(current->brief);
-    current->doc        = processMarkdown(current->doc);
-    current->inbodyDocs = processMarkdown(current->inbodyDocs);
+    current->brief      = processMarkdown(fileName,current,current->brief);
+    current->doc        = processMarkdown(fileName,current,current->doc);
+    current->inbodyDocs = processMarkdown(fileName,current,current->inbodyDocs);
   }
 
   Debug::print(Debug::CommentScan,0,

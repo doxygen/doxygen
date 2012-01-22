@@ -330,12 +330,17 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
 void HtmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
   switch(s->type())
   {
     case DocVerbatim::Code: 
       forceEndParagraph(s);
       m_t << PREFRAG_START;
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
       m_t << PREFRAG_END;

@@ -163,8 +163,6 @@ static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
 static bool             g_dumpConfigAsXML = FALSE;
 
-
-
 void clearAll()
 {
   g_inputFiles.clear();      
@@ -8233,8 +8231,9 @@ static void findMainPage(EntryNav *rootNav)
           indexName,
           Doxygen::mainPage->name(),
           Doxygen::mainPage->title(),
-          SectionInfo::Page);
-      Doxygen::sectionDict.insert(indexName,si);
+          SectionInfo::Page,
+          0); // level 0
+      Doxygen::sectionDict.append(indexName,si);
       Doxygen::mainPage->addSectionsToDefinition(root->anchors);
     }
     else
@@ -8310,7 +8309,7 @@ static void checkPageRelations()
 
 static void resolveUserReferences()
 {
-  QDictIterator<SectionInfo> sdi(Doxygen::sectionDict);
+  SDict<SectionInfo>::Iterator sdi(Doxygen::sectionDict);
   SectionInfo *si;
   for (;(si=sdi.current());++sdi)
   {
@@ -9380,7 +9379,7 @@ void initDoxygen()
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
-  Doxygen::citeDict = new CiteDict(256);
+  Doxygen::citeDict = new CiteDict(257);
 }
 
 void cleanUpDoxygen()

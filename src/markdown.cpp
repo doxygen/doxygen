@@ -43,6 +43,14 @@
 #include "util.h"
 #include "doxygen.h"
 #include "commentscan.h"
+#include "entry.h"
+
+//-----------
+
+#define isIdChar(i) \
+      ((data[(i)]>='a' && data[(i)]<='z') || \
+       (data[(i)]>='A' && data[(i)]<='Z') || \
+       (data[(i)]>='0' && data[(i)]<='9'))   \
 
 //----------
 
@@ -62,6 +70,8 @@ enum Alignment { AlignNone, AlignLeft, AlignCenter, AlignRight };
 
 static QDict<LinkRef> g_linkRefs(257);
 static action_t       g_actions[256];
+static Entry         *g_current;
+static QCString       g_fileName;
 //static QDict<void>    g_htmlBlockTags(17);
 
 //----------
@@ -206,11 +216,7 @@ static int findEmphasisChar(const char *data, int size, char c)
 
     if (data[i] == c)
     {
-      if (i<size-1 && ((data[i+1]>='a' && data[i+1]<='z') || 
-                       (data[i+1]>='A' && data[i+1]<='Z') ||
-                       (data[i+1]>='0' && data[i+1]<='9')
-                      )
-         ) // to prevent touching some_underscore_identifier
+      if (i<size-1 && isIdChar(i+1)) // to prevent touching some_underscore_identifier
       {
         i++;
         continue;
@@ -397,11 +403,110 @@ static int processEmphasis3(GrowBuf &out, const char *data, int size, char c)
   return 0;
 }
 
-static int processEmphasis(GrowBuf &out,const char *data,int,int size)
+static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
 {
+  if (offset>0 && data[-1]=='\\') return 0; // escaped <
+
+  // find the end of the html tag
+  int i=1;
+  int l=0;
+  // compute length of the tag name
+  while (i<size && isIdChar(i)) i++,l++;
+  QCString tagName;
+  convertStringFragment(tagName,data+1,i-1);
+  if (tagName.lower()=="pre") // found <pre> tag
+  {
+    bool insideStr=FALSE;
+    while (i<size-6)
+    {
+      char c=data[i];
+      if (!insideStr && c=='<') // potential start of html tag
+      {
+        if (data[i+1]=='/' &&
+            tolower(data[i+2])=='p' && tolower(data[i+3])=='r' &&
+            tolower(data[i+4])=='e' && tolower(data[i+5])=='>')
+        { // found </pre> tag, copy from start to end of tag
+          out.addStr(data,i+6);
+          //printf("found <pre>..</pre> [%d..%d]\n",0,i+6);
+          return i+6;
+        }
+      }
+      else if (insideStr && c=='"')
+      {
+        if (data[i-1]!='\\') insideStr=FALSE;
+      }
+      else if (c=='"')
+      {
+        insideStr=TRUE;
+      }
+      i++;
+    }
+  }
+  else // some other html tag
+  {
+    if (l>0 && i<size)
+    {
+      if (data[i]=='/' && i<size-1 && data[i+1]=='>') // <bla/>
+      {
+        //printf("Found htmlTag={%s}\n",QCString(data).left(i+2).data());
+        out.addStr(data,i+2);
+        return i+2;
+      }
+      else if (data[i]=='>') // <bla>
+      {
+        //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
+        out.addStr(data,i+1);
+        return i+1;
+      }
+      else if (data[i]==' ') // <bla attr=...
+      {
+        i++;
+        bool insideAttr=FALSE;
+        while (i<size)
+        {
+          if (!insideAttr && data[i]=='"')
+          {
+            insideAttr=TRUE;
+          }
+          else if (data[i]=='"' && data[i-1]!='\\')
+          {
+            insideAttr=FALSE;
+          }
+          else if (!insideAttr && data[i]=='>') // found end of tag
+          {
+            //printf("Found htmlTag={%s}\n",QCString(data).left(i+1).data());
+            out.addStr(data,i+1);
+            return i+1;
+          }
+          i++;
+        }
+      }
+    }
+  }
+  //printf("Not a valid html tag\n");
+  return 0;
+}
+
+static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
+{
+  if (offset>0 && size>1 && (isIdChar(-1) || data[-1]==data[0]))
+  {
+    if (isIdChar(1) || data[-1]==data[0])
+    {
+      // avoid processing interal * and  _ as cmd_id, or 4*10 as emphasis,
+      // also x**2,y*2 should not be processed
+      return 0;
+    }
+    else if (size>2 && data[0]==data[1] && isIdChar(2))
+    {
+      // avoid processing interal ** and  __ such as cmd__id__bla, 
+      // or 4**10,5**10 as emphasis
+      return 0;
+    }
+  }
   char c = data[0];
-  size_t ret;
-  if (size>2 && data[1]!=c)
+  int ret;
+  if (size>2 && data[1]!=c) // _bla or *bla
   {
     // whitespace cannot follow an opening emphasis
     if (data[1]==' ' || data[1]=='\n' || 
@@ -411,7 +516,7 @@ static int processEmphasis(GrowBuf &out,const char *data,int,int size)
     }
     return ret+1;
   }
-  if (size>3 && data[1]==c && data[2]!=c)
+  if (size>3 && data[1]==c && data[2]!=c) // __bla or **bla
   {
     if (data[2]==' ' || data[2]=='\n' || 
         (ret = processEmphasis2(out, data+2, size-2, c)) == 0)
@@ -420,7 +525,7 @@ static int processEmphasis(GrowBuf &out,const char *data,int,int size)
     }
     return ret+2;
   }
-  if (size>4 && data[1]==c && data[2]==c && data[3]!=c)
+  if (size>4 && data[1]==c && data[2]==c && data[3]!=c) // ___bla or ***bla
   {
     if (data[3]==' ' || data[3]=='\n' || 
         (ret = processEmphasis3(out, data+3, size-3, c)) == 0)
@@ -478,7 +583,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   contentEnd=i;
   convertStringFragment(content,data+contentStart,contentEnd-contentStart);
   //printf("processLink: content={%s}\n",content.data());
-  if (content.isEmpty()) return 0; // no link text
+  if (!isImageLink && content.isEmpty()) return 0; // no link text
   i++; // skip over ]
 
   // skip whitespace
@@ -588,7 +693,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     }
     i++;
   }
-  else if (i<size && data[i]!=':') // minimal link ref notation [some id]
+  else if (i<size && data[i]!=':' && !content.isEmpty()) // minimal link ref notation [some id]
   {
     LinkRef *lr = g_linkRefs.find(content.lower());
     //printf("processLink: minimal link {%s} lr=%p",content.data(),lr);
@@ -609,28 +714,33 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   {
     return 0;
   }
-  if (isImageLink) // TODO: use @image?
+  static QRegExp re("^[@\\]ref ");
+  if (isImageLink) 
   {
-    out.addStr("<img src=\"");
-    out.addStr(link);
-    out.addStr("\" alt=\"");
-    out.addStr(content);
-    out.addStr("\"");
-    if (!title.isEmpty())
+    if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1) 
+        // assume doxygen symbol link
     {
-      out.addStr(" title=\"");
-      out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
-      out.addStr("\"");
+      out.addStr("@image html ");
+      out.addStr(link.mid(5));
+      if (!explicitTitle && !content.isEmpty())
+      { 
+        out.addStr(" \"");
+        out.addStr(content);
+        out.addStr("\"");
+      }
+      else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
+      {
+        out.addStr(" \"");
+        out.addStr(title);
+        out.addStr("\"");
+      }
     }
-    out.addStr("/>");
-  }
-  else
-  {
-    static QRegExp re("^[@\\]ref ");
-    if (link.find('/')!=-1) // file/url link
+    else
     {
-      out.addStr("<a href=\"");
+      out.addStr("<img src=\"");
       out.addStr(link);
+      out.addStr("\" alt=\"");
+      out.addStr(content);
       out.addStr("\"");
       if (!title.isEmpty())
       {
@@ -638,11 +748,12 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
         out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
         out.addStr("\"");
       }
-      out.addStr(">");
-      out.addStr(content.simplifyWhiteSpace());
-      out.addStr("</a>");
+      out.addStr("/>");
     }
-    else if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1) 
+  }
+  else
+  {
+    if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1) 
         // assume doxygen symbol link
     {
       out.addStr(link);
@@ -657,7 +768,22 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       }
       out.addStr("\"");
     }
-    else // avoid link to F[x](y)
+    else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1) 
+    { // file/url link
+      out.addStr("<a href=\"");
+      out.addStr(link);
+      out.addStr("\"");
+      if (!title.isEmpty())
+      {
+        out.addStr(" title=\"");
+        out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+        out.addStr("\"");
+      }
+      out.addStr(">");
+      out.addStr(content.simplifyWhiteSpace());
+      out.addStr("</a>");
+    }
+    else // avoid link to e.g. F[x](y)
     {
       //printf("no link for '%s'\n",link.data());
       return 0;
@@ -722,17 +848,14 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
     i=f_begin;
     while (i<f_end-1)
     {
-      if (data[i]=='\'' && !((data[i+1]>='a' && data[i+1]<='z') ||
-                             (data[i+1]>='A' && data[i+1]<='Z') ||
-                             (data[i+1]>='0' && data[i+1]<='9')
-                            )) // reject `some word' and not `it's cool`
+      if (data[i]=='\'' && !isIdChar(i+1)) // reject `some word' and not `it's cool`
       {
         return 0;
       }
       i++;
     }
   }
-  printf("found code span '%s'\n",QCString(data+f_begin).left(f_end-f_begin).data());
+  //printf("found code span '%s'\n",QCString(data+f_begin).left(f_end-f_begin).data());
 
   /* real code span */
   if (f_begin < f_end)
@@ -782,28 +905,6 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
   }
   return 0;
 }
-
-#if 0
-static int processHtmlBlock(GrowBuf &out, const char *data, int offset, int size)
-{
-  if (size<2 || data[0]!='<') return 0;
-  int i=1;
-  while (i<size && ((data[i]>='0' && data[i]<='9') ||
-                    (data[i]>='A' && data[i]<='Z') ||
-                    (data[i]>='a' && data[i]<='z'))) i++;
-  if (i<=1 || i>=size) return 0;
-  QCString tagName;
-  convertStringFragment(tagName,data+1,i-1);
-  printf("found html tag '%s'\n",tagName.data());
-  if (g_htmlBlockTags.find(tagName)!=0)
-  {
-    printf("found block tag\n");
-
-    // search for end of the block...
-  }
-  return 0;
-}
-#endif
 
 static void processInline(GrowBuf &out,const char *data,int size)
 {
@@ -856,7 +957,24 @@ static bool isBlockQuote(const char *data,int size,int indent)
 {
   int i = 0;
   while (i<size && data[i]==' ') i++;
-  return i<size && data[i]=='>' && i<indent+codeBlockIndent;
+  if (i<indent+codeBlockIndent) // could be a quotation
+  {
+    // count >'s and skip spaces
+    int level=0;
+    while (i<size && (data[i]=='>' || data[i]==' ')) 
+    {
+      if (data[i]=='>') level++;
+      i++;
+    }
+    // last characters should be a space or newline, 
+    // so a line starting with >= does not match
+    return level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n'); 
+  }
+  else // too much indentation -> code block
+  {
+    return FALSE;
+  }
+  //return i<size && data[i]=='>' && i<indent+codeBlockIndent;
 }
 
 /** returns end of the link ref if this is indeed a link reference. */
@@ -979,7 +1097,7 @@ static int isHRuler(const char *data,int size)
 
 static QCString extractTitleId(QCString &title)
 {
-  static QRegExp r1("^[a-z_A-Z][a-z_A-Z0-9\\-]*:");
+  //static QRegExp r1("^[a-z_A-Z][a-z_A-Z0-9\\-]*:");
   static QRegExp r2("\\{#[a-z_A-Z][a-z_A-Z0-9\\-]*\\}$");
   int l=0;
   int i = r2.match(title,0,&l);
@@ -990,20 +1108,21 @@ static QCString extractTitleId(QCString &title)
     //printf("found id='%s' title='%s'\n",id.data(),title.data());
     return id;
   }
-  i = r1.match(title,0,&l);
-  if (i!=-1) // found id: style id
-  {
-    QCString id = title.mid(i,l-1);
-    title = title.left(i)+title.mid(i+l);
-    //printf("found id='%s' title='%s'\n",id.data(),title.data());
-    return id;
-  }
+  //i = r1.match(title,0,&l);
+  //if (i!=-1) // found id: style id
+  //{
+  //  QCString id = title.mid(i,l-1);
+  //  title = title.left(i)+title.mid(i+l);
+  //  //printf("found id='%s' title='%s'\n",id.data(),title.data());
+  //  return id;
+  //}
   //printf("no id found in title '%s'\n",title.data());
   return "";
 }
 
 
-static int isAtxHeader(const char *data,int size,QCString &header)
+static int isAtxHeader(const char *data,int size,
+                       QCString &header,QCString &id)
 {
   int i = 0, end;
   int level = 0;
@@ -1021,6 +1140,13 @@ static int isAtxHeader(const char *data,int size,QCString &header)
 
   // store result
   convertStringFragment(header,data+i,end-i);
+  id = extractTitleId(header);
+  if (!id.isEmpty()) // strip #'s between title and id
+  {
+    i=header.length()-1;
+    while (i>=0 && header.at(i)=='#' || header.at(i)==' ') i--;
+    header=header.left(i+1);
+  }
 
   return level;
 }
@@ -1037,19 +1163,29 @@ static int isEmptyLine(const char *data,int size)
   return TRUE;
 }
 
+#define isLiTag(i) \
+   (data[(i)]=='<' && \
+   (data[(i)+1]=='l' || data[(i)+1]=='L') && \
+   (data[(i)+2]=='i' || data[(i)+2]=='I') && \
+   (data[(i)+3]=='>'))
+
 // compute the indent from the start of the input, excluding list markers
-// such as -, *, +, and 1.
+// such as -, -#, *, +, 1., and <li>
 static int computeIndentExcludingListMarkers(const char *data,int size)
 {
   int i=0;
   int indent=0;
   bool isDigit=FALSE;
+  bool isLi=FALSE;
   bool listMarkerSkipped=FALSE;
   while (i<size && 
          (data[i]==' ' ||                                    // space
           (!listMarkerSkipped &&                             // first list marker
            (data[i]=='+' || data[i]=='-' || data[i]=='*' ||  // unordered list char
-           (isDigit=(data[i]>='1' && data[i]<='9')))         // ordered list marker?
+            (data[i]=='#' && i>0 && data[i-1]=='-') ||       // -# item
+            (isDigit=(data[i]>='1' && data[i]<='9')) ||      // ordered list marker?
+            (isLi=(i<size-3 && isLiTag(i)))                  // <li> tag
+           )
           )
          )
         ) 
@@ -1076,18 +1212,68 @@ static int computeIndentExcludingListMarkers(const char *data,int size)
         j++;
       }
     }
-    else if (data[i]!=' ' && i<size-1 && data[i+1]==' ')
+    else if (isLi)
     {
+      i+=3; // skip over <li>
+      indent+=3;
+      listMarkerSkipped=TRUE;
+    }
+    else if (data[i]=='-' && i<size-2 && data[i+1]=='#' && data[i+2]==' ')
+    { // case "-# "
+      listMarkerSkipped=TRUE; // only a single list marker is accepted
+      i++; // skip over #
+      indent++;
+    }
+    else if (data[i]!=' ' && i<size-1 && data[i+1]==' ')
+    { // case "- " or "+ " or "* "
       listMarkerSkipped=TRUE; // only a single list marker is accepted
     }
     if (data[i]!=' ' && !listMarkerSkipped)
-    {
+    { // end of indent
       break;
     }
     indent++,i++;
   }
   //printf("{%s}->%d\n",QCString(data).left(size).data(),indent);
   return indent;
+}
+
+static bool isFencedCodeBlock(const char *data,int size,int refIndent,
+                             QCString &lang,int &start,int &end,int &offset)
+{
+  // TODO: implement me...
+  // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
+  // return FALSE
+  int i=0;
+  int indent=0;
+  int startTildes=0;
+  while (i<size && data[i]==' ') indent++,i++;
+  if (indent>=refIndent+4) return FALSE; // part of code block
+  while (i<size && data[i]=='~') startTildes++,i++;
+  if (startTildes<3) return FALSE; // not enough tildes
+  if (i<size && data[i]=='{') i++; // skip over optional {
+  int startLang=i;
+  while (i<size && (data[i]!='\n' && data[i]!='}' && data[i]!=' ')) i++;
+  convertStringFragment(lang,data+startLang,i-startLang);
+  while (i<size && data[i]!='\n') i++; // proceed to the end of the line
+  start=i;
+  while (i<size)
+  {
+    if (data[i]=='~')
+    {
+      end=i-1;
+      int endTildes=0;
+      while (i<size && data[i]=='~') endTildes++,i++; 
+      while (i<size && data[i]==' ') i++;
+      if (i==size || data[i]=='\n') 
+      {
+        offset=i;
+        return endTildes==startTildes;
+      }
+    }
+    i++;
+  }
+  return FALSE;
 }
 
 static bool isCodeBlock(const char *data,int offset,int size,int &indent)
@@ -1244,16 +1430,9 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
 
   // write table header, in range [start..end]
   out.addStr("<tr>");
-  j=start;
-  for (k=0;k<columns;k++)
-  {
-    out.addStr("<th>");
-    while (j<=end && (data[j]!='|' || (j>0 && data[j-1]=='\\')))
-    {
-      out.addChar(data[j++]);
-    }
-    j++;
-  }
+
+  int headerStart = start;
+  int headerEnd = end;
 
   // read cell alignments
   int ret = findTableColumns(data+i,size-i,start,end,cc);
@@ -1294,6 +1473,25 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
   }
   // proceed to next line
   i+=ret;
+
+  int m=headerStart;
+  for (k=0;k<columns;k++)
+  {
+    out.addStr("<th");
+    switch (columnAlignment[k])
+    {
+      case AlignLeft:   out.addStr(" align=left"); break;
+      case AlignRight:  out.addStr(" align=right"); break;
+      case AlignCenter: out.addStr(" align=center"); break;
+      case AlignNone:   break;
+    }
+    out.addStr(">");
+    while (m<=headerEnd && (data[m]!='|' || (m>0 && data[m-1]=='\\')))
+    {
+      out.addChar(data[m++]);
+    }
+    m++;
+  }
 
   // write table cells
   while (i<size)
@@ -1348,17 +1546,44 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
 {
   int level;
   QCString header;
+  QCString id;
   if (isHRuler(data,size))
   {
     out.addStr("<hr>\n");
   }
-  else if ((level=isAtxHeader(data,size,header)))
+  else if ((level=isAtxHeader(data,size,header,id)))
   {
     QCString hTag;
-    hTag.sprintf("h%d",level);
-    out.addStr("<"+hTag+">");
-    out.addStr(header); 
-    out.addStr("</"+hTag+">\n");
+    if (level<5 && !id.isEmpty())
+    {
+      switch(level)
+      {
+        case 1:  out.addStr("@section "); break;
+        case 2:  out.addStr("@subsection "); break;
+        case 3:  out.addStr("@subsubsection "); break;
+        default: out.addStr("@paragraph "); break;
+      }
+      out.addStr(id);
+      out.addStr(" ");
+      out.addStr(header);
+      SectionInfo *si = new SectionInfo(g_fileName,id,header,SectionInfo::Anchor,level);
+      if (g_current)
+      {
+        g_current->anchors->append(si);
+      }
+      Doxygen::sectionDict.append(header,si);
+    }
+    else
+    {
+      if (!id.isEmpty())
+      {
+        out.addStr("\\anchor "+id+"\n");
+      }
+      hTag.sprintf("h%d",level);
+      out.addStr("<"+hTag+">");
+      out.addStr(header); 
+      out.addStr("</"+hTag+">\n");
+    }
   }
   else // nothing interesting -> just output the line
   {
@@ -1386,6 +1611,11 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
       if (data[j]=='>') { level++; indent=j+1; }
       else if (j>0 && data[j-1]=='>') indent=j+1;
       j++;
+    }
+    if (j>0 && data[j-1]=='>') // disqualify last > if not followed by space
+    {
+      indent--;
+      j--;
     }
     if (level>curLevel) // quote level increased => add start markers
     {
@@ -1458,11 +1688,12 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
                           int &pi,int&i,int &end)
 {
   // find end of the line
+  int nb=0;
   for (end=i+1; end<size && data[end-1]!='\n'; end++)
   {
     // while looking for the end of the line we might encounter a block
     // that needs to be passed unprocessed.
-    if ((data[end-1]=='\\' || data[end-1]=='@') &&            // command
+    if ((data[end-1]=='\\' || data[end-1]=='@') &&          // command
         (end<=1 || (data[end-2]!='\\' && data[end-2]!='@')) // not escaped
        )
     {
@@ -1492,6 +1723,36 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
           }
         }
       }
+    }
+    else if (nb==0 && data[end-1]=='<' && end<size-6 &&
+             (end<=1 || (data[end-2]!='\\' && data[end-2]!='@'))
+            )
+    {
+      if (tolower(data[end])=='p' && tolower(data[end+1])=='r' &&
+          tolower(data[end+2])=='e' && data[end+3]=='>') // <pre> tag
+      {
+        if (pi!=-1) // output previous line if available
+        {
+          out.addStr(data+pi,i-pi);
+        }
+        // output part until <pre>
+        out.addStr(data+i,end-1-i); 
+        // output part until </pre>
+        i = end-1 + processHtmlTag(out,data+end-1,end-1,size-end+1);
+        pi=-1;
+        end = i+1;
+        break;
+      }
+    }
+    else if (nb==0 && data[end-1]=='`') 
+    {
+      while (end<size && data[end-1]=='`') end++,nb++;
+    }
+    else if (nb>0 && data[end-1]=='`')
+    {
+      int enb=0;
+      while (end<size && data[end-1]=='`') end++,enb++;
+      if (enb==nb) nb=0;
     }
   }
 }
@@ -1578,17 +1839,38 @@ static QCString processBlocks(const QCString &s,int indent)
 
     if (pi!=-1)
     {
+      int blockStart,blockEnd,blockOffset;
+      QCString lang;
       blockIndent = indent;
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
       if ((level=isHeaderline(data+i,size-i))>0)
       {
         //printf("Found header at %d-%d\n",i,end);
         while (pi<size && data[pi]==' ') pi++;
-        if (i-pi>1)
+        QCString header,id;
+        convertStringFragment(header,data+pi,i-pi-1);
+        id = extractTitleId(header);
+        if (!header.isEmpty())
         {
-          out.addStr(level==1?"<h1>":"<h2>");
-          out.addStr(data+pi,i-pi-1);
-          out.addStr(level==1?"</h1>\n":"</h2>\n");
+          if (!id.isEmpty())
+          {
+            out.addStr(level==1?"@section ":"@subsection ");
+            out.addStr(id);
+            out.addStr(" ");
+            out.addStr(header);
+            SectionInfo *si = new SectionInfo(g_fileName,id,header,SectionInfo::Anchor,level);
+            if (g_current)
+            {
+              g_current->anchors->append(si);
+            }
+            Doxygen::sectionDict.append(header,si);
+          }
+          else
+          {
+            out.addStr(level==1?"<h1>":"<h2>");
+            out.addStr(header);
+            out.addStr(level==1?"</h1>\n":"</h2>\n");
+          }
         }
         else
         {
@@ -1607,6 +1889,23 @@ static QCString processBlocks(const QCString &s,int indent)
         i=ref+pi;
         pi=-1;
         end=i+1;
+      }
+      else if (isFencedCodeBlock(data+pi,size-pi,indent,lang,blockStart,blockEnd,blockOffset))
+      {
+        //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
+        //       lang.data(),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());
+        out.addStr("@code");
+        if (!lang.isEmpty() && lang.at(0)=='.') lang=lang.mid(1);
+        if (!lang.isEmpty())
+        {
+          out.addStr("{"+lang+"}");
+        }
+        out.addStr(data+pi+blockStart,blockEnd-blockStart);       
+        out.addStr("\n@endcode");
+        i=pi+blockOffset;
+        pi=-1;
+        end=i+1;
+        continue;
       }
       else if (isCodeBlock(data+i,i,end-i,blockIndent))
       //if (isCodeBlock(data+pi,pi,end-pi,blockIndent))
@@ -1651,7 +1950,7 @@ static QCString processBlocks(const QCString &s,int indent)
   return out.get();
 }
 
-static QCString extractPageTitle(QCString &docs)
+static QCString extractPageTitle(QCString &docs,QCString &id)
 {
   // first first non-empty line
   QCString title;
@@ -1671,16 +1970,19 @@ static QCString extractPageTitle(QCString &docs)
     while (end2<size && data[end2-1]!='\n') end2++;
     if (isHeaderline(data+end1,size-end1))
     {
-      convertStringFragment(title,data+i,end1-i);
+      convertStringFragment(title,data+i,end1-i-1);
       docs=docs.mid(end2);
+      id = extractTitleId(title);
+      //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       return title;
     }
   }
-  if (i<end1 && isAtxHeader(data+i,end1-i,title)>0)
+  if (i<end1 && isAtxHeader(data+i,end1-i,title,id)>0)
   {
     docs=docs.mid(end1);
   }
-  //printf("extractPageTitle(title='%s' docs='%s')\n",title.data(),docs.data());
+  id = extractTitleId(title);
+  //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
   return title;
 }
 
@@ -1727,36 +2029,12 @@ static QCString detab(const QCString &s,int &refIndent)
 
 //---------------------------------------------------------------------------
 
-QCString processMarkdown(const QCString &input)
+QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input)
 {
-#if 0
-  static bool g_init = FALSE;
-  if (!g_init)
-  {
-    g_htmlBlockTags.insert("p",(void*)0x8);
-    g_htmlBlockTags.insert("dl",(void*)0x8);
-    g_htmlBlockTags.insert("h1",(void*)0x8);
-    g_htmlBlockTags.insert("h2",(void*)0x8);
-    g_htmlBlockTags.insert("h3",(void*)0x8);
-    g_htmlBlockTags.insert("h4",(void*)0x8);
-    g_htmlBlockTags.insert("h5",(void*)0x8);
-    g_htmlBlockTags.insert("h6",(void*)0x8);
-    g_htmlBlockTags.insert("ol",(void*)0x8);
-    g_htmlBlockTags.insert("ul",(void*)0x8);
-    g_htmlBlockTags.insert("div",(void*)0x8);
-    g_htmlBlockTags.insert("pre",(void*)0x8);
-    g_htmlBlockTags.insert("form",(void*)0x8);
-    g_htmlBlockTags.insert("math",(void*)0x8);
-    g_htmlBlockTags.insert("table",(void*)0x8);
-    g_htmlBlockTags.insert("iframe",(void*)0x8);
-    g_htmlBlockTags.insert("script",(void*)0x8);
-    g_htmlBlockTags.insert("fieldset",(void*)0x8);
-    g_htmlBlockTags.insert("noscript",(void*)0x8);
-    g_init=TRUE;
-  }
-#endif
   g_linkRefs.setAutoDelete(TRUE);
   g_linkRefs.clear();
+  g_current = e;
+  g_fileName = fileName;
   static GrowBuf out;
   if (input.isEmpty()) return input;
   out.clear();
@@ -1777,7 +2055,7 @@ QCString processMarkdown(const QCString &input)
   g_actions['@']=processSpecialCommand;
   g_actions['[']=processLink;
   g_actions['!']=processLink;
-  //g_actions['<']=processHtmlBlock;
+  g_actions['<']=processHtmlTag;
   // finally process the inline markup (links, emphasis and code spans)
   processInline(out,s,size);
   out.addChar(0);
@@ -1794,10 +2072,11 @@ void MarkdownFileParser::parseInput(const char *fileName,
   Entry *current = new Entry;
   current->lang = SrcLangExt_Markdown;
   QCString docs = fileBuf;
-  QCString title=extractPageTitle(docs).stripWhiteSpace();
-  QCString id=extractTitleId(title);
+  QCString id;
+  QCString title=extractPageTitle(docs,id).stripWhiteSpace();
   QCString baseName = substitute(QFileInfo(fileName).baseName().utf8()," ","_");
   if (id.isEmpty()) id = "md_"+baseName;
+  if (title.isEmpty()) title = baseName;
   if (id=="mainpage" || id=="index")
   {
     docs.prepend("@mainpage "+title+"\n");
