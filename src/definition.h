@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -330,6 +330,7 @@ class Definition : public DefinitionIntf, public LockableObj
     void setLocalName(const QCString name);
 
     void addSectionsToIndex();
+    void writeToc(OutputList &ol);
 
   protected:
 

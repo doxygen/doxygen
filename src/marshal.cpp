@@ -9,6 +9,7 @@
 #include "definition.h"
 #include "groupdef.h"
 #include "example.h"
+#include "arguments.h"
 
 #define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
 

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -47,6 +47,8 @@
 #include "bufstr.h"
 #include "portable.h"
 #include "bufstr.h"
+#include "arguments.h"
+#include "entry.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -1552,7 +1554,10 @@ static void readIncludeFile(const QCString &inc)
       //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
-        for (i=0;i<g_includeStack.count();i++) msg("  ");
+        for (i=0;i<g_includeStack.count();i++) 
+        {
+          Debug::print(Debug::Preprocessor,0,"  ");
+        }
         //msg("#include %s: parsing...\n",incFileName.data());
       }
       if (oldFileDef)
@@ -1625,11 +1630,11 @@ static void readIncludeFile(const QCString &inc)
       {
 	if (alreadyIncluded)
 	{
-          msg("#include %s: already included! skipping...\n",incFileName.data());
+          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",incFileName.data());
 	}
 	else
 	{
-          msg("#include %s: not found! skipping...\n",incFileName.data());
+          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",incFileName.data());
 	}
         //printf("error: include file %s not found\n",yytext);
       }
@@ -2990,25 +2995,32 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   {
     char *orgPos=output.data()+orgOffset;
     char *newPos=output.data()+output.curPos();
-    msg("Preprocessor output (size: %d bytes):\n",newPos-orgPos);
+    Debug::print(Debug::Preprocessor,0,"Preprocessor output (size: %d bytes):\n",newPos-orgPos);
     int line=1;
-    msg("---------\n00001 ");
+    Debug::print(Debug::Preprocessor,0,"---------\n00001 ");
     while (orgPos<newPos) 
     {
       putchar(*orgPos);
-      if (*orgPos=='\n') printf("%05d ",++line);
+      if (*orgPos=='\n') Debug::print(Debug::Preprocessor,0,"%05d ",++line);
       orgPos++;
     }
-    msg("\n---------\n");
-    msg("Macros accessible in this file:\n");
-    msg("---------\n");
-    QDictIterator<Define> di(DefineManager::instance().defineContext());
-    Define *def;
-    for (di.toFirst();(def=di.current());++di)
+    Debug::print(Debug::Preprocessor,0,"\n---------\n");
+    if (DefineManager::instance().defineContext().count()>0)
     {
-      msg("%s ",def->name.data());
+      Debug::print(Debug::Preprocessor,0,"Macros accessible in this file:\n");
+      Debug::print(Debug::Preprocessor,0,"---------\n");
+      QDictIterator<Define> di(DefineManager::instance().defineContext());
+      Define *def;
+      for (di.toFirst();(def=di.current());++di)
+      {
+        Debug::print(Debug::Preprocessor,0,"%s ",def->name.data());
+      }
+      Debug::print(Debug::Preprocessor,0,"\n---------\n");
     }
-    msg("\n---------\n");
+    else
+    {
+      Debug::print(Debug::Preprocessor,0,"No macros accessible in this file.\n");
+    }
   }
   DefineManager::instance().endContext();
 }

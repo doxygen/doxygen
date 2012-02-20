@@ -52,10 +52,15 @@ static QCString getListOfBibFiles(const QCString &sep,bool stripExtension)
   const char *bibdata = citeDataList.first();
   while (bibdata)
   {
+    int i;
     QCString bibFile = bibdata;
     if (stripExtension && bibFile.right(4)==".bib")
     {
       bibFile = bibFile.left(bibFile.length()-4);
+    }
+    if (stripExtension && (i=bibFile.findRev('/'))!=-1)
+    {
+      bibFile = bibFile.mid(i+1);
     }
     if (!bibFile.isEmpty())
     {

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -34,6 +34,7 @@
 #include "util.h"
 #include "membername.h"
 #include "searchindex.h"
+#include "arguments.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -546,10 +547,10 @@ static void nextCodeLine()
 /*! write a code fragment `text' that may span multiple lines, inserting
  * line numbers for each line.
  */
-static void codifyLines(char *text)
+static void codifyLines(const char *text)
 {
   //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
-  char *p=text,*sp=p;
+  const char *p=text,*sp=p;
   char c;
   bool done=FALSE;
   while (!done)
@@ -559,8 +560,13 @@ static void codifyLines(char *text)
     if (c=='\n')
     {
       g_yyLineNr++;
-      *(p-1)='\0';
-      g_code->codify(sp);
+      //*(p-1)='\0';
+      int l = p-sp-1;
+      char *tmp = (char*)malloc(l+1);
+      memcpy(tmp,sp,l);
+      tmp[l]='\0';
+      g_code->codify(tmp);
+      free(tmp);
       nextCodeLine();
     }
     else
@@ -874,6 +880,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
       md->isLinkable() && (!varOnly || md->isVariable()))
   {
+    //printf("found it!\n");
     if (g_exampleBlock)
     {
       QCString anchor;
@@ -939,7 +946,7 @@ static bool getLink(const char *className,
   return TRUE;
 }
 
-static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
+static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName,
                                       bool typeOnly=FALSE,bool varOnly=FALSE)
 {
   int i=0;
@@ -954,6 +961,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   {
     className+="-p";
   }
+  className = substitute(className,"\\","::"); // for PHP namespaces
   ClassDef *cd=0,*lcd=0;
   MemberDef *md=0;
   bool isLocal=FALSE;
@@ -1277,7 +1285,18 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
   return;
 }
 
-static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
+static void generatePHPVariableLink(CodeOutputInterface &ol,const char *varName)
+{
+  QCString name = varName+7; // strip $this->
+  name.prepend("$");
+  //printf("generatePHPVariableLink(%s) name=%s scope=%s\n",varName,name.data(),g_classScope.data());
+  if (!getLink(g_classScope,name,ol,varName))
+  {
+    codifyLines(varName);
+  }
+}
+
+static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
 {
   //CodeClassDef *ccd=0;
   ClassDef *ccd=0;
@@ -2105,6 +2124,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					}
 <ClassName>{ID}("\\"{ID})*		{ // PHP namespace
                                           g_curClassName=substitute(yytext,"\\","::");
+  					  g_scopeStack.push(CLASSBLOCK);
+					  pushScope(g_curClassName);
 					  addType();
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( ClassVar );
@@ -2204,8 +2225,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
-<Bases>{ID}	                        { 
-					  //printf("%s:addBase(%s)\n",g_ccd.name.data(),yytext);
+<Bases>{SEP}?({ID}{SEP})*{ID}           { 
+					  //fprintf(stderr,"%s:addBase(%s)\n",g_curClassName.data(),yytext);
   					  g_curClassBases.inSort(yytext); 
 					  generateClassOrGlobalLink(*g_code,yytext);
 					}
@@ -2421,6 +2442,11 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
                                           g_lastTemplCastContext = YY_START;
 					  BEGIN(TemplCast);
 					}
+<Body>"$this->"{SCOPENAME}/{BN}*[;,)\]] { // PHP member variable
+					  addType();
+					  generatePHPVariableLink(*g_code,yytext);
+  					  g_name+=yytext+7; 
+                                        }
 <Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"("::"{ID})*/{B}* { // A<T> *pt;
 					  int i=QCString(yytext).find('<');
 					  QCString kw = QCString(yytext).left(i).stripWhiteSpace();

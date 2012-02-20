@@ -46,6 +46,7 @@
 #include <qstringlist.h>
 #include <qlist.h>
 #include <qmap.h>
+#include "arguments.h"
 
 #define YY_NEVER_INTERACTIVE 1
 

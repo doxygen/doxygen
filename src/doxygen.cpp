@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -82,6 +82,7 @@
 #include "cite.h"
 #include "filestorage.h"
 #include "markdown.h"
+#include "arguments.h"
 
 #include "layout.h"
 
@@ -507,6 +508,7 @@ static void addRelatedPage(EntryNav *rootNav)
   if (pd)
   {
     pd->addSectionsToDefinition(root->anchors);
+    pd->setShowToc(root->stat);
     addPageToContext(pd,rootNav);
   }
 }
@@ -898,7 +900,7 @@ static Definition *findScope(Entry *root,int level=0)
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
-static Definition *buildScopeFromQualifiedName(const QCString name,int level)
+static Definition *buildScopeFromQualifiedName(const QCString name,int level,SrcLangExt lang)
 {
   int i=0;
   int p=0,l;
@@ -922,9 +924,10 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
     else if (nd==0 && cd==0) // scope is not known!
     {
       // introduce bogus namespace
-      printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
+      //printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
       nd=new NamespaceDef(
         "[generated]",1,fullScope);
+      nd->setLanguage(lang);
 
       // add namespace to the list
       Doxygen::namespaceSDict->inSort(fullScope,nd);
@@ -1010,7 +1013,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
           // so use this instead.
           QCString fqn = QCString(ui.currentKey())+
                          scope.right(scope.length()-p);
-          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"));
+          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"),startScope->getLanguage());
           //printf("Creating scope from fqn=%s result %p\n",fqn.data(),resultScope);
           if (resultScope) 
           {
@@ -1322,7 +1325,7 @@ static void resolveClassNestingRelations()
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
-      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"));
+      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage());
       if (d!=cd && !cd->getDefFileName().isEmpty()) 
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                  // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
@@ -1641,7 +1644,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
-          Definition *d = buildScopeFromQualifiedName(fullName,fullName.contains("::"));
+          Definition *d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage());
           d->addInnerCompound(nd);
           nd->setOuterScope(d);
           // TODO: Due to the order in which the tag file is written
@@ -3186,7 +3189,7 @@ static void buildFunctionList(EntryNav *rootNav)
                      )
                     );
               // otherwise, allow a duplicate global member with the same argument list
-              if (!found && gd && gd==md->getGroupDef())
+              if (!found && gd && gd==md->getGroupDef() && nsName==rnsName)
               {
                 // member is already in the group, so we don't want to add it again.
                 found=TRUE;
@@ -4749,8 +4752,8 @@ static void computeClassRelations()
       if (!root->name.isEmpty() && root->name.find('@')==-1 && // normal name
           (guessSection(root->fileName)==Entry::HEADER_SEC || 
            Config_getBool("EXTRACT_LOCAL_CLASSES")) && // not defined in source file
-          (root->protection!=Private || Config_getBool("EXTRACT_PRIVATE")) && // hidden by protection
-          !Config_getBool("HIDE_UNDOC_CLASSES") // undocumented class are visible
+           protectionLevelVisible(root->protection) && // hidden by protection
+           !Config_getBool("HIDE_UNDOC_CLASSES") // undocumented class are visible
          )
         warn_undoc(
                    root->fileName,root->startLine,
@@ -8224,6 +8227,7 @@ static void findMainPage(EntryNav *rootNav)
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setFileName(indexName);
+      Doxygen::mainPage->setShowToc(root->stat);
       addPageToContext(Doxygen::mainPage,rootNav);
           
       // a page name is a label as well!
@@ -9274,7 +9278,7 @@ void dumpConfigAsXML()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2011\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2012\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);

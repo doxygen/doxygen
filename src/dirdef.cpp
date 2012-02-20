@@ -22,6 +22,7 @@ DirDef::DirDef(const char *path) : Definition(path,1,path)
   m_dispName = stripFromPath(path);
   // get short name (last part of path)
   m_shortName = path;
+  m_diskName = path;
   if (m_shortName.at(m_shortName.length()-1)=='/')
   { // strip trailing /
     m_shortName = m_shortName.left(m_shortName.length()-1);
@@ -105,8 +106,9 @@ static QCString encodeDirName(const QCString &anchor)
 
 QCString DirDef::getOutputFileBase() const
 {
-  return "dir_"+encodeDirName(name());
-  //return QCString().sprintf("dir_%06d",m_dirCount);
+  //printf("DirDef::getOutputFileBase() %s->dir_%s\n",
+  //    m_diskName.data(),encodeDirName(m_diskName).data());
+  return "dir_"+encodeDirName(m_diskName);
 }
 
 void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
@@ -737,6 +739,86 @@ void DirRelation::writeDocumentation(OutputList &ol)
 //----------------------------------------------------------------------
 // external functions
 
+/** In order to create stable, but unique directory names,
+ *  we compute the common part of the path shared by all directories.
+ */
+static void computeCommonDirPrefix()
+{
+  QCString path;
+  DirDef *dir;
+  DirSDict::Iterator sdi(*Doxygen::directories);
+  if (Doxygen::directories->count()>0) // we have at least one dir
+  {
+    // start will full path of first dir
+    sdi.toFirst();
+    dir=sdi.current();
+    path=dir->name();
+    int i=path.findRev('/',path.length()-2);
+    path=path.left(i+1);
+    bool done=FALSE;
+    if (i==-1) 
+    {
+      path="";
+    }
+    else
+    {
+      while (!done)
+      {
+        int l = path.length();
+        int count=0;
+        for (sdi.toFirst();(dir=sdi.current());++sdi)
+        {
+          QCString dirName = dir->name();
+          if (dirName.length()>path.length())
+          {
+            if (strncmp(dirName,path,l)!=0) // dirName does not start with path
+            {
+              int i=path.findRev('/',l-2);
+              if (i==-1) // no unique prefix -> stop
+              {
+                path="";
+                done=TRUE;
+              }
+              else // restart with shorter path
+              {
+                path=path.left(i+1);
+                break;
+              }
+            }
+          }
+          else // dir is shorter than path -> take path of dir as new start
+          {
+            path=dir->name();
+            int i=path.findRev('/',l-2);
+            if (i==-1) // no unique prefix -> stop
+            {
+              path="";
+              done=TRUE;
+            }
+            else // restart with shorter path
+            {
+              path=path.left(i+1);
+            }
+            break;
+          }
+          count++;
+        }
+        if (count==Doxygen::directories->count())
+          // path matches for all directories -> found the common prefix
+        {
+          done=TRUE;
+        }
+      }
+    }
+  }
+  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  {
+    QCString diskName = dir->name().right(dir->name().length()-path.length());
+    dir->setDiskName(diskName);
+    //printf("set disk name: %s -> %s\n",dir->name().data(),diskName.data());
+  }
+}
+
 void buildDirectories()
 {
   // for each input file
@@ -786,6 +868,7 @@ void buildDirectories()
       }
     }
   }
+  computeCommonDirPrefix();
 }
 
 void computeDirDependencies()

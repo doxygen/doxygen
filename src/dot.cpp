@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -115,6 +115,13 @@ static const char svgZoomFooter[] =
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
 "        </g>\n"
+"        <svg viewBox=\"0 0 25 25\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\"> \n"
+"          <g id=\"printButton\" transform=\"scale(0.4 0.4)\" onmousedown=\"handlePrint(evt)\">\n"
+"            <rect height=\"23.33753581\" id=\"paper\" rx=\"2\" style=\"fill:#f2f5e9;fill-rule:evenodd;stroke:#111111;stroke-width:3.224;stroke-linejoin:round;\" transform=\"matrix(1.000000,0.000000,-0.339266,0.940691,0.000000,0.000000)\" width=\"25.55231285\" x=\"26.69387353\" y=\"7.36162977\"/>\n"
+"            <rect height=\"26.272097\" id=\"body\" rx=\"2\" style=\"fill:#404040;fill-rule:evenodd;stroke:#111111;stroke-width:3.125;stroke-linejoin:round;\" width=\"50\" x=\"4.5295201\" y=\"27.078951\"/>\n"
+"            <rect height=\"8.27750969\" id=\"tray\" style=\"fill:#d2d5c9;fill-rule:evenodd;stroke:#111111;stroke-width:3.125;stroke-linecap:round;stroke-linejoin:round;\" width=\"40\" x=\"10.28778839\" y=\"44.96812282\"/>\n"
+"          </g>\n"
+"        </svg>\n"
 "</svg>\n"
 ;
 
@@ -1540,7 +1547,8 @@ static void writeBoxMemberList(FTextStream &t,
       if (mma->getClassDef() == scope &&
           (skipNames==0 || skipNames->find(mma->name())==0))
       {
-        if (totalCount>=15 && count>=10)
+        static int limit = Config_getInt("UML_LIMIT_NUM_FIELDS");
+        if (limit==0 || (totalCount>=limit*3/2 && count>=limit))
         {
           t << "and " << (totalCount-count-1) << " more...";
           // TODO: TRANSLATE ME

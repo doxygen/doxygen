@@ -60,6 +60,7 @@ struct  YYMM
 #include "vhdlscanner.h"
 #include "commentscan.h"
 #include "entry.h"
+#include "arguments.h"
 
 //-----------------------------variables ---------------------------------------------------------------------------
 static MyParserVhdl* myconv=0;

@@ -432,6 +432,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\src\arguments.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ce_lex.cpp"
 				>
 			</File>
@@ -3584,6 +3588,14 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\src\arguments.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\bib2xhtml.h"
+				>
+			</File>
 			<File
 				RelativePath="..\src\bufstr.h"
 				>

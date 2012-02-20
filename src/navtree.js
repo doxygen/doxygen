@@ -19,7 +19,9 @@ function getScript(scriptName,func,show)
   script.onload = func; 
   script.src = scriptName+'.js'; 
   script.onreadystatechange = function() {
-    if (script.readyState == 'complete') { func(); if (show) showRoot(); }
+    if (script.readyState=='complete' || script.readyState=='loaded') { 
+      func(); if (show) showRoot(); 
+    }
   };
   head.appendChild(script); 
 }

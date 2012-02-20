@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,6 +15,7 @@
  *
  */
 /*! \page docblocks Documenting the code
+\tableofcontents
 
 This chapter covers two topics:
 1. How to put comments in your code such that doxygen incorporates them in
@@ -504,7 +505,7 @@ lower then sign). The brief documentation also ends at a line not starting
 with a \c # (hash sign).
 
 Inside doxygen comment blocks all normal doxygen markings are supported.
-The only expections are described in the following two paragraphs.
+The only exceptions are described in the following two paragraphs.
 
 If a doxygen comment block ends with a line containing only
 \c #\\code or \c #\@code all code until a line only containing \c #\\endcode
@@ -560,7 +561,7 @@ Go to the <a href="lists.html">next</a> section or return to the
 
 \section docstructure Anatomy of a comment block
 
-The previous section focussed on how to make the comments in your code known
+The previous section focused on how to make the comments in your code known
 to doxygen, it explained the difference between a brief and a detailed description, and
 the use of structural commands.
 

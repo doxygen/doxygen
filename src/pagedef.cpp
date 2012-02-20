@@ -17,6 +17,7 @@ PageDef::PageDef(const char *f,int l,const char *n,
   m_subPageDict = new PageSDict(7);
   m_pageScope = 0;
   m_nestingLevel = 0;
+  m_showToc = FALSE;
 }
 
 PageDef::~PageDef()
@@ -138,6 +139,11 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.startContents();
   ol.popGeneratorState();
   //2.}
+
+  if (m_showToc && hasSections())
+  {
+    writeToc(ol);
+  }
 
   writePageDocumentation(ol);
 
@@ -268,5 +274,10 @@ bool PageDef::hasSubPages() const
 void PageDef::setNestingLevel(int l)
 {
   m_nestingLevel = l;
+}
+
+void PageDef::setShowToc(bool b)
+{
+  m_showToc = b;
 }
 

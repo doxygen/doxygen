@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -109,6 +109,7 @@ static bool handleProtected(const QCString &);
 static bool handleProtectedSection(const QCString &);
 static bool handlePublic(const QCString &s);
 static bool handlePublicSection(const QCString &s);
+static bool handleToc(const QCString &s);
 static bool handleInherit(const QCString &);
 static bool handleExtends(const QCString &);
 static bool handleCopyDoc(const QCString &);
@@ -203,6 +204,7 @@ static DocCmdMap docCmdMap[] =
   { "protectedsection",&handleProtectedSection, FALSE },
   { "public",          &handlePublic,           FALSE },
   { "publicsection",   &handlePublicSection,    FALSE },
+  { "tableofcontents", &handleToc,              FALSE },
   { "inherit",         &handleInherit,          TRUE  },
   { "extends",         &handleExtends,          TRUE  },
   { "implements",      &handleExtends,          TRUE  },
@@ -590,9 +592,9 @@ static QCString addFormula()
     formLabel.sprintf("\\form#%d",f->getId());
   }
   int i;
-  for (i=0;i<formulaNewLines;i++) formLabel+="\\_fakenl"; // add fake newlines to
-                                                          // keep the warnings 
-                                                          // correctly aligned.
+  for (i=0;i<formulaNewLines;i++) formLabel+="@_fakenl"; // add fake newlines to
+                                                         // keep the warnings 
+                                                         // correctly aligned.
   return formLabel;
 }
 
@@ -2557,6 +2559,16 @@ static bool handlePublic(const QCString &)
 static bool handlePublicSection(const QCString &)
 {
   current->protection = protection = Public;
+  return FALSE;
+}
+
+static bool handleToc(const QCString &)
+{
+  if (current->section==Entry::PAGEDOC_SEC || 
+      current->section==Entry::MAINPAGEDOC_SEC)
+  {
+    current->stat=TRUE;  // we 'abuse' stat to pass whether or the TOC is enabled
+  }
   return FALSE;
 }
 

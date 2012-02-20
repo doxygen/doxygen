@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -34,7 +34,8 @@ class Debug
                      PrintTree    = 0x00000100,
                      Time         = 0x00000200,
                      ExtCmd       = 0x00000400,
-                     Markdown     = 0x00000800
+                     Markdown     = 0x00000800,
+                     FilterOutput = 0x00001000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
     static void setFlag(const char *label);

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -367,7 +367,7 @@ void Definition::addSectionsToIndex()
   //printf("Definition::addSectionsToIndex()\n");
   SDict<SectionInfo>::Iterator li(*m_impl->sectionDict);
   SectionInfo *si;
-  int level=0;
+  int level=1;
   for (li.toFirst();(si=li.current());++li)
   {
     if (si->type==SectionInfo::Section       || 
@@ -394,11 +394,68 @@ void Definition::addSectionsToIndex()
       level = nextLevel;
     }
   }
-  while (level>0)
+  while (level>1)
   {
     Doxygen::indexList.decContentsDepth();
     level--;
   }
+}
+
+void Definition::writeToc(OutputList &ol)
+{
+  makeResident();
+  if (m_impl->sectionDict==0) return;
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  ol.writeString("<div class=\"toc\">");
+  ol.writeString("<h3>");
+  ol.writeString(theTranslator->trRTFTableOfContents());
+  ol.writeString("</h3>\n");
+  ol.writeString("<ul>");
+  SDict<SectionInfo>::Iterator li(*m_impl->sectionDict);
+  SectionInfo *si;
+  int level=1;
+  char cs[2];
+  cs[1]='\0';
+  bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
+  for (li.toFirst();(si=li.current());++li)
+  {
+    if (si->type==SectionInfo::Section       || 
+        si->type==SectionInfo::Subsection    || 
+        si->type==SectionInfo::Subsubsection ||
+        si->type==SectionInfo::Paragraph)
+    {
+      //printf("  level=%d title=%s\n",level,si->title.data());
+      int nextLevel = (int)si->type;
+      if (nextLevel>level)
+      {
+        ol.writeString("<ul>");
+      }
+      else if (nextLevel<level)
+      {
+        if (inLi[level]) ol.writeString("</li>\n");
+        inLi[level]=FALSE;
+        ol.writeString("</ul>\n");
+      }
+      cs[0]='0'+nextLevel;
+      if (inLi[nextLevel]) ol.writeString("</li>\n");
+      ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+si->title+"</a>");
+      inLi[nextLevel]=TRUE;
+      level = nextLevel;
+    }
+  }
+  while (level>1)
+  {
+    if (inLi[level]) ol.writeString("</li>\n");
+    inLi[level]=FALSE;
+    ol.writeString("</ul>\n");
+    level--;
+  }
+  if (inLi[level]) ol.writeString("</li>\n");
+  inLi[level]=FALSE;
+  ol.writeString("</ul>\n");
+  ol.writeString("</div>\n");
+  ol.popGeneratorState();
 }
 
 void Definition::writeDocAnchorsToTagFile()
@@ -679,7 +736,7 @@ static bool readCodeFragment(const char *fileName,
           cn=fgetc(f);
           if (cn!=':') found=TRUE;
         }
-        else if (c=='{')
+        else if (c=='{')   // } so vi matching brackets has no problem
         {
           found=TRUE;
         }
@@ -743,6 +800,8 @@ static bool readCodeFragment(const char *fileName,
     if (usePipe) 
     {
       portable_pclose(f); 
+      Debug::print(Debug::FilterOutput, 0, "Filter output\n");
+      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",result.data());
     }
     else 
     {

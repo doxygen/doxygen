@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -45,6 +45,7 @@ static LabelMap s_labels[] =
   { "time",         Debug::Time         },
   { "extcmd",       Debug::ExtCmd       },
   { "markdown",     Debug::Markdown     },
+  { "filteroutput", Debug::FilterOutput },
   { 0,             (Debug::DebugMask)0  }
 };
 

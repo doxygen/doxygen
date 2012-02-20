@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -954,7 +954,7 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<dl class=\"" << s->typeString() << "\"><dt><b>";
+  m_t << "<dl class=\"section " << s->typeString() << "\"><dt>";
   switch(s->type())
   {
     case DocSimpleSect::See: 
@@ -995,7 +995,7 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
-    m_t << ":</b></dt><dd>";
+    m_t << ":</dt><dd>";
   }
 }
 

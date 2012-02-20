@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -27,6 +27,7 @@
 #include <qtextstream.h>
 #include <ctype.h>
 #include "sortdict.h"
+#include "types.h"
 
 //--------------------------------------------------------------------
 
@@ -87,27 +88,8 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 //--------------------------------------------------------------------
 
-enum SrcLangExt
-{
-  SrcLangExt_Unknown  = 0x00000,
-  SrcLangExt_IDL      = 0x00008,
-  SrcLangExt_Java     = 0x00010,
-  SrcLangExt_CSharp   = 0x00020,
-  SrcLangExt_D        = 0x00040,
-  SrcLangExt_PHP      = 0x00080,
-  SrcLangExt_ObjC     = 0x00100,
-  SrcLangExt_Cpp      = 0x00200,
-  SrcLangExt_JS       = 0x00400,
-  SrcLangExt_Python   = 0x00800,
-  SrcLangExt_Fortran  = 0x01000,
-  SrcLangExt_VHDL     = 0x02000,
-  SrcLangExt_XML      = 0x04000,
-  SrcLangExt_Tcl      = 0x08000,
-  SrcLangExt_Markdown = 0x10000
-};
-
 QCString langToString(SrcLangExt lang);
-QCString getLanguageSpecificSeparator(SrcLangExt lang);
+QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
 
 //--------------------------------------------------------------------
 
@@ -418,6 +400,8 @@ QCString extractBlock(const QCString text,const QCString marker);
 QCString correctURL(const QCString &url,const QCString &relPath);
 
 QCString processMarkup(const QCString &s);
+
+bool protectionLevelVisible(Protection prot);
 
 #endif
 

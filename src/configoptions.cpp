@@ -500,6 +500,12 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "EXTRACT_PACKAGE",
+                 "If the EXTRACT_PACKAGE tag is set to YES all members with package or internal scope will be included in the documentation.",
+                 FALSE
+                );
+  //----
+  cb = cfg->addBool(
                  "EXTRACT_STATIC",
                  "If the EXTRACT_STATIC tag is set to YES all static members of a file\n"
                  "will be included in the documentation.",
@@ -1596,7 +1602,7 @@ void addConfigOptions(Config *cfg)
                  "(see http://www.mathjax.org) which uses client side Javascript for the\n"
                  "rendering instead of using prerendered bitmaps. Use this if you do not\n"
                  "have LaTeX installed or if you want to formulas look prettier in the HTML\n"
-                 "output. When enabled you also need to install MathJax separately and\n"
+                 "output. When enabled you may also need to install MathJax separately and\n"
                  "configure the path to it using the MATHJAX_RELPATH option.",
                  FALSE
                 );
@@ -1607,12 +1613,13 @@ void addConfigOptions(Config *cfg)
                  "HTML output directory using the MATHJAX_RELPATH option. The destination\n"
                  "directory should contain the MathJax.js script. For instance, if the mathjax\n"
                  "directory is located at the same level as the HTML output directory, then\n"
-                 "MATHJAX_RELPATH should be ../mathjax. The default value points to the\n"
-                 "mathjax.org site, so you can quickly see the result without installing\n"
-                 "MathJax, but it is strongly recommended to install a local copy of MathJax\n"
-                 "before deployment."
+                 "MATHJAX_RELPATH should be ../mathjax. The default value points to\n"
+                 "the MathJax Content Delivery Network so you can quickly see the result without\n"
+                 "installing MathJax.\n"
+                 "However, it is strongly recommended to install a local\n"
+                 "copy of MathJax from http://www.mathjax.org before deployment."
                 );
-  cs->setDefaultValue("http://www.mathjax.org/mathjax");
+  cs->setDefaultValue("http://cdn.mathjax.org/mathjax/latest");
   //----
   cl = cfg->addList(
                  "MATHJAX_EXTENSIONS",
@@ -2259,6 +2266,18 @@ void addConfigOptions(Config *cfg)
                  FALSE
                 );
   cb->addDependency("HAVE_DOT");
+  //----
+  ci = cfg->addInt(
+                 "UML_LIMIT_NUM_FIELDS",
+                 "If the UML_LOOK tag is enabled, the fields and methods are shown inside\n"
+                 "the class node. If there are many fields or methods and many nodes the\n"
+                 "graph may become too big to be useful. The UML_LIMIT_NUM_FIELDS\n"
+                 "threshold limits the number of items for each type to make the size more\n"
+                 "managable. Set this to 0 for no limit. Note that the threshold may be\n"
+                 "exceeded by 50% before the limit is enforced.",
+                 0,100,10
+                );
+  ci->addDependency("HAVE_DOT");
   //----
   cb = cfg->addBool(
                  "TEMPLATE_RELATIONS",

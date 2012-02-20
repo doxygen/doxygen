@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -16,34 +16,7 @@
  */
 /*! \page markdown Markdown support
 
-Table of contents
-- \ref markdown_std
-  - \ref md_para 
-  - \ref md_headers 
-  - \ref md_blockquotes 
-  - \ref md_lists
-  - \ref md_codeblock
-  - \ref md_rulers
-  - \ref md_emphasis 
-  - \ref md_codespan
-  - \ref md_links 
-    - \ref md_inlinelinks 
-    - \ref md_reflinks 
-  - \ref md_images
-  - \ref md_autolink
-- \ref markdown_extra 
-  - \ref md_tables
-  - \ref md_fenced
-  - \ref md_header_id
-- \ref markdown_dox
-  - \ref md_page_header
-  - \ref md_html_blocks
-  - \ref mddox_code_blocks
-  - \ref mddox_code_spans
-  - \ref mddox_lists
-  - \ref mddox_stars
-  - \ref mddox_limits
-- \ref markdown_debug
+[TOC]
 
 [Markdown] support 
 was introduced in doxygen version 1.8.0. It is a plain text formatting
@@ -57,7 +30,7 @@ syntax written by John Gruber, with the following underlying design goal:
 > text-to-HTML filters, the single biggest source of inspiration 
 > for Markdown’s syntax is the format of plain text email.
 
-In the \ref markdown_std "next section" the standard markdown features
+In the \ref markdown_std "next section" the standard Markdown features
 are briefly discussed. The reader is referred to the [Markdown site][markdown]
 for more details.
 
@@ -128,7 +101,7 @@ to avoid false positives, i.e. when writing
     0  if OK\n
     >1 if NOK
 
-the second line will not seen as a block quote.
+the second line will not be seen as a block quote.
 
 \subsection md_lists Lists
 
@@ -315,13 +288,21 @@ Note that doxygen will also produce the links without the angle brackets.
 
 \section markdown_extra Markdown Extensions
 
+\subsection md_toc Table of Contents
+
+Doxygen supports a special link marker `[TOC]` which can be placed in a page
+to produce a table of contents at the start of the page, listing all sections.
+
+Note that using `[TOC]` is the same as using a
+\ref cmdtableofcontents "\\tableofcontents" command.
+
 \subsection md_tables Tables
 
 Of the features defined by "Markdown Extra" is support for
 <a href="http://michelf.com/projects/php-markdown/extra/#table">simple tables</a>:
 
 A table consists of a header line, a separator line, and at least one
-row line. Table columns are separated by the pipe (!) character.
+row line. Table columns are separated by the pipe (|) character.
 
 Here is an example:
 
@@ -360,7 +341,7 @@ fenced code blocks</a>:
 
 A fenced code block does not require indentation, and is
 defined by a pair of "fence lines". Such a line consists of 3 or
-more tile (~) characters on a line. The end of the block should have the
+more tilde (~) characters on a line. The end of the block should have the
 same number of tildes. Here is an example:
 
 
@@ -370,12 +351,13 @@ same number of tildes. Here is an example:
     a one-line code block
     ~~~~~~~~~~~~~~~~~~~~~
 
-The contents of the code block is syntax highlighted.
-The default language is based on the file it was found in
-(i.e. a fenced block in a Python file is assumed to be Python code).
-In case the language is not clear from the context or you want to 
-indicate a specific language you can add the language's extension after
-the opening fence:
+By default the output is the same as for a normal code block.
+
+For languages supported by doxygen you can also make the code block
+appear with syntax highlighting. To do so you need to 
+indicate the typical file extension that corresponds to the 
+programming language after the opening fence. For highlighting according
+to the Python language for instance, you would need to write the following:
 
     ~~~~~~~~~~~~~{.py}
     # A class
@@ -383,26 +365,26 @@ the opening fence:
         pass
     ~~~~~~~~~~~~~
 
-will produce:
+which will produce:
 ~~~~~~~~~~~~~{.py}
 # A class
 class Dummy:
     pass
 ~~~~~~~~~~~~~
 
-and
+and for C you would write:
 
     ~~~~~~~~~~~~~~~{.c}
     int func(int a,int b) { return a*b; }
     ~~~~~~~~~~~~~~~
 
-will produce:
+which will produce:
 
 ~~~~~~~~~~~~~~~{.c}
 int func(int a,int b) { return a*b; }
 ~~~~~~~~~~~~~~~
 
-The curly brances and dot are optional by the way.
+The curly braces and dot are optional by the way.
 
 \subsection md_header_id Header Id Attributes
 
@@ -429,7 +411,7 @@ Note this only works for the headers of level 1 to 4.
 
 \section markdown_dox Doxygen specifics
 
-Even doxygen tries to following the Markdown standard as closely as
+Even though doxygen tries to following the Markdown standard as closely as
 possible, there are couple of deviation and doxygen specifics additions.
 
 \subsection md_page_header Including Markdown files as pages
@@ -479,7 +461,7 @@ and in other sections that need to be processed without changes
 
 \subsection mddox_code_blocks Code Block Indentation
 
-With markdown any block that is indented by 4 spaces (and 8 spaces
+With Markdown any block that is indented by 4 spaces (and 8 spaces
 inside lists) is treated as a code block. This indentation amount
 is absolute, i.e. counting from the start of the line.
 
@@ -580,13 +562,13 @@ To avoid that a stray * or _ matches something many paragraphs later,
 and shows everything in between with emphasis, doxygen limits the scope
 of a * and _ to a single paragraph.
 
-For code span, between the starting and ending backtick only two
+For a code span, between the starting and ending backtick only two
 new lines are allowed. 
 
 Also for links there are limits; the link text, and link title each can
 contain only one new line, the URL may not contain any newlines. 
 
-\section markdown_debug Debugging problems
+\section markdown_debug Debugging of problems
 
 When doxygen parses the source code it first extracts the comments blocks,
 then passes these through the Markdown preprocessor. The output of the

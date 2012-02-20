@@ -25,7 +25,8 @@ clean: FORCE
 distclean: clean
 	-del src\Makefile.libdoxygen \
 	     src\Makefile.doxygen \
-	     src\Makefile.libdoxycfg
+	     src\Makefile.libdoxycfg \
+	     src\libdoxycfg.t src\libdoxygen.t
 	-del Makefile src\Makefile examples\Makefile doc\Makefile
 	-del src\libdoxygen.pro src\doxygen.pro src\libdoxycfg.pro
 	-del src\version.cpp

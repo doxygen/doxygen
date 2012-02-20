@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -322,6 +322,7 @@ NONWS     [^ \t\r\n]
 BLANK     [ \t\r]
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITEID    [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-:/]*
 MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
@@ -518,7 +519,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
   			 g_token->name = "inheritdoc";
 			 return TK_COMMAND;
 		       }
-<St_Para>"\\_fakenl"     { // artificial new line
+<St_Para>"@_fakenl"     { // artificial new line
                              yylineno++; 
   		          }
 <St_Para>{SPCMD3}      {
@@ -958,7 +959,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			 g_token->name = g_token->name.left(yyleng-2);
 			 return TK_WORD;
                        }
-<St_Param>({LABELID}"|")*{LABELID}{WS}+("&")?"$"{LABELID} {
+<St_Param>({PHPTYPE}{BLANK}*"|"{BLANK}*)*{PHPTYPE}{WS}+("&")?"$"{LABELID} {
   			 QCString params = yytext;
 			 int j = params.find('&');
 			 int i = params.find('$');

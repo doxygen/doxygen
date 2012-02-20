@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -104,13 +104,7 @@ static void writeLatexMakefile()
       << "\tdvips -o refman.ps refman.dvi" << endl
       << endl;
     t << "refman.pdf: refman.ps" << endl;
-#if defined(_MSC_VER)
-    // ps2pdf.bat does not work properly from a makefile using GNU make!
-    t << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-      "-sOutputFile=refman.pdf -c save pop -f refman.ps" << endl << endl;
-#else
     t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
-#endif
     t << "refman.dvi: clean refman.tex doxygen.sty" << endl
       << "\techo \"Running latex...\"" << endl
       << "\t" << latex_command << " refman.tex" << endl
@@ -121,7 +115,7 @@ static void writeLatexMakefile()
       t << "\techo \"Running bibtex...\"" << endl;
       t << "\tbibtex refman" << endl;
       t << "\techo \"Rerunning latex....\"" << endl;
-      t << "\tpdflatex refman" << endl;
+      t << "\t" << latex_command << " refman.tex" << endl;
     }
     t << "\techo \"Rerunning latex....\"" << endl
       << "\t" << latex_command << " refman.tex" << endl
@@ -136,13 +130,7 @@ static void writeLatexMakefile()
       << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
       << endl
       << "refman_2on1.pdf: refman_2on1.ps" << endl
-#if defined(_MSC_VER)
-      // ps2pdf.bat does not work properly from a makefile using GNU make!
-      << "\tgswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-         "-sOutputFile=refman_2on1.pdf -c save pop -f refman_2on1.ps" << endl;
-#else
       << "\tps2pdf refman_2on1.ps refman_2on1.pdf" << endl;
-#endif
   }
   else // use pdflatex for higher quality output
   {
@@ -168,38 +156,64 @@ static void writeLatexMakefile()
 
   t << endl
     << "clean:" << endl
-#if defined(_MSC_VER)
-    << "\tdel /s/y " 
-#else
     << "\trm -f " 
-#endif
     << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf" << endl;
 }
 
-static void writeMakePdfBat()
+static void writeMakeBat()
 {
 #if defined(_MSC_VER)
-  if (Config_getBool("USE_PDFLATEX")) // use plain old latex
+  QCString dir=Config_getString("LATEX_OUTPUT");
+  QCString fileName=dir+"/make.bat";
+  QCString latex_command = Config_getString("LATEX_CMD_NAME");
+  QCString mkidx_command = Config_getString("MAKEINDEX_CMD_NAME");
+  QFile file(fileName);
+  bool generateBib = !Doxygen::citeDict->isEmpty();
+  if (!file.open(IO_WriteOnly))
   {
-    bool generateBib = !Doxygen::citeDict->isEmpty();
-    QCString mkidx_command = Config_getString("MAKEINDEX_CMD_NAME");
-    QCString dir=Config_getString("LATEX_OUTPUT");
-    QCString fileName=dir+"/makepdf.bat";
-    QFile file(fileName);
-    if (!file.open(IO_WriteOnly))
+    err("Could not open file %s for writing\n",fileName.data());
+    exit(1);
+  }
+  FTextStream t(&file);
+  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
+  if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
+  {
+    t << latex_command << " refman.tex\n";
+    t << "echo ----\n";
+    t << mkidx_command << " refman.idx\n";
+    if (generateBib)
     {
-      err("Could not open file %s for writing\n",fileName.data());
-      exit(1);
+      t << "bibtex refman\n";
+      t << "echo ----\n";
+      t << latex_command << " refman.tex\n";
     }
-    FTextStream t(&file);
-    t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
+    t << "setlocal enabledelayedexpansion\n";
+    t << "set count=5\n";
+    t << ":repeat\n";
+    t << "set content=X\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\n";
+    t << "if !content! == X goto :skip\n";
+    t << "set /a count-=1\n";
+    t << "if !count! EQU 0 goto :skip\n\n";
+    t << "echo ----\n";
+    t << latex_command << " refman.tex\n";
+    t << "goto :repeat\n";
+    t << ":skip\n";
+    t << "endlocal\n";
+    t << "dvips -o refman.ps refman.dvi\n";
+    t << "gswin32c -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
+         "-sOutputFile=refman.pdf -c save pop -f refman.ps\n";
+  }
+  else // use pdflatex
+  {
     t << "pdflatex refman\n";
     t << "echo ----\n";
     t << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
-      t << "\tbibtex refman" << endl;
-      t << "\tpdflatex refman" << endl;
+      t << "bibtex refman" << endl;
+      t << "pdflatex refman" << endl;
     }
     t << "echo ----\n";
     t << "pdflatex refman\n\n";
@@ -233,7 +247,7 @@ void LatexGenerator::init()
   }
 
   writeLatexMakefile();
-  writeMakePdfBat();
+  writeMakeBat();
 
   createSubDirs(d);
 }
@@ -249,14 +263,16 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     paperName="a4"; 
   else 
     paperName=paperType;
-  t << "\\documentclass[" << paperName << "paper";
-  //if (Config_getBool("PDF_HYPERLINKS")) t << ",ps2pdf";
-  t << "]{";
+  t << "\\documentclass";
+  //"[" << paperName << "paper";
+  //t << "]";
+  t << "{";
   if (Config_getBool("COMPACT_LATEX")) t << "article"; else t << "book";
   t << "}\n";
   // the next package is obsolete (see bug 563698)
   //if (paperType=="a4wide") t << "\\usepackage{a4wide}\n";
   t << 
+    "\\usepackage["<<paperName<<"paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}\n"
     "\\usepackage{makeidx}\n"
     "\\usepackage{natbib}\n"
     "\\usepackage{graphicx}\n"
@@ -958,12 +974,12 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2011";
+  //t << "Dimitri van Heesch \\copyright~1997-2012";
   writeDefaultStyleSheetPart2(t);
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2011";
+  //t << "Dimitri van Heesch \\copyright~1997-2012";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -2561,7 +2577,7 @@ void LatexGenerator::lineBreak(const char *)
   }
   else
   {
-    t << "\\*\n";
+    t << "\\\\*\n";
   }
 }
 

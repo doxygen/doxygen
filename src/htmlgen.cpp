@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -615,6 +615,30 @@ static unsigned char open_a_png[81] =
     0,  0,  0,  0,255,  0,  0,  0,  0
 };
 
+static unsigned char bdwn_png[7*8] =
+{
+    0,  0,  0,142,  0,  0,  0,
+    0,  0,  0,142,  0,  0,  0,
+    0,  0,  0,142,  0,  0,  0,
+  142,  0,  0,142,  0,  0,142,
+  142,142,  0,142,  0,142,142,
+  142,142,142,142,142,142,142,
+    0,142,142,142,142,142,  0,
+    0,  0,142,142,142,  0,  0,
+};
+
+static unsigned char bdwn_a_png[7*8] =
+{
+    0,  0,  0,255,  0,  0,  0,
+    0,  0,  0,255,  0,  0,  0,
+    0,  0,  0,255,  0,  0,  0,
+  128,  0,  0,255,  0,  0,128,
+  255,128,  0,255,  0,128,255,
+  128,255,128,255,128,255,128,
+    0,128,255,255,255,128,  0,
+    0,  0,128,255,128,  0,  0,
+};
+
 
 
 //------------------------------------------------------------------------
@@ -722,6 +746,7 @@ static ColoredImgDataItem colored_tab_data[] =
   { "doxygen.png", 104,31, doxygen_png, doxygen_a_png },
   { "closed.png",   9,  9, closed_png, closed_a_png },
   { "open.png",     9,  9, open_png, open_a_png },
+  { "bdwn.png",     7,  8, bdwn_png, bdwn_a_png },
   { 0, 0, 0, 0, 0 }
 };
 
@@ -927,6 +952,18 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
   if (cssFile.isEmpty())
   {
     cssFile = "doxygen.css";
+  }
+  else
+  {
+    QFileInfo cssfi(cssFile);
+    if (cssfi.exists())
+    {
+      cssFile = cssfi.fileName();
+    }
+    else
+    {
+      cssFile = "doxygen.css";
+    }
   }
 
   if (timeStamp) {

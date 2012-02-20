@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -38,6 +38,7 @@
 #include "searchindex.h"
 #include "vhdldocgen.h"
 #include "layout.h"
+#include "arguments.h"
 
 //-----------------------------------------------------------------------------
 
@@ -404,14 +405,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
   if (1 /*!isReference()*/) // changed to 1 for showing members of external
                             // classes when HAVE_DOT and UML_LOOK are enabled.
   {
-    static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
-
     bool isSimple=FALSE;
 
     /********************************************/
     /* insert member in the declaration section */
     /********************************************/
-    if (md->isRelated() && (extractPrivate || prot!=Private))
+    if (md->isRelated() && protectionLevelVisible(prot))
     {
       addMemberToList(MemberList::related,md,TRUE);
     }
@@ -560,7 +559,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
     /*******************************************************/
     /* insert member in the detailed documentation section */
     /*******************************************************/
-    if ((md->isRelated() && (extractPrivate || prot!=Private)) || md->isFriend())
+    if ((md->isRelated() && protectionLevelVisible(prot)) || md->isFriend())
     {
       addMemberToList(MemberList::relatedMembers,md,FALSE);
     }
@@ -579,23 +578,13 @@ void ClassDef::internalInsertMember(MemberDef *md,
           addMemberToList(MemberList::functionMembers,md,FALSE);
           break;
         case MemberDef::Slot:
-          switch (prot)
+          if (protectionLevelVisible(prot))
           {
-            case Protected: 
-            case Package: 
-            case Public:    
-              addMemberToList(MemberList::functionMembers,md,FALSE);
-              break;
-            case Private:   
-              if (extractPrivate)
-              {
-                addMemberToList(MemberList::functionMembers,md,FALSE);
-              }
-              break;
+            addMemberToList(MemberList::functionMembers,md,FALSE);
           }
           break;
         default: // any of the other members
-          if (prot!=Private || extractPrivate)
+          if (protectionLevelVisible(prot))
           {
             switch (md->memberType())
             {
@@ -2047,7 +2036,7 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
     for (cli.toFirst();(innerCd=cli.current());++cli)
     {
       if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
-          (innerCd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
+          protectionLevelVisible(innerCd->protection()) &&
          !innerCd->isEmbeddedInOuterScope()
          )
       {
@@ -2162,7 +2151,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           memberWritten=TRUE;
         }
         else if (!Config_getBool("HIDE_UNDOC_MEMBERS") && 
-                  (md->protection()!=Private || Config_getBool("EXTRACT_PRIVATE") || md->isFriend()) 
+                  (protectionLevelVisible(md->protection()) || md->isFriend()) 
                 ) // no documentation, 
                   // generate link to the class instead.
         {
@@ -2429,6 +2418,8 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
       mg->writePlainDeclarations(ol,this,0,0,0);
     }
   }
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  static bool extractPackage = Config_getBool("EXTRACT_PACKAGE");
 
   writePlainMemberDeclaration(ol,MemberList::pubTypes,inGroup);
   writePlainMemberDeclaration(ol,MemberList::pubMethods,inGroup);
@@ -2446,12 +2437,15 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   writePlainMemberDeclaration(ol,MemberList::proSlots,inGroup);
   writePlainMemberDeclaration(ol,MemberList::proStaticMethods,inGroup);
   writePlainMemberDeclaration(ol,MemberList::proStaticAttribs,inGroup);
-  writePlainMemberDeclaration(ol,MemberList::pacTypes,inGroup);
-  writePlainMemberDeclaration(ol,MemberList::pacMethods,inGroup);
-  writePlainMemberDeclaration(ol,MemberList::pacAttribs,inGroup);
-  writePlainMemberDeclaration(ol,MemberList::pacStaticMethods,inGroup);
-  writePlainMemberDeclaration(ol,MemberList::pacStaticAttribs,inGroup);
-  if (Config_getBool("EXTRACT_PRIVATE"))
+  if (extractPackage)
+  {
+    writePlainMemberDeclaration(ol,MemberList::pacTypes,inGroup);
+    writePlainMemberDeclaration(ol,MemberList::pacMethods,inGroup);
+    writePlainMemberDeclaration(ol,MemberList::pacAttribs,inGroup);
+    writePlainMemberDeclaration(ol,MemberList::pacStaticMethods,inGroup);
+    writePlainMemberDeclaration(ol,MemberList::pacStaticAttribs,inGroup);
+  }
+  if (extractPrivate)
   {
     writePlainMemberDeclaration(ol,MemberList::priTypes,inGroup);
     writePlainMemberDeclaration(ol,MemberList::priMethods,inGroup);
@@ -2467,7 +2461,6 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 /*! a link to this class is possible within this project */
 bool ClassDef::isLinkableInProject() const
 { 
-  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
   static bool extractLocal   = Config_getBool("EXTRACT_LOCAL_CLASSES");
   static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
   static bool hideUndoc      = Config_getBool("HIDE_UNDOC_CLASSES");
@@ -2480,7 +2473,7 @@ bool ClassDef::isLinkableInProject() const
     return !name().isEmpty() &&                    /* has a name */
       !isArtificial() && !isHidden() &&            /* not hidden */
       name().find('@')==-1 &&                      /* not anonymous */
-      (m_impl->prot!=Private || extractPrivate) && /* private */
+      protectionLevelVisible(m_impl->prot)      && /* private/internal */
       (!m_impl->isLocal      || extractLocal)   && /* local */
       (hasDocumentation()    || !hideUndoc)     && /* documented */ 
       (!m_impl->isStatic     || extractStatic)  && /* static */
@@ -2505,7 +2498,6 @@ bool ClassDef::isLinkable() const
 bool ClassDef::isVisibleInHierarchy() 
 { 
   static bool allExternals     = Config_getBool("ALLEXTERNALS");
-  static bool extractPrivate   = Config_getBool("EXTRACT_PRIVATE");
   static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
   static bool extractStatic    = Config_getBool("EXTRACT_STATIC");
 
@@ -2516,7 +2508,7 @@ bool ClassDef::isVisibleInHierarchy()
       // not an artificially introduced class
       !isArtificial() &&
       // and not privately inherited
-      (m_impl->prot!=Private || extractPrivate) &&
+      protectionLevelVisible(m_impl->prot) &&
       // documented or shown anyway or documentation is external 
       (hasDocumentation() || 
        !hideUndocClasses || 
@@ -2587,7 +2579,7 @@ void ClassDef::mergeMembers()
   //static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   //static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   SrcLangExt lang = getLanguage();
-  QCString sep=getLanguageSpecificSeparator(lang);
+  QCString sep=getLanguageSpecificSeparator(lang,TRUE);
   int sepLen = sep.length();
 
   m_impl->membersMerged=TRUE;

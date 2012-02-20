@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -23,27 +23,11 @@
 #include "section.h"
 #include "doxygen.h"
 #include "filestorage.h"
+#include "arguments.h"
 
 //------------------------------------------------------------------
 
 #define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
-
-//------------------------------------------------------------------
-
-/*! the argument list is documented if one of its
- *  arguments is documented 
- */
-bool ArgumentList::hasDocumentation() const
-{
-  bool hasDocs=FALSE;
-  ArgumentListIterator ali(*this);
-  Argument *a;
-  for (ali.toFirst();!hasDocs && (a=ali.current());++ali)
-  {
-    hasDocs = a->hasDocumentation(); 
-  }
-  return hasDocs;
-}
 
 //------------------------------------------------------------------
 
