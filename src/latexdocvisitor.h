@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -168,9 +168,9 @@ class LatexDocVisitor : public DocVisitor
     bool m_insideTabbing;
     QStack<bool> m_enabled;
     QCString m_langExt;
-	QMap<int, int> m_rowspanIndices;
-	int m_currentColumn;
-	bool m_inRowspan;
+    QMap<int, int> m_rowspanIndices;
+    int m_currentColumn;
+    bool m_inRowspan;
 };
 
 #endif

@@ -47,10 +47,24 @@
 
 //-----------
 
+// is character at position i in data part of an identifier?
 #define isIdChar(i) \
-      ((data[(i)]>='a' && data[(i)]<='z') || \
-       (data[(i)]>='A' && data[(i)]<='Z') || \
-       (data[(i)]>='0' && data[(i)]<='9'))   \
+  ((data[i]>='a' && data[i]<='z') || \
+   (data[i]>='A' && data[i]<='Z') || \
+   (data[i]>='0' && data[i]<='9'))   \
+
+// is character at position i in data allowed before an emphasis section
+#define isOpenEmphChar(i) \
+  (data[i]=='\n' || data[i]==' ' || data[i]=='\'' || data[i]=='<' || \
+   data[i]=='{'  || data[i]=='(' || data[i]=='['  || data[i]==',' || \
+   data[i]==':'  || data[i]==';')
+
+// is character at position i in data an escape that prevents ending an emphasis section
+// so for example *bla (*.txt) is cool*
+#define ignoreCloseEmphChar(i) \
+  (data[i]=='('  || data[i]=='{' || data[i]=='[' || data[i]=='<' || \
+   data[i]=='='  || data[i]=='+' || data[i]=='-' || data[i]=='\\' || \
+   data[i]=='@')
 
 //----------
 
@@ -199,7 +213,6 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   return QCString();
 }
 
-
 /** looks for the next emph char, skipping other constructs, and
  *  stopping when either it is found, or we are at the end of a paragraph.
  */
@@ -209,12 +222,19 @@ static int findEmphasisChar(const char *data, int size, char c)
 
   while (i<size)
   {
-    while (i<size && data[i]!=c && data[i]!='`' && 
+    while (i<size && data[i]!=c    && data[i]!='`' && 
                      data[i]!='\\' && data[i]!='@' &&
                      data[i]!='\n') i++;
     //printf("findEmphasisChar: data=[%s] i=%d c=%c\n",data,i,data[i]);
 
-    if (data[i] == c)
+    // not counting escaped chars or characters that are unlikely 
+    // to appear as the end of the emphasis char
+    if (i>0 && ignoreCloseEmphChar(i-1))
+    {
+      i++;
+      continue;
+    }
+    else if (data[i] == c)
     {
       if (i<size-1 && isIdChar(i+1)) // to prevent touching some_underscore_identifier
       {
@@ -224,12 +244,6 @@ static int findEmphasisChar(const char *data, int size, char c)
       return i; // found it
     }
 
-    // not counting escaped chars
-    if (i>0 && (data[i-1]=='\\' || data[i-1]=='@'))
-    {
-      i++;
-      continue;
-    }
 
     // skipping a code span
     if (data[i]=='`')
@@ -489,6 +503,14 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
 
 static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
 {
+  if ((offset>0 && !isOpenEmphChar(-1)) || // invalid char before * or _
+      (size>1 && data[0]!=data[1] && !isIdChar(1)) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !isIdChar(2)))   // invalid char after ** or __
+  {
+    return 0;
+  }
+
+#if 0
   if (offset>0 && size>1 && (isIdChar(-1) || data[-1]==data[0]))
   {
     if (isIdChar(1) || data[-1]==data[0])
@@ -504,6 +526,7 @@ static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
       return 0;
     }
   }
+#endif
   char c = data[0];
   int ret;
   if (size>2 && data[1]!=c) // _bla or *bla
@@ -544,6 +567,7 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   QCString title;
   int contentStart,contentEnd,linkStart,titleStart,titleEnd;
   bool isImageLink = FALSE;
+  bool isToc = FALSE;
   int i=1;
   if (data[0]=='!')
   {
@@ -704,6 +728,11 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
       explicitTitle=TRUE;
       i=contentEnd;
     }
+    else if (content=="TOC")
+    {
+      isToc=TRUE;
+      i=contentEnd;
+    }
     else
     {
       return 0;
@@ -715,7 +744,11 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
     return 0;
   }
   static QRegExp re("^[@\\]ref ");
-  if (isImageLink) 
+  if (isToc) // special case for [TOC]
+  {
+    if (g_current) g_current->stat=TRUE;
+  }
+  else if (isImageLink) 
   {
     if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1) 
         // assume doxygen symbol link
@@ -893,11 +926,11 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
       i++;
     }
   }
-  if (size>1)
+  if (size>1 && data[0]=='\\')
   {
     char c=data[1];
-    if (c=='[' || c==']' || c=='*' || c=='_' || c=='+' || c=='-' ||
-        c=='!' || c=='(' || c==')' || c=='.' || c=='`') 
+    if (c=='[' || c==']' || c=='*' || c=='+' || c=='-' ||
+        c=='!' || c=='(' || c==')' || c=='.' || c=='`' || c=='_') 
     {
       out.addStr(&data[1],1);
       return 2;
@@ -1144,7 +1177,7 @@ static int isAtxHeader(const char *data,int size,
   if (!id.isEmpty()) // strip #'s between title and id
   {
     i=header.length()-1;
-    while (i>=0 && header.at(i)=='#' || header.at(i)==' ') i--;
+    while (i>=0 && (header.at(i)=='#' || header.at(i)==' ')) i--;
     header=header.left(i+1);
   }
 
@@ -1241,7 +1274,6 @@ static int computeIndentExcludingListMarkers(const char *data,int size)
 static bool isFencedCodeBlock(const char *data,int size,int refIndent,
                              QCString &lang,int &start,int &end,int &offset)
 {
-  // TODO: implement me...
   // rules: at least 3 ~~~, end of the block same amount of ~~~'s, otherwise
   // return FALSE
   int i=0;
@@ -1537,7 +1569,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
 
   out.addStr("</table>\n");
 
-  delete columnAlignment;
+  delete[] columnAlignment;
   return i;
 }
 
@@ -1689,7 +1721,8 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
 {
   // find end of the line
   int nb=0;
-  for (end=i+1; end<size && data[end-1]!='\n'; end++)
+  end=i+1;
+  while (end<size && data[end-1]!='\n')
   {
     // while looking for the end of the line we might encounter a block
     // that needs to be passed unprocessed.
@@ -1700,12 +1733,8 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
       QCString endBlockName = isBlockCommand(data+end-1,end-1,size-(end-1));
       if (!endBlockName.isEmpty())
       {
-        if (pi!=-1) // output previous line if available
-        {
-          out.addStr(data+pi,i-pi);
-        }
         int l = endBlockName.length();
-        for (;end<size-l-1;end++) // search for end of block marker
+        for (;end<size-l;end++) // search for end of block marker
         {
           if ((data[end]=='\\' || data[end]=='@') &&
               data[end-1]!='\\' && data[end-1]!='@'
@@ -1713,7 +1742,13 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
           {
             if (strncmp(&data[end+1],endBlockName,l)==0)
             {
+              if (pi!=-1) // output previous line if available
+              {
+                //printf("feol out={%s}\n",QCString(data+pi).left(i-pi).data());
+                out.addStr(data+pi,i-pi);
+              }
               // found end marker, skip over this block
+              //printf("feol.block out={%s}\n",QCString(data+i).left(end+l+1-i).data());
               out.addStr(data+i,end+l+1-i);
               pi=-1;
               i=end+l+1; // continue after block
@@ -1722,6 +1757,10 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
             }
           }
         }
+      }
+      else
+      {
+        end++;
       }
     }
     else if (nb==0 && data[end-1]=='<' && end<size-6 &&
@@ -1743,6 +1782,10 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
         end = i+1;
         break;
       }
+      else
+      {
+        end++;
+      }
     }
     else if (nb==0 && data[end-1]=='`') 
     {
@@ -1754,7 +1797,12 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
       while (end<size && data[end-1]=='`') end++,enb++;
       if (enb==nb) nb=0;
     }
+    else
+    {
+      end++;
+    }
   }
+  //printf("findEndOfLine pi=%d i=%d end=%d {%s}\n",pi,i,end,QCString(data+i).left(end-i).data());
 }
 
 static QCString processQuotations(const QCString &s,int refIndent)
@@ -1779,6 +1827,7 @@ static QCString processQuotations(const QCString &s,int refIndent)
       }
       else
       {
+        //printf("quote out={%s}\n",QCString(data+pi).left(i-pi).data());
         out.addStr(data+pi,i-pi);
       }
     }
@@ -1837,6 +1886,8 @@ static QCString processBlocks(const QCString &s,int indent)
     findEndOfLine(out,data,size,pi,i,end);
     // line is now found at [i..end)
 
+    //printf("findEndOfLine: pi=%d i=%d end=%d\n",pi,i,end);
+
     if (pi!=-1)
     {
       int blockStart,blockEnd,blockOffset;
@@ -1894,24 +1945,24 @@ static QCString processBlocks(const QCString &s,int indent)
       {
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       lang.data(),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());
-        out.addStr("@code");
         if (!lang.isEmpty() && lang.at(0)=='.') lang=lang.mid(1);
+        if (lang.isEmpty()) out.addStr("@verbatim"); else out.addStr("@code");
         if (!lang.isEmpty())
         {
           out.addStr("{"+lang+"}");
         }
         out.addStr(data+pi+blockStart,blockEnd-blockStart);       
-        out.addStr("\n@endcode");
+        out.addStr("\n");
+        if (lang.isEmpty()) out.addStr("@endverbatim"); else out.addStr("@endcode");
         i=pi+blockOffset;
         pi=-1;
         end=i+1;
         continue;
       }
       else if (isCodeBlock(data+i,i,end-i,blockIndent))
-      //if (isCodeBlock(data+pi,pi,end-pi,blockIndent))
       {
         // skip previous line (it is empty anyway)
-        i=pi+writeCodeBlock(out,data+pi,size-pi,blockIndent);
+        i+=writeCodeBlock(out,data+i,size-i,blockIndent);
         pi=-1;
         end=i+1;
         continue;

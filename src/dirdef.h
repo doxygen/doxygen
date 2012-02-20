@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -74,6 +74,7 @@ class DirDef : public Definition
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;
+    void setDiskName(const QCString &name) { m_diskName = name; }
 
   private:
     friend void computeDirDependencies();
@@ -96,6 +97,7 @@ class DirDef : public Definition
     DirList m_subdirs;
     QCString m_dispName;
     QCString m_shortName;
+    QCString m_diskName;
     FileList *m_fileList;                 // list of files in the group
     int m_dirCount;
     int m_level;

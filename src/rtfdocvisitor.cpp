@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,6 +33,24 @@
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
+
+static QCString align(DocHtmlCell *cell)
+{
+  HtmlAttribList attrs = cell->attribs();
+  uint i;
+  for (i=0; i<attrs.count(); ++i) 
+  {
+    if (attrs.at(i)->name.lower()=="align")
+    {
+      if (attrs.at(i)->value.lower()=="center") 
+        return "\\qc ";
+      else if (attrs.at(i)->value.lower()=="right") 
+        return "\\qr ";
+      else return "";
+    }
+  }
+  return "";
+}
 
 RTFDocVisitor::RTFDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -931,7 +949,8 @@ void RTFDocVisitor::visitPost(DocHtmlTable *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocHtmlTable)}\n");
-  m_t << "\\pard" << endl;
+  m_t << "\\pard\\plain" << endl;
+  m_t << "\\par" << endl;
   m_lastIsPara=TRUE;
 }
 
@@ -959,6 +978,10 @@ void RTFDocVisitor::visitPre(DocHtmlRow *r)
          "\\trbrdrv\\brdrs\\brdrw10 "<< endl;
   for (i=0;i<r->numCells();i++)
   {
+    if (r->isHeading())
+    {
+      m_t << "\\clcbpat16"; // set cell shading to light grey (color 16 in the clut)
+    }
     m_t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10 "
            "\\clbrdrl\\brdrs\\brdrw10 "
            "\\clbrdrb\\brdrs\\brdrw10 "
@@ -980,11 +1003,11 @@ void RTFDocVisitor::visitPost(DocHtmlRow *)
   m_lastIsPara=FALSE;
 }
 
-void RTFDocVisitor::visitPre(DocHtmlCell *)
+void RTFDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlCell)}\n");
-  m_t << "{";
+  m_t << "{" << align(c);
   m_lastIsPara=FALSE;
 }
 

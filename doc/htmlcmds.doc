@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -123,7 +123,7 @@ The special HTML character entities that are recognized by Doxygen:
 <li><tt>\&rsquo;</tt> right single quotation mark
 <li><tt>\&ldquo;</tt> left double quotation mark
 <li><tt>\&rdquo;</tt> right double quotation mark
-<li><tt>\&ndash;</tt> n-dash (for numeric ranges, eg. 2&ndash;8)
+<li><tt>\&ndash;</tt> n-dash (for numeric ranges, e.g. 2&ndash;8)
 <li><tt>\&mdash;</tt> m-dash (for parenthetical punctuation &mdash; like this)
 <li><tt>\&?uml;</tt>   where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y}, 
        writes a character with a diaeresis accent (like &auml;).

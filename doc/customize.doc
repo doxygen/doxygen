@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,6 +15,8 @@
  *
  */
 /*! \page customize Customizing the output
+
+\tableofcontents
 
 Doxygen provides various levels of customization. 
 The section \ref minor_tweaks "Minor Tweaks" discusses what to 
@@ -84,7 +86,7 @@ that are disabled by default:
   with \ref cfg_interactive_svg "INTERACTIVE_SVG" while setting 
   \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" to \c svg, will make doxygen
   produce SVG images that will allow the user to zoom and pan (this only
-  happens when th size of the images exceeds a certain size).
+  happens when the size of the images exceeds a certain size).
 
 \subsection minor_tweaks_header_css Header, Footer, and Stylesheet changes
 
@@ -92,7 +94,7 @@ To tweak things like fonts or colors, margins, or other look \& feel
 aspects of the HTML output in detail, you can create a different 
 <a href="http://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
 You can also let doxygen use a custom header and footer for each HTML 
-page it generates, for instance to make the output comform to the style 
+page it generates, for instance to make the output conform to the style 
 used on the rest of your web site.
 
 To do this first run doxygen as follows:
@@ -121,12 +123,16 @@ for more information about the possible meta commands you can use inside
 your custom header.
 
 \note You should not put the style sheet in the HTML output directory. Treat
-it is a source file. Doxygen will copy it for you. 
+it as a source file. Doxygen will copy it for you. 
 
 \note If you use images or other external content in a custom header you
 need to make sure these end up in the HTML output directory yourself,
 for instance by writing a script that runs doxygen can then copies the
 images to the output.
+
+\warning The structure of headers and footers may change after upgrading to
+a newer version of doxygen, so if you are using a custom header or footer, 
+it might not produce valid output anymore after upgrading. 
 
 \section layout Changing the layout of pages
 

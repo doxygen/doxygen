@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -53,6 +53,8 @@
 #include "bufstr.h"
 #include "image.h"
 #include "growbuf.h"
+#include "entry.h"
+#include "arguments.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1737,7 +1739,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     bool keepSpaces,int indentLevel)
 {
   //printf("linkify=`%s'\n",text);
-  static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9.:\\x80-\\xFF]*");
+  static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9$\\\\.:\\x80-\\xFF]*");
   static QRegExp regExpSplit("(?!:),");
   QCString txtStr=text;
   int strLen = txtStr.length();
@@ -1795,7 +1797,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
-    QCString matchWord = substitute(word,".","::");
+    QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    word.data(),matchWord.data(),scope?scope->name().data():"<none>");
     bool found=FALSE;
@@ -2273,6 +2275,8 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       contents.at(totalSize-2)='\n'; // to help the scanner
       contents.at(totalSize-1)='\0';
       portable_pclose(f);
+      Debug::print(Debug::FilterOutput, 0, "Filter output\n");
+      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",contents.data());
       return transcodeCharacterStringToUTF8(contents);
     }
   }
@@ -6616,6 +6620,28 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   return result;
 }
 
+static QCString escapeCommas(const QCString &s)
+{
+  QGString result;
+  const char *p = s.data();
+  char c,pc=0;
+  while ((c=*p++))
+  {
+    if (c==',' && pc!='\\')
+    {
+      result+="\\,";
+    }
+    else
+    {
+      result+=c;
+    }
+    pc=c;
+  }
+  result+='\0';
+  //printf("escapeCommas: '%s'->'%s'\n",s.data(),result.data());
+  return result.data();
+}
+
 static QCString expandAliasRec(const QCString s)
 {
   QCString result;
@@ -6627,18 +6653,28 @@ static QCString expandAliasRec(const QCString s)
     result+=value.mid(p,i-p);
     QCString args = extractAliasArgs(value,i+l);
     bool hasArgs = !args.isEmpty();            // found directly after command
-    QCString cmd;
+    int argsLen = args.length();
+    QCString cmd = value.mid(i+1,l-1);
+    QCString cmdNoArgs = cmd;
+    int numArgs=0;
     if (hasArgs)
     {
-      int numArgs = countAliasArguments(args);
-      cmd  = value.mid(i+1,l-1)+QCString().sprintf("{%d}",numArgs);  // alias name + {n}
-    }
-    else
-    {
-      cmd = value.mid(i+1,l-1);
+      numArgs = countAliasArguments(args);
+      cmd += QCString().sprintf("{%d}",numArgs);  // alias name + {n}
     }
     QCString *aliasText=Doxygen::aliasDict.find(cmd);
-    //printf("Found command '%s' args='%s' aliasText=%s\n",cmd.data(),args.data(),aliasText?aliasText->data():"<none>");
+    if (numArgs>1 && aliasText==0) 
+    { // in case there is no command with numArgs parameters, but there is a command with 1 parameter, 
+      // we also accept all text as the argument of that command (so you don't have to escape commas)
+      aliasText=Doxygen::aliasDict.find(cmdNoArgs+"{1}");
+      if (aliasText)
+      {
+        cmd = cmdNoArgs+"{1}";
+        args = escapeCommas(args); // escape , so that everything is seen as one argument
+      }
+    }
+    //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
+    //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
     if (aliasesProcessed.find(cmd)==0 && aliasText) // expand the alias
     {
       //printf("is an alias!\n");
@@ -6653,7 +6689,7 @@ static QCString expandAliasRec(const QCString s)
       result+=expandAliasRec(val);
       aliasesProcessed.remove(cmd);
       p=i+l;
-      if (hasArgs) p+=args.length()+2;
+      if (hasArgs) p+=argsLen+2;
     }
     else // command is not an alias
     {
@@ -6871,6 +6907,9 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
       inBuf.addArray(buf,numRead),size+=numRead;
     }
     portable_pclose(f);
+    inBuf.at(inBuf.curPos()) ='\0';
+    Debug::print(Debug::FilterOutput, 0, "Filter output\n");
+    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",inBuf.data());
   }
 
   int start=0;
@@ -7187,13 +7226,13 @@ QCString langToString(SrcLangExt lang)
 }
 
 /** Returns the scope separator to use given the programming language \a lang */
-QCString getLanguageSpecificSeparator(SrcLangExt lang)
+QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope)
 {
   if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp || lang==SrcLangExt_VHDL || lang==SrcLangExt_Python)
   {
     return ".";
   }
-  else if (lang==SrcLangExt_PHP)
+  else if (lang==SrcLangExt_PHP && !classScope)
   {
     return "\\";
   }
@@ -7219,3 +7258,14 @@ QCString correctURL(const QCString &url,const QCString &relPath)
 }
 
 //---------------------------------------------------------------------------
+
+bool protectionLevelVisible(Protection prot)
+{
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  static bool extractPackage = Config_getBool("EXTRACT_PACKAGE");
+
+  return (prot!=Private && prot!=Package)  || 
+         (prot==Private && extractPrivate) || 
+         (prot==Package && extractPackage);
+}
+

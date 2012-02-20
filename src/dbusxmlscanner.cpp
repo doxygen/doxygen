@@ -26,6 +26,7 @@
 
 #include "message.h"
 #include "util.h"
+#include "arguments.h"
 
 // -----------------------------------------------------------------------
 // Convenience defines:

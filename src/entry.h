@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,9 +20,9 @@
 
 #include "qtbc.h"
 #include <qlist.h>
+#include "types.h"
 
 #include <qgstring.h>
-#include "util.h"
 
 struct SectionInfo;
 class QFile;
@@ -30,18 +30,8 @@ class EntryNav;
 class FileDef;
 class FileStorage;
 class StorageIntf;
-
-enum Protection { Public, Protected, Private, Package } ;
-enum Specifier { Normal, Virtual, Pure } ;
-enum MethodTypes { Method, Signal, Slot, DCOP, Property, Event };
-enum RelatesType { Simple, Duplicate, MemberOf };
-enum Relationship { Member, Related, Foreign };
-
-struct ListItemInfo
-{
-  QCString type;
-  int itemId;
-};
+class ArgumentList;
+class ListItemInfo;
 
 /*! \brief This class stores information about an inheritance relation
  */ 
@@ -55,83 +45,6 @@ struct BaseInfo
   Specifier  virt; //!< virtualness
 };
 
-/*! \brief This class contains the information about the argument of a
- *         function or template
- *
- */
-struct Argument
-{
-  /*! Construct a new argument. */
-  Argument() {}
-  /*! Copy an argument (does a deep copy of all strings). */
-  Argument(const Argument &a) 
-  { 
-    attrib=a.attrib.copy();
-    type=a.type.copy(); 
-    name=a.name.copy(); 
-    defval=a.defval.copy(); 
-    docs=a.docs.copy();
-    array=a.array.copy();
-  }
-  /*! Assignment of an argument (does a deep copy of all strings). */
-  Argument &operator=(const Argument &a)
-  {
-    if (this!=&a)
-    {
-      attrib=a.attrib.copy();
-      type=a.type.copy(); 
-      name=a.name.copy(); 
-      defval=a.defval.copy(); 
-      docs=a.docs.copy();
-      array=a.array.copy();
-    }
-    return *this;
-  }
-  /*! return TRUE if this argument is documentation and the argument has a
-   *  non empty name.
-   */
-  bool hasDocumentation() const 
-  { 
-    return !name.isEmpty() && !docs.isEmpty(); 
-  }
-  
-  QCString attrib;   /*!< Argument's attribute (IDL only) */
-  QCString type;     /*!< Argument's type */
-  QCString canType;  /*!< Cached value of canonical type (after type resolution). Empty initially. */
-  QCString name;     /*!< Argument's name (may be empty) */
-  QCString array;    /*!< Argument's array specifier (may be empty) */
-  QCString defval;   /*!< Argument's default value (may be empty) */
-  QCString docs;     /*!< Argument's documentation (may be empty) */
-};
-
-/*! \brief This class represents an function or template argument list. 
- *
- *  This class also stores some information about member that is typically
- *  put after the argument list, such as wether the member is const, 
- *  volatile or pure virtual.
- */
-class ArgumentList : public QList<Argument> 
-{
-  public:
-    /*! Creates an empty argument list */
-    ArgumentList() : QList<Argument>(), 
-                     constSpecifier(FALSE),
-                     volatileSpecifier(FALSE),
-                     pureSpecifier(FALSE)
-                     { setAutoDelete(TRUE); }
-    /*! Destroys the argument list */
-   ~ArgumentList() {}
-    bool hasDocumentation() const;
-    /*! Does the member modify the state of the class? default: FALSE. */
-    bool constSpecifier;
-    /*! Is the member volatile? default: FALSE. */
-    bool volatileSpecifier;
-    /*! Is this a pure virtual member? default: FALSE */
-    bool pureSpecifier;
-};
-
-typedef QListIterator<Argument> ArgumentListIterator;
-
 /*! \brief This struct is used to capture the tag file information 
  *         for an Entry. 
  */
@@ -140,43 +53,6 @@ struct TagInfo
   QCString tagName;
   QCString fileName;
   QCString anchor;
-};
-
-struct Grouping 
-{
-  enum GroupPri_t 
-  {
-    GROUPING_LOWEST,
-    GROUPING_AUTO_WEAK = 
-      GROUPING_LOWEST,     //!< membership in group was defined via \@weakgroup 
-    GROUPING_AUTO_ADD,     //!< membership in group was defined via \@add[to]group 
-    GROUPING_AUTO_DEF,     //!< membership in group was defined via \@defgroup
-    GROUPING_AUTO_HIGHEST = GROUPING_AUTO_DEF,
-    GROUPING_INGROUP,      //!< membership in group was defined by \@ingroup
-    GROUPING_HIGHEST = GROUPING_INGROUP
-  };
-
-  static const char *getGroupPriName( GroupPri_t priority )
-  {
-    switch( priority )
-    {
-      case GROUPING_AUTO_WEAK:
-        return "@weakgroup";
-      case GROUPING_AUTO_ADD:
-        return "@addtogroup";
-      case GROUPING_AUTO_DEF:
-        return "@defgroup";
-      case GROUPING_INGROUP:
-        return "@ingroup";
-    }	    
-    return "???";
-  }
-
-  Grouping( const char *gn, GroupPri_t p ) : groupname(gn), pri(p) {}
-  Grouping( const Grouping &g ) : groupname(g.groupname), pri(g.pri) {}
-  QCString groupname;   //!< name of the group
-  GroupPri_t pri;       //!< priority of this definition
-
 };
 
 /*! \brief Represents an unstructured piece of information, about an

@@ -1,4 +1,4 @@
-(1.7.5)
+(1.7.6.1)
 
 Doxygen supports the following 39 languages (sorted alphabetically):
 
@@ -112,6 +112,7 @@ for occurence of the method identifiers:
   QCString trAlphabeticalList()
   QCString trDCOPMethods()
   QCString trDirDependency(const char *)
+  QCString trFuncProtos()
   QCString trFunctionPrototypeDocumentation()
   QCString trGraphicalHierarchy()
   QCString trSearchForIndex()

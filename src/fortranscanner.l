@@ -64,8 +64,11 @@
 #include "commentscan.h" 
 #include "fortrancode.h"
 #include "pre.h"
+#include "arguments.h"
 
 #define YY_NEVER_INTERACTIVE 1
+
+class Arguments;
 
 enum ScanVar { V_IGNORE, V_VARIABLE, V_PARAMETER};
 enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
@@ -868,14 +871,16 @@ private                                 {
 <Variable>";".*"\n"                     { currentModifiers = SymbolModifiers();
                                           yy_pop_state(); // end variable declaration list
                                           docBlock.resize(0);
-                                          inputStringSemi =(const char*)(yytext+1);
+                                          inputStringSemi =(const char*)(QCString(" \n") + QCString(yytext+1)).data();
+                                          yyLineNr--;
                                           pushBuffer(inputStringSemi);
                                         }
 <*>";".*"\n"                            {
 					  if (YY_START == Variable) REJECT; // Just be on the safe side
                                           if (YY_START == String) REJECT; // ";" ignored in strings
                                           if (YY_START == StrIgnore) REJECT; // ";" ignored in regular comments
-                                          inputStringSemi =(const char*)(yytext+1);
+                                          inputStringSemi =(const char*)(QCString(" \n") + QCString(yytext+1)).data();
+                                          yyLineNr--;
                                           pushBuffer(inputStringSemi);
                                         }
 

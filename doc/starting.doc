@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,6 +15,7 @@
  *
  */
 /*! \page starting Getting started
+\tableofcontents
 
 The executable \c doxygen is the main program that parses the sources and 
 generates the documentation. See section \ref doxygen_usage for more
@@ -196,7 +197,8 @@ The generated \f$\mbox{\LaTeX}\f$ documentation must first be compiled by
 a \f$\mbox{\LaTeX}\f$ compiler (I use a recent teTeX distribution for Linux
 and MacOSX and MikTex for Windows). 
 To simplify the process of compiling the generated
-documentation, \c doxygen writes a \c Makefile into the \c latex directory. 
+documentation, \c doxygen writes a \c Makefile into the \c latex directory
+(on the Windows platform also a \c make.bat batch file is generated). 
 
 The contents and targets in the \c Makefile depend on the setting of
 \ref cfg_use_pdflatex "USE_PDFLATEX". If it is disabled (set to \c NO), then

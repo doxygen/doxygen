@@ -1,4 +1,5 @@
 /*! \page page1 A documentation page
+  \tableofcontents
   Leading text.
   \section sec An example section
   This page contains the subsections \ref subsection1 and \ref subsection2.

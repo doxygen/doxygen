@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -17,21 +17,13 @@
 /*! \page install Installation
 
 \addindex installation
+\tableofcontents
+
 First go to the 
 <a href="http://www.doxygen.org/download.html">download</a> page
-to get the latest distribution, if you did not have it already.
+to get the latest distribution, if you did not downloaded doxygen already.
 
-This section is divided into the following sections:
-<ul>
-<li>\ref install_src_unix  "Compiling from source on UNIX"
-<li>\ref install_bin_unix  "Installing the binaries on UNIX"
-<li>\ref unix_problems "Known compilation problems for UNIX"
-<li>\ref install_src_windows "Compiling from source on Windows"
-<li>\ref install_bin_windows "Installing the binaries on Windows"
-<li>\ref build_tools "Tools used to develop doxygen"
-</ul>
-
-\section install_src_unix    Compiling from source on UNIX
+\section install_src_unix Compiling from source on UNIX
 
 If you downloaded the source distribution, you need at least the 
 following to build the executable:
@@ -357,7 +349,7 @@ Now you need to add/adjust the following environment variables
 - add <code>c:\\tools\\unxutils\\usr\\local\\wbin;</code> to the start of <code>PATH</code>
 - set <code>BISON_SIMPLE</code> to <code>c:\\tools\\unxutils\\usr\\local\\share\\bison.simple</code>
 
-Download doxygen's source tarball and put it somewhere (e.g use <code>c:\\tools</code>)
+Download doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)
 
 Now start a new command shell and type
 \verbatim
@@ -371,7 +363,7 @@ Now your environment is setup to build \c doxygen.
 
 Inside the \c doxygen-x.y.z directory you will find a \c winbuild directory 
 containing a \c Doxygen.sln file. Open this file in Visual Studio. 
-You can now build the Release or Debug flavor of Doxygen and Doxytag by right-clicking
+You can now build the Release or Debug flavor of Doxygen by right-clicking
 the project in the solutions explorer, and selecting Build.
 
 Note that compiling Doxywizard currently requires Qt version 4

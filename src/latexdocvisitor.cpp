@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -915,7 +915,7 @@ void LatexDocVisitor::visitPost(DocHtmlRow *)
     it.data()--;
     if (it.data () <= 0)
     {
-      m_rowspanIndices.remove (it);
+      m_rowspanIndices.remove(it);
     }
     else if (0 < it.data() - col)
     {
@@ -940,7 +940,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   m_currentColumn++;
   //Skip columns that span from above.
   QMap<int, int>::Iterator it = m_rowspanIndices.find(m_currentColumn);
-  while (0 < it.data() && it != m_rowspanIndices.end())
+  while (it!=m_rowspanIndices.end() && 0<it.data())
   {
     m_t << "&";
     m_currentColumn++;

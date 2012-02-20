@@ -3,7 +3,7 @@
  *
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  * Authors: Dimitri van Heesch, Miguel Lobo.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -30,6 +30,7 @@
 #include <qdict.h>
 #include <qfile.h>
 #include "ftextstream.h"
+#include "arguments.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 

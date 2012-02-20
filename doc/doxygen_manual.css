@@ -822,7 +822,7 @@ dl
         padding: 0 0 0 10px;
 }
 
-dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug
+dl.section
 {
         border-left:4px solid;
         padding: 0 0 0 6px;
@@ -861,6 +861,10 @@ dl.test
 dl.bug
 {
         border-color: #C08050;
+}
+
+dl.section dd {
+	margin-bottom: 1em;
 }
 
 #projectlogo
@@ -944,6 +948,54 @@ dl.citelist dt {
 dl.citelist dd {
         margin:2px 0;
         padding:5px 0;
+}
+
+div.toc {
+        padding: 14px 25px;
+        background-color: #F6F6F6;
+        border: 1px solid #DDDDDD;
+        border-radius: 7px 7px 7px 7px;
+        float: right;
+        height: auto;
+        margin: 0 20px 10px 10px;
+        width: 200px;
+}
+
+div.toc li {
+        background: url("bdwn.png") no-repeat scroll 0 5px transparent;
+        font: 10px/1.2 Verdana,DejaVu Sans,Geneva,sans-serif;
+        margin-top: 5px;
+        padding-left: 10px;
+        padding-top: 2px;
+}
+
+div.toc h3 {
+        font: bold 12px/1.2 Arial,FreeSans,sans-serif;
+        border-bottom: 0 none;
+        color: #606060;
+        margin: 0;
+}
+
+div.toc ul {
+        list-style: none outside none;
+        border: medium none;
+        padding: 0px;
+}
+
+div.toc li.level1 {
+        margin-left: 0px;
+}
+
+div.toc li.level2 {
+        margin-left: 15px;
+}
+
+div.toc li.level3 {
+        margin-left: 30px;
+}
+
+div.toc li.level4 {
+        margin-left: 45px;
 }
 
 @media print

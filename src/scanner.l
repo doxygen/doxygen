@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -42,6 +42,7 @@
 #include "language.h"
 #include "commentscan.h"
 #include "code.h"
+#include "arguments.h"
 
 #define YY_NEVER_INTERACTIVE 1
 
@@ -70,6 +71,7 @@ static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
 static int              lastCSConstraint;
 static int              lastHereDocContext;
+static int              lastDefineContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -571,7 +573,7 @@ ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
 PHPSCOPENAME ({ID}"\\")+{ID}
-TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,]*">")?
+TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,:]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
@@ -1140,7 +1142,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           unput('{');
   					  BEGIN( Function );
   					}
-<FindMembers>{BN}{1,80}			{
+<FindMembers>{BN}{1,80}		        {
   					  lineCount();
   					}
 <FindMembers>"@"({ID}".")*{ID}{BN}*"("	{
@@ -1813,6 +1815,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->name=n.left(n.length()-2);
 					}
 <FindMembers>{SCOPENAME}{BN}*/"<"	{ // Note: this could be a return type!
+                                          roundCount=0;
   					  sharpCount=0;
 					  lineCount();
 					  addType( current );
@@ -2080,6 +2083,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    {
 					      current->protection = Protected;
 					    }
+					    else if (javaLike && strcmp(yytext,"internal")==0)
+					    {
+					      current->protection = Package;
+					    }
 					    else if (javaLike && strcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
@@ -2190,6 +2197,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  if (insidePHP)
 					    REJECT;
   					  current->bodyLine = yyLineNr;
+                                          lastDefineContext = YY_START;
   					  BEGIN( Define );
   					}
 <FindMembers,ReadBody,ReadNSBody,ReadBodyIntf,SkipCurly,SkipCurlyCpp>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
@@ -2274,7 +2282,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  initEntry();
-					  BEGIN(FindMembers);
+					  BEGIN(lastDefineContext);
   					}
 <DefinePHPEnd>";"			{
   					  //printf("End define\n");
@@ -3545,7 +3553,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   */
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
 <MemberSpecSkip>";"		        { unput(';'); BEGIN(MemberSpec); }
-<ReadBody,ReadNSBody,ReadBodyIntf>{BN}+	{ current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{BN}{1,80} { current->program += yytext ;
 					  lineCount() ;
 					}
 <ReadBodyIntf>"@end"/[^a-z_A-Z0-9]	{ // end of Objective C block
@@ -5011,6 +5019,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <BasesProt>"virtual"{BN}+               { lineCount(); baseVirt = Virtual; }
 <BasesProt>"public"{BN}+                { lineCount(); baseProt = Public; }
 <BasesProt>"protected"{BN}+             { lineCount(); baseProt = Protected; }
+<BasesProt>"internal"{BN}+              { lineCount(); baseProt = Package; }
 <BasesProt>"private"{BN}+               { lineCount(); baseProt = Private; }
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }

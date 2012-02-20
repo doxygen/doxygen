@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2011 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -31,7 +31,7 @@ Each argument has a certain range:
 <li>If {curly} braces are used the argument extends until the next paragraph.
     Paragraphs are delimited by a blank line or by a section indicator.
 </ul>
-If in addition to the aboveargument specifiers [square] brackets are used the argument is optional.
+If in addition to the above argument specifiers [square] brackets are used the argument is optional.
 
 Here is an alphabetically sorted list of all commands with references to their
 documentation:
@@ -166,6 +166,7 @@ documentation:
 \refitem cmdsubpage \\subpage
 \refitem cmdsubsection \\subsection
 \refitem cmdsubsubsection \\subsubsection
+\refitem cmdtableofcontents \\tableofcontents
 \refitem cmdtest \\test
 \refitem cmdthrow \\throw
 \refitem cmdthrows \\throws
@@ -192,6 +193,7 @@ documentation:
 \refitem cmdhash \\\#
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
+\refitem cmdchardot \\\.
 \refitem cmddcolon \::
 \endsecreflist
 
@@ -387,7 +389,7 @@ Structural indicators
   \ref cfg_example_path "EXAMPLE_PATH" tag, you can include part of the absolute path
   to disambiguate it.
 
-  If more that one source file is needed for the example,
+  If more than one source file is needed for the example,
   the \\include command can be used.
 
   \par Example:
@@ -494,7 +496,7 @@ Structural indicators
   the documentation is in front of the definition. The arguments of
   this command are the same as the second and third argument of
   \ref cmdclass "\\class".
-  The \<header-file\> name refers to the file that should by included by the
+  The \<header-file\> name refers to the file that should be included by the
   application to obtain the definition of the class, struct, or union.
   The \<header-name\> argument can be used to overwrite the
   name of the link that is used in the class documentation to something other
@@ -535,7 +537,7 @@ Structural indicators
   By default the value of a define and the initializer of a variable
   are displayed unless they are longer than 30 lines. By putting
   this command in a comment block of a define or variable, the
-  initializer is always hidden. The maximum number of initalization linens
+  initializer is always hidden. The maximum number of initialization lines
   can be changed by means of the configuration parameter
   \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES", the default value is
   30.
@@ -922,7 +924,7 @@ Structural indicators
   are only displayed if they are less than 30 lines long. By putting
   this command in a comment block of a define or variable, the
   initializer is shown unconditionally.
-  The maximum number of initalization linens
+  The maximum number of initialization lines
   can be changed by means of the configuration parameter
   \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES", the default value is
   30.
@@ -945,7 +947,7 @@ Structural indicators
   \addindex \\typedef
   Indicates that a comment block contains documentation for a
   typedef (either global or as a member of a class).
-  This command is equivalent to \\var, \\propery, and \\fn.
+  This command is equivalent to \\var, \\property, and \\fn.
 
   \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and
               \ref cmdvar "\\var".
@@ -966,7 +968,7 @@ Structural indicators
   \addindex \\var
   Indicates that a comment block contains documentation for a variable or
   enum value (either global or as a member of a class).
-  This command is equivalent to \\typedef, \\propery, and \\fn.
+  This command is equivalent to \\typedef, \\property, and \\fn.
 
   \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
@@ -1159,7 +1161,7 @@ contains \c TEST, or \c DEV
   expected life span, etc.
 
 <hr>
-\section cmddetails \\details { detailed decription }
+\section cmddetails \\details { detailed description }
 
   \addindex \\details
   Just like \ref cmdbrief "\\brief" starts a brief description, \\details
@@ -1384,6 +1386,18 @@ void memcpy(void *dest, const void *src, size_t n);
   The \\param description ends when a blank line or some other
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an
   example.
+
+  Note that you can also document multiple parameters with a single
+  \\param command using a comma separated list. Here is an example:
+
+\code
+/** Sets the position.
+ *  @param x,y,z Coordinates of the position in 3D space.
+ */
+void setPosition(double x,double y,double z,double t)
+{
+}
+\endcode
 
   Note that for PHP one can also specify the type (or types if you
   separate them with a pipe symbol) which are allowed for a parameter
@@ -1761,6 +1775,17 @@ This page is for advanced users.
 Make sure you have first read \ref intro "the introduction".
 */
 \endverbatim
+
+<hr>
+\section cmdtableofcontents \\tableofcontents
+
+  \addindex \\tableofcontents
+  Creates a table of contents at the top of a page, listing all
+  sections and subsections in the page. 
+
+  \warning This command only works inside related page documentation and
+           \e not in other documentation blocks and only has effect in the
+           HTML output!
 
 <hr>
 \section cmdsection \\section <section-name> (section title)
@@ -2805,6 +2830,15 @@ class Receiver
   This command writes the \" character to the output. This
   character has to be escaped in some cases, because it is used in pairs
   to indicate an unformatted text fragment.
+
+<hr>
+\section cmdchardot \\.
+
+  \addindex \\\.
+  This command writes a dot to the output. This can be useful to 
+  prevent ending a brief description when JAVADOC_AUTOBRIEF is enabled
+  or to prevent starting a numbered list when the dot follows a number at
+  the start of a line.
 
 <hr>
 \section cmddcolon \\::

@@ -31,7 +31,7 @@ distclean: clean
 	-rm -f latex
 	-rm -f objects/*.o
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
-	-rm -f src/Makefile.libdoxycfg
+	-rm -f src/Makefile.libdoxycfg src/libdoxycfg.t src/libdoxygen.t
 	-rm -f libmd5/Makefile.libmd5
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig

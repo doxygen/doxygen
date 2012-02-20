@@ -278,4 +278,42 @@ function handleZoom(evt,direction)
   doZoom(g,p,factor);
 }
 
+function serializeXmlNode(xmlNode) 
+{
+  if (typeof window.XMLSerializer != "undefined") {
+    return (new window.XMLSerializer()).serializeToString(xmlNode);
+  } else if (typeof xmlNode.xml != "undefined") {
+    return xmlNode.xml;
+  }
+  return "";
+}
+
+/** 
+ * Handler for print function
+ */
+function handlePrint(evt)
+{
+  evt.returnValue = false;
+  var g = svgDoc.getElementById("graph");
+  var xs = serializeXmlNode(g);
+  try {
+    var w = window.open('about:blank','_blank','width='+windowWidth+',height='+windowHeight+
+                        ',toolbar=0,status=0,menubar=0,scrollbars=0,resizable=0,location=0,directories=0');
+    var d = w.document;
+    d.write('<html xmlns="http://www.w3.org/1999/xhtml" '+
+            'xmlns:svg="http://www.w3.org/2000/svg" '+
+            'xmlns:xlink="http://www.w3.org/1999/xlink">');
+    d.write('<head><title>Print SVG</title></head>');
+    d.write('<body style="margin: 0px; padding: 0px;" onload="window.print(); window.close();">');
+    d.write('<div id="svg" style="width:'+windowWidth+'px; height:'+windowHeight+'px;">'+xs+'</div>');
+    d.write('</body>');
+    d.write('</html>');
+    d.close();
+  } catch(e) {
+    alert('Print function not supported by this browser!');
+  }
+}
+
+
+
 
