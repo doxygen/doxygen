@@ -1185,7 +1185,16 @@ void RTFDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocRef)}\n");
-  if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+  // when ref->isSubPage()==TRUE we use ref->file() for HTML and
+  // ref->anchor() for LaTeX/RTF
+  if (ref->isSubPage())
+  {
+    startLink(ref->ref(),0,ref->anchor());
+  }
+  else
+  {
+    if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+  }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
@@ -1448,11 +1457,11 @@ void RTFDocVisitor::visitPost(DocParamList *pl)
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocParamList)}\n");
 
   DocParamSect::Type parentType = DocParamSect::Unknown;
-  DocParamSect *sect = 0;
+  //DocParamSect *sect = 0;
   if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
     parentType = ((DocParamSect*)pl->parent())->type();
-    sect=(DocParamSect*)pl->parent();
+    //sect=(DocParamSect*)pl->parent();
   }
   bool useTable = parentType==DocParamSect::Param ||
                   parentType==DocParamSect::RetVal ||
@@ -1652,9 +1661,12 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
     {
       refName+=file;
     }
-    if (anchor)
+    if (!file.isEmpty() && anchor)
     {
       refName+='_';
+    }
+    if (anchor)
+    {
       refName+=anchor;
     }
 

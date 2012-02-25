@@ -402,7 +402,7 @@ void Store::dumpBlock(portable_off_t s,portable_off_t e)
   portable_fseek(m_file,s,SEEK_SET);
   int size = (int)(e-s);
   uchar *buf = new uchar[size];
-  fread(buf,size,1,m_file);
+  (void)fread(buf,size,1,m_file);
   int i,j;
   for (i=0;i<size;i+=16)
   {

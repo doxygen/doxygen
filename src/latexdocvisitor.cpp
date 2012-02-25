@@ -1126,14 +1126,30 @@ void LatexDocVisitor::visitPost(DocLink *lnk)
 void LatexDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+  // when ref->isSubPage()==TRUE we use ref->file() for HTML and
+  // ref->anchor() for LaTeX/RTF
+  if (ref->isSubPage())
+  {
+    startLink(ref->ref(),0,ref->anchor());
+  }
+  else
+  {
+    if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+  }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void LatexDocVisitor::visitPost(DocRef *ref) 
 {
   if (m_hide) return;
-  if (!ref->file().isEmpty()) endLink(ref->ref(),ref->file(),ref->anchor());
+  if (ref->isSubPage())
+  {
+    endLink(ref->ref(),0,ref->anchor());
+  }
+  else
+  {
+    if (!ref->file().isEmpty()) endLink(ref->ref(),ref->file(),ref->anchor());
+  }
 }
 
 void LatexDocVisitor::visitPre(DocSecRefItem *)

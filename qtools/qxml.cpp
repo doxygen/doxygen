@@ -1515,7 +1515,7 @@ bool QXmlDefaultHandler::unparsedEntityDecl( const QString&, const QString&,
   provided in the XML document.
 */
 bool QXmlDefaultHandler::resolveEntity( const QString&, const QString&,
-	QXmlInputSource* ret )
+	QXmlInputSource* &ret )
 {
     ret = 0;
     return TRUE;

@@ -169,10 +169,8 @@ Examples:
 
     __double underscores__
 
-Note that unlike standard Markdown, doxygen will not touch internal underscores or
-stars, so the following will appear as-is:
-
-    a_nice_identifier
+See section \ref mddox_emph_spans for more info how doxygen handles
+emphasis spans slightly different than standard Markdown.
 
 \subsection md_codespan code spans
 
@@ -504,6 +502,24 @@ relative indent:
 For Item1 the indentation is 4 (when treating the list marker as whitespace), 
 so the next paragraph "More text..." starts at the same indentation level 
 and is therefore not seen as a code block.
+
+\subsection mddox_emph_spans Emphasis limits
+
+Unlike standard Markdown, doxygen will not touch internal underscores or
+stars, so the following will appear as-is:
+
+    a_nice_identifier
+
+Futhermore, a `*` or `_` only starts an emphasis if
+- it is followed by an alphanumberical character, and
+- it is preceded by a space, newline, or one the following characters `<{([,:;`
+
+An emphasis ends if
+- it is not following by an alphanumerical character, and
+- it is not preceded by a space, newline, or one the following characters `({[<=+-\@`
+
+Lastly, the span of the emphasis is limited to a single paragraph.
+
 
 \subsection mddox_code_spans Code Spans Limits
 

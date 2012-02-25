@@ -576,7 +576,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 
   ClassDef *cd=0,*lcd=0;  /** Class def that we may find */
   MemberDef *md=0;        /** Member def that we may find */
-  bool isLocal=FALSE;
+  //bool isLocal=FALSE;
 
   if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
@@ -611,7 +611,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     {
       g_theCallContext.setClass(lcd);
     }
-    isLocal=TRUE;
+    //isLocal=TRUE;
     //fprintf(stderr,"is a local variable cd=%p!\n",cd);
   }
 
@@ -1426,19 +1426,14 @@ static void adjustScopesAndSuites(unsigned indentLength)
   }
 }
 
-void parsePythonCode(CodeOutputInterface &od,const char *className,
+void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
                  const QCString &s,bool exBlock, const char *exName,
-		 FileDef *fd,int startLine,int endLine,bool inlineFragment,
+		 FileDef *fd,int startLine,int endLine,bool /*inlineFragment*/,
 		 MemberDef *,bool) 
 {
 
   //printf("***parseCode()\n");
   
-  //--- some code to eliminate warnings---
-  className = "";
-  exBlock = FALSE;
-  exName = "";
-  inlineFragment = "";
   //--------------------------------------
   if (s.isEmpty()) return;
   g_code = &od;

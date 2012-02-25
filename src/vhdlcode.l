@@ -618,12 +618,12 @@ static void codifyMapLines(char *text)
   int wordCounter=0;
   QCString ctemp;
   //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
-  char *p=text,*sp=p;
+  char *p=text; //,*sp=p;
   char c;
   bool done=FALSE;
   while (!done)
   {
-    sp=p;
+    //sp=p;
     while ((c=*p++) &&  c!='\n' && c!=':' && c != ' ' && c != '(' && c!='\0' && c!='\t')
     { 
       if (c!=0x9)

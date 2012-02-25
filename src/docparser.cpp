@@ -2275,7 +2275,7 @@ void DocInternalRef::parse()
 //---------------------------------------------------------------------------
 
 DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) : 
-   m_refToSection(FALSE), m_refToAnchor(FALSE)
+   m_refToSection(FALSE), m_refToAnchor(FALSE), m_isSubPage(FALSE)
 {
   m_parent = parent; 
   Definition  *compound = 0;
@@ -2286,14 +2286,20 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   SectionInfo *sec = Doxygen::sectionDict[target];
   if (sec) // ref to section or anchor
   {
+    PageDef *pd = 0;
+    if (sec->type==SectionInfo::Page)
+    {
+      pd = Doxygen::pageSDict->find(target);
+    }
     m_text         = sec->title;
     if (m_text.isEmpty()) m_text = sec->label;
 
     m_ref          = sec->ref;
     m_file         = stripKnownExtensions(sec->fileName);
-    if (sec->type!=SectionInfo::Page) m_anchor = sec->label;
     m_refToAnchor  = sec->type==SectionInfo::Anchor;
     m_refToSection = sec->type!=SectionInfo::Anchor;
+    m_isSubPage    = pd && pd->hasParentPage();
+    if (sec->type!=SectionInfo::Page || m_isSubPage) m_anchor = sec->label;
     //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d type=%d\n",
     //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor,sec->type);
     return;

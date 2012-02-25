@@ -525,7 +525,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <St_Para>{SPCMD3}      {
   			 g_token->name = "form";
 			 bool ok;
-			 g_token->id = QCString(yytext).right(yyleng-6).toInt(&ok);
+			 g_token->id = QCString(yytext).right((int)yyleng-6).toInt(&ok);
 			 ASSERT(ok);
 			 return TK_COMMAND;
   		       }
@@ -633,7 +633,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <St_Para>{LNKWORD1}{FUNCARG}{CVSPEC}[^a-z_A-Z0-9] {
                          g_token->name = yytext;
                          g_token->name = g_token->name.left(g_token->name.length()-1);
-			 unput(yytext[yyleng-1]);
+			 unput(yytext[(int)yyleng-1]);
                          return TK_LNKWORD;
                        }
   /********* patterns for normal words ******************/
@@ -684,7 +684,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			 }
 			 else // found end of a paragraph
 			 {
-                           g_token->indent=computeIndent(yytext,yyleng-1);
+                           g_token->indent=computeIndent(yytext,(int)yyleng-1);
                            int i;
                            // put back the indentation (needed for list items)
                            for (i=0;i<g_token->indent;i++)
@@ -946,7 +946,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                        }
 <St_XRefItem2>[0-9]+"." {
   			 QCString numStr=yytext;
-			 numStr=numStr.left(yyleng-1);
+			 numStr=numStr.left((int)yyleng-1);
 			 g_token->id=numStr.toInt();
 			 return RetVal_OK;
   		       }
@@ -956,7 +956,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                        }
 <St_Param>"\""[^\n\"]+"\"" {
   			 g_token->name = yytext+1;
-			 g_token->name = g_token->name.left(yyleng-2);
+			 g_token->name = g_token->name.left((int)yyleng-2);
 			 return TK_WORD;
                        }
 <St_Param>({PHPTYPE}{BLANK}*"|"{BLANK}*)*{PHPTYPE}{WS}+("&")?"$"{LABELID} {

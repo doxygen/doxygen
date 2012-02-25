@@ -82,12 +82,12 @@ QString QDir::canonicalPath() const
 
     char cur[PATH_MAX];
     char tmp[PATH_MAX];
-    GETCWD( cur, PATH_MAX );
+    (void)GETCWD( cur, PATH_MAX );
     if ( CHDIR(QFile::encodeName(dPath)) >= 0 ) {
-	GETCWD( tmp, PATH_MAX );
+	(void)GETCWD( tmp, PATH_MAX );
 	r = QFile::decodeName(tmp);
     }
-    CHDIR( cur );
+    (void)CHDIR( cur );
 
     slashify( r );
     return r;

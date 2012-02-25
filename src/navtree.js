@@ -125,10 +125,13 @@ function newNode(o, po, text, link, childrenData, lastNode)
       var targetPage = stripPath(link.split('#')[0]);
       a.href = srcPage!=targetPage ? url : '#';
       a.onclick = function(){
-        $('.item').removeClass('selected');
-        $('.item').removeAttr('id');
-        $(a).parent().parent().addClass('selected');
-        $(a).parent().parent().attr('id','selected');
+        if (!$(a).parent().parent().hasClass('selected'))
+        {
+          $('.item').removeClass('selected');
+          $('.item').removeAttr('id');
+          $(a).parent().parent().addClass('selected');
+          $(a).parent().parent().attr('id','selected');
+        }
         var pos, anchor = $(aname), docContent = $('#doc-content');
         if (anchor.parent().attr('class')=='memItemLeft') {
           pos = anchor.parent().position().top;
@@ -229,7 +232,7 @@ function highlightAnchor()
 
 function showNode(o, node, index)
 {
-  if (node.childrenData && !node.expanded) {
+  if (node.childrenData /*&& !node.expanded*/) {
     if (typeof(node.childrenData)==='string') {
       var varName    = node.childrenData;
       getScript(node.relpath+varName,function(){
@@ -276,6 +279,7 @@ function showNode(o, node, index)
             $(n.itemDiv).addClass('selected');
             $(n.itemDiv).attr('id','selected');
           }
+          showRoot();
         }
       }
     }
@@ -291,6 +295,20 @@ function getNode(o, po)
     po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2],
       i==l);
   }
+}
+
+function navTo(o,root,hash,relpath)
+{
+  getScript(relpath+"navtreeindex",function(){
+    var navTreeIndex = eval('NAVTREEINDEX');
+    if (navTreeIndex) {
+      var nti = navTreeIndex[root+hash];
+      o.breadcrumbs = nti ? nti : navTreeIndex[root];
+      if (o.breadcrumbs==null) o.breadcrumbs = navTreeIndex["index.html"];
+      o.breadcrumbs.unshift(0);
+      showNode(o, o.node, 0);
+    }
+  },true);
 }
 
 function initNavTree(toroot,relpath)
@@ -313,35 +331,22 @@ function initNavTree(toroot,relpath)
   o.node.plus_img.width = 16;
   o.node.plus_img.height = 22;
 
-  getScript(relpath+"navtreeindex",function(){
-    var navTreeIndex = eval('NAVTREEINDEX');
-    if (navTreeIndex) {
-      var nti = navTreeIndex[toroot+window.location.hash];
-      o.breadcrumbs = nti ? nti : navTreeIndex[toroot];
-      if (o.breadcrumbs==null) o.breadcrumbs = navTreeIndex["index.html"];
-      o.breadcrumbs.unshift(0);
-      showNode(o, o.node, 0);
-    }
-  },true);
+  navTo(o,toroot,window.location.hash,relpath);
 
   $(window).bind('hashchange', function(){
      if (window.location.hash && window.location.hash.length>1){
-       highlightAnchor();
        var a;
        if ($(location).attr('hash')){
-         var link=stripPath($(location).attr('pathname'))+':'+
-                  $(location).attr('hash').substring(1);
-         a=$('.item a[class$=\""'+link+'"\"]');
+         var clslink=stripPath($(location).attr('pathname'))+':'+
+                               $(location).attr('hash').substring(1);
+         a=$('.item a[class$=\""'+clslink+'"\"]');
        }
-       if (a && a.length){
+       if (a==null || !$(a).parent().parent().hasClass('selected')){
          $('.item').removeClass('selected');
          $('.item').removeAttr('id');
-         a.parent().parent().addClass('selected');
-         a.parent().parent().attr('id','selected');
-         var anchor = $($(location).attr('hash'));
-         var targetDiv = anchor.next();
-         showRoot();
        }
+       var link=stripPath($(location).attr('pathname'));
+       navTo(o,link,$(location).attr('hash'),relpath);
      }
   })
 

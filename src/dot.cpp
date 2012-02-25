@@ -250,7 +250,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
 {
   // search for href="...", store ... part in link
   QCString href = "href";
-  bool isXLink=FALSE;
+  //bool isXLink=FALSE;
   int len = 6;
   int indexS = buf.find("href=\""), indexE;
   if (indexS>5 && buf.find("xlink:href=\"")!=-1) // XLink href (for SVG)
@@ -258,7 +258,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
     indexS-=6;
     len+=6;
     href.prepend("xlink:");
-    isXLink=TRUE;
+    //isXLink=TRUE;
   }
   if (indexS>=0 && (indexE=buf.find('"',indexS+len))!=-1)
   {
@@ -1601,13 +1601,16 @@ void DotNode::writeBox(FTextStream &t,
     // add names shown as relation to a dictionary, so we don't show
     // them as attributes as well
     QDict<void> arrowNames(17);
-    QListIterator<EdgeInfo> li(*m_edgeInfo);
-    EdgeInfo *ei;
-    for (li.toFirst();(ei=li.current());++li)
+    if (m_edgeInfo)
     {
-      if (!ei->m_label.isEmpty())
+      QListIterator<EdgeInfo> li(*m_edgeInfo);
+      EdgeInfo *ei;
+      for (li.toFirst();(ei=li.current());++li)
       {
-        arrowNames.insert(ei->m_label,(void*)0x8);
+        if (!ei->m_label.isEmpty())
+        {
+          arrowNames.insert(ei->m_label,(void*)0x8);
+        }
       }
     }
 
