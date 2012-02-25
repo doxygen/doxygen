@@ -403,17 +403,17 @@ void VhdlDocGen::findAllPackages(const QCString& className,QDict<QCString>& qdic
 
 MemberDef* VhdlDocGen::findFunction(const QList<Argument> &ql,
     const QCString& funcname,
-    const QCString& package, bool type)
+    const QCString& package, bool /*type*/)
 {
   MemberDef* mdef=0;
-  int funcType;
+  //int funcType;
   ClassDef *cdef=getClass(package.data());
   if (cdef==0) return 0;
 
-  if (type)
-    funcType=VhdlDocGen::PROCEDURE;
-  else
-    funcType=VhdlDocGen::FUNCTION;
+  //if (type)
+  //  funcType=VhdlDocGen::PROCEDURE;
+  //else
+  //  funcType=VhdlDocGen::FUNCTION;
 
   MemberList *mem=cdef->getMemberList(MemberList::pubMethods);
 
@@ -1194,7 +1194,7 @@ void VhdlDocGen::writeFuncProcDocu(
     bool /*type*/)
 {
   if (al==0) return;
-  bool sem=FALSE;
+  //bool sem=FALSE;
   ol.enableAll();
 
   ArgumentListIterator ali(*al);
@@ -1263,7 +1263,7 @@ void VhdlDocGen::writeFuncProcDocu(
     }
     ol.endParameterName(FALSE,FALSE,FALSE);
 
-    sem=TRUE;
+    //sem=TRUE;
     first=FALSE;
   }
   //ol.endParameterList();

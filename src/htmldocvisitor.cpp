@@ -1374,7 +1374,9 @@ void HtmlDocVisitor::visitPre(DocRef *ref)
   if (m_hide) return;
   if (!ref->file().isEmpty()) 
   {
-    startLink(ref->ref(),ref->file(),ref->relPath(),ref->anchor());
+    // when ref->isSubPage()==TRUE we use ref->file() for HTML and
+    // ref->anchor() for LaTeX/RTF
+    startLink(ref->ref(),ref->file(),ref->relPath(),ref->isSubPage() ? 0 : ref->anchor());
   }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }

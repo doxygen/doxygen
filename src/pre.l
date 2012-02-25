@@ -2206,11 +2206,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(SkipString);
 					}
 <SkipLine>.
-<SkipLine,SkipCommand,SkipCPPBlock,SkipString>"//"[^\n]* {
+<SkipString>"//"/[^\n]*                 { 
+                                        }
+<SkipLine,SkipCommand,SkipCPPBlock>"//"[^\n]* {
   					  g_lastCPPContext=YY_START;
   					  BEGIN(RemoveCPPComment);
 					}
-<SkipLine,SkipCommand,SkipCPPBlock,SkipString>"/*"/[^\n]* {
+<SkipString>"/*"/[^\n]*                 { 
+                                        }
+<SkipLine,SkipCommand,SkipCPPBlock>"/*"/[^\n]* {
 					  g_lastCContext=YY_START;
   					  BEGIN(RemoveCComment);
   					}

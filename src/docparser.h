@@ -721,11 +721,13 @@ class DocRef : public CompAccept<DocRef>, public DocNode
     bool hasLinkText() const     { return !m_children.isEmpty(); }
     bool refToAnchor() const     { return m_refToAnchor; }
     bool refToSection() const    { return m_refToSection; }
+    bool isSubPage() const       { return m_isSubPage; }
     void accept(DocVisitor *v)   { CompAccept<DocRef>::accept(this,v); }
 
   private:
     bool      m_refToSection;
     bool      m_refToAnchor;
+    bool      m_isSubPage;
     QCString   m_file;
     QCString   m_relPath;
     QCString   m_ref;

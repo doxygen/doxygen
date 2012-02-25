@@ -1713,7 +1713,7 @@ void RTFGenerator::docify(const char *str)
   {
     const unsigned char *p=(const unsigned char *)str;
     unsigned char c;
-    unsigned char pc='\0';
+    //unsigned char pc='\0';
     while (*p)
     {
       //static bool MultiByte = FALSE;
@@ -1746,7 +1746,7 @@ void RTFGenerator::docify(const char *str)
             t << (char)c;
           }
       }
-      pc = c;
+      //pc = c;
       m_omitParagraph = FALSE;
     }
   }

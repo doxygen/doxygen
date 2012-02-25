@@ -35,7 +35,7 @@ class FileStorage;
 class EntryNav;
 class ClassDef;
 class MemberDef;
-class Argument;
+struct Argument;
 
 // wrapper class for the vhdl parser
 class MyParserVhdl 

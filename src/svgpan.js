@@ -304,13 +304,13 @@ function handlePrint(evt)
             'xmlns:svg="http://www.w3.org/2000/svg" '+
             'xmlns:xlink="http://www.w3.org/1999/xlink">');
     d.write('<head><title>Print SVG</title></head>');
-    d.write('<body style="margin: 0px; padding: 0px;" onload="window.print(); window.close();">');
+    d.write('<body style="margin: 0px; padding: 0px;" onload="window.print();">');
     d.write('<div id="svg" style="width:'+windowWidth+'px; height:'+windowHeight+'px;">'+xs+'</div>');
     d.write('</body>');
     d.write('</html>');
     d.close();
   } catch(e) {
-    alert('Print function not supported by this browser!');
+    alert('Failed to open popup window needed for printing!\n'+e.message);
   }
 }
 

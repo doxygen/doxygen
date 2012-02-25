@@ -454,7 +454,7 @@ static QCString configStringRecode(
   QCString outputEncoding = toEncoding;
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
   int inputSize=str.length();
-  size_t outputSize=inputSize*4+1;
+  int outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
@@ -463,13 +463,13 @@ static QCString configStringRecode(
         inputEncoding.data(),outputEncoding.data());
     exit(1);
   }
-  size_t iLeft=inputSize;
-  size_t oLeft=outputSize;
+  size_t iLeft=(size_t)inputSize;
+  size_t oLeft=(size_t)outputSize;
   const char *inputPtr  = str.data();
   char       *outputPtr = output.data();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
-    outputSize-=oLeft;
+    outputSize-=(int)oLeft;
     output.resize(outputSize+1);
     output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());

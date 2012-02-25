@@ -2729,7 +2729,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
       //int indentDepth=0;
       int si=scope.find('@');
       //int anonyScopes = 0;
-      bool added=FALSE;
+      //bool added=FALSE;
       
       static bool inlineSimpleStructs = Config_getBool("INLINE_SIMPLE_STRUCTS");
       if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
@@ -2754,7 +2754,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
                                   root->protection,
                                   isMemberOf ? Foreign : isRelated ? Related : Member
                                  );
-            added=TRUE;
+            //added=TRUE;
           }
           else // anonymous scope inside namespace or file => put variable in the global scope
           {
@@ -2762,7 +2762,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
             {
               md=addVariableToFile(rootNav,mtype,pScope,name,TRUE,0); 
             }
-            added=TRUE;
+            //added=TRUE;
           }
         }
       }
@@ -9318,8 +9318,6 @@ static const char *getArg(int argc,char **argv,int &optind)
 }
 
 //----------------------------------------------------------------------------
-
-extern void commentScanTest();
 
 void initDoxygen()
 {

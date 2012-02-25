@@ -942,7 +942,7 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
 static void processInline(GrowBuf &out,const char *data,int size)
 {
   int i=0, end=0;
-  action_t action;
+  action_t action = 0;
   while (i<size)
   {
     while (end<size && ((action=g_actions[(uchar)data[end]])==0)) end++;

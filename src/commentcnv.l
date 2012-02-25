@@ -82,27 +82,37 @@ static void replaceCommentMarker(const char *s,int len)
 {
   const char *p=s;
   char c;
-  // copy blanks
+  // copy leading blanks
   while ((c=*p) && (c==' ' || c=='\t' || c=='\n')) 
   {
     ADDCHAR(c);
     g_lineNr += c=='\n';
     p++;
   }
-  // replace start of comment marker by spaces
+  // replace start of comment marker by blanks and the last character by a *
+  int blanks=0;
   while ((c=*p) && (c=='/' || c=='!' || c=='#')) 
   {
-    ADDCHAR(' ');
+    blanks++;
     p++;
     if (*p=='<') // comment-after-item marker 
     { 
-      ADDCHAR(' '); 
+      blanks++;
       p++; 
     }
     if (c=='!') // end after first !
     {
       break;
     }
+  }
+  if (blanks>0)
+  {
+    while (blanks>1)
+    {
+      ADDCHAR(' ');
+      blanks--;
+    }
+    ADDCHAR('*');
   }
   // copy comment line to output
   ADDARRAY(p,len-(p-s));

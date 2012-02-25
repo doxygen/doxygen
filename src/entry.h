@@ -31,7 +31,7 @@ class FileDef;
 class FileStorage;
 class StorageIntf;
 class ArgumentList;
-class ListItemInfo;
+struct ListItemInfo;
 
 /*! \brief This class stores information about an inheritance relation
  */ 

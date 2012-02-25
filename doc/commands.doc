@@ -539,8 +539,8 @@ Structural indicators
   this command in a comment block of a define or variable, the
   initializer is always hidden. The maximum number of initialization lines
   can be changed by means of the configuration parameter
-  \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES", the default value is
-  30.
+  \ref cfg_max_initializer_lines "MAX_INITIALIZER_LINES", the default 
+  value is 30.
 
   \sa section \ref cmdshowinitializer "\\showinitializer".
 

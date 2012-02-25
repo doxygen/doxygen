@@ -78,8 +78,6 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   //printf("PageDef::writeDocumentation: %s\n",getOutputFileBase().data());
 
-  startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
-
   ol.pushGeneratorState();
   //1.{ 
 
@@ -94,6 +92,8 @@ void PageDef::writeDocumentation(OutputList &ol)
     ol.enable(OutputGenerator::Man);
     ol.enable(OutputGenerator::Html);
   }
+
+  startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
 
   if (!generateTreeView)
   {
@@ -147,9 +147,6 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   writePageDocumentation(ol);
 
-  ol.popGeneratorState();
-  //1.}
-
   if (generateTreeView && getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
   {
     ol.endContents();
@@ -159,6 +156,9 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     endFile(ol);
   }
+
+  ol.popGeneratorState();
+  //1.}
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {

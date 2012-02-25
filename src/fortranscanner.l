@@ -249,6 +249,7 @@ ARGS      {BS}({ARGS_L0}|{ARGS_L1}|{ARGS_L2})
 NOARGS    {BS}"\n"
 
 NUM_TYPE  (complex|integer|logical|real)
+LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
@@ -1102,7 +1103,9 @@ private                                 {
                                             popBuffer();
                                           }
                                         }
- <*>.                 	                {
+<*>{LOG_OPER}                           { // Fortran logical comparison keywords
+                                        }
+<*>.                 	                {
                                           //debugStr+=yytext;
 					  //printf("I:%c\n", *yytext);
                                         } // ignore remaining text 
@@ -2070,16 +2073,16 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   current = subrCurrent.first(); // temporarily switch to the entry of the subroutine / function
   if (docBlock.stripWhiteSpace().find("\\param") == 0)
   {
-    handleCommentBlock(doc,brief);
+    handleCommentBlock("\n\n"+doc,brief);
   }
   else if (docBlock.stripWhiteSpace().find("@param") == 0)
   {
-    handleCommentBlock(doc,brief);
+    handleCommentBlock("\n\n"+doc,brief);
   }
   else 
   {
     int dir1 = modifiers[current_root][argName.lower()].direction;
-    handleCommentBlock(QCString("@param ") + directionParam[dir1] + " " + 
+    handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	               argName + " " + doc,brief);
   }
   current=tmp_entry;
@@ -2122,8 +2125,9 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   {
     isFixedForm = recognizeFixedForm(fileBuf);
 
-    if (isFixedForm) {
-      printf("Prepassing fixed form of %s\n", fileName);
+    if (isFixedForm) 
+    {
+      msg("Prepassing fixed form of %s\n", fileName);
       //printf("---strlen=%d\n", strlen(fileBuf));
       //clock_t start=clock();
 

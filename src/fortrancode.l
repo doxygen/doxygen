@@ -652,6 +652,7 @@ ARGS_L2   "("({ARGS_L0}|[^()]|{ARGS_L1a}|{ARGS_L1})*")"
 ARGS      {BS}({ARGS_L0}|{ARGS_L1}|{ARGS_L2})
 
 NUM_TYPE  (complex|integer|logical|real)
+LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS})
@@ -979,6 +980,9 @@ IGNORE (CALL)
 <*>.					{ 
   					  g_code->codify(yytext);
 					}
+<*>{LOG_OPER}                           { // Fortran logical comparison keywords
+                                          g_code->codify(yytext);
+                                        }
 %%
 
 /*@ ----------------------------------------------------------------------------
