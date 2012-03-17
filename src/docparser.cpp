@@ -3288,6 +3288,57 @@ int DocHtmlCell::parseXml()
   return retval;
 }
 
+int DocHtmlCell::rowSpan() const
+{
+  int retval = 0;
+  HtmlAttribList attrs = attribs();
+  uint i;
+  for (i=0; i<attrs.count(); ++i) 
+  {
+    if (attrs.at(i)->name.lower()=="rowspan")
+    {
+      retval = attrs.at(i)->value.toInt();
+      break;
+    }
+  }
+  return retval;
+}
+
+int DocHtmlCell::colSpan() const
+{
+  int retval = 1;
+  HtmlAttribList attrs = attribs();
+  uint i;
+  for (i=0; i<attrs.count(); ++i) 
+  {
+    if (attrs.at(i)->name.lower()=="colspan")
+    {
+      retval = QMAX(1,attrs.at(i)->value.toInt());
+      break;
+    }
+  }
+  return retval;
+}
+
+DocHtmlCell::Alignment DocHtmlCell::alignment() const
+{
+  HtmlAttribList attrs = attribs();
+  uint i;
+  for (i=0; i<attrs.count(); ++i) 
+  {
+    if (attrs.at(i)->name.lower()=="align")
+    {
+      if (attrs.at(i)->value.lower()=="center") 
+        return Center;
+      else if (attrs.at(i)->value.lower()=="right") 
+        return Right;
+      else return Left;
+    }
+  }
+  return Left;
+}
+
+
 //---------------------------------------------------------------------------
 
 int DocHtmlRow::parse()
@@ -3482,6 +3533,8 @@ getrow:
     retval=tr->parse();
   } 
 
+  computeTableGrid();
+
   DBG(("DocHtmlTable::parse() end\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
@@ -3524,23 +3577,82 @@ int DocHtmlTable::parseXml()
     isHeader=FALSE;
   } 
 
+  computeTableGrid();
+
   DBG(("DocHtmlTable::parseXml() end\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval==RetVal_EndTable ? RetVal_OK : retval;
 }
 
-uint DocHtmlTable::numCols() const
+struct ActiveRowSpan
 {
-  uint cols=0;
-  QListIterator<DocNode> cli(m_children);
-  DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli)
+  ActiveRowSpan(int rows,int col) : rowsLeft(rows), column(col) {}
+  int rowsLeft;
+  int column;
+};
+
+typedef QList<ActiveRowSpan> RowSpanList;
+
+/** determines the location of all cells in a grid, resolving row and
+    column spans. For each the total number of visible cells is computed,
+    and the total number of visible columns over all rows is stored.
+ */
+void DocHtmlTable::computeTableGrid()
+{
+  //printf("computeTableGrid()\n");
+  RowSpanList rowSpans;
+  rowSpans.setAutoDelete(TRUE);
+  int maxCols=0;
+  int rowIdx=1;
+  QListIterator<DocNode> li(children());
+  DocNode *rowNode;
+  for (li.toFirst();(rowNode=li.current());++li)
   {
-    ASSERT(n->kind()==DocNode::Kind_HtmlRow);
-    cols=QMAX(cols,((DocHtmlRow *)n)->numCells());
+    int colIdx=1;
+    int cells=0;
+    if (rowNode->kind()==DocNode::Kind_HtmlRow)
+    {
+      uint i;
+      DocHtmlRow *row = (DocHtmlRow*)rowNode;
+      QListIterator<DocNode> rli(row->children());
+      DocNode *cellNode;
+      for (rli.toFirst();(cellNode=rli.current());++rli)
+      {
+        if (cellNode->kind()==DocNode::Kind_HtmlCell)
+        {
+          DocHtmlCell *cell = (DocHtmlCell*)cellNode;
+          int rs = cell->rowSpan();
+          int cs = cell->colSpan();
+
+          for (i=0;i<rowSpans.count();i++)
+          {
+            if (rowSpans.at(i)->rowsLeft>0 && 
+                rowSpans.at(i)->column==colIdx) 
+            {
+              colIdx=rowSpans.at(i)->column+1;
+              cells++;
+            }
+          }
+          if (rs>0) rowSpans.append(new ActiveRowSpan(rs,colIdx));
+          //printf("found cell at (%d,%d)\n",rowIdx,colIdx);
+          cell->setRowIndex(rowIdx);
+          cell->setColumnIndex(colIdx);
+          colIdx+=cs; 
+          cells++;
+        }
+      }
+      for (i=0;i<rowSpans.count();i++)
+      {
+        if (rowSpans.at(i)->rowsLeft>0) rowSpans.at(i)->rowsLeft--;
+      }
+      row->setVisibleCells(cells);
+      row->setRowIndex(rowIdx);
+      rowIdx++;
+    }
+    if (colIdx-1>maxCols) maxCols=colIdx-1;
   }
-  return cols;
+  m_numCols = maxCols;
 }
 
 void DocHtmlTable::accept(DocVisitor *v) 
@@ -3900,6 +4012,8 @@ int DocHtmlList::parse()
     }
     else // found some other tag
     {
+      // add dummy item to obtain valid HTML
+      m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected <li> tag but "
           "found <%s%s> instead!",g_token->endTag?"/":"",qPrint(g_token->name));
       doctokenizerYYpushBackHtmlTag(g_token->name);
@@ -3908,12 +4022,16 @@ int DocHtmlList::parse()
   }
   else if (tok==0) // premature end of comment
   {
+    // add dummy item to obtain valid HTML
+    m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
     warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment while looking"
         " for a html list item");
     goto endlist;
   }
   else // token other than html token
   {
+    // add dummy item to obtain valid HTML
+    m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
     warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected <li> tag but found %s token instead!",
         tokToString(tok));
     goto endlist;
@@ -4063,6 +4181,12 @@ int DocSimpleList::parse()
 
 //--------------------------------------------------------------------------
 
+DocAutoListItem::DocAutoListItem(DocNode *parent,int indent,int num) 
+      : m_indent(indent), m_itemNum(num)
+{ 
+  m_parent = parent; 
+}
+
 int DocAutoListItem::parse()
 {
   int retval = RetVal_OK;
@@ -4103,6 +4227,14 @@ int DocAutoListItem::parse()
 
 //--------------------------------------------------------------------------
 
+DocAutoList::DocAutoList(DocNode *parent,int indent,bool isEnumList,
+                         int depth) : 
+      m_indent(indent), m_isEnumList(isEnumList),
+      m_depth(depth)
+{ 
+  m_parent = parent; 
+}
+
 int DocAutoList::parse()
 {
   int retval = RetVal_OK;
@@ -4111,13 +4243,23 @@ int DocAutoList::parse()
 	  // first item or sub list => create new list
   do
   {
+    if (g_token->id!=-1) // explicitly numbered list
+    {
+      num=g_token->id;  // override num with real number given
+    }
     DocAutoListItem *li = new DocAutoListItem(this,m_indent,num++);
     m_children.append(li);
     retval=li->parse();
+    //printf("DocAutoList::parse(): retval=0x%x g_token->indent=%d m_indent=%d "
+    //       "m_isEnumList=%d g_token->isEnumList=%d g_token->name=%s\n", 
+    //       retval,g_token->indent,m_indent,m_isEnumList,g_token->isEnumList,
+    //       g_token->name.data());
+    //printf("num=%d g_token->id=%d\n",num,g_token->id);
   } 
-  while (retval==TK_LISTITEM &&              // new list item
-         m_indent==g_token->indent &&        // at same indent level
-	 m_isEnumList==g_token->isEnumList   // of the same kind
+  while (retval==TK_LISTITEM &&                // new list item
+         m_indent==g_token->indent &&          // at same indent level
+	 m_isEnumList==g_token->isEnumList &&  // of the same kind
+         (g_token->id==-1 || g_token->id>=num)  // increasing number (or no number)
         );
 
   DocNode *n=g_nodeStack.pop();
@@ -5762,6 +5904,10 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unsupported xml/html tag <%s> found", qPrint(tagName));
       m_children.append(new DocWord(this, "<"+tagName+tagHtmlAttribs.toString()+">"));
       break;
+  case XML_INHERITDOC:
+      handleInheritDoc();
+      break;
+	  
     default:
       // we should not get here!
       ASSERT(0);
@@ -5917,6 +6063,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case XML_SEE:
     case XML_SEEALSO:
     case XML_EXCEPTION:
+    case XML_INHERITDOC:
       retval = RetVal_CloseXml;
       break;
     case XML_C:
@@ -6032,7 +6179,8 @@ reparsetoken:
           DocAutoList *al=0;
           do
           {
-            al = new DocAutoList(this,g_token->indent,g_token->isEnumList, depth);
+            al = new DocAutoList(this,g_token->indent,
+                                 g_token->isEnumList,depth);
             m_children.append(al);
             retval = al->parse();
           } while (retval==TK_LISTITEM &&         // new list

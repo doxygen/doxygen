@@ -22,7 +22,8 @@
 #include "docvisitor.h"
 #include <qstack.h>
 #include <qcstring.h>
-#include <qmap.h>
+#include <qlist.h>
+//#include <qmap.h>
 
 class FTextStream;
 class CodeOutputInterface;
@@ -134,6 +135,18 @@ class LatexDocVisitor : public DocVisitor
 
   private:
 
+    struct ActiveRowSpan
+    {
+      ActiveRowSpan(DocHtmlCell *c,int rs,int cs,int col) 
+        : cell(c), rowSpan(rs), colSpan(cs), column(col) {}
+      DocHtmlCell *cell;
+      int rowSpan;
+      int colSpan;
+      int column;
+    };
+
+    typedef QList<ActiveRowSpan> RowSpanList;
+
     //--------------------------------------
     // helper functions 
     //--------------------------------------
@@ -166,11 +179,14 @@ class LatexDocVisitor : public DocVisitor
     bool m_insideItem;
     bool m_hide;
     bool m_insideTabbing;
+    bool m_insideTable;
+    int  m_numCols;
     QStack<bool> m_enabled;
     QCString m_langExt;
-    QMap<int, int> m_rowspanIndices;
+    RowSpanList m_rowSpans;
     int m_currentColumn;
     bool m_inRowspan;
+    bool m_inColspan;
 };
 
 #endif

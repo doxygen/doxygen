@@ -520,6 +520,7 @@ void FTVHelp::finalize()
  */
 void FTVHelp::incContentsDepth()
 {
+  //printf("incContentsDepth() indent=%d\n",m_indent);
   m_indent++;
   ASSERT(m_indent<MAX_INDENT);
 }
@@ -530,16 +531,20 @@ void FTVHelp::incContentsDepth()
  */
 void FTVHelp::decContentsDepth()
 {
+  //printf("decContentsDepth() indent=%d\n",m_indent);
   ASSERT(m_indent>0);
   if (m_indent>0)
   {
     m_indent--;
     QList<FTVNode> *nl = &m_indentNodes[m_indent];
     FTVNode *parent = nl->getLast();
-    QList<FTVNode> *children = &m_indentNodes[m_indent+1];
-    while (!children->isEmpty())
+    if (parent)
     {
-      parent->children.append(children->take(0));
+      QList<FTVNode> *children = &m_indentNodes[m_indent+1];
+      while (!children->isEmpty())
+      {
+        parent->children.append(children->take(0));
+      }
     }
   }
 }

@@ -660,7 +660,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
-        ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE);
+        ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
         ol.endMemberDescription();
       }
       fd=fileList->next();
@@ -678,7 +678,17 @@ void GroupDef::writeNamespaces(OutputList &ol,const QCString &title)
 void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
 {
   // write list of groups
+  int count=0;
   if (groupList->count()>0)
+  {
+    GroupDef *gd=groupList->first();
+    while (gd)
+    {
+      if (gd->isVisible()) count++;
+      gd=groupList->next();
+    }
+  }
+  if (count>0)
   {
     ol.startMemberHeader("groups");
     ol.parseText(title);
@@ -687,21 +697,24 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
     GroupDef *gd=groupList->first();
     while (gd)
     {
-      ol.startMemberItem(gd->getOutputFileBase(),0);
-      //ol.docify(theTranslator->trGroup(FALSE,TRUE));
-      //ol.docify(" ");
-      ol.insertMemberAlign();
-      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (gd->isVisible())
       {
-        Doxygen::tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
-      }
-      ol.endMemberItem();
-      if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
-      {
-        ol.startMemberDescription(gd->getOutputFileBase());
-        ol.parseDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE);
-        ol.endMemberDescription();
+        ol.startMemberItem(gd->getOutputFileBase(),0);
+        //ol.docify(theTranslator->trGroup(FALSE,TRUE));
+        //ol.docify(" ");
+        ol.insertMemberAlign();
+        ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
+        if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+        {
+          Doxygen::tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
+        }
+        ol.endMemberItem();
+        if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+        {
+          ol.startMemberDescription(gd->getOutputFileBase());
+          ol.parseDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+          ol.endMemberDescription();
+        }
       }
       gd=groupList->next();
     }
@@ -1448,5 +1461,15 @@ void GroupDef::removeMemberFromList(MemberList::ListType lt,MemberDef *md)
 void GroupDef::sortSubGroups() 
 { 
     groupList->sort(); 
+}
+
+bool GroupDef::isLinkableInProject() const
+{
+  return !isReference() && isLinkable();
+}
+
+bool GroupDef::isLinkable() const
+{
+  return hasUserDocumentation();
 }
 

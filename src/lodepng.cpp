@@ -31,6 +31,8 @@ You are free to name this file lodepng.cpp or lodepng.c depending on your usage.
 #include "lodepng.h"
 #include "portable.h"
 
+#define USE_BRUTE_FORCE_ENCODING 1
+
 #define VERSION_STRING "20080927"
 
 /* ////////////////////////////////////////////////////////////////////////// */
@@ -1033,14 +1035,71 @@ static void addLengthDistance(uivector* values, size_t length, size_t distance)
   uivector_push_back(values, extra_distance);
 }
 
-#if 0
+#if USE_BRUTE_FORCE_ENCODING
+#define encodeLZ77 encodeLZ77_brute
 /*the "brute force" version of the encodeLZ7 algorithm, not used anymore, kept here for reference*/
-static void encodeLZ77_brute(uivector* out, const unsigned char* in, size_t size, unsigned windowSize)
+static unsigned encodeLZ77_brute(uivector* out, const unsigned char* in, size_t size, unsigned windowSize)
 {
   size_t pos;
   /*using pointer instead of vector for input makes it faster when NOT using optimization when compiling; no influence if optimization is used*/
   for(pos = 0; pos < size; pos++)
   {
+    /*Phase 1: doxygen images often have long runs of the same color, try to find them*/   
+    const int minLength = 4; // Minimum length for a run to make sense
+    
+    if(pos < size - minLength * 4)
+    {
+      size_t p, fp;
+      size_t current_length;
+      
+      /*RGBA pixel run?*/
+      p  = pos;
+      fp = pos + 4;
+      current_length = 0;
+      
+      while(fp < size && in[p] == in[fp] && current_length < MAX_SUPPORTED_DEFLATE_LENGTH)
+      {
+        ++p;
+        ++fp;
+        ++current_length;
+      }
+      
+      if (current_length > (minLength - 1 ) * 4) /*worth using?*/
+      {
+        uivector_push_back(out, in[pos    ]);
+        uivector_push_back(out, in[pos + 1]);
+        uivector_push_back(out, in[pos + 2]);
+        uivector_push_back(out, in[pos + 3]);
+        addLengthDistance(out, current_length, 4);
+        
+        pos += current_length + 4 - 1; /*-1 for loop's pos++*/
+        continue;
+      }
+      
+      /*RGB pixel run?*/
+      p  = pos;
+      fp = pos + 3;
+      current_length = 0;
+      
+      while(fp < size && in[p] == in[fp] && current_length < MAX_SUPPORTED_DEFLATE_LENGTH)
+      {
+        ++p;
+        ++fp;
+        ++current_length;
+      }
+      
+      if (current_length > (minLength - 1 ) * 3) /*worth using?*/
+      {
+        uivector_push_back(out, in[pos    ]);
+        uivector_push_back(out, in[pos + 1]);
+        uivector_push_back(out, in[pos + 2]);
+        addLengthDistance(out, current_length, 3);
+        
+        pos += current_length + 3 - 1; /*-1 for loop's pos++*/
+        continue;
+      }
+    }
+
     size_t length = 0, offset = 0; /*the length and offset found for the current position*/
     size_t max_offset = pos < windowSize ? pos : windowSize; /*how far back to test*/
     size_t current_offset;
@@ -1082,6 +1141,8 @@ static void encodeLZ77_brute(uivector* out, const unsigned char* in, size_t size
       pos += (length - 1);
     }
   } /*end of the loop through each character of input*/
+
+  return 0;
 }
 #endif
 
@@ -1094,6 +1155,7 @@ making HASH_NUM_CHARACTERS larger (like 8), makes the file size larger but is a 
 making HASH_NUM_CHARACTERS smaller (like 3), makes the file size smaller but is slower
 */
 
+#if !defined(USE_BRUTE_FORCE_ENCODING)
 static unsigned getHash(const unsigned char* data, size_t size, size_t pos)
 {
   unsigned result = 0;
@@ -1195,6 +1257,7 @@ static unsigned encodeLZ77(uivector* out, const unsigned char* in, size_t size, 
   uivector_cleanup(&tablepos2);
   return error;
 }
+#endif
 
 /* /////////////////////////////////////////////////////////////////////////// */
 

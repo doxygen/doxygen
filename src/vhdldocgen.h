@@ -1,7 +1,5 @@
 /******************************************************************************
  *
- * 
- *
  * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -249,7 +247,8 @@ class VhdlDocGen
     static QCString getRecordNumber();
    
     static QCString getClassName(const ClassDef*);
-    static void adjustRecordMember(MemberDef *mdef);
+    // obsolete
+    // static void adjustRecordMember(MemberDef *mdef);
 
     static void writeLink(const MemberDef* mdef,OutputList &ol);
     static void adjustMemberName(QCString& nn);

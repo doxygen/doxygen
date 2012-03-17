@@ -377,13 +377,20 @@ void Definition::addSectionsToIndex()
     {
       //printf("  level=%d title=%s\n",level,si->title.data());
       int nextLevel = (int)si->type;
+      int i;
       if (nextLevel>level)
       {
-        Doxygen::indexList.incContentsDepth();
+        for (i=level;i<nextLevel;i++)
+        {
+          Doxygen::indexList.incContentsDepth();
+        }
       }
       else if (nextLevel<level)
       {
-        Doxygen::indexList.decContentsDepth();
+        for (i=nextLevel;i<level;i++)
+        {
+          Doxygen::indexList.decContentsDepth();
+        }
       }
       Doxygen::indexList.addContentsItem(TRUE,si->title,
                                          getReference(),
@@ -508,7 +515,7 @@ void Definition::_setDocumentation(const char *d,const char *docFile,int docLine
   QCString doc = d;
   if (stripWhiteSpace)
   {
-    doc = stripLeadingAndTrailingEmptyLines(doc);
+    doc = stripLeadingAndTrailingEmptyLines(doc,docLine);
   }
   else // don't strip whitespace
   {

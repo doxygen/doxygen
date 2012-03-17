@@ -928,6 +928,8 @@ void addConfigOptions(Config *cfg)
   cl->addValue("*.php3");
   cl->addValue("*.inc");
   cl->addValue("*.m");
+  cl->addValue("*.markdown");
+  cl->addValue("*.md");
   cl->addValue("*.mm");
   cl->addValue("*.dox");
   cl->addValue("*.py");

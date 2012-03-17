@@ -109,6 +109,8 @@ static void mapLibPackage(const Entry* ce);
 static Entry* getEntryAtLine(const Entry* ce,int line);
 static bool addLibUseClause(const QCString &type);
 
+static bool varr=false;
+static QCString varName;
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_USER_ACTION num_chars += vhdlScanYYleng;
@@ -288,8 +290,8 @@ static void lineCount()
 
 static void startCodeBlock(int index){
   int ll=strComment.length();
-  iCodeLen=inputVhdlString.findRev(strComment.data(),num_chars)+ll;
-  fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
+  iCodeLen=inputVhdlString.findRev(strComment.data())+ll;
+  // fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
   //assert(false);
   gBlock.reset();
   int len=strComment.length();
@@ -551,6 +553,8 @@ BR                         [ \t\n\r]
     pTemp->briefLine=yyLineNr;
     pTemp->brief+=vhdlScanYYtext;
     pTemp->briefFile=yyFileName;
+    pTemp->fileName = yyFileName;
+ 	   
     VhdlDocGen::prepareComment(pTemp->brief);
   }
   else 
@@ -568,6 +572,7 @@ BR                         [ \t\n\r]
   if (index>0)
   {
     startCodeBlock(index);
+    doxComment=true;
   }
   lineCount();
   BEGIN(Comment);
@@ -585,12 +590,13 @@ BR                         [ \t\n\r]
           VhdlDocGen::prepareComment(strComment);
 
 
-          if (index==-1) 
+          if (index==-1 && !doxComment) 
           {
             handleCommentBlock(strComment,FALSE);
           }
           strComment.resize(0);;
           unput(*vhdlScanYYtext);
+          doxComment=false;
           BEGIN(g_lastCommentContext);
         }
         
@@ -617,7 +623,7 @@ BR                         [ \t\n\r]
 	  //printf("--> handleCommentBlock line %d\n",yyLineNr);
 	  Entry* pTemp=getEntryAtLine(current_root,yyLineNr);
 
-	  if (!isEndCode)
+	  if (!isEndCode && index==-1)
 	  {
 	    int j=qcs.find("--!");
 	    qcs=qcs.right(qcs.length()-3-j);
@@ -625,7 +631,8 @@ BR                         [ \t\n\r]
 	    if (pTemp)
 	    {
 	      pTemp->briefLine=yyLineNr;
-	      qcs=qcs.stripWhiteSpace();
+	      pTemp->fileName = yyFileName;
+ 	      qcs=qcs.stripWhiteSpace();
 	      pTemp->brief+=qcs;
 
 	      pTemp->briefFile=yyFileName;
@@ -735,9 +742,10 @@ bool VHDLLanguageScanner::needsPreprocessing(const QCString & /*extension*/)
   return TRUE; 
 }
 
-void VHDLLanguageScanner::parsePrototype(const char * /*text*/)
+void VHDLLanguageScanner::parsePrototype(const char *text)
 { 
-  assert(FALSE); 
+  varName=text;
+  varr=true;
 }
 
 // do parsing
@@ -916,8 +924,8 @@ static void handleCommentBlock(const QCString &doc,bool brief)
     current->briefLine = iDocLine; 
   else 
     current->docLine = iDocLine;
-
-  //printf("parseCommentBlock %p [%s]\n",current,doc.data());
+  
+//  printf("parseCommentBlock file<%s>\n [%s]\n",yyFileName.data(),doc.data());
   while (parseCommentBlock(
 	g_thisParser,
 	current,
@@ -938,6 +946,15 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   }
   if (needsEntry)
   {
+    if(varr)
+    {
+      varr=false;
+      current->name=varName;
+      current->section=Entry::VARIABLEDOC_SEC;
+      varName="";
+      strComment.resize(0);
+    }
+   
     newVhdlEntry();
   }
   iDocLine=-1;

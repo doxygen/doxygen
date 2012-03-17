@@ -328,7 +328,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
-OLISTITEM {BLANK}*[1-9][0-9]*"."{WS}
+OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
 ENDLIST   {BLANK}*"."{BLANK}*\n
 ATTRIB    {ID}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
@@ -426,6 +426,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          QCString text=yytext;
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
+                         g_token->id         = -1;
 			 g_token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
@@ -440,6 +441,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                            static QRegExp re("[*+]");
                            int listPos = text.findRev(re);
                            g_token->isEnumList = FALSE;
+                           g_token->id         = -1;
                            g_token->indent     = computeIndent(yytext,listPos);
                            return TK_LISTITEM;
                          }
@@ -454,7 +456,9 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                            QCString text=yytext;
                            static QRegExp re("[1-9]");
                            int digitPos = text.find(re);
+                           int dotPos = text.find('.',digitPos);
                            g_token->isEnumList = TRUE;
+                           g_token->id         = atoi(QCString(yytext).mid(digitPos,dotPos-digitPos));
                            g_token->indent     = computeIndent(yytext,digitPos);
                            return TK_LISTITEM;
                          }
@@ -464,6 +468,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			 text=text.right(text.length()-text.find('\n')-1);
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
+                         g_token->id         = -1;
 			 g_token->indent     = computeIndent(text,dashPos);
                          return TK_LISTITEM;
                        }
@@ -479,11 +484,12 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                            text=text.right(text.length()-text.find('\n')-1);
                            int markPos = text.findRev(re);
                            g_token->isEnumList = FALSE;
+                           g_token->id         = -1;
                            g_token->indent     = computeIndent(text,markPos);
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*\n{OLISTITEM}     { /* list item on next line */ 
+<St_Para>({BLANK}*\n)+{OLISTITEM}     { /* list item on next line */ 
                          if (!Doxygen::markdownSupport)
                          {
                            REJECT;
@@ -491,10 +497,14 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          else
                          {
                            QCString text=yytext;
-                           text=text.right(text.length()-text.find('\n')-1);
+                           int nl=text.findRev('\n');
+                           int len=text.length();
+                           text=text.right(len-nl-1);
                            static QRegExp re("[1-9]");
                            int digitPos = text.find(re);
+                           int dotPos = text.find('.',digitPos);
                            g_token->isEnumList = TRUE;
+                           g_token->id         = atoi(QCString(text).mid(digitPos,dotPos-digitPos));
                            g_token->indent     = computeIndent(text,digitPos);
                            return TK_LISTITEM;
                          }
@@ -684,7 +694,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			 }
 			 else // found end of a paragraph
 			 {
-                           g_token->indent=computeIndent(yytext,(int)yyleng-1);
+                           g_token->indent=computeIndent(yytext,(int)yyleng);
                            int i;
                            // put back the indentation (needed for list items)
                            for (i=0;i<g_token->indent;i++)

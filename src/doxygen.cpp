@@ -500,7 +500,7 @@ static void addRelatedPage(EntryNav *rootNav)
     doc=root->brief+"\n\n"+root->doc+root->inbodyDocs;
   }
   PageDef *pd = addRelatedPage(root->name,root->args,doc,root->anchors,
-      root->fileName,root->startLine,
+      root->docFile,root->docLine,
       root->sli,
       gd,rootNav->tagInfo(),
       root->lang
@@ -3942,7 +3942,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
       for (mnii.toFirst();(mi=mnii.current());++mnii)
       {
         MemberDef *md=mi->memberDef;
-        if (md->isVariable()) // for each member variable in this class
+        if (md->isVariable() || md->isObjCProperty()) // for each member variable in this class
         {
           //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
           QCString type=removeRedundantWhiteSpace(md->typeString());
@@ -4483,7 +4483,7 @@ static bool findClassRelation(
         if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
         {
           baseClassName+="-g";
-          templSpec.resize(0);
+          //templSpec.resize(0);
         }
 
         if (!found)
@@ -4556,8 +4556,8 @@ static bool findClassRelation(
         else if (mode==Undocumented && (scopeOffset==0 || isATemplateArgument))
         {
           Debug::print(Debug::Classes,0,
-                       "    New undocumented base class `%s' baseClassName=%s isArtificial=%d\n",
-                       biName.data(),baseClassName.data(),isArtificial
+                       "    New undocumented base class `%s' baseClassName=%s templSpec=%s isArtificial=%d\n",
+                       biName.data(),baseClassName.data(),templSpec.data(),isArtificial
                       );
           baseClass=0;
           if (isATemplateArgument)
@@ -6936,6 +6936,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
 
     if (!name.isEmpty())
     {
+      //printf("** name=%s\n",name.data());
       MemberName *mn = mnsd->find(name); // for all members with this name
       if (mn)
       {
@@ -6945,23 +6946,26 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
         {
           if (md->isEnumerate() && rootNav->children())
           {
+            //printf("   enum with %d children\n",rootNav->children()->count());
             EntryNavListIterator eli(*rootNav->children()); // for each enum value
             EntryNav *e;
             for (;(e=eli.current());++eli)
             {
               SrcLangExt sle;
-              if (rootNav->fileDef() &&
-                  ( (sle=getLanguageFromFileName(rootNav->fileDef()->name()))==SrcLangExt_CSharp
-                  || sle==SrcLangExt_Java || sle==SrcLangExt_XML
-                  )
+              if (
+                   (sle=rootNav->lang())==SrcLangExt_CSharp || 
+                   sle==SrcLangExt_Java || 
+                   sle==SrcLangExt_XML
                  )
               {
-                // Unlike C++, for C# enum value are only inside the enum 
+                // Unlike C++, for C# & Java enum values are only inside the enum 
                 // scope, so we must create them here and only add them to the
                 // enum
                 e->loadEntry(g_storage);
                 Entry *root = e->entry();
-                if (md->qualifiedName()==rootNav->name()) // enum value scope matches that of the enum
+                //printf("md->qualifiedName()=%s rootNav->name()=%s\n",
+                //    md->qualifiedName().data(),rootNav->name().data());
+                if (md->qualifiedName()==substitute(rootNav->name(),"::",".")) // enum value scope matches that of the enum
                 {
                   MemberDef *fmd=new MemberDef(
                       root->fileName,root->startLine,
@@ -8223,7 +8227,7 @@ static void findMainPage(EntryNav *rootNav)
       QCString title=root->args.stripWhiteSpace();
       //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
       QCString indexName="index";
-      Doxygen::mainPage = new PageDef(root->fileName,root->startLine,
+      Doxygen::mainPage = new PageDef(root->docFile,root->docLine,
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setFileName(indexName);

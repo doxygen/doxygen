@@ -209,7 +209,12 @@ QCString DiagramItem::label() const
   {
     // we use classDef->name() here and not diplayName() in order
     // to get the name used in the inheritance relation.
-    result=insertTemplateSpecifierInScope(classDef->name(),templSpec);
+    QCString n = classDef->name();
+    if (n.right(2)=="-g" || n.right(2)=="-p")
+    {
+      n = n.left(n.length()-2);
+    }
+    result=insertTemplateSpecifierInScope(n,templSpec);
   }
   else
   {

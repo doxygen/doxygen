@@ -417,9 +417,12 @@ table.memberdecls {
 }
 
 .memname {
-        white-space: nowrap;
         font-weight: bold;
         margin-left: 6px;
+}
+
+.memname td {
+	vertical-align: bottom;
 }
 
 .memproto, dl.reflist dt {

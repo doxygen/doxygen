@@ -2073,6 +2073,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(Start);
 					  g_yyLineNr++;
   					}
+<Command>"pragma"{B}+"once"             {
+                                          g_expectGuard = FALSE;
+                                        }
 <Command>{ID}				{ // unknown directive
 					  BEGIN(IgnoreLine);
 					}

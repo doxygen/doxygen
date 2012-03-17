@@ -2233,6 +2233,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   {
     bool first=TRUE;
     LockingPtr<MemberList> fmdl=enumFieldList();
+    //printf("** %s: enum values=%d\n",name().data(),fmdl!=0 ? fmdl->count() : 0);
     if (fmdl!=0)
     {
       MemberDef *fmd=fmdl->first();

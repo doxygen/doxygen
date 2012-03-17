@@ -895,10 +895,10 @@ static int processCodeSpan(GrowBuf &out, const char *data, int /*offset*/, int s
   {
     QCString codeFragment;
     convertStringFragment(codeFragment,data+f_begin,f_end-f_begin);
-    out.addStr("<code>");
+    out.addStr("<tt>");
     //out.addStr(convertToHtml(codeFragment,TRUE));
     out.addStr(escapeSpecialChars(codeFragment));
-    out.addStr("</code>");
+    out.addStr("</tt>");
   }
   return end;
 }
@@ -1158,13 +1158,20 @@ static int isAtxHeader(const char *data,int size,
                        QCString &header,QCString &id)
 {
   int i = 0, end;
-  int level = 0;
+  int level = 0, blanks=0;
 
   // find start of header text and determine heading level
   while (i<size && data[i]==' ') i++;
-  if (i>=size || data[i]!='#') return 0;
+  if (i>=size || data[i]!='#') 
+  {
+    return 0;
+  }
   while (i<size && level<6 && data[i]=='#') i++,level++;
-  while (i<size && data[i]==' ') i++;
+  while (i<size && data[i]==' ') i++,blanks++;
+  if (level==1 && blanks==0) 
+  {
+    return 0; // special case to prevent #someid seen as a header (see bug 671395)
+  }
 
   // find end of header text
   end=i;
@@ -1588,17 +1595,26 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
     QCString hTag;
     if (level<5 && !id.isEmpty())
     {
+      SectionInfo::SectionType type = SectionInfo::Anchor;
       switch(level)
       {
-        case 1:  out.addStr("@section "); break;
-        case 2:  out.addStr("@subsection "); break;
-        case 3:  out.addStr("@subsubsection "); break;
-        default: out.addStr("@paragraph "); break;
+        case 1:  out.addStr("@section ");       
+                 type=SectionInfo::Section; 
+                 break;
+        case 2:  out.addStr("@subsection ");    
+                 type=SectionInfo::Subsection; 
+                 break;
+        case 3:  out.addStr("@subsubsection "); 
+                 type=SectionInfo::Subsubsection;
+                 break;
+        default: out.addStr("@paragraph "); 
+                 type=SectionInfo::Paragraph;
+                 break;
       }
       out.addStr(id);
       out.addStr(" ");
       out.addStr(header);
-      SectionInfo *si = new SectionInfo(g_fileName,id,header,SectionInfo::Anchor,level);
+      SectionInfo *si = new SectionInfo(g_fileName,id,header,type,level);
       if (g_current)
       {
         g_current->anchors->append(si);
@@ -1909,7 +1925,8 @@ static QCString processBlocks(const QCString &s,int indent)
             out.addStr(id);
             out.addStr(" ");
             out.addStr(header);
-            SectionInfo *si = new SectionInfo(g_fileName,id,header,SectionInfo::Anchor,level);
+            SectionInfo *si = new SectionInfo(g_fileName,id,header,
+                level==1 ? SectionInfo::Section : SectionInfo::Subsection,level);
             if (g_current)
             {
               g_current->anchors->append(si);

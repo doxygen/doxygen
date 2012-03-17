@@ -163,7 +163,10 @@ void DocSets::initialize()
 
 void DocSets::finalize()
 {
-  m_nts << indent() << " </Node>" << endl;
+  if (!m_firstNode.at(m_dc-1))
+  {
+    m_nts << indent() << " </Node>" << endl;
+  }
   m_dc--;
   m_nts << "      </Subnodes>" << endl;
   m_nts << "    </Node>" << endl;
@@ -225,7 +228,9 @@ void DocSets::addContentsItem(bool isDir,
     m_firstNode.at(m_dc-1)=FALSE;
     m_nts << indent() << " <Node>" << endl;
     m_nts << indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
-    m_nts << indent() << "  <Path>" << file << Doxygen::htmlFileExtension << "</Path>" << endl;
+    m_nts << indent() << "  <Path>";
+    m_nts << file << Doxygen::htmlFileExtension;
+    m_nts << "</Path>" << endl;
     if (anchor)
     {
       m_nts << indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;

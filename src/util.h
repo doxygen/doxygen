@@ -329,7 +329,7 @@ bool containsWord(const QCString &s,const QCString &word);
 
 bool findAndRemoveWord(QCString &s,const QCString &word);
 
-QCString stripLeadingAndTrailingEmptyLines(const QCString &s);
+QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 
 //void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
 //                         const QCString &str, bool priority=FALSE,

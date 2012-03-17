@@ -1598,7 +1598,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   ClassDef *kl=0;
   LockingPtr<ArgumentList> alp = mdef->argumentList();
   QCString nn;
- VhdlDocGen::adjustRecordMember(mdef) ;
+  //VhdlDocGen::adjustRecordMember(mdef);
   if (gd) gd=0;
   switch(mm)
   {
@@ -1972,6 +1972,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
   }
 }// writeVHDLDeclarations
 
+#if 0
 /* strips the prefix for record and unit members*/
 void VhdlDocGen::adjustRecordMember(MemberDef *mdef)
 { //,OutputList & ol) {
@@ -1984,7 +1985,7 @@ void VhdlDocGen::adjustRecordMember(MemberDef *mdef)
     mdef->setName(nn.data());
   }
 }//adjustRecordMember
-
+#endif
 /* strips the prefix for package and package body */
 
 bool VhdlDocGen::writeClassType( ClassDef *& cd,

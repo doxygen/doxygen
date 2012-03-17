@@ -420,7 +420,7 @@ class PrintDocVisitor : public DocVisitor
     {
       indent_pre();
       printf("<table rows=\"%d\" cols=\"%d\">\n",
-          t->numRows(),t->numCols());
+          t->numRows(),t->numColumns());
     }
     void visitPost(DocHtmlTable *) 
     {
