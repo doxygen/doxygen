@@ -1,0 +1,125 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page custcmd Custom Commands
+
+\tableofcontents
+
+Doxygen provides a large number of \ref commands "special commands", 
+\ref xmlcmds "XML commands", and \ref htmlcmds "HTML commands".
+that can be used to enhance or structure the documentation inside a comment block. 
+If you for some reason have a need to define new commands you can do
+so by means of an \e alias definition. 
+
+The definition of an alias should be specified in the configuration file using
+the \ref cfg_aliases "ALIASES" configuration tag.
+
+\section custcmd_simple Simple aliases
+The simplest form of an alias is a simple substitution of the form
+\verbatim
+ name=value
+\endverbatim
+ For example defining the following alias: 
+\verbatim
+ ALIASES += sideeffect="\par Side Effects:\n" 
+\endverbatim
+ will allow you to
+ put the command \\sideeffect (or \@sideeffect) in the documentation, which 
+ will result in a user-defined paragraph with heading <b>Side Effects:</b>.
+
+Note that you can put \\n's in the value part of an alias to insert newlines.
+
+Also note that you can redefine existing special commands if you wish.
+
+Some commands, such as \ref cmdxrefitem "\\xrefitem" are designed to be used in
+combination with aliases. 
+
+\section custcmd_complex Aliases with arguments
+Aliases can also have one or more arguments. In the alias definition you then need
+to specify the number of arguments between curly braces. In the value part of the
+definition you can place \\x markers, where 'x' represents the argument number starting
+with 1.
+
+Here is an example of an alias definition with a single argument:
+\verbatim
+ALIASES += l{1}="\ref \1"
+\endverbatim
+
+Inside a comment block you can use it as follows
+\verbatim
+/** See \l{SomeClass} for more information. */
+\endverbatim
+which would be the same as writing
+\verbatim
+/** See \ref SomeClass for more information. */
+\endverbatim
+
+Note that you can overload an alias by a version with multiple arguments, for instance:
+\verbatim
+ALIASES += l{1}="\ref \1"
+ALIASES += l{2}="\ref \1 \"\2\""
+\endverbatim
+Note that the quotes inside the alias definition have to be escaped with a backslash.
+
+With these alias definitions, we can write
+\verbatim
+/** See \l{SomeClass,Some Text} for more information. */
+\endverbatim
+inside the comment block and it will expand to
+\verbatim
+/** See \ref SomeClass "Some Text" for more information. */
+\endverbatim
+where the command with a single argument would still work as shown before.
+
+Aliases can also be expressed in terms of other aliases, e.g. a new command
+\\reminder can be expressed as a \\xrefitem via an intermediate \\xreflist command
+as follows:
+\verbatim
+ALIASES += xreflist{3}="\xrefitem \1 \"\2\" \"\3\" " \
+ALIASES += reminder="\xreflist{reminders,Reminder,Reminders}" \
+\endverbatim
+
+Note that if for aliases with more than one argument a comma is used as a separator,
+if you want to put a comma inside the command, you will need to escape it with a backslash,
+i.e. 
+\verbatim
+\l{SomeClass,Some text\, with an escaped comma} 
+\endverbatim
+given the alias definition of \\l in the example above.
+
+\section custcmd_nesting Nesting custom command
+
+You can use commands as arguments of aliases, including commands
+defined using aliases.
+
+As an example consider the following alias definitions
+
+\verbatim
+ALIASES += Bold{1}="<b>\1</b>"
+ALIASES += Emph{1}="<em>\1</em>"
+\endverbatim
+
+Inside a comment block you can now use:
+\verbatim
+/** This is a \Bold{bold \Emph{and} Emphasized} text fragment. */
+\endverbatim
+which will expand to
+\verbatim
+/** This is a <b>bold <em>and</em> Emphasized</b> text fragment. */
+\endverbatim
+
+
+*/

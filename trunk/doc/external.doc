@@ -1,0 +1,120 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page external Linking to external documentation
+
+If your project depends on external libraries or tools, there are several 
+reasons to not include all sources for these with every run of doxygen:
+
+<dl>
+<dt>Disk space:<dd> Some documentation may be available outside of the output 
+    directory of doxygen already, for instance somewhere on the web. 
+    You may want to link to these pages instead of generating the documentation 
+    in your local output directory.
+<dt>Compilation speed:<dd> External projects typically have a different update 
+    frequency from your own project. It does not make much sense to let doxygen 
+    parse the sources for these external project over and over again, even if 
+    nothing has changed.
+<dt>Memory:<dd> For very large source trees, letting doxygen parse all sources 
+    may simply take too much of your system's memory. By dividing the sources 
+    into several "packages", the sources of one package can be parsed by 
+    doxygen, while all other packages that this package depends on, are 
+    linked in externally. This saves a lot of memory.
+<dt>Availability:<dd> For some projects that are documented with doxygen,
+    the sources may just not be available.
+<dt>Copyright issues:<dd>If the external
+    package and its documentation are copyright someone else, it may be
+    better - or even necessary - to reference it rather than include a
+    copy of it with your project's documentation.  When the author forbids
+    redistribution, this is necessary.  If the author requires compliance
+    with some license condition as a precondition of redistribution, and
+    you do not want to be bound by those conditions, referring to their
+    copy of their documentation is preferable to including a copy.
+
+</dl>
+
+If any of the above apply, you can use doxygen's tag file mechanism.
+A tag file is basically a compact representation of the entities found in the
+external sources. Doxygen can both generate and read tag files.
+
+To generate a tag file for your project, simply put the name of the
+tag file after the \ref cfg_generate_tagfile "GENERATE_TAGFILE" option in 
+the configuration file. 
+
+To combine the output of one or more external projects with your own project 
+you should specify the name of the tag files after 
+the \ref cfg_tagfiles "TAGFILES" option in the configuration file.
+
+A tag file typically only contains a relative location of the documentation from the
+point where doxygen was run. So when you include a tag file in other project 
+you have to specify where the external documentation is located in relation this project.
+You can do this in the configuration file by assigning the (relative) location to the
+tag files specified after the \ref cfg_tagfiles "TAGFILES" configuration
+option. If you use a relative path it should be relative with respect to 
+the directory where the HTML output of your project is generated; so a relative path
+from the HTML output directory of a project to the HTML output of the other project that 
+is linked to.
+
+\par Example: 
+Suppose you have a project \c proj that uses two external 
+projects called \c ext1 and \c ext2.
+The directory structure looks as follows:
+
+\par
+\verbatim
+<root>
+  +- proj
+  |   +- html               HTML output directory for proj
+  |   +- src                sources for proj
+  |   |- proj.cpp
+  +- ext1
+  |   +- html               HTML output directory for ext1
+  |   |- ext1.tag           tag file for ext1
+  +- ext2
+  |   +- html               HTML output directory for ext2
+  |   |- ext2.tag           tag file for ext2
+  |- proj.cfg               doxygen configuration file for proj
+  |- ext1.cfg               doxygen configuration file for ext1
+  |- ext2.cfg               doxygen configuration file for ext2
+\endverbatim
+
+\par
+Then the relevant parts of the configuration files look as follows:
+\par
+proj.cfg:
+\verbatim
+OUTPUT_DIRECTORY  = proj
+INPUT             = proj/src
+TAGFILES          = ext1/ext1.tag=../../ext1/html \
+                    ext2/ext2.tag=../../ext2/html 
+\endverbatim 
+ext1.cfg:
+\verbatim
+OUTPUT_DIRECTORY  = ext1
+GENERATE_TAGFILE  = ext1/ext1.tag 
+\endverbatim 
+ext2.cfg:
+\verbatim
+OUTPUT_DIRECTORY  = ext2
+GENERATE_TAGFILE  = ext2/ext2.tag
+\endverbatim
+
+\htmlonly
+Go to the <a href="faq.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/

@@ -1,0 +1,32 @@
+all: src\version.cpp
+	set TMAKEPATH=$(TMAKEPATH) & cd qtools & $(MAKE)
+	set TMAKEPATH=$(TMAKEPATH) & cd libmd5 & $(MAKE)
+	set TMAKEPATH=$(TMAKEPATH) & cd src & $(MAKE)
+
+clean:
+	cd examples & $(MAKE) clean
+	cd doc & $(MAKE) clean
+	cd src & $(MAKE) clean
+	-del bin\doxy*.*
+	-del objects\*.o
+
+distclean: clean
+	-del src\Makefile.libdoxygen \
+	     src\Makefile.doxygen \
+	     src\Makefile.libdoxycfg \
+	     src\libdoxycfg.t src\libdoxygen.t
+	-del Makefile src\Makefile examples\Makefile doc\Makefile
+	-del src\libdoxygen.pro src\doxygen.pro src\libdoxycfg.pro
+	-del src\version.cpp
+
+docs:
+	set TMAKEPATH=$(TMAKEPATH) & cd examples & $(MAKE)
+	set TMAKEPATH=$(TMAKEPATH) & cd doc & $(MAKE)
+
+ps: docs
+	cd latex & $(MAKE)
+
+src\version.cpp: Makefile
+	echo char versionString[]="""$(VERSION)"""; > src\version.cpp
+
+FORCE:

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="Run Moc"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="moc"
+			DisplayName="Moc"
+			CommandLine="$(QTDIR)/bin/moc.exe $(InputPath) -o moc_$(InputName).cpp"
+			Outputs="moc_$(InputName).cpp"
+			AdditionalDependencies="$(QTDIR)/bin/moc.exe"
+			FileExtensions="*.h"
+			ExecutionDescription="Moc&apos;ing $(InputPath)"
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

@@ -1,0 +1,36 @@
+#
+# 
+#
+# Copyright (C) 1997-2012 by Dimitri van Heesch.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+#
+# Documents produced by Doxygen are derivative works derived from the
+# input used in their production; they are not affected by this license.
+
+all: language FORCE
+	@xcopy /s /q /i ..\examples ..\html\examples
+	set DOXYGEN_DOCDIR=. & \
+	set VERSION=$(VERSION) & \
+	$(DOXYGEN)\bin\doxygen
+	@del ..\latex\refman.tex
+	@copy doxygen_logo*.gif ..\html
+	@copy Makefile.latex ..\latex\Makefile
+	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen_manual.tex >..\latex\doxygen_manual.tex
+	@sed -e "s/\$$VERSION/$(VERSION)/g" doxygen.sty >..\latex\doxygen.sty 
+	@epstopdf doxygen_logo.eps --outfile=..\latex\doxygen_logo.pdf
+
+clean: 
+	del /s /q ..\html ..\latex
+	del translator_report.txt *.bak
+
+language: language.doc
+
+language.doc: maintainers.txt language.tpl translator.py
+	set DOXYGEN_DOCDIR=. & set VERSION=$(VERSION) & python translator.py
+
+FORCE:

@@ -1,0 +1,112 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page formulas Including formulas 
+
+Doxygen allows you to put \f$\mbox{\LaTeX}\f$ formulas in the
+output (this works only for the HTML and \f$\mbox{\LaTeX}\f$ output, 
+not for the RTF nor for the man page output). To be able to include 
+formulas (as images) in the HTML documentation, you will also need to 
+have the following tools installed
+<ul>
+<li>\c latex: the \f$\mbox{\LaTeX}\f$ compiler, needed to parse the formulas. 
+    To test I have used the teTeX 1.0 distribution.
+<li>\c dvips: a tool to convert DVI files to PostScript files 
+    I have used version 5.92b from Radical Eye software for testing.
+<li>\c gs: the GhostScript interpreter for converting PostScript files 
+    to bitmaps. I have used Aladdin GhostScript 8.0 for testing.
+</ul>
+For the HTML output there is also an alternative solution using
+<a href="http://www.mathjax.org">MathJax</a> which does not
+require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
+the config then the latex formulas will be copied to the HTML "as is" and a
+client side javascript will parse them and turn them into (interactive) images.
+
+There are three ways to include formulas in the documentation.
+<ol>
+<li>Using in-text formulas that appear in the running text. 
+    These formulas should be put between a pair of \\f\$ 
+    commands, so
+\verbatim
+  The distance between \f$(x_1,y_1)\f$ and \f$(x_2,y_2)\f$ is 
+  \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
+\endverbatim results in:
+
+  The distance between \f$(x_1,y_1)\f$ and \f$(x_2,y_2)\f$ is 
+  \f$\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}\f$.
+<br>
+<li>Unnumbered displayed formulas that are centered on a separate line.
+    These formulas should be put between \\f[ and \\f] commands.
+    An example:
+\verbatim
+  \f[
+    |I_2|=\left| \int_{0}^T \psi(t) 
+             \left\{ 
+                u(a,t)-
+                \int_{\gamma(t)}^a 
+                \frac{d\theta}{k(\theta,t)}
+                \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi
+             \right\} dt
+          \right|
+  \f]
+\endverbatim
+  results in:
+  \f[
+    |I_2|=\left| \int_{0}^T \psi(t) 
+             \left\{ 
+                u(a,t)-
+                \int_{\gamma(t)}^a 
+                \frac{d\theta}{k(\theta,t)}
+                \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi
+             \right\} dt
+          \right|
+  \f]
+<li>Formulas or other latex elements that are not in a math 
+    environment can be specified using \\f{environment}, where
+    \c environment is the name of the \f$\mbox{\LaTeX}\f$ environment, 
+    the corresponding end command is \\f}. Here is an example for an 
+    equation array
+\verbatim
+   \f{eqnarray*}{
+        g &=& \frac{Gm_2}{r^2} \\ 
+          &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
+              \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
+          &=& 9.82066032\,\mbox{m/s}^2
+   \f}
+\endverbatim
+  which results in:
+   \f{eqnarray*}
+        g &=& \frac{Gm_2}{r^2} \\ 
+          &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
+              \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
+          &=& 9.82066032\,\mbox{m/s}^2
+   \f}
+</ol>
+For the first two commands one should make sure formulas contain 
+valid commands in \f$\mbox{\LaTeX}\f$'s math-mode. For the third command
+the section should contain valid command for the specific environment.
+
+\warning Currently, doxygen is not very fault tolerant in recovering 
+from typos in formulas. It may be necessary to remove the
+file <code>formula.repository</code> that is written to the html directory to 
+get rid of an incorrect formula.
+
+\htmlonly
+Go to the <a href="diagrams.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/

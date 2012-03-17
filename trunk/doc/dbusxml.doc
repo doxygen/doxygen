@@ -1,0 +1,149 @@
+/*! \page dbusxml DBus XML output format
+
+\addindex dbusxml
+
+<p>Doxygen can generate documentation for DBus XML files.  This way
+DBus interfaces can be annotated with doxygen style comments, and
+without writing custom XML parsers.  Doxygen extracts its text from
+all XML comments starting with '*' or '!'.  An additional '<' can be
+used to assign the documentation string to the previous entity instead
+of the one following the comment.
+
+Note that before the parsing of DBus XML file works one has to
+assign the .xml extension to the DBus XML parser using the
+following configuration option:
+
+\verbatim
+EXTENSION_MAPPING = xml=dbusxml
+\endverbatim
+
+\section dbusxml_supported Supported XML elements and attributes
+
+<p>The following DBus XML elemets can be annotated:
+
+<ul>
+<li><b>interface</b>
+
+<li><b>method</b> or <b>signal</b>
+
+<li><b>arg</b>
+
+<li><b>property</b>
+
+</ul>
+
+Additional elements are supported. These are available once
+the xmlns "http://psiamp.org/dtd/doxygen_dbusxml.dtd" is
+available.
+
+<ul>
+<li><b>namespace</b>: This can be used to group other more of the
+additional elemets.  This element requires a <b>name</b> attribute.
+
+<li><b>enum</b> is used to define enums.  <b>value</b> element is
+    then used to define the individual values in the enum.  This element
+    requires the <b>name</b> and <b>type</b> attributes.  A
+    optional <b>named-type</b> attribute is allowed, referrencing typed
+    previously defined by one of the additional elements.  A enum name
+    can be used anywhere a type is required using the <b>named-type</b>
+    attribute.
+
+<li><b>flagset</b> is used to define sets of flags. Required and
+    optional attributes are identical to the ones used by <b>enum</b>.
+    While <b>enum</b>s assume the values to be consecutive, while
+    a <b>flagset</b> is values suitable for flags.  A flagset name
+    can be used anywhere a type is required using the <b>named-type</b>
+    attribute.
+
+<li><b>struct</b> is used to define structures. A <b>name</b>
+    attribute is required.
+
+<li><b>member</b> is used to define members of <b>structs</b>.  It
+    is valid inside <b>struct</b> elements. This
+    element requires <b>name</b> and <b>type</b> attributes.  In
+    addition to (or even instead of) the <b>type</b> attribute a
+    <b>named-type</b> attribute may be used to reference types defined
+    by <b>enum</b>, <b>flagset</b> or <b>struct</b>.
+
+\section dbusxml_example Example
+
+<pre>
+<?xml version="1.0" ?>
+<!-- Comment -->
+<!--*< File comment -->
+<node name="/SomeNode" xmlns:dx="http://psiamp.org/dtd/doxygen_dbusxml.dtd">
+  <!--* test struct outside a namespace and interface -->
+  <dx:struct name="StructOutsideNamespace">
+    <!--* member 1 -->
+    <dx:member name="member1" type="s"/>
+    <!--* complex member 1 -->
+    <dx:member name="complexMember1" type="(ssu)"/>
+  </dx:struct>
+
+  <!--* Test flag set -->
+  <dx:flagset name="flagset">
+    <!--* Flag 1 of flagset. -->
+    <dx:value name="FLAG1"/>
+  </dx:flagset>
+
+  <!--* namespace comment -->
+  <dx:namespace name="SomeNamespace">
+    <!--* struct inside a namespace -->
+    <dx:struct name="StructInNamespace">
+       <!--* member 2 -->
+       <dx:member name="member2" type="s"/>
+    </dx:struct>
+  </dx:namespace>
+  <!--* Documentation on the interface -->
+  <interface name="nl.stack.doxygen.test.interface">
+    <!--* Test Enum documentation -->
+    <dx:enum name="TestEnum">
+      <!--* key 1 with value 13 -->
+      <dx:value name="KEY1" value="13"/>
+      <!--* key 2 without a value -->
+      <dx:value name="KEY2"/>
+    </dx:enum>
+
+    <!--* struct inside a interface -->
+    <dx:struct name="StructInInterface">
+      <!--* member 3 -->
+      <dx:member name="member3" type="s"/>
+      <!--* Struct in a struct -->
+      <dx:struct name="StructInAStruct">
+        <!--* member4 -->
+        <dx:member name="member4" type="s"/>
+      </dx:struct>
+      <!--* struct member -->
+      <dx:member name="structMembor" type="(s)" named-type="StructInAStruct"/>
+    </dx:struct>
+    <!--* Document method
+
+          Some extended documentation for the method.
+
+          @param[in] input blah.
+          @param[out] output blub
+     -->
+    <method name="method">
+      <arg direction="in" name="input" type="(s(s))" named-type="::nl::stack::doxygen::test::interface::StructInInterface"/>
+      <arg direction="out" type="v" name="output"/>
+    </method>
+
+    <signal name="signal">
+      <!--*< Documentation for signal.
+
+             @param parameter some parameter.
+        -->
+      <arg name="parameter" type="s"/>
+    </signal>
+
+    <!--* property documentation -->
+    <property name="property" type="s" access="readwrite"/>
+
+    <!--* property documentation read-only -->
+    <property name="propertyRead" type="s" access="read"/>
+    <!--* property documentation write-only -->
+    <property name="propertyWrite" type="s" access="write"/>
+  </interface>
+</node>
+</pre>
+*/

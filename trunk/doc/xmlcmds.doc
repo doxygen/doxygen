@@ -1,0 +1,103 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page xmlcmds XML Commands
+
+Doxygen supports most of the XML commands that are typically used in C# 
+code comments. The XML tags are defined in Appendix E of the
+<a href="http://www.ecma-international.org/publications/standards/Ecma-334.htm">ECMA-334</a> 
+standard, which defines the C# language. Unfortunately, the specification is
+not very precise and a number of the examples given are of poor quality.
+
+Here is the list of tags supported by doxygen:
+
+<ul>
+<li><tt>\<c\></tt>     Identifies inline text that should be rendered as a 
+                       piece of code. Similar to using <tt>\<tt\></tt>text<tt>\</tt\></tt>.
+<li><tt>\<code\></tt>  Set one or more lines of source code or program output.
+                       Note that this command behaves like <tt>\\code ... \\endcode</tt>
+                       for C# code, but it behaves like the HTML equivalent
+                       <tt>\<code\>...\</code\></tt> for other languages.
+<li><tt>\<description\></tt> Part of a <tt>\<list\></tt> command, describes an item.
+<li><tt>\<example\></tt> Marks a block of text as an example, ignored by doxygen.
+<li><tt>\<exception cref="member"\></tt> Identifies the exception a 
+                         method can throw.
+<li><tt>\<include\></tt> Can be used to import a piece of XML from an external
+                         file. Ignored by doxygen at the moment.
+<li><tt>\<inheritdoc\></tt> Can be used to insert the documentation of a 
+                         member of a base class into the documentation of a 
+                         member of a derived class that reimplements it.
+<li><tt>\<item\></tt> List item. Can only be used inside a <tt>\<list\></tt> context.
+<li><tt>\<list type="type"\></tt> Starts a list, supported types are <tt>bullet</tt>
+                         or <tt>number</tt> and <tt>table</tt>. 
+                         A list consists of a number of <tt>\<item\></tt> tags.
+                         A list of type table, is a two column table which can have
+                         a header.
+<li><tt>\<listheader\></tt>   Starts the header of a list of type "table".
+<li><tt>\<para\></tt>    Identifies a paragraph of text.
+<li><tt>\<param name="paramName"\></tt> Marks a piece of text as the documentation
+                         for parameter "paramName". Similar to 
+                         using \ref cmdparam "\\param".
+<li><tt>\<paramref name="paramName"\></tt> Refers to a parameter with name
+                         "paramName". Similar to using \ref cmda "\\a".
+<li><tt>\<permission\></tt> Identifies the security accessibility of a member.
+                         Ignored by doxygen.
+<li><tt>\<remarks\></tt> Identifies the detailed description. 
+<li><tt>\<returns\></tt> Marks a piece of text as the return value of a
+                         function or method. Similar to using \ref cmdreturn "\\return".
+<li><tt>\<see cref="member"\></tt> Refers to a member. Similar to \ref cmdref "\\ref".
+<li><tt>\<seealso cref="member"\></tt> Starts a "See also" section referring
+                         to "member". Similar to using \ref cmdsa "\\sa" member.
+<li><tt>\<summary\></tt> Identifies the brief description.
+                         Similar to using \ref cmdbrief "\\brief".
+<li><tt>\<term\></tt>    Part of a <tt>\<list\></tt> command.
+<li><tt>\<typeparam name="paramName"\></tt> Marks a piece of text as the documentation
+                         for type parameter "paramName". Similar to 
+                         using \ref cmdparam "\\param".
+<li><tt>\<typeparamref name="paramName"\></tt> Refers to a parameter with name
+                         "paramName". Similar to using \ref cmda "\\a".
+<li><tt>\<value\></tt>   Identifies a property. Ignored by doxygen.
+</ul>
+
+Here is an example of a typical piece of code using some of the above commands:
+
+\code
+/// <summary>
+/// A search engine.
+/// </summary>
+class Engine
+{
+  /// <summary>
+  /// The Search method takes a series of parameters to specify the search criterion
+  /// and returns a dataset containing the result set.
+  /// </summary>
+  /// <param name="connectionString">the connection string to connect to the
+  /// database holding the content to search</param>
+  /// <param name="maxRows">The maximum number of rows to
+  /// return in the result set</param>
+  /// <param name="searchString">The text that we are searching for</param>
+  /// <returns>A DataSet instance containing the matching rows. It contains a maximum
+  /// number of rows specified by the maxRows parameter</returns>
+  public DataSet Search(string connectionString, int maxRows, int searchString)
+  {
+    DataSet ds = new DataSet();
+    return ds;
+  }
+}
+\endcode
+
+*/
+ 

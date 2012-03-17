@@ -1,0 +1,299 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page faq Frequently Asked Questions
+
+<ol>
+<li><b>How to get information on the index page in HTML?</b>
+<p>
+You should use the \\mainpage command inside a comment block like this:
+\verbatim
+/*! \mainpage My Personal Index Page
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the introduction.
+ *
+ * \section install_sec Installation
+ *
+ * \subsection step1 Step 1: Opening the box
+ *  
+ * etc...
+ */
+\endverbatim
+
+<li><b>Help, some/all of the members of my class / file / namespace 
+       are not documented?</b>
+
+  Check the following:
+  <ol>
+  <li>Is your class / file / namespace documented? If not, it will not 
+      be extracted from the sources unless \c EXTRACT_ALL is set to \c YES
+      in the config file.
+  <li>Are the members private? If so, you must set \c EXTRACT_PRIVATE to \c YES
+      to make them appear in the documentation.
+  <li>Is there a function macro in your class that does not end with a 
+      semicolon (e.g. MY_MACRO())? If so then you have to instruct 
+      doxygen's preprocessor to remove it.
+
+      This typically boils down to the following settings in the config file:
+
+      \verbatim
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = MY_MACRO()=
+      \endverbatim
+
+      Please read the \ref preprocessing "preprocessing" section of the
+      manual for more information.
+  </ol> 
+
+<li><b>When I set EXTRACT_ALL to NO none of my functions are shown in the 
+    documentation.</b>
+
+In order for global functions, variables, enums, typedefs, and defines 
+to be documented you should document the file in which these commands are
+located using a comment block containing a \\file (or \@file) 
+command. 
+
+Alternatively, you can put all members in a group (or module)
+using the \\ingroup command and then document the group using a comment
+block containing the \\defgroup command.
+
+For member functions or functions that are part of a namespace you should
+document either the class or namespace.
+ 
+<li><b>How can I make doxygen ignore some code fragment?</b>
+
+The new and easiest way is to add one comment block 
+with a \ref cmdcond "\\cond" command at the start and one comment block 
+with a \ref cmdendcond "\\endcond" command at the end of the piece of
+code that should be ignored. This should be within the same file of course.
+
+But you can also use Doxygen's preprocessor for this: 
+If you put
+\verbatim
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+ /* code that must be skipped by Doxygen */
+
+#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+\endverbatim
+around the blocks that should be hidden and put:
+\verbatim
+  PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS
+\endverbatim
+in the config file then all blocks should be skipped by Doxygen as long
+as <code>PREPROCESSING = YES</code>.
+
+<li><b>How can I change what is after the <code>\#include</code> in the class documentation?</b>
+
+In most cases you can use STRIP_FROM_INC_PATH to strip a user defined
+part of a path.
+
+You can also document your class as follows
+
+\verbatim
+/*! \class MyClassName include.h path/include.h
+ *
+ *  Docs for MyClassName
+ */
+\endverbatim
+
+To make doxygen put <br><br>
+<code>
+\#include \<path/include.h\>
+</code>
+
+in the documentation of the class MyClassName regardless of the name of the actual 
+header file in which the definition of MyClassName is contained.
+
+If you want doxygen to show that the include file should be included using
+quotes instead of angle brackets you should type:
+\verbatim
+/*! \class MyClassName myhdr.h "path/myhdr.h"
+ *
+ *  Docs for MyClassName
+ */
+\endverbatim
+
+<li><b>How can I use tag files in combination with compressed HTML?</b>
+
+If you want to refer from one compressed HTML file 
+\c a.chm to another compressed HTML file 
+called \c b.chm, the
+link in \c a.chm must have the following format:
+\verbatim
+<a href="b.chm::/file.html">
+\endverbatim
+Unfortunately this only works if both compressed HTML files are in the same 
+directory.
+
+As a result you must rename the generated \c index.chm files for all projects
+into something unique and put all <code>.chm</code> files in one directory.
+
+Suppose you have a project \e a referring to a project \e b using tag file
+\c b.tag, then you could rename the \c index.chm for project \e a into
+\c a.chm and the \c index.chm for project \e b into \c b.chm. In the 
+configuration file for project \e a you write:
+\verbatim
+TAGFILES = b.tag=b.chm::
+\endverbatim
+or you can use \c installdox to set the links as follows:
+\verbatim
+installdox -lb.tag@b.chm::
+\endverbatim
+
+<li><b>I don't like the quick index that is put above each HTML page, what do I do?</b>
+
+You can disable the index by setting DISABLE_INDEX to YES. Then you can
+put in your own header file by writing your own header and feed that to
+HTML_HEADER.
+
+<li><b>The overall HTML output looks different, while I only wanted to 
+       use my own html header file</b>
+
+You probably forgot to include the stylesheet <code>doxygen.css</code> that 
+doxygen generates. You can include this by putting
+\verbatim
+<LINK HREF="doxygen.css" REL="stylesheet" TYPE="text/css">
+\endverbatim
+in the HEAD section of the HTML page.
+
+<li><b>Why does doxygen use Qt?</b>
+
+The most important reason is to have a platform abstraction for most 
+Unices and Windows by means of the QFile, QFileInfo, QDir, QDate, 
+QTime and QIODevice classes. 
+Another reason is for the nice and bug free utility classes, like QList, 
+QDict, QString, QArray, QTextStream, QRegExp, QXML etc. 
+
+The GUI front-end doxywizard uses Qt for... well... the GUI!
+
+<li><b>How can I exclude all test directories from my directory tree?</b>
+
+Simply put an exclude pattern like this in the configuration file:
+
+\verbatim
+EXCLUDE_PATTERNS = */test/*
+\endverbatim
+
+<li><b>Doxygen automatically generates a link to the 
+       class MyClass somewhere in the running text. 
+       How do I prevent that at a certain place?</b>
+
+Put a \% in front of the class name. Like this: \%MyClass. Doxygen will then
+remove the % and keep the word unlinked.
+
+<li><b>My favorite programming language is X. Can I still use doxygen?</b>
+
+No, not as such; doxygen needs to understand the structure of what it reads. 
+If you don't mind spending some time on it, there are several options:
+- If the grammar of X is close to C or C++, then it is probably not too hard to
+  tweak src/scanner.l a bit so the language is supported. This is done
+  for all other languages directly supported by doxygen 
+  (i.e. Java, IDL, C#, PHP).
+- If the grammar of X is somewhat different than you can write an input
+  filter that translates X into something similar enough to C/C++ for
+  doxygen to understand (this approach is taken for VB, Object Pascal, and
+  Javascript, see http://www.stack.nl/~dimitri/doxygen/download.html#helpers).
+- If the grammar is completely different one could write a parser for X and 
+  write a backend that produces a similar syntax tree as is done by 
+  src/scanner.l (and also by src/tagreader.cpp while reading tag files).
+
+<li><b>Help! I get the cryptic message 
+ "input buffer overflow, can't enlarge buffer because scanner uses REJECT"</b>
+
+This error happens when doxygen's lexical scanner has a rule that matches
+more than 256K of input characters in one go. I've seen this happening 
+on a very large generated file (\>256K lines), where the built-in preprocessor 
+converted it into an empty file (with \>256K of newlines). Another case
+where this might happen is if you have lines in your code with more than
+256K characters. 
+
+If you have run into such a case and want me to fix it, you
+should send me a code fragment that triggers the message. To work around
+the problem, put some line-breaks into your file, split it up into smaller 
+parts, or exclude it from the input using EXCLUDE.
+
+<li><b>When running make in the latex dir I get "TeX capacity exceeded". Now what?</b>
+
+You can edit the texmf.cfg file to increase the default values of the 
+various buffers and then run "texconfig init".
+
+<li><b>Why are dependencies via STL classes not shown in the dot graphs?</b>
+
+Doxygen is unaware of the STL classes, unless the option BUILTIN_STL_SUPPORT is
+turned on.
+
+<li><b>I have problems getting the search engine to work with PHP5 and/or windows</b>
+
+Please read <a href="searchengine.html">this</a> for hints on where to look. 
+
+<li><b>Can I configure doxygen from the command line?</b>
+
+Not via command line options, but doxygen can read from <code>stdin</code>,
+so you can pipe things through it. Here's an example how to override an option
+in a configuration file from the command line (assuming a UNIX environment):
+
+\verbatim
+( cat Doxyfile ; echo "PROJECT_NUMBER=1.0" ) | doxygen -
+\endverbatim
+
+For Windows the following would do the same:
+
+\verbatim
+( type Doxyfile & echo PROJECT_NUMBER=1.0 ) | doxygen.exe -
+\endverbatim
+
+If multiple options with the same name are specified then doxygen will use 
+the last one. To append to an existing option you can use the += operator.
+
+<li><b>How did doxygen get its name?</b>
+
+Doxygen got its name from playing with the words 
+documentation and generator.
+
+\verbatim
+documentation -> docs -> dox
+generator -> gen
+\endverbatim
+
+At the time I was looking into lex and yacc, where a lot of things start with
+"yy", so the "y" slipped in and made things pronounceable 
+(the proper pronouncement is Docs-ee-gen, so with a long "e").
+
+<li><b>What was the reason to develop doxygen?</b>
+
+I once wrote a GUI widget based on the Qt library (it is still available at
+http://qdbttabular.sourceforge.net/ and maintained by Sven Meyer). 
+Qt had nicely generated documentation (using an internal tool which 
+they didn't want to release) and I wrote similar docs by hand. 
+This was a nightmare to maintain, so I wanted a similar tool. I looked at
+Doc++ but that just wasn't good enough (it didn't support signals and
+slots and did not have the Qt look and feel I had grown to like), 
+so I started to write my own tool...
+
+</ol>
+
+\htmlonly
+Go to the <a href="trouble.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+*/
+

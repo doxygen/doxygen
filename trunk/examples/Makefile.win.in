@@ -1,0 +1,122 @@
+DOXYDIR = ..\bin
+
+all: class/html/index.html \
+     define/html/index.html \
+     enum/html/index.html \
+     file/html/index.html \
+     func/html/index.html \
+     page/html/index.html \
+     relates/html/index.html \
+     author/html/index.html \
+     par/html/index.html \
+     overload/html/index.html \
+     example/html/index.html \
+     include/html/index.html \
+     qtstyle/html/index.html \
+     jdstyle/html/index.html \
+     structcmd/html/index.html \
+     autolink/html/index.html \
+     restypedef/html/index.html \
+     afterdoc/html/index.html \
+     template/html/index.html \
+     tag/html/index.html \
+     group/html/index.html \
+     diagrams/html/index.html \
+     memgrp/html/index.html \
+     docstring/html/index.html \
+     pyexample/html/index.html \
+     tclexample/html/index.html \
+     mux/html/index.html \
+     manual/html/index.html
+
+clean:
+	del /s/y class define enum file pyexample tclexample docstring
+	del /s/y func page relates author
+	del /s/y par overload example include qtstyle 
+	del /s/y jdstyle structcmd autolink resdefine mux manual
+	del /s/y restypedef afterdoc template tag group diagrams memgrp
+
+class/html/index.html: class.h class.cfg
+	$(DOXYDIR)\doxygen class.cfg
+
+define/html/index.html: define.h define.cfg
+	$(DOXYDIR)\doxygen define.cfg
+
+enum/html/index.html: enum.h enum.cfg
+	$(DOXYDIR)\doxygen enum.cfg
+
+file/html/index.html: file.h file.cfg
+	$(DOXYDIR)\doxygen file.cfg
+
+func/html/index.html: func.h func.cfg
+	$(DOXYDIR)\doxygen func.cfg
+
+page/html/index.html: page.doc page.cfg
+	$(DOXYDIR)\doxygen page.cfg
+
+relates/html/index.html: relates.cpp relates.cfg
+	$(DOXYDIR)\doxygen relates.cfg
+
+author/html/index.html: author.cpp author.cfg
+	$(DOXYDIR)\doxygen author.cfg
+
+par/html/index.html: par.cpp par.cfg
+	$(DOXYDIR)\doxygen par.cfg
+
+overload/html/index.html: overload.cpp overload.cfg
+	$(DOXYDIR)\doxygen overload.cfg
+
+example/html/index.html: example.cpp example_test.cpp example.cfg 
+	$(DOXYDIR)\doxygen example.cfg
+
+include/html/index.html: include.cpp example_test.cpp include.cfg 
+	$(DOXYDIR)\doxygen include.cfg
+
+qtstyle/html/index.html: qtstyle.cpp qtstyle.cfg 
+	$(DOXYDIR)\doxygen qtstyle.cfg
+
+jdstyle/html/index.html: jdstyle.cpp jdstyle.cfg 
+	$(DOXYDIR)\doxygen jdstyle.cfg
+
+structcmd/html/index.html: structcmd.h structcmd.cfg 
+	$(DOXYDIR)\doxygen structcmd.cfg
+
+autolink/html/index.html: autolink.cpp autolink.cfg 
+	$(DOXYDIR)\doxygen autolink.cfg
+
+tag/html/index.html: tag.cpp tag.cfg 
+	$(DOXYDIR)\doxygen tag.cfg
+
+restypedef/html/index.html: restypedef.cpp restypedef.cfg 
+	$(DOXYDIR)\doxygen restypedef.cfg
+
+afterdoc/html/index.html: afterdoc.h afterdoc.cfg
+	$(DOXYDIR)\doxygen afterdoc.cfg
+
+template/html/index.html: templ.cpp templ.cfg
+	$(DOXYDIR)\doxygen templ.cfg
+
+group/html/index.html: group.cpp group.cfg
+	$(DOXYDIR)\doxygen group.cfg
+
+memgrp/html/index.html: memgrp.cpp memgrp.cfg
+	$(DOXYDIR)\doxygen memgrp.cfg
+
+pyexample/html/index.html: pyexample.py pyexample.cfg
+	$(DOXYDIR)\doxygen pyexample.cfg
+
+tclexample/html/index.html: tclexample.tcl tclexample.cfg
+	$(DOXYDIR)\doxygen tclexample.cfg
+
+mux/html/index.html: mux.vhdl mux.cfg
+	$(DOXYDIR)\doxygen mux.cfg
+
+manual/html/index.html: manual.c manual.cfg
+	$(DOXYDIR)\doxygen manual.cfg
+
+docstring/html/index.html: docstring.py docstring.cfg
+	$(DOXYDIR)\doxygen docstring.cfg
+	
+diagrams/html/index.html: diagrams_a.h diagrams_b.h diagrams_c.h diagrams_d.h diagrams_e.h diagrams.cfg
+	$(DOXYDIR)\doxygen diagrams.cfg
+

@@ -1,0 +1,10 @@
+			    tmake version 1.3
+
+tmake is an easy-to-use tool for creating and maintaining makefiles across
+many platforms and compilers. For information about installing and using
+tmake, see:
+
+  doc/tmake.html      -- User's Guide
+  doc/tmake_ref.html  -- Reference Manual
+
+Download the latest version from: <ftp://ftp.troll.no/freebies/tmake>

@@ -1,0 +1,138 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page doxywizard_usage Doxywizard usage
+
+Doxywizard is a GUI front-end for configuring and running doxygen. 
+
+When you start doxywizard it will display the main window 
+(the actual look depends on the OS used).
+
+\image html doxywizard_main.png "Main window"
+
+The windows shows the steps to take to configure and run doxygen.
+The first step is to choose one of the ways to configure doxygen.
+<dl>
+<dt>Wizard<dd>Click this button to quickly configure the most important 
+    settings and leave the rest of the options to their defaults.
+<dt>Expert<dd>Click this button to gain access to the 
+    \ref config "full range of configuration options".
+<dt>Load<dd>Click this button to load an existing configuration file 
+    from disk.
+</dl>
+Note that you can select multiple buttons in a row, for instance to first 
+configure doxygen using the Wizard and then fine tune the settings via 
+the Expert.
+
+After doxygen is configured you need to save the configuration as a file
+to disk. This second step allows doxygen to use the configuration 
+and has the additional advantage that the configuration can be reused 
+to run doxygen with the same settings at a later point in time.
+
+Since some configuration options may use relative paths, the next step is
+to select a directory from which to run doxygen. This is typically the root
+of the source tree and will most of the time already be filled in correctly.
+
+Once the configuration file is saved and the working directory is set, you
+can run doxygen based on the selected settings. Do this by pressing the
+"Start" button. Once doxygen runs you can cancel it by clicking the same
+button again. The output produced by doxygen is captured and shown in a log
+window. Once doxygen finishes, the log can be saved as a text file.
+
+<h3>The Wizard Dialog</h3>
+
+If you select the Wizard button in step 1, then a dialog with
+a number of tabs will appear.
+
+\image html doxywizard_page1.png "Wizard dialog: Project settings"
+
+The fields in the project tab speak for themselves. Once doxygen has finished
+the Destination directory is where to look for the results. Doxygen will
+put each output format in a separate sub-directory.
+
+\image html doxywizard_page2.png "Wizard dialog: Mode of operating"
+
+The mode tab allows you to select how doxygen will look at your sources.
+The default is to only look for things that have been documented. 
+
+You can also select how doxygen should present the results. 
+The latter does not affect the way doxygen parses your source code.
+
+\image html doxywizard_page3.png "Wizard dialog: Output to produce"
+
+You can select one or more of the output formats that doxygen should
+produce. For HTML and LaTeX there are additional options. 
+
+\image html doxywizard_page4.png "Wizard dialog: Diagrams to generate"
+
+Doxygen can produce a number of diagrams. Using the diagrams tab you
+can select which ones to generate. For most diagrams the 
+dot tool of the <a href="http://www.graphviz.org">GraphViz</a> package
+is needed (if you use the binary packages for MacOSX this
+tool is already included).
+
+<h3>Expert dialog</h3>
+
+The Expert dialog has a number of tab fields, one
+for each section in the configuration file. Each tab-field
+contains a number of lines, one for each configuration option in
+that section. 
+
+The kind of input widget depends on the type of the configuration option. 
+<ul>
+<li>For each boolean option (those options that are answered with YES or 
+    NO in the configuration file) there is a check-box. 
+<li>For items taking one of a fixed set of values (like 
+    \ref cfg_output_language "OUTPUT_LANGUAGE") a combo box is used.
+<li>For items taking an integer value from a range, a spinbox is used.
+<li>For free form string-type options there is a one line edit field
+<li>For options taking a lists of strings, a one line edit field is 
+    available, with a `+' button to add this string to the list and 
+    a `-' button to remove the selected string from the list. There 
+    is also a `*' button that, when pressed, 
+    replaces the selected item in the list with the string entered in the 
+    edit field. 
+<li>For file and folder entries, there are special buttons 
+    that start a file selection dialog.
+</ul>
+
+\image html doxywizard_expert.png "Some options from the Expert dialog"
+
+The get additional information about the meaning of an option, click
+on the "Help" button at the bottom right of the dialog and then on the
+item. A tooltip with additional information will appear.
+
+<h3>Menu options</h3>
+
+The GUI front-end has a menu with a couple of useful items
+
+\image html doxywizard_menu.png "File menu"
+
+<dl>
+<dt>Open...<dd>This is the same as the "Load" button in the main window
+    and allows to open a configuration file from disk.
+<dt>Save as..<dd>This is the same as the "Save" button in the main window
+    and can be used to save the current configuration settings to disk.
+<dt>Recent configurations<dd>Allow to quickly load a recently saved
+    configuration.
+<dt>Set as default...<dd>Stores the current configuration settings as the
+    default to use next time the GUI is started. You will be asked to
+    confirm the action.
+<dt>Reset...<dd>Restores the factory defaults as the default settings to use.
+    You will be asked to confirm the action.
+</dl>
+
+*/
