@@ -652,6 +652,8 @@ blank the following patterns are tested:
       <value name='*.php3'/>
       <value name='*.inc'/>
       <value name='*.m'/>
+      <value name='*.markdown'/>
+      <value name='*.md'/>
       <value name='*.mm'/>
       <value name='*.dox'/>
       <value name='*.py'/>

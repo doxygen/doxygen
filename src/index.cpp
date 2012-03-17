@@ -1716,10 +1716,7 @@ void addClassMemberNameToIndex(MemberDef *md)
   static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
   ClassDef *cd=0;
 
-  if (md->getLanguage()==SrcLangExt_VHDL)
-  {
-    VhdlDocGen::adjustRecordMember(md);
-  }
+ 
   
   if (md->isLinkableInProject() && 
       (cd=md->getClassDef())    && 
@@ -2735,6 +2732,8 @@ static void writeSubPages(PageDef *pd)
       bool hasSubPages = subPage->hasSubPages();
       bool hasSections = subPage->hasSections();
 
+      //printf("subpage %s: addToIndex=%d hasSubPages=%d hasSections=%d\n",
+      //    pd->name().data(),addToIndex,hasSubPages,hasSections);
       if (addToIndex)
       {
         Doxygen::indexList.addContentsItem(hasSubPages,pageTitle,
@@ -2933,6 +2932,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
    * That is why we should not check if it was visited 
    */
   if (/*!gd->visited &&*/ (!gd->isASubGroup() || level>0) &&
+      gd->isVisible() &&
       (!gd->isReference() || Config_getBool("EXTERNAL_GROUPS")) // hide external groups by default
      )
   {
@@ -3002,7 +3002,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           MemberDef *md;
           for (mi.toFirst();(md=mi.current());++mi)
           {
-            if (md->name().find('@')==-1)
+            if (md->isVisible() && md->name().find('@')==-1)
             {
               Doxygen::indexList.addContentsItem(FALSE,
                   md->name(),md->getReference(),
@@ -3017,9 +3017,12 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         ClassDef *cd;
         for (;(cd=it.current());++it)
         {
-          Doxygen::indexList.addContentsItem(FALSE,
-              cd->localName(),cd->getReference(),
-              cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE);
+          if (cd->isVisible())
+          {
+            Doxygen::indexList.addContentsItem(FALSE,
+                cd->localName(),cd->getReference(),
+                cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE);
+          }
         }
       }
       else if (lde->kind()==LayoutDocEntry::GroupNamespaces && addToIndex)
@@ -3028,9 +3031,12 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         NamespaceDef *nd;
         for (;(nd=it.current());++it)
         {
-          Doxygen::indexList.addContentsItem(FALSE,
-              nd->localName(),nd->getReference(),
-              nd->getOutputFileBase(),0,FALSE,FALSE);
+          if (nd->isVisible())
+          {
+            Doxygen::indexList.addContentsItem(FALSE,
+                nd->localName(),nd->getReference(),
+                nd->getOutputFileBase(),0,FALSE,FALSE);
+          }
         }
       }
       else if (lde->kind()==LayoutDocEntry::GroupFiles && addToIndex)
@@ -3039,9 +3045,12 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         FileDef *fd;
         for (;(fd=it.current());++it)
         {
-          Doxygen::indexList.addContentsItem(FALSE,
-              fd->displayName(),fd->getReference(),
-              fd->getOutputFileBase(),0,FALSE,FALSE);
+          if (fd->isVisible())
+          {
+            Doxygen::indexList.addContentsItem(FALSE,
+                fd->displayName(),fd->getReference(),
+                fd->getOutputFileBase(),0,FALSE,FALSE);
+          }
         }
       }
       else if (lde->kind()==LayoutDocEntry::GroupDirs && addToIndex)
@@ -3053,9 +3062,12 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           DirDef *dd;
           for (;(dd=it.current());++it)
           {
-            Doxygen::indexList.addContentsItem(FALSE,
-                dd->shortName(),dd->getReference(),
-                dd->getOutputFileBase(),0,FALSE,FALSE);
+            if (dd->isVisible())
+            {
+              Doxygen::indexList.addContentsItem(FALSE,
+                  dd->shortName(),dd->getReference(),
+                  dd->getOutputFileBase(),0,FALSE,FALSE);
+            }
           }
         }
       }
@@ -3423,9 +3435,9 @@ static void writeIndex(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
 
   QCString defFileName = 
-    Doxygen::mainPage ? Doxygen::mainPage->getDefFileName().data() : "[generated]";
+    Doxygen::mainPage ? Doxygen::mainPage->docFile().data() : "[generated]";
   int defLine =
-    Doxygen::mainPage ? Doxygen::mainPage->getDefLine() : -1;
+    Doxygen::mainPage ? Doxygen::mainPage->docLine() : -1;
 
   QCString title;
   if (!mainPageHasTitle())
@@ -3500,6 +3512,11 @@ static void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     Doxygen::insideMainPage=TRUE;
+    if (Doxygen::mainPage->showToc() && Doxygen::mainPage->hasSections())
+    {
+      Doxygen::mainPage->writeToc(ol);
+    }
+
     ol.startTextBlock();
     ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,
                 Doxygen::mainPage->documentation(),TRUE,FALSE

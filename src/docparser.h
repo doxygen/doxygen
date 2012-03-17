@@ -534,10 +534,7 @@ class DocCopy : /*public CompAccept<DocCopy>,*/ public DocNode
 class DocAutoList : public CompAccept<DocAutoList>, public DocNode
 {
   public:
-    DocAutoList(DocNode *parent,int indent,bool isEnumList,
-                int depth) : 
-      m_indent(indent), m_isEnumList(isEnumList),
-      m_depth(depth) { m_parent = parent; }
+    DocAutoList(DocNode *parent,int indent,bool isEnumList,int depth);
     Kind kind() const          { return Kind_AutoList; }
     bool isEnumList() const    { return m_isEnumList; }
     int  indent() const        { return m_indent; }
@@ -555,9 +552,7 @@ class DocAutoList : public CompAccept<DocAutoList>, public DocNode
 class DocAutoListItem : public CompAccept<DocAutoListItem>, public DocNode
 {
   public:
-    DocAutoListItem(DocNode *parent,int indent,int num) 
-      : m_indent(indent), m_itemNum(num)
-    { m_parent = parent; }
+    DocAutoListItem(DocNode *parent,int indent,int num);
     Kind kind() const          { return Kind_AutoListItem; }
     int itemNumber() const     { return m_itemNum; }
     void accept(DocVisitor *v) { CompAccept<DocAutoListItem>::accept(this,v); }
@@ -1144,10 +1139,13 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
 /*! @brief Node representing a HTML table cell */
 class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
 {
+    friend class DocHtmlTable;
   public:
+    enum Alignment { Left, Right, Center };
     DocHtmlCell(DocNode *parent,const HtmlAttribList &attribs,bool isHeading) : 
        m_isHeading(isHeading), 
-       m_isFirst(FALSE), m_isLast(FALSE), m_attribs(attribs) { m_parent = parent; }
+       m_isFirst(FALSE), m_isLast(FALSE), m_attribs(attribs),
+       m_rowIdx(-1), m_colIdx(-1) { m_parent = parent; }
     bool isHeading() const      { return m_isHeading; }
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
@@ -1158,12 +1156,21 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
     int parseXml();
+    int rowIndex() const        { return m_rowIdx; }
+    int columnIndex() const     { return m_colIdx; }
+    int rowSpan() const;
+    int colSpan() const;
+    Alignment alignment() const;
 
   private:
+    void setRowIndex(int idx)    { m_rowIdx = idx; }
+    void setColumnIndex(int idx) { m_colIdx = idx; }
     bool           m_isHeading;
     bool           m_isFirst;
     bool           m_isLast;
-    HtmlAttribList  m_attribs;
+    HtmlAttribList m_attribs;
+    int            m_rowIdx;
+    int            m_colIdx;
 };
 
 /*! @brief Node representing a HTML table caption */
@@ -1185,9 +1192,10 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
 /*! @brief Node representing a HTML table row */
 class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
 {
+    friend class DocHtmlTable;
   public:
     DocHtmlRow(DocNode *parent,const HtmlAttribList &attribs) : 
-      m_attribs(attribs) { m_parent = parent; }
+      m_attribs(attribs), m_visibleCells(-1), m_rowIdx(-1) { m_parent = parent; }
     Kind kind() const          { return Kind_HtmlRow; }
     uint numCells() const      { return m_children.count(); }
     void accept(DocVisitor *v) { CompAccept<DocHtmlRow>::accept(this,v); }
@@ -1197,9 +1205,15 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
     bool isHeading() const     { return m_children.count()>0 && 
                                  ((DocHtmlCell*)m_children.getFirst())->isHeading(); 
                                }
+    void setVisibleCells(int n) { m_visibleCells = n; }
+    int visibleCells() const    { return m_visibleCells; }
+    int rowIndex() const        { return m_rowIdx; }
 
   private:
+    void setRowIndex(int idx)    { m_rowIdx = idx; }
     HtmlAttribList m_attribs;
+    int m_visibleCells;
+    int m_rowIdx;
 };
 
 /*! @brief Node representing a HTML table */
@@ -1215,12 +1229,14 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
     int parseXml();
-    uint numCols() const;
+    uint numColumns() const { return m_numCols; }
     void accept(DocVisitor *v);
 
   private:
+    void computeTableGrid();
     DocHtmlCaption    *m_caption;
     HtmlAttribList     m_attribs;
+    int m_numCols;
 };
 
 /*! @brief Node representing an HTML blockquote */

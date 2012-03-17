@@ -310,6 +310,7 @@ void SearchIndex::write(const char *fileName)
 
 #include "memberdef.h"
 #include "namespacedef.h"
+#include "pagedef.h"
 #include "classdef.h"
 #include "filedef.h"
 #include "language.h"
@@ -321,7 +322,8 @@ static const char search_script[]=
 ;
 
 #define MEMBER_INDEX_ENTRIES   256
-#define NUM_SEARCH_INDICES      13
+
+#define NUM_SEARCH_INDICES      15
 #define SEARCH_INDEX_ALL         0
 #define SEARCH_INDEX_CLASSES     1
 #define SEARCH_INDEX_NAMESPACES  2
@@ -335,6 +337,8 @@ static const char search_script[]=
 #define SEARCH_INDEX_EVENTS     10
 #define SEARCH_INDEX_RELATED    11
 #define SEARCH_INDEX_DEFINES    12
+#define SEARCH_INDEX_GROUPS     13
+#define SEARCH_INDEX_PAGES      14
 
 class SearchIndexList : public SDict< QList<Definition> >
 {
@@ -375,7 +379,7 @@ static void addMemberToSearchIndex(
   NamespaceDef *nd=0;
   FileDef *fd=0;
   GroupDef *gd=0;
-  if (isLinkable             && 
+  if (isLinkable && 
       (
        ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==0) ||
        ((gd=md->getGroupDef()) && gd->isLinkable())
@@ -525,7 +529,9 @@ static const char *g_searchIndexName[NUM_SEARCH_INDICES] =
     "properties", 
     "events", 
     "related",
-    "defines"
+    "defines",
+    "groups",
+    "pages"
 };
 
 
@@ -547,6 +553,8 @@ class SearchIndexCategoryMapping
       categoryLabel[SEARCH_INDEX_EVENTS]     = theTranslator->trEvents();
       categoryLabel[SEARCH_INDEX_RELATED]    = theTranslator->trFriends();
       categoryLabel[SEARCH_INDEX_DEFINES]    = theTranslator->trDefines();
+      categoryLabel[SEARCH_INDEX_GROUPS]     = theTranslator->trGroup(TRUE,FALSE);
+      categoryLabel[SEARCH_INDEX_PAGES]      = theTranslator->trPage(TRUE,FALSE);
     }
     QCString categoryLabel[NUM_SEARCH_INDICES];
 };
@@ -641,6 +649,68 @@ void writeJavascriptSearchIndex()
       }
     }
   }
+
+  // index groups
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    if (gd->isLinkable())
+    {
+      QCString title = gd->groupTitle();
+      if (!title.isEmpty()) // TODO: able searching for all word in the title
+      {
+        uchar charCode = title.at(0);
+        uint letter = charCode<128 ? tolower(charCode) : charCode;
+        if (isId(letter))
+        {
+          g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(gd);
+          g_searchIndexSymbols[SEARCH_INDEX_GROUPS][letter].append(gd);
+          g_searchIndexCount[SEARCH_INDEX_ALL]++;
+          g_searchIndexCount[SEARCH_INDEX_GROUPS]++;
+        }
+      }
+    }
+  }
+
+  // index pages
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  {
+    if (pd->isLinkable())
+    {
+      QCString title = pd->title();
+      if (!title.isEmpty())
+      {
+        uchar charCode = title.at(0);
+        uint letter = charCode<128 ? tolower(charCode) : charCode;
+        if (isId(letter))
+        {
+          g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(pd);
+          g_searchIndexSymbols[SEARCH_INDEX_PAGES][letter].append(pd);
+          g_searchIndexCount[SEARCH_INDEX_ALL]++;
+          g_searchIndexCount[SEARCH_INDEX_PAGES]++;
+        }
+      }
+    }
+  }
+  if (Doxygen::mainPage)
+  {
+    QCString title = Doxygen::mainPage->title();
+    if (!title.isEmpty())
+    {
+      uchar charCode = title.at(0);
+      uint letter = charCode<128 ? tolower(charCode) : charCode;
+      if (isId(letter))
+      {
+        g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(Doxygen::mainPage);
+        g_searchIndexSymbols[SEARCH_INDEX_PAGES][letter].append(Doxygen::mainPage);
+        g_searchIndexCount[SEARCH_INDEX_ALL]++;
+        g_searchIndexCount[SEARCH_INDEX_PAGES]++;
+      }
+    }
+  }
   
   // sort all lists
   int i,p;
@@ -730,9 +800,6 @@ void writeJavascriptSearchIndex()
           {
             Definition *d = dl->first();
             QCString id = d->localName();
-//            t << "<div class=\"SRResult\" id=\"SR_"
-//              << searchId(d->localName()) << "\">" << endl;
-//            t << " <div class=\"SREntry\">\n";
 
             if (!firstEntry)
             {
@@ -740,30 +807,24 @@ void writeJavascriptSearchIndex()
             }
             firstEntry=FALSE;
 
-            ti << "  ['" << searchId(d->localName()) << "',['" 
-               << d->localName() << "',[";
+            QCString dispName = d->localName();
+            if (d->definitionType()==Definition::TypeGroup)
+            {
+              dispName = ((GroupDef*)d)->groupTitle();
+            }
+            else if (d->definitionType()==Definition::TypePage)
+            {
+              dispName = ((PageDef*)d)->title();
+            }
+            ti << "  ['" << searchId(dispName) << "',['" 
+               << convertToXML(dispName) << "',[";
 
             if (dl->count()==1) // item with a unique name
             {
               MemberDef  *md   = 0;
               bool isMemberDef = d->definitionType()==Definition::TypeMember;
               if (isMemberDef) md = (MemberDef*)d;
-//              t << "  <a id=\"Item" << itemCount << "\" "
-//                << "onkeydown=\""
-//                << "return searchResults.Nav(event," << itemCount << ")\" "
-//                << "onkeypress=\""
-//                << "return searchResults.Nav(event," << itemCount << ")\" "
-//                << "onkeyup=\""
-//                << "return searchResults.Nav(event," << itemCount << ")\" "
-//                << "class=\"SRSymbol\" ";
-//              t << externalLinkTarget() << "href=\"" << externalRef("../",d->getReference(),TRUE);
-//              t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
               QCString anchor = d->anchor();
-//              if (!anchor.isEmpty())
-//              {
-//                t << "#" << anchor;
-//              }
-//              t << "\"";
 
               ti << "'" << externalRef("../",d->getReference(),TRUE)
                  << d->getOutputFileBase() << Doxygen::htmlFileExtension;
@@ -776,24 +837,15 @@ void writeJavascriptSearchIndex()
               static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
               if (!extLinksInWindow || d->getReference().isEmpty())
               {
-//                t << " target=\"_parent\"";
                 ti << "1,";
               }
               else
               {
                 ti << "0,";
               }
-//              t << ">";
-//              t << convertToXML(d->localName());
-//              t << "</a>" << endl;
-
 
               if (d->getOuterScope()!=Doxygen::globalScope)
               {
-//                t << "  <span class=\"SRScope\">" 
-//                  << convertToXML(d->getOuterScope()->name()) 
-//                  << "</span>" << endl;
-
                 ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
               }
               else if (md)
@@ -802,10 +854,6 @@ void writeJavascriptSearchIndex()
                 if (fd==0) fd = md->getFileDef();
                 if (fd)
                 {
-//                  t << "  <span class=\"SRScope\">" 
-//                    << convertToXML(fd->localName())
-//                    << "</span>" << endl;
-                 
                   ti << "'" << convertToXML(fd->localName()) << "'";
                 }
               }
@@ -817,19 +865,6 @@ void writeJavascriptSearchIndex()
             }
             else // multiple items with the same name
             {
-//              t << "  <a id=\"Item" << itemCount << "\" "
-//                << "onkeydown=\""
-//                << "return searchResults.Nav(event," << itemCount << ")\" "
-//                << "onkeypress=\""
-//                << "return searchResults.Nav(event," << itemCount << ")\" "
-//                << "onkeyup=\""
-//                << "return searchResults.Nav(event," << itemCount << ")\" "
-//                << "class=\"SRSymbol\" "
-//                << "href=\"javascript:searchResults.Toggle('SR_"
-//                << searchId(d->localName()) << "')\">" 
-//                << convertToXML(d->localName()) << "</a>" << endl;
-//              t << "  <div class=\"SRChildren\">" << endl;
-
               QListIterator<Definition> di(*dl);
               bool overloadedFunction = FALSE;
               Definition *prevScope = 0;
@@ -844,31 +879,7 @@ void writeJavascriptSearchIndex()
                 bool isMemberDef = d->definitionType()==Definition::TypeMember;
                 if (isMemberDef) md = (MemberDef*)d;
                 if (next) nextScope = next->getOuterScope();
-
-//                t << "    <a id=\"Item" << itemCount << "_c" 
-//                  << childCount << "\" "
-//                  << "onkeydown=\""
-//                  << "return searchResults.NavChild(event," 
-//                  << itemCount << "," << childCount << ")\" "
-//                  << "onkeypress=\""
-//                  << "return searchResults.NavChild(event," 
-//                  << itemCount << "," << childCount << ")\" "
-//                  << "onkeyup=\""
-//                  << "return searchResults.NavChild(event," 
-//                  << itemCount << "," << childCount << ")\" "
-//                  << "class=\"SRScope\" ";
-//                if (!d->getReference().isEmpty())
-//                {
-//                  t << externalLinkTarget() << externalRef("../",d->getReference(),FALSE);
-//                }
-//                t << "href=\"" << externalRef("../",d->getReference(),TRUE);
-//                t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
                 QCString anchor = d->anchor();
-//                if (!anchor.isEmpty())
-//                {
-//                  t << "#" << anchor;
-//                }
-//                t << "\"";
 
                 if (childCount>0)
                 {
@@ -885,14 +896,12 @@ void writeJavascriptSearchIndex()
                 static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
                 if (!extLinksInWindow || d->getReference().isEmpty())
                 {
-//                  t << " target=\"_parent\"";
                   ti << "1,";
                 }
                 else
                 {
                   ti << "0,";
                 }
-//                t << ">";
                 bool found=FALSE;
                 overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
                                       (scope && scope==nextScope)
@@ -903,7 +912,7 @@ void writeJavascriptSearchIndex()
                 if (overloadedFunction) // overloaded member function
                 {
                   prefix+=convertToXML(md->argsString()); 
-                          // show argument list to disambiguate overloaded functions
+                  // show argument list to disambiguate overloaded functions
                 }
                 else if (md) // unique member function
                 {
@@ -951,21 +960,16 @@ void writeJavascriptSearchIndex()
                 {
                   name = prefix + "("+theTranslator->trGlobalNamespace()+")";
                 }
-//                t << name;
-//                t << "</a>" << endl;
 
                 ti << "'" << name << "'";
 
                 prevScope = scope;
                 childCount++;
               }
-//              t << "  </div>" << endl; // SRChildren
 
               ti << "]]";
             }
             ti << "]";
-//            t << " </div>" << endl; // SREntry
-//            t << "</div>" << endl; // SRResult
             itemCount++;
           }
           if (!firstEntry)
@@ -983,7 +987,6 @@ void writeJavascriptSearchIndex()
       }
     }
   }
-  //ol.popGeneratorState();
 
   {
     QFile f(searchDirName+"/search.js");

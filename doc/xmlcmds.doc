@@ -37,6 +37,9 @@ Here is the list of tags supported by doxygen:
                          method can throw.
 <li><tt>\<include\></tt> Can be used to import a piece of XML from an external
                          file. Ignored by doxygen at the moment.
+<li><tt>\<inheritdoc\></tt> Can be used to insert the documentation of a 
+                         member of a base class into the documentation of a 
+                         member of a derived class that reimplements it.
 <li><tt>\<item\></tt> List item. Can only be used inside a <tt>\<list\></tt> context.
 <li><tt>\<list type="type"\></tt> Starts a list, supported types are <tt>bullet</tt>
                          or <tt>number</tt> and <tt>table</tt>. 

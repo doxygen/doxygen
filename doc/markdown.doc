@@ -22,13 +22,13 @@
 was introduced in doxygen version 1.8.0. It is a plain text formatting
 syntax written by John Gruber, with the following underlying design goal:
 
-> The design goal for Markdown’s formatting syntax is to 
+> The design goal for Markdown's formatting syntax is to 
 > make it as readable as possible. The idea is that a Markdown-formatted 
 > document should be publishable as-is, as plain text, without 
-> looking like it’s been marked up with tags or formatting instructions. 
-> While Markdown’s syntax has been influenced by several existing 
+> looking like it's been marked up with tags or formatting instructions. 
+> While Markdown's syntax has been influenced by several existing 
 > text-to-HTML filters, the single biggest source of inspiration 
-> for Markdown’s syntax is the format of plain text email.
+> for Markdown's syntax is the format of plain text email.
 
 In the \ref markdown_std "next section" the standard Markdown features
 are briefly discussed. The reader is referred to the [Markdown site][markdown]

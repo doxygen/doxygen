@@ -181,7 +181,8 @@ enum HtmlTagType
   XML_TERM         = XML_CmdMask + 18,
   XML_TYPEPARAM    = XML_CmdMask + 19,
   XML_TYPEPARAMREF = XML_CmdMask + 20,
-  XML_VALUE        = XML_CmdMask + 21
+  XML_VALUE        = XML_CmdMask + 21,
+  XML_INHERITDOC   = XML_CmdMask + 22
 };
 
 class Mapper

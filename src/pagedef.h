@@ -54,6 +54,7 @@ class PageDef : public Definition
     bool documentedPage() const;
     bool hasSubPages() const;
     bool hasParentPage() const;
+    bool showToc() const { return m_showToc; }
     void setPageScope(Definition *d){ m_pageScope = d; }
     Definition *getPageScope() const { return m_pageScope; }
     QCString displayName() const { return !m_title.isEmpty() ? m_title : Definition::name(); }

@@ -2068,7 +2068,7 @@ extern YYSTYPE vhdlScanYYlval;
 
 void vhdlScanYYerror(const char* /*str*/)
 {
- // fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
+//  fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
  // exit(0);
 }
 
@@ -2336,10 +2336,11 @@ static void addVhdlType(const QCString &name,int startLine,int section,int spec,
   for (uint u=0;u<ql.count();u++)
   {
     current->name=(QCString)ql[u];
-    if (section==Entry::VARIABLE_SEC &&  !(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
-    {
-      current->name.prepend(VhdlDocGen::getRecordNumber());
-    }
+ //   if (section==Entry::VARIABLE_SEC &&  !(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
+ //   {
+ //     current->name.prepend(VhdlDocGen::getRecordNumber());
+ //   }
+   
     current->startLine=startLine;
     current->bodyLine=startLine;
     current->section=section;

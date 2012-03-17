@@ -3259,7 +3259,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					    else
 					    {
-					      if (current->section == Entry::ENUM_SEC)
+					      if ((current->section == Entry::ENUM_SEC) || (current->spec&Entry::Enum))
 					      {
 					        current->program+=','; // add field terminator
 					      }
@@ -3329,7 +3329,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->type.prepend(yytext);
   					}
 <TypedefName>{ID}			{
-  					  if (current->section == Entry::ENUM_SEC)
+					  if ((current->section == Entry::ENUM_SEC) || (current->spec&Entry::Enum))
 					  {
 					    current->program+=","; // add field terminator
 					  }
@@ -3350,7 +3350,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <TypedefName>";"			{ /* typedef of anonymous type */
 					  current->name.sprintf("@%d",anonCount++);
-					  if (current->section == Entry::ENUM_SEC)
+					  if ((current->section == Entry::ENUM_SEC) || (current->spec&Entry::Enum))
 					  {
 					    current->program+=','; // add field terminator
 					  }

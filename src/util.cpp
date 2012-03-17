@@ -848,6 +848,75 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
   return FALSE;
 }
 
+const int MAX_STACK_SIZE = 1000;
+
+class AccessStack
+{
+  public:
+    AccessStack() : m_index(0) {}
+    void push(Definition *scope,FileDef *fileScope,Definition *item)
+    {
+      if (m_index<MAX_STACK_SIZE)
+      {
+        m_elements[m_index].scope     = scope;
+        m_elements[m_index].fileScope = fileScope;
+        m_elements[m_index].item      = item;
+        m_index++;
+      }
+    }
+    void push(Definition *scope,FileDef *fileScope,Definition *item,const QCString &expScope)
+    {
+      if (m_index<MAX_STACK_SIZE)
+      {
+        m_elements[m_index].scope     = scope;
+        m_elements[m_index].fileScope = fileScope;
+        m_elements[m_index].item      = item;
+        m_elements[m_index].expScope  = expScope;
+        m_index++;
+      }
+    }
+    void pop()
+    {
+      if (m_index>0) m_index--;
+    }
+    bool find(Definition *scope,FileDef *fileScope, Definition *item)
+    {
+      int i=0;
+      for (i=0;i<m_index;i++)
+      {
+        AccessElem *e = &m_elements[i];
+        if (e->scope==scope && e->fileScope==fileScope && e->item==item) 
+        {
+          return TRUE;
+        }
+      }
+      return FALSE;
+    }
+    bool find(Definition *scope,FileDef *fileScope, Definition *item,const QCString &expScope)
+    {
+      int i=0;
+      for (i=0;i<m_index;i++)
+      {
+        AccessElem *e = &m_elements[i];
+        if (e->scope==scope && e->fileScope==fileScope && e->item==item && e->expScope==expScope) 
+        {
+          return TRUE;
+        }
+      }
+      return FALSE;
+    }
+
+  private:
+    struct AccessElem
+    {
+      Definition *scope;
+      FileDef *fileScope;
+      Definition *item;
+      QCString expScope;
+    };
+    int m_index;
+    AccessElem m_elements[MAX_STACK_SIZE];
+};
 
 /* Returns the "distance" (=number of levels up) from item to scope, or -1
  * if item in not inside scope. 
@@ -857,15 +926,12 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
   //printf("<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
 
-  QCString key(40);
-  key.sprintf("%p:%p:%p",scope,fileScope,item);
-  static QDict<void> visitedDict;
-  if (visitedDict.find(key)) 
+  static AccessStack accessStack;
+  if (accessStack.find(scope,fileScope,item))
   {
-    //printf("> already found\n");
-    return -1; // already looked at this
+    return -1;
   }
-  visitedDict.insert(key,(void *)0x8);
+  accessStack.push(scope,fileScope,item);
 
   int result=0; // assume we found it
   int i;
@@ -934,7 +1000,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     result= (i==-1) ? -1 : i+2;
   }
 done:
-  visitedDict.remove(key);
+  accessStack.pop();
   //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
@@ -964,15 +1030,13 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
     return isAccessibleFrom(scope,fileScope,item);
   }
 
-  QCString key(40+explicitScopePart.length());
-  key.sprintf("%p:%p:%p:%s",scope,fileScope,item,explicitScopePart.data());
-  static QDict<void> visitedDict;
-  if (visitedDict.find(key)) 
+  static AccessStack accessStack;
+  if (accessStack.find(scope,fileScope,item,explicitScopePart))
   {
-    //printf("Already visited!\n");
-    return -1; // already looked at this
+    return -1;
   }
-  visitedDict.insert(key,(void *)0x8);
+  accessStack.push(scope,fileScope,item,explicitScopePart);
+
 
   //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",
   //                                      item?item->name().data():"<none>",
@@ -1101,9 +1165,10 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
       result= (i==-1) ? -1 : i+2;
     }
   }
+
 done:
   //printf("  > result=%d\n",result);
-  visitedDict.remove(key);
+  accessStack.pop();
   //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
@@ -2004,6 +2069,14 @@ QCString tempArgListToString(ArgumentList *al)
   {
     if (!a->name.isEmpty()) // add template argument name
     {
+      if (a->type.left(4)=="out") // C# covariance
+      {
+        result+="out ";
+      }
+      else if (a->type.left(3)=="in") // C# contravariance
+      {
+        result+="in ";
+      }
       result+=a->name;
     }
     else // extract name from type
@@ -6181,9 +6254,14 @@ bool findAndRemoveWord(QCString &s,const QCString &word)
 }
 
 /** Special version of QCString::stripWhiteSpace() that only strips
- *  empty lines.
+ *  completely blank lines.
+ *  @param s the string to be stripped
+ *  @param docLine the line number corresponding to the start of the
+ *         string. This will be adjusted based on the number of lines stripped
+ *         from the start.
+ *  @returns The stripped string.
  */
-QCString stripLeadingAndTrailingEmptyLines(const QCString &s)
+QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
 {
   const char *p = s.data();
   if (p==0) return 0;
@@ -6194,7 +6272,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s)
   while ((c=*p++))
   {
     if (c==' ' || c=='\t' || c=='\r') i++;
-    else if (c=='\n') i++,li=i;
+    else if (c=='\n') i++,li=i,docLine++;
     else break;
   }
 
@@ -6591,6 +6669,18 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
       markerStart=0; // outside marker
       markerEnd=0;
     }
+  }
+  if (markerStart>0)
+  {
+    markerEnd=l;
+  }
+  if (markerStart>0 && markerEnd>markerStart)
+  {
+     int markerLen = markerEnd-markerStart;
+     markerList.append(new Marker(markerStart-1, // include backslash
+                 atoi(aliasValue.mid(markerStart,markerLen)),markerLen+1));
+     //printf("found marker at %d with len %d and number %d\n",
+     //    markerStart-1,markerLen+1,atoi(aliasValue.mid(markerStart,markerLen)));
   }
 
   // then we replace the markers with the corresponding arguments in one pass

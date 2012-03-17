@@ -1557,6 +1557,11 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
     }
     m_output.closeList();
   }
+  else if (md->argsString()!=0) 
+  {
+    m_output.addFieldQuotedString("arguments", md->argsString());
+  }
+
   if (!md->initializer().isEmpty())
     m_output.addFieldQuotedString("initializer", md->initializer());
   

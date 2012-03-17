@@ -68,15 +68,9 @@ class GroupDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
-    int countMembers() const;
-    bool isLinkableInProject() const
-    {
-      return !isReference();
-    }
-    bool isLinkable() const
-    {
-      return TRUE;
-    }
+    int  countMembers() const;
+    bool isLinkableInProject() const;
+    bool isLinkable() const;
     bool isASubGroup() const;
     void computeAnchors();
 

@@ -414,6 +414,7 @@ static void writeDefaultStyleSheetPart1(FTextStream &t)
        "\\RequirePackage{verbatim}\n"
        "\\RequirePackage{ifthen}\n"
        "\\RequirePackage{xtab}\n"
+       "\\RequirePackage{multirow}\n"
        "\\RequirePackage[table]{xcolor}\n\n";
 
   t << "% Use helvetica font instead of times roman\n"

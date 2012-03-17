@@ -60,6 +60,7 @@ static const char *getSectionName(int level)
   return secLabels[QMIN(maxLevels-1,l)];
 }
 
+#if 0
 static int rowspan(DocHtmlCell *cell)
 {
   int retval = 0;
@@ -70,6 +71,22 @@ static int rowspan(DocHtmlCell *cell)
     if (attrs.at(i)->name.lower()=="rowspan")
     {
       retval = attrs.at(i)->value.toInt();
+      break;
+    }
+  }
+  return retval;
+}
+
+static int colspan(DocHtmlCell *cell)
+{
+  int retval = 1;
+  HtmlAttribList attrs = cell->attribs();
+  uint i;
+  for (i=0; i<attrs.count(); ++i) 
+  {
+    if (attrs.at(i)->name.lower()=="colspan")
+    {
+      retval = QMAX(1,attrs.at(i)->value.toInt());
       break;
     }
   }
@@ -93,6 +110,70 @@ static int align(DocHtmlCell *cell)
   }
   return 0;
 }
+
+struct ActiveRowSpan
+{
+  ActiveRowSpan(int rows,int col) : rowsLeft(rows), column(col) {}
+  int rowsLeft;
+  int column;
+};
+
+typedef QList<ActiveRowSpan> RowSpanList;
+
+static int determineNumCols(DocHtmlTable *table)
+{
+  RowSpanList rowSpans;
+  rowSpans.setAutoDelete(TRUE);
+  int maxCols=0;
+  int rowIdx=1;
+  QListIterator<DocNode> li(table->children());
+  DocNode *rowNode;
+  for (li.toFirst();(rowNode=li.current());++li)
+  {
+    int colIdx=1;
+    int cells=0;
+    if (rowNode->kind()==DocNode::Kind_HtmlRow)
+    {
+      uint i;
+      DocHtmlRow *row = (DocHtmlRow*)rowNode;
+      QListIterator<DocNode> rli(row->children());
+      DocNode *cellNode;
+      for (rli.toFirst();(cellNode=rli.current());++rli)
+      {
+        if (cellNode->kind()==DocNode::Kind_HtmlCell)
+        {
+          DocHtmlCell *cell = (DocHtmlCell*)cellNode;
+          int rs = rowspan(cell);
+          int cs = colspan(cell);
+
+          for (i=0;i<rowSpans.count();i++)
+          {
+            if (rowSpans.at(i)->rowsLeft>0 && 
+                rowSpans.at(i)->column==colIdx) 
+            {
+              colIdx=rowSpans.at(i)->column+1;
+              cells++;
+            }
+          }
+          if (rs>0) rowSpans.append(new ActiveRowSpan(rs,colIdx));
+          cell->setRowIndex(rowIdx);
+          cell->setColumnIndex(colIdx);
+          colIdx+=cs; 
+          cells++;
+        }
+      }
+      for (i=0;i<rowSpans.count();i++)
+      {
+        if (rowSpans.at(i)->rowsLeft>0) rowSpans.at(i)->rowsLeft--;
+      }
+      row->setVisibleCells(cells);
+      rowIdx++;
+    }
+    if (colIdx-1>maxCols) maxCols=colIdx-1;
+  }
+  return maxCols;
+}
+#endif
 
 QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 {
@@ -121,9 +202,10 @@ LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                                  const char *langExt,bool insideTabbing) 
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
     m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
-    m_langExt(langExt), m_currentColumn(0), 
-    m_inRowspan(FALSE)
+    m_insideTable(FALSE), m_langExt(langExt), m_currentColumn(0), 
+    m_inRowspan(FALSE), m_inColspan(FALSE)
 {
+  m_rowSpans.setAutoDelete(TRUE);
 }
 
   //--------------------------------------
@@ -241,7 +323,8 @@ void LatexDocVisitor::visit(DocURL *u)
 void LatexDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
-  m_t << "\\par\n";
+  if (m_insideTable) m_t << "\\newline\n";
+  else m_t << "\\par\n";
 }
 
 void LatexDocVisitor::visit(DocHorRuler *)
@@ -259,7 +342,7 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "{\\bfseries ";      else m_t << "}";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "{\\itshape ";     else m_t << "\\/}";
+      if (s->enable()) m_t << "{\\itshape ";     else m_t << "}";
       break;
     case DocStyleChange::Code:
       if (s->enable()) m_t << "{\\ttfamily ";   else m_t << "}";
@@ -862,17 +945,21 @@ void LatexDocVisitor::visitPost(DocHtmlDescData *)
 
 void LatexDocVisitor::visitPre(DocHtmlTable *t)
 {
-  m_rowspanIndices.clear();
+  m_rowSpans.clear();
+  m_insideTable=TRUE;
   if (m_hide) return;
   if (t->hasCaption()) 
   {
     m_t << "\\begin{table}[h]";
   }
-  m_t << "\\begin{TabularC}{" << t->numCols() << "}\n\\hline\n";
+  m_t << "\\begin{TabularC}{" << t->numColumns() << "}\n";
+  m_numCols = t->numColumns();
+  m_t << "\\hline\n";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlTable *t) 
 {
+  m_insideTable=FALSE;
   if (m_hide) return;
   if (t->hasCaption())
   {
@@ -902,32 +989,67 @@ void LatexDocVisitor::visitPre(DocHtmlRow *r)
   if (r->isHeading()) m_t << "\\rowcolor{lightgray}";
 }
 
-void LatexDocVisitor::visitPost(DocHtmlRow *) 
+void LatexDocVisitor::visitPost(DocHtmlRow *row) 
 {
   if (m_hide) return;
 
-  m_t << "\\\\";
-  
-  QMap<int, int>::Iterator it;
-  int col = 1;
-  for (it = m_rowspanIndices.begin(); it != m_rowspanIndices.end(); ++it) 
+  int c=m_currentColumn;
+  while (c<=m_numCols) // end of row while inside a row span?
   {
-    it.data()--;
-    if (it.data () <= 0)
+    uint i;
+    for (i=0;i<m_rowSpans.count();i++)
     {
-      m_rowspanIndices.remove(it);
+      ActiveRowSpan *span = m_rowSpans.at(i);
+      //printf("  founc row span: column=%d rs=%d cs=%d rowIdx=%d cell->rowIdx=%d\n",
+      //    span->column, span->rowSpan,span->colSpan,row->rowIndex(),span->cell->rowIndex());
+      if (span->rowSpan>0 && span->column==c &&  // we are at a cell in a row span
+          row->rowIndex()>span->cell->rowIndex() // but not the row that started the span
+         )
+      {
+        m_t << "&";
+        if (span->colSpan>1) // row span is also part of a column span
+        {
+          m_t << "\\multicolumn{" << span->colSpan << "}{";
+          m_t << "p{(\\linewidth-\\tabcolsep*" 
+            << m_numCols << "-\\arrayrulewidth*"
+            << row->visibleCells() << ")*" 
+            << span->colSpan <<"/"<< m_numCols << "}|}{}";
+        }
+        else // solitary row span
+        {
+          m_t << "\\multicolumn{1}{c|}{}";
+        }
+      }
     }
-    else if (0 < it.data() - col)
-    {
-      m_t << "\\cline{" << col << "-" << it.data() - col << "}";
-    }
-      
-    col = 1 + it.data();
+    c++;
   }
 
-  if (col <= m_currentColumn)
+  m_t << "\\\\";
+  
+  int col = 1;
+  uint i;
+  for (i=0;i<m_rowSpans.count();i++)
   {
-    m_t << "\\cline{" << col << "-" << m_currentColumn << "}";
+    ActiveRowSpan *span = m_rowSpans.at(i);
+    if (span->rowSpan>0) span->rowSpan--;
+    if (span->rowSpan<=0)
+    {
+      // inactive span
+    }
+    else if (span->column>col)
+    {
+      m_t << "\\cline{" << col << "-" << (span->column-1) << "}";
+      col = span->column+span->colSpan;
+    }
+    else
+    {
+      col = span->column+span->colSpan;
+    }
+  }
+
+  if (col <= m_numCols)
+  {
+    m_t << "\\cline{" << col << "-" << m_numCols << "}";
   }
 
   m_t << "\n";
@@ -936,36 +1058,92 @@ void LatexDocVisitor::visitPost(DocHtmlRow *)
 void LatexDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
+
+  DocHtmlRow *row = 0;
+  if (c->parent() && c->parent()->kind()==DocNode::Kind_HtmlRow)
+  {
+    row = (DocHtmlRow*)c->parent();
+  }
   
   m_currentColumn++;
+
   //Skip columns that span from above.
+  uint i;
+  for (i=0;i<m_rowSpans.count();i++)
+  {
+    ActiveRowSpan *span = m_rowSpans.at(i);
+    if (span->rowSpan>0 && span->column==m_currentColumn)
+    {
+      if (row && span->colSpan>1)
+      {
+        m_t << "\\multicolumn{" << span->colSpan << "}{";
+        if (m_currentColumn /*c->columnIndex()*/==1) // add extra | for first column
+        {
+          m_t << "|";
+        }
+        m_t << "p{(\\linewidth-\\tabcolsep*" 
+            << m_numCols << "-\\arrayrulewidth*"
+            << row->visibleCells() << ")*" 
+            << span->colSpan <<"/"<< m_numCols << "}|}{}";
+        m_currentColumn+=span->colSpan;
+      }
+      else
+      {
+        m_currentColumn++;
+      }
+      m_t << "&";
+    }
+  }
+
+#if 0
   QMap<int, int>::Iterator it = m_rowspanIndices.find(m_currentColumn);
-  while (it!=m_rowspanIndices.end() && 0<it.data())
+  if (it!=m_rowspanIndices.end() && it.data()>0)
   {
     m_t << "&";
     m_currentColumn++;
     it++;
   }
+#endif
 
-  int rs = rowspan(c);
+  int cs = c->colSpan();
+  if (cs>1 && row)
+  {
+    m_inColspan = TRUE;
+    m_t << "\\multicolumn{" << cs << "}{";
+    if (c->columnIndex()==1) // add extra | for first column
+    {
+      m_t << "|";
+    }
+    m_t << "p{(\\linewidth-\\tabcolsep*" 
+        << m_numCols << "-\\arrayrulewidth*"
+        << row->visibleCells() << ")*" 
+        << cs <<"/"<< m_numCols << "}|}{";
+    if (c->isHeading()) m_t << "\\cellcolor{lightgray}";
+  }
+  int rs = c->rowSpan();
   if (rs>0)
   {
     m_inRowspan = TRUE;
-    m_rowspanIndices[m_currentColumn] = rs;
+    //m_rowspanIndices[m_currentColumn] = rs;
+    m_rowSpans.append(new ActiveRowSpan(c,rs,cs,m_currentColumn));
     m_t << "\\multirow{" << rs << "}{\\linewidth}{";
   }
-  int a = align(c);
-  if (a==1)
+  int a = c->alignment();
+  if (a==DocHtmlCell::Center)
   {
     m_t << "\\PBS\\centering ";
   }
-  else if (a==2)
+  else if (a==DocHtmlCell::Right)
   {
     m_t << "\\PBS\\raggedleft ";
   }
   if (c->isHeading())
   {
     m_t << "{\\bf ";
+  }
+  if (cs>1)
+  {
+    m_currentColumn+=cs-1;
   }
 }
 
@@ -979,6 +1157,11 @@ void LatexDocVisitor::visitPost(DocHtmlCell *c)
   if (m_inRowspan)
   {
     m_inRowspan = FALSE;
+    m_t << "}";
+  }
+  if (m_inColspan)
+  {
+    m_inColspan = FALSE;
     m_t << "}";
   }
   if (!c->isLast()) m_t << "&";

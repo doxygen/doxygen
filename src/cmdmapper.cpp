@@ -186,6 +186,7 @@ CommandMap htmlTagMap[] =
   { "summary",      XML_SUMMARY },
   { "term",         XML_TERM },
   { "value",        XML_VALUE },
+  { "inheritdoc",   XML_INHERITDOC },
   { 0,              0 }
 };
 

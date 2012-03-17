@@ -918,7 +918,10 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
 
   ol.startTextBlock();
 
-  writeTemplateSpec(ol,this,compoundTypeString());
+  if (getLanguage()==SrcLangExt_Cpp)
+  {
+    writeTemplateSpec(ol,this,compoundTypeString());
+  }
 
   // repeat brief description
   if (!briefDescription().isEmpty() && repeatBrief)

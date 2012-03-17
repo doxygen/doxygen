@@ -585,7 +585,7 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
   m_t << "<table rows=\"" << t->numRows() 
-      << "\" cols=\"" << t->numCols() << "\">" ;
+      << "\" cols=\"" << t->numColumns() << "\">" ;
 }
 
 void XmlDocVisitor::visitPost(DocHtmlTable *) 

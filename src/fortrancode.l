@@ -593,9 +593,8 @@ void endScope()
   // fprintf(stderr,"===> endScope %s",yytext);
   if (scopeStack.isEmpty()) 
   {
-    fprintf(stderr,"WARNING: fortrancode.l: stack empty!"); 
+    //fprintf(stderr,"WARNING: fortrancode.l: stack empty!\n"); 
     return;
-    //exit(-1);
   }
 
   Scope *scope = scopeStack.getLast();

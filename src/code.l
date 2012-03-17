@@ -2284,7 +2284,15 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<Body>{SCOPEPREFIX}?"operator"{B}*[^\(\n]+/"(" {
+<Body>{SCOPEPREFIX}?"operator"/"("      {
+  					  addType();
+					  generateFunctionLink(*g_code,yytext);
+  					  g_bracketCount=0;
+					  g_args.resize(0);
+  					  g_name+=yytext; 
+  					  BEGIN( FuncCall );
+                                        }
+<Body>{SCOPEPREFIX}?"operator"[^a-z_A-Z0-9\(\n]+/"(" {
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
   					  g_bracketCount=0;
