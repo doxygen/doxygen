@@ -1565,7 +1565,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
     QFileInfo fi(fileName);
     g_moduleScope = findPackageScope(fileName);
-    QString baseName=fi.baseName();
+    QCString baseName=fi.baseName().utf8();
     if (baseName!="__init__") // package initializer file is not a package itself
     {
       if (!g_moduleScope.isEmpty())

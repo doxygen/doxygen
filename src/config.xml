@@ -519,11 +519,6 @@ Set the SHOW_USED_FILES tag to NO to disable the list of files generated
 at the bottom of the documentation of classes and structs. If set to YES the 
 list will mention the files that were used to generate the documentation.
 ' defval='1'/>
-    <option type='bool' id='SHOW_DIRECTORIES' docs='
-If the sources in your project are distributed over multiple directories 
-then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy 
-in the documentation. The default is NO. 
-' defval='0'/>
     <option type='bool' id='SHOW_FILES' docs='
 Set the SHOW_FILES tag to NO to disable the generation of the Files page. 
 This will remove the Files entry from the Quick Index and from the 
@@ -1058,10 +1053,6 @@ The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values
 documentation. Note that a value of 0 will completely suppress the enum 
 values from appearing in the overview section.
 ' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'/>
-    <option type='bool' id='USE_INLINE_TREES' defval='0' docs='
-By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, 
-and Class Hierarchy pages using a tree view instead of an ordered list.
-' depends='GENERATE_HTML'/>
     <option type='int' id='TREEVIEW_WIDTH' docs='
 If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be 
 used to set the initial width (in pixels) of the frame in which the tree 
@@ -1542,7 +1533,7 @@ If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen
 will generate a graphical hierarchy of all classes instead of a textual one. 
 ' defval='1' depends='HAVE_DOT'/>
     <option type='bool' id='DIRECTORY_GRAPH' docs='
-If the DIRECTORY_GRAPH, SHOW_DIRECTORIES and HAVE_DOT tags are set to YES 
+If the DIRECTORY_GRAPH and HAVE_DOT tags are set to YES 
 then doxygen will show the dependencies a directory has on other directories 
 in a graphical way. The dependency relations are determined by the #include 
 relations between the files in the directories. 
@@ -1637,5 +1628,7 @@ the various graphs.
     <option type='obsolete' id='DOC_ABSPATH'/>
     <option type='obsolete' id='BIN_ABSPATH'/>
     <option type='obsolete' id='EXT_DOC_PATHS'/>
+    <option type='obsolete' id='USE_INLINE_TREES'/>
+    <option type='obsolete' id='SHOW_DIRECTORIES'/>
   </group>
 </doxygenconfig>

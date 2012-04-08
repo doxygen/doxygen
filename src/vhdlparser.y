@@ -106,7 +106,7 @@ static void newEntry();
 static void initEntry(Entry *e);
 static bool isFuncProcProced();
 static void popConfig();
-static void pushLabel(QCString label);
+static void pushLabel(const QCString &label);
 static void popLabel();
 static void addConfigureNode(const char* a,const char*b,
                          bool isRoot,bool isLeave,bool inlineConf=FALSE);
@@ -416,7 +416,7 @@ use_clause : t_USE sel_list t_Semicolon
                    for (uint j=0;j<ql1.count();j++)
                    {
                      QStringList ql=QStringList::split(".",ql1[j],FALSE);
-                     QCString it=(QCString)ql[1];;
+                     QCString it=ql[1].utf8();
                      if ( parse_sec == 0 )
                      {
                        addVhdlType(it,getParsedLine(t_USE),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_");
@@ -2128,7 +2128,7 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
   }
 }
 
-static void pushLabel(QCString label)
+static void pushLabel(const QCString &label)
 {
   genLabels+="|"+label;
 }
@@ -2220,7 +2220,7 @@ static void addProto(const char *s1,const char *s2,const char *s3,
   for (uint u=0;u<ql.count();u++)
   {
     Argument *arg=new Argument;
-    arg->name=(QCString)ql[u];
+    arg->name=ql[u].utf8();
     if (s3)
     {
       arg->type=s3;
@@ -2303,7 +2303,7 @@ static void createFunction(const QCString &impure,int spec,
       for (uint ii=0;ii<q1.count();ii++)
       {
         Argument *arg=new Argument;
-        arg->name=(QCString)q1[ii];
+        arg->name=q1[ii].utf8();
         current->argList->append(arg);
       }
     }
@@ -2335,7 +2335,7 @@ static void addVhdlType(const QCString &name,int startLine,int section,int spec,
 
   for (uint u=0;u<ql.count();u++)
   {
-    current->name=(QCString)ql[u];
+    current->name=ql[u].utf8();
  //   if (section==Entry::VARIABLE_SEC &&  !(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
  //   {
  //     current->name.prepend(VhdlDocGen::getRecordNumber());

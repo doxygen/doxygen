@@ -40,7 +40,29 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_7_5 : public TranslatorAdapterBase
+class TranslatorAdapter_1_8_0 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.0"); }
+
+    virtual QCString trDetailLevel()
+    { return english.trDetailLevel(); }
+
+    virtual QCString trTemplateParameters()
+    { return english.trTemplateParameters(); }
+
+    virtual QCString trAndMore(const QCString &number)
+    { return english.trAndMore(number); }
+
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { return english.trEnumGeneratedFromFiles(single); }
+
+    virtual QCString trEnumReference(const char *name)
+    { return english.trEnumReference(name); }
+};
+
+class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
 {
   public:
     virtual QCString updateNeededMessage()

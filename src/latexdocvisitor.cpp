@@ -485,7 +485,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
       { 
          m_t << "\n\\begin{DoxyCodeInclude}\n";
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),

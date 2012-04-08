@@ -1595,8 +1595,7 @@ static void writeBoxMemberList(FTextStream &t,
         static int limit = Config_getInt("UML_LIMIT_NUM_FIELDS");
         if (limit==0 || (totalCount>=limit*3/2 && count>=limit))
         {
-          t << "and " << (totalCount-count-1) << " more...";
-          // TODO: TRANSLATE ME
+          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count-1));
           break;
         }
         else
@@ -2959,7 +2958,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
 
   // derive target file names from baseName
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
   QCString absMapName  = absBaseName+".map";
   QCString absPdfName  = absBaseName+".pdf";
@@ -3279,7 +3278,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   if (m_inverse) mapName+="dep";
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
   QCString absMapName  = absBaseName+".map";
   QCString absPdfName  = absBaseName+".pdf";
@@ -3568,7 +3567,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   QCString mapName     = baseName;
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
   QCString absMapName  = absBaseName+".map";
   QCString absPdfName  = absBaseName+".pdf";
@@ -3705,7 +3704,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   QCString mapName=escapeCharsInString(baseName,FALSE);
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absBaseName = d.absPath().utf8()+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
   QCString absMapName  = absBaseName+".map";
   QCString absPdfName  = absBaseName+".pdf";
@@ -3903,8 +3902,8 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = (QCString)outFile+"."+imgExt;
-  QCString absImgName = QCString(d.absPath())+"/"+imgName;
-  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
+  QCString absImgName = d.absPath().utf8()+"/"+imgName;
+  QCString absOutFile = d.absPath().utf8()+"/"+outFile;
 
   DotRunner dotRun(inFile,d.absPath().data(),FALSE,absImgName);
   if (format==BITMAP)
@@ -3958,7 +3957,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   QCString mapName = baseName+".map";
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
+  QCString absOutFile = d.absPath().utf8()+"/"+mapName;
 
   DotRunner dotRun(inFile,d.absPath().data(),FALSE);
   dotRun.addJob(MAP_CMD,absOutFile);

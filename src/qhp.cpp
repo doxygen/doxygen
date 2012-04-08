@@ -89,7 +89,7 @@ void Qhp::initialize()
     QStringList customFilterAttributes = QStringList::split(QChar(' '), Config_getString("QHP_CUST_FILTER_ATTRS"));
     for (int i = 0; i < (int)customFilterAttributes.count(); i++)
     {
-      m_doc.openCloseContent("filterAttribute", customFilterAttributes[i]);
+      m_doc.openCloseContent("filterAttribute", customFilterAttributes[i].utf8());
     }
     m_doc.close("customFilter");
   }
@@ -105,7 +105,7 @@ void Qhp::initialize()
   }
   for (int i = 0; i < (int)sectionFilterAttributes.count(); i++)
   {
-    m_doc.openCloseContent("filterAttribute", sectionFilterAttributes[i]);
+    m_doc.openCloseContent("filterAttribute", sectionFilterAttributes[i].utf8());
   }
 
   m_toc.open("toc");
@@ -174,7 +174,8 @@ void Qhp::decContentsDepth()
 void Qhp::addContentsItem(bool /*isDir*/, const char * name, 
                           const char * /*ref*/, const char * file, 
                           const char * /*anchor*/,bool /* separateIndex */,
-                          bool /* addToNavIndex */)
+                          bool /* addToNavIndex */,
+                          Definition * /*def*/)
 {
   // Backup difference before modification
   int diff = m_prevSectionLevel - m_sectionLevel;

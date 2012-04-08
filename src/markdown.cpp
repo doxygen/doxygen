@@ -44,6 +44,8 @@
 #include "doxygen.h"
 #include "commentscan.h"
 #include "entry.h"
+#include "bufstr.h"
+#include "commentcnv.h"
 
 //-----------
 
@@ -86,7 +88,13 @@ static QDict<LinkRef> g_linkRefs(257);
 static action_t       g_actions[256];
 static Entry         *g_current;
 static QCString       g_fileName;
-//static QDict<void>    g_htmlBlockTags(17);
+
+// In case a markdown page starts with a level1 header, that header is used
+// as a title of the page, in effect making it a level0 header, so the
+// level of all other sections needs to be corrected as well.
+// This flag is TRUE if corrections are needed.
+static bool           g_correctSectionLevel;
+
 
 //----------
 
@@ -750,11 +758,14 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
   else if (isImageLink) 
   {
-    if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1) 
-        // assume doxygen symbol link
+    bool ambig;
+    FileDef *fd=0;
+    if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1 ||
+        (fd=findFileDef(Doxygen::imageNameDict,link,ambig))) 
+        // assume doxygen symbol link or local image link
     {
       out.addStr("@image html ");
-      out.addStr(link.mid(5));
+      out.addStr(link.mid(fd ? 0 : 5));
       if (!explicitTitle && !content.isEmpty())
       { 
         out.addStr(" \"");
@@ -1592,6 +1603,8 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
   }
   else if ((level=isAtxHeader(data,size,header,id)))
   {
+    if (level==1) g_correctSectionLevel=FALSE;
+    if (g_correctSectionLevel) level--;
     QCString hTag;
     if (level<5 && !id.isEmpty())
     {
@@ -1614,6 +1627,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
       out.addStr(id);
       out.addStr(" ");
       out.addStr(header);
+      out.addStr("\n");
       SectionInfo *si = new SectionInfo(g_fileName,id,header,type,level);
       if (g_current)
       {
@@ -1912,6 +1926,8 @@ static QCString processBlocks(const QCString &s,int indent)
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
       if ((level=isHeaderline(data+i,size-i))>0)
       {
+        if (level==1) g_correctSectionLevel=FALSE;
+        if (g_correctSectionLevel) level--;
         //printf("Found header at %d-%d\n",i,end);
         while (pi<size && data[pi]==' ') pi++;
         QCString header,id;
@@ -1925,6 +1941,7 @@ static QCString processBlocks(const QCString &s,int indent)
             out.addStr(id);
             out.addStr(" ");
             out.addStr(header);
+            out.addStr("\n");
             SectionInfo *si = new SectionInfo(g_fileName,id,header,
                 level==1 ? SectionInfo::Section : SectionInfo::Subsection,level);
             if (g_current)
@@ -2139,9 +2156,19 @@ void MarkdownFileParser::parseInput(const char *fileName,
 {
   Entry *current = new Entry;
   current->lang = SrcLangExt_Markdown;
-  QCString docs = fileBuf;
+  current->fileName = fileName;
+  current->docFile  = fileName;
+  int len = strlen(fileBuf);
+  BufStr input(len);
+  BufStr output(len);
+  input.addArray(fileBuf,strlen(fileBuf));
+  input.addChar('\0');
+  convertCppComments(&input,&output,fileName);
+  output.addChar('\0');
+  QCString docs = output.data();
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
+  g_correctSectionLevel = !title.isEmpty();
   QCString baseName = substitute(QFileInfo(fileName).baseName().utf8()," ","_");
   if (id.isEmpty()) id = "md_"+baseName;
   if (title.isEmpty()) title = baseName;
@@ -2193,6 +2220,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
 
   // restore setting
   Doxygen::markdownSupport = markdownEnabled;
+  g_correctSectionLevel = FALSE;
 }
 
 void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,

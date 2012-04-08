@@ -210,24 +210,28 @@ void HtmlDocVisitor::visit(DocSymbol *s)
   }
 }
 
+void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
+{
+  m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
+  uint i;
+  int size=3;
+  for (i=0;i<url.length();)
+  {
+    m_t << "+'" << url.mid(i,size) << "'";
+    i+=size;
+    if (size==3) size=2; else size=3;
+  }
+  m_t << "; return false;\">";
+}
+
 void HtmlDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
   if (u->isEmail()) // mail address
   {
-    // do obfuscation via javascript
-    m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
-    QCString url = u->url();     
-    uint i;
-    int size=3;
-    for (i=0;i<url.length();)
-    {
-      m_t << "+'" << url.mid(i,size) << "'";
-      i+=size;
-      if (size==3) size=2; else size=3;
-    }
-    m_t << "; return false;\">";
-    size=5;
+    QCString url = u->url();
+    writeObfuscatedMailAddress(url);
+    uint size=5,i;
     for (i=0;i<url.length();)
     {
       filter(url.mid(i,size));
@@ -454,7 +458,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          forceEndParagraph(inc);
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
-         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,
                                            inc->context(),
@@ -1013,7 +1017,7 @@ void HtmlDocVisitor::visitPre(DocTitle *)
 void HtmlDocVisitor::visitPost(DocTitle *)
 {
   if (m_hide) return;
-  m_t << "</b></dt><dd>";
+  m_t << "</dt><dd>";
 }
 
 void HtmlDocVisitor::visitPre(DocSimpleList *sl)
@@ -1234,9 +1238,16 @@ void HtmlDocVisitor::visitPost(DocInternal *)
 void HtmlDocVisitor::visitPre(DocHRef *href)
 {
   if (m_hide) return;
-  QCString url = correctURL(href->url(),href->relPath());
-  m_t << "<a href=\"" << convertToXML(url)  << "\""
-      << htmlAttribsToString(href->attribs()) << ">";
+  if (href->url().left(7)=="mailto:")
+  {
+    writeObfuscatedMailAddress(href->url().mid(7));
+  }
+  else
+  {
+    QCString url = correctURL(href->url(),href->relPath());
+    m_t << "<a href=\"" << convertToXML(url)  << "\""
+        << htmlAttribsToString(href->attribs()) << ">";
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocHRef *) 
@@ -1463,8 +1474,9 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
       className="exception";
       break;
     case DocParamSect::TemplateParam: 
-      heading="Template Parameters"; break; // TODO: TRANSLATE ME
+      heading=theTranslator->trTemplateParameters();
       className="tparams";
+      break;
     default:
       ASSERT(0);
   }

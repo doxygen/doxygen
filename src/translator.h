@@ -504,6 +504,17 @@ class Translator
     virtual QCString trCiteReferences() = 0;
     virtual QCString trCopyright() = 0;
     virtual QCString trDirDepGraph(const char *name) = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDetailLevel() = 0;
+    virtual QCString trTemplateParameters() = 0;
+    virtual QCString trAndMore(const QCString &number) = 0;
+    virtual QCString trEnumGeneratedFromFiles(bool single) = 0;
+    virtual QCString trEnumReference(const char *name) = 0;
+
 };
 
 #endif

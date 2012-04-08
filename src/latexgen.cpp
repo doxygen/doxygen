@@ -2621,3 +2621,18 @@ void LatexGenerator::endInlineMemberDoc()
   t << "\\\\\n\\hline\n" << endl;
 }
 
+void LatexGenerator::startLabels()
+{
+  t << "\\hspace{0.3cm}";
+}
+
+void LatexGenerator::writeLabel(const char *l,bool isLast)
+{
+  t << "{\\ttfamily [" << l << "]}";
+  if (!isLast) t << ", ";
+}
+
+void LatexGenerator::endLabels()
+{
+}
+

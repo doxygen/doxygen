@@ -441,6 +441,13 @@ class OutputList : public OutputDocInterface
     void endInlineMemberDoc()
     { forall(&OutputGenerator::endInlineMemberDoc); }
 
+    void startLabels() 
+    { forall(&OutputGenerator::startLabels); }
+    void writeLabel(const char *l,bool isLast)
+    { forall(&OutputGenerator::writeLabel,l,isLast); }
+    void endLabels()
+    { forall(&OutputGenerator::endLabels); }
+
     void startFontClass(const char *c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()

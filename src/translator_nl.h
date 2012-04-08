@@ -162,7 +162,7 @@ class TranslatorDutch : public Translator
     { return "Naslagwerk"; }
 
     QCString trDefines()
-    { return "Defines"; }
+    { return "Macros"; }
     QCString trFuncProtos()
     { return "Functie Prototypes"; }
     QCString trTypedefs()
@@ -176,7 +176,7 @@ class TranslatorDutch : public Translator
     QCString trEnumerationValues()
     { return "Enumeratie waarden"; }
     QCString trDefineDocumentation()
-    { return "Documentatie van defines"; }
+    { return "Documentatie van macro's"; }
     QCString trFunctionPrototypeDocumentation()
     { return "Documentatie van functie Prototypes"; }
     QCString trTypedefDocumentation()
@@ -417,8 +417,10 @@ class TranslatorDutch : public Translator
         case ClassDef::Category:   result+="deze categorie"; break;
         case ClassDef::Exception:  result+="deze exceptie"; break;
       }
-      result+=" is gegenereerd op grond van het volgende bestand";
-      if (single) result+=":"; else result+="s:";
+      result+=" is gegenereerd op grond van ";
+      if (single) result+="het"; else result+="de";
+      result+=" volgende bestand";
+      if (single) result+=":"; else result+="en:";
       return result;
     }
 
@@ -1339,8 +1341,10 @@ class TranslatorDutch : public Translator
         case ClassDef::Category:   result+="deze category"; break;
         case ClassDef::Exception:  result+="deze exception"; break;
       }
-      result+=" is gegenereerd op grond van het volgende bestand";
-      if (single) result+=":"; else result+="s:";
+      result+=" is gegenereerd op grond van ";
+      if (single) result+="het"; else result+="de";
+      result+=" volgende bestand";
+      if (single) result+=":"; else result+="en:";
       return result;
     }
     /*! This is used for translation of the word that will possibly
@@ -1463,6 +1467,35 @@ class TranslatorDutch : public Translator
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Folder afhankelijkheidsgraaf voor ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "detail niveau"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Template Parameters"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "en "+number+ " anderen..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "De documentatie voor deze enum is gegenereerd op grond van ";
+      if (single) result+="het"; else result+="de";
+      result+=" volgende bestand";
+      if (single) result+=":"; else result+="en:";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString(name)+" Enum Referentie"; }
 
 
 };

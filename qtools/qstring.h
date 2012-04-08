@@ -43,6 +43,7 @@
 #include "qcstring.h"
 #endif // QT_H
 
+#define QT_NO_ASCII_CAST
 
 /*****************************************************************************
   QString class

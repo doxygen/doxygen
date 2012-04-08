@@ -746,14 +746,6 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
-                 "SHOW_DIRECTORIES",
-                 "If the sources in your project are distributed over multiple directories\n"
-                 "then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy\n"
-                 "in the documentation. The default is NO.",
-                 FALSE
-                );
-  //----
-  cb = cfg->addBool(
                  "SHOW_FILES",
                  "Set the SHOW_FILES tag to NO to disable the generation of the Files page.\n"
                  "This will remove the Files entry from the Quick Index and from the\n"
@@ -1551,14 +1543,6 @@ void addConfigOptions(Config *cfg)
                 );
   ci->addDependency("GENERATE_HTML");
   //----
-  cb = cfg->addBool(
-                 "USE_INLINE_TREES",
-                 "By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories,\n"
-                 "and Class Hierarchy pages using a tree view instead of an ordered list.",
-                 FALSE
-                );
-  cb->addDependency("GENERATE_HTML");
-  //----
   ci = cfg->addInt(
                  "TREEVIEW_WIDTH",
                  "If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be\n"
@@ -2341,7 +2325,7 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "DIRECTORY_GRAPH",
-                 "If the DIRECTORY_GRAPH, SHOW_DIRECTORIES and HAVE_DOT tags are set to YES\n"
+                 "If the DIRECTORY_GRAPH and HAVE_DOT tags are set to YES\n"
                  "then doxygen will show the dependencies a directory has on other directories\n"
                  "in a graphical way. The dependency relations are determined by the #include\n"
                  "relations between the files in the directories.",
@@ -2491,4 +2475,8 @@ void addConfigOptions(Config *cfg)
   cfg->addObsolete("BIN_ABSPATH");
   //----
   cfg->addObsolete("EXT_DOC_PATHS");
+  //----
+  cfg->addObsolete("USE_INLINE_TREES");
+  //----
+  cfg->addObsolete("SHOW_DIRECTORIES");
 }

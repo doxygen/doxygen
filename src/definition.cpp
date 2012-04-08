@@ -245,7 +245,7 @@ void Definition::addToMap(const char *name,Definition *d)
 
 void Definition::removeFromMap(Definition *d)
 {
-  QString symbolName = d->m_symbolName;
+  QCString symbolName = d->m_symbolName;
   if (!symbolName.isEmpty()) 
   {
     //printf("******* removing symbol `%s' (%p)\n",symbolName.data(),d);
@@ -510,8 +510,8 @@ bool Definition::_docsAlreadyAdded(const QCString &doc)
 void Definition::_setDocumentation(const char *d,const char *docFile,int docLine,
                                    bool stripWhiteSpace,bool atTop)
 {
+  //printf("%s::setDocumentation(%s,%s,%d,%d)\n",name().data(),d,docFile,docLine,stripWhiteSpace);
   if (d==0) return;
-  //printf("Definition::setDocumentation(%s,%s,%d,%d)\n",d,docFile,docLine,stripWhiteSpace);
   QCString doc = d;
   if (stripWhiteSpace)
   {
@@ -1435,6 +1435,10 @@ void Definition::writePathFragment(OutputList &ol) const
   {
     m_impl->outerScope->writePathFragment(ol);
   }
+  else if (definitionType()==Definition::TypeFile && ((const FileDef*)this)->getDirDef())
+  {
+    ((const FileDef*)this)->getDirDef()->writePathFragment(ol);
+  }
   ol.writeString("      <li class=\"navelem\">");
   if (isLinkable())
   {
@@ -1522,12 +1526,63 @@ QCString Definition::docFile() const
   return m_impl->details ? m_impl->details->file : QCString("<"+m_name+">"); 
 }
 
+//----------------------------------------------------------------------------
+// strips w from s iff s starts with w
+static bool stripWord(QCString &s,QCString w)
+{
+  bool success=FALSE;
+  if (s.left(w.length())==w) 
+  {
+    success=TRUE;
+    s=s.right(s.length()-w.length());
+  }
+  return success;
+}
+
+//----------------------------------------------------------------------------
+// some quasi intelligent brief description abbreviator :^)
+QCString abbreviate(const char *s,const char *name)
+{
+  QCString scopelessName=name;
+  int i=scopelessName.findRev("::");
+  if (i!=-1) scopelessName=scopelessName.mid(i+2);
+  QCString result=s;
+  result=result.stripWhiteSpace();
+  // strip trailing .
+  if (!result.isEmpty() && result.at(result.length()-1)=='.') 
+    result=result.left(result.length()-1);
+
+  // strip any predefined prefix
+  QStrList &briefDescAbbrev = Config_getList("ABBREVIATE_BRIEF");
+  const char *p = briefDescAbbrev.first();
+  while (p)
+  {
+    QCString s = p;
+    s.replace(QRegExp("\\$name"), scopelessName);  // replace $name with entity name
+    s += " ";
+    stripWord(result,s);
+    p = briefDescAbbrev.next();
+  }
+
+  // capitalize first word
+  if (!result.isEmpty())
+  {
+    int c=result[0];
+    if (c>='a' && c<='z') c+='A'-'a';
+    result[0]=c;
+  }
+  return result;
+}
+
+
 //----------------------
 
-QCString Definition::briefDescription() const 
+QCString Definition::briefDescription(bool abbr) const 
 { 
   makeResident();
-  return m_impl->brief ? m_impl->brief->doc : QCString(""); 
+  return m_impl->brief ? 
+         (abbr ? abbreviate(m_impl->brief->doc,displayName()) : m_impl->brief->doc) :
+         QCString(""); 
 }
 
 QCString Definition::briefDescriptionAsTooltip() const

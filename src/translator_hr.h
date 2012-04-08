@@ -81,7 +81,7 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public Translator
+class TranslatorCroatian : public TranslatorAdapter_1_8_0
 {
   private:
   

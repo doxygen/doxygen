@@ -2928,4 +2928,19 @@ void RTFGenerator::endInlineMemberDoc()
   t << "\\cell }{\\row }" << endl;
 }
 
+void RTFGenerator::startLabels()
+{
+}
+
+void RTFGenerator::writeLabel(const char *l,bool isLast)
+{
+  t << "{\\f2 [" << l << "]}";
+  if (!isLast) t << ", ";
+}
+
+void RTFGenerator::endLabels()
+{
+}
+
+
 

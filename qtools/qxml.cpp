@@ -820,7 +820,7 @@ void QXmlInputSource::readInput( QByteArray& rawData )
 	    }
 	    delete stream;
 	    stream = new QTextStream( &buf );
-	    stream->setCodec( QTextCodec::codecForName( encoding ) );
+	    stream->setCodec( QTextCodec::codecForName( encoding.utf8() ) );
 	    buf.reset();
 	    input = "";
 	}

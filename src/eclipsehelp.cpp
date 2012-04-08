@@ -157,6 +157,7 @@ void EclipseHelp::decContentsDepth()
  * @param anchor Name of an anchor of the item.
  * @param separateIndex not used.
  * @param addToNavIndex not used.
+ * @param def not used.
  */
 void EclipseHelp::addContentsItem(
     bool /* isDir */,
@@ -165,7 +166,8 @@ void EclipseHelp::addContentsItem(
     const char *file,
     const char *anchor,
     bool /* separateIndex */,
-    bool /* addToNavIndex */) 
+    bool /* addToNavIndex */,
+    Definition * /*def*/) 
 {
   // -- write the topic tag 
   closedTag();

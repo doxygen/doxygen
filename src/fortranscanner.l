@@ -805,8 +805,8 @@ private                                 {
 						  (modifiers[current_root->parent()][current_root->name.lower()].returnName.lower() == argName.lower()))
 					      {
 						int strt = current_root->type.find("function");
-						QString lft;
-						QString rght;
+						QCString lft;
+						QCString rght;
 						if (strt != -1)
 						{
 						  lft = "";

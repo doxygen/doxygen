@@ -1693,9 +1693,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->name=removeRedundantWhiteSpace(substitute(yytext,"\\","::"));
   					  //printf("PHP: adding use relation: %s\n",current->name.data());
                                           current->fileName = yyFileName; 
-  					  current->section=Entry::USINGDIR_SEC;
+                                          // add a using declaraton
+  					  current->section=Entry::USINGDECL_SEC;
 					  current_root->addSubEntry(current);
-					  current = new Entry;
+					  current = new Entry(*current);
+                                          // also add it as a using directive
+					  current->section=Entry::USINGDIR_SEC;
+					  current_root->addSubEntry(current);
+					  current = new Entry ;
 					  initEntry();
 					  aliasName.resize(0);
 					}
@@ -2289,9 +2294,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->fileName   = yyFileName;
 					  current->startLine  = yyLineNr;
 					  current->type.resize(0);
-  					  current->args       = current->args.simplifyWhiteSpace();
+                                          current->type       = "const";
+                                          QCString init = current->initializer.data();
+  					  init = init.simplifyWhiteSpace();
+  					  init = init.left(init.length()-1);
+                                          current->initializer = init;
   					  current->name       = current->name.stripWhiteSpace();
-					  current->section    = Entry::ENUM_SEC;  //HACK!
+					  current->section    = Entry::VARIABLE_SEC; 
 					  current_root->addSubEntry(current);
 					  current             = new Entry ;
 					  initEntry();
@@ -2318,12 +2327,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->name = current->name.stripWhiteSpace();
 					  current->name = current->name.left(current->name.length()-1).stripWhiteSpace();
 					  current->name = current->name.left(current->name.length()-1);
-					  current->args = "(";
   					  current->bodyLine = yyLineNr;
   					  lastRoundContext = DefinePHPEnd;
-  					  pCopyRoundString = &current->args;
+  					  pCopyRoundGString = &current->initializer;
 					  roundCount = 0;
-  					  BEGIN( CopyRound );
+  					  BEGIN( GCopyRound );
 					}
 
 <FindMembers>[\^%]			{  // ^ and % are C++/CLI extensions
@@ -6002,7 +6010,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
     if (YY_START==Comment)
     {
-      warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
+      warn(yyFileName,yyLineNr,"warning: File ended in the middle of a comment block! Perhaps a missing \\endcode?");
     }
 
     //forceEndGroup();

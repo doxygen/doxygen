@@ -62,6 +62,7 @@ class NamespaceDef : public Definition
     SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();
     QCString displayName() const;
+    QCString localName() const;
     
     bool isLinkableInProject() const;
     bool isLinkable() const;

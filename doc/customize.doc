@@ -80,8 +80,6 @@ that are disabled by default:
 - enabling \ref cfg_html_dynamic_sections "HTML_DYNAMIC_SECTIONS" will make
   doxygen hide certain content (like graphs) in the HTML by default, 
   and let the reader expand these sections on request.
-- enabling \ref cfg_use_inline_trees "USE_INLINE_TREES" will make some
-  tree structures in the output dynamically expandable.
 - enabling \ref cfg_have_dot "HAVE_DOT" along 
   with \ref cfg_interactive_svg "INTERACTIVE_SVG" while setting 
   \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" to \c svg, will make doxygen

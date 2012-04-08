@@ -243,6 +243,9 @@ class ManGenerator : public OutputGenerator
     void startInlineMemberDoc();
     void endInlineMemberDoc();
 
+    void startLabels();
+    void writeLabel(const char *l,bool isLast);
+    void endLabels();
 
     void writeCodeAnchor(const char *) {}
     void linkableSymbol(int,const char *,Definition *,Definition *) {}

@@ -125,7 +125,7 @@ struct LayoutNavEntry
       Files, 
       FileList,
       FileGlobals,
-      Dirs, 
+      //Dirs, 
       Examples,
       User,
       UserGroup

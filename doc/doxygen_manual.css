@@ -26,6 +26,19 @@ h3 {
 	font-size: 100%;
 }
 
+h1, h2, h3, h4, h5, h6 {
+        -webkit-transition: text-shadow 0.5s linear;
+        -moz-transition: text-shadow 0.5s linear;
+        -ms-transition: text-shadow 0.5s linear;
+        -o-transition: text-shadow 0.5s linear;
+        transition: text-shadow 0.5s linear;
+        margin-right: 15px;
+}
+
+h1.glow, h2.glow, h3.glow, h4.glow, h5.glow, h6.glow {
+         text-shadow: 0 0 15px cyan;
+}
+
 dt {
 	font-weight: bold;
 }
@@ -425,6 +438,15 @@ table.memberdecls {
 	padding: 0;
 	margin-bottom: 10px;
 	margin-right: 5px;
+        -webkit-transition: box-shadow 0.5s linear;
+        -moz-transition: box-shadow 0.5s linear;
+        -ms-transition: box-shadow 0.5s linear;
+        -o-transition: box-shadow 0.5s linear;
+        transition: box-shadow 0.5s linear;
+}
+
+.memitem.glow {
+         box-shadow: 0 0 15px cyan;
 }
 
 .memname {

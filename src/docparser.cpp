@@ -337,7 +337,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al==0) return; // no argument list
 
-  static QRegExp re("[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
+  static QRegExp re("$?[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
   int p=0,i=0,l;
   while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
   {
@@ -352,11 +352,10 @@ static void checkArgumentName(const QCString &name,bool isParam)
       QCString argName = g_memberDef->isDefine() ? a->type : a->name;
       if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
-      //printf("argName=`%s'\n",argName.data());
+      //printf("argName=`%s' aName=%s\n",argName.data(),aName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName) 
       {
-	//printf("adding `%s'\n",aName.data());
 	g_paramsFound.insert(aName,(void *)(0x8));
 	found=TRUE;
 	break;

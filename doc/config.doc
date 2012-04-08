@@ -251,7 +251,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_separate_member_pages SEPARATE_MEMBER_PAGES
 \refitem cfg_server_based_search SERVER_BASED_SEARCH
 \refitem cfg_short_names SHORT_NAMES
-\refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_files SHOW_FILES
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_namespaces SHOW_NAMESPACES
@@ -278,7 +277,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_uml_limit_num_fields UML_LIMIT_NUM_FIELDS
 \refitem cfg_uml_look UML_LOOK
 \refitem cfg_use_htags USE_HTAGS
-\refitem cfg_use_inline_trees USE_INLINE_TREES
 \refitem cfg_use_mathjax USE_MATHJAX
 \refitem cfg_use_pdflatex USE_PDFLATEX
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
@@ -915,13 +913,6 @@ function's detailed documentation block.
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
 
-\anchor cfg_show_dirs
-<dt>\c SHOW_DIRECTORIES <dd>
- \addindex SHOW_DIRECTORIES
- If the sources in your project are distributed over multiple directories
- then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy
- in the documentation.
-
 \anchor cfg_show_files
 <dt>\c SHOW_FILES <dd>
  \addindex SHOW_FILES
@@ -1087,8 +1078,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  in the directories. If left blank the following patterns are tested:
  <code>
  *.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh 
- *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py 
- *.f90 *.f *.vhd *.vhdl
+ *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.markdown *.md 
+ *.mm *.dox *.py *.f90 *.f *.vhd *.vhdl
  </code>
 
 \anchor cfg_recursive
@@ -1766,12 +1757,6 @@ and does not have live searching capabilities.
  example that shows how to put an image at the root of the tree instead of
  the \ref cfg_project_name "project name".
 
-\anchor cfg_use_inline_trees
-<dt>\c USE_INLINE_TREES <dd>
- \addindex USE_INLINE_TREES
-By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, 
-and Class Hierarchy pages using a tree view instead of an ordered list.
-
 \anchor cfg_treeview_width
 <dt>\c TREEVIEW_WIDTH <dd>
  \addindex TREEVIEW_WIDTH
@@ -2447,7 +2432,7 @@ The default size is 10pt.
 \anchor cfg_directory_graph
 <dt>\c DIRECTORY_GRAPH <dd>
  \addindex DIRECTORY_GRAPH		    
- If the \c DIRECTORY_GRAPH, \c SHOW_DIRECTORIES and \c HAVE_DOT options are set 
+ If the \c DIRECTORY_GRAPH, and \c HAVE_DOT options are set 
  to \c YES then doxygen will show the dependencies a directory has on other directories
  in a graphical way. The dependency relations are determined by the \#include
  relations between the files in the directories.

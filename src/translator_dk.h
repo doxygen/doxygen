@@ -87,7 +87,7 @@
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-class TranslatorDanish : public Translator
+class TranslatorDanish : public TranslatorAdapter_1_8_0
 {
   public:
 

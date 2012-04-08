@@ -343,9 +343,7 @@ Structural indicators
   The "path fragment" argument should include the directory name and
   enough of the path to be unique with respect to the other directories
   in the project.
-  The \ref cfg_show_dirs "SHOW_DIRECTORIES" option determines whether
-  or not the directory information is shown and the
-  \ref cfg_strip_from_path "STRIP_FROM_PATH" option determines what is
+  The \ref cfg_strip_from_path "STRIP_FROM_PATH" option determines what is
   stripped from the full path before it appears in the output.
 
 <hr>

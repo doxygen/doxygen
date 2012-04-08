@@ -101,7 +101,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public Translator
+class TranslatorFrench : public TranslatorAdapter_1_8_0
 {
    public:
    

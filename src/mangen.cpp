@@ -785,3 +785,18 @@ void ManGenerator::endInlineMemberDoc()
   firstCol=TRUE;
 }
 
+void ManGenerator::startLabels()
+{
+}
+
+void ManGenerator::writeLabel(const char *l,bool isLast)
+{
+  t << "\\fC [" << l << "]\\fP";
+  if (!isLast) t << ", ";
+}
+
+void ManGenerator::endLabels()
+{
+}
+
+

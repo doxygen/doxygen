@@ -377,6 +377,7 @@ class MemberDef : public Definition
     void _computeLinkableInProject();
     void _computeIsConstructor();
     void _computeIsDestructor();
+    void _getLabels(QStrList &sl,Definition *container) const;
 
     static int s_indentLevel;
     // disable copying of member defs
