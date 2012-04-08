@@ -469,7 +469,7 @@ Entry* tcl_entry_new()
 //  myEntry->type       = "";
   myEntry->brief      = "";
 //  myEntry->doc        = "";
-  myEntry->protection = Package;
+  myEntry->protection = Public;
 //  myEntry->mtype      = Method;
 //  myEntry->virt       = Normal;
 //  myEntry->stat       = FALSE;
@@ -499,7 +499,7 @@ void tcl_protection(Entry *entry)
 
 //! Check name.
 // @return 'ns' and 'name' of given current 'ns0' and 'name0'
-static void tcl_name(const QCString ns0, const QString name0, QCString &ns, QCString &name)
+static void tcl_name(const QCString &ns0, const QCString &name0, QCString &ns, QCString &name)
 {
   QCString myNm;
   int myStart;
@@ -510,7 +510,7 @@ static void tcl_name(const QCString ns0, const QString name0, QCString &ns, QCSt
   }
   else if (ns0.length() && ns0 != " ")
   {
-    myNm = ns0 + "::" + name0.data();
+    myNm = ns0 + "::" + name0;
   }
   else
   {
@@ -690,26 +690,25 @@ static void tcl_codify(const char *s,const char *str)
   tcl_codify(s,tmp);
   free(tmp);
 }
+
+//! Codify 'str' with special font class 's'.
+static void tcl_codify(const char *s,const QString &str)
+{
+  if (tcl.code==NULL) return;
+  tcl_codify(s,str.utf8());
+}
 #endif
 
 //! Codify 'str' with special font class 's'.
-static void tcl_codify(const char *s,QString str)
+static void tcl_codify(const char *s,const QCString &str)
 {
   if (tcl.code==NULL) return;
-  char *tmp= (char *) malloc(str.length()+1);
-  strcpy(tmp, str.data());
-  tcl_codify(s,tmp);
-  free(tmp);
+  tcl_codify(s,str.data());
 }
 
-//! Codify 'str' with special font class 's'.
-static void tcl_codify(const char *s,QCString str)
+static void tcl_codify_cmd(const char *s,int i)
 {
-  if (tcl.code==NULL) return;
-  char *tmp= (char *) malloc(str.length()+1);
-  strcpy(tmp, str);
-  tcl_codify(s,tmp);
-  free(tmp);
+  tcl_codify(s,(*tcl.list_commandwords.at(i)).utf8());
 }
 
 //-----------------------------------------------------------------------------
@@ -1084,9 +1083,9 @@ tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.ascii());
       myScan->type[0] = type;
       break;
     case '?':
-      if (content[0]=='"'&&content[content.length()-1]=='"') myScan->type[0]='"';
-      if (content[0]=='{'&&content[content.length()-1]=='}') myScan->type[0]='{';
-      if (content[0]=='['&&content[content.length()-1]==']') myScan->type[0]='[';
+      if (content[0]=='"' && content[content.length()-1]=='"') myScan->type[0]='"';
+      if (content[0]=='{' && content[content.length()-1]=='}') myScan->type[0]='{';
+      if (content[0]=='[' && content[content.length()-1]==']') myScan->type[0]='[';
   }
   if (myScan->type[0]!=' ')
   {
@@ -1129,7 +1128,7 @@ tcl_inf("line=%d\n",myScan->line1);
       myStart=i;
       break;
     }
-    tcl_codify(myScan->after[i],myScan->after[i+1]);
+    tcl_codify(myScan->after[i].utf8(),myScan->after[i+1].utf8());
   }
   yy_delete_buffer(myScan->buffer_state);
   yy_pop_state();
@@ -1564,23 +1563,23 @@ D
     tcl_split_list(*myArgs.at(i),myArgs1);
     if (myArgs1.count()==2)
     {
-      myArg->name= *myArgs1.at(0);
-      myArg->defval= *myArgs1.at(1);
+      myArg->name= (*myArgs1.at(0)).utf8();
+      myArg->defval= (*myArgs1.at(1)).utf8();
       if (myArg->defval.isEmpty())
       {
 	myArg->defval = " ";
       }
-      myArglist = myArglist + "?" + myArg->name.data() + "? ";
+      myArglist += "?" + QCString(myArg->name) + "? ";
     }
     else
     {
-      myArg->name= *myArgs.at(i);
-      myArglist = myArglist + myArg->name.data() + " ";
+      myArg->name= (*myArgs.at(i)).utf8();
+      myArglist += QString(myArg->name) + " ";
     }
     tcl.entry_current->argList->append(myArg);
   }
   arglist = myArglist;
-  tcl.entry_current->args = arglist;
+  tcl.entry_current->args = arglist.utf8();
 }
 
 //! Create link.
@@ -1668,8 +1667,8 @@ static void tcl_codify_link(QCString name)
 static void tcl_command_IF(QStringList type)
 {
 D
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
   tcl_scan *myScan=tcl.scan.at(0);
   myScan = tcl_scan_start('?',*tcl.list_commandwords.at(2),
 	myScan->ns,myScan->entry_cl,myScan->entry_fn);
@@ -1683,8 +1682,8 @@ D
 static void tcl_command_FOR()
 {
 D
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
   tcl_scan *myScan=tcl.scan.at(0);
   myScan = tcl_scan_start('?',*tcl.list_commandwords.at(2),
 	myScan->ns,myScan->entry_cl,myScan->entry_fn);
@@ -1703,10 +1702,10 @@ static void tcl_command_FOREACH()
 {
 D
   unsigned int i;
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
+  tcl_codify_cmd("keyword",0);
   for (i = 1;i<tcl.list_commandwords.count()-1;i++)
   {
-    tcl_codify(NULL,*tcl.list_commandwords.at(i));
+    tcl_codify_cmd(NULL,i);
   }
   tcl_scan *myScan=tcl.scan.at(0);
   myScan = tcl_scan_start('?',*tcl.list_commandwords.at(tcl.list_commandwords.count()-1),
@@ -1718,8 +1717,8 @@ D
 static void tcl_command_WHILE()
 {
 D
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
   tcl_scan *myScan=tcl.scan.at(0);
   myScan = tcl_scan_start('?',*tcl.list_commandwords.at(2),
 	myScan->ns,myScan->entry_cl,myScan->entry_fn);
@@ -1736,7 +1735,7 @@ D
   QCString myName;
   for (unsigned int i=0; i< tcl.list_commandwords.count(); i++)
   {
-    myName = *tcl.list_commandwords.at(i);
+    myName = (*tcl.list_commandwords.at(i)).utf8();
     if (i==0)
     {
       tcl_codify_link(myName);
@@ -1793,13 +1792,13 @@ D
   Entry *myEntryNs, *myEntry;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify(NULL,*tcl.list_commandwords.at(2));
-  tcl_codify(NULL,*tcl.list_commandwords.at(3));
-  tcl_codify(NULL,*tcl.list_commandwords.at(4));
-  tcl_codify(NULL,*tcl.list_commandwords.at(5));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(2),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd(NULL,2);
+  tcl_codify_cmd(NULL,3);
+  tcl_codify_cmd(NULL,4);
+  tcl_codify_cmd(NULL,5);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myEntryNs = tcl_entry_namespace(myNs);
@@ -1832,13 +1831,13 @@ D
   Entry *myEntryCl, *myEntry;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify(NULL,*tcl.list_commandwords.at(2));
-  tcl_codify(NULL,*tcl.list_commandwords.at(3));
-  tcl_codify(NULL,*tcl.list_commandwords.at(4));
-  tcl_codify(NULL,*tcl.list_commandwords.at(5));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(2),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd(NULL,2);
+  tcl_codify_cmd(NULL,3);
+  tcl_codify_cmd(NULL,4);
+  tcl_codify_cmd(NULL,5);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myEntryCl = tcl_entry_class(myNs);
@@ -1874,11 +1873,11 @@ D
   Entry *myEntryCl, *myEntry;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify(NULL,*tcl.list_commandwords.at(2));
-  tcl_codify(NULL,*tcl.list_commandwords.at(3));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(0),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd(NULL,2);
+  tcl_codify_cmd(NULL,3);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(0)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myEntryCl = tcl_entry_class(myNs);
@@ -1911,9 +1910,9 @@ D
   Entry *myEntryCl, *myEntry;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(0),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(0)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myEntryCl = tcl_entry_class(myNs);
@@ -1945,13 +1944,13 @@ D
   Entry *myEntryNs=NULL;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify("keyword",*tcl.list_commandwords.at(2));
-  tcl_codify(NULL,*tcl.list_commandwords.at(3));
-  tcl_codify(NULL,*tcl.list_commandwords.at(4));
-  tcl_codify(NULL,*tcl.list_commandwords.at(5));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(4),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd("keyword",2);
+  tcl_codify_cmd(NULL,3);
+  tcl_codify_cmd(NULL,4);
+  tcl_codify_cmd(NULL,5);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(4)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myName = myNs+"::"+myName;
@@ -1964,12 +1963,12 @@ D
   tcl.entry_main->addSubEntry(tcl.entry_current);
   tcl.ns.insert(myName,tcl.entry_current);
   myEntryNs = tcl.entry_current;
-  myStr = *tcl.list_commandwords.at(6);
+  myStr = (*tcl.list_commandwords.at(6)).utf8();
   if (tcl.list_commandwords.count() > 7)
   {
     for (uint i=7;i<tcl.list_commandwords.count();i++)
     {
-      myStr.append(*tcl.list_commandwords.at(i));
+      myStr.append((*tcl.list_commandwords.at(i)).utf8());
     }
     tcl.word_is=' ';
   }
@@ -1984,11 +1983,11 @@ D
   Entry *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify("NULL",*tcl.list_commandwords.at(2));
-  tcl_codify("NULL",*tcl.list_commandwords.at(3));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(2),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd("NULL",2);
+  tcl_codify_cmd("NULL",3);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myName = myNs+"::"+myName;
@@ -2013,13 +2012,13 @@ D
   Entry *myEntryNs, *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify("NULL",*tcl.list_commandwords.at(2));
-  tcl_codify("NULL",*tcl.list_commandwords.at(3));
-  tcl_codify("NULL",*tcl.list_commandwords.at(4));
-  tcl_codify("NULL",*tcl.list_commandwords.at(5));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(4),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd("NULL",2);
+  tcl_codify_cmd("NULL",3);
+  tcl_codify_cmd("NULL",4);
+  tcl_codify_cmd("NULL",5);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(4)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myName = myNs+"::"+myName;
@@ -2045,22 +2044,22 @@ D
   Entry *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
-  tcl_codify(NULL,*tcl.list_commandwords.at(1));
-  tcl_codify("NULL",*tcl.list_commandwords.at(2));
-  tcl_codify("NULL",*tcl.list_commandwords.at(3));
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(2),myNs,myName);
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_codify_cmd("NULL",2);
+  tcl_codify_cmd("NULL",3);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myName = myNs+"::"+myName;
   }
   myEntryCl = tcl_entry_class(myName);
-  myStr = *tcl.list_commandwords.at(4);
+  myStr = (*tcl.list_commandwords.at(4)).utf8();
   if (tcl.list_commandwords.count() > 5)
   {
     for (uint i=5;i<tcl.list_commandwords.count();i++)
     {
-      myStr.append(*tcl.list_commandwords.at(i));
+      myStr.append((*tcl.list_commandwords.at(i)).utf8());
     }
     tcl.word_is=' ';
   }
@@ -2075,12 +2074,12 @@ D
   Entry *myEntry;
   tcl_scan *myScan = tcl.scan.at(0);
 
-  tcl_codify("keyword",*tcl.list_commandwords.at(0));
+  tcl_codify_cmd("keyword",0);
   for (unsigned int i=1; i< tcl.list_commandwords.count(); i++)
   {
-    tcl_codify(NULL,*tcl.list_commandwords.at(i));
+    tcl_codify_cmd(NULL,i);
   }
-  tcl_name(myScan->ns,*tcl.list_commandwords.at(2),myNs,myName);
+  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {// qualified variables go into namespace
     myEntry = tcl_entry_namespace(myNs);
@@ -2110,6 +2109,9 @@ D
 }
 
 //! Handling of command parsing.
+//! what=0  -> ...
+//! what=1  -> ...
+//! what=-1 -> ...
 static void tcl_command(int what,const char *text)
 {
   int myLine=0;
@@ -2125,7 +2127,7 @@ tcl_inf("<- %s\n",text);
     tcl.command=1;
     return;
   }
-  if (what==1)
+  else if (what==1)
   {
     if (tcl.string_last.length())
     {
@@ -2138,7 +2140,7 @@ tcl_inf("<- %s\n",text);
     }
     return;
   }
-  if (what!=-1)
+  else if (what!=-1)
   {// should not happen
     tcl_err("what %d\n",what);
     return;
@@ -2147,7 +2149,7 @@ tcl_inf("<- %s\n",text);
 tcl_inf("->\n");
   if (tcl.command==0)
   {
-    return;//TODO check on inside comment
+    return; //TODO check on inside comment
   }
   if (tcl.string_last != "")
   {// get last word
@@ -2157,7 +2159,7 @@ tcl_inf("->\n");
   yy_pop_state();
 
   // check command
-  QString myStr = *tcl.list_commandwords.at(0);
+  QCString myStr = (*tcl.list_commandwords.at(0)).utf8();
   int myLevel = 0;
   Protection myProt = tcl.protection;
 
@@ -2170,27 +2172,27 @@ tcl_inf("->\n");
   if (myStr.left(2)=="::") myStr = myStr.mid(2);
   if (tcl.config_subst.contains(myStr))
   {
-    myStr=tcl.config_subst[myStr];
+    myStr=tcl.config_subst[myStr].utf8();
   }
-  if (strcmp("private",myStr)==0)
+  if (myStr=="private")
   {
     tcl.protection = Private;
     myLevel = 1;
   }
-  else if (strcmp("protected",myStr)==0)
+  else if (myStr=="protected")
   {
     tcl.protection = Protected;
     myLevel = 1;
   }
-  else if (strcmp("public",myStr)==0)
+  else if (myStr=="public")
   {
     tcl.protection = Public;
     myLevel = 1;
   }
   if (myLevel)
   {
-    tcl_codify("keyword",*tcl.list_commandwords.at(0));
-    tcl_codify(NULL,*tcl.list_commandwords.at(1));
+    tcl_codify_cmd("keyword",0);
+    tcl_codify_cmd(NULL,1);
     tcl.list_commandwords.remove(tcl.list_commandwords.at(1));
     tcl.list_commandwords.remove(tcl.list_commandwords.at(0));
     if (tcl.list_commandwords.count()==1)
@@ -2201,15 +2203,15 @@ tcl_inf("->\n");
       myProt = tcl.protection;
       goto command_end;
     }
-    myStr	= *tcl.list_commandwords.at(0);
+    myStr	= (*tcl.list_commandwords.at(0)).utf8();
     // remove leading "::" and apply TCL_SUBST
     if (myStr.left(2)=="::") myStr = myStr.mid(2);
     if (tcl.config_subst.contains(myStr))
     {
-      myStr=tcl.config_subst[myStr];
+      myStr=tcl.config_subst[myStr].utf8();
     }
   }
-  if (strcmp("proc",myStr)==0)
+  if (myStr=="proc")
   {
     if (tcl.list_commandwords.count() == 5)
     {// itcl::proc
@@ -2220,7 +2222,7 @@ tcl_inf("->\n");
     tcl_command_PROC();
     goto command_end;
   }
-  if (strcmp("method",myStr)==0)
+  if (myStr=="method")
   {
     if (tcl.list_commandwords.count() == 5)
     {// itcl::method
@@ -2231,21 +2233,21 @@ tcl_inf("->\n");
     tcl_command_METHOD();
     goto command_end;
   }
-  if (strcmp("constructor",myStr)==0)
+  if (myStr=="constructor")
   {
     if (tcl.list_commandwords.count() != 5) {myLine=__LINE__;goto command_warn;}
     tcl_command_CONSTRUCTOR();
     goto command_end;
   }
-  if (strcmp("destructor",myStr)==0)
+  if (myStr=="destructor")
   {
     if (tcl.list_commandwords.count() != 3) {myLine=__LINE__;goto command_warn;}
     tcl_command_DESTRUCTOR();
     goto command_end;
   }
-  if (strcmp("namespace",myStr)==0)
+  if (myStr=="namespace")
   {
-    if (strcmp("eval",*tcl.list_commandwords.at(2))==0)
+    if ((*tcl.list_commandwords.at(2)).utf8()=="eval")
     {
       if (tcl.list_commandwords.count() < 7) {myLine=__LINE__;goto command_warn;}
       tcl_command_NAMESPACE();
@@ -2254,21 +2256,21 @@ tcl_inf("->\n");
     tcl_command_OTHER();
     goto command_text;
   }
-  if (strcmp("itcl::class",myStr)==0)
+  if (myStr=="itcl::class")
   {
     if (tcl.list_commandwords.count() != 5) {myLine=__LINE__;goto command_warn;}
     tcl_command_ITCL_CLASS();
     goto command_end;
   }
-  if (strcmp("itcl::body",myStr)==0)
+  if (myStr=="itcl::body")
   {
     if (tcl.list_commandwords.count() != 7) {myLine=__LINE__;goto command_warn;}
     tcl_command_METHOD();
     goto command_end;
   }
-  if (strcmp("oo::class",myStr)==0)
+  if (myStr=="oo::class")
   {
-    if (strcmp("create",*tcl.list_commandwords.at(2))==0)
+    if ((*tcl.list_commandwords.at(2)).utf8()=="create")
     {
       if (tcl.list_commandwords.count() != 7) {myLine=__LINE__;goto command_warn;}
       tcl_command_OO_CLASS();
@@ -2277,13 +2279,13 @@ tcl_inf("->\n");
     tcl_command_OTHER();
     goto command_text;
   }
-  if (strcmp("oo::define",myStr)==0)
+  if (myStr=="oo::define")
   {
     if (tcl.list_commandwords.count() < 5) {myLine=__LINE__;goto command_warn;}
     tcl_command_OO_DEFINE();
     goto command_end;
   }
-  if (strcmp("variable",myStr)==0)
+  if (myStr=="variable")
   {
     if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
     if (tcl.scan.at(0)->entry_fn == NULL)
@@ -2292,7 +2294,7 @@ tcl_inf("->\n");
       goto command_text;
     }
   }
-  if (strcmp("common",myStr)==0)
+  if (myStr=="common")
   {
     if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
     if (tcl.scan.at(0)->entry_fn == NULL)
@@ -2301,14 +2303,14 @@ tcl_inf("->\n");
       goto command_text;
     }
   }
-  if (strcmp("inherit",myStr)==0 || strcmp("superclass",myStr)==0)
+  if (myStr=="inherit" || myStr=="superclass")
   {
     if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
     if (tcl.scan.at(0)->entry_cl!=NULL&&tcl.scan.at(0)->entry_cl->name!="")
     {
       for (unsigned int i = 2; i < tcl.list_commandwords.count(); i = i + 2)
       {
-        tcl.scan.at(0)->entry_cl->extends->append(new BaseInfo(*tcl.list_commandwords.at(i),Public,Normal));
+        tcl.scan.at(0)->entry_cl->extends->append(new BaseInfo((*tcl.list_commandwords.at(i)).utf8(),Public,Normal));
       }
     }
     goto command_end;
@@ -2318,13 +2320,13 @@ tcl_inf("->\n");
    * Ready: if, for, foreach, while
    * TODO: switch, eval, ?
    */
-  if (strcmp("for",myStr)==0)
+  if (myStr=="for")
   {
     if (tcl.list_commandwords.count() != 9) {myLine=__LINE__;goto command_warn;}
     tcl_command_FOR();
     goto command_end;
   }
-  if (strcmp("foreach",myStr)==0)
+  if (myStr=="foreach")
   {
     if (tcl.list_commandwords.count() < 7 || tcl.list_commandwords.count()%2==0) {myLine=__LINE__;goto command_warn;}
     tcl_command_FOREACH();
@@ -2333,17 +2335,18 @@ tcl_inf("->\n");
   /*
 if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
   */
-  if (strcmp("if",myStr)==0 && tcl.list_commandwords.count() > 4)
+  if (myStr=="if" && tcl.list_commandwords.count() > 4)
   {
     QStringList myType;
     myType << "keyword" << "NULL" << "script" << "NULL";
     char myState='x';// last word: e'x'pr 't'hen 'b'ody 'e'lse else'i'f..
     for (unsigned int i = 4; i < tcl.list_commandwords.count(); i = i + 2)
     {
-      const char *myStr=*tcl.list_commandwords.at(i);
+      QCString myStr=(*tcl.list_commandwords.at(i)).utf8();
       if (myState=='x')
       {
-        if (strcmp("then",myStr)==0) {
+        if (myStr=="then") 
+        {
           myState='t';
 	  myType << "keyword" << "NULL";
         }
@@ -2360,11 +2363,11 @@ if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
       }
       else if (myState=='b')
       {
-        if (strcmp("elseif",myStr)==0) {
+        if (myStr=="elseif") {
           myState='i';
 	  myType << "keyword" << "NULL";
         }
-        else if (strcmp("else",myStr)==0 && i==tcl.list_commandwords.count()-3)
+        else if (myStr=="else" && i==tcl.list_commandwords.count()-3)
         {
 	  myState = 'b';
 	  myType << "keyword" << "NULL" << "script";
@@ -2391,7 +2394,7 @@ if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
     tcl_command_IF(myType);
     goto command_end;
   }
-  if (strcmp("while",myStr)==0)
+  if (myStr=="while")
   {
     if (tcl.list_commandwords.count() != 5) {myLine=__LINE__;goto command_warn;}
     tcl_command_WHILE();

@@ -38,7 +38,7 @@ class IndexIntf
     virtual void decContentsDepth() = 0;
     virtual void addContentsItem(bool isDir, const char *name, const char *ref, 
                                  const char *file, const char *anchor, bool separateIndex,
-                                 bool addToNavIndex) = 0;
+                                 bool addToNavIndex,Definition *def) = 0;
     virtual void addIndexItem(Definition *context,MemberDef *md,const char *title) = 0;
     virtual void addIndexFile(const char *name) = 0;
     virtual void addImageFile(const char *name) = 0;
@@ -98,11 +98,11 @@ class IndexList : public IndexIntf
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6);
     }
 
-    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6,typename A7>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6,A7),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6,A7 a7)
+    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6,typename A7,typename A8>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6,A7,A8),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6,A7 a7,A8 a8)
     {
       QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6,a7);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6,a7,a8);
     }
 
   public:
@@ -122,9 +122,10 @@ class IndexList : public IndexIntf
     void decContentsDepth()
     { foreach(&IndexIntf::decContentsDepth); }
     void addContentsItem(bool isDir, const char *name, const char *ref, 
-                         const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE)
-    { foreach<bool,const char *,const char *,const char *,const char*,bool,bool>
-             (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex); }
+                         const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
+                         Definition *def=0)
+    { foreach<bool,const char *,const char *,const char *,const char*,bool,bool,Definition *>
+             (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
     void addIndexItem(Definition *context,MemberDef *md,const char *title=0)
     { foreach<Definition *,MemberDef *>
              (&IndexIntf::addIndexItem,context,md,title); }
@@ -166,7 +167,7 @@ enum HighlightedItem
   HLI_None=0,
   HLI_Main,
   HLI_Modules,
-  HLI_Directories,
+  //HLI_Directories,
   HLI_Namespaces,
   HLI_Hierarchy,
   HLI_Classes,

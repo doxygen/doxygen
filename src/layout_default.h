@@ -18,7 +18,6 @@
 "      <tab type=\"filelist\" visible=\"yes\" title=\"\" intro=\"\"/>\n"
 "      <tab type=\"globals\" visible=\"yes\" title=\"\" intro=\"\"/>\n"
 "    </tab>\n"
-"    <tab type=\"dirs\" visible=\"yes\" title=\"\" intro=\"\"/>\n"
 "    <tab type=\"examples\" visible=\"yes\" title=\"\" intro=\"\"/>  \n"
 "  </navindex>\n"
 "\n"

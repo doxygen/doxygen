@@ -1765,6 +1765,87 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const
   return result;
 }
 
+void MemberDef::_getLabels(QStrList &sl,Definition *container) const
+{
+  Specifier lvirt=virtualness();
+  if ((!isObjCMethod() || isOptional() || isRequired()) &&
+      (protection()!=Public || lvirt!=Normal ||
+       isFriend() || isRelated() || 
+       (isInline() && Config_getBool("INLINE_INFO")) ||
+       isSignal() || isSlot() ||
+       isStatic() || 
+       (m_impl->classDef && m_impl->classDef!=container && container->definitionType()==TypeClass) ||
+       (m_impl->memSpec & ~Entry::Inline)!=0 
+      )
+     )
+  {
+    // write the member specifier list
+    //ol.writeLatexSpacing();
+    //ol.startTypewriter();
+    //ol.docify(" [");
+    SrcLangExt lang = getLanguage();
+    bool optVhdl = lang==SrcLangExt_VHDL;
+    if (optVhdl)
+    {
+      sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
+    }
+    else
+    {
+      if (isFriend()) sl.append("friend");
+      else if (isRelated()) sl.append("related");
+      else
+      {
+        if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
+        if      (isExplicit())            sl.append("explicit");
+        if      (isMutable())             sl.append("mutable");
+        if      (isStatic())              sl.append("static");
+        if      (isGettable())            sl.append("get");
+        if      (isSettable())            sl.append("set");
+        if      (isAddable())             sl.append("add");
+        if      (isRemovable())           sl.append("remove");
+        if      (isRaisable())            sl.append("raise");
+        if      (isReadable())            sl.append("read");
+        if      (isWritable())            sl.append("write");
+        if      (isFinal())               sl.append("final");
+        if      (isAbstract())            sl.append("abstract");
+        if      (isOverride())            sl.append("override");
+        if      (isInitonly())            sl.append("initonly");
+        if      (isSealed())              sl.append("sealed");
+        if      (isNew())                 sl.append("new");
+        if      (isOptional())            sl.append("optional");
+        if      (isRequired())            sl.append("required");
+        if      (isAssign())              sl.append("assign");
+        else if (isCopy())                sl.append("copy");
+        else if (isRetain())              sl.append("retain");
+
+        if (!isObjCMethod())
+        {
+          if      (protection()==Protected) sl.append("protected");
+          else if (protection()==Private)   sl.append("private");
+          else if (protection()==Package)   sl.append("package");
+
+          if      (lvirt==Virtual)          sl.append("virtual");
+          else if (lvirt==Pure)             sl.append("pure virtual");
+          if      (isSignal())              sl.append("signal");
+          if      (isSlot())                sl.append("slot");
+        }
+      }
+      if (m_impl->classDef && 
+          container->definitionType()==TypeClass && 
+          m_impl->classDef!=container &&
+          !isRelated()
+         ) 
+      {
+        sl.append("inherited");
+      }
+    }
+  }
+  else if (isObjCMethod() && isImplementation())
+  {
+    sl.append("implementation");
+  }
+}
+
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
  */
@@ -1851,6 +1932,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   ol.pushGeneratorState();
 
+  QStrList sl;
+  _getLabels(sl,container);
+  bool htmlEndLabelTable=FALSE;
 
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
@@ -1949,6 +2033,18 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       }
     }
 
+    if (sl.count()>0)
+    {
+      ol.pushGeneratorState();
+      ol.disableAll();
+      ol.enable(OutputGenerator::Html);
+      ol.writeString("<table class=\"mlabels\">\n");
+      ol.writeString("  <tr>\n");
+      ol.writeString("  <td class=\"mlabels-left\">\n");
+      ol.popGeneratorState();
+      htmlEndLabelTable=TRUE;
+    }
+
     ol.startMemberDocName(isObjCMethod());
     if (cd && cd->isObjectiveC())
     {
@@ -2013,95 +2109,22 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
   }
 
-  Specifier lvirt=virtualness();
-
-  if ((!isObjCMethod() || isOptional() || isRequired()) &&
-      (protection()!=Public || lvirt!=Normal ||
-       isFriend() || isRelated() || 
-       (isInline() && Config_getBool("INLINE_INFO")) ||
-       isSignal() || isSlot() ||
-       isStatic() || 
-       (m_impl->classDef && m_impl->classDef!=container && container->definitionType()==TypeClass) ||
-       (m_impl->memSpec & ~Entry::Inline)!=0 
-      )
-     )
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Html);
+  if (sl.count()>0)
   {
-    // write the member specifier list
-    ol.writeLatexSpacing();
-    ol.startTypewriter();
-    ol.docify(" [");
-    QStrList sl;
-    if (optVhdl)
-    {
-      sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
-    }
-    else
-    {
-      if (isFriend()) sl.append("friend");
-      else if (isRelated()) sl.append("related");
-      else
-      {
-        if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
-        if      (isExplicit())            sl.append("explicit");
-        if      (isMutable())             sl.append("mutable");
-        if      (isStatic())              sl.append("static");
-        if      (isGettable())            sl.append("get");
-        if      (isSettable())            sl.append("set");
-        if      (isAddable())             sl.append("add");
-        if      (isRemovable())           sl.append("remove");
-        if      (isRaisable())            sl.append("raise");
-        if      (isReadable())            sl.append("read");
-        if      (isWritable())            sl.append("write");
-        if      (isFinal())               sl.append("final");
-        if      (isAbstract())            sl.append("abstract");
-        if      (isOverride())            sl.append("override");
-        if      (isInitonly())            sl.append("initonly");
-        if      (isSealed())              sl.append("sealed");
-        if      (isNew())                 sl.append("new");
-        if      (isOptional())            sl.append("optional");
-        if      (isRequired())            sl.append("required");
-        if      (isAssign())              sl.append("assign");
-        else if (isCopy())                sl.append("copy");
-        else if (isRetain())              sl.append("retain");
-
-        if (!isObjCMethod())
-        {
-          if      (protection()==Protected) sl.append("protected");
-          else if (protection()==Private)   sl.append("private");
-          else if (protection()==Package)   sl.append("package");
-
-          if      (lvirt==Virtual)          sl.append("virtual");
-          else if (lvirt==Pure)             sl.append("pure virtual");
-          if      (isSignal())              sl.append("signal");
-          if      (isSlot())                sl.append("slot");
-        }
-      }
-      if (m_impl->classDef && 
-          container->definitionType()==TypeClass && 
-          m_impl->classDef!=container &&
-          !isRelated()
-         ) 
-      {
-        sl.append("inherited");
-      }
-    }
+    ol.startLabels();
     const char *s=sl.first();
     while (s)
     {
-      ol.docify(s);
-      s=sl.next();
-      if (s) ol.docify(", ");
+      const char *ns = sl.next();
+      ol.writeLabel(s,ns==0);
+      s=ns;
     }
-    ol.docify("]");
-    ol.endTypewriter();
+    ol.endLabels();
   }
-  else if (isObjCMethod() && isImplementation())
-  {
-    ol.writeLatexSpacing();
-    ol.startTypewriter();
-    ol.docify(" [implementation]");
-    ol.endTypewriter();
-  }
+  ol.popGeneratorState();
+
   if (hasParameterList) 
   {
     ol.endParameterList();
@@ -2112,6 +2135,32 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.endMemberDocName();
     ol.endMemberDoc(FALSE);
   }
+
+  // for HTML write the labels here
+  ol.pushGeneratorState();
+  ol.disableAll();
+  ol.enable(OutputGenerator::Html);
+  if (htmlEndLabelTable)
+  {
+    ol.writeString("  </td>\n");
+    ol.writeString("  <td class=\"mlabels-right\">\n");
+    ol.startLabels();
+    const char *s=sl.first();
+    while (s)
+    {
+      const char *ns = sl.next();
+      ol.writeLabel(s,ns==0);
+      s=ns;
+    }
+    ol.endLabels();
+    ol.writeString("  </td>\n");
+    ol.writeString("  </tr>\n");
+    ol.writeString("</table>\n");
+  }
+  ol.writeString("</div>");
+  ol.popGeneratorState();
+
+
   ol.endDoxyAnchor(cfname,memAnchor);
   ol.startIndent();
 
@@ -2624,7 +2673,7 @@ QCString MemberDef::memberTypeName() const
   makeResident();
   switch (m_impl->mtype)
   {
-    case Define:      return "define";
+    case Define:      return "macro definition";
     case Function:    return "function";
     case Variable:    return "variable";
     case Typedef:     return "typedef";

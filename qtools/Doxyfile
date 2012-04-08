@@ -1,4 +1,4 @@
-# Doxyfile 1.7.4
+# Doxyfile 1.8.0
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -27,11 +27,13 @@ INHERIT_DOCS           = YES
 SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 8
 ALIASES                =
+TCL_SUBST              =
 OPTIMIZE_OUTPUT_FOR_C  = NO
 OPTIMIZE_OUTPUT_JAVA   = NO
 OPTIMIZE_FOR_FORTRAN   = NO
 OPTIMIZE_OUTPUT_VHDL   = NO
 EXTENSION_MAPPING      =
+MARKDOWN_SUPPORT       = YES
 BUILTIN_STL_SUPPORT    = NO
 CPP_CLI_SUPPORT        = NO
 SIP_SUPPORT            = NO
@@ -39,13 +41,16 @@ IDL_PROPERTY_SUPPORT   = YES
 DISTRIBUTE_GROUP_DOC   = NO
 SUBGROUPING            = YES
 INLINE_GROUPED_CLASSES = NO
+INLINE_SIMPLE_STRUCTS  = NO
 TYPEDEF_HIDES_STRUCT   = NO
 SYMBOL_CACHE_SIZE      = 0
+LOOKUP_CACHE_SIZE      = 0
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = NO
+EXTRACT_PACKAGE        = NO
 EXTRACT_STATIC         = YES
 EXTRACT_LOCAL_CLASSES  = YES
 EXTRACT_LOCAL_METHODS  = NO
@@ -73,15 +78,15 @@ GENERATE_DEPRECATEDLIST= YES
 ENABLED_SECTIONS       =
 MAX_INITIALIZER_LINES  = 30
 SHOW_USED_FILES        = YES
-SHOW_DIRECTORIES       = NO
 SHOW_FILES             = YES
 SHOW_NAMESPACES        = YES
 FILE_VERSION_FILTER    =
 LAYOUT_FILE            =
+CITE_BIB_FILES         =
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
 #---------------------------------------------------------------------------
-QUIET                  = NO
+QUIET                  = YES
 WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
@@ -112,7 +117,7 @@ FILTER_SOURCE_PATTERNS =
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
-SOURCE_BROWSER         = YES
+SOURCE_BROWSER         = NO
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
@@ -132,8 +137,8 @@ IGNORE_PREFIX          = Q
 GENERATE_HTML          = YES
 HTML_OUTPUT            =
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = 
-HTML_FOOTER            = 
+HTML_HEADER            =
+HTML_FOOTER            =
 HTML_STYLESHEET        =
 HTML_EXTRA_FILES       =
 HTML_COLORSTYLE_HUE    = 220
@@ -167,13 +172,13 @@ ECLIPSE_DOC_ID         = org.doxygen.qtools
 DISABLE_INDEX          = YES
 GENERATE_TREEVIEW      = YES
 ENUM_VALUES_PER_LINE   = 4
-USE_INLINE_TREES       = YES
 TREEVIEW_WIDTH         = 250
 EXT_LINKS_IN_WINDOW    = NO
 FORMULA_FONTSIZE       = 10
 FORMULA_TRANSPARENT    = YES
 USE_MATHJAX            = NO
 MATHJAX_RELPATH        = http://cdn.mathjax.org/mathjax/latest
+MATHJAX_EXTENSIONS     =
 SEARCHENGINE           = YES
 SERVER_BASED_SEARCH    = NO
 #---------------------------------------------------------------------------
@@ -193,6 +198,7 @@ USE_PDFLATEX           = YES
 LATEX_BATCHMODE        = NO
 LATEX_HIDE_INDICES     = NO
 LATEX_SOURCE_CODE      = YES
+LATEX_BIB_STYLE        = plain
 #---------------------------------------------------------------------------
 # configuration options related to the RTF output
 #---------------------------------------------------------------------------
@@ -256,13 +262,14 @@ MSCGEN_PATH            =
 HIDE_UNDOC_RELATIONS   = YES
 HAVE_DOT               = NO
 DOT_NUM_THREADS        = 0
-DOT_FONTNAME           = 
+DOT_FONTNAME           =
 DOT_FONTSIZE           = 10
 DOT_FONTPATH           =
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 GROUP_GRAPHS           = YES
 UML_LOOK               = NO
+UML_LIMIT_NUM_FIELDS   = 10
 TEMPLATE_RELATIONS     = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES

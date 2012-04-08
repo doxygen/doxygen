@@ -129,7 +129,7 @@ static bool checkVhdlString(QCString &name)
   if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
   {
     QStringList qrl=QStringList::split(regg,name,FALSE);
-    if (VhdlDocGen::isNumber((QCString)qrl[0]))
+    if (VhdlDocGen::isNumber(qrl[0].utf8()))
     {
       g_code->codify("\""); 
       startFontClass("vhdllogic");
@@ -679,7 +679,7 @@ static void writeFuncProto()
     return;
   }
   QStringList qlist=QStringList::split(name,g_FuncProto,FALSE);
-  QCString temp=(QCString)qlist[0];
+  QCString temp=qlist[0].utf8();
   codifyLines(temp.data(),g_CurrClass.data());
   g_FuncProto.stripPrefix(temp.data());
   temp.resize(0);
@@ -821,7 +821,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			if (ql.count()>=2)
 			{
 			  unsigned int index=0;
-			  QCString t1=(QCString)ql[0];
+			  QCString t1=ql[0].utf8();
 			  char cc=t1.at(index);
 			  while (cc==' ' || cc=='\t') 
 			  {
@@ -852,7 +852,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			  }        
 			  codifyLines("=>");
 			  index=0;
-			  QCString s2=(QCString)ql[1];
+			  QCString s2=ql[1].utf8();
 			  t1=s2;
 			  cc=t1.at(index);
 			  while (cc==' ' || cc=='\t') 
@@ -1166,9 +1166,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                 
                           if (strl.count()>2) 
 			  {
-                             QCString s1=(QCString)strl[0];  
-                             QCString s2=(QCString)strl[1];  
-                             QCString s3=(QCString)strl[2];  
+                             QCString s1=strl[0].utf8();  
+                             QCString s2=strl[1].utf8();  
+                             QCString s3=strl[2].utf8();  
                              s1.append(".");
                              s3.prepend(".");
                              codifyLines(s1.data(),g_CurrClass.data());  
@@ -1292,7 +1292,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                            QCString ss(vhdlcodeYYtext);
                            QCString temp=VhdlDocGen::getIndexWord(vhdlcodeYYtext,2);
                            QStringList ql=QStringList::split(temp,ss,FALSE);
-                           QCString ll=(QCString)ql[0];
+                           QCString ll=ql[0].utf8();
                            codifyLines(ll.data(),g_CurrClass.data());
                            temp=temp.stripWhiteSpace();
                                      temp.prepend("_");

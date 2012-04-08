@@ -854,7 +854,14 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_lineNr   = 1;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
-  BEGIN(Scan);
+  if (g_lang==SrcLangExt_Markdown)
+  {
+    BEGIN(CComment);
+  }
+  else
+  {
+    BEGIN(Scan);
+  }
   yylex();
   while (!g_condStack.isEmpty())
   {

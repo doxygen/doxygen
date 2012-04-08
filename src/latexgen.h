@@ -247,6 +247,10 @@ class LatexGenerator : public OutputGenerator
     void startInlineMemberDoc();
     void endInlineMemberDoc();
 
+    void startLabels();
+    void writeLabel(const char *l,bool isLast);
+    void endLabels();
+
     void startFontClass(const char *); // {}
     void endFontClass(); // {}
 

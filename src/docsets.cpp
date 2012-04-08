@@ -13,12 +13,11 @@
  *
  */
 
+#include <qfile.h>
 #include "docsets.h"
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
-#include <qfile.h>
-
 
 DocSets::DocSets() : m_nodes(17), m_scopes(17)
 {
@@ -216,7 +215,8 @@ void DocSets::addContentsItem(bool isDir,
                               const char *file,
                               const char *anchor,
                               bool /* separateIndex */,
-                              bool /* addToNavIndex */)
+                              bool /* addToNavIndex */,
+                              Definition * /*def*/)
 {
   (void)isDir;
   if (file && ref==0)
@@ -447,7 +447,7 @@ void DocSets::writeToken(FTextStream &t,
 {
   t << "  <Token>" << endl;
   t << "    <TokenIdentifier>" << endl;
-  QString name = d->name();
+  QCString name = d->name();
   if (name.right(2)=="-p")  name=name.left(name.length()-2);
   t << "      <Name>" << convertToXML(name) << "</Name>" << endl;
   if (!lang.isEmpty())

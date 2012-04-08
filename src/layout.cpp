@@ -937,13 +937,13 @@ class LayoutParser : public QXmlDefaultHandler
           theTranslator->trFileMembersDescription(extractAll),
           "globals"
         },
-        { "dirs",
-          LayoutNavEntry::Dirs,
-          theTranslator->trDirectories(),
-          QCString(),
-          theTranslator->trDirDescription(),
-          "dirs"
-        },
+        //{ "dirs",
+        //  LayoutNavEntry::Dirs,
+        //  theTranslator->trDirectories(),
+        //  QCString(),
+        //  theTranslator->trDirDescription(),
+        //  "dirs"
+        //},
         { "examples",
           LayoutNavEntry::Examples,
           theTranslator->trExamples(),
@@ -1154,7 +1154,7 @@ class LayoutParser : public QXmlDefaultHandler
                        const QString& name, const QXmlAttributes& attrib )
     {
       //printf("startElement [%s]::[%s]\n",m_scope.data(),name.data());
-      StartElementHandler *handler = m_sHandler[m_scope+name];
+      StartElementHandler *handler = m_sHandler[m_scope+name.utf8()];
       if (handler)
       {
         (*handler)(attrib);
@@ -1170,13 +1170,13 @@ class LayoutParser : public QXmlDefaultHandler
     {
       //printf("endElement [%s]::[%s]\n",m_scope.data(),name.data());
       EndElementHandler *handler;
-      if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name+"/")
+      if (!m_scope.isEmpty() && m_scope.right(name.length()+1)==name.utf8()+"/")
       { // element ends current scope
         handler = m_eHandler[m_scope.left(m_scope.length()-1)];
       }
       else // continue with current scope
       {
-        handler = m_eHandler[m_scope+name];
+        handler = m_eHandler[m_scope+name.utf8()];
       }
       if (handler)
       {
@@ -1194,7 +1194,7 @@ class LayoutParser : public QXmlDefaultHandler
 
     QDict<StartElementHandler> m_sHandler;
     QDict<EndElementHandler>   m_eHandler;
-    QString m_scope;
+    QCString m_scope;
     int m_part;
     LayoutNavEntry *m_rootNav;
     bool m_invalidEntry;

@@ -631,6 +631,7 @@ QCString HtmlHelp::recode(const QCString &s)
  *  \param anchor the anchor of the item.
  *  \param separateIndex not used.
  *  \param addToNavIndex not used.
+ *  \param def not used.
  */
 void HtmlHelp::addContentsItem(bool isDir,
                                const char *name,
@@ -638,7 +639,8 @@ void HtmlHelp::addContentsItem(bool isDir,
                                const char *file,
                                const char *anchor,
                                bool /* separateIndex */,
-                               bool /* addToNavIndex */)
+                               bool /* addToNavIndex */,
+                               Definition * /* def */)
 {
   // If we're using a binary toc then folders cannot have links. 
   if(Config_getBool("BINARY_TOC") && isDir) 

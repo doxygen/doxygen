@@ -30,6 +30,7 @@
 #include "index.h"
 
 class QFile;
+class Definition;
 struct FTVNode;
 class FTextStream;
 
@@ -50,10 +51,8 @@ class FTVHelp : public IndexIntf
                          const char *file,
                          const char *anchor,
                          bool separateIndex=FALSE,
-                         bool addToNavIndex=FALSE);
-    //void addIndexItem(const char *, const char *, 
-    //                  const char *, const char *,
-    //                  const char *, const MemberDef *) {}
+                         bool addToNavIndex=FALSE,
+                         Definition *def=0);
     void addIndexItem(Definition *,MemberDef *,const char *) {}
     void addIndexFile(const char *) {}
     void addImageFile(const char *) {}
@@ -64,9 +63,10 @@ class FTVHelp : public IndexIntf
     void generateTreeViewScripts();
   private:
     void generateScript(FTextStream &t);
-    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level);
+    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level,int &index);
     bool generateJSTree(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
     //bool generateJSTreeTopLevel(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
+    QCString generateIndentLabel(FTVNode *n,int level);
     void generateIndent(FTextStream &t,FTVNode *n,int level);
     void generateLink(FTextStream &t,FTVNode *n);
     void generateJSLink(FTextStream &t,FTVNode *n);

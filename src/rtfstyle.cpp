@@ -443,7 +443,7 @@ void loadStylesheet(const char *name, QDict<StyleData>& dict)
   while (!t.eof())
   {
     QCString s(4096); // string buffer of max line length
-    s = t.readLine().stripWhiteSpace();
+    s = t.readLine().stripWhiteSpace().utf8();
     if (s.isEmpty() || s.at(0)=='#') continue; // skip blanks & comments
     int sepLength;
     int sepStart = separator.match(s,0,&sepLength);
@@ -490,7 +490,7 @@ void loadExtensions(const char *name)
   while (!t.eof())
   {
     QCString s(4096); // string buffer of max line length
-    s = t.readLine().stripWhiteSpace();
+    s = t.readLine().stripWhiteSpace().utf8();
     if (s.length()==0 || s.at(0)=='#') continue; // skip blanks & comments
     int sepLength;
     int sepStart = separator.match(s,0,&sepLength);

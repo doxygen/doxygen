@@ -52,7 +52,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_8_0
 {
   public:
 

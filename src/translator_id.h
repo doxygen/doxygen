@@ -24,7 +24,7 @@
  *
  * Penterjemah: Adhi Hargo <cadmus_sw at yahoo.com>
  */
-class TranslatorIndonesian : public Translator
+class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 {
   public:
 

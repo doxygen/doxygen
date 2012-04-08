@@ -265,6 +265,9 @@ class HtmlGenerator : public OutputGenerator
     void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
     void endFontClass() { t << "</span>"; }
 
+    void startLabels();
+    void writeLabel(const char *l,bool isLast);
+    void endLabels();
 
     void writeCodeAnchor(const char *anchor) 
     { t << "<a name=\"" << anchor << "\"></a>"; }

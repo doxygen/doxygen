@@ -750,6 +750,21 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trDirDepGraph(fromUtf8(name))); }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trDetailLevel()
+    { return toUtf8(m_translator->trDetailLevel()); }
+    QCString trTemplateParameters()
+    { return toUtf8(m_translator->trTemplateParameters()); }
+    QCString trAndMore(const QCString &number)
+    { return toUtf8(m_translator->trAndMore(fromUtf8(number))); }
+    QCString trEnumGeneratedFromFiles(bool single)
+    { return toUtf8(m_translator->trEnumGeneratedFromFiles(single)); }
+    QCString trEnumReference(const char *name)
+    { return toUtf8(m_translator->trEnumReference(fromUtf8(name))); }
+
+//////////////////////////////////////////////////////////////////////////
   private:
     Translator *m_translator;
     void *m_toUtf8;

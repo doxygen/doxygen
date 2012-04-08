@@ -50,7 +50,7 @@ DirDef::~DirDef()
 
 bool DirDef::isLinkableInProject() const 
 { 
-  return !isReference() && Config_getBool("SHOW_DIRECTORIES"); 
+  return !isReference(); 
 }
 
 bool DirDef::isLinkable() const 
@@ -231,7 +231,7 @@ void DirDef::writeSubDirList(OutputList &ol)
             FALSE, // indexWords
             FALSE, // isExample
             0,     // exampleName
-            FALSE, // single line
+            TRUE,  // single line
             TRUE   // link from index
            );
         ol.endMemberDescription();
@@ -292,7 +292,7 @@ void DirDef::writeFileList(OutputList &ol)
             FALSE, // indexWords
             FALSE, // isExample
             0,     // exampleName
-            FALSE, // single line
+            TRUE,  // single line
             TRUE   // link from index
            );
         ol.endMemberDescription();

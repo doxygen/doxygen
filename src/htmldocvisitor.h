@@ -135,6 +135,7 @@ class HtmlDocVisitor : public DocVisitor
     // helper functions 
     //--------------------------------------
     
+    void writeObfuscatedMailAddress(const QCString &url);
     void filter(const char *str);
     void filterQuotedCdataAttr(const char* str);
     void startLink(const QCString &ref,const QCString &file,

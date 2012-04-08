@@ -651,8 +651,8 @@ static void readIncludeFile(const char *incName)
 						 break;
 					       case ConfigOption::O_Obsolete:
 					         config_err("warning: Tag `%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+						            "To avoid this warning please remove this line from your configuration "
+							    "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -1034,9 +1034,9 @@ static void cleanUpPaths(QStrList &str)
 	int i = str.at();
 	str.remove();
 	if (str.at()==i) // did not remove last item
-	  str.insert(i,fi.absFilePath()+"/");
+	  str.insert(i,fi.absFilePath().utf8()+"/");
 	else
-	  str.append(fi.absFilePath()+"/");
+	  str.append(fi.absFilePath().utf8()+"/");
       }
     }
     sfp = str.next();
@@ -1110,7 +1110,7 @@ void Config::check()
   char *sfp = stripFromPath.first();
   if (sfp==0) // by default use the current path
   {
-    stripFromPath.append(QDir::currentDirPath()+"/");
+    stripFromPath.append(QDir::currentDirPath().utf8()+"/");
   }
   else
   {
@@ -1225,7 +1225,7 @@ void Config::check()
     QFileInfo fi(dotPath);
     if (fi.exists() && fi.isFile()) // user specified path + exec
     {
-      dotPath=fi.dirPath(TRUE);
+      dotPath=fi.dirPath(TRUE).utf8();
     }
     else
     {
@@ -1237,7 +1237,7 @@ void Config::check()
       }
       else
       {
-	dotPath=dp.dirPath(TRUE)+"/";
+	dotPath=dp.dirPath(TRUE).utf8()+"/";
       }
     }
 #if defined(_WIN32) // convert slashes
@@ -1262,7 +1262,7 @@ void Config::check()
     }
     else
     {
-      mscgenPath=dp.dirPath(TRUE)+"/";
+      mscgenPath=dp.dirPath(TRUE).utf8()+"/";
 #if defined(_WIN32) // convert slashes
       uint i=0,l=mscgenPath.length();
       for (i=0;i<l;i++) if (mscgenPath.at(i)=='/') mscgenPath.at(i)='\\';
@@ -1280,7 +1280,7 @@ void Config::check()
   if (inputSources.count()==0)
   {
     // use current dir as the default
-    inputSources.append(QDir::currentDirPath());
+    inputSources.append(QDir::currentDirPath().utf8());
   }
   else
   {

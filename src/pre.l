@@ -1515,7 +1515,7 @@ static void readIncludeFile(const QCString &inc)
         QFileInfo fi2(absName);
         if (fi2.exists())
         {
-	  absIncFileName=fi2.absFilePath();
+	  absIncFileName=fi2.absFilePath().utf8();
 	}
 	else if (searchIncludes) // search in INCLUDE_PATH as well
 	{
@@ -1526,12 +1526,12 @@ static void readIncludeFile(const QCString &inc)
 	    QFileInfo fi(s);
 	    if (fi.exists() && fi.isDir())
 	    {
-	      QCString absName = QCString(fi.absFilePath())+"/"+incFileName;
+	      QCString absName = QCString(fi.absFilePath().utf8())+"/"+incFileName;
 	      //printf("trying absName=%s\n",absName.data());
 	      QFileInfo fi2(absName);
 	      if (fi2.exists())
 	      {
-		absIncFileName=fi2.absFilePath();
+		absIncFileName=fi2.absFilePath().utf8();
 		break;
 	      }
 	      //printf( "absIncFileName = %s\n", absIncFileName.data() );
@@ -2812,7 +2812,7 @@ static void unputChar(const QCString &expr,QCString *rest,uint &pos,char c)
 void addSearchDir(const char *dir)
 {
   QFileInfo fi(dir);
-  if (fi.isDir()) g_pathList->append(fi.absFilePath());
+  if (fi.isDir()) g_pathList->append(fi.absFilePath().utf8());
 } 
 
 void initPreprocessor()

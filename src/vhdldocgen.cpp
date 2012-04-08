@@ -548,7 +548,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   else if (ii==VhdlDocGen::ARCHITECTURE)
   {
     QStringList qlist=QStringList::split("-",nn,FALSE);
-    nn=qlist[1];
+    nn=qlist[1].utf8();
     cd=VhdlDocGen::getClass(nn.data());
   }
 
@@ -561,8 +561,8 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
     {
       QCString *temp=ql.at(i);
       QStringList qlist=QStringList::split("-",*temp,FALSE);
-      QCString s1=(QCString)qlist[0];
-      QCString s2=(QCString)qlist[1];
+      QCString s1=qlist[0].utf8();
+      QCString s2=qlist[1].utf8();
       s1.stripPrefix("_");
       if (j==1) s1.resize(0);
       ClassDef*cc = getClass(temp->data());
@@ -595,7 +595,7 @@ void VhdlDocGen::findAllArchitectures(QList<QCString>& qll,const ClassDef *cd)
     if (cd != citer && jj.contains('-')!=-1)
     {
       QStringList ql=QStringList::split("-",jj,FALSE);
-      QCString temp=(QCString)ql[1];
+      QCString temp=ql[1].utf8();
       if (stricmp(cd->className().data(),temp.data())==0)
       {
         QCString *cl=new QCString(jj.data());
@@ -617,7 +617,7 @@ ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
     QStringList ql=QStringList::split(":",jj,FALSE);
     if (ql.count()>1)
     {
-      if ((QCString)ql[0]==nn )
+      if (ql[0].utf8()==nn )
       {
         return citer;
       }
@@ -664,7 +664,6 @@ bool VhdlDocGen::compareString(const QCString& s1,const QCString& s2)
  */
 void VhdlDocGen::prepareComment(QCString& qcs)
 {
-  QCString temp;
   const char* s="--!";
   //const char *start="--!{";
   //const char *end="--!}";
@@ -674,8 +673,7 @@ void VhdlDocGen::prepareComment(QCString& qcs)
   {
     index=qcs.find(s,0,TRUE);
     if (index<0) break;
-    temp=qcs.remove(index,strlen(s));
-    qcs=temp;
+    qcs=qcs.remove(index,strlen(s));
   }
   qcs=qcs.stripWhiteSpace();
 }
@@ -752,7 +750,7 @@ QCString VhdlDocGen::getIndexWord(const char* c,int index)
 
   if (ql.count() > (unsigned int)index)
   {
-    return (QCString)ql[index];
+    return ql[index].utf8();
   }
 
   return "";
@@ -818,7 +816,7 @@ bool VhdlDocGen::deleteCharRev(QCString &s,char c)
   int index=s.findRev(c,-1,FALSE);
   if (index > -1)
   {
-    QString qcs=s.remove(index,1);
+    QCString qcs=s.remove(index,1);
     s=qcs;
     return TRUE;
   }
@@ -830,7 +828,7 @@ void VhdlDocGen::deleteAllChars(QCString &s,char c)
   int index=s.findRev(c,-1,FALSE);
   while (index > -1)
   {
-    QString qcs=s.remove(index,1);
+    QCString qcs=s.remove(index,1);
     s=qcs;
     index=s.findRev(c,-1,FALSE);
   }
@@ -2190,7 +2188,7 @@ void VhdlDocGen::writeCodeFragment( MemberDef *mdef,OutputList& ol)
   int len= qsl.count();
   for(int j=0;j<len;j++)
   {
-    QCString q=(QCString)qsl[j];
+    QCString q=qsl[j].utf8();
     VhdlDocGen::writeFormatString(q,ol,mdef);
     ol.lineBreak();
     if (j==2) // only the first three lines are shown
@@ -2219,7 +2217,7 @@ void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
     ol.docify(lineNumber.data());
     ol.endBold();
     ol.insertMemberAlign();
-    QCString q=(QCString)qsl[j];
+    QCString q=qsl[j].utf8();
     VhdlDocGen::writeFormatString(q,ol,mdef);
     ol.docify("\n");
   }
@@ -2459,8 +2457,8 @@ QCString  VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   QStringList ql=QStringList::split(exp,entity,FALSE);
   //int ii=ql.findIndex(ent);
   assert(ql.count()>=2);
-  label = (QCString)ql[0];
-  entity = (QCString)ql[1];
+  label = ql[0].utf8();
+  entity = ql[1].utf8();
   if ((index=entity.findRev("."))>=0)
   {
     entity.remove(0,index+1);
@@ -2468,7 +2466,7 @@ QCString  VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
   if (ql.count()==3)
   {
-    arch= (QCString)ql[2];
+    arch= ql[2].utf8();
     ql=QStringList::split(exp,arch,FALSE);
     if (ql.count()>1) // expression
       arch="";
@@ -2490,19 +2488,14 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   if (ql.contains("open"))
     return "open";
 
-  if (ql.count()==1)
-    (QCString)ql[0];
-  //assert(ql.count()>=2);
+  label=ql[0].utf8();
 
-
-  label=(QCString)ql[0];
-
-  entity = (QCString)ql[1];
+  entity = ql[1].utf8();
   if ((index=entity.findRev("."))>=0)
     entity.remove(0,index+1);
 
   if (ql.count()==3)
-    arch=(QCString)ql[2];
+    arch=ql[2].utf8();
   return label;
 }
 
@@ -2725,7 +2718,7 @@ void  VhdlDocGen::writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDe
   uint len=ql.count();
   for(uint i=0;i<len;i++)
   {
-    QCString n=(QCString)ql[i];
+    QCString n=ql[i].utf8();
     VhdlDocGen::formatString(n,ol,mdef);
     if ((len-i)>1) ol.lineBreak();
   }
@@ -2745,7 +2738,7 @@ void VhdlDocGen::writeRecUnitDocu(
   bool first=TRUE;
   for(uint i=0;i<len;i++)
   {
-    QCString n=(QCString)ql[i];
+    QCString n=ql[i].utf8();
     ol.startParameterType(first,"");
     VhdlDocGen::formatString(n,ol,md);
     if ((len-i)>1)
@@ -2776,7 +2769,7 @@ void VhdlDocGen::writeCodeFragment(OutputList& ol,int start, QCString & codeFrag
     ol.docify(lineNumber.data());
     ol.endBold();
     ol.insertMemberAlign();
-    QCString q=(QCString)qsl[j];
+    QCString q=qsl[j].utf8();
     VhdlDocGen::writeFormatString(q,ol,mdef);
     ol.docify("\n");
   }

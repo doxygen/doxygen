@@ -70,18 +70,22 @@ static const char search_styleSheet[] =
 ;
 
 static const char search_jquery_script1[]=
-#include "jquery_js.h"
+#include "jquery_p1_js.h"
 ;
 
 static const char search_jquery_script2[]=
-#include "sizzle_js.h"
+#include "jquery_p2_js.h"
 ;
 
 static const char search_jquery_script3[]=
-#include "jquery_ui_js.h"
+#include "jquery_p3_js.h"
 ;
 
 static const char search_jquery_script4[]=
+#include "jquery_ui_js.h"
+;
+
+static const char search_jquery_script5[]=
 #include "jquery_fx_js.h"
 ;
 
@@ -958,7 +962,7 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
     QFileInfo cssfi(cssFile);
     if (cssfi.exists())
     {
-      cssFile = cssfi.fileName();
+      cssFile = cssfi.fileName().utf8();
     }
     else
     {
@@ -1139,7 +1143,7 @@ void HtmlGenerator::init()
       t << search_jquery_script1 << search_jquery_script2 << search_jquery_script3;
       if (Config_getBool("GENERATE_TREEVIEW"))
       {
-        t << search_jquery_script4;
+        t << search_jquery_script4 << search_jquery_script5;
       }
     }
   }
@@ -1213,6 +1217,13 @@ void HtmlGenerator::writeTabData()
   Doxygen::indexList.addStyleSheetFile("tabs.css");
   QCString dname=Config_getString("HTML_OUTPUT");
   writeColoredImgData(dname,colored_tab_data);
+
+  {
+    unsigned char shadow[6] = { 5, 5, 5, 5, 5, 5 };
+    unsigned char shadow_alpha[6]  = { 80, 60, 40, 20, 10, 0 };
+    ColoredImage img(1,6,shadow,shadow_alpha,0,0,100);
+    img.save(dname+"/nav_g.png");
+  }
 }
 
 void HtmlGenerator::writeSearchData(const char *dir)
@@ -1249,7 +1260,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file, const char *cssname)
   
   QString relPathStr = "$relpath$";
 
-  QCString id(file.name());
+  QCString id(file.name().utf8());
   if (id.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
   {
     id=id.left(id.length()-Doxygen::htmlFileExtension.length());
@@ -1428,11 +1439,11 @@ void HtmlGenerator::writeStyleInfo(int part)
         // convert style sheet to string
         QCString fileStr = fileToString(cssname);
         // write the string into the output dir
-        startPlainFile(cssfi.fileName());
+        startPlainFile(cssfi.fileName().utf8());
         t << fileStr;
         endPlainFile();
       }
-      Doxygen::indexList.addStyleSheetFile(cssfi.fileName());
+      Doxygen::indexList.addStyleSheetFile(cssfi.fileName().utf8());
     }
   }
 }
@@ -2209,7 +2220,7 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
     t << "        </tr>" << endl;
   }
   t << "      </table>" << endl;
-  t << "</div>" << endl;
+ // t << "</div>" << endl;
 }
 
 void HtmlGenerator::startDotGraph()
@@ -2495,6 +2506,8 @@ static QCString fixSpaces(const QCString &s)
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
+  static bool showFiles = Config_getBool("SHOW_FILES");
+  static bool showNamespaces = Config_getBool("SHOW_NAMESPACES");
   switch (kind)
   {
     case LayoutNavEntry::MainPage:         return TRUE; 
@@ -2502,18 +2515,18 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::UserGroup:        return TRUE;                                           
     case LayoutNavEntry::Pages:            return indexedPages>0;
     case LayoutNavEntry::Modules:          return documentedGroups>0;
-    case LayoutNavEntry::Namespaces:       return documentedNamespaces>0;
-    case LayoutNavEntry::NamespaceList:    return documentedNamespaces>0;
+    case LayoutNavEntry::Namespaces:       return documentedNamespaces>0 && showNamespaces;
+    case LayoutNavEntry::NamespaceList:    return documentedNamespaces>0 && showNamespaces;
     case LayoutNavEntry::NamespaceMembers: return documentedNamespaceMembers[NMHL_All]>0;
     case LayoutNavEntry::Classes:          return annotatedClasses>0;
     case LayoutNavEntry::ClassList:        return annotatedClasses>0; 
     case LayoutNavEntry::ClassIndex:       return annotatedClasses>0; 
     case LayoutNavEntry::ClassHierarchy:   return hierarchyClasses>0;
     case LayoutNavEntry::ClassMembers:     return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:            return documentedHtmlFiles>0;
-    case LayoutNavEntry::FileList:         return documentedHtmlFiles>0;
+    case LayoutNavEntry::Files:            return documentedHtmlFiles>0 && showFiles;
+    case LayoutNavEntry::FileList:         return documentedHtmlFiles>0 && showFiles;
     case LayoutNavEntry::FileGlobals:      return documentedFileMembers[FMHL_All]>0;
-    case LayoutNavEntry::Dirs:             return documentedDirs>0;
+    //case LayoutNavEntry::Dirs:             return documentedDirs>0;
     case LayoutNavEntry::Examples:         return Doxygen::exampleSDict->count()>0;
   }
   return FALSE;
@@ -2635,7 +2648,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
   {
     case HLI_Main:             kind = LayoutNavEntry::MainPage;         break;
     case HLI_Modules:          kind = LayoutNavEntry::Modules;          break;
-    case HLI_Directories:      kind = LayoutNavEntry::Dirs;             break;
+    //case HLI_Directories:      kind = LayoutNavEntry::Dirs;             break;
     case HLI_Namespaces:       kind = LayoutNavEntry::NamespaceList;    altKind = LayoutNavEntry::Namespaces;  break;
     case HLI_Hierarchy:        kind = LayoutNavEntry::ClassHierarchy;   break;
     case HLI_Classes:          kind = LayoutNavEntry::ClassIndex;       altKind = LayoutNavEntry::Classes;     break;
@@ -3018,4 +3031,25 @@ void HtmlGenerator::endInlineMemberDoc()
   DBG_HTML(t << "<!-- endInlineMemberDoc -->" << endl;)
   t << "</td></tr>" << endl;
 }
+
+void HtmlGenerator::startLabels()
+{
+  DBG_HTML(t << "<!-- startLabels -->" << endl;)
+  t << "<span class=\"mlabels\">";
+}
+
+void HtmlGenerator::writeLabel(const char *l,bool /*isLast*/)
+{
+  DBG_HTML(t << "<!-- writeLabel(" << l << ") -->" << endl;)
+  //t << "<tt>[" << l << "]</tt>";
+  //if (!isLast) t << ", ";
+  t << "<span class=\"mlabel\">" << l << "</span>";
+}
+
+void HtmlGenerator::endLabels()
+{
+  DBG_HTML(t << "<!-- endLabels -->" << endl;)
+  t << "</span>";
+}
+
 

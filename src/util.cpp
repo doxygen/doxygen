@@ -436,7 +436,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
     //    qualifiedName.data(),context->name().data(),md->typeString(),md->argsString()
     //    );
     result=md->typeString();
-    QString args = md->argsString();
+    QCString args = md->argsString();
     if (args.find(")(")!=-1) // typedef of a function/member pointer
     {
       result+=args;
@@ -4539,7 +4539,7 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=nd;
     return TRUE;
   }
-  else if ((dir=Doxygen::directories->find(QFileInfo(linkRef).absFilePath()+"/"))
+  else if ((dir=Doxygen::directories->find(QFileInfo(linkRef).absFilePath().utf8()+"/"))
       && dir->isLinkable()) // TODO: make this location independent like filedefs
   {
     *resContext=dir;
@@ -4906,6 +4906,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       case '+': growBuf.addStr("_09"); break;
       case '=': growBuf.addStr("_0A"); break;
       case '$': growBuf.addStr("_0B"); break;
+      case '\\': growBuf.addStr("_0C"); break;
       default: 
                 if (c<0)
                 {
@@ -6880,11 +6881,7 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al)
   ol.endConstraintList();
 }
 
-bool usingTreeIndex()
-{
-  static bool treeView = Config_getBool("USE_INLINE_TREES");
-  return treeView;
-}
+//----------------------------------------------------------------------------
 
 void stackTrace()
 {
@@ -7340,7 +7337,7 @@ QCString correctURL(const QCString &url,const QCString &relPath)
   QCString result = url;
   if (!relPath.isEmpty() && 
       url.left(5)!="http:" && url.left(6)!="https:" && 
-      url.left(4)!="ftp:" && url.left(5)!="file:")
+      url.left(4)!="ftp:"  && url.left(5)!="file:")
   {
     result.prepend(relPath);
   }

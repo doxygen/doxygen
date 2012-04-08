@@ -419,6 +419,10 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startInlineMemberDoc() = 0;
     virtual void endInlineMemberDoc() = 0;
 
+    virtual void startLabels() = 0;
+    virtual void writeLabel(const char *,bool) = 0;
+    virtual void endLabels() = 0;
+
   protected:
     FTextStream t;
     QFile *file;

@@ -3106,6 +3106,10 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipComment>[ \t]*"*/"			{ 
   					  g_code->codify(yytext);
 					  endFontClass();
+  					  if (g_lastCContext==SkipCPP)
+                                          {
+                                            startFontClass("preprocessor");
+                                          }
   					  BEGIN( g_lastCContext ) ; 
 					}
 <SkipCxxComment>[^\r\n]*"\\"[\r]?\n	{ // line continuation
@@ -3258,7 +3262,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
-                                          if (YY_START==SkipComment || YY_START==SkipString || YY_START==SkipCPP) REJECT;
+                                          if (YY_START==SkipComment || YY_START==SkipString) REJECT;
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;

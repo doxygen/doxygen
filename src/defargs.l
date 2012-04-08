@@ -275,7 +275,7 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 					    {
 					      int i=l-1;
 					      while (i>=0 && (isspace((uchar)g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
-					      while (i>=0 && isId(g_curArgTypeName.at(i))) i--;
+					      while (i>=0 && (isId(g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='$')) i--;
 					      Argument *a = new Argument; 
 					      a->attrib = g_curArgAttrib.copy();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
@@ -327,6 +327,11 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 					      {
 						a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
 					      }
+                                              if (!a->type.isEmpty() && a->type.at(0)=='$') // typeless PHP name?
+                                              {
+                                                a->name = a->type;
+                                                a->type = "";
+                                              }
 					      a->array  += removeRedundantWhiteSpace(g_curArgArray);
 					      //printf("array=%s\n",a->array.data());
 					      int alen = a->array.length();
@@ -363,7 +368,7 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 					    }
 					  }
   					}
-<ReadFuncArgType,ReadFuncArgPtr>{ID}	{ 
+<ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
   					  QCString name=yytext; //resolveDefines(yytext);
 					  if (YY_START==ReadFuncArgType && g_curArgArray=="[]") // Java style array
 					  {

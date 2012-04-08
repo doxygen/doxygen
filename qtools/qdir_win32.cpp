@@ -347,7 +347,7 @@ bool QDir::readDirEntries( const QString &nameFilter,
     {
 #if defined(DEBUG)
       warning( "QDir::readDirEntries: Cannot read the directory: %s",
-                           (const char *)dPath );
+                           (const char *)dPath.utf8() );
 #endif
     return FALSE;
     }

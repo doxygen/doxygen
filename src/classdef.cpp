@@ -1013,10 +1013,7 @@ void ClassDef::showUsedFiles(OutputList &ol)
   }
   else if (isJavaEnum())
   {
-    // TODO: TRANSLATE ME
-    QCString s;
-    if (m_impl->files.count()!=1) s="s";
-    ol.parseText("The documentation for this enum was generated from the following file"+s+":");
+    ol.parseText(theTranslator->trEnumGeneratedFromFiles(m_impl->files.count()==1));
   }
   else
   {
@@ -1917,13 +1914,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
   else if (lang==SrcLangExt_VHDL)
   {
-    // TODO: TRANSLATE ME
     pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
   }
   else if (isJavaEnum())
   {
-    // TODO: TRANSLATE ME
-    pageTitle = displayName()+" Enum Reference";
+    pageTitle = theTranslator->trEnumReference(displayName());
   }
   else
   {

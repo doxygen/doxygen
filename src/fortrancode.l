@@ -462,7 +462,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 	         for ( QStringList::Iterator it = only.begin(); it != only.end(); ++it)
                  {
                    //cout << " search in only: " << moduleName << ":: " << memberName << "==" << (*it)<<  endl;
-		   if (memberName == (QCString)(*it))
+		   if (memberName == (*it).utf8())
                      return TRUE; // found in ONLY-part of use list
 	         }
 	       }
@@ -580,7 +580,7 @@ static int countLines()
 
 //----------------------------------------------------------------------------
 /** start scope */
-void startScope() 
+static void startScope() 
 {
   // fprintf(stderr, "===> startScope %s",yytext);
   Scope *scope = new Scope;
@@ -588,7 +588,7 @@ void startScope()
 }
 
 /** end scope */
-void endScope() 
+static void endScope() 
 {
   // fprintf(stderr,"===> endScope %s",yytext);
   if (scopeStack.isEmpty()) 
@@ -601,18 +601,18 @@ void endScope()
   scopeStack.removeLast();
   for ( QStringList::Iterator it = scope->useNames.begin(); it != scope->useNames.end(); ++it) 
   {
-    useMembers->remove(*it);
+    useMembers->remove((*it).utf8());
   }
   delete scope;
 }
 
-void addUse(QString moduleName) 
+static void addUse(const QCString &moduleName) 
 {
   if (!scopeStack.isEmpty())
     scopeStack.last()->useNames.append(moduleName);
 }
 
-void addLocalVar(QString varName) 
+static void addLocalVar(const QCString &varName) 
 {
   if (!scopeStack.isEmpty())
     scopeStack.last()->localVars.insert(varName, (void*)1);

@@ -27,6 +27,7 @@
 #include "ftextstream.h"
 
 class QFile;
+class Definition;
 class HtmlHelpIndex;
 
 /*! A class that generated the HTML Help specific files.
@@ -75,10 +76,8 @@ class HtmlHelp  : public IndexIntf
                          const char *file,
                          const char *anchor,
                          bool separateIndex,
-                         bool addToNavIndex);
-    //void addIndexItem(const char *level1, const char *level2, 
-    //                  const char *contRef, const char *memRef,
-    //                  const char *anchor,const MemberDef *md);
+                         bool addToNavIndex,
+                         Definition *def);
     void addIndexItem(Definition *context,MemberDef *md,const char *title);
     void addIndexFile(const char *name);
     void addImageFile(const char *);

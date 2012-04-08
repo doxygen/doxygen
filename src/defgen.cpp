@@ -553,7 +553,7 @@ void generateDEF()
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   if (outputDirectory.isEmpty())
   {
-    outputDirectory=QDir::currentDirPath();
+    outputDirectory=QDir::currentDirPath().utf8();
   }
   else
   {
@@ -574,7 +574,7 @@ void generateDEF()
       }
       dir.cd(outputDirectory);
     }
-    outputDirectory=dir.absPath();
+    outputDirectory=dir.absPath().utf8();
   }
 
   QDir dir(outputDirectory);

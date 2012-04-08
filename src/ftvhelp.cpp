@@ -32,6 +32,8 @@
 #include "htmlgen.h"
 #include "layout.h"
 #include "pagedef.h"
+#include "docparser.h"
+#include "htmldocvisitor.h"
 
 #define MAX_INDENT 1024
 
@@ -230,6 +232,112 @@ static unsigned char doc_a_png[528] =
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
+static unsigned char module_png[528] =
+{
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,255,193,128,136,255,255,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,255,213,128,170,255,255,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,247,247,128,196,255,247,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,213,255,153,230,255,213,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,187,255,187,255,230,204,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,153,255,247,255,196,204,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,128,247,255,255,170,204,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,128,213,255,255,136,204,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,255,255,128,187,255,230,138,204,255,217,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,255,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+};
+
+static unsigned char namespace_png[528] =
+{
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,226,128,128,198,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,255,189,128,198,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,255,244,141,198,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,255,255,220,198,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,226,255,255,220,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,198,220,255,255,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,198,141,250,255,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,198,128,198,255,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,157,255,255,198,128,128,226,255,255,157,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,255,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+};
+
+static unsigned char class_png[528] =
+{
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,187,247,255,255,230,170,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,196,255,255,255,255,255,255,170,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,145,255,255,230,128,136,230,247,179,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,179,255,255,170,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,179,255,255,162,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,179,255,255,170,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,145,255,255,221,128,128,221,255,179,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,196,255,255,255,255,255,255,187,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,187,247,255,255,240,179,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,128,128,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,
+  255,255,128,128,128,128,128,128,128,128,128,128,128,128,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+  255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+};
+
+
+static unsigned char letter_a_png[528] =
+{
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0, 60,156,204,204,204,204,204,204,204,204,156, 51,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0, 78,255,255,255,255,255,255,255,255,255,255,255,252, 72,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,210,255,255,255,255,255,255,255,255,255,255,255,255,207,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,240,255,255,255,255,255,255,255,255,255,255,255,255,240,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,222,255,255,255,255,255,255,255,255,255,255,255,255,219,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,111,255,255,255,255,255,255,255,255,255,255,255,255, 99,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0, 99,198,204,204,204,204,204,204,204,204,195, 90,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+};
+
+
 static unsigned char arrow_right_png[352] =
 {
   255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
@@ -391,7 +499,7 @@ struct FTVImageInfo
   const char *alt;
   const char *name;
   const unsigned char *data;
-  unsigned int len;
+  //unsigned int len;
   unsigned short width, height;
 };
 
@@ -409,6 +517,9 @@ struct FTVImageInfo
 #define FTVIMG_plastnode    9
 #define FTVIMG_pnode       10
 #define FTVIMG_vertline    11
+#define FTVIMG_ns          12
+#define FTVIMG_cl          13
+#define FTVIMG_mo          14
 
 #define FTV_S(name) #name
 #define FTV_ICON_FILE(name) "ftv2" FTV_S(name) ".png"
@@ -423,19 +534,22 @@ struct FTVImageInfo
 
 static FTVImageInfo image_info[] =
 {
-  { "&#160;", "ftv2blank.png",    0 /*ftv2blank_png*/        ,174,16,22 },
-  { "*",  "ftv2doc.png",          0 /*ftv2doc_png*/          ,255,24,22 },
-  { "+",  "ftv2folderclosed.png", 0 /*ftv2folderclosed_png*/ ,259,24,22 },
-  { "-",  "ftv2folderopen.png",   0 /*ftv2folderopen_png*/   ,261,24,22 },
-  { "\\", "ftv2lastnode.png",     0 /*ftv2lastnode_png*/     ,233,16,22 },
-  { "-",  "ftv2link.png",         0 /*ftv2link_png*/         ,358,24,22 },
-  { "\\", "ftv2mlastnode.png",    0 /*ftv2mlastnode_png*/    ,160,16,22 },
-  { "o",  "ftv2mnode.png",        0 /*ftv2mnode_png*/        ,194,16,22 },
-  { "o",  "ftv2node.png",         0 /*ftv2node_png*/         ,235,16,22 },
-  { "\\", "ftv2plastnode.png",    0 /*ftv2plastnode_png*/    ,165,16,22 },
-  { "o",  "ftv2pnode.png",        0 /*ftv2pnode_png*/        ,200,16,22 },
-  { "|",  "ftv2vertline.png",     0 /*ftv2vertline_png*/     ,229,16,22 },
-  {   0,  0,                      0,                            0, 0, 0 }
+  { "&#160;", "ftv2blank.png",    0 /*ftv2blank_png*/        /*,174*/,16,22 },
+  { "*",  "ftv2doc.png",          0 /*ftv2doc_png*/          /*,255*/,24,22 },
+  { "+",  "ftv2folderclosed.png", 0 /*ftv2folderclosed_png*/ /*,259*/,24,22 },
+  { "-",  "ftv2folderopen.png",   0 /*ftv2folderopen_png*/   /*,261*/,24,22 },
+  { "\\", "ftv2lastnode.png",     0 /*ftv2lastnode_png*/     /*,233*/,16,22 },
+  { "-",  "ftv2link.png",         0 /*ftv2link_png*/         /*,358*/,24,22 },
+  { "\\", "ftv2mlastnode.png",    0 /*ftv2mlastnode_png*/    /*,160*/,16,22 },
+  { "o",  "ftv2mnode.png",        0 /*ftv2mnode_png*/        /*,194*/,16,22 },
+  { "o",  "ftv2node.png",         0 /*ftv2node_png*/         /*,235*/,16,22 },
+  { "\\", "ftv2plastnode.png",    0 /*ftv2plastnode_png*/    /*,165*/,16,22 },
+  { "o",  "ftv2pnode.png",        0 /*ftv2pnode_png*/        /*,200*/,16,22 },
+  { "|",  "ftv2vertline.png",     0 /*ftv2vertline_png*/     /*,229*/,16,22 },
+  { "N",  "ftv2ns.png",           0 /*ftv2vertline_png*/     /*,352*/,24,22 },
+  { "C",  "ftv2cl.png",           0 /*ftv2vertline_png*/     /*,352*/,24,22 },
+  { "M",  "ftv2mo.png",           0 /*ftv2vertline_png*/     /*,352*/,24,22 },
+  {   0,  0,                      0                          /*,  0*/, 0, 0 }
 };
 
 static ColoredImgDataItem ftv_image_data[] =
@@ -444,6 +558,9 @@ static ColoredImgDataItem ftv_image_data[] =
   { "ftv2doc.png",          24,  22, doc_png,          doc_a_png          },
   { "ftv2folderclosed.png", 24,  22, folderclosed_png, folderclosed_a_png },
   { "ftv2folderopen.png",   24,  22, folderopen_png,   folderopen_a_png   },
+  { "ftv2ns.png",           24,  22, namespace_png,    letter_a_png       },
+  { "ftv2mo.png",           24,  22, module_png,       letter_a_png       },
+  { "ftv2cl.png",           24,  22, class_png,        letter_a_png       },
   { "ftv2lastnode.png",     16,  22, blank_png,        blank_png          },
   { "ftv2link.png",         24,  22, doc_png,          doc_a_png          },
   { "ftv2mlastnode.png",    16,  22, arrow_down_png,   arrow_down_a_png   },
@@ -460,9 +577,12 @@ static int folderId=1;
 
 struct FTVNode
 {
-  FTVNode(bool dir,const char *r,const char *f,const char *a,const char *n,bool sepIndex,bool navIndex)
+  FTVNode(bool dir,const char *r,const char *f,const char *a,
+          const char *n,bool sepIndex,bool navIndex,Definition *df)
     : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), index(0),
-      parent(0), separateIndex(sepIndex), addToNavIndex(navIndex) { children.setAutoDelete(TRUE); }
+      parent(0), separateIndex(sepIndex), addToNavIndex(navIndex),
+      def(df) { children.setAutoDelete(TRUE); }
+  int computeTreeDepth(int level);
   bool isLast;
   bool isDir;
   QCString ref;
@@ -474,8 +594,24 @@ struct FTVNode
   FTVNode *parent;
   bool separateIndex;
   bool addToNavIndex;
+  Definition *def;
 };
 
+int FTVNode::computeTreeDepth(int level)
+{
+  int maxDepth=level;
+  QListIterator<FTVNode> li(children);
+  FTVNode *n;
+  for (;(n=li.current());++li)
+  {
+    if (n->children.count()>0)
+    {
+      int d = n->computeTreeDepth(level+1);
+      if (d>maxDepth) maxDepth=d;
+    }
+  }
+  return maxDepth;
+}
 
 //----------------------------------------------------------------------------
 
@@ -557,6 +693,7 @@ void FTVHelp::decContentsDepth()
  *  \param name the name of the item.
  *  \param separateIndex put the entries in a separate index file
  *  \param addToNavIndex add this entry to the quick navigation index
+ *  \param def Definition corresponding to this entry
  */
 void FTVHelp::addContentsItem(bool isDir,
                               const char *name,
@@ -564,12 +701,13 @@ void FTVHelp::addContentsItem(bool isDir,
                               const char *file,
                               const char *anchor,
                               bool separateIndex,
-                              bool addToNavIndex
+                              bool addToNavIndex,
+                              Definition *def
                               )
 {
   //printf("addContentsItem(%s,%s,%s,%s)\n",name,ref,file,anchor);
   QList<FTVNode> *nl = &m_indentNodes[m_indent];
-  FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name,separateIndex,addToNavIndex);
+  FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
   if (!nl->isEmpty())
   {
     nl->getLast()->isLast=FALSE;
@@ -604,6 +742,16 @@ static QCString node2URL(FTVNode *n)
   return url;
 }
 
+QCString FTVHelp::generateIndentLabel(FTVNode *n,int level)
+{
+  QCString result;
+  if (n->parent)
+  {
+    result=generateIndentLabel(n->parent,level+1);
+  }
+  result+=QCString().sprintf("%d_",n->index);
+  return result;
+}
 
 void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
 {
@@ -618,7 +766,11 @@ void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
     {
       if (n->isDir)
       {
-        t << "<img " << FTV_IMGATTRIBS(plastnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+        t << "<img id=\"arr_" << generateIndentLabel(n,0) 
+          << "\" " << FTV_IMGATTRIBS(mlastnode) 
+          << "onclick=\"toggleFolder('" 
+          << generateIndentLabel(n,0) 
+          << "')\"/>";
       }
       else
       {
@@ -629,7 +781,11 @@ void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
     {
       if (n->isDir)
       {
-        t << "<img " << FTV_IMGATTRIBS(pnode) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+        t << "<img id=\"arr_" << generateIndentLabel(n,0)
+          << "\" " << FTV_IMGATTRIBS(mnode) 
+          << "onclick=\"toggleFolder('" 
+          << generateIndentLabel(n,0)
+          << "')\"/>";
       }
       else
       {
@@ -701,31 +857,115 @@ void FTVHelp::generateJSLink(FTextStream &t,FTVNode *n)
   }
 }
 
-void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level)
+static void generateBriefDoc(FTextStream &t,Definition *def)
 {
-  QCString spaces;
-  spaces.fill(' ',level*2+8);
+  QCString brief = def->briefDescription(TRUE);
+  if (!brief.isEmpty())
+  {
+    DocNode *root = validatingParseDoc(def->briefFile(),def->briefLine(),
+        def,0,brief,FALSE,FALSE,0,TRUE,TRUE);
+    HtmlGenerator htmlGen;
+    HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,0);
+    root->accept(visitor);
+    delete visitor;
+    delete root;
+  }
+}
+
+void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,int &index)
+{
+  //QCString spaces;
+  //spaces.fill(' ',level*2+8);
   QListIterator<FTVNode> nli(nl);
   FTVNode *n;
   for (nli.toFirst();(n=nli.current());++nli)
   {
-    t << spaces << "<p>";
+    //t << spaces << "<p>";
+    t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
+    if ((index&1)==0) t << " class=\"even\"";
+    t << "><td class=\"entry\">";
+    index++;
     generateIndent(t,n,0);
     if (n->isDir)
     {
-      t << "<img " << FTV_IMGATTRIBS(folderclosed) << "onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+      t << "<img ";
+      if (n->def && n->def->definitionType()==Definition::TypeGroup)
+      {
+        t << FTV_IMGATTRIBS(mo);
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
+      {
+        t << FTV_IMGATTRIBS(ns);
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypeClass)
+      {
+        t << FTV_IMGATTRIBS(cl);
+      }
+      else
+      {
+        t << "id=\"img_" << generateIndentLabel(n,0) 
+          << "\" " << FTV_IMGATTRIBS(folderopen) << "onclick=\"toggleFolder('"
+          << generateIndentLabel(n,0)
+          << "')\"";
+      }
+      t << "/>";
       generateLink(t,n);
-      t << "</p>\n";
-      t << spaces << "<div id=\"folder" << folderId << "\">\n";
+      //t << "</p>\n";
+      //t << spaces << "<div id=\"folder" << folderId << "\">\n";
+      t << "</td><td class=\"desc\">";
+      if (n->def)
+      {
+        generateBriefDoc(t,n->def);
+      }
+      t << "</td></tr>" << endl;
       folderId++;
-      generateTree(t,n->children,level+1);
-      t << spaces << "</div>\n";
+      generateTree(t,n->children,level+1,index);
+      //t << spaces << "</div>\n";
     }
     else
     {
-      t << "<img " << FTV_IMGATTRIBS(doc) << "/>";
+      FileDef *srcRef=0;
+      if (n->def && n->def->definitionType()==Definition::TypeFile &&
+          ((FileDef*)n->def)->generateSourceFile())
+      {
+        srcRef = (FileDef*)n->def;
+      }
+      if (srcRef)
+      {
+        t << "<a href=\"" << srcRef->getSourceFileBase()
+          << Doxygen::htmlFileExtension 
+          << "\">";
+      }
+      t << "<img ";
+      if (n->def && n->def->definitionType()==Definition::TypeGroup)
+      {
+        t << FTV_IMGATTRIBS(mo);
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
+      {
+        t << FTV_IMGATTRIBS(ns);
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypeClass)
+      {
+        t << FTV_IMGATTRIBS(cl);
+      }
+      else
+      {
+        t << FTV_IMGATTRIBS(doc);
+      }
+      t << "/>";
+      //t << "</p>\n";
+      if (srcRef)
+      {
+        t << "</a>";
+      }
       generateLink(t,n);
-      t << "</p>\n";
+      t << "</td><td class=\"desc\">";
+      if (n->def)
+      {
+        generateBriefDoc(t,n->def);
+      }
+      t << "</td></tr>" << endl;
     }
   }
 }
@@ -909,9 +1149,9 @@ void FTVHelp::generateTreeViewScripts()
 // old style script (used for inline trees)
 void FTVHelp::generateScript(FTextStream &t)
 {
-  t << "    <script type=\"text/javascript\">\n";
-  t << "    <!-- // Hide script from old browsers\n";
-  t << "    \n";
+  t << "<script type=\"text/javascript\">\n";
+  t << "<!-- // Hide script from old browsers\n";
+#if 0
 
   /* User has clicked on a node (folder or +/-) in the tree */
   t << "    function toggleFolder(id, imageNode) \n";
@@ -931,23 +1171,7 @@ void FTVHelp::generateScript(FTextStream &t)
   t << "      {\n";
   t << "      } \n";
   /* Node controls a open section, we need to close it */
-  t << "      else if (folder.style.display == \"block\") \n";
-  t << "      {\n";
-  t << "        if (imageNode != null) \n";
-  t << "        {\n";
-  t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
-  t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(mnode) "\")\n";
-  t << "          {\n";
-  t << "            imageNode.src = \"" FTV_ICON_FILE(pnode) "\";\n";
-  t << "          }\n";
-  t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(mlastnode) "\")\n";
-  t << "          {\n";
-  t << "            imageNode.src = \"" FTV_ICON_FILE(plastnode) "\";\n";
-  t << "          }\n";
-  t << "        }\n";
-  t << "        folder.style.display = \"none\";\n";
-  t << "      } \n";
-  t << "      else \n"; /* section is closed, we need to open it */
+  t << "      else if (folder.style.display == \"none\") \n";
   t << "      {\n";
   t << "        if (imageNode != null) \n";
   t << "        {\n";
@@ -963,24 +1187,116 @@ void FTVHelp::generateScript(FTextStream &t)
   t << "        }\n";
   t << "        folder.style.display = \"block\";\n";
   t << "      }\n";
+  t << "      else \n"; /* section is closed, we need to open it */
+  t << "      {\n";
+  t << "        if (imageNode != null) \n";
+  t << "        {\n";
+  t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
+  t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(mnode) "\")\n";
+  t << "          {\n";
+  t << "            imageNode.src = \"" FTV_ICON_FILE(pnode) "\";\n";
+  t << "          }\n";
+  t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(mlastnode) "\")\n";
+  t << "          {\n";
+  t << "            imageNode.src = \"" FTV_ICON_FILE(plastnode) "\";\n";
+  t << "          }\n";
+  t << "        }\n";
+  t << "        folder.style.display = \"none\";\n";
+  t << "      } \n";
   t << "    }\n";
   t << "\n";
-  t << "    // End script hiding -->        \n";
-  t << "    </script>\n";
+#endif
+
+  t << "function updateStripes()\n";
+  t << "{\n";
+  t << "  $('table.directoryalt tr').\n";
+  t << "       removeClass('even').filter(':visible:even').addClass('even');\n";
+  t << "}\n";
+
+  t << "function toggleLevel(level)\n";
+  t << "{\n";
+  t << "  $('table.directoryalt tr').each(function(){ \n";
+  t << "    var l = this.id.split('_').length-1;\n";
+  t << "    var i = $('#img'+this.id.substring(3));\n";
+  t << "    var a = $('#arr'+this.id.substring(3));\n";
+  t << "    if (l<level+1) {\n";
+  t << "      i.attr('src','" FTV_ICON_FILE(folderopen) "');\n";
+  t << "      a.attr('src','" FTV_ICON_FILE(mnode) "');\n";
+  t << "      $(this).show();\n";
+  t << "    } else if (l==level+1) {\n";
+  t << "      i.attr('src','" FTV_ICON_FILE(folderclosed) "');\n";
+  t << "      a.attr('src','" FTV_ICON_FILE(pnode) "');\n";
+  t << "      $(this).show();\n";
+  t << "    } else {\n";
+  t << "      $(this).hide();\n";
+  t << "    }\n";
+  t << "  });\n";
+  t << "  updateStripes();\n";
+  t << "}\n";
+
+  t << "function toggleFolder(id) \n";
+  t << "{\n";
+  t << "  var n = $('[id^=row_'+id+']');\n"; // select parent + children
+  t << "  var i = $('[id^=img_'+id+']');\n"; // i = dir imagess
+  t << "  var a = $('[id^=arr_'+id+']');\n"; // a = arrow images
+  t << "  var c = n.slice(1);\n";            // c = array of children
+  t << "  if (c.filter(':first').is(':visible')===true) {\n";
+  t << "    i.attr('src','" FTV_ICON_FILE(folderclosed) "');\n";
+  t << "    a.attr('src','" FTV_ICON_FILE(pnode) "');\n";
+  t << "    c.hide();\n";
+  t << "  } else {\n";
+  t << "    i.attr('src','" FTV_ICON_FILE(folderopen) "');\n";
+  t << "    a.attr('src','" FTV_ICON_FILE(mnode) "');\n";
+  t << "    c.show();\n";
+  t << "  }\n";
+  t << "  updateStripes();\n";
+  t << "}\n";
+
+  t << "  // End script hiding -->        \n";
+  t << "</script>\n";
+
 }
 
 // write tree inside page
 void FTVHelp::generateTreeViewInline(FTextStream &t)
 {
   generateScript(t);
-  t << "    <div class=\"directory-alt\">\n";
-  t << "      <br/>\n";
-  t << "      <div style=\"display: block;\">\n";
+  t << "<div class=\"directoryalt\">\n";
 
-  generateTree(t,m_indentNodes[0],0);
+  QListIterator<FTVNode> li(m_indentNodes[0]);
+  FTVNode *n;
+  int d=1, depth=1;
+  for (;(n=li.current());++li)
+  {
+    if (n->children.count()>0)
+    {
+      d = n->computeTreeDepth(2);
+      if (d>depth) depth=d;
+    }
+  }
+  if (depth>1)
+  {
+    t << "<div class=\"levels\">[";
+    t << theTranslator->trDetailLevel(); 
+    t << " ";
+    int i;
+    for (i=1;i<=depth;i++)
+    {
+      t << "<span onclick=\"javascript:toggleLevel(" << i << ");\">" << i << "</span>";
+    }
+    t << "]</div>";
+  }
 
-  t << "      </div>\n";
-  t << "    </div>\n";
+//  t << "      <br/>\n";
+//  t << "      <div style=\"display: block;\">\n";
+  t << "<table class=\"directoryalt\">\n";
+
+  int index=0;
+  generateTree(t,m_indentNodes[0],0,index);
+
+  t << "</table>\n";
+//  t << "      </div>\n";
+  t << "</div>\n";
 }
 
 // write old style index.html and tree.html

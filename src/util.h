@@ -367,7 +367,6 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al);
 
 QCString convertCharEntitiesToUTF8(const QCString &s);
 
-bool usingTreeIndex();
 void stackTrace();
 
 bool readInputFile(const char *fileName,BufStr &inBuf);

@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_8_0
 {
   public:
 		/*! Used for identification of the language. The identification

@@ -527,8 +527,8 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional, bool inclu
         (root->groupDocType!=Entry::GROUPDOC_NORMAL &&  additional))
     {
       GroupDef *gd = Doxygen::groupSDict->find(root->name);
-      //printf("Processing group '%s': add=%d ext=%d gd=%p\n",
-      //    root->type.data(),additional,includeExternal,gd);
+      //printf("Processing group '%s':'%s' add=%d ext=%d gd=%p\n",
+      //    root->type.data(),root->name.data(),additional,includeExternal,gd);
 
       if (gd)
       {
@@ -561,7 +561,8 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional, bool inclu
           gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        gd->setDocumentation(root->doc,root->docFile,root->docLine);
+        // allow empty docs for group
+        gd->setDocumentation(!root->doc.isEmpty() ? root->doc : QCString(" "),root->docFile,root->docLine,FALSE);
         gd->setInbodyDocumentation( root->inbodyDocs, root->inbodyFile, root->inbodyLine );
         gd->addSectionsToDefinition(root->anchors);
         Doxygen::groupSDict->append(root->name,gd);
@@ -8679,7 +8680,7 @@ static void readTagFile(Entry *root,const char *tl)
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     QFileInfo fi(fileName);
-    Doxygen::tagDestinationDict.insert(fi.fileName(),new QCString(destName));
+    Doxygen::tagDestinationDict.insert(fi.fileName().utf8(),new QCString(destName));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
   }
   else
@@ -8700,7 +8701,7 @@ static void readTagFile(Entry *root,const char *tl)
   else
     msg("Reading tag file `%s'...\n",fileName.data());
 
-  parseTagFile(root,fi.absFilePath(),fi.fileName());
+  parseTagFile(root,fi.absFilePath().utf8(),fi.fileName().utf8());
 }
 
 //----------------------------------------------------------------------------
@@ -8921,7 +8922,7 @@ int readDir(QFileInfo *fi,
             QDict<void> *killDict
            )
 {
-  QString dirName = fi->absFilePath();
+  QCString dirName = fi->absFilePath().utf8();
   if (fi->isSymLink())
   {
     dirName = resolveSymlink(dirName.data());
@@ -8943,7 +8944,7 @@ int readDir(QFileInfo *fi,
 
     while ((cfi=it.current()))
     {
-      if (exclDict==0 || exclDict->find(cfi->absFilePath())==0) 
+      if (exclDict==0 || exclDict->find(cfi->absFilePath().utf8())==0) 
       { // file should not be excluded
         //printf("killDict->find(%s)\n",cfi->absFilePath().data());
         if (!cfi->exists() || !cfi->isReadable())
@@ -8957,7 +8958,7 @@ int readDir(QFileInfo *fi,
             (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
             (patList==0 || patternMatch(*cfi,patList)) && 
             !patternMatch(*cfi,exclPatList) &&
-            (killDict==0 || killDict->find(cfi->absFilePath())==0)
+            (killDict==0 || killDict->find(cfi->absFilePath().utf8())==0)
             )
         {
           totalSize+=cfi->size()+cfi->absFilePath().length()+4;
@@ -8965,7 +8966,7 @@ int readDir(QFileInfo *fi,
           //printf("New file %s\n",name.data());
           if (fnDict)
           {
-            FileDef  *fd=new FileDef(cfi->dirPath()+"/",name);
+            FileDef  *fd=new FileDef(cfi->dirPath().utf8()+"/",name);
             FileName *fn=0;
             if (!name.isEmpty() && (fn=(*fnDict)[name]))
             {
@@ -8973,7 +8974,7 @@ int readDir(QFileInfo *fi,
             }
             else
             {
-              fn = new FileName(cfi->absFilePath(),name);
+              fn = new FileName(cfi->absFilePath().utf8(),name);
               fn->append(fd);
               if (fnList) fnList->inSort(fn);
               fnDict->insert(name,fn);
@@ -8982,11 +8983,11 @@ int readDir(QFileInfo *fi,
           QCString *rs=0;
           if (resultList || resultDict)
           {
-            rs=new QCString(cfi->absFilePath());
+            rs=new QCString(cfi->absFilePath().utf8());
           }
           if (resultList) resultList->append(rs);
-          if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
-          if (killDict) killDict->insert(cfi->absFilePath(),(void *)0x8);
+          if (resultDict) resultDict->insert(cfi->absFilePath().utf8(),rs);
+          if (killDict) killDict->insert(cfi->absFilePath().utf8(),(void *)0x8);
         }
         else if (recursive &&
             (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
@@ -9035,7 +9036,7 @@ int readFileOrDirectory(const char *s,
   //printf("readFileOrDirectory(%s)\n",s);
   int totalSize=0;
   {
-    if (exclDict==0 || exclDict->find(fi.absFilePath())==0)
+    if (exclDict==0 || exclDict->find(fi.absFilePath().utf8())==0)
     {
       if (!fi.exists() || !fi.isReadable())
       {
@@ -9049,7 +9050,7 @@ int readFileOrDirectory(const char *s,
         if (fi.isFile())
         {
           //printf("killDict->find(%s)\n",fi.absFilePath().data());
-          if (killDict==0 || killDict->find(fi.absFilePath())==0)
+          if (killDict==0 || killDict->find(fi.absFilePath().utf8())==0)
           {
             totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input); 
             //fiList->inSort(new FileInfo(fi));
@@ -9057,7 +9058,7 @@ int readFileOrDirectory(const char *s,
             //printf("New file %s\n",name.data());
             if (fnDict)
             {
-              FileDef  *fd=new FileDef(fi.dirPath(TRUE)+"/",name);
+              FileDef  *fd=new FileDef(fi.dirPath(TRUE).utf8()+"/",name);
               FileName *fn=0;
               if (!name.isEmpty() && (fn=(*fnDict)[name]))
               {
@@ -9065,7 +9066,7 @@ int readFileOrDirectory(const char *s,
               }
               else
               {
-                fn = new FileName(fi.absFilePath(),name);
+                fn = new FileName(fi.absFilePath().utf8(),name);
                 fn->append(fd);
                 if (fnList) fnList->inSort(fn);
                 fnDict->insert(name,fn);
@@ -9074,12 +9075,12 @@ int readFileOrDirectory(const char *s,
             QCString *rs=0;
             if (resultList || resultDict)
             {
-              rs=new QCString(fi.absFilePath());
+              rs=new QCString(fi.absFilePath().utf8());
               if (resultList) resultList->append(rs);
-              if (resultDict) resultDict->insert(fi.absFilePath(),rs);
+              if (resultDict) resultDict->insert(fi.absFilePath().utf8(),rs);
             }
 
-            if (killDict) killDict->insert(fi.absFilePath(),(void *)0x8);
+            if (killDict) killDict->insert(fi.absFilePath().utf8(),(void *)0x8);
           }
         }
         else if (fi.isDir()) // readable dir
@@ -9106,7 +9107,7 @@ void readFormulaRepository()
     QCString line;
     while (!t.eof())
     {
-      line=t.readLine();
+      line=t.readLine().utf8();
       int se=line.find(':'); // find name and text separator.
       if (se==-1)
       {
@@ -9802,7 +9803,7 @@ void adjustConfiguration()
   while (s)
   {
     QFileInfo fi(s);
-    addSearchDir(fi.absFilePath());
+    addSearchDir(fi.absFilePath().utf8());
     s=includePath.next();
   }
 
@@ -10073,7 +10074,7 @@ void parseInput()
   QCString &outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   if (outputDirectory.isEmpty()) 
   {
-    outputDirectory=QDir::currentDirPath();
+    outputDirectory=QDir::currentDirPath().utf8();
   }
   else
   {
@@ -10095,7 +10096,7 @@ void parseInput()
       }
       dir.cd(outputDirectory);
     }
-    outputDirectory=dir.absPath();
+    outputDirectory=dir.absPath().utf8();
   }
 
   /**************************************************************************
@@ -10487,7 +10488,7 @@ void parseInput()
   msg("Sorting member lists...\n");
   sortMemberLists();
 
-  if (Config_getBool("SHOW_DIRECTORIES") && Config_getBool("DIRECTORY_GRAPH"))
+  if (Config_getBool("DIRECTORY_GRAPH"))
   {
     msg("Computing dependencies between directories...\n");
     computeDirDependencies();
@@ -10545,10 +10546,10 @@ void generateOutput()
     bool generateTreeView    = Config_getBool("GENERATE_TREEVIEW");
     bool generateDocSet      = Config_getBool("GENERATE_DOCSET");
     if (generateEclipseHelp) Doxygen::indexList.addIndex(new EclipseHelp);
-    if (generateHtmlHelp) Doxygen::indexList.addIndex(new HtmlHelp);
-    if (generateQhp)      Doxygen::indexList.addIndex(new Qhp);
-    if (generateTreeView) Doxygen::indexList.addIndex(new FTVHelp(TRUE));
-    if (generateDocSet)   Doxygen::indexList.addIndex(new DocSets);
+    if (generateHtmlHelp)    Doxygen::indexList.addIndex(new HtmlHelp);
+    if (generateQhp)         Doxygen::indexList.addIndex(new Qhp);
+    if (generateTreeView)    Doxygen::indexList.addIndex(new FTVHelp(TRUE));
+    if (generateDocSet)      Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
     HtmlGenerator::writeTabData();
 
@@ -10556,10 +10557,7 @@ void generateOutput()
     copyStyleSheet();
     copyLogo();
     copyExtraFiles();
-    if (!generateTreeView && Config_getBool("USE_INLINE_TREES"))
-    {
-      FTVHelp::generateTreeViewImages();
-    }
+    FTVHelp::generateTreeViewImages();
   }
   if (Config_getBool("GENERATE_LATEX")) 
   {
@@ -10605,7 +10603,7 @@ void generateOutput()
       exit(1);
     }
     Doxygen::tagFile.setDevice(tag);
-    Doxygen::tagFile << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>" << endl;
+    Doxygen::tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
     Doxygen::tagFile << "<tagfile>" << endl;
   }
 
@@ -10683,11 +10681,8 @@ void generateOutput()
     writeGraphInfo(*g_outputList);
   }
 
-  if (Config_getBool("SHOW_DIRECTORIES"))
-  {
-    msg("Generating directory documentation...\n");
-    generateDirDocs(*g_outputList);
-  }
+  msg("Generating directory documentation...\n");
+  generateDirDocs(*g_outputList);
 
   if (Doxygen::formulaList.count()>0 && Config_getBool("GENERATE_HTML")
       && !Config_getBool("USE_MATHJAX"))

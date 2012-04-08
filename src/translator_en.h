@@ -421,7 +421,7 @@ class TranslatorEnglish : public Translator
      *  list of defines
      */
     virtual QCString trDefines()
-    { return "Defines"; }
+    { return "Macros"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of function prototypes
@@ -463,7 +463,7 @@ class TranslatorEnglish : public Translator
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "Define Documentation"; }
+    { return "Macro Definition Documentation"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for function prototypes
@@ -1885,6 +1885,36 @@ class TranslatorEnglish : public Translator
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Directory dependency graph for ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "detail level"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Template Parameters"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "and "+number+" more..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "The documentation for this enum was generated from the following file";
+      if (!single) result += "s";
+      result+=":";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString(name)+" Enum Reference"; }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 
