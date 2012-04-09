@@ -572,6 +572,7 @@
 "td.mlabels-right {\n"
 "	vertical-align: bottom;\n"
 "	padding: 0px;\n"
+"	white-space: nowrap;\n"
 "}\n"
 "\n"
 "span.mlabels {\n"

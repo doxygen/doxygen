@@ -60,6 +60,13 @@ class TranslatorAdapter_1_8_0 : public TranslatorAdapterBase
 
     virtual QCString trEnumReference(const char *name)
     { return english.trEnumReference(name); }
+
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return english.trInheritedFrom(members,what); }
+
+    virtual QCString trAdditionalInheritedMembers()
+    { return english.trAdditionalInheritedMembers(); }
+
 };
 
 class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0

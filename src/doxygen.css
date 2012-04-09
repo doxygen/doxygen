@@ -572,6 +572,7 @@ td.mlabels-left {
 td.mlabels-right {
 	vertical-align: bottom;
 	padding: 0px;
+	white-space: nowrap;
 }
 
 span.mlabels {
