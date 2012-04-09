@@ -1497,6 +1497,15 @@ class TranslatorDutch : public Translator
     virtual QCString trEnumReference(const char *name)
     { return QCString(name)+" Enum Referentie"; }
 
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" overge&euml;rfd van "+what; }
+
+    /*! Header of the sections with inherited members specific for the 
+     *  base class(es) 
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "Additionele Overge&euml;rfde Members"; }
 
 };
 

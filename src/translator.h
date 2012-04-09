@@ -514,6 +514,8 @@ class Translator
     virtual QCString trAndMore(const QCString &number) = 0;
     virtual QCString trEnumGeneratedFromFiles(bool single) = 0;
     virtual QCString trEnumReference(const char *name) = 0;
+    virtual QCString trInheritedFrom(const char *members,const char *what) = 0;
+    virtual QCString trAdditionalInheritedMembers() = 0;
 
 };
 

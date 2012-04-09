@@ -763,6 +763,11 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trEnumGeneratedFromFiles(single)); }
     QCString trEnumReference(const char *name)
     { return toUtf8(m_translator->trEnumReference(fromUtf8(name))); }
+    QCString trInheritedFrom(const char *members,const char *what)
+    { return toUtf8(m_translator->trInheritedFrom(fromUtf8(members),fromUtf8(what))); }
+    QCString trAdditionalInheritedMembers()
+    { return toUtf8(m_translator->trAdditionalInheritedMembers()); }
+
 
 //////////////////////////////////////////////////////////////////////////
   private:
