@@ -363,6 +363,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::XmlOnly: 
+    case DocVerbatim::RtfOnly: 
       /* nothing */ 
       break;
 
@@ -1054,11 +1055,11 @@ void HtmlDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<h" << s->level()+1 << ">";
+  m_t << "<h" << s->level() << ">";
   m_t << "<a class=\"anchor\" id=\"" << s->anchor();
   m_t << "\"></a>" << endl;
   filter(convertCharEntitiesToUTF8(s->title().data()));
-  m_t << "</h" << s->level()+1 << ">\n";
+  m_t << "</h" << s->level() << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocSection *s) 
@@ -1480,9 +1481,9 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
     default:
       ASSERT(0);
   }
-  m_t << "<dl class=\"" << className << "\"><dt><b>";
+  m_t << "<dl class=\"" << className << "\"><dt>";
   m_t << heading << ":";
-  m_t << "</b></dt><dd>" << endl;
+  m_t << "</dt><dd>" << endl;
   m_t << "  <table class=\"" << className << "\">" << endl;
 }
 

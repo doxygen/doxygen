@@ -97,6 +97,8 @@ class VhdlDocGen
     static QCString convertFileNameToClassName(QCString name);
     // --- used by vhdlscanner.l -----------
     
+    static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
+
     static QCString getIndexWord(const char* ,int index);
     static  bool    foundInsertedComponent(const QCString& name,Entry* root);
     static bool     deleteCharRev(QCString &s,char c);
@@ -272,6 +274,7 @@ class VhdlDocGen
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
+    static void addBaseClass(ClassDef* cd,ClassDef *ent);
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);

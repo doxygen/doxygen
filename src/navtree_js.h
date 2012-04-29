@@ -297,7 +297,7 @@
 "            showNode(o,node,index); // retry with child node expanded\n"
 "          },true);\n"
 "        } else {\n"
-"          if (o.toroot==\"index.html\" || n.childrenData) {\n"
+"          if (o.toroot==\"index.html\" /*|| n.childrenData*/) {\n"
 "            expandNode(o, n, true, true);\n"
 "          }\n"
 "          selectAndHighlight(n);\n"

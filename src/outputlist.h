@@ -87,8 +87,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startFile,name,manName,title); }
     void writeSearchInfo()
     { forall(&OutputGenerator::writeSearchInfo); }
-    void writeFooter()
-    { forall(&OutputGenerator::writeFooter); }
+    void writeFooter(const char *navPath)
+    { forall(&OutputGenerator::writeFooter,navPath); }
     void endFile() 
     { forall(&OutputGenerator::endFile); }
     void startTitleHead(const char *fileName) 
@@ -201,8 +201,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startAnonTypeScope,i1); }
     void endAnonTypeScope(int i1) 
     { forall(&OutputGenerator::endAnonTypeScope,i1); }
-    void startMemberItem(const char *anchor,int i1) 
-    { forall(&OutputGenerator::startMemberItem,anchor,i1); }
+    void startMemberItem(const char *anchor,int i1,const char *id=0) 
+    { forall(&OutputGenerator::startMemberItem,anchor,i1,id); }
     void endMemberItem() 
     { forall(&OutputGenerator::endMemberItem); }
     void startMemberTemplateParams() 
@@ -295,10 +295,13 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startBold); }
     void endBold() 
     { forall(&OutputGenerator::endBold); }
-    void startMemberDescription(const char *anchor) 
-    { forall(&OutputGenerator::startMemberDescription,anchor); }
+    void startMemberDescription(const char *anchor,const char *inheritId=0) 
+    { forall(&OutputGenerator::startMemberDescription,anchor,inheritId); }
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
+    void writeInheritedSectionTitle(const char *id,const char *file,
+                         const char *anchor,const char *title,const char *name)
+    { forall(&OutputGenerator::writeInheritedSectionTitle,id,file,anchor,title,name); }
     void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
                          const char *title) 
     { forall(&OutputGenerator::startSimpleSect,t,file,anchor,title); }
@@ -308,8 +311,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList() 
     { forall(&OutputGenerator::endParamList); }
-    //void writeDescItem() 
-    //{ forall(&OutputGenerator::writeDescItem); }
     void startIndent() 
     { forall(&OutputGenerator::startIndent); }
     void endIndent() 
@@ -508,6 +509,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(bool,HighlightedItem,const char *);
     FORALLPROTO3(bool,bool,bool);
     FORALLPROTO3(const char *,const char *,bool);
+    FORALLPROTO3(const char *,int,const char *);
     FORALLPROTO3(const char *,const char *,SectionInfo::SectionType);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);

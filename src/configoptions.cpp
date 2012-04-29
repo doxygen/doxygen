@@ -1275,15 +1275,6 @@ void addConfigOptions(Config *cfg)
   cb->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
-                 "HTML_ALIGN_MEMBERS",
-                 "If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes,\n"
-                 "files or namespaces will be aligned in HTML using tables. If set to\n"
-                 "NO a bullet list will be used.",
-                 TRUE
-                );
-  cb->addDependency("GENERATE_HTML");
-  //----
-  cb = cfg->addBool(
                  "HTML_DYNAMIC_SECTIONS",
                  "If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML\n"
                  "documentation will contain sections that can be hidden and shown after the\n"
@@ -2479,4 +2470,6 @@ void addConfigOptions(Config *cfg)
   cfg->addObsolete("USE_INLINE_TREES");
   //----
   cfg->addObsolete("SHOW_DIRECTORIES");
+  //----
+  cfg->addObsolete("HTML_ALIGN_MEMBERS");
 }

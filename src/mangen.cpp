@@ -524,7 +524,7 @@ void ManGenerator::endAnonTypeScope(int indentLevel)
 }
 
 
-void ManGenerator::startMemberItem(const char *,int) 
+void ManGenerator::startMemberItem(const char *,int,const char *) 
 { 
   if (firstCol && !insideTabbing) t << ".in +1c\n";
   t << "\n.ti -1c\n.RI \""; 

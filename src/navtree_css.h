@@ -51,8 +51,6 @@
 "\n"
 "#nav-tree .selected a {\n"
 "  text-decoration:none;\n"
-"  padding:2px;\n"
-"  margin:0px;\n"
 "  color:#fff;\n"
 "}\n"
 "\n"

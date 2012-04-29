@@ -378,7 +378,6 @@ void LatexDocVisitor::visit(DocStyleChange *s)
 
 void LatexDocVisitor::visit(DocVerbatim *s)
 {
-  //static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
   if (m_hide) return;
   QCString lang = m_langExt;
   if (!s->language().isEmpty()) // explicit language setting
@@ -404,6 +403,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
     case DocVerbatim::ManOnly: 
+    case DocVerbatim::RtfOnly: 
       /* nothing */ 
       break;
     case DocVerbatim::LatexOnly: 

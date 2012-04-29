@@ -115,7 +115,6 @@ static bool isFuncProcProced();
 static void initEntry(Entry *e);
 static void addProto(const char *s1,const char *s2,const char *s3,
                      const char *s4,const char *s5,const char *s6);
-static bool findInstant(QCString inst);
 static void createFunction(const QCString &impure,int spec,
                            const QCString &fname);
 
@@ -2115,12 +2114,13 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
   if (lastCompound)
   {
     current->args=lastCompound->name;
-    if (!findInstant(current->type))
+    if (true) // !findInstant(current->type))
     {
       initEntry(current);
       instFiles.append(new Entry(*current));
     }
-    current->reset();
+    delete  current;
+    current=new Entry;
   }
   else
   {
@@ -2205,6 +2205,7 @@ static void initEntry(Entry *e)
 {
   e->fileName = s_str.fileName;
   e->lang=SrcLangExt_VHDL;
+  isVhdlDocPending();
   initGroupInfo(e);
 }
 
@@ -2249,21 +2250,6 @@ static void addProto(const char *s1,const char *s2,const char *s3,
     current->args+=",";
   }
 }
-
-static bool findInstant(QCString inst)
-{
-  QListIterator<Entry> eli(instFiles);
-  Entry *cur;
-
-  for (eli.toFirst();(cur=eli.current());++eli)
-  {
-    if (stricmp(inst.data(),cur->type.data())==0)
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}//findInst
 
 static void createFunction(const QCString &impure,int spec,
                            const QCString &fname)

@@ -8991,9 +8991,9 @@ int readDir(QFileInfo *fi,
         }
         else if (recursive &&
             (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
-            cfi->isDir() && cfi->fileName()!="." && 
+            cfi->isDir() && 
             !patternMatch(*cfi,exclPatList) &&
-            cfi->fileName()!="..")
+            cfi->fileName().at(0)!='.') // skip "." ".." and ".dir"
         {
           cfi->setFile(cfi->absFilePath());
           totalSize+=readDir(cfi,fnList,fnDict,exclDict,
@@ -10399,11 +10399,11 @@ void parseInput()
   msg("Computing class relations...\n");
   computeTemplateClassRelations(); 
   flushUnresolvedRelations();
-  computeClassRelations();        
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
   {
     VhdlDocGen::computeVhdlComponentRelations(); 
   }
+  computeClassRelations();        
   g_classEntries.clear();          
 
   msg("Add enum values to enums...\n");

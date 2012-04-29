@@ -34,8 +34,10 @@ def parseOption(node):
         if type=='bool':
         	if len(adefval)>0:
 			enabled = adefval
+		elif defval=='1':
+			enabled = "TRUE"
 		else:
-			enabled = "TRUE" if defval=='1' else "FALSE"
+			enabled = "FALSE"
 		print "  cb = cfg->addBool("
 		print "                 \"%s\"," % (name)
 		print "                 \"%s\"," % (docC)

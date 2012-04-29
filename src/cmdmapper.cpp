@@ -75,6 +75,7 @@ CommandMap cmdMap[] =
   { "return",        CMD_RETURN },
   { "returns",       CMD_RETURN },
   { "retval",        CMD_RETVAL },
+  { "rtfonly",       CMD_RTFONLY },
   { "sa",            CMD_SA },
   { "secreflist",    CMD_SECREFLIST },
   { "section",       CMD_SECTION },
@@ -117,6 +118,8 @@ CommandMap cmdMap[] =
   { "includelineno", CMD_INCWITHLINES },
   { "inheritdoc",    CMD_INHERITDOC },
   { "mscfile",       CMD_MSCFILE },
+  { "rtfonly",       CMD_RTFONLY },
+  { "endrtfonly",    CMD_ENDRTFONLY },
   { 0,               0 },
 };
 

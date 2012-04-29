@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2012/04: updated translation of new items used since version 1.7.5 and 1.8.0
  *  2010/08: updated translation of new items used since version 1.6.0 and 1.6.3
  *           completely reviewed the translation in the trLegendDocs() function
  *           corrected some typos all around
@@ -84,7 +85,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_7_5
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1847,7 +1848,63 @@ class TranslatorItalian : public TranslatorAdapter_1_7_5
       return sdate;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Riferimenti bibliografici"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Grafo di dipendenza delle directory per ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "livello di dettaglio"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Parametri dei template"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "e altri "+number+" ..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "La documentazione per questo tipo enumerato è stata generata";
+      if (!single) result += " dai seguenti";
+      else result += " dal seguente";
+      result+=" file:";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString("Riferimenti per il tipo enumerato ") + QCString(name); }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" ereditati da "+what; }
+
+    /*! Header of the sections with inherited members specific for the 
+     *  base class(es) 
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "Altri membri ereditati"; }
+
 };
 
 #endif
+
 

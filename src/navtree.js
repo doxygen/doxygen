@@ -297,7 +297,7 @@ function showNode(o, node, index)
             showNode(o,node,index); // retry with child node expanded
           },true);
         } else {
-          if (o.toroot=="index.html" || n.childrenData) {
+          if (o.toroot=="index.html" /*|| n.childrenData*/) {
             expandNode(o, n, true, true);
           }
           selectAndHighlight(n);

@@ -767,6 +767,7 @@ private                                 {
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
  					  /* work around for bug in QCString.replace (QCString works) */
 					  QCString name=yytext;
+                                          name = name.lower();
 					  /* remember attributes for the symbol */
 					  modifiers[current_root][name.lower()] |= currentModifiers;
 					  argName= name;
@@ -853,7 +854,7 @@ private                                 {
 					  QCString name(argName);
 					  QCString attr("dimension");
 					  attr += yytext;
-					  modifiers[current_root][name] |= attr;
+					  modifiers[current_root][name.lower()] |= attr;
 					}
 <Variable>{COMMA}	                { //printf("COMMA: %d<=..<=%d\n", yyColNr-yyleng, yyColNr);
 					  // locate !< comment
@@ -963,7 +964,7 @@ private                                 {
 <Subprog>{BS}                          {   /* ignore white space */   }
 <Subprog>{ID}                          { current->name = yytext;
                                          //cout << "1a==========> got " << current->type << " " << yytext << " " << yyLineNr << endl;
-                                         modifiers[current_root][current->name.lower()].returnName = current->name;
+                                         modifiers[current_root][current->name.lower()].returnName = current->name.lower();
 
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
@@ -1893,6 +1894,7 @@ static void initEntry()
 static void addCurrentEntry()
 {
   //printf("===Adding entry %s to %s\n", current->name.data(), current_root->name.data());
+  current->name = current->name.lower();
   current_root->addSubEntry(current);
   last_entry = current;
   current = new Entry ;

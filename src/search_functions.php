@@ -17,14 +17,14 @@ function end_form($value)
 
 function end_page()
 {
-  global $config;
-  global $translator;
-  if ($config['GENERATE_TREEVIEW'])
-  {
-    echo "</div>\n<div id=\"nav-path\" class=\"navpath\">\n  <ul>\n    <li class=\"footer\">";
-    echo $translator['logo'];
-    echo "</li>\n  </ul>\n</div>";
-  }
+  //global $config;
+  //global $translator;
+  //if ($config['GENERATE_TREEVIEW'])
+  //{
+  //  echo "</div>\n<div id=\"nav-path\" class=\"navpath\">\n  <ul>\n    <li class=\"footer\">";
+  //  echo $translator['logo'];
+  //  echo "</li>\n  </ul>\n</div>";
+  //}
   echo "</body></html>";
 }
 

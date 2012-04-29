@@ -15,7 +15,10 @@
  *
  */
 
-/*
+#ifndef TRANSLATOR_ES_H
+#define TRANSLATOR_ES_H
+
+/*! 
  * translator_es.h modified by Lucas Cruz (7-julio-2000)
  * Some notes:
  * - It's posible that some sentences haven't got meaning because  
@@ -26,12 +29,11 @@
  * Updated to 1.5.8 by Bartomeu Creus Navarro (10-abril-2009)
  * Updated to 1.6.3 by Bartomeu Creus Navarro (3-marzo-2010)
  * Updated to 1.6.4 by Bartomeu Creus Navarro (26-mayo-2010) [(16-jun-2010) grabado en UTF-8]
+ * Updated to 1.8.0 by Bartomeu Creus Navarro (11-abril-2012)
  */
 
-#ifndef TRANSLATOR_ES_H
-#define TRANSLATOR_ES_H
 
-class TranslatorSpanish : public TranslatorAdapter_1_7_5
+class TranslatorSpanish : public Translator
 {
 
   public:
@@ -1929,6 +1931,63 @@ class TranslatorSpanish : public TranslatorAdapter_1_7_5
       return sdate;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Referencias bibliográficas"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Copyright"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Gráfico de dependencias de directorios para ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "detalle nivel"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Parámetros del template"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "y "+number+" más..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "La documentación para este enum ha sido generada a partir de";
+      if (single)
+          result += "l siguiente fichero:";
+      else
+          result += " los siguientes ficheros:";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString("Referencia del enum ") + QCString(name); }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" heredados desde "+what; }
+
+    /*! Header of the sections with inherited members specific for the 
+     *  base class(es) 
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "Otros miembros heredados"; }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 

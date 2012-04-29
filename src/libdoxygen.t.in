@@ -171,6 +171,9 @@ navtree_css.h: navtree.css
 svgpan_js.h: svgpan.js
 	cat svgpan.js | $(TO_C_CMD) >svgpan_js.h
 
+dynsections_js.h: dynsections.js
+	cat dynsections.js | $(TO_C_CMD) >dynsections_js.h
+
 doxygen_bst.h: doxygen.bst
 	cat doxygen.bst | $(TO_C_CMD) >doxygen_bst.h
 

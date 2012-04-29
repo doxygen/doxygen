@@ -501,7 +501,7 @@ static void writeDefaultStyleSheetPart2(FTextStream &t)
 
 static void writeDefaultStyleSheetPart3(FTextStream &t)
 {
-  static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
+  //static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
   t << "}}\n";
   //t << "\\cfoot{}\n\n";
   t << "\\fancyfoot[CO]{\\fancyplain{}{}}\n";
@@ -557,25 +557,25 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "}\n\n";
   t << "% Used by @code ... @endcode\n"
        "\\newenvironment{DoxyCode}{%\n";
-  if (latexSourceCode)
-  {
+  //if (latexSourceCode)
+  //{
     t << "\n\n\\begin{scriptsize}\\begin{alltt}%" << endl;
-  }
-  else
-  {
-    t << "  \\footnotesize%\n"
-         "  \\verbatim%\n";
-  }
+  //}
+  //else
+  //{
+  //  t << "  \\footnotesize%\n"
+  //       "  \\verbatim%\n";
+  //}
   t << "}{%\n";
-  if (latexSourceCode)
-  {
+  //if (latexSourceCode)
+  //{
     t << "\\end{alltt}\\end{scriptsize}%" << endl; 
-  }
-  else
-  {
-    t << "  \\endverbatim%\n"
-         "  \\normalsize%\n";
-  }
+  //}
+  //else
+  //{
+  //  t << "  \\endverbatim%\n"
+  //       "  \\normalsize%\n";
+  //}
   t << "}\n\n";
   t << "% Used by @example, @include, @includelineno and @dontinclude\n"
        "\\newenvironment{DoxyCodeInclude}{%\n"
@@ -1656,7 +1656,7 @@ void LatexGenerator::writeCodeLink(const char *ref,const char *f,
     t << "\n      ";
     col=0;
   }
-  if (m_prettyCode && !disableLinks && !ref && usePDFLatex && pdfHyperlinks)
+  if (/*m_prettyCode &&*/ !disableLinks && !ref && usePDFLatex && pdfHyperlinks)
   {
     t << "\\hyperlink{";
     if (f) t << stripPath(f);
@@ -2030,14 +2030,14 @@ void LatexGenerator::codify(const char *str)
                      }
                    }
                    result[i]=0; // add terminator
-                   if (m_prettyCode)
-                   {
+                   //if (m_prettyCode)
+                   //{
                      filterLatexString(t,result,insideTabbing,TRUE);
-                   }
-                   else
-                   {
-                     t << result;
-                   }
+                   //}
+                   //else
+                   //{
+                   //  t << result;
+                   //}
                    break;
       }
     }
@@ -2102,7 +2102,7 @@ void LatexGenerator::endMemberTemplateParams(const char *)
   }
 }
 
-void LatexGenerator::startMemberItem(const char *,int annoType) 
+void LatexGenerator::startMemberItem(const char *,int annoType,const char *) 
 { 
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!insideTabbing)
@@ -2122,7 +2122,7 @@ void LatexGenerator::endMemberItem()
   t << endl; 
 }
 
-void LatexGenerator::startMemberDescription(const char *) 
+void LatexGenerator::startMemberDescription(const char *,const char *) 
 {
   if (!insideTabbing)
   { 
@@ -2528,13 +2528,13 @@ void LatexGenerator::endCodeLine()
 
 void LatexGenerator::startFontClass(const char *name)
 {
-  if (!m_prettyCode) return;
+  //if (!m_prettyCode) return;
   t << "\\textcolor{" << name << "}{";
 }
 
 void LatexGenerator::endFontClass()
 {
-  if (!m_prettyCode) return;
+  //if (!m_prettyCode) return;
   t << "}";
 }
 
@@ -2542,7 +2542,7 @@ void LatexGenerator::startCodeAnchor(const char *name)
 {
   static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
   static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  if (!m_prettyCode) return;
+  //if (!m_prettyCode) return;
   if (usePDFLatex && pdfHyperlinks)
   {
     t << "\\hypertarget{" << stripPath(name) << "}{}";

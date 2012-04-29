@@ -48,7 +48,7 @@ class LatexGenerator : public OutputGenerator
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeSearchInfo() {}
-    void writeFooter() {}
+    void writeFooter(const char *) {}
     void endFile();
     void clearBuffer();
     
@@ -113,7 +113,7 @@ class LatexGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(const char *,int);
+    void startMemberItem(const char *,int,const char *);
     void endMemberItem();
     void startMemberTemplateParams();
     void endMemberTemplateParams(const char *);
@@ -162,8 +162,10 @@ class LatexGenerator : public OutputGenerator
     void endCenter()        { t << "\\end{center}" << endl; }
     void startSmall()       { t << "\\footnotesize "; }
     void endSmall()         { t << "\\normalsize "; }
-    void startMemberDescription(const char *);
+    void startMemberDescription(const char *,const char *);
     void endMemberDescription();
+    void writeInheritedSectionTitle(const char *,const char *,
+                      const char *,const char *,const char *) {}
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);

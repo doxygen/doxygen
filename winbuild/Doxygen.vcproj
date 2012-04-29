@@ -40,6 +40,7 @@
 			/>
 			<Tool
 				Name="Lex"
+				CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -88,6 +89,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Debug"
 				GenerateManifest="false"
+				IgnoreDefaultLibraryNames="libcmt.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/Doxygen.pdb"
 				SubSystem="1"
@@ -154,7 +156,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200 "
+				AdditionalOptions="/Zm200 /bigobj"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
@@ -239,6 +241,7 @@
 			/>
 			<Tool
 				Name="Lex"
+				CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -4046,6 +4049,10 @@
 			</File>
 			<File
 				RelativePath="..\src\translator_en.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\translator_eo.h"
 				>
 			</File>
 			<File

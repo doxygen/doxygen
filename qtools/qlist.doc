@@ -927,13 +927,11 @@
   QStrList documentation
  *****************************************************************************/
 
-typedef QList<char> QStrList
+//typedef QList<char> QStrList
 
 /*!
   \class QStrList qstrlist.h
   \brief The QStrList class provides a doubly linked list of \c char*.
-
-  \inherit QList
 
   \ingroup collection
   \ingroup tools
@@ -1038,8 +1036,6 @@ case insensitive compare.
 /*!
   \class QStrListIterator qstrlist.h
   \brief The QStrListIterator class is an iterator for the QStrList and QStrIList classes.
-
-  \inherit QListIterator
 
   \ingroup tools
 

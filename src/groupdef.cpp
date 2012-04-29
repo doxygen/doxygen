@@ -694,6 +694,10 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
+    if (Config_getBool("SORT_GROUP_NAMES"))
+    {
+      groupList->sort();
+    }
     GroupDef *gd=groupList->first();
     while (gd)
     {

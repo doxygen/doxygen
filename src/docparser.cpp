@@ -1310,6 +1310,15 @@ reparsetoken:
             doctokenizerYYsetStatePara();
           }
           break;
+        case CMD_RTFONLY:
+          {
+            doctokenizerYYsetStateRtfOnly();
+            tok = doctokenizerYYlex();
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::RtfOnly,g_isExample,g_exampleName));
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: rtfonly section ended without end marker");
+            doctokenizerYYsetStatePara();
+          }
+          break;
         case CMD_LATEXONLY:
           {
             doctokenizerYYsetStateLatexOnly();
@@ -5265,6 +5274,15 @@ int DocPara::handleCommand(const QCString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_RTFONLY:
+      {
+        doctokenizerYYsetStateRtfOnly();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::RtfOnly,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: rtfonly section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_LATEXONLY:
       {
         doctokenizerYYsetStateLatexOnly();
@@ -5313,6 +5331,7 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDMANONLY:
+    case CMD_ENDRTFONLY:
     case CMD_ENDLATEXONLY:
     case CMD_ENDXMLONLY:
     case CMD_ENDLINK:

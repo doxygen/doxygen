@@ -71,6 +71,7 @@ HEADERS      =	arguments.h \
 		jquery_ui_js.h \
 		jquery_fx_js.h \
 		svgpan_js.h \
+		dynsections_js.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \

@@ -259,7 +259,8 @@ void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,const char *manName,
                const char *title,HighlightedItem hli=HLI_None,
                bool additionalIndices=FALSE,const char *altSidebarName=0);
-void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE);
+void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
+             const QCString &navPath=QCString());
 void endFileWithNavPath(Definition *d,OutputList &ol);
 
 void initClassMemberIndices();
