@@ -40,6 +40,8 @@
 #include "vhdldocgen.h"
 #include "layout.h"
 #include "image.h"
+#include "ftvhelp.h"
+#include "bufstr.h"
 
 
 //#define DBG_HTML(x) x;
@@ -91,6 +93,10 @@ static const char search_jquery_script5[]=
 
 static const char svgpan_script[]=
 #include "svgpan_js.h"
+;
+
+static const char dynsections_script[]=
+#include "dynsections_js.h"
 ;
 
 
@@ -927,9 +933,37 @@ static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSe
   return QCString(result);
 }
 
+static QCString removeEmptyLines(const QCString &s)
+{
+  BufStr out(s.length()+1);
+  char *p=s.data();
+  char c;
+  while ((c=*p++))
+  {
+    if (c=='\n')
+    {
+      char *e = p;
+      while (*e==' ' || *e=='\t') e++;
+      if (*e=='\n') 
+      {
+        p=e;
+      }
+      else out.addChar(c);
+    }
+    else
+    {
+      out.addChar(c);
+    }
+  }
+  out.addChar('\0');
+  //printf("removeEmptyLines(%s)=%s\n",s.data(),out.data());
+  return out.data();
+}
 
-static QCString substituteHtmlKeywords(const QCString &s,const char *title,
-                                       const QCString &relPath)
+static QCString substituteHtmlKeywords(const QCString &s,
+                                       const QCString &title,
+                                       const QCString &relPath,
+                                       const QCString &navPath=QCString())
 {
   // Build CSS/Javascript tags depending on treeview, search engine settings
   QCString cssFile;
@@ -980,7 +1014,6 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
   if (treeView)
   {
     treeViewCssJs = "<link href=\"$relpath$navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
-                    "<script type=\"text/javascript\" src=\"$relpath$jquery.js\"></script>\n"
                     "<script type=\"text/javascript\" src=\"$relpath$resize.js\"></script>\n"
                     "<script type=\"text/javascript\" src=\"$relpath$navtree.js\"></script>\n"
                     "<script type=\"text/javascript\">\n"
@@ -991,10 +1024,6 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
   if (searchEngine)
   {
     searchCssJs = "<link href=\"$relpath$search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-    if (!Config_getBool("GENERATE_TREEVIEW"))
-    {
-      searchCssJs += "<script type=\"text/javascript\" src=\"$relpath$jquery.js\"></script>\n";
-    }
     searchCssJs += "<script type=\"text/javascript\" src=\"$relpath$search/search.js\"></script>\n";
 
     if (!serverBasedSearch) 
@@ -1057,6 +1086,7 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
         convertToHtml(Config_getString("PROJECT_BRIEF")));
 
   // additional HTML only keywords
+  result = substitute(result,"$navpath",navPath);
   result = substitute(result,"$stylesheet",cssFile);
   result = substitute(result,"$treeview",treeViewCssJs);
   result = substitute(result,"$searchbox",searchBox);
@@ -1074,6 +1104,8 @@ static QCString substituteHtmlKeywords(const QCString &s,const char *title,
   result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber);
   result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief);
   result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo);
+
+  result = removeEmptyLines(result);
 
   return result;
 }
@@ -1158,55 +1190,12 @@ void HtmlGenerator::init()
     }
   }
 
-  if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
   {
     QFile f(dname+"/dynsections.js");
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
-      t << 
-        "var showTriggers = new Array();\n"
-        "\n"
-        "function registerShow(sectId,showFunc) {\n"
-        "  showTriggers[sectId] = showFunc;\n"
-        "}\n"
-        "\n"
-        "function hasClass(ele,cls) {\n"
-        "  return ele.className.match(new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)'));\n"
-        "}\n"
-        "\n"
-        "function addClass(ele,cls) {\n"
-        "  if (!this.hasClass(ele,cls)) ele.className += \" \"+cls;\n"
-        "}\n"
-        "\n"
-        "function removeClass(ele,cls) {\n"
-        "  if (hasClass(ele,cls)) {\n"
-        "    var reg = new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)');\n"
-        "    ele.className=ele.className.replace(reg,' ');\n"
-        "  }\n"
-        "}\n"
-        "\n"
-        "function toggleVisibility(linkObj) {\n"
-        " var base = linkObj.getAttribute('id');\n"
-        " var summary = document.getElementById(base + '-summary');\n"
-        " var content = document.getElementById(base + '-content');\n"
-        " var trigger = document.getElementById(base + '-trigger');\n"
-        " if ( hasClass(linkObj,'closed') ) {\n"
-        "   summary.style.display = 'none';\n"
-        "   content.style.display = 'block';\n"
-        "   trigger.src = trigger.src.substring(0,trigger.src.length-10)+'open.png';\n"
-        "   removeClass(linkObj,'closed');\n"
-        "   addClass(linkObj,'opened');\n"
-        "   if (showTriggers[base]) { showTriggers[base](); }\n"
-        " } else if ( hasClass(linkObj,'opened') ) {\n"
-        "   summary.style.display = 'block';\n"
-        "   content.style.display = 'none';\n"
-        "   trigger.src = trigger.src.substring(0,trigger.src.length-8)+'closed.png';\n"
-        "   removeClass(linkObj,'opened');\n"
-        "   addClass(linkObj,'closed');\n"
-        " }\n"
-        " return false;\n"
-        "}\n";
+      t << dynsections_script;
     }
   }
 }
@@ -1276,14 +1265,11 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   t << contents;
 }
 
-static void generateDynamicSections(FTextStream &t,const QCString &relPath)
-{
-  if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
-  { 
-    t << "<script type=\"text/javascript\" src=\"" << relPath 
-      << "dynsections.js\"></script>\n";
-  }
-}
+//static void generateDynamicSections(FTextStream &t,const QCString &relPath)
+//{
+//  t << "<script type=\"text/javascript\" src=\"" << relPath 
+//    << "dynsections.js\"></script>\n";
+//}
 
 
 void HtmlGenerator::startFile(const char *name,const char *,
@@ -1319,7 +1305,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
       << relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
     t << "</script>\n";
   }
-  generateDynamicSections(t,relPath);
+  //generateDynamicSections(t,relPath);
   m_sectionCount=0;
 }
 
@@ -1383,14 +1369,15 @@ void HtmlGenerator::writeLogo()
   t << writeLogoAsString(relPath);
 }
 
-void HtmlGenerator::writePageFooter(FTextStream &t,const QCString &lastTitle,const QCString &relPath)
+void HtmlGenerator::writePageFooter(FTextStream &t,const QCString &lastTitle,
+                              const QCString &relPath,const QCString &navPath)
 {
-  t << substituteHtmlKeywords(g_footer,convertToHtml(lastTitle),relPath);
+  t << substituteHtmlKeywords(g_footer,convertToHtml(lastTitle),relPath,navPath);
 }
 
-void HtmlGenerator::writeFooter()
+void HtmlGenerator::writeFooter(const char *navPath)
 {
-  writePageFooter(t,lastTitle,relPath);
+  writePageFooter(t,lastTitle,relPath,navPath);
 }
 
 void HtmlGenerator::endFile()
@@ -1873,42 +1860,47 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
 void HtmlGenerator::startMemberList()  
 { 
   DBG_HTML(t << "<!-- startMemberList -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
-  }
-  else
-  {
-    t << "<ul>" << endl; 
-  }
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
+  //}
+  //else
+  //{
+  //  t << "<ul>" << endl; 
+  //}
 }
 
 void HtmlGenerator::endMemberList()    
 { 
   DBG_HTML(t << "<!-- endMemberList -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
-  }
-  else
-  {
-    t << "</ul>" << endl; 
-  }
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
+  //}
+  //else
+  //{
+  //  t << "</ul>" << endl; 
+  //}
 }
 
 // anonymous type:
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
-void HtmlGenerator::startMemberItem(const char *anchor,int annoType) 
+void HtmlGenerator::startMemberItem(const char *anchor,int annoType,const char *inheritId) 
 { 
   DBG_HTML(t << "<!-- startMemberItem() -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     if (m_emptySection)
     {
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr class=\"memitem:" << anchor << "\">";
+    t << "<tr class=\"memitem:" << anchor;
+    if (inheritId)
+    {
+      t << " inherit " << inheritId;
+    }
+    t << "\">";
     switch(annoType)
     {
       case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
@@ -1916,20 +1908,20 @@ void HtmlGenerator::startMemberItem(const char *anchor,int annoType)
       case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
       default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
     }
-  }
-  else
-  {
-    t << "<li>"; 
-  }
+  //}
+  //else
+  //{
+  //  t << "<li>"; 
+  //}
 }
 
 void HtmlGenerator::endMemberItem() 
 { 
   //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     t << "</td></tr>"; 
-  }
+  //}
   t << endl; 
 }
 
@@ -1939,94 +1931,104 @@ void HtmlGenerator::startMemberTemplateParams()
 
 void HtmlGenerator::endMemberTemplateParams(const char *anchor)
 {
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     t << "</td></tr>" << endl;
     t << "<tr class=\"memitem:" << anchor << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
-  }
+  //}
 }
 
 
 void HtmlGenerator::insertMemberAlign(bool templ) 
 { 
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     QCString className = templ ? "memTemplItemRight" : "memItemRight";
     t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
-  }
+  //}
 }
 
-void HtmlGenerator::startMemberDescription(const char *anchor) 
+void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheritId) 
 { 
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     if (m_emptySection)
     {
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr class=\"memdesc:" << anchor << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
-  }
-  else
-  {
-    t << "<dl class=\"el\"><dd class=\"mdescRight\">";
-  }
+    t << "<tr class=\"memdesc:" << anchor;
+    if (inheritId)
+    {
+      t << " inherit " << inheritId;
+    }
+    t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
+  //}
+  //else
+  //{
+  //  t << "<dl class=\"el\"><dd class=\"mdescRight\">";
+  //}
 }
 
 void HtmlGenerator::endMemberDescription()   
 { 
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     t << "<br/></td></tr>" << endl; 
-  }
-  else
-  {
-    t << "<br/></dl>";
-  }
+  //}
+  //else
+  //{
+  //  t << "<br/></dl>";
+  //}
 }
 
 void HtmlGenerator::startMemberSections()
 {
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     m_emptySection=TRUE; // we postpone writing <table> until we actually
                          // write a row to prevent empty tables, which 
                          // are not valid XHTML!
-  }
+  //}
 }
 
 void HtmlGenerator::endMemberSections()
 {
   DBG_HTML(t << "<!-- endMemberSections -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     if (!m_emptySection)
     {
       t << "</table>" << endl;
     }
-  }
+  //}
 }
 
 void HtmlGenerator::startMemberHeader(const char *anchor)
 {
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
+    if (!m_emptySection)
+    {
+      t << "</table>";
+      m_emptySection=TRUE;
+    }
     if (m_emptySection)
     {
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr><td colspan=\"2\"><h2>";
-  }
-  else
-  {
-    startGroupHeader(FALSE);
-  }
+    t << "<tr class=\"heading\"><td colspan=\"2\"><h2>";
+  //}
+  //else
+  //{
+  //  startGroupHeader(FALSE);
+  //}
   if (anchor)
   {
     t << "<a name=\"" << anchor << "\"></a>" << endl;
@@ -2036,26 +2038,28 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
 void HtmlGenerator::endMemberHeader()
 {
   DBG_HTML(t << "<!-- endMemberHeader -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  {
+  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
+  //{
     t << "</h2></td></tr>" << endl;
-  }
-  else
-  {
-    endGroupHeader(FALSE);
-  }
+  //}
+  //else
+  //{
+  //  endGroupHeader(FALSE);
+  //}
 }
 
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<tr><td class=\"ititle\" colspan=\"2\">";
+  //if (Config_getBool("HTML_ALIGN_MEMBERS")) 
+    t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "</td></tr>" << endl;
+  //if (Config_getBool("HTML_ALIGN_MEMBERS")) 
+    t << "</td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
@@ -2702,7 +2706,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
 
 void HtmlGenerator::endQuickIndices()
 {
-  t << "</div>" << endl;
+  t << "</div><!-- top -->" << endl;
 }
 
 QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpath)
@@ -2723,10 +2727,10 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
     "  </div>\n"
     "</div>\n"
     "<script type=\"text/javascript\">\n"
-    "  initNavTree('") + 
+    "$(document).ready(function(){initNavTree('") + 
     QCString(name) + Doxygen::htmlFileExtension + 
     QCString("','") + relpath +
-    QCString("');\n"
+    QCString("');});\n"
     "</script>\n"
     "<div id=\"doc-content\">\n");
   }
@@ -2846,11 +2850,12 @@ void HtmlGenerator::writeSearchPage()
     // Write empty navigation path, to make footer connect properly
     if (generateTreeView)
     {
-      t << "</div><div id=\"nav-path\" class=\"navpath\">\n";
-      t << "    <ul>\n";
+      t << "</div><!-- doc-contents -->\n";
+      //t << "<div id=\"nav-path\" class=\"navpath\">\n";
+      //t << "  <ul>\n";
     }
 
-    writePageFooter(t,"Search","");
+    writePageFooter(t,"Search","","");
   }
   QCString scriptName = Config_getString("HTML_OUTPUT")+"/search/search.js";
   QFile sf(scriptName);
@@ -3050,6 +3055,21 @@ void HtmlGenerator::endLabels()
 {
   DBG_HTML(t << "<!-- endLabels -->" << endl;)
   t << "</span>";
+}
+
+void HtmlGenerator::writeInheritedSectionTitle(const char *id,
+                  const char *file,const char *anchor,const char *title,
+                  const char *name)
+{
+  DBG_HTML(t << "<!-- writeInheritedSectionTitle -->" << endl;)
+  QCString a = anchor;
+  if (!a.isEmpty()) a.prepend("#");
+  QCString classLink = QCString("<a class=\"el\" href=\"")+correctURL(file,relPath)+Doxygen::htmlFileExtension+a+"\">"+name+"</a>";
+  t << "<tr class=\"inherit_header " << id << "\">"
+    << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
+    << "<img src=\"" << relPath << "closed.png\" alt=\"-\"/>&nbsp;" 
+    << theTranslator->trInheritedFrom(title,classLink)
+    << "</td></tr>" << endl;
 }
 
 

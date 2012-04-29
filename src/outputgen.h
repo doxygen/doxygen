@@ -302,7 +302,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startFile(const char *name,const char *manName,
                            const char *title) = 0;
     virtual void writeSearchInfo() = 0;
-    virtual void writeFooter() = 0;
+    virtual void writeFooter(const char *navPath) = 0;
     virtual void endFile() = 0;
     virtual void startIndexSection(IndexSections) = 0;
     virtual void endIndexSection(IndexSections) = 0;
@@ -340,7 +340,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
-    virtual void startMemberItem(const char *,int) = 0;
+    virtual void startMemberItem(const char *,int,const char *) = 0;
     virtual void endMemberItem() = 0;
     virtual void startMemberTemplateParams() = 0;
     virtual void endMemberTemplateParams(const char *) = 0;
@@ -362,8 +362,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeStartAnnoItem(const char *type,const char *file,
                                     const char *path,const char *name) = 0;
     virtual void writeEndAnnoItem(const char *name) = 0;
-    virtual void startMemberDescription(const char *anchor) = 0;
+    virtual void startMemberDescription(const char *anchor,const char *inheritId) = 0;
     virtual void endMemberDescription() = 0;
+    virtual void writeInheritedSectionTitle(const char *id,
+                    const char *file,const char *anchor,
+                    const char *title,const char *name) = 0;
     virtual void startIndent() = 0;
     virtual void endIndent() = 0;
     virtual void writeSynopsis() = 0;
@@ -418,6 +421,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInlineMemberName() = 0;
     virtual void startInlineMemberDoc() = 0;
     virtual void endInlineMemberDoc() = 0;
+
 
     virtual void startLabels() = 0;
     virtual void writeLabel(const char *,bool) = 0;

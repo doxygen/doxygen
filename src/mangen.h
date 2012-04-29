@@ -45,7 +45,7 @@ class ManGenerator : public OutputGenerator
     static void init();
     void startFile(const char *name,const char *manName,const char *title);
     void writeSearchInfo() {}
-    void writeFooter() {}
+    void writeFooter(const char *) {}
     void endFile();
     void clearBuffer();
 
@@ -111,7 +111,7 @@ class ManGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int);
     void endAnonTypeScope(int);
-    void startMemberItem(const char *,int);
+    void startMemberItem(const char *,int,const char *);
     void endMemberItem();
     void startMemberTemplateParams() {}
     void endMemberTemplateParams(const char *) {}
@@ -158,8 +158,10 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *) { t << "\n.RI \"\\fI"; firstCol=FALSE; }
+    void startMemberDescription(const char *,const char *) { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
+    void writeInheritedSectionTitle(const char *,const char *,
+                      const char *,const char *,const char *) {}
     void startDescList(SectionTypes);
     void endDescList()        {}
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);

@@ -841,22 +841,6 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
   }
 }
 
-void FTVHelp::generateJSLink(FTextStream &t,FTVNode *n)
-{
-  if (n->file.isEmpty()) // no link
-  {
-    t << "\"" << convertToJSString(n->name) << "\", null, ";
-  }
-  else // link into other page
-  {
-    // TODO: use m_topLevelIndex
-    t << "\"" << convertToJSString(n->name) << "\", \"";
-    t << externalRef("",n->ref,TRUE);
-    t << node2URL(n);
-    t << "\", ";
-  }
-}
-
 static void generateBriefDoc(FTextStream &t,Definition *def)
 {
   QCString brief = def->briefDescription(TRUE);
@@ -888,27 +872,31 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
     generateIndent(t,n,0);
     if (n->isDir)
     {
-      t << "<img ";
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {
-        t << FTV_IMGATTRIBS(mo);
+        //t << FTV_IMGATTRIBS(mo);
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
+        t << "<img ";
         t << FTV_IMGATTRIBS(ns);
+        t << "/>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
+        t << "<img ";
         t << FTV_IMGATTRIBS(cl);
+        t << "/>";
       }
       else
       {
+        t << "<img ";
         t << "id=\"img_" << generateIndentLabel(n,0) 
           << "\" " << FTV_IMGATTRIBS(folderopen) << "onclick=\"toggleFolder('"
           << generateIndentLabel(n,0)
           << "')\"";
+        t << "/>";
       }
-      t << "/>";
       generateLink(t,n);
       //t << "</p>\n";
       //t << spaces << "<div id=\"folder" << folderId << "\">\n";
@@ -936,24 +924,30 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
           << Doxygen::htmlFileExtension 
           << "\">";
       }
-      t << "<img ";
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {
-        t << FTV_IMGATTRIBS(mo);
+        //t << "<img ";
+        //t << FTV_IMGATTRIBS(mo);
+        //t << "/>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
+        t << "<img ";
         t << FTV_IMGATTRIBS(ns);
+        t << "/>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
+        t << "<img ";
         t << FTV_IMGATTRIBS(cl);
+        t << "/>";
       }
       else
       {
+        t << "<img ";
         t << FTV_IMGATTRIBS(doc);
+        t << "/>";
       }
-      t << "/>";
       //t << "</p>\n";
       if (srcRef)
       {
@@ -970,6 +964,8 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
   }
 }
 
+//-----------------------------------------------------------
+
 static void writePathToNode(FTextStream &tidx,FTVNode *leaf,FTVNode *n)
 {
   if (n->parent)
@@ -980,23 +976,30 @@ static void writePathToNode(FTextStream &tidx,FTVNode *leaf,FTVNode *n)
   if (leaf!=n) tidx << ",";
 }
 
-bool childOfHierarchy(const FTVNode *n)
-{
-  if (n==0) return FALSE;
-  if (n->file=="hierarchy") 
-    return TRUE;
-  else 
-    return childOfHierarchy(n->parent);
-}
-
-bool dupOfParent(const FTVNode *n)
+static bool dupOfParent(const FTVNode *n)
 {
   if (n->parent==0) return FALSE;
   if (n->file==n->parent->file) return TRUE;
   return FALSE;
 }
 
-bool FTVHelp::generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNode> &nl,int level,bool &first)
+static void generateJSLink(FTextStream &t,FTVNode *n)
+{
+  if (n->file.isEmpty()) // no link
+  {
+    t << "\"" << convertToJSString(n->name) << "\", null, ";
+  }
+  else // link into other page
+  {
+    // TODO: use m_topLevelIndex
+    t << "\"" << convertToJSString(n->name) << "\", \"";
+    t << externalRef("",n->ref,TRUE);
+    t << node2URL(n);
+    t << "\", ";
+  }
+}
+
+static bool generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNode> &nl,int level,bool &first)
 {
   QCString indentStr;
   indentStr.fill(' ',level*2);
@@ -1016,7 +1019,6 @@ bool FTVHelp::generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNo
     }
     found=TRUE;
 
-    //if (!n->file.isEmpty() && !childOfHierarchy(n->parent))
     if (n->addToNavIndex)
     {
       tidx << "," << endl << "\"" << node2URL(n) << "\":[";
@@ -1068,6 +1070,57 @@ bool FTVHelp::generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNo
   return found;
 }
 
+static void generateJSNavTree(const QList<FTVNode> &nodeList)
+{
+  QCString htmlOutput = Config_getString("HTML_OUTPUT");
+  QFile f(htmlOutput+"/navtree.js");
+  QFile fidx(htmlOutput+"/navtreeindex.js");
+  if (f.open(IO_WriteOnly) && fidx.open(IO_WriteOnly))
+  {
+    FTextStream tidx(&fidx);
+    tidx << "var NAVTREEINDEX =" << endl;
+    tidx << "{" << endl;
+    FTextStream t(&f);
+    t << "var NAVTREE =" << endl;
+    t << "[" << endl;
+    t << "  [ ";
+    QCString &projName = Config_getString("PROJECT_NAME");
+    if (projName.isEmpty())
+    {
+      if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty()) // Use title of main page as root
+      {
+        t << "\"" << convertToJSString(Doxygen::mainPage->title()) << "\", ";
+      }
+      else // Use default section title as root
+      {
+        LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::MainPage);
+        t << "\"" << convertToJSString(lne->title()) << "\", ";
+      }
+    }
+    else // use PROJECT_NAME as root tree element
+    {
+      t << "\"" << convertToJSString(projName) << "\", ";
+    }
+    t << "\"index" << Doxygen::htmlFileExtension << "\", ";
+
+    tidx << "\"index" << Doxygen::htmlFileExtension << "\":[]";
+
+    bool first=TRUE;
+    generateJSTree(tidx,t,nodeList,1,first);
+
+    if (first) 
+      t << "]" << endl;
+    else 
+      t << endl << "  ] ]" << endl;
+    t << "];" << endl;
+    t << endl << navtree_script;
+
+    tidx << endl << "};" << endl;
+  }
+}
+
+//-----------------------------------------------------------
+
 // new style images
 void FTVHelp::generateTreeViewImages()
 {
@@ -1078,57 +1131,14 @@ void FTVHelp::generateTreeViewImages()
 // new style scripts
 void FTVHelp::generateTreeViewScripts()
 {
-  // generate navtree.js
-  {
-    QCString htmlOutput = Config_getString("HTML_OUTPUT");
-    QFile f(htmlOutput+"/navtree.js");
-    QFile fidx(htmlOutput+"/navtreeindex.js");
-    if (f.open(IO_WriteOnly) && fidx.open(IO_WriteOnly))
-    {
-      FTextStream tidx(&fidx);
-      tidx << "var NAVTREEINDEX =" << endl;
-      tidx << "{" << endl;
-      FTextStream t(&f);
-      t << "var NAVTREE =" << endl;
-      t << "[" << endl;
-      t << "  [ ";
-      QCString &projName = Config_getString("PROJECT_NAME");
-      if (projName.isEmpty())
-      {
-        if (Doxygen::mainPage && !Doxygen::mainPage->title().isEmpty()) // Use title of main page as root
-        {
-          t << "\"" << convertToJSString(Doxygen::mainPage->title()) << "\", ";
-        }
-        else // Use default section title as root
-        {
-          LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::MainPage);
-          t << "\"" << convertToJSString(lne->title()) << "\", ";
-        }
-      }
-      else // use PROJECT_NAME as root tree element
-      {
-        t << "\"" << convertToJSString(projName) << "\", ";
-      }
-      t << "\"index" << Doxygen::htmlFileExtension << "\", ";
+  QCString htmlOutput = Config_getString("HTML_OUTPUT");
 
-      tidx << "\"index" << Doxygen::htmlFileExtension << "\":[]";
+  // generate navtree.js & navtreeindex.js
+  generateJSNavTree(m_indentNodes[0]);
 
-      bool first=TRUE;
-      generateJSTree(tidx,t,m_indentNodes[0],1,first);
-
-      if (first) 
-        t << "]" << endl;
-      else 
-        t << endl << "  ] ]" << endl;
-      t << "];" << endl;
-      t << endl << navtree_script;
-
-      tidx << endl << "};" << endl;
-    }
-  }
   // generate resize.js
   {
-    QFile f(Config_getString("HTML_OUTPUT")+"/resize.js");
+    QFile f(htmlOutput+"/resize.js");
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
@@ -1137,7 +1147,7 @@ void FTVHelp::generateTreeViewScripts()
   }
   // generate navtree.css
   {
-    QFile f(Config_getString("HTML_OUTPUT")+"/navtree.css");
+    QFile f(htmlOutput+"/navtree.css");
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
@@ -1146,122 +1156,11 @@ void FTVHelp::generateTreeViewScripts()
   }
 }
 
-// old style script (used for inline trees)
-void FTVHelp::generateScript(FTextStream &t)
-{
-  t << "<script type=\"text/javascript\">\n";
-  t << "<!-- // Hide script from old browsers\n";
-#if 0
-
-  /* User has clicked on a node (folder or +/-) in the tree */
-  t << "    function toggleFolder(id, imageNode) \n";
-  t << "    {\n";
-  t << "      var folder = document.getElementById(id);\n";
-  t << "      var l = imageNode.src.length;\n";
-  /* If the user clicks on the book icon, we move left one image so 
-   * the code (below) will also adjust the '+' icon. 
-   */
-  t << "      if (imageNode.src.substring(l-20,l)==\"" FTV_ICON_FILE(folderclosed) "\" || \n";
-  t << "          imageNode.src.substring(l-18,l)==\"" FTV_ICON_FILE(folderopen)  "\")\n";
-  t << "      {\n";
-  t << "        imageNode = imageNode.previousSibling;\n";
-  t << "        l = imageNode.src.length;\n";
-  t << "      }\n";
-  t << "      if (folder == null) \n";
-  t << "      {\n";
-  t << "      } \n";
-  /* Node controls a open section, we need to close it */
-  t << "      else if (folder.style.display == \"none\") \n";
-  t << "      {\n";
-  t << "        if (imageNode != null) \n";
-  t << "        {\n";
-  t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderopen) "\";\n";
-  t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(pnode) "\")\n";
-  t << "          {\n";
-  t << "            imageNode.src = \"" FTV_ICON_FILE(mnode) "\";\n";
-  t << "          }\n";
-  t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(plastnode) "\")\n";
-  t << "          {\n";
-  t << "            imageNode.src = \"" FTV_ICON_FILE(mlastnode) "\";\n";
-  t << "          }\n";
-  t << "        }\n";
-  t << "        folder.style.display = \"block\";\n";
-  t << "      }\n";
-  t << "      else \n"; /* section is closed, we need to open it */
-  t << "      {\n";
-  t << "        if (imageNode != null) \n";
-  t << "        {\n";
-  t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
-  t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(mnode) "\")\n";
-  t << "          {\n";
-  t << "            imageNode.src = \"" FTV_ICON_FILE(pnode) "\";\n";
-  t << "          }\n";
-  t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(mlastnode) "\")\n";
-  t << "          {\n";
-  t << "            imageNode.src = \"" FTV_ICON_FILE(plastnode) "\";\n";
-  t << "          }\n";
-  t << "        }\n";
-  t << "        folder.style.display = \"none\";\n";
-  t << "      } \n";
-  t << "    }\n";
-  t << "\n";
-#endif
-
-  t << "function updateStripes()\n";
-  t << "{\n";
-  t << "  $('table.directoryalt tr').\n";
-  t << "       removeClass('even').filter(':visible:even').addClass('even');\n";
-  t << "}\n";
-
-  t << "function toggleLevel(level)\n";
-  t << "{\n";
-  t << "  $('table.directoryalt tr').each(function(){ \n";
-  t << "    var l = this.id.split('_').length-1;\n";
-  t << "    var i = $('#img'+this.id.substring(3));\n";
-  t << "    var a = $('#arr'+this.id.substring(3));\n";
-  t << "    if (l<level+1) {\n";
-  t << "      i.attr('src','" FTV_ICON_FILE(folderopen) "');\n";
-  t << "      a.attr('src','" FTV_ICON_FILE(mnode) "');\n";
-  t << "      $(this).show();\n";
-  t << "    } else if (l==level+1) {\n";
-  t << "      i.attr('src','" FTV_ICON_FILE(folderclosed) "');\n";
-  t << "      a.attr('src','" FTV_ICON_FILE(pnode) "');\n";
-  t << "      $(this).show();\n";
-  t << "    } else {\n";
-  t << "      $(this).hide();\n";
-  t << "    }\n";
-  t << "  });\n";
-  t << "  updateStripes();\n";
-  t << "}\n";
-
-  t << "function toggleFolder(id) \n";
-  t << "{\n";
-  t << "  var n = $('[id^=row_'+id+']');\n"; // select parent + children
-  t << "  var i = $('[id^=img_'+id+']');\n"; // i = dir imagess
-  t << "  var a = $('[id^=arr_'+id+']');\n"; // a = arrow images
-  t << "  var c = n.slice(1);\n";            // c = array of children
-  t << "  if (c.filter(':first').is(':visible')===true) {\n";
-  t << "    i.attr('src','" FTV_ICON_FILE(folderclosed) "');\n";
-  t << "    a.attr('src','" FTV_ICON_FILE(pnode) "');\n";
-  t << "    c.hide();\n";
-  t << "  } else {\n";
-  t << "    i.attr('src','" FTV_ICON_FILE(folderopen) "');\n";
-  t << "    a.attr('src','" FTV_ICON_FILE(mnode) "');\n";
-  t << "    c.show();\n";
-  t << "  }\n";
-  t << "  updateStripes();\n";
-  t << "}\n";
-
-  t << "  // End script hiding -->        \n";
-  t << "</script>\n";
-
-}
-
 // write tree inside page
 void FTVHelp::generateTreeViewInline(FTextStream &t)
 {
-  generateScript(t);
-  t << "<div class=\"directoryalt\">\n";
+  //generateScript(t);
+  t << "<div class=\"directory\">\n";
 
   QListIterator<FTVNode> li(m_indentNodes[0]);
   FTVNode *n;
@@ -1289,7 +1188,7 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
 
 //  t << "      <br/>\n";
 //  t << "      <div style=\"display: block;\">\n";
-  t << "<table class=\"directoryalt\">\n";
+  t << "<table class=\"directory\">\n";
 
   int index=0;
   generateTree(t,m_indentNodes[0],0,index);

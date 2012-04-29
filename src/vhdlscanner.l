@@ -108,9 +108,17 @@ static void handleCommentBlock(const QCString &doc,bool brief);
 static void mapLibPackage(const Entry* ce);
 static Entry* getEntryAtLine(const Entry* ce,int line);
 static bool addLibUseClause(const QCString &type);
-
-static bool varr=false;
+static Entry* oldEntry;
+static bool varr=FALSE;
 static QCString varName;
+
+static struct 
+{
+  QCString doc;
+  bool brief;
+  bool pending;
+  int iDocLine;
+} str_doc;
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_USER_ACTION num_chars += vhdlScanYYleng;
@@ -537,7 +545,7 @@ BR                         [ \t\n\r]
 .	{ /* unknown characters */ }
 									
 
-<*>{B}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
+<*>{BR}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qc(vhdlScanYYtext);
   int len=qc.contains('\n')+yyLineNr-1;
@@ -572,7 +580,7 @@ BR                         [ \t\n\r]
   if (index>0)
   {
     startCodeBlock(index);
-    doxComment=true;
+    doxComment=TRUE;
   }
   lineCount();
   BEGIN(Comment);
@@ -596,7 +604,7 @@ BR                         [ \t\n\r]
           }
           strComment.resize(0);;
           unput(*vhdlScanYYtext);
-          doxComment=false;
+          doxComment=FALSE;
           BEGIN(g_lastCommentContext);
         }
         
@@ -745,7 +753,7 @@ bool VHDLLanguageScanner::needsPreprocessing(const QCString & /*extension*/)
 void VHDLLanguageScanner::parsePrototype(const char *text)
 { 
   varName=text;
-  varr=true;
+  varr=TRUE;
 }
 
 // do parsing
@@ -914,11 +922,27 @@ static bool addLibUseClause(const QCString &type)
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
   int position=0;
+
+  // empty comment  --!
+  if (doc.isEmpty()) return;
+
   bool needsEntry=FALSE;
   Protection protection=Public;
   int lineNr = iDocLine;
 
   Entry* current=getCurrentVhdlEntry();
+
+  if (oldEntry==current)
+  {
+    //printf("\n find pending message  < %s > at line: %d \n ",doc.data(),iDocLine);
+    str_doc.doc=doc;
+    str_doc.iDocLine=iDocLine;
+    str_doc.brief=brief;
+    str_doc.pending=TRUE;
+    return;
+  }
+
+  oldEntry=current;
 
   if (brief) 
     current->briefLine = iDocLine; 
@@ -948,7 +972,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   {
     if(varr)
     {
-      varr=false;
+      varr=FALSE;
       current->name=varName;
       current->section=Entry::VARIABLEDOC_SEC;
       varName="";
@@ -988,4 +1012,13 @@ int getParsedLine(int object)
   return lineIndex [object];
 }
 
+void isVhdlDocPending()
+{
+  if (!str_doc.pending)
+    return;
 
+  iDocLine=str_doc.iDocLine;
+  handleCommentBlock(str_doc.doc,str_doc.brief);
+  iDocLine=-1;
+  str_doc.pending=FALSE;
+}

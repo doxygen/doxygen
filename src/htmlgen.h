@@ -55,7 +55,7 @@ class HtmlGenerator : public OutputGenerator
     void printDoc(DocNode *,const char *);
 
     void startFile(const char *name,const char *manName,const char *title);
-    void writeFooter();
+    void writeFooter(const char *navPath);
     void endFile();
     void clearBuffer();
     void writeSearchInfo();
@@ -120,7 +120,7 @@ class HtmlGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(const char *anchor,int);
+    void startMemberItem(const char *anchor,int,const char *inheritId);
     void endMemberItem();
     void startMemberTemplateParams();
     void endMemberTemplateParams(const char *anchor);
@@ -133,8 +133,10 @@ class HtmlGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void insertMemberAlign(bool);
-    void startMemberDescription(const char *anchor);
+    void startMemberDescription(const char *anchor,const char *inheritId);
     void endMemberDescription();
+    void writeInheritedSectionTitle(const char *id,const char *file,
+                      const char *anchor,const char *title,const char *name);
 
     void writeRuler()    { t << "<hr/>"; }
     void writeAnchor(const char *,const char *name) 
@@ -276,7 +278,7 @@ class HtmlGenerator : public OutputGenerator
     //static void generateSectionImages();
 
   private:
-    static void writePageFooter(FTextStream &t,const QCString &,const QCString &);
+    static void writePageFooter(FTextStream &t,const QCString &,const QCString &,const QCString &);
     QCString lastTitle;
     QCString lastFile;
     QCString relPath;

@@ -137,10 +137,13 @@ class MemberList : public QList<MemberDef>
     void countDecMembers(bool countEnumValues=FALSE,GroupDef *gd=0);
     void countDocMembers(bool countEnumValues=FALSE);
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               const char *inheritId);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *title,const char *subtitle,bool showEnumValues=FALSE,bool showInline=FALSE);
+               const char *title,const char *subtitle,
+               bool showEnumValues=FALSE,bool showInline=FALSE,
+               ClassDef *inheritedFrom=0);
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
     void writeSimpleDocumentation(OutputList &ol,Definition *container);

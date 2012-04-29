@@ -395,6 +395,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 %x St_HtmlOnly
 %x St_ManOnly
 %x St_LatexOnly
+%x St_RtfOnly
 %x St_XmlOnly
 %x St_Verbatim
 %x St_Dot
@@ -708,9 +709,10 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
   		           return TK_NEWPARA;
 			 }
                        }
-<St_CodeOpt>"{"{LABELID}"}" {
+<St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
                          g_token->name = yytext;
-                         g_token->name = g_token->name.mid(1,g_token->name.length()-2);
+                         int i=g_token->name.find('{');
+                         g_token->name = g_token->name.mid(i+1,g_token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
 <St_CodeOpt>\n         |
@@ -743,6 +745,14 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <St_ManOnly>[^\\@\n$]+    |
 <St_ManOnly>\n            |
 <St_ManOnly>.             {
+  			 g_token->verb+=yytext;
+  		       }
+<St_RtfOnly>{CMD}"endrtfonly" {
+                         return RetVal_OK;
+                       }
+<St_RtfOnly>[^\\@\n$]+    |
+<St_RtfOnly>\n            |
+<St_RtfOnly>.             {
   			 g_token->verb+=yytext;
   		       }
 <St_LatexOnly>{CMD}"endlatexonly" {
@@ -1197,6 +1207,12 @@ void doctokenizerYYsetStateManOnly()
 {
   g_token->verb="";
   BEGIN(St_ManOnly);
+}
+
+void doctokenizerYYsetStateRtfOnly()
+{
+  g_token->verb="";
+  BEGIN(St_RtfOnly);
 }
 
 void doctokenizerYYsetStateXmlOnly()

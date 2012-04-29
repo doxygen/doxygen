@@ -54,23 +54,23 @@
 
 //! Application error.
 #define tcl_err \
-  printf("Error %d %s() in %s line %d! ",__LINE__,__FUNCTION__,tcl.file_name.data(),yylineno); \
+  printf("Error %d %s() at line %d! ",__LINE__,tcl.file_name.data(),yylineno); \
   yy_push_state(ERROR); \
   yyless(0); \
   printf
 
 //! Application warning.
 #define tcl_war \
-  printf("Warning %d %s() in %s line %d: ",__LINE__,__FUNCTION__,tcl.file_name.data(),yylineno); \
+  printf("Warning %d %s() at line %d: ",__LINE__,tcl.file_name.data(),yylineno); \
   printf
 
 //! Application message.
 #define tcl_inf \
-  if (0) printf("--- %.4d %s() %d@%d: ",__LINE__,__FUNCTION__,yylineno,yy_start_stack_ptr) && printf
+  if (0) printf("--- %.4d %d@%d: ",__LINE__,yylineno,yy_start_stack_ptr) && printf
 
 //! Debug message.
 #define D\
-  if (0) printf("--- %.4d %s() %d@%d: %s\n",__LINE__,__FUNCTION__,yylineno,yy_start_stack_ptr,yytext);
+  if (0) printf("--- %.4d %d@%d: %s\n",__LINE__,yylineno,yy_start_stack_ptr,yytext);
 
 // BEGIN of copy from tclUtil.c
 // - Tcl_Interp removed

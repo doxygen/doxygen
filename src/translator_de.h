@@ -123,13 +123,17 @@
 //    - Changed file encoding to utf-8, adapted idLanguageCharset()
 //    - New German orthography (ngerman) is now default in LaTeX
 //
+//   2012/04/11 Peter Grotrian
+//    - Updated for "new since 1.8.0" version
+//    - Some small corrections
+//
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_8_0
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -222,11 +226,11 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return "enum Bezeichner"; }
+    { return "enum-Bezeichner"; }
     
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return "enum Wert"; }
+    { return "enum-Wert"; }
     
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
@@ -950,7 +954,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
-      return "Invariant";
+      return "Invariante";
     }
 
     /*! Text shown before a multi-line variable/enum initialization */
@@ -1029,7 +1033,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
 
     virtual QCString trStaticProtectedAttribs()
     {
-      return "Statische geschützte Attribute";
+      return "Statische, geschützte Attribute";
     }
 
     virtual QCString trPrivateTypes()
@@ -1044,7 +1048,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
 
     virtual QCString trStaticPrivateAttribs()
     {
-      return "Statische private Attribute";
+      return "Statische, private Attribute";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1170,8 +1174,8 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
         "Pfeil stehen die Variable(n), mit deren Hilfe auf die Struktur oder "
         "Klasse an der Pfeilspitze zugegriffen werden kann.</li>\n"
         "<li>Ein gestrichelter gelber Pfeil kennzeichnet eine Verknüpfung "
-        "zwischen einer Template Instanz und der Template Klasse von welcher "
-        "es abstammt. Neben dem Pfeil sind die Template Parameter aufgeführt.</li>\n"
+        "zwischen einer Template-Instanz und der Template-Klasse von welcher "
+        "es abstammt. Neben dem Pfeil sind die Template-Parameter aufgeführt.</li>\n"
         "</ul>\n";
     }
 
@@ -1531,7 +1535,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Hier ist ein Graph der zeigt, was diese Funktion aufruft:";
+      return "Hier ist ein Graph, der zeigt, was diese Funktion aufruft:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1670,7 +1674,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "Enumerator-Dokumentation"; }
+    { return "Dokumentation der Aufzählungswerte"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
@@ -1980,6 +1984,47 @@ class TranslatorGerman : public TranslatorAdapter_1_8_0
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Diagramm der Verzeichnisabhängigkeiten für ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "Detailebene"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Template-Parameter"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "und "+number+" mehr ..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "Die Dokumentation für diesen enum wurde aus ";
+      if (single)
+		result += "der folgenden Datei";
+	  else
+		result += "den folgenden Dateien";
+      result+=" generiert:";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString(name)+" Enum-Referenz"; }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" geerbt von "+what; }
+
+    /*! Header of the sections with inherited members specific for the 
+     *  base class(es) 
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "Weitere Geerbte Elemente"; }
 
 };
 

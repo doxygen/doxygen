@@ -44,7 +44,7 @@ class RTFGenerator : public OutputGenerator
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeSearchInfo() {}
-    void writeFooter() {}
+    void writeFooter(const char *) {}
     void endFile();
     void clearBuffer();
     //void postProcess(QByteArray &);
@@ -111,7 +111,7 @@ class RTFGenerator : public OutputGenerator
     void endInlineHeader();
     void startAnonTypeScope(int) {}
     void endAnonTypeScope(int) {}
-    void startMemberItem(const char *,int);
+    void startMemberItem(const char *,int,const char *);
     void endMemberItem();
     void startMemberTemplateParams() {}
     void endMemberTemplateParams(const char *) {}
@@ -154,8 +154,10 @@ class RTFGenerator : public OutputGenerator
     void startSmall()       { t << "{\\sub "; }
     void endSmall()         { t << "}"; }
 
-    void startMemberDescription(const char *);
+    void startMemberDescription(const char *,const char *);
     void endMemberDescription();
+    void writeInheritedSectionTitle(const char *,const char *,
+                      const char *,const char *,const char *) {}
     void startDescList(SectionTypes);
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
     void endSimpleSect();

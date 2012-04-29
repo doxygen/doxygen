@@ -30,6 +30,9 @@
 
 MemberList::MemberList()
 {
+  memberGroupList=0;
+  m_numDecMembers=-1; // special value indicating that value needs to be computed
+  m_numDocMembers=-1; // special value indicating that value needs to be computed
 }
 
 MemberList::MemberList(ListType lt) : m_listType(lt)
@@ -248,7 +251,8 @@ bool MemberList::declVisible() const
 }
 
 void MemberList::writePlainDeclarations(OutputList &ol,
-                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd
+                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+                       const char *inheritId
                       )
 {
   //printf("----- writePlainDeclaration() ----\n");
@@ -286,7 +290,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberDef::Event:  
           {
             if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritId);
             break;
           }
         case MemberDef::Enumeration: 
@@ -319,7 +323,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.startMemberList();
                 first=FALSE;
               }
-              ol.startMemberItem(md->anchor(),0);
+              ol.startMemberItem(md->anchor(),0,inheritId);
               ol.writeString("enum ");
               ol.insertMemberAlign();
               md->writeEnumDeclaration(ol,cd,nd,fd,gd);
@@ -356,7 +360,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.startMemberList();
               first=FALSE;
             }
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritId);
             break;
           }
         case MemberDef::EnumValue: 
@@ -365,7 +369,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
-              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritId);
             }
           }
           break;
@@ -410,10 +414,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
              const char *title,const char *subtitle, bool showEnumValues,
-             bool showInline)
+             bool showInline,ClassDef *inheritedFrom)
 {
-  //printf("----- writeDeclaration() this=%p ----\n",this);
+  //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  QCString inheritId;
 
   countDecMembers(showEnumValues,gd); // count members shown in this section
   Definition *ctx = cd;
@@ -421,87 +426,120 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (ctx==0 && gd) ctx = gd;
   if (ctx==0 && fd) ctx = fd;
 
-  if (numDecMembers()==0) return;
   //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
-  //    this,title,subtitle,numDecMembers());
-  if (title) 
-  {
-    if (showInline)
-    {
-      ol.startInlineHeader();
-    }
-    else
-    {
-      ol.startMemberHeader(listTypeAsString());
-    }
-    ol.parseText(title);
-    if (showInline)
-    {
-      ol.endInlineHeader();
-    }
-    else
-    {
-      ol.endMemberHeader();
-    }
-  }
-  if (subtitle) 
-  {
-    QCString st=subtitle;
-    st = st.stripWhiteSpace();
-    if (!st.isEmpty())
-    {
-      ol.startMemberSubtitle();
-      ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,FALSE,FALSE);
-      ol.endMemberSubtitle();
-    }
-  }
+  //       this,title,subtitle,numDecMembers());
 
-  // TODO: Two things need to be worked out for proper VHDL output:
-  // 1. Signals and types under the group need to be
-  //    formatted to associate them with the group somehow
-  //    indentation, or at the very least, extra space after
-  //    the group is done
-  // 2. This might need to be repeated below for memberGroupLists
-  if (optimizeVhdl) // use specific declarations function
+  int num = numDecMembers();
+  if (inheritedFrom)
   {
-    VhdlDocGen::writeVhdlDeclarations(this,ol,0,cd,0,0);
-  }
-  else
-  {
-    writePlainDeclarations(ol,cd,nd,fd,gd);
-  }
- 
-  //printf("memberGroupList=%p\n",memberGroupList);
-  if (memberGroupList)
-  {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    while ((mg=mgli.current()))
+    if (cd && !optimizeVhdl)
     {
-      bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
-      //printf("mg->header=%s hasHeader=%d\n",mg->header().data(),hasHeader);
-      ol.startMemberGroupHeader(hasHeader);
-      if (hasHeader)
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      inheritId = substitute(listTypeAsString(),"-","_")+"_"+
+                  stripPath(cd->getOutputFileBase());
+      if (title)
       {
-        ol.parseText(mg->header());
+        ol.writeInheritedSectionTitle(inheritId,cd->getOutputFileBase(),
+                                      cd->anchor(),title,cd->displayName());
       }
-      ol.endMemberGroupHeader();
-      if (!mg->documentation().isEmpty())
-      {
-        //printf("Member group has docs!\n");
-        ol.startMemberGroupDocs();
-        ol.parseDoc("[generated]",-1,ctx,0,mg->documentation()+"\n",FALSE,FALSE);
-        ol.endMemberGroupDocs();
-      }
-      ol.startMemberGroup();
-      //printf("--- mg->writePlainDeclarations ---\n");
-      mg->writePlainDeclarations(ol,cd,nd,fd,gd);
-      ol.endMemberGroup(hasHeader);
-      ++mgli;
+      ol.popGeneratorState();
     }
+  }
+  else if (num>0)
+  {
+    if (title) 
+    {
+      if (showInline)
+      {
+        ol.startInlineHeader();
+      }
+      else
+      {
+        ol.startMemberHeader(listTypeAsString());
+      }
+      ol.parseText(title);
+      if (showInline)
+      {
+        ol.endInlineHeader();
+      }
+      else
+      {
+        ol.endMemberHeader();
+      }
+    }
+    if (subtitle) 
+    {
+      QCString st=subtitle;
+      st = st.stripWhiteSpace();
+      if (!st.isEmpty())
+      {
+        ol.startMemberSubtitle();
+        ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,FALSE,FALSE);
+        ol.endMemberSubtitle();
+      }
+    }
+  }
+  if (num>0)
+  {
+    // TODO: Two things need to be worked out for proper VHDL output:
+    // 1. Signals and types under the group need to be
+    //    formatted to associate them with the group somehow
+    //    indentation, or at the very least, extra space after
+    //    the group is done
+    // 2. This might need to be repeated below for memberGroupLists
+    if (optimizeVhdl) // use specific declarations function
+    {
+      VhdlDocGen::writeVhdlDeclarations(this,ol,0,cd,0,0);
+    }
+    else
+    {
+      writePlainDeclarations(ol,cd,nd,fd,gd,inheritId);
+    }
+
+    //printf("memberGroupList=%p\n",memberGroupList);
+    if (memberGroupList)
+    {
+      MemberGroupListIterator mgli(*memberGroupList);
+      MemberGroup *mg;
+      while ((mg=mgli.current()))
+      {
+        bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+        if (inheritId.isEmpty())
+        {
+          //printf("mg->header=%s hasHeader=%d\n",mg->header().data(),hasHeader);
+          ol.startMemberGroupHeader(hasHeader);
+          if (hasHeader)
+          {
+            ol.parseText(mg->header());
+          }
+          ol.endMemberGroupHeader();
+          if (!mg->documentation().isEmpty())
+          {
+            //printf("Member group has docs!\n");
+            ol.startMemberGroupDocs();
+            ol.parseDoc("[generated]",-1,ctx,0,mg->documentation()+"\n",FALSE,FALSE);
+            ol.endMemberGroupDocs();
+          }
+          ol.startMemberGroup();
+        }
+        //printf("--- mg->writePlainDeclarations ---\n");
+        mg->writePlainDeclarations(ol,cd,nd,fd,gd,inheritId);
+        if (inheritId.isEmpty())
+        {
+          ol.endMemberGroup(hasHeader);
+        }
+        ++mgli;
+      }
+    }
+  }
+  if (inheritedFrom && cd) 
+  {
+    // also add members that of this list type, that are grouped together
+    // in a separate list in class 'inheritedFrom'
+    cd->addGroupedInheritedMembers(ol,m_listType,inheritId);
   }
   //printf("----- end writeDeclaration() ----\n");
-
 }
 
 void MemberList::writeDocumentation(OutputList &ol,

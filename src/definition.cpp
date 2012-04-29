@@ -1428,27 +1428,33 @@ QCString Definition::pathFragment() const
   return result;
 }
 
-void Definition::writePathFragment(OutputList &ol) const
+/*! Returns the string used in the footer for $navpath when 
+ *  GENERATE_TREEVIEW is enabled
+ */
+QCString Definition::navigationPathAsString() const
 {
   makeResident();
+  QCString result;
   if (m_impl->outerScope && m_impl->outerScope!=Doxygen::globalScope)
   {
-    m_impl->outerScope->writePathFragment(ol);
+    result+=m_impl->outerScope->navigationPathAsString();
   }
   else if (definitionType()==Definition::TypeFile && ((const FileDef*)this)->getDirDef())
   {
-    ((const FileDef*)this)->getDirDef()->writePathFragment(ol);
+    result+=((const FileDef*)this)->getDirDef()->navigationPathAsString();
   }
-  ol.writeString("      <li class=\"navelem\">");
+  result+="<li class=\"navelem\">";
   if (isLinkable())
   {
     if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
     {
-      ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const GroupDef*)this)->groupTitle());
+      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+              ((const GroupDef*)this)->groupTitle()+"</a>";
     }
     else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
     {
-      ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const PageDef*)this)->title());
+      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+              ((const PageDef*)this)->title()+"</a>";
     }
     else if (definitionType()==Definition::TypeClass)
     {
@@ -1457,46 +1463,34 @@ void Definition::writePathFragment(OutputList &ol) const
       {
         name = name.left(name.length()-2);
       }
-      ol.writeObjectLink(getReference(),getOutputFileBase(),0,name);
+      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension;
+      if (!anchor().isEmpty()) result+="#"+anchor();
+      result+="\">"+name+"</a>";
     }
     else
     {
-      ol.writeObjectLink(getReference(),getOutputFileBase(),0,m_impl->localName);
+      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+              m_impl->localName+"</a>";
     }
   }
   else
   {
-    ol.startBold();
-    ol.docify(m_impl->localName);
-    ol.endBold();
+    result+="<b>"+m_impl->localName+"</b>";
   }
-  ol.writeString("      </li>\n");
+  result+="</li>";
+  return result;
 }
 
 void Definition::writeNavigationPath(OutputList &ol) const
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  if (generateTreeView)
-  {
-    ol.writeString("</div>\n");
-  }
-  //if (showSearchInfo)
-  //{
-  //  ol.writeSearchInfo();
-  //}
-
-  ol.writeString("  <div id=\"nav-path\" class=\"navpath\">\n");
-  ol.writeString("    <ul>\n");
-  writePathFragment(ol);
-  if (!generateTreeView)
-  {
-    ol.writeString("    </ul>\n");
-    ol.writeString("  </div>\n");
-  }
+  ol.writeString("<div id=\"nav-path\" class=\"navpath\">\n");
+  ol.writeString("  <ul>\n");
+  ol.writeString(navigationPathAsString());
+  ol.writeString("  </ul>\n");
+  ol.writeString("</div>\n");
 
   ol.popGeneratorState();
 }

@@ -710,8 +710,6 @@ MemberDef::~MemberDef()
 void MemberDef::setReimplements(MemberDef *md)   
 { 
   makeResident();
-  //if (redefines==0) redefines = new MemberList;
-  //if (redefines->find(md)==-1) redefines->inSort(md);
 
   m_impl->redefines = md;
 }
@@ -1231,7 +1229,7 @@ bool MemberDef::isBriefSectionVisible() const
 
 void MemberDef::writeDeclaration(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup
+               bool inGroup,const char *inheritId
                )
 {
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",name().data(),inGroup);
@@ -1321,7 +1319,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
-  ol.startMemberItem( anchor(), isAnonymous ? 1 : m_impl->tArgList ? 3 : 0);
+  ol.startMemberItem(anchor(), 
+                     isAnonymous ? 1 : m_impl->tArgList ? 3 : 0,
+                     inheritId
+                    );
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = isDetailedSectionLinkable();
@@ -1378,9 +1379,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
       int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
       ol.startAnonTypeScope(s_indentLevel++);
-      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup);
+      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
-      ol.startMemberItem(anchor(),2);
+      ol.startMemberItem(anchor(),2,inheritId);
       int j;
       for (j=0;j< s_indentLevel-1;j++) 
       {
@@ -1443,7 +1444,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                );
   }
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-  if (htmlOn && Config_getBool("HTML_ALIGN_MEMBERS") && !ltype.isEmpty())
+  if (htmlOn && /*Config_getBool("HTML_ALIGN_MEMBERS") &&*/ !ltype.isEmpty())
   {
     ol.disable(OutputGenerator::Html);
   }
@@ -1646,7 +1647,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       /* && !annMemb */
      )
   {
-    ol.startMemberDescription(anchor());
+    ol.startMemberDescription(anchor(),inheritId);
     ol.parseDoc(briefFile(),briefLine(),
                 getOuterScope()?getOuterScope():d,this,briefDescription(),
                 TRUE,FALSE,0,TRUE,FALSE);
@@ -1939,7 +1940,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
     // find enum type and insert it in the definition
-    MemberListIterator vmli(*ml);
+    QListIterator<MemberDef> vmli(*ml);
     MemberDef *vmd;
     bool found=FALSE;
     for ( ; (vmd=vmli.current()) && !found ; ++vmli)
@@ -3173,7 +3174,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
 
   int enumMemCount=0;
 
-  QList<MemberDef> *fmdl=m_impl->enumFields;
+  MemberList *fmdl=m_impl->enumFields;
   uint numVisibleEnumValues=0;
   if (fmdl)
   {

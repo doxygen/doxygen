@@ -2378,6 +2378,13 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  codifyLines(yytext);
 					  endFontClass();
   					}
+<Body>"*"{B}*")"                        { // end of cast?
+  					  g_code->codify(yytext);
+					  g_theCallContext.popScope();
+					  g_bracketCount--;
+                                          g_parmType = g_name;
+					  BEGIN(FuncCall);
+                                        }
 <Body>[\\|\)\+\-\/\%\~\!]		{
   					  g_code->codify(yytext);
   				          g_name.resize(0);g_type.resize(0);
@@ -2870,8 +2877,17 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
   					  g_code->codify(yytext);
   					}
-<MemberCall,MemberCall2,FuncCall>")"	{ 
-					  g_theVarContext.addVariable(g_parmType,g_parmName);
+<MemberCall,MemberCall2,FuncCall>("*"{B}*)?")"	{ 
+                                          if (yytext[0]==')') // no a pointer cast
+                                          {
+                                            //printf("addVariable(%s,%s)\n",g_parmType.data(),g_parmName.data());
+					    g_theVarContext.addVariable(g_parmType,g_parmName);
+                                          }
+                                          else
+                                          {
+                                            g_parmType.resize(0);
+                                            g_parmName.resize(0);
+                                          }
 					  g_theCallContext.popScope();
 					  g_inForEachExpression = FALSE;
 					  //g_theCallContext.setClass(0); // commented out, otherwise a()->b() does not work for b().

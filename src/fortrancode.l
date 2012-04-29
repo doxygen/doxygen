@@ -526,35 +526,37 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
 static void generateLink(CodeOutputInterface &ol, char *lname)
 {
   ClassDef *cd=0;
+  QCString tmp = lname;
+  tmp = tmp.lower();
  
-  // check if lname is a linkable type or interface
-  if ( (getFortranTypeDefs(lname, currentModule, cd, useMembers)) && cd->isLinkable() )
+  // check if lowercase lname is a linkable type or interface
+  if ( (getFortranTypeDefs(tmp, currentModule, cd, useMembers)) && cd->isLinkable() )
   {
     if ( (cd->compoundType() == ClassDef::Class) && // was  Entry::INTERFACE_SEC) &&
-         (getGenericProcedureLink(cd, lname, ol)) ) 
+         (getGenericProcedureLink(cd, tmp, ol)) ) 
     {
       //cout << "=== generic procedure resolved" << endl; 
     } 
     else 
     { // write type or interface link
-      ol.linkableSymbol(g_yyLineNr, lname, cd, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
-      writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),lname);
-      addToSearchIndex(lname);
+      ol.linkableSymbol(g_yyLineNr, tmp, cd, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
+      writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),tmp);
+      addToSearchIndex(tmp.data());
     }
   }
   // check for function/variable
-  else if (getLink(useMembers, lname, ol, lname)) 
+  else if (getLink(useMembers, tmp, ol, tmp)) 
   {
-    //cout << "=== found link for " << lname << endl;
+    //cout << "=== found link for lowercase " << lname << endl;
   }
   else 
   {
     // nothing found, just write out the word
-    ol.linkableSymbol(g_yyLineNr, lname, 0, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
+    ol.linkableSymbol(g_yyLineNr, tmp, 0, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
     //startFontClass("charliteral"); //test
-    codifyLines(lname);
+    codifyLines(tmp);
     //endFontClass(); //test
-    addToSearchIndex(lname);
+    addToSearchIndex(tmp.data());
   }
 }
 
@@ -838,9 +840,15 @@ IGNORE (CALL)
 					  endFontClass();
   					}
 <Declaration>{ID}                       { // local var
-					  g_code->codify(yytext);
-					  if (g_currentMemberDef && g_currentMemberDef->isFunction())
-					    addLocalVar(yytext);
+                                          if (g_currentMemberDef && !g_currentMemberDef->isFunction())
+                                          {
+                                            g_code->codify(yytext);
+                                            addLocalVar(yytext);
+                                          }
+                                           else
+                                          {
+                                            generateLink(*g_code, yytext);
+                                          }
 					}
 <Declaration>[(]			{ // start of array specification
 					  bracketCount++;

@@ -640,6 +640,7 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
     return;
   case DocVerbatim::Verbatim:	type = "preformatted"; break;
   case DocVerbatim::HtmlOnly:	type = "htmlonly"; break;
+  case DocVerbatim::RtfOnly:	type = "rtfonly"; break;
   case DocVerbatim::ManOnly:	type = "manonly"; break;
   case DocVerbatim::LatexOnly:	type = "latexonly"; break;
   case DocVerbatim::XmlOnly:	type = "xmlonly"; break;

@@ -117,11 +117,12 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               const char *inheritId
               )
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd);
+  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
@@ -135,6 +136,42 @@ void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
 {
   memberList->writeDocumentationPage(ol,scopeName,container);
 }
+
+void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
+               MemberList::ListType lt,const QCString &inheritId)
+{
+  //printf("** addGroupedInheritedMembers()\n");
+  MemberListIterator li(*memberList);
+  MemberDef *md;
+  for (li.toFirst();(md=li.current());++li)
+  {
+    //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
+    if (lt==md->getSectionList(m_parent)->listType())
+    {
+      MemberList ml(lt);
+      ml.append(md);
+      ml.writePlainDeclarations(ol,cd,0,0,0,inheritId);
+    }
+  }
+}
+
+int MemberGroup::countGroupedInheritedMembers(MemberList::ListType lt)
+{
+  //printf("** countGroupedInheritedMembers()\n");
+  int count=0;
+  MemberListIterator li(*memberList);
+  MemberDef *md;
+  for (li.toFirst();(md=li.current());++li)
+  {
+    //printf("matching %d == %d\n",lt,md->getSectionList(m_parent)->listType());
+    if (lt==md->getSectionList(m_parent)->listType())
+    {
+      count++;
+    }
+  }
+  return count;
+}
+
 
 /*! Add this group as a subsection of the declaration section, instead
  *  of rendering it in its own section

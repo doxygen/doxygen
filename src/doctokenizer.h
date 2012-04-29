@@ -134,6 +134,7 @@ void doctokenizerYYsetStateHtmlOnly();
 void doctokenizerYYsetStateManOnly();
 void doctokenizerYYsetStateLatexOnly();
 void doctokenizerYYsetStateXmlOnly();
+void doctokenizerYYsetStateRtfOnly();
 void doctokenizerYYsetStateVerbatim();
 void doctokenizerYYsetStateDot();
 void doctokenizerYYsetStateMsc();

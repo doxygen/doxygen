@@ -194,6 +194,11 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       filter(s->text());
       m_t << "</htmlonly>";
       break;
+    case DocVerbatim::RtfOnly: 
+      m_t << "<rtfonly>";
+      filter(s->text());
+      m_t << "</rtfonly>";
+      break;
     case DocVerbatim::ManOnly: 
       m_t << "<manonly>";
       filter(s->text());

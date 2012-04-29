@@ -1593,9 +1593,9 @@ static void writeBoxMemberList(FTextStream &t,
           (skipNames==0 || skipNames->find(mma->name())==0))
       {
         static int limit = Config_getInt("UML_LIMIT_NUM_FIELDS");
-        if (limit==0 || (totalCount>=limit*3/2 && count>=limit))
+        if (limit>0 && (totalCount>limit*3/2 && count>=limit))
         {
-          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count-1));
+          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count));
           break;
         }
         else

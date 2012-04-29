@@ -253,7 +253,8 @@ void startFile(OutputList &ol,const char *name,const char *manName,
   ol.writeSearchInfo();
 }
 
-void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents)
+void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
+             const QCString &navPath)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
@@ -263,12 +264,10 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents)
     if (!skipEndContents) ol.endContents();
     if (generateTreeView)
     {
-      ol.writeString("</div>\n");
-      ol.writeString("  <div id=\"nav-path\" class=\"navpath\">\n");
-      ol.writeString("    <ul>\n");
+      ol.writeString("</div><!-- doc-content -->\n");
     }
   }
-  ol.writeFooter(); // write the footer
+  ol.writeFooter(navPath); // write the footer
   ol.popGeneratorState();
   ol.endFile();
 }
@@ -276,11 +275,13 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents)
 void endFileWithNavPath(Definition *d,OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  QCString navPath;
   if (generateTreeView)
   {
-    d->writeNavigationPath(ol);
+    ol.writeString("</div><!-- doc-content -->\n");
+    navPath = d->navigationPathAsString();
   }
-  endFile(ol,generateTreeView,TRUE);
+  endFile(ol,generateTreeView,TRUE,navPath);
 }
 
 //----------------------------------------------------------------------
@@ -389,6 +390,11 @@ static void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int 
   for ( ; bcli.current() ; ++bcli)
   {
     ClassDef *cd=bcli.current()->classDef;
+    if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+    {
+      continue;
+    }
+
     bool b;
     if (cd->getLanguage()==SrcLangExt_VHDL)
     {
@@ -436,7 +442,14 @@ static void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int 
         }
         if (ftv)
         {
-          ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
+          if (cd->getLanguage()==SrcLangExt_VHDL)
+          {
+            ftv->addContentsItem(hasChildren,bcli.current()->usedName,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
+          }
+          else
+          {
+            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
+          }
         }
       }
       else
@@ -716,7 +729,10 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           }
           if (ftv)
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd); 
+            if (cd->getLanguage()!=SrcLangExt_VHDL) // prevents double insertion in Design Unit List
+            {
+              ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd); 
+            }
           }
         }
         else
@@ -1175,6 +1191,21 @@ void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalO
     ClassDef *cd;
     for (;(cd=cli.current());++cli)
     {
+      if (cd->getLanguage()==SrcLangExt_VHDL) 
+      {
+        if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS || 
+            (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
+           )// no architecture
+        {
+          continue;
+        }
+        if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
+        {
+          QCString n=cd->name();
+          cd->setClassName(n.data());
+        }         
+      }
+
       if (!globalOnly || 
           cd->getOuterScope()==0 || 
           cd->getOuterScope()==Doxygen::globalScope 
@@ -1257,15 +1288,23 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
           count+=classCount;
         }
 
-        ftv->addContentsItem(count>0,nd->localName(),nd->getReference(),
-            nd->getOutputFileBase(),0,FALSE,TRUE,nd); 
+        if (nd->getLanguage()==SrcLangExt_VHDL)
+        {
+          QCString q=nd->getOutputFileBase().replace(0,strlen("namespace"),"class");
+          ftv->addContentsItem(count>0,nd->localName(),nd->getReference(),q,0,FALSE,TRUE,nd);
+        }
+        else
+        {
+          ftv->addContentsItem(count>0,nd->localName(),nd->getReference(),
+              nd->getOutputFileBase(),0,FALSE,TRUE,nd); 
+        }
 
         if (addToIndex)
         {
           if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
           {
-            ClassDef* ccd=getClass(nd->displayName().data());
-            if (ccd) Doxygen::indexList.addContentsItem(FALSE,ccd->displayName(),ccd->getReference(),ccd->getOutputFileBase(),0);
+            QCString q=nd->getOutputFileBase().replace(0,strlen("namespace"),"class");
+            Doxygen::indexList.addContentsItem(count>0,nd->localName(),nd->getReference(),q,QCString(),count>0,showClasses);
           }
           else
           {
@@ -1332,8 +1371,7 @@ static void writeNamespaceIndex(OutputList &ol)
       ol.startIndexKey();
       if (nd->getLanguage()==SrcLangExt_VHDL)
       {
-        ClassDef* ccd=getClass(nd->displayName());
-        if (ccd) ol.writeObjectLink(0,ccd->getOutputFileBase(),0,nd->displayName());
+        ol.writeObjectLink(0, nd->getOutputFileBase().replace(0,strlen("namespace"),"class"),0,nd->displayName());
       }
       else
       {
@@ -1379,7 +1417,11 @@ static void writeNamespaceIndex(OutputList &ol)
       Doxygen::indexList.incContentsDepth();
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
-    writeNamespaceTree(Doxygen::namespaceSDict,ftv,TRUE,FALSE,addToIndex);
+    static bool optimizeOutputVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+    if (!optimizeOutputVhdl) // prevents double insertions (Packages/Design Unit List)
+    {
+      writeNamespaceTree(Doxygen::namespaceSDict,ftv,TRUE,FALSE,addToIndex);
+    }
     QGString outStr;
     FTextStream t(&outStr);
     ftv->generateTreeViewInline(t);
@@ -1433,8 +1475,13 @@ static void writeAnnotatedClassList(OutputList &ol)
   
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->getLanguage()==SrcLangExt_VHDL &&(!(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS ))
+    if (cd->getLanguage()==SrcLangExt_VHDL && 
+        ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS || 
+         (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+       ) // no architecture
+    {
       continue;
+    }
  
     ol.pushGeneratorState();
     if (cd->isEmbeddedInOuterScope())

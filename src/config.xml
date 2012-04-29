@@ -888,11 +888,6 @@ If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
 page will contain the date and time when the page was generated. Setting 
 this to NO can help when comparing the output of multiple runs.
 ' defval='1' depends='GENERATE_HTML'/>
-    <option type='bool' id='HTML_ALIGN_MEMBERS' docs='
-If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
-files or namespaces will be aligned in HTML using tables. If set to 
-NO a bullet list will be used. 
-' defval='1' depends='GENERATE_HTML'/>
     <option type='bool' id='HTML_DYNAMIC_SECTIONS' docs='
 If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML 
 documentation will contain sections that can be hidden and shown after the 
@@ -1630,5 +1625,6 @@ the various graphs.
     <option type='obsolete' id='EXT_DOC_PATHS'/>
     <option type='obsolete' id='USE_INLINE_TREES'/>
     <option type='obsolete' id='SHOW_DIRECTORIES'/>
+    <option type='obsolete' id='HTML_ALIGN_MEMBERS'/>
   </group>
 </doxygenconfig>

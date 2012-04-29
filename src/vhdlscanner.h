@@ -128,4 +128,5 @@ QList<Entry> &  getVhdlInstList();
 // returns the list of found configurations
 QList<ConfNode>& getVhdlConfiguration();
 
+void isVhdlDocPending();
 #endif

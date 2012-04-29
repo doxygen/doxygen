@@ -31,10 +31,10 @@ class QGString;
 class SectionDict;
 class MemberSDict;
 class GroupList;
+class MemberList;
 struct BodyInfo;
 struct DocInfo;
 struct BriefInfo;
-class MemberList;
 class ExampleSDict;
 class Entry;
 

@@ -515,7 +515,7 @@ Futhermore, a `*` or `_` only starts an emphasis if
 - it is preceded by a space, newline, or one the following characters `<{([,:;`
 
 An emphasis ends if
-- it is not following by an alphanumerical character, and
+- it is not followed by an alphanumerical character, and
 - it is not preceded by a space, newline, or one the following characters `({[<=+-\@`
 
 Lastly, the span of the emphasis is limited to a single paragraph.
