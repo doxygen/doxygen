@@ -990,7 +990,6 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &/*pageTy
     ol.endGroupHeader();
 
     writeDetailedDocumentationBody(ol);
-
   }
   else
   {
@@ -1021,7 +1020,6 @@ void ClassDef::showUsedFiles(OutputList &ol)
           getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));  
   }
-
 
   bool first=TRUE;
   const char *file = m_impl->files.first();
@@ -2082,13 +2080,16 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.parseText(displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
   ol.startContents();
+  ol.startParagraph();
   ol.parseText(theTranslator->trThisIsTheListOfAllMembers());
   ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),displayName());
   ol.parseText(theTranslator->trIncludingInheritedMembers());
+  ol.endParagraph();
   
   //ol.startItemList();
-  ol.writeString("<table>\n");
+  ol.writeString("<table class=\"directory\">\n");
   
+  int idx=0;
   //MemberNameInfo *mni=m_impl->allMemberNameInfoList->first();
   MemberNameInfoSDict::Iterator mnii(*m_impl->allMemberNameInfoSDict); 
   MemberNameInfo *mni;
@@ -2105,7 +2106,6 @@ void ClassDef::writeMemberList(OutputList &ol)
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
       //    name().data(),md->name().data(),cd->name().data(),md->protection(),mi->prot,prot,mi->inherited);
 
-
       if (cd && !md->name().isEmpty() && md->name()[0]!='@')
       {
         bool memberWritten=FALSE;
@@ -2114,7 +2114,10 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           QCString name=mi->ambiguityResolutionScope+md->name();
           //ol.writeListItem();
-          ol.writeString("  <tr class=\"memlist\"><td>");
+          ol.writeString("  <tr");
+          if ((idx&1)==0) ol.writeString(" class=\"even\"");
+          idx++;
+          ol.writeString("><td class=\"entry\">");
           if (cd->isObjectiveC())
           {
             if (md->isObjCMethod())
@@ -2125,7 +2128,7 @@ void ClassDef::writeMemberList(OutputList &ol)
                 ol.writeString("-&#160;</td><td>");
             }
             else
-              ol.writeString("</td><td>");
+              ol.writeString("</td><td class=\"entry\">");
           }
           if (md->isObjCMethod())
           {
@@ -2163,18 +2166,21 @@ void ClassDef::writeMemberList(OutputList &ol)
                   // generate link to the class instead.
         {
           //ol.writeListItem();
-          ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");
+          ol.writeString("  <tr bgcolor=\"#f0f0f0\"");
+          if ((idx&1)==0) ol.writeString("class=\"even\"");
+          idx++;
+          ol.writeString("><td class=\"entry\">");
           if (cd->isObjectiveC())
           {
             if (md->isObjCMethod())
             {
               if (md->isStatic())
-                ol.writeString("+&#160;</td><td>");
+                ol.writeString("+&#160;</td><td class=\"entry\">");
               else
-                ol.writeString("-&#160;</td><td>");
+                ol.writeString("-&#160;</td><td class=\"entry\">");
             }
             else
-              ol.writeString("</td><td>");
+              ol.writeString("</td><td class=\"entry\">");
           }
           ol.startBold();
           ol.docify(md->name());
@@ -2212,7 +2218,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         }
         if (memberWritten)
         {
-          ol.writeString("<td>");
+          ol.writeString("<td class=\"entry\">");
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),
                              cd->anchor(),
@@ -2220,7 +2226,7 @@ void ClassDef::writeMemberList(OutputList &ol)
                                 md->category()->displayName() : 
                                 cd->displayName());
           ol.writeString("</td>");
-          ol.writeString("<td>");
+          ol.writeString("<td class=\"entry\">");
         }
         SrcLangExt lang = md->getLanguage();
         if (
@@ -2232,8 +2238,7 @@ void ClassDef::writeMemberList(OutputList &ol)
             )
             && memberWritten)
         {
-          ol.startTypewriter();
-          ol.docify(" [");
+          ol.writeString("<span class=\"mlabel\">");
           QStrList sl;
           if (lang==SrcLangExt_VHDL) 
           {
@@ -2262,10 +2267,9 @@ void ClassDef::writeMemberList(OutputList &ol)
           {
             ol.docify(s);
             s=sl.next();
-            if (s) ol.docify(", ");
+            if (s) ol.writeString("</span><span class=\"mlabel\">");
           }
-          ol.docify("]");
-          ol.endTypewriter();
+          ol.writeString("</span>");
         }
         if (memberWritten)
         {
@@ -2383,7 +2387,7 @@ bool ClassDef::hasNonReferenceSuperClass()
  *  definition of an anonymous struct, union or class.
  */
 void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
-    const char *inheritId)
+    ClassDef *inheritedFrom,const char *inheritId)
 {
   //ol.insertMemberAlign();
   //printf("ClassName=`%s' inGroup=%d\n",name().data(),inGroup);
@@ -2423,7 +2427,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
     for (;(mg=mgli.current());++mgli)
     {
       mg->setInGroup(inGroup);
-      mg->writePlainDeclarations(ol,this,0,0,0,inheritId);
+      mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
     }
   }
 
@@ -2435,7 +2439,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-      writePlainMemberDeclaration(ol,lmd->type,inGroup,inheritId);
+      writePlainMemberDeclaration(ol,lmd->type,inGroup,inheritedFrom,inheritId);
     }
   }
 }
@@ -2684,7 +2688,7 @@ void ClassDef::mergeMembers()
               //       it seems that the member is not reachable by prefixing a 
               //       scope name either (according to my compiler). Currently, 
               //       this case is shown anyway.
-              if (!found && srcMd->protection()!=Private)
+              if (!found && srcMd->protection()!=Private && !srcMd->isFriend())
               {
                 Protection prot=srcMd->protection();
                 if (bcd->prot==Protected && prot==Public)       prot=bcd->prot;
@@ -2747,38 +2751,41 @@ void ClassDef::mergeMembers()
             MemberInfo *mi;
             for (;(mi=mnii.current());++mnii)
             {
-              Protection prot = mi->prot;
-              if (bcd->prot==Protected)
+              if (!mi->memberDef->isFriend()) // don't inherit friends
               {
-                if (prot==Public) prot=Protected;
-              }
-              else if (bcd->prot==Private)
-              {
-                prot=Private;
-              }
-              //printf("%s::%s: prot=%d bcd->prot=%d result=%d\n",
-              //    name().data(),mi->memberDef->name().data(),mi->prot,
-              //    bcd->prot,prot);
-
-              if (mi->prot!=Private)
-              {
-                Specifier virt=mi->virt;
-                if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-
-                if (inlineInheritedMembers)
+                Protection prot = mi->prot;
+                if (bcd->prot==Protected)
                 {
-                  if (!isStandardFunc(mi->memberDef))
-                  {
-                    //printf("    insertMember `%s'\n",mi->memberDef->name().data());
-                    internalInsertMember(mi->memberDef,prot,FALSE);
-                  }
+                  if (prot==Public) prot=Protected;
                 }
-                //printf("Adding!\n");
-                MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt,TRUE);
-                newMi->scopePath=bClass->name()+sep+mi->scopePath;
-                newMi->ambigClass=mi->ambigClass;
-                newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
-                newMni->append(newMi);
+                else if (bcd->prot==Private)
+                {
+                  prot=Private;
+                }
+                //printf("%s::%s: prot=%d bcd->prot=%d result=%d\n",
+                //    name().data(),mi->memberDef->name().data(),mi->prot,
+                //    bcd->prot,prot);
+
+                if (mi->prot!=Private)
+                {
+                  Specifier virt=mi->virt;
+                  if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
+
+                  if (inlineInheritedMembers)
+                  {
+                    if (!isStandardFunc(mi->memberDef))
+                    {
+                      //printf("    insertMember `%s'\n",mi->memberDef->name().data());
+                      internalInsertMember(mi->memberDef,prot,FALSE);
+                    }
+                  }
+                  //printf("Adding!\n");
+                  MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt,TRUE);
+                  newMi->scopePath=bClass->name()+sep+mi->scopePath;
+                  newMi->ambigClass=mi->ambigClass;
+                  newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
+                  newMni->append(newMi);
+                }
               }
             }
 
@@ -3797,7 +3804,8 @@ static void convertProtectionLevel(
   }
 }
 
-int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt)
+int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt,
+                                          ClassDef *inheritedFrom)
 {
   int count=0;
   if (m_impl->inherits)
@@ -3811,18 +3819,20 @@ int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt)
       MemberList *ml = icd->getMemberList((MemberList::ListType)lt1);
       if (ml)
       {
-        ml->countDecMembers();
-        count+=ml->numDecMembers();
-        count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt1);
+        //ml->countDecMembers();
+        //count+=ml->numDecMembers();
+        count+=ml->countInheritableMembers(inheritedFrom);
+        count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt1,inheritedFrom);
       }
       if (lt2!=-1)
       {
         ml = icd->getMemberList((MemberList::ListType)lt2);
         if (ml) 
         {
-          ml->countDecMembers();
-          count+=ml->numDecMembers();
-          count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt2);
+          //ml->countDecMembers();
+          //count+=ml->numDecMembers();
+          count+=ml->countInheritableMembers(inheritedFrom);
+          count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt2,inheritedFrom);
         }
       }
       ibcd=m_impl->inherits->next();
@@ -3849,12 +3859,13 @@ int ClassDef::countInheritedDecMembers(MemberList::ListType lt)
   MemberList *ml = getMemberList(lt);
   if (ml)
   {
-    ml->countDecMembers();
-    count = ml->numDecMembers();
+    //ml->countDecMembers();
+    //count = ml->numDecMembers();
+    count=ml->countInheritableMembers(this);
   }
   if (count==0) // for this class the member list is empty
   {
-    count = countInheritedDecMembersRec(lt);
+    count = countInheritedDecMembersRec(lt,this);
   }
   else // member list is not empty, so we will add the inherited members there
   {
@@ -3874,7 +3885,10 @@ int ClassDef::countAdditionalInheritedMembers()
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-      totalCount+=countInheritedDecMembers(lmd->type);
+      if (lmd->type!=MemberList::friends) // friendship is not inherited
+      {
+        totalCount+=countInheritedDecMembers(lmd->type);
+      }
     }
   }
   //printf("countAdditonalInheritedMembers()=%d\n",totalCount);
@@ -3902,14 +3916,16 @@ void ClassDef::writeAdditionalInheritedMembers(OutputList &ol)
   }
 }
 
-int ClassDef::countMembersIncludingGrouped(MemberList::ListType lt)
+int ClassDef::countMembersIncludingGrouped(MemberList::ListType lt,
+              ClassDef *inheritedFrom)
 {
   int count=0;
   MemberList *ml = getMemberList(lt);
   if (ml) 
   { 
-    ml->countDecMembers(); 
-    count=ml->numDecMembers(); 
+    //ml->countDecMembers(); 
+    //count=ml->numDecMembers(); 
+    count=ml->countInheritableMembers(inheritedFrom);
   }
   if (m_impl->memberGroupSDict)
   {
@@ -3923,6 +3939,8 @@ int ClassDef::countMembersIncludingGrouped(MemberList::ListType lt)
       }
     }
   }
+  //printf("%s:countMembersIncludingGrouped(%s)=%d\n",
+  //    name().data(),ml?ml->listTypeAsString().data():"<none>",count);
   return count;
 }
 
@@ -3933,13 +3951,14 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  bool process = countMembersIncludingGrouped(lt)>0;
+  bool process = countMembersIncludingGrouped(lt,inheritedFrom)>0;
   if (process^invert)
   {
     if (m_impl->inherits)
     {
-      BaseClassDef *ibcd=m_impl->inherits->first();
-      while (ibcd)
+      BaseClassListIterator it(*m_impl->inherits);
+      BaseClassDef *ibcd;
+      for (it.toFirst();(ibcd=it.current());++it)
       {
         ClassDef *icd=ibcd->classDef;
         int lt1,lt2;
@@ -3949,9 +3968,9 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
         visitedClasses->insert(icd,icd);
         if (lt1!=-1)
         {
-          icd->writeMemberDeclarations(ol,(MemberList::ListType)lt1,title,QCString(),FALSE,inheritedFrom,lt2,visitedClasses);
+          icd->writeMemberDeclarations(ol,(MemberList::ListType)lt1,
+                      title,QCString(),FALSE,inheritedFrom,lt2,visitedClasses);
         }
-        ibcd=m_impl->inherits->next();
       }
     }
   }
@@ -3995,7 +4014,8 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
   }
 }
 
-void ClassDef::addGroupedInheritedMembers(OutputList &ol,MemberList::ListType lt,const QCString &inheritId)
+void ClassDef::addGroupedInheritedMembers(OutputList &ol,MemberList::ListType lt,
+                        ClassDef *inheritedFrom,const QCString &inheritId)
 {
   //printf("** %s::addGroupedInheritedMembers(%p) inheritId=%s\n",name().data(),m_impl->memberGroupSDict,inheritId.data());
   if (m_impl->memberGroupSDict)
@@ -4007,7 +4027,7 @@ void ClassDef::addGroupedInheritedMembers(OutputList &ol,MemberList::ListType lt
       //printf("  candidate %s\n",mg->header().data());
       if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
       {
-        mg->addGroupedInheritedMembers(ol,this,lt,inheritId);
+        mg->addGroupedInheritedMembers(ol,this,lt,inheritedFrom,inheritId);
       }
     }
   }
@@ -4028,14 +4048,15 @@ void ClassDef::writeSimpleMemberDocumentation(OutputList &ol,MemberList::ListTyp
 }
 
 void ClassDef::writePlainMemberDeclaration(OutputList &ol,
-         MemberList::ListType lt,bool inGroup,const char *inheritId)
+         MemberList::ListType lt,bool inGroup,
+         ClassDef *inheritedFrom,const char *inheritId)
 {
   //printf("%s: ClassDef::writePlainMemberDeclaration()\n",name().data());
   MemberList * ml = getMemberList(lt);
   if (ml) 
   {
     ml->setInGroup(inGroup);
-    ml->writePlainDeclarations(ol,this,0,0,0,inheritId); 
+    ml->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId); 
   }
 }
 

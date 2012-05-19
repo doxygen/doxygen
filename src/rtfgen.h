@@ -123,7 +123,7 @@ class RTFGenerator : public OutputGenerator
     void startCodeFragment();
     void endCodeFragment();
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
-    void startCodeLine() { col=0; }
+    void startCodeLine(bool) { col=0; }
     void endCodeLine() { lineBreak(); }
     void startEmphasis() { t << "{\\i ";  }
     void endEmphasis()   { t << "}"; }

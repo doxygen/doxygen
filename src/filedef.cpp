@@ -49,7 +49,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
                                const char *) {}
     virtual void writeLineNumber(const char *,const char *,
                                  const char *,int) {}
-    virtual void startCodeLine() {}
+    virtual void startCodeLine(bool) {}
     virtual void endCodeLine() {}
     virtual void startCodeAnchor(const char *) {}
     virtual void endCodeAnchor() {}
@@ -341,7 +341,11 @@ void FileDef::writeIncludeGraph(OutputList &ol)
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,FALSE);
-    if (!incDepGraph.isTrivial() && !incDepGraph.isTooBig())
+    if (incDepGraph.isTooBig())
+    {
+       err("warning: Include graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+    }
+    else if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
@@ -361,7 +365,11 @@ void FileDef::writeIncludedByGraph(OutputList &ol)
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,TRUE);
-    if (!incDepGraph.isTrivial() && !incDepGraph.isTooBig())
+    if (incDepGraph.isTooBig())
+    {
+       err("warning: Included by graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
+    }
+    if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);

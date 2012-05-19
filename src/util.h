@@ -96,7 +96,7 @@ QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
 void linkifyText(const TextGeneratorIntf &ol,
                  Definition *scope,
                  FileDef *fileScope,
-                 const char *name,
+                 Definition *self,
                  const char *text,
                  bool autoBreak=FALSE,
                  bool external=TRUE,

@@ -2119,8 +2119,11 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
       initEntry(current);
       instFiles.append(new Entry(*current));
     }
-    delete  current;
-    current=new Entry;
+  
+    Entry *temp=current;  // hold  current pointer  (temp=oldEntry)
+    current=new Entry;     // (oldEntry != current)
+    delete  temp;
+   
   }
   else
   {

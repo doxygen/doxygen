@@ -210,7 +210,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       if (hasFuncPtrType) n=a->type.left(wp);
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
     }
     else // non-function pointer type
     {
@@ -219,7 +219,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       if (a->type!="...")
       {
         if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-        linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
+        linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
       }
     }
     if (!isDefine)
@@ -261,7 +261,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                         // that comes after the name
     {
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),
-                  md->name(),a->type.right(a->type.length()-vp));
+                  md,a->type.right(a->type.length()-vp));
     }
     if (!a->defval.isEmpty()) // write the default value
     {
@@ -270,7 +270,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.docify(" = ");
 
       ol.startTypewriter();
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n,FALSE,TRUE,TRUE); 
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n,FALSE,TRUE,TRUE); 
       ol.endTypewriter();
 
     }
@@ -738,6 +738,28 @@ LockingPtr<MemberList> MemberDef::reimplementedBy() const
 { 
   makeResident();
   return LockingPtr<MemberList>(this,m_impl->redefinedBy); 
+}
+
+bool MemberDef::isReimplementedBy(ClassDef *cd) const
+{
+  makeResident();
+  if (cd && m_impl->redefinedBy)
+  {
+    MemberListIterator mi(*m_impl->redefinedBy);
+    MemberDef *md;
+    for (mi.toFirst();(md=mi.current());++mi)
+    {
+      ClassDef *mcd = md->getClassDef();
+      if (mcd)
+      {
+        if (cd==mcd || cd->isBaseClass(mcd,TRUE))
+        {
+          return TRUE;
+        }
+      }
+    }
+  }
+  return FALSE;
 }
 
 void MemberDef::insertEnumField(MemberDef *md)
@@ -1229,7 +1251,7 @@ bool MemberDef::isBriefSectionVisible() const
 
 void MemberDef::writeDeclaration(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup,const char *inheritId
+               bool inGroup,ClassDef *inheritedFrom,const char *inheritId
                )
 {
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",name().data(),inGroup);
@@ -1379,7 +1401,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
       ol.startAnonTypeScope(s_indentLevel++);
-      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritId);
+      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
       ol.startMemberItem(anchor(),2,inheritId);
       int j;
@@ -1403,13 +1425,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
         linkifyText(TextGeneratorOLImpl(ol), // out
                     d,                       // scope
                     getBodyDef(),            // fileScope
-                    name(),                  // 
+                    this,                    // self
                     ltype.left(i),           // text
                     TRUE                     // autoBreak
                    ); 
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd);
         //ol+=*getAnonymousEnumType()->enumDecl();
-        linkifyText(TextGeneratorOLImpl(ol),d,m_impl->fileDef,name(),ltype.right(ltype.length()-i-l),TRUE); 
+        linkifyText(TextGeneratorOLImpl(ol),d,m_impl->fileDef,this,ltype.right(ltype.length()-i-l),TRUE); 
       }
       else
       {
@@ -1417,7 +1439,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
         linkifyText(TextGeneratorOLImpl(ol), // out
                     d,                       // scope
                     getBodyDef(),            // fileScope
-                    name(),                  // 
+                    this,                    // self
                     ltype,                   // text
                     TRUE                     // autoBreak
                    ); 
@@ -1438,7 +1460,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     linkifyText(TextGeneratorOLImpl(ol), // out
                 d,                       // scope
                 getBodyDef(),            // fileScope
-                name(),                  //
+                this,                    // self
                 ltype,                   // text
                 TRUE                     // autoBreak
                );
@@ -1544,7 +1566,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     linkifyText(TextGeneratorOLImpl(ol), // out
                 d,                       // scope
                 getBodyDef(),            // fileScope
-                name(),                  //
+                this,                    // self
                 argsString(),            // text
                 m_impl->annMemb,         // autoBreak
                 TRUE,                    // external
@@ -1563,7 +1585,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // *** write bitfields
   if (!m_impl->bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),m_impl->bitfields.simplifyWhiteSpace());
+    linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_impl->bitfields.simplifyWhiteSpace());
   }
   else if (hasOneLineInitializer()
       //!init.isEmpty() && initLines==0 && // one line initializer
@@ -1573,12 +1595,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (!isDefine()) 
     {
       ol.writeString(" = "); 
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),m_impl->initializer.simplifyWhiteSpace());
+      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_impl->initializer.simplifyWhiteSpace());
     }
     else 
     {
       ol.writeNonBreakableSpace(3);
-      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),m_impl->initializer);
+      linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),this,m_impl->initializer);
     }
   }
 
@@ -1847,6 +1869,295 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
   }
 }
 
+void MemberDef::_writeCallGraph(OutputList &ol)
+{
+  // write call graph
+  if ((m_impl->hasCallGraph || Config_getBool("CALL_GRAPH")) 
+      && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
+     )
+  {
+    DotCallGraph callGraph(this,FALSE);
+    if (callGraph.isTooBig())
+    {
+       err("warning: Call graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
+    }
+    else if (!callGraph.isTrivial())
+    {
+      msg("Generating call graph for function %s\n",qPrint(qualifiedName()));
+      ol.disable(OutputGenerator::Man);
+      ol.startParagraph();
+      ol.startCallGraph();
+      ol.parseText(theTranslator->trCallGraph());
+      ol.endCallGraph(callGraph);
+      ol.endParagraph(); 
+      ol.enableAll();
+    }
+  }
+}
+
+void MemberDef::_writeCallerGraph(OutputList &ol)
+{
+  if ((m_impl->hasCallerGraph || Config_getBool("CALLER_GRAPH")) 
+      && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
+     )
+  {
+    DotCallGraph callerGraph(this, TRUE);
+    if (callerGraph.isTooBig())
+    {
+       err("warning: Caller graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",qPrint(qualifiedName()));
+    }
+    else if (!callerGraph.isTrivial() && !callerGraph.isTooBig())
+    {
+      msg("Generating caller graph for function %s\n",qPrint(qualifiedName()));
+      ol.disable(OutputGenerator::Man);
+      ol.startParagraph();
+      ol.startCallGraph();
+      ol.parseText(theTranslator->trCallerGraph());
+      ol.endCallGraph(callerGraph);
+      ol.endParagraph();
+      ol.enableAll();
+    }
+  }
+}
+
+void MemberDef::_writeReimplements(OutputList &ol)
+{
+  MemberDef *bmd=reimplements();
+  ClassDef *bcd=0;
+  if (bmd && (bcd=bmd->getClassDef()))
+  {
+    // write class that contains a member that is reimplemented by this one
+    if (bcd->isLinkable())
+    {
+      ol.startParagraph();
+      QCString reimplFromLine; 
+      if (bmd->virtualness()!=Pure && bcd->compoundType()!=ClassDef::Interface)
+      {
+        reimplFromLine = theTranslator->trReimplementedFromList(1);
+      }
+      else
+      {
+        reimplFromLine = theTranslator->trImplementedFromList(1);
+      }
+      int markerPos = reimplFromLine.find("@0");
+      if (markerPos!=-1) // should always pass this.
+      {
+        ol.parseText(reimplFromLine.left(markerPos)); //text left from marker
+        if (bmd->isLinkable()) // replace marker with link
+        {
+          //Definition *bd=bmd->group;
+          //if (bd==0) bd=bcd;
+          ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
+              bmd->anchor(),bcd->displayName());
+
+          //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+          //    bmd->anchor(),bcd->name());
+          if ( bmd->isLinkableInProject() ) 
+          {
+            writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
+          }
+        }
+        else
+        {
+          ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+              0,bcd->displayName());
+          if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ )
+          {
+            writePageRef(ol,bcd->getOutputFileBase(),bcd->anchor());
+          }
+        }
+        ol.parseText(reimplFromLine.right(
+              reimplFromLine.length()-markerPos-2)); // text right from marker
+
+      }
+      else
+      {
+        err("error: translation error: no marker in trReimplementsFromList()\n");
+      }
+      ol.endParagraph();
+    }
+  }
+}
+
+void MemberDef::_writeReimplementedBy(OutputList &ol)
+{
+  LockingPtr<MemberList> bml=reimplementedBy();
+  if (bml!=0)
+  {
+    MemberListIterator mli(*bml);
+    MemberDef *bmd=0;
+    uint count=0;
+    ClassDef *bcd=0;
+    for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->getClassDef());++mli)
+    {
+      // count the members that directly inherit from md and for
+      // which the member and class are visible in the docs.
+      if ( bmd->isLinkable() && bcd->isLinkable() ) 
+      {
+        count++;
+      }
+    }
+    if (count>0)
+    {
+      mli.toFirst();
+      // write the list of classes that overwrite this member
+      ol.startParagraph();
+
+      QCString reimplInLine;
+      if (m_impl->virt==Pure || (m_impl->classDef && m_impl->classDef->compoundType()==ClassDef::Interface))
+      {
+        reimplInLine = theTranslator->trImplementedInList(count);
+      }
+      else
+      {
+        reimplInLine = theTranslator->trReimplementedInList(count);
+      }
+      static QRegExp marker("@[0-9]+");
+      int index=0,newIndex,matchLen;
+      // now replace all markers in reimplInLine with links to the classes
+      while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
+      {
+        ol.parseText(reimplInLine.mid(index,newIndex-index));
+        bool ok;
+        uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+        //bmd=bml->at(entryIndex);
+
+        count=0;
+        // find the entryIndex-th documented entry in the inheritance list.
+        for (mli.toLast();(bmd=mli.current()) && (bcd=bmd->getClassDef());--mli)
+        {
+          if ( bmd->isLinkable() && bcd->isLinkable()) 
+          {
+            if (count==entryIndex) break;
+            count++;
+          }
+        }
+
+        if (ok && bcd && bmd) // write link for marker
+        {
+          //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+          //    bmd->anchor(),bcd->name());
+          ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
+              bmd->anchor(),bcd->displayName());
+
+          if (bmd->isLinkableInProject() ) 
+          {
+            writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
+          }
+        }
+        ++mli;
+        index=newIndex+matchLen;
+      } 
+      ol.parseText(reimplInLine.right(reimplInLine.length()-index));
+      ol.endParagraph();
+    }
+  }
+}
+
+void MemberDef::_writeExamples(OutputList &ol)
+{
+  // write the list of examples that use this member
+  if (hasExamples())
+  {
+    ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
+    ol.startDescForItem();
+    writeExample(ol,m_impl->exampleSDict);
+    ol.endDescForItem();
+    ol.endSimpleSect();
+  }
+}
+
+void MemberDef::_writeTypeConstraints(OutputList &ol)
+{
+  if (m_impl->typeConstraints)
+  {
+    writeTypeConstraints(ol,this,m_impl->typeConstraints);
+  }
+}
+
+void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
+                                 const QCString &cfname,const QCString &ciname,
+                                 const QCString &cname)
+{
+  // For enum, we also write the documented enum values
+  if (isEnumerate())
+  {
+    bool first=TRUE;
+    LockingPtr<MemberList> fmdl=enumFieldList();
+    //printf("** %s: enum values=%d\n",name().data(),fmdl!=0 ? fmdl->count() : 0);
+    if (fmdl!=0)
+    {
+      MemberDef *fmd=fmdl->first();
+      while (fmd)
+      {
+        //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
+        if (fmd->isLinkable())
+        {
+          if (first)
+          {
+            ol.startSimpleSect(BaseOutputDocInterface::EnumValues,0,0,theTranslator->trEnumerationValues()+": ");
+            ol.startDescForItem();
+            ol.startDescTable();
+          }
+
+          ol.addIndexItem(fmd->name(),ciname);
+          ol.addIndexItem(ciname,fmd->name());
+
+          //Doxygen::indexList.addIndexItem(
+          //                       ciname,                                // level1
+          //                       fmd->name(),                           // level2
+          //                       separateMemPages ? cfname : cfiname,   // contRef
+          //                       cfname,                                // memRef
+          //                       fmd->anchor(),                         // anchor
+          //                       fmd);                                  // memberdef
+          Doxygen::indexList.addIndexItem(container,fmd);
+
+          //ol.writeListItem();
+          ol.startDescTableTitle(); // this enables emphasis!
+          ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
+          first=FALSE;
+          //ol.startEmphasis();
+          ol.docify(fmd->name());
+          //ol.endEmphasis();
+          ol.disableAllBut(OutputGenerator::Man);
+          ol.writeString(" ");
+          ol.enableAll();
+          ol.endDoxyAnchor(cfname,fmd->anchor());
+          ol.endDescTableTitle();
+          //ol.newParagraph();
+          ol.startDescTableData();
+
+          if (!fmd->briefDescription().isEmpty())
+          { 
+            ol.parseDoc(fmd->briefFile(),fmd->briefLine(),getOuterScope()?getOuterScope():container,fmd,fmd->briefDescription(),TRUE,FALSE);
+          }
+          // FIXME:PARA
+          //if (!fmd->briefDescription().isEmpty() && 
+          //    !fmd->documentation().isEmpty())
+          //{
+          //  ol.newParagraph();
+          //}
+          if (!fmd->documentation().isEmpty())
+          { 
+            ol.parseDoc(fmd->docFile(),fmd->docLine(),getOuterScope()?getOuterScope():container,fmd,fmd->documentation()+"\n",TRUE,FALSE);
+          }
+          ol.endDescTableData();
+        }
+        fmd=fmdl->next();
+      }
+    }
+    if (!first) 
+    { 
+      //ol.endItemList(); 
+      ol.endDescTable();
+      ol.endDescForItem();
+      ol.endSimpleSect();
+      ol.writeChar('\n'); 
+    }
+  }
+}
+
+
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
  */
@@ -1933,9 +2244,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   ol.pushGeneratorState();
 
+  bool htmlEndLabelTable=FALSE;
   QStrList sl;
   _getLabels(sl,container);
-  bool htmlEndLabelTable=FALSE;
 
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
@@ -1949,9 +2260,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
+        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-i-l));
+        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-i-l));
 
         found=TRUE;
       }
@@ -1976,10 +2287,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       // last ei characters of ldef contain pointer/reference specifiers
       int ni=ldef.find("::",si);
       if (ni>=ei) ei=ni+2;
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-ei));
+      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-ei));
     }
   }
-  else // not an enum value
+  else // not an enum value or anonymous compound
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(ciname,name(),memAnchor,title,showInline);
@@ -2086,7 +2397,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),substitute(ldef,"::",sep));
+      linkifyText(TextGeneratorOLImpl(ol),
+                  container,
+                  getBodyDef(),
+                  this,
+                  substitute(ldef,"::",sep)
+                 );
       hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
     }
 
@@ -2095,18 +2411,18 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (!isDefine()) 
       {
         ol.docify(" = "); 
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),m_impl->initializer.simplifyWhiteSpace());
+        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,m_impl->initializer.simplifyWhiteSpace());
       }
       else 
       {
         ol.writeNonBreakableSpace(3);
-        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),m_impl->initializer);
+        linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,m_impl->initializer);
       }
     }
     if (excpString()) // add exception list
     {
       ol.docify(" ");
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),excpString());
+      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,excpString());
     }
   }
 
@@ -2164,12 +2480,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   ol.endDoxyAnchor(cfname,memAnchor);
   ol.startIndent();
-
-  // FIXME:PARA
-  //ol.pushGeneratorState();
-  //ol.disable(OutputGenerator::RTF);
-  //ol.newParagraph();
-  //ol.popGeneratorState();
 
   /* write multi-line initializer (if any) */
   if (hasMultiLineInitializer()
@@ -2278,269 +2588,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   }
 
-  // For enum, we also write the documented enum values
-  if (isEnumerate())
-  {
-    bool first=TRUE;
-    LockingPtr<MemberList> fmdl=enumFieldList();
-    //printf("** %s: enum values=%d\n",name().data(),fmdl!=0 ? fmdl->count() : 0);
-    if (fmdl!=0)
-    {
-      MemberDef *fmd=fmdl->first();
-      while (fmd)
-      {
-        //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
-        if (fmd->isLinkable())
-        {
-          if (first)
-          {
-            ol.startSimpleSect(BaseOutputDocInterface::EnumValues,0,0,theTranslator->trEnumerationValues()+": ");
-            ol.startDescForItem();
-            ol.startDescTable();
-          }
-
-          ol.addIndexItem(fmd->name(),ciname);
-          ol.addIndexItem(ciname,fmd->name());
-
-          //Doxygen::indexList.addIndexItem(
-          //                       ciname,                                // level1
-          //                       fmd->name(),                           // level2
-          //                       separateMemPages ? cfname : cfiname,   // contRef
-          //                       cfname,                                // memRef
-          //                       fmd->anchor(),                         // anchor
-          //                       fmd);                                  // memberdef
-          Doxygen::indexList.addIndexItem(container,fmd);
-
-          //ol.writeListItem();
-          ol.startDescTableTitle(); // this enables emphasis!
-          ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
-          first=FALSE;
-          //ol.startEmphasis();
-          ol.docify(fmd->name());
-          //ol.endEmphasis();
-          ol.disableAllBut(OutputGenerator::Man);
-          ol.writeString(" ");
-          ol.enableAll();
-          ol.endDoxyAnchor(cfname,fmd->anchor());
-          ol.endDescTableTitle();
-          //ol.newParagraph();
-          ol.startDescTableData();
-
-          if (!fmd->briefDescription().isEmpty())
-          { 
-            ol.parseDoc(fmd->briefFile(),fmd->briefLine(),getOuterScope()?getOuterScope():container,fmd,fmd->briefDescription(),TRUE,FALSE);
-          }
-          // FIXME:PARA
-          //if (!fmd->briefDescription().isEmpty() && 
-          //    !fmd->documentation().isEmpty())
-          //{
-          //  ol.newParagraph();
-          //}
-          if (!fmd->documentation().isEmpty())
-          { 
-            ol.parseDoc(fmd->docFile(),fmd->docLine(),getOuterScope()?getOuterScope():container,fmd,fmd->documentation()+"\n",TRUE,FALSE);
-          }
-          ol.endDescTableData();
-        }
-        fmd=fmdl->next();
-      }
-    }
-    if (!first) 
-    { 
-      //ol.endItemList(); 
-      ol.endDescTable();
-      ol.endDescForItem();
-      ol.endSimpleSect();
-      ol.writeChar('\n'); 
-    }
-  }
-
-  MemberDef *bmd=reimplements();
-  ClassDef *bcd=0;
-  if (bmd && (bcd=bmd->getClassDef()))
-  {
-    // write class that contains a member that is reimplemented by this one
-    if (bcd->isLinkable())
-    {
-      ol.startParagraph();
-      QCString reimplFromLine; 
-      if (bmd->virtualness()!=Pure && bcd->compoundType()!=ClassDef::Interface)
-      {
-        reimplFromLine = theTranslator->trReimplementedFromList(1);
-      }
-      else
-      {
-        reimplFromLine = theTranslator->trImplementedFromList(1);
-      }
-      int markerPos = reimplFromLine.find("@0");
-      if (markerPos!=-1) // should always pass this.
-      {
-        ol.parseText(reimplFromLine.left(markerPos)); //text left from marker
-        if (bmd->isLinkable()) // replace marker with link
-        {
-          //Definition *bd=bmd->group;
-          //if (bd==0) bd=bcd;
-          ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
-              bmd->anchor(),bcd->displayName());
-
-          //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-          //    bmd->anchor(),bcd->name());
-          if ( bmd->isLinkableInProject() ) 
-          {
-            writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
-          }
-        }
-        else
-        {
-          ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-              0,bcd->displayName());
-          if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ )
-          {
-            writePageRef(ol,bcd->getOutputFileBase(),bcd->anchor());
-          }
-        }
-        ol.parseText(reimplFromLine.right(
-              reimplFromLine.length()-markerPos-2)); // text right from marker
-
-      }
-      else
-      {
-        err("error: translation error: no marker in trReimplementsFromList()\n");
-      }
-      ol.endParagraph();
-    }
-
-    //ol.writeString(".");
-  }
-
-  LockingPtr<MemberList> bml=reimplementedBy();
-  if (bml!=0)
-  {
-    MemberListIterator mli(*bml);
-    MemberDef *bmd=0;
-    uint count=0;
-    ClassDef *bcd=0;
-    for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->getClassDef());++mli)
-    {
-      // count the members that directly inherit from md and for
-      // which the member and class are visible in the docs.
-      if ( bmd->isLinkable() && bcd->isLinkable() ) 
-      {
-        count++;
-      }
-    }
-    if (count>0)
-    {
-      mli.toFirst();
-      // write the list of classes that overwrite this member
-      ol.startParagraph();
-
-      QCString reimplInLine;
-      if (m_impl->virt==Pure || (m_impl->classDef && m_impl->classDef->compoundType()==ClassDef::Interface))
-      {
-        reimplInLine = theTranslator->trImplementedInList(count);
-      }
-      else
-      {
-        reimplInLine = theTranslator->trReimplementedInList(count);
-      }
-      static QRegExp marker("@[0-9]+");
-      int index=0,newIndex,matchLen;
-      // now replace all markers in reimplInLine with links to the classes
-      while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
-      {
-        ol.parseText(reimplInLine.mid(index,newIndex-index));
-        bool ok;
-        uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-        //bmd=bml->at(entryIndex);
-
-        count=0;
-        // find the entryIndex-th documented entry in the inheritance list.
-        for (mli.toLast();(bmd=mli.current()) && (bcd=bmd->getClassDef());--mli)
-        {
-          if ( bmd->isLinkable() && bcd->isLinkable()) 
-          {
-            if (count==entryIndex) break;
-            count++;
-          }
-        }
-
-        if (ok && bcd && bmd) // write link for marker
-        {
-          //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-          //    bmd->anchor(),bcd->name());
-          ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
-              bmd->anchor(),bcd->displayName());
-
-          if (bmd->isLinkableInProject() ) 
-          {
-            writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
-          }
-        }
-        ++mli;
-        index=newIndex+matchLen;
-      } 
-      ol.parseText(reimplInLine.right(reimplInLine.length()-index));
-      ol.endParagraph();
-    }
-  }
-
-  // write the list of examples that use this member
-  if (hasExamples())
-  {
-    ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
-    ol.startDescForItem();
-    writeExample(ol,m_impl->exampleSDict);
-    ol.endDescForItem();
-    ol.endSimpleSect();
-  }
-
-  if (m_impl->typeConstraints)
-  {
-    writeTypeConstraints(ol,this,m_impl->typeConstraints);
-  }
-
-  // write reference to the source
+  _writeEnumValues(ol,container,cfname,ciname,cname);
+  _writeReimplements(ol);
+  _writeReimplementedBy(ol);
+  _writeExamples(ol);
+  _writeTypeConstraints(ol);
   writeSourceDef(ol,cname);
   writeSourceRefs(ol,cname);
   writeSourceReffedBy(ol,cname);
   writeInlineCode(ol,cname);
-
-  // write call graph
-  if ((m_impl->hasCallGraph || Config_getBool("CALL_GRAPH")) 
-      && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
-     )
-  {
-    DotCallGraph callGraph(this,FALSE);
-    if (!callGraph.isTrivial() && !callGraph.isTooBig())
-    {
-      msg("Generating call graph for function %s\n",qPrint(qualifiedName()));
-      ol.disable(OutputGenerator::Man);
-      ol.startParagraph();
-      ol.startCallGraph();
-      ol.parseText(theTranslator->trCallGraph());
-      ol.endCallGraph(callGraph);
-      ol.endParagraph(); 
-      ol.enableAll();
-    }
-  }
-  if ((m_impl->hasCallerGraph || Config_getBool("CALLER_GRAPH")) 
-      && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
-     )
-  {
-    DotCallGraph callerGraph(this, TRUE);
-    if (!callerGraph.isTrivial() && !callerGraph.isTooBig())
-    {
-      msg("Generating caller graph for function %s\n",qPrint(qualifiedName()));
-      ol.disable(OutputGenerator::Man);
-      ol.startParagraph();
-      ol.startCallGraph();
-      ol.parseText(theTranslator->trCallerGraph());
-      ol.endCallGraph(callerGraph);
-      ol.endParagraph();
-      ol.enableAll();
-    }
-  }
+  _writeCallGraph(ol);
+  _writeCallerGraph(ol);
 
   if (Doxygen::userComments)
   {
@@ -2625,7 +2683,7 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
   linkifyText(TextGeneratorOLImpl(ol), // out
               scope,                   // scope
               getBodyDef(),            // fileScope
-              doxyName,                // 
+              this,                    // self
               ts,                      // text
               TRUE                     // autoBreak
              ); 
@@ -2636,7 +2694,7 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
   ol.docify(doxyName);
   if (!m_impl->bitfields.isEmpty()) // add bitfields
   {
-    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),name(),m_impl->bitfields.simplifyWhiteSpace());
+    linkifyText(TextGeneratorOLImpl(ol),getOuterScope(),getBodyDef(),this,m_impl->bitfields.simplifyWhiteSpace());
   }
   ol.endInlineMemberName();
 

@@ -895,6 +895,16 @@ page has loaded. For this to work a browser that supports
 JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox 
 Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). 
 ' defval='0' depends='GENERATE_HTML'/>
+    <option type='int' id='HTML_INDEX_NUM_ENTRIES' docs='
+With HTML_INDEX_NUM_ENTRIES one can control the preferred number of 
+entries shown in the various tree structured indices initially; the user 
+can expand and collapse entries dynamically later on. Doxygen will expand 
+the tree to such a level that at most the specified number of entries are 
+visible (unless a fully collapsed tree already exceeds this amount). 
+So setting the number of entries 1 will produce a full collapsed tree by 
+default. 0 is a special value representing an infinite number of entries 
+and will result in a full expanded tree by default.
+' minval='0' maxval='9999' defval='100'/>
     <option type='bool' id='GENERATE_DOCSET' docs='
 If the GENERATE_DOCSET tag is set to YES, additional index files 
 will be generated that can be used as input for Apple&apos;s Xcode 3 

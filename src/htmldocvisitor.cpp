@@ -352,9 +352,9 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       break;
     case DocVerbatim::Verbatim: 
       forceEndParagraph(s);
-      m_t << PREFRAG_START;
+      m_t << /*PREFRAG_START <<*/ "<pre class=\"fragment\">";
       filter(s->text());
-      m_t << PREFRAG_END;
+      m_t << "</pre>" /*<< PREFRAG_END*/;
       forceStartParagraph(s);
       break;
     case DocVerbatim::HtmlOnly: 
@@ -477,9 +477,9 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::VerbInclude: 
       forceEndParagraph(inc);
-      m_t << PREFRAG_START;
+      m_t << /*PREFRAG_START <<*/ "<pre class=\"fragment\">";
       filter(inc->text());
-      m_t << PREFRAG_END;
+      m_t << "</pre>" /*<< PREFRAG_END*/;
       forceStartParagraph(inc);
       break;
     case DocInclude::Snippet:

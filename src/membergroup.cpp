@@ -118,11 +118,11 @@ void MemberGroup::writeDeclarations(OutputList &ol,
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *inheritId
+               ClassDef *inheritedFrom,const char *inheritId
               )
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritId);
+  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
@@ -138,7 +138,8 @@ void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
 }
 
 void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
-               MemberList::ListType lt,const QCString &inheritId)
+               MemberList::ListType lt,
+               ClassDef *inheritedFrom,const QCString &inheritId)
 {
   //printf("** addGroupedInheritedMembers()\n");
   MemberListIterator li(*memberList);
@@ -150,7 +151,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
     {
       MemberList ml(lt);
       ml.append(md);
-      ml.writePlainDeclarations(ol,cd,0,0,0,inheritId);
+      ml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -205,6 +206,12 @@ int MemberGroup::countDocMembers()
   }
   return m_numDocMembers;
 }
+
+int MemberGroup::countInheritableMembers(ClassDef *inheritedFrom) const
+{
+  return memberList->countInheritableMembers(inheritedFrom);
+}
+
 
 void MemberGroup::distributeMemberGroupDocumentation()
 {

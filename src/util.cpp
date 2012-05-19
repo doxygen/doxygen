@@ -1799,7 +1799,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 
 
 void linkifyText(const TextGeneratorIntf &out,Definition *scope,
-    FileDef *fileScope,const char *,
+    FileDef *fileScope,Definition *self,
     const char *text, bool autoBreak,bool external,
     bool keepSpaces,int indentLevel)
 {
@@ -1882,11 +1882,14 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         //printf("Found typedef %s\n",typeDef->name().data());
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
-          out.writeLink(typeDef->getReference(),
-              typeDef->getOutputFileBase(),
-              typeDef->anchor(),
-              word);
-          found=TRUE;
+          if (typeDef->getOuterScope()!=self)
+          {
+            out.writeLink(typeDef->getReference(),
+                typeDef->getOutputFileBase(),
+                typeDef->anchor(),
+                word);
+            found=TRUE;
+          }
         }
       }
       if (!found && cd) 
@@ -1895,8 +1898,11 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-          found=TRUE;
+          if (cd!=self)
+          {
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+            found=TRUE;
+          }
         }
       }
       else if ((cd=getClass(matchWord+"-p"))) // search for Obj-C protocols as well
@@ -1904,8 +1910,11 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-          found=TRUE;
+          if (cd!=self)
+          {
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+            found=TRUE;
+          }
         }
       }
       else if ((cd=getClass(matchWord+"-g"))) // C# generic as well
@@ -1913,8 +1922,11 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
-          out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-          found=TRUE;
+          if (cd!=self)
+          {
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+            found=TRUE;
+          }
         }
       }
       else
@@ -1951,10 +1963,14 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
         //printf("Found ref scope=%s\n",d?d->name().data():"<global>");
         //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
         //                       md->anchor(),word);
-        out.writeLink(md->getReference(),md->getOutputFileBase(),
-            md->anchor(),word);
-        //printf("found symbol %s\n",matchWord.data());
-        found=TRUE;
+        if (md!=self && (self==0 || md->name()!=self->name())) 
+          // name check is needed for overloaded members, where getDefs just returns one
+        {
+          out.writeLink(md->getReference(),md->getOutputFileBase(),
+              md->anchor(),word);
+          //printf("found symbol %s\n",matchWord.data());
+          found=TRUE;
+        }
       }
     }
 
@@ -6123,7 +6139,7 @@ void filterLatexString(FTextStream &t,const char *str,
                    else if (*p=='>')
                    { t << "$>$"; p++; } 
                    else  
-                   { t << "$\\backslash$"; }
+                   { t << "\\textbackslash{}"; }
                    break;           
         case '"':  { t << "\\char`\\\"{}"; }
                    break;

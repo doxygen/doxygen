@@ -49,7 +49,7 @@ class MemberGroup
     void setAnchors(ClassDef *);
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *inheritId);
+               ClassDef *inheritedFrom,const char *inheritId);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                bool showInline=FALSE);
@@ -58,7 +58,8 @@ class MemberGroup
     void writeDocumentationPage(OutputList &ol,const char *scopeName,
                Definition *container);
     void addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
-               MemberList::ListType lt,const QCString &inheritId);
+               MemberList::ListType lt,
+               ClassDef *inheritedFrom,const QCString &inheritId);
 
     QCString documentation() { return doc; }
     bool allMembersInSameSection() { return inSameSection; }
@@ -78,6 +79,7 @@ class MemberGroup
     int friendCount() const;
     int numDecMembers() const;
     int numDocMembers() const;
+    int countInheritableMembers(ClassDef *inheritedFrom) const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
     void setRefItems(const QList<ListItemInfo> *sli);

@@ -298,7 +298,7 @@ class XMLCodeGenerator : public CodeOutputInterface
       writeXMLLink(m_t,ref,file,anchor,name,tooltip);
       col+=strlen(name);
     }
-    void startCodeLine() 
+    void startCodeLine(bool) 
     {
       XML_DB(("(startCodeLine)\n"));
       m_t << "<codeline";
@@ -770,7 +770,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
     stripQualifiers(typeStr);
     t << "        <type>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),typeStr);
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
     t << "</type>" << endl;
     t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
     t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
@@ -833,7 +833,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
         if (!a->type.isEmpty())
         {
           t << "          <type>";
-          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),a->type);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a->type);
           t << "</type>" << endl;
         }
         if (!a->name.isEmpty())
@@ -857,7 +857,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
         if (!a->defval.isEmpty())
         {
           t << "          <defval>";
-          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),a->defval);
+          linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a->defval);
           t << "</defval>" << endl;
         }
         if (defArg && defArg->hasDocumentation())
@@ -895,14 +895,14 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   if (!md->initializer().isEmpty() && md->initializer().length()<2000)
   {
     t << "        <initializer>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),md->initializer());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->initializer());
     t << "</initializer>" << endl;
   }
 
   if (md->excpString())
   {
     t << "        <exceptions>";
-    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),md->excpString());
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->excpString());
     t << "</exceptions>" << endl;
   }
   

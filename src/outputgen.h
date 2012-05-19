@@ -65,7 +65,7 @@ class CodeOutputInterface
 
     virtual void writeLineNumber(const char *ref,const char *file,
                                  const char *anchor,int lineNumber) = 0;
-    virtual void startCodeLine() = 0;
+    virtual void startCodeLine(bool hasLineNumbers) = 0;
     virtual void endCodeLine() = 0;
     virtual void startCodeAnchor(const char *label) = 0;
     virtual void endCodeAnchor() = 0;

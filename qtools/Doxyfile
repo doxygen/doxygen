@@ -9,7 +9,7 @@ PROJECT_NUMBER         =
 PROJECT_BRIEF          =
 PROJECT_LOGO           =
 OUTPUT_DIRECTORY       = ../qtools_docs
-CREATE_SUBDIRS         = NO
+CREATE_SUBDIRS         = YES
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
@@ -117,7 +117,7 @@ FILTER_SOURCE_PATTERNS =
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
@@ -145,7 +145,6 @@ HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
 HTML_TIMESTAMP         = YES
-HTML_ALIGN_MEMBERS     = YES
 HTML_DYNAMIC_SECTIONS  = YES
 GENERATE_DOCSET        = YES
 DOCSET_FEEDNAME        = "Doxygen generated docs"

@@ -976,22 +976,22 @@ static void processInline(GrowBuf &out,const char *data,int size)
 /** returns whether the line is a setext-style hdr underline */
 static int isHeaderline(const char *data, int size)
 {
-  int i = 0;
+  int i=0, c=0;
   while (i<size && data[i]==' ') i++;
 
   // test of level 1 header
   if (data[i]=='=')
   {
-    while (i<size && data[i]=='=') i++;
+    while (i<size && data[i]=='=') i++,c++;
     while (i<size && data[i]==' ') i++;
-    return (i>=size || data[i]=='\n') ? 1 : 0;
+    return (c>1 && (i>=size || data[i]=='\n')) ? 1 : 0;
   }
   // test of level 2 header
   if (data[i]=='-')
   {
-    while (i<size && data[i]=='-') i++;
+    while (i<size && data[i]=='-') i++,c++;
     while (i<size && data[i]==' ') i++;
-    return (i>=size || data[i]=='\n') ? 2 : 0;
+    return (c>1 && (i>=size || data[i]=='\n')) ? 2 : 0;
   }
   return 0;
 }
@@ -1713,6 +1713,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
   int i=0,end;
   //printf("writeCodeBlock: data={%s}\n",QCString(data).left(size).data());
   out.addStr("@verbatim\n");
+  int emptyLines=0;
   while (i<size)
   {
     // find end of this line
@@ -1724,12 +1725,17 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
     //printf("j=%d end=%d indent=%d refIndent=%d data={%s}\n",j,end,indent,refIndent,QCString(data+i).left(end-i-1).data());
     if (j==end-1) // empty line 
     {
-      // add empty line
-      out.addStr("\n");
+      emptyLines++;
       i=end;
     }
     else if (indent>=refIndent+codeBlockIndent) // enough indent to contine the code block
     {
+      while (emptyLines>0) // write skipped empty lines
+      {
+        // add empty line
+        out.addStr("\n");
+        emptyLines--;
+      }
       // add code line minus the indent
       out.addStr(data+i+refIndent+codeBlockIndent,end-i-refIndent-codeBlockIndent);
       i=end;
@@ -1740,6 +1746,12 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
     }
   }
   out.addStr("@endverbatim\n"); 
+  while (emptyLines>0) // write skipped empty lines
+  {
+    // add empty line
+    out.addStr("\n");
+    emptyLines--;
+  }
   //printf("i=%d\n",i);
   return i;
 }

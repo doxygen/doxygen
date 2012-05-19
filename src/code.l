@@ -516,7 +516,7 @@ static void startCodeLine()
       g_code->writeLineNumber(0,0,0,g_yyLineNr);
     }
   }
-  g_code->startCodeLine(); 
+  g_code->startCodeLine(g_sourceFileDef && g_lineNumbers); 
   if (g_currentFontClass)
   {
     g_code->startFontClass(g_currentFontClass);

@@ -353,7 +353,7 @@ class SDict
 
     class IteratorDict;         // first forward declare
     friend class IteratorDict;  // then make it a friend
-    /*! Simple iterator for SDict. It iterates in over the dictionary elements
+    /*! Simple iterator for SDict. It iterates over the dictionary elements
      *  in an unsorted way, but does provide information about the element's key.
      */
     class IteratorDict

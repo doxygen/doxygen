@@ -331,7 +331,8 @@ class ClassDef : public Definition
     void writeDocumentationForInnerClasses(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeMemberList(OutputList &ol);
-    void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,const char *inheritId);
+    void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
+                          ClassDef *inheritedFrom,const char *inheritId);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
     void writeSummaryLinks(OutputList &ol);
     void reclassifyMember(MemberDef *md,MemberDef::MemberType t);
@@ -340,7 +341,7 @@ class ClassDef : public Definition
                               const char *header,bool localNames);
     void removeMemberFromLists(MemberDef *md);
     void addGroupedInheritedMembers(OutputList &ol,MemberList::ListType lt,
-                              const QCString &inheritId);
+                              ClassDef *inheritedFrom,const QCString &inheritId);
     
     bool visited;
 
@@ -362,7 +363,7 @@ class ClassDef : public Definition
                                  const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,QPtrDict<void> *visitedClasses=0);
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title,bool showInline=FALSE);
     void writeSimpleMemberDocumentation(OutputList &ol,MemberList::ListType lt);
-    void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup,const char *inheritId);
+    void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
     void writeBriefDescription(OutputList &ol,bool exampleFlag);
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString());
@@ -381,11 +382,11 @@ class ClassDef : public Definition
     void writeMoreLink(OutputList &ol,const QCString &anchor);
     void writeDetailedDocumentationBody(OutputList &ol);
     
-    int countInheritedDecMembersRec(MemberList::ListType lt);
+    int countInheritedDecMembersRec(MemberList::ListType lt,ClassDef *inheritedFrom);
     int countInheritedDecMembers(MemberList::ListType lt);
     int countAdditionalInheritedMembers();
     void writeAdditionalInheritedMembers(OutputList &ol);
-    int countMembersIncludingGrouped(MemberList::ListType lt);
+    int countMembersIncludingGrouped(MemberList::ListType lt,ClassDef *inheritedFrom);
     
     ClassDefImpl *m_impl;
 

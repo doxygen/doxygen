@@ -67,6 +67,47 @@ int MemberList::compareItems(GCI item1, GCI item2)
   return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
 }
 
+int MemberList::countInheritableMembers(ClassDef *inheritedFrom) const
+{
+  int count=0;
+  QListIterator<MemberDef> mli(*this);
+  MemberDef *md;
+  for (mli.toFirst();(md=mli.current());++mli)
+  {
+    if (md->isBriefSectionVisible())
+    {
+      if (md->memberType()!=MemberDef::Friend &&
+          md->memberType()!=MemberDef::EnumValue)
+      {
+        //printf("member %s: isReimplementedBy(%s)=%d\n",md->name().data(),
+        //    inheritedFrom->name().data(),
+        //    md->isReimplementedBy(inheritedFrom));
+        if (md->memberType()==MemberDef::Function)
+        {
+          if (!md->isReimplementedBy(inheritedFrom)) count++;
+        }
+        else
+        {
+          count++;
+        }
+      }
+    }
+  }
+  if (memberGroupList)
+  {
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      count+=mg->countInheritableMembers(inheritedFrom);
+    }
+  }
+  //printf("%s::countInheritableMembers(%s)=%d\n",
+  //    listTypeAsString().data(),
+  //    inheritedFrom->name().data(),count);
+  return count;
+}
+
 /*! Count the number of members in this list that are visible in
  *  the declaration part of a compound's documentation page.
  */
@@ -252,7 +293,7 @@ bool MemberList::declVisible() const
 
 void MemberList::writePlainDeclarations(OutputList &ol,
                        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                       const char *inheritId
+                       ClassDef *inheritedFrom,const char *inheritId
                       )
 {
   //printf("----- writePlainDeclaration() ----\n");
@@ -274,7 +315,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   {
     //printf(">>> Member `%s' type=%d visible=%d\n",
     //    md->name().data(),md->memberType(),md->isBriefSectionVisible());
-    if (md->isBriefSectionVisible())
+    if ((inheritedFrom==0 || !md->isReimplementedBy(inheritedFrom)) &&
+        md->isBriefSectionVisible())
     {
       switch(md->memberType())
       {
@@ -290,7 +332,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberDef::Event:  
           {
             if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             break;
           }
         case MemberDef::Enumeration: 
@@ -354,13 +396,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             break;
           }
         case MemberDef::Friend:
+          if (inheritedFrom==0)
           {
             if (first) 
             {
               ol.startMemberList();
               first=FALSE;
             }
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             break;
           }
         case MemberDef::EnumValue: 
@@ -369,7 +412,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
-              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritId);
+              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             }
           }
           break;
@@ -411,16 +454,32 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   //printf("----- end writePlainDeclaration() ----\n");
 }
 
+/** Writes the list of members to the output.
+ *  @param ol Output list to write to
+ *  @param cd non-null if this list is part of class documentation.
+ *  @param nd non-null if this list is part of namespace documentation.
+ *  @param fd non-null if this list is part of file documentation.
+ *  @param gd non-null if this list is part of group documentation.
+ *  @param title Title to use for the member list.
+ *  @param subtitle Sub title to use for the member list.
+ *  @param showEnumValues Obsolete, always set to FALSE.
+ *  @param showInline if set to TRUE if title is rendered differently
+ *  @param inheritedFrom if not 0, the list is shown inside the
+ *         given class as inherited members, parameter cd points to the
+ *         class containing the members.
+ */
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
              const char *title,const char *subtitle, bool showEnumValues,
              bool showInline,ClassDef *inheritedFrom)
 {
+  (void)showEnumValues; // unused
+
   //printf("----- writeDeclaration() this=%p ---- inheritedFrom=%p\n",this,inheritedFrom);
   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString inheritId;
 
-  countDecMembers(showEnumValues,gd); // count members shown in this section
+  countDecMembers(/*showEnumValues*/FALSE,gd); // count members shown in this section
   Definition *ctx = cd;
   if (ctx==0 && nd) ctx = nd;
   if (ctx==0 && gd) ctx = gd;
@@ -432,7 +491,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   int num = numDecMembers();
   if (inheritedFrom)
   {
-    if (cd && !optimizeVhdl)
+    if ( cd && !optimizeVhdl && countInheritableMembers(inheritedFrom)>0 )
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
@@ -494,7 +553,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
     else
     {
-      writePlainDeclarations(ol,cd,nd,fd,gd,inheritId);
+      writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
@@ -524,7 +583,7 @@ void MemberList::writeDeclarations(OutputList &ol,
           ol.startMemberGroup();
         }
         //printf("--- mg->writePlainDeclarations ---\n");
-        mg->writePlainDeclarations(ol,cd,nd,fd,gd,inheritId);
+        mg->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
         if (inheritId.isEmpty())
         {
           ol.endMemberGroup(hasHeader);
@@ -537,7 +596,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   {
     // also add members that of this list type, that are grouped together
     // in a separate list in class 'inheritedFrom'
-    cd->addGroupedInheritedMembers(ol,m_listType,inheritId);
+    cd->addGroupedInheritedMembers(ol,m_listType,inheritedFrom,inheritId);
   }
   //printf("----- end writeDeclaration() ----\n");
 }

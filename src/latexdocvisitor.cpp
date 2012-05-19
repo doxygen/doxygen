@@ -244,7 +244,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
   if (m_hide) return;
   switch(s->symbol())
   {
-    case DocSymbol::BSlash:  m_t << "$\\backslash$"; break;
+    case DocSymbol::BSlash:  m_t << "\\textbackslash{}"; break;
     case DocSymbol::At:      m_t << "@"; break;
     case DocSymbol::Less:    if (m_insidePre) m_t << "<"; else m_t << "$<$"; 
                              break;

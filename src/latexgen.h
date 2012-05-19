@@ -132,7 +132,7 @@ class LatexGenerator : public OutputGenerator
     void startCodeFragment();
     void endCodeFragment();
     void writeLineNumber(const char *,const char *,const char *,int l);
-    void startCodeLine();
+    void startCodeLine(bool hasLineNumbers);
     void endCodeLine();
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }

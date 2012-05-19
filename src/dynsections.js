@@ -68,10 +68,10 @@ function toggleInherit(id)
   var img = $('tr.inherit_header.'+id+' img');
   var src = $(img).attr('src');
   if (rows.filter(':first').is(':visible')===true) {
-    rows.hide();
+    rows.css('display','none');
     $(img).attr('src',src.substring(0,src.length-8)+'closed.png');
   } else {
-    rows.show();
+    rows.css('display','table-row'); // using show() causes jump in firefox
     $(img).attr('src',src.substring(0,src.length-10)+'open.png');
   }
 }
