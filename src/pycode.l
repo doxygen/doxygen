@@ -382,7 +382,7 @@ static void startCodeLine()
     }
     //g_code->endLineNumber();
   }
-  g_code->startCodeLine(); 
+  g_code->startCodeLine(g_sourceFileDef); 
   if (g_currentFontClass)
   {
     g_code->startFontClass(g_currentFontClass);

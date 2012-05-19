@@ -75,8 +75,8 @@ the \ref cfg_predefined "PREDEFINED" or
 \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.  
 
 A typically example where some help from the preprocessor is needed is
-when dealing with Microsoft's __declspec language extension. Here is an
-example function.
+when dealing with Microsoft's __declspec language extension. The same goes
+for GNU's __attribute__ extension. Here is an example function.
 
 \verbatim
 extern "C" void __declspec(dllexport) ErrorMsg( String aMessage,...);

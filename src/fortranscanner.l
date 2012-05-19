@@ -196,7 +196,7 @@ static int yyread(char *buf,int max_size);
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void subrHandleCommentBlock(const QCString &doc,bool brief);
-static void addCurrentEntry();
+static void addCurrentEntry(int case_insens);
 static void addModule(const char *name, bool isModule=FALSE);
 static void addSubprogram(const char *text);
 static void addInterface(QCString name, InterfaceType type);
@@ -463,9 +463,8 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
                                           // extract generic name
                                           QCString name = QCString(yytext).stripWhiteSpace();
-                                          name = name.right(name.length() - 9).stripWhiteSpace();
+                                          name = name.right(name.length() - 9).stripWhiteSpace().lower();
                                           addInterface(name, ifType);
-
                                           startScope(last_entry);
                                         }
 }
@@ -490,7 +489,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           current->section = Entry::FUNCTION_SEC ;
                                           current->name = yytext; 
                                           moduleProcedures.append(current);
-                                          addCurrentEntry();
+                                          addCurrentEntry(1);
                                         }
 <ModuleProcedure>"\n"                   { yyColNr -= 1;
 					  unput(*yytext); 
@@ -608,7 +607,7 @@ private                                 {
                                             current->name = current_root->name + "::" + current->name;
                                           }
 
-                                          addCurrentEntry();
+                                          addCurrentEntry(1);
                                           startScope(last_entry); 
                                           BEGIN(TypedefBody);
                                         }
@@ -639,7 +638,7 @@ private                                 {
                                           current->name     = name;
                                           current->fileName = yyFileName;
                                           current->bodyLine = yyLineNr;
-                                          addCurrentEntry();
+                                          addCurrentEntry(1);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
                                           last_entry->args = yytext;
@@ -689,7 +688,7 @@ private                                 {
                                             addModule(NULL); 
                                             yy_push_state(ModuleBody); //anon program
                                           }
-					  argType = QCString(yytext).simplifyWhiteSpace();
+					  argType = QCString(yytext).simplifyWhiteSpace().lower();
 					  yy_push_state(AttributeList);
                                         }
   /*  Dimitri: macro expansion should already be done during preprocessing not here!
@@ -781,7 +780,7 @@ private                                 {
 					    current->type = argType;
 					    current->fileName = yyFileName;
 					    current->bodyLine  = yyLineNr; // used for source reference
-                                            addCurrentEntry();
+                                            addCurrentEntry(1);
                                           } 
 					  else if (!argType.isEmpty())
 					  { // declaration of parameter list: add type for corr. parameter 
@@ -925,7 +924,7 @@ private                                 {
  /*------ fortran subroutine/function handling ------------------------------------------------------------*/
  /*       Start is initial condition                                                                       */
  
-<Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{TYPE_SPEC}{BS}/{SUBPROG}{BS_} {
+<Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{TYPE_SPEC}{BS}({PREFIX}{BS_})?/{SUBPROG}{BS_} {
                                          if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                          {
                                            addInterface("$interface$", ifType);
@@ -977,7 +976,7 @@ private                                 {
 <Parameterlist>")"                     {
 				         current->args += ")";
 				         current->args = removeRedundantWhiteSpace(current->args);
-                                         addCurrentEntry();
+                                         addCurrentEntry(1);
 					 startScope(last_entry);
 					 BEGIN(SubprogBody);
 				       }
@@ -1003,7 +1002,7 @@ private                                 {
 				           newLine();
 					   //printf("3=========> without parameterlist \n");
  					   //current->argList = ;
-                                           addCurrentEntry();
+                                           addCurrentEntry(1);
 					   startScope(last_entry);
 					   BEGIN(SubprogBody);				           
 }
@@ -1891,10 +1890,10 @@ static void initEntry()
 /**
   adds current entry to current_root and creates new current
 */
-static void addCurrentEntry()
+static void addCurrentEntry(int case_insens)
 {
+  if (case_insens) current->name = current->name.lower();
   //printf("===Adding entry %s to %s\n", current->name.data(), current_root->name.data());
-  current->name = current->name.lower();
   current_root->addSubEntry(current);
   last_entry = current;
   current = new Entry ;
@@ -1928,7 +1927,7 @@ static void addModule(const char *name, bool isModule)
   current->fileName  = yyFileName;
   current->bodyLine  = yyLineNr; // used for source reference
   current->protection = Public ;
-  addCurrentEntry();
+  addCurrentEntry(1);
   startScope(last_entry);
 }
 
@@ -1992,7 +1991,7 @@ static void addInterface(QCString name, InterfaceType type)
 
   current->fileName = yyFileName;
   current->bodyLine  = yyLineNr; 
-  addCurrentEntry();
+  addCurrentEntry(1);
 }
 
 
@@ -2060,11 +2059,11 @@ static void handleCommentBlock(const QCString &doc,bool brief)
         )) 
   {
 	   //fprintf(stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry);
-   if (needsEntry) addCurrentEntry();
+   if (needsEntry) addCurrentEntry(0);
   }
   //fprintf(stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry);
 
-  if (needsEntry) addCurrentEntry();
+  if (needsEntry) addCurrentEntry(0);
 }
 
 //----------------------------------------------------------------------------

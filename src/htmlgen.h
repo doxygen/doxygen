@@ -21,8 +21,10 @@
 #include "qtbc.h"
 #include "outputgen.h"
 
-#define PREFRAG_START "<div class=\"fragment\"><pre class=\"fragment\">"
-#define PREFRAG_END   "</pre></div>"
+//#define PREFRAG_START "<div class=\"fragment\"><pre class=\"fragment\">"
+//#define PREFRAG_END   "</pre></div>"
+#define PREFRAG_START "<div class=\"fragment\">"
+#define PREFRAG_END   "</div><!-- fragment -->"
 
 class QFile;
 class FTextStream;
@@ -144,8 +146,8 @@ class HtmlGenerator : public OutputGenerator
     void startCodeFragment() { t << PREFRAG_START; }
     void endCodeFragment()   { t << PREFRAG_END; } 
     void writeLineNumber(const char *,const char *,const char *,int);
-    void startCodeLine() { col=0; }
-    void endCodeLine()   { codify("\n"); }
+    void startCodeLine(bool);
+    void endCodeLine();
     void startEmphasis() { t << "<em>";  }
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }
@@ -164,8 +166,8 @@ class HtmlGenerator : public OutputGenerator
                          const char *anchor,const char *name,
                          const char *args);
     void endDoxyAnchor(const char *fName,const char *anchor);
-    void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\"></a>"; }
-    void endCodeAnchor() { }
+    void startCodeAnchor(const char *label);
+    void endCodeAnchor();
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);

@@ -76,6 +76,7 @@
   display:block;
   padding:0px;
   margin:0px;
+  -webkit-overflow-scrolling : touch; /* iOS 5+ */
 }
 
 #side-nav {
@@ -115,6 +116,7 @@
   background-image:url('nav_h.png');
   background-repeat:repeat-x;
   background-color: ##FA;
+  -webkit-overflow-scrolling : touch; /* iOS 5+ */
 }
 
 @media print

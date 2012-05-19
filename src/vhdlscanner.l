@@ -1016,9 +1016,9 @@ void isVhdlDocPending()
 {
   if (!str_doc.pending)
     return;
-
+  str_doc.pending=FALSE;
+  oldEntry=0; // prevents endless recursion
   iDocLine=str_doc.iDocLine;
   handleCommentBlock(str_doc.doc,str_doc.brief);
   iDocLine=-1;
-  str_doc.pending=FALSE;
 }

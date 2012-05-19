@@ -1662,7 +1662,9 @@ void LatexGenerator::writeCodeLink(const char *ref,const char *f,
     if (f) t << stripPath(f);
     if (f && anchor) t << "_"; 
     if (anchor) t << anchor; 
-    t << "}{" << name << "}";
+    t << "}{";
+    codify(name);
+    t << "}";
   }
   else
   {
@@ -2516,7 +2518,7 @@ void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const 
   }
 }
 
-void LatexGenerator::startCodeLine()
+void LatexGenerator::startCodeLine(bool)
 {
   col=0;
 }

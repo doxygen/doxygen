@@ -128,7 +128,7 @@ class ManGenerator : public OutputGenerator
     void startCodeFragment();
     void endCodeFragment();
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
-    void startCodeLine() {}
+    void startCodeLine(bool) {}
     void endCodeLine() { codify("\n"); col=0; }
     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
     void endEmphasis()   { t << "\\fP"; firstCol=FALSE; }

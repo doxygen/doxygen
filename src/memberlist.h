@@ -136,9 +136,10 @@ class MemberList : public QList<MemberDef>
     bool needsSorting() const  { return m_needsSorting; }
     void countDecMembers(bool countEnumValues=FALSE,GroupDef *gd=0);
     void countDocMembers(bool countEnumValues=FALSE);
+    int countInheritableMembers(ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *inheritId);
+               ClassDef *inheritedFrom,const char *inheritId);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                const char *title,const char *subtitle,

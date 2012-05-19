@@ -2234,13 +2234,15 @@ void HtmlGenerator::startDotGraph()
 
 void HtmlGenerator::endDotGraph(const DotClassGraph &g)
 {
+  bool generateLegend = Config_getBool("GENERATE_LEGEND");
+  bool umlLook = Config_getBool("UML_LOOK");
   endSectionHeader(t);
   startSectionSummary(t,m_sectionCount);
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
   g.writeGraph(t,BITMAP,dir,fileName,relPath,TRUE,TRUE,m_sectionCount);
-  if (Config_getBool("GENERATE_LEGEND"))
+  if (generateLegend && !umlLook)
   {
     t << "<center><span class=\"legend\">[";
     startHtmlLink(relPath+"graph_legend"+Doxygen::htmlFileExtension);
@@ -2382,28 +2384,6 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   {
     t << "&#160;";
   }
-}
-
-void HtmlGenerator::writeLineNumber(const char *ref,const char *filename,
-                                    const char *anchor,int l)
-{
-  QCString lineNumber,lineAnchor;
-  lineNumber.sprintf("%05d",l);
-  lineAnchor.sprintf("l%05d",l);
-
-  if (filename)
-  {
-    startCodeAnchor(lineAnchor);
-    writeCodeLink(ref,filename,anchor,lineNumber,0);
-    endCodeAnchor();
-  }
-  else
-  {
-    startCodeAnchor(lineAnchor);
-    codify(lineNumber);
-    endCodeAnchor();
-  }
-  codify(" ");
 }
 
 void HtmlGenerator::startSimpleSect(SectionTypes,
@@ -3071,5 +3051,51 @@ void HtmlGenerator::writeInheritedSectionTitle(const char *id,
     << theTranslator->trInheritedFrom(title,classLink)
     << "</td></tr>" << endl;
 }
+
+void HtmlGenerator::startCodeLine(bool hasLineNumbers) 
+{ 
+  if (!hasLineNumbers) t << "<div class=\"line\">";
+  col=0; 
+}
+
+void HtmlGenerator::endCodeLine() 
+{ 
+  //codify("\n"); 
+  t << "</div>\n";
+}
+
+void HtmlGenerator::startCodeAnchor(const char *label) 
+{ 
+  t << "<div class=\"line\">";
+  t << "<a name=\"" << label << "\"></a><span class=\"lineno\">"; 
+}
+
+void HtmlGenerator::endCodeAnchor() 
+{ 
+  t << "</span>"; 
+}
+
+void HtmlGenerator::writeLineNumber(const char *ref,const char *filename,
+                                    const char *anchor,int l)
+{
+  QCString lineNumber,lineAnchor;
+  lineNumber.sprintf("%5d",l);
+  lineAnchor.sprintf("l%05d",l);
+
+  if (filename)
+  {
+    startCodeAnchor(lineAnchor);
+    writeCodeLink(ref,filename,anchor,lineNumber,0);
+    endCodeAnchor();
+  }
+  else
+  {
+    startCodeAnchor(lineAnchor);
+    codify(lineNumber);
+    endCodeAnchor();
+  }
+  t << "&#160;";
+}
+
 
 

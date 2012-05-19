@@ -1285,6 +1285,19 @@ void addConfigOptions(Config *cfg)
                 );
   cb->addDependency("GENERATE_HTML");
   //----
+  ci = cfg->addInt(
+                 "HTML_INDEX_NUM_ENTRIES",
+                 "With HTML_INDEX_NUM_ENTRIES one can control the preferred number of\n"
+                 "entries shown in the various tree structured indices initially; the user\n"
+                 "can expand and collapse entries dynamically later on. Doxygen will expand\n"
+                 "the tree to such a level that at most the specified number of entries are\n"
+                 "visible (unless a fully collapsed tree already exceeds this amount).\n"
+                 "So setting the number of entries 1 will produce a full collapsed tree by\n"
+                 "default. 0 is a special value representing an infinite number of entries\n"
+                 "and will result in a full expanded tree by default.",
+                 0,9999,100
+                );
+  //----
   cb = cfg->addBool(
                  "GENERATE_DOCSET",
                  "If the GENERATE_DOCSET tag is set to YES, additional index files\n"

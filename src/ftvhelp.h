@@ -62,11 +62,11 @@ class FTVHelp : public IndexIntf
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level,int &index);
+    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level,int maxLevel,int &index);
     //bool generateJSTree(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
     //bool generateJSTreeTopLevel(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
     QCString generateIndentLabel(FTVNode *n,int level);
-    void generateIndent(FTextStream &t,FTVNode *n,int level);
+    void generateIndent(FTextStream &t,FTVNode *n,int level,bool opened);
     void generateLink(FTextStream &t,FTVNode *n);
     //void generateJSLink(FTextStream &t,FTVNode *n);
     QList<FTVNode> *m_indentNodes;

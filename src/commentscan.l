@@ -1101,6 +1101,15 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   				          addOutput(yytext); 
   					}
+<Comment>^{B}*([\-:|]{B}*)*("--"|"---")({B}*[\-:|])*{B}*/\n { // horizontal line (dashed)
+  				          addOutput(yytext); 
+                                        }
+<Comment>"---"                          { // mdash
+                                          addOutput("&mdash;");
+                                        }
+<Comment>"--"                           { // ndash
+                                          addOutput("&ndash;");
+                                        }
 <Comment>("."+)[a-z_A-Z0-9\)]		{ // . at start or in the middle of a word, or ellipsis
   					  addOutput(yytext);
   					}

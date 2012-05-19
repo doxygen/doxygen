@@ -115,12 +115,25 @@ static const char svgZoomFooter[] =
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
 "        </g>\n"
+/*
 "        <svg viewBox=\"0 0 25 25\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\"> \n"
 "          <g id=\"printButton\" transform=\"scale(0.4 0.4)\" onmousedown=\"handlePrint(evt)\">\n"
 "            <rect height=\"23.33753581\" id=\"paper\" rx=\"2\" style=\"fill:#f2f5e9;fill-rule:evenodd;stroke:#111111;stroke-width:3.224;stroke-linejoin:round;\" transform=\"matrix(1.000000,0.000000,-0.339266,0.940691,0.000000,0.000000)\" width=\"25.55231285\" x=\"26.69387353\" y=\"7.36162977\"/>\n"
 "            <rect height=\"26.272097\" id=\"body\" rx=\"2\" style=\"fill:#404040;fill-rule:evenodd;stroke:#111111;stroke-width:3.125;stroke-linejoin:round;\" width=\"50\" x=\"4.5295201\" y=\"27.078951\"/>\n"
 "            <rect height=\"8.27750969\" id=\"tray\" style=\"fill:#d2d5c9;fill-rule:evenodd;stroke:#111111;stroke-width:3.125;stroke-linecap:round;stroke-linejoin:round;\" width=\"40\" x=\"10.28778839\" y=\"44.96812282\"/>\n"
 "          </g>\n"
+"        </svg>\n"
+*/
+"        <svg viewBox=\"0 0 15 15\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\">\n"
+"         <g id=\"arrow_out\" transform=\"scale(0.3 0.3)\">\n"
+"          <a xlink:href=\"$orgname\" target=\"_base\">\n"
+"           <rect id=\"button\" ry=\"5\" rx=\"5\" y=\"6\" x=\"6\" height=\"38\" width=\"38\"\n"
+"                fill=\"#f2f5e9\" fill-opacity=\"0.5\" stroke=\"#606060\" stroke-width=\"1.0\"/>\n"
+"           <path id=\"arrow\"\n"
+"             d=\"M 11.500037,31.436501 C 11.940474,20.09759 22.043105,11.32322 32.158766,21.979434 L 37.068811,17.246167 C 37.068811,17.246167 37.088388,32 37.088388,32 L 22.160133,31.978069 C 22.160133,31.978069 26.997745,27.140456 26.997745,27.140456 C 18.528582,18.264221 13.291696,25.230495 11.500037,31.436501 z\"\n"
+"             style=\"fill:#404040;\"/>\n"
+"          </a>\n"
+"         </g>\n"
 "        </svg>\n"
 "</svg>\n"
 ;
@@ -585,9 +598,9 @@ static bool writeSVGFigureLink(FTextStream &out,const QCString &relPath,
   if (width==-1)
   {
     if (height<=60) 
-      height=60;
+      height=300;
     else 
-      height+=40; // add some extra space for zooming
+      height+=300; // add some extra space for zooming
     if (height>600) height=600; // clip to maximum height of 600 pixels
     out << "<div class=\"zoom\">";
     //out << "<object type=\"image/svg+xml\" data=\"" 
@@ -1065,11 +1078,42 @@ bool DotFilePatcher::run()
     }
     lineNr++;
   }
+  fi.close();
   if (isSVGFile && interactiveSVG && replacedHeader)
   {
-    t << svgZoomFooter;
+    QCString orgName=m_patchFile.left(m_patchFile.length()-4)+"_org.svg";
+    t << substitute(svgZoomFooter,"$orgname",orgName);
+    fo.close();
+    // keep original SVG file so we can refer to it, we do need to replace
+    // dummy link by real ones
+    QFile fi(tmpName);
+    QFile fo(orgName);
+    if (!fi.open(IO_ReadOnly)) 
+    {
+      err("error: problem opening file %s for reading!\n",tmpName.data());
+      return FALSE;
+    }
+    if (!fo.open(IO_WriteOnly))
+    {
+      err("error: problem opening file %s for writing!\n",orgName.data());
+      return FALSE;
+    }
+    FTextStream t(&fo);
+    while (!fi.atEnd()) // foreach line
+    {
+      QCString line(maxLineLen);
+      int numBytes = fi.readLine(line.data(),maxLineLen);
+      if (numBytes<=0)
+      {
+        break;
+      }
+      Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
+      t << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
+    }
+    fi.close();
+    fo.close();
   }
-  fi.close();
+  // remove temporary file
   QDir::current().remove(tmpName);
   return TRUE;
 }
@@ -1484,8 +1528,8 @@ void DotNode::setDistance(int distance)
 static QCString convertLabel(const QCString &l)
 {
   QCString result;
-  QCString bBefore("\\_/<({[: =-+@%#~?$");
-  QCString bAfter(">]),;|");
+  QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
+  QCString bAfter(">]),;|");               // break after  character set
   const char *p=l.data();
   if (p==0) return result;
   char c;
@@ -1520,7 +1564,7 @@ static QCString convertLabel(const QCString &l)
     }
     else if (charsLeft>foldLen/3 && sinceLast>foldLen && bBefore.contains(c))
     {
-      result+="\\n";
+      result+="\\l";
       result+=replacement;
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=1;
@@ -1529,14 +1573,14 @@ static QCString convertLabel(const QCString &l)
             !isupper(c) && isupper(*p))
     {
       result+=replacement;
-      result+="\\n";
+      result+="\\l";
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
     else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c))
     {
       result+=replacement;
-      result+="\\n";
+      result+="\\l";
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
@@ -1595,7 +1639,7 @@ static void writeBoxMemberList(FTextStream &t,
         static int limit = Config_getInt("UML_LIMIT_NUM_FIELDS");
         if (limit>0 && (totalCount>limit*3/2 && count>=limit))
         {
-          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count));
+          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << "\\l";
           break;
         }
         else
@@ -2781,10 +2825,11 @@ DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
 
 bool DotClassGraph::isTrivial() const
 {
+  static bool umlLook = Config_getBool("UML_LOOK");
   if (m_graphType==DotNode::Inheritance)
     return m_startNode->m_children==0 && m_startNode->m_parents==0;
   else
-    return m_startNode->m_children==0;
+    return !umlLook && m_startNode->m_children==0;
 }
 
 bool DotClassGraph::isTooBig() const

@@ -211,7 +211,7 @@ void FormulaList::generateBitmaps(const char *path)
           err("error: ghostscript produced an illegal image format!");
         else
         {
-          // assume the size if after the first line that does not start with
+          // assume the size is after the first line that does not start with
           // # excluding the first line of the file.
           while (!t.eof() && (s=t.readLine().utf8()) && !s.isEmpty() && s.at(0)=='#') { }
           sscanf(s,"%d %d",&imageX,&imageY);

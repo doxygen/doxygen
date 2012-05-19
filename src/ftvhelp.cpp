@@ -582,7 +582,8 @@ struct FTVNode
     : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), index(0),
       parent(0), separateIndex(sepIndex), addToNavIndex(navIndex),
       def(df) { children.setAutoDelete(TRUE); }
-  int computeTreeDepth(int level);
+  int computeTreeDepth(int level) const;
+  int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
   bool isDir;
   QCString ref;
@@ -597,7 +598,7 @@ struct FTVNode
   Definition *def;
 };
 
-int FTVNode::computeTreeDepth(int level)
+int FTVNode::computeTreeDepth(int level) const
 {
   int maxDepth=level;
   QListIterator<FTVNode> li(children);
@@ -611,6 +612,22 @@ int FTVNode::computeTreeDepth(int level)
     }
   }
   return maxDepth;
+}
+
+int FTVNode::numNodesAtLevel(int level,int maxLevel) const
+{
+  int num=0;
+  if (level<maxLevel)
+  {
+    num++; // this node
+    QListIterator<FTVNode> li(children);
+    FTVNode *n;
+    for (;(n=li.current());++li)
+    {
+      num+=n->numNodesAtLevel(level+1,maxLevel);
+    }
+  }
+  return num;
 }
 
 //----------------------------------------------------------------------------
@@ -753,11 +770,11 @@ QCString FTVHelp::generateIndentLabel(FTVNode *n,int level)
   return result;
 }
 
-void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
+void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level, bool opened)
 {
   if (n->parent)
   {
-    generateIndent(t,n->parent,level+1);
+    generateIndent(t,n->parent,level+1,opened);
   }
   // from the root up to node n do...
   if (level==0) // item before a dir or document
@@ -767,8 +784,12 @@ void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
       if (n->isDir)
       {
         t << "<img id=\"arr_" << generateIndentLabel(n,0) 
-          << "\" " << FTV_IMGATTRIBS(mlastnode) 
-          << "onclick=\"toggleFolder('" 
+          << "\" ";
+        if (opened)
+          t << FTV_IMGATTRIBS(mlastnode);
+        else 
+          t << FTV_IMGATTRIBS(plastnode);
+        t << "onclick=\"toggleFolder('" 
           << generateIndentLabel(n,0) 
           << "')\"/>";
       }
@@ -782,8 +803,12 @@ void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
       if (n->isDir)
       {
         t << "<img id=\"arr_" << generateIndentLabel(n,0)
-          << "\" " << FTV_IMGATTRIBS(mnode) 
-          << "onclick=\"toggleFolder('" 
+          << "\" ";
+        if (opened)
+          t << FTV_IMGATTRIBS(mnode);
+        else
+          t << FTV_IMGATTRIBS(pnode);
+        t << "onclick=\"toggleFolder('" 
           << generateIndentLabel(n,0)
           << "')\"/>";
       }
@@ -856,25 +881,31 @@ static void generateBriefDoc(FTextStream &t,Definition *def)
   }
 }
 
-void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,int &index)
+void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,int maxLevel,int &index)
 {
-  //QCString spaces;
-  //spaces.fill(' ',level*2+8);
   QListIterator<FTVNode> nli(nl);
   FTVNode *n;
   for (nli.toFirst();(n=nli.current());++nli)
   {
-    //t << spaces << "<p>";
     t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
-    if ((index&1)==0) t << " class=\"even\"";
+    if ((index&1)==0) // even row
+      t << " class=\"even\"";
+    if (level>=maxLevel) // item invisible by default
+      t << " style=\"display:none;\"";
+    else // item visible by default
+      index++;
     t << "><td class=\"entry\">";
-    index++;
-    generateIndent(t,n,0);
+    bool nodeOpened = level+1<maxLevel;
+    generateIndent(t,n,0,nodeOpened);
     if (n->isDir)
     {
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {
-        //t << FTV_IMGATTRIBS(mo);
+        // no icon
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypePage)
+      {
+        // no icon
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
@@ -892,14 +923,17 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       {
         t << "<img ";
         t << "id=\"img_" << generateIndentLabel(n,0) 
-          << "\" " << FTV_IMGATTRIBS(folderopen) << "onclick=\"toggleFolder('"
+          << "\" ";
+        if (nodeOpened)
+          t << FTV_IMGATTRIBS(folderopen);
+        else
+          t << FTV_IMGATTRIBS(folderclosed);
+        t << "onclick=\"toggleFolder('"
           << generateIndentLabel(n,0)
           << "')\"";
         t << "/>";
       }
       generateLink(t,n);
-      //t << "</p>\n";
-      //t << spaces << "<div id=\"folder" << folderId << "\">\n";
       t << "</td><td class=\"desc\">";
       if (n->def)
       {
@@ -907,10 +941,9 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       t << "</td></tr>" << endl;
       folderId++;
-      generateTree(t,n->children,level+1,index);
-      //t << spaces << "</div>\n";
+      generateTree(t,n->children,level+1,maxLevel,index);
     }
-    else
+    else // leaf node
     {
       FileDef *srcRef=0;
       if (n->def && n->def->definitionType()==Definition::TypeFile &&
@@ -926,9 +959,11 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
       {
-        //t << "<img ";
-        //t << FTV_IMGATTRIBS(mo);
-        //t << "/>";
+        // no icon
+      }
+      else if (n->def && n->def->definitionType()==Definition::TypePage)
+      {
+        // no icon
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
@@ -948,7 +983,6 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
         t << FTV_IMGATTRIBS(doc);
         t << "/>";
       }
-      //t << "</p>\n";
       if (srcRef)
       {
         t << "</a>";
@@ -966,14 +1000,35 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
 
 //-----------------------------------------------------------
 
-static void writePathToNode(FTextStream &tidx,FTVNode *leaf,FTVNode *n)
+struct NavIndexEntry
 {
+  NavIndexEntry(const QCString &u,const QCString &p) : url(u), path(p) {}
+  QCString url;
+  QCString path;
+};
+
+class NavIndexEntryList : public QList<NavIndexEntry> 
+{
+  public:
+    NavIndexEntryList() : QList<NavIndexEntry>() { setAutoDelete(TRUE); }
+   ~NavIndexEntryList() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      // sort list based on url
+      return qstrcmp(((NavIndexEntry*)item1)->url,((NavIndexEntry*)item2)->url);
+    }
+};
+
+static QCString pathToNode(FTVNode *leaf,FTVNode *n)
+{
+  QCString result;
   if (n->parent)
   {
-    writePathToNode(tidx,leaf,n->parent);
+    result+=pathToNode(leaf,n->parent);
   }
-  tidx << n->index;
-  if (leaf!=n) tidx << ",";
+  result+=QCString().setNum(n->index);
+  if (leaf!=n) result+=",";
+  return result;
 }
 
 static bool dupOfParent(const FTVNode *n)
@@ -991,7 +1046,6 @@ static void generateJSLink(FTextStream &t,FTVNode *n)
   }
   else // link into other page
   {
-    // TODO: use m_topLevelIndex
     t << "\"" << convertToJSString(n->name) << "\", \"";
     t << externalRef("",n->ref,TRUE);
     t << node2URL(n);
@@ -999,7 +1053,8 @@ static void generateJSLink(FTextStream &t,FTVNode *n)
   }
 }
 
-static bool generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNode> &nl,int level,bool &first)
+static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t, 
+                           const QList<FTVNode> &nl,int level,bool &first)
 {
   QCString indentStr;
   indentStr.fill(' ',level*2);
@@ -1019,11 +1074,9 @@ static bool generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNode
     }
     found=TRUE;
 
-    if (n->addToNavIndex)
+    if (n->addToNavIndex) // add entry to the navigation index
     {
-      tidx << "," << endl << "\"" << node2URL(n) << "\":[";
-      writePathToNode(tidx,n,n);
-      tidx << "]";
+      navIndex.append(new NavIndexEntry(node2URL(n),pathToNode(n,n)));
     }
 
     if (n->separateIndex) // store items in a separate file for dynamic loading
@@ -1043,12 +1096,11 @@ static bool generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNode
           int i=fileId.findRev('/');
           if (i>=0) varId = varId.mid(i+1);
           tt << "var " << varId << " =" << endl;
-          generateJSTree(tidx,tt,n->children,1,firstChild);
+          generateJSTree(navIndex,tt,n->children,1,firstChild);
           tt << endl << "];"; 
         }
         // write file name without extension as marker
         t << "\"" << fileId << "\" ]";
-        //if (n->file!="hierarchy") addFilesToIndex(tidx,n);
       }
       else // no children
       {
@@ -1060,7 +1112,7 @@ static bool generateJSTree(FTextStream &tidx,FTextStream &t, const QList<FTVNode
       bool firstChild=TRUE;
       t << indentStr << "  [ ";
       generateJSLink(t,n);
-      bool emptySection = !generateJSTree(tidx,t,n->children,level+1,firstChild);
+      bool emptySection = !generateJSTree(navIndex,t,n->children,level+1,firstChild);
       if (emptySection)
         t << "null ]";
       else
@@ -1074,12 +1126,12 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
 {
   QCString htmlOutput = Config_getString("HTML_OUTPUT");
   QFile f(htmlOutput+"/navtree.js");
-  QFile fidx(htmlOutput+"/navtreeindex.js");
-  if (f.open(IO_WriteOnly) && fidx.open(IO_WriteOnly))
+  NavIndexEntryList navIndex;
+  if (f.open(IO_WriteOnly) /*&& fidx.open(IO_WriteOnly)*/)
   {
-    FTextStream tidx(&fidx);
-    tidx << "var NAVTREEINDEX =" << endl;
-    tidx << "{" << endl;
+    //FTextStream tidx(&fidx);
+    //tidx << "var NAVTREEINDEX =" << endl;
+    //tidx << "{" << endl;
     FTextStream t(&f);
     t << "var NAVTREE =" << endl;
     t << "[" << endl;
@@ -1103,10 +1155,13 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     }
     t << "\"index" << Doxygen::htmlFileExtension << "\", ";
 
-    tidx << "\"index" << Doxygen::htmlFileExtension << "\":[]";
+    // add special entry for index page
+    navIndex.append(new NavIndexEntry("index"+Doxygen::htmlFileExtension,""));
+    // related page index is written as a child of index.html, so add this as well
+    navIndex.append(new NavIndexEntry("pages"+Doxygen::htmlFileExtension,""));
 
     bool first=TRUE;
-    generateJSTree(tidx,t,nodeList,1,first);
+    generateJSTree(navIndex,t,nodeList,1,first);
 
     if (first) 
       t << "]" << endl;
@@ -1114,8 +1169,52 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       t << endl << "  ] ]" << endl;
     t << "];" << endl;
     t << endl << navtree_script;
+  }
 
-    tidx << endl << "};" << endl;
+  // write the navigation index (and sub-indices)
+  navIndex.sort();
+  int subIndex=0;
+  int elemCount=0;
+  const int maxElemCount=250;
+  QFile fidx(htmlOutput+"/navtreeindex.js");
+  QFile fsidx(htmlOutput+"/navtreeindex0.js");
+  if (fidx.open(IO_WriteOnly) && fsidx.open(IO_WriteOnly))
+  {
+    FTextStream tidx(&fidx);
+    FTextStream tsidx(&fsidx);
+    tidx << "var NAVTREEINDEX =" << endl;
+    tidx << "[" << endl;
+    tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
+    tsidx << "{" << endl;
+    QListIterator<NavIndexEntry> li(navIndex);
+    NavIndexEntry *e;
+    for (li.toFirst();(e=li.current());) // for each entry
+    {
+      if (elemCount==0)
+      {
+        tidx << "\"" << e->url << "\"," << endl;
+      }
+      tsidx << "\"" << e->url << "\":[" << e->path << "]";
+      ++li;
+      if (li.current()) tsidx << ","; // not last entry
+      tsidx << endl;
+
+      elemCount++;
+      if (li.current() && elemCount>=maxElemCount) // switch to new sub-index
+      {
+        tsidx << "};" << endl;
+        elemCount=0;
+        fsidx.close();
+        subIndex++;
+        fsidx.setName(htmlOutput+"/navtreeindex"+QCString().setNum(subIndex)+".js");
+        if (!fsidx.open(IO_WriteOnly)) break;
+        tsidx.setDevice(&fsidx);
+        tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
+        tsidx << "{" << endl;
+      }
+    }
+    tsidx << "};" << endl;
+    tidx << "];" << endl;
   }
 }
 
@@ -1159,9 +1258,8 @@ void FTVHelp::generateTreeViewScripts()
 // write tree inside page
 void FTVHelp::generateTreeViewInline(FTextStream &t)
 {
-  //generateScript(t);
+  int preferredNumEntries = Config_getInt("HTML_INDEX_NUM_ENTRIES");
   t << "<div class=\"directory\">\n";
-
   QListIterator<FTVNode> li(m_indentNodes[0]);
   FTVNode *n;
   int d=1, depth=1;
@@ -1173,6 +1271,8 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
       if (d>depth) depth=d;
     }
   }
+  int preferredDepth = depth;
+  // write level selector
   if (depth>1)
   {
     t << "<div class=\"levels\">[";
@@ -1184,18 +1284,38 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
       t << "<span onclick=\"javascript:toggleLevel(" << i << ");\">" << i << "</span>";
     }
     t << "]</div>";
+
+    if (preferredNumEntries>0)
+    {
+      preferredDepth=1;
+      for (int i=1;i<=depth;i++)
+      {
+        int num=0;
+        QListIterator<FTVNode> li(m_indentNodes[0]);
+        FTVNode *n;
+        for (;(n=li.current());++li)
+        {
+          num+=n->numNodesAtLevel(0,i);
+        }
+        if (num<=preferredNumEntries)
+        {
+          preferredDepth=i;
+        }
+        else
+        {
+          break;
+        }
+      }
+    }
   }
+  //printf("preferred depth=%d\n",preferredDepth);
 
-//  t << "      <br/>\n";
-//  t << "      <div style=\"display: block;\">\n";
   t << "<table class=\"directory\">\n";
-
   int index=0;
-  generateTree(t,m_indentNodes[0],0,index);
-
+  generateTree(t,m_indentNodes[0],0,preferredDepth,index);
   t << "</table>\n";
-//  t << "      </div>\n";
-  t << "</div>\n";
+
+  t << "</div><!-- directory -->\n";
 }
 
 // write old style index.html and tree.html

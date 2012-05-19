@@ -149,20 +149,55 @@ dl.el {
 	margin-left: -1cm;
 }
 
-.fragment {
-	font-family: monospace, fixed;
-	font-size: 105%;
+pre.fragment {
+        border: 1px solid #C4CFE5;
+        background-color: #FBFCFD;
+        padding: 4px 6px;
+        margin: 4px 8px 4px 2px;
+        overflow: auto;
+        word-wrap: break-word;
+        font-size:  9pt;
+        line-height: 125%;
+        font-family: monospace, fixed;
+        font-size: 105%;
 }
 
-pre.fragment {
-	border: 1px solid ##CC;
+div.fragment {
+        padding: 4px;
+        margin: 4px;
 	background-color: ##FC;
-	padding: 4px 6px;
-	margin: 4px 8px 4px 2px;
-	overflow: auto;
-	word-wrap: break-word;
-	font-size:  9pt;
-	line-height: 125%;
+	border: 1px solid ##CC;
+}
+
+div.line {
+	font-family: monospace, fixed;
+        font-size: 13px;
+	line-height: 1.0;
+	text-wrap: unrestricted;
+	white-space: -moz-pre-wrap; /* Moz */
+	white-space: -pre-wrap;     /* Opera 4-6 */
+	white-space: -o-pre-wrap;   /* Opera 7 */
+	white-space: pre-wrap;      /* CSS3  */
+	word-wrap: break-word;      /* IE 5.5+ */
+	text-indent: -53px;
+	padding-left: 53px;
+	padding-bottom: 0px;
+	margin: 0px;
+}
+
+span.lineno {
+	padding-right: 4px;
+	text-align: right;
+	border-right: 2px solid #0F0;
+	background-color: #E8E8E8;
+        white-space: pre;
+}
+span.lineno a {
+	background-color: #D8D8D8;
+}
+
+span.lineno a:hover {
+	background-color: #C8C8C8;
 }
 
 div.ah {
@@ -581,8 +616,8 @@ span.mlabels {
 
 span.mlabel {
         background-color: ##88;
-        border-top:1px solid ##55;
-        border-left:1px solid ##55;
+        border-top:1px solid ##70;
+        border-left:1px solid ##70;
         border-right:1px solid ##CC;
         border-bottom:1px solid ##CC;
 	text-shadow: none;
@@ -620,6 +655,10 @@ div.directory {
 .directory td.entry {
         white-space: nowrap;
         padding-right: 6px;
+}
+
+.directory td.entry a {
+        outline:none;
 }
 
 .directory td.desc {
@@ -1088,16 +1127,6 @@ tr.heading h2 {
     width:auto !important;
     overflow:inherit;
     display:inline;
-  }
-  pre.fragment
-  {
-    overflow: visible;
-    text-wrap: unrestricted;
-    white-space: -moz-pre-wrap; /* Moz */
-    white-space: -pre-wrap; /* Opera 4-6 */
-    white-space: -o-pre-wrap; /* Opera 7 */
-    white-space: pre-wrap; /* CSS3  */
-    word-wrap: break-word; /* IE 5.5+ */
   }
 }
 

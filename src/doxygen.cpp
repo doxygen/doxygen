@@ -253,11 +253,17 @@ static STLInfo g_stlinfo[] =
 {
   // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
   { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { "array",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE }, // C++11
   { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // deprecated
   { "smart_ptr",            0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "unique_ptr",           0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "weak_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE }, // C++11
   { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
+  { "error_code",           0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
+  { "error_category",       0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
+  { "system_error",         0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
+  { "error_condition",      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
+  { "thread",               0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }, // C++11
   { "basic_ios",            "ios_base",                     0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
   { "basic_istream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
   { "basic_ostream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
@@ -293,10 +299,15 @@ static STLInfo g_stlinfo[] =
   { "bitset",               0,                              0,                     "Bits",        0,             0,            0,             FALSE,              FALSE },
   { "deque",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
   { "list",                 0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
+  { "forward_list",         0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  }, // C++11
   { "map",                  0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
+  { "unordered_map",        0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
   { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
+  { "unordered_multimap",   0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  }, // C++11
   { "set",                  0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
+  { "unordered_set",        0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  }, // C++11
   { "multiset",             0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
+  { "unordered_multiset",   0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  }, // C++11
   { "vector",               0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
   { "queue",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
@@ -507,6 +518,7 @@ static void addRelatedPage(EntryNav *rootNav)
      );
   if (pd)
   {
+    pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     pd->addSectionsToDefinition(root->anchors);
     pd->setShowToc(root->stat);
     addPageToContext(pd,rootNav);
@@ -8231,6 +8243,7 @@ static void findMainPage(EntryNav *rootNav)
       Doxygen::mainPage = new PageDef(root->docFile,root->docLine,
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
+      Doxygen::mainPage->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       Doxygen::mainPage->setFileName(indexName);
       Doxygen::mainPage->setShowToc(root->stat);
       addPageToContext(Doxygen::mainPage,rootNav);
@@ -8428,6 +8441,7 @@ static void buildExampleList(EntryNav *rootNav)
     {
       PageDef *pd=new PageDef(root->fileName,root->startLine,
           root->name,root->brief+root->doc+root->inbodyDocs,root->args);
+      pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
       pd->setLanguage(root->lang);
