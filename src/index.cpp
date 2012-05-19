@@ -3144,7 +3144,7 @@ static void countRelatedPages(int &docPages,int &indexPages)
 
 static void writePages(PageDef *pd,FTVHelp *ftv)
 {
-  //printf("writePages()=%s\n",pd->title().data());
+  //printf("writePages()=%s pd=%p mainpage=%p\n",pd->name().data(),pd,Doxygen::mainPage);
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Pages);
   bool addToIndex = lne==0 || lne->visible();
   if (!addToIndex) return;
@@ -3169,7 +3169,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
           pd->getReference(),pd->getOutputFileBase(),
           0,hasSubPages,TRUE,pd); 
     }
-    if (addToIndex)
+    if (addToIndex && pd!=Doxygen::mainPage)
     {
       Doxygen::indexList.addContentsItem(
           hasSubPages,pageTitle,
@@ -3178,7 +3178,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
-  if (hasSections || hasSubPages)
+  if ((hasSections || hasSubPages) && pd!=Doxygen::mainPage)
   {
     Doxygen::indexList.incContentsDepth();
   }
@@ -3197,7 +3197,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     }
   }
   if (hasSubPages && ftv) ftv->decContentsDepth();
-  if (hasSections || hasSubPages)
+  if ((hasSections || hasSubPages) && pd!=Doxygen::mainPage)
   {
     Doxygen::indexList.decContentsDepth();
   }
@@ -3806,7 +3806,7 @@ static void writeIndex(OutputList &ol)
   
   if (Doxygen::mainPage)
   {
-    if (Doxygen::mainPage->hasSubPages() || 
+    if (/*Doxygen::mainPage->hasSubPages() || */
         (!Config_getString("PROJECT_NAME").isEmpty() && mainPageHasTitle())
        ) // to avoid duplicate entries in the treeview
     {
