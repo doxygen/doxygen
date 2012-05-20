@@ -891,9 +891,7 @@ this to NO can help when comparing the output of multiple runs.
     <option type='bool' id='HTML_DYNAMIC_SECTIONS' docs='
 If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML 
 documentation will contain sections that can be hidden and shown after the 
-page has loaded. For this to work a browser that supports 
-JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox 
-Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). 
+page has loaded. 
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='int' id='HTML_INDEX_NUM_ENTRIES' docs='
 With HTML_INDEX_NUM_ENTRIES one can control the preferred number of 

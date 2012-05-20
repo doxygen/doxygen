@@ -602,22 +602,26 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
       {
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
+        QCString reference;
+        QCString outputBase;
+        if (doc) 
+        {
+          reference  = fd->getReference();
+          outputBase = fd->getOutputFileBase();
+        }
         if (doc || src)
         {
           ol.startIndexListItem();
-          ol.startIndexItem(doc ? fd->getReference() : 0,
-                            doc ? fd->getOutputFileBase() : 0);
+          ol.startIndexItem(reference,outputBase);
           ol.parseText(fd->displayName());
-          ol.endIndexItem(doc ? fd->getReference() : 0,
-                          doc ? fd->getOutputFileBase() : 0);
+          ol.endIndexItem(reference,outputBase);
           ol.endIndexListItem();
           if (ftv)
           {
             ftv->addContentsItem(FALSE,
                 fd->displayName(),
-                doc ? fd->getReference() : 0,
-                doc ? fd->getOutputFileBase() : 0,0,
-                FALSE,FALSE,fd); 
+                reference,outputBase,
+                0,FALSE,FALSE,fd); 
           }
         }
         fd=fileList->next();
@@ -689,13 +693,17 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
       {
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
+        QCString reference,outputBase;
+        if (doc)
+        {
+          reference = fd->getReference();
+          outputBase = fd->getOutputFileBase();
+        }
         static bool fullPathNames = Config_getBool("FULL_PATH_NAMES");
         if ((!fullPathNames || fd->getDirDef()==0) && (doc || src))
         {
           ftv->addContentsItem(FALSE,fd->displayName(),
-              doc ? fd->getReference() : 0,
-              doc ? fd->getOutputFileBase() : 0, 
-              0,
+              reference, outputBase, 0,
               FALSE,FALSE,fd); 
           if (addToIndex)
           {

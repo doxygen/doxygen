@@ -167,6 +167,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_html_file_extension HTML_FILE_EXTENSION
 \refitem cfg_html_footer HTML_FOOTER
 \refitem cfg_html_header HTML_HEADER
+\refitem cfg_html_index_num_entries HTML_INDEX_NUM_ENTRIES
 \refitem cfg_html_output HTML_OUTPUT
 \refitem cfg_html_stylesheet HTML_STYLESHEET
 \refitem cfg_html_timestamp HTML_TIMESTAMP
@@ -1498,9 +1499,19 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  \addindex HTML_DYNAMIC_SECTIONS
  If the \c HTML_DYNAMIC_SECTIONS tag is set to \c YES then the generated HTML
  documentation will contain sections that can be hidden and shown after the
- page has loaded. For this to work a browser that supports
- JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox
- Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). 
+ page has loaded. 
+
+\anchor cfg_html_index_num_entries
+<dt>\c HTML_NUM_INDEX_ENTRIES <dd>
+ \addindex HTML_NUM_INDEX_ENTRIES
+ With HTML_INDEX_NUM_ENTRIES one can control the preferred number of 
+ entries shown in the various tree structured indices initially; the user 
+ can expand and collapse entries dynamically later on. Doxygen will expand 
+ the tree to such a level that at most the specified number of entries are 
+ visible (unless a fully collapsed tree already exceeds this amount). 
+ So setting the number of entries 1 will produce a full collapsed tree by 
+ default. 0 is a special value representing an infinite number of entries 
+ and will result in a full expanded tree by default.
 
 \anchor cfg_generate_docset
 <dt>\c GENERATE_DOCSET <dd>
