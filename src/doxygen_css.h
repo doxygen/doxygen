@@ -172,6 +172,7 @@
 "div.line {\n"
 "	font-family: monospace, fixed;\n"
 "        font-size: 13px;\n"
+"	min-height: 13px;\n"
 "	line-height: 1.0;\n"
 "	text-wrap: unrestricted;\n"
 "	white-space: -moz-pre-wrap; /* Moz */\n"
