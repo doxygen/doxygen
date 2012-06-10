@@ -21,11 +21,7 @@
 
 #include <qdict.h>
 
-struct CommandMap
-{
-  const char *cmdName;
-  int cmdId;
-};
+struct CommandMap;
 
 const int SIMPLESECT_BIT = 0x1000;
 
@@ -187,32 +183,18 @@ enum HtmlTagType
   XML_INHERITDOC   = XML_CmdMask + 22
 };
 
+/** Class representing a mapping from command names to command IDs. */
 class Mapper
 {
   public:
-    int map(const char *n)
-    {
-      QCString name=n;
-      if (!m_cs) name=name.lower();
-      int *result;
-      return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
-    }
-
-    Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
-    {
-      m_map.setAutoDelete(TRUE);
-      const CommandMap *p = cm;
-      while (p->cmdName)
-      {
-        m_map.insert(p->cmdName,new int(p->cmdId));
-        p++;
-      }
-    }
+    int map(const char *n);
+    Mapper(const CommandMap *cm,bool caseSensitive);
   private:
     QDict<int> m_map;
     bool m_cs;
 };
 
+/** Class representing a namespace for the doxygen and HTML command mappers. */
 struct Mappers
 {
   static void freeMappers();

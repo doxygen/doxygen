@@ -26,28 +26,12 @@
 #include "layout.h"
 #include "memberlist.h"
 
-class QStringList;
 class Entry;
-class ClassSDict;
-class FileStorage;
-class EntryNav;
 class ClassDef;
 class MemberDef;
 struct Argument;
 
-// wrapper class for the vhdl parser
-class MyParserVhdl 
-{
-  public:
-  uint iFileSize; 
-
-  ~MyParserVhdl(){}
-  MyParserVhdl(){}
-  
- int parse(MyParserVhdl*);
- int doLex();
- }; 
-
+/** Class for generating documentation specific for VHDL */
 class VhdlDocGen  
 {
   public:
@@ -275,6 +259,9 @@ class VhdlDocGen
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
+
+    static void writeOverview(OutputList &ol);
+    static void writeOverview();
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);

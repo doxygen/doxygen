@@ -22,6 +22,7 @@
 
 class QFile;
 
+/** Generator for Man page output. */
 class ManGenerator : public OutputGenerator
 {
   public:
@@ -160,7 +161,7 @@ class ManGenerator : public OutputGenerator
     void endSmall()           {}
     void startMemberDescription(const char *,const char *) { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
-    void writeInheritedSectionTitle(const char *,const char *,
+    void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes);
     void endDescList()        {}
@@ -184,6 +185,7 @@ class ManGenerator : public OutputGenerator
     void startQuickIndices() {}
     void endQuickIndices() {}
     void writeSplitBar(const char *) {}
+    void writeNavigationPath(const char *) {}
     void writeLogo() {}
     void writeQuickLinks(bool,HighlightedItem,const char *) {}
     void startContents() {}

@@ -34,7 +34,7 @@ class Definition;
 struct FTVNode;
 class FTextStream;
 
-/*! A class that generates a dynamic tree view side panel.
+/** A class that generates a dynamic tree view side panel.
  */
 class FTVHelp : public IndexIntf
 {

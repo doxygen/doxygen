@@ -22,6 +22,7 @@
 
 class QFile;
 
+/** Generator for RTF output. */
 class RTFGenerator : public OutputGenerator
 {
   public:
@@ -156,7 +157,7 @@ class RTFGenerator : public OutputGenerator
 
     void startMemberDescription(const char *,const char *);
     void endMemberDescription();
-    void writeInheritedSectionTitle(const char *,const char *,
+    void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes);
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
@@ -179,6 +180,7 @@ class RTFGenerator : public OutputGenerator
     void startQuickIndices() {}
     void endQuickIndices() {}
     void writeSplitBar(const char *) {}
+    void writeNavigationPath(const char *) {}
     void writeLogo() {}
     void writeQuickLinks(bool,HighlightedItem,const char *) {}
     void startContents() {}

@@ -22,6 +22,7 @@
 #include "memberdef.h"
 #include "sortdict.h"
 
+/** Class representing all MemberDef objects with the same name */
 class MemberName : public QList<MemberDef>
 { 
   public:
@@ -34,12 +35,14 @@ class MemberName : public QList<MemberDef>
     QCString name;
 };
 
+/** Iterator for MemberDef objects in a MemberName list. */
 class MemberNameIterator : public QListIterator<MemberDef>
 {
   public:
     MemberNameIterator( const MemberName &list);
 };
 
+/** Sorted dictionary of MemberName objects. */
 class MemberNameSDict : public SDict<MemberName>
 {
   public:
@@ -49,6 +52,7 @@ class MemberNameSDict : public SDict<MemberName>
    int compareItems(GCI item1,GCI item2);
 };
 
+/** Data associated with a MemberDef in an inheritance relation. */
 struct MemberInfo
 {
   MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
@@ -63,6 +67,7 @@ struct MemberInfo
   ClassDef  *ambigClass;
 };
 
+/** Class representing all MemberInfo objects with the same name */
 class MemberNameInfo : public QList<MemberInfo>
 {
   public:
@@ -74,6 +79,7 @@ class MemberNameInfo : public QList<MemberInfo>
     QCString name;
 };
 
+/** Iterator for MemberInfo objects in a MemberNameInfo list. */
 class MemberNameInfoIterator : public QListIterator<MemberInfo>
 {
   public:
@@ -81,7 +87,7 @@ class MemberNameInfoIterator : public QListIterator<MemberInfo>
       : QListIterator<MemberInfo>(mnii) {}
 };
 
-
+/** Sorted dictionary of MemberNameInfo objects. */
 class MemberNameInfoSDict : public SDict<MemberNameInfo>
 {
   public:

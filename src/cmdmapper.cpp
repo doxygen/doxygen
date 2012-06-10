@@ -18,6 +18,13 @@
 
 #include "cmdmapper.h"
 
+/** Call representing a mapping from a command name to a command ID. */
+struct CommandMap
+{
+  const char *cmdName;
+  int cmdId;
+};
+
 CommandMap cmdMap[] =
 {
   { "a",             CMD_EMPHASIS },
@@ -197,6 +204,25 @@ CommandMap htmlTagMap[] =
 
 Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,TRUE);
 Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,FALSE);
+
+int Mapper::map(const char *n)
+{
+  QCString name=n;
+  if (!m_cs) name=name.lower();
+  int *result;
+  return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
+}
+
+Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
+{
+  m_map.setAutoDelete(TRUE);
+  const CommandMap *p = cm;
+  while (p->cmdName)
+  {
+    m_map.insert(p->cmdName,new int(p->cmdId));
+    p++;
+  }
+}
 
 void Mappers::freeMappers()
 {

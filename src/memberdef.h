@@ -40,12 +40,7 @@ class QTextStream;
 class ArgumentList;
 class MemberDefImpl;
 
-struct SourceReference
-{
-  FileDef *fd;
-  QCString anchor;
-};
-
+/** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition
 {
   public:
@@ -157,6 +152,8 @@ class MemberDef : public Definition
     bool isCopy() const;
     bool isAssign() const;
     bool isRetain() const;
+    bool isWeak() const;
+    bool isStrong() const;
     bool isNew() const;
     bool isSealed() const;
     bool isImplementation() const;
@@ -238,7 +235,7 @@ class MemberDef : public Definition
 
     ClassDef *category() const;
 
-    QCString displayName() const { return Definition::name(); }
+    QCString displayName(bool=TRUE) const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----

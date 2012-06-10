@@ -850,6 +850,9 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
 
 const int MAX_STACK_SIZE = 1000;
 
+/** Helper class representing the stack of items considered while resolving
+ *  the scope.
+ */
 class AccessStack
 {
   public:
@@ -907,6 +910,7 @@ class AccessStack
     }
 
   private:
+    /** Element in the stack. */
     struct AccessElem
     {
       Definition *scope;
@@ -4665,6 +4669,7 @@ QCString substituteClassNames(const QCString &s)
 
 //----------------------------------------------------------------------
 
+/** Cache element for the file name to FileDef mapping cache. */
 struct FindFileCacheElem
 {
   FindFileCacheElem(FileDef *fd,bool ambig) : fileDef(fd), isAmbig(ambig) {}
@@ -5122,6 +5127,10 @@ done:
   }
   //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
   //       className.data(),namespaceName.data());
+  if (className.right(2)=="-g" || className.right(2)=="-p")
+  {
+    className = className.left(className.length()-2);
+  }
   return;
 }
 

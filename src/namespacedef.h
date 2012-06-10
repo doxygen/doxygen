@@ -34,6 +34,7 @@ class NamespaceList;
 class MemberGroupSDict;
 class NamespaceSDict;
 
+/** A model of a namespace symbol. */
 class NamespaceDef : public Definition
 {
   public:
@@ -61,7 +62,7 @@ class NamespaceDef : public Definition
     void addUsingDeclaration(Definition *def);
     SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();
-    QCString displayName() const;
+    QCString displayName(bool=TRUE) const;
     QCString localName() const;
     
     bool isLinkableInProject() const;
@@ -123,6 +124,7 @@ class NamespaceDef : public Definition
     bool                  m_subGrouping;
 };
 
+/** A list of NamespaceDef objects. */
 class NamespaceList : public QList<NamespaceDef>
 { 
   public:
@@ -135,6 +137,7 @@ class NamespaceList : public QList<NamespaceDef>
     }
 };
 
+/** An iterator for NamespaceDef objects in a NamespaceList. */
 class NamespaceListIterator : public QListIterator<NamespaceDef>
 {
   public:
@@ -142,6 +145,7 @@ class NamespaceListIterator : public QListIterator<NamespaceDef>
       QListIterator<NamespaceDef>(l) {}
 };
 
+/** An unsorted dictionary of NamespaceDef objects. */
 class NamespaceDict : public QDict<NamespaceDef>
 {
   public:
@@ -149,6 +153,7 @@ class NamespaceDict : public QDict<NamespaceDef>
    ~NamespaceDict() {}
 };
 
+/** A sorted dictionary of NamespaceDef objects. */
 class NamespaceSDict : public SDict<NamespaceDef>
 {
   public:

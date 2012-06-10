@@ -36,6 +36,7 @@ class Definition;
 class StorageIntf;
 struct ListItemInfo;
 
+/** A class representing a group of members. */
 class MemberGroup 
 {
   public:
@@ -106,10 +107,12 @@ class MemberGroup
     QList<ListItemInfo> *m_xrefListItems;
 };
 
+/** A list of MemberGroup objects. */
 class MemberGroupList : public QList<MemberGroup>
 {
 };
 
+/** An iterator for MemberGroup objects in a MemberGroupList. */
 class MemberGroupListIterator : public QListIterator<MemberGroup>
 {
   public:
@@ -117,6 +120,7 @@ class MemberGroupListIterator : public QListIterator<MemberGroup>
       QListIterator<MemberGroup>(l) {}
 };
 
+/** A sorted dictionary of MemberGroup objects. */
 class MemberGroupSDict : public SIntDict<MemberGroup>
 {
   public:
@@ -128,7 +132,7 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
     }
 };
 
-
+/** Data collected for a member group */
 struct MemberGroupInfo
 {
   MemberGroupInfo() : m_sli(0) {}
@@ -140,20 +144,5 @@ struct MemberGroupInfo
   QCString compoundName;
   QList<ListItemInfo> *m_sli;
 };
-
-//class MemberGroupDict : public QIntDict<MemberGroup>
-//{
-//  public:
-//    MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
-//   ~MemberGroupDict() {}
-//};
-
-//class MemberGroupDictIterator : public QIntDictIterator<MemberGroup>
-//{
-//  public:
-//    MemberGroupDictIterator(const MemberGroupDict &d) : 
-//      QIntDictIterator<MemberGroup>(d) {}
-//   ~MemberGroupDictIterator() {}
-//};
 
 #endif

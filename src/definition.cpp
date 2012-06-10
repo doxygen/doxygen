@@ -44,6 +44,8 @@
 
 //-----------------------------------------------------------------------------------------
 
+
+/** Private data associated with a Definition object. */
 class DefinitionImpl
 {
   public:
@@ -669,6 +671,7 @@ static bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
+  static int tabSize = Config_getInt("TAB_SIZE");
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
   QCString filter = getFileFilter(fileName,TRUE);
@@ -717,7 +720,7 @@ static bool readCodeFragment(const char *fileName,
           }
           else if (c=='\t') 
           {
-            col+=Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
+            col+=tabSize - (col%tabSize);
           }
           else if (pc=='/' && c=='/') // skip single line comment
           {
@@ -1448,12 +1451,12 @@ QCString Definition::navigationPathAsString() const
   {
     if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
     {
-      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               ((const GroupDef*)this)->groupTitle()+"</a>";
     }
     else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
     {
-      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               ((const PageDef*)this)->title()+"</a>";
     }
     else if (definitionType()==Definition::TypeClass)
@@ -1463,13 +1466,13 @@ QCString Definition::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension;
+      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension;
       if (!anchor().isEmpty()) result+="#"+anchor();
       result+="\">"+name+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\""+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               m_impl->localName+"</a>";
     }
   }
@@ -1486,11 +1489,13 @@ void Definition::writeNavigationPath(OutputList &ol) const
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  ol.writeString("<div id=\"nav-path\" class=\"navpath\">\n");
-  ol.writeString("  <ul>\n");
-  ol.writeString(navigationPathAsString());
-  ol.writeString("  </ul>\n");
-  ol.writeString("</div>\n");
+  QCString navPath;
+  navPath += "<div id=\"nav-path\" class=\"navpath\">\n"
+             "  <ul>\n";
+  navPath += navigationPathAsString();
+  navPath += "  </ul>\n"
+             "</div>\n";
+  ol.writeNavigationPath(navPath);
 
   ol.popGeneratorState();
 }

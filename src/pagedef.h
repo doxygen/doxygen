@@ -21,6 +21,7 @@
 class PageSDict;
 class OutputList;
 
+/** @brief A model of a page symbol. */
 class PageDef : public Definition
 {
   public:
@@ -57,7 +58,7 @@ class PageDef : public Definition
     bool showToc() const { return m_showToc; }
     void setPageScope(Definition *d){ m_pageScope = d; }
     Definition *getPageScope() const { return m_pageScope; }
-    QCString displayName() const { return !m_title.isEmpty() ? m_title : Definition::name(); }
+    QCString displayName(bool=TRUE) const { return !m_title.isEmpty() ? m_title : Definition::name(); }
 
     void writeDocumentation(OutputList &ol);
 

@@ -107,12 +107,13 @@ static void replaceCommentMarker(const char *s,int len)
   }
   if (blanks>0)
   {
-    while (blanks>1)
+    while (blanks>2)
     {
       ADDCHAR(' ');
       blanks--;
     }
-    ADDCHAR('*');
+    if (blanks>1) ADDCHAR('*');
+    ADDCHAR(' ');
   }
   // copy comment line to output
   ADDARRAY(p,len-(p-s));

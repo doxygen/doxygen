@@ -235,7 +235,7 @@ static void findMember(EntryNav *rootNav,
                        bool isFunc
                       );
 
-
+/** A struct contained the data for an STL class */
 struct STLInfo
 {
   const char *className;
@@ -821,6 +821,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       if (!iName.isEmpty()) // user specified include file
       {
         if (iName.at(0)=='<') local=FALSE; // explicit override
+        else if (iName.at(0)=='"') local=TRUE;
         if (iName.at(0)=='"' || iName.at(0)=='<')
         {
           iName=iName.mid(1,iName.length()-2); // strip quotes or brackets
@@ -2356,12 +2357,16 @@ static MemberDef *addVariableToFile(
          )
         // variable already in the scope
       {
+        bool isPHPArray = md->getLanguage()==SrcLangExt_PHP &&
+                          md->argsString()!=root->args && 
+                          root->args.find('[')!=-1;
+        bool staticsInDifferentFiles = 
+                          root->stat && md->isStatic() && 
+                          root->fileName!=md->getDefFileName();
+
         if (md->getFileDef() &&
-            ! // not a php array
-             (
-               (md->getLanguage()==SrcLangExt_PHP) &&
-               (md->argsString()!=root->args && root->args.find('[')!=-1)
-             )
+            !isPHPArray && // not a php array
+            !staticsInDifferentFiles
            ) 
           // not a php array variable
         {
@@ -2835,7 +2840,7 @@ static void buildTypedefList(EntryNav *rootNav)
 
 static void buildVarList(EntryNav *rootNav)
 {
-  //printf("buildVarList(%s)\n",rootNav->name().data());
+  //printf("buildVarList(%s) section=%08x\n",rootNav->name().data(),rootNav->section());
   int isFuncPtr=-1;
   if (!rootNav->name().isEmpty() &&
       (rootNav->type().isEmpty() || g_compoundKeywordDict.find(rootNav->type())==0) &&
@@ -2877,11 +2882,18 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   Entry *root = rootNav->entry();
   FileDef *fd=rootNav->fileDef();
 
-  int l,i=-1;
+  int l;
   static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
+  int ts=root->type.find('<');
+  int te=root->type.findRev('>');
+  int i=re.match(root->type,0,&l);
+  if (i!=-1 && ts!=-1 && ts<te && ts<i && i<te) // avoid changing A<int(int*)>, see bug 677315
+  {
+    i=-1;
+  }
 
   if (cd->getLanguage()==SrcLangExt_Cpp && // only C has pointers
-      !root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1) // function variable
+      !root->type.isEmpty() && i!=-1) // function variable
   {
     root->args+=root->type.right(root->type.length()-i-l);
     root->type=root->type.left(i+l);
@@ -3113,12 +3125,17 @@ static void buildFunctionList(EntryNav *rootNav)
       }
 
       static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
+      int ts=root->type.find('<');
+      int te=root->type.findRev('>');
+      int ti;
       if (!rootNav->parent()->name().isEmpty() &&
           (rootNav->parent()->section() & Entry::COMPOUND_MASK) && 
           cd &&
           // do some fuzzy things to exclude function pointers 
           (root->type.isEmpty() || 
-           (root->type.find(re,0)==-1 || root->args.find(")[")!=-1) ||     // type contains ..(..* and args not )[.. -> function pointer
+           ((ti=root->type.find(re,0))==-1 ||      // type does not contain ..(..* 
+            (ts!=-1 && ts<te && ts<ti && ti<te) || // outside of < ... >
+           root->args.find(")[")!=-1) ||           // and args not )[.. -> function pointer
            root->type.find(")(")!=-1 || root->type.find("operator")!=-1 || // type contains ..)(.. and not "operator"
            cd->getLanguage()!=SrcLangExt_Cpp                               // language other than C
           )
@@ -3181,11 +3198,16 @@ static void buildFunctionList(EntryNav *rootNav)
                 sameNumTemplateArgs = FALSE;
               }
             }
+
+            bool staticsInDifferentFiles = 
+                    root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
+
             if (
                 matchArguments2(md->getOuterScope(),mfd,mdAl.pointer(),
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
                                 FALSE) &&
-                sameNumTemplateArgs
+                sameNumTemplateArgs && 
+                !staticsInDifferentFiles
                )
             {
               GroupDef *gd=0;
@@ -5231,7 +5253,6 @@ static bool findGlobalMember(EntryNav *rootNav,
           }
         }
 
-
         //printf("%s<->%s\n",
         //    argListToString(md->argumentList()).data(),
         //    argListToString(root->argList).data());
@@ -5255,7 +5276,7 @@ static bool findGlobalMember(EntryNav *rootNav,
         }
       }
     } 
-    if (!found && root->relatesType != Duplicate) // no match
+    if (!found && root->relatesType != Duplicate && root->section==Entry::FUNCTION_SEC) // no match
     {
       QCString fullFuncDecl=decl;
       if (root->argList) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -5263,12 +5284,13 @@ static bool findGlobalMember(EntryNav *rootNav,
          QCString("warning: no matching file member found for \n")+substitute(fullFuncDecl,"%","%%");
       if (mn->count()>0)
       {
-        warnMsg+="Possible candidates:\n";
+        warnMsg+="\nPossible candidates:\n";
         for (mni.toFirst();(md=mni.current());++mni)
         {
-          warnMsg+="  ";
+          warnMsg+=" '";
           warnMsg+=substitute(md->declaration(),"%","%%");
-          warnMsg+='\n';
+          warnMsg+="' at line "+QCString().setNum(md->getDefLine())+
+                   " of file"+md->getDefFileName()+"\n";
         }
       }
       warn(root->fileName,root->startLine,warnMsg);
@@ -6003,7 +6025,7 @@ static void findMember(EntryNav *rootNav,
                   LockingPtr<ArgumentList> templAl = md->templateArguments();
                   if (templAl!=0)
                   {
-                    warnMsg+="  template ";
+                    warnMsg+="  'template ";
                     warnMsg+=tempArgListToString(templAl.pointer());
                     warnMsg+='\n';
                   }
@@ -6020,9 +6042,8 @@ static void findMember(EntryNav *rootNav,
                     warnMsg+=md->argsString();
                   if (noMatchCount>1) 
                   {
-                    QCString lineFile;
-                    lineFile.sprintf(" at line %d of file ",md->getDefLine());
-                    warnMsg+=lineFile+md->getDefFileName();
+                    warnMsg+="' at line "+QCString().setNum(md->getDefLine()) +
+                             " of file "+md->getDefFileName();
                   }
 
                   warnMsg+='\n';
@@ -8785,20 +8806,6 @@ static void copyExtraFiles()
 //! parse the list of input files
 static void parseFiles(Entry *root,EntryNav *rootNav)
 {
-#if 0
-  void *cd = 0;
-  QCString inpEncoding = Config_getString("INPUT_ENCODING");
-  bool needsTranscoding = !inpEncoding.isEmpty();
-  if (needsTranscoding)
-  {
-    if (!(cd = portable_iconv_open("UTF-8", inpEncoding)))
-    {
-       err("error: unsupported character enconding: '%s'",inpEncoding.data());
-       exit(1);
-    }
-  }
-#endif
-
   QCString *s=g_inputFiles.first();
   while (s)
   {
@@ -10293,18 +10300,6 @@ void parseInput()
    *             Parse source files                                         * 
    **************************************************************************/
 
-  //printNavTree(rootNav,0);
-
-  // we are done with input scanning now, so free up the buffers used by flex
-  // (can be around 4MB)
-  preFreeScanner();
-  scanFreeScanner();
-  pyscanFreeScanner();
-
-  //delete rootNav;
-  //g_storage.close();
-  //exit(1);
-
   if (Config_getBool("BUILTIN_STL_SUPPORT"))
   {
     addSTLClasses(rootNav);
@@ -10312,6 +10307,13 @@ void parseInput()
 
   parseFiles(root,rootNav);
   g_storage->close();
+
+  // we are done with input scanning now, so free up the buffers used by flex
+  // (can be around 4MB)
+  preFreeScanner();
+  scanFreeScanner();
+  pyscanFreeScanner();
+
   if (!g_storage->open(IO_ReadOnly))
   {
     err("Failed to open temporary storage file %s for reading",
@@ -10530,6 +10532,13 @@ void parseInput()
 
   msg("Adding members to index pages...\n");
   addMembersToIndex();
+
+  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
+      Config_getBool("HAVE_DOT") &&
+      Config_getEnum("DOT_IMAGE_FORMAT")=="svg")
+  {
+    VhdlDocGen::writeOverview();
+  }
 }
 
 void generateOutput()

@@ -825,6 +825,8 @@
       <xsd:enumeration value="retain"/>
       <xsd:enumeration value="copy"/>
       <xsd:enumeration value="assign"/>
+      <xsd:enumeration value="weak"/>
+      <xsd:enumeration value="strong"/>
     </xsd:restriction>
   </xsd:simpleType>
 

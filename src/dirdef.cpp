@@ -887,79 +887,7 @@ void computeDirDependencies()
     dir->computeDependencies();
   }
 
-#if 0
-  printf("-------------------------------------------------------------\n");
-  // print dependencies (for debugging)
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
-  {
-    if (dir->usedDirs())
-    {
-      QDictIterator<UsedDir> udi(*dir->usedDirs());
-      UsedDir *usedDir;
-      for (udi.toFirst();(usedDir=udi.current());++udi)
-      {
-        printf("%s depends on %s due to ",
-            dir->shortName().data(),usedDir->dir()->shortName().data());
-        QDictIterator<FileDef> fdi(usedDir->files());
-        FileDef *fd;
-        for (fdi.toFirst();(fd=fdi.current());++fdi)
-        {
-          printf("%s ",fd->name().data());
-        }
-        printf("\n");
-      }
-    }
-  }
-  printf("^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^\n");
-#endif
 }
-
-#if 0
-void writeDirDependencyGraph(const char *dirName)
-{
-  QString path;
-  DirDef *dir;
-  DirSDict::Iterator sdi(*Doxygen::directories);
-  QFile htmlPage(QCString(dirName)+"/dirdeps.html");
-  if (htmlPage.open(IO_WriteOnly))
-  {
-    QTextStream out(&htmlPage);
-    out << "<html><body>";
-    for (sdi.toFirst();(dir=sdi.current());++sdi)
-    {
-      path=dirName;
-      path+="/";
-      path+=dir->getOutputFileBase();
-      path+="_dep.dot";
-      out << "<h4>" << dir->displayName() << "</h4>" << endl;
-      out << "<img src=\"" << dir->getOutputFileBase() << "_dep.gif\">" << endl;
-      QFile f(path);
-      if (f.open(IO_WriteOnly))
-      {
-        QTextStream t(&f);
-        dir->writeDepGraph(t);
-      }
-      f.close();
-
-      QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-      QCString outFile = QCString(dirName)+"/"+
-                         dir->getOutputFileBase()+"_dep."+imgExt; 
-      DotRunner dotRun(path);
-      dotRun.addJob(imgExt,outFile);
-      dotRun.run();
-      
-      //QCString dotArgs(4096);
-      //dotArgs.sprintf("%s -Tgif -o %s",path.data(),outFile.data());
-      //if (portable_system(Config_getString("DOT_PATH")+"dot",dotArgs,FALSE)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //}
-    }
-    out << "</body></html>";
-  }
-  htmlPage.close();
-}
-#endif
 
 void generateDirDocs(OutputList &ol)
 {

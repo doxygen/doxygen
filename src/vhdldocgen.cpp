@@ -46,7 +46,7 @@
 #include "vhdlscanner.h"
 #include "layout.h"
 #include "arguments.h"
-
+#include "portable.h"
 
 #define theTranslator_vhdlType VhdlDocGen::trVhdlType
 
@@ -58,30 +58,450 @@ static QDict<QCString> g_xilinxUcfDict(17,FALSE);
 
 static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
-static void assignConfiguration(ConfNode* ,QCString);
-static void assignBinding(ConfNode* conf,QCString label);
+static void assignConfiguration(VhdlConfNode* ,QCString);
+static void assignBinding(VhdlConfNode* conf,QCString label);
 static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,Entry *cur,ClassDef* archBind=NULL);
 
-#if 0
-static ConfNode* findConfiguration(QCString config)
-{
-  QList<ConfNode> confList= getVhdlConfiguration();
-  uint size=confList.count();
-  if (size==0) return NULL;
+//---------- create svg ------------------------------------------------------------- 
+static void createSVG();
+static void startDot(FTextStream &t);
+static void startTable(FTextStream &t,const QCString &className);
+static QList<MemberDef>* getPorts(ClassDef *cd);
+static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd);
+static void endDot(FTextStream &t);
+static void writeTable(QList<MemberDef>* port,FTextStream & t);
+static void endTabel(FTextStream &t);
+static void writeClassToDot(FTextStream &t,ClassDef* cd);
+static void writeVhdlDotLink(FTextStream &t,const QCString &a,const QCString &b,const QCString &style);
+static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd);
 
-  for (uint i=0;i<size;i++)
-  {
-    ConfNode* conf= (ConfNode *)confList.at(i);
-    QCString entity=VhdlDocGen::getIndexWord(conf->confVhdl.data(),1);
-    if (entity==config)
+
+
+
+
+//--------------------------------------------------------------------------------------------------
+static void codify(FTextStream &t,const char *str)
+{
+
+  if (str)
+  { 
+    const char *p=str;
+    char c;
+      while (*p)
     {
-      return conf;
+      c=*p++;
+      switch(c)
+      {
+        case '<':  t << "&lt;"; 
+                   break;
+        case '>':  t << "&gt;"; 
+                   break;
+        case '&':  t << "&amp;"; 
+                   break;
+        case '\'': t << "&#39;";
+                   break;
+        case '"':  t << "&quot;"; 
+                   break;
+        default:   t << c;                  
+                   break;
+      }
+    }
+  }
+}
+
+static void createSVG()
+{
+    QCString ov =Config_getString("HTML_OUTPUT");
+    QCString dir="-o "+ov+"/vhdl_design_overview.html";
+    ov+="/vhdl_design.dot ";
+
+    QRegExp ep("[\\s]");
+    QCString vlargs="-Tsvg "+ov+dir ;
+
+    if (portable_system("dot",vlargs)!=0)
+    {
+      err("could not create dot file");
+    }
+}
+
+// Creates a svg image. All in/out/inout  ports are shown with  brief description and direction.
+// Brief descriptions for entities are shown too.
+void VhdlDocGen::writeOverview()
+{
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd;
+  bool found=false;
+  for ( ; (cd=cli.current()) ; ++cli )
+  {
+    if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS )
+    {
+      found=true;
+      break;
     }
   }
 
-  return NULL;
+  if (!found) return;
+
+  QCString ov =Config_getString("HTML_OUTPUT");
+  QCString fileName=ov+"/vhdl_design.dot";
+  QFile f(fileName);
+  QStringList qli;
+  FTextStream  t(&f);
+
+  if (!f.open(IO_WriteOnly))
+  {
+    fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    return;
+  }
+
+  startDot(t);
+
+  for (cli.toFirst() ; (cd=cli.current()) ; ++cli )
+  {
+    if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS )
+    {
+      continue;
+    }
+
+    QList<MemberDef>* port= getPorts(cd);
+    if (port==0) 
+    {
+      continue;
+    }
+    if (port->count()==0)
+    {
+      delete port;
+      port=NULL;
+      continue;
+    }
+
+    startTable(t,cd->name());
+    writeClassToDot(t,cd);
+    writeTable(port,t);
+    endTabel(t);
+
+    writeVhdlPortToolTip(t,port,cd);
+    writeVhdlEntityToolTip(t,cd);
+    delete port;
+
+    BaseClassList *bl=cd->baseClasses();
+    if (bl)
+    {
+      BaseClassListIterator bcli(*bl);
+      BaseClassDef *bcd;
+      for ( ; (bcd=bcli.current()) ; ++bcli )
+      {
+        ClassDef *bClass=bcd->classDef; 
+        QCString dotn=cd->name()+":";
+        dotn+=cd->name();
+        QCString csc=bClass->name()+":";
+        csc+=bClass->name();
+        //  fprintf(stderr,"\n <%s| %s>",dotn.data(),csc.data());
+        writeVhdlDotLink(t,dotn,csc,0);
+      }
+    }// if bl
+  }// for
+
+  endDot(t);
+  //  writePortLinks(t);
+  f.close();
+  createSVG();
 }
-#endif
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+static void startDot(FTextStream &t)
+{
+  t << " digraph G { \n"; 
+  t << "rankdir=LR \n";
+  t << "concentrate=true\n";
+  t << "stylesheet=\"doxygen.css\"\n";
+}
+
+static void endDot(FTextStream &t)
+{
+  t <<" } \n"; 
+}
+
+static void startTable(FTextStream &t,const QCString &className)
+{
+  t << className <<" [ shape=none , fontname=\"arial\",  fontcolor=\"blue\" , \n"; 
+  t << "label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n";
+}
+
+static void writeVhdlDotLink(FTextStream &t,
+    const QCString &a,const QCString &b,const QCString &style)
+{
+  t << a << "->" << b;
+  if (!style.isEmpty())
+  {
+    t << "[style=" << style << "];\n";
+  }
+  t << "\n";
+}
+
+
+static QCString formatBriefNote(const QCString &brief,ClassDef * cd)
+{
+  QRegExp ep("[\n]");
+  QCString vForm;  
+  QCString repl("<BR ALIGN=\"LEFT\"/>");
+  QCString file=cd->getDefFileName();
+
+  int k=cd->briefLine();
+
+  QStringList qsl=QStringList::split(ep,brief);
+  for(uint j=0;j<qsl.count();j++)
+  {
+    QCString qcs=qsl[j].data();
+    vForm+=parseCommentAsText(cd,NULL,qcs,file,k);
+    k++;
+    vForm+='\n';
+  }
+
+  vForm.replace(ep,repl.data());
+  return vForm;
+}
+
+
+static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd)
+{
+
+  uint len=port->count();
+  MemberDef *md;
+  return; //????
+
+  for (uint j=0;j<len;j++)
+  {
+    md=(MemberDef*)port->at(j);
+    QCString brief=md->briefDescriptionAsTooltip();
+    if (brief.isEmpty()) continue;
+
+    QCString node="node";
+    node+=VhdlDocGen::getRecordNumber();
+    t << node <<"[shape=box margin=0.1, label=<\n";
+    t<<"<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"2\" >\n ";
+    t<<"<TR><TD BGCOLOR=\"lightcyan\"> ";
+    t<<brief;
+    t<<" </TD></TR></TABLE>>];";
+    QCString dotn=cd->name()+":";
+    dotn+=md->name();
+    //  writeVhdlDotLink(t,dotn,node,"dotted");
+  }
+}
+
+
+static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd)
+{
+
+  QCString brief=cd->briefDescription();
+
+  if (brief.isEmpty()) return;  
+
+  brief=formatBriefNote(brief,cd);
+
+  QCString node="node";
+  node+=VhdlDocGen::getRecordNumber();
+  t << node <<"[shape=none margin=0.1, label=<\n";
+  t << "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"2\" >\n ";
+  t << "<TR><TD BGCOLOR=\"lightcyan\"> ";
+  t << brief;
+  t << " </TD></TR></TABLE>>];";
+  QCString dotn=cd->name()+":";
+  dotn+=cd->name();
+  writeVhdlDotLink(t,dotn,node,"dotted");
+}
+
+static void writeColumn(FTextStream &t,MemberDef *md,bool start)
+{
+  QCString toolTip;
+
+  static QRegExp reg("[%]");
+  bool bidir=(md!=0 &&( stricmp(md->typeString(),"inout")==0));
+
+  if (md)
+  {
+    toolTip=md->briefDescriptionAsTooltip();
+    if (!toolTip.isEmpty())
+    {
+      QCString largs = md->argsString();
+      if (!largs.isEmpty())
+        largs=largs.replace(reg," ");
+      toolTip+=" [";
+      toolTip+=largs;
+      toolTip+="]";	 
+    }
+  }
+  if (start) 
+  {
+    t <<"<TR>\n";
+  }
+
+  t << "<TD ALIGN=\"LEFT\" ";
+  if (md)
+  {
+    t << "href=\"";
+    t << md->getOutputFileBase()<< Doxygen::htmlFileExtension;
+    t << "#" << md->anchor();
+    t<<"\" ";
+
+    t<<" TOOLTIP=\"";
+    if(!toolTip.isEmpty())
+      codify(t,toolTip.data());
+    else{
+      QCString largs = md->argsString();
+      if(!largs.isEmpty()){ 
+        largs=largs.replace(reg," ");
+        codify(t,largs.data());
+      }
+    }
+    t << "\" ";
+
+    t << " PORT=\"";
+    t << md->name();
+    t << "\" ";
+  }
+  if (!toolTip.isEmpty())
+  {
+    // if (!toolTip.isEmpty()) 
+
+    if (bidir)
+      t << "BGCOLOR=\"orange\">";
+    else
+      t << "BGCOLOR=\"azure\">";
+  }
+  else if (bidir)
+  {
+    t << "BGCOLOR=\"pink\">";
+  }
+  else
+  {
+    t << "BGCOLOR=\"lightgrey\">";
+  }
+  if (md)
+  {
+    t << md->name();
+  }
+  else
+  {
+    t << " \n";
+  }
+  t << "</TD>\n";
+
+  if (!start)
+  {
+    t << "</TR>\n";
+  }
+}
+
+static void endTabel(FTextStream &t)
+{
+  t << "</TABLE>>\n";
+  t << "] \n"; 
+}
+
+static void writeClassToDot(FTextStream &t,ClassDef* cd)
+{
+  t << "<TR><TD COLSPAN=\"2\" BGCOLOR=\"yellow\" ";
+  t << "PORT=\"";
+  t << cd->name();
+  t << "\" ";
+  t << "href=\"";
+  t << cd->getOutputFileBase() << Doxygen::htmlFileExtension;
+  t << "\" ";
+  t << ">";
+  t << cd->name();
+  t << " </TD></TR>\n"; 
+}
+
+static QList<MemberDef>* getPorts(ClassDef *cd)
+{
+  MemberDef* md;
+  QList<MemberDef> *portList=new QList<MemberDef>;
+  MemberList *ml=cd->getMemberList(MemberList::variableMembers);
+
+  if (ml==0) return NULL;
+
+  MemberListIterator fmni(*ml);
+
+  for (fmni.toFirst();(md=fmni.current());++fmni)
+  {
+    if (md->getMemberSpecifiers()==VhdlDocGen::PORT)
+    {
+      portList->append(md);
+    }
+  } 
+
+  return portList;
+}
+
+//writeColumn(FTextStream &t,QCString name,bool start)
+
+static void writeTable(QList<MemberDef>* port,FTextStream & t)
+{
+  QCString space(" ");
+  MemberDef *md;
+  uint len=port->count();
+
+  QList<MemberDef> inPorts;
+  QList<MemberDef> outPorts;
+
+  uint j;
+  for (j=0;j<len;j++)
+  {
+    md=(MemberDef*)port->at(j);
+    QCString qc=md->typeString();
+    if(qc=="in")
+    {
+      inPorts.append(md);
+    }
+    else
+    {
+      outPorts.append(md);
+    }
+  }
+
+  int inp  = inPorts.count();
+  int outp = outPorts.count();
+  int maxLen;
+
+  if (inp>=outp) 
+  {
+    maxLen=inp;
+  }
+  else
+  {
+    maxLen=outp;
+  }
+
+  int i;
+  for(i=0;i<maxLen;i++)
+  {
+    //write inports
+    if (i<inp)
+    {
+      md=(MemberDef*)inPorts.at(i);
+      writeColumn(t,md,true);
+    }
+    else
+    {
+      writeColumn(t,NULL,true);
+    }
+
+    if (i<outp)
+    {
+      md=(MemberDef*)outPorts.at(i);
+      writeColumn(t,md,false);
+    }
+    else
+    {
+      writeColumn(t,NULL,false);
+    }
+  }	
+}
+
+//--------------------------------------------------------------------------------------------------
+
 
 VhdlDocGen::VhdlDocGen()
 {
@@ -1643,12 +2063,12 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::LIBRARY:
       writeLink(mdef,ol);
       ol.insertMemberAlign();
-     if (largs=="context")
-     {
-	VhdlDocGen::writeRecorUnit(ltype,ol,mdef);
-     }
+      if (largs=="context")
+      {
+        VhdlDocGen::writeRecorUnit(ltype,ol,mdef);
+      }
 
-     break;
+      break;
 
     case VhdlDocGen::GENERIC:
     case VhdlDocGen::PORT:
@@ -2216,7 +2636,7 @@ void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
     ol.insertMemberAlign();
     QCString q=qsl[j].utf8();
     VhdlDocGen::writeFormatString(q,ol,mdef);
-    ol.docify("\n");
+    ol.lineBreak();
   }
   ol.endCodeFragment();
 
@@ -2407,6 +2827,15 @@ bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
   // LayoutNavEntry *kks = kk->parent();//   find(LayoutNavEntry::Files);
   QCString file;
   QCString co("Constraints");
+
+  if (Config_getBool("HAVE_DOT") && Config_getEnum("DOT_IMAGE_FORMAT")=="svg")
+  {
+     QCString ov("Design Overview"); // TODO: translate me
+     QCString ofile("vhdl_design_overview");
+     LayoutNavEntry *oo=new LayoutNavEntry( lne,LayoutNavEntry::MainPage,true,ofile,ov,"");  
+     kk->addChild(oo); 
+  }
+
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -2512,7 +2941,7 @@ ClassDef*  VhdlDocGen::findArchitecture(QCString identifier, QCString entity_nam
 //@param isInlineConf
 //@param confN List of configurations
 
-void assignBinding(ConfNode * conf,QCString label)
+void assignBinding(VhdlConfNode * conf,QCString label)
 {
   QList<Entry> instList= getVhdlInstList();
   QListIterator<Entry> eli(instList);
@@ -2592,7 +3021,7 @@ void assignBinding(ConfNode * conf,QCString label)
 }//assignBinding
 
 
-void assignConfiguration(ConfNode* rootNode,QCString label)
+void assignConfiguration(VhdlConfNode* rootNode,QCString label)
 {
   if (rootNode==NULL) return;
   uint iter;
@@ -2609,7 +3038,7 @@ void assignConfiguration(ConfNode* rootNode,QCString label)
 
   for(iter=0;iter<rootNode->confN.count();iter++)
   {
-    ConfNode* conf= (ConfNode *)rootNode->confN.at(iter);
+    VhdlConfNode* conf= (VhdlConfNode *)rootNode->confN.at(iter);
     assignConfiguration(conf,label);
   }
 }
@@ -2632,10 +3061,10 @@ void VhdlDocGen::computeVhdlComponentRelations()
 
   QCString entity,inst,arch,vhd;
 
-  QList<ConfNode> confList =  getVhdlConfiguration();
+  QList<VhdlConfNode> confList =  getVhdlConfiguration();
   for (uint iter=0;iter<confList.count(); iter++)
   {
-    ConfNode* conf= (ConfNode *)confList.at(iter);
+    VhdlConfNode* conf= (VhdlConfNode *)confList.at(iter);
     assignConfiguration(conf,"");
   }
 

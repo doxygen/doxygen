@@ -40,6 +40,7 @@ class MemberGroupSDict;
 class PackageDef;
 class DirDef;
 
+/** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
   IncludeInfo() { fileDef=0; local=FALSE; indirect=FALSE; }
@@ -51,16 +52,14 @@ struct IncludeInfo
   bool indirect;
 };
 
-/*! \class FileDef filedef.h
-    \brief A File definition.
-    
-    An object of this class contains all file information that is gathered.
-    This includes the members and compounds defined in the file.
-    
-    The member writeDocumentation() can be used to generate the page of
-    documentation to HTML and LaTeX.
-*/
-
+/** A model of a file symbol. 
+ *   
+ *  An object of this class contains all file information that is gathered.
+ *  This includes the members and compounds defined in the file.
+ *   
+ *  The member writeDocumentation() can be used to generate the page of
+ *  documentation to HTML and LaTeX.
+ */
 class FileDef : public Definition
 {
   friend class FileName;
@@ -80,7 +79,7 @@ class FileDef : public Definition
       else 
         return Definition::name(); 
     } 
-    QCString displayName() const { return name(); }
+    QCString displayName(bool=TRUE) const { return name(); }
     QCString fileName() const { return filename; }
     
     QCString getOutputFileBase() const 
@@ -221,8 +220,6 @@ class FileDef : public Definition
     QIntDict<Definition> *srcDefDict;
     QIntDict<MemberDef>  *srcMemberDict;
     bool                  isSource;
-    //bool                  m_isJava;
-    //bool                  m_isCSharp;
     QCString              fileVersion;
     PackageDef           *package;
     DirDef               *dir;
@@ -233,7 +230,7 @@ class FileDef : public Definition
     bool                  m_subGrouping;
 };
 
-
+/** Class representing a list of FileDef objects. */
 class FileList : public QList<FileDef>
 {
   public:
@@ -273,6 +270,7 @@ class OutputNameDict : public QDict<FileList>
 
 class Directory;
 
+/** Class representing an entry (file or sub directory) in a directory */
 class DirEntry
 {
   public:
@@ -303,6 +301,7 @@ class DirEntry
     bool m_isLast;
 };
 
+/** Class representing a directory tree of DirEntry objects. */
 class Directory : public DirEntry
 {
   public:
@@ -319,7 +318,6 @@ class Directory : public DirEntry
     QList<DirEntry> m_children;
 };
 
-//void generateFileTree(QTextStream &t);
 void generateFileTree();
 
 #endif

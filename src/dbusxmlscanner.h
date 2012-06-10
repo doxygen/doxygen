@@ -20,7 +20,7 @@
 
 #include "parserintf.h"
 
-/** \brief D-Bus XML parser.
+/** D-Bus XML parser.
  *
  *  This is the D-Bus XML parser for doxygen.
  */

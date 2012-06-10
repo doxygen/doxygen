@@ -24,7 +24,7 @@
 #include <qlist.h>
 #include "sortdict.h"
 
-/*! This struct represents an item in the list of references. */
+/** This struct represents an item in the list of references. */
 struct RefItem
 {
   RefItem() /*: written(FALSE)*/ {}
@@ -39,7 +39,7 @@ struct RefItem
   QList<RefItem> extraItems; //!< more items belonging to the same entity
 };
 
-/*! List of items sorted by title */
+/** List of items sorted by title */
 class SortedRefItems : public SDict<RefItem>
 {
   public:
@@ -53,7 +53,7 @@ class SortedRefItems : public SDict<RefItem>
     }
 };
 
-/*! @brief List of cross-referenced items 
+/** List of cross-referenced items 
  * 
  *  This class represents a list of items that are put
  *  at a certain point in the documentation by some special command 

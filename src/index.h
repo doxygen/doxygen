@@ -107,10 +107,16 @@ class IndexList : public IndexIntf
 
   public:
     /** Creates a list of indexes */
-    IndexList() { m_intfs.setAutoDelete(TRUE); }
+    IndexList() { m_intfs.setAutoDelete(TRUE); m_enabled=TRUE; }
     /** Add an index generator to the list */
     void addIndex(IndexIntf *intf) 
     { m_intfs.append(intf); }
+    void disable()
+    { m_enabled = FALSE; }
+    void enable()
+    { m_enabled = TRUE; }
+    bool isEnabled() const
+    { return m_enabled; }
 
     // IndexIntf implementation
     void initialize() 
@@ -118,24 +124,26 @@ class IndexList : public IndexIntf
     void finalize() 
     { foreach(&IndexIntf::finalize); }
     void incContentsDepth()
-    { foreach(&IndexIntf::incContentsDepth); }
+    { if (m_enabled) foreach(&IndexIntf::incContentsDepth); }
     void decContentsDepth()
-    { foreach(&IndexIntf::decContentsDepth); }
+    { if (m_enabled) foreach(&IndexIntf::decContentsDepth); }
     void addContentsItem(bool isDir, const char *name, const char *ref, 
                          const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          Definition *def=0)
-    { foreach<bool,const char *,const char *,const char *,const char*,bool,bool,Definition *>
+    { if (m_enabled) foreach<bool,const char *,const char *,const char *,const char*,bool,bool,Definition *>
              (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
     void addIndexItem(Definition *context,MemberDef *md,const char *title=0)
-    { foreach<Definition *,MemberDef *>
+    { if (m_enabled) foreach<Definition *,MemberDef *>
              (&IndexIntf::addIndexItem,context,md,title); }
     void addIndexFile(const char *name) 
-    { foreach<const char *>(&IndexIntf::addIndexFile,name); }
+    { if (m_enabled) foreach<const char *>(&IndexIntf::addIndexFile,name); }
     void addImageFile(const char *name) 
-    { foreach<const char *>(&IndexIntf::addImageFile,name); }
+    { if (m_enabled) foreach<const char *>(&IndexIntf::addImageFile,name); }
     void addStyleSheetFile(const char *name) 
-    { foreach<const char *>(&IndexIntf::addStyleSheetFile,name); }
+    { if (m_enabled) foreach<const char *>(&IndexIntf::addStyleSheetFile,name); }
 
+  private:
+    bool m_enabled;
 };
 
 

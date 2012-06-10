@@ -27,8 +27,7 @@
 #include "ftextstream.h"
 
 
-/*! \brief Abstract base class for any configuration option.
- *
+/** Abstract base class for any configuration option.
  */
 class ConfigOption
 {
@@ -92,8 +91,7 @@ class ConfigOption
     OptionType m_kind;
 };
 
-/*! \brief Section marker for grouping the configuration options
- *
+/** Section marker for grouping the configuration options.
  */
 class ConfigInfo : public ConfigOption
 {
@@ -117,8 +115,7 @@ class ConfigInfo : public ConfigOption
     void substEnvVars() {}
 };
 
-/*! \brief Option of the list type.
- *
+/** Class respresenting a list type option.
  */
 class ConfigList : public ConfigOption
 {
@@ -155,8 +152,7 @@ class ConfigList : public ConfigOption
     WidgetType m_widgetType;
 };
 
-/*! \brief Option of the enum type.
- *
+/** Class representing an enum type option.
  */
 class ConfigEnum : public ConfigOption
 {
@@ -197,8 +193,7 @@ class ConfigEnum : public ConfigOption
     QCString m_defValue;
 };
 
-/*! \brief Option of the string type.
- *
+/** Class representing a string type option.
  */
 class ConfigString : public ConfigOption
 {
@@ -240,8 +235,7 @@ class ConfigString : public ConfigOption
     WidgetType m_widgetType;
 };
 
-/*! \brief Option of the integer type.
- *
+/** Class representing an integer type option.
  */
 class ConfigInt : public ConfigOption
 {
@@ -291,8 +285,7 @@ class ConfigInt : public ConfigOption
     QCString m_valueString;
 };
 
-/*! \brief Option of the boolean type.
- *
+/** Class representing a Boolean type option.
  */
 class ConfigBool : public ConfigOption
 {
@@ -337,8 +330,7 @@ class ConfigBool : public ConfigOption
     QCString m_valueString;
 };
 
-/*! \brief Section marker for obsolete options
- *
+/** Section marker for obsolete options
  */
 class ConfigObsolete : public ConfigOption
 {
@@ -358,7 +350,7 @@ class ConfigObsolete : public ConfigOption
 #define Config_getEnum(val)    Config::instance()->getEnum(__FILE__,__LINE__,val)
 #define Config_getBool(val)    Config::instance()->getBool(__FILE__,__LINE__,val)
 
-/*! \brief Singleton for configuration variables.
+/** Singleton for configuration variables.
  *
  *  This object holds the global static variables
  *  read from a user-supplied configuration file.

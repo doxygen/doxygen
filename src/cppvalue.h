@@ -22,11 +22,10 @@
 #include <stdio.h>
 #include <qglobal.h> 
 
+/** A class representing a C-preprocessor value. */
 class CPPValue
 {
   public:
-  
-  
     enum Type { Int, Float };
   
     CPPValue(long val=0) : type(Int) { v.l = val; }

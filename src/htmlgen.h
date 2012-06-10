@@ -29,6 +29,7 @@
 class QFile;
 class FTextStream;
 
+/** Generator for HTML output */
 class HtmlGenerator : public OutputGenerator
 {
   public:
@@ -137,8 +138,9 @@ class HtmlGenerator : public OutputGenerator
     void insertMemberAlign(bool);
     void startMemberDescription(const char *anchor,const char *inheritId);
     void endMemberDescription();
-    void writeInheritedSectionTitle(const char *id,const char *file,
-                      const char *anchor,const char *title,const char *name);
+    void writeInheritedSectionTitle(const char *id,   const char *ref,
+                                    const char *file, const char *anchor,
+                                    const char *title,const char *name);
 
     void writeRuler()    { t << "<hr/>"; }
     void writeAnchor(const char *,const char *name) 
@@ -200,6 +202,7 @@ class HtmlGenerator : public OutputGenerator
     void startQuickIndices() {}
     void endQuickIndices();
     void writeSplitBar(const char *name);
+    void writeNavigationPath(const char *s);
     void writeLogo();
     void writeQuickLinks(bool compact,HighlightedItem hli,const char *file);
     void startContents();

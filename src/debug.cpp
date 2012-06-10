@@ -25,6 +25,7 @@
 
 //------------------------------------------------------------------------
 
+/** Helper struct representing a mapping from debug label to a debug ID */
 struct LabelMap
 {
   const char *name;
@@ -49,6 +50,7 @@ static LabelMap s_labels[] =
   { 0,             (Debug::DebugMask)0  }
 };
 
+/** Class representing a mapping from debug labels to debug IDs. */
 class LabelMapper
 {
   public:

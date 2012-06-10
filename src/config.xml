@@ -541,7 +541,7 @@ is used as the file version. See the manual for examples.
     <option type='string' id='LAYOUT_FILE' format='file' docs='
 The LAYOUT_FILE tag can be used to specify a layout file which will be parsed 
 by doxygen. The layout file controls the global structure of the generated 
-output files in an output format independent way. The create the layout file 
+output files in an output format independent way. To create the layout file 
 that represents doxygen&apos;s defaults, run doxygen with the -l option. 
 You can optionally specify a file name after the option, if omitted 
 DoxygenLayout.xml will be used as the name of the layout file. 
@@ -763,7 +763,7 @@ of functions and classes directly in the documentation.
     <option type='bool' id='STRIP_CODE_COMMENTS' docs='
 Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct 
 doxygen to hide any special comment blocks from generated source code 
-fragments. Normal C and C++ comments will always remain visible. 
+fragments. Normal C, C++ and Fortran comments will always remain visible. 
 ' defval='1'/>
     <option type='bool' id='REFERENCED_BY_RELATION' docs='
 If the REFERENCED_BY_RELATION tag is set to YES 

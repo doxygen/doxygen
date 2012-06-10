@@ -2722,6 +2722,11 @@ void HtmlGenerator::writeSplitBar(const char *name)
   t << writeSplitBarAsString(name,relPath);
 }
 
+void HtmlGenerator::writeNavigationPath(const char *s)
+{
+  t << substitute(s,"$relpath$",relPath);
+}
+
 void HtmlGenerator::startContents()
 {
   t << "<div class=\"contents\">" << endl;
@@ -3037,14 +3042,21 @@ void HtmlGenerator::endLabels()
   t << "</span>";
 }
 
-void HtmlGenerator::writeInheritedSectionTitle(const char *id,
-                  const char *file,const char *anchor,const char *title,
-                  const char *name)
+void HtmlGenerator::writeInheritedSectionTitle(
+                  const char *id,    const char *ref, 
+                  const char *file,  const char *anchor,
+                  const char *title, const char *name)
 {
   DBG_HTML(t << "<!-- writeInheritedSectionTitle -->" << endl;)
   QCString a = anchor;
   if (!a.isEmpty()) a.prepend("#");
-  QCString classLink = QCString("<a class=\"el\" href=\"")+correctURL(file,relPath)+Doxygen::htmlFileExtension+a+"\">"+name+"</a>";
+  QCString classLink = QCString("<a class=\"el\" href=\"");
+  if (ref)
+  {
+    classLink+= externalLinkTarget() + externalRef(relPath,ref,TRUE);
+  }
+  classLink+=file+Doxygen::htmlFileExtension+a;
+  classLink+=QCString("\">")+name+"</a>";
   t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
     << "<img src=\"" << relPath << "closed.png\" alt=\"-\"/>&nbsp;" 

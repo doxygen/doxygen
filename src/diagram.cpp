@@ -36,6 +36,108 @@
 
 //-----------------------------------------------------------------------------
 
+class DiagramItemList;
+
+/** Class representing a single node in the built-in class diagram */
+class DiagramItem 
+{
+  public:
+    DiagramItem(DiagramItem *p,int number,ClassDef *cd,
+                Protection prot,Specifier virt,const char *ts);
+   ~DiagramItem();
+    QCString label() const;
+    QCString fileName() const;
+    DiagramItem *parentItem() { return parent; } 
+    DiagramItemList *getChildren() { return children; }
+    void move(int dx,int dy) { x+=dx; y+=dy; }
+    int xPos() const { return x; }
+    int yPos() const { return y; }
+    int avgChildPos() const;
+    int numChildren() const;
+    void addChild(DiagramItem *di);
+    int number() const { return num; }
+    Protection protection() const { return prot; }
+    Specifier virtualness() const { return virt; }
+    void putInList() { inList=TRUE; }
+    bool isInList() const { return inList; } 
+    ClassDef *getClassDef() const { return classDef; }
+  private:
+    DiagramItemList *children;
+    DiagramItem *parent;
+    int x,y;
+    int num;
+    Protection prot;
+    Specifier virt;
+    QCString templSpec;
+    bool inList;
+    ClassDef *classDef;
+};
+
+/** Class representing a list of DiagramItem object. */
+class DiagramItemList : public QList<DiagramItem>
+{
+  public:
+    DiagramItemList() : QList<DiagramItem>() {}
+   ~DiagramItemList() {}
+};
+
+/** Class representing a row in the built-in class diagram */
+class DiagramRow : public QList<DiagramItem> 
+{
+  public:
+    DiagramRow(TreeDiagram *d,int l) : QList<DiagramItem>() 
+    { 
+      diagram=d; 
+      level=l;
+      setAutoDelete(TRUE); 
+    }
+    void insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
+                     Protection prot,Specifier virt,const char *ts);
+    uint number() { return level; }
+  private:
+    TreeDiagram *diagram;
+    uint level;
+};
+
+/** Class representing iterator for the rows in the built-in class diagram. */
+class DiagramRowIterator : public QListIterator<DiagramRow>
+{
+  public:
+    DiagramRowIterator(const QList<DiagramRow> &d) 
+      : QListIterator<DiagramRow>(d) {}
+};
+
+/** Class represeting the tree layout for the built-in class diagram. */
+class TreeDiagram : public QList<DiagramRow>
+{
+  public:
+    TreeDiagram(ClassDef *root,bool doBases);
+   ~TreeDiagram();
+    void computeLayout();
+    uint computeRows();
+    //uint computeCols();
+    void moveChildren(DiagramItem *root,int dx);
+    void computeExtremes(uint *labelWidth,uint *xpos);
+    void drawBoxes(FTextStream &t,Image *image,
+                   bool doBase,bool bitmap,
+                   uint baseRows,uint superRows,
+                   uint cellWidth,uint cellHeight,
+                   QCString relPath="",
+                   bool generateMap=TRUE);
+    void drawConnectors(FTextStream &t,Image *image,
+                   bool doBase,bool bitmap,
+                   uint baseRows,uint superRows,
+                   uint cellWidth,uint cellheight);
+  private:
+    bool layoutTree(DiagramItem *root,int row);
+    TreeDiagram &operator=(const TreeDiagram &);
+    TreeDiagram(const TreeDiagram &);
+};
+
+
+
+//-----------------------------------------------------------------------------
+
 const uint maxTreeWidth = 8;
 const int gridWidth  = 100;
 const int gridHeight = 100;

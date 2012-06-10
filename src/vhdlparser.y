@@ -63,9 +63,9 @@ struct  YYMM
 #include "arguments.h"
 
 //-----------------------------variables ---------------------------------------------------------------------------
-static MyParserVhdl* myconv=0;
+//static VhdlParser* myconv=0;
 
-static struct s_contVhdl s_str;
+static VhdlContainer s_str;
 static QList<Entry>instFiles;
 static int yyLineNr;
 static Entry* lastCompound;
@@ -80,8 +80,8 @@ static int levelCounter;
 static QCString confName;
 static QCString genLabels;
 
-static QList<ConfNode> configL;
-static ConfNode* currNode;
+static QList<VhdlConfNode> configL;
+static VhdlConfNode* currNode;
 
 static int currP=0;
 
@@ -1245,7 +1245,7 @@ attribute_spec: t_ATTRIBUTE t_Identifier t_OF entity_spec t_IS expr t_Semicolon
                   addVhdlType($2,getParsedLine(t_ATTRIBUTE),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,oo.data());
                 }
 
-entity_spec : entity_name_list signature  t_Colon entity_class
+entity_spec : entity_name_list signature  t_Colon entity_class { $$=$1+$2+":"+$4;}	
 
 entity_name_list:   designator entity_name_list_1         { $$=$1+" "+$2; }
 entity_name_list:   t_OTHERS                              { $$="others";  }
@@ -1263,7 +1263,7 @@ entity_class: t_LABEL         { $$="label";         }
 entity_class: t_TYPE          { $$="type";          }
 entity_class: t_SUBTYPE       { $$="subtype";       }
 entity_class: t_PROCEDURE     { $$="procedure";     }
-entity_class: t_FUNCTION      { $$="";              }
+entity_class: t_FUNCTION      { $$="function";      }
 entity_class: t_SIGNAL        { $$="signal";        }
 entity_class: t_VARIABLE      { $$="variable";      }
 entity_class: t_CONSTANT      { $$="constant";      }
@@ -2071,18 +2071,18 @@ void vhdlScanYYerror(const char* /*str*/)
  // exit(0);
 }
 
-int MyParserVhdl::parse(MyParserVhdl* conv)
+void vhdlParse()
 {
-  myconv=conv;
-  return vhdlScanYYparse();
+//  //myconv=conv;
+  vhdlScanYYparse();
 }
 
-int lex(void)
-{
-  return myconv->doLex();
-}
+//int lex(void)
+//{
+//  return myconv->doLex();
+//}
 
-struct s_contVhdl*  getVhdlCont()
+VhdlContainer*  getVhdlCont()
 {
   return &s_str;
 }
@@ -2094,7 +2094,7 @@ Entry* getVhdlCompound()
   return NULL;
 }
 
-QList<ConfNode>& getVhdlConfiguration() { return  configL; }
+QList<VhdlConfNode>& getVhdlConfiguration() { return  configL; }
 
 static void addCompInst(char *n, char* instName, char* comp,int iLine)
 {
@@ -2152,7 +2152,7 @@ static void popConfig()
 
 static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeave,bool inlineConf)
 {
-  struct ConfNode* co;
+  VhdlConfNode* co;
   QCString ent,arch,lab;
   ent=a;
   lab =  VhdlDocGen::parseForConfig(ent,arch);
@@ -2163,7 +2163,7 @@ static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeav
     lab=VhdlDocGen::parseForBinding(ent,arch);
   }
 
-  co=new ConfNode(a,b,confName.data());
+  co=new VhdlConfNode(a,b,confName.data());
   if (inlineConf)
   {
     co->isInlineConf=TRUE;
@@ -2185,7 +2185,7 @@ static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeav
   else
   {
     assert(0);
-    co=new ConfNode(a,b,confName.data());
+    co=new VhdlConfNode(a,b,confName.data());
     currNode->addNode(co);
   }
 }// addConfigure

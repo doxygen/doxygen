@@ -965,7 +965,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <dt>\c LAYOUT_FILE <dd>
  The \c LAYOUT_FILE tag can be used to specify a layout file which will be parsed by
  doxygen. The layout file controls the global structure of the generated output files
- in an output format independent way. The create the layout file that represents
+ in an output format independent way. To create the layout file that represents
  doxygen's defaults, run doxygen with the -l option. You can optionally specify a
  file name after the option, if omitted DoxygenLayout.xml will be used as the name
  of the layout file. Note that if you run doxygen from a directory containing 

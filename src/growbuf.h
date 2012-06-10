@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/** Class representing a string buffer optimised for growing. */
 class GrowBuf
 {
   public:

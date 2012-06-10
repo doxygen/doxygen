@@ -42,7 +42,7 @@ class DotRunnerQueue;
 
 enum GraphOutputFormat { BITMAP , EPS };
 
-/** @brief Attributes of an edge of a dot graph */
+/** Attributes of an edge of a dot graph */
 struct EdgeInfo
 {
   enum Colors { Blue=0, Green=1, Red=2, Purple=3, Grey=4, Orange=5 };
@@ -56,7 +56,7 @@ struct EdgeInfo
   int m_labColor;
 };
 
-/** @brief A node in a dot graph */
+/** A node in a dot graph */
 class DotNode
 {
   public:
@@ -138,7 +138,7 @@ inline int DotNode::findParent( DotNode *n )
     return m_parents->find(n);
 }
 
-/** @brief Represents a graphical class hierarchy */
+/** Represents a graphical class hierarchy */
 class DotGfxHierarchyTable
 {
   public:
@@ -156,7 +156,7 @@ class DotGfxHierarchyTable
     DotNodeList    *m_rootSubgraphs;
 };
 
-/** @brief Representation of a class inheritance or dependency graph */
+/** Representation of a class inheritance or dependency graph */
 class DotClassGraph
 {
   public:
@@ -188,7 +188,7 @@ class DotClassGraph
     bool               m_lrRank;
 };
 
-/** @brief Representation of an include dependency graph */
+/** Representation of an include dependency graph */
 class DotInclDepGraph
 {
   public:
@@ -215,7 +215,7 @@ class DotInclDepGraph
     bool            m_inverse;
 };
 
-/** @brief Representation of an call graph */
+/** Representation of an call graph */
 class DotCallGraph
 {
   public:
@@ -242,7 +242,7 @@ class DotCallGraph
     Definition *    m_scope;
 };
 
-/** @brief Representation of an directory dependency graph */
+/** Representation of an directory dependency graph */
 class DotDirDeps
 {
   public:
@@ -260,7 +260,7 @@ class DotDirDeps
     DirDef *m_dir;
 };
 
-/** @brief Representation of a group collaboration graph */
+/** Representation of a group collaboration graph */
 class DotGroupCollaboration
 {
   public :
@@ -318,7 +318,7 @@ class DotGroupCollaboration
     QList<Edge>     m_edges;
 };
 
-/** @brief Helper class to run dot from doxygen.
+/** Helper class to run dot from doxygen.
  */
 class DotRunner
 {
@@ -358,7 +358,7 @@ class DotRunner
     CleanupItem m_cleanupItem;
 };
 
-/** @brief Helper class to insert a set of map file into an output file */
+/** Helper class to insert a set of map file into an output file */
 class DotFilePatcher
 {
   public:
@@ -389,6 +389,7 @@ class DotFilePatcher
     QCString m_patchFile;
 };
 
+/** Queue of dot jobs to run. */
 class DotRunnerQueue
 {
   public:
@@ -401,6 +402,7 @@ class DotRunnerQueue
     mutable QMutex  m_mutex;
 };
 
+/** Worker thread to execute a dot run */
 class DotWorkerThread : public QThread
 {
   public:
@@ -413,7 +415,7 @@ class DotWorkerThread : public QThread
     QList<DotRunner::CleanupItem> m_cleanupItems;
 };
 
-/** @brief singleton that manages dot relation actions */
+/** Singleton that manages dot relation actions */
 class DotManager
 {
   public:

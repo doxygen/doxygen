@@ -26,6 +26,7 @@
 
 class Definition;
 
+/** Class representing a section in a page */
 struct SectionInfo
 {
   enum SectionType { Page          = 0, 
@@ -58,6 +59,7 @@ struct SectionInfo
   int level;
 };
 
+/** Unsorted dictionary of SectionInfo objects. */
 class SectionDict : public SDict<SectionInfo>
 {
   public:

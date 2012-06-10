@@ -38,15 +38,7 @@ struct SectionInfo;
 class Definition;
 class DefinitionImpl;
 
-#if 0
-struct ReachableDefinition
-{
-  ReachableDefinition(Definition *d,int dist) : def(d), distance(dist) {}
-  Definition *def;
-  int distance;
-};
-#endif
-
+/** Data associated with a detailed description. */
 struct DocInfo
 {
     QCString doc;  
@@ -54,6 +46,7 @@ struct DocInfo
     QCString file;
 };
 
+/** Data associated with a brief description. */
 struct BriefInfo
 {
     QCString doc;  
@@ -62,14 +55,15 @@ struct BriefInfo
     QCString file;
 };
 
+/** Data associated with description found in the body. */
 struct BodyInfo
 {
-    int      startLine;   // line number of the start of the definition
-    int      endLine;     // line number of the end of the definition
-    FileDef *fileDef;     // file definition containing the function body
+    int      startLine;   //!< line number of the start of the definition
+    int      endLine;     //!< line number of the end of the definition
+    FileDef *fileDef;     //!< file definition containing the function body
 };
     
-/*! Abstract interface for a Definition or DefinitionList */
+/** Abstract interface for a Definition or DefinitionList */
 class DefinitionIntf
 {
   public:
@@ -92,7 +86,8 @@ class DefinitionIntf
     virtual DefType definitionType() const = 0;
 };
 
-/*! The common base class of all entity definitions found in the sources. 
+/** The common base class of all entity definitions found in the sources. 
+ *
  *  This can be a class or a member function, or a file, or a namespace, etc.
  *  Use definitionType() to find which type of definition this is.
  */
@@ -117,7 +112,7 @@ class Definition : public DefinitionIntf, public LockableObj
     const QCString& name() const { return m_name; }
 
     /*! Returns the name of the definition as it appears in the output */
-    virtual QCString displayName() const = 0;
+    virtual QCString displayName(bool includeScope=TRUE) const = 0;
 
     /*! Returns the local name without any scope qualifiers. */
     QCString localName() const;
@@ -362,6 +357,7 @@ class Definition : public DefinitionIntf, public LockableObj
     int m_defLine;
 };
 
+/** A list of Definition objects. */
 class DefinitionList : public QList<Definition>, public DefinitionIntf
 {
   public:
@@ -376,6 +372,7 @@ class DefinitionList : public QList<Definition>, public DefinitionIntf
 
 };
 
+/** An iterator for Definition objects in a DefinitionList. */
 class DefinitionListIterator : public QListIterator<Definition>
 {
   public:

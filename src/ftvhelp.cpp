@@ -722,7 +722,7 @@ void FTVHelp::addContentsItem(bool isDir,
                               Definition *def
                               )
 {
-  //printf("addContentsItem(%s,%s,%s,%s)\n",name,ref,file,anchor);
+  //printf("%p: m_indent=%d addContentsItem(%s,%s,%s,%s)\n",this,m_indent,name,ref,file,anchor);
   QList<FTVNode> *nl = &m_indentNodes[m_indent];
   FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
   if (!nl->isEmpty())
@@ -1053,9 +1053,18 @@ static void generateJSLink(FTextStream &t,FTVNode *n)
   }
 }
 
+static QCString convertFileId2Var(const QCString &fileId)
+{
+  QCString varId = fileId;
+  int i=varId.findRev('/');
+  if (i>=0) varId = varId.mid(i+1);
+  return substitute(varId,"-","_");
+}
+
 static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t, 
                            const QList<FTVNode> &nl,int level,bool &first)
 {
+  static QCString htmlOutput = Config_getString("HTML_OUTPUT");
   QCString indentStr;
   indentStr.fill(' ',level*2);
   bool found=FALSE;
@@ -1088,18 +1097,14 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
       {
         QCString fileId = n->file;
         if (dupOfParent(n)) fileId+="_dup";
-        QFile f(Config_getString("HTML_OUTPUT")+"/"+fileId+".js");
+        QFile f(htmlOutput+"/"+fileId+".js");
         if (f.open(IO_WriteOnly))
         {
           FTextStream tt(&f);
-          QCString varId = fileId;
-          int i=fileId.findRev('/');
-          if (i>=0) varId = varId.mid(i+1);
-          tt << "var " << varId << " =" << endl;
+          tt << "var " << convertFileId2Var(fileId) << " =" << endl;
           generateJSTree(navIndex,tt,n->children,1,firstChild);
           tt << endl << "];"; 
         }
-        // write file name without extension as marker
         t << "\"" << fileId << "\" ]";
       }
       else // no children
@@ -1167,54 +1172,54 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       t << "]" << endl;
     else 
       t << endl << "  ] ]" << endl;
-    t << "];" << endl;
-    t << endl << navtree_script;
-  }
+    t << "];" << endl << endl;
 
-  // write the navigation index (and sub-indices)
-  navIndex.sort();
-  int subIndex=0;
-  int elemCount=0;
-  const int maxElemCount=250;
-  QFile fidx(htmlOutput+"/navtreeindex.js");
-  QFile fsidx(htmlOutput+"/navtreeindex0.js");
-  if (fidx.open(IO_WriteOnly) && fsidx.open(IO_WriteOnly))
-  {
-    FTextStream tidx(&fidx);
-    FTextStream tsidx(&fsidx);
-    tidx << "var NAVTREEINDEX =" << endl;
-    tidx << "[" << endl;
-    tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
-    tsidx << "{" << endl;
-    QListIterator<NavIndexEntry> li(navIndex);
-    NavIndexEntry *e;
-    for (li.toFirst();(e=li.current());) // for each entry
+    // write the navigation index (and sub-indices)
+    navIndex.sort();
+    int subIndex=0;
+    int elemCount=0;
+    const int maxElemCount=250;
+    //QFile fidx(htmlOutput+"/navtreeindex.js");
+    QFile fsidx(htmlOutput+"/navtreeindex0.js");
+    if (/*fidx.open(IO_WriteOnly) &&*/ fsidx.open(IO_WriteOnly))
     {
-      if (elemCount==0)
+      //FTextStream tidx(&fidx);
+      FTextStream tsidx(&fsidx);
+      t << "var NAVTREEINDEX =" << endl;
+      t << "[" << endl;
+      tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
+      tsidx << "{" << endl;
+      QListIterator<NavIndexEntry> li(navIndex);
+      NavIndexEntry *e;
+      for (li.toFirst();(e=li.current());) // for each entry
       {
-        tidx << "\"" << e->url << "\"," << endl;
+        if (elemCount==0)
+        {
+          t << "\"" << e->url << "\"," << endl;
+        }
+        tsidx << "\"" << e->url << "\":[" << e->path << "]";
+        ++li;
+        if (li.current()) tsidx << ","; // not last entry
+        tsidx << endl;
+  
+        elemCount++;
+        if (li.current() && elemCount>=maxElemCount) // switch to new sub-index
+        {
+          tsidx << "};" << endl;
+          elemCount=0;
+          fsidx.close();
+          subIndex++;
+          fsidx.setName(htmlOutput+"/navtreeindex"+QCString().setNum(subIndex)+".js");
+          if (!fsidx.open(IO_WriteOnly)) break;
+          tsidx.setDevice(&fsidx);
+          tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
+          tsidx << "{" << endl;
+        }
       }
-      tsidx << "\"" << e->url << "\":[" << e->path << "]";
-      ++li;
-      if (li.current()) tsidx << ","; // not last entry
-      tsidx << endl;
-
-      elemCount++;
-      if (li.current() && elemCount>=maxElemCount) // switch to new sub-index
-      {
-        tsidx << "};" << endl;
-        elemCount=0;
-        fsidx.close();
-        subIndex++;
-        fsidx.setName(htmlOutput+"/navtreeindex"+QCString().setNum(subIndex)+".js");
-        if (!fsidx.open(IO_WriteOnly)) break;
-        tsidx.setDevice(&fsidx);
-        tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
-        tsidx << "{" << endl;
-      }
+      tsidx << "};" << endl;
+      t << "];" << endl;
     }
-    tsidx << "};" << endl;
-    tidx << "];" << endl;
+    t << endl << navtree_script;
   }
 }
 

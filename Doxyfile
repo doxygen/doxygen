@@ -99,7 +99,8 @@ WARN_LOGFILE           =
 INPUT                  = src
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
-                         *.cpp
+                         *.cpp \
+			 *.md
 RECURSIVE              = NO
 EXCLUDE                = src/code.cpp \
                          src/ce_lex.cpp \
@@ -127,6 +128,7 @@ EXCLUDE                = src/code.cpp \
                          src/vhdlparser.cpp \
                          src/vhdlcode.cpp \
                          src/tclscanner.cpp \
+			 src/lodepng.cpp \
                          src/doxygen_css.h \
                          src/doxygen_js.h \
                          src/doxygen_php.h \

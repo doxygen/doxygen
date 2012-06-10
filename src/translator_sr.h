@@ -1589,7 +1589,7 @@ private:
     { return "Dokumentacija funkcija i procedura"; }
 
     /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
-    /*! @todo Koji je prevod za Compound u Fortran kontekstu */
+    /* TODO: Koji je prevod za Compound u Fortran kontekstu */
     virtual QCString trCompoundListFortran()
     { return "Složeni tipovi podataka"; }
 

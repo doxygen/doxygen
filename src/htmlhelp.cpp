@@ -34,6 +34,7 @@
 
 //----------------------------------------------------------------------------
 
+/** Class representing a field in the HTML help index. */
 struct IndexField
 {
   QCString name;
@@ -43,6 +44,7 @@ struct IndexField
   bool     reversed;
 };
 
+/** Sorted dictionary of IndexField objects. */
 class IndexFieldSDict : public SDict<IndexField>
 {
   public:
@@ -54,8 +56,8 @@ class IndexFieldSDict : public SDict<IndexField>
     }
 };
 
-/*! A helper class for HtmlHelp that manages a two level index in 
- * alphabetical order 
+/** A helper class for HtmlHelp that manages a two level index in 
+ *  alphabetical order.
  */
 class HtmlHelpIndex
 {

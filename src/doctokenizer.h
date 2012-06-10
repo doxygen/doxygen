@@ -63,6 +63,7 @@ enum Tokens
   RetVal_EndBlockQuote  = 0x10014
 };
 
+/** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
 {
   // unknown token

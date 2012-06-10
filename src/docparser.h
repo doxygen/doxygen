@@ -79,7 +79,7 @@ void docFindSections(const char *input,
 
 //---------------------------------------------------------------------------
 
-/*! @brief Abstract node interface with type information. */
+/** Abstract node interface with type information. */
 class DocNode
 {
   public:
@@ -167,7 +167,7 @@ class DocNode
     bool m_insidePre;
 };
 
-/*! @brief Default accept implementation for compound nodes in the abstract
+/** Default accept implementation for compound nodes in the abstract
  *  syntax tree.
  */
 template<class T> class CompAccept
@@ -191,7 +191,7 @@ template<class T> class CompAccept
 };
 
 
-/*! @brief Node representing a word 
+/** Node representing a word 
  */
 class DocWord : public DocNode
 {
@@ -205,7 +205,7 @@ class DocWord : public DocNode
     QCString  m_word;
 };
 
-/*! @brief Node representing a word that can be linked to something
+/** Node representing a word that can be linked to something
  */
 class DocLinkedWord : public DocNode
 {
@@ -231,7 +231,7 @@ class DocLinkedWord : public DocNode
     QCString  m_tooltip;
 };
 
-/*! @brief Node representing an URL (or email address) */
+/** Node representing an URL (or email address) */
 class DocURL : public DocNode
 {
   public:
@@ -247,7 +247,7 @@ class DocURL : public DocNode
     bool m_isEmail;
 };
 
-/*! @brief Node representing a line break */
+/** Node representing a line break */
 class DocLineBreak : public DocNode
 {
   public:
@@ -258,7 +258,7 @@ class DocLineBreak : public DocNode
   private:
 };
 
-/*! @brief Node representing a horizonal ruler */
+/** Node representing a horizonal ruler */
 class DocHorRuler : public DocNode
 {
   public:
@@ -269,7 +269,7 @@ class DocHorRuler : public DocNode
   private:
 };
 
-/*! @brief Node representing an anchor */
+/** Node representing an anchor */
 class DocAnchor : public DocNode
 {
   public:
@@ -284,7 +284,7 @@ class DocAnchor : public DocNode
     QCString  m_file;
 };
 
-/*! @brief Node representing a citation of some bibliographic reference */
+/** Node representing a citation of some bibliographic reference */
 class DocCite : public DocNode
 {
   public:
@@ -306,7 +306,7 @@ class DocCite : public DocNode
 };
 
 
-/*! @brief Node representing a style change */
+/** Node representing a style change */
 class DocStyleChange : public DocNode
 {
   public:
@@ -333,7 +333,7 @@ class DocStyleChange : public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a special symbol */
+/** Node representing a special symbol */
 class DocSymbol : public DocNode
 {
   public:
@@ -355,7 +355,7 @@ class DocSymbol : public DocNode
     char     m_letter;
 };
 
-/*! @brief Node representing some amount of white space */
+/** Node representing some amount of white space */
 class DocWhiteSpace : public DocNode
 {
   public:
@@ -368,7 +368,7 @@ class DocWhiteSpace : public DocNode
     QCString  m_chars;
 };
 
-/*! @brief Node representing a verbatim, unparsed text fragment */
+/** Node representing a verbatim, unparsed text fragment */
 class DocVerbatim : public DocNode
 {
   public:
@@ -397,7 +397,7 @@ class DocVerbatim : public DocNode
 };
 
 
-/*! @brief Node representing an included text block from file */
+/** Node representing an included text block from file */
 class DocInclude : public DocNode
 {
   public:
@@ -436,7 +436,7 @@ class DocInclude : public DocNode
     QCString  m_blockId;
 };
 
-/*! @brief Node representing a include/dontinclude operator block */
+/** Node representing a include/dontinclude operator block */
 class DocIncOperator : public DocNode
 {
   public:
@@ -471,7 +471,7 @@ class DocIncOperator : public DocNode
     QCString  m_exampleFile;
 };
 
-/*! @brief Node representing an item of a cross-referenced list */
+/** Node representing an item of a cross-referenced list */
 class DocFormula : public DocNode
 {
   public:
@@ -491,7 +491,7 @@ class DocFormula : public DocNode
     int      m_id;
 };
 
-/*! @brief Node representing an entry in the index. */
+/** Node representing an entry in the index. */
 class DocIndexEntry : public DocNode
 {
   public:
@@ -512,8 +512,8 @@ class DocIndexEntry : public DocNode
 
 //-----------------------------------------------------------------------
 
-/*! @brief Node representing a copy of documentation block. */
-class DocCopy : /*public CompAccept<DocCopy>,*/ public DocNode
+/** Node representing a copy of documentation block. */
+class DocCopy : public DocNode
 {
   public:
     DocCopy(DocNode *parent,const QCString &link,bool copyBrief,bool copyDetails) 
@@ -530,7 +530,7 @@ class DocCopy : /*public CompAccept<DocCopy>,*/ public DocNode
     bool     m_copyDetails;
 };
 
-/*! @brief Node representing an auto List */
+/** Node representing an auto List */
 class DocAutoList : public CompAccept<DocAutoList>, public DocNode
 {
   public:
@@ -548,7 +548,7 @@ class DocAutoList : public CompAccept<DocAutoList>, public DocNode
     int      m_depth;
 };
 
-/*! @brief Node representing an item of a auto list */
+/** Node representing an item of a auto list */
 class DocAutoListItem : public CompAccept<DocAutoListItem>, public DocNode
 {
   public:
@@ -565,7 +565,7 @@ class DocAutoListItem : public CompAccept<DocAutoListItem>, public DocNode
 
 
 
-/*! @brief Node representing a simple section title */
+/** Node representing a simple section title */
 class DocTitle : public CompAccept<DocTitle>, public DocNode
 {
   public:
@@ -578,11 +578,10 @@ class DocTitle : public CompAccept<DocTitle>, public DocNode
   private:
 };
 
-/*! @brief Node representing an item of a cross-referenced list */
+/** Node representing an item of a cross-referenced list */
 class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
 {
   public:
-    //enum Type { Bug, Test, Todo, Deprecated };
     DocXRefItem(DocNode *parent,int id,const char *key);
     Kind kind() const          { return Kind_XRefItem; }
     QCString file() const       { return m_file; }
@@ -602,7 +601,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
     QCString  m_relPath;
 };
 
-/*! @brief Node representing an image */
+/** Node representing an image */
 class DocImage : public CompAccept<DocImage>, public DocNode
 {
   public:
@@ -631,7 +630,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
     QCString  m_url;
 };
 
-/*! @brief Node representing a dot file */
+/** Node representing a dot file */
 class DocDotFile : public CompAccept<DocDotFile>, public DocNode
 {
   public:
@@ -655,7 +654,7 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
     QCString  m_context;
 };
 
-/*! @brief Node representing a msc file */
+/** Node representing a msc file */
 class DocMscFile : public CompAccept<DocMscFile>, public DocNode
 {
   public:
@@ -680,7 +679,7 @@ class DocMscFile : public CompAccept<DocMscFile>, public DocNode
 };
 
 
-/*! @brief Node representing a link to some item */
+/** Node representing a link to some item */
 class DocLink : public CompAccept<DocLink>, public DocNode
 {
   public:
@@ -701,7 +700,7 @@ class DocLink : public CompAccept<DocLink>, public DocNode
     QCString  m_refText;
 };
 
-/*! @brief Node representing a reference to some item */
+/** Node representing a reference to some item */
 class DocRef : public CompAccept<DocRef>, public DocNode
 {
   public:
@@ -730,7 +729,7 @@ class DocRef : public CompAccept<DocRef>, public DocNode
     QCString   m_text;
 };
 
-/*! @brief Node representing an internal reference to some item */
+/** Node representing an internal reference to some item */
 class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
 {
   public:
@@ -748,24 +747,7 @@ class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
     QCString   m_anchor;
 };
 
-/*! @brief Node representing a Language specific section */
-//class DocLanguage : public CompAccept<DocLanguage>, public DocNode
-//{
-//  public:
-//    DocLanguage(DocNode *parent,const QCString &id) : 
-//      m_parent(parent), m_id(id) {}
-//    QCString id() const         { return m_id; }
-//    Kind kind() const          { return Kind_Language; }
-//    DocNode *parent() const    { return m_parent; }
-//    void accept(DocVisitor *v) { CompAccept<DocLanguage>::accept(this,v); }
-//    int parse();
-//    
-//  private:
-//    DocNode * m_parent;
-//    QCString   m_id;
-//};
-
-/*! @brief Node representing a Hypertext reference */
+/** Node representing a Hypertext reference */
 class DocHRef : public CompAccept<DocHRef>, public DocNode
 {
   public:
@@ -785,7 +767,7 @@ class DocHRef : public CompAccept<DocHRef>, public DocNode
     QCString   m_relPath;
 };
 
-/*! @brief Node Html heading */
+/** Node Html heading */
 class DocHtmlHeader : public CompAccept<DocHtmlHeader>, public DocNode
 {
   public:
@@ -802,7 +784,7 @@ class DocHtmlHeader : public CompAccept<DocHtmlHeader>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a Html description item */
+/** Node representing a Html description item */
 class DocHtmlDescTitle : public CompAccept<DocHtmlDescTitle>, public DocNode
 {
   public:
@@ -817,7 +799,7 @@ class DocHtmlDescTitle : public CompAccept<DocHtmlDescTitle>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a Html description list */
+/** Node representing a Html description list */
 class DocHtmlDescList : public CompAccept<DocHtmlDescList>, public DocNode
 {
   public:
@@ -832,7 +814,7 @@ class DocHtmlDescList : public CompAccept<DocHtmlDescList>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a normal section */
+/** Node representing a normal section */
 class DocSection : public CompAccept<DocSection>, public DocNode
 {
   public:
@@ -855,7 +837,7 @@ class DocSection : public CompAccept<DocSection>, public DocNode
     QCString  m_file;
 };
 
-/*! @brief Node representing a reference to a section */
+/** Node representing a reference to a section */
 class DocSecRefItem : public CompAccept<DocSecRefItem>, public DocNode
 {
   public:
@@ -874,7 +856,7 @@ class DocSecRefItem : public CompAccept<DocSecRefItem>, public DocNode
     QCString  m_anchor;
 };
 
-/*! @brief Node representing a list of section references */
+/** Node representing a list of section references */
 class DocSecRefList : public CompAccept<DocSecRefList>, public DocNode
 {
   public:
@@ -886,7 +868,7 @@ class DocSecRefList : public CompAccept<DocSecRefList>, public DocNode
   private:
 };
 
-/*! @brief Node representing an internal section of documentation */
+/** Node representing an internal section of documentation */
 class DocInternal : public CompAccept<DocInternal>, public DocNode
 {
   public:
@@ -898,7 +880,7 @@ class DocInternal : public CompAccept<DocInternal>, public DocNode
   private:
 };
 
-/*! @brief Node representing a simple list */
+/** Node representing a simple list */
 class DocSimpleList : public CompAccept<DocSimpleList>, public DocNode
 {
   public:
@@ -910,7 +892,7 @@ class DocSimpleList : public CompAccept<DocSimpleList>, public DocNode
   private:
 };
 
-/*! @brief Node representing a Html list */
+/** Node representing a Html list */
 class DocHtmlList : public CompAccept<DocHtmlList>, public DocNode
 {
   public:
@@ -929,7 +911,7 @@ class DocHtmlList : public CompAccept<DocHtmlList>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! Node representing a simple section */
+/** Node representing a simple section */
 class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
 {
   public:
@@ -954,7 +936,7 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     DocTitle *      m_title;
 };
 
-/*! Node representing a separator between two simple sections of the
+/** Node representing a separator between two simple sections of the
  *  same type. 
  */
 class DocSimpleSectSep : public DocNode
@@ -967,7 +949,7 @@ class DocSimpleSectSep : public DocNode
   private:
 };
 
-/*! Node representing a parameter section */
+/** Node representing a parameter section */
 class DocParamSect : public CompAccept<DocParamSect>, public DocNode
 {
     friend class DocParamList;
@@ -998,7 +980,7 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
     bool            m_hasTypeSpecifier;
 };
 
-/*! Node representing a paragraph in the documentation tree */
+/** Node representing a paragraph in the documentation tree */
 class DocPara : public CompAccept<DocPara>, public DocNode
 {
   public:
@@ -1042,7 +1024,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     bool     m_isLast;
 };
 
-/*! @brief Node representing a parameter list. */
+/** Node representing a parameter list. */
 class DocParamList : public DocNode
 {
   public:
@@ -1084,7 +1066,7 @@ class DocParamList : public DocNode
     bool                    m_isLast;
 };
 
-/*! @brief Node representing a simple list item */
+/** Node representing a simple list item */
 class DocSimpleListItem : public DocNode
 {
   public:
@@ -1104,7 +1086,7 @@ class DocSimpleListItem : public DocNode
     DocPara *m_paragraph;
 };
 
-/*! @brief Node representing a HTML list item */
+/** Node representing a HTML list item */
 class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
 {
   public:
@@ -1122,7 +1104,7 @@ class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
     int            m_itemNum;
 };
 
-/*! @brief Node representing a HTML description data */
+/** Node representing a HTML description data */
 class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
 {
   public:
@@ -1136,7 +1118,7 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Node representing a HTML table cell */
+/** Node representing a HTML table cell */
 class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
 {
     friend class DocHtmlTable;
@@ -1173,7 +1155,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
     int            m_colIdx;
 };
 
-/*! @brief Node representing a HTML table caption */
+/** Node representing a HTML table caption */
 class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
 {
   public:
@@ -1189,7 +1171,7 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
     bool           m_atTop;
 };
 
-/*! @brief Node representing a HTML table row */
+/** Node representing a HTML table row */
 class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
 {
     friend class DocHtmlTable;
@@ -1216,7 +1198,7 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
     int m_rowIdx;
 };
 
-/*! @brief Node representing a HTML table */
+/** Node representing a HTML table */
 class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
 {
   public:
@@ -1239,7 +1221,7 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     int m_numCols;
 };
 
-/*! @brief Node representing an HTML blockquote */
+/** Node representing an HTML blockquote */
 class DocHtmlBlockQuote : public CompAccept<DocHtmlBlockQuote>, public DocNode
 {
   public:
@@ -1254,7 +1236,7 @@ class DocHtmlBlockQuote : public CompAccept<DocHtmlBlockQuote>, public DocNode
     HtmlAttribList m_attribs;
 };
 
-/*! @brief Root node of a text fragment */
+/** Root node of a text fragment */
 class DocText : public CompAccept<DocText>, public DocNode
 {
   public:
@@ -1264,7 +1246,7 @@ class DocText : public CompAccept<DocText>, public DocNode
     void parse();
 };
 
-/*! @brief Root node of documentation tree */
+/** Root node of documentation tree */
 class DocRoot : public CompAccept<DocRoot>, public DocNode
 {
   public:

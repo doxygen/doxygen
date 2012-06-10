@@ -179,6 +179,8 @@ static bool             externC;
 
 static QCString         g_hereDocId;
 
+static int              g_column;
+
 //-----------------------------------------------------------------------------
 
 // forward declarations
@@ -274,8 +276,31 @@ static void initEntry()
 
 static void lineCount()
 {
-  for( const char* c = yytext ; *c ; ++c )
-    yyLineNr += (*c == '\n') ;
+  static int tabSize = Config_getInt("TAB_SIZE");
+  const char *p;
+  for (p = yytext ; *p ; ++p )
+  {
+    if (*p=='\n') 
+      yyLineNr++,g_column=0;
+    else if (*p=='\t') 
+      g_column+=tabSize - (g_column&tabSize);
+    else 
+      g_column++;
+  }
+}
+
+static inline int computeIndent(const char *s,int startIndent)
+{
+  int col=startIndent;
+  static int tabSize=Config_getInt("TAB_SIZE");
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    if (c=='\t') col+=tabSize-(col%tabSize);
+    else col++;
+  }
+  return col;
 }
 
 static void addType( Entry* current )
@@ -1187,7 +1212,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->spec&=~Entry::Assign;
 					  current->spec|=Entry::Copy;
   					}
-<ObjCPropAttr>"nonatmic"		{
+<ObjCPropAttr>"weak"                    {
+					  current->spec&=~Entry::Assign;
+					  current->spec|=Entry::Weak;
+                                        }
+<ObjCPropAttr>"strong"                  {
+					  current->spec&=~Entry::Assign;
+					  current->spec|=Entry::Strong;
+                                        }
+<ObjCPropAttr>"nonatomic"		{
 					  current->spec|=Entry::NonAtomic;
   					}
 <ObjCPropAttr>")"			{
@@ -4299,10 +4332,20 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
 					  {
 					    int tempArg=current->name.find('<');
+                                            int ts=current->type.find('<');
+                                            int te=current->type.findRev('>');
+                                            int ti=current->type.find(re,0);
+
+                                            // bug677315: A<int(void *, char *)> get(); is not a function pointer
+                                            bool isFunction = ti==-1 || // not a (...*...) pattern
+                                                              (ts!=-1 && ts<te && ts<ti && ti<te); // (...*...) is part of a template argument list
+                                                              
+                                            //printf("type=%s ts=%d te=%d ti=%d isFunction=%d\n",
+                                            //    current->type.data(),ts,te,ti,isFunction);
 					    QCString tempName;
 					    if (tempArg==-1) tempName=current->name; else tempName=current->name.left(tempArg);
 					    if (!current->type.isEmpty() &&
-						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
+						(!isFunction || current->type.left(8)=="typedef "))
 					    {
 					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
 					      if (isTypedef && current->type.left(8)!="typedef ")
@@ -5329,8 +5372,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->docFile = yyFileName;
 					  docBlockContext = YY_START;
 					  docBlockInBody  = YY_START==SkipCurly;
-					  docBlockAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
+                                          static bool javadocAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
+                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+					  docBlockAutoBrief = javadocAutoBrief;
 					  docBlock.resize(0);
+                                          if (markdownSupport)
+                                          {
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,g_column));
+                                            docBlock+=indent;
+                                          }
+
 					  if (docBlockAutoBrief)
 					  {
 					    current->briefLine = yyLineNr;
@@ -5471,6 +5523,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN(docBlockContext);
   					}
 <DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*]	{ // start of a comment line
+                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+                                          if (markdownSupport)
+                                          {
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,0));
+                                            docBlock+=indent;
+                                          }
   					}
 <DocBlock>^{B}*("//"){B}*		{ // strip embedded C++ comments if at the start of a line
   					}
@@ -5558,6 +5617,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    REJECT;
 					  }
+                                          else
+                                          {
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,0));
+                                            docBlock+=indent;
+                                          }
   					}
 <DocCopyBlock>[^\<@/*\]\$\\\n]+		{ // any character that is not special
   					  docBlock+=yytext;
@@ -5861,6 +5926,7 @@ static void parseCompounds(Entry *rt)
       // init scanner state
       padCount=0;
       //depthIf = 0;
+      g_column=0;
       inputString = ce->program;
       inputPosition = 0;
       scanYYrestart( scanYYin ) ;
@@ -5962,6 +6028,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   inputString = fileBuf;
   inputPosition = 0;
   g_inputFromFile = FALSE;
+  g_column = 0;
 
   //anonCount     = 0;  // don't reset per file
   //depthIf       = 0;
@@ -6063,6 +6130,7 @@ static void parsePrototype(const QCString &text)
   // set new string
   inputString = text;
   inputPosition = 0;
+  g_column = 0;
   g_inputFromFile = FALSE;
   scanYYrestart( scanYYin );
   BEGIN(Prototype);

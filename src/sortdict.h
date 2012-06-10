@@ -74,7 +74,7 @@ const uint SDict_primes[] =
 template<class T> class SDict;
 template<class T> class SIntDict;
 
-/*! internal wrapper class that redirects compareItems() to the 
+/** internal wrapper class that redirects compareItems() to the 
  *  dictionary 
  */
 template<class T>
@@ -91,7 +91,7 @@ class SList : public QList<T>
     SDict<T> *m_owner;  
 };
 
-/*! Ordered dictionary of elements of type T. 
+/** Ordered dictionary of elements of type T. 
  *  Internally uses a QList<T> and a QDict<T>.
  */
 template<class T>
@@ -422,7 +422,7 @@ class SDict
     };
 };
 
-/*! internal wrapper class that redirects compareItems() to the 
+/** internal wrapper class that redirects compareItems() to the 
  *  dictionary 
  */
 template<class T>
@@ -439,7 +439,7 @@ class SIntList : public QList<T>
     SIntDict<T> *m_owner;  
 };
 
-/*! Ordered dictionary of elements of type T. 
+/** Ordered dictionary of elements of type T. 
  *  Internally uses a QList<T> and a QIntDict<T>.
  */
 template<class T>
