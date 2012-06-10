@@ -42,12 +42,7 @@
 
 //-----------------------------------------------------------------------------
 
-//static inline MemberList *createNewMemberList(MemberList::ListType lt)
-//{
-//  MemberList *result = new MemberList(lt);
-//  return result;
-//}
-
+/** Private data associated with a ClassDef object. */
 class ClassDefImpl
 {
   public:
@@ -296,7 +291,7 @@ QCString ClassDef::getMemberListFileName() const
   return convertNameToFile(compoundTypeString()+name()+"-members");
 }
 
-QCString ClassDef::displayName() const
+QCString ClassDef::displayName(bool includeScope) const
 {
   //static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   SrcLangExt lang = getLanguage();
@@ -308,7 +303,14 @@ QCString ClassDef::displayName() const
   }
   else 
   {
-    n=qualifiedNameWithTemplateParameters();
+    if (includeScope)
+    {
+      n=qualifiedNameWithTemplateParameters();
+    }
+    else
+    {
+      n=className();
+    }
   }
   QCString sep=getLanguageSpecificSeparator(lang);
   if (sep!="::")
@@ -3819,9 +3821,8 @@ int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt,
       MemberList *ml = icd->getMemberList((MemberList::ListType)lt1);
       if (ml)
       {
-        //ml->countDecMembers();
-        //count+=ml->numDecMembers();
-        count+=ml->countInheritableMembers(inheritedFrom);
+        //count+=ml->countInheritableMembers(inheritedFrom);
+        count+=icd->countMembersIncludingGrouped((MemberList::ListType)lt1,inheritedFrom,TRUE);
         count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt1,inheritedFrom);
       }
       if (lt2!=-1)
@@ -3829,15 +3830,15 @@ int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt,
         ml = icd->getMemberList((MemberList::ListType)lt2);
         if (ml) 
         {
-          //ml->countDecMembers();
-          //count+=ml->numDecMembers();
-          count+=ml->countInheritableMembers(inheritedFrom);
+          //count+=ml->countInheritableMembers(inheritedFrom);
+          count+=icd->countMembersIncludingGrouped((MemberList::ListType)lt2,inheritedFrom,TRUE);
           count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt2,inheritedFrom);
         }
       }
       ibcd=m_impl->inherits->next();
     }
   }
+#if 0
   if (m_impl->memberGroupSDict)
   {
     MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
@@ -3850,6 +3851,7 @@ int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt,
       }
     }
   }
+#endif
   return count;
 }
 
@@ -3859,11 +3861,11 @@ int ClassDef::countInheritedDecMembers(MemberList::ListType lt)
   MemberList *ml = getMemberList(lt);
   if (ml)
   {
-    //ml->countDecMembers();
-    //count = ml->numDecMembers();
-    count=ml->countInheritableMembers(this);
+    count = ml->countInheritableMembers(this);
   }
   if (count==0) // for this class the member list is empty
+                // see if we need to create a section for it under
+                // Additional Inherited Members
   {
     count = countInheritedDecMembersRec(lt,this);
   }
@@ -3897,7 +3899,7 @@ int ClassDef::countAdditionalInheritedMembers()
 
 void ClassDef::writeAdditionalInheritedMembers(OutputList &ol)
 {
-  //printf("writeAdditionalInheritedMembers()\n");
+  //printf("**** writeAdditionalInheritedMembers()\n");
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
   LayoutDocEntry *lde;
@@ -3917,30 +3919,31 @@ void ClassDef::writeAdditionalInheritedMembers(OutputList &ol)
 }
 
 int ClassDef::countMembersIncludingGrouped(MemberList::ListType lt,
-              ClassDef *inheritedFrom)
+              ClassDef *inheritedFrom,bool additional)
 {
   int count=0;
   MemberList *ml = getMemberList(lt);
   if (ml) 
   { 
-    //ml->countDecMembers(); 
-    //count=ml->numDecMembers(); 
     count=ml->countInheritableMembers(inheritedFrom);
   }
+  //printf("%s:countMembersIncludingGrouped: count=%d\n",name().data(),count);
   if (m_impl->memberGroupSDict)
   {
     MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
+      bool hasOwnSection = !mg->allMembersInSameSection() || 
+                           !m_impl->subGrouping; // group is in its own section
+      if ((additional && hasOwnSection) || (!additional && !hasOwnSection))
       {
         count+=mg->countGroupedInheritedMembers(lt);
       }
     }
   }
-  //printf("%s:countMembersIncludingGrouped(%s)=%d\n",
-  //    name().data(),ml?ml->listTypeAsString().data():"<none>",count);
+  //printf("%s:countMembersIncludingGrouped(lt=%d,%s)=%d\n",
+  //    name().data(),lt,ml?ml->listTypeAsString().data():"<none>",count);
   return count;
 }
 
@@ -3951,7 +3954,9 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  bool process = countMembersIncludingGrouped(lt,inheritedFrom)>0;
+  bool process = countMembersIncludingGrouped(lt,inheritedFrom,FALSE)>0;
+  //printf("%s: writeInheritedMemberDec: lt=%d process=%d invert=%d\n",
+  //    name().data(),lt,process,invert);
   if (process^invert)
   {
     if (m_impl->inherits)
@@ -3964,7 +3969,10 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
         int lt1,lt2;
         convertProtectionLevel(lt,ibcd->prot,&lt1,&lt2);
         //printf("%s:convert %d->(%d,%d)\n",icd->name().data(),lt,lt1,lt2);
-        if (visitedClasses->find(icd)!=0) return;
+        if (visitedClasses->find(icd)!=0) 
+        {
+          return; // already processed before (in case of multiple inheritance)
+        }
         visitedClasses->insert(icd,icd);
         if (lt1!=-1)
         {
@@ -4024,7 +4032,6 @@ void ClassDef::addGroupedInheritedMembers(OutputList &ol,MemberList::ListType lt
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      //printf("  candidate %s\n",mg->header().data());
       if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
       {
         mg->addGroupedInheritedMembers(ol,this,lt,inheritedFrom,inheritId);

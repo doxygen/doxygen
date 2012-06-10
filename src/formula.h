@@ -22,6 +22,7 @@
 #include <qlist.h>
 #include <qdict.h>
 
+/** Class representing a formula in the output. */
 class Formula
 {
   public:
@@ -35,12 +36,14 @@ class Formula
     QCString form;
 };
 
+/** A list of Formula objects. */
 class FormulaList : public QList<Formula>
 {
   public:
     void generateBitmaps(const char *path);
 };
 
+/** Iterator for Formula objects in a FormulaList. */
 class FormulaListIterator : public QListIterator<Formula>
 {
   public:
@@ -48,6 +51,7 @@ class FormulaListIterator : public QListIterator<Formula>
       QListIterator<Formula>(l) {}
 };
 
+/** Unsorted dictionary of Formula objects. */
 class FormulaDict : public QDict<Formula>
 {
   public:

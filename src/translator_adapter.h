@@ -3,7 +3,7 @@
 
 #include "version.h"
 
-/*! \brief Base of the translator adapter tree
+/** Base of the translator adapter tree.
  *
  *  This abstract class provides access to the english
  *  translations, to be used as a substitute for not implemented
@@ -40,6 +40,9 @@ class TranslatorAdapterBase : public Translator
 
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.8.0. 
+ */
 class TranslatorAdapter_1_8_0 : public TranslatorAdapterBase
 {
   public:
@@ -69,6 +72,9 @@ class TranslatorAdapter_1_8_0 : public TranslatorAdapterBase
 
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.7.5.
+ */
 class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
 {
   public:
@@ -85,6 +91,9 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     { return english.trDirDepGraph(name); }
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.6.3.
+ */
 class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
 {
   public:
@@ -103,6 +112,9 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.6.0.
+ */
 class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
 {
   public:
@@ -125,6 +137,9 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
     { return english.trNoMatches(); }
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.5.4
+ */
 class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
 {
   public:
@@ -201,6 +216,9 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
     { return english.trTypeConstraints(); }
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.4.6
+ */
 class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
 {
   public:
@@ -217,6 +235,9 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
     }
 };
 
+/** Adapter class for languages that only contain translations upto 
+ *  version 1.4.1
+ */
 class TranslatorAdapter_1_4_1 : public TranslatorAdapter_1_4_6
 {
   public:

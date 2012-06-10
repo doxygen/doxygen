@@ -490,7 +490,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>({BLANK}*\n)+{OLISTITEM}     { /* list item on next line */ 
+<St_Para>{BLANK}*\n{OLISTITEM}     { /* list item on next line */ 
                          if (!Doxygen::markdownSupport)
                          {
                            REJECT;

@@ -74,6 +74,7 @@ static const char *sectionLevelToName[] =
 static Definition *           g_scope;
 static QCString               g_context;
 static bool                   g_inSeeBlock;
+static bool                   g_xmlComment;
 static bool                   g_insideHtmlLink;
 static QStack<DocNode>        g_nodeStack;
 static QStack<DocStyleChange> g_styleStack;
@@ -95,12 +96,15 @@ static QCString               g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
 
-// parser's context to store all global variables
+
+/** Parser's context to store all global variables. 
+ */
 struct DocParserContext
 {
   Definition *scope;
   QCString context;
   bool inSeeBlock;
+  bool xmlComment;
   bool insideHtmlLink;
   QStack<DocNode> nodeStack;
   QStack<DocStyleChange> styleStack;
@@ -140,6 +144,7 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
   ctx->scope              = g_scope;
   ctx->context            = g_context;
   ctx->inSeeBlock         = g_inSeeBlock;
+  ctx->xmlComment         = g_xmlComment;
   ctx->insideHtmlLink     = g_insideHtmlLink;
   ctx->nodeStack          = g_nodeStack;
   ctx->styleStack         = g_styleStack;
@@ -177,6 +182,7 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
   g_scope               = ctx->scope;
   g_context             = ctx->context;
   g_inSeeBlock          = ctx->inSeeBlock;
+  g_xmlComment          = ctx->xmlComment;
   g_insideHtmlLink      = ctx->insideHtmlLink;
   g_nodeStack           = ctx->nodeStack;
   g_styleStack          = ctx->styleStack;
@@ -643,20 +649,6 @@ static bool insideTable(DocNode *n)
   }
   return FALSE;
 }
-
-//---------------------------------------------------------------------------
-
-///*! Returns TRUE iff node n is a child of a language node */
-//static bool insideLang(DocNode *n)
-//{
-//  while (n)
-//  {
-//    if (n->kind()==DocNode::Kind_Language) return TRUE;
-//    n=n->parent();
-//  }
-//  return FALSE;
-//}
-
 
 //---------------------------------------------------------------------------
 
@@ -3593,13 +3585,15 @@ int DocHtmlTable::parseXml()
   return retval==RetVal_EndTable ? RetVal_OK : retval;
 }
 
+/** Helper class to compute the grid for an HTML style table */
 struct ActiveRowSpan
 {
   ActiveRowSpan(int rows,int col) : rowsLeft(rows), column(col) {}
   int rowsLeft;
-  int column;
+  int column;  
 };
 
+/** List of ActiveRowSpan classes. */
 typedef QList<ActiveRowSpan> RowSpanList;
 
 /** determines the location of all cells in a grid, resolving row and
@@ -5577,8 +5571,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
     case HTML_CODE:
-      if (getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp) 
-        // for C# code we treat <code> as an XML tag
+      if (getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp || g_xmlComment) 
+        // for C# source or inside a <summary> or <remark> section we 
+        // treat <code> as an XML tag (so similar to @code)
       {
         doctokenizerYYsetStateXmlCode();
         retval = handleStartCode();
@@ -5719,6 +5714,8 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
 
     case XML_SUMMARY:
     case XML_REMARKS:
+      g_xmlComment=TRUE;
+      // fall through
     case XML_VALUE:
     case XML_PARA:
       if (!m_children.isEmpty())
@@ -6860,6 +6857,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_styleStack.clear();
   g_initialStyleStack.clear();
   g_inSeeBlock = FALSE;
+  g_xmlComment = FALSE;
   g_insideHtmlLink = FALSE;
   g_includeFileText = "";
   g_includeFileOffset = 0;
@@ -6923,6 +6921,7 @@ DocNode *validatingParseText(const char *input)
   g_styleStack.clear();
   g_initialStyleStack.clear();
   g_inSeeBlock = FALSE;
+  g_xmlComment = FALSE;
   g_insideHtmlLink = FALSE;
   g_includeFileText = "";
   g_includeFileOffset = 0;

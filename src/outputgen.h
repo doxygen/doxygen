@@ -38,7 +38,7 @@ class MemberDef;
 class GroupDef;
 class Definition;
 
-/*! \brief Output interface for code parser. 
+/** Output interface for code parser. 
  */
 class CodeOutputInterface
 {
@@ -76,7 +76,7 @@ class CodeOutputInterface
                  Definition *symDef,Definition *context) = 0;
 };
 
-/*! \brief Base Interface used for generating output outside of the
+/** Base Interface used for generating output outside of the
  *  comment blocks.
  *
  *  This abstract class is used by output generation functions
@@ -263,7 +263,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void endSubsubsection() = 0;
 };
 
-/*! \brief Abstract output generator.
+/** Abstract output generator.
  *
  *  Subclass this class to add support for a new output format
  */
@@ -364,9 +364,9 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeEndAnnoItem(const char *name) = 0;
     virtual void startMemberDescription(const char *anchor,const char *inheritId) = 0;
     virtual void endMemberDescription() = 0;
-    virtual void writeInheritedSectionTitle(const char *id,
-                    const char *file,const char *anchor,
-                    const char *title,const char *name) = 0;
+    virtual void writeInheritedSectionTitle(const char *id,const char *ref,
+                                            const char *file,const char *anchor,
+                                            const char *title,const char *name) = 0;
     virtual void startIndent() = 0;
     virtual void endIndent() = 0;
     virtual void writeSynopsis() = 0;
@@ -386,6 +386,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startQuickIndices() = 0;
     virtual void endQuickIndices() = 0;
     virtual void writeSplitBar(const char *) = 0;
+    virtual void writeNavigationPath(const char *) = 0;
     virtual void writeLogo() = 0;
     virtual void writeQuickLinks(bool compact,HighlightedItem hli,const char *file) = 0;
     virtual void startContents() = 0;
@@ -440,7 +441,7 @@ class OutputGenerator : public BaseOutputDocInterface
     OutputGenerator &operator=(const OutputGenerator &o);
 };
 
-/*! \brief Interface used for generating documentation.
+/** Interface used for generating documentation.
  *
  *  This abstract class is used by several functions
  *  to generate the output for a specific format. 

@@ -38,7 +38,7 @@
 #include "arguments.h"
 //#include "reflist.h"
 
-/*! Information about an linkable anchor */
+/** Information about an linkable anchor */
 class TagAnchorInfo
 {
   public:
@@ -47,6 +47,7 @@ class TagAnchorInfo
     QCString fileName;
 };
 
+/** List of TagAnchorInfo objects. */
 class TagAnchorInfoList : public QList<TagAnchorInfo>
 {
   public: 
@@ -54,7 +55,7 @@ class TagAnchorInfoList : public QList<TagAnchorInfo>
     virtual ~TagAnchorInfoList() {}
 };
 
-/*! Container for member specific info that can be read from a tagfile */
+/** Container for member specific info that can be read from a tagfile */
 class TagMemberInfo
 {
   public:
@@ -71,7 +72,7 @@ class TagMemberInfo
     bool isStatic; 
 };
 
-/*! Container for class specific info that can be read from a tagfile */
+/** Container for class specific info that can be read from a tagfile */
 class TagClassInfo
 {
   public:
@@ -89,7 +90,7 @@ class TagClassInfo
     bool isObjC;
 };
 
-/*! Container for namespace specific info that can be read from a tagfile */
+/** Container for namespace specific info that can be read from a tagfile */
 class TagNamespaceInfo
 {
   public:
@@ -102,7 +103,7 @@ class TagNamespaceInfo
     QList<TagMemberInfo> members;
 };
 
-/*! Container for package specific info that can be read from a tagfile */
+/** Container for package specific info that can be read from a tagfile */
 class TagPackageInfo
 {
   public:
@@ -114,6 +115,7 @@ class TagPackageInfo
     QStringList classList;
 };
 
+/** Container for include info that can be read from a tagfile */
 class TagIncludeInfo
 {
   public:
@@ -124,7 +126,7 @@ class TagIncludeInfo
     bool isImported;
 };
 
-/*! Container for file specific info that can be read from a tagfile */
+/** Container for file specific info that can be read from a tagfile */
 class TagFileInfo
 {
   public:
@@ -139,7 +141,7 @@ class TagFileInfo
     QList<TagIncludeInfo> includes;
 };
 
-/*! Container for group specific info that can be read from a tagfile */
+/** Container for group specific info that can be read from a tagfile */
 class TagGroupInfo
 {
   public:
@@ -157,7 +159,7 @@ class TagGroupInfo
     QStringList dirList;
 };
 
-/*! Container for page specific info that can be read from a tagfile */
+/** Container for page specific info that can be read from a tagfile */
 class TagPageInfo
 {
   public:
@@ -167,7 +169,7 @@ class TagPageInfo
     TagAnchorInfoList docAnchors;
 };
 
-/*! Container for directory specific info that can be read from a tagfile */
+/** Container for directory specific info that can be read from a tagfile */
 class TagDirInfo
 {
   public:
@@ -179,7 +181,8 @@ class TagDirInfo
     TagAnchorInfoList docAnchors;
 };
 
-/*! Tag file parser. 
+/** Tag file parser. 
+ *
  *  Reads an XML-structured tagfile and builds up the structure in
  *  memory. The method buildLists() is used to transfer/translate 
  *  the structures to the doxygen engine.
@@ -826,7 +829,8 @@ class TagFileParser : public QXmlDefaultHandler
     QCString                   m_inputFileName;
 };
 
-/*! Error handler for the XML tag file parser. 
+/** Error handler for the XML tag file parser. 
+ *
  *  Basically dumps all fatal error to stderr using err().
  */
 class TagFileErrorHandler : public QXmlErrorHandler

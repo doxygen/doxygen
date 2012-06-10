@@ -1339,6 +1339,11 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
     //printf(">isCodeBlock: line is not indented enough %d<4\n",indent0);
     return FALSE;
   }
+  if (indent0>=size || data[indent0]=='\n') // empty line does not start a code block
+  {
+    //printf("only spaces at the end of a comment block\n");
+    return FALSE;
+  }
     
   i=offset;
   int nl=0;
@@ -1382,8 +1387,8 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
     {
       return FALSE;
     }
-    //printf(">isCodeBlock global indent %d>=%d+4=%d\n",
-    //    indent0,indent,indent0>=indent+4);
+    //printf(">isCodeBlock global indent %d>=%d+4=%d nl=%d\n",
+    //    indent0,indent,indent0>=indent+4,nl);
     return indent0>=indent+codeBlockIndent;
   }
 }
@@ -2121,6 +2126,7 @@ static QCString detab(const QCString &s,int &refIndent)
   }
   if (minIndent!=maxIndent) refIndent=minIndent; else refIndent=0;
   out.addChar(0);
+  //printf("detab refIndent=%d\n",refIndent);
   return out.get();
 }
 

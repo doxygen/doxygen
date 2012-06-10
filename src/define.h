@@ -24,6 +24,7 @@
 
 class FileDef;
 
+/** A class representing a macro definition. */
 class Define
 {
   public:
@@ -47,6 +48,7 @@ class Define
     bool nonRecursive;
 };
 
+/** A list of Define objects. */
 class DefineList : public QList<Define>
 {
   public:
@@ -58,6 +60,7 @@ class DefineList : public QList<Define>
     }
 };
 
+/** A list of Define objects associated with a specific name. */
 class DefineName : public QList<Define>
 {
   public:
@@ -73,6 +76,7 @@ class DefineName : public QList<Define>
     QCString name;
 };
 
+/** A list of DefineName objects. */
 class DefineNameList : public QList<DefineName>
 {
   public:
@@ -85,7 +89,10 @@ class DefineNameList : public QList<DefineName>
     }
 };
 
+/** An unsorted dictionary of Define objects. */
 typedef QDict<Define> DefineDict;
+
+/** A sorted dictionary of DefineName object. */
 typedef QDict<DefineName> DefineNameDict;
 
 #endif

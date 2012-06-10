@@ -27,6 +27,7 @@ class MemberGroup;
 class MemberGroupList;
 class StorageIntf;
 
+/** A list of MemberDef objects. */
 class MemberList : public QList<MemberDef> 
 { 
   public:
@@ -180,6 +181,7 @@ class MemberList : public QList<MemberDef>
     bool m_needsSorting;
 };
 
+/** An iterator for MemberDef objects in a MemberList. */
 class MemberListIterator : public QListIterator<MemberDef>
 {
   public:
@@ -187,6 +189,7 @@ class MemberListIterator : public QListIterator<MemberDef>
     virtual ~MemberListIterator() {}
 };
 
+/** An unsorted dictionary of MemberDef objects. */
 class MemberDict : public QDict<MemberDef>
 {
   public:
@@ -194,6 +197,7 @@ class MemberDict : public QDict<MemberDef>
     virtual ~MemberDict() {}
 };
 
+/** A sorted dictionary of MemberDef objects. */
 class MemberSDict : public SDict<MemberDef>
 {
   public:

@@ -184,7 +184,23 @@ div.line {
 	padding-left: 53px;
 	padding-bottom: 0px;
 	margin: 0px;
+	-webkit-transition-property: background-color, box-shadow;
+	-webkit-transition-duration: 0.5s;
+	-moz-transition-property: background-color, box-shadow;
+	-moz-transition-duration: 0.5s;
+	-ms-transition-property: background-color, box-shadow;
+	-ms-transition-duration: 0.5s;
+	-o-transition-property: background-color, box-shadow;
+	-o-transition-duration: 0.5s;
+	transition-property: background-color, box-shadow;
+	transition-duration: 0.5s;
 }
+
+div.line.glow {
+	background-color: cyan;
+	box-shadow: 0 0 10px cyan;
+}
+
 
 span.lineno {
 	padding-right: 4px;
@@ -486,6 +502,8 @@ table.memberdecls {
         -ms-transition: box-shadow 0.5s linear;
         -o-transition: box-shadow 0.5s linear;
         transition: box-shadow 0.5s linear;
+        display: table !important;
+        width: 100%;
 }
 
 .memitem.glow {
@@ -575,6 +593,9 @@ dl.reflist dd {
 .paramname em {
 	font-style: normal;
 }
+.paramname code {
+        line-height: 14px;
+}
 
 .params, .retval, .exception, .tparams {
         margin-left: 0px;
@@ -660,6 +681,10 @@ div.directory {
 
 .directory td.entry a {
         outline:none;
+}
+
+.directory td.entry a img {
+        border: none;
 }
 
 .directory td.desc {
@@ -857,9 +882,7 @@ div.summary a
 
 div.ingroups
 {
-	margin-left: 5px;
 	font-size: 8pt;
-	padding-left: 5px;
 	width: 50%;
 	text-align: left;
 }

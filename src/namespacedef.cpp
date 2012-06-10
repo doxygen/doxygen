@@ -739,9 +739,9 @@ void NamespaceDef::addListReferences()
   }
 }
 
-QCString NamespaceDef::displayName() const
+QCString NamespaceDef::displayName(bool includeScope) const
 {
-  QCString result=name();
+  QCString result=includeScope ? name() : localName();
   SrcLangExt lang = getLanguage();
   QCString sep = getLanguageSpecificSeparator(lang);
   if (sep!="::")

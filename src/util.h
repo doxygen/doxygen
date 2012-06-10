@@ -18,7 +18,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-/*! \file util.h 
+/*! \file 
  *  \brief A bunch of utility functions.
  */
 
@@ -61,6 +61,7 @@ class FTextStream;
 
 //--------------------------------------------------------------------
 
+/** Abstract interface for a hyperlinked text fragment. */
 class TextGeneratorIntf
 {
   public:
@@ -72,6 +73,7 @@ class TextGeneratorIntf
                      ) const = 0; 
 };
 
+/** Implements TextGeneratorIntf for an OutputDocInterface stream. */
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
@@ -381,6 +383,7 @@ QCString externalLinkTarget();
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
 
+/** Data associated with a HSV colored image. */
 struct ColoredImgDataItem
 {
   const char *name;

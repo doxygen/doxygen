@@ -106,9 +106,8 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
 {
   static QRegExp nextPart("[_a-z:][A-Z]");
   //printf("SearchIndex::addWord(%s,%d)\n",word,hiPriority);
-  QCString wStr(word);
-  if (wStr.isEmpty()) return;
-  wStr=wStr.lower();
+  if (word==0 || word[0]=='\0') return;
+  QCString wStr = QCString(word).lower();
   IndexWord *w = m_words[wStr];
   if (w==0)
   {

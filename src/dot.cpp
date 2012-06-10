@@ -195,6 +195,7 @@ static const char *umlEdgeStyleMap[] =
   "solid"          // usage
 };
 
+/** Helper struct holding the properties of a edge in a dot graph. */
 struct EdgeProperties
 {
   const char * const *edgeColorMap;
@@ -746,6 +747,7 @@ static bool checkDeliverables(const QCString &file1,
 
 //--------------------------------------------------------------------
 
+/** Class representing a list of DotNode objects. */
 class DotNodeList : public QList<DotNode>
 {
   public:

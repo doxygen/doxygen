@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_ID_H
 #define TRANSLATOR_ID_H
 
-/** 
+/* 
  * Translasi berikut didasarkan pada versi translator_en.h dalam
  * Doxygen 1.7.5.1.
  *

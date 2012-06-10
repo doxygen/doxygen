@@ -778,7 +778,7 @@ void addConfigOptions(Config *cfg)
                  "LAYOUT_FILE",
                  "The LAYOUT_FILE tag can be used to specify a layout file which will be parsed\n"
                  "by doxygen. The layout file controls the global structure of the generated\n"
-                 "output files in an output format independent way. The create the layout file\n"
+                 "output files in an output format independent way. To create the layout file\n"
                  "that represents doxygen's defaults, run doxygen with the -l option.\n"
                  "You can optionally specify a file name after the option, if omitted\n"
                  "DoxygenLayout.xml will be used as the name of the layout file."
@@ -1076,7 +1076,7 @@ void addConfigOptions(Config *cfg)
                  "STRIP_CODE_COMMENTS",
                  "Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct\n"
                  "doxygen to hide any special comment blocks from generated source code\n"
-                 "fragments. Normal C and C++ comments will always remain visible.",
+                 "fragments. Normal C, C++ and Fortran comments will always remain visible.",
                  TRUE
                 );
   //----

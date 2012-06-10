@@ -26,6 +26,7 @@
 
 class Definition;
 
+/** A list of ClassDef objects. */
 class ClassList : public QList<ClassDef>
 { 
   public:
@@ -35,12 +36,14 @@ class ClassList : public QList<ClassDef>
    int compareItems(GCI item1,GCI item2);
 };
 
+/** An iterator for ClassDef objects in a ClassList. */
 class ClassListIterator : public QListIterator<ClassDef>
 {
   public:
     ClassListIterator(const ClassList &list);
 };
 
+/** An unsorted dictionary of ClassDef objects. */
 class ClassDict : public QDict<ClassDef>
 {
   public:
@@ -48,6 +51,7 @@ class ClassDict : public QDict<ClassDef>
    ~ClassDict() {}
 };
 
+/** A sorted dictionary of ClassDef objects. */
 class ClassSDict : public SDict<ClassDef>
 {
   public:

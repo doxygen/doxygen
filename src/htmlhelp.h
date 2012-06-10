@@ -30,7 +30,8 @@ class QFile;
 class Definition;
 class HtmlHelpIndex;
 
-/*! A class that generated the HTML Help specific files.
+/** A class that generated the HTML Help specific files.
+ *
  *  These files can be used with the Microsoft HTML Help workshop
  *  to generate compressed HTML files (.chm).
  */

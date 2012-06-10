@@ -64,6 +64,7 @@
 
 const QString EXTENSION_URI("http://psiamp.org/dtd/doxygen_dbusxml.dtd");
 
+/** DBus implementation of the generic QXmlDefaultHandler. */
 class DBusXMLHandler : public QXmlDefaultHandler
 {
 public:

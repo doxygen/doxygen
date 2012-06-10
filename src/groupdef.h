@@ -42,6 +42,7 @@ class DirList;
 class FTVHelp;
 class Entry;
 
+/** A model of a group of symbols. */
 class GroupDef : public Definition
 {
   public:
@@ -50,7 +51,7 @@ class GroupDef : public Definition
     DefType definitionType() const { return TypeGroup; }
     QCString getOutputFileBase() const;
     QCString anchor() const { return QCString(); }
-    QCString displayName() const { return hasGroupTitle() ? title : Definition::name(); }
+    QCString displayName(bool=TRUE) const { return hasGroupTitle() ? title : Definition::name(); }
     const char *groupTitle() const { return title; }
     void setGroupTitle( const char *newtitle );
     bool hasGroupTitle( ) const { return titleSet; }
@@ -153,6 +154,7 @@ class GroupDef : public Definition
 
 };
 
+/** A sorted dictionary of GroupDef objects. */
 class GroupSDict : public SDict<GroupDef>
 {
   public:
@@ -164,6 +166,7 @@ class GroupSDict : public SDict<GroupDef>
     }
 };
 
+/** A list of GroupDef objects. */
 class GroupList : public QList<GroupDef>
 {
   public:
@@ -173,6 +176,7 @@ class GroupList : public QList<GroupDef>
     }
 };
 
+/** An iterator for GroupDef objects in a GroupList. */
 class GroupListIterator : public QListIterator<GroupDef>
 {
   public:

@@ -21,6 +21,7 @@
 #include "translator.h"
 #include "portable.h"
 
+/** Decoder adapter for translator file that are not yet UTF-8 encoded. */
 class TranslatorDecoder : public Translator
 {
   public:

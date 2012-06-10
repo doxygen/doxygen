@@ -40,6 +40,7 @@
 
 //---------------------------------------------------------------------------
 
+/** Class implementing CodeOutputInterface by throwing away everything. */
 class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:

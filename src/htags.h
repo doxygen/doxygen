@@ -17,6 +17,7 @@
 
 class QCString;
 
+/** This class is a namespace for HTAGS related functions */
 struct Htags
 {
   static bool useHtags;

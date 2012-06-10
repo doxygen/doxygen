@@ -22,6 +22,7 @@
 
 class QFile;
 
+/** Generator for LaTeX output. */
 class LatexGenerator : public OutputGenerator
 {
   public:
@@ -164,7 +165,7 @@ class LatexGenerator : public OutputGenerator
     void endSmall()         { t << "\\normalsize "; }
     void startMemberDescription(const char *,const char *);
     void endMemberDescription();
-    void writeInheritedSectionTitle(const char *,const char *,
+    void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
@@ -187,6 +188,7 @@ class LatexGenerator : public OutputGenerator
     void startQuickIndices() {}
     void endQuickIndices() {}
     void writeSplitBar(const char *) {}
+    void writeNavigationPath(const char *) {}
     void writeLogo() {}
     void writeQuickLinks(bool,HighlightedItem,const char*) {}
     void startContents() {}

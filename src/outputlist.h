@@ -33,6 +33,8 @@
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4),arg1,arg2,arg3,arg4)
 #define FORALLPROTO5(arg1,arg2,arg3,arg4,arg5) \
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5),arg1,arg2,arg3,arg4,arg5)
+#define FORALLPROTO6(arg1,arg2,arg3,arg4,arg5,arg6) \
+  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6),arg1,arg2,arg3,arg4,arg5,arg6)
   
 class ClassDiagram;
 class DotClassGraph;
@@ -42,6 +44,9 @@ class DotGfxHierarchyTable;
 class SectionDict;
 class DotGroupCollaboration;
 
+/** Class representing a list of output generators that are written to
+ *  in parallel. 
+ */
 class OutputList : public OutputDocInterface
 {
   public:
@@ -299,9 +304,11 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDescription,anchor,inheritId); }
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
-    void writeInheritedSectionTitle(const char *id,const char *file,
-                         const char *anchor,const char *title,const char *name)
-    { forall(&OutputGenerator::writeInheritedSectionTitle,id,file,anchor,title,name); }
+    void writeInheritedSectionTitle(const char *id,   const char *ref,
+                                    const char *file, const char *anchor,
+                                    const char *title,const char *name)
+    { forall(&OutputGenerator::writeInheritedSectionTitle,id,ref,
+                                    file,anchor,title,name); }
     void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
                          const char *title) 
     { forall(&OutputGenerator::startSimpleSect,t,file,anchor,title); }
@@ -337,6 +344,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endQuickIndices); }
     void writeSplitBar(const char *name)
     { forall(&OutputGenerator::writeSplitBar,name); }
+    void writeNavigationPath(const char *s)
+    { forall(&OutputGenerator::writeNavigationPath,s); }
     void writeLogo()
     { forall(&OutputGenerator::writeLogo); }
     void writeQuickLinks(bool compact,HighlightedItem hli,const char *file)
@@ -519,6 +528,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO4(const char *,const char *,const char *,bool);
     FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
     FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
+    FORALLPROTO6(const char *,const char *,const char *,const char *,const char *,const char *);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

@@ -40,7 +40,7 @@ class MemberDef;
 class QStringList;
 
 
-/** \brief VHDL parser using state-based lexical scanning.
+/** VHDL parser using state-based lexical scanning.
  *
  * This is the VHDL language parser for doxygen.
  */
@@ -68,8 +68,8 @@ class VHDLLanguageScanner : public ParserInterface
     void parsePrototype(const char *text);
 };
 
-// container for vhdlscanner 
-struct  s_contVhdl
+/** Container for vhdlscanner */
+struct VhdlContainer
 {
   int yyLineNr;          // current line no
   int iLine;             // line no of last t_identifier  
@@ -78,10 +78,11 @@ struct  s_contVhdl
   Entry*  root;          // root
 };   
 
-struct ConfNode
+/** Configuation node for VHDL */
+struct VhdlConfNode
 { 
-  ConfNode *prevNode;
-  ConfNode(const char*  a,const char*  b,const char* config) 
+  VhdlConfNode *prevNode;
+  VhdlConfNode(const char*  a,const char*  b,const char* config) 
   { 
     arch=a;              // architecture  e.g. for iobuffer
     binding=b;           // binding e.g.  use entiy work.xxx(bev)
@@ -95,14 +96,14 @@ struct ConfNode
   QCString confVhdl;
   QCString arch;
   QCString binding;
-  QList<ConfNode> confN;
+  QList<VhdlConfNode> confN;
   bool isBind;
   bool isInlineConf;
   bool isRoot;
 
-  void addNode(ConfNode* n) { confN.append(n); }
+  void addNode(VhdlConfNode* n) { confN.append(n); }
   bool isBinding()          { return binding.isEmpty(); }
-} ;
+};
 
 // returns the current conpound entity,architecture, package,package body 
 Entry* getVhdlCompound();
@@ -114,7 +115,7 @@ void newVhdlEntry();
 
 void initVhdlParser();
 
-struct s_contVhdl*    getVhdlCont();
+struct VhdlContainer* getVhdlCont();
 
 // returns the  parsed line 
 // @ param object index of vhdl keyword like t_Identifier t_Entity 
@@ -122,11 +123,13 @@ int getParsedLine(int object);
 
 void vhdlscanFreeScanner();
 
+void vhdlParse();
+
 // return the list of component instantiations e.g. foo: component bar 
 QList<Entry> &  getVhdlInstList();
 
 // returns the list of found configurations
-QList<ConfNode>& getVhdlConfiguration();
+QList<VhdlConfNode>& getVhdlConfiguration();
 
 void isVhdlDocPending();
 #endif

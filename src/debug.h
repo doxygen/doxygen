@@ -19,6 +19,7 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
+/** Class containing a print function for diagnostics. */
 class Debug
 {
   public:

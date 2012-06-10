@@ -957,11 +957,18 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					}
 <Comment>"<summary>"			{ // start of a .NET XML style brief description
 					  setOutput(OutputBrief);
+                                          addOutput(yytext);
   					}
-<Comment>"<remarks>"|"</summary>"	{ // start of a .NET XML style detailed description
+<Comment>"<remarks>"            	{ // start of a .NET XML style detailed description
+					  setOutput(OutputDoc);
+                                          addOutput(yytext);
+  					}
+<Comment>"</summary>"	                { // start of a .NET XML style detailed description
+                                          addOutput(yytext);
 					  setOutput(OutputDoc);
   					}
 <Comment>"</remarks>"			{ // end of a brief or detailed description
+                                          addOutput(yytext);
   					}
 <Comment>{RCSTAG}			{ // RCS tag which end a brief description
   					  setOutput(OutputDoc);
@@ -988,6 +995,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					      // this command forces the end of brief description
 					      setOutput(OutputDoc);
 					    }
+                                            int i=0;
+                                            while (yytext[i]==' ' || yytext[i]=='\t') i++;
+                                            if (i>0) addOutput(QCString(yytext).left(i));
 					    if (cmdPtr->func && cmdPtr->func(cmdName))
 					    {
 					      // implicit split of the comment block into two
@@ -1010,7 +1020,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    {
 					      // command without handler, to be processed
 					      // later by parsedoc.cpp
-					      addOutput(yytext);
+					      addOutput(yytext+i);
 					    }
 					  }
 					  else // command not relevant
@@ -1315,7 +1325,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg2>.				{ // ignore other stuff
   					}
 
-<ClassDocArg3>[<]?{FILE}?[>]?		{ // third argument; include file name
+<ClassDocArg3>[<"]?{FILE}?[">]?		{ // third argument; include file name
  					  current->includeName = yytext;
 					  BEGIN( Comment );
 					}
@@ -2331,7 +2341,7 @@ static bool handleMemberOf(const QCString &)
 
 static bool handleRefItem(const QCString &)
 {
-  addOutput(" @refitem ");
+  addOutput("@refitem ");
   BEGIN(LineParam);
   return FALSE;
 }
@@ -2339,7 +2349,7 @@ static bool handleRefItem(const QCString &)
 static bool handleSection(const QCString &s)
 {
   setOutput(OutputDoc);
-  addOutput(" @"+s+" ");
+  addOutput("@"+s+" ");
   BEGIN(SectionLabel);
   if      (s=="section")       g_sectionLevel=1;
   else if (s=="subsection")    g_sectionLevel=2;
@@ -2358,28 +2368,28 @@ static bool handleSubpage(const QCString &s)
     warn(yyFileName,yyLineNr,
 	"warning: found \\subpage command in a comment block that is not marked as a page!");
   }
-  addOutput(" @"+s+" ");
+  addOutput("@"+s+" ");
   BEGIN(SubpageLabel);
   return FALSE;
 }
 
 static bool handleAnchor(const QCString &s)
 {
-  addOutput(" @"+s+" ");
+  addOutput("@"+s+" ");
   BEGIN(AnchorLabel);
   return FALSE;
 }
 
 static bool handleCite(const QCString &s)
 {
-  addOutput(" @"+s+" ");
+  addOutput("@"+s+" ");
   BEGIN(CiteLabel);
   return FALSE;
 }
 
 static bool handleFormatBlock(const QCString &s)
 {
-  addOutput(" @"+s+" ");
+  addOutput("@"+s+" ");
   //printf("handleFormatBlock(%s)\n",s.data());
   blockName=s;
   g_commentCount=0;
@@ -2389,7 +2399,7 @@ static bool handleFormatBlock(const QCString &s)
 
 static bool handleAddIndex(const QCString &)
 {
-  addOutput(" @addindex ");
+  addOutput("@addindex ");
   BEGIN(LineParam);
   return FALSE;
 }

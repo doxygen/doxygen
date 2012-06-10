@@ -491,7 +491,9 @@ void MemberList::writeDeclarations(OutputList &ol,
   int num = numDecMembers();
   if (inheritedFrom)
   {
-    if ( cd && !optimizeVhdl && countInheritableMembers(inheritedFrom)>0 )
+    //if ( cd && !optimizeVhdl && countInheritableMembers(inheritedFrom)>0 )
+    if ( cd && !optimizeVhdl && cd->countMembersIncludingGrouped(
+                                      m_listType,inheritedFrom,TRUE)>0 )
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
@@ -499,7 +501,8 @@ void MemberList::writeDeclarations(OutputList &ol,
                   stripPath(cd->getOutputFileBase());
       if (title)
       {
-        ol.writeInheritedSectionTitle(inheritId,cd->getOutputFileBase(),
+        ol.writeInheritedSectionTitle(inheritId,cd->getReference(),
+                                      cd->getOutputFileBase(), 
                                       cd->anchor(),title,cd->displayName());
       }
       ol.popGeneratorState();

@@ -270,6 +270,7 @@ static void codifyLines(char *text)
   char *p=text,*sp=p;
   char c;
   bool done=FALSE;
+  const char *  tmp_currentFontClass = g_currentFontClass;
   while (!done)
   {
     sp=p;
@@ -283,6 +284,10 @@ static void codifyLines(char *text)
       if (g_yyLineNr<g_inputLines) 
       {
 	startCodeLine();
+      }
+      if (tmp_currentFontClass)
+      {
+        startFontClass(tmp_currentFontClass);
       }
     }
     else
@@ -923,7 +928,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
 
  /*-------- comments ---------------------------------------------------*/
-<Start>\n?{BS}"!>"                      { // start comment line or comment block
+<Start>\n?{BS}"!>"|"!<"                 { // start comment line or comment block
+                                          yy_push_state(YY_START);
+					  BEGIN(DocBlock);
+                                          docBlock=yytext;
+					}
+<Declaration>{BS}"!<"                   { // start comment line or comment block
                                           yy_push_state(YY_START);
 					  BEGIN(DocBlock);
                                           docBlock=yytext;
@@ -932,7 +942,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <DocBlock>.*    			{ // contents of current comment line
                                           docBlock+=yytext;
   					}
-<DocBlock>"\n"{BS}("!>"|"!"+)		{ //| comment block (next line is also comment line)
+<DocBlock>"\n"{BS}("!>"|"!<"|"!!")	{ //| comment block (next line is also comment line)
 					  docBlock+=yytext; 
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
@@ -956,7 +966,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                          yy_pop_state();
 					}
 
-<*>"!"[^>\n].*|"!"$ 			{ // normal comment
+<*>"!"[^><\n].*|"!"$ 			{ // normal comment
 					  if(YY_START == String) REJECT; // ignore in strings
   					  startFontClass("comment");
   					  codifyLines(yytext);

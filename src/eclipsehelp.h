@@ -32,8 +32,7 @@
 class QFile;
 class Definition;
 
-/*!
- * \brief Generator of Eclipse help files
+/** Generator for Eclipse help files.
  *
  * This class generates the Eclipse specific help files.
  * These files can be used to generate a help plugin readable

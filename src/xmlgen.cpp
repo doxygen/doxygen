@@ -60,6 +60,7 @@ static const char compound_xsd[] =
 
 //------------------
 
+/** Helper class mapping MemberList::ListType to a string representing */
 class XmlSectionMapper : public QIntDict<char>
 {
   public:
@@ -193,6 +194,7 @@ void writeXMLLink(FTextStream &t,const char *extRef,const char *compoundId,
   t << "</ref>";
 }
 
+/** Implements TextGeneratorIntf for an XML stream. */
 class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
@@ -212,6 +214,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
     FTextStream &m_t;
 };
 
+/** Helper class representing a stack of objects stored by value */
 template<class T> class ValStack
 {
   public:
@@ -265,7 +268,7 @@ template<class T> class ValStack
     int m_size;
 };
 
-
+/** Generator for producing XML formatted source code. */
 class XMLCodeGenerator : public CodeOutputInterface
 {
   public:
@@ -733,12 +736,14 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     if (md->isSettable()) t << "yes"; else t << "no";
     t << "\"";
 
-    if (md->isAssign() || md->isCopy() || md->isRetain())
+    if (md->isAssign() || md->isCopy() || md->isRetain() || md->isStrong() || md->isWeak())
     {
       t << " accessor=\"";
-      if (md->isAssign()) t << "assign";
-      else if (md->isCopy()) t << "copy";
+      if (md->isAssign())      t << "assign";
+      else if (md->isCopy())   t << "copy";
       else if (md->isRetain()) t << "retain";
+      else if (md->isStrong()) t << "strong";
+      else if (md->isWeak())   t << "weak";
       t << "\"";
     }
   }

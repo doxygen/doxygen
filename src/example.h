@@ -24,6 +24,7 @@
 class ClassDef;
 class MemberName;
 
+/** Data associated with an example. */
 struct Example
 {
   QCString anchor;
@@ -31,6 +32,7 @@ struct Example
   QCString file;
 };
 
+/** A sorted dictionary of Example objects. */
 class ExampleSDict : public SDict<Example>
 {
   public:

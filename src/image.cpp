@@ -25,6 +25,7 @@
 
 typedef unsigned char  Byte;
 
+/** Helper struct representing a RGBA color */
 struct Color
 {
   Byte red;

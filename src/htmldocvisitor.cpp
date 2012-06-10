@@ -572,8 +572,8 @@ void HtmlDocVisitor::visit(DocFormula *f)
     m_t << "\" alt=\"";
     filterQuotedCdataAttr(f->text());
     m_t << "\"";
-    /// @todo cache image dimensions on formula generation and give height/width
-    /// for faster preloading and better rendering of the page
+    // TODO: cache image dimensions on formula generation and give height/width
+    // for faster preloading and better rendering of the page
     m_t << " src=\"" << f->relPath() << f->name() << ".png\"/>";
 
   }

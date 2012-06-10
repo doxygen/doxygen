@@ -66,31 +66,24 @@
 #include <qmap.h>
 #include "entry.h"
 
-static MyParserVhdl *pconv;
+extern void vhdlParse(); // defined in vhdlparser.y
 
 static bool          g_lexInit = FALSE;
 static ParserInterface *g_thisParser;
-static struct s_contVhdl* yycont=NULL;
+static VhdlContainer* yycont=NULL;
 static Entry* current_root;
 static Entry   gBlock;
 
 static int yyLineNr =1;
-//static int yyPrevLine=1;
-//static int yyEndLine=1;
 static int   g_lastCommentContext;
 static int              inputPosition;
-//static int defineLineContinue=0;
 static int startComment;
-//static int iSize=0;
 static QCString inputVhdlString;
 static QFile            inputFile;
 static QCString         yyFileName;
 static QList<QCString> qlist;
-
 static QCString lastLetter;
-//static int totLines=0;
 
-//static bool multLineComment=FALSE;
 static bool doxComment=FALSE; // doxygen comment ? 
 static QCString strComment;
 static int iDocLine=-1;
@@ -99,14 +92,12 @@ static int num_chars;
 static  int prevToken;
 static int iCodeLen;
 
-//static const char *  g_inputString;       //!< the    code fragment as text
-//static int           g_inputLines=0;      //!<number of line in the code fragment
-//static bool          g_needsTermination;
-static	QMap<QCString, int> keyMap;
-
+static QMap<QCString, int> keyMap;
+static QList<Entry>  lineEntry;
+static bool  checkMultiComment(QCString& qcs,int line);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void mapLibPackage(const Entry* ce);
-static Entry* getEntryAtLine(const Entry* ce,int line);
+static QList<Entry>* getEntryAtLine(const Entry* ce,int line);
 static bool addLibUseClause(const QCString &type);
 static Entry* oldEntry;
 static bool varr=FALSE;
@@ -554,18 +545,8 @@ BR                         [ \t\n\r]
     startComment=yyLineNr;
     g_lastCommentContext=YY_START;
   }
-
-  Entry* pTemp=getEntryAtLine(current_root,len);
-  if (pTemp)
-  { // found one line comment, add it to the entry on this line
-    pTemp->briefLine=yyLineNr;
-    pTemp->brief+=vhdlScanYYtext;
-    pTemp->briefFile=yyFileName;
-    pTemp->fileName = yyFileName;
- 	   
-    VhdlDocGen::prepareComment(pTemp->brief);
-  }
-  else 
+  
+   if(!checkMultiComment(qc,len))
   {
     strComment+=vhdlScanYYtext;
   }
@@ -629,29 +610,17 @@ BR                         [ \t\n\r]
 	  }
 
 	  //printf("--> handleCommentBlock line %d\n",yyLineNr);
-	  Entry* pTemp=getEntryAtLine(current_root,yyLineNr);
-
 	  if (!isEndCode && index==-1)
-	  {
-	    int j=qcs.find("--!");
-	    qcs=qcs.right(qcs.length()-3-j);
+          {
+            int j=qcs.find("--!");
+            qcs=qcs.right(qcs.length()-3-j);
 
-	    if (pTemp)
-	    {
-	      pTemp->briefLine=yyLineNr;
-	      pTemp->fileName = yyFileName;
- 	      qcs=qcs.stripWhiteSpace();
-	      pTemp->brief+=qcs;
-
-	      pTemp->briefFile=yyFileName;
-	      iDocLine=-1;
-	    }
-	    else
-	    {
-	      handleCommentBlock(qcs,TRUE);
-	    }
-	  }//endcode
-        }
+            if(!checkMultiComment(qcs,yyLineNr))
+            {
+              handleCommentBlock(qcs,TRUE);
+            }
+          }//endcode
+       }
 
 <*>"/*" {
 	  strComment+=vhdlScanYYtext;
@@ -757,12 +726,12 @@ void VHDLLanguageScanner::parsePrototype(const char *text)
 }
 
 // do parsing
-int MyParserVhdl::doLex()
-{
-  int token=vhdlScanYYlex();
-  //fprintf(stderr,"\ntoken: %d at line: %d",token,yyLineNr);
-  return token;
-}
+//int VhdlParser::doLex()
+//{
+//  int token=vhdlScanYYlex();
+//  //fprintf(stderr,"\ntoken: %d at line: %d",token,yyLineNr);
+//  return token;
+//}
 
 void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
 {
@@ -803,11 +772,8 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   inputVhdlString=fileBuf;
   yyLineNr=1;
   current_root=root;
-  pconv=new MyParserVhdl();
   groupEnterFile(fileName,yyLineNr);
-  pconv->parse(pconv);
-  //    resetScanner(NULL,pconv);
-  delete pconv;	  	  
+  vhdlParse();
   Entry* curr=getCurrentVhdlEntry(); // delete last current
   delete curr;
   curr=0;
@@ -945,9 +911,13 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   oldEntry=current;
 
   if (brief) 
+  {
     current->briefLine = iDocLine; 
+  }
   else 
+  {
     current->docLine = iDocLine;
+  }
   
 //  printf("parseCommentBlock file<%s>\n [%s]\n",yyFileName.data(),doc.data());
   while (parseCommentBlock(
@@ -970,7 +940,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   }
   if (needsEntry)
   {
-    if(varr)
+    if (varr)
     {
       varr=FALSE;
       current->name=varName;
@@ -985,25 +955,22 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   strComment.resize(0);
 }
 
-// returns the vhdl type parsed at line xxx
-static Entry* getEntryAtLine(const Entry* ce,int line)
+// returns the vhdl parsed types at line xxx
+QList<Entry>* getEntryAtLine(const Entry* ce,int line)
 {
   EntryListIterator eli(*ce->children());
-  Entry *found=0;
   Entry *rt;
   for (;(rt=eli.current());++eli)
   {
     if (rt->bodyLine==line)
     {
-      found=rt;
+      lineEntry.insert(0,rt);
     } // if
-    if (!found) 
-    {
-      found=getEntryAtLine(rt,line);
-    }
+
+    getEntryAtLine(rt,line);
   }
-  return found;
-}// getEntryAtLine
+  return &lineEntry;
+}
 
 // token index in vhdlparser.hpp 258..416
 int getParsedLine(int object)
@@ -1022,3 +989,25 @@ void isVhdlDocPending()
   handleCommentBlock(str_doc.doc,str_doc.brief);
   iDocLine=-1;
 }
+
+static bool  checkMultiComment(QCString& qcs,int line)
+{
+  QList<Entry> *pTemp=getEntryAtLine(current_root,line);
+
+  if (pTemp->isEmpty()) return false;
+
+  int ii=pTemp->count();
+  qcs.stripPrefix("--!");
+  while (!pTemp->isEmpty())
+  {
+    Entry *e=(Entry*)pTemp->first();
+    e->briefLine=line;
+    e->brief+=qcs;
+    iDocLine=-1;
+    pTemp->removeFirst();
+    ii=pTemp->count();
+  }
+  return true; 
+}
+ 
+ 

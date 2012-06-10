@@ -33,7 +33,7 @@ class StorageIntf;
 class ArgumentList;
 struct ListItemInfo;
 
-/*! \brief This class stores information about an inheritance relation
+/** This class stores information about an inheritance relation
  */ 
 struct BaseInfo 
 {
@@ -45,8 +45,8 @@ struct BaseInfo
   Specifier  virt; //!< virtualness
 };
 
-/*! \brief This struct is used to capture the tag file information 
- *         for an Entry. 
+/** This struct is used to capture the tag file information 
+ *  for an Entry. 
  */
 struct TagInfo 
 {
@@ -55,8 +55,8 @@ struct TagInfo
   QCString anchor;
 };
 
-/*! \brief Represents an unstructured piece of information, about an
- *         entity found in the sources. 
+/** Represents an unstructured piece of information, about an
+ *  entity found in the sources. 
  *
  *  parseMain() in scanner.l will generate a tree of these
  *  entries.
@@ -137,9 +137,11 @@ class Entry
       Copy        = 0x00080000,
       Retain      = 0x00100000,
       Assign      = 0x00200000,
-      Composition = 0x00400000,
-      Aggregation = 0x00800000,
-      Association = 0x01000000
+      Strong      = 0x00400000,
+      Weak        = 0x00800000,
+      Composition = 0x01000000,
+      Aggregation = 0x02000000,
+      Association = 0x04000000
     };
     enum ClassSpecifier
     {
@@ -299,6 +301,11 @@ class Entry
     Entry &operator=(const Entry &); 
 };
 
+/** Wrapper for a node in the Entry tree.
+ *
+ *  Allows navigating through the Entry tree and load and storing Entry
+ *  objects persistently to disk.
+ */
 class EntryNav
 {
   public:
