@@ -784,9 +784,12 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
             reference = fd->getReference();
             outputBase = fd->getOutputFileBase();
           }
-          ftv->addContentsItem(FALSE,fd->displayName(),          
-                               reference, outputBase, 0,         
-                               FALSE,FALSE,fd);
+          if (doc || src)
+          {
+            ftv->addContentsItem(FALSE,fd->displayName(),          
+                                 reference, outputBase, 0,         
+                                 FALSE,FALSE,fd);
+          }
           if (addToIndex)
           {
             if (doc)
