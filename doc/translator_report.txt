@@ -1,4 +1,4 @@
-(1.8.1)
+(1.8.1.1)
 
 Doxygen supports the following 39 languages (sorted alphabetically):
 
@@ -10,7 +10,7 @@ Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 11 translators are up-to-date, 28 translators are based on
+Of them, 12 translators are up-to-date, 27 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -27,6 +27,7 @@ still may be some details listed even for them:
   TranslatorEsperanto
   TranslatorGerman
   TranslatorItalian
+  TranslatorKorean -- Change the base class to Translator.
   TranslatorPolish -- Remove the obsolete methods (never used).
   TranslatorSlovak
   TranslatorSpanish -- The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()
@@ -59,9 +60,6 @@ must be implemented to become up-to-date:
 	Note: Reimplementation using UTF-8 suggested.
 
   TranslatorPersian               1.7.5 	10 methods to implement (4 %)
-  TranslatorKorean                1.7.5 	10 methods to implement (4 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorVietnamese            1.6.0 	19 methods to implement (8 %)
   TranslatorSwedish               1.6.0 	19 methods to implement (8 %)
 	Note: Reimplementation using UTF-8 suggested.
@@ -122,7 +120,6 @@ for occurence of the method identifiers:
   QCString trDirDependency(const char *)
   QCString trFuncProtos()
   QCString trFunctionPrototypeDocumentation()
-  QCString trGraphicalHierarchy()
   QCString trSearchForIndex()
 
 
@@ -484,23 +481,10 @@ TranslatorJapaneseEn   (TranslatorEnglish)  230 methods to implement (97 %)
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorKorean   (TranslatorAdapter_1_7_5)  10 methods to implement (4 %)
+TranslatorKorean   (TranslatorAdapter_1_7_5)
 ----------------
 
-  Implements 225 of the required methods (95 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDetailLevel()
-    virtual QCString trTemplateParameters()
-    virtual QCString trAndMore(const QCString & number)
-    virtual QCString trDirDepGraph(const char * name)
-    virtual QCString trEnumReference(const char * name)
-    virtual QCString trInheritedFrom(const char * members, const char * what)
-    virtual QCString trCiteReferences()
-    virtual QCString trAdditionalInheritedMembers()
-    virtual QCString trCopyright()
-    virtual QCString trEnumGeneratedFromFiles(bool single)
+  Implements 235 of the required methods (100 %).
 
 
 TranslatorKoreanEn   (TranslatorEnglish)  230 methods to implement (97 %)

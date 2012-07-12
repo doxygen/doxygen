@@ -125,7 +125,7 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Списак свих чланова."; }
+    { return "Списак свих чланова"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

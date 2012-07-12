@@ -126,7 +126,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Llista de tots els membres."; }
+    { return "Llista de tots els membres"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

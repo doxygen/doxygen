@@ -127,7 +127,7 @@ class TranslatorEsperanto : public Translator
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Listo de ĉiuj membroj."; }
+    { return "Listo de ĉiuj membroj"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

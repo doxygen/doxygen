@@ -340,7 +340,19 @@ class DocSymbol : public DocNode
     enum SymType { Unknown=0, BSlash, At, Less, Greater, Amp, Dollar, Hash,
                    DoubleColon, Percent, Copy, Tm, Reg, Apos, Quot, Uml, Acute, 
                    Grave, Circ, Tilde, Szlig, Cedil, Ring, Nbsp, Slash, 
-                   Lsquo, Rsquo, Ldquo, Rdquo, Ndash, Mdash, Aelig, AElig
+                   Lsquo, Rsquo, Ldquo, Rdquo, Ndash, Mdash, Aelig, AElig,
+                   GrkGamma, GrkDelta, GrkTheta, GrkLambda, GrkXi, GrkPi,
+                   GrkSigma, GrkUpsilon, GrkPhi, GrkPsi, GrkOmega, Grkalpha,
+                   Grkbeta, Grkgamma, Grkdelta, Grkepsilon, Grkzeta, Grketa,
+                   Grktheta, Grkiota, Grkkappa, Grklambda, Grkmu, Grknu, Grkxi,
+                   Grkpi, Grkrho, Grksigma, Grktau, Grkupsilon, Grkphi, Grkchi,
+                   Grkpsi, Grkomega, Grkvarsigma, Section, Degree, Prime,
+                   DoublePrime, Infinity, EmptySet, PlusMinus, Times, Minus,
+                   CenterDot, Partial, Nabla, SquareRoot, Perpendicular, Sum,
+                   Integral, Product, Similar, Approx, NotEqual, Equivalent,
+                   Proportional, LessEqual, GreaterEqual, LeftArrow, RightArrow,
+                   SetIn, SetNotIn, LeftCeil, RightCeil, LeftFloor, RightFloor,
+                   Pipe
                  };
     DocSymbol(DocNode *parent,SymType s,char letter='\0') : 
       m_symbol(s), m_letter(letter) { m_parent = parent; }

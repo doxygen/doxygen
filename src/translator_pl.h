@@ -99,7 +99,7 @@ class TranslatorPolish : public Translator
 
     /*! put in the class documentation */
     QCString trListOfAllMembers()
-    { return "Lista wszystkich składowych."; }
+    { return "Lista wszystkich składowych"; }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList()

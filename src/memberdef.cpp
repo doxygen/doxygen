@@ -401,7 +401,9 @@ class MemberDefImpl
 
     ExampleSDict *exampleSDict; // a dictionary of all examples for quick access
 
-    QCString type;            // return type
+    QCString type;            // return actual type
+    QCString accessorType;    // return type that tell how to get to this member
+    ClassDef *accessorClass;  // class that this member accesses (for anonymous types)
     QCString args;            // function arguments/variable array specifiers
     QCString def;             // member definition in code (fully qualified name)
     QCString anc;             // HTML anchor name
@@ -525,6 +527,7 @@ void MemberDefImpl::init(Definition *def,
   redefines=0;
   relatedAlso=0;
   redefinedBy=0;
+  accessorClass=0;
   nspace=0;
   memDef=0;
   memDec=0;
@@ -1046,7 +1049,6 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
 {
   KEEP_RESIDENT_DURING_CALL;
   SrcLangExt lang = getLanguage();
-  //static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
   QCString sep = getLanguageSpecificSeparator(lang,TRUE);
   QCString n = name();
@@ -1134,14 +1136,12 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
     if (!cname.isEmpty() && annName.left(cname.length()+2)!=cname+"::") 
     {
       QCString ts=stripAnonymousNamespaceScope(cname+"::"+annName);
-      //printf("Member::writeDeclaration: Trying %s\n",ts.data());
       annoClassDef=getClass(ts);
     }
     // if not found yet, try without scope name
     if (annoClassDef==0)
     {
       QCString ts=stripAnonymousNamespaceScope(annName);
-      //printf("Member::writeDeclaration: Trying %s\n",ts.data());
       annoClassDef=getClass(ts);
     }
   }
@@ -1847,6 +1847,7 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
         else if (isRetain())              sl.append("retain");
         else if (isWeak())                sl.append("weak");
         else if (isStrong())              sl.append("strong");
+        else if (isUnretained())          sl.append("unsafe_unretained");
 
         if (!isObjCMethod())
         {
@@ -2666,6 +2667,50 @@ static QCString simplifyTypeForTable(const QCString &s)
   return ts;
 }
 
+#if 0
+/** Returns the type definition corresponding to a member's return type. 
+ *  @param[in]  scope The scope in which to search for the class definition.
+ *  @param[in]  type  The string representing the member's return type.
+ *  @param[in]  lang  The programming language in which the class is defined.
+ *  @param[out] start The string position where the class definition name was found.
+ *  @param[out] length The length of the class definition's name.
+ */
+static Definition *getClassFromType(Definition *scope,const QCString &type,SrcLangExt lang,int &start,int &length)
+{
+  int pos=0;
+  int i;
+  QCString name;
+  QCString templSpec;
+  while ((i=extractClassNameFromType(type,pos,name,templSpec,lang))!=-1)
+  {
+    ClassDef *cd=0;
+    MemberDef *md=0;
+    int l = name.length()+templSpec.length();
+    if (!templSpec.isEmpty())
+    {
+      cd = getResolvedClass(scope,0,name+templSpec,&md);
+    }
+    cd = getResolvedClass(scope,0,name);
+    if (cd) 
+    {
+      start=i;
+      length=l;
+      printf("getClassFromType: type=%s name=%s start=%d length=%d\n",type.data(),name.data(),start,length);
+      return cd;
+    }
+    else if (md)
+    {
+      start=i;
+      length=l;
+      printf("getClassFromType: type=%s name=%s start=%d length=%d\n",type.data(),name.data(),start,length);
+      return md;
+    }
+    pos=i+l;
+  }
+  return 0;
+}
+#endif
+
 void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
 {
   KEEP_RESIDENT_DURING_CALL;
@@ -2682,18 +2727,49 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
     doxyName="__unnamed__";
   }
 
+  ClassDef *cd = m_impl->accessorClass;
+  //printf("===> %s::anonymous: %s\n",name().data(),cd?cd->name().data():"<none>");
+
   ol.startInlineMemberType();
   ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
 
-  QCString ts = simplifyTypeForTable(m_impl->type);
+  QCString type = m_impl->accessorType;
+  if (type.isEmpty())
+  {
+    type = m_impl->type;
+  }
+  QCString ts = simplifyTypeForTable(type);
 
-  linkifyText(TextGeneratorOLImpl(ol), // out
-              scope,                   // scope
-              getBodyDef(),            // fileScope
-              this,                    // self
-              ts,                      // text
-              TRUE                     // autoBreak
-             ); 
+  if (cd) // cd points to an anonymous struct pointed to by this member
+          // so we add a link to it from the type column.
+  {
+    int i=0;
+    const char *prefixes[] = { "struct ","union ","class ", 0 };
+    const char **p = prefixes;
+    while (*p)
+    {
+      int l=strlen(*p);
+      if (ts.left(l)==*p)
+      {
+        ol.writeString(*p);
+        i=l;
+      }
+      p++;
+    }
+    ol.writeObjectLink(cd->getReference(),
+                       cd->getOutputFileBase(),
+                       cd->anchor(),ts.mid(i));
+  }
+  else // use standard auto linking
+  {
+    linkifyText(TextGeneratorOLImpl(ol), // out
+                scope,                   // scope
+                getBodyDef(),            // fileScope
+                this,                    // self
+                ts,                      // text
+                TRUE                     // autoBreak
+               ); 
+  }
   ol.endDoxyAnchor(cfname,memAnchor);
   ol.endInlineMemberType();
 
@@ -3396,6 +3472,13 @@ void MemberDef::setType(const char *t)
   m_impl->type = t;
 }
 
+void MemberDef::setAccessorType(ClassDef *cd,const char *t)
+{
+  makeResident();
+  m_impl->accessorClass = cd;
+  m_impl->accessorType = t;
+}
+
 void MemberDef::findSectionsInDocumentation()
 {
   makeResident();
@@ -3873,6 +3956,13 @@ bool MemberDef::isStrong() const
   makeResident();
   return (m_impl->memSpec&Entry::Strong)!=0; 
 }
+
+bool MemberDef::isUnretained() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Unretained)!=0; 
+}
+
 
 bool MemberDef::isImplementation() const
 { 
@@ -4387,6 +4477,8 @@ void MemberDef::flushToDisk() const
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->relatedAlso);
   marshalExampleSDict (Doxygen::symbolStorage,m_impl->exampleSDict);
   marshalQCString     (Doxygen::symbolStorage,m_impl->type);
+  marshalQCString     (Doxygen::symbolStorage,m_impl->accessorType);
+  marshalObjPointer   (Doxygen::symbolStorage,m_impl->accessorClass);
   marshalQCString     (Doxygen::symbolStorage,m_impl->args);
   marshalQCString     (Doxygen::symbolStorage,m_impl->def);
   marshalQCString     (Doxygen::symbolStorage,m_impl->anc);
@@ -4486,6 +4578,8 @@ void MemberDef::loadFromDisk() const
   m_impl->relatedAlso             = (ClassDef*)unmarshalObjPointer     (Doxygen::symbolStorage);
   m_impl->exampleSDict            = unmarshalExampleSDict (Doxygen::symbolStorage);
   m_impl->type                    = unmarshalQCString     (Doxygen::symbolStorage);
+  m_impl->accessorType            = unmarshalQCString     (Doxygen::symbolStorage);
+  m_impl->accessorClass           = (ClassDef*)unmarshalObjPointer     (Doxygen::symbolStorage);
   m_impl->args                    = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->def                     = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->anc                     = unmarshalQCString     (Doxygen::symbolStorage);

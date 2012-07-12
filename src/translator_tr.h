@@ -125,7 +125,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Tüm üyelerin listesi."; }
+    { return "Tüm üyelerin listesi"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

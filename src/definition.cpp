@@ -394,7 +394,9 @@ void Definition::addSectionsToIndex()
           Doxygen::indexList.decContentsDepth();
         }
       }
-      Doxygen::indexList.addContentsItem(TRUE,si->title,
+      QCString title = si->title;
+      if (title.isEmpty()) title = si->label;
+      Doxygen::indexList.addContentsItem(TRUE,title,
                                          getReference(),
                                          getOutputFileBase(),
                                          si->label,

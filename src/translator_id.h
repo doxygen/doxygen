@@ -109,7 +109,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Daftar semua anggota."; }
+    { return "Daftar semua anggota"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

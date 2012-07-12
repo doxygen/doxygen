@@ -116,9 +116,12 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty())
   {
-    ol.writeRuler();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Html);
+      ol.writeRuler();
+    ol.popGeneratorState();
+    ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
       ol.writeAnchor(0,"details");
     ol.popGeneratorState();
     ol.startGroupHeader();

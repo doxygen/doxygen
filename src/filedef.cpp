@@ -171,9 +171,12 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       (Config_getBool("SOURCE_BROWSER") && getStartBodyLine()!=-1 && getBodyDef())
      )
   {
-    ol.writeRuler();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Html);
+      ol.writeRuler();
+    ol.popGeneratorState();
+    ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
       ol.writeAnchor(0,"details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -492,7 +495,8 @@ void FileDef::writeSummaryLinks(OutputList &ol)
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
       QCString label = lde->kind()==LayoutDocEntry::FileClasses ? "nested-classes" : "namespaces";
-      writeSummaryLink(ol,label,ls->title,first);
+      ol.writeSummaryLink(0,label,ls->title,first);
+      first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
@@ -500,7 +504,8 @@ void FileDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+        first=FALSE;
       }
     }
   }
@@ -794,10 +799,13 @@ void FileDef::writeSource(OutputList &ol)
   ol.disable(OutputGenerator::RTF);
   if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
 
+  bool isDocFile = isDocumentationFile();
+  bool genSourceFile = !isDocFile && generateSourceFile();
   if (getDirDef())
   {
     startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,
-        !generateTreeView,getOutputFileBase());
+        !generateTreeView,
+        !isDocFile && genSourceFile ? 0 : getOutputFileBase());
     if (!generateTreeView)
     {
       getDirDef()->writeNavigationPath(ol);
@@ -809,8 +817,8 @@ void FileDef::writeSource(OutputList &ol)
   }
   else
   {
-    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,
-        FALSE,getOutputFileBase());
+    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,FALSE,
+        !isDocFile && genSourceFile ? 0 : getOutputFileBase());
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);
     endTitle(ol,getSourceFileBase(),0);

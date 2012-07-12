@@ -88,6 +88,35 @@ sub html_ent {
 	s/\\([cC]hi)\b/&$1;/g;
 	s/\\([pP]si)\b/&$1;/g;
 	s/\\([oO]mega)\b/&$1;/g;
+	s/\\S\b/&sect;/g;
+	s/^\\circ\b/&deg;/g;
+	s/\\infty\b/&infin;/g;
+	s/\\emptyset\b/&empty;/g;
+	s/\\pm\b/&plusmn;/g;
+	s/\\times\b/&times;/g;
+	s/\\cdot\b/&sdot;/g;
+	s/\\partial\b/&part;/g;
+	s/\\nabla\b/&nabla;/g;
+	s/\\surd\b/&radic;/g;
+	s/\\perp\b/&perp;/g;
+	s/\\sum\b/&sum;/g;
+	s/\\int\b/&int;/g;
+	s/\\prod\b/&prod;/g;
+	s/\\sim\b/&sim;/g;
+	s/\\approx\b/&asymp;/g;
+	s/\\ne\b/&ne;/g;
+	s/\\equiv\b/&equiv;/g;
+	s/\\propto\b/&prop;/g;
+	s/\\le\b/&le;/g;
+	s/\\ge\b/&ge;/g;
+	s/\\leftarrow\b/&larr;/g;
+	s/\\rightarrow\b/&rarr;/g;
+	s/\\in\b/&isin;/g;
+	s/\\notin\b/&notin;/g;
+	s/\\lceil\b/&lceil;/g;
+	s/\\rceil\b/&rceil;/g;
+	s/\\lfloor\b/&lfloor;/g;
+	s/\\rfloor\b/&rfloor;/g;
 }
 foreach (@ARGV) {
   if (/\.bib$/) {

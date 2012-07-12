@@ -547,9 +547,12 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
   {
     if (pageDict->count()!=countMembers()) // not only pages -> classical layout
     {
-      ol.writeRuler();
       ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
+        ol.disable(OutputGenerator::Html);
+        ol.writeRuler();
+      ol.popGeneratorState();
+      ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
         ol.writeAnchor(0,"details");
       ol.popGeneratorState();
       ol.startGroupHeader();
@@ -883,7 +886,8 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
                        lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
                        lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
                        "dirs";
-      writeSummaryLink(ol,label,ls->title,first);
+      ol.writeSummaryLink(0,label,ls->title,first);
+      first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
@@ -891,7 +895,8 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+        first=FALSE;
       }
     }
   }

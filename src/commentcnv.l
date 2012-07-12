@@ -195,64 +195,6 @@ static void endCondSection()
   }
 }
 
-#if 0
-/** remove and executes cond and endcond commands in \a s */
-static QCString handleCondCmdInAliases(const QCString &s)
-{
-  QCString result;
-  //printf("handleCondCmdInAliases(%s)\n",s.data());
-  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
-  int p=0,i,l;
-  while ((i=cmdPat.match(s,p,&l))!=-1)
-  {
-    result+=s.mid(p,i-p);
-    QCString cmd = s.mid(i+1,l-1);
-    //printf("Found command %s\n",cmd.data());
-    if (cmd=="cond")
-    {
-      int sp=i+l,ep;
-      const char *arg=s.data()+sp;
-      char c;
-      // skip spaces
-      while ((c=*arg) && (c==' ' || c=='\t')) arg++,sp++;
-      // read argument
-      if (*arg=='\n') // no arg
-      {
-	startCondSection(" ");
-	ep=sp;
-      }
-      else // get argument
-      {
-	ep=sp;
-	while ((c=*arg) && isId(c)) arg++,ep++;
-	if (ep>sp)
-	{
-	  QCString id = s.mid(sp,ep-sp);
-	  //printf("Found conditional section id %s\n",id.data());
-	  startCondSection(id);
-	}
-	else // invalid identifier
-	{
-	}
-      }
-      p=ep;
-    }
-    else if (cmd=="endcond")
-    {
-      endCondSection();
-      p=i+l;
-    }
-    else
-    {
-      result+=s.mid(i,l);
-      p=i+l;
-    }
-  }
-  result+=s.right(s.length()-p);
-  return result;
-}
-#endif
-
 /** copies string \a s with length \a len to the output, while 
  *  replacing any alias commands found in the string.
  */
@@ -608,6 +550,7 @@ void replaceComment(int offset);
 				       BEGIN(Scan);
 				     }
   				   }
+   /* removed for bug 674842 (bug was introduced in rev 768)
 <CComment>"'"			   {
   			             g_charContext = YY_START;
 				     copyToOutput(yytext,(int)yyleng);
@@ -618,6 +561,7 @@ void replaceComment(int offset);
 				     copyToOutput(yytext,(int)yyleng);
 				     BEGIN(SkipString);
   				   }
+   */
 <CComment>.			   {
                                      copyToOutput(yytext,(int)yyleng); 
   				   }

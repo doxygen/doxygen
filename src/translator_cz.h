@@ -148,7 +148,7 @@ class TranslatorCzech : public Translator
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Seznam všech členů."; }
+    { return "Seznam všech členů"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

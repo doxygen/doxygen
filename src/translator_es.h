@@ -119,7 +119,7 @@ class TranslatorSpanish : public Translator
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Lista de todos los miembros."; }
+    { return "Lista de todos los miembros"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

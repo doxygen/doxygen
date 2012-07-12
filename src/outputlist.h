@@ -54,6 +54,7 @@ class OutputList : public OutputDocInterface
     virtual ~OutputList();
 
     void add(const OutputGenerator *);
+    uint count() const { return outputs->count(); }
     
     void disableAllBut(OutputGenerator::OutputType o);
     void enableAll();
@@ -350,6 +351,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeLogo); }
     void writeQuickLinks(bool compact,HighlightedItem hli,const char *file)
     { forall(&OutputGenerator::writeQuickLinks,compact,hli,file); }
+    void writeSummaryLink(const char *file,const char *anchor,const char *title,bool first)
+    { forall(&OutputGenerator::writeSummaryLink,file,anchor,title,first); }
     void startContents()
     { forall(&OutputGenerator::startContents); }
     void endContents()

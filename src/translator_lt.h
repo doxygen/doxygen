@@ -118,7 +118,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Visø nariø sàraðas."; }
+    { return "Visø nariø sàraðas"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

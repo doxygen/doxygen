@@ -120,7 +120,7 @@ static int computeIndent(const char *str,int length)
 {
   int i;
   int indent=0;
-  int tabSize=Config_getInt("TAB_SIZE");
+  static int tabSize=Config_getInt("TAB_SIZE");
   for (i=0;i<length;i++)
   {
     if (str[i]=='\t')
@@ -340,7 +340,7 @@ FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM})
-SPCMD2    {CMD}[\\@<>&$#%~".]
+SPCMD2    {CMD}[\\@<>&$#%~".|]
 SPCMD3    {CMD}form#[0-9]+
 SPCMD4    {CMD}"::"
 INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
@@ -432,7 +432,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */ 
-                         if (!Doxygen::markdownSupport)
+                         if (!Doxygen::markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -448,7 +448,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */ 
-                         if (!Doxygen::markdownSupport)
+                         if (!Doxygen::markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -474,7 +474,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*\n{MLISTITEM}     { /* list item on next line */ 
-                         if (!Doxygen::markdownSupport)
+                         if (!Doxygen::markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -491,7 +491,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          }
                        }
 <St_Para>{BLANK}*\n{OLISTITEM}     { /* list item on next line */ 
-                         if (!Doxygen::markdownSupport)
+                         if (!Doxygen::markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
@@ -685,15 +685,19 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          return TK_COMMAND;
   		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n{BLANK}* {
-                         if (g_insidePre)
-			 {
-			   /* Inside a <pre>..</pre> blank lines are treated
-			    * as whitespace.
-			    */
-                           g_token->chars=yytext;
-			   return TK_WHITESPACE;
-			 }
-			 else // found end of a paragraph
+                         // g_insidePre was always FALSE, so the next section
+                         // was never executed, now g_insidePre is set properly
+                         // again, so the section is commented out to keep the
+                         // old behavior.
+                         //if (g_insidePre)
+			 //{
+			 //  /* Inside a <pre>..</pre> blank lines are treated
+			 //   * as whitespace.
+			 //   */
+                         //  g_token->chars=yytext;
+			 //  return TK_WHITESPACE;
+			 //}
+			 //else // found end of a paragraph
 			 {
                            g_token->indent=computeIndent(yytext,(int)yyleng);
                            int i;

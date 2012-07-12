@@ -182,7 +182,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 
      /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Lista kaikista jäsenistä."; } // "List of all members."
+    { return "Lista kaikista jäsenistä"; } // "List of all members."
     virtual QCString trMemberList()
 
     /*! used as the title of the "list of all members" page of a class */

@@ -232,11 +232,19 @@ static int getDotFontSize()
   return dotFontSize;
 }
 
-static void writeGraphHeader(FTextStream &t)
+static void writeGraphHeader(FTextStream &t,const QCString &title=QCString())
 {
   static bool interactiveSVG = Config_getBool("INTERACTIVE_SVG");
-  t << "digraph G" << endl;
-  t << "{" << endl;
+  t << "digraph ";
+  if (title.isEmpty())
+  {
+    t << "\"Dot Graph\"";
+  }
+  else
+  {
+    t << "\"" << convertToXML(title) << "\"";
+  }
+  t << endl << "{" << endl;
   if (interactiveSVG) // insert a comment to force regeneration when this
                       // option is toggled
   {
@@ -701,7 +709,8 @@ static void removeDotGraph(const QCString &dotName)
  *  file does not exist or its contents are not equal to \a md5, 
  *  a new .md5 is generated with the \a md5 string as contents.
  */
-static bool checkAndUpdateMd5Signature(const QCString &baseName,const QCString &md5)
+static bool checkAndUpdateMd5Signature(const QCString &baseName,
+            const QCString &md5)
 {
   QFile f(baseName+".md5");
   if (f.open(IO_ReadOnly))
@@ -2197,7 +2206,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
     // compute md5 checksum of the graph were are about to generate
     QGString theGraph;
     FTextStream md5stream(&theGraph);
-    writeGraphHeader(md5stream);
+    writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
     md5stream << "  rankdir=\"LR\";" << endl;
     for (dnli2.toFirst();(node=dnli2.current());++dnli2)
     {
@@ -2861,6 +2870,7 @@ QCString computeMd5Signature(DotNode *root,
                    bool lrRank,
                    bool renderParents,
                    bool backArrows,
+                   const QCString &title,
                    QCString &graphStr
                   )
 {
@@ -2869,7 +2879,7 @@ QCString computeMd5Signature(DotNode *root,
   //printf("computeMd5Signature\n");
   QGString buf;
   FTextStream md5stream(&buf);
-  writeGraphHeader(md5stream);
+  writeGraphHeader(md5stream,title);
   if (lrRank)
   {
     md5stream << "  rankdir=\"LR\";" << endl;
@@ -2930,13 +2940,15 @@ static bool updateDotGraph(DotNode *root,
                            GraphOutputFormat format,
                            bool lrRank,
                            bool renderParents,
-                           bool backArrows
+                           bool backArrows,
+                           const QCString &title=QCString()
                           )
 {
   QCString theGraph;
   // TODO: write graph to theGraph, then compute md5 checksum
   QCString md5 = computeMd5Signature(
-                   root,gt,format,lrRank,renderParents,backArrows,theGraph);
+                   root,gt,format,lrRank,renderParents,
+                   backArrows,title,theGraph);
   QFile f(baseName+".dot");
   if (f.open(IO_WriteOnly))
   {
@@ -3019,7 +3031,8 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                  format,
                  m_lrRank,
                  m_graphType==DotNode::Inheritance,
-                 TRUE
+                 TRUE,
+                 m_startNode->label()
                 ) ||
       !checkDeliverables(format==BITMAP ? absImgName : 
                          usePDFLatex    ? absPdfName : absEpsName,
@@ -3339,7 +3352,8 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                  format,
                  FALSE,        // lrRank
                  FALSE,        // renderParents
-                 m_inverse     // backArrows
+                 m_inverse,    // backArrows
+                 m_startNode->label()
                 ) ||
       !checkDeliverables(format==BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
@@ -3611,7 +3625,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
 
   QCString baseName = m_diskName + (m_inverse ? "_icgraph" : "_cgraph");
-  QCString mapName     = baseName;
+  QCString mapName  = baseName;
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString absBaseName = d.absPath().utf8()+"/"+baseName;
@@ -3621,14 +3635,15 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   QCString absEpsName  = absBaseName+".eps";
   QCString absImgName  = absBaseName+"."+imgExt;
 
-  bool regenerate=FALSE;
+  bool regenerate = FALSE;
   if (updateDotGraph(m_startNode,
                  DotNode::CallGraph,
                  absBaseName,
                  format,
                  TRUE,         // lrRank
                  FALSE,        // renderParents
-                 m_inverse     // backArrows
+                 m_inverse,    // backArrows
+                 m_startNode->label()
                 ) ||
       !checkDeliverables(format==BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
@@ -3873,7 +3888,7 @@ void generateGraphLegend(const char *path)
 
   QGString theGraph;
   FTextStream md5stream(&theGraph);
-  writeGraphHeader(md5stream);
+  writeGraphHeader(md5stream,theTranslator->trLegendTitle());
   md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
   md5stream << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
@@ -4266,7 +4281,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
 
   QGString theGraph;
   FTextStream md5stream(&theGraph);
-  writeGraphHeader(md5stream);
+  writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
   QDictIterator<DotNode> dni(*m_usedNodes);
@@ -4463,9 +4478,19 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes->count() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(FTextStream &t) const
+void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
+      const QCString &title) const
 {
-  t << "digraph structs" << endl;
+  t << "digraph ";
+  if (title.isEmpty())
+  {
+    t << "\"Dot Graph\"";
+  }
+  else
+  {
+    t << "\"" << convertToXML(title) << "\"";
+  }
+  t << endl;
   t << "{" << endl;
   if (Config_getBool("DOT_TRANSPARENT"))
   {
@@ -4479,7 +4504,7 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t) const
 
 void writeDotDirDepGraph(FTextStream &t,DirDef *dd)
 {
-    t << "digraph G {\n";
+    t << "digraph \"" << dd->displayName() << "\" {\n";
     if (Config_getBool("DOT_TRANSPARENT"))
     {
       t << "  bgcolor=transparent;\n";

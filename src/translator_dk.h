@@ -170,7 +170,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Liste over alle medlemmer."; }
+    { return "Liste over alle medlemmer"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

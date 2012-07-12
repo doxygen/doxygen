@@ -5,9 +5,11 @@ Introduction
 ------------
 
 This page provides a high-level overview of the internals of doxygen, with
-links to the relevant parts of the code.
+links to the relevant parts of the code. This document is intended for
+developers who want to work on doxygen. Users of doxygen are refered to the
+[User Manual](http://www.doxygen.org/manual.html).
 
-The generic starting point of the application is ofcource the main() function.
+The generic starting point of the application is of cource the main() function.
 
 Configuration options
 ---------------------
@@ -39,9 +41,21 @@ for each file. Each parser implements the abstract interface ParserInterface.
 
 If the parser indicates it needs preprocessing
 via ParserInterface::needsPreprocessing(), doxygen will call preprocessFile()
-on the file before calling ParserInterface::parseInput().
+on the file. 
 
-The result of parsing is a tree of Entry objects 
+A second step is to convert multiline C++-style comments into C style comments
+for easier processing later on. As side effect of this step also 
+aliases (ALIASES option) are resolved. The function that performs these 
+2 tasks is called convertCppComments().
+
+*Note:* Alias resolution should better be done in a separate step as it is
+now coupled to C/C++ code and does not work automatically for other languages!
+
+The third step is the actual language parsing and is done by calling 
+ParserInterface::parseInput() on the parser interface returned by 
+the ParserManager.
+
+The result of parsing is a tree of Entry objects.
 These Entry objects are wrapped in a EntryNav object and stored on disk using
 Entry::createNavigationIndex() on the root node of the tree.
 
@@ -54,6 +68,36 @@ is split into multiple parts if needed. Some data that is later needed is
 extracted like section labels, xref items, and formulas. 
 Also Markdown markup is processed using processMarkdown() during this pass.
 
+Resolving relations
+-------------------
 
+The Entry objects created and filled during parsing are stored on disk 
+(to keep memory needs low). The name, parent/child relation, and 
+location on disk of each Entry is stored as a tree of EntryNav nodes, which is 
+kept in memory.
+
+Doxygen does a number of tree walks over the EntryNav nodes in the tree to
+build up the data structures needed to produce the output. 
+
+The resulting data structures are all children of the generic base class
+called Definition which holds all non-specific data for a symbol definition.
+
+Definition is an abstract base class. Concrete subclasses are
+- ClassDef: for storing class/struct/union related data
+- NamespaceDef: for storing namespace related data
+- FileDef: for storing file related data
+- DirDef: for storing directory related data
+
+For doxygen specific concepts the following subclasses are available
+- GroupDef: for storing grouping related data
+- PageDef: for storing page related data
+
+Finally the data for members of classes, namespaces, and files is stored is
+the subclass MemberDef.
+
+Producing output
+----------------
+
+TODO
 
 

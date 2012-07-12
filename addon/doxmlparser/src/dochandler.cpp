@@ -2043,11 +2043,11 @@ DocSectionHandler::DocSectionHandler(IBaseHandler *parent,int level)
   if (level<6) 
   {
     sectionKey.sprintf("sect%d",level+1);
-    addStartHandler(sectionKey,this,&DocSectionHandler::startSubSection);
+    addStartHandler(sectionKey.utf8(),this,&DocSectionHandler::startSubSection);
   }
   addStartHandler("internal",this,&DocSectionHandler::startInternal);
   sectionKey.sprintf("sect%d",level);
-  addEndHandler(sectionKey,this,&DocSectionHandler::endDocSection);
+  addEndHandler(sectionKey.utf8(),this,&DocSectionHandler::endDocSection);
 }
 
 DocSectionHandler::~DocSectionHandler()
@@ -2120,7 +2120,7 @@ DocInternalHandler::DocInternalHandler(IBaseHandler *parent,int level)
   addStartHandler("para",this,&DocInternalHandler::startParagraph);
   QString sectionKey;
   sectionKey.sprintf("sect%d",level+1);
-  addStartHandler(sectionKey,this,&DocInternalHandler::startSubSection);
+  addStartHandler(sectionKey.utf8(),this,&DocInternalHandler::startSubSection);
   addEndHandler("internal",this,&DocInternalHandler::endInternal);
 }
 

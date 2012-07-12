@@ -66,7 +66,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     QCString trMore()
     { return "..."; }
     QCString trListOfAllMembers()
-    { return "Seznam vseh metod / atributov."; }
+    { return "Seznam vseh metod / atributov"; }
     QCString trMemberList()
     { return " - seznam metod in atributov."; }
     QCString trThisIsTheListOfAllMembers()

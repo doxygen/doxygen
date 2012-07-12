@@ -126,7 +126,7 @@ class TranslatorEnglish : public Translator
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "List of all members."; }
+    { return "List of all members"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
@@ -555,7 +555,7 @@ class TranslatorEnglish : public Translator
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "See also"; }
+    { return "See Also"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()

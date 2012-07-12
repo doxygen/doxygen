@@ -79,7 +79,7 @@ template<class T> class ElementMapper
     typedef StartElementHandler StartElementHandlerT;
     typedef EndElementHandler   EndElementHandlerT;
 	  
-	ElementMapper() : m_startHandlers(67), m_endHandlers(67)
+    ElementMapper() : m_startHandlers(67), m_endHandlers(67)
     {
       m_startHandlers.setAutoDelete(TRUE);
       m_endHandlers.setAutoDelete(TRUE);
@@ -132,7 +132,7 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
     typedef typename ElementMapper<T>::StartElementHandlerT StartElementHandlerT;
     typedef typename ElementMapper<T>::EndElementHandlerT EndElementHandlerT;
 
-    BaseHandler() : m_delegateHandler(0), m_fallBackHandler(0)
+    BaseHandler() : m_skipCount(0), m_delegateHandler(0), m_fallBackHandler(0)
     {
     }
 
@@ -165,7 +165,7 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
         return TRUE; 
       }
 
-      StartElementHandlerT *handler = ElementMapper<T>::m_startHandlers[name];
+      StartElementHandlerT *handler = ElementMapper<T>::m_startHandlers[name.utf8()];
       if (handler)
       {
         (*handler)(attrib);
@@ -205,7 +205,7 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
       }
       else if (m_skipUntil.isEmpty())
       {
-        EndElementHandlerT *handler = ElementMapper<T>::m_endHandlers[name];
+        EndElementHandlerT *handler = ElementMapper<T>::m_endHandlers[name.utf8()];
         if (handler)
         {
           (*handler)();
@@ -301,7 +301,7 @@ template<class T> class BaseFallBackHandler : public ElementMapper<T>,
     bool handleStartElement(const QString & name, 
                                     const QXmlAttributes & attrib)
     {
-      StartElementHandlerT *handler = ElementMapper<T>::m_startHandlers[name];
+      StartElementHandlerT *handler = ElementMapper<T>::m_startHandlers[name.utf8()];
       if (handler)
       {
         (*handler)(attrib);
@@ -311,7 +311,7 @@ template<class T> class BaseFallBackHandler : public ElementMapper<T>,
     }
     bool handleEndElement(const QString &name)
     {
-      EndElementHandlerT *handler = ElementMapper<T>::m_endHandlers[name];
+      EndElementHandlerT *handler = ElementMapper<T>::m_endHandlers[name.utf8()];
       if (handler)
       {
         (*handler)();

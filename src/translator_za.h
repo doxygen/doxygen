@@ -113,7 +113,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Lys van alle lede."; }
+    { return "Lys van alle lede"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

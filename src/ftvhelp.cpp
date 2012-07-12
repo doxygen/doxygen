@@ -739,7 +739,7 @@ void FTVHelp::addContentsItem(bool isDir,
   
 }
 
-static QCString node2URL(FTVNode *n)
+static QCString node2URL(FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
 {
   QCString url = n->file;
   if (!url.isEmpty() && url.at(0)=='!')  // relative URL
@@ -753,6 +753,18 @@ static QCString node2URL(FTVNode *n)
   }
   else // local file (with optional anchor)
   {
+    if (overruleFile && n->def && n->def->definitionType()==Definition::TypeFile)
+    {
+      FileDef *fd = (FileDef*)n->def;
+      if (srcLink)
+      {
+        url = fd->getSourceFileBase();
+      }
+      else
+      {
+        url = fd->getOutputFileBase();
+      }
+    }
     url+=Doxygen::htmlFileExtension;
     if (!n->anchor.isEmpty()) url+="#"+n->anchor;
   }
@@ -1085,7 +1097,24 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
 
     if (n->addToNavIndex) // add entry to the navigation index
     {
-      navIndex.append(new NavIndexEntry(node2URL(n),pathToNode(n,n)));
+      if (n->def && n->def->definitionType()==Definition::TypeFile)
+      {
+        FileDef *fd = (FileDef*)n->def;
+        bool doc,src;
+        doc = fileVisibleInIndex(fd,src);
+        if (doc)
+        {
+          navIndex.append(new NavIndexEntry(node2URL(n,TRUE,FALSE),pathToNode(n,n)));
+        }
+        if (src)
+        {
+          navIndex.append(new NavIndexEntry(node2URL(n,TRUE,TRUE),pathToNode(n,n)));
+        }
+      }
+      else
+      {
+        navIndex.append(new NavIndexEntry(node2URL(n),pathToNode(n,n)));
+      }
     }
 
     if (n->separateIndex) // store items in a separate file for dynamic loading
@@ -1191,15 +1220,24 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       tsidx << "{" << endl;
       QListIterator<NavIndexEntry> li(navIndex);
       NavIndexEntry *e;
+      bool first=TRUE;
       for (li.toFirst();(e=li.current());) // for each entry
       {
         if (elemCount==0)
         {
-          t << "\"" << e->url << "\"," << endl;
+          if (!first)
+          {
+            t << "," << endl;
+          }
+          else
+          {
+            first=FALSE;
+          }
+          t << "\"" << e->url << "\"";
         }
         tsidx << "\"" << e->url << "\":[" << e->path << "]";
         ++li;
-        if (li.current()) tsidx << ","; // not last entry
+        if (li.current() && elemCount<maxElemCount-1) tsidx << ","; // not last entry
         tsidx << endl;
   
         elemCount++;
@@ -1217,7 +1255,7 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
         }
       }
       tsidx << "};" << endl;
-      t << "];" << endl;
+      t << endl << "];" << endl;
     }
     t << endl << navtree_script;
   }

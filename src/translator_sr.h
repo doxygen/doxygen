@@ -128,7 +128,7 @@ private:
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return decode( "Spisak svih članova." ); }
+    { return decode( "Spisak svih članova" ); }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

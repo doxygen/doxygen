@@ -20,6 +20,34 @@ function stripPath2(uri)
   return m ? uri.substring(i-6) : s;
 }
 
+function localStorageSupported()
+{
+  return 'localStorage' in window && window['localStorage'] !== null;
+}
+
+function storeLink(link)
+{
+  if (!$("#nav-sync").hasClass('sync') && localStorageSupported()) {
+      window.localStorage.setItem('navpath',link);
+  }
+}
+
+function deleteLink()
+{
+  if (localStorageSupported()) {
+    window.localStorage.setItem('navpath','');
+  } 
+}
+
+function cachedLink()
+{
+  if (localStorageSupported()) {
+    return window.localStorage.getItem('navpath');
+  } else {
+    return '';
+  }
+}
+
 function getScript(scriptName,func,show)
 {
   var head = document.getElementsByTagName("head")[0]; 
@@ -138,6 +166,7 @@ function newNode(o, po, text, link, childrenData, lastNode)
       var targetPage = stripPath(link.split('#')[0]);
       a.href = srcPage!=targetPage ? url : '#';
       a.onclick = function(){
+        storeLink(link);
         if (!$(a).parent().parent().hasClass('selected'))
         {
           $('.item').removeClass('selected');
@@ -165,6 +194,7 @@ function newNode(o, po, text, link, childrenData, lastNode)
       };
     } else {
       a.href = url;
+      a.onclick = function() { storeLink(link); }
     }
   } else {
     if (childrenData != null) 
@@ -248,6 +278,8 @@ function highlightAnchor()
     glowEffect(rows.children(),300); // member without details
   } else if (anchor.parents().slice(2).prop('tagName')=='TR') {
     glowEffect(anchor.parents('div.memitem'),1000); // enum value
+  } else if (anchor.parent().attr('class')=='fieldtype'){
+    glowEffect(anchor.parent().parent(),1000); // struct field
   } else if (anchor.parent().is(":header")) {
     glowEffect(anchor.parent(),1000); // section header
   } else {
@@ -255,12 +287,11 @@ function highlightAnchor()
   }
 }
 
-function selectAndHighlight(n)
+function selectAndHighlight(hash,n)
 {
   var a;
-  if ($(location).attr('hash')) {
-    var link=stripPath($(location).attr('pathname'))+':'+
-      $(location).attr('hash').substring(1);
+  if (hash) {
+    var link=stripPath($(location).attr('pathname'))+':'+hash.substring(1);
     a=$('.item a[class$="'+link+'"]');
   }
   if (a && a.length) {
@@ -274,14 +305,14 @@ function selectAndHighlight(n)
   showRoot();
 }
 
-function showNode(o, node, index)
+function showNode(o, node, index, hash)
 {
   if (node && node.childrenData) {
     if (typeof(node.childrenData)==='string') {
       var varName    = node.childrenData;
       getScript(node.relpath+varName,function(){
         node.childrenData = getData(varName);
-        showNode(o,node,index);
+        showNode(o,node,index,hash);
       },true);
     } else {
       if (!node.childrenVisited) {
@@ -296,26 +327,26 @@ function showNode(o, node, index)
       node.expanded = true;
       var n = node.children[o.breadcrumbs[index]];
       if (index+1<o.breadcrumbs.length) {
-        showNode(o,n,index+1);
+        showNode(o,n,index+1,hash);
       } else {
         if (typeof(n.childrenData)==='string') {
           var varName = n.childrenData;
           getScript(n.relpath+varName,function(){
             n.childrenData = getData(varName);
             node.expanded=false;
-            showNode(o,node,index); // retry with child node expanded
+            showNode(o,node,index,hash); // retry with child node expanded
           },true);
         } else {
-          var rootBase = o.toroot.replace(/\..+$/, '');
+          var rootBase = stripPath(o.toroot.replace(/\..+$/, ''));
           if (rootBase=="index" || rootBase=="pages") {
             expandNode(o, n, true, true);
           }
-          selectAndHighlight(n);
+          selectAndHighlight(hash,n);
         }
       }
     }
   } else {
-    selectAndHighlight();
+    selectAndHighlight(hash);
   }
 }
 
@@ -333,7 +364,7 @@ function getNode(o, po)
 function gotoNode(o,subIndex,root,hash,relpath)
 {
   var nti = navTreeSubIndices[subIndex][root+hash];
-  o.breadcrumbs = nti ? nti : navTreeSubIndices[subIndex][root];
+  o.breadcrumbs = $.extend(true, [], nti ? nti : navTreeSubIndices[subIndex][root]);
   if (!o.breadcrumbs && root!=NAVTREE[0][1]) { // fallback: show index
     navTo(o,NAVTREE[0][1],"",relpath);
     $('.item').removeClass('selected');
@@ -341,16 +372,29 @@ function gotoNode(o,subIndex,root,hash,relpath)
   }
   if (o.breadcrumbs) {
     o.breadcrumbs.unshift(0); // add 0 for root node
-    showNode(o, o.node, 0);
+    showNode(o, o.node, 0, hash);
   }
 }
 
 function navTo(o,root,hash,relpath)
 {
+  var link = cachedLink();
+  if (link) {
+    var parts = link.split('#');
+    root = parts[0];
+    if (parts.length>1) hash = '#'+parts[1];
+    else hash='';
+  }
+  if (root==NAVTREE[0][1]) {
+    $('#nav-sync').css('top','30px');
+  } else {
+    $('#nav-sync').css('top','5px');
+  }
   if (hash.match(/^#l\d+$/)) {
     var anchor=$('a[name='+hash.substring(1)+']');
     glowEffect(anchor.parent(),1000); // line number
     hash=''; // strip line number anchors
+    //root=root.replace(/_source\./,'.'); // source link to doc link
   }
   var url=root+hash;
   var i=-1;
@@ -364,6 +408,20 @@ function navTo(o,root,hash,relpath)
         gotoNode(o,i,root,hash,relpath);
       }
     },true);
+  }
+}
+
+function toggleSyncButton(relpath)
+{
+  var navSync = $('#nav-sync');
+  if (navSync.hasClass('sync')) {
+    navSync.removeClass('sync');
+    navSync.html('<img src="'+relpath+'sync_off.png"/>');
+    storeLink(stripPath2($(location).attr('pathname'))+$(location).attr('hash'));
+  } else {
+    navSync.addClass('sync');
+    navSync.html('<img src="'+relpath+'sync_on.png"/>');
+    deleteLink();
   }
 }
 
@@ -386,6 +444,17 @@ function initNavTree(toroot,relpath)
   o.node.plus_img.src = relpath+"ftv2pnode.png";
   o.node.plus_img.width = 16;
   o.node.plus_img.height = 22;
+
+  if (localStorageSupported()) {
+    var navSync = $('#nav-sync');
+    if (cachedLink()) {
+      navSync.html('<img src="'+relpath+'sync_off.png"/>');
+      navSync.removeClass('sync');
+    } else {
+      navSync.html('<img src="'+relpath+'sync_on.png"/>');
+    }
+    navSync.click(function(){ toggleSyncButton(relpath); });
+  }
 
   navTo(o,toroot,window.location.hash,relpath);
 

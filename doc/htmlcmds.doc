@@ -141,6 +141,73 @@ The special HTML character entities that are recognized by Doxygen:
 <li><tt>\&?ring;</tt> where ? is one of {a,A},
        writes an <tt>a</tt> with a ring (like &aring;).
 <li><tt>\&nbsp;</tt> a non breakable space.
+<li><tt>\&Gamma;</tt> Greek letter Gamma &Gamma;.
+<li><tt>\&Delta;</tt> Greek letter Delta &Delta;.
+<li><tt>\&Theta;</tt> Greek letter Theta &Theta;.
+<li><tt>\&Lambda;</tt> Greek letter Lambda &Lambda;.
+<li><tt>\&Xi;</tt> Greek letter Xi &Xi;.
+<li><tt>\&Pi;</tt> Greek letter Pi &Pi;.
+<li><tt>\&Sigma;</tt> Greek letter Sigma &Sigma;.
+<li><tt>\&Upsilon;</tt> Greek letter Upsilon &Upsilon;.
+<li><tt>\&Phi;</tt> Greek letter Phi &Phi;.
+<li><tt>\&Psi;</tt> Greek letter Psi &Psi;.
+<li><tt>\&Omega;</tt> Greek letter Omega &Omega;.
+<li><tt>\&alpha;</tt> Greek letter alpha &alpha;.
+<li><tt>\&beta;</tt> Greek letter beta &beta;.
+<li><tt>\&gamma;</tt> Greek letter gamma &gamma;.
+<li><tt>\&delta;</tt> Greek letter delta &delta;.
+<li><tt>\&epsilon;</tt> Greek letter epsilon &epsilon;.
+<li><tt>\&zeta;</tt> Greek letter zeta &zeta;.
+<li><tt>\&eta;</tt> Greek letter eta &eta;.
+<li><tt>\&theta;</tt> Greek letter theta &theta;.
+<li><tt>\&iota;</tt> Greek letter iota &iota;.
+<li><tt>\&kappa;</tt> Greek letter kappa &kappa;.
+<li><tt>\&lambda;</tt> Greek letter lambda &lambda;.
+<li><tt>\&mu;</tt> Greek letter mu &mu;.
+<li><tt>\&nu;</tt> Greek letter nu &nu;.
+<li><tt>\&xi;</tt> Greek letter xi &xi;.
+<li><tt>\&pi;</tt> Greek letter pi &pi;.
+<li><tt>\&rho;</tt> Greek letter rho &rho;.
+<li><tt>\&sigma;</tt> Greek letter sigma &sigma;.
+<li><tt>\&tau;</tt> Greek letter tau &tau;.
+<li><tt>\&upsilon;</tt> Greek letter upsilon &upsilon;.
+<li><tt>\&phi;</tt> Greek letter phi &phi;.
+<li><tt>\&chi;</tt> Greek letter chi &chi;.
+<li><tt>\&psi;</tt> Greek letter psi &psi;.
+<li><tt>\&omega;</tt> Greek letter omega &omega;.
+<li><tt>\&sigmaf;</tt> Greek final sigma &sigmaf;.
+<li><tt>\&sect;</tt> section sign &sect;.
+<li><tt>\&deg;</tt> degree &deg;.
+<li><tt>\&prime;</tt> prime &prime;.
+<li><tt>\&Prime;</tt> double prime &Prime;.
+<li><tt>\&infin;</tt> infinity &infin;.
+<li><tt>\&empty;</tt> empty set &empty;.
+<li><tt>\&plusmn;</tt> plus or minus &plusmn;.
+<li><tt>\&times;</tt> multiplication sign &times;.
+<li><tt>\&minus;</tt> minus sign &minus;.
+<li><tt>\&sdot;</tt> centered dot &sdot;.
+<li><tt>\&part;</tt> partial derivative &part;.
+<li><tt>\&nabla;</tt> nabla symbol &nabla;.
+<li><tt>\&radic;</tt> square root &radic;.
+<li><tt>\&perp;</tt> perpendicular symbol &perp;.
+<li><tt>\&sum;</tt> sum &sum;.
+<li><tt>\&int;</tt> integral &int;.
+<li><tt>\&prod;</tt> product &prod;.
+<li><tt>\&sim;</tt> similar to &sim;.
+<li><tt>\&asymp;</tt> approximately equal to &asymp;.
+<li><tt>\&ne;</tt> not equal to &ne;.
+<li><tt>\&equiv;</tt> equivalent to &equiv;.
+<li><tt>\&prop;</tt> proportional to &prop;.
+<li><tt>\&le;</tt> less than or equal to &le;.
+<li><tt>\&ge;</tt> greater than or equal to &ge;.
+<li><tt>\&larr;</tt> left arrow &larr;.
+<li><tt>\&rarr;</tt> right arrow &rarr;.
+<li><tt>\&isin;</tt> in the set &isin;.
+<li><tt>\&notin;</tt> not in the set &notin;.
+<li><tt>\&lceil;</tt> left ceiling sign &lceil;.
+<li><tt>\&rceil;</tt> right ceiling sign &rceil;.
+<li><tt>\&lfloor;</tt> left floor sign &lfloor;.
+<li><tt>\&rfloor;</tt> right floor sign &rfloor;.
 </ul>
 
 Finally, to put invisible comments inside comment blocks, HTML style
@@ -150,4 +217,3 @@ comments can be used:
 \endverbatim
 
 */
- 

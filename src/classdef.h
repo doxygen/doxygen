@@ -361,7 +361,7 @@ class ClassDef : public Definition
     MemberList *createMemberList(MemberList::ListType lt);
     void writeInheritedMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,ClassDef *inheritedFrom,bool invert,QPtrDict<void> *visitedClasses);
     void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
-                                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,QPtrDict<void> *visitedClasses=0);
+                                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,bool invert=FALSE,QPtrDict<void> *visitedClasses=0);
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title,bool showInline=FALSE);
     void writeSimpleMemberDocumentation(OutputList &ol,MemberList::ListType lt);
     void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
@@ -369,7 +369,7 @@ class ClassDef : public Definition
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString());
     void writeIncludeFiles(OutputList &ol);
-    void writeAllMembersLink(OutputList &ol);
+    //void writeAllMembersLink(OutputList &ol);
     void writeInheritanceGraph(OutputList &ol);
     void writeCollaborationGraph(OutputList &ol);
     void writeMemberGroups(OutputList &ol,bool showInline=FALSE);
