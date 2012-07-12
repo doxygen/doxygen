@@ -778,15 +778,27 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
         {
           bool doc,src;
           doc = fileVisibleInIndex(fd,src);
+          QCString reference, outputBase;
           if (doc)
           {
-            addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),TRUE);
+            reference = fd->getReference();
+            outputBase = fd->getOutputFileBase();
           }
-          else if (src)
+          ftv->addContentsItem(FALSE,fd->displayName(),          
+                               reference, outputBase, 0,         
+                               FALSE,FALSE,fd);
+          if (addToIndex)
           {
-            Doxygen::indexList.addContentsItem(
-                 FALSE, convertToHtml(fd->name(),TRUE), 0, 
-                 fd->getSourceFileBase(), 0, FALSE, TRUE, fd);
+            if (doc)
+            {
+              addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),TRUE);
+            }
+            else if (src)
+            {
+              Doxygen::indexList.addContentsItem(
+                  FALSE, convertToHtml(fd->name(),TRUE), 0, 
+                  fd->getSourceFileBase(), 0, FALSE, TRUE, fd);
+            }
           }
         }
       }
