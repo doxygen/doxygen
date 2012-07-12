@@ -970,6 +970,14 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>"</remarks>"			{ // end of a brief or detailed description
                                           addOutput(yytext);
   					}
+<Comment>"<"{PRE}{ATTR}">"              {
+                                          insidePre=TRUE;
+                                          addOutput(yytext);
+                                        }
+<Comment>"</"{PRE}">"                   {
+                                          insidePre=FALSE;
+                                          addOutput(yytext);
+                                        }
 <Comment>{RCSTAG}			{ // RCS tag which end a brief description
   					  setOutput(OutputDoc);
 					  REJECT;
@@ -1115,10 +1123,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   				          addOutput(yytext); 
                                         }
 <Comment>"---"                          { // mdash
-                                          addOutput("&mdash;");
+                                          addOutput(insidePre || Doxygen::markdownSupport ? yytext : "&mdash;");
                                         }
 <Comment>"--"                           { // ndash
-                                          addOutput("&ndash;");
+                                          addOutput(insidePre || Doxygen::markdownSupport ? yytext : "&ndash;");
                                         }
 <Comment>("."+)[a-z_A-Z0-9\)]		{ // . at start or in the middle of a word, or ellipsis
   					  addOutput(yytext);
@@ -2672,7 +2680,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
-               "input=[%s]\n",fileName.data(),lineNr,comment.data()
+               "input=[\n%s]\n",fileName.data(),lineNr,comment.data()
               );
   
   commentScanYYrestart( commentScanYYin );

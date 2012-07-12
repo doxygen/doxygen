@@ -135,7 +135,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
     { return "Mer..."; }
 
     virtual QCString trListOfAllMembers()
-    { return "Lista över alla medlemmar."; }
+    { return "Lista över alla medlemmar"; }
 
     virtual QCString trMemberList()
     { return "Medlemslista"; }

@@ -132,7 +132,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Liệt kê tất cả các thành viên."; }
+    { return "Liệt kê tất cả các thành viên"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

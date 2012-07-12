@@ -2168,7 +2168,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_curClassBases.clear();
   					  BEGIN( Bases ); 
 					}
-<PackageName>[ \t]*";"				|
+<PackageName>[ \t]*";"			|
+<Bases>^{B}*/"@"{ID}                    | // Objective-C interface
 <Bases,ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*"{"{B}* {
                                           g_theVarContext.pushScope();
   					  g_code->codify(yytext);

@@ -237,9 +237,12 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
       !documentation().isEmpty()
      )
   {
-    ol.writeRuler();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Html);
+      ol.writeRuler();
+    ol.popGeneratorState();
+    ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
       ol.writeAnchor(0,"details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -394,7 +397,8 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
       QCString label = lde->kind()==LayoutDocEntry::NamespaceClasses ? "nested-classes" : "namespaces";
-      writeSummaryLink(ol,label,ls->title,first);
+      ol.writeSummaryLink(0,label,ls->title,first);
+      first=FALSE;
     }
     else if (lde->kind()== LayoutDocEntry::MemberDecl)
     {
@@ -402,7 +406,8 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+        first=FALSE;
       }
     }
   }

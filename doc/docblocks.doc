@@ -597,4 +597,9 @@ forms of additional markup on top of Markdown formatting.
 If this is still not enough doxygen also supports a \ref htmlcmds "subset" of 
 the <a href="http://en.wikipedia.org/wiki/HTML">HTML</a> markup language.
 
+\htmlonly
+Go to the <a href="markdown.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */

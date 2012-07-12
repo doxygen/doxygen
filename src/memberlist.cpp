@@ -615,7 +615,10 @@ void MemberList::writeDocumentation(OutputList &ol,
 
   if (title)
   {
-    ol.writeRuler();
+    ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Html);
+      ol.writeRuler();
+    ol.popGeneratorState();
     ol.startGroupHeader(showInline ? 2 : 0);
     ol.parseText(title);
     ol.endGroupHeader(showInline ? 2 : 0);

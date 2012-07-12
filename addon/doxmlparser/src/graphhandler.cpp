@@ -64,7 +64,7 @@ void GraphHandler::startNode(const QXmlAttributes &attrib)
   NodeHandler *n = new NodeHandler(this);
   n->startNode(attrib);
   m_nodes.append(n);
-  m_nodeDict->insert(attrib.value("id"),n);
+  m_nodeDict->insert(attrib.value("id").utf8(),n);
 }
 
 INodeIterator *GraphHandler::nodes() const
@@ -74,7 +74,7 @@ INodeIterator *GraphHandler::nodes() const
 
 NodeHandler *GraphHandler::getNodeById(const QString &id) const
 {
-  return m_nodeDict->find(id);
+  return m_nodeDict->find(id.utf8());
 }
 
 //------------------------------------------------------------------------

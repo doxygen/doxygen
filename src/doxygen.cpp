@@ -1080,48 +1080,48 @@ ArgumentList *getTemplateArgumentsFromName(
 
 static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
 {
-    ClassDef::CompoundType sec=ClassDef::Class; 
-    if (specifier&Entry::Struct) 
-      sec=ClassDef::Struct;
-    else if (specifier&Entry::Union) 
-      sec=ClassDef::Union;
-    else if (specifier&Entry::Interface) 
-      sec=ClassDef::Interface;
-    else if (specifier&Entry::Protocol) 
-      sec=ClassDef::Protocol;
-    else if (specifier&Entry::Category) 
-      sec=ClassDef::Category;
-    else if (specifier&Entry::Exception) 
-      sec=ClassDef::Exception;
+  ClassDef::CompoundType sec=ClassDef::Class; 
+  if (specifier&Entry::Struct) 
+    sec=ClassDef::Struct;
+  else if (specifier&Entry::Union) 
+    sec=ClassDef::Union;
+  else if (specifier&Entry::Category) 
+    sec=ClassDef::Category;
+  else if (specifier&Entry::Interface) 
+    sec=ClassDef::Interface;
+  else if (specifier&Entry::Protocol) 
+    sec=ClassDef::Protocol;
+  else if (specifier&Entry::Exception) 
+    sec=ClassDef::Exception;
 
-    switch(section)
-    {
-      //case Entry::UNION_SEC: 
-      case Entry::UNIONDOC_SEC: 
-        sec=ClassDef::Union; 
-        break;
+  switch(section)
+  {
+    //case Entry::UNION_SEC: 
+    case Entry::UNIONDOC_SEC: 
+      sec=ClassDef::Union; 
+      break;
       //case Entry::STRUCT_SEC:
-      case Entry::STRUCTDOC_SEC: 
-        sec=ClassDef::Struct; 
-        break;
+    case Entry::STRUCTDOC_SEC: 
+      sec=ClassDef::Struct; 
+      break;
       //case Entry::INTERFACE_SEC:
-      case Entry::INTERFACEDOC_SEC:
-        sec=ClassDef::Interface; 
-        break;
+    case Entry::INTERFACEDOC_SEC:
+      sec=ClassDef::Interface; 
+      break;
       //case Entry::PROTOCOL_SEC:
-      case Entry::PROTOCOLDOC_SEC:
-        sec=ClassDef::Protocol; 
-        break;
+    case Entry::PROTOCOLDOC_SEC:
+      sec=ClassDef::Protocol; 
+      break;
       //case Entry::CATEGORY_SEC:
-      case Entry::CATEGORYDOC_SEC:
-        sec=ClassDef::Category; 
-        break;
+    case Entry::CATEGORYDOC_SEC:
+      sec=ClassDef::Category; 
+      break;
       //case Entry::EXCEPTION_SEC:
-      case Entry::EXCEPTIONDOC_SEC:
-        sec=ClassDef::Exception; 
-        break;
-    }
-    return sec;
+    case Entry::EXCEPTIONDOC_SEC:
+      sec=ClassDef::Exception; 
+      break;
+  }
+  return sec;
 }
 
 
@@ -1210,7 +1210,7 @@ static void addClassToContext(EntryNav *rootNav)
     cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
         tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
-        fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
+        fullName.data(),sec,root->tArgLists ? (int)root->tArgLists->count() : -1);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setLanguage(root->lang);    
@@ -1241,7 +1241,6 @@ static void addClassToContext(EntryNav *rootNav)
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
     Doxygen::classSDict->append(fullName,cd);
-
   }
 
   cd->addSectionsToDefinition(root->anchors);
@@ -1504,7 +1503,7 @@ static void processTagLessClasses(ClassDef *rootCd,
               //printf("    found %s for class %s\n",name.data(),cd->name().data());
               ClassDef *ncd = createTagLessInstance(rootCd,icd,name);
               processTagLessClasses(rootCd,icd,ncd,name,count+1);
-              //printf("    addTagged %s to %s\n",ncd->name().data(),cd->name().data());
+              //printf("    addTagged %s to %s\n",ncd->name().data(),tagParentCd->name().data());
               tagParentCd->addTaggedInnerClass(ncd);
               ncd->setTagLessReference(icd);
 
@@ -1524,7 +1523,8 @@ static void processTagLessClasses(ClassDef *rootCd,
                 {
                   if (pmd->name()==md->name())
                   {
-                    pmd->setType(substitute(pmd->typeString(),icd->name(),ncd->name()));
+                    pmd->setAccessorType(ncd,substitute(pmd->typeString(),icd->name(),ncd->name()));
+                    //pmd->setType(substitute(pmd->typeString(),icd->name(),ncd->name()));
                   }
                 }
               }
@@ -1533,6 +1533,26 @@ static void processTagLessClasses(ClassDef *rootCd,
         }
       }
     }
+  }
+}
+
+static void writeMainPageTagFileData()
+{
+  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
+  {
+    Doxygen::tagFile << "  <compound kind=\"page\">" << endl
+                     << "    <name>"
+                     << convertToXML(Doxygen::mainPage->name())
+                     << "</name>" << endl
+                     << "    <title>"
+                     << convertToXML(Doxygen::mainPage->title())
+                     << "</title>" << endl
+                     << "    <filename>"
+                     << convertToXML(Doxygen::mainPage->getOutputFileBase())
+                     << "</filename>" << endl;
+
+    Doxygen::mainPage->writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
   }
 }
 
@@ -6989,12 +7009,13 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
               if (
                    (sle=rootNav->lang())==SrcLangExt_CSharp || 
                    sle==SrcLangExt_Java || 
-                   sle==SrcLangExt_XML
+                   sle==SrcLangExt_XML ||
+                   (root->spec&Entry::Strong)
                  )
               {
-                // Unlike C++, for C# & Java enum values are only inside the enum 
-                // scope, so we must create them here and only add them to the
-                // enum
+                // Unlike classic C/C++ enums, for C++11, C# & Java enum 
+                // values are only inside the enum scope, so we must create 
+                // them here and only add them to the enum
                 e->loadEntry(g_storage);
                 Entry *root = e->entry();
                 //printf("md->qualifiedName()=%s rootNav->name()=%s\n",
@@ -7371,7 +7392,9 @@ static void computeMemberRelations()
             {
               //printf("  match found!\n");
               if (mcd && bmcd && 
-                  mcd->isLinkable() && bmcd->isLinkable()
+                  mcd->isLinkable() && bmcd->isLinkable() && md->isFunction() &&
+                  classInheritedProtectionLevel(mcd,bmcd)!=Private && 
+                  md->protection()!=Private
                  )
               {
                 MemberDef *rmd;
@@ -10556,8 +10579,14 @@ void generateOutput()
 
   initDocParser();
 
+  bool generateHtml  = Config_getBool("GENERATE_HTML");
+  bool generateLatex = Config_getBool("GENERATE_LATEX");
+  bool generateMan   = Config_getBool("GENERATE_MAN");
+  bool generateRtf   = Config_getBool("GENERATE_RTF");
+
+
   g_outputList = new OutputList(TRUE);
-  if (Config_getBool("GENERATE_HTML"))  
+  if (generateHtml)  
   {
     g_outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
@@ -10582,17 +10611,17 @@ void generateOutput()
     copyExtraFiles();
     FTVHelp::generateTreeViewImages();
   }
-  if (Config_getBool("GENERATE_LATEX")) 
+  if (generateLatex) 
   {
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
   }
-  if (Config_getBool("GENERATE_MAN"))
+  if (generateMan)
   {
     g_outputList->add(new ManGenerator);
     ManGenerator::init();
   }
-  if (Config_getBool("GENERATE_RTF"))
+  if (generateRtf)
   {
     g_outputList->add(new RTFGenerator);
     RTFGenerator::init();
@@ -10630,9 +10659,9 @@ void generateOutput()
     Doxygen::tagFile << "<tagfile>" << endl;
   }
 
-  if (Config_getBool("GENERATE_HTML"))  writeDoxFont(Config_getString("HTML_OUTPUT"));
-  if (Config_getBool("GENERATE_LATEX")) writeDoxFont(Config_getString("LATEX_OUTPUT"));
-  if (Config_getBool("GENERATE_RTF"))   writeDoxFont(Config_getString("RTF_OUTPUT"));
+  if (generateHtml)  writeDoxFont(Config_getString("HTML_OUTPUT"));
+  if (generateLatex) writeDoxFont(Config_getString("LATEX_OUTPUT"));
+  if (generateRtf)   writeDoxFont(Config_getString("RTF_OUTPUT"));
 
   msg("Generating style sheet...\n");
   //printf("writing style info\n");
@@ -10656,7 +10685,7 @@ void generateOutput()
   // generate search indices (need to do this before writing other HTML
   // pages as these contain a drop down menu with options depending on
   // what categories we find in this function.
-  if (Config_getBool("GENERATE_HTML") && searchEngine)
+  if (generateHtml && searchEngine)
   {
     msg("Generating search indices...\n");
     QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
@@ -10707,19 +10736,24 @@ void generateOutput()
   msg("Generating directory documentation...\n");
   generateDirDocs(*g_outputList);
 
-  if (Doxygen::formulaList.count()>0 && Config_getBool("GENERATE_HTML")
+  if (Doxygen::formulaList.count()>0 && generateHtml
       && !Config_getBool("USE_MATHJAX"))
   {
     msg("Generating bitmaps for formulas in HTML...\n");
     Doxygen::formulaList.generateBitmaps(Config_getString("HTML_OUTPUT"));
   }
   
-  writeIndexHierarchy(*g_outputList);
+  writeMainPageTagFileData();
+
+  if (g_outputList->count()>0)
+  {
+    writeIndexHierarchy(*g_outputList);
+  }
 
   msg("finalizing index lists...\n");
   Doxygen::indexList.finalize();
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (!generateTagFile.isEmpty())
   {
     Doxygen::tagFile << "</tagfile>" << endl;
     delete tag;
@@ -10727,11 +10761,11 @@ void generateOutput()
 
   if (Config_getBool("DOT_CLEANUP"))
   {
-    if (Config_getBool("GENERATE_HTML"))
+    if (generateHtml)
       removeDoxFont(Config_getString("HTML_OUTPUT"));
-    if (Config_getBool("GENERATE_RTF"))  
+    if (generateRtf)  
       removeDoxFont(Config_getString("RTF_OUTPUT"));
-    if (Config_getBool("GENERATE_LATEX"))  
+    if (generateLatex)  
       removeDoxFont(Config_getString("LATEX_OUTPUT"));
   }
 
@@ -10752,14 +10786,14 @@ void generateOutput()
     msg("Generating Perl module output...\n");
     generatePerlMod();
   }
-  if (Config_getBool("GENERATE_HTML") && searchEngine && serverBasedSearch)
+  if (generateHtml && searchEngine && serverBasedSearch)
   {
     msg("Generating search index\n");
     HtmlGenerator::writeSearchPage();
     Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search/search.idx");
   }
 
-  if (Config_getBool("GENERATE_RTF"))
+  if (generateRtf)
   {
     msg("Combining RTF output...\n");
     if (!RTFGenerator::preProcessFileInplace(Config_getString("RTF_OUTPUT"),"refman.rtf"))
@@ -10773,7 +10807,7 @@ void generateOutput()
     DotManager::instance()->run();
   }
 
-  if (Config_getBool("GENERATE_HTML") &&
+  if (generateHtml &&
       Config_getBool("GENERATE_HTMLHELP") && 
       !Config_getString("HHC_LOCATION").isEmpty())
   {
@@ -10788,7 +10822,7 @@ void generateOutput()
     portable_sysTimerStop();
     QDir::setCurrent(oldDir);
   }
-  if ( Config_getBool("GENERATE_HTML") &&
+  if ( generateHtml &&
        Config_getBool("GENERATE_QHP") && 
       !Config_getString("QHG_LOCATION").isEmpty())
   {

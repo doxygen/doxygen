@@ -124,6 +124,8 @@ You can also make a numbered list like so
     1. First item.
     2. Second item.
 
+Make sure to also read \ref mddox_lists for doxygen specifics.
+
 \subsection md_codeblock Code Blocks
 
 Preformatted verbatim blocks can be created by indenting
@@ -546,6 +548,30 @@ Example:
     1. Item1 of list 2
     2. Item2 of list 2
 
+With Markdown the actual numbers you use to mark the list have no 
+effect on the HTML output Markdown produces. I.e. it treats the 
+following as a list with 3 numbered items:
+
+    1. Item1
+    1. Item2
+    1. Item3
+
+Doxygen however requires that the numbers used as marks are in 
+strictly ascending order; an item with a equal or lower number than 
+the preceding item, will start a new list. For example:
+
+    1. Item1 of list 1
+    3. Item2 of list 1
+    2. Item1 of list 2
+    4. Item2 of list 2
+
+will produce:
+
+1. Item1 of list 1
+3. Item2 of list 1
+2. Item1 of list 2
+4. Item2 of list 2
+    
 Historically doxygen has an additional way to create numbered 
 lists by using `-#` markers:
 
@@ -602,5 +628,10 @@ as they are based on the intermediate format.
 To see the result after Markdown processing you can run doxygen with the
 `-d Markdown` option. It will then print each comment block before and
 after Markdown processing.
+
+\htmlonly
+Go to the <a href="lists.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
 
 */

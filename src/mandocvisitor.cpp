@@ -84,6 +84,7 @@ void ManDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Hash:    m_t << "#"; break;
     case DocSymbol::DoubleColon: m_t << "::"; break;
     case DocSymbol::Percent: m_t << "%"; break;
+    case DocSymbol::Pipe:    m_t << "|"; break;
     case DocSymbol::Copy:    m_t << "(C)"; break;
     case DocSymbol::Tm:      m_t << "(TM)"; break;
     case DocSymbol::Reg:     m_t << "(R)"; break;
@@ -106,7 +107,8 @@ void ManDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Ring:    m_t << s->letter() << "\\*o"; break;
     case DocSymbol::Nbsp:    m_t << " "; break;
     default:
-                             err("error: unknown symbol found\n");
+         // unsupport symbol for man page :-(
+         break;
   }
   m_firstCol=FALSE;
 }

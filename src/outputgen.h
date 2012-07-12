@@ -389,6 +389,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeNavigationPath(const char *) = 0;
     virtual void writeLogo() = 0;
     virtual void writeQuickLinks(bool compact,HighlightedItem hli,const char *file) = 0;
+    virtual void writeSummaryLink(const char *file,const char *anchor,const char *title,bool first) = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;
     virtual void startTextBlock(bool) = 0;

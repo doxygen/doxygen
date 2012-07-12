@@ -77,7 +77,7 @@ class CompoundEntryIterator : public ICompoundIterator,
     virtual ICompound *current() const
     { 
       CompoundEntry *ch = QListIterator<CompoundEntry>::current(); 
-      return ch ? m_mainHandler->compoundById(ch->id) : 0;
+      return ch ? m_mainHandler->compoundById(ch->id.utf8()) : 0;
     }
     virtual void release()
     { delete this; }
@@ -116,7 +116,7 @@ void MainHandler::startCompound(const QXmlAttributes& attrib)
   m_curCompound = new CompoundEntry(257);
   m_curCompound->id = attrib.value("refid");
   m_compounds.append(m_curCompound);
-  m_compoundDict.insert(m_curCompound->id,m_curCompound);
+  m_compoundDict.insert(m_curCompound->id.utf8(),m_curCompound);
 }
 
 void MainHandler::startName(const QXmlAttributes& /*attrib*/)
@@ -133,7 +133,7 @@ void MainHandler::endName()
   else
   {
     m_curCompound->name = m_curString;
-    m_compoundNameDict.insert(m_curString,m_curCompound);
+    m_compoundNameDict.insert(m_curString.utf8(),m_curCompound);
   }
 }
 
@@ -143,17 +143,17 @@ void MainHandler::startMember(const QXmlAttributes& attrib)
   m_curMember = new MemberEntry;
   m_curMember->id = attrib.value("refid");
   m_curMember->compound = m_curCompound;
-  m_memberDict.insert(m_curMember->id,m_curMember);
+  m_memberDict.insert(m_curMember->id.utf8(),m_curMember);
 }
 
 void MainHandler::endMember()
 {
-  m_curCompound->memberDict.insert(m_curMember->name,m_curMember);
+  m_curCompound->memberDict.insert(m_curMember->name.utf8(),m_curMember);
   QList<CompoundEntry> *cel=0;
-  if ((cel=m_memberNameDict.find(m_curMember->name))==0)
+  if ((cel=m_memberNameDict.find(m_curMember->name.utf8()))==0)
   {
     cel = new QList<CompoundEntry>;
-    m_memberNameDict.insert(m_curMember->name,cel);
+    m_memberNameDict.insert(m_curMember->name.utf8(),cel);
   }
   cel->append(m_curCompound);
   m_insideMember = FALSE;
@@ -210,13 +210,13 @@ ICompound *MainHandler::compoundById(const char *id) const
 {
   QString ids = id;
   if (ids.isEmpty()) return 0;
-  CompoundHandler *ch = m_compoundsLoaded[ids];
+  CompoundHandler *ch = m_compoundsLoaded[ids.utf8()];
   if (ch) // compound already in memory
   {
     ch->addref(); // returning alias -> increase reference counter
     return ch->toICompound(); 
   }
-  CompoundEntry *ce = m_compoundDict.find(ids);
+  CompoundEntry *ce = m_compoundDict.find(ids.utf8());
   if (ce==0) return 0; // id not found
   // create and load a new compound
   ch = new CompoundHandler(m_xmlDirName);
@@ -249,7 +249,7 @@ ICompound *MainHandler::compoundByName(const char *name) const
   if (nameStr.isEmpty()) return 0;
   CompoundEntry *ce = m_compoundNameDict[name];
   if (ce==0) return 0; // name not found
-  return compoundById(ce->id);
+  return compoundById(ce->id.utf8());
 }
 
 ICompound *MainHandler::memberById(const char *id) const
@@ -258,7 +258,7 @@ ICompound *MainHandler::memberById(const char *id) const
   if (ids.isEmpty()) return 0;
   MemberEntry *me = m_memberDict[id];
   if (me==0) return 0; // id not found
-  return compoundById(me->compound->id);
+  return compoundById(me->compound->id.utf8());
 }
 
 ICompoundIterator *MainHandler::memberByName(const char *name) const

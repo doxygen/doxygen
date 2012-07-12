@@ -27,7 +27,6 @@
     <includes visible="$SHOW_INCLUDE_FILES"/>
     <inheritancegraph visible="$CLASS_GRAPH"/>
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
-    <allmemberslink visible="yes"/>
     <memberdecl>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
@@ -72,6 +71,7 @@
       <properties title=""/>
       <events title=""/>
     </memberdef>
+    <allmemberslink visible="yes"/>
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
   </class>

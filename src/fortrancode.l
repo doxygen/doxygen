@@ -672,11 +672,12 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR})
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|ELEMENTAL)
+ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|ELEMENTAL)
 ACCESS_SPEC (PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
-COMMANDS  (DO|SELECT|CASE|WHERE|IF|THEN|ELSE|MODULE{BS_}PROCEDURE|CONTAINS|IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|DEALLOCATE|SIZE|END{BS}IF|END{BS}DO|WHILE|INQUIRE|OPEN|CLOSE|DATA)
+FLOW  (DO|SELECT|CASE|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT)
+COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|DEALLOCATE|SIZE|INQUIRE|OPEN|CLOSE|DATA|COMMON)
 IGNORE (CALL)
 PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTAL)?
 
@@ -713,21 +714,32 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
  /*-------- inner construct ---------------------------------------------------*/
  
-<Start>{COMMANDS}/[,( \t\n].*           { // hightlight rest of fortran statements
+<Start>{COMMANDS}/[,( \t\n].*           {  // highlight
    					  /* font class is defined e.g. in doxygen.css */
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>"end"({BS_}{COMMANDS})?/[ \t\n]  { 
-  					  startFontClass("keyword");
+<Start>{FLOW}/[,( \t\n].*               {
+   					  /* font class is defined e.g. in doxygen.css */
+  					  startFontClass("keywordflow");
+  					  codifyLines(yytext);
+					  endFontClass();
+					}
+<Start>"end"({BS}{FLOW})?/[ \t\n]       { // list is a bit long as not all have possible end
+  					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
 
+<Start>"implicit"{BS}"none"             { 
+  					  startFontClass("keywordtype"); 
+  					  codifyLines(yytext);
+					  endFontClass();
+                                        }
  /*-------- use statement -------------------------------------------*/
 <Start>"use"{BS_}                       { 
-  					  startFontClass("keyword"); 
+  					  startFontClass("keywordtype"); 
   					  codifyLines(yytext);
 					  endFontClass();
                                           yy_push_state(YY_START);
@@ -750,7 +762,9 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  addUse(tmp);
                                         }           
 <Use>,{BS}"ONLY"                        { // TODO: rename
+  					  startFontClass("keywordtype"); 
  					  codifyLines(yytext);
+					  endFontClass();
                                           yy_push_state(YY_START);
 					  BEGIN(UseOnly);     
                                         }           
@@ -815,7 +829,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <Subprog,Subprogend>"\n"                { codifyLines(yytext);
                                           yy_pop_state();
                                         }
-<Start>^{BS}"end"{BS}({SUBPROG}|"module"|"program"|"type"|"interface"){BS}     {  // Fortran subroutine or function ends
+<Start>^{BS}"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"type"|"interface"){BS}     {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endScope();
    					  startFontClass("keyword");
@@ -828,7 +842,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  generateLink(*g_code,yytext);
                                           yy_pop_state();
                                         }
-<Start>^{BS}"end"{BS}({SUBPROG}|"module"|"program"|"type"|"interface"){BS}/(\n|!) {  // Fortran subroutine or function ends
+<Start>^{BS}"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"type"|"interface"){BS}/(\n|!) {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endScope();
    					  startFontClass("keyword");

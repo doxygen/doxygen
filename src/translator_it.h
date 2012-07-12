@@ -159,7 +159,7 @@ class TranslatorItalian : public Translator
 
     /*! put in the class documentation */
     QCString trListOfAllMembers()
-    { return "Elenco di tutti i membri."; }
+    { return "Elenco di tutti i membri"; }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList()

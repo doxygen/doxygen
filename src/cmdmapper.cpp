@@ -113,6 +113,7 @@ CommandMap cmdMap[] =
   { "$",             CMD_DOLLAR },
   { "#",             CMD_HASH },
   { "%",             CMD_PERCENT },
+  { "|",             CMD_PIPE },
   { "::",            CMD_DCOLON },
   { "\"",            CMD_QUOTE },
   { "_internalref",  CMD_INTERNALREF },

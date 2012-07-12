@@ -107,7 +107,7 @@ class TranslatorChinese : public Translator
 
     /*! put in the class documention */
     virtual QCString trListOfAllMembers()
-    { return "所有成员列表."; }
+    { return "所有成员列表"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

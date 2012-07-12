@@ -160,10 +160,12 @@ void Qhp::finalize()
 void Qhp::incContentsDepth()
 {
   m_sectionLevel++;
+  //printf("Qhp::incContentsDepth() %d->%d\n",m_sectionLevel-1,m_sectionLevel);
 }
 
 void Qhp::decContentsDepth()
 {
+  //printf("Qhp::decContentsDepth() %d->%d\n",m_sectionLevel,m_sectionLevel-1);
   if (m_sectionLevel <= 0)
   {
     return;
@@ -177,6 +179,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
                           bool /* addToNavIndex */,
                           Definition * /*def*/)
 {
+  //printf("Qhp::addContentsItem(%s) %d\n",name,m_sectionLevel);
   // Backup difference before modification
   int diff = m_prevSectionLevel - m_sectionLevel;
 
@@ -282,7 +285,7 @@ void Qhp::handlePrevSection()
 
   if (m_prevSectionTitle.isNull())
   {
-    return;
+    m_prevSectionTitle=" "; // should not happen...
   }
 
   // We skip "Main Page" as our extra root is pointing to that

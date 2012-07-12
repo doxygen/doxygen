@@ -283,7 +283,7 @@ static void lineCount()
     if (*p=='\n') 
       yyLineNr++,g_column=0;
     else if (*p=='\t') 
-      g_column+=tabSize - (g_column&tabSize);
+      g_column+=tabSize - (g_column%tabSize);
     else 
       g_column++;
   }
@@ -818,7 +818,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembersPHP>[^\n<]+                 { // Non-PHP code text, ignore
   					}
 <FindMembersPHP>\n                      { // Non-PHP code text, ignore
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <FindMembersPHP>.                       { // Non-PHP code text, ignore
 				        }
@@ -996,7 +996,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN( FindMembers );
   					}
 <CliPropertyType>\n			{
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <CliPropertyType>{B}*			{
   					}
@@ -1204,6 +1204,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <ObjCPropAttr>"assign"			{ // default
   					}
+<ObjCPropAttr>"unsafe_unretained"       {
+					  current->spec&=~Entry::Assign;
+					  current->spec|=Entry::Unretained;
+                                        }
 <ObjCPropAttr>"retain"			{
 					  current->spec&=~Entry::Assign;
 					  current->spec|=Entry::Retain;
@@ -1234,7 +1238,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else if (strcmp(yytext,"@property")==0) // ObjC 2.0 property
 					  {
   					    current->mtype = mtype = Property;
-					    current->spec|=Entry::Writable | Entry::Readable | Entry::Assign;
+					    current->spec|=Entry::Writable | Entry::Readable;
 					    current->protection = Public ;
 					  }
 					  else if (strcmp(yytext,"@synthesize")==0)
@@ -1630,7 +1634,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?"{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString text=yytext;
+					  isTypedef    = text.find("typedef")!=-1;
+                                          bool isStrongEnum = text.find("struct")!=-1 || text.find("class")!=-1;
 					  if (insideJava)
 					  {
 					    current->section = Entry::CLASS_SEC;
@@ -1641,7 +1647,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					    current->section = Entry::ENUM_SEC ;
 					  }
 					  addType( current ) ;
-					  current->type += " enum" ;
+					  current->type += " enum";
+                                          if (isStrongEnum)
+                                          {
+                                            current->spec |= Entry::Strong;
+                                          }
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
@@ -2205,9 +2215,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <IDLUnionCase>"::"
 <IDLUnionCase>":"			{ BEGIN(FindMembers); }
-<IDLUnionCase>\n			{ yyLineNr++; }
+<IDLUnionCase>\n			{ lineCount(); }
 <IDLUnionCase>.
-<TryFunctionBlock>\n			{ yyLineNr++; }
+<TryFunctionBlock>\n			{ lineCount(); }
 <TryFunctionBlock>"{"			{ 
 					  curlyCount=0;
 					  lastCurlyContext = TryFunctionBlockEnd ;
@@ -2274,12 +2284,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
   					    current->program+=yytext;
 					  }
-                                          yyLineNr++;
+                                          lineCount();
   					  BEGIN( lastPreLineCtrlContext );
   					}
 <SkipCPP>.
-<SkipCPP>\\[\r]*"\n"[\r]*		{ yyLineNr++ ; }
-<SkipCPP>[\r]*\n[\r]*			{ yyLineNr++ ;
+<SkipCPP>\\[\r]*"\n"[\r]*		{ lineCount(); }
+<SkipCPP>[\r]*\n[\r]*			{ lineCount();
 					  BEGIN( lastCPPContext) ;
 					}
 <Define>{ID}{B}*"("			{
@@ -2310,7 +2320,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <DefineEnd>\n				{
   					  //printf("End define: doc=%s docFile=%s docLine=%d\n",current->doc.data(),current->docFile.data(),current->docLine);
-					  yyLineNr++;
+                                          lineCount();
 					  current->fileName   = yyFileName;
 					  current->startLine  = yyLineNr;
 					  current->type.resize(0);
@@ -2341,7 +2351,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <DefinePHPEnd>.
 <DefineEnd>\\[\r]?\n			{
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <DefineEnd>\"				{
 					  if (insideIDL && insideCppQuote)
@@ -2608,7 +2618,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                         } 
 <ReadInitializer>\n			{
   					  current->initializer+=*yytext;
-					  yyLineNr++;
+                                          lineCount();
   					}
 <ReadInitializer>"@\""			{ 
   					  //printf("insideCS=%d\n",insideCS);
@@ -2637,7 +2647,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <SkipVerbString>\n			{
 					  *pSkipVerbString+=*yytext;
-					  yyLineNr++;
+                                          lineCount();
   					}
 <SkipVerbString>.			{
 					  *pSkipVerbString+=*yytext;
@@ -2669,7 +2679,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <CopyString,CopyPHPString>\n		{
   					  *pCopyQuotedString+=*yytext;
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <CopyString,CopyPHPString>.		{
   					  *pCopyQuotedString+=*yytext;
@@ -2692,7 +2702,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <CopyGString,CopyPHPGString>\n		{
   					  *pCopyQuotedGString+=*yytext;
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <CopyGString,CopyPHPGString>.		{
   					  *pCopyQuotedGString+=*yytext;
@@ -2715,7 +2725,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN(lastRoundContext);
   					}
 <CopyRound>\n				{
-  					  yyLineNr++;
+                                          lineCount();
   					  *pCopyRoundString+=*yytext;
   					}
 <CopyRound>\'				{
@@ -2765,7 +2775,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN(lastRoundContext);
   					}
 <GCopyRound>\n				{
-  					  yyLineNr++;
+                                          lineCount();
   					  *pCopyRoundGString+=*yytext;
   					}
 <GCopyRound>\'				{
@@ -2837,7 +2847,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <CopyCurly>"/"				{ *pCopyCurlyString+=yytext; }
 <CopyCurly>\n				{
-  					  yyLineNr++;
+                                          lineCount();
 					  *pCopyCurlyString+=*yytext;
   					}
 <CopyCurly>.				{
@@ -2855,6 +2865,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (yytext[yyleng-1]=='\n')
 					  {
 					    yyLineNr++;
+                                            g_column=0;
 					  }
   					}
 <GCopyCurly>\"				{
@@ -2895,7 +2906,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <GCopyCurly>"/"				{ *pCopyCurlyGString+=yytext; }
 <GCopyCurly>\n				{
-  					  yyLineNr++;
+                                          lineCount();
 					  *pCopyCurlyGString+=*yytext;
   					}
 <GCopyCurly>.				{
@@ -3165,7 +3176,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
   					}
 <SkipRemainder>\n			{ 
-                                          yyLineNr++;
+                                          lineCount();
                                         }
 <SkipRemainder>[^\n]*
 <FindFields>","				{
@@ -3185,7 +3196,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->section    = Entry::VARIABLE_SEC;
 					    // add to the scope of the enum
 					    current_root->addSubEntry(current);
-					    if (!insideCS && !insideJava) // for C# and Java 1.5+ enum values always have to be explicitly qualified
+					    if (!insideCS && !insideJava &&
+                                                !(current_root->spec&Entry::Strong)) 
+                                                // for C# and Java 1.5+ enum values always have to be explicitly qualified,
+                                                // same for C++11 style enums (enum class Name {})
 					    {
 					      current             = new Entry(*current);
 					      // add to the scope surrounding the enum (copy!)
@@ -3650,7 +3664,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount();
   					}
 <FuncPtrOperator>\n			{
-                                          yyLineNr++;
+                                          lineCount();
   					  current->name += *yytext;
   					}
 <FuncPtrOperator>"("			{
@@ -3927,7 +3941,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           BEGIN( lastCommentInArgContext ); 
 					}
 <CopyArgCommentLine>\n			{ fullArgString+=yytext;
-  					  yyLineNr++;
+                                          lineCount();
   					  if (lastCopyArgChar!=0)
 					    unput(lastCopyArgChar);
 					  BEGIN( lastCommentInArgContext );
@@ -3963,7 +3977,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <CopyArgCommentLine>[^\\\@\n]+		{ fullArgString+=yytext; }
 <CopyArgCommentLine>.			{ fullArgString+=*yytext; }
-<CopyArgComment,CopyArgVerbatim>\n	{ fullArgString+=*yytext; yyLineNr++; }
+<CopyArgComment,CopyArgVerbatim>\n	{ fullArgString+=*yytext; lineCount(); }
 <CopyArgComment,CopyArgVerbatim>.	{ fullArgString+=*yytext; }
 <CopyArgComment>{CMD}("brief"|"short"){B}+ {
   					  warn(yyFileName,yyLineNr,
@@ -4052,7 +4066,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
   					}
 <ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSharp>\n  { 
-  					  yyLineNr++; 
+                                          lineCount();
 					  *copyArgString+=*yytext; 
 					  fullArgString+=*yytext; 
 					}
@@ -4167,7 +4181,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN(FuncQual);
   					}
 <CliOverride>\n				{
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <CliOverride>.				{
   					}
@@ -4208,7 +4222,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <FuncPtrInit>\n				{
                                           current->args += *yytext; 
-					  yyLineNr++;
+                                          lineCount();
   					}
 <FuncQual>{ID}				{ // typically a K&R style C function
                                           if (insideCS && strcmp(yytext,"where")==0)
@@ -4307,7 +4321,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <ExcpList>"\n"				{
   					  current->exception += ' ';
-					  yyLineNr++;
+                                          lineCount();
   					}
 <ExcpList>.				{
   					  current->exception += *yytext;
@@ -4567,7 +4581,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  BEGIN( SkipCurlyCpp );
 					}
 <SkipCurly,SkipInits>\n			{
-  					  yyLineNr++;
+                                          lineCount();
   				          //addToBody(yytext);
   					}
 <SkipCurly,SkipCurlyCpp>"<<<"	        {
@@ -4582,17 +4596,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
   					}
 <SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}<]+ {
+                                          lineCount();  // for g_column updates
   				          //addToBody(yytext);
   					}
 <SkipCurlyCpp>\n			{ 
   				          //addToBody(yytext);
-  					  yyLineNr++; 
+                                          lineCount();
   					  lastCurlyContext = FindMembers;
   					  BEGIN( SkipCurly ); 
 					}
 <SkipCurlyCpp>\\[\r]*"\n"[\r]*		{ 
   				          //addToBody(yytext);
-  					  yyLineNr++; 
+                                          lineCount();
 					}
 <SkipInits,SkipCurly,SkipCurlyCpp>"/*"	{
   				          //addToBody(yytext);
@@ -4649,7 +4664,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <SkipString,SkipPHPString>"/*"|"*/"|"//" { }
 <SkipString,SkipPHPString>\n		{
-  					  yyLineNr++;
+                                          lineCount();
   					}
 <SkipString,SkipPHPString>.		{ }
 <CompoundName>":"			{ // for "class : public base {} var;" construct, see bug 608359
@@ -4745,7 +4760,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  BEGIN( FindMembers );
 					}
-<CompoundName>{SCOPENAME}/"("		{ 
+<CompoundName>{SCOPENAME}/{BN}*"("	{ 
 					  current->name = yytext ;
 					  lineCount();
 					  if (current->spec & Entry::Protocol)
@@ -4872,10 +4887,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
     					  if (insideObjC && *yytext=='(') // class category
 					  {
 					    current->name+='(';
-                                            if (current->section!=Entry::OBJCIMPL_SEC)
-                                            {
+                                            //if (current->section!=Entry::OBJCIMPL_SEC)
+                                            //{
 					      current->spec|=Entry::Category;
-                                            }
+                                            //}
 					    BEGIN( ClassCategory );
 					  }
 					  else
@@ -4935,7 +4950,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           }
                                         }
 <CSConstraintName,CSConstraintType>\n	{
-					  yyLineNr++;
+                                          lineCount();
 					}
 <CSConstraintName,CSConstraintType>.	{
 					}
@@ -5121,7 +5136,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else
 					  {
-					    yyLineNr++;
+                                            lineCount();
 					    unput('{');
 					  }
 					}
@@ -5307,7 +5322,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN(ClassVar);
 					  }
   					}
-<SkipUnionSwitch>\n			{ yyLineNr++; }
+<SkipUnionSwitch>\n			{ lineCount(); }
 <SkipUnionSwitch>.			
 <Comment>{BN}+				{ current->program += yytext ;
 					  lineCount() ;
@@ -5373,15 +5388,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  docBlockContext = YY_START;
 					  docBlockInBody  = YY_START==SkipCurly;
                                           static bool javadocAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
-                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
 					  docBlockAutoBrief = javadocAutoBrief;
 					  docBlock.resize(0);
-                                          if (markdownSupport)
-                                          {
-                                            QCString indent;
-                                            indent.fill(' ',computeIndent(yytext,g_column));
-                                            docBlock+=indent;
-                                          }
+
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock+=indent;
 
 					  if (docBlockAutoBrief)
 					  {
@@ -5495,7 +5507,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <CSAccessorDecl>"remove"		{ if (curlyCount==0) current->spec |= Entry::Removable; }
 <CSAccessorDecl>"raise"			{ if (curlyCount==0) current->spec |= Entry::Raisable;  }
 <CSAccessorDecl>.			{}
-<CSAccessorDecl>\n			{ yyLineNr++; }
+<CSAccessorDecl>\n			{ lineCount(); }
 
 
 
@@ -5508,7 +5520,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <DocLine>[^\n]*"\n"[ \t]*"//"[/!]       { // continuation of multiline C++-style comment
 				           docBlock+=yytext;
           		                   docBlock.resize(docBlock.length() - 3);
-					   yyLineNr++;
+                                           lineCount();
                                         }
 <DocLine>[^\n]*/"\n"			{ // whole line
   					  docBlock+=yytext;
@@ -5523,13 +5535,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN(docBlockContext);
   					}
 <DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*]	{ // start of a comment line
-                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
-                                          if (markdownSupport)
-                                          {
-                                            QCString indent;
-                                            indent.fill(' ',computeIndent(yytext,0));
-                                            docBlock+=indent;
-                                          }
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock+=indent;
   					}
 <DocBlock>^{B}*("//"){B}*		{ // strip embedded C++ comments if at the start of a line
   					}
@@ -5578,7 +5586,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  docBlock+=yytext;
   					}
 <DocBlock>\n				{ // newline
-  					  yyLineNr++;
+                                          lineCount();
 					  docBlock+=*yytext;
   					}
 <DocBlock>.				{ // command block
@@ -5632,7 +5640,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <DocCopyBlock>\n			{ // newline
   					  docBlock+=*yytext;
-					  yyLineNr++;
+                                          lineCount();
   					}
 <DocCopyBlock>.				{ // any other character
   					  docBlock+=*yytext;
@@ -5727,14 +5735,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else 
 					  {
-					    yyLineNr++; 
+                                            lineCount();
 					  }
   					}
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;
 					}
 <SkipComment>[^\*\n]+
-<*>\n					{ yyLineNr++ ; }
+<*>\n					{ lineCount(); }
 <*>\"					{
 					  if (insideIDL && insideCppQuote)
 					  {
@@ -5819,7 +5827,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody && previous ? previous : current,
-	doc,        // text
+	stripIndentation(doc),        // text
 	yyFileName, // file
 	lineNr,     // line of block start
 	docBlockInBody ? FALSE : brief,               // isBrief

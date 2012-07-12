@@ -139,9 +139,10 @@ class Entry
       Assign      = 0x00200000,
       Strong      = 0x00400000,
       Weak        = 0x00800000,
-      Composition = 0x01000000,
-      Aggregation = 0x02000000,
-      Association = 0x04000000
+      Unretained  = 0x01000000,
+      Composition = 0x02000000,
+      Aggregation = 0x04000000,
+      Association = 0x08000000
     };
     enum ClassSpecifier
     {

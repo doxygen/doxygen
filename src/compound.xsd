@@ -392,6 +392,75 @@
       <xsd:element name="ring" type="docCharType" />
       <xsd:element name="szlig" type="docEmptyType" />
       <xsd:element name="nonbreakablespace" type="docEmptyType" />
+      <xsd:element name="aelig" type="docEmptyType" />
+      <xsd:element name="AElig" type="docEmptyType" />
+      <xsd:element name="Gamma" type="docEmptyType" />
+      <xsd:element name="Delta" type="docEmptyType" />
+      <xsd:element name="Theta" type="docEmptyType" />
+      <xsd:element name="Lambda" type="docEmptyType" />
+      <xsd:element name="Xi" type="docEmptyType" />
+      <xsd:element name="Pi" type="docEmptyType" />
+      <xsd:element name="Sigma" type="docEmptyType" />
+      <xsd:element name="Upsilon" type="docEmptyType" />
+      <xsd:element name="Phi" type="docEmptyType" />
+      <xsd:element name="Psi" type="docEmptyType" />
+      <xsd:element name="Omega" type="docEmptyType" />
+      <xsd:element name="alpha" type="docEmptyType" />
+      <xsd:element name="beta" type="docEmptyType" />
+      <xsd:element name="gamma" type="docEmptyType" />
+      <xsd:element name="delta" type="docEmptyType" />
+      <xsd:element name="epsilon" type="docEmptyType" />
+      <xsd:element name="zeta" type="docEmptyType" />
+      <xsd:element name="eta" type="docEmptyType" />
+      <xsd:element name="theta" type="docEmptyType" />
+      <xsd:element name="iota" type="docEmptyType" />
+      <xsd:element name="kappa" type="docEmptyType" />
+      <xsd:element name="lambda" type="docEmptyType" />
+      <xsd:element name="mu" type="docEmptyType" />
+      <xsd:element name="nu" type="docEmptyType" />
+      <xsd:element name="xi" type="docEmptyType" />
+      <xsd:element name="pi" type="docEmptyType" />
+      <xsd:element name="rho" type="docEmptyType" />
+      <xsd:element name="sigma" type="docEmptyType" />
+      <xsd:element name="tau" type="docEmptyType" />
+      <xsd:element name="upsilon" type="docEmptyType" />
+      <xsd:element name="phi" type="docEmptyType" />
+      <xsd:element name="chi" type="docEmptyType" />
+      <xsd:element name="psi" type="docEmptyType" />
+      <xsd:element name="omega" type="docEmptyType" />
+      <xsd:element name="sigmaf" type="docEmptyType" />
+      <xsd:element name="sect" type="docEmptyType" />
+      <xsd:element name="deg" type="docEmptyType" />
+      <xsd:element name="prime" type="docEmptyType" />
+      <xsd:element name="Prime" type="docEmptyType" />
+      <xsd:element name="infin" type="docEmptyType" />
+      <xsd:element name="empty" type="docEmptyType" />
+      <xsd:element name="plusmn" type="docEmptyType" />
+      <xsd:element name="times" type="docEmptyType" />
+      <xsd:element name="minus" type="docEmptyType" />
+      <xsd:element name="sdot" type="docEmptyType" />
+      <xsd:element name="part" type="docEmptyType" />
+      <xsd:element name="nabla" type="docEmptyType" />
+      <xsd:element name="radic" type="docEmptyType" />
+      <xsd:element name="perp" type="docEmptyType" />
+      <xsd:element name="sum" type="docEmptyType" />
+      <xsd:element name="int" type="docEmptyType" />
+      <xsd:element name="prod" type="docEmptyType" />
+      <xsd:element name="sim" type="docEmptyType" />
+      <xsd:element name="asymp" type="docEmptyType" />
+      <xsd:element name="ne" type="docEmptyType" />
+      <xsd:element name="equiv" type="docEmptyType" />
+      <xsd:element name="prop" type="docEmptyType" />
+      <xsd:element name="le" type="docEmptyType" />
+      <xsd:element name="ge" type="docEmptyType" />
+      <xsd:element name="larr" type="docEmptyType" />
+      <xsd:element name="rarr" type="docEmptyType" />
+      <xsd:element name="isin" type="docEmptyType" />
+      <xsd:element name="notin" type="docEmptyType" />
+      <xsd:element name="lceil" type="docEmptyType" />
+      <xsd:element name="rceil" type="docEmptyType" />
+      <xsd:element name="lfloor" type="docEmptyType" />
+      <xsd:element name="rfloor" type="docEmptyType" />
     </xsd:choice>
   </xsd:group>
 
@@ -827,6 +896,7 @@
       <xsd:enumeration value="assign"/>
       <xsd:enumeration value="weak"/>
       <xsd:enumeration value="strong"/>
+      <xsd:enumeration value="unretained"/>
     </xsd:restriction>
   </xsd:simpleType>
 

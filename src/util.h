@@ -234,6 +234,7 @@ void initClassHierarchy(ClassSDict *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
+Protection classInheritedProtectionLevel(ClassDef *cd,ClassDef *bcd,Protection prot=Public,int level=0);
 
 QCString convertNameToFile(const char *name,bool allowDots=FALSE,bool allowUnderscore=FALSE);
 
@@ -376,9 +377,6 @@ QCString filterTitle(const QCString &title);
 
 bool patternMatch(const QFileInfo &fi,const QStrList *patList);
 
-void writeSummaryLink(OutputList &ol,const char *label,const char *title,
-                      bool &first);
-
 QCString externalLinkTarget();
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
@@ -404,6 +402,10 @@ QCString correctURL(const QCString &url,const QCString &relPath);
 QCString processMarkup(const QCString &s);
 
 bool protectionLevelVisible(Protection prot);
+
+QCString stripIndentation(const QCString &s);
+
+bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile);
 
 #endif
 

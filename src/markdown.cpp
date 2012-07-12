@@ -275,7 +275,7 @@ static int findEmphasisChar(const char *data, int size, char c)
       {
         i++;
         int l = endBlockName.length();
-        while (i<size-l-1)
+        while (i<size-l)
         {
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -366,7 +366,7 @@ static int processEmphasis2(GrowBuf &out, const char *data, int size, char c)
   return 0;
 }
 
-/** Parsing single emphase.
+/** Parsing tripple emphasis.
  *  Finds the first closing tag, and delegates to the other emph 
  */
 static int processEmphasis3(GrowBuf &out, const char *data, int size, char c)
@@ -425,6 +425,41 @@ static int processEmphasis3(GrowBuf &out, const char *data, int size, char c)
   return 0;
 }
 
+/** Process ndash and mdashes */
+static int processNmdash(GrowBuf &out,const char *data,int,int size)
+{
+  // precondition: data[0]=='-'
+  int i=1;
+  int count=1;
+  if (i<size && data[i]=='-') // found --
+  {
+    count++,i++;
+  }
+  if (i<size && data[i]=='-') // found ---
+  {
+    count++,i++;
+  }
+  if (i<size && data[i]=='-') // found ----
+  {
+    count++;
+  }
+  if (count==2) // -- => ndash
+  {
+    out.addStr("&ndash;");
+    return 2;
+  }
+  else if (count==3) // --- => ndash
+  {
+    out.addStr("&mdash;");
+    return 3;
+  }
+  // not an ndash or mdash
+  return 0;
+}
+
+/** Process a HTML tag. Note that <pre>..</pre> are treated specially, in
+ *  the sense that all code inside is written unprocessed
+ */
 static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
 {
   if (offset>0 && data[-1]=='\\') return 0; // escaped <
@@ -518,23 +553,6 @@ static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
     return 0;
   }
 
-#if 0
-  if (offset>0 && size>1 && (isIdChar(-1) || data[-1]==data[0]))
-  {
-    if (isIdChar(1) || data[-1]==data[0])
-    {
-      // avoid processing interal * and  _ as cmd_id, or 4*10 as emphasis,
-      // also x**2,y*2 should not be processed
-      return 0;
-    }
-    else if (size>2 && data[0]==data[1] && isIdChar(2))
-    {
-      // avoid processing interal ** and  __ such as cmd__id__bla, 
-      // or 4**10,5**10 as emphasis
-      return 0;
-    }
-  }
-#endif
   char c = data[0];
   int ret;
   if (size>2 && data[1]!=c) // _bla or *bla
@@ -922,7 +940,7 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
   if (!endBlockName.isEmpty())
   {
     int l = endBlockName.length();
-    while (i<size-l-1)
+    while (i<size-l)
     {
       if ((data[i]=='\\' || data[i]=='@') && // command
           data[i-1]!='\\' && data[i-1]!='@') // not escaped
@@ -1152,14 +1170,6 @@ static QCString extractTitleId(QCString &title)
     //printf("found id='%s' title='%s'\n",id.data(),title.data());
     return id;
   }
-  //i = r1.match(title,0,&l);
-  //if (i!=-1) // found id: style id
-  //{
-  //  QCString id = title.mid(i,l-1);
-  //  title = title.left(i)+title.mid(i+l);
-  //  //printf("found id='%s' title='%s'\n",id.data(),title.data());
-  //  return id;
-  //}
   //printf("no id found in title '%s'\n",title.data());
   return "";
 }
@@ -2159,6 +2169,7 @@ QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input
   g_actions['[']=processLink;
   g_actions['!']=processLink;
   g_actions['<']=processHtmlTag;
+  g_actions['-']=processNmdash;
   // finally process the inline markup (links, emphasis and code spans)
   processInline(out,s,size);
   out.addChar(0);

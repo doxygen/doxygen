@@ -1225,7 +1225,7 @@ void Config::check()
     QFileInfo fi(dotPath);
     if (fi.exists() && fi.isFile()) // user specified path + exec
     {
-      dotPath=fi.dirPath(TRUE).utf8();
+      dotPath=fi.dirPath(TRUE).utf8()+"/";
     }
     else
     {

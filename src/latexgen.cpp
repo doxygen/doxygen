@@ -326,6 +326,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "\\usepackage[scaled=.90]{helvet}\n";
   t << "\\usepackage{courier}\n";
   t << "\\usepackage{sectsty}\n";
+  t << "\\usepackage{amssymb}\n";
   t << "\\usepackage[titles]{tocloft}\n";
   t << "\\usepackage{doxygen}\n";
 

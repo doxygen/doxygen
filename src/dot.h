@@ -127,6 +127,7 @@ class DotNode
                       GraphOutputFormat f, 
                       bool lrRank, bool renderParents,
                       bool backArrows,
+                      const QCString &title,
                       QCString &graphStr
                      );
 };
@@ -307,7 +308,7 @@ class DotGroupCollaboration
   private :
     void addCollaborationMember( Definition* def, QCString& url, EdgeType eType );
     void addMemberList( class MemberList* ml );
-    void writeGraphHeader(FTextStream &t) const;
+    void writeGraphHeader(FTextStream &t,const QCString &title) const;
     Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
                    const QCString& _label, const QCString& _url );
 

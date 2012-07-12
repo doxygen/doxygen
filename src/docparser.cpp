@@ -1526,6 +1526,73 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
   else if (symName=="&nbsp;")  return DocSymbol::Nbsp;
   else if (symName=="&AElig;") return DocSymbol::AElig;
   else if (symName=="&aelig;") return DocSymbol::Aelig;
+  else if (symName=="&Gamma;")     return DocSymbol::GrkGamma;
+  else if (symName=="&Delta;")     return DocSymbol::GrkDelta;
+  else if (symName=="&Theta;")     return DocSymbol::GrkTheta;
+  else if (symName=="&Lambda;")    return DocSymbol::GrkLambda;
+  else if (symName=="&Xi;")        return DocSymbol::GrkXi;
+  else if (symName=="&Pi;")        return DocSymbol::GrkPi;
+  else if (symName=="&Sigma;")     return DocSymbol::GrkSigma;
+  else if (symName=="&Upsilon;")   return DocSymbol::GrkUpsilon;
+  else if (symName=="&Phi;")       return DocSymbol::GrkPhi;
+  else if (symName=="&Psi;")       return DocSymbol::GrkPsi;
+  else if (symName=="&Omega;")     return DocSymbol::GrkOmega;
+  else if (symName=="&alpha;")     return DocSymbol::Grkalpha;
+  else if (symName=="&beta;")      return DocSymbol::Grkbeta;
+  else if (symName=="&gamma;")     return DocSymbol::Grkgamma;
+  else if (symName=="&delta;")     return DocSymbol::Grkdelta;
+  else if (symName=="&epsilon;")   return DocSymbol::Grkepsilon;
+  else if (symName=="&zeta;")      return DocSymbol::Grkzeta;
+  else if (symName=="&eta;")       return DocSymbol::Grketa;
+  else if (symName=="&theta;")     return DocSymbol::Grktheta;
+  else if (symName=="&iota;")      return DocSymbol::Grkiota;
+  else if (symName=="&kappa;")     return DocSymbol::Grkkappa;
+  else if (symName=="&lambda;")    return DocSymbol::Grklambda;
+  else if (symName=="&mu;")        return DocSymbol::Grkmu;
+  else if (symName=="&nu;")        return DocSymbol::Grknu;
+  else if (symName=="&xi;")        return DocSymbol::Grkxi;
+  else if (symName=="&pi;")        return DocSymbol::Grkpi;
+  else if (symName=="&rho;")       return DocSymbol::Grkrho;
+  else if (symName=="&sigma;")     return DocSymbol::Grksigma;
+  else if (symName=="&tau;")       return DocSymbol::Grktau;
+  else if (symName=="&upsilon;")   return DocSymbol::Grkupsilon;
+  else if (symName=="&phi;")       return DocSymbol::Grkphi;
+  else if (symName=="&chi;")       return DocSymbol::Grkchi;
+  else if (symName=="&psi;")       return DocSymbol::Grkpsi;
+  else if (symName=="&omega;")     return DocSymbol::Grkomega;
+  else if (symName=="&sigmaf;")    return DocSymbol::Grkvarsigma;
+  else if (symName=="&sect;")      return DocSymbol::Section;
+  else if (symName=="&deg;")       return DocSymbol::Degree;
+  else if (symName=="&prime;")     return DocSymbol::Prime;
+  else if (symName=="&Prime;")     return DocSymbol::DoublePrime;
+  else if (symName=="&infin;")     return DocSymbol::Infinity;
+  else if (symName=="&empty;")     return DocSymbol::EmptySet;
+  else if (symName=="&plusmn;")    return DocSymbol::PlusMinus;
+  else if (symName=="&times;")     return DocSymbol::Times;
+  else if (symName=="&minus;")     return DocSymbol::Minus;
+  else if (symName=="&sdot;")      return DocSymbol::CenterDot;
+  else if (symName=="&part;")      return DocSymbol::Partial;
+  else if (symName=="&nabla;")     return DocSymbol::Nabla;
+  else if (symName=="&radic;")     return DocSymbol::SquareRoot;
+  else if (symName=="&perp;")      return DocSymbol::Perpendicular;
+  else if (symName=="&sum;")       return DocSymbol::Sum;
+  else if (symName=="&int;")       return DocSymbol::Integral;
+  else if (symName=="&prod;")      return DocSymbol::Product;
+  else if (symName=="&sim;")       return DocSymbol::Similar;
+  else if (symName=="&asymp;")     return DocSymbol::Approx;
+  else if (symName=="&ne;")        return DocSymbol::NotEqual;
+  else if (symName=="&equiv;")     return DocSymbol::Equivalent;
+  else if (symName=="&prop;")      return DocSymbol::Proportional;
+  else if (symName=="&le;")        return DocSymbol::LessEqual;
+  else if (symName=="&ge;")        return DocSymbol::GreaterEqual;
+  else if (symName=="&larr;")      return DocSymbol::LeftArrow;
+  else if (symName=="&rarr;")      return DocSymbol::RightArrow;
+  else if (symName=="&isin;")      return DocSymbol::SetIn;
+  else if (symName=="&notin;")     return DocSymbol::SetNotIn;
+  else if (symName=="&lceil;")     return DocSymbol::LeftCeil;
+  else if (symName=="&rceil;")     return DocSymbol::RightCeil;
+  else if (symName=="&lfloor;")    return DocSymbol::LeftFloor;
+  else if (symName=="&rfloor;")    return DocSymbol::RightFloor;
   else if (l==6 && symName.right(4)=="uml;")  
   {
     *letter=symName.at(1);
@@ -5069,7 +5136,7 @@ int DocPara::handleStartCode()
     if (g_token->verb.at(i)=='\n') li=i+1;
     i++;
   }
-  m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_exampleName,lang));
+  m_children.append(new DocVerbatim(this,g_context,stripIndentation(g_token->verb.mid(li)),DocVerbatim::Code,g_isExample,g_exampleName,lang));
   if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: code section ended without end marker");
   doctokenizerYYsetStatePara();
   return retval;
@@ -5152,6 +5219,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_HASH:
       m_children.append(new DocSymbol(this,DocSymbol::Hash));
+      break;
+    case CMD_PIPE:
+      m_children.append(new DocSymbol(this,DocSymbol::Pipe));
       break;
     case CMD_DCOLON:
       m_children.append(new DocSymbol(this,DocSymbol::DoubleColon));
@@ -5607,7 +5677,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_PRE:
       handleStyleEnter(this,m_children,DocStyleChange::Preformatted,&g_token->attribs);
       setInsidePreformatted(TRUE);
-      //doctokenizerYYsetInsidePre(TRUE);
+      doctokenizerYYsetInsidePre(TRUE);
       break;
     case HTML_P:
       retval=TK_NEWPARA;
@@ -6011,7 +6081,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case HTML_PRE:
       handleStyleLeave(this,m_children,DocStyleChange::Preformatted,"pre");
       setInsidePreformatted(FALSE);
-      //doctokenizerYYsetInsidePre(FALSE);
+      doctokenizerYYsetInsidePre(FALSE);
       break;
     case HTML_P:
       retval=TK_NEWPARA;

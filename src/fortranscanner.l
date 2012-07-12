@@ -1028,6 +1028,20 @@ private                                 {
 					   startCommentBlock(TRUE);
                                            yy_push_state(DocBackLine);
                                           }
+                                          else
+                                          {
+                                            /* handle out of place !< comment as a normal comment */
+                                            if (YY_START == String) { yyColNr -= yyleng; REJECT; } // "!" is ignored in strings
+                                            // skip comment line (without docu comments "!>" "!<" ) 
+                                            /* ignore further "!" and ignore comments in Strings */
+                                            if ((YY_START != StrIgnore) && (YY_START != String)) 
+					    {
+                                              yy_push_state(YY_START);
+                                              BEGIN(StrIgnore); 
+                                              debugStr="*!";
+                                              //fprintf(stderr,"start comment %d\n",yyLineNr);
+                                            }      
+                                          }
   					 }
 <DocBackLine>.*    			 { // contents of current comment line
                                           docBlock+=yytext;

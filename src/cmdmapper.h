@@ -116,7 +116,8 @@ enum CommandType
   CMD_CITE         = 86,
   CMD_SNIPPET      = 87,
   CMD_RTFONLY      = 88, 
-  CMD_ENDRTFONLY   = 89
+  CMD_ENDRTFONLY   = 89,
+  CMD_PIPE         = 90
 };
 
 enum HtmlTagType

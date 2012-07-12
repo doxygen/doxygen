@@ -45,7 +45,7 @@ class MemberTypeMap
     }
     IMember::MemberKind map(const QString &s)
     {
-      int *val = m_map.find(s);
+      int *val = m_map.find(s.utf8());
       if (val==0) 
       {
         debug(1,"Warning: `%s' is an invalid member type\n",s.data());
@@ -312,7 +312,7 @@ void MemberHandler::startLocation(const QXmlAttributes& attrib)
 {
   m_defFile = attrib.value("file");
   m_bodyFile = attrib.value("bodyfile");
-  QCString s;
+  QString s;
   s = attrib.value("line");
   if (!s.isEmpty()) m_defLine=s.toInt();
   s = attrib.value("bodystart");

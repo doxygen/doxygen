@@ -112,11 +112,11 @@ static void codify(FTextStream &t,const char *str)
 static void createSVG()
 {
     QCString ov =Config_getString("HTML_OUTPUT");
-    QCString dir="-o "+ov+"/vhdl_design_overview.html";
-    ov+="/vhdl_design.dot ";
+    QCString dir="-o \""+ov+"/vhdl_design_overview.html\"";
+    ov+="/vhdl_design.dot";
 
     QRegExp ep("[\\s]");
-    QCString vlargs="-Tsvg "+ov+dir ;
+    QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
     if (portable_system("dot",vlargs)!=0)
     {

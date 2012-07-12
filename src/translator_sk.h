@@ -92,7 +92,7 @@ class TranslatorSlovak : public Translator
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Zoznam všetkých členov."; }
+    { return "Zoznam všetkých členov"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

@@ -61,7 +61,7 @@ class TranslatorDutch : public Translator
     QCString trMore()
     { return "Meer..."; }
     QCString trListOfAllMembers()
-    { return "Lijst van alle members."; }
+    { return "Lijst van alle members"; }
     QCString trMemberList()
     { return "Member Lijst"; }
     QCString trThisIsTheListOfAllMembers()

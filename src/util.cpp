@@ -2422,16 +2422,6 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   int m=maxInheritanceDepth; 
   if (cd->baseClasses())
   {
-#if 0    
-    BaseClassListIterator bcli(*cd->baseClasses());
-    for ( ; bcli.current() ; ++bcli)
-    {
-      //printf("class %s base class %s\n",cd->name().data(),bcli.current()->classDef->name().data());
-      int mc=minClassDistance(bcli.current()->classDef,bcd,level+1);
-      if (mc<m) m=mc;
-      if (m<0) break;
-    }
-#endif
     BaseClassDef *bcdi = cd->baseClasses()->first();
     while (bcdi)
     {
@@ -2442,6 +2432,38 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
     }
   }
   return m;
+}
+
+Protection classInheritedProtectionLevel(ClassDef *cd,ClassDef *bcd,Protection prot,int level)
+{
+  if (bcd->categoryOf()) // use class that is being extended in case of 
+    // an Objective-C category
+  {
+    bcd=bcd->categoryOf();
+  }
+  if (cd==bcd) 
+  {
+    goto exit;
+  }
+  if (level==256)
+  {
+    err("error: Internal inconsistency: found class %s seem to have a recursive "
+        "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
+  }
+  else if (cd->baseClasses())
+  {
+    BaseClassDef *bcdi = cd->baseClasses()->first();
+    while (bcdi && prot!=Private)
+    {
+      Protection baseProt = classInheritedProtectionLevel(bcdi->classDef,bcd,bcdi->prot,level+1);
+      if (baseProt==Private)   prot=Private;
+      else if (baseProt==Protected) prot=Protected;
+      bcdi = cd->baseClasses()->next();
+    }
+  }
+exit:
+  //printf("classInheritedProtectionLevel(%s,%s)=%d\n",cd->name().data(),bcd->name().data(),prot);
+  return prot;
 }
 
 //static void printArgList(ArgumentList *al)
@@ -5386,77 +5408,144 @@ QCString convertToJSString(const char *s)
 
 QCString convertCharEntitiesToUTF8(const QCString &s)
 {
-  static QDict<char> entityMap(67);
+  static QDict<char> entityMap(127);
   static bool init=TRUE;
   QCString result;
   static QRegExp entityPat("&[a-zA-Z]+;");
 
   if (init)
   {
-    entityMap.insert("copy",  "\xC2\xA9");
-    entityMap.insert("tm",    "\xE2\x84\xA2");
-    entityMap.insert("trade", "\xE2\x84\xA2");
-    entityMap.insert("reg",   "\xC2\xAE");
-    entityMap.insert("lsquo", "\xE2\x80\x98");
-    entityMap.insert("rsquo", "\xE2\x80\x99");
-    entityMap.insert("ldquo", "\xE2\x80\x9C");
-    entityMap.insert("rdquo", "\xE2\x80\x9D");
-    entityMap.insert("ndash", "\xE2\x80\x93");
-    entityMap.insert("mdash", "\xE2\x80\x94");
-    entityMap.insert("Auml",  "\xC3\x84");
-    entityMap.insert("Euml",  "\xC3\x8B");
-    entityMap.insert("Iuml",  "\xC3\x8F");
-    entityMap.insert("Ouml",  "\xC3\x96");
-    entityMap.insert("Uuml",  "\xC3\x9C");
-    entityMap.insert("Yuml",  "\xC5\xB8");
-    entityMap.insert("auml",  "\xC3\xA4");
-    entityMap.insert("euml",  "\xC3\xAB");
-    entityMap.insert("iuml",  "\xC3\xAF");
-    entityMap.insert("ouml",  "\xC3\xB6");
-    entityMap.insert("uuml",  "\xC3\xBC");
-    entityMap.insert("yuml",  "\xC3\xBF");
-    entityMap.insert("Aacute","\xC3\x81");
-    entityMap.insert("Eacute","\xC3\x89");
-    entityMap.insert("Iacute","\xC3\x8D");
-    entityMap.insert("Oacute","\xC3\x93");
-    entityMap.insert("Uacute","\xC3\x9A");
-    entityMap.insert("aacute","\xC3\xA1");
-    entityMap.insert("eacute","\xC3\xA9");
-    entityMap.insert("iacute","\xC3\xAD");
-    entityMap.insert("oacute","\xC3\xB3");
-    entityMap.insert("uacute","\xC3\xBA");
-    entityMap.insert("Agrave","\xC3\x80");
-    entityMap.insert("Egrave","\xC3\x88");
-    entityMap.insert("Igrave","\xC3\x8C");
-    entityMap.insert("Ograve","\xC3\x92");
-    entityMap.insert("Ugrave","\xC3\x99");
-    entityMap.insert("agrave","\xC3\xA0");
-    entityMap.insert("egrave","\xC3\xA8");
-    entityMap.insert("igrave","\xC3\xAC");
-    entityMap.insert("ograve","\xC3\xB2");
-    entityMap.insert("ugrave","\xC3\xB9");
-    entityMap.insert("Acirc", "\xC3\x82");
-    entityMap.insert("Ecirc", "\xC3\x8A");
-    entityMap.insert("Icirc", "\xC3\x8E");
-    entityMap.insert("Ocirc", "\xC3\x94");
-    entityMap.insert("Ucirc", "\xC3\x9B");
-    entityMap.insert("acirc", "\xC3\xA2");
-    entityMap.insert("ecirc", "\xC3\xAA");
-    entityMap.insert("icirc", "\xC3\xAE");
-    entityMap.insert("ocirc", "\xC3\xB4");
-    entityMap.insert("ucirc", "\xC3\xBB");
-    entityMap.insert("Atilde","\xC3\x83");
-    entityMap.insert("Ntilde","\xC3\x91");
-    entityMap.insert("Otilde","\xC3\x95");
-    entityMap.insert("atilde","\xC3\xA3");
-    entityMap.insert("ntilde","\xC3\xB1");
-    entityMap.insert("otilde","\xC3\xB5");
-    entityMap.insert("szlig", "\xC3\x9F");
-    entityMap.insert("Ccedil","\xC3\x87");
-    entityMap.insert("ccedil","\xC3\xA7");
-    entityMap.insert("Aring", "\xC3\x85");
-    entityMap.insert("aring", "\xC3\xA5");
-    entityMap.insert("nbsp",  "\xC2\xA0");
+    entityMap.insert("copy",       "\xC2\xA9");
+    entityMap.insert("tm",         "\xE2\x84\xA2");
+    entityMap.insert("trade",      "\xE2\x84\xA2");
+    entityMap.insert("reg",        "\xC2\xAE");
+    entityMap.insert("lsquo",      "\xE2\x80\x98");
+    entityMap.insert("rsquo",      "\xE2\x80\x99");
+    entityMap.insert("ldquo",      "\xE2\x80\x9C");
+    entityMap.insert("rdquo",      "\xE2\x80\x9D");
+    entityMap.insert("ndash",      "\xE2\x80\x93");
+    entityMap.insert("mdash",      "\xE2\x80\x94");
+    entityMap.insert("Auml",       "\xC3\x84");
+    entityMap.insert("Euml",       "\xC3\x8B");
+    entityMap.insert("Iuml",       "\xC3\x8F");
+    entityMap.insert("Ouml",       "\xC3\x96");
+    entityMap.insert("Uuml",       "\xC3\x9C");
+    entityMap.insert("Yuml",       "\xC5\xB8");
+    entityMap.insert("auml",       "\xC3\xA4");
+    entityMap.insert("euml",       "\xC3\xAB");
+    entityMap.insert("iuml",       "\xC3\xAF");
+    entityMap.insert("ouml",       "\xC3\xB6");
+    entityMap.insert("uuml",       "\xC3\xBC");
+    entityMap.insert("yuml",       "\xC3\xBF");
+    entityMap.insert("Aacute",     "\xC3\x81");
+    entityMap.insert("Eacute",     "\xC3\x89");
+    entityMap.insert("Iacute",     "\xC3\x8D");
+    entityMap.insert("Oacute",     "\xC3\x93");
+    entityMap.insert("Uacute",     "\xC3\x9A");
+    entityMap.insert("aacute",     "\xC3\xA1");
+    entityMap.insert("eacute",     "\xC3\xA9");
+    entityMap.insert("iacute",     "\xC3\xAD");
+    entityMap.insert("oacute",     "\xC3\xB3");
+    entityMap.insert("uacute",     "\xC3\xBA");
+    entityMap.insert("Agrave",     "\xC3\x80");
+    entityMap.insert("Egrave",     "\xC3\x88");
+    entityMap.insert("Igrave",     "\xC3\x8C");
+    entityMap.insert("Ograve",     "\xC3\x92");
+    entityMap.insert("Ugrave",     "\xC3\x99");
+    entityMap.insert("agrave",     "\xC3\xA0");
+    entityMap.insert("egrave",     "\xC3\xA8");
+    entityMap.insert("igrave",     "\xC3\xAC");
+    entityMap.insert("ograve",     "\xC3\xB2");
+    entityMap.insert("ugrave",     "\xC3\xB9");
+    entityMap.insert("Acirc",      "\xC3\x82");
+    entityMap.insert("Ecirc",      "\xC3\x8A");
+    entityMap.insert("Icirc",      "\xC3\x8E");
+    entityMap.insert("Ocirc",      "\xC3\x94");
+    entityMap.insert("Ucirc",      "\xC3\x9B");
+    entityMap.insert("acirc",      "\xC3\xA2");
+    entityMap.insert("ecirc",      "\xC3\xAA");
+    entityMap.insert("icirc",      "\xC3\xAE");
+    entityMap.insert("ocirc",      "\xC3\xB4");
+    entityMap.insert("ucirc",      "\xC3\xBB");
+    entityMap.insert("Atilde",     "\xC3\x83");
+    entityMap.insert("Ntilde",     "\xC3\x91");
+    entityMap.insert("Otilde",     "\xC3\x95");
+    entityMap.insert("atilde",     "\xC3\xA3");
+    entityMap.insert("ntilde",     "\xC3\xB1");
+    entityMap.insert("otilde",     "\xC3\xB5");
+    entityMap.insert("szlig",      "\xC3\x9F");
+    entityMap.insert("Ccedil",     "\xC3\x87");
+    entityMap.insert("ccedil",     "\xC3\xA7");
+    entityMap.insert("Aring",      "\xC3\x85");
+    entityMap.insert("aring",      "\xC3\xA5");
+    entityMap.insert("nbsp",       "\xC2\xA0");
+    entityMap.insert("Gamma",      "\xCE\x93");
+    entityMap.insert("Delta",      "\xCE\x94");
+    entityMap.insert("Theta",      "\xCE\x98");
+    entityMap.insert("Lambda",     "\xCE\x9B");
+    entityMap.insert("Xi",         "\xCE\x9E");
+    entityMap.insert("Pi",         "\xCE\xA0");
+    entityMap.insert("Sigma",      "\xCE\xA3");
+    entityMap.insert("Upsilon",    "\xCE\xA5");
+    entityMap.insert("Phi",        "\xCE\xA6");
+    entityMap.insert("Psi",        "\xCE\xA8");
+    entityMap.insert("Omega",      "\xCE\xA9");
+    entityMap.insert("alpha",      "\xCE\xB1");
+    entityMap.insert("beta",       "\xCE\xB2");
+    entityMap.insert("gamma",      "\xCE\xB3");
+    entityMap.insert("delta",      "\xCE\xB4");
+    entityMap.insert("epsilon",    "\xCE\xB5");
+    entityMap.insert("zeta",       "\xCE\xB6");
+    entityMap.insert("eta",        "\xCE\xB8");
+    entityMap.insert("theta",      "\xCE\xB8");
+    entityMap.insert("iota",       "\xCE\xB9");
+    entityMap.insert("kappa",      "\xCE\xBA");
+    entityMap.insert("lambda",     "\xCE\xBB");
+    entityMap.insert("mu",         "\xCE\xBC");
+    entityMap.insert("nu",         "\xCE\xBD");
+    entityMap.insert("xi",         "\xCE\xBE");
+    entityMap.insert("pi",         "\xCF\x80");
+    entityMap.insert("rho",        "\xCF\x81");
+    entityMap.insert("sigma",      "\xCF\x83");
+    entityMap.insert("tau",        "\xCF\x84");
+    entityMap.insert("upsilon",    "\xCF\x85");
+    entityMap.insert("phi",        "\xCF\x86");
+    entityMap.insert("chi",        "\xCF\x87");
+    entityMap.insert("psi",        "\xCF\x88");
+    entityMap.insert("omega",      "\xCF\x89");
+    entityMap.insert("sigmaf",     "\xCF\x82");
+    entityMap.insert("sect",       "\xC2\xA7");
+    entityMap.insert("deg",        "\xC2\xB0");
+    entityMap.insert("prime",      "\xE2\x80\xB2");
+    entityMap.insert("Prime",      "\xE2\x80\xB2");
+    entityMap.insert("infin",      "\xE2\x88\x9E");
+    entityMap.insert("empty",      "\xE2\x88\x85");
+    entityMap.insert("plusmn",     "\xC2\xB1");
+    entityMap.insert("times",      "\xC3\x97");
+    entityMap.insert("minus",      "\xE2\x88\x92");
+    entityMap.insert("sdot",       "\xE2\x8B\x85");
+    entityMap.insert("part",       "\xE2\x88\x82");
+    entityMap.insert("nabla",      "\xE2\x88\x87");
+    entityMap.insert("radic",      "\xE2\x88\x9A");
+    entityMap.insert("perp",       "\xE2\x8A\xA5");
+    entityMap.insert("sum",        "\xE2\x88\x91");
+    entityMap.insert("int",        "\xE2\x88\xAB");
+    entityMap.insert("prod",       "\xE2\x88\x8F");
+    entityMap.insert("sim",        "\xE2\x88\xBC");
+    entityMap.insert("asymp",      "\xE2\x89\x88");
+    entityMap.insert("ne",         "\xE2\x89\xA0");
+    entityMap.insert("equiv",      "\xE2\x89\xA1");
+    entityMap.insert("prop",       "\xE2\x88\x9D");
+    entityMap.insert("le",         "\xE2\x89\xA4");
+    entityMap.insert("ge",         "\xE2\x89\xA5");
+    entityMap.insert("larr",       "\xE2\x86\x90");
+    entityMap.insert("rarr",       "\xE2\x86\x92");
+    entityMap.insert("isin",       "\xE2\x88\x88");
+    entityMap.insert("notin",      "\xE2\x88\x89");
+    entityMap.insert("lceil",      "\xE2\x8C\x88");
+    entityMap.insert("rceil",      "\xE2\x8C\x89");
+    entityMap.insert("lfloor",     "\xE2\x8C\x8A");
+    entityMap.insert("rfloor",     "\xE2\x8C\x8B");
     init=FALSE;
   }
 
@@ -6596,7 +6685,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   root->accept(visitor);
   delete visitor;
   delete root;
-  QCString result = s.data();
+  QCString result = convertCharEntitiesToUTF8(s.data());
   int i=0;
   int charCnt=0;
   int l=result.length();
@@ -7114,8 +7203,9 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
   return found;
 }
 
+#if 0 // move to HtmlGenerator::writeSummaryLink
 void writeSummaryLink(OutputList &ol,const char *label,const char *title,
-                      bool &first)
+                      bool &first,const char *file)
 {
   if (first)
   {
@@ -7126,12 +7216,22 @@ void writeSummaryLink(OutputList &ol,const char *label,const char *title,
   {
     ol.writeString(" &#124;\n");
   }
-  ol.writeString("<a href=\"#");
-  ol.writeString(label);
+  if (file)
+  {
+    ol.writeString("<a href=\"");
+    ol.writeString(file);
+    ol.writeString(Doxygen::htmlFileExtension);
+  }
+  else
+  {
+    ol.writeString("<a href=\"#");
+    ol.writeString(label);
+  }
   ol.writeString("\">");
   ol.writeString(title);
   ol.writeString("</a>");
 }
+#endif
 
 QCString externalLinkTarget()
 {
@@ -7380,4 +7480,86 @@ bool protectionLevelVisible(Protection prot)
          (prot==Private && extractPrivate) || 
          (prot==Package && extractPackage);
 }
+
+//---------------------------------------------------------------------------
+
+QCString stripIndentation(const QCString &s)
+{
+  if (s.isEmpty()) return s; // empty string -> we're done
+
+  //printf("stripIndentation:\n%s\n------\n",s.data());
+  // compute minimum indentation over all lines
+  const char *p=s.data();
+  char c;
+  int indent=0;
+  int minIndent=1000000; // "infinite"
+  bool searchIndent=TRUE;
+  static int tabSize=Config_getInt("TAB_SIZE");
+  while ((c=*p++))
+  {
+    if      (c=='\t') indent+=tabSize - (indent%tabSize);
+    else if (c=='\n') indent=0,searchIndent=TRUE;
+    else if (c==' ')  indent++;
+    else if (searchIndent) 
+    {
+      searchIndent=FALSE;
+      if (indent<minIndent) minIndent=indent;
+    }
+  }
+
+  // no indent to remove -> we're done
+  if (minIndent==0) return s;
+
+  // remove minimum indentation for each line
+  QGString result;
+  p=s.data();
+  indent=0;
+  while ((c=*p++))
+  {
+    if (c=='\n') // start of new line
+    {
+      indent=0;
+      result+=c;
+    }
+    else if (indent<minIndent) // skip until we reach minIndent
+    {
+      if (c=='\t')
+      {
+        int newIndent = indent+tabSize-(indent%tabSize);
+        int i=newIndent;
+        while (i>minIndent) // if a tab crosses the minIndent boundary fill the rest with spaces
+        {
+          result+=' ';
+          i--;
+        }
+        indent=newIndent;
+      }
+      else // space
+      {
+        indent++;
+      }
+    }
+    else // copy anything until the end of the line
+    {
+      result+=c;
+    }
+  }
+
+  result+='\0';
+  return result.data();
+}
+
+
+bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile)
+{
+  static bool allExternals = Config_getBool("ALLEXTERNALS");
+  bool isDocFile = fd->isDocumentationFile();
+  genSourceFile = !isDocFile && fd->generateSourceFile();
+  return ( ((allExternals && fd->isLinkable()) ||
+            fd->isLinkableInProject()
+           ) && 
+           !isDocFile
+         );
+}
+
 

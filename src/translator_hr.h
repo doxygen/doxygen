@@ -113,7 +113,7 @@ class TranslatorCroatian : public Translator
     QCString trMore()
     { return "Opširnije..."; }
     QCString trListOfAllMembers()
-    { return "Popis svih članova."; }
+    { return "Popis svih članova"; }
     QCString trMemberList()
     { return "Popis članova."; }
     QCString trThisIsTheListOfAllMembers()

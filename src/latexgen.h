@@ -191,6 +191,7 @@ class LatexGenerator : public OutputGenerator
     void writeNavigationPath(const char *) {}
     void writeLogo() {}
     void writeQuickLinks(bool,HighlightedItem,const char*) {}
+    void writeSummaryLink(const char *,const char *,const char *,bool) {}
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int);

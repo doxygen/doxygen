@@ -761,9 +761,9 @@ static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
     ol.startTypewriter();
     ol.docify(" [");
     QStrList sl;
-    if (bcd->prot==Protected)    sl.append("protected");
-    else if (bcd->prot==Private) sl.append("private");
-    if (bcd->virt==Virtual)      sl.append("virtual");
+    if      (bcd->prot==Protected) sl.append("protected");
+    else if (bcd->prot==Private)   sl.append("private");
+    if      (bcd->virt==Virtual)   sl.append("virtual");
     const char *s=sl.first();
     while (s)
     {
@@ -790,7 +790,11 @@ void ClassDef::setIncludeFile(FileDef *fd,
     m_impl->incInfo->includeName = includeName;
     m_impl->incInfo->local       = local;
   }
-  if (force && includeName) m_impl->incInfo->includeName = includeName;
+  if (force && includeName) 
+  {
+    m_impl->incInfo->includeName = includeName;
+    m_impl->incInfo->local       = local;
+  }
 }
 
 // TODO: fix this: a nested template class can have multiple outer templates
@@ -971,7 +975,10 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &/*pageTy
       (Config_getBool("SOURCE_BROWSER") && getStartBodyLine()!=-1 && getBodyDef()) ||
       exampleFlag)
   {
-    ol.writeRuler();
+    ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Html);
+      ol.writeRuler();
+    ol.popGeneratorState();
 
     ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
@@ -1331,6 +1338,7 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
   }
 }
 
+#if 0
 void ClassDef::writeAllMembersLink(OutputList &ol)
 {
   // write link to list of all members (HTML only)
@@ -1349,6 +1357,7 @@ void ClassDef::writeAllMembersLink(OutputList &ol)
     ol.popGeneratorState();
   }
 }
+#endif
 
 void ClassDef::writeMemberGroups(OutputList &ol,bool showInline)
 {
@@ -1462,7 +1471,16 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
          )
       {
         LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-        writeSummaryLink(ol,"nested-classes",ls->title,first);
+        ol.writeSummaryLink(0,"nested-classes",ls->title,first);
+        first=FALSE;
+      }
+      else if (lde->kind()==LayoutDocEntry::ClassAllMembersLink &&
+               m_impl->allMemberNameInfoSDict &&
+               !Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
+              )
+      {
+        ol.writeSummaryLink(getMemberListFileName(),"all-members-list",theTranslator->trListOfAllMembers(),first);
+        first=FALSE;
       }
       else if (lde->kind()== LayoutDocEntry::MemberDecl)
       {
@@ -1470,7 +1488,8 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+          ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+          first=FALSE;
         }
       }
     }
@@ -1480,7 +1499,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
     SDict<QCString>::Iterator li(m_impl->vhdlSummaryTitles);
     for (li.toFirst();li.current();++li)
     {
-      writeSummaryLink(ol,li.current()->data(),li.current()->data(),first);
+      ol.writeSummaryLink(0,li.current()->data(),li.current()->data(),first);
     }
   }
   if (!first)
@@ -1821,7 +1840,7 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTit
         writeCollaborationGraph(ol); 
         break; 
       case LayoutDocEntry::ClassAllMembersLink: 
-        writeAllMembersLink(ol);
+        //writeAllMembersLink(ol); // this is now part of the summary links
         break;
       case LayoutDocEntry::MemberDeclStart: 
         startMemberDeclarations(ol);
@@ -3804,54 +3823,49 @@ static void convertProtectionLevel(
         break;
     }
   }
+  //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
+  //    inListType,inProt,*outListType1,*outListType2);
 }
 
 int ClassDef::countInheritedDecMembersRec(MemberList::ListType lt,
                                           ClassDef *inheritedFrom)
 {
+  //printf("> %s::countedInheritedDecMembersRec(%d)\n",name().data(),lt);
   int count=0;
   if (m_impl->inherits)
   {
-    BaseClassDef *ibcd=m_impl->inherits->first();
-    while (ibcd)
+    BaseClassListIterator it(*m_impl->inherits);
+    BaseClassDef *ibcd;
+    for (it.toFirst();(ibcd=it.current());++it)
     {
       ClassDef *icd=ibcd->classDef;
       int lt1,lt2;
+      // an inherited member with protection level lt 
+      // could have come from a section with protection levels lt1 or lt2
+      // in the bass class (e.g. for protected inheritance, the protected
+      // member comes from protected and public methods in the base class)
       convertProtectionLevel(lt,ibcd->prot,&lt1,&lt2);
-      MemberList *ml = icd->getMemberList((MemberList::ListType)lt1);
-      if (ml)
+      MemberList *ml1 = icd->getMemberList((MemberList::ListType)lt1);
+      MemberList *ml2 = icd->getMemberList((MemberList::ListType)lt2);
+      if (ml1)
       {
-        //count+=ml->countInheritableMembers(inheritedFrom);
         count+=icd->countMembersIncludingGrouped((MemberList::ListType)lt1,inheritedFrom,TRUE);
+      }
+      if (ml2) 
+      {
+        count+=icd->countMembersIncludingGrouped((MemberList::ListType)lt2,inheritedFrom,TRUE);
+      }
+      if (lt1!=-1)
+      {
         count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt1,inheritedFrom);
       }
       if (lt2!=-1)
       {
-        ml = icd->getMemberList((MemberList::ListType)lt2);
-        if (ml) 
-        {
-          //count+=ml->countInheritableMembers(inheritedFrom);
-          count+=icd->countMembersIncludingGrouped((MemberList::ListType)lt2,inheritedFrom,TRUE);
-          count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt2,inheritedFrom);
-        }
-      }
-      ibcd=m_impl->inherits->next();
-    }
-  }
-#if 0
-  if (m_impl->memberGroupSDict)
-  {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
-      {
-        count+=mg->countGroupedInheritedMembers(lt);
+        count+=icd->countInheritedDecMembersRec((MemberList::ListType)lt2,inheritedFrom);
       }
     }
   }
-#endif
+  //printf("< %s::countedInheritedDecMembersRec(%d) count=%d\n",name().data(),lt,count);
   return count;
 }
 
@@ -3863,7 +3877,7 @@ int ClassDef::countInheritedDecMembers(MemberList::ListType lt)
   {
     count = ml->countInheritableMembers(this);
   }
-  if (count==0) // for this class the member list is empty
+  if (count==0) // for this class the (non-private) member list is empty
                 // see if we need to create a section for it under
                 // Additional Inherited Members
   {
@@ -3871,7 +3885,7 @@ int ClassDef::countInheritedDecMembers(MemberList::ListType lt)
   }
   else // member list is not empty, so we will add the inherited members there
   {
-    count=0;
+    count = 0;
   }
   return count;
 }
@@ -3977,7 +3991,7 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
         if (lt1!=-1)
         {
           icd->writeMemberDeclarations(ol,(MemberList::ListType)lt1,
-                      title,QCString(),FALSE,inheritedFrom,lt2,visitedClasses);
+                      title,QCString(),FALSE,inheritedFrom,lt2,invert,visitedClasses);
         }
       }
     }
@@ -3986,19 +4000,22 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
 }
 
 void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
-               const char *subTitle,bool showInline,ClassDef *inheritedFrom,int lt2,QPtrDict<void> *visitedClasses)
+               const char *subTitle,bool showInline,ClassDef *inheritedFrom,int lt2,bool invert,QPtrDict<void> *visitedClasses)
 {
-  //printf("%s::writeMemberDeclarations(%s)\n",name().data(),title.data());
-  //static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  //printf("%s: ClassDef::writeMemberDeclarations for %s\n",name().data(),ml->listTypeAsString().data());
   MemberList * ml = getMemberList(lt);
-  if (ml) 
+  if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
   {
-    //printf("%s: ClassDef::writeMemberDeclarations for %s\n",name().data(),ml->listTypeAsString().data());
-    if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
+    if (ml)
     {
       VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0,0);
     }
-    else // use generic declaration function
+  }
+  else
+  {
+    //printf("%s::writeMemberDeclarations(%s)\n",name().data(),title.data());
+    //static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+    if (ml) 
     {
       ml->writeDeclarations(ol,this,0,0,0,title,subTitle,FALSE,showInline,inheritedFrom); 
       if (lt2!=-1)
@@ -4009,15 +4026,14 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
           ml2->writeDeclarations(ol,this,0,0,0,0,0,FALSE,showInline,inheritedFrom); 
         }
       }
-      
-      static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
-      if (!inlineInheritedMembers) // show inherited members as separate lists
-      {
-        QPtrDict<void> visited(17);
-        writeInheritedMemberDeclarations(ol,lt,title,
-                                    inheritedFrom ? inheritedFrom : this,
-                                    FALSE,visitedClasses==0 ? &visited: visitedClasses);
-      }
+    }
+    static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
+    if (!inlineInheritedMembers) // show inherited members as separate lists
+    {
+      QPtrDict<void> visited(17);
+      writeInheritedMemberDeclarations(ol,lt,title,
+                                       inheritedFrom ? inheritedFrom : this,
+                                       invert,visitedClasses==0 ? &visited: visitedClasses);
     }
   }
 }

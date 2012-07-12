@@ -113,7 +113,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Список на сите членови."; }
+    { return "Список на сите членови"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

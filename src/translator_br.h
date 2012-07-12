@@ -113,7 +113,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_0
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Lista de todos os Membros."; }
+    { return "Lista de todos os Membros"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

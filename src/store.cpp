@@ -418,6 +418,7 @@ void Store::dumpBlock(portable_off_t s,portable_off_t e)
     }
     printf("\n");
   }
+  delete[] buf;
   portable_fseek(m_file,m_cur,SEEK_SET);
 }
 

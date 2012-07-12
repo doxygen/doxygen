@@ -205,6 +205,7 @@ class HtmlGenerator : public OutputGenerator
     void writeNavigationPath(const char *s);
     void writeLogo();
     void writeQuickLinks(bool compact,HighlightedItem hli,const char *file);
+    void writeSummaryLink(const char *file,const char *anchor,const char *title,bool first);
     void startContents();
     void endContents();
     void writeNonBreakableSpace(int);

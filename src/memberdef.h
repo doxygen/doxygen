@@ -154,6 +154,7 @@ class MemberDef : public Definition
     bool isRetain() const;
     bool isWeak() const;
     bool isStrong() const;
+    bool isUnretained() const;
     bool isNew() const;
     bool isSealed() const;
     bool isImplementation() const;
@@ -298,6 +299,7 @@ class MemberDef : public Definition
     void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
     void setTypeConstraints(ArgumentList *al);
     void setType(const char *t);
+    void setAccessorType(ClassDef *cd,const char *t);
 
     // namespace related members
     void setNamespace(NamespaceDef *nd);

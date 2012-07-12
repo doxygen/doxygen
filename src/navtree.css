@@ -43,6 +43,7 @@
 #nav-tree .label {
   margin:0px;
   padding:0px;
+  font: 12px 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
 }
 
 #nav-tree .label a {
@@ -117,6 +118,21 @@
   background-repeat:repeat-x;
   background-color: ##FA;
   -webkit-overflow-scrolling : touch; /* iOS 5+ */
+}
+
+#nav-sync {
+  position:absolute;
+  top:5px;
+  right:24px;
+  z-index:0;
+}
+
+#nav-sync img {
+  opacity:0.3;
+}
+
+#nav-sync img:hover {
+  opacity:0.9;
 }
 
 @media print

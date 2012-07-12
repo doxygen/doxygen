@@ -142,7 +142,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "ليست تمام اعضاء ."; }
+    { return "ليست تمام اعضاء "; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()

@@ -3469,6 +3469,16 @@
 						Outputs="$(InputDir)\..\src\vhdlparser.cpp"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on vhdlparser.y"
+						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
+						Outputs="$(InputDir)\..\src\vhdlparser.cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\vhdlscanner.l"
