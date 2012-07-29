@@ -33,7 +33,7 @@
  */
 
 
-class TranslatorSpanish : public Translator
+class TranslatorSpanish : public TranslatorAdapter_1_8_2
 {
 
   public:

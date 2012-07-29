@@ -96,6 +96,7 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
 void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
                                   const char *header,bool localNames)
 {
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
   if (count()>0)
   {
     ClassSDict::Iterator sdi(*this);
@@ -105,6 +106,8 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     {
       //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
       if (cd->name().find('@')==-1 && 
+          !cd->isExtension() && 
+          (cd->protection()!=Private || extractPrivate) &&
           (filter==0 || *filter==cd->compoundType())
          )
       {

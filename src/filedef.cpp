@@ -167,7 +167,7 @@ void FileDef::findSectionsInDocumentation()
 void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty() ||
+      !documentation().stripWhiteSpace().isEmpty() || // avail empty section
       (Config_getBool("SOURCE_BROWSER") && getStartBodyLine()!=-1 && getBodyDef())
      )
   {
@@ -487,6 +487,7 @@ void FileDef::writeSummaryLinks(OutputList &ol)
       LayoutDocManager::instance().docEntries(LayoutDocManager::File));
   LayoutDocEntry *lde;
   bool first=TRUE;
+  SrcLangExt lang=getLanguage();
   for (eli.toFirst();(lde=eli.current());++eli)
   {
     if ((lde->kind()==LayoutDocEntry::FileClasses && classSDict && classSDict->declVisible()) || 
@@ -495,7 +496,7 @@ void FileDef::writeSummaryLinks(OutputList &ol)
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
       QCString label = lde->kind()==LayoutDocEntry::FileClasses ? "nested-classes" : "namespaces";
-      ol.writeSummaryLink(0,label,ls->title,first);
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
@@ -504,7 +505,7 @@ void FileDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title(lang),first);
         first=FALSE;
       }
     }
@@ -602,6 +603,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- start flexible part -------------------------------
   
+  SrcLangExt lang = getLanguage();
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::File));
   LayoutDocEntry *lde;
@@ -630,13 +632,13 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileClasses: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeClassDeclarations(ol,ls->title);
+          writeClassDeclarations(ol,ls->title(lang));
         }
         break; 
       case LayoutDocEntry::FileNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeNamespaceDeclarations(ol,ls->title);
+          writeNamespaceDeclarations(ol,ls->title(lang));
         }
         break; 
       case LayoutDocEntry::MemberGroups: 
@@ -645,7 +647,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl: 
         {
           LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-          writeMemberDeclarations(ol,lmd->type,lmd->title);
+          writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break; 
       case LayoutDocEntry::MemberDeclEnd: 
@@ -654,7 +656,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DetailedDesc: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeDetailedDescription(ol,ls->title);
+          writeDetailedDescription(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefStart: 
@@ -666,7 +668,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef: 
         {
           LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
-          writeMemberDocumentation(ol,lmd->type,lmd->title);
+          writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefEnd: 
@@ -985,7 +987,7 @@ void FileDef::addSourceRef(int line,Definition *d,MemberDef *md)
     srcDefDict->insert(line,d);
     if (md) srcMemberDict->insert(line,md);
     //printf("Adding member %s with anchor %s at line %d to file %s\n",
-    //    md->name().data(),md->anchor().data(),line,name().data());
+    //    md?md->name().data():"<none>",md?md->anchor().data():"<none>",line,name().data());
   }
 }
 

@@ -36,6 +36,8 @@
 
 #include <assert.h>
 
+#define YY_NO_INPUT 1
+
 #define ADDCHAR(c)    g_outBuf->addChar(c)
 #define ADDARRAY(a,s) g_outBuf->addArray(a,s)
   

@@ -92,7 +92,10 @@
 #  if !defined(MAC_OS_X_VERSION_10_7)
 #       define MAC_OS_X_VERSION_10_7 MAC_OS_X_VERSION_10_6 + 10
 #  endif
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_7)
+#  if !defined(MAC_OS_X_VERSION_10_8)
+#       define MAC_OS_X_VERSION_10_8 MAC_OS_X_VERSION_10_7 + 10
+#  endif
+#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8)
 #    warning "This version of Mac OS X is unsupported"
 #  endif
 #elif defined(MSDOS) || defined(_MSDOS) || defined(__MSDOS__)

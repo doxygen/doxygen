@@ -826,7 +826,7 @@ static uint char_val( const char **str, uint *strlength )   // get char value
 }
 
 
-#if defined(DEBUG)
+#if 0 //defined(DEBUG)
 static uint *dump( uint *p )
 {
     while ( *p != END ) {

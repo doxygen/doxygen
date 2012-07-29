@@ -22,7 +22,7 @@
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public Translator
+class TranslatorPolish : public TranslatorAdapter_1_8_2
 {
   public:
 

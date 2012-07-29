@@ -66,6 +66,8 @@
 #include <qmap.h>
 #include "entry.h"
 
+#define YY_NO_INPUT 1
+
 extern void vhdlParse(); // defined in vhdlparser.y
 
 static bool          g_lexInit = FALSE;

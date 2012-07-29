@@ -384,11 +384,12 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           ClassSDict::Iterator it(*classes);
           for (;(cd=it.current());++it)
           {
-            if (cd->isLinkable())
+            if (cd->isLinkable() && (cd->partOfGroups()==0 || def->definitionType()==Definition::TypeGroup))
             {
               bool isNestedClass = def->definitionType()==Definition::TypeClass;
               addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),
-                                addToIndex && isNestedClass,preventSeparateIndex);
+                                addToIndex && isNestedClass,
+                                preventSeparateIndex || cd->isEmbeddedInOuterScope());
             }
           }
         }
@@ -1374,7 +1375,7 @@ void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalO
           ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
               cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd); 
           if (addToIndex && 
-              !cd->isEmbeddedInOuterScope() &&
+              cd->partOfGroups()==0 &&
               (cd->getOuterScope()==0 || 
                cd->getOuterScope()->definitionType()!=Definition::TypeClass
               )
@@ -1402,7 +1403,7 @@ static bool containsVisibleChild(NamespaceDef *nd,bool includeClasses)
     NamespaceDef *cnd;
     for (cnli.toFirst();(cnd=cnli.current());++cnli)
     {
-      if (cnd->isLinkable() && cnd->localName().find('@')!=-1)
+      if (cnd->isLinkable() && cnd->localName().find('@')==-1)
       {
         return TRUE;
       }
@@ -3158,6 +3159,7 @@ bool writeMemberNavIndex(FTextStream &t,
 
 //----------------------------------------------------------------------------
 
+#if 0
 static bool writeFullNavIndex(FTextStream &t, LayoutNavEntry *root,int indent,bool &first)
 {
   static struct NavEntryCountMap 
@@ -3239,6 +3241,7 @@ static bool writeFullNavIndex(FTextStream &t, LayoutNavEntry *root,int indent,bo
   }
   return found;
 }
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -3563,21 +3566,24 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         ClassDef *cd;
         for (;(cd=it.current());++it)
         {
-          bool nestedClassInSameGroup = 
-              cd->getOuterScope() && cd->getOuterScope()->definitionType()==Definition::TypeClass &&
-              cd->getOuterScope()->partOfGroups()!=0 && cd->getOuterScope()->partOfGroups()->contains(gd);
-          if (cd->isVisible() && !nestedClassInSameGroup)
+          //bool nestedClassInSameGroup = 
+          //    cd->getOuterScope() && cd->getOuterScope()->definitionType()==Definition::TypeClass &&
+          //    cd->getOuterScope()->partOfGroups()!=0 && cd->getOuterScope()->partOfGroups()->contains(gd);
+          //printf("===== GroupClasses: %s visible=%d nestedClassInSameGroup=%d\n",cd->name().data(),cd->isVisible(),nestedClassInSameGroup);
+          if (cd->isVisible() /*&& !nestedClassInSameGroup*/)
           {
-            if (cd->isLinkable() && cd->isEmbeddedInOuterScope())
-            {
+            //if (cd->isEmbeddedInOuterScope())
+            //{
+              //printf("add class & members %d\n",addToIndex);
               addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),addToIndex,TRUE);
-            }
-            else // only index the class, not its members
-            {
-              Doxygen::indexList.addContentsItem(FALSE,
-                cd->localName(),cd->getReference(),
-                cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE);
-            }
+            //}
+            //else // only index the class, not its members
+            //{
+            //  printf("%s: add class only\n",cd->name().data());
+            //  Doxygen::indexList.addContentsItem(FALSE,
+            //    cd->displayName(TRUE),cd->getReference(),
+            //    cd->getOutputFileBase(),cd->anchor(),addToIndex,TRUE);
+            //}
           }
         }
       }

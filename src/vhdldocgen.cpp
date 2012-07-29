@@ -2830,7 +2830,7 @@ bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
 
   if (Config_getBool("HAVE_DOT") && Config_getEnum("DOT_IMAGE_FORMAT")=="svg")
   {
-     QCString ov("Design Overview"); // TODO: translate me
+     QCString ov = theTranslator->trDesignOverview();
      QCString ofile("vhdl_design_overview");
      LayoutNavEntry *oo=new LayoutNavEntry( lne,LayoutNavEntry::MainPage,true,ofile,ov,"");  
      kk->addChild(oo); 

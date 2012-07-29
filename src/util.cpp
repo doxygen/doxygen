@@ -1749,11 +1749,13 @@ nextChar:
       vsp=0;
     }
     else if (!isspace((uchar)c) || // not a space
-        ( i>0 && i<l-1 &&          // internal character
-          (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']')
-          && (isId(s.at(i+1)) || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))
-            || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3))))
-        ) 
+          ( i>0 && i<l-1 &&          // internal character
+            (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']') && 
+            (isId(s.at(i+1)) || 
+             (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2))) || 
+             (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))
+            )
+          ) 
         )
     {
       if (c=='*' || c=='&' || c=='@' || c=='$')
@@ -1763,6 +1765,14 @@ nextChar:
         if ((rl>0 && (isId(growBuf.at(rl-1)) || growBuf.at(rl-1)=='>')) &&
             ((c!='*' && c!='&') || !findOperator2(s,i)) // avoid splitting operator* and operator->* and operator&
            ) 
+        {
+          growBuf.addChar(' ');
+        }
+      }
+      else if (c=='-')
+      {
+        uint rl=growBuf.getPos();
+        if (rl>0 && growBuf.at(rl-1)==')' && i<l-1 && s.at(i+1)=='>') // trailing return type ')->' => ') ->'
         {
           growBuf.addChar(' ');
         }
@@ -2076,6 +2086,8 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals
   result+=")";
   if (al->constSpecifier) result+=" const";
   if (al->volatileSpecifier) result+=" volatile";
+  if (!al->trailingReturnType.isEmpty()) result+=" -> "+al->trailingReturnType;
+  if (al->pureSpecifier) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
 
@@ -2261,7 +2273,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   {
     size_t iLeft=inputSize;
     size_t oLeft=outputSize;
-    const char *inputPtr = input.data();
+    char *inputPtr = input.data();
     char *outputPtr = output.data();
     if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
     {
@@ -5853,27 +5865,6 @@ QCString substituteTemplateArgumentsInString(
   return result.stripWhiteSpace();
 }
 
-
-/*! Makes a deep copy of argument list \a src. Will allocate memory, that
- *  is owned by the caller. 
- */
-ArgumentList *copyArgumentList(const ArgumentList *src)
-{
-  ASSERT(src!=0);
-  ArgumentList *dst = new ArgumentList;
-  dst->setAutoDelete(TRUE);
-  ArgumentListIterator tali(*src);
-  Argument *a;
-  for (;(a=tali.current());++tali)
-  {
-    dst->append(new Argument(*a));
-  }
-  dst->constSpecifier    = src->constSpecifier;
-  dst->volatileSpecifier = src->volatileSpecifier;
-  dst->pureSpecifier     = src->pureSpecifier;
-  return dst;
-}
-
 /*! Makes a deep copy of the list of argument lists \a srcLists. 
  *  Will allocate memory, that is owned by the caller.
  */
@@ -5886,7 +5877,7 @@ QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists)
   ArgumentList *sl;
   for (;(sl=sli.current());++sli)
   {
-    dstLists->append(copyArgumentList(sl));
+    dstLists->append(sl->deepCopy());
   }
   return dstLists;
 }
@@ -7041,7 +7032,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   BufStr tmpBuf(tmpBufSize);
   size_t iLeft=size;
   size_t oLeft=tmpBufSize;
-  const char *srcPtr = srcBuf.data();
+  char *srcPtr = srcBuf.data();
   char *dstPtr = tmpBuf.data();
   uint newSize=0;
   if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))

@@ -110,6 +110,7 @@ class CompoundHandler : public IClass,
                         public IFile,
                         public IGroup,
                         public IPage,
+                        public IDir,
                         public BaseHandler<CompoundHandler>
 {
     friend class RelatedCompound;

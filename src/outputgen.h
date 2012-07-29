@@ -97,8 +97,8 @@ class BaseOutputDocInterface : public CodeOutputInterface
                         Examples 
                       };
 
-    virtual void parseDoc(const char *,int, const char *,MemberDef *,
-                          const QCString &,bool)  {} 
+    //virtual void parseDoc(const char *,int, const char *,MemberDef *,
+    //                      const QCString &,bool)  {} 
     virtual void parseText(const QCString &)  {}
     
     /*! Start of a bullet list: e.g. \c \<ul\> in html. startItemListItem() is
@@ -343,7 +343,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startMemberItem(const char *,int,const char *) = 0;
     virtual void endMemberItem() = 0;
     virtual void startMemberTemplateParams() = 0;
-    virtual void endMemberTemplateParams(const char *) = 0;
+    virtual void endMemberTemplateParams(const char *,const char *) = 0;
     virtual void startMemberGroupHeader(bool) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;
@@ -364,6 +364,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeEndAnnoItem(const char *name) = 0;
     virtual void startMemberDescription(const char *anchor,const char *inheritId) = 0;
     virtual void endMemberDescription() = 0;
+    virtual void startMemberDeclaration() = 0;
+    virtual void endMemberDeclaration(const char *anchor,const char *inheritId) = 0;
     virtual void writeInheritedSectionTitle(const char *id,const char *ref,
                                             const char *file,const char *anchor,
                                             const char *title,const char *name) = 0;
@@ -478,7 +480,7 @@ class OutputDocInterface : public BaseOutputDocInterface
     /*! Enables a specific output format (useful for OutputList only) */
     virtual void enable(OutputGenerator::OutputType o) = 0;
 
-    /*! Check whether a specific output format is currenly enabled 
+    /*! Check whether a specific output format is currently enabled 
      *  (useful for OutputList only) 
      */
     virtual bool isEnabled(OutputGenerator::OutputType o) = 0;

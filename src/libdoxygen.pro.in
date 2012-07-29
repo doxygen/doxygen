@@ -61,7 +61,6 @@ HEADERS      =	arguments.h \
                 htmldocvisitor.h \
 		htmlgen.h \
 		htmlhelp.h \
-		indexlog.h \
 		image.h \
 		index.h \
                 index_xsd.h \
@@ -211,7 +210,6 @@ SOURCES      =	arguments.cpp \
                 htmldocvisitor.cpp \
 		htmlgen.cpp \
 		htmlhelp.cpp \
-		indexlog.cpp \
 		image.cpp \
 		index.cpp \
 		language.cpp \

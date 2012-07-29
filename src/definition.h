@@ -336,8 +336,9 @@ class Definition : public DefinitionIntf, public LockableObj
     void lock() const {}
     void unlock() const {}
 
-  private: 
+    Definition(const Definition &d);
 
+  private: 
     static void addToMap(const char *name,Definition *d);
     static void removeFromMap(Definition *d);
 

@@ -43,6 +43,7 @@
 #include "arguments.h"
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_INPUT 1
   
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x

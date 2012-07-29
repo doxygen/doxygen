@@ -105,7 +105,7 @@ static QCString g_footer;
 
 //------------------------- Pictures for the Tabs ------------------------
 
-// active
+// active tab background luma
 static unsigned char tab_a_png[36] =
 {
    31,  42,  59,  69,  73,  74,  75,  77,  77,
@@ -114,13 +114,22 @@ static unsigned char tab_a_png[36] =
    96,  96,  97,  98,  98,  99,  99,  99, 100
 };
 
-// normal background
+// normal tab background luma
 static unsigned char tab_b_png[36] =
 {
-  240, 239, 238, 237, 235, 234, 234, 232, 231,
-  229, 228, 227, 224, 224, 221, 219, 218, 217,
-  214, 212, 210, 209, 206, 203, 202, 200, 198,
-  196, 195, 193, 192, 190, 189, 188, 188, 188
+    221, 231, 238, 236, 233, 230, 228, 225, 224,
+    221, 220, 218, 217, 216, 215, 214, 213, 212,
+    212, 194, 195, 196, 197, 198, 199, 200, 201,
+    202, 204, 206, 208, 210, 214, 216, 203, 185 
+};
+
+// hovering tab background luma
+static unsigned char tab_h_png[36] =
+{
+    181, 191, 198, 196, 193, 190, 188, 185, 184,
+    181, 180, 178, 177, 176, 175, 174, 173, 172,
+    172, 154, 155, 156, 157, 158, 159, 160, 161,
+    162, 164, 166, 168, 170, 174, 176, 163, 145
 };
 
 // shadowed header
@@ -142,16 +151,7 @@ static unsigned char func_header_png[56] =
   228, 228, 228, 229, 229, 229, 229, 229
 };
 
-// hovering
-static unsigned char tab_h_png[36] =
-{
-  199, 198, 196, 196, 195, 194, 193, 192, 189,
-  188, 187, 184, 184, 181, 180, 178, 176, 173,
-  171, 169, 166, 164, 163, 161, 159, 156, 155,
-  153, 152, 149, 148, 147, 145, 145, 150, 161
-};
-
-// separator
+// tab separator
 static unsigned char tab_s_png[36] =
 {
   187, 186, 185, 183, 182, 181, 180, 178, 176,
@@ -160,7 +160,7 @@ static unsigned char tab_s_png[36] =
   138, 136, 134, 131, 131, 128, 126, 125, 124
 };
 
-
+// breadcrumbs luma
 static unsigned char bc_s_png[240] =
 {
   150,187,187,148,148,148,148,148,
@@ -195,6 +195,7 @@ static unsigned char bc_s_png[240] =
   111,134,106,106,106,106,106,106
 };
 
+// breadcrumbs alpha map
 static unsigned char bc_s_a_png[240] =
 {
   241,241, 21,  0,  0,  0,  0,  0,
@@ -229,6 +230,7 @@ static unsigned char bc_s_a_png[240] =
   211,201,  0,  0,  0,  0,  0,  0
 };
 
+// doxygen logo luma
 static unsigned char doxygen_png[3224] =
 {
   255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
@@ -264,6 +266,7 @@ static unsigned char doxygen_png[3224] =
   255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 };
 
+// doxygen logo alpha map
 static unsigned char doxygen_a_png[3224] =
 {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -1196,12 +1199,205 @@ static QCString substituteHtmlKeywords(const QCString &s,
   return result;
 }
 
-//------------------------- Pictures for the Tabs ------------------------
+//--------------------------------------------------------------------------
+
+HtmlCodeGenerator::HtmlCodeGenerator()
+   : m_streamSet(FALSE), m_col(0)
+{
+}
+
+HtmlCodeGenerator::HtmlCodeGenerator(FTextStream &t,const QCString &relPath) 
+   : m_col(0), m_relPath(relPath)
+{
+  setTextStream(t);
+}
+
+void HtmlCodeGenerator::setTextStream(FTextStream &t)
+{
+  m_streamSet = t.device()!=0;
+  m_t.setDevice(t.device());
+}
+
+void HtmlCodeGenerator::setRelativePath(const QCString &path)
+{
+  m_relPath = path;
+}
+
+void HtmlCodeGenerator::codify(const char *str)
+{
+  static int tabSize = Config_getInt("TAB_SIZE");
+  if (str)
+  { 
+    const char *p=str;
+    char c;
+    int spacesToNextTabStop;
+    while (*p)
+    {
+      c=*p++;
+      switch(c)
+      {
+        case '\t': spacesToNextTabStop = 
+                         tabSize - (m_col%tabSize); 
+                   m_t << Doxygen::spaces.left(spacesToNextTabStop); 
+                   m_col+=spacesToNextTabStop; 
+                   break; 
+        case '\n': m_t << "\n"; m_col=0; 
+                   break;
+        case '\r': break;
+        case '<':  m_t << "&lt;"; m_col++; 
+                   break;
+        case '>':  m_t << "&gt;"; m_col++; 
+                   break;
+        case '&':  m_t << "&amp;"; m_col++; 
+                   break;
+        case '\'': m_t << "&#39;"; m_col++; // &apos; is not valid XHTML
+                   break;
+        case '"':  m_t << "&quot;"; m_col++;
+                   break;
+        case '\\':
+                   if (*p=='<')
+                     { m_t << "&lt;"; p++; }
+                   else if (*p=='>')
+                     { m_t << "&gt;"; p++; }
+                   else
+                     m_t << "\\";
+                   m_col++;
+                   break;
+        default:   m_t << c;    
+                   m_col++;                    
+                   break;
+      }
+    }
+  }
+}
+
+void HtmlCodeGenerator::docify(const char *str)
+{
+  if (str)
+  {
+    const char *p=str;
+    char c;
+    while (*p)
+    {
+      c=*p++;
+      switch(c)
+      {
+        case '<':  m_t << "&lt;"; break;
+        case '>':  m_t << "&gt;"; break;
+        case '&':  m_t << "&amp;"; break;
+        case '"':  m_t << "&quot;"; break;
+        case '\\':
+                   if (*p=='<')
+                     { m_t << "&lt;"; p++; }
+                   else if (*p=='>')
+                     { m_t << "&gt;"; p++; }
+                   else
+                     m_t << "\\";
+                   break;
+        default:   m_t << c; 
+      }
+    }
+  }
+}
+
+void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
+                                    const char *anchor,int l)
+{
+  QCString lineNumber,lineAnchor;
+  lineNumber.sprintf("%5d",l);
+  lineAnchor.sprintf("l%05d",l);
+
+  if (filename)
+  {
+    startCodeAnchor(lineAnchor);
+    writeCodeLink(ref,filename,anchor,lineNumber,0);
+    endCodeAnchor();
+  }
+  else
+  {
+    startCodeAnchor(lineAnchor);
+    codify(lineNumber);
+    endCodeAnchor();
+  }
+  m_t << "&#160;";
+}
+
+
+void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
+                                      const char *anchor, const char *name,
+                                      const char *tooltip)
+{
+  if (!m_streamSet) return;
+  //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
+  if (ref) 
+  {
+    m_t << "<a class=\"codeRef\" ";
+    m_t << externalLinkTarget() << externalRef(m_relPath,ref,FALSE);
+  }
+  else
+  {
+    m_t << "<a class=\"code\" ";
+  }
+  m_t << "href=\"";
+  m_t << externalRef(m_relPath,ref,TRUE);
+  if (f) m_t << f << Doxygen::htmlFileExtension;
+  if (anchor) m_t << "#" << anchor;
+  m_t << "\"";
+  if (tooltip) m_t << " title=\"" << tooltip << "\"";
+  m_t << ">";
+  docify(name);
+  m_t << "</a>";
+  m_col+=strlen(name);
+}
+
+void HtmlCodeGenerator::startCodeLine(bool hasLineNumbers) 
+{ 
+  if (!hasLineNumbers) m_t << "<div class=\"line\">";
+  m_col=0; 
+}
+
+void HtmlCodeGenerator::endCodeLine() 
+{ 
+  m_t << "</div>\n";
+}
+
+void HtmlCodeGenerator::startCodeAnchor(const char *label) 
+{ 
+  m_t << "<div class=\"line\">";
+  m_t << "<a name=\"" << label << "\"></a><span class=\"lineno\">"; 
+}
+
+void HtmlCodeGenerator::endCodeAnchor() 
+{ 
+  m_t << "</span>"; 
+}
+
+
+void HtmlCodeGenerator::startFontClass(const char *s) 
+{ 
+  if (m_streamSet) m_t << "<span class=\"" << s << "\">"; 
+}
+
+void HtmlCodeGenerator::endFontClass() 
+{ 
+  if (m_streamSet) m_t << "</span>"; 
+}
+
+void HtmlCodeGenerator::writeCodeAnchor(const char *anchor) 
+{ 
+  if (m_streamSet) m_t << "<a name=\"" << anchor << "\"></a>"; 
+}
+
+void HtmlCodeGenerator::linkableSymbol(int,const char *,Definition *,Definition *) 
+{
+}
+
+
+//--------------------------------------------------------------------------
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
   dir=Config_getString("HTML_OUTPUT");
-  col=0;  
   m_emptySection=FALSE;
 }
 
@@ -1321,27 +1517,27 @@ void HtmlGenerator::writeSearchData(const char *dir)
   Doxygen::indexList.addStyleSheetFile("search/search.css");
 }
 
-
-
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
 {
   FTextStream t(&file);
   t << replaceColorMarkers(defaultStyleSheet);
 }
 
-void HtmlGenerator::writeHeaderFile(QFile &file, const char *cssname)
+void HtmlGenerator::writeHeaderFile(QFile &file, const char * /*cssname*/)
 {
   FTextStream t(&file);
+  QCString contents(defaultHtmlHeader);
+  t << contents;
   
-  QString relPathStr = "$relpath$";
+//  QString relPathStr = "$relpath$";
 
-  QCString id(file.name().utf8());
-  if (id.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
-  {
-    id=id.left(id.length()-Doxygen::htmlFileExtension.length());
-  }
+//  QCString id(file.name().utf8());
+//  if (id.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
+//  {
+//    id=id.left(id.length()-Doxygen::htmlFileExtension.length());
+//  }
 
-  t << substitute(defaultHtmlHeader, "$stylesheet", cssname);
+//  t << substitute(defaultHtmlHeader, "$stylesheet", cssname);
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
@@ -1350,13 +1546,6 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   QCString contents(defaultHtmlFooter);
   t << contents;
 }
-
-//static void generateDynamicSections(FTextStream &t,const QCString &relPath)
-//{
-//  t << "<script type=\"text/javascript\" src=\"" << relPath 
-//    << "dynsections.js\"></script>\n";
-//}
-
 
 void HtmlGenerator::startFile(const char *name,const char *,
                               const char *title)
@@ -1371,6 +1560,8 @@ void HtmlGenerator::startFile(const char *name,const char *,
     fileName+=Doxygen::htmlFileExtension;
   }
   startPlainFile(fileName);
+  m_codeGen.setTextStream(t);
+  m_codeGen.setRelativePath(relPath);
   Doxygen::indexList.addIndexFile(fileName);
   //if (Config_getBool("GENERATE_HTMLHELP"))
   //{
@@ -1630,32 +1821,6 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   t << "</a>";
 }
 
-void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
-                                  const char *anchor, const char *name,
-                                  const char *tooltip)
-{
-  //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
-  if (ref) 
-  {
-    t << "<a class=\"codeRef\" ";
-    t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
-  }
-  else
-  {
-    t << "<a class=\"code\" ";
-  }
-  t << "href=\"";
-  t << externalRef(relPath,ref,TRUE);
-  if (f) t << f << Doxygen::htmlFileExtension;
-  if (anchor) t << "#" << anchor;
-  t << "\"";
-  if (tooltip) t << " title=\"" << tooltip << "\"";
-  t << ">";
-  docify(name);
-  t << "</a>";
-  col+=strlen(name);
-}
-
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
   t << "<a href=\"";
@@ -1773,59 +1938,6 @@ void HtmlGenerator::docify(const char *str,bool inHtmlComment)
                      t << "\\";
                    break;
         default:   t << c; 
-      }
-    }
-  }
-}
-
-void HtmlGenerator::codify(const char *str)
-{
-  //docify(str);
-  //static char spaces[]="        ";
-  if (str)
-  { 
-    const char *p=str;
-    char c;
-    int spacesToNextTabStop;
-    while (*p)
-    {
-      c=*p++;
-      switch(c)
-      {
-        case '\t': spacesToNextTabStop = 
-                         Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE")); 
-                   t << Doxygen::spaces.left(spacesToNextTabStop); 
-                   col+=spacesToNextTabStop; 
-                   break; 
-        case '\n': t << "\n"; col=0; 
-                   break;
-        //case '\n': t << "<br>"; col=0; 
-        //           break;
-        case '\r': break;
-        case '<':  t << "&lt;"; col++; 
-                   break;
-        case '>':  t << "&gt;"; col++; 
-                   break;
-        case '&':  t << "&amp;"; col++; 
-                   break;
-        case '\'': t << "&#39;"; col++; // &apos; is not valid HTML
-                   break;
-        case '"':  t << "&quot;"; col++;
-                   break;
-        //case ' ':  t << "&#160;"; col++;
-        //           break;
-        case '\\':
-                   if (*p=='<')
-                     { t << "&lt;"; p++; }
-                   else if (*p=='>')
-                     { t << "&gt;"; p++; }
-                   else
-                     t << "\\";
-                   col++;
-                   break;
-        default:   t << c;    
-                   col++;                    
-                   break;
       }
     }
   }
@@ -1974,40 +2086,29 @@ void HtmlGenerator::endMemberList()
 void HtmlGenerator::startMemberItem(const char *anchor,int annoType,const char *inheritId) 
 { 
   DBG_HTML(t << "<!-- startMemberItem() -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    if (m_emptySection)
-    {
-      t << "<table class=\"memberdecls\">" << endl;
-      m_emptySection=FALSE;
-    }
-    t << "<tr class=\"memitem:" << anchor;
-    if (inheritId)
-    {
-      t << " inherit " << inheritId;
-    }
-    t << "\">";
-    switch(annoType)
-    {
-      case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-      case 1:  t << "<td class=\"memItemLeft\" >"; break;
-      case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
-      default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
-    }
-  //}
-  //else
-  //{
-  //  t << "<li>"; 
-  //}
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
+  t << "<tr class=\"memitem:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\">";
+  switch(annoType)
+  {
+    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case 1:  t << "<td class=\"memItemLeft\" >"; break;
+    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+  }
 }
 
 void HtmlGenerator::endMemberItem() 
 { 
-  //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    t << "</td></tr>"; 
-  //}
+  t << "</td></tr>"; 
   t << endl; 
 }
 
@@ -2015,13 +2116,15 @@ void HtmlGenerator::startMemberTemplateParams()
 {
 }
 
-void HtmlGenerator::endMemberTemplateParams(const char *anchor)
+void HtmlGenerator::endMemberTemplateParams(const char *anchor,const char *inheritId)
 {
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    t << "</td></tr>" << endl;
-    t << "<tr class=\"memitem:" << anchor << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
-  //}
+  t << "</td></tr>" << endl;
+  t << "<tr class=\"memitem:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
 }
 
 
@@ -3147,57 +3250,12 @@ void HtmlGenerator::writeInheritedSectionTitle(
     classLink+=relPath;
   }
   classLink+=file+Doxygen::htmlFileExtension+a;
-  classLink+=QCString("\">")+name+"</a>";
+  classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
   t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
-    << "<img src=\"" << relPath << "closed.png\" alt=\"-\"/>&nbsp;" 
-    << theTranslator->trInheritedFrom(title,classLink)
+    << "<img src=\"" << relPath << "closed.png\" alt=\"-\"/>&#160;" 
+    << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
     << "</td></tr>" << endl;
-}
-
-void HtmlGenerator::startCodeLine(bool hasLineNumbers) 
-{ 
-  if (!hasLineNumbers) t << "<div class=\"line\">";
-  col=0; 
-}
-
-void HtmlGenerator::endCodeLine() 
-{ 
-  //codify("\n"); 
-  t << "</div>\n";
-}
-
-void HtmlGenerator::startCodeAnchor(const char *label) 
-{ 
-  t << "<div class=\"line\">";
-  t << "<a name=\"" << label << "\"></a><span class=\"lineno\">"; 
-}
-
-void HtmlGenerator::endCodeAnchor() 
-{ 
-  t << "</span>"; 
-}
-
-void HtmlGenerator::writeLineNumber(const char *ref,const char *filename,
-                                    const char *anchor,int l)
-{
-  QCString lineNumber,lineAnchor;
-  lineNumber.sprintf("%5d",l);
-  lineAnchor.sprintf("l%05d",l);
-
-  if (filename)
-  {
-    startCodeAnchor(lineAnchor);
-    writeCodeLink(ref,filename,anchor,lineNumber,0);
-    endCodeAnchor();
-  }
-  else
-  {
-    startCodeAnchor(lineAnchor);
-    codify(lineNumber);
-    endCodeAnchor();
-  }
-  t << "&#160;";
 }
 
 void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const char *title,bool first)
@@ -3226,4 +3284,13 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
   t << "</a>";
 }
 
+void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritId)
+{
+  t << "<tr class=\"separator:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
+}
 

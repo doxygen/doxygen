@@ -132,6 +132,7 @@ class GroupDef : public Definition
     void endMemberDocumentation(OutputList &ol);
     void writeAuthorSection(OutputList &ol);
     void writeSummaryLinks(OutputList &ol);
+    void updateLanguage(const Definition *);
 
     QCString title;                      // title of the group
     bool titleSet;                       // true if title is not the same as the name

@@ -349,7 +349,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
  *                 references followed by a $ and then the URL.
  *  \param context the context (file, class, or namespace) in which the
  *                 map file was found
- *  \returns TRUE if succesful.
+ *  \returns TRUE if successful.
  */
 static bool convertMapFile(FTextStream &t,const char *mapName,
                            const QCString relPath, bool urlOnly=FALSE,
@@ -1774,7 +1774,7 @@ void DotNode::writeBox(FTextStream &t,
     static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
     if (!dotTransparent)
     {
-      ClassDef* ccd=this->m_classDef;
+      ClassDef* ccd=m_classDef;
 
       t << ",color=\"" << labCol << "\", fillcolor=\"";
       if (ccd && vhdlOpt && (VhdlDocGen::VhdlClasses)ccd->protection()==VhdlDocGen::ARCHITECTURECLASS)

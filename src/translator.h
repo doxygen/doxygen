@@ -518,6 +518,18 @@ class Translator
     virtual QCString trInheritedFrom(const char *members,const char *what) = 0;
     virtual QCString trAdditionalInheritedMembers() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trPanelSynchronisationTooltip(bool enable) = 0;
+    virtual QCString trProvidedByCategory() = 0;
+    virtual QCString trExtendsClass() = 0;
+    virtual QCString trClassMethods() = 0;
+    virtual QCString trInstanceMethods() = 0;
+    virtual QCString trMethodDocumentation() = 0;
+    virtual QCString trDesignOverview() = 0;
+
 };
 
 #endif

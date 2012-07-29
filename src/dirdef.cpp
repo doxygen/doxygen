@@ -18,8 +18,8 @@ static int g_dirCount=0;
 
 DirDef::DirDef(const char *path) : Definition(path,1,path)
 {
+  bool fullPathNames = Config_getBool("FULL_PATH_NAMES");
   // get display name (stipping the paths mentioned in STRIP_FROM_PATH)
-  m_dispName = stripFromPath(path);
   // get short name (last part of path)
   m_shortName = path;
   m_diskName = path;
@@ -33,6 +33,11 @@ DirDef::DirDef(const char *path) : Definition(path,1,path)
     m_shortName = m_shortName.mid(pi+1);
   }
   setLocalName(m_shortName);
+  m_dispName = fullPathNames ? stripFromPath(path) : m_shortName;
+  if (m_dispName.at(m_dispName.length()-1)=='/')
+  { // strip trailing /
+    m_dispName = m_dispName.left(m_dispName.length()-1);
+  }
   
   m_fileList   = new FileList;
   m_usedDirs   = new QDict<UsedDir>(257);
@@ -198,7 +203,7 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
       ol.disable(OutputGenerator::Man);
       //ol.startParagraph();
       ol.startDirDepGraph();
-      ol.parseText(theTranslator->trDirDepGraph(displayName()));
+      ol.parseText(theTranslator->trDirDepGraph(shortName()));
       ol.endDirDepGraph(dirDep);
       //ol.endParagraph();
       ol.enableAll();
@@ -218,6 +223,7 @@ void DirDef::writeSubDirList(OutputList &ol)
     DirDef *dd=m_subdirs.first();
     while (dd)
     {
+      ol.startMemberDeclaration();
       ol.startMemberItem(dd->getOutputFileBase(),0);
       ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
@@ -239,6 +245,7 @@ void DirDef::writeSubDirList(OutputList &ol)
            );
         ol.endMemberDescription();
       }
+      ol.endMemberDeclaration(0,0);
       dd=m_subdirs.next();
     }
 
@@ -258,6 +265,7 @@ void DirDef::writeFileList(OutputList &ol)
     FileDef *fd=m_fileList->first();
     while (fd)
     {
+      ol.startMemberDeclaration();
       ol.startMemberItem(fd->getOutputFileBase(),0);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
@@ -300,6 +308,7 @@ void DirDef::writeFileList(OutputList &ol)
            );
         ol.endMemberDescription();
       }
+      ol.endMemberDeclaration(0,0);
       fd=m_fileList->next();
     }
     ol.endMemberList();
@@ -353,6 +362,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   
   //---------------------------------------- start flexible part -------------------------------
 
+  SrcLangExt lang = getLanguage();
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Directory));
   LayoutDocEntry *lde;
@@ -381,7 +391,7 @@ void DirDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DetailedDesc: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeDetailedDescription(ol,ls->title);
+          writeDetailedDescription(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::ClassIncludes:

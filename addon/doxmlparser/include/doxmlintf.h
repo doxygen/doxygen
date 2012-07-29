@@ -1070,6 +1070,13 @@ class IPage : public ICompound
     virtual const IDocTitle *title() const = 0;
 };
 
+/** \brief Interface to a directory in the object model. */
+class IDir : public ICompound
+{
+  public:
+    virtual ICompoundIterator *nestedCompounds() const = 0;
+};
+
 /*! Root node of the object model. */
 class IDoxygen 
 {

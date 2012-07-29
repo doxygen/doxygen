@@ -68,6 +68,7 @@ class MemberDef : public Definition
    ~MemberDef(); 
     DefType definitionType() const        { return TypeMember; }
     // move this member into a different scope
+    MemberDef *deepCopy() const;
     void moveTo(Definition *);
     
     //-----------------------------------------------------------------------------------
@@ -159,6 +160,10 @@ class MemberDef : public Definition
     bool isSealed() const;
     bool isImplementation() const;
     bool isExternal() const;
+    bool isAlias() const;
+    bool isDefault() const;
+    bool isDelete() const;
+    bool isNoExcept() const;
     bool isTemplateSpecialization() const;
     bool hasDocumentedParams() const;
     bool hasDocumentedReturnType() const;
@@ -196,6 +201,8 @@ class MemberDef : public Definition
     bool isDocsForDefinition() const;
     MemberDef *getEnumScope() const;
     LockingPtr< MemberList > enumFieldList() const;
+    void setEnumBaseType(const QCString &type);
+    QCString enumBaseType() const;
 
     bool hasExamples();
     LockingPtr<ExampleSDict> getExamples() const;
@@ -235,6 +242,7 @@ class MemberDef : public Definition
     MemberDef *getGroupAlias() const;
 
     ClassDef *category() const;
+    MemberDef *categoryRelation() const;
 
     QCString displayName(bool=TRUE) const;
 
@@ -334,6 +342,7 @@ class MemberDef : public Definition
     void copyArgumentNames(MemberDef *bmd);
 
     void setCategory(ClassDef *);
+    void setCategoryRelation(MemberDef *);
 
     void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
     void setBriefDescription(const char *b,const char *briefFile,int briefLine);
@@ -387,6 +396,7 @@ class MemberDef : public Definition
     void _writeEnumValues(OutputList &ol,Definition *container,
                           const QCString &cfname,const QCString &ciname,
                           const QCString &cname);
+    void _writeCategoryRelation(OutputList &ol);
 
     static int s_indentLevel;
     // disable copying of member defs
@@ -405,5 +415,7 @@ class MemberDef : public Definition
     uchar m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
     uchar m_isDestructorCached;  // 0 = not cached, 1=FALSE, 2=TRUE
 };
+
+void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef);
 
 #endif

@@ -455,8 +455,11 @@ table.memberdecls {
 	color: #555;
 }
 
-.memItemLeft, .memItemRight, .memTemplParams {
-	border-bottom: 1px solid ##E2;
+.memSeparator {
+        border-bottom: 1px solid #DEE4F0;
+        line-height: 1px;
+        margin: 0px;
+        padding: 0px;
 }
 
 .memItemLeft, .memTemplItemLeft {
@@ -470,6 +473,7 @@ table.memberdecls {
 .memTemplParams {
 	color: ##60;
         white-space: nowrap;
+	font-size: 80%;
 }
 
 /* @end */
@@ -648,12 +652,13 @@ span.mlabel {
         border-right:1px solid ##CC;
         border-bottom:1px solid ##CC;
 	text-shadow: none;
-        color: white;
-        margin-right: 4px;
-        padding: 2px 3px;
-        border-radius: 3px;
-        font-size: 7pt;
+	color: white;
+	margin-right: 4px;
+	padding: 2px 3px;
+	border-radius: 3px;
+	font-size: 7pt;
 	white-space: nowrap;
+	vertical-align: middle;
 }
 
 
@@ -824,6 +829,7 @@ table.fieldtable {
 	font-size: 11px;
 	background-image:url('tab_b.png');
 	background-repeat:repeat-x;
+	background-position: 0 -5px;
 	height:30px;
 	line-height:30px;
 	color:##9b;

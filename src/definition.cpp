@@ -292,6 +292,85 @@ Definition::Definition(const char *df,int dl,
   }
 }
 
+Definition::Definition(const Definition &d) : DefinitionIntf(), LockableObj()
+{
+  m_name = d.m_name;
+  m_defLine = d.m_defLine;
+  m_impl = new DefinitionImpl;
+  *m_impl = *d.m_impl;
+  m_impl->sectionDict = 0;
+  m_impl->sourceRefByDict = 0;
+  m_impl->sourceRefsDict = 0;
+  m_impl->partOfGroups = 0;
+  m_impl->xrefListItems = 0;
+  m_impl->brief = 0;
+  m_impl->details = 0;
+  m_impl->body = 0;
+  m_impl->inbodyDocs = 0;
+  if (d.m_impl->sectionDict)
+  {
+    m_impl->sectionDict = new SectionDict(17);
+    SDict<SectionInfo>::Iterator it(*d.m_impl->sectionDict);
+    SectionInfo *si;
+    for (it.toFirst();(si=it.current());++it)
+    {
+      m_impl->sectionDict->append(si->label,si);
+    }
+  }
+  if (d.m_impl->sourceRefByDict)
+  {
+    m_impl->sourceRefByDict = new MemberSDict;
+    MemberSDict::IteratorDict it(*d.m_impl->sourceRefByDict);
+    MemberDef *md;
+    for (it.toFirst();(md=it.current());++it)
+    {
+      m_impl->sourceRefByDict->append(it.currentKey(),md);
+    }
+  }
+  if (d.m_impl->sourceRefsDict)
+  {
+    m_impl->sourceRefsDict = new MemberSDict;
+    MemberSDict::IteratorDict it(*d.m_impl->sourceRefsDict);
+    MemberDef *md;
+    for (it.toFirst();(md=it.current());++it)
+    {
+      m_impl->sourceRefsDict->append(it.currentKey(),md);
+    }
+  }
+  if (d.m_impl->partOfGroups)
+  {
+    GroupListIterator it(*d.m_impl->partOfGroups);
+    GroupDef *gd;
+    for (it.toFirst();(gd=it.current());++it)
+    {
+      makePartOfGroup(gd);
+    }
+  }
+  if (d.m_impl->xrefListItems)
+  {
+    setRefItems(d.m_impl->xrefListItems);
+  }
+  if (d.m_impl->brief)
+  {
+    m_impl->brief = new BriefInfo(*d.m_impl->brief);
+  }
+  if (d.m_impl->details)
+  {
+    m_impl->details = new DocInfo(*d.m_impl->details);
+  }
+  if (d.m_impl->body)
+  {
+    m_impl->body = new BodyInfo(*d.m_impl->body);
+  }
+  if (d.m_impl->inbodyDocs)
+  {
+    m_impl->details = new DocInfo(*d.m_impl->inbodyDocs);
+  }
+
+  m_isSymbol = d.m_isSymbol;
+  if (m_isSymbol) addToMap(m_name,this);
+}
+
 Definition::~Definition()
 {
   if (m_isSymbol) 
@@ -1297,6 +1376,7 @@ QCString Definition::qualifiedName() const
 void Definition::setOuterScope(Definition *d) 
 {
   makeResident();
+  //printf("%s::setOuterScope(%s)\n",name().data(),d?d->name().data():"<none>");
   if (m_impl->outerScope!=d)
   { 
     m_impl->qualifiedName.resize(0); // flush cached scope name

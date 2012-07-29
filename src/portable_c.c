@@ -11,8 +11,8 @@ void * portable_iconv_open(const char* tocode, const char* fromcode)
   return iconv_open(tocode,fromcode);
 }
 
-size_t portable_iconv (void *cd, const char** inbuf,  size_t *inbytesleft, 
-                                       char** outbuf, size_t *outbytesleft)
+size_t portable_iconv (void *cd, char** inbuf,  size_t *inbytesleft, 
+                                 char** outbuf, size_t *outbytesleft)
 {
   return iconv((iconv_t)cd,inbuf,inbytesleft,outbuf,outbytesleft);
 }
