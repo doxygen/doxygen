@@ -28,6 +28,8 @@
 #include "declinfo.h"
 #include "util.h"
 #include "message.h"
+
+#define YY_NO_INPUT 1
   
 /* -----------------------------------------------------------------
  *

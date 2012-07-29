@@ -58,6 +58,7 @@
 #include "arguments.h"
   
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_INPUT 1
   
 /* -----------------------------------------------------------------
  *	state variables
@@ -79,6 +80,7 @@ static int              g_argCurlyCount;
 static int              g_readArgContext;
 static int              g_lastDocContext;
 static int              g_lastDocChar;
+static QCString         g_delimiter;
 
 /* -----------------------------------------------------------------
  */
@@ -100,11 +102,14 @@ static int yyread(char *buf,int max_size)
 
 B       [ \t]
 ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
+RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
 %option noyywrap
 
 %x      Start
 %x      CopyArgString
+%x      CopyRawString
 %x	CopyArgRound
 %x	CopyArgRound2
 %x	CopyArgSharp
@@ -115,6 +120,7 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 %x	FuncQual
 %x	ReadDocBlock
 %x	ReadDocLine
+%x      TrailingReturn
 
 
 %%
@@ -137,6 +143,13 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 <ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ g_curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"\\."'"		{ g_curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ g_curArgDefValue+=yytext; }
+<ReadFuncArgDef>{RAWBEGIN}              { g_curArgDefValue+=yytext; 
+                                          QCString text=yytext;
+                                          int i=text.find('"');
+                                          g_delimiter = yytext+i+1;
+                                          g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+                                          BEGIN( CopyRawString );
+                                        }
 <ReadFuncArgDef>\"			{
   					  g_curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
@@ -222,6 +235,11 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 					    BEGIN( g_readArgContext );
 					  }
   					}
+<CopyArgRound>")"/{B}*                  {
+					  *g_copyArgValue += *yytext;
+					  if (g_argRoundCount>0) g_argRoundCount--;
+					  else BEGIN( g_readArgContext );
+                                        }
 <CopyArgSharp>"<"			{
   					  g_argSharpCount++;
 					  *g_copyArgValue += *yytext;
@@ -235,7 +253,7 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
   					  g_argCurlyCount++;
 					  *g_copyArgValue += *yytext;
   					}
-<CopyArgSharp>"}"			{
+<CopyArgCurly>"}"			{
 					  *g_copyArgValue += *yytext;
 					  if (g_argCurlyCount>0) g_argCurlyCount--;
 					  else BEGIN( g_readArgContext );
@@ -243,6 +261,15 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 <CopyArgString>\\.			{
 					  g_curArgDefValue+=yytext;
   					}
+<CopyRawString>{RAWEND}                 {
+					  g_curArgDefValue+=yytext;
+                                          QCString delimiter = yytext+1;
+                                          delimiter=delimiter.left(delimiter.length()-1);
+                                          if (delimiter==g_delimiter)
+                                          {
+					    BEGIN( ReadFuncArgDef );
+                                          }
+                                        }
 <CopyArgString>\"			{
 					  g_curArgDefValue+=*yytext;
 					  BEGIN( ReadFuncArgDef );
@@ -385,7 +412,7 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 <ReadFuncArgDef,CopyArgString>"->"|">="|">>"	{
   					  g_curArgDefValue+=yytext;
   					}
-<ReadFuncArgDef,CopyArgString>.		{
+<ReadFuncArgDef,CopyArgString,CopyRawString>.		{
 					  g_curArgDefValue+=*yytext;
   					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
@@ -401,9 +428,24 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 <FuncQual>"volatile"		    	{ 
 					  g_argList->volatileSpecifier=TRUE;
 					}
-<FuncQual>"="{B}*"0"		  	{ 
+<FuncQual,TrailingReturn>"="{B}*"0"  	{ 
 					  g_argList->pureSpecifier=TRUE;
+                                          BEGIN(FuncQual);
 					}
+<FuncQual>"->"                          { // C++11 trailing return type
+                                          g_argList->trailingReturnType=" -> ";
+                                          BEGIN(TrailingReturn);
+                                        }
+<TrailingReturn>{B}/("final"|"override"){B}*  {
+                                          unput(*yytext);
+                                          BEGIN(FuncQual);
+                                        }
+<TrailingReturn>.                       {
+                                          g_argList->trailingReturnType+=yytext;
+                                        }
+<TrailingReturn>\n                      {
+                                          g_argList->trailingReturnType+=yytext;
+                                        }
 <FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
                                           // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
   					  g_extraTypeChars=yytext;
@@ -447,8 +489,10 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
  */
 
 /*! Converts an argument string into an ArgumentList.
- *  \param argsString the list of Arguments.
- *  \param al a reference to resulting argument list pointer.
+ *  \param[in] argsString the list of Arguments.
+ *  \param[out] al a reference to resulting argument list pointer.
+ *  \param[out] extraTypeChars point to string to which trailing characters 
+ *              for complex types are written to
  */
  
 void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extraTypeChars)

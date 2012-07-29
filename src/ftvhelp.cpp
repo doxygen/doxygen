@@ -885,7 +885,8 @@ static void generateBriefDoc(FTextStream &t,Definition *def)
   {
     DocNode *root = validatingParseDoc(def->briefFile(),def->briefLine(),
         def,0,brief,FALSE,FALSE,0,TRUE,TRUE);
-    HtmlGenerator htmlGen;
+    QCString relPath = relativePathToRoot(def->getOutputFileBase());
+    HtmlCodeGenerator htmlGen(t,relPath);
     HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,0);
     root->accept(visitor);
     delete visitor;
@@ -1257,6 +1258,8 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       tsidx << "};" << endl;
       t << endl << "];" << endl;
     }
+    t << endl << "var SYNCONMSG = '"  << theTranslator->trPanelSynchronisationTooltip(FALSE) << "';"; 
+    t << endl << "var SYNCOFFMSG = '" << theTranslator->trPanelSynchronisationTooltip(TRUE)  << "';"; 
     t << endl << navtree_script;
   }
 }

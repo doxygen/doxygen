@@ -19,6 +19,8 @@
 #include "qtbc.h"
 #include <qlist.h>
 
+class StorageIntf;
+
 /*! \brief This class contains the information about the argument of a
  *         function or template
  *
@@ -71,7 +73,7 @@ struct Argument
 /*! \brief This class represents an function or template argument list. 
  *
  *  This class also stores some information about member that is typically
- *  put after the argument list, such as wether the member is const, 
+ *  put after the argument list, such as whether the member is const, 
  *  volatile or pure virtual.
  */
 class ArgumentList : public QList<Argument> 
@@ -85,6 +87,9 @@ class ArgumentList : public QList<Argument>
                      { setAutoDelete(TRUE); }
     /*! Destroys the argument list */
    ~ArgumentList() {}
+    /*! Makes a deep copy of this object */
+    ArgumentList *deepCopy() const;
+    /*! Does any argument of this list have documentation? */
     bool hasDocumentation() const;
     /*! Does the member modify the state of the class? default: FALSE. */
     bool constSpecifier;
@@ -92,6 +97,12 @@ class ArgumentList : public QList<Argument>
     bool volatileSpecifier;
     /*! Is this a pure virtual member? default: FALSE */
     bool pureSpecifier;
+    /*! C++11 style Trailing return type? */
+    QCString trailingReturnType;
+    /*! C++11 defaulted method */
+
+    static ArgumentList *unmarshal(StorageIntf *s);
+    static void marshal(StorageIntf *s,ArgumentList *argList);
 };
 
 typedef QListIterator<Argument> ArgumentListIterator;

@@ -244,6 +244,15 @@ class ClassDef : public Definition
     /** Returns TRUE if this class is implemented in C# */
     bool isCSharp() const;
 
+    /** Returns TRUE if this class is marked as final */
+    bool isFinal() const;
+
+    /** Returns TRUE if this class is marked as sealed */
+    bool isSealed() const;
+
+    /** Returns TRUE if this class represents an Objective-C 2.0 extension (nameless category) */
+    bool isExtension() const;
+
     /** Returns the class of which this is a category (Objective-C only) */
     ClassDef *categoryOf() const;
 
@@ -303,6 +312,7 @@ class ClassDef : public Definition
     void setIsStatic(bool b);
     void setCompoundType(CompoundType t);
     void setClassName(const char *name);
+    void setClassSpecifier(int spec);
 
     void setTemplateArguments(ArgumentList *al);
     void setTemplateBaseClassNames(QDict<int> *templateNames);
@@ -387,6 +397,7 @@ class ClassDef : public Definition
     int countInheritedDecMembers(MemberList::ListType lt);
     int countAdditionalInheritedMembers();
     void writeAdditionalInheritedMembers(OutputList &ol);
+    void addClassAttributes(OutputList &ol);
     
     ClassDefImpl *m_impl;
 

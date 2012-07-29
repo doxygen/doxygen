@@ -40,6 +40,9 @@
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="kind" type="DoxCompoundKind" />
     <xsd:attribute name="prot" type="DoxProtectionKind" />
+    <xsd:attribute name="final" type="DoxBool" use="optional"/>
+    <xsd:attribute name="sealed" type="DoxBool" use="optional"/>
+    <xsd:attribute name="abstract" type="DoxBool" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="listofallmembersType">

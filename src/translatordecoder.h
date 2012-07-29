@@ -66,7 +66,7 @@ class TranslatorDecoder : public Translator
       QCString output(oSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
-      const char *iPtr = s.data();
+      char *iPtr       = s.data();
       char *oPtr       = output.data();
       if (!portable_iconv(cd,&iPtr,&iLeft,&oPtr,&oLeft))
       {
@@ -769,6 +769,24 @@ class TranslatorDecoder : public Translator
     QCString trAdditionalInheritedMembers()
     { return toUtf8(m_translator->trAdditionalInheritedMembers()); }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trPanelSynchronisationTooltip(bool enable)
+    { return toUtf8(m_translator->trPanelSynchronisationTooltip(enable)); }
+    QCString trProvidedByCategory()
+    { return toUtf8(m_translator->trProvidedByCategory()); }
+    QCString trExtendsClass()
+    { return toUtf8(m_translator->trExtendsClass()); }
+    QCString trClassMethods()
+    { return toUtf8(m_translator->trClassMethods()); }
+    QCString trInstanceMethods()
+    { return toUtf8(m_translator->trInstanceMethods()); }
+    QCString trMethodDocumentation()
+    { return toUtf8(m_translator->trMethodDocumentation()); }
+    QCString trDesignOverview()
+    { return toUtf8(m_translator->trDesignOverview()); }
 
 //////////////////////////////////////////////////////////////////////////
   private:

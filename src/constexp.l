@@ -23,6 +23,7 @@
 #include "ce_parse.h" // generated header file
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_INPUT 1
   
 QCString    g_strToken;  
 CPPValue    g_resultValue;

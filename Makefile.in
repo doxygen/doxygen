@@ -129,7 +129,7 @@ rpmbinary: dist
 
 
 ctags:
-	ctags -f tags src addon/doxywizard qtools
+	ctags -R -f tags src addon/doxywizard qtools
 
 FORCE:
 

@@ -83,7 +83,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_8_2
 {
   public:
     // --- Language control methods -------------------

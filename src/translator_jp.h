@@ -1215,10 +1215,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("クラス"));
       return result;
     }
@@ -1227,10 +1225,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trFile(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("ファイル"));
       return result;
     }
@@ -1239,10 +1235,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    virtual QCString trNamespace(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("ネームスペース"));
       return result;
     }
@@ -1251,10 +1245,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trGroup(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("グループ"));
       return result;
     }
@@ -1263,10 +1255,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trPage(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("ページ"));
       return result;
     }
@@ -1275,10 +1265,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trMember(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("メンバ"));
       return result;
     }
@@ -1287,10 +1275,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trField(bool first_capital, bool singular)
+    virtual QCString trField(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("フィールド"));
       return result;
     }
@@ -1299,10 +1285,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    virtual QCString trGlobal(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("グローバル"));
       return result;
     }
@@ -1313,10 +1297,8 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trAuthor(bool /*first_capital*/, bool /*singular*/)
     {
-      first_capital = first_capital;
-      singular = singular;
       QCString result(decode("作者"));
       return result;
     }

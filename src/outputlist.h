@@ -213,8 +213,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endMemberItem); }
     void startMemberTemplateParams() 
     { forall(&OutputGenerator::startMemberTemplateParams); }
-    void endMemberTemplateParams(const char *anchor) 
-    { forall(&OutputGenerator::endMemberTemplateParams,anchor); }
+    void endMemberTemplateParams(const char *anchor,const char *inheritId) 
+    { forall(&OutputGenerator::endMemberTemplateParams,anchor,inheritId); }
     void startMemberGroupHeader(bool b) 
     { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()
@@ -305,6 +305,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDescription,anchor,inheritId); }
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
+    void startMemberDeclaration()
+    { forall(&OutputGenerator::startMemberDeclaration); }
+    void endMemberDeclaration(const char *anchor,const char *inheritId)
+    { forall(&OutputGenerator::endMemberDeclaration,anchor,inheritId); }
     void writeInheritedSectionTitle(const char *id,   const char *ref,
                                     const char *file, const char *anchor,
                                     const char *title,const char *name)

@@ -40,10 +40,39 @@ class TranslatorAdapterBase : public Translator
 
 };
 
+class TranslatorAdapter_1_8_2 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.2"); }
+
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    { return english.trPanelSynchronisationTooltip(enable); }
+
+    virtual QCString trProvidedByCategory()
+    { return english.trProvidedByCategory(); }
+
+    virtual QCString trExtendsClass()
+    { return english.trExtendsClass(); }
+
+    virtual QCString trClassMethods()
+    { return english.trClassMethods(); }
+
+    virtual QCString trInstanceMethods()
+    { return english.trInstanceMethods(); }
+
+    virtual QCString trMethodDocumentation()
+    { return english.trMethodDocumentation(); }
+
+    virtual QCString trDesignOverview()
+    { return english.trDesignOverview(); }
+};
+
+
 /** Adapter class for languages that only contain translations upto 
  *  version 1.8.0. 
  */
-class TranslatorAdapter_1_8_0 : public TranslatorAdapterBase
+class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
 {
   public:
     virtual QCString updateNeededMessage()

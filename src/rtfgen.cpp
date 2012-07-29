@@ -212,7 +212,7 @@ void RTFGenerator::beginRTFDocument()
   t <<"{\\rtf1\\ansi\\ansicpg" << theTranslator->trRTFansicp();
   t <<"\\uc1 \\deff0\\deflang1033\\deflangfe1033\n";
 
-  DBG_RTF(t <<"{\\comment Begining font list}\n")
+  DBG_RTF(t <<"{\\comment Beginning font list}\n")
   t <<"{\\fonttbl ";
   t <<"{\\f0\\froman\\fcharset" << theTranslator->trRTFCharSet();
   t <<"\\fprq2{\\*\\panose 02020603050405020304}Times New Roman;}\n";
@@ -1840,7 +1840,7 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
 void RTFGenerator::startMemberItem(const char *,int,const char *)
 {
   DBG_RTF(t <<"{\\comment startMemberItem }" << endl)
-  t << rtf_Style_Reset << rtf_BList_DepthStyle() << endl; // set style to apropriate depth
+  t << rtf_Style_Reset << rtf_BList_DepthStyle() << endl; // set style to appropriate depth
 }
 
 void RTFGenerator::endMemberItem()
@@ -2291,7 +2291,7 @@ static void encodeForOutput(FTextStream &t,const QCString &s)
     {
       size_t iLeft=l;
       size_t oLeft=enc.size();
-      const char *inputPtr = s.data();
+      char *inputPtr = s.data();
       char *outputPtr = enc.data();
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
@@ -2415,14 +2415,14 @@ void RTFGenerator::endDotGraph(const DotClassGraph &g)
 {
   newParagraph();
 
-  QCString fileName =
+  QCString fn =
     g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),fileName,relPath,TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
+  t << fn << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   newParagraph();
@@ -2490,14 +2490,14 @@ void RTFGenerator::endDirDepGraph(const DotDirDeps &g)
 {
   newParagraph();
 
-  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
+  QCString fn = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
                         fileName,relPath,FALSE);
 
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
+  t << fn << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   DBG_RTF(t << "{\\comment (endDirDepGraph)}"    << endl)

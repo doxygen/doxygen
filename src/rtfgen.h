@@ -115,7 +115,7 @@ class RTFGenerator : public OutputGenerator
     void startMemberItem(const char *,int,const char *);
     void endMemberItem();
     void startMemberTemplateParams() {}
-    void endMemberTemplateParams(const char *) {}
+    void endMemberTemplateParams(const char *,const char *) {}
     void insertMemberAlign(bool) {}
 
     void writeRuler() { rtfwriteRuler_thin(); }
@@ -157,6 +157,8 @@ class RTFGenerator : public OutputGenerator
 
     void startMemberDescription(const char *,const char *);
     void endMemberDescription();
+    void startMemberDeclaration() {} 
+    void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes);

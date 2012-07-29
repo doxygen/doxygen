@@ -89,6 +89,7 @@ static bool          g_insideBody;
 static int           g_bodyCurlyCount;
 static QCString      g_saveName;
 static QCString      g_saveType;
+static QCString      g_delimiter;
 
 static int	     g_bracketCount = 0;
 static int	     g_curlyCount   = 0;
@@ -880,7 +881,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
       md->isLinkable() && (!varOnly || md->isVariable()))
   {
-    //printf("found it!\n");
+    //printf("found it %s!\n",md->qualifiedName().data());
     if (g_exampleBlock)
     {
       QCString anchor;
@@ -1302,6 +1303,10 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
   ClassDef *ccd=0;
   QCString locScope=g_classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
+  QCString funcScope;
+  QCString funcWithScope=locFunc;
+  QCString funcWithFullScope=locFunc;
+  QCString fullScope=locScope;
   //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
   int len=2;
   int i=locFunc.findRev("::");
@@ -1323,14 +1328,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
   if (i==-1) i=locFunc.findRev("\\"),len=1; // for PHP
   if (i>0)
   {
-    if (locScope.isEmpty())
-    {
-      locScope=locFunc.left(i);
-    }
-    else
-    {
-      locScope+="::"+locFunc.left(i);
-    }
+    funcScope=locFunc.left(i);
     locFunc=locFunc.right(locFunc.length()-i-len).stripWhiteSpace();
     int ts=locScope.find('<'); // start of template
     int te=locScope.findRev('>'); // end of template
@@ -1340,9 +1338,28 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
       // remove template from scope
       locScope=locScope.left(ts)+locScope.right(locScope.length()-te-1);
     }
+    ts=funcScope.find('<'); // start of template
+    te=funcScope.findRev('>'); // end of template
+    //printf("ts=%d te=%d\n",ts,te);
+    if (ts!=-1 && te!=-1 && te>ts)
+    {
+      // remove template from scope
+      funcScope=funcScope.left(ts)+funcScope.right(funcScope.length()-te-1);
+    }
+    if (!funcScope.isEmpty())
+    {
+      funcWithScope = funcScope+"::"+locFunc;
+      if (!locScope.isEmpty())
+      {
+        fullScope=locScope+"::"+funcScope;
+      }
+    }
+    if (!locScope.isEmpty())
+    {
+      funcWithFullScope = locScope+"::"+funcWithScope;
+    }
   }
-  //printf("generateFunctionLink(%s) classScope=`%s'\n",locFunc.data(),locScope.data());
-  if (!locScope.isEmpty() && (ccd=g_codeClassSDict->find(locScope)))
+  if (!fullScope.isEmpty() && (ccd=g_codeClassSDict->find(fullScope)))
   {
     //printf("using classScope %s\n",g_classScope.data());
     if (ccd->baseClasses())
@@ -1357,7 +1374,22 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
       }
     }
   }
-  if (!getLink(locScope,locFunc,ol,funcName))
+  if (!locScope.isEmpty() && fullScope!=locScope && (ccd=g_codeClassSDict->find(locScope)))
+  {
+    //printf("using classScope %s\n",g_classScope.data());
+    if (ccd->baseClasses())
+    {
+      BaseClassListIterator bcli(*ccd->baseClasses());
+      for ( ; bcli.current() ; ++bcli)
+      {
+	if (getLink(bcli.current()->classDef->name(),funcWithScope,ol,funcName)) 
+	{
+	  goto exit;
+	}
+      }
+    }
+  }
+  if (!getLink(locScope,funcWithScope,ol,funcName))
   {
     generateClassOrGlobalLink(ol,funcName);
   }
@@ -1782,7 +1814,7 @@ SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
 KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
-TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string")
+TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 ARITHOP "+"|"-"|"/"|"*"|"%"|"--"|"++"
@@ -1790,6 +1822,9 @@ ASSIGNOP "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
 LOGICOP "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
 BITOP   "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
+RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
+RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+
 %option noyywrap
 
 %x      SkipString
@@ -1823,6 +1858,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 %x      ObjCSkipStr
 %x      OldStyleArgs
 %x	UsingName
+%x      RawString
 
 %%
 
@@ -2130,6 +2166,14 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( ClassVar );
   					}
+<ClassName>{ID}{B}*"("{ID}")"           { // Obj-C category
+                                          g_curClassName=removeRedundantWhiteSpace(yytext);
+  					  g_scopeStack.push(CLASSBLOCK);
+					  pushScope(g_curClassName);
+					  addType();
+					  generateClassOrGlobalLink(*g_code,yytext);
+					  BEGIN( ClassVar );
+                                        }
 <PackageName>{ID}("."{ID})*		{
 					  g_curClassName=substitute(yytext,".","::");
 					  //printf("found package: %s\n",g_curClassName.data());
@@ -2502,6 +2546,18 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits>{RAWBEGIN}	{
+                                          QCString text=yytext;
+                                          int i=text.find('R');
+                                          g_code->codify(text.left(i+1));
+					  startFontClass("stringliteral");
+  					  g_code->codify(yytext+i+1);
+  					  g_lastStringContext=YY_START;
+					  g_inForEachExpression = FALSE;
+                                          g_delimiter = yytext+i+2;
+                                          g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+  					  BEGIN( RawString );
+                                        }
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits>\"	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
@@ -2538,6 +2594,18 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipString,SkipStringS>\\.		{
   					  g_code->codify(yytext);
 					}
+<RawString>{RAWEND}                     { 
+                                          g_code->codify(yytext);
+                                          QCString delimiter = yytext+1;
+                                          delimiter=delimiter.left(delimiter.length()-1);
+                                          if (delimiter==g_delimiter)
+                                          {
+					    BEGIN( g_lastStringContext );
+                                          }
+                                        }
+<RawString>[^)]+                        { g_code->codify(yytext); }
+<RawString>.                            { g_code->codify(yytext); }
+<RawString>\n                           { codifyLines(yytext); }
 <SkipVerbString>[^"\n]+			{
   					  g_code->codify(yytext);
 					}

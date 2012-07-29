@@ -266,8 +266,6 @@ QCString substituteTemplateArgumentsInString(
        ArgumentList *formalArgs,
        ArgumentList *actualArgs);
 
-ArgumentList *copyArgumentList(const ArgumentList *src);
-
 QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
 
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,

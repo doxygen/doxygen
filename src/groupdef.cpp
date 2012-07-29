@@ -135,6 +135,7 @@ void GroupDef::addFile(const FileDef *def)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (def->isHidden()) return;
+  updateLanguage(def);
   if (sortBriefDocs)
     fileList->inSort(def);
   else
@@ -145,6 +146,7 @@ bool GroupDef::addClass(const ClassDef *cd)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (cd->isHidden()) return FALSE;
+  updateLanguage(cd);
   if (classSDict->find(cd->qualifiedName())==0)
   {
     QCString qn = cd->qualifiedName();
@@ -192,6 +194,7 @@ bool GroupDef::addNamespace(const NamespaceDef *def)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (def->isHidden()) return FALSE;
+  updateLanguage(def);
   if (namespaceSDict->find(def->name())==0)
   {
     if (sortBriefDocs)
@@ -252,6 +255,7 @@ void GroupDef::addMembersToMemberGroup()
 bool GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
   if (md->isHidden()) return FALSE;
+  updateLanguage(md);
   //printf("GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
   if ((mni=(*allMemberNameInfoSDict)[md->name()]))
@@ -651,6 +655,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
     FileDef *fd=fileList->first();
     while (fd)
     {
+      ol.startMemberDeclaration();
       ol.startMemberItem(fd->getOutputFileBase(),0);
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
@@ -666,6 +671,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
         ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
         ol.endMemberDescription();
       }
+      ol.endMemberDeclaration(0,0);
       fd=fileList->next();
     }
     ol.endMemberList();
@@ -706,6 +712,7 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
     {
       if (gd->isVisible())
       {
+        ol.startMemberDeclaration();
         ol.startMemberItem(gd->getOutputFileBase(),0);
         //ol.docify(theTranslator->trGroup(FALSE,TRUE));
         //ol.docify(" ");
@@ -722,6 +729,7 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
           ol.parseDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
           ol.endMemberDescription();
         }
+        ol.endMemberDeclaration(0,0);
       }
       gd=groupList->next();
     }
@@ -741,6 +749,7 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
     DirDef *dd=dirList->first();
     while (dd)
     {
+      ol.startMemberDeclaration();
       ol.startMemberItem(dd->getOutputFileBase(),0);
       ol.parseText(theTranslator->trDir(FALSE,TRUE));
       ol.insertMemberAlign();
@@ -756,6 +765,7 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
         ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
         ol.endMemberDescription();
       }
+      ol.endMemberDeclaration(0,0);
       dd=dirList->next();
     }
 
@@ -871,6 +881,7 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
       LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
   LayoutDocEntry *lde;
   bool first=TRUE;
+  SrcLangExt lang = getLanguage();
   for (eli.toFirst();(lde=eli.current());++eli)
   {
     if ((lde->kind()==LayoutDocEntry::GroupClasses && classSDict->declVisible()) || 
@@ -886,7 +897,7 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
                        lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
                        lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
                        "dirs";
-      ol.writeSummaryLink(0,label,ls->title,first);
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
@@ -895,7 +906,7 @@ void GroupDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title(lang),first);
         first=FALSE;
       }
     }
@@ -950,6 +961,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- start flexible part -------------------------------
 
+  SrcLangExt lang=getLanguage();
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
   LayoutDocEntry *lde;
@@ -966,7 +978,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::GroupClasses: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeClasses(ol,ls->title);
+          writeClasses(ol,ls->title(lang));
         }
         break; 
       case LayoutDocEntry::GroupInlineClasses: 
@@ -977,7 +989,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::GroupNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeNamespaces(ol,ls->title);
+          writeNamespaces(ol,ls->title(lang));
         }
         break; 
       case LayoutDocEntry::MemberGroups: 
@@ -986,7 +998,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl: 
         {
           LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-          writeMemberDeclarations(ol,lmd->type,lmd->title);
+          writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break; 
       case LayoutDocEntry::MemberDeclEnd: 
@@ -995,7 +1007,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DetailedDesc: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeDetailedDescription(ol,ls->title);
+          writeDetailedDescription(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefStart: 
@@ -1004,7 +1016,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef: 
         {
           LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
-          writeMemberDocumentation(ol,lmd->type,lmd->title);
+          writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefEnd: 
@@ -1013,7 +1025,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::GroupNestedGroups: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeNestedGroups(ol,ls->title);
+          writeNestedGroups(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::GroupPageDocs: 
@@ -1022,13 +1034,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::GroupDirs: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeDirs(ol,ls->title);
+          writeDirs(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::GroupFiles: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeFiles(ol,ls->title);
+          writeFiles(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::GroupGraph: 
@@ -1480,5 +1492,15 @@ bool GroupDef::isLinkableInProject() const
 bool GroupDef::isLinkable() const
 {
   return hasUserDocumentation();
+}
+
+// let the "programming language" for a group depend on what is inserted into it.
+// First item that has an associated languages determines the language for the whole group.
+void GroupDef::updateLanguage(const Definition *d)
+{
+  if (getLanguage()==SrcLangExt_Unknown && d->getLanguage()!=SrcLangExt_Unknown)
+  {
+    setLanguage(d->getLanguage());
+  }
 }
 

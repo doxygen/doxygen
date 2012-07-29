@@ -397,7 +397,7 @@ static void checkArgumentName(const QCString &name,bool isParam)
 }
 
 /*! Checks if the parameters that have been specified using \@param are
- *  indeed all paramters.
+ *  indeed all parameters.
  *  Must be called after checkArgumentName() has been called for each
  *  argument.
  */
@@ -1838,7 +1838,7 @@ void DocInclude::parse()
       break;
     case Snippet:
       readTextFileByName(m_file,m_text);
-      // check here for the existance of the blockId inside the file, so we
+      // check here for the existence of the blockId inside the file, so we
       // only generate the warning once.
       int count;
       if (!m_blockId.isEmpty() && (count=m_text.contains(m_blockId.data()))!=2)

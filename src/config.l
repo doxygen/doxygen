@@ -43,6 +43,8 @@
 #undef Config_getEnum
 #undef Config_getBool
 
+#define YY_NO_INPUT 1
+
 // use in-class definitions
 #define Config_getString(val)  getString(__FILE__,__LINE__,val)
 #define Config_getInt(val)     getInt(__FILE__,__LINE__,val)
@@ -463,8 +465,8 @@ static QCString configStringRecode(
   }
   size_t iLeft=(size_t)inputSize;
   size_t oLeft=(size_t)outputSize;
-  const char *inputPtr  = str.data();
-  char       *outputPtr = output.data();
+  char *inputPtr  = str.data();
+  char *outputPtr = output.data();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=(int)oLeft;
@@ -904,7 +906,7 @@ static void substEnvVarsInStrList(QStrList &sl)
 
     if (!wasQuoted) /* as a result of the expansion, a single string
 		       may have expanded into a list, which we'll
-		       add to sl. If the orginal string already 
+		       add to sl. If the original string already 
 		       contained multiple elements no further 
 		       splitting is done to allow quoted items with spaces! */
     {
@@ -1484,7 +1486,7 @@ void Config::check()
     bool b5 = Config_getBool("SKIP_FUNCTION_MACROS");
     bool b6 = Config_getBool("EXTRACT_PACKAGE");
     const char *s1,*s2,*s3,*s4,*s5,*s6;
-    if (b1)  s1="  INLINDE_INHERITED_MEMB = NO (was YES)\n"; else s1="";
+    if (b1)  s1="  INLINE_INHERITED_MEMB  = NO (was YES)\n"; else s1="";
     if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
     if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
     if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";

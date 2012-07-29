@@ -49,7 +49,7 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
 #endif
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
-  commandHasConsole=commandHasConsole;
+  (void)commandHasConsole;
   /*! taken from the system() manpage on my Linux box */
   int pid,status=0;
 

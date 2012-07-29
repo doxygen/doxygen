@@ -389,6 +389,7 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
       LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
   LayoutDocEntry *lde;
   bool first=TRUE;
+  SrcLangExt lang = getLanguage();
   for (eli.toFirst();(lde=eli.current());++eli)
   {
     if ((lde->kind()==LayoutDocEntry::NamespaceClasses && classSDict && classSDict->declVisible()) || 
@@ -397,7 +398,7 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
       QCString label = lde->kind()==LayoutDocEntry::NamespaceClasses ? "nested-classes" : "namespaces";
-      ol.writeSummaryLink(0,label,ls->title,first);
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
     else if (lde->kind()== LayoutDocEntry::MemberDecl)
@@ -406,7 +407,7 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title,first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title(lang),first);
         first=FALSE;
       }
     }
@@ -489,13 +490,13 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceClasses: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeClassDeclarations(ol,ls->title);
+          writeClassDeclarations(ol,ls->title(lang));
         }
         break; 
       case LayoutDocEntry::NamespaceNestedNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeNamespaceDeclarations(ol,ls->title);
+          writeNamespaceDeclarations(ol,ls->title(lang));
         }
         break; 
       case LayoutDocEntry::MemberGroups: 
@@ -504,7 +505,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDecl: 
         {
           LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
-          writeMemberDeclarations(ol,lmd->type,lmd->title);
+          writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break; 
       case LayoutDocEntry::MemberDeclEnd: 
@@ -513,7 +514,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::DetailedDesc: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeDetailedDescription(ol,ls->title);
+          writeDetailedDescription(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefStart: 
@@ -525,7 +526,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::MemberDef: 
         {
           LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
-          writeMemberDocumentation(ol,lmd->type,lmd->title);
+          writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
       case LayoutDocEntry::MemberDefEnd: 
@@ -852,6 +853,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
     if (nd->isLinkable())
     {
       SrcLangExt lang = nd->getLanguage();
+      ol.startMemberDeclaration();
       ol.startMemberItem(nd->getOutputFileBase(),0);
       if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
       {
@@ -887,6 +889,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
         ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE,0,TRUE);
         ol.endMemberDescription();
       }
+      ol.endMemberDeclaration(0,0);
     }
   }
   ol.endMemberList();

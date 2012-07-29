@@ -365,6 +365,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.startMemberList();
                 first=FALSE;
               }
+              ol.startMemberDeclaration();
               ol.startMemberItem(md->anchor(),0,inheritId);
               ol.writeString("enum ");
               ol.insertMemberAlign();
@@ -391,6 +392,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 }
                 ol.endMemberDescription();
               }
+              ol.endMemberDeclaration(md->anchor(),inheritId);
             }
             md->warnIfUndocumented();
             break;

@@ -51,8 +51,9 @@ static void report_error(int code, const char *where, const char *what)
         qWarning("%s: %s failure: %d", where, what, code);
 }
 
-struct QWaitConditionPrivate
+class QWaitConditionPrivate
 {
+  public:
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     int waiters;

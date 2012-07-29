@@ -47,6 +47,8 @@
 #include "cite.h"
 #include "markdown.h"
 
+#define YY_NO_INPUT 1
+
 // forward declarations
 static bool handleBrief(const QCString &);
 static bool handleFn(const QCString &);
@@ -533,7 +535,14 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     RefItem *item = refList->getRefItem(lii->itemId);
     ASSERT(item!=0);
     item->text += " <p>";
-    item->text += outputXRef;
+    if (Doxygen::markdownSupport)
+    {
+      item->text += processMarkdown(yyFileName,current,outputXRef);
+    }
+    else
+    {
+      item->text += outputXRef;
+    }
     //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
@@ -548,7 +557,14 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     sprintf(anchorLabel,"_%s%06d",listName,itemId);
     RefItem *item = refList->getRefItem(itemId);
     ASSERT(item!=0);
-    item->text = outputXRef;
+    if (Doxygen::markdownSupport)
+    {
+      item->text = processMarkdown(yyFileName,current,outputXRef);
+    }
+    else
+    {
+      item->text = outputXRef;
+    }
     item->listAnchor = anchorLabel;
     docEntry->addSpecialListItem(listName,itemId);
     QCString cmdString;
@@ -835,7 +851,9 @@ DL	  [dD][lL]
 IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
+CODE      [cC][oO][dD][eE]
 DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
+DETAILEDHTMLOPT {CODE}
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -952,6 +970,14 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
    */
 <Comment>"<"{DETAILEDHTML}{ATTR}">"	{ // HTML command that ends a brief description
 					  setOutput(OutputDoc);
+					  // continue with the same input
+                                          REJECT;
+					}
+<Comment>"<"{DETAILEDHTMLOPT}{ATTR}">"	{ // HTML command that ends a brief description
+					  if (current->lang==SrcLangExt_CSharp)
+                                          {
+                                            setOutput(OutputDoc);
+                                          }
 					  // continue with the same input
                                           REJECT;
 					}
@@ -2323,6 +2349,7 @@ static bool handleDeprecated(const QCString &)
 
 static bool handleXRefItem(const QCString &)
 {
+  newXRefKind = XRef_Item;
   BEGIN(XRefItemParam1);
   return FALSE;
 }

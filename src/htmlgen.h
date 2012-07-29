@@ -20,6 +20,7 @@
 
 #include "qtbc.h"
 #include "outputgen.h"
+#include "ftextstream.h"
 
 //#define PREFRAG_START "<div class=\"fragment\"><pre class=\"fragment\">"
 //#define PREFRAG_END   "</pre></div>"
@@ -27,7 +28,35 @@
 #define PREFRAG_END   "</div><!-- fragment -->"
 
 class QFile;
-class FTextStream;
+
+class HtmlCodeGenerator : public CodeOutputInterface
+{
+  public:
+    HtmlCodeGenerator(FTextStream &t,const QCString &relPath);
+    HtmlCodeGenerator();
+    void setTextStream(FTextStream &t);
+    void setRelativePath(const QCString &path);
+    void codify(const char *text);
+    void writeCodeLink(const char *ref,const char *file,
+                       const char *anchor,const char *name,
+                       const char *tooltip);
+    void writeLineNumber(const char *,const char *,const char *,int);
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startCodeAnchor(const char *label);
+    void endCodeAnchor();
+    void startFontClass(const char *s);
+    void endFontClass();
+    void writeCodeAnchor(const char *anchor);
+    void linkableSymbol(int,const char *,Definition *,Definition *);
+
+  private:
+    void docify(const char *str);
+    bool m_streamSet;
+    FTextStream m_t;
+    int m_col;
+    QCString m_relPath;
+};
 
 /** Generator for HTML output */
 class HtmlGenerator : public OutputGenerator
@@ -54,6 +83,34 @@ class HtmlGenerator : public OutputGenerator
     void disableIfNot(OutputType o) { if (o!=Html) disable(); }
     bool isEnabled(OutputType o) { return (o==Html && active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
+
+    // ---- CodeOutputInterface
+    void codify(const char *text) 
+    { m_codeGen.codify(text); }
+    void writeCodeLink(const char *ref,const char *file,
+                       const char *anchor,const char *name,
+                       const char *tooltip)
+    { m_codeGen.writeCodeLink(ref,file,anchor,name,tooltip); }
+    void writeLineNumber(const char *ref,const char *file,const char *anchor,int lineNumber)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    void startCodeLine(bool hasLineNumbers)
+    { m_codeGen.startCodeLine(hasLineNumbers); }
+    void endCodeLine()
+    { m_codeGen.endCodeLine(); }
+    void startCodeAnchor(const char *label)
+    { m_codeGen.startCodeAnchor(label); }
+    void endCodeAnchor()
+    { m_codeGen.endCodeAnchor(); }
+    void startFontClass(const char *s) 
+    { m_codeGen.startFontClass(s); }
+    void endFontClass() 
+    { m_codeGen.endFontClass(); }
+    void writeCodeAnchor(const char *anchor) 
+    { m_codeGen.writeCodeAnchor(anchor); }
+    void linkableSymbol(int line,const char *symName,
+                        Definition *symDef,Definition *context) 
+    { m_codeGen.linkableSymbol(line,symName,symDef,context); }
+    // ---------------------------
 
     void printDoc(DocNode *,const char *);
 
@@ -90,12 +147,10 @@ class HtmlGenerator : public OutputGenerator
     void startIndexItem(const char *ref,const char *file);
     void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
-    void codify(const char *text);
+
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor,const char *name);
-    void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
+
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();
     void startHtmlLink(const char *url);
@@ -126,7 +181,7 @@ class HtmlGenerator : public OutputGenerator
     void startMemberItem(const char *anchor,int,const char *inheritId);
     void endMemberItem();
     void startMemberTemplateParams();
-    void endMemberTemplateParams(const char *anchor);
+    void endMemberTemplateParams(const char *anchor,const char *inheritId);
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -138,6 +193,8 @@ class HtmlGenerator : public OutputGenerator
     void insertMemberAlign(bool);
     void startMemberDescription(const char *anchor,const char *inheritId);
     void endMemberDescription();
+    void startMemberDeclaration() {}
+    void endMemberDeclaration(const char *anchor,const char *inheritId);
     void writeInheritedSectionTitle(const char *id,   const char *ref,
                                     const char *file, const char *anchor,
                                     const char *title,const char *name);
@@ -147,9 +204,6 @@ class HtmlGenerator : public OutputGenerator
                          { t << "<a name=\"" << name <<"\" id=\"" << name << "\"></a>"; }
     void startCodeFragment() { t << PREFRAG_START; }
     void endCodeFragment()   { t << PREFRAG_END; } 
-    void writeLineNumber(const char *,const char *,const char *,int);
-    void startCodeLine(bool);
-    void endCodeLine();
     void startEmphasis() { t << "<em>";  }
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }
@@ -168,8 +222,6 @@ class HtmlGenerator : public OutputGenerator
                          const char *anchor,const char *name,
                          const char *args);
     void endDoxyAnchor(const char *fName,const char *anchor);
-    void startCodeAnchor(const char *label);
-    void endCodeAnchor();
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
@@ -270,16 +322,10 @@ class HtmlGenerator : public OutputGenerator
     void startInlineMemberDoc();
     void endInlineMemberDoc();
 
-    void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
-    void endFontClass() { t << "</span>"; }
-
     void startLabels();
     void writeLabel(const char *l,bool isLast);
     void endLabels();
 
-    void writeCodeAnchor(const char *anchor) 
-    { t << "<a name=\"" << anchor << "\"></a>"; }
-    void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
     //static void generateSectionImages();
 
@@ -293,9 +339,9 @@ class HtmlGenerator : public OutputGenerator
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);
 
-    int col;
     int m_sectionCount;
     bool m_emptySection;
+    HtmlCodeGenerator m_codeGen;
 };
 
 #endif

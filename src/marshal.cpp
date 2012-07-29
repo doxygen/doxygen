@@ -55,32 +55,7 @@ void marshalQGString(StorageIntf *s,const QGString &str)
 
 void marshalArgumentList(StorageIntf *s,ArgumentList *argList)
 {
-  if (argList==0)
-  {
-    marshalUInt(s,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(s,argList->count());
-    if (argList->count()>0)
-    {
-      ArgumentListIterator ali(*argList);
-      Argument *a;
-      for (ali.toFirst();(a=ali.current());++ali)
-      {
-        marshalQCString(s,a->attrib);    
-        marshalQCString(s,a->type);    
-        marshalQCString(s,a->canType);    
-        marshalQCString(s,a->name);    
-        marshalQCString(s,a->array);    
-        marshalQCString(s,a->defval);    
-        marshalQCString(s,a->docs);    
-      }
-    }
-    marshalBool(s,argList->constSpecifier);
-    marshalBool(s,argList->volatileSpecifier);
-    marshalBool(s,argList->pureSpecifier);
-  }
+  ArgumentList::marshal(s,argList);
 }
 
 void marshalArgumentLists(StorageIntf *s,QList<ArgumentList> *argLists)
@@ -488,28 +463,7 @@ QGString unmarshalQGString(StorageIntf *s)
 
 ArgumentList *unmarshalArgumentList(StorageIntf *s)
 {
-  uint i;
-  uint count = unmarshalUInt(s);
-  if (count==NULL_LIST) return 0; // null list
-  ArgumentList *result = new ArgumentList;
-  assert(count<1000000);
-  //printf("unmarshalArgumentList: %d\n",count);
-  for (i=0;i<count;i++)
-  {
-    Argument *a = new Argument;
-    a->attrib  = unmarshalQCString(s);
-    a->type    = unmarshalQCString(s);
-    a->canType = unmarshalQCString(s);
-    a->name    = unmarshalQCString(s);
-    a->array   = unmarshalQCString(s);
-    a->defval  = unmarshalQCString(s);
-    a->docs    = unmarshalQCString(s);
-    result->append(a);
-  }
-  result->constSpecifier    = unmarshalBool(s);
-  result->volatileSpecifier = unmarshalBool(s);
-  result->pureSpecifier     = unmarshalBool(s);
-  return result;
+  return ArgumentList::unmarshal(s);
 }
 
 QList<ArgumentList> *unmarshalArgumentLists(StorageIntf *s)

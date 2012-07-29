@@ -45,6 +45,7 @@
 #include "arguments.h"
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_INPUT 1
 
 /* -----------------------------------------------------------------
  *
@@ -69,6 +70,7 @@ static int              lastClassTemplSpecContext;
 static int              lastPreLineCtrlContext;
 static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
+static int              lastRawStringContext;
 static int              lastCSConstraint;
 static int              lastHereDocContext;
 static int              lastDefineContext;
@@ -119,6 +121,7 @@ static bool             insidePHP   = FALSE;		//!< processing PHP code?
 static bool             insideObjC  = FALSE;            //!< processing Objective C code?
 static bool             insideCli   = FALSE;            //!< processing C++/CLI code?
 static bool             insideJS    = FALSE;            //!< processing JavaScript code?
+static bool             insideCpp   = TRUE;             //!< processing C/C++ code
 
 static bool             insideCppQuote = FALSE;
 static bool             insideProtocolList = FALSE;
@@ -137,11 +140,13 @@ static char             lastCopyArgChar;
 static QCString         *pCopyQuotedString;
 static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
+static QCString         *pCopyRawString;
 
 static QGString         *pCopyCurlyGString;
 static QGString         *pCopyRoundGString;
 static QGString         *pCopyQuotedGString;
 static QGString         *pCopyHereDocGString;
+static QGString         *pCopyRawGString;
 static QGString         *pSkipVerbString;
 static QStack<Grouping> autoGroupStack;
 
@@ -177,7 +182,7 @@ static QCString         idlProp;
 static bool             g_lexInit = FALSE;
 static bool             externC;
 
-static QCString         g_hereDocId;
+static QCString         g_delimiter;
 
 static int              g_column;
 
@@ -365,6 +370,7 @@ static void setContext()
   insidePHP  = language==SrcLangExt_PHP;
   insideObjC = language==SrcLangExt_ObjC;
   insideJS   = language==SrcLangExt_JS;
+  insideCpp  = language==SrcLangExt_Cpp;
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -606,6 +612,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 IDLATTR   ("["[^\]]*"]"){BN}*
 TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
+RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
+RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
 %option noyywrap
 
@@ -627,6 +635,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	BasesProt
 %x	NextSemi
 %x	BitFields
+%x	EnumBaseType
 %x	FindMembers
 %x	FindMembersPHP
 %x	FindMemberName
@@ -637,12 +646,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	ExcpRound
 %x	ExcpList
 %x	FuncQual
+%x      TrailingReturn
 %x	Operator
 %x	Array
 %x	ReadBody
 %x	ReadNSBody
 %x	ReadBodyIntf
 %x	Using
+%x	UsingAlias
 %x	UsingDirective
 %x	SkipCurly
 %x	SkipCurlyCpp
@@ -661,6 +672,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	SkipRound
 %x	SkipSquare
 %x	SkipRemainder
+%x      StaticAssert
+%x      DeclType
 %x	TypedefName
 %x	TryFunctionBlock
 %x	TryFunctionBlockEnd
@@ -729,6 +742,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	HereDocEnd
 %x	CopyHereDoc
 %x	CopyHereDocEnd
+%x	RawString
+%x	RawGString
 
 %x      IDLAttribute
 %x      IDLProp
@@ -805,6 +820,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  unput(*yytext);
 					  BEGIN( FindMembers );
   					}
+<EnumBaseType>[{;,]                     {
+                                          current->args = current->args.simplifyWhiteSpace();
+  					  unput(*yytext);
+					  BEGIN( ClassVar );
+                                        }
 <FindMembers>"<?php"			{ // PHP code with unsupported extension?
                                           insidePHP = TRUE;
   					}
@@ -1758,29 +1778,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  aliasName.resize(0);
   					}
 <PHPUse,PHPUseAs>[,;]			{
-                                       /*
-                                          if (!aliasName.isEmpty())
-					  {
-					    int i=aliasName.findRev('\\');
-					    if (i!=-1)
-					    {
-					      QCString an = removeRedundantWhiteSpace(
-						    substitute(aliasName,"\\","::"));
-  					      printf("PHP: adding use relation: %s->%s\n",aliasName.mid(i+1).data(),an.data());
-					      Doxygen::namespaceAliasDict.insert(aliasName.mid(i+1),
-					  	                        new QCString(an));
-					      current->name     = an;
-					      current->fileName = yyFileName; 
-					      current->section=Entry::USINGDECL_SEC;
-					      current_root->addSubEntry(current);
-					      current = new Entry ;
-					      initEntry();
-					    }
-					    else if (i==0)
-					    {
-					    }
-					  }
-					  */
 					  if (*yytext==',')
 					  {
 					    BEGIN(PHPUse);
@@ -1831,7 +1828,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDECL_SEC;
+                                          current->startLine = yyLineNr;
 					  current_root->addSubEntry(current);
+                                          previous = current;
 					  current             = new Entry ;
 					  if (insideCS) /* Hack: in C# a using declaration and 
 							   directive have the same syntax, so we
@@ -1848,6 +1847,26 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  initEntry();
 					  BEGIN(Using);
   					}
+<Using>"="                              { // C++11 style template alias?
+                                          BEGIN(UsingAlias);
+                                        }
+<UsingAlias>";"                         { 
+                                          previous->section=Entry::VARIABLE_SEC;
+                                          previous->type = "typedef "+previous->args;
+					  previous->type=previous->type.simplifyWhiteSpace();
+                                          previous->args.resize(0);
+					  previous->name=previous->name.stripWhiteSpace();
+					  previous->bodyLine = yyLineNr;
+                                          previous->spec |= Entry::Alias;
+                                          BEGIN(FindMembers); 
+                                        }
+<UsingAlias>.                           {
+                                          previous->args+=yytext;
+                                        }
+<UsingAlias>\n                          {
+                                          previous->args+=yytext;
+                                          lineCount();
+                                        }
 <UsingDirective>{SCOPENAME}		{ current->name=removeRedundantWhiteSpace(yytext);
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
@@ -1979,25 +1998,25 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    REJECT;
 					}
 <CopyHereDoc>{ID}                       { // PHP heredoc
-  					  g_hereDocId = yytext;
+  					  g_delimiter = yytext;
                                           *pCopyHereDocGString += yytext;
 					  BEGIN(CopyHereDocEnd);
                                         }
 <CopyHereDoc>"'"{ID}/"'"		{ // PHP nowdoc
-  					  g_hereDocId = &yytext[1];
+  					  g_delimiter = &yytext[1];
                                           *pCopyHereDocGString += yytext;
 					  BEGIN(CopyHereDocEnd);
                                         }
 <HereDoc>{ID}				{ // PHP heredoc
-  					  g_hereDocId = yytext;
+  					  g_delimiter = yytext;
 					  BEGIN(HereDocEnd);
   					}
 <HereDoc>"'"{ID}/"'"			{ // PHP nowdoc
-  					  g_hereDocId = &yytext[1];
+  					  g_delimiter = &yytext[1];
 					  BEGIN(HereDocEnd);
   					}
 <HereDocEnd>^{ID}			{ // id at start of the line could mark the end of the block
-  					  if (g_hereDocId==yytext) // it is the end marker
+  					  if (g_delimiter==yytext) // it is the end marker
 					  {
   					    BEGIN(lastHereDocContext);
 					  }
@@ -2005,7 +2024,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <HereDocEnd>.				{ }
 <CopyHereDocEnd>^{ID}			{ // id at start of the line could mark the end of the block
                                           *pCopyHereDocGString += yytext;
-  					  if (g_hereDocId==yytext) // it is the end marker
+  					  if (g_delimiter==yytext) // it is the end marker
 					  {
   					    BEGIN(lastHereDocContext);
 					  }
@@ -2116,6 +2135,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->name="this";
 					    BEGIN(CSIndexer);
 					  }
+                                          else if (insideCpp && strcmp(yytext,"static_assert")==0)
+                                          {
+                                            // C++11 static_assert
+                                            BEGIN(StaticAssert);
+                                          }
+                                          else if (insideCpp && strcmp(yytext,"decltype")==0)
+                                          {
+                                            // C++11 decltype(x)
+					    current->type+=yytext;
+                                            BEGIN(DeclType);
+                                          }
 					  else
 					  {
 					    if (YY_START==FindMembers)
@@ -2194,6 +2224,28 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             }
 					  }
 					}
+<StaticAssert>"("                       {
+					  lastSkipRoundContext = FindMembers;
+					  roundCount=1;
+                                          BEGIN(SkipRound);
+                                        }
+<StaticAssert>{BN}+                     { lineCount(); }
+<StaticAssert>.                         { // variable with static_assert as name?
+                                          unput(*yytext);
+                                          BEGIN(FindMembers);
+                                        }
+<DeclType>"("                           {
+					  current->type+=yytext;
+  					  lastRoundContext=FindMembers;
+  					  pCopyRoundString=&current->type;
+					  roundCount=0;
+                                          BEGIN(CopyRound);
+                                        }
+<DeclType>{BN}+                         { lineCount(); }
+<DeclType>.                             {
+                                          unput(*yytext);
+                                          BEGIN(FindMembers);
+                                        }
 <CSIndexer>"["[^\n\]]*"]"		{
 					  current->name+=removeRedundantWhiteSpace(yytext);
   					  BEGIN(FindMembers);
@@ -2392,7 +2444,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           current->name += yytext ;  
   					  addType( current );
 					}
-<FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  if (current->bodyLine==-1)
 					  {
@@ -2404,6 +2456,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					  docBlock.resize(0);
 					  docBlockTerm = ';';
+                                          if (YY_START==EnumBaseType && current->section==Entry::ENUM_SEC)
+                                          {
+                                            current->bitfields = ":"+current->args;
+                                            current->args.resize(0);
+                                            current->section=Entry::VARIABLE_SEC;
+                                          }
 					  if (yytext[yyleng-3]=='/')
 					  {
 					    startCommentBlock(TRUE);
@@ -2415,7 +2473,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN( DocBlock );
 					  }
   					}
-<MemberSpec,FindFields,FindMembers,NextSemi,BitFields,ReadInitializer,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<MemberSpec,FindFields,FindMembers,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
@@ -2423,6 +2481,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					  docBlock.resize(0);
 					  docBlockTerm = ',';
+                                          if (YY_START==EnumBaseType && current->section==Entry::ENUM_SEC)
+                                          {
+                                            current->bitfields = ":"+current->args;
+                                            current->args.resize(0);
+                                            current->section=Entry::VARIABLE_SEC;
+                                          }
 					  if (yytext[yyleng-3]=='/')
 					  {
 					    startCommentBlock(TRUE);
@@ -2515,6 +2579,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  current->bodyLine = yyLineNr;
+                                          current->initializer = yytext;
 					  lastInitializerContext = YY_START;
 					  initBracketCount=0;
 					  BEGIN(ReadInitializer);
@@ -2563,6 +2628,66 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					    current->initializer+=*yytext; 
 					  }
   					}
+<ReadInitializer>{RAWBEGIN}             { // C++11 raw string
+                                          if (!insideCpp)
+                                          { 
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            QCString text=yytext;
+                                            current->initializer+=text;
+                                            int i=text.find('"');
+                                            g_delimiter = yytext+i+1;
+                                            g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+                                            lastRawStringContext = YY_START;
+                                            pCopyRawGString = &current->initializer;
+                                            BEGIN(RawGString);
+                                            //printf("RawGString delimiter='%s'\n",delimiter.data());
+                                          }
+                                        }
+<RawGString>{RAWEND}                    {
+                                          *pCopyRawGString+=yytext;
+                                          QCString delimiter = yytext+1;
+                                          delimiter=delimiter.left(delimiter.length()-1);
+                                          if (delimiter==g_delimiter)
+                                          {
+                                            BEGIN(lastRawStringContext);
+                                          }
+                                        }
+<RawGString>[^)]+                       {
+                                          *pCopyRawGString+=yytext;
+                                        }
+<RawGString>.                           {
+                                          *pCopyRawGString+=yytext;
+                                        }
+<RawGString>\n                          {
+                                          *pCopyRawGString+=yytext;
+                                          lineCount();
+                                        }
+<RawString>{RAWEND}                     {
+                                          *pCopyRawString+=yytext;
+  					  fullArgString+=yytext;
+                                          QCString delimiter = yytext+1;
+                                          delimiter=delimiter.left(delimiter.length()-1);
+                                          if (delimiter==g_delimiter)
+                                          {
+                                            BEGIN(lastRawStringContext);
+                                          }
+                                        }
+<RawString>[^)]+                        {
+                                          *pCopyRawString+=yytext;
+  					  fullArgString+=yytext;
+                                        }
+<RawString>.                            {
+                                          *pCopyRawString+=yytext;
+  					  fullArgString+=yytext;
+                                        }
+<RawString>\n                           {
+                                          *pCopyRawString+=yytext;
+  					  fullArgString+=yytext;
+                                          lineCount();
+                                        }
 <ReadInitializer>\"			{
 					  if (insideIDL && insideCppQuote)
   					  {
@@ -2571,7 +2696,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					  {
                                             lastStringContext=YY_START;
-  					    current->initializer=yytext; 
+  					    current->initializer+=yytext; 
   					    pCopyQuotedGString=&current->initializer;
 					    BEGIN(CopyGString);
 					  }
@@ -2928,8 +3053,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <BitFields>.				{
   					  current->bitfields+=*yytext;
   					}
+<EnumBaseType>.				{
+  					  current->args+=*yytext;
+  					}
+<EnumBaseType>\n			{
+                                          lineCount();
+  					}
 <FindMembers>[;,]			{ 
-  					  QCString oldType = current->type.copy();
+  					  QCString oldType = current->type;
 					  if (current->bodyLine==-1)
 					  {
 					    current->bodyLine = yyLineNr;
@@ -3145,11 +3276,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  unput('(');
   					  lastInitializerContext = YY_START;
 					  initBracketCount=0;
+                                          current->initializer = "=";
   					  BEGIN(ReadInitializer);
   					}
 <FindFields>"="				{
   					  lastInitializerContext = YY_START;
 					  initBracketCount=0;
+                                          current->initializer = yytext;
   					  BEGIN(ReadInitializer);
   					}
 <FindFields>";"                         {
@@ -3347,7 +3480,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						}
 						else
 						{
-						  if (!isTypedef && cn.find('@')==-1) // not typedef or unnamed struct
+						  if (!isTypedef) // not typedef 
 						  {
 						    // enabled the next two lines for bug 623424
 						    current->doc.resize(0);
@@ -3538,6 +3671,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      varEntry->doc = current->doc.copy();
 					      varEntry->brief = current->brief.copy();
 					      varEntry->mGrpId = current->mGrpId;
+                                              varEntry->initializer = current->initializer;
 
 					      // deep copy group list
 					      QListIterator<Grouping> gli(*current->groups);
@@ -3595,6 +3729,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <MemberSpec>"="				{ 
   					  lastInitializerContext=YY_START;
 					  initBracketCount=0;
+                                          current->initializer = yytext;
   					  BEGIN(ReadInitializer);
   					  /* BEGIN(MemberSpecSkip); */
 					}
@@ -3818,6 +3953,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  fullArgString+=" ";
   					  lineCount();
   					}
+<ReadFuncArgType,CopyArgRound,CopyArgSharp,ReadTempArgs>{RAWBEGIN}	{
+                                          g_delimiter = yytext+2;
+                                          g_delimiter=g_delimiter.left(g_delimiter.length()-1);
+                                          lastRawStringContext = YY_START;
+                                          pCopyRawString = copyArgString;
+                                          *pCopyRawString+=yytext;
+  					  fullArgString+=yytext;
+                                          BEGIN(RawString);
+                                        }
 <ReadFuncArgType,CopyArgRound,CopyArgSharp,ReadTempArgs>\"	{
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
@@ -4115,10 +4259,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           current->virt = Pure;
                                           current->args += " override "; 
                                         }
-<FuncQual>{BN}*"override"{BN}*          { // overridden virtual member function
+<FuncQual,TrailingReturn>{BN}*"override"{BN}*          { // C++11 overridden virtual member function
                                           lineCount() ; 
                                           current->spec |= Entry::Override;
                                           current->args += " override "; 
+                                          BEGIN(FuncQual);
+                                        }
+<FuncQual,TrailingReturn>{BN}*"final"{BN}*             { // C++11 final method
+                                          lineCount() ; 
+                                          current->spec |= Entry::Final;
+                                          current->args += " final "; 
+                                          BEGIN(FuncQual);
                                         }
 <FuncQual>{BN}*"sealed"{BN}*            { // sealed member function
                                           lineCount() ; 
@@ -4140,12 +4291,49 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->args += " volatile "; 
 					  current->argList->volatileSpecifier=TRUE;
 					}
-<FuncQual>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
+<FuncQual>{BN}*"noexcept"{BN}*    	{ // volatile member function
+  					  lineCount() ; 
+  					  current->args += " noexcept "; 
+					  current->spec |= Entry::NoExcept;
+					}
+<FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
   					  lineCount() ; 
 					  current->args += " = 0"; 
 					  current->virt = Pure; 
 					  current->argList->pureSpecifier=TRUE;
+                                          BEGIN(FuncQual);
 					}
+<FuncQual,TrailingReturn>{BN}*"="{BN}*"delete"{BN}*     { // C++11 explicitly delete member
+                                          lineCount();
+                                          current->args += " = delete";
+					  current->spec |= Entry::Delete;
+                                          BEGIN(FuncQual);
+                                        }
+<FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
+                                          lineCount();
+                                          current->args += " = default";
+					  current->spec |= Entry::Default;
+                                          BEGIN(FuncQual);
+                                        }
+<FuncQual>{BN}*"->"{BN}*                {
+                                          lineCount();
+                                          current->argList->trailingReturnType = " -> ";
+                                          current->args += " -> ";
+                                          BEGIN(TrailingReturn);
+                                        }
+<TrailingReturn>[{;]                    {
+                                          unput(*yytext);
+                                          BEGIN(FuncQual);
+                                        }
+<TrailingReturn>.                       {
+                                          current->argList->trailingReturnType+=yytext;
+                                          current->args+=yytext;
+                                        }
+<TrailingReturn>\n                      {
+                                          lineCount();
+                                          current->argList->trailingReturnType+=yytext;
+                                          current->args+=' ';
+                                        }
 <FuncRound,FuncFunc>{BN}*","{BN}*	{ 
   					  lineCount() ; 
 					  current->args += ", " ; 
@@ -4171,6 +4359,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             // typically an initialized function pointer
   					    lastInitializerContext=YY_START;
 					    initBracketCount=0;
+                                            current->initializer = yytext;
   					    BEGIN(ReadInitializer);
 					  }
   					}
@@ -4463,7 +4652,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					  }
                                         }
-<SkipInits>"{"				{ 
+<SkipInits>"{"				{ // C++11 style initializer
   				          //addToBody(yytext);
   				          //lastCurlyContext = FindMembers;
 					  //curlyCount=0;
@@ -4751,6 +4940,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->name += yytext;
 					}
 <CompoundName>{SCOPENAME}{BN}*";"	{ // forward declaration
+                                          if (current->tArgLists && current->tArgLists->count()>0)
+                                          {
+                                            // found a forward template declaration, this has
+                                            // a purpose of its own
+                                            current->name = yytext;
+                                            current->name=current->name.left(current->name.length()-1).stripWhiteSpace();
+                                            //printf("template class declaration for %s!\n",current->name.data());
+                                            current_root->addSubEntry(current);
+                                            current = new Entry;
+                                          }
+
     					  unput(';');
 					  current->reset();
 					  initEntry();
@@ -4859,14 +5059,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    lastCSConstraint = YY_START;
 					    BEGIN( CSConstraintName );
 					  }
-					  else if (insideCli &&  strcmp(yytext,"abstract"))
+					  else if (insideCli &&  strcmp(yytext,"abstract")==0)
 					  {
 					    current->spec|=Entry::Abstract;
 					  }
-					  else if (insideCli &&  strcmp(yytext,"sealed"))
+					  else if (insideCli &&  strcmp(yytext,"sealed")==0)
 					  {
 					    current->spec|=Entry::Sealed;
 					  }
+                                          else if (strcmp(yytext,"final")==0)
+                                          {
+                                            current->spec|=Entry::Final;
+                                          }
 					  else
 					  {
 					    if (current->section == Entry::ENUM_SEC)
@@ -4957,6 +5161,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <ClassCategory>{ID}			{
 					  current->name+=yytext;
 					}
+<ClassCategory>")"/{BN}*"{"		{
+					  current->name+=')';
+					  BEGIN( ClassVar );
+                                        }
+<ClassCategory>")"/{BN}*"<"		{
+					  current->name+=')';
+					  BEGIN( ObjCProtocolList );
+                                        }
 <ClassCategory>")"			{
 					  current->name+=')';
 					  if ((current->section & Entry::Protocol) ||
@@ -4972,10 +5184,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN( ClassVar );
 					}
 <ClassVar>":"				{ 
-					  if (current->section == Entry::VARIABLE_SEC) // enum a b:2, see bug 313527
+					  if (current->section==Entry::ENUM_SEC) // enum E:2, see bug 313527, 
+                                                                                 // or C++11 style enum: 'E : unsigned int {...}'
 					  {
-  					    BEGIN(BitFields);
-					    current->bitfields+=":";
+					    current->args.resize(0);
+  					    BEGIN(EnumBaseType);
 					  }
 					  else
 					  {
@@ -5478,13 +5691,21 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					    else
 					    {
-					      needsSemi = TRUE;
-					      current->type.resize(0);
-					      current->name.resize(0);
-					      current->args.resize(0);
-					      current->argList->clear();
-					      curlyCount=0;
-					      BEGIN( SkipCurlyBlock );
+					      // pre C++11 code -> ignore the initializer
+                                              //needsSemi = TRUE;
+					      //current->type.resize(0);
+					      //current->name.resize(0);
+					      //current->args.resize(0);
+					      //current->argList->clear();
+					      //curlyCount=0;
+					      //BEGIN( SkipCurlyBlock );
+
+                                              // C++11 style initializer list
+  					      current->bodyLine = yyLineNr;
+                                              current->initializer = yytext;
+					      lastInitializerContext = YY_START;
+					      initBracketCount=1;
+					      BEGIN(ReadInitializer);
 					    }
 					  }
   					}

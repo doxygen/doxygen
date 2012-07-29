@@ -36,6 +36,7 @@
 #include "portable.h"
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_INPUT 1
   
 //--------------------------------------------------------------------------
 

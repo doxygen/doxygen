@@ -2007,14 +2007,14 @@ static QCString processBlocks(const QCString &s,int indent)
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       lang.data(),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());
         if (!lang.isEmpty() && lang.at(0)=='.') lang=lang.mid(1);
-        if (lang.isEmpty()) out.addStr("@verbatim"); else out.addStr("@code");
+        out.addStr("@code");
         if (!lang.isEmpty())
         {
           out.addStr("{"+lang+"}");
         }
         out.addStr(data+pi+blockStart,blockEnd-blockStart);       
         out.addStr("\n");
-        if (lang.isEmpty()) out.addStr("@endverbatim"); else out.addStr("@endcode");
+        out.addStr("@endcode");
         i=pi+blockOffset;
         pi=-1;
         end=i+1;
@@ -2144,6 +2144,22 @@ static QCString detab(const QCString &s,int &refIndent)
 
 QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input)
 {
+  static bool init=FALSE;
+  if (!init)
+  {
+    // setup callback table for special characters
+    g_actions[(unsigned int)'_']=processEmphasis;
+    g_actions[(unsigned int)'*']=processEmphasis;
+    g_actions[(unsigned int)'`']=processCodeSpan;
+    g_actions[(unsigned int)'\\']=processSpecialCommand;
+    g_actions[(unsigned int)'@']=processSpecialCommand;
+    g_actions[(unsigned int)'[']=processLink;
+    g_actions[(unsigned int)'!']=processLink;
+    g_actions[(unsigned int)'<']=processHtmlTag;
+    g_actions[(unsigned int)'-']=processNmdash;
+    init=TRUE;
+  }
+
   g_linkRefs.setAutoDelete(TRUE);
   g_linkRefs.clear();
   g_current = e;
@@ -2160,18 +2176,8 @@ QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input
   // then process block items (headers, rules, and code blocks, references)
   s = processBlocks(s,refIndent);
   //printf("======== Blocks =========\n---- output -----\n%s\n---------\n",s.data());
-  int size=s.length();
-  g_actions['_']=processEmphasis;
-  g_actions['*']=processEmphasis;
-  g_actions['`']=processCodeSpan;
-  g_actions['\\']=processSpecialCommand;
-  g_actions['@']=processSpecialCommand;
-  g_actions['[']=processLink;
-  g_actions['!']=processLink;
-  g_actions['<']=processHtmlTag;
-  g_actions['-']=processNmdash;
   // finally process the inline markup (links, emphasis and code spans)
-  processInline(out,s,size);
+  processInline(out,s,s.length());
   out.addChar(0);
   Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n---------\n",input.data(),out.get());
   return out.get();

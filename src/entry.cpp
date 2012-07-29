@@ -81,8 +81,7 @@ Entry::Entry(const Entry &e)
   virt        = e.virt;
   args        = e.args;
   bitfields   = e.bitfields;
-  argList     = new ArgumentList;
-  argList->setAutoDelete(TRUE);
+  argList     = e.argList->deepCopy();
   tArgLists = 0;
   program     = e.program;
   initializer = e.initializer;
@@ -169,27 +168,10 @@ Entry::Entry(const Entry &e)
     anchors->append(new SectionInfo(*s));
   }
 
-  // deep copy argument list
-  QListIterator<Argument> ali(*e.argList);
-  Argument *a;
-  for (;(a=ali.current());++ali)
-  {
-    argList->append(new Argument(*a));
-  }
-  argList->constSpecifier    = e.argList->constSpecifier;
-  argList->volatileSpecifier = e.argList->volatileSpecifier;
-  argList->pureSpecifier     = e.argList->pureSpecifier;
-  
   // deep copy type contraint list
   if (e.typeConstr)
   {
-    typeConstr  = new ArgumentList;
-    typeConstr->setAutoDelete(TRUE);
-    QListIterator<Argument> tcli(*e.typeConstr);
-    for (;(a=tcli.current());++tcli)
-    {
-      typeConstr->append(new Argument(*a));
-    }
+    typeConstr  = e.typeConstr->deepCopy();
   }
 
   // deep copy template argument lists

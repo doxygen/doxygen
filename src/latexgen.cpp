@@ -2097,7 +2097,7 @@ void LatexGenerator::startMemberTemplateParams()
   }
 }
 
-void LatexGenerator::endMemberTemplateParams(const char *)
+void LatexGenerator::endMemberTemplateParams(const char *,const char *)
 {
   if (templateMemberItem)
   {

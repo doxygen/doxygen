@@ -39,6 +39,7 @@
 #include "searchindex.h"
 
 #define YY_NEVER_INTERACTIVE 1
+#define YY_NO_INPUT 1
 
 static ClassSDict    g_codeClassSDict(17);
 static QCString      g_curClassName;

@@ -115,7 +115,7 @@ class ManGenerator : public OutputGenerator
     void startMemberItem(const char *,int,const char *);
     void endMemberItem();
     void startMemberTemplateParams() {}
-    void endMemberTemplateParams(const char *) {}
+    void endMemberTemplateParams(const char *,const char *) {}
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -161,6 +161,8 @@ class ManGenerator : public OutputGenerator
     void endSmall()           {}
     void startMemberDescription(const char *,const char *) { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
+    void startMemberDeclaration() {} 
+    void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes);

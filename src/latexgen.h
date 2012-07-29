@@ -117,7 +117,7 @@ class LatexGenerator : public OutputGenerator
     void startMemberItem(const char *,int,const char *);
     void endMemberItem();
     void startMemberTemplateParams();
-    void endMemberTemplateParams(const char *);
+    void endMemberTemplateParams(const char *,const char *);
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -165,6 +165,8 @@ class LatexGenerator : public OutputGenerator
     void endSmall()         { t << "\\normalsize "; }
     void startMemberDescription(const char *,const char *);
     void endMemberDescription();
+    void startMemberDeclaration() {} 
+    void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }

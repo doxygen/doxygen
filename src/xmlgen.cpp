@@ -1220,6 +1220,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
   if (cd->isHidden())           return; // skip hidden classes.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
+  if (cd->isArtificial())       return; // skip artificially created classes
 
   msg("Generating XML output for class %s\n",cd->name().data());
 
@@ -1249,6 +1250,9 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
     case Private:   t << "private";   break;
     case Package:   t << "package";   break;
   }
+  if (cd->isFinal()) t << "\" final=\"yes";
+  if (cd->isSealed()) t << "\" sealed=\"yes";
+  if (cd->isAbstract()) t << "\" abstract=\"yes";
   t << "\">" << endl;
   t << "    <compoundname>"; 
   writeXMLString(t,cd->name()); 
