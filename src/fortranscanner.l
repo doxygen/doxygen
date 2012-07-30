@@ -1638,84 +1638,84 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
 {
   if (!mdfs.dimension.isNull()) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += mdfs.dimension;
   }
   if (mdfs.direction!=SymbolModifiers::NONE_D) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += directionStrs[mdfs.direction];
   }
   if (mdfs.optional) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "optional";
   }
   if (mdfs.allocatable) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "allocatable";
   }
   if (mdfs.external) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "external";
   }
   if (mdfs.intrinsic) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "intrinsic";
   }
   if (mdfs.parameter) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "parameter";
   }
   if (mdfs.pointer) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "pointer";
   }
   if (mdfs.target) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "target";
   }
   if (mdfs.save) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "save";
   }
   if (mdfs.deferred) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "deferred";
   }
   if (mdfs.nonoverridable) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "non_overridable";
   }
   if (mdfs.nopass) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "nopass";
   }
   if (mdfs.pass) 
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "pass";
     if (!mdfs.passVar.isEmpty())
       typeName += "(" + mdfs.passVar + ")";
   }
   if (mdfs.protection == SymbolModifiers::PUBLIC)
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "public";
   }
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
   {
-    typeName += ", ";
+    if (!typeName.isEmpty()) typeName += ", ";
     typeName += "private";
   }
 
