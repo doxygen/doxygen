@@ -770,10 +770,13 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  BEGIN(UseOnly);     
                                         }           
 <UseOnly>{BS},{BS}                      { codifyLines(yytext); }
+<UseOnly>{BS}&{BS}"\n"                  { codifyLines(yytext); }
 <UseOnly>{ID}                           {
- 					  codifyLines(yytext);
+                                          g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+                                          g_insideBody=FALSE;
                                           useEntry->onlyNames.append(yytext);
-                                        }   
+                                        }
 <Use,UseOnly>"\n"                       {
                                           unput(*yytext);
                                           yy_pop_state();
@@ -1015,6 +1018,13 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <*>"\\\\"                               { str+=yytext; /* ignore \\  */}
 <*>"\\\""|\\\'                          { str+=yytext; /* ignore \"  */}
 
+<String>\n                              { // string with \n inside
+                                          str+=yytext;
+  					  startFontClass("stringliteral");
+  					  codifyLines(str);
+					  endFontClass();
+                                          str = "";
+                                        }           
 <String>\"|\'                           { // string ends with next quote without previous backspace 
                                           if(yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
                                           str+=yytext;
