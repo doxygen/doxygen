@@ -100,4 +100,54 @@ Producing output
 
 TODO
 
+Topics TODO
+-----------
+- Grouping of files in Model / Parser / Generator categories
+- Index files based on IndexIntf
+  - HTML navigation
+  - HTML Help (chm)
+  - Documentation Sets (XCode)
+  - Qt Help (qhp)
+  - Eclipse Help
+- Search index
+  - Javascript based
+  - Server based
+  - External
+- Citations
+  - via bibtex
+- Various processing steps for a comment block
+  - comment conversion
+  - comment scanner
+  - markdown processor
+  - doc tokeninzer
+  - doc parser
+  - doc visitors
+- Diagrams and Images
+  - builtin
+  - via Graphviz dot
+  - via mscgen
+  - PNG generation
+- Output formats: OutputGen, OutputList, and DocVisitor
+  - Html:  HtmlGenerator and HtmlDocVisitor
+  - Latex: LatexGenerator and LatexDocVisitor
+  - RTF:   RTFGenerator and RTFDocVisitor
+  - Man:   ManGenerator and ManDocVisitor
+  - XML:   generateXML() and XmlDocVisitor
+  - print: debugging via PrintDocVisitor
+  - text:  TextDocVisitor for tooltips
+  - perlmod
+- i18n via Translator and language.cpp
+- Customizing the layout via LayoutDocManager
+- Parsers 
+  - C Preprocessing 
+    - const expression evaluation
+  - C link languages
+  - Python
+  - Fortran
+  - VHDL
+  - TCL
+  - Tag files
+- Marshaling to/from disk
+- Portability functions
+- Utility functions
 

@@ -1540,10 +1540,10 @@ static QCString convertLabel(const QCString &l)
 {
   QCString result;
   QCString bBefore("\\_/<({[: =-+@%#~?$"); // break before character set
-  QCString bAfter(">]),;|");               // break after  character set
+  QCString bAfter(">]),:;|");              // break after  character set
   const char *p=l.data();
   if (p==0) return result;
-  char c;
+  char c,pc=0;
   char cs[2];
   cs[1]=0;
   int len=l.length();
@@ -1573,7 +1573,7 @@ static QCString convertLabel(const QCString &l)
       foldLen = (3*foldLen+sinceLast+2)/4;
       sinceLast=1;
     }
-    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bBefore.contains(c))
+    else if ((pc!=':' || c!=':') && charsLeft>foldLen/3 && sinceLast>foldLen && bBefore.contains(c))
     {
       result+="\\l";
       result+=replacement;
@@ -1588,7 +1588,7 @@ static QCString convertLabel(const QCString &l)
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=0;
     }
-    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c))
+    else if (charsLeft>foldLen/3 && sinceLast>foldLen && bAfter.contains(c) && (c!=':' || *p!=':'))
     {
       result+=replacement;
       result+="\\l";
@@ -1601,6 +1601,7 @@ static QCString convertLabel(const QCString &l)
       sinceLast++;
     }
     charsLeft--;
+    pc=c;
   }
   return result;
 }

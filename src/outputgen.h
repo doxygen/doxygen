@@ -97,8 +97,6 @@ class BaseOutputDocInterface : public CodeOutputInterface
                         Examples 
                       };
 
-    //virtual void parseDoc(const char *,int, const char *,MemberDef *,
-    //                      const QCString &,bool)  {} 
     virtual void parseText(const QCString &)  {}
     
     /*! Start of a bullet list: e.g. \c \<ul\> in html. startItemListItem() is
@@ -294,7 +292,7 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void printDoc(DocNode *,const char *langExt) = 0;
+    virtual void writeDoc(DocNode *,Definition *ctx,MemberDef *md) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

@@ -2708,9 +2708,9 @@ void RTFGenerator::endParameterType()
   t << " ";
 }
 
-void RTFGenerator::printDoc(DocNode *n,const char *langExt)
+void RTFGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,langExt);
+  RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);
   delete visitor; 
   m_omitParagraph = TRUE;

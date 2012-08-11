@@ -9,9 +9,9 @@ class FileDef;
 class MemberDef;
 
 void parseVhdlCode(CodeOutputInterface &,const char *,const QCString &, 
-            bool ,const char *,FileDef *fd=0,
-            int startLine=-1,int endLine=-1,bool inlineFragment=FALSE,
-            MemberDef *memberDef=0,bool showLineNumbers=TRUE);
+            bool ,const char *,FileDef *fd,
+            int startLine,int endLine,bool inlineFragment,
+            MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx);
 void resetVhdlCodeParserState();
 void codeFreeVhdlScanner();
 

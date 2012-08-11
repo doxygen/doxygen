@@ -302,6 +302,7 @@ static unsigned char doxygen_a_png[3224] =
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
+// magnifying glass icon (raw png)
 unsigned char mag_sel_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
   0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x13,
@@ -556,25 +557,6 @@ static unsigned char close_png[] = {
 };
 static unsigned int close_png_len = 273;
 
-#if 0
-unsigned char open_gif[] = {
-  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x09, 0x00, 0x09, 0x00, 0xf0, 0x00,
-  0x00, 0x8e, 0xaf, 0xc4, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
-  0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x09, 0x00,
-  0x00, 0x02, 0x0d, 0x8c, 0x8f, 0xa9, 0xcb, 0xe0, 0xff, 0x02, 0x8c, 0x66,
-  0x26, 0x7a, 0x51, 0x01, 0x00, 0x3b
-};
-unsigned int open_gif_len = 54;
-
-unsigned char closed_gif[] = {
-  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x09, 0x00, 0x09, 0x00, 0xf0, 0x00,
-  0x00, 0x8e, 0xaf, 0xc4, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
-  0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x09, 0x00,
-  0x00, 0x02, 0x10, 0x8c, 0x03, 0xa7, 0x98, 0xcb, 0xad, 0x80, 0x84, 0x66,
-  0xca, 0x38, 0x57, 0xd6, 0xf4, 0xd0, 0x02, 0x00, 0x3b
-};
-unsigned int closed_gif_len = 57;
-#endif
 
 static unsigned char closed_png[81] =
 {
@@ -833,24 +815,26 @@ static void writeImgData(const char *dir,img_data_item *data)
 
 static ColoredImgDataItem colored_tab_data[] =
 {
-  { "tab_a.png",    1, 36, tab_a_png, 0 },
-  { "tab_b.png",    1, 36, tab_b_png, 0 },
-  { "tab_h.png",    1, 36, tab_h_png, 0 },
-  { "tab_s.png",    1, 36, tab_s_png, 0 },
-  { "nav_h.png",    1, 12, header_png, 0 },
+  // file_name      W   H  luma_data        alpha_data
+  { "tab_a.png",    1, 36, tab_a_png,       0 },
+  { "tab_b.png",    1, 36, tab_b_png,       0 },
+  { "tab_h.png",    1, 36, tab_h_png,       0 },
+  { "tab_s.png",    1, 36, tab_s_png,       0 },
+  { "nav_h.png",    1, 12, header_png,      0 },
   { "nav_f.png",    1, 56, func_header_png, 0 },
-  { "bc_s.png",     8, 32, bc_s_png, bc_s_a_png },
-  { "doxygen.png", 104,31, doxygen_png, doxygen_a_png },
-  { "closed.png",   9,  9, closed_png, closed_a_png },
-  { "open.png",     9,  9, open_png, open_a_png },
-  { "bdwn.png",     7,  8, bdwn_png, bdwn_a_png },
-  { "sync_on.png", 24, 24, sync_on_png, sync_a_png },
-  { "sync_off.png",24, 24, sync_off_png, sync_a_png },
+  { "bc_s.png",     8, 30, bc_s_png,        bc_s_a_png },
+  { "doxygen.png", 104,31, doxygen_png,     doxygen_a_png },
+  { "closed.png",   9,  9, closed_png,      closed_a_png },
+  { "open.png",     9,  9, open_png,        open_a_png },
+  { "bdwn.png",     7,  8, bdwn_png,        bdwn_a_png },
+  { "sync_on.png", 24, 24, sync_on_png,     sync_a_png },
+  { "sync_off.png",24, 24, sync_off_png,    sync_a_png },
   { 0, 0, 0, 0, 0 }
 };
 
 static img_data_item search_client_data[] =
 {
+  // file_name          raw_data          num bytes
   { "mag_sel.png",      mag_sel_png,      mag_sel_png_len  },
   { "search_l.png",     search_l_png,     search_l_png_len },
   { "search_m.png",     search_m_png,     search_m_png_len },
@@ -861,6 +845,7 @@ static img_data_item search_client_data[] =
 
 static img_data_item search_server_data[] =
 {
+  // file_name          raw_data          num bytes
   { "mag.png",          mag_png,          mag_png_len      },
   { "search_l.png",     search_l_png,     search_l_png_len },
   { "search_m.png",     search_m_png,     search_m_png_len },
@@ -1056,11 +1041,13 @@ static QCString substituteHtmlKeywords(const QCString &s,
 {
   // Build CSS/Javascript tags depending on treeview, search engine settings
   QCString cssFile;
+  QCString extraCssFile;
   QCString generatedBy;
   QCString treeViewCssJs;
   QCString searchCssJs;
   QCString searchBox;
   QCString mathJaxJs;
+  QCString extraCssText;
 
   static QCString projectName = Config_getString("PROJECT_NAME");
   static bool timeStamp = Config_getBool("HTML_TIMESTAMP");
@@ -1091,6 +1078,11 @@ static QCString substituteHtmlKeywords(const QCString &s,
     {
       cssFile = "doxygen.css";
     }
+  }
+  extraCssFile = Config_getString("HTML_EXTRA_STYLESHEET");
+  if (!extraCssFile.isEmpty())
+  {
+    extraCssText = "<link href=\"$relpath$"+extraCssFile+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   }
 
   if (timeStamp) {
@@ -1182,6 +1174,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
   result = substitute(result,"$search",searchCssJs);
   result = substitute(result,"$mathjax",mathJaxJs);
   result = substitute(result,"$generatedby",generatedBy);
+  result = substitute(result,"$extrastylesheet",extraCssText);
   result = substitute(result,"$relpath$",relPath); //<-- must be last
   
   // additional HTML only conditional blocks
@@ -1563,10 +1556,6 @@ void HtmlGenerator::startFile(const char *name,const char *,
   m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(relPath);
   Doxygen::indexList.addIndexFile(fileName);
-  //if (Config_getBool("GENERATE_HTMLHELP"))
-  //{
-  //  HtmlHelp::getInstance()->addIndexFile(fileName);
-  //}
   
   lastFile = fileName;
   t << substituteHtmlKeywords(g_header,convertToHtml(title),relPath);
@@ -1853,15 +1842,15 @@ void HtmlGenerator::startGroupHeader(int extraIndentLevel)
 {
   if (extraIndentLevel==2)
   {
-    t << "<h4>";
+    t << "<h4 class=\"groupheader\">";
   }
   else if (extraIndentLevel==1)
   {
-    t << "<h3>";
+    t << "<h3 class=\"groupheader\">";
   }
   else // extraIndentLevel==0
   {
-    t << "<h2>";
+    t << "<h2 class=\"groupheader\">";
   }
 }
 
@@ -2212,7 +2201,7 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr class=\"heading\"><td colspan=\"2\"><h2>";
+    t << "<tr class=\"heading\"><td colspan=\"2\"><h2 class=\"groupheader\">";
   //}
   //else
   //{
@@ -2609,9 +2598,9 @@ void HtmlGenerator::endParamList()
   t << "</dl>"; 
 }
 
-void HtmlGenerator::printDoc(DocNode *n,const char *langExt)
+void HtmlGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *md)
 {
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,*this,langExt);
+  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx,md);
   n->accept(visitor);
   delete visitor; 
 }

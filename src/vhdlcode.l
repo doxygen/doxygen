@@ -83,6 +83,7 @@ static int           g_inputPosition;   //!< read offset during parsing
 static int           g_inputLines;      //!< number of line in the code fragment
 static int           g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
+static Definition   *g_searchCtx;
 
 static QCString      g_exampleName;
 static QCString      g_exampleFile;
@@ -113,11 +114,18 @@ static void startFontClass(const char *s);
 //-------------------------------------------------------------------
 
 
-static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
+static void setCurrentDoc(const QCString &anchor)
 {
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+    if (g_searchCtx)
+    {
+      Doxygen::searchIndex->setCurrentDoc(g_searchCtx,g_searchCtx->anchor(),FALSE);
+    }
+    else
+    {
+      Doxygen::searchIndex->setCurrentDoc(g_sourceFileDef,anchor,TRUE);
+    }
   }
 }
 
@@ -207,18 +215,14 @@ static void startCodeLine()
         g_code->writeLineNumber(g_currentMemberDef->getReference(),
                                 g_currentMemberDef->getOutputFileBase(),
                                 g_currentMemberDef->anchor(),g_yyLineNr);
-        setCurrentDoc(g_currentMemberDef->qualifiedName(),
-                      g_sourceFileDef->getSourceFileBase(),
-                      lineAnchor);
+        setCurrentDoc(lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         g_code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
                                 0,g_yyLineNr);
-        setCurrentDoc(d->qualifiedName(),
-                      g_sourceFileDef->getSourceFileBase(),
-                      lineAnchor);
+        setCurrentDoc(lineAnchor);
       }
     }
     else
@@ -1501,9 +1505,9 @@ void resetVhdlCodeParserState()
 }
 
 void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString &s, 
-                  bool exBlock, const char *exName,FileDef *fd,
+                  bool /*exBlock*/, const char *exName,FileDef *fd,
                   int startLine,int endLine,bool inlineFragment,
-                  MemberDef *memberDef,bool)
+                  MemberDef *memberDef,bool,Definition *searchCtx)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
@@ -1519,6 +1523,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   g_inputPosition = 0;
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
+  g_searchCtx = searchCtx;
 
   if (endLine!=-1)
     g_inputLines  = endLine+1;
@@ -1535,14 +1540,16 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   g_classScope    = className;
   g_exampleName   = exName;
   g_sourceFileDef = fd;
-  if (exBlock && fd==0)
+  bool cleanupSourceDef = FALSE;
+  if (fd==0)
   {
     // create a dummy filedef for the example
     g_sourceFileDef = new FileDef("",exName);
+    cleanupSourceDef = TRUE;
   }
   if (g_sourceFileDef) 
   {
-    setCurrentDoc(g_sourceFileDef->name(),g_sourceFileDef->getSourceFileBase());
+    setCurrentDoc("l00001");
   }
   g_currentDefinition = 0;
   g_currentMemberDef = 0;
@@ -1574,7 +1581,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   {
     endCodeLine();
   }
-  if (exBlock && g_sourceFileDef)
+  if (cleanupSourceDef)
   {
     // delete the temporary file definition used for this example
     delete g_sourceFileDef;

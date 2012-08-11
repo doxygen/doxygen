@@ -112,7 +112,7 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.linkableSymbol(line,symName,symDef,context); }
     // ---------------------------
 
-    void printDoc(DocNode *,const char *);
+    void writeDoc(DocNode *,Definition *,MemberDef *);
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeFooter(const char *navPath);

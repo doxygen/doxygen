@@ -15,7 +15,7 @@ RCC_DIR      = rcc
 DEFINES     += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 
 macx-g++ {
-  CONFIG += x86 ppc
+  CONFIG += x86 
 }
 
 # Input

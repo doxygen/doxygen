@@ -6,7 +6,7 @@ body, table, div, p, dl {
 
 /* @group Heading Levels */
 
-h1 {
+h1.groupheader {
 	font-size: 150%;
 }
 
@@ -16,7 +16,7 @@ h1 {
 	margin: 10px 2px;
 }
 
-h2 {
+h2.groupheader {
 	border-bottom: 1px solid ##99;
 	color: ##44;
 	font-size: 150%;
@@ -27,7 +27,7 @@ h2 {
 	width: 100%;
 }
 
-h3 {
+h3.groupheader {
 	font-size: 100%;
 }
 
@@ -857,7 +857,10 @@ table.fieldtable {
 	display:block;
 	text-decoration: none;
 	outline: none;
+	color: ##30;
 	font-family: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
+	text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
+	text-decoration: none;        
 }
 
 .navpath li.navelem a:hover

@@ -51,6 +51,7 @@ static const char *  g_inputString;     //!< the code fragment as text
 static int	     g_inputPosition;   //!< read offset during parsing 
 static const char *  g_currentFontClass;
 static bool          g_needsTermination;
+static Definition   *g_searchCtx;
 static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
 static FileDef *     g_sourceFileDef;
@@ -280,11 +281,18 @@ static int countLines()
   return count;
 }
 
-static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
+static void setCurrentDoc(const QCString &anchor)
 {
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+    if (g_searchCtx)
+    {
+      Doxygen::searchIndex->setCurrentDoc(g_searchCtx,g_searchCtx->anchor(),FALSE);
+    }
+    else
+    {
+      Doxygen::searchIndex->setCurrentDoc(g_sourceFileDef,anchor,TRUE);
+    }
   }
 }
 
@@ -360,20 +368,14 @@ static void startCodeLine()
         g_code->writeLineNumber(g_currentMemberDef->getReference(),
 	                        g_currentMemberDef->getOutputFileBase(),
 	                        g_currentMemberDef->anchor(),g_yyLineNr);
-        setCurrentDoc(
-                                g_currentMemberDef->qualifiedName(),
-	                        g_sourceFileDef->getSourceFileBase(),
-	                        lineAnchor);
+        setCurrentDoc(lineAnchor);
       }
       else
       {
         g_code->writeLineNumber(d->getReference(),
 	                        d->getOutputFileBase(),
 	                        0,g_yyLineNr);
-        setCurrentDoc(
-                                d->qualifiedName(),
-	                        g_sourceFileDef->getSourceFileBase(),
-	                        lineAnchor);
+        setCurrentDoc(lineAnchor);
       }
     }
     else
@@ -1430,7 +1432,7 @@ static void adjustScopesAndSuites(unsigned indentLength)
 void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
                  const QCString &s,bool exBlock, const char *exName,
 		 FileDef *fd,int startLine,int endLine,bool /*inlineFragment*/,
-		 MemberDef *,bool) 
+		 MemberDef *,bool,Definition *searchCtx) 
 {
 
   //printf("***parseCode()\n");
@@ -1442,6 +1444,7 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   g_inputPosition = 0;
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
+  g_searchCtx=searchCtx;
   if (endLine!=-1)
     g_inputLines  = endLine+1;
   else
@@ -1456,6 +1459,17 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   g_exampleName   = exName;
   g_sourceFileDef = fd;
 
+  bool cleanupSourceDef = FALSE;
+  if (fd==0)
+  {
+    // create a dummy filedef for the example
+    g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
+    cleanupSourceDef = TRUE;
+  }
+  if (g_sourceFileDef) 
+  {
+    setCurrentDoc("l00001");
+  }
 
   // Starts line 1 on the output  
   startCodeLine();
@@ -1472,6 +1486,12 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   if (g_needsTermination)
   {
     endCodeLine();
+  }
+  if (cleanupSourceDef)
+  {
+    // delete the temporary file definition used for this example
+    delete g_sourceFileDef;
+    g_sourceFileDef=0;
   }
   return;
 }

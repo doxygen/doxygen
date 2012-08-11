@@ -14,9 +14,10 @@
  * input used in their production; they are not affected by this license.
  *
  * ----------------------------------------------------------------------------*/
- 
+
 // Updates:
 // --------
+// 2012/08/02 - Updates for "new since 1.8.2".
 // 2012/04/18 - Updates for "new since 1.8.0".
 // 2011/07/28 - Updates for "new since 1.7.5".
 // 2010/06/04 - big leap from 1.2.18 to 1.6.3+
@@ -30,7 +31,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public TranslatorAdapter_1_8_2
+class TranslatorSlovak : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -112,7 +113,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result("Generované automaticky programom Doxygen "
                       "zo zdrojových textov");
-      if (s) 
+      if (s)
           result+=(QCString)" projektu "+s;
       result+=".";
       return result;
@@ -1330,7 +1331,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
@@ -1350,35 +1351,35 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Typy v balíku";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Funkcie v balíku";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Statické funkcie v balíku";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Atribúty balíku";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Statické atribúty balíku";
     }
 
@@ -1386,7 +1387,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1398,13 +1399,13 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     {
       return "Táto funkcia volá...";
     }
-   
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the index 
-     *  of each page before the search field. 
+    /*! When the search engine is enabled this text is put in the index
+     *  of each page before the search field.
      */
     virtual QCString trSearchForIndex()
     {
@@ -1421,7 +1422,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1435,20 +1436,20 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
       {
         return "Bol nájdený jediný dokument, ktorý vyhovuje vášmu dotazu.";
       }
-      else 
+      else
       {
         return "Bolo nájdených <b>$num</b> dokumentov, ktoré vyhovujú vášmu "
                       "dotazu. Najviac odpovedajúce dokumenty sú ako prvé.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
     {
       return "Nájdené slová:";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.8
 //////////////////////////////////////////////////////////////////////////
@@ -1459,8 +1460,8 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     {
       return QCString("Zdrojový súbor ") + filename;
     }
-    
-    
+
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
 //////////////////////////////////////////////////////////////////////////
@@ -1484,34 +1485,34 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     virtual QCString trDirectories()
     { return "Adresáre"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-    { 
+    {
         return "Následujúca hierarchia adresárov je zhruba, "
-                      "ale nie úplne, zoradená podľa abecedy:"; 
+                      "ale nie úplne, zoradená podľa abecedy:";
     }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const char *dirName)
-    { 
-        QCString result = "Referencia k adresáru "; 
-        result += dirName; 
-        return result; 
+    {
+        QCString result = "Referencia k adresáru ";
+        result += dirName;
+        return result;
     }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
-    { 
+    {
         QCString result((first_capital ? "Adresár" : "adresár"));
-        if ( ! singular) 
+        if ( ! singular)
             result += "e";
-        return result; 
+        return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1536,7 +1537,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     { return "Túto funkciu volajú..."; }
 
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
@@ -1546,12 +1547,12 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "Dokumentácia členských funkcií/podprogramov"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "Zoznam dátových typov"; }
 
@@ -1574,18 +1575,18 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
       }
       result+="zložiek dátových typov";
       result+=" s odkazmi na ";
-      if (!extractAll) 
+      if (!extractAll)
       {
          result+="dokumentáciu dátovej štruktúry pre každú zložku:";
       }
-      else 
+      else
       {
           result+="příslušné dátové typy:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1597,24 +1598,24 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     virtual QCString trTypeDocumentation()
     { return "Dokumentácia k dátovým typom"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "Funkcie/podprogramy"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "Dokumentácia funkcie/podprogramu"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "Dátové typy"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "Zoznam modulov"; }
@@ -1653,46 +1654,46 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
     virtual QCString trModuleReference(const char *namespaceName)
     {
       QCString result="Dokumentácia modulu ";
-      result += namespaceName;        
+      result += namespaceName;
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "Časti modulu"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Nasleduje zoznam všetkých ";
       if (!extractAll) result+="dokumentovaných ";
       result+="častí modulov s odkazmi ";
-      if (extractAll) 
+      if (extractAll)
       {
         result+="na dokumentáciu modulov pre danú časť:";
       }
-      else 
+      else
       {
         result+="na moduly, ku ktorým časť patrí:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "Register modulov"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool first_capital, bool singular)
-    {       
+    {
       QCString result((first_capital ? "Modul" : "modul"));
       if (!singular)  result+="y";
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1713,29 +1714,29 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
         case ClassDef::Exception:  result+="k tejto výnimke"; break;
       }
       result+=" bola vygenerovaná z ";
-      if (single) result+="nasledujúceho súboru:"; 
+      if (single) result+="nasledujúceho súboru:";
       else result+="nasledujúcich súborov:";
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Typ" : "typ"));
       if (!singular)  result+="y";
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Podprogram" : "podprogram"));
       if (!singular)  result+="y";
-      return result; 
+      return result;
     }
 
     /*! C# Type Contraint list */
@@ -1806,7 +1807,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
       return (QCString)"Vkladá (include) súbor z "+name;
     }
 
-    /** Compiles a date string. 
+    /** Compiles a date string.
      *  @param year Year in 4 digits
      *  @param month Month of the year: 1=January
      *  @param day Day of the Month: 1..31
@@ -1893,6 +1894,69 @@ class TranslatorSlovak : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Ďaľšie zdedené členy"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "povoliť" : "zakázať";
+      return opt + " synchronizáciu panelov";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "Deklarované v kategórii @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "Rozširuje triedu @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Metódy triedy";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Metódy inštancie";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Dokumentácia metódy";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "Návrhová schéma";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 };

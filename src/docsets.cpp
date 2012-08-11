@@ -88,6 +88,9 @@ void DocSets::initialize()
         "\trm -f $(DOCSET_RESOURCES)/Nodes.xml\n"
         "\trm -f $(DOCSET_RESOURCES)/Tokens.xml\n"
         "\n"
+        "clean:\n"
+        "\trm -rf $(DOCSET_NAME)\n"
+        "\n"
         "install: docset\n"
         "\tmkdir -p $(DESTDIR)\n"
         "\tcp -R $(DOCSET_NAME) $(DESTDIR)\n"
@@ -194,6 +197,7 @@ QCString DocSets::indent()
 
 void DocSets::incContentsDepth()
 {
+  //printf("DocSets::incContentsDepth() m_dc=%d\n",m_dc);
   ++m_dc;
   m_nts << indent() << "<Subnodes>" << endl;
   m_firstNode.resize(m_dc);
@@ -211,6 +215,7 @@ void DocSets::decContentsDepth()
   }
   m_nts << indent() << "</Subnodes>" << endl;
   --m_dc;
+  //printf("DocSets::decContentsDepth() m_dc=%d\n",m_dc);
 }
 
 void DocSets::addContentsItem(bool isDir,
@@ -223,7 +228,8 @@ void DocSets::addContentsItem(bool isDir,
                               Definition * /*def*/)
 {
   (void)isDir;
-  if (file && ref==0)
+  //printf("DocSets::addContentsItem(%s) m_dc=%d\n",name,m_dc);
+  if (ref==0)
   {
     if (!m_firstNode.at(m_dc-1))
     {
@@ -232,12 +238,27 @@ void DocSets::addContentsItem(bool isDir,
     m_firstNode.at(m_dc-1)=FALSE;
     m_nts << indent() << " <Node>" << endl;
     m_nts << indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
-    m_nts << indent() << "  <Path>";
-    m_nts << file << Doxygen::htmlFileExtension;
-    m_nts << "</Path>" << endl;
-    if (anchor)
+    if (file && file[0]=='^') // URL marker
     {
-      m_nts << indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;
+      m_nts << indent() << "  <URL>" << convertToXML(&file[1]) 
+            << "</URL>" << endl;
+    }
+    else // relative file
+    {
+      m_nts << indent() << "  <Path>";
+      if (file && file[0]=='!') // user specified file
+      {
+        m_nts << convertToXML(&file[1]);
+      }
+      else if (file) // doxygen generated file
+      {
+        m_nts << file << Doxygen::htmlFileExtension;
+      }
+      m_nts << "</Path>" << endl;
+      if (file && anchor)
+      {
+        m_nts << indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;
+      }
     }
   }
 }
@@ -374,7 +395,16 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,const char *)
     {
       scope = nd->name();
     }
-    writeToken(m_tts,md,type,lang,scope,md->anchor());
+    MemberDef *declMd = md->memberDeclaration();
+    if (declMd==0) declMd = md;
+    {
+      fd = md->getFileDef();
+      if (fd)
+      {
+        decl = fd->name();
+      }
+    }
+    writeToken(m_tts,md,type,lang,scope,md->anchor(),decl);
   }
   else if (context && context->isLinkable())
   {

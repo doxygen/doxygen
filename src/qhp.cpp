@@ -20,6 +20,7 @@
 #include "config.h"
 #include "memberdef.h"
 #include "groupdef.h"
+#include "doxygen.h"
 #include "filedef.h"
 
 #include <qstringlist.h>
@@ -27,8 +28,19 @@
 
 static QCString makeFileName(const char * withoutExtension)
 {
-  if (!withoutExtension) return QCString();
-  return QCString(withoutExtension)+".html";
+  QCString result=withoutExtension;
+  if (!result.isEmpty())
+  {
+    if (result.at(0)=='!') // relative URL -> strip marker
+    {
+      result=result.mid(1);
+    }
+    else // add specified HTML extension
+    {
+      result+=Doxygen::htmlFileExtension;
+    }
+  }
+  return result;
 }
 
 static QCString makeRef(const char * withoutExtension, const char * anchor)
@@ -114,10 +126,11 @@ void Qhp::initialize()
   QCString fullProjectname = getFullProjectName();
   const char * const attributes[] =
   { "title", fullProjectname,
-    "ref",   "index.html",
+    "ref",   QCString("index")+Doxygen::htmlFileExtension,
     NULL
   };
   m_toc.open("section", attributes);
+  m_prevSectionTitle = getFullProjectName();
   m_prevSectionLevel = 1;
   m_sectionLevel = 1;
 
@@ -181,10 +194,14 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
 {
   //printf("Qhp::addContentsItem(%s) %d\n",name,m_sectionLevel);
   // Backup difference before modification
+
+  QCString f = file;
+  if (!f.isEmpty() && f.at(0)=='^') return; // absolute URL not supported
+
   int diff = m_prevSectionLevel - m_sectionLevel;
 
   handlePrevSection();
-  setPrevSection(name, file, m_sectionLevel);
+  setPrevSection(name, f, m_sectionLevel);
 
   // Close sections as needed
   for (; diff > 0; diff--)
@@ -289,7 +306,7 @@ void Qhp::handlePrevSection()
   }
 
   // We skip "Main Page" as our extra root is pointing to that
-  if (!((m_prevSectionLevel==1) && (m_prevSectionTitle=="Main Page")))
+  if (!((m_prevSectionLevel==1) && (m_prevSectionTitle==getFullProjectName())))
   {
     QCString finalRef = makeFileName(m_prevSectionRef);
 

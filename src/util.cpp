@@ -460,10 +460,21 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
 /*! Get a class definition given its name. 
  *  Returns 0 if the class is not found.
  */
-ClassDef *getClass(const char *name)
+ClassDef *getClass(const char *n)
 {
-  if (name==0 || name[0]=='\0') return 0;
-  return Doxygen::classSDict->find(name);
+  if (n==0 || n[0]=='\0') return 0;
+  QCString name=n;
+  ClassDef *result = Doxygen::classSDict->find(name);
+  //if (result==0 && !exact) // also try generic and protocol versions
+  //{
+  //  result = Doxygen::classSDict->find(name+"-g");
+  //  if (result==0)
+  //  {
+  //    result = Doxygen::classSDict->find(name+"-p");
+  //  }
+  //}
+  //printf("getClass(%s)=%s\n",n,result?result->name().data():"<none>");
+  return result;
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
@@ -1388,18 +1399,20 @@ static ClassDef *getResolvedClassRec(Definition *scope,
 
   //printf("Looking for symbol %s\n",name.data());
   DefinitionIntf *di = Doxygen::symbolMap->find(name);
+  // the -g (for C# generics) and -p (for ObjC protocols) are now already 
+  // stripped from the key used in the symbolMap, so that is not needed here.
   if (di==0) 
   {
-    di = Doxygen::symbolMap->find(name+"-g");
-    if (di==0)
-    {
+    //di = Doxygen::symbolMap->find(name+"-g");
+    //if (di==0)
+    //{
       di = Doxygen::symbolMap->find(name+"-p");
       if (di==0)
       {
         //printf("no such symbol!\n");
         return 0;
       }
-    }
+    //}
   }
   //printf("found symbol!\n");
 
@@ -1822,10 +1835,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
   static QRegExp regExpSplit("(?!:),");
   QCString txtStr=text;
   int strLen = txtStr.length();
-  //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d\n",
+  //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
   //    scope?scope->name().data():"<none>",
   //    fileScope?fileScope->name().data():"<none>",
-  //    txtStr.data(),strLen);
+  //    txtStr.data(),strLen,external);
   int matchLen;
   int index=0;
   int newIndex;
@@ -1906,7 +1919,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
           }
         }
       }
-      if (!found && cd) 
+      if (!found && (cd || (cd=getClass(matchWord)))) 
       {
         //printf("Found class %s\n",cd->name().data());
         // add link to the result
@@ -1931,18 +1944,18 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
           }
         }
       }
-      else if ((cd=getClass(matchWord+"-g"))) // C# generic as well
-      {
-        // add link to the result
-        if (external ? cd->isLinkable() : cd->isLinkableInProject())
-        {
-          if (cd!=self)
-          {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-            found=TRUE;
-          }
-        }
-      }
+//      else if ((cd=getClass(matchWord+"-g"))) // C# generic as well
+//      {
+//        // add link to the result
+//        if (external ? cd->isLinkable() : cd->isLinkableInProject())
+//        {
+//          if (cd!=self)
+//          {
+//            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+//            found=TRUE;
+//          }
+//        }
+//      }
       else
       {
         //printf("   -> nothing\n");
@@ -3822,15 +3835,19 @@ static void findMembersWithSpecificName(MemberName *mn,
  *   - if `fd' is non zero, the member was found in the global namespace of
  *     file fd.
  */
-bool getDefs(const QCString &scName,const QCString &memberName, 
-    const char *args,
-    MemberDef *&md, 
-    ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd,
-    bool forceEmptyScope,
-    FileDef *currentFile,
-    bool checkCV,
-    const char *forceTagFile
-    )
+bool getDefs(const QCString &scName,
+             const QCString &memberName, 
+             const char *args,
+             MemberDef *&md, 
+             ClassDef *&cd, 
+             FileDef *&fd, 
+             NamespaceDef *&nd, 
+             GroupDef *&gd,
+             bool forceEmptyScope,
+             FileDef *currentFile,
+             bool checkCV,
+             const char *forceTagFile
+            )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
@@ -4224,8 +4241,8 @@ static bool getScopeDefs(const char *docScope,const char *scope,
     if (scopeOffset>0) fullName.prepend(docScopeName.left(scopeOffset)+"::");
 
     if (((cd=getClass(fullName)) ||         // normal class
-         (cd=getClass(fullName+"-p")) ||    // ObjC protocol
-         (cd=getClass(fullName+"-g"))       // C# generic
+         (cd=getClass(fullName+"-p")) //||    // ObjC protocol
+         //(cd=getClass(fullName+"-g"))       // C# generic
         ) && cd->isLinkable())
     {
       return TRUE; // class link written => quit 
@@ -4582,12 +4599,12 @@ bool resolveLink(/* in */ const char *scName,
     resAnchor=cd->anchor();
     return TRUE;
   }
-  else if ((cd=getClass(linkRef+"-g"))) // C# generic link
-  {
-    *resContext=cd;
-    resAnchor=cd->anchor();
-    return TRUE;
-  }
+//  else if ((cd=getClass(linkRef+"-g"))) // C# generic link
+//  {
+//    *resContext=cd;
+//    resAnchor=cd->anchor();
+//    return TRUE;
+//  }
   else if ((nd=Doxygen::namespaceSDict->find(linkRef)))
   {
     *resContext=nd;
@@ -5161,7 +5178,7 @@ done:
   }
   //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
   //       className.data(),namespaceName.data());
-  if (className.right(2)=="-g" || className.right(2)=="-p")
+  if (/*className.right(2)=="-g" ||*/ className.right(2)=="-p")
   {
     className = className.left(className.length()-2);
   }

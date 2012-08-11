@@ -1400,7 +1400,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // write search index info
   if (Doxygen::searchIndex && isLinkableInProject())
   {
-    Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
+    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
     Doxygen::searchIndex->addWord(localName(),TRUE);
     Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
   }
@@ -1459,7 +1459,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   // *** write template lists
-  if (m_impl->tArgList)
+  if (m_impl->tArgList && getLanguage()==SrcLangExt_Cpp)
   {
     if (!isAnonymous) ol.startMemberTemplateParams();
     writeTemplatePrefix(ol,m_impl->tArgList);
@@ -2466,7 +2466,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (!Config_getBool("HIDE_SCOPE_NAMES"))
     {
       bool first=TRUE;
-      if (m_impl->defTmpArgLists) 
+      SrcLangExt lang = getLanguage();
+      if (m_impl->defTmpArgLists && lang==SrcLangExt_Cpp) 
         // definition has explicit template parameter declarations
       {
         QListIterator<ArgumentList> ali(*m_impl->defTmpArgLists);
@@ -2485,7 +2486,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       else // definition gets it template parameters from its class
         // (since no definition was found)
       {
-        if (cd && !isTemplateSpecialization())
+        if (cd && lang==SrcLangExt_Cpp && !isTemplateSpecialization())
         {
           QList<ArgumentList> tempParamLists;
           cd->getTemplateParameterLists(tempParamLists);
@@ -2503,7 +2504,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
           }
         }
-        if (m_impl->tArgList) // function template prefix
+        if (m_impl->tArgList && lang==SrcLangExt_Cpp) // function template prefix
         {
           ol.startMemberDocPrefixItem();
           writeTemplatePrefix(ol,m_impl->tArgList);
@@ -2668,7 +2669,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     pIntf->resetCodeParserState();
     ol.startCodeFragment();
     pIntf->parseCode(ol,scopeName,m_impl->initializer,FALSE,0,getFileDef(),
-                     -1,-1,TRUE,this,FALSE);
+                     -1,-1,TRUE,this,FALSE,this);
     ol.endCodeFragment();
   }
 

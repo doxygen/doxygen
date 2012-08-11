@@ -794,12 +794,13 @@ void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     int endLine,
     bool inlineFragment,
     MemberDef *memberDef,
-    bool showLineNumbers
+    bool showLineNumbers,
+    Definition *searchCtx
     )
 {
   ::parseVhdlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                   fileDef,startLine,endLine,inlineFragment,memberDef,
-                  showLineNumbers);
+                  showLineNumbers,searchCtx);
 }
 
 /*
@@ -998,7 +999,7 @@ static bool  checkMultiComment(QCString& qcs,int line)
 
   if (pTemp->isEmpty()) return false;
 
-  int ii=pTemp->count();
+  //int ii=pTemp->count();
   qcs.stripPrefix("--!");
   while (!pTemp->isEmpty())
   {
@@ -1007,7 +1008,7 @@ static bool  checkMultiComment(QCString& qcs,int line)
     e->brief+=qcs;
     iDocLine=-1;
     pTemp->removeFirst();
-    ii=pTemp->count();
+    //ii=pTemp->count();
   }
   return true; 
 }

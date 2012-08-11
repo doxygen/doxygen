@@ -162,7 +162,7 @@ class ClassDefImpl
      */
     bool subGrouping; 
 
-    /** Reason of existance is a "use" relation */
+    /** Reason of existence is a "use" relation */
     bool usedOnly;
 
     /** List of titles to use for the summary */
@@ -179,6 +179,8 @@ class ClassDefImpl
 
     /** Does this class represent a Java style enum? */
     bool isJavaEnum;
+
+    bool isGeneric;
 
     int spec;
 };
@@ -240,6 +242,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   {
     isLocal=FALSE;
   }
+  isGeneric = lang==SrcLangExt_CSharp && QCString(name).find('<')!=-1;
 }
 
 ClassDefImpl::ClassDefImpl() : vhdlSummaryTitles(17)
@@ -324,10 +327,10 @@ QCString ClassDef::displayName(bool includeScope) const
   {
     n="<"+n.left(n.length()-2)+">";
   }
-  else if (n.right(2)=="-g")
-  {
-    n = n.left(n.length()-2);
-  }
+  //else if (n.right(2)=="-g")
+  //{
+  //  n = n.left(n.length()-2);
+  //}
   //printf("ClassDef::displayName()=%s\n",n.data());
   return n;
 }
@@ -831,7 +834,7 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
     ClassDef *cd=(ClassDef *)d;
     if (!name.isEmpty()) name+="::";
     QCString clName = d->localName();
-    if (clName.right(2)=="-g" || clName.right(2)=="-p")
+    if (/*clName.right(2)=="-g" ||*/ clName.right(2)=="-p")
     {
       clName = clName.left(clName.length()-2);
     }
@@ -1749,19 +1752,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
     ol.startMemberDeclaration();
     ol.startMemberItem(anchor(),FALSE);
     QCString ctype = compoundTypeString();
-    QCString cname;
-    if (localNames)
-    {
-      cname = localName();
-      if (cname.right(2)=="-p" || cname.right(2)=="-g")
-      {
-        cname = cname.left(cname.length()-2);
-      }
-    }
-    else
-    {
-      cname = displayName();
-    }
+    QCString cname = displayName(!localNames);
 
     if (lang!=SrcLangExt_VHDL) // for VHDL we swap the name and the type
     {
@@ -1831,7 +1822,7 @@ void ClassDef::addClassAttributes(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTitle)
+void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*pageTitle*/)
 {
   ol.startContents();
 
@@ -1845,7 +1836,7 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString &pageTit
 
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase(),anchor());
+    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
   bool exampleFlag=hasExamples();
@@ -2456,7 +2447,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
   QCString cn=name().right(name().length()-ri-2);
   if (!cn.isEmpty() && cn.at(0)!='@' && md)
   { 
-    if (cn.right(2)=="-p" || cn.right(2)=="-g")
+    if (cn.right(2)=="-p" /*|| cn.right(2)=="-g"*/)
     {
       cn = cn.left(cn.length()-2);
     }
@@ -3622,13 +3613,13 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   if (!scName.isEmpty()) scName+=scopeSeparator;
 
   bool isSpecialization = localName().find('<')!=-1;
-  bool isGeneric = getLanguage()==SrcLangExt_CSharp;
 
   QCString clName = className();
-  if (isGeneric && clName.right(2)=="-g") 
-  {
-    clName = clName.left(clName.length()-2);
-  }
+  //bool isGeneric = getLanguage()==SrcLangExt_CSharp;
+  //if (isGeneric && clName.right(2)=="-g") 
+  //{
+  //  clName = clName.left(clName.length()-2);
+  //}
   //printf("m_impl->lang=%d clName=%s\n",m_impl->lang,clName.data());
   scName+=clName;
   ArgumentList *al=0;
@@ -4483,6 +4474,11 @@ void ClassDef::removeMemberFromLists(MemberDef *md)
 bool ClassDef::isJavaEnum() const
 {
   return m_impl->isJavaEnum;
+}
+
+bool ClassDef::isGeneric() const
+{
+  return m_impl->isGeneric;
 }
 
 void ClassDef::setClassSpecifier(int spec)

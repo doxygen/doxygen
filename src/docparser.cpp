@@ -1001,9 +1001,18 @@ static void handleUnclosedStyleCommands()
 
 static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
+  QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
+  static bool autolinkSupport = Config_getBool("AUTOLINK_SUPPORT");
+  if (!autolinkSupport) // no autolinking -> add as normal word
+  {
+    children.append(new DocWord(parent,name));
+    return;
+  }
+
+  // ------- try to turn the word 'name' into a link
+
   Definition *compound=0;
   MemberDef  *member=0;
-  QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
   int len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
@@ -1091,18 +1100,18 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
           cd->briefDescriptionAsTooltip()
           ));
   }
-  else if (!g_insideHtmlLink && (cd=getClass(g_token->name+"-g")))
-  {
-    // special case 3, where the token name is not a class, but could
-    // be a C# generic
-    children.append(new 
-        DocLinkedWord(parent,name,
-          cd->getReference(),
-          cd->getOutputFileBase(),
-          cd->anchor(),
-          cd->briefDescriptionAsTooltip()
-          ));
-  }
+//  else if (!g_insideHtmlLink && (cd=getClass(g_token->name+"-g")))
+//  {
+//    // special case 3, where the token name is not a class, but could
+//    // be a C# generic
+//    children.append(new 
+//        DocLinkedWord(parent,name,
+//          cd->getReference(),
+//          cd->getOutputFileBase(),
+//          cd->anchor(),
+//          cd->briefDescriptionAsTooltip()
+//          ));
+//  }
   else // normal non-linkable word
   {
     if (g_token->name.left(1)=="#" || g_token->name.left(2)=="::")
@@ -5641,7 +5650,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
     case HTML_CODE:
-      if (getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp || g_xmlComment) 
+      if (/*getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp ||*/ g_xmlComment) 
         // for C# source or inside a <summary> or <remark> section we 
         // treat <code> as an XML tag (so similar to @code)
       {
@@ -6835,6 +6844,20 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   }
   g_scope = ctx;
 
+  if (indexWords && Doxygen::searchIndex)
+  {
+    if (md)
+    {
+      g_searchUrl=md->getOutputFileBase();
+      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),FALSE);
+    }
+    else if (ctx)
+    {
+      g_searchUrl=ctx->getOutputFileBase();
+      Doxygen::searchIndex->setCurrentDoc(ctx,ctx->anchor(),FALSE);
+    }
+  }
+#if 0
   if (indexWords && md && Doxygen::searchIndex)
   {
     g_searchUrl=md->getOutputFileBase();
@@ -6912,6 +6935,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
     }
     Doxygen::searchIndex->setCurrentDoc(name,g_searchUrl);
   }
+#endif
   else
   {
     g_searchUrl="";
@@ -7034,24 +7058,5 @@ void docFindSections(const char *input,
                      const char *fileName)
 {
   doctokenizerYYFindSections(input,d,mg,fileName);
-}
-
-void initDocParser()
-{
-  static bool searchEngine = Config_getBool("SEARCHENGINE");
-  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-  if (searchEngine && serverBasedSearch)
-  {
-    Doxygen::searchIndex = new SearchIndex;
-  }
-  else // no search engine or pure javascript based search function
-  {
-    Doxygen::searchIndex = 0;
-  }
-}
-
-void finializeDocParser()
-{
-  delete Doxygen::searchIndex;
 }
 

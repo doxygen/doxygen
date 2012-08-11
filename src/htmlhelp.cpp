@@ -123,6 +123,16 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
   }
 }
 
+static QCString field2URL(const IndexField *f,bool checkReversed)
+{
+  QCString result = f->url + Doxygen::htmlFileExtension;
+  if (!f->anchor.isEmpty() && (!checkReversed || f->reversed)) 
+  {
+    result+="#"+f->anchor;  
+  }
+  return result;
+}
+
 /*! Writes the sorted list of index items into a html like list.
  *
  *  An list of calls with <code>name = level1,level2</code> as follows:
@@ -198,8 +208,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
       if (level2.isEmpty())
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
-        t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
-        if (!f->anchor.isEmpty() && f->reversed) t << "#" << f->anchor;  
+        t << "<param name=\"Local\" value=\"" << field2URL(f,TRUE);
         t << "\">";
         t << "<param name=\"Name\" value=\"" << m_help->recode(level1) << "\">"
            "</OBJECT>\n";
@@ -209,8 +218,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
         if (f->link)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
-          if (!f->anchor.isEmpty() && f->reversed) t << "#" << f->anchor;  
+          t << "<param name=\"Local\" value=\"" << field2URL(f,TRUE);
           t << "\">";
           t << "<param name=\"Name\" value=\"" << m_help->recode(level1) << "\">"
                "</OBJECT>\n";
@@ -237,8 +245,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
     if (level2Started)
     {
       t << "    <LI><OBJECT type=\"text/sitemap\">";
-      t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
-      if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
+      t << "<param name=\"Local\" value=\"" << field2URL(f,FALSE);
       t << "\">";
       t << "<param name=\"Name\" value=\"" << m_help->recode(level2) << "\">"
          "</OBJECT>\n";
@@ -655,8 +662,19 @@ void HtmlHelp::addContentsItem(bool isDir,
   cts << "<param name=\"Name\" value=\"" << recode(name) << "\">";
   if (file)      // made file optional param - KPW
   {
-    cts << "<param name=\"Local\" value=\"" << file << Doxygen::htmlFileExtension;
-    if (anchor) cts << "#" << anchor;  
+    if (file && (file[0]=='!' || file[0]=='^')) // special markers for user defined URLs
+    {
+      cts << "<param name=\"";
+      if (file[0]=='^') cts << "URL"; else cts << "Local";
+      cts << "\" value=\"";
+      cts << &file[1];
+    }
+    else
+    {
+      cts << "<param name=\"Local\" value=\"";
+      cts << file << Doxygen::htmlFileExtension;
+      if (anchor) cts << "#" << anchor;  
+    }
     cts << "\">";
   }
   cts << "<param name=\"ImageNumber\" value=\"";

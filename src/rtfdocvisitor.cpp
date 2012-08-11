@@ -1683,7 +1683,7 @@ void RTFDocVisitor::filter(const char *str,bool verbatim)
   {
     const unsigned char *p=(const unsigned char *)str;
     unsigned char c;
-    unsigned char pc='\0';
+    //unsigned char pc='\0';
     while (*p)
     {
       //static bool MultiByte = FALSE;
@@ -1718,7 +1718,7 @@ void RTFDocVisitor::filter(const char *str,bool verbatim)
                    break;
         default:   m_t << (char)c;
       }
-      pc = c;
+      //pc = c;
     }
   }
 }

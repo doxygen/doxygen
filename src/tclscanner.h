@@ -43,7 +43,8 @@ class TclLanguageScanner : public ParserInterface
                    int endLine=-1,
                    bool inlineFragment=FALSE,
                    MemberDef *memberDef=0,
-                   bool showLineNumbers=TRUE
+                   bool showLineNumbers=TRUE,
+                   Definition *searchCtx=0
                   );
     void resetCodeParserState();
     void parsePrototype(const char *text);

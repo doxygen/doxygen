@@ -130,10 +130,11 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
-                               const char *langExt) 
+                               Definition *ctx,MemberDef *md) 
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
-                                 m_hide(FALSE), m_langExt(langExt)
+                                 m_hide(FALSE), m_ctx(ctx), m_md(md)
 {
+  if (ctx) m_langExt=ctx->getDefFileExtension();
 }
 
   //--------------------------------------
@@ -413,8 +414,19 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       forceEndParagraph(s);
       m_t << PREFRAG_START;
       Doxygen::parserManager->getParser(lang)
-                            ->parseCode(m_ci,s->context(),s->text(),
-                                        s->isExample(),s->exampleFile());
+                            ->parseCode(m_ci,
+                                        s->context(),
+                                        s->text(),
+                                        s->isExample(),
+                                        s->exampleFile(),
+                                        0,     // fileDef
+                                        -1,    // startLine
+                                        -1,    // endLine
+                                        FALSE, // inlineFragment
+                                        0,     // memberDef
+                                        TRUE,  // show line numbers
+                                        m_ctx  // search context
+                                       );
       m_t << PREFRAG_END;
       forceStartParagraph(s);
       break;
@@ -514,10 +526,13 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                         inc->text(),
                                         inc->isExample(),
                                         inc->exampleFile(),
-                                        0,   // fd
-                                        -1,  // startLine
-                                        -1,  // endLine
-                                        TRUE // inlineFragment
+                                        0,     // fileDef
+                                        -1,    // startLine
+                                        -1,    // endLine
+                                        TRUE,  // inlineFragment
+                                        0,     // memberDef
+                                        TRUE,  // show line numbers
+                                        m_ctx  // search context 
                                        );
       m_t << PREFRAG_END;
       forceStartParagraph(inc);
@@ -533,7 +548,15 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            inc->context(),
                                            inc->text(),
                                            inc->isExample(),
-                                           inc->exampleFile(), &fd);
+                                           inc->exampleFile(), 
+                                           &fd,   // fileDef,
+                                           -1,    // start line
+                                           -1,    // end line
+                                           FALSE, // inline fragment
+                                           0,     // memberDef
+                                           TRUE,  // show line numbers
+                                           m_ctx  // search context
+                                           );
          m_t << PREFRAG_END;
          forceStartParagraph(inc);
       }
@@ -561,9 +584,12 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            inc->isExample(),
                                            inc->exampleFile(), 
                                            0,
-                                           -1,  // startLine
-                                           -1,  // endLine
-                                           TRUE // inlineFragment
+                                           -1,    // startLine
+                                           -1,    // endLine
+                                           TRUE,  // inlineFragment
+                                           0,     // memberDef
+                                           TRUE,  // show line number
+                                           m_ctx  // search context
                                           );
          m_t << PREFRAG_END;
          forceStartParagraph(inc);
@@ -588,9 +614,20 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     if (!m_hide) 
     {
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,op->context(),
-                                op->text(),op->isExample(),
-                                op->exampleFile());
+                            ->parseCode(
+                                m_ci,
+                                op->context(),
+                                op->text(),
+                                op->isExample(),
+                                op->exampleFile(),
+                                0,     // fileDef
+                                -1,    // startLine
+                                -1,    // endLine
+                                FALSE, // inline fragment
+                                0,     // memberDef
+                                TRUE,  // show line numbers
+                                m_ctx  // search context
+                               );
     }
     pushEnabled();
     m_hide=TRUE;

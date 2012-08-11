@@ -31,11 +31,12 @@
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;
+class Definition;
 
 extern void parsePythonCode(CodeOutputInterface &,const char *,const QCString &, 
-             bool ,const char *,FileDef *fd=0,
-	     int startLine=-1,int endLine=-1,bool inlineFragment=FALSE,
-             MemberDef *memberDef=0,bool showLineNumbers=TRUE);
+             bool ,const char *,FileDef *fd,
+	     int startLine,int endLine,bool inlineFragment,
+             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx);
 extern void resetPythonCodeParserState();
 
 #endif

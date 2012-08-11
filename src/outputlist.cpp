@@ -166,7 +166,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   {
     //printf("og->printDoc(extension=%s)\n",
     //    ctx?ctx->getDefFileExtension().data():"<null>");
-    if (og->isEnabled()) og->printDoc(root,ctx?ctx->getDefFileExtension():QCString(""));
+    if (og->isEnabled()) og->writeDoc(root,ctx,md);
     og=outputs->next();
   }
 
@@ -189,7 +189,7 @@ void OutputList::parseText(const QCString &textStr)
   og=outputs->first();
   while (og)
   {
-    if (og->isEnabled()) og->printDoc(root,0);
+    if (og->isEnabled()) og->writeDoc(root,0,0);
     og=outputs->next();
   }
 

@@ -4883,7 +4883,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					  else if (insideCS) // C# generic class
 					  {
-					    current->name+="-g"; 
+                                            //current->name+="-g";
 					    BEGIN( CSGeneric );
 					  }
 					  else // C++ template specialization
@@ -4904,10 +4904,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
 					  templateStr="<";
-					  //current->name += "<";
+					  current->name += "<";
 					  fullArgString = templateStr;
-					  //copyArgString = &current->name;
-					  copyArgString = &templateStr;
+					  copyArgString = &current->name;
+					  //copyArgString = &templateStr;
 					  currentArgumentContext = ClassVar;
 					  BEGIN( ReadTempArgs );
   					}
@@ -6421,12 +6421,13 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    int endLine,
                    bool inlineFragment,
 		   MemberDef *memberDef,
-		   bool showLineNumbers
+		   bool showLineNumbers,
+                   Definition *searchCtx
                   )
 {
   ::parseCCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                fileDef,startLine,endLine,inlineFragment,memberDef,
-	       showLineNumbers);
+	       showLineNumbers,searchCtx);
 }
 
 bool CLanguageScanner::needsPreprocessing(const QCString &extension)

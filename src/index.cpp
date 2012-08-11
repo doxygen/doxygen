@@ -1946,6 +1946,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
               if (sep!="::")
               {
                 nsDispName=substitute(namesp,"::",sep);
+                cname=substitute(cname,"::",sep);
               }
               else
               {
@@ -3433,7 +3434,8 @@ void writeGraphInfo(OutputList &ol)
     legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]\n" + legendDocs.mid(e); 
     //printf("legendDocs=%s\n",legendDocs.data());
   }
-  ol.parseDoc("graph_legend",1,0,0,legendDocs,FALSE,FALSE);
+  FileDef fd("","graph_legend");
+  ol.parseDoc("graph_legend",1,&fd,0,legendDocs,FALSE,FALSE);
   stripCommentsStateRef = oldStripCommentsState;
   endFile(ol);
   ol.popGeneratorState();
@@ -4156,7 +4158,7 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/
           (fortranOpt ? theTranslator->trCompoundIndexFortran() : 
            vhdlOpt    ? VhdlDocGen::trDesignUnitIndex()         :
-                        theTranslator->trCompoundIndex()
+                        theTranslator->trHierarchicalIndex()
           ));
       ol.endIndexSection(isClassHierarchyIndex);
     }

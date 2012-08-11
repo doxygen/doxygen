@@ -938,7 +938,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
+    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
     static QRegExp we("[a-zA-Z_][-a-zA-Z_0-9]*");
     int i=0,p=0,l=0;
     while ((i=we.match(title,p,&l))!=-1) // foreach word in the title
