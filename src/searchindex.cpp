@@ -15,13 +15,21 @@
  *
  */
 
+#include <ctype.h>
+#include <assert.h>
+
+#include <qfile.h>
+#include <qregexp.h>
+
 #include "qtbc.h"
 #include "searchindex.h"
 #include "config.h"
 #include "util.h"
-#include <qfile.h>
-#include <ctype.h>
-#include <qregexp.h>
+#include "doxygen.h"
+#include "language.h"
+#include "pagedef.h"
+#include "growbuf.h"
+#include "message.h"
 
 
 // file format: (all multi-byte values are stored in big endian format)
@@ -61,7 +69,8 @@ void IndexWord::addUrlIndex(int idx,bool hiPriority)
 
 //--------------------------------------------------------------------
 
-SearchIndex::SearchIndex() : m_words(328829), m_index(numIndexEntries), m_urlIndex(-1)
+SearchIndex::SearchIndex() : SearchIndexIntf(Internal), 
+      m_words(328829), m_index(numIndexEntries), m_urlIndex(-1)
 {
   int i;
   m_words.setAutoDelete(TRUE);
@@ -70,13 +79,86 @@ SearchIndex::SearchIndex() : m_words(328829), m_index(numIndexEntries), m_urlInd
   for (i=0;i<numIndexEntries;i++) m_index.insert(i,new QList<IndexWord>);
 }
 
-void SearchIndex::setCurrentDoc(const char *name,const char *baseName,const char *anchor)
+void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile)
 {
-  if (name==0 || baseName==0) return;
+  if (ctx==0) return;
+  assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
-  QCString url=baseName+Config_getString("HTML_FILE_EXTENSION");
-  if (anchor) url+=(QCString)"#"+anchor;  
+  QCString url=isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
+  url+=Config_getString("HTML_FILE_EXTENSION");
+  if (anchor) url+=QCString("#")+anchor;  
   m_urlIndex++;
+  QCString name=ctx->qualifiedName();
+  if (ctx->definitionType()==Definition::TypeMember)
+  {
+    MemberDef *md = (MemberDef *)ctx;
+    name.prepend((md->getLanguage()==SrcLangExt_Fortran  ? 
+                 theTranslator->trSubprogram(TRUE,TRUE) :
+                 theTranslator->trMember(TRUE,TRUE))+" ");
+  }
+  else // compound type
+  {
+    SrcLangExt lang = ctx->getLanguage();
+    QCString sep = getLanguageSpecificSeparator(lang);
+    if (sep!="::")
+    {
+      name = substitute(name,"::",sep);
+    }
+    switch (ctx->definitionType())
+    {
+      case Definition::TypePage:
+        {
+          PageDef *pd = (PageDef *)ctx;
+          if (!pd->title().isEmpty())
+          {
+            name = theTranslator->trPage(TRUE,TRUE)+" "+pd->title();
+          }
+          else
+          {
+            name = theTranslator->trPage(TRUE,TRUE)+" "+pd->name();
+          }
+        }
+        break;
+      case Definition::TypeClass:
+        {
+          ClassDef *cd = (ClassDef *)ctx;
+          name.prepend(cd->compoundTypeString()+" ");
+        }
+        break;
+      case Definition::TypeNamespace:
+        {
+          if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+          {
+            name = theTranslator->trPackage(name);
+          }
+          else if (lang==SrcLangExt_Fortran)
+          {
+            name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
+          }
+          else
+          {
+            name.prepend(theTranslator->trNamespace(TRUE,TRUE)+" ");
+          }
+        }
+        break;
+      case Definition::TypeGroup:
+        {
+          GroupDef *gd = (GroupDef *)ctx;
+          if (gd->groupTitle())
+          {
+            name = theTranslator->trGroup(TRUE,TRUE)+" "+gd->groupTitle();
+          }
+          else
+          {
+            name.prepend(theTranslator->trGroup(TRUE,TRUE)+" ");
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
   m_urls.insert(m_urlIndex,new URL(name,url));
 }
 
@@ -139,6 +221,10 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
   }
 }
 
+void SearchIndex::addWord(const char *word,bool hiPriority)
+{
+  addWord(word,hiPriority,FALSE);
+}
 
 static void writeInt(QFile &f,int index)
 {
@@ -304,6 +390,193 @@ void SearchIndex::write(const char *fileName)
   delete[] wordStatOffsets;
 }
 
+
+//---------------------------------------------------------------------------
+// the following part is for writing an external search index
+
+struct SearchDocEntry
+{
+  QCString type;
+  QCString name;
+  QCString tag;
+  QCString url;
+  GrowBuf  importantText;
+  GrowBuf  normalText;
+};
+
+struct SearchIndexExternal::Private
+{
+  Private() : docEntries(257) {}
+  //QFile f;
+  //bool openOk;
+  //FTextStream t;
+  //bool insideDoc;
+  SDict<SearchDocEntry> docEntries;
+  SearchDocEntry *current;
+};
+
+SearchIndexExternal::SearchIndexExternal() : SearchIndexIntf(External)
+{
+  p = new SearchIndexExternal::Private;
+  p->docEntries.setAutoDelete(TRUE);
+  p->current=0;
+  //p->f.setName(fileName);
+  //p->openOk = p->f.open(IO_WriteOnly);
+  //if (p->openOk) 
+  //{
+  //  p->t.setDevice(&p->f);
+  //  p->t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+  //  p->t << "<add>" << endl;
+  //  p->insideDoc=FALSE;
+  //}
+}
+
+SearchIndexExternal::~SearchIndexExternal()
+{
+  //if (p->openOk)
+  //{
+  //  if (p->insideDoc)
+  //  {
+  //    p->t << "  </doc>" << endl;
+  //  }
+  //  p->t << "</add>" << endl;
+  //  p->f.close();
+  //  p->openOk=FALSE;
+  //}
+  delete p;
+}
+
+static QCString definitionToName(Definition *ctx)
+{
+  if (ctx->definitionType()==Definition::TypeMember)
+  {
+    MemberDef *md = (MemberDef*)ctx;
+    if (md->isFunction())
+      return "function";
+    else if (md->isSlot())
+      return "slot";
+    else if (md->isSignal())
+      return "signal";
+    else if (md->isVariable())
+      return "variable";
+    else if (md->isTypedef())
+      return "typedef";
+    else if (md->isEnumerate())
+      return "enum";
+    else if (md->isEnumValue())
+      return "enumvalue";
+    else if (md->isProperty())
+      return "property";
+    else if (md->isEvent())
+      return "event";
+    else if (md->isRelated() || md->isForeign())
+      return "related";
+    else if (md->isFriend())
+      return "friend";
+    else if (md->isDefine())
+      return "define";
+  }
+  else if (ctx)
+  {
+    switch(ctx->definitionType())
+    {
+      case Definition::TypeClass: 
+        return ((ClassDef*)ctx)->compoundTypeString();
+      case Definition::TypeFile:
+        return "file";
+      case Definition::TypeNamespace:
+        return "namespace";
+      case Definition::TypeGroup:
+        return "group";
+      case Definition::TypePackage:
+        return "package";
+      case Definition::TypePage:
+        return "page";
+      case Definition::TypeDir:
+        return "dir";
+      default:
+        break;
+    }
+  }
+  return "unknown";
+}
+
+void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile)
+{
+  //if (p->openOk)
+  //{
+    SearchDocEntry *e = new SearchDocEntry;
+    e->type = definitionToName(ctx);
+    e->name = ctx->qualifiedName();
+    e->tag  = stripPath(Config_getString("GENERATE_TAGFILE"));
+    QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
+    e->url  = baseName + Doxygen::htmlFileExtension;
+    if (anchor) e->url+=QCString("#")+anchor;
+    p->current = e;
+    p->docEntries.append(e->url,e);
+    //if (p->insideDoc)
+    //{
+    //  p->t << "  </doc>" << endl;
+    //}
+    //p->t << "  <doc>" << endl;
+    //QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
+    //p->t << "    <field name=\"type\">" << definitionToName(ctx) << "</field>" << endl;
+    //p->t << "    <field name=\"name\">" << convertToXML(ctx->qualifiedName()) << "</field>" << endl;
+    //p->t << "    <field name=\"tag\">"  << convertToXML(stripPath(Config_getString("GENERATE_TAGFILE"))) << "</field>" << endl;
+    //p->t << "    <field name=\"url\">" << baseName << Doxygen::htmlFileExtension;
+    //if (anchor) p->t << "#" << anchor;
+    //p->t << "</field>" << endl;
+    //p->insideDoc=TRUE;
+  //}
+}
+
+void SearchIndexExternal::addWord(const char *word,bool hiPriority)
+{
+  if (word==0 || !isId(*word) || p->current==0) return;
+  GrowBuf *pText = hiPriority ? &p->current->importantText : &p->current->normalText;
+  if (pText->getPos()>0) pText->addChar(' ');
+  pText->addStr(word);
+  //if (p->openOk)
+  //{
+  //  p->t << "    <field name=\"text";
+  //  if (hiPriority) p->t << "\" boost=\"yes";
+  //  p->t << "\">";
+  //  p->t << convertToXML(word);
+  //  p->t << "</field>" << endl;
+  //}
+}
+
+void SearchIndexExternal::write(const char *fileName)
+{
+  QFile f(fileName);
+  if (f.open(IO_WriteOnly))
+  {
+    FTextStream t(&f);
+    t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+    t << "<add>" << endl;
+    SDict<SearchDocEntry>::Iterator it(p->docEntries);
+    SearchDocEntry *doc;
+    for (it.toFirst();(doc=it.current());++it)
+    {
+      doc->normalText.addChar(0);    // make sure buffer ends with a 0 terminator
+      doc->importantText.addChar(0); // make sure buffer ends with a 0 terminator
+      t << "  <doc>" << endl;
+      t << "    <field name=\"type\">" << doc->type << "</field>" << endl;
+      t << "    <field name=\"name\">" << convertToXML(doc->name) << "</field>" << endl;
+      t << "    <field name=\"tag\">"  << convertToXML(doc->tag)  << "</field>" << endl;
+      t << "    <field name=\"url\">"  << doc->url  << "</field>" << endl;
+      t << "    <field name=\"keywords\">" << convertToXML(doc->importantText.get())  << "</field>" << endl;
+      t << "    <field name=\"text\">"     << convertToXML(doc->normalText.get())     << "</field>" << endl;
+      t << "  </doc>" << endl;
+    }
+    t << "</add>" << endl;
+  }
+  else
+  {
+    err("Failed to open file %s for writing!\n",fileName);
+  }
+}
+
 //---------------------------------------------------------------------------
 // the following part is for the javascript based search engine
 
@@ -322,7 +595,6 @@ static const char search_script[]=
 
 #define MEMBER_INDEX_ENTRIES   256
 
-#define NUM_SEARCH_INDICES      15
 #define SEARCH_INDEX_ALL         0
 #define SEARCH_INDEX_CLASSES     1
 #define SEARCH_INDEX_NAMESPACES  2
@@ -338,6 +610,7 @@ static const char search_script[]=
 #define SEARCH_INDEX_DEFINES    12
 #define SEARCH_INDEX_GROUPS     13
 #define SEARCH_INDEX_PAGES      14
+#define NUM_SEARCH_INDICES      15
 
 class SearchIndexList : public SDict< QList<Definition> >
 {
@@ -1079,5 +1352,26 @@ void writeSearchCategories(FTextStream &t)
   }
 }
 
+//---------------------------------------------------------------------------------------------
+
+void initSearchIndexer()
+{
+  static bool searchEngine = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  if (searchEngine && serverBasedSearch)
+  {
+    //Doxygen::searchIndex = new SearchIndexExternal;
+    Doxygen::searchIndex = new SearchIndex;
+  }
+  else // no search engine or pure javascript based search function
+  {
+    Doxygen::searchIndex = 0;
+  }
+}
+
+void finializeSearchIndexer()
+{
+  delete Doxygen::searchIndex;
+}
 
 

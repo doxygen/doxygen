@@ -946,6 +946,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
 static void writeDefaultFooter(FTextStream &t)
 {
   Doxygen::citeDict->writeLatexBibliography(t);
+  t << "\\addcontentsline{toc}{part}{" << theTranslator->trRTFGeneralIndex() << "}\n";
   t << "\\printindex\n";
   t << "\\end{document}\n";
 }
@@ -2372,9 +2373,10 @@ void LatexGenerator::endParameterName(bool last,bool /* emptyList */,bool closeB
 }
 
 
-void LatexGenerator::printDoc(DocNode *n,const char *langExt)
+void LatexGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  LatexDocVisitor *visitor = new LatexDocVisitor(t,*this,langExt,insideTabbing);
+  LatexDocVisitor *visitor = 
+    new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),insideTabbing);
   n->accept(visitor);
   delete visitor; 
 }

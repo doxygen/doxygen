@@ -26,6 +26,13 @@
 #include <qvector.h>
 
 class FTextStream;
+class Definition;
+class MemberDef;
+
+/*! Initialize the search indexer */
+void initSearchIndexer();
+/*! Cleanup the search indexer */
+void finializeSearchIndexer();
 
 //------- server side search index ----------------------
 
@@ -57,18 +64,47 @@ class IndexWord
     QIntDict<URLInfo> m_urls;
 };
 
-class SearchIndex
+class SearchIndexIntf
+{
+  public:
+    enum Kind { Internal, External };
+    SearchIndexIntf(Kind k) : m_kind(k) {}
+    virtual ~SearchIndexIntf() {}
+    virtual void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile) = 0;
+    virtual void addWord(const char *word,bool hiPriority) = 0;
+    virtual void write(const char *file) = 0;
+    Kind kind() const { return m_kind; }
+  private:
+    Kind m_kind;
+};
+
+class SearchIndex : public SearchIndexIntf
 {
   public:
     SearchIndex();
-    void setCurrentDoc(const char *name,const char *baseName,const char *anchor=0);
-    void addWord(const char *word,bool hiPriority,bool recurse=FALSE);
+    void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile);
+    void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
+    void addWord(const char *word,bool hiPrio,bool recurse);
     QDict<IndexWord> m_words;
     QVector< QList<IndexWord> > m_index;
     QIntDict<URL>  m_urls;
     int m_urlIndex;
+};
+
+
+class SearchIndexExternal : public SearchIndexIntf
+{
+    struct Private;
+  public:
+    SearchIndexExternal();
+   ~SearchIndexExternal();
+    void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile);
+    void addWord(const char *word,bool hiPriority);
+    void write(const char *file);
+  private:
+    Private *p;
 };
 
 //------- client side search index ----------------------

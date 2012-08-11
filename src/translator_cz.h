@@ -20,6 +20,7 @@
 
 // Updates:
 // --------
+// 2012/07/31 - Updates for "new since 1.8.2".
 // 2012/04/10 - Updates for "new since 1.8.0".
 // 2011/07/28 - Updates for "new since 1.7.5".
 // 2010/06/01 - typo
@@ -83,7 +84,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public TranslatorAdapter_1_8_2
+class TranslatorCzech : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -1964,6 +1965,70 @@ class TranslatorCzech : public TranslatorAdapter_1_8_2
     { return "Další zděděné členy"; }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "povolit" : "zakázat";
+      return opt + " synchronizaci panelů";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "Deklarováno v kategorii @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "Rozšiřuje třídu @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Metody třídy";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Metody instance";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Dokumentace metody";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "Návrhové schéma";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+
 };
 
 #endif // TRANSLATOR_CZ_H

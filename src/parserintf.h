@@ -24,6 +24,7 @@ class Entry;
 class FileDef;
 class CodeOutputInterface;
 class MemberDef;
+class Definition;
 
 /** \brief Abstract interface for programming language parsers.
  *
@@ -70,6 +71,7 @@ class ParserInterface
      *             for a member).
      *  @param[in] showLineNumbers if set to TRUE and also fileDef is not 0,
      *             line numbers will be added to the source fragement
+     *  @param[in] searchCtx context under which search data has to be stored.
      */
     virtual void parseCode(CodeOutputInterface &codeOutIntf,
                            const char *scopeName,
@@ -81,7 +83,8 @@ class ParserInterface
                            int endLine=-1,
                            bool inlineFragment=FALSE,
                            MemberDef *memberDef=0,
-                           bool showLineNumbers=TRUE
+                           bool showLineNumbers=TRUE,
+                           Definition *searchCtx=0
                           ) = 0;
 
     /** Resets the state of the code parser.

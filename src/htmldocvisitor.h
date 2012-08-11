@@ -23,6 +23,8 @@
 #include <qstack.h>
 #include <qcstring.h>
 
+class Definition;
+class MemberDef;
 class DocNode;
 class FTextStream;
 class CodeOutputInterface;
@@ -31,7 +33,7 @@ class CodeOutputInterface;
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,Definition *ctx,MemberDef *md);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -160,6 +162,8 @@ class HtmlDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_hide;
     QStack<bool> m_enabled;
+    Definition *m_ctx;
+    MemberDef *m_md;
     QCString m_langExt;
 };
 

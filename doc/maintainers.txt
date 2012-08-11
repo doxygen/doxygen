@@ -4,7 +4,7 @@
 % There is one record for each language. The records are separated
 % by the empty line and they do not contain empty lines.
 % First line of the record identifies the translator class for the language.
-% The following one or more lines contain information about 
+% The following one or more lines contain information about
 % the maintainer(s) for the language (one line, one maintainer)
 % in the form: <readable name><colon><e-mail>
 % If the readable name name starts with '--' it will be displayed in HTML
@@ -44,21 +44,21 @@ Gary Lee: garywlee at gmail dot com
 TranslatorCroatian
 Boris Bralo: boris dot bralo at gmail dot com
 
-TranslatorCzech 
-Petr Přikryl: prikrylp at skil dot cz
+TranslatorCzech
+Petr Přikryl: prikryl at atlas dot cz
 
 TranslatorDanish
 Poul-Erik Hansen: pouhan at gnotometrics dot dk
 Erik Søe Sørensen: eriksoe+doxygen at daimi dot au dot dk
 
-TranslatorDutch 
+TranslatorDutch
 Dimitri van Heesch: dimitri at stack dot nl
 
-TranslatorEnglish 
+TranslatorEnglish
 Dimitri van Heesch: dimitri at stack dot nl
 
 TranslatorEsperanto
-Ander Martinez: dwarfnauko at gmail dot com
+Ander Martínez: ander dot basaundi at gmail dot com
 
 TranslatorFinnish
 Antti Laine: antti dot a dot laine at tut dot fi
@@ -67,7 +67,7 @@ TranslatorFrench
 David Martinet: contact at e-concept-applications dot fr
 Xavier Outhier: xouthier at yahoo dot fr
 
-TranslatorGerman  
+TranslatorGerman
 Peter Grotrian: Peter dot Grotrian at pdv-FS dot de
 Jens Seidel: jensseidel at users dot sf dot net
 
@@ -81,11 +81,11 @@ Földvári György: [unreachable] foldvari lost at cyberspace
 TranslatorIndonesian
 Hendy Irawan: ceefour at gauldong dot net
 
-TranslatorItalian 
-Alessandro Falappa: alessandro at falappa dot net 
+TranslatorItalian
+Alessandro Falappa: alessandro at falappa dot net
 Ahmed Aldo Faisal: aaf23 at cam dot ac dot uk
 
-TranslatorJapanese 
+TranslatorJapanese
 Hiroki Iseri: goyoki at gmail dot com
 Ryunosuke Satoh: sun594 at hotmail dot com
 Kenji Nagamatsu: naga at joyful dot club dot ne dot jp
@@ -111,14 +111,14 @@ Slave Jovanovski: slavejovanovski at yahoo dot com
 TranslatorPersian
 Ali Nadalizadeh: nadalizadeh at gmail dot com
 
-TranslatorPolish 
+TranslatorPolish
 Piotr Kaminski: [unreachable] Piotr dot Kaminski at ctm dot gdynia dot pl
 Grzegorz Kowal: [unreachable] g_kowal at poczta dot onet dot pl
 Krzysztof Kral: krzysztof dot kral at gmail dot com
 
 TranslatorPortuguese
 Rui Godinho Lopes: [resigned] rgl at ruilopes dot com
--- searching for the maintainer --: [Please, try to help to find someone.]
+Fabio "FJTC" Jun Takada Chino: jun-chino at uol dot com dot br
 
 TranslatorRomanian
 Ionut Dumitrascu: reddumy at yahoo dot com
@@ -135,18 +135,18 @@ Nedeljko Stefanovic: stenedjo at yahoo dot com
 
 TranslatorSlovak
 % Stanislav Kudláč: [resigned] skudlac at pobox dot sk
-Kali+Laco Švec: the Slovak language advisors 
-Petr Přikryl: prikrylp at skil dot cz
+Kali+Laco Švec: [the Slovak language advisors]
+Petr Přikryl: prikryl at atlas dot cz
 
 TranslatorSlovene
 Matjaž Ostroveršnik: matjaz dot ostroversnik at ostri dot org
 
-TranslatorSpanish 
+TranslatorSpanish
 Bartomeu: bartomeu at loteria3cornella dot com
 Francisco Oltra Thennet: [unreachable] foltra at puc dot cl
 David Vaquero: david at grupoikusnet dot com
 
-TranslatorSwedish 
+TranslatorSwedish
 Mikael Hallin: mikaelhallin at yahoo dot se
 
 TranslatorTurkish

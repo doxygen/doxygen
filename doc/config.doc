@@ -61,6 +61,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_allexternals ALLEXTERNALS 
 \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
+\refitem cfg_autolink_support AUTOLINK_SUPPORT
 \refitem cfg_binary_toc BINARY_TOC
 \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
 \refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
@@ -164,6 +165,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_html_colorstyle_sat HTML_COLORSTYLE_SAT
 \refitem cfg_html_dynamic_sections HTML_DYNAMIC_SECTIONS
 \refitem cfg_html_extra_files HTML_EXTRA_FILES
+\refitem cfg_html_extra_stylesheet HTML_EXTRA_STYLESHEET
 \refitem cfg_html_file_extension HTML_FILE_EXTENSION
 \refitem cfg_html_footer HTML_FOOTER
 \refitem cfg_html_header HTML_HEADER
@@ -470,6 +472,14 @@ followed by the descriptions of the tags grouped by category.
  The output of markdown processing is further processed by doxygen, so you 
  can mix doxygen, HTML, and XML commands with Markdown formatting. 
  Disable only in case of backward compatibilities issues. 
+
+\anchor cfg_autolink_support
+<dt>'c AUTOLINK_SUPPORT <dd>
+ \addindex AUTOLINK_SUPPORT
+ When enabled doxygen tries to link words that correspond to documented classes, 
+ or namespaces to their corresponding documentation. Such a link can be 
+ prevented in individual cases by by putting a % sign in front of the word or 
+ globally by setting AUTOLINK_SUPPORT to NO.
 
 \anchor cfg_builtin_stl_support
 <dt>\c BUILTIN_STL_SUPPORT <dd>
@@ -1430,13 +1440,60 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
 \anchor cfg_html_stylesheet
 <dt>\c HTML_STYLESHEET <dd>
  \addindex HTML_STYLESHEET
- The \c HTML_STYLESHEET tag can be used to specify a user-defined cascading
- style sheet that is used by each HTML page. It can be used to
- fine-tune the look of the HTML output. If the tag is left blank doxygen
- will generate a default style sheet. 
 
+ The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
+ style sheet that is used by each HTML page. It can be used to 
+ fine-tune the look of the HTML output. If left blank doxygen 
+ will generate a default style sheet. 
+ 
  See also section \ref doxygen_usage for information on how to generate
  the style sheet that doxygen normally uses.
+
+ \note It is recommended to use 
+ \c HTML_EXTRA_STYLESHEET instead of this one, as it is more robust and 
+ this tag will in the future become obsolete.
+
+\anchor cfg_html_extra_stylesheet
+<dt>\c HTML_EXTRA_STYLESHEET <dd>
+ \addindex HTML_EXTRA_STYLESHEET
+ The HTML_EXTRA_STYLESHEET tag can be used to specify an additional 
+ user-defined cascading style sheet that is included after the standard 
+ style sheets created by doxygen. Using this option one can overrule 
+ certain style aspects. This is preferred over using \c HTML_STYLESHEET 
+ since it does not replace the standard style sheet and is therefor more 
+ robust against future updates. Doxygen will copy the style sheet file to 
+ the output directory.
+
+ Here is an example stylesheet that gives the contents area a fixed width:
+\verbatim
+body {
+        background-color: #CCC;
+        color: black;
+        margin: 0;
+}
+
+div.contents {
+        margin-bottom: 10px;
+        padding: 12px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 960px;
+        background-color: white;
+        border-radius: 8px;
+}
+
+#titlearea {
+        background-color: white;
+}
+
+hr.footer {
+        display: none;
+}
+
+.footer {
+        background-color: #AAA;
+}
+\endverbatim
 
 \anchor cfg_html_extra_files
 <dt>\c HTML_EXTRA_FILES <dd>

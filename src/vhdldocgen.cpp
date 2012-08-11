@@ -1963,7 +1963,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   // write search index info
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(mdef->qualifiedName(),mdef->getOutputFileBase(),mdef->anchor());
+    Doxygen::searchIndex->setCurrentDoc(mdef,mdef->anchor(),FALSE);
     Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
     Doxygen::searchIndex->addWord(mdef->qualifiedName(),FALSE);
   }

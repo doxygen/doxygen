@@ -149,8 +149,9 @@ can be used to strip a user-defined part of the path. Stripping is
 only done if one of the specified strings matches the left-hand part of 
 the path. The tag can be used to show relative paths in the file list. 
 If left blank the directory from which doxygen is run is used as the 
-path to strip. 
-' depends='FULL_PATH_NAMES'>
+path to strip. Note that you specify absolute paths here, but also 
+relative paths, which will be relative from the directory where doxygen is 
+started.' depends='FULL_PATH_NAMES'>
       <value name=''/>
     </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string' docs='
@@ -201,7 +202,7 @@ be part of the file/class/namespace that contains it.
     <option type='int' id='TAB_SIZE' docs='
 The TAB_SIZE tag can be used to set the number of spaces in a tab. 
 Doxygen uses this value to replace tabs by spaces in code fragments. 
-' minval='1' maxval='16' defval='8'/>
+' minval='1' maxval='16' defval='4'/>
     <option type='list' id='ALIASES' format='string' docs='
 This tag can be used to specify a number of aliases that acts 
 as commands in the documentation. An alias has the form &quot;name=value&quot;. 
@@ -240,14 +241,15 @@ VHDL.
 ' defval='0'/>
     <option type='list' id='EXTENSION_MAPPING' format='string' docs='
 Doxygen selects the parser to use depending on the extension of the files it 
-parses. With this tag you can assign which parser to use for a given extension. 
-Doxygen has a built-in mapping, but you can override or extend it using this 
-tag. The format is ext=language, where ext is a file extension, and language 
-is one of the parsers supported by doxygen: IDL, Java, Javascript, CSharp, C, 
-C++, D, PHP, Objective-C, Python, Fortran, VHDL, C, C++. For instance to make 
-doxygen treat .inc files as Fortran files (default is PHP), and .f files as C 
-(default is Fortran), use: inc=Fortran f=C. Note that for custom extensions 
-you also need to set FILE_PATTERNS otherwise the files are not read by doxygen.
+parses. With this tag you can assign which parser to use for a given 
+extension. Doxygen has a built-in mapping, but you can override or extend it 
+using this tag. The format is ext=language, where ext is a file extension, 
+and language is one of the parsers supported by doxygen: IDL, Java, 
+Javascript, CSharp, C, C++, D, PHP, Objective-C, Python, Fortran, VHDL, C, 
+C++. For instance to make doxygen treat .inc files as Fortran files (default 
+is PHP), and .f files as C (default is Fortran), use: inc=Fortran f=C. Note 
+that for custom extensions you also need to set FILE_PATTERNS otherwise the 
+files are not read by doxygen.
 '>
     </option>
     <option type='bool' id='MARKDOWN_SUPPORT' docs='
@@ -257,6 +259,12 @@ documentation. See http://daringfireball.net/projects/markdown/ for details.
 The output of markdown processing is further processed by doxygen, so you 
 can mix doxygen, HTML, and XML commands with Markdown formatting. 
 Disable only in case of backward compatibilities issues. 
+' defval='1'/>
+    <option type='bool' id='AUTOLINK_SUPPORT' docs='
+When enabled doxygen tries to link words that correspond to documented classes, 
+or namespaces to their corresponding documentation. Such a link can be 
+prevented in individual cases by by putting a % sign in front of the word or 
+globally by setting AUTOLINK_SUPPORT to NO.
 ' defval='1'/>
     <option type='bool' id='BUILTIN_STL_SUPPORT' docs='
 If you use STL classes (i.e. std::string, std::vector, etc.) but do not want 
@@ -276,12 +284,12 @@ Doxygen will parse them like normal C++ but will assume all classes use public
 instead of private inheritance when no explicit protection keyword is present. 
 ' defval='0'/>
     <option type='bool' id='IDL_PROPERTY_SUPPORT' docs='
-For Microsoft&apos;s IDL there are propget and propput attributes to indicate getter 
-and setter methods for a property. Setting this option to YES (the default) 
-will make doxygen replace the get and set methods by a property in the 
-documentation. This will only work if the methods are indeed getting or 
-setting a simple type. If this is not the case, or you want to show the 
-methods anyway, you should set this option to NO. 
+For Microsoft&apos;s IDL there are propget and propput attributes to indicate
+getter and setter methods for a property. Setting this option to YES (the
+default) will make doxygen replace the get and set methods by a property in
+the documentation. This will only work if the methods are indeed getting or
+setting a simple type. If this is not the case, or you want to show the
+methods anyway, you should set this option to NO.
 ' defval='1'/>
     <option type='bool' id='DISTRIBUTE_GROUP_DOC' docs='
 If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC 
@@ -356,7 +364,7 @@ If the EXTRACT_PRIVATE tag is set to YES all private members of a class
 will be included in the documentation. 
 ' defval='0'/>
     <option type='bool' id='EXTRACT_PACKAGE' docs='
-If the EXTRACT_PACKAGE tag is set to YES all members with package or internal
+If the EXTRACT_PACKAGE tag is set to YES all members with package or internal 
 scope will be included in the documentation. 
 ' defval='0'/>
     <option type='bool' id='EXTRACT_STATIC' docs='
@@ -848,10 +856,19 @@ standard footer.
     <option type='string' id='HTML_STYLESHEET' format='file' docs='
 The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
 style sheet that is used by each HTML page. It can be used to 
-fine-tune the look of the HTML output. If the tag is left blank doxygen 
-will generate a default style sheet. Note that doxygen will try to copy 
-the style sheet file to the HTML output directory, so don&apos;t put your own 
-style sheet in the HTML output directory as well, or it will be erased! 
+fine-tune the look of the HTML output. If left blank doxygen will 
+generate a default style sheet. Note that it is recommended to use 
+HTML_EXTRA_STYLESHEET instead of this one, as it is more robust and this 
+tag will in the future become obsolete.
+' defval='' depends='GENERATE_HTML'/>
+    <option type='string' id='HTML_EXTRA_STYLESHEET' format='file' docs='
+The HTML_EXTRA_STYLESHEET tag can be used to specify an additional 
+user-defined cascading style sheet that is included after the standard 
+style sheets created by doxygen. Using this option one can overrule 
+certain style aspects. This is preferred over using HTML_STYLESHEET 
+since it does not replace the standard style sheet and is therefor more 
+robust against future updates. Doxygen will copy the style sheet file to 
+the output directory.
 ' defval='' depends='GENERATE_HTML'/>
     <option type='list' id='HTML_EXTRA_FILES' format='file' docs='
 The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
@@ -928,9 +945,9 @@ reverse domain-name style string, e.g. com.mycompany.MyDocSet. Doxygen
 will append .docset to the name. 
 ' defval='org.doxygen.Project' depends='GENERATE_DOCSET'/>
     <option type='string' id='DOCSET_PUBLISHER_ID' format='string' docs='
-When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely identify 
-the documentation publisher. This should be a reverse domain-name style 
-string, e.g. com.mycompany.MyDocSet.documentation. 
+When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely 
+identify the documentation publisher. This should be a reverse domain-name 
+style string, e.g. com.mycompany.MyDocSet.documentation. 
 ' defval='org.doxygen.Publisher' depends='GENERATE_DOCSET'/>
     <option type='string' id='DOCSET_PUBLISHER_NAME' format='string' docs='
 The GENERATE_PUBLISHER_NAME tag identifies the documentation publisher.

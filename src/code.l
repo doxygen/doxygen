@@ -112,6 +112,8 @@ static bool          g_lexInit = FALSE;
 
 static QStack<int>   g_classScopeLengthStack;
 
+static Definition   *g_searchCtx;
+
 // context for an Objective-C method call
 struct ObjCCallCtx
 {
@@ -414,11 +416,18 @@ static void popScope()
   //printf("popScope() result: `%s'\n",g_classScope.data());
 }
 
-static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
+static void setCurrentDoc(const QCString &anchor)
 {
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+    if (g_searchCtx)
+    {
+      Doxygen::searchIndex->setCurrentDoc(g_searchCtx,g_searchCtx->anchor(),FALSE);
+    }
+    else
+    {
+      Doxygen::searchIndex->setCurrentDoc(g_sourceFileDef,anchor,TRUE);
+    }
   }
 }
 
@@ -496,20 +505,14 @@ static void startCodeLine()
         g_code->writeLineNumber(g_currentMemberDef->getReference(),
 	                        g_currentMemberDef->getOutputFileBase(),
 	                        g_currentMemberDef->anchor(),g_yyLineNr);
-        setCurrentDoc(
-                                g_currentMemberDef->qualifiedName(),
-	                        g_sourceFileDef->getSourceFileBase(),
-	                        lineAnchor);
+        setCurrentDoc(lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         g_code->writeLineNumber(d->getReference(),
 	                        d->getOutputFileBase(),
 	                        0,g_yyLineNr);
-        setCurrentDoc(
-                                d->qualifiedName(),
-	                        g_sourceFileDef->getSourceFileBase(),
-	                        lineAnchor);
+        setCurrentDoc(lineAnchor);
       }
     }
     else
@@ -3546,10 +3549,10 @@ void resetCCodeParserState()
 void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
-		  MemberDef *memberDef,bool showLineNumbers)
+		  MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx)
 {
-  //printf("***parseCode() exBlock=%d exName=%s fd=%p className=%s\n",
-  //    exBlock,exName,fd,className);
+  //printf("***parseCode() exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",
+  //      exBlock,exName,fd,className,searchCtx?searchCtx->name().data():"<none>");
   if (s.isEmpty()) return;
   if (g_codeClassSDict==0)
   {
@@ -3560,6 +3563,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_inputPosition = 0;
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
+  g_searchCtx = searchCtx;
   g_inFunctionTryBlock = FALSE;
   if (endLine!=-1)
     g_inputLines  = endLine+1;
@@ -3585,7 +3589,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_sourceFileDef = fd;
   g_lineNumbers   = fd!=0 && showLineNumbers;
   bool cleanupSourceDef = FALSE;
-  if (/* exBlock */ fd==0)
+  if (fd==0)
   {
     // create a dummy filedef for the example
     g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
@@ -3593,7 +3597,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   }
   if (g_sourceFileDef) 
   {
-    setCurrentDoc(g_sourceFileDef->name(),g_sourceFileDef->getSourceFileBase());
+    setCurrentDoc("l00001");
     g_insideObjC = g_sourceFileDef->name().lower().right(2)==".m" || 
                    g_sourceFileDef->name().lower().right(3)==".mm"; 
   }

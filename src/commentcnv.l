@@ -439,6 +439,23 @@ void replaceComment(int offset);
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
 				     }
+                                     else
+                                     {
+                                       int l=0;
+                                       while (yytext[l]==' ' || yytext[l]=='\t')
+                                       {
+                                         l++;
+                                       }
+                                       copyToOutput(yytext,l);
+                                       if (yyleng-l==3) // ends with //! or ///
+                                       {
+                                         copyToOutput(" * ",3);
+                                       }
+                                       else // ends with //
+                                       {
+                                         copyToOutput("//",2);
+                                       }
+                                     }
   				   }
 <Verbatim,VerbatimCode>[^@\/\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yytext,(int)yyleng); 
@@ -446,10 +463,16 @@ void replaceComment(int offset);
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
-<Verbatim,VerbatimCode>^[ \t]*"///"  {
+<Verbatim>^[ \t]*"///"             {
   				     if (g_blockName=="dot" || g_blockName=="msc" || g_blockName.at(0)=='f')
 				     {
 				       // see bug 487871, strip /// from dot images and formulas.
+                                       int l=0;
+                                       while (yytext[l]==' ' || yytext[l]=='\t')
+                                       {
+                                         l++;
+                                       }
+                                       copyToOutput(yytext,l);
 				       copyToOutput("   ",3);
 				     }
 				     else // even slashes are verbatim (e.g. \verbatim, \code)

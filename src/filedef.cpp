@@ -587,7 +587,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   if (Doxygen::searchIndex)
   {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
   

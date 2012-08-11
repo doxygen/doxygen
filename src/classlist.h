@@ -64,4 +64,22 @@ class ClassSDict : public SDict<ClassDef>
    bool declVisible(const ClassDef::CompoundType *filter=0) const;
 };
 
+class GenericsCollection : public QIntDict<ClassDef>
+{
+  public:
+    GenericsCollection() : QIntDict<ClassDef>(17) {}
+   ~GenericsCollection() {}
+};
+
+class GenericsSDict 
+{
+  public:
+   GenericsSDict() : m_dict(17) { m_dict.setAutoDelete(TRUE); }
+  ~GenericsSDict() {}
+   void insert(const QCString &key,ClassDef *cd);
+   ClassDef *find(const QCString &key);
+  private:
+   SDict<GenericsCollection> m_dict;
+};
+
 #endif

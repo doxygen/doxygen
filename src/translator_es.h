@@ -30,12 +30,11 @@
  * Updated to 1.6.3 by Bartomeu Creus Navarro (3-marzo-2010)
  * Updated to 1.6.4 by Bartomeu Creus Navarro (26-mayo-2010) [(16-jun-2010) grabado en UTF-8]
  * Updated to 1.8.0 by Bartomeu Creus Navarro (11-abril-2012)
+ * Updated to 1.8.2 by Bartomeu Creus Navarro (01-julio-2012)
  */
 
-
-class TranslatorSpanish : public TranslatorAdapter_1_8_2
+class TranslatorSpanish : public Translator
 {
-
   public:
 
     // --- Language control methods -------------------
@@ -1060,7 +1059,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_2
         "class ProtectedBase { };\n\n"
         "/*! Clase que es heredera usando herencia privada  */\n"
         "class PrivateBase { };\n\n"
-        "/*! Clase que es usada por la clase hija */\n"
+        "/*! Clase que es usada por la clase heredada */\n"
         "class Used { };\n\n"
         "/*! Super-Clase que hereda de varias otras clases */\n"
         "class Inherited : public PublicBase,\n"
@@ -1073,13 +1072,13 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_2
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Si la etiqueta \\c MAX_DOT_GRAPH_HEIGHT en el archivo de configuración "
-        "tiene valor 240 resultará en el siguiente gráfico:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "Dará como resultado el siguiente gráfico:"
+        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
         "<p>\n"
         "Las cajas en el gráfico arriba tienen el siguiente significado:\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Una caja llena negra representa la estructura o clase para la cuál"
+        "<li>Una caja llena gris representa la estructura o clase para la cuál"
         "se generó el gráfico.\n"
         "<li>Una caja con borde negro señala una estructura o clase documentada.\n"
         "<li>Una caja con borde griz señala una estructura o clase no documentada.\n"
@@ -1088,7 +1087,9 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_2
         "mostradas. El gráfico sera truncado si este no calza dentro de los "
         "límites especificados."
         "</ul>\n"
+        "<p>\n"
         "Las flechas tienen el siguiente significado:\n"
+        "</p>\n"
         "<ul>\n"
         "<li>Una flecha azul oscuro es usada para visualizar una relación herencia publica entre dos clases.\n"
         "<li>Una flecha verde oscuro es usada para herencia protegida.\n"
@@ -1986,6 +1987,69 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Otros miembros heredados"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is 
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "habilitar" : "deshabilitar";
+      return "click en "+opt+" sincronización";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "Proporcionado por categoría @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "Extiende la clase @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Métodos de la clase";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Métodos de instancia";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Método de documentación";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "Diseño información general";
+    }
 
 //////////////////////////////////////////////////////////////////////////
 

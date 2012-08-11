@@ -862,7 +862,7 @@ class LayoutParser : public QXmlDefaultHandler
       m_scope="";
       if (m_rootNav && !m_rootNav->find(LayoutNavEntry::MainPage))
       {
-        // no MainPage node... add one the first item of the root node...
+        // no MainPage node... add one as the first item of the root node...
         new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE, 
             /*Config_getBool("GENERATE_TREEVIEW") ? "main" :*/ "index",
             theTranslator->trMainPage(),TRUE);

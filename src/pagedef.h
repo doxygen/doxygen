@@ -15,6 +15,9 @@
  *
  */
 
+#ifndef PAGEDEF_H
+#define PAGEDEF_H
+
 #include "definition.h"
 #include "sortdict.h"
 
@@ -84,4 +87,6 @@ class PageSDict : public SDict<PageDef>
       return stricmp(((PageDef *)i1)->name(),((PageDef *)i2)->name());
     }
 };
+
+#endif
 

@@ -659,9 +659,9 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::printDoc(DocNode *n,const char *langExt)
+void ManGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  ManDocVisitor *visitor = new ManDocVisitor(t,*this,langExt);
+  ManDocVisitor *visitor = new ManDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);
   delete visitor; 
   firstCol=FALSE;

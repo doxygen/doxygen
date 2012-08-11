@@ -130,7 +130,7 @@ NamespaceDef    *Doxygen::globalScope = 0;
 QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
 QTime            Doxygen::runningTime;
-SearchIndex *    Doxygen::searchIndex=0;
+SearchIndexIntf *Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap;
 bool             Doxygen::outputToWizard=FALSE;
 QDict<int> *     Doxygen::htmlDirMap = 0;
@@ -151,6 +151,7 @@ bool             Doxygen::userComments = FALSE;
 QCString         Doxygen::spaces;
 bool             Doxygen::generatingXmlOutput = FALSE;
 bool             Doxygen::markdownSupport = TRUE;
+GenericsSDict    Doxygen::genericsDict;
 
 // locally accessible globals
 static QDict<EntryNav>  g_classEntries(1009);
@@ -1156,7 +1157,7 @@ static void addClassToContext(EntryNav *rootNav)
 
   Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
       cd ? cd->name().data() : root->name.data(), qualifiedName.data(),cd);
-  
+
   if (cd) 
   {
     fullName=cd->name();
@@ -1241,6 +1242,11 @@ static void addClassToContext(EntryNav *rootNav)
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
     Doxygen::classSDict->append(fullName,cd);
+
+    if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instantions
+    {
+      Doxygen::genericsDict.insert(fullName,cd);
+    }
   }
 
   cd->addSectionsToDefinition(root->anchors);
@@ -3833,12 +3839,16 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = getClass(name);
   }
+  if (result==0 && cd && cd->getLanguage()==SrcLangExt_CSharp && name.find('<')!=-1)
+  {
+    result = Doxygen::genericsDict.find(name);
+  }
   //printf("** Trying to find %s within context %s class %s result=%s lookup=%p\n",
   //       name.data(),
   //       context ? context->name().data() : "<none>",
   //       cd      ? cd->name().data()      : "<none>",
   //       result  ? result->name().data()  : "<none>",
-  //       Doxygen::classSDict.find(name)
+  //       Doxygen::classSDict->find(name)
   //      );
   return result;
 }
@@ -4366,24 +4376,31 @@ static bool findClassRelation(
         if (baseClass==0 && i!=-1) 
           // base class has template specifiers
         {
-          // TODO: here we should try to find the correct template specialization
-          // but for now, we only look for the unspecializated base class.
-          int e=findEndOfTemplate(baseClassName,i+1);
-          //printf("baseClass==0 i=%d e=%d\n",i,e);
-          if (e!=-1) // end of template was found at e
+          if (root->lang == SrcLangExt_CSharp)
           {
-            templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
-            baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
-            baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
-                                       cd->getFileDef(),
-                                       baseClassName,
-                                       &baseClassTypeDef,
-                                       0, //&templSpec,
-                                       mode==Undocumented,
-                                       TRUE
-                                      );
-            //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
-            //      baseClass,baseClassName.data(),templSpec.data());
+            baseClass = Doxygen::genericsDict.find(baseClassName);
+          }
+          else
+          {
+            // TODO: here we should try to find the correct template specialization
+            // but for now, we only look for the unspecializated base class.
+            int e=findEndOfTemplate(baseClassName,i+1);
+            //printf("baseClass==0 i=%d e=%d\n",i,e);
+            if (e!=-1) // end of template was found at e
+            {
+              templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
+              baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
+              baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
+                  cd->getFileDef(),
+                  baseClassName,
+                  &baseClassTypeDef,
+                  0, //&templSpec,
+                  mode==Undocumented,
+                  TRUE
+                  );
+              //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
+              //      baseClass,baseClassName.data(),templSpec.data());
+            }
           }
         }
         else if (baseClass && !templSpec.isEmpty()) // we have a known class, but also
@@ -4425,11 +4442,10 @@ static bool findClassRelation(
         
         //printf("root->name=%s biName=%s baseClassName=%s\n",
         //        root->name.data(),biName.data(),baseClassName.data());
-        if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
-        {
-          baseClassName+="-g";
-          //templSpec.resize(0);
-        }
+        //if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
+        //{
+        //  baseClassName+="-g";
+        //}
 
         if (!found)
         {
@@ -6036,7 +6052,7 @@ static void findMember(EntryNav *rootNav,
       else if (overloaded) // check if the function belongs to only one class 
       {
         // for unique overloaded member we allow the class to be
-        // omitted, this is to be Qt compatable. Using this should 
+        // omitted, this is to be Qt compatible. Using this should 
         // however be avoided, because it is error prone
         MemberNameIterator mni(*mn);
         MemberDef *md=mni.toFirst();
@@ -7182,7 +7198,7 @@ static void findEnumDocumentation(EntryNav *rootNav)
   RECURSE_ENTRYTREE(findEnumDocumentation,rootNav);
 }
 
-// seach for each enum (member or function) in mnl if it has documented 
+// search for each enum (member or function) in mnl if it has documented 
 // enum values.
 static void findDEV(const MemberNameSDict &mnsd)
 {
@@ -7217,7 +7233,7 @@ static void findDEV(const MemberNameSDict &mnsd)
   }
 }
 
-// seach for each enum (member or function) if it has documented enum 
+// search for each enum (member or function) if it has documented enum 
 // values.
 static void findDocumentedEnumValues()
 {
@@ -8687,6 +8703,22 @@ static void copyStyleSheet()
       copyFile(htmlStyleSheet,destFileName);
     }
   }
+  QCString &htmlExtraStyleSheet = Config_getString("HTML_EXTRA_STYLESHEET");
+  if (!htmlExtraStyleSheet.isEmpty())
+  {
+    QFileInfo fi(htmlExtraStyleSheet);
+    if (!fi.exists())
+    {
+      err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",htmlExtraStyleSheet.data());
+      htmlExtraStyleSheet.resize(0); // revert to the default
+    }
+    else
+    {
+      QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+      copyFile(htmlExtraStyleSheet,destFileName);
+    }
+  }
+  
 }
 
 static void copyLogo()
@@ -8704,6 +8736,7 @@ static void copyLogo()
     {
       QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
       copyFile(projectLogo,destFileName);
+      Doxygen::indexList.addImageFile(fi.fileName().data());
     }
   }
 }
@@ -10420,7 +10453,7 @@ void parseInput()
   }
 
   // compute the shortest possible names of all files
-  // without loosing the uniqueness of the file names.
+  // without losing the uniqueness of the file names.
   msg("Generating disk names...\n");
   Doxygen::inputNameList->generateDiskNames();
   
@@ -10484,7 +10517,7 @@ void generateOutput()
     exit(0);
   }
 
-  initDocParser();
+  initSearchIndexer();
 
   bool generateHtml  = Config_getBool("GENERATE_HTML");
   bool generateLatex = Config_getBool("GENERATE_LATEX");
@@ -10696,8 +10729,15 @@ void generateOutput()
   if (generateHtml && searchEngine && serverBasedSearch)
   {
     msg("Generating search index\n");
-    HtmlGenerator::writeSearchPage();
-    Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search/search.idx");
+    if (Doxygen::searchIndex->kind()==SearchIndexIntf::Internal) // write own search index
+    {
+      HtmlGenerator::writeSearchPage();
+      Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search/search.idx");
+    }
+    else // write data for external search index
+    {
+      Doxygen::searchIndex->write(Config_getString("OUTPUT_DIRECTORY")+"/searchdata.xml");
+    }
   }
 
   if (generateRtf)
@@ -10789,7 +10829,7 @@ void generateOutput()
 
   cleanUpDoxygen();
 
-  finializeDocParser();
+  finializeSearchIndexer();
   Doxygen::symbolStorage->close();
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);

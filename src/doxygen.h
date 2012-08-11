@@ -42,7 +42,7 @@
 class PageSList;
 class PageSDict;
 class PageDef;
-class SearchIndex;
+class SearchIndexIntf;
 class ParserManager;
 class ObjCache;
 class Store;
@@ -114,7 +114,7 @@ class Doxygen
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
     static QTime                     runningTime;
-    static SearchIndex              *searchIndex;
+    static SearchIndexIntf          *searchIndex;
     static QDict<DefinitionIntf>    *symbolMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
@@ -135,6 +135,7 @@ class Doxygen
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
+    static GenericsSDict             genericsDict;
 };
 
 void initDoxygen();
