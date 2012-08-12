@@ -1082,7 +1082,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
   extraCssFile = Config_getString("HTML_EXTRA_STYLESHEET");
   if (!extraCssFile.isEmpty())
   {
-    extraCssText = "<link href=\"$relpath$"+extraCssFile+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+    extraCssText = "<link href=\"$relpath$"+stripPath(extraCssFile)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   }
 
   if (timeStamp) {

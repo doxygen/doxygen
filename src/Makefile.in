@@ -33,21 +33,27 @@ tmake:
 	$(ENV) $(PERL) $(TMAKE) libdoxycfg.pro >Makefile.libdoxycfg
 	$(ENV) $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
 
+# clean objects
 clean: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen 
 	$(MAKE) -f Makefile.libdoxygen clean 
 	$(MAKE) -f Makefile.libdoxycfg clean 
 	$(MAKE) -f Makefile.doxygen    clean 
 
+# also clean flex/bison generated files
 distclean: clean
 	-$(RM) scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
                ce_parse.cpp ce_parse.h tag.cpp commentscan.cpp \
 	       declinfo.cpp defargs.cpp commentcnv.cpp doctokenizer.cpp \
 	       pycode.cpp pyscanner.cpp fortrancode.cpp fortranscanner.cpp \
 	       vhdlscanner.cpp vhdlcode.cpp tclscanner.cpp vhdlparser.h \
-	       vhdlparser.cpp index_xsd.h compound_xsd.h layout_default.h \
-               header_html.h footer_html.h search_functions_php.h search_opensearch_php.h \
+	       vhdlparser.cpp \
+
+# clean also the generated files which are in SVN
+realclean: distclean
+	-$(RM) index_xsd.h compound_xsd.h layout_default.h \
+	       header_html.h footer_html.h search_functions_php.h search_opensearch_php.h \
 	       search_js.h search_css.h doxygen_css.h navtree_js.h navindex_js.h resize_js.h \
-               jquery_fx_js.h jquery_p1_js.h jquery_p2_js.h \
+	       jquery_fx_js.h jquery_p1_js.h jquery_p2_js.h \
 	       jquery_p3_js.h jquery_ui_js.h navtree_css.h svgpan_js.h dynsections_js.h \
 	       doxygen_bst.h bib2xhtml.h configoptions.cpp
 

@@ -12,6 +12,7 @@
 "$search\n"
 "$mathjax\n"
 "<link href=\"$relpath$$stylesheet\" rel=\"stylesheet\" type=\"text/css\" />\n"
+"$extrastylesheet\n"
 "</head>\n"
 "<body>\n"
 "<div id=\"top\"><!-- do not remove this div, it is closed by doxygen! -->\n"
