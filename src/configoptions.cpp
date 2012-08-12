@@ -208,7 +208,9 @@ void addConfigOptions(Config *cfg)
                  "only done if one of the specified strings matches the left-hand part of\n"
                  "the path. The tag can be used to show relative paths in the file list.\n"
                  "If left blank the directory from which doxygen is run is used as the\n"
-                 "path to strip."
+                 "path to strip. Note that you specify absolute paths here, but also\n"
+                 "relative paths, which will be relative from the directory where doxygen is\n"
+                 "started."
                 );
   cl->addValue("");
   cl->addDependency("FULL_PATH_NAMES");
@@ -281,7 +283,7 @@ void addConfigOptions(Config *cfg)
                  "TAB_SIZE",
                  "The TAB_SIZE tag can be used to set the number of spaces in a tab.\n"
                  "Doxygen uses this value to replace tabs by spaces in code fragments.",
-                 1,16,8
+                 1,16,4
                 );
   //----
   cl = cfg->addList(
@@ -339,14 +341,15 @@ void addConfigOptions(Config *cfg)
   cl = cfg->addList(
                  "EXTENSION_MAPPING",
                  "Doxygen selects the parser to use depending on the extension of the files it\n"
-                 "parses. With this tag you can assign which parser to use for a given extension.\n"
-                 "Doxygen has a built-in mapping, but you can override or extend it using this\n"
-                 "tag. The format is ext=language, where ext is a file extension, and language\n"
-                 "is one of the parsers supported by doxygen: IDL, Java, Javascript, CSharp, C,\n"
-                 "C++, D, PHP, Objective-C, Python, Fortran, VHDL, C, C++. For instance to make\n"
-                 "doxygen treat .inc files as Fortran files (default is PHP), and .f files as C\n"
-                 "(default is Fortran), use: inc=Fortran f=C. Note that for custom extensions\n"
-                 "you also need to set FILE_PATTERNS otherwise the files are not read by doxygen."
+                 "parses. With this tag you can assign which parser to use for a given\n"
+                 "extension. Doxygen has a built-in mapping, but you can override or extend it\n"
+                 "using this tag. The format is ext=language, where ext is a file extension,\n"
+                 "and language is one of the parsers supported by doxygen: IDL, Java,\n"
+                 "Javascript, CSharp, C, C++, D, PHP, Objective-C, Python, Fortran, VHDL, C,\n"
+                 "C++. For instance to make doxygen treat .inc files as Fortran files (default\n"
+                 "is PHP), and .f files as C (default is Fortran), use: inc=Fortran f=C. Note\n"
+                 "that for custom extensions you also need to set FILE_PATTERNS otherwise the\n"
+                 "files are not read by doxygen."
                 );
   //----
   cb = cfg->addBool(
@@ -357,6 +360,15 @@ void addConfigOptions(Config *cfg)
                  "The output of markdown processing is further processed by doxygen, so you\n"
                  "can mix doxygen, HTML, and XML commands with Markdown formatting.\n"
                  "Disable only in case of backward compatibilities issues.",
+                 TRUE
+                );
+  //----
+  cb = cfg->addBool(
+                 "AUTOLINK_SUPPORT",
+                 "When enabled doxygen tries to link words that correspond to documented classes,\n"
+                 "or namespaces to their corresponding documentation. Such a link can be\n"
+                 "prevented in individual cases by by putting a % sign in front of the word or\n"
+                 "globally by setting AUTOLINK_SUPPORT to NO.",
                  TRUE
                 );
   //----
@@ -388,12 +400,7 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "IDL_PROPERTY_SUPPORT",
-                 "For Microsoft's IDL there are propget and propput attributes to indicate getter\n"
-                 "and setter methods for a property. Setting this option to YES (the default)\n"
-                 "will make doxygen replace the get and set methods by a property in the\n"
-                 "documentation. This will only work if the methods are indeed getting or\n"
-                 "setting a simple type. If this is not the case, or you want to show the\n"
-                 "methods anyway, you should set this option to NO.",
+                 "For Microsoft's IDL there are propget and propput attributes to indicate getter and setter methods for a property. Setting this option to YES (the default) will make doxygen replace the get and set methods by a property in the documentation. This will only work if the methods are indeed getting or setting a simple type. If this is not the case, or you want to show the methods anyway, you should set this option to NO.",
                  TRUE
                 );
   //----
@@ -501,7 +508,8 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "EXTRACT_PACKAGE",
-                 "If the EXTRACT_PACKAGE tag is set to YES all members with package or internal scope will be included in the documentation.",
+                 "If the EXTRACT_PACKAGE tag is set to YES all members with package or internal\n"
+                 "scope will be included in the documentation.",
                  FALSE
                 );
   //----
@@ -1212,10 +1220,23 @@ void addConfigOptions(Config *cfg)
                  "HTML_STYLESHEET",
                  "The HTML_STYLESHEET tag can be used to specify a user-defined cascading\n"
                  "style sheet that is used by each HTML page. It can be used to\n"
-                 "fine-tune the look of the HTML output. If the tag is left blank doxygen\n"
-                 "will generate a default style sheet. Note that doxygen will try to copy\n"
-                 "the style sheet file to the HTML output directory, so don't put your own\n"
-                 "style sheet in the HTML output directory as well, or it will be erased!"
+                 "fine-tune the look of the HTML output. If left blank doxygen will\n"
+                 "generate a default style sheet. Note that it is recommended to use\n"
+                 "HTML_EXTRA_STYLESHEET instead of this one, as it is more robust and this\n"
+                 "tag will in the future become obsolete."
+                );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_HTML");
+  //----
+  cs = cfg->addString(
+                 "HTML_EXTRA_STYLESHEET",
+                 "The HTML_EXTRA_STYLESHEET tag can be used to specify an additional\n"
+                 "user-defined cascading style sheet that is included after the standard\n"
+                 "style sheets created by doxygen. Using this option one can overrule\n"
+                 "certain style aspects. This is preferred over using HTML_STYLESHEET\n"
+                 "since it does not replace the standard style sheet and is therefor more\n"
+                 "robust against future updates. Doxygen will copy the style sheet file to\n"
+                 "the output directory."
                 );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
@@ -1334,9 +1355,9 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "DOCSET_PUBLISHER_ID",
-                 "When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely identify\n"
-                 "the documentation publisher. This should be a reverse domain-name style\n"
-                 "string, e.g. com.mycompany.MyDocSet.documentation."
+                 "When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely\n"
+                 "identify the documentation publisher. This should be a reverse domain-name\n"
+                 "style string, e.g. com.mycompany.MyDocSet.documentation."
                 );
   cs->setDefaultValue("org.doxygen.Publisher");
   cs->addDependency("GENERATE_DOCSET");
