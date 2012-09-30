@@ -79,7 +79,8 @@ class HtmlHelp  : public IndexIntf
                          bool separateIndex,
                          bool addToNavIndex,
                          Definition *def);
-    void addIndexItem(Definition *context,MemberDef *md,const char *title);
+    void addIndexItem(Definition *context,MemberDef *md,
+                      const char *sectionAnchor, const char *title);
     void addIndexFile(const char *name);
     void addImageFile(const char *);
     void addStyleSheetFile(const char *) {}

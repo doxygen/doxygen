@@ -1442,12 +1442,13 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
       {
 
         bool hasChildren = containsVisibleChild(nd,showClasses);
-        
+        bool isLinkable  = nd->isLinkableInProject();
+
         QCString ref; 
         QCString file; 
-        if (nd->isLinkableInProject())
+        if (isLinkable)
         {
-          ref = nd->getReference();
+          ref  = nd->getReference();
           file = nd->getOutputFileBase();
           if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
           {
@@ -1455,7 +1456,7 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
           }
         }
 
-        if (nd->isLinkable() || hasChildren)
+        if (isLinkable || hasChildren)
         {
           ftv->addContentsItem(hasChildren,nd->localName(),ref,file,0,FALSE,TRUE,nd); 
 
@@ -3970,7 +3971,7 @@ static void writeIndex(OutputList &ol)
     {
       Doxygen::indexList.addContentsItem(Doxygen::mainPage->hasSubPages(),title,0,indexName,0,Doxygen::mainPage->hasSubPages(),TRUE); 
     }
-    if (Doxygen::mainPage->hasSubPages())
+    if (Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections())
     {
       writePages(Doxygen::mainPage,0);
     }

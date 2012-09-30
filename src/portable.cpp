@@ -198,7 +198,8 @@ void portable_setenv(const char *name,const char *value)
     {
       for (ep = environ; *ep; ++ep)
       {
-        if (!strncmp (*ep, name, namelen) && (*ep)[namelen] == '=')
+        if (!strncmp (*ep, name, (uint)namelen) &&
+            (*ep)[namelen] == '=')
           break;
         else
           ++size;
@@ -281,7 +282,7 @@ void portable_unsetenv(const char *variable)
     ep = environ;
     while (*ep != NULL)
     {
-      if (!strncmp(*ep, variable, len) && (*ep)[len]=='=')
+      if (!strncmp(*ep, variable, (uint)len) && (*ep)[len]=='=')
       {
         /* Found it.  Remove this pointer by moving later ones back.  */
         char **dp = ep;

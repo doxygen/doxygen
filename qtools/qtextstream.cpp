@@ -308,7 +308,7 @@ bool QStringBuffer::open( int m )
 	s->truncate( 0 );
     }
     if ( m & IO_Append ) {                      // append to end of buffer
-	ioIndex = s->length()*sizeof(QChar);
+	ioIndex = s->length()*(int)sizeof(QChar);
     } else {
 	ioIndex = 0;
     }
@@ -331,7 +331,7 @@ void QStringBuffer::flush()
 
 uint QStringBuffer::size() const
 {
-    return s ? s->length()*sizeof(QChar) : 0;
+    return s ? s->length()*(int)sizeof(QChar) : 0;
 }
 
 int  QStringBuffer::at()   const
@@ -916,7 +916,7 @@ QTextStream &QTextStream::writeBlock( const char* p, uint len )
 	QChar *u = new QChar[len];
 	for (uint i=0; i<len; i++)
 	    u[i] = p[i];
-	dev->writeBlock( (char*)u, len*sizeof(QChar) );
+	dev->writeBlock( (char*)u, len*(int)sizeof(QChar) );
 	delete [] u;
     } else {
 	for (uint i=0; i<len; i++)
@@ -932,7 +932,7 @@ QTextStream &QTextStream::writeBlock( const QChar* p, uint len )
 	    doUnicodeHeader = FALSE;
 	    ts_putc( QChar::byteOrderMark );
 	}
-	dev->writeBlock( (char*)p, sizeof(QChar)*len );
+	dev->writeBlock( (char*)p, (int)sizeof(QChar)*len );
     } else {
 	for (uint i=0; i<len; i++)
 	    ts_putc( p[i] );

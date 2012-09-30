@@ -16,7 +16,7 @@
  *
  */
  /*! @file
-  * @brief ´Danish translation
+  * @brief Danish translation
   */
 
 /*

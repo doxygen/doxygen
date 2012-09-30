@@ -412,7 +412,7 @@ static Q_INT32 read_int_ascii( QDataStream *s )
 	n++;
     }
     buf[n] = '\0';
-    return atol( buf );
+    return (Q_INT32)atol( buf );
 }
 
 

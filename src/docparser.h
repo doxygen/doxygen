@@ -504,7 +504,7 @@ class DocIndexEntry : public DocNode
 {
   public:
     DocIndexEntry(DocNode *parent,Definition *scope,MemberDef *md) 
-      : m_scope(scope), m_member(md) { m_parent = parent; }
+      : m_scope(scope), m_member(md){ m_parent = parent; }
     Kind kind() const { return Kind_IndexEntry; }
     int parse();
     Definition *scope() const    { return m_scope;  }

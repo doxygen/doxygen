@@ -807,7 +807,7 @@ void FileDef::writeSource(OutputList &ol)
   {
     startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,
         !generateTreeView,
-        !isDocFile && genSourceFile ? 0 : getOutputFileBase());
+        !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
     if (!generateTreeView)
     {
       getDirDef()->writeNavigationPath(ol);
@@ -820,7 +820,7 @@ void FileDef::writeSource(OutputList &ol)
   else
   {
     startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,FALSE,
-        !isDocFile && genSourceFile ? 0 : getOutputFileBase());
+        !isDocFile && genSourceFile ? QCString() : getOutputFileBase());
     startTitle(ol,getSourceFileBase());
     ol.parseText(title);
     endTitle(ol,getSourceFileBase(),0);
@@ -1173,13 +1173,15 @@ bool FileDef::isIncluded(const QCString &name) const
 
 bool FileDef::generateSourceFile() const 
 { 
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  static bool verbatimHeaders = Config_getBool("VERBATIM_HEADERS");
   QCString extension = name().right(4);
   return !isReference() && 
-         (Config_getBool("SOURCE_BROWSER") || 
-           (Config_getBool("VERBATIM_HEADERS") && guessSection(name())==Entry::HEADER_SEC) 
+         (sourceBrowser || 
+           (verbatimHeaders && guessSection(name())==Entry::HEADER_SEC) 
          ) &&
          extension!=".doc" && extension!=".txt" && extension!=".dox" &&
-         extension!=".md" && extension!=".markdown";  
+         extension!=".md" && name().right(9)!=".markdown";  
 }
 
 
@@ -1526,7 +1528,7 @@ void FileDef::acquireFileVersion()
     }
     const int bufSize=1024;
     char buf[bufSize];
-    int numRead = fread(buf,1,bufSize,f);
+    int numRead = (int)fread(buf,1,bufSize,f);
     portable_pclose(f);
     if (numRead>0 && !(fileVersion=QCString(buf,numRead).stripWhiteSpace()).isEmpty())
     {

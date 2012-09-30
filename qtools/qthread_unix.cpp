@@ -52,6 +52,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
+#include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -118,6 +119,13 @@ void QThread::start()
     QMutexLocker locker(&d->mutex);
     if (d->running) return;
 
+    // Block the SIGINT signal. The threads will inherit the signal mask.
+    // This will avoid them catching SIGINT instead of this thread.
+    sigset_t sigset, oldset;
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &sigset, &oldset);
+
     d->running = TRUE;
     d->finished = FALSE;
 
@@ -141,6 +149,11 @@ void QThread::start()
         d->running = FALSE;
         d->finished = FALSE;
         d->thread_id = 0;
+    }
+    else
+    {
+       // Restore the old signal mask only for this thread.
+       pthread_sigmask(SIG_SETMASK, &oldset, NULL);
     }
 }
 
@@ -182,7 +195,7 @@ int QThread::idealThreadCount()
     int cores = -1;
 #if defined(_OS_MAC_)
     // Mac OS X
-    cores = MPProcessorsScheduled();
+    cores = (int)MPProcessorsScheduled();
 #elif defined(_OS_HPUX_)
     // HP-UX
     struct pst_dynamic psd;

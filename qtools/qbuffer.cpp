@@ -375,7 +375,7 @@ int QBuffer::readLine( char *p, uint maxlen )
 	    break;
     }
     *p = '\0';
-    ioIndex = d - a.data();
+    ioIndex = (int)(d - a.data());
     return (uint)ioIndex - start;
 }
 

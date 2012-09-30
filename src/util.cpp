@@ -2290,7 +2290,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
     char *outputPtr = output.data();
     if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
     {
-      outputSize-=oLeft;
+      outputSize-=(int)oLeft;
       output.resize(outputSize+1);
       output.at(outputSize)='\0';
       //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
@@ -2383,7 +2383,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       QCString contents(bSize);
       int totalSize=0;
       int size;
-      while ((size=fread(contents.data()+totalSize,1,bSize,f))==bSize)
+      while ((size=(int)fread(contents.data()+totalSize,1,bSize,f))==bSize)
       {
         totalSize+=bSize;
         contents.resize(totalSize+bSize); 
@@ -3321,7 +3321,7 @@ static QCString getCanonicalTypeForIdentifier(
 
     if (mType && mType->isTypedef()) // but via a typedef
     {
-      result = resolvedType;
+      result = resolvedType+ts; // the +ts was added for bug 685125
     }
     else
     {
@@ -7054,7 +7054,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   uint newSize=0;
   if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
   {
-    newSize = tmpBufSize-oLeft;
+    newSize = tmpBufSize-(int)oLeft;
     srcBuf.shrink(newSize);
     strncpy(srcBuf.data(),tmpBuf.data(),newSize);
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
@@ -7110,7 +7110,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     const int bufSize=1024;
     char buf[bufSize];
     int numRead;
-    while ((numRead=fread(buf,1,bufSize,f))>0) 
+    while ((numRead=(int)fread(buf,1,bufSize,f))>0)
     {
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
       inBuf.addArray(buf,numRead),size+=numRead;

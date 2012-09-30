@@ -25,6 +25,7 @@
 #include <qcstring.h>
 #include "layout.h"
 #include "memberlist.h"
+#include "arguments.h"
 
 class Entry;
 class ClassDef;
@@ -262,6 +263,14 @@ class VhdlDocGen
 
     static void writeOverview(OutputList &ol);
     static void writeOverview();
+ 
+ // flowcharts
+    static void  createFlowChart( MemberDef*);
+    static void addFlowImage(FTextStream,QCString);
+    
+    static void setFlowMember( const MemberDef *flowMember);
+    static const  MemberDef * getFlowMember();
+    static  void  resetFlowMember();
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
@@ -271,5 +280,91 @@ class VhdlDocGen
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
     static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
 };
+
+
+class FlowNode
+{
+  public:
+    enum nodeType {
+      IF_NO        = 1<<1,
+      ELSIF_NO     = 1<<2,
+      ELSE_NO      = 1<<3,
+      CASE_NO      = 1<<4,
+      WHEN_NO      = 1<<5,
+      EXIT_NO      = 1<<6,
+      END_NO       = 1<<7,
+      TEXT_NO      = 1<<8,
+      START_NO     = 1<<9,
+      ENDIF_NO     = 1<<10,
+      FOR_NO       = 1<<11,
+      WHILE_NO     = 1<<12,
+      END_LOOP     = 1<<13,
+      END_CASE     = 1<<14,
+      VARIABLE_NO  = 1<<15,
+      RETURN_NO    = 1<<16,
+      LOOP_NO      = 1<<17,
+      NEXT_NO      = 1<<18,
+      EXIT_WHEN_NO = 1<<19,
+      NEXT_WHEN_NO = 1<<20,
+      EMPTY_NO     = 1<<21
+    };
+
+    //---------- create svg ------------------------------------------------------------- 
+    static void createSVG();
+    static void startDot(FTextStream &t);
+    static void endDot(FTextStream &t);
+    static void codify(FTextStream &t,const char *str);
+    static void writeShape(FTextStream &t,const FlowNode* fl);
+    static void writeEdge(FTextStream &t,int fl_from,int fl_to,int i);
+    static void writeEdge(FTextStream &t,const FlowNode* fl_from,const FlowNode* fl_to,int i);
+    //static void writeEndNode(FTextStream &t,const FlowNode* fl);
+    static void writeFlowLinks(FTextStream &t);
+    //static void writeStartNode(FTextStream &t,const FlowNode* fl);
+    static void checkNode(int);
+    static void checkNode(const FlowNode*);
+
+    static QCString getNodeName(int n);
+    static void colTextNodes();
+
+    static int getTextLink(const FlowNode* fl,uint index);
+    static int getNoLink(const FlowNode*,uint);
+    static int getNextNode(int);
+    static int findNode(int index,int stamp,int type);
+    static int findNode(int index,int type);
+    static int findNextLoop(int j,int stamp);
+    static int findPrevLoop(int j,int stamp);
+    static int findLabel(int j,QCString &);
+    static void delFlowList();
+    static const char* getNodeType(int c);
+
+    static void addFlowNode(int type,const char* text,const char* exp,const char * label=NULL);
+    static void moveToPrevLevel();
+    static void printFlowList();
+    static void setLabel(const char* text);
+    static int getTimeStamp();
+    static void printNodeList();
+    static void writeFlowNode();
+    static void alignFuncProc(QCString & q,const ArgumentList*  al,bool isFunc);
+    static QCString convertNameToFileName();
+
+    static QList<FlowNode>  flowList;
+    static int ifcounter;
+    static int nodeCounter;
+    static int imageCounter;
+    static int caseCounter;
+
+    FlowNode(int typ,const char*  t,const char* ex,const char* label=NULL);
+    ~FlowNode();
+
+    int id;
+    int stamp;
+    int type;
+
+    QCString label;
+    QCString text;
+    QCString exp;
+};
+
+
 
 #endif

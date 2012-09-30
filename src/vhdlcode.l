@@ -361,7 +361,7 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
     {
       g_yyLineNr++;
       QCString line = sp;
-      line = line.left(p-sp-1);
+      line = line.left((int)(p-sp)-1);
       //*(p-1)='\0';
       //g_code->codify(sp);
       writeWord(line,cl,classlink);

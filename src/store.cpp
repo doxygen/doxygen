@@ -162,7 +162,7 @@ int Store::write(const char *buf,uint size)
 #else
     portable_off_t curPos = m_cur;
 #endif
-    int bytesInBlock = BLOCK_SIZE - BLOCK_POINTER_SIZE - (curPos & (BLOCK_SIZE-1));
+    int bytesInBlock = (int)(BLOCK_SIZE - BLOCK_POINTER_SIZE - (curPos & (BLOCK_SIZE-1)));
     int bytesLeft    = bytesInBlock<(int)size ? (int)size-bytesInBlock : 0;
     int numBytes     = size - bytesLeft;
     STORE_ASSERT(bytesInBlock>=0);
@@ -254,7 +254,7 @@ void Store::end()
 #else
   portable_off_t curPos = m_cur;
 #endif
-  int bytesInBlock = BLOCK_SIZE - (curPos & (BLOCK_SIZE-1));
+  int bytesInBlock = (int)(BLOCK_SIZE - (curPos & (BLOCK_SIZE-1)));
   //printf("%x: Store::end erasing %x bytes\n",(int)curPos&~(BLOCK_SIZE-1),bytesInBlock);
   //printf("end: bytesInBlock=%x\n",bytesInBlock);
   // zero out rest of the block
@@ -327,7 +327,7 @@ int Store::read(char *buf,uint size)
 #else
     portable_off_t curPos = m_cur;
 #endif
-    int bytesInBlock = BLOCK_SIZE - BLOCK_POINTER_SIZE - (curPos & (BLOCK_SIZE-1));
+    int bytesInBlock = (int)(BLOCK_SIZE - BLOCK_POINTER_SIZE - (curPos & (BLOCK_SIZE-1)));
     int bytesLeft    = bytesInBlock<(int)size ? (int)size-bytesInBlock : 0;
     int numBytes     = size - bytesLeft;
     //printf("  Store::read: pos=%x num=%d left=%d\n",(int)curPos,numBytes,bytesLeft);

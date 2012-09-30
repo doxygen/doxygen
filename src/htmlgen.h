@@ -262,16 +262,21 @@ class HtmlGenerator : public OutputGenerator
     void endContents();
     void writeNonBreakableSpace(int);
     
-    void startDescTable()
-    { t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl; }
+    void startDescTable(const char *title)
+    //{ t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl; }
+    { t << "<table class=\"fieldtable\">" << endl
+        << "<tr><th colspan=\"2\">" << title << "</th></tr>";
+    }
     void endDescTable()
     { t << "</table>" << endl; }
     void startDescTableTitle()
-    { t << "<tr><td valign=\"top\"><em>"; }
+    //{ t << "<tr><td valign=\"top\"><em>"; }
+    { t << "<tr><td class=\"fieldname\"><em>"; }
     void endDescTableTitle()
     { t << "</em>&nbsp;</td>"; }
     void startDescTableData()
-    { t << "<td>" << endl; }
+    //{ t << "<td>" << endl; }
+    { t << "<td class=\"fielddoc\">" << endl; }
     void endDescTableData()
     { t << "</td></tr>" << endl; }
     

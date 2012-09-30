@@ -284,11 +284,11 @@ Doxygen will parse them like normal C++ but will assume all classes use public
 instead of private inheritance when no explicit protection keyword is present. 
 ' defval='0'/>
     <option type='bool' id='IDL_PROPERTY_SUPPORT' docs='
-For Microsoft&apos;s IDL there are propget and propput attributes to indicate
-getter and setter methods for a property. Setting this option to YES (the
-default) will make doxygen replace the get and set methods by a property in
-the documentation. This will only work if the methods are indeed getting or
-setting a simple type. If this is not the case, or you want to show the
+For Microsoft&apos;s IDL there are propget and propput attributes to indicate 
+getter and setter methods for a property. Setting this option to YES (the 
+default) will make doxygen replace the get and set methods by a property in 
+the documentation. This will only work if the methods are indeed getting or 
+setting a simple type. If this is not the case, or you want to show the 
 methods anyway, you should set this option to NO.
 ' defval='1'/>
     <option type='bool' id='DISTRIBUTE_GROUP_DOC' docs='
@@ -561,7 +561,8 @@ containing the references data. This must be a list of .bib files. The
 requires the bibtex tool to be installed. See also 
 http://en.wikipedia.org/wiki/BibTeX for more info. For LaTeX the style 
 of the bibliography can be controlled using LATEX_BIB_STYLE. To use this 
-feature you need bibtex and perl available in the search path. 
+feature you need bibtex and perl available in the search path. Do not use 
+file names with spaces, bibtex cannot handle them.
 ' defval=''/>
   </group>
   <group name='Messages' docs='configuration options related to warning and progress messages'>

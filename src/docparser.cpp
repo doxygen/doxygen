@@ -43,6 +43,7 @@
 #include "portable.h"
 #include "cite.h"
 #include "arguments.h"
+#include "vhdldocgen.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -5399,6 +5400,7 @@ int DocPara::handleCommand(const QCString &cmdName)
         m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: msc section ended without end marker");
         doctokenizerYYsetStatePara();
+        VhdlDocGen::createFlowChart(g_memberDef);
       }
       break;
     case CMD_ENDCODE:

@@ -220,7 +220,7 @@ static void newLine();
 //-----------------------------------------------------------------------------
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-#define YY_USER_ACTION yyColNr+=yyleng;
+#define YY_USER_ACTION yyColNr+=(int)yyleng;
 //-----------------------------------------------------------------------------
 
 %}
@@ -312,8 +312,8 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
                                           //fprintf(stderr, "---%s", yytext);
 
-                                            int indexStart = getAmpersandAtTheStart(yytext, yyleng);                              
-                                            int indexEnd = getAmpOrExclAtTheEnd(yytext, yyleng);
+                                            int indexStart = getAmpersandAtTheStart(yytext, (int)yyleng);
+                                            int indexEnd = getAmpOrExclAtTheEnd(yytext, (int)yyleng);
 					    if (indexEnd>=0 && yytext[indexEnd]!='&') //we are only interested in amp
 					      indexEnd=-1;
 
@@ -362,7 +362,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    initializer+=yytext;
 					}
 <String>\"|\'                           { // string ends with next quote without previous backspace
-                                          if (yytext[0]!=stringStartSymbol) { yyColNr -= yyleng; REJECT; } // single vs double quote
+                                          if (yytext[0]!=stringStartSymbol) { yyColNr -= (int)yyleng; REJECT; } // single vs double quote
 					  if (yy_top_state() == Initialization
 					      || yy_top_state() == ArrayInitializer)
 					    initializer+=yytext;
@@ -373,7 +373,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    initializer+=yytext;
 					} 
 <*>\"|\'                                { /* string starts */
-					  if (YY_START == StrIgnore) { yyColNr -= yyleng; REJECT; }; // ignore in simple comments
+					  if (YY_START == StrIgnore) { yyColNr -= (int)yyleng; REJECT; }; // ignore in simple comments
                                           yy_push_state(YY_START);
                                           if (yy_top_state() == Initialization
 					      || yy_top_state() == ArrayInitializer)
@@ -384,7 +384,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*------ ignore simple comment (not documentation comments) */
 
-<*>"!"/[^<>\n]                         {  if (YY_START == String) { yyColNr -= yyleng; REJECT; } // "!" is ignored in strings
+<*>"!"/[^<>\n]                         {  if (YY_START == String) { yyColNr -= (int)yyleng; REJECT; } // "!" is ignored in strings
                                           // skip comment line (without docu comments "!>" "!<" ) 
                                           /* ignore further "!" and ignore comments in Strings */
                                           if ((YY_START != StrIgnore) && (YY_START != String)) 
@@ -709,7 +709,7 @@ private                                 {
 					  } 
 					  else 
 					  {
-					    yyColNr -= yyleng;
+					    yyColNr -= (int)yyleng;
 					    REJECT;
 					  }
 					}
@@ -733,10 +733,10 @@ private                                 {
 {BS}					{}
 {ATTR_SPEC}.				{ /* update current modifierswhen it is an ATTR_SPEC and not a variable name */
             				  /* bug_625519 */
-                                          QChar chr = yytext[yyleng-1];
+                                          QChar chr = yytext[(int)yyleng-1];
                                           if (chr.isLetter() || chr.isDigit() || (chr == '_'))
                                           {
-					    yyColNr -= yyleng;
+					    yyColNr -= (int)yyleng;
                                             REJECT;
                                           }
                                           else
@@ -744,7 +744,7 @@ private                                 {
                                             QCString tmp = yytext;
                                             tmp = tmp.left(tmp.length() - 1);
 					    yyColNr -= 1;
-                                            unput(yytext[yyleng-1]);
+                                            unput(yytext[(int)yyleng-1]);
                                             currentModifiers |= (tmp);
                                           }
 					}
@@ -853,12 +853,12 @@ private                                 {
 					  attr += yytext;
 					  modifiers[current_root][name.lower()] |= attr;
 					}
-<Variable>{COMMA}	                { //printf("COMMA: %d<=..<=%d\n", yyColNr-yyleng, yyColNr);
+<Variable>{COMMA}	                { //printf("COMMA: %d<=..<=%d\n", yyColNr-(int)yyleng, yyColNr);
 					  // locate !< comment
-					  updateVariablePrepassComment(yyColNr-yyleng, yyColNr);
+					  updateVariablePrepassComment(yyColNr-(int)yyleng, yyColNr);
 					}
 <Variable>{BS}"="                       { yy_push_state(YY_START);
-                                          initializer="";
+                                          initializer="=";
                                           initializerScope = initializerArrayScope = 0;
 					  BEGIN(Initialization);
                                         }
@@ -904,7 +904,7 @@ private                                 {
 					}
 <Initialization>{COMMA}                 { if (initializerScope == 0)
 					  {
-					    updateVariablePrepassComment(yyColNr-yyleng, yyColNr);
+					    updateVariablePrepassComment(yyColNr-(int)yyleng, yyColNr);
 					    yy_pop_state(); // end initialization
                                             if (v_type == V_VARIABLE) last_entry->initializer= initializer;
 					  }
@@ -979,7 +979,7 @@ private                                 {
 					 BEGIN(SubprogBody);
 				       }
 <Parameterlist>{COMMA}|{BS}            { current->args += yytext;
-					 CommentInPrepass *c = locatePrepassComment(yyColNr-yyleng, yyColNr);
+					 CommentInPrepass *c = locatePrepassComment(yyColNr-(int)yyleng, yyColNr);
 					 if (c!=NULL) {
                                            if(current->argList->count()>0) {
 					     current->argList->at(current->argList->count()-1)->docs = c->str;
@@ -1029,7 +1029,7 @@ private                                 {
                                           else
                                           {
                                             /* handle out of place !< comment as a normal comment */
-                                            if (YY_START == String) { yyColNr -= yyleng; REJECT; } // "!" is ignored in strings
+                                            if (YY_START == String) { yyColNr -= (int)yyleng; REJECT; } // "!" is ignored in strings
                                             // skip comment line (without docu comments "!>" "!<" ) 
                                             /* ignore further "!" and ignore comments in Strings */
                                             if ((YY_START != StrIgnore) && (YY_START != String)) 

@@ -3554,7 +3554,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <MemberSpec>([*&]*{BN}*)*{ID}{BN}*("["[^\]\n]*"]")* { // the [] part could be improved.
   					  lineCount();
-  					  int i=0,l=yyleng,j;
+  					  int i=0,l=(int)yyleng,j;
 					  while (i<l && (!isId(yytext[i]))) i++;
 					  msName = QCString(yytext).right(l-i).stripWhiteSpace();
 					  j=msName.find("[");
@@ -4001,7 +4001,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    // for defines we interpret a comment
 					    // as documentation for the define 
-					    int i;for (i=yyleng-1;i>=0;i--)
+					    int i;for (i=(int)yyleng-1;i>=0;i--)
 					    {
 					      unput(yytext[i]);
 					    }
@@ -4052,7 +4052,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    // for defines we interpret a comment
 					    // as documentation for the define 
-					    int i;for (i=yyleng-1;i>0;i--)
+					    int i;for (i=(int)yyleng-1;i>0;i--)
 					    {
 					      unput(yytext[i]);
 					    }
@@ -4291,11 +4291,20 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  current->args += " volatile "; 
 					  current->argList->volatileSpecifier=TRUE;
 					}
-<FuncQual>{BN}*"noexcept"{BN}*    	{ // volatile member function
+<FuncQual>{BN}*"noexcept"{BN}*    	{ // noexcept qualifier
   					  lineCount() ; 
   					  current->args += " noexcept "; 
 					  current->spec |= Entry::NoExcept;
 					}
+<FuncQual>{BN}*"noexcept"{BN}*"("    	{ // noexcept expression
+  					  lineCount() ; 
+  					  current->args += " noexcept("; 
+					  current->spec |= Entry::NoExcept;
+  					  lastRoundContext=FuncQual;
+  					  pCopyRoundString=&current->args;
+					  roundCount=0;
+                                          BEGIN(CopyRound);
+                                        }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
   					  lineCount() ; 
 					  current->args += " = 0"; 

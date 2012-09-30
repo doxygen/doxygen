@@ -4542,9 +4542,18 @@ static bool findClassRelation(
             {
               baseClass=new ClassDef(root->fileName,root->startLine,
                   baseClassName,ClassDef::Class);
-              Doxygen::classSDict->append(baseClassName,baseClass);
+              //Doxygen::classSDict->append(baseClassName,baseClass);
               if (isArtificial) baseClass->setArtificial(TRUE);
               baseClass->setLanguage(root->lang);
+              int si = baseClassName.findRev("::");
+              if (si!=-1) // class is nested
+              {
+                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si));
+                if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
+                {
+                  baseClass->setArtificial(TRUE); // see bug678139
+                }
+              }
             }
           }
           if (biName.right(2)=="-p")
@@ -7430,7 +7439,6 @@ static void buildCompleteMemberLists()
 
 static void generateFileSources()
 {
-  if (documentedHtmlFiles==0) return;
   if (Doxygen::inputNameList->count()>0)
   {
     FileNameListIterator fnli(*Doxygen::inputNameList); 
@@ -9869,6 +9877,7 @@ static void stopDoxygen(int)
   {
     thisDir.remove(Doxygen::objDBFileName);
   }
+  killpg(0,SIGINT);
   exit(1);
 }
 #endif

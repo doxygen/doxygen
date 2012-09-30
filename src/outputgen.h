@@ -245,7 +245,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void addIndexItem(const char *s1,const char *s2) = 0;
 
     virtual void writeNonBreakableSpace(int) = 0;
-    virtual void startDescTable() = 0;
+    virtual void startDescTable(const char *title) = 0;
     virtual void endDescTable() = 0;
     virtual void startDescTableTitle() = 0;
     virtual void endDescTableTitle() = 0;

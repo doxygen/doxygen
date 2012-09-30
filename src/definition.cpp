@@ -691,7 +691,7 @@ void Definition::setInbodyDocumentation(const char *d,const char *inbodyFile,int
  * The line actually containing the bracket is returned via endLine.
  * Note that for VHDL code the bracket search is not done.
  */
-static bool readCodeFragment(const char *fileName,
+bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
@@ -1546,7 +1546,7 @@ void Definition::writeToc(OutputList &ol)
   ol.writeString("<ul>");
   SDict<SectionInfo>::Iterator li(*sectionDict);
   SectionInfo *si;
-  int level=1;
+  int level=1,l;
   char cs[2];
   cs[1]='\0';
   bool inLi[5]={ FALSE, FALSE, FALSE, FALSE };
@@ -1561,13 +1561,19 @@ void Definition::writeToc(OutputList &ol)
       int nextLevel = (int)si->type;
       if (nextLevel>level)
       {
-        ol.writeString("<ul>");
+        for (l=level;l<nextLevel;l++)
+        {
+          ol.writeString("<ul>");
+        }
       }
       else if (nextLevel<level)
       {
-        if (inLi[level]) ol.writeString("</li>\n");
-        inLi[level]=FALSE;
-        ol.writeString("</ul>\n");
+        for (l=level;l>nextLevel;l--)
+        {
+          if (inLi[l]) ol.writeString("</li>\n");
+          inLi[l]=FALSE;
+          ol.writeString("</ul>\n");
+        }
       }
       cs[0]='0'+nextLevel;
       if (inLi[nextLevel]) ol.writeString("</li>\n");

@@ -931,11 +931,11 @@ static int getByte(char* &cursor)
     int byte = 0;
     if ( *cursor ) {
         if ( cursor[1] == 'x' )
-            byte = strtol(cursor+2,&cursor,16);
+            byte = (int)strtol(cursor+2,&cursor,16);
         else if ( cursor[1] == 'd' )
-            byte = strtol(cursor+2,&cursor,10);
+            byte = (int)strtol(cursor+2,&cursor,10);
         else
-            byte = strtol(cursor+2,&cursor,8);
+            byte = (int)strtol(cursor+2,&cursor,8);
     }
     return byte&0xff;
 }
@@ -1017,7 +1017,7 @@ public:
                         cursor[2]>='0' && cursor[2]<='9' &&
                         cursor[3]>='0' && cursor[3]<='9') {
 
-                        unicode = strtol(cursor+2,&cursor,16);
+                        unicode = (int)strtol(cursor+2,&cursor,16);
 
                     } else if (*cursor==esc) {
 

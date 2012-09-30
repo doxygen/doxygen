@@ -1,4 +1,4 @@
-/* The standard CSS for doxygen */
+/* The standard CSS for doxygen $doxygenversion */
 
 body, table, div, p, dl {
 	font: 400 14px/19px Roboto,sans-serif;
@@ -789,6 +789,14 @@ table.fieldtable {
 .fieldtable td.fielddoc {
         border-bottom: 1px solid ##B4;
         width: 100%;
+}
+
+.fieldtable td.fielddoc p:first-child {
+        margin-top: 2px;
+}       
+        
+.fieldtable td.fielddoc p:last-child {
+        margin-bottom: 2px;
 }
 
 .fieldtable tr:last-child td {

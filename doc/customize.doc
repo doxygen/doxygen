@@ -109,12 +109,19 @@ This will create 3 files:
   a HTML page. Also here special commands can be used. This file contain the 
   link to www.doxygen.org and the body and html end tags.
 - customdoxygen.css is the default cascading style sheet
-  used by doxygen. 
+  used by doxygen. It is recommended only to look into this file and overrule
+  some settings you like by putting them in a separate stylesheet and
+  referencing that extra file 
+  via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
 
 You should edit these files and then reference them from the config file.
 - \ref cfg_html_header "HTML_HEADER" = \c header.html
 - \ref cfg_html_footer "HTML_FOOTER" = \c footer.html
-- \ref cfg_html_stylesheet "HTML_STYLESHEET" = \c customdoxygen.css
+- \ref cfg_html_stylesheet "HTML_STYLESHEET" = \c customdoxygen.css <b>&larr;obsolete</b>
+
+\note it is not longer recommended to use HTML_STYLESHEET this way,
+as it make it difficult to upgrade to a newer version of doxygen. Use
+\ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead.
 
 See the documentation of the \ref cfg_html_header "HTML_HEADER" tag
 for more information about the possible meta commands you can use inside

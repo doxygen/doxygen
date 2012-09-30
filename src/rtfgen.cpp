@@ -1964,9 +1964,11 @@ void RTFGenerator::endMemberList()
 //  // not yet implemented
 //}
 //
-void RTFGenerator::startDescTable()
+void RTFGenerator::startDescTable(const char *title)
 {
   DBG_RTF(t << "{\\comment (startDescTable) }"    << endl)
+  startSimpleSect(EnumValues,0,0,title);
+  startDescForItem();
   //t << "{" << endl;
   //incrementIndentLevel();
   //t << rtf_Style_Reset << rtf_CList_DepthStyle();
@@ -1976,6 +1978,8 @@ void RTFGenerator::endDescTable()
 {
   //decrementIndentLevel();
   DBG_RTF(t << "{\\comment (endDescTable)}"      << endl)
+  endDescForItem();
+  endSimpleSect();
   //t << "}" << endl;
   //t << rtf_Style_Reset << styleStack.top();
 }
@@ -2295,7 +2299,7 @@ static void encodeForOutput(FTextStream &t,const QCString &s)
       char *outputPtr = enc.data();
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
-        enc.resize(enc.size()-oLeft);
+        enc.resize(enc.size()-(unsigned int)oLeft);
         converted=TRUE;
       }
       portable_iconv_close(cd);

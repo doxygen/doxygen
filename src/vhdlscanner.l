@@ -114,7 +114,7 @@ static struct
 } str_doc;
 
 #define YY_NEVER_INTERACTIVE 1
-#define YY_USER_ACTION num_chars += vhdlScanYYleng;
+#define YY_USER_ACTION num_chars += (int)vhdlScanYYleng;
 
 #define MAX_KEYWORD_LEN 20
 

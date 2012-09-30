@@ -38,6 +38,8 @@ struct SectionInfo;
 class Definition;
 class DefinitionImpl;
 
+
+  
 /** Data associated with a detailed description. */
 struct DocInfo
 {
@@ -382,4 +384,12 @@ class DefinitionListIterator : public QListIterator<Definition>
     ~DefinitionListIterator() {}
 };
 
+/** Reads a fragment from file \a fileName starting with line \a startLine
+ *  and ending with line \a endLine. The result is returned as a string 
+ *  via \a result. The function returns TRUE if successful and FALSE 
+ *  in case of an error.
+ */
+bool readCodeFragment(const char *fileName, 
+                      int &startLine,int &endLine,
+                      QCString &result);
 #endif

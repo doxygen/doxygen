@@ -55,19 +55,19 @@ protected:
 
 public:
     QArray() {}
-    QArray( int size ) : QGArray(size*sizeof(type)) {}
+    QArray( int size ) : QGArray(size*(int)sizeof(type)) {}
     QArray( const QArray<type> &a ) : QGArray(a) {}
    ~QArray() {}
     QArray<type> &operator=(const QArray<type> &a)
 				{ return (QArray<type>&)QGArray::assign(a); }
     type *data()    const	{ return (type *)QGArray::data(); }
     uint  nrefs()   const	{ return QGArray::nrefs(); }
-    uint  size()    const	{ return QGArray::size()/sizeof(type); }
+    uint  size()    const	{ return QGArray::size()/(int)sizeof(type); }
     uint  count()   const 	{ return size(); }
     bool  isEmpty() const	{ return QGArray::size() == 0; }
     bool  isNull()  const	{ return QGArray::data() == 0; }
-    bool  resize( uint size )	{ return QGArray::resize(size*sizeof(type)); }
-    bool  truncate( uint pos )	{ return QGArray::resize(pos*sizeof(type)); }
+    bool  resize( uint size )	{ return QGArray::resize(size*(int)sizeof(type)); }
+    bool  truncate( uint pos )	{ return QGArray::resize(pos*(int)sizeof(type)); }
     bool  fill( const type &d, int size = -1 )
 	{ return QGArray::fill((char*)&d,size,sizeof(type) ); }
     void  detach()		{ QGArray::detach(); }
@@ -94,9 +94,9 @@ public:
     int  bsearch( const type &d ) const
 	{ return QGArray::bsearch((const char*)&d,sizeof(type)); }
     type& operator[]( int i ) const
-	{ return (type &)(*(type *)QGArray::at(i*sizeof(type))); }
+	{ return (type &)(*(type *)QGArray::at(i*(int)sizeof(type))); }
     type& at( uint i ) const
-	{ return (type &)(*(type *)QGArray::at(i*sizeof(type))); }
+	{ return (type &)(*(type *)QGArray::at(i*(int)sizeof(type))); }
 	 operator const type*() const { return (const type *)QGArray::data(); }
     bool operator==( const QArray<type> &a ) const { return isEqual(a); }
     bool operator!=( const QArray<type> &a ) const { return !isEqual(a); }

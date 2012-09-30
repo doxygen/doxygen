@@ -172,7 +172,7 @@ int TclFindElement(
 	} 
 	else if (openBraces == 1) 
 	{
-	  size = (p - elemStart);
+	  size = (int)(p - elemStart);
 	  p++;
 	  if ((p >= limit) || isspace(UCHAR(*p))) 
 	  {	/* INTL: ISO space. */
@@ -211,7 +211,7 @@ int TclFindElement(
       case '\v':
 	if ((openBraces == 0) && !inQuotes) 
 	{
-	  size = (p - elemStart);
+	  size = (int)(p - elemStart);
 	  goto done;
 	}
 	break;
@@ -223,7 +223,7 @@ int TclFindElement(
       case '"':
 	if (inQuotes) 
 	{
-	  size = (p - elemStart);
+	  size = (int)(p - elemStart);
 	  p++;
 	  if ((p >= limit) || isspace(UCHAR(*p))) 
 	  {	/* INTL: ISO space */
@@ -254,7 +254,7 @@ int TclFindElement(
     {
       return TCL_ERROR;
     }
-    size = (p - elemStart);
+    size = (int)(p - elemStart);
   }
 
 done:
@@ -316,7 +316,7 @@ int Tcl_SplitList(
       }
     }
   }
-  length = l - list;
+  length = (int)(l - list);
   argv = (CONST char **) ckalloc((unsigned)
       ((size * sizeof(char *)) + length + 1));
   for (i = 0, p = ((char *) argv) + size*sizeof(char *);
@@ -326,7 +326,7 @@ int Tcl_SplitList(
 
     result = TclFindElement(list, length, &element, &list,
 	&elSize, &brace);
-    length -= (list - prevList);
+    length -= (int)(list - prevList);
     if (result != TCL_OK) 
     {
       ckfree((char *) argv);

@@ -45,7 +45,7 @@ CiteDict::CiteDict(int size) : m_entries(size, FALSE)
   m_entries.setAutoDelete(TRUE);
 }
 
-static QCString getListOfBibFiles(const QCString &sep,bool stripExtension)
+static QCString getListOfBibFiles(const QCString &sep,bool namesOnly)
 {
   QCString result;
   QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
@@ -54,17 +54,24 @@ static QCString getListOfBibFiles(const QCString &sep,bool stripExtension)
   {
     int i;
     QCString bibFile = bibdata;
-    if (stripExtension && bibFile.right(4)==".bib")
+    if (namesOnly && bibFile.right(4)==".bib") // strip extension
     {
       bibFile = bibFile.left(bibFile.length()-4);
     }
-    if (stripExtension && (i=bibFile.findRev('/'))!=-1)
+    if ((i=bibFile.findRev('/'))!=-1) // strip path
     {
       bibFile = bibFile.mid(i+1);
     }
     if (!bibFile.isEmpty())
     {
-      result+=bibFile;
+      if (namesOnly) // bare names
+      {
+        result+=bibFile;
+      }
+      else // add quotes for paths with spaces
+      {
+        result+="\""+bibFile+"\""; 
+      }
       bibdata = citeDataList.next();
       if (bibdata)
       {
@@ -162,12 +169,52 @@ void CiteDict::generatePage() const
   f.writeBlock(bstData, bstData.length());
   f.close();
 
-  // 4. run bib2xhtml perl script on the generated file which will insert the
-  //    bibliography in citelist.doc
-  portable_system("perl",bib2xhtmlFile+" "+getListOfBibFiles(" ",FALSE)+" "+
-                         citeListFile);
+  // 4. for html we just copy the bib files to the output so that
+  //    bibtex can find them without path (bibtex doesn't support path's
+  //    with spaces!)
+  QList<QCString> tempFiles;
+  tempFiles.setAutoDelete(TRUE);
+  QDir thisDir;
+  if (Config_getBool("GENERATE_HTML"))
+  {
+    // copy bib files to the latex output dir
+    QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
+    QCString bibOutputDir = outputDir+"/";
+    QFileInfo fo(bibOutputDir);
+    const char *bibdata = citeDataList.first();
+    while (bibdata)
+    {
+      QCString bibFile = bibdata;
+      if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
+      QFileInfo fi(bibFile);
+      if (fi.exists() && fi.dirPath(TRUE)!=fo.absFilePath())
+      {
+        if (!bibFile.isEmpty())
+        {
+          QCString destFile=bibOutputDir+fi.fileName().data();
+          copyFile(bibFile,destFile);
+          tempFiles.append(new QCString(destFile));
+        }
+      }
+      else if (!fi.exists())
+      {
+        err("Error: bib file %s not found!\n",bibFile.data());
+      }
+      bibdata = citeDataList.next();
+    }
+  }
 
-  // 5. read back the file
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QDir::setCurrent(outputDir);
+
+  // 5. run bib2xhtml perl script on the generated file which will insert the
+  //    bibliography in citelist.doc
+  portable_system("perl","\""+bib2xhtmlFile+"\" "+getListOfBibFiles(" ",FALSE)+" \""+
+                         citeListFile+"\"");
+
+  QDir::setCurrent(oldDir);
+
+  // 6. read back the file
   f.setName(citeListFile);
   if (!f.open(IO_ReadOnly)) 
   {
@@ -212,11 +259,11 @@ void CiteDict::generatePage() const
   }
   //printf("doc=[%s]\n",doc.data());
 
-  // 6. add it as a page
+  // 7. add it as a page
   addRelatedPage(CiteConsts::fileName,
        theTranslator->trCiteReferences(),doc,0,CiteConsts::fileName,1,0,0,0);
 
-  // 7. for latex we just copy the bib files to the output and let 
+  // 8. for latex we just copy the bib files to the output and let 
   //    latex do this work.
   if (Config_getBool("GENERATE_LATEX"))
   {
@@ -244,11 +291,14 @@ void CiteDict::generatePage() const
     }
   }
 
-  // 8. Remove temporary files
-  QDir thisDir;
-  thisDir.remove(citeListFile);
-  thisDir.remove(doxygenBstFile);
-  thisDir.remove(bib2xhtmlFile);
-
+  // 9. Remove temporary files
+  //thisDir.remove(citeListFile);
+  //thisDir.remove(doxygenBstFile);
+  //thisDir.remove(bib2xhtmlFile);
+  //while (!tempFiles.isEmpty()) 
+  //{
+  //  QCString *s=tempFiles.take();
+  //  thisDir.remove(*s);
+  //}
 }
 

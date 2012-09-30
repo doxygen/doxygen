@@ -22,6 +22,7 @@
 #include "vhdldocgen.h"
 #include "util.h"
 #include "doxygen.h"
+#include "version.h"
 
 #include <assert.h>
 #include <qxml.h>
@@ -1372,7 +1373,7 @@ void writeDefaultLayoutFile(const char *fileName)
     return;
   }
   QTextStream t(&f);
-  t << layout_default;
+  t << substitute(layout_default,"$doxygenversion",versionString);
 }
 
 //----------------------------------------------------------------------------------

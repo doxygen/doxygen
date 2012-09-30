@@ -954,6 +954,7 @@ static void writeDefaultFooter(FTextStream &t)
 void LatexGenerator::writeHeaderFile(QFile &f)
 {
   FTextStream t(&f);
+  t << "% Latex header for doxygen " << versionString << endl;
   writeDefaultHeaderPart1(t);
   t << "Your title here";
   writeDefaultHeaderPart2(t);
@@ -964,12 +965,14 @@ void LatexGenerator::writeHeaderFile(QFile &f)
 void LatexGenerator::writeFooterFile(QFile &f)
 {
   FTextStream t(&f);
+  t << "% Latex footer for doxygen " << versionString << endl;
   writeDefaultFooter(t);
 }
 
 void LatexGenerator::writeStyleSheetFile(QFile &f)
 {
   FTextStream t(&f);
+  t << "% stylesheet for doxygen " << versionString << endl;
 
   writeDefaultStyleSheetPart1(t);
   QCString &projectName = Config_getString("PROJECT_NAME");

@@ -86,7 +86,7 @@
 "  display:block;\n"
 "  position: absolute;\n"
 "  left: 0px;\n"
-"  width: 300px;\n"
+"  width: $width;\n"
 "}\n"
 "\n"
 ".ui-resizable .ui-resizable-handle {\n"

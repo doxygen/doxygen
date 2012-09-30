@@ -189,6 +189,7 @@ void EclipseHelp::addContentsItem(
 void EclipseHelp::addIndexItem(
     Definition * /* context */,
     MemberDef * /* md */,
+    const char * /* sectionAnchor */,
     const char * /* title */)
 {
 }
