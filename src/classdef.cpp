@@ -1507,6 +1507,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
     for (li.toFirst();li.current();++li)
     {
       ol.writeSummaryLink(0,li.current()->data(),li.current()->data(),first);
+      first=FALSE;
     }
   }
   if (!first)
@@ -2997,6 +2998,7 @@ void ClassDef::addUsedClass(ClassDef *cd,const char *accessName,
                Protection prot)
 {
   static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  static bool umlLook = Config_getBool("UML_LOOK");
   if (prot==Private && !extractPrivate) return;
   //printf("%s::addUsedClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
   if (m_impl->usesImplClassDict==0) 
@@ -3012,13 +3014,25 @@ void ClassDef::addUsedClass(ClassDef *cd,const char *accessName,
      //printf("Adding used class %s to class %s via accessor %s\n",
      //    cd->name().data(),name().data(),accessName);
   }
-  ucd->addAccessor(accessName);
+  QCString acc = accessName;
+  if (umlLook)
+  {
+    switch(prot)
+    {
+      case Public:    acc.prepend("+"); break;
+      case Private:   acc.prepend("-"); break;
+      case Protected: acc.prepend("#"); break;
+      case Package:   acc.prepend("~"); break;
+    }
+  }
+  ucd->addAccessor(acc);
 }
 
 void ClassDef::addUsedByClass(ClassDef *cd,const char *accessName,
                Protection prot)
 {
   static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  static bool umlLook = Config_getBool("UML_LOOK");
   if (prot==Private && !extractPrivate) return;
   //printf("%s::addUsedByClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
   if (m_impl->usedByImplClassDict==0) 
@@ -3034,7 +3048,18 @@ void ClassDef::addUsedByClass(ClassDef *cd,const char *accessName,
      //printf("Adding used by class %s to class %s\n",
      //    cd->name().data(),name().data());
   }
-  ucd->addAccessor(accessName);
+  QCString acc = accessName;
+  if (umlLook)
+  {
+    switch(prot)
+    {
+      case Public:    acc.prepend("+"); break;
+      case Private:   acc.prepend("-"); break;
+      case Protected: acc.prepend("#"); break;
+      case Package:   acc.prepend("~"); break;
+    }
+  }
+  ucd->addAccessor(acc);
 }
 
 

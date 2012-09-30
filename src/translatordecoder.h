@@ -70,7 +70,7 @@ class TranslatorDecoder : public Translator
       char *oPtr       = output.data();
       if (!portable_iconv(cd,&iPtr,&iLeft,&oPtr,&oLeft))
       {
-        oSize -= oLeft;
+        oSize -= (int)oLeft;
         output.resize(oSize+1);
         output.at(oSize)='\0';
         return output;

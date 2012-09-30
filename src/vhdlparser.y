@@ -63,9 +63,10 @@ struct  YYMM
 #include "arguments.h"
 
 //-----------------------------variables ---------------------------------------------------------------------------
-//static VhdlParser* myconv=0;
+//static MyParserVhdl* myconv=0;
 
 static VhdlContainer s_str;
+
 static QList<Entry>instFiles;
 static int yyLineNr;
 static Entry* lastCompound;
@@ -79,6 +80,7 @@ static QCString currName;
 static int levelCounter;
 static QCString confName;
 static QCString genLabels;
+static QCString lab;
 
 static QList<VhdlConfNode> configL;
 static VhdlConfNode* currNode;
@@ -91,7 +93,7 @@ static int param_sec = 0;
 static int parse_sec=0;
 
 
-//---------------------------- function --------------------------------------------------------------------------------
+//---------------------------- functions --------------------------------------------------------------------------------
 
 int vhdlScanYYlex ();
 void vhdlScanYYerror (char const *);
@@ -104,7 +106,7 @@ static void addCompInst(char *n, char* instName,char* comp,int line);
 
 static void newEntry();
 static void initEntry(Entry *e);
-static bool isFuncProcProced();
+
 static void popConfig();
 static void pushLabel(const QCString &label);
 static void popLabel();
@@ -117,6 +119,8 @@ static void addProto(const char *s1,const char *s2,const char *s3,
                      const char *s4,const char *s5,const char *s6);
 static void createFunction(const QCString &impure,int spec,
                            const QCString &fname);
+
+static void createFlow(QCString s);    
 
 void newVhdlEntry()
 {
@@ -325,13 +329,29 @@ t_ToolDir
 %type<qstr> entity_class_entry_list entity_class_entry group_constituent_list group_constituent group_declaration group_template_declaration
 %type<qstr> procs_stat1_5 comp_1 mark_comp dot_name fi_dec multiplying_operator factor term adding_op
 %type<qstr> simple_exp alias_spec sigma signature1 mark_stats mark_stats_1 signature
-%type<qstr> protected_type_body protected_type_declaration alias_name_stat vcomp_stat comp_spec_stat
+%type<qstr> protected_type_body protected_type_declaration alias_name_stat vcomp_stat comp_spec_stat procs_decltve_item
 %type<qstr> sig_stat external_name absolute_pathname relative_pathname package_path_name external_pathname pathname_element_list neg_list pathname_element
 
 %type<qstr> func_name return_is param func_prec iproc ifunc interface_subprogram_decl interface_package_decl package_instantiation_decl
-%type<qstr> subprogram_instantiation_decl
-%type<qstr>  context_ref  libustcont_stats   libustcont_stat  context_decl
+%type<qstr> subprogram_instantiation_decl procs_stat1_4
+%type<qstr>  context_ref  libustcont_stats   libustcont_stat  context_decl entity_decltve_item case_stat 
+%type<qstr> exit_stat   if_stat loop_stat next_stat null_stat    return_stat  signal_assign_stat 
+%type<qstr> variable_assign_stat  wait_stat report_statement assertion_stat_2 assertion_stat_1
 
+%type<qstr> binding_indic_2 binding_indic_1   shift_op block_decltve_item disconnection_spec seq_stats_1 seq_stats_2 seq_stats
+%type<qstr> signal_list signal_list_1 signal_list_2 seq_stat assertion_stat choice_stat choice_stat_1
+%type<qstr>  case_stat_1 case_stat_2 case_stat_alternative  exit_stat_1 exit_stat_2  if_stat_2 if_stat_3 if_stat_1 loop_stat_2  loop_stat_1 loop_stat_3
+%type<qstr>  next_stat_1  next_stat_2 return_stat_1   lable variable_assign_stat_1
+%type<qstr>  wait_stat_1 wait_stat_2 wait_stat_3 target delay_mechanism
+%type<qstr> if_generation_scheme if_scheme if_scheme_1 if_scheme_2 if_scheme_3  iteration_scheme for_scheme while_scheme concurrent_stats
+%type<qstr> concurrent_stats_1 concurrent_stats_2  concurrent_stat  block_stat_5 block_stat_4 block_stat_3 block_stat_2 block_stat_1 block_stat_0
+%type<qstr> generate_statement_body generation_scheme concurrent_assertion_stat concurrent_procedure_call concurrent_signal_assign_stat
+%type<qstr> block_stat_6  block_stat_7 block_stat_8 condal_signal_assign  sel_signal_assign opts condal_wavefrms wavefrm wavefrm_element
+%type<qstr> wavefrm_1 wavefrm_2 wavefrm_element_1 wavefrm_element_2 opts_1 opts_2 sel_wavefrms
+%type<qstr>  sel_wavefrms_1 sel_wavefrms_2 gen_stat1 block_declarative_part end_stats inout_stat
+%type<qstr> selected_signal_assignment comp_inst_stat                                             
+ %type<qstr> conditional_signal_assignment selected_variable_assignment conditional_variable_assignment 
+ %type<qstr> subprog_decltve_item subprog_body_3 subprog_body_1 procs_stat1_2
 
 %debug
 
@@ -341,10 +361,14 @@ t_ToolDir
 %expect 2
 
 // minimum bison version
-//%require "2.2"
+//%required "2.2"
+
+
 
 %%
 start: design_file
+      | procs_stat
+      | subprog_body
 
 
 design_file     : design_unit_list
@@ -441,10 +465,9 @@ entity_start: t_ENTITY t_Identifier t_IS
                 $$=$2;
                 lastEntity=current;
                 lastCompound=0;
-                /*int k=*/ getParsedLine(t_ENTITY);
+                 getParsedLine(t_ENTITY);
                 addVhdlType($$,getParsedLine(t_ENTITY),Entry::CLASS_SEC,VhdlDocGen::ENTITY,0,0,Public);
-                //fprintf(stderr,"\n entiy %s : at line %d",$$.data(),s_str.yyLineNr);
-              }
+               }
               ;
 
 entity_decl_5 :   /* empty */
@@ -473,9 +496,7 @@ arch_body     : arch_start error t_END arch_body_2 t_Semicolon
 
 arch_start    : t_ARCHITECTURE t_Identifier t_OF t_Identifier t_IS
                 {
-                  $$=$4;
-                  $$+="::";
-                  $$+=$2;
+                  $$=$4+"::"+$2;
                   pushLabel($2);
                   lastCompound=current;
                   addVhdlType($$,getParsedLine(t_ARCHITECTURE),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
@@ -516,22 +537,15 @@ package_decl  : package_start package_decl_1 t_END package_decl_2 t_Semicolon
 package_start : t_PACKAGE t_Identifier t_IS
                            {
                           lastCompound=current;
-
-
-         Entry *clone=new Entry(*current);
-         clone->section=Entry::NAMESPACE_SEC;
-         clone->spec=VhdlDocGen::PACKAGE;
-           clone->name=$2;
-           int line=s_str.iLine;
-         clone->startLine=line;
-           clone->bodyLine=line;
-
-         clone->protection=Package;
-             current_root->addSubEntry(clone);
-
-
-                        addVhdlType($2,line,Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
-                        //fprintf(stderr,"\n entiy %s : at line %d",$$.data(),s_str.yyLineNr);
+                          Entry *clone=new Entry(*current);
+                         clone->section=Entry::NAMESPACE_SEC;
+                         clone->spec=VhdlDocGen::PACKAGE;
+                         clone->name=$2;
+                         clone->startLine=s_str.iLine;
+                         clone->bodyLine=s_str.iLine;
+                         clone->protection=Package;
+                         current_root->addSubEntry(clone);
+                         addVhdlType($2,s_str.iLine,Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
                        }
 
 package_decl_2     :  /* empty */
@@ -563,56 +577,54 @@ package_body_2  : t_Identifier                                            { last
 package_body_2  : t_PACKAGE t_BODY                         { lastCompound=0; }
 package_body_2  : t_PACKAGE t_BODY t_Identifier      { lastCompound=0; }
 
-
 package_body_1  :  /* empty */  { $$=""; }
 package_body_1  : package_body_1 package_body_3
 package_body_3  : package_body_decltve_item
-
 
 
 /*------------------------------------------
 --  Declarative Item
 --------------------------------------------*/
 
-common_decltve_item_1: package_decl
+common_decltve_item_1: package_decl 
 common_decltve_item_1: package_instantiation_decl
 common_decltve_item_1: package_body
 common_decltve_item_1: subprogram_instantiation_decl
 
 
-common_decltve_item: type_decl
-common_decltve_item: subtype_decl
-common_decltve_item: constant_decl
-common_decltve_item: file_decl
-common_decltve_item: alias_decl
-common_decltve_item: subprog_decl
-common_decltve_item: use_clause
+common_decltve_item: type_decl{$$=$1;}
+common_decltve_item: subtype_decl{$$=$1;}
+common_decltve_item: constant_decl{  $$=$1;}
+common_decltve_item: file_decl{$$=$1;}
+common_decltve_item: alias_decl{$$=$1;}
+common_decltve_item: subprog_decl{$$=$1;}
+common_decltve_item: use_clause {$$=$1;}
 
-entity_decltve_item: common_decltve_item
-entity_decltve_item: subprog_body
-entity_decltve_item: attribute_decl
-entity_decltve_item: attribute_spec
-entity_decltve_item: disconnection_spec
-entity_decltve_item: signal_decl
-entity_decltve_item: variable_decl
-entity_decltve_item: group_template_declaration
-entity_decltve_item: group_declaration
-entity_decltve_item: common_decltve_item_1
+entity_decltve_item: common_decltve_item  {$$=$1;}
+entity_decltve_item: subprog_body {$$=$1;}
+entity_decltve_item: attribute_decl {$$=$1;}
+entity_decltve_item: attribute_spec {$$=$1;}
+entity_decltve_item: disconnection_spec {$$=$1;}
+entity_decltve_item: signal_decl {$$=$1;}
+entity_decltve_item: variable_decl {$$=$1;}
+entity_decltve_item: group_template_declaration {$$=$1;}
+entity_decltve_item: group_declaration {$$=$1;}
+entity_decltve_item: common_decltve_item_1 {$$="";}
 
 
-block_decltve_item: common_decltve_item
-block_decltve_item: subprog_body
-block_decltve_item: comp_decl
-block_decltve_item: attribute_decl
-block_decltve_item: attribute_spec
-block_decltve_item: config_spec
-block_decltve_item: disconnection_spec
+block_decltve_item: common_decltve_item 
+block_decltve_item: subprog_body 
+block_decltve_item: comp_decl 
+block_decltve_item: attribute_decl 
+block_decltve_item: attribute_spec 
+block_decltve_item: config_spec 
+block_decltve_item: disconnection_spec 
 block_decltve_item: signal_decl
 block_decltve_item: variable_decl
 block_decltve_item: group_template_declaration
 block_decltve_item: group_declaration
-block_decltve_item: common_decltve_item_1
-block_decltve_item: tool_directive
+block_decltve_item: common_decltve_item_1 {$$="";}
+block_decltve_item: tool_directive {$$="";}
 
 block_declarative_part: block_decltve_item
                       | block_declarative_part  block_decltve_item
@@ -640,23 +652,16 @@ package_body_decltve_item: attribute_decl
 package_body_decltve_item: attribute_spec
 package_body_decltve_item: common_decltve_item_1
 
-subprog_decltve_item: common_decltve_item
-subprog_decltve_item: subprog_body
-subprog_decltve_item: attribute_decl
-subprog_decltve_item: attribute_spec
-subprog_decltve_item: variable_decl
+subprog_decltve_item: common_decltve_item {$$=$1;}
+subprog_decltve_item: subprog_body  {$$="";}
+subprog_decltve_item: attribute_decl {$$=$1;}
+subprog_decltve_item: attribute_spec {$$=$1;}
+subprog_decltve_item: variable_decl {$$=$1;}
 subprog_decltve_item: group_template_declaration
-subprog_decltve_item: group_declaration
-subprog_decltve_item: common_decltve_item_1
+subprog_decltve_item: group_declaration {$$="";}
+subprog_decltve_item: common_decltve_item_1 {$$="";}
 
-procs_decltve_item: common_decltve_item
-procs_decltve_item: subprog_body
-procs_decltve_item: attribute_decl
-procs_decltve_item: attribute_spec
-procs_decltve_item: variable_decl
-procs_decltve_item: group_template_declaration
-procs_decltve_item: group_declaration
-procs_decltve_item: common_decltve_item_1
+procs_decltve_item: subprog_decltve_item {$$=$1;}
 
 config_decltve_item: attribute_spec    { $$=$1; }
 config_decltve_item: use_clause        { $$=$1; }
@@ -672,7 +677,11 @@ func_prec: t_IMPURE { $$="impure"; }
 subprog_decl: subprog_spec t_Semicolon { currP=0; }
 
 subprog_spec: t_PROCEDURE t_Identifier
-              { currP=VhdlDocGen::PROCEDURE; createFunction($2,currP,0); }
+              { 
+              currP=VhdlDocGen::PROCEDURE; 
+              createFunction($2,currP,0); 
+              tempEntry=current;
+             }
               subprog_spec_1 {  newEntry(); }
 subprog_spec: func_prec t_FUNCTION designator
               {
@@ -680,7 +689,7 @@ subprog_spec: func_prec t_FUNCTION designator
                 createFunction($1,currP,$3.data());
               }
               subprog_spec_2 t_RETURN mark
-              {
+                {
                 tempEntry=current;
                 current->type=$7;
                 newEntry();
@@ -694,8 +703,10 @@ subprog_spec  :  t_FUNCTION designator
               subprog_spec_2 t_RETURN mark
               {
                 tempEntry=current;
+                current->bodyLine=getParsedLine(t_FUNCTION);
                 current->type=$6;
                 newEntry();
+
               }
 
 subprog_spec_22: gen_interface_list
@@ -718,7 +729,9 @@ subprog_spec_1: subprog_spec_2
 
 subprog_body: subprog_spec t_IS  subprog_body_1 t_BEGIN   seq_stats t_END subprog_body_2 t_Semicolon
     {
-      currP=0;
+               tempEntry->endBodyLine=s_str.yyLineNr;
+               createFlow($3);    
+                currP=0;
     }
 subprog_body: subprog_spec t_IS error  t_END subprog_body_2 t_Semicolon
     {
@@ -732,12 +745,12 @@ subprog_body_2: t_PROCEDURE t_Identifier
 subprog_body_2: t_FUNCTION t_Identifier
 subprog_body_2: t_FUNCTION t_STRING
 
-
-subprog_body_1:  /* empty */
+subprog_body_1:  /* empty */ {$$="";}
 //subprog_body_1    :  subprogram_instantiation_decl
-subprog_body_1: subprog_body_1 subprog_body_3
-subprog_body_3: subprog_decltve_item
+subprog_body_1: subprog_body_1 subprog_body_3  {$$=$1+$2; }
 
+subprog_body_3: subprog_decltve_item  {      $$=$1; }
+                                                              
 /*--------------------------------------------------
 --  Interface Lists and Associaton Lists
 ----------------------------------------------------*/
@@ -753,8 +766,7 @@ interf_element: interface_package_decl
                     // adding generic :  [ package foo  is new bar]
                     if (parse_sec==GEN_SEC)
                     {
-                      QCString n=current->name;
-                      addVhdlType(n.data(),getParsedLine(t_PACKAGE),Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,$1.data(),0);
+                       addVhdlType(current->name.data(),getParsedLine(t_PACKAGE),Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,$1.data(),0);
                     }
                   }
 interf_element: interface_subprogram_decl
@@ -766,21 +778,18 @@ interf_element: interface_subprogram_decl
 
                       if (a>b) b=a;
 
-                      QCString n=current->name;
-                      addVhdlType(n.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,$1.data(),0);
+                      addVhdlType(current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,$1.data(),0);
                     }
                   }
 interf_element: interf_element_1 t_Identifier
                   {
                     if (parse_sec==GEN_SEC)
                     {
-                      QCString v= $1;
-                      addVhdlType($2,s_str.iLine,Entry::VARIABLE_SEC,currP,$1.data(),0);
+                        addVhdlType($2,s_str.iLine,Entry::VARIABLE_SEC,currP,$1.data(),0);
                     }
                   }
 interf_element: interf_element_1 idf_list t_Colon interf_element_2 subtype_indic interf_element_3 interf_element_4
                   {
-                    QCString b=$2;
                     $$=$2+":"+$4+$5+$6+$7;
                     if (currP!=VhdlDocGen::COMPONENT)
                     {
@@ -822,7 +831,7 @@ association_list_2: t_Comma association_element            { $$=", "+$2; }
 
 gen_association_list : t_LeftParen gen_association_element gen_association_list_1 t_RightParen
     {
-      QCString str="( "+$2;
+      QCString str="( "+$2+$3;
       str.append(" )");
       $$=str;
     }
@@ -830,7 +839,7 @@ gen_association_list: t_LeftParen  error t_RightParen { $$=""; }
 gen_association_list: t_LeftParen t_OPEN t_RightParen { $$=" ( open ) "; }
 
 gen_association_list_1:  /* empty */  { $$=""; }
-gen_association_list_1: gen_association_list_1   gen_association_list_2  { $$=$1+"?? "+$2; }
+gen_association_list_1: gen_association_list_1   gen_association_list_2  { $$=$1+" "+$2; }
 gen_association_list_2: t_Comma gen_association_element { $$=","+$2; }
 
 association_element: formal_part t_Arrow actual_part { $$=$1+"=>"+$3; }
@@ -840,7 +849,7 @@ association_element: t_DEFAULT   { $$="default"; }
 
 /* changed ;gen_association_element   : association_element  */
 gen_association_element: expr            { $$=$1; }
-gen_association_element: choice t_Arrow expr
+gen_association_element: choice t_Arrow expr { $$=$1+"=>"+$3; }
 gen_association_element: discrete_range1 {  $$=$1 ; }
 
 formal_part: name  { $$=$1; }
@@ -853,31 +862,29 @@ actual_part: t_INERTIAL expr    { $$="inertial"; }
 --  Names and Expressions
 ----------------------------------------------------*/
 
-
-
 expr: and_relation  { $$=$1; }
 expr: relation  { $$=$1; }
 
-shift_op: t_SLL
-        | t_SRA
-        | t_SLA
-        | t_SRL
-        | t_ROR
-        | t_ROL
+shift_op: t_SLL { $$="sll"; }
+        | t_SRA    { $$="sra"; }
+        | t_SLA    { $$="sla"; }
+        | t_SRL    { $$="srl"; }
+        | t_ROR    { $$="ror"; }
+        | t_ROL   { $$="rol"; }
         ;
-and_relation: relation shift_op relation
-and_relation: relation t_AND    relation
-and_relation: relation t_XOR    relation
-and_relation: relation t_OR     relation
-and_relation: relation t_NOR    relation
-and_relation: relation t_XNOR   relation
-and_relation: relation t_NAND   relation
-and_relation: and_relation t_NAND relation
-and_relation: and_relation t_NOR  relation
-and_relation: and_relation t_XNOR relation
-and_relation: and_relation t_AND  relation
-and_relation: and_relation t_OR   relation
-and_relation: and_relation t_XOR  relation
+and_relation: relation shift_op relation {$$= $1+$2+$3; }
+and_relation: relation t_AND    relation  {$$= $1+" and "+$3; }
+and_relation: relation t_XOR    relation  {$$= $1+" xor "+$3; }
+and_relation: relation t_OR     relation  {$$= $1+" or "+$3; }
+and_relation: relation t_NOR    relation  {$$= $1+" nor "+$3; }
+and_relation: relation t_XNOR   relation  {$$= $1+"xnor"+$3; }
+and_relation: relation t_NAND   relation {$$= $1+"nand"+$3; }
+and_relation: and_relation t_NAND relation {$$= $1+"nand"+$3; }
+and_relation: and_relation t_NOR  relation{$$= $1+"nor"+$3; }
+and_relation: and_relation t_XNOR relation  {$$= $1+"nand"+$3; }
+and_relation: and_relation t_AND  relation {$$= $1+" and "+$3; }
+and_relation: and_relation t_OR   relation  {$$= $1+" or "+$3; }
+and_relation: and_relation t_XOR  relation  {$$= $1+" xor "+$3; }
 
 /* ;relation   : unary_operator primary   */
 
@@ -890,7 +897,7 @@ relation: t_NOT primary                        { $$="not "+$2; }
 relation: primary t_DoubleStar primary         { $$=$1+" ** "+$3; }
 relation: t_Minus primary t_DoubleStar primary { $$=$2+" ** "+$4; }
 
-/* ;    relation : relation binary_operator primary */
+/*   relation : relation binary_operator primary */
 
 relation: relation t_MOD   relation       { $$=$1+" mod  "+$3; }
 relation: relation t_REM   relation       { $$=$1+" rem "+$3;  }
@@ -1013,11 +1020,13 @@ type_decl: t_TYPE t_Identifier error t_Semicolon  { $$=""; }
 type_decl: t_TYPE t_Identifier type_decl_1 t_Semicolon
            {
              addVhdlType($2,getParsedLine(t_TYPE),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,$3.data());
+            $$="type ";
+            $$+=$2+$3+";";
            }
 type_decl: t_TYPE error t_Semicolon { $$=""; }
 
 type_decl_1:  /* empty */           { $$=""; }
-type_decl_1: t_IS type_definition   { $$="is "+$2; }
+type_decl_1: t_IS type_definition   { $$=" is "+$2; }
 
 type_definition: enumeration_type_definition    { $$=$1; }
 type_definition: range_constraint               { $$=$1; }
@@ -1153,6 +1162,9 @@ constant_decl: t_CONSTANT idf_list t_Colon subtype_indic constant_decl_1 t_Semic
                                     QCString it=$4+" "+$5;
                                     //  fprintf(stderr,"\n currP %d \n",currP);
                                     addVhdlType($2,getParsedLine(t_CONSTANT),Entry::VARIABLE_SEC,VhdlDocGen::CONSTANT,0,it.data());
+                                    $$="constant "+$2;
+                                    $$+=": ";
+                                    $$+=it+";";
                                   }
 constant_decl_1:  /* empty */     { $$="";      }
 constant_decl_1: t_VarAsgn expr   { $$=":="+$2; }
@@ -1169,7 +1181,8 @@ signal_decl_1: signal_kind        { $$=$1; }
 
 variable_decl: t_VARIABLE idf_list t_Colon subtype_indic variable_decl_1 t_Semicolon
                                   {
-                                    $$=$2+":"+$4+" "+$5;
+                                    $$=$2+":"+$4+" "+$5+";";
+                                    $$.prepend("variable: ");
                                   }
 variable_decl: t_SHARED t_VARIABLE idf_list t_Colon subtype_indic variable_decl_1 t_Semicolon
                                   {
@@ -1193,6 +1206,9 @@ alias_decl: t_ALIAS alias_name_stat alias_spec t_IS name signature t_Semicolon
                                   {
                                     QCString s=$3+" is "+$5+$6;
                                     addVhdlType($2,getParsedLine(t_ALIAS),Entry::VARIABLE_SEC,VhdlDocGen::ALIAS,0,s.data());
+                                   $$="alias "+$2;
+                                   $$+=": ";
+                                   $$+=s+";";
                                   }
 alias_decl: t_ALIAS alias_name_stat alias_spec t_IS error t_Semicolon { $$=""; }
 
@@ -1200,7 +1216,7 @@ alias_name_stat: t_Identifier     { $$=$1; }
 alias_name_stat: t_StringLit      { $$=$1; }
 
 alias_spec :/*empty*/              { $$=""; }
-           | t_Colon subtype_indic { $$=","+$2; }
+           | t_Colon subtype_indic { $$=$2; }
            ;
 
 file_decl: t_FILE idf_list t_Colon subtype_indic t_IS file_decl_1 expr t_Semicolon
@@ -1222,13 +1238,14 @@ file_decl_1:  /* empty */   { $$=""; }
 file_decl_1: mode           { $$=$1; }
 
 disconnection_spec: t_DISCONNECT signal_list t_Colon mark t_AFTER expr t_Semicolon
-
-signal_list:   name signal_list_1
-signal_list:   t_OTHERS
-signal_list:   t_ALL
-signal_list_1:  /* empty */
-signal_list_1: signal_list_1 signal_list_2
-signal_list_2: t_Comma name
+                                      { $$="disconnect "+$2+":"+$4+" after "+$6;}
+                                      
+signal_list:   name signal_list_1 { $$=$1+$2;}
+signal_list:   t_OTHERS   { $$="others";}
+signal_list:   t_ALL             { $$="all";}
+signal_list_1:  /* empty */  { $$="";}
+signal_list_1: signal_list_1 signal_list_2    { $$=$1+$2;}
+signal_list_2: t_Comma name {$$=" , "+$2;}
 
 /*--------------------------------------------------
 --  Attribute Declarations and Specifications
@@ -1237,12 +1254,14 @@ signal_list_2: t_Comma name
 attribute_decl: t_ATTRIBUTE t_Identifier t_Colon mark t_Semicolon
                 {
                   addVhdlType($2,getParsedLine(t_ATTRIBUTE),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,$4.data());
+                 $$= "attribute "+$2+ " : "+$4;
                 }
 
 attribute_spec: t_ATTRIBUTE t_Identifier t_OF entity_spec t_IS expr t_Semicolon
                 {
-                  QCString oo=$4+" is "+$6;
-                  addVhdlType($2,getParsedLine(t_ATTRIBUTE),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,oo.data());
+                  QCString att=$4+" is "+$6;
+                  addVhdlType($2,getParsedLine(t_ATTRIBUTE),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,att.data());
+                  $$="attribute "+att+";";
                 }
 
 entity_spec : entity_name_list signature  t_Colon entity_class { $$=$1+$2+":"+$4;}	
@@ -1263,7 +1282,7 @@ entity_class: t_LABEL         { $$="label";         }
 entity_class: t_TYPE          { $$="type";          }
 entity_class: t_SUBTYPE       { $$="subtype";       }
 entity_class: t_PROCEDURE     { $$="procedure";     }
-entity_class: t_FUNCTION      { $$="function";      }
+entity_class: t_FUNCTION      { $$="function";              }
 entity_class: t_SIGNAL        { $$="signal";        }
 entity_class: t_VARIABLE      { $$="variable";      }
 entity_class: t_CONSTANT      { $$="constant";      }
@@ -1277,69 +1296,90 @@ entity_class: t_PROPERTY      { $$="property";      }
 
 /*--------------------------------------------------
 --  Schemes
-
 --------------------------------------------------------------------------*/
 
-if_generation_scheme: if_scheme
+if_generation_scheme: if_scheme { $$=$1; }
 
-if_scheme: t_IF expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2
-if_scheme: t_IF lable expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2
+if_scheme: t_IF expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2 {$$="";}
+if_scheme: t_IF lable expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2 {$$="";}
 
-if_scheme_2: /* empty */
-if_scheme_2: t_ELSE t_GENERATE  generate_statement_body
-if_scheme_2: t_ELSE lable t_GENERATE  generate_statement_body
-if_scheme_1: /* empty */
-if_scheme_1: if_scheme_1 if_scheme_3
-if_scheme_3: t_ELSIF expr t_GENERATE generate_statement_body
-if_scheme_3: t_ELSIF lable expr t_GENERATE generate_statement_body
+if_scheme_2: /* empty */ { $$=""; }
+if_scheme_2: t_ELSE t_GENERATE  generate_statement_body { $$="else generate "+$3; }
+if_scheme_2: t_ELSE lable t_GENERATE  generate_statement_body { $$="else "+$2+" generate "+$4; }
+if_scheme_1: /* empty */  { $$=""; }
+if_scheme_1: if_scheme_1 if_scheme_3  { $$=$1+$2; }
+if_scheme_3: t_ELSIF expr t_GENERATE generate_statement_body { $$="elsif "+$2+" generate "+$4; }
+if_scheme_3: t_ELSIF lable expr t_GENERATE generate_statement_body  { $$="elsif "+$2+$3+" generate "+$5; }
 
-generation_scheme: for_scheme
+generation_scheme: for_scheme {$$=$1;}
 
-iteration_scheme: for_scheme
-iteration_scheme: while_scheme
+iteration_scheme: for_scheme     {$$=$1;}
+iteration_scheme: while_scheme {$$=$1;}
 
-for_scheme: t_FOR t_Identifier t_IN discrete_range
-for_scheme: t_FOR lable t_Identifier t_IN discrete_range
+for_scheme: t_FOR t_Identifier t_IN discrete_range 
+  {
+ if(!lab.isEmpty())
+    $$=lab+" :for "+$2+" in "+$4;
+  else
+    $$=" for "+$2+" in "+$4;
+  FlowNode::addFlowNode(FlowNode::FOR_NO,0,$$,lab.data());
+  lab.resize(0);
+  }
+for_scheme: t_FOR lable t_Identifier t_IN discrete_range 
+ {
+ $$=lab+" for "+$2+$3+" in "+$5;
+   FlowNode::addFlowNode(FlowNode::FOR_NO,0,$$,lab.data());
+ lab="";
+ }
 
-while_scheme: t_WHILE expr
+while_scheme: t_WHILE expr {
+                                             $$=" while "+$2;
+                                              FlowNode::addFlowNode(FlowNode::WHILE_NO,0,$$,lab.data());
+                                              lab="";
+                                             }
 
 /*--------------------------------------------------
 --  Concurrent Statements
 ----------------------------------------------------*/
 
-concurrent_stats:   concurrent_stats_1
-concurrent_stats_1: /* empty */
-concurrent_stats_1: concurrent_stats_1 concurrent_stats_2
-concurrent_stats_2: concurrent_stat
+concurrent_stats:   concurrent_stats_1 {$$=$1;}
+concurrent_stats_1: /* empty */             {$$="";}
+concurrent_stats_1: concurrent_stats_1 concurrent_stats_2 {$$=$1+$2;}
+concurrent_stats_2: concurrent_stat  {$$=$1;}
 
-concurrent_stat : block_stat
-                | concurrent_assertion_stat
-                | concurrent_procedure_call
-                | concurrent_signal_assign_stat
-                | comp_inst_stat
-                | generate_stat
-                | procs_stat
+concurrent_stat : block_stat                 {$$=$1;}
+                | concurrent_assertion_stat {$$=$1;}
+                | concurrent_procedure_call {$$=$1;}
+                | concurrent_signal_assign_stat {$$=$1;}
+                | comp_inst_stat         
+                                          {
+                                          QCString li=$1;
+                                          $$=$1;
+                                          
+                                          }
+                | generate_stat              {$$=$1;}
+                | procs_stat                   
 
 block_stat: t_Identifier t_Colon t_BLOCK block_stat_0 block_stat_1 block_stat_2
             block_stat_3 block_stat_4 t_BEGIN concurrent_stats t_END t_BLOCK block_stat_5
-            t_Semicolon
-block_stat_5: /* empty */
-block_stat_5: t_Identifier
-block_stat_4: /* empty */
-block_stat_4: block_stat_4 block_stat_6
-block_stat_6: block_decltve_item
-block_stat_3: /* empty */
-block_stat_3: t_PORT interf_list t_Semicolon block_stat_7
-//block_sta_7:  /* empty */
-block_stat_7: t_PORT t_MAP association_list t_Semicolon
-block_stat_2: /* empty */
-block_stat_2: t_GENERIC interf_list t_Semicolon block_stat_8
-block_stat_8: /* empty */
-block_stat_8: t_GENERIC t_MAP association_list t_Semicolon
-block_stat_1: /* empty */
-block_stat_1: t_LeftParen expr t_RightParen  block_stat_0
-block_stat_0: /* empty */
-block_stat_0: t_IS
+            t_Semicolon {$$=$1+":block"+$4+$5+$6+$7+$8+"begin "+$10+" block "+$13;}
+block_stat_5: /* empty */  {$$="";}
+block_stat_5: t_Identifier {$$=$1;}
+block_stat_4: /* empty */  {$$=""; }
+block_stat_4: block_stat_4 block_stat_6 {$$=$1+$2;}
+block_stat_6: block_decltve_item {$$=$1;}
+block_stat_3: /* empty */  {$$="";}
+block_stat_3: t_PORT interf_list t_Semicolon block_stat_7   {$$="port "+$2+";"+$4; }
+//block_sta_7:  /* empty */  {$$="";}
+block_stat_7: t_PORT t_MAP association_list t_Semicolon  {$$="port map "+$3; }
+block_stat_2: /* empty */  {$$="";}
+block_stat_2: t_GENERIC interf_list t_Semicolon block_stat_8  {$$="generic "+$2+";"+$4; }
+block_stat_8: /* empty */  {$$="";}
+block_stat_8: t_GENERIC t_MAP association_list t_Semicolon  {$$="generic map "+$3; }
+block_stat_1: /* empty */  {$$="";}
+block_stat_1: t_LeftParen expr t_RightParen  block_stat_0  {$$="("+$2+")"+$4; }
+block_stat_0: /* empty */  {$$=""; }
+block_stat_0: t_IS  {$$=" is ";}
 
 dot_name: t_Identifier                 { $$=$1; }
         | dot_name  t_Dot t_Identifier { $$=$1+"."+$3; }
@@ -1356,90 +1396,91 @@ vcomp_stat: t_COMPONENT          { $$="component";yyLineNr=s_str.iLine; }
 
 comp_inst_stat:  t_Identifier   t_Colon  name   { yyLineNr=s_str.iLine; }     t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
                              {
-                                addCompInst($1.data(),$3.data(),0,yyLineNr);
+                                addCompInst($1.data(),$3.data(),0,yyLineNr);$$="";
                                }
 comp_inst_stat:  t_Identifier   t_Colon     name   { yyLineNr=s_str.iLine; }    t_PORT t_MAP association_list t_Semicolon
                               {
-                               addCompInst($1.data(),$3.data(),0,yyLineNr);
+                               addCompInst($1.data(),$3.data(),0,yyLineNr);$$="222";
                              }
 
 comp_inst_stat:  t_Identifier  t_Colon   vcomp_stat  mark_comp    t_PORT t_MAP association_list t_Semicolon
                              {
-                                  addCompInst($1.data(),$4.data(),$3.data(),yyLineNr);
+                                  addCompInst($1.data(),$4.data(),$3.data(),yyLineNr);$$="";
                               }
 comp_inst_stat:  t_Identifier  t_Colon  vcomp_stat   mark_comp        t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
                               {
-                                addCompInst($1.data(),$4.data(),$3.data(),yyLineNr);
+                                addCompInst($1.data(),$4.data(),$3.data(),yyLineNr);$$="";
                               }
-comp_inst_stat_1:  /* empty */
-comp_inst_stat_1: t_PORT t_MAP association_list
+comp_inst_stat_1:  /* empty                                       {$$="";} */  
+comp_inst_stat_1: t_PORT t_MAP association_list //    {$$="port map"+$3;}
 
-concurrent_assertion_stat:  t_Identifier t_Colon  assertion_stat
-concurrent_assertion_stat:  assertion_stat
+concurrent_assertion_stat:  t_Identifier t_Colon  assertion_stat  {$$=$1+":"+$3;}
+concurrent_assertion_stat:  assertion_stat              {$$=$1; }
 
-concurrent_assertion_stat:  t_Identifier t_Colon  t_POSTPONED  assertion_stat
-concurrent_assertion_stat:   t_POSTPONED assertion_stat
+concurrent_assertion_stat:  t_Identifier t_Colon  t_POSTPONED  assertion_stat {$$=$1+":"+"postponed "+$4; }
+concurrent_assertion_stat:   t_POSTPONED assertion_stat {$$="postponed "+$2; }
 
-concurrent_procedure_call: t_Identifier t_Colon procedure_call_stat
-concurrent_procedure_call: procedure_call_stat
+concurrent_procedure_call: t_Identifier t_Colon procedure_call_stat {$$=$1+":"+$3; }
+concurrent_procedure_call: procedure_call_stat {$$=$1;}
 
-concurrent_procedure_call: t_Identifier t_Colon t_POSTPONED procedure_call_stat
-concurrent_procedure_call: t_POSTPONED procedure_call_stat
+concurrent_procedure_call: t_Identifier t_Colon t_POSTPONED procedure_call_stat {$$=$1+":"+"postponed "+$4; }
+concurrent_procedure_call: t_POSTPONED procedure_call_stat {$$="postponed "+$2; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon condal_signal_assign
-concurrent_signal_assign_stat: condal_signal_assign
+concurrent_signal_assign_stat: t_Identifier t_Colon condal_signal_assign {$$=$1+":"+$3; }
+concurrent_signal_assign_stat: condal_signal_assign  {$$=$1;}
 
-concurrent_signal_assign_stat: t_Identifier t_Colon  t_POSTPONED  condal_signal_assign
-concurrent_signal_assign_stat: t_POSTPONED  condal_signal_assign
+concurrent_signal_assign_stat: t_Identifier t_Colon  t_POSTPONED  condal_signal_assign {$$=$1+":"+"postponed "+$4; }
+concurrent_signal_assign_stat: t_POSTPONED  condal_signal_assign {$$="postponed "+$2; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon t_POSTPONED sel_signal_assign
-concurrent_signal_assign_stat: t_POSTPONED sel_signal_assign
+concurrent_signal_assign_stat: t_Identifier t_Colon t_POSTPONED sel_signal_assign {$$=$1+":"+"postponed "+$4; }
+concurrent_signal_assign_stat: t_POSTPONED sel_signal_assign {$$="postponed "+$2; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon sel_signal_assign
-concurrent_signal_assign_stat: sel_signal_assign
+concurrent_signal_assign_stat: t_Identifier t_Colon sel_signal_assign  {$$=$1+":"+$3; }
+concurrent_signal_assign_stat: sel_signal_assign  {$$=$1; }
 
-condal_signal_assign: target t_LESym opts   condal_wavefrms t_Semicolon
+condal_signal_assign: target t_LESym opts   condal_wavefrms t_Semicolon {$$=$1+"<="+$3+$4; }
 
-condal_wavefrms: wavefrm
-condal_wavefrms: wavefrm t_WHEN expr
-condal_wavefrms: wavefrm t_WHEN expr t_ELSE condal_wavefrms
+condal_wavefrms: wavefrm {$$=$1;}
+condal_wavefrms: wavefrm t_WHEN expr  {$$=$1+" when "+$3;}
+condal_wavefrms: wavefrm t_WHEN expr t_ELSE condal_wavefrms {$$=$1+" when "+$3+"else"+$5;}
 
-wavefrm:   wavefrm_element wavefrm_1
-wavefrm:   t_UNAFFECTED
-wavefrm_1: /* empty */
-wavefrm_1: wavefrm_1 wavefrm_2
-wavefrm_2: t_Comma wavefrm_element
+wavefrm:   wavefrm_element wavefrm_1 {$$=$1+$2;}
+wavefrm:   t_UNAFFECTED {$$="unaffected";}
+wavefrm_1: /* empty */  {$$="";}
+wavefrm_1: wavefrm_1 wavefrm_2 {$$=$1+$2;}
+wavefrm_2: t_Comma wavefrm_element {$$=","+$2;}
 
-wavefrm_element:   expr wavefrm_element_1
-wavefrm_element_1: /* empty */
-wavefrm_element_1: t_AFTER expr
-wavefrm_element_1: t_NULL wavefrm_element_2
-wavefrm_element_1: t_NULL
-wavefrm_element_2: t_AFTER expr
+wavefrm_element:   expr wavefrm_element_1 {$$=$1+$2;}
+wavefrm_element_1: /* empty */ {$$="";}
+wavefrm_element_1: t_AFTER expr {$$="after "+$2;}
+wavefrm_element_1: t_NULL wavefrm_element_2 {$$=" null "+$2;}
+wavefrm_element_1: t_NULL {$$=" null ";}
+wavefrm_element_2: t_AFTER expr {$$="after "+$2;}
 
-target: name
-target: aggregate
+target: name {$$=$1;}
+target: aggregate   {$$=$1;}
 
-opts: opts_1 opts_2
+opts: opts_1 opts_2   {$$=$1+$2;}
 
-opts_2: /* empty */
-opts_2: t_TRANSPORT
-opts_2: t_REJECT expr t_INERTIAL
-opts_2: t_INERTIAL
+opts_2: /* empty */  {$$="";}
+opts_2: t_TRANSPORT  {$$="transport ";}
+opts_2: t_REJECT expr t_INERTIAL  {$$="transport"+$2+" intertial ";}
+opts_2: t_INERTIAL  {$$=" intertial ";}
 
-opts_1: /* empty */
-opts_1: t_GUARDED
+opts_1: /* empty */ {$$="";}
+opts_1: t_GUARDED {$$=" guarded ";}
 
-sel_signal_assign: t_WITH expr t_SELECT target t_LESym opts sel_wavefrms t_Semicolon
+sel_signal_assign: t_WITH expr t_SELECT target t_LESym opts sel_wavefrms t_Semicolon 
+ {$$="with "+$2+" select "+$4+"<="+$6+$7;}
+ 
+sel_wavefrms:   sel_wavefrms_1 wavefrm t_WHEN choices  {$$=$1+$2;}
+sel_wavefrms_1: /* empty */  {$$="";}
+sel_wavefrms_1: sel_wavefrms_1 sel_wavefrms_2 {$$=$1+$2;}
+sel_wavefrms_2: wavefrm t_WHEN choices t_Comma {$$=$1+" when "+$3;}
 
-sel_wavefrms:   sel_wavefrms_1 wavefrm t_WHEN choices
-sel_wavefrms_1: /* empty */
-sel_wavefrms_1: sel_wavefrms_1 sel_wavefrms_2
-sel_wavefrms_2: wavefrm t_WHEN choices t_Comma
-
-gen_stat1: /* empty */
-        |  block_declarative_part  t_BEGIN
-        | t_BEGIN
+gen_stat1: /* empty */  {$$="";}
+        |  block_declarative_part  t_BEGIN {$$=$1+" begin ";}
+        | t_BEGIN {$$="begin ";}
 
  // problem with double end
  // end;
@@ -1465,29 +1506,41 @@ generate_stat_1: t_GENERATE              { $$=""; }
 generate_stat_1: t_GENERATE t_Identifier { $$=$2; }
 
 //end_stats :
-end_stats: t_END t_Semicolon
-end_stats: t_END t_Identifier t_Semicolon
+end_stats: t_END t_Semicolon   { $$="end"; }
+end_stats: t_END t_Identifier t_Semicolon   { $$="end "+$2; }
 
 procs_stat: t_Identifier t_Colon procs_stat1
-               {
+         {  
                  current->name=$1;
+                 tempEntry=current;
                  current->endBodyLine=s_str.yyLineNr;
                  newEntry();
+                 currName=$1;
                }
 
 procs_stat: procs_stat1
                {
                  current->name=VhdlDocGen::getProcessNumber();
                  current->endBodyLine=s_str.yyLineNr;
+                 tempEntry=current;
                  newEntry();
                }
 
 procs_stat1: procs_stat1_5
-               { currP=VhdlDocGen::PROCESS; }
+               {  
+               currP=VhdlDocGen::PROCESS; 
+               current->startLine=s_str.yyLineNr;
+               current->bodyLine=s_str.yyLineNr;
+               }
                t_PROCESS procs_stat1_1 procs_stat1_2 t_BEGIN seq_stats t_END
                procs_stat1_3 t_Semicolon
-               { currP=0;
-                 createFunction(currName,VhdlDocGen::PROCESS,$4.data());
+               { 
+                $5.stripPrefix($4.data());
+                tempEntry=current;
+                currP=0;
+                createFunction(currName,VhdlDocGen::PROCESS,$4.data());
+                createFlow($5);
+                currName="";
                }
 procs_stat1: error t_END procs_stat1_3  t_Semicolon { currP=0; }
 
@@ -1500,10 +1553,10 @@ procs_stat1_5: t_POSTPONED  { $$="postponed"; }
 procs_stat1_6:  /* empty */ { $$=""; }
 procs_stat1_6: t_Identifier { $$=$1; }
 
-procs_stat1_2:  /* empty */
-procs_stat1_2:  t_IS
-procs_stat1_2: procs_stat1_2 procs_stat1_4
-procs_stat1_4: procs_decltve_item
+procs_stat1_2:  /* empty */  {$$="";}
+procs_stat1_2:  t_IS {$$="";}   
+procs_stat1_2: procs_stat1_2 procs_stat1_4   { $$+=$2; }
+procs_stat1_4: procs_decltve_item           { $$=$1; }
 procs_stat1_1:  /* empty */                                    { $$=""; }
 procs_stat1_1: t_LeftParen t_ALL t_RightParen                  { $$="all"; }
 procs_stat1_1: t_LeftParen sensitivity_list t_RightParen       { $$=$2; }
@@ -1517,113 +1570,201 @@ sensitivity_list_2: t_Comma name                               { $$=","+$2; }
 --  Sequential Statements
 ----------------------------------------------------*/
 
-seq_stats:   seq_stats_1
-seq_stats_1: /* empty */
-seq_stats_1: seq_stats_1 seq_stats_2
-seq_stats_2: seq_stat
+seq_stats:   seq_stats_1                         {$$=$1;}
+seq_stats_1: /* empty */                           {$$="";}
+seq_stats_1: seq_stats_1 seq_stats_2 {$$=$1+$2;}
+seq_stats_2: seq_stat                              {$$=$1;}
 
-seq_stat: assertion_stat
-seq_stat: lable assertion_stat
-seq_stat: case_stat
-seq_stat: exit_stat
-seq_stat: if_stat
-seq_stat: loop_stat
-seq_stat: next_stat
-seq_stat: null_stat
-seq_stat: procedure_call_stat
-seq_stat: return_stat
-seq_stat: lable signal_assign_stat
-seq_stat: signal_assign_stat
-seq_stat: variable_assign_stat
-seq_stat: wait_stat
-seq_stat: lable wait_stat
-seq_stat: report_statement
+seq_stat: assertion_stat                        {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+seq_stat: lable assertion_stat               {$$=$1+$2; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+seq_stat: case_stat                              {$$=$1;}
+seq_stat: exit_stat                                   {
+                                                                   $$=$1;
+                                                              }
+seq_stat: if_stat                                     {$$="";} 
+seq_stat: loop_stat                               {$$=$1;}
+seq_stat: next_stat                                  {
+                                                                $$=$1;
+                                                                }
+seq_stat: null_stat                                    {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+seq_stat: procedure_call_stat                   {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);} 
+seq_stat: return_stat                                    {$$=$1; FlowNode::addFlowNode(FlowNode::RETURN_NO,$$.data(),0);}
+seq_stat: lable signal_assign_stat                    {$$=$1+$2;}
+seq_stat: signal_assign_stat                              
+                                                 {
+                                                   $$=$1;
+                                                    FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);
+                                                   }
+seq_stat: variable_assign_stat                             {   $$=$1;    FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+seq_stat: wait_stat                                          {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+seq_stat: lable wait_stat                                     {$$=$1+$2; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+seq_stat: report_statement                              {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
 
-report_statement: loop_stat_1 t_REPORT expr assertion_stat_2  t_Semicolon
+report_statement: loop_stat_1 t_REPORT expr assertion_stat_2  t_Semicolon {$$=$1+"report "+$3+$4+";";  }
 
-assertion_stat: t_ASSERT expr assertion_stat_1 assertion_stat_2 t_Semicolon
-assertion_stat_2:  /* empty */
-assertion_stat_2     : t_SEVERITY expr
-assertion_stat_1     :  /* empty */
-assertion_stat_1     : t_REPORT expr
+assertion_stat: t_ASSERT expr assertion_stat_1 assertion_stat_2 t_Semicolon  {$$="assert "+$2+$3+$4+";";}
+assertion_stat_2:  /* empty */                    {$$="";}
+assertion_stat_2     : t_SEVERITY expr  {$$=" serverity "+$2;} 
+assertion_stat_1     :  /* empty */            {$$="";}
+assertion_stat_1     : t_REPORT expr  {$$=" report "+$2;}
 
-choice_stat :  /* empty */
-choice_stat :  t_Q
+choice_stat :  /* empty */ {$$="";}
+choice_stat :  t_Q            {$$="?";}
 
-choice_stat_1:  /* empty */
-choice_stat_1 :  t_Q
-choice_stat_1 : t_Identifier
+choice_stat_1:  /* empty */   {$$="";}
+choice_stat_1 :                  t_Q     {$$="?";}
+choice_stat_1 : t_Identifier  {$$=$1;}
 
-case_stat  : t_CASE choice_stat expr t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
-case_stat  : lable t_CASE choice_stat expr t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
 
-case_stat  : t_CASE error t_END t_CASE choice_stat_1  t_Semicolon
-case_stat_1     :  /* empty */
-case_stat_1     : case_stat_1 case_stat_2
-case_stat_2     : case_stat_alternative
+case_stat  : t_CASE choice_stat expr 
+                   {
+                     QCString ca="case "+$2+$3;
+                    FlowNode::addFlowNode(FlowNode::CASE_NO,0,ca);
+                   }                 
+                     t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
+                    { 
+                     FlowNode::addFlowNode(FlowNode::END_CASE,"end case",0);
+                     FlowNode::moveToPrevLevel();
+                    }
+          
 
-case_stat_alternative     : t_WHEN choices t_Arrow seq_stats
+case_stat  : lable t_CASE choice_stat expr
+                   {
+                   QCString ca="case "+$3+$4;
+                   FlowNode::addFlowNode(FlowNode::CASE_NO,0,ca);
+                   } 
+                    t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
+                    {
+                     FlowNode::addFlowNode(FlowNode::END_CASE,0,0);
+                    FlowNode::moveToPrevLevel();
+                    }
 
-exit_stat  : t_EXIT exit_stat_1 exit_stat_2 t_Semicolon
-exit_stat_2     :  /* empty */
-exit_stat_2     : t_WHEN expr
-exit_stat_1     :  /* empty */
-exit_stat_1     : t_Identifier
+case_stat  : t_CASE error t_END t_CASE choice_stat_1  t_Semicolon  {$$="";}
+case_stat_1     :  /* empty */                          {$$="";}
+case_stat_1     : case_stat_1 case_stat_2  {$$=$1+$2;}
+case_stat_2     : case_stat_alternative         {$$=$1;}
+case_stat_alternative     : t_WHEN choices t_Arrow
+ { 
+  QCString t="when ";
+  t+=$2+"=> ";
+   FlowNode::addFlowNode(FlowNode::WHEN_NO,0,t);
+  }
+seq_stats  {$$="";}
 
-if_stat    : t_IF expr t_THEN seq_stats if_stat_1 if_stat_2 t_END t_IF t_Semicolon
-if_stat  :  t_IF expr t_THEN  error  t_END t_IF  t_Semicolon
-if_stat_2  :  /* empty */
-if_stat_2  : t_ELSE seq_stats
-if_stat_1  :  /* empty */
-if_stat_1  : if_stat_1 if_stat_3
-if_stat_3  : t_ELSIF expr t_THEN seq_stats
 
+
+if_stat    : t_IF expr  t_THEN
+  {
+     $2.prepend("if ");
+    FlowNode::addFlowNode(FlowNode::IF_NO,0,$2);
+  }  
+  seq_stats   
+ 
+  if_stat_1 if_stat_2 t_END t_IF t_Semicolon 
+  {
+  FlowNode::addFlowNode(FlowNode::ENDIF_NO,0,0);
+   FlowNode::moveToPrevLevel();
+  } 
+     
+if_stat_2  :  /* empty */                 {$$=""; }
+if_stat_2  : t_ELSE    
+   {
+      FlowNode::addFlowNode(FlowNode::ELSE_NO,0,0);
+    } seq_stats  {$$=""; }
+ 
+
+if_stat_1  :  /* empty */                  {$$=""; }
+if_stat_1  : if_stat_1 if_stat_3      {$$=$1+$2; }
+if_stat_3  : t_ELSIF expr t_THEN 
+  { 
+   FlowNode::addFlowNode(FlowNode::ELSIF_NO,0,$2.data());
+  } seq_stats {$$="";}
+  
 loop_stat:   loop_stat_1 loop_stat_2 t_LOOP seq_stats t_END t_LOOP loop_stat_3 t_Semicolon
-loop_stat_3: /* empty */
-loop_stat_3: t_Identifier
-loop_stat_2: /* epty */
+                    {
+                      
+                       $$=$1+$2+" loop "+$4+" end loop" +$7;
+                       QCString endLoop="end loop" + $7;
+                        FlowNode::addFlowNode(FlowNode::END_LOOP,endLoop.data(),0);
+                        FlowNode::moveToPrevLevel();
+                     }
+
+loop_stat_3: /* empty */ {$$=""; }
+loop_stat_3: t_Identifier {$$=$1; }
+loop_stat_2: /* empty */ {
+                                     $$=""; 
+                                      FlowNode::addFlowNode(FlowNode::LOOP_NO,0,"infinite loop");
+                                     }
 loop_stat_2: iteration_scheme
-loop_stat_1: /* empty */
-loop_stat_1: t_Identifier t_Colon
+loop_stat_1: /* empty */ {$$=""; }
+loop_stat_1: t_Identifier t_Colon {$$=$1+":";lab=$1;}
 
-next_stat:   t_NEXT next_stat_1 next_stat_2 t_Semicolon
-next_stat_2:  /* empty */
-next_stat_2: t_WHEN expr
-next_stat_1:  /* empty */
-next_stat_1: t_Identifier
+exit_stat  : loop_stat_1 t_EXIT exit_stat_1 exit_stat_2 t_Semicolon   
+                       {
+                         $$=$1+"exit "+$3+";";
+                        if($4.data())
+                             FlowNode::addFlowNode(FlowNode::EXIT_WHEN_NO,0,$4.data(),0);                                                                      
+                    
+                              FlowNode::addFlowNode(FlowNode::EXIT_NO,$$.data(),0,$3.data());                                                       
+                        }
+exit_stat_2     :  /* empty */        {$$="";}
+exit_stat_2     : t_WHEN expr  {$$="when "+$2;}
+exit_stat_1     :  /* empty */    {$$="";}
+exit_stat_1     : t_Identifier    {$$=$1;lab=$$;}
 
-null_stat: t_NULL t_Semicolon
 
-procedure_call_stat: name t_Semicolon
+next_stat: loop_stat_1  t_NEXT next_stat_1 next_stat_2 t_Semicolon
+                   {
+                     $$=$1+"next "+$3+";" ;
+                         if($4.data())
+                             FlowNode::addFlowNode(FlowNode::EXIT_WHEN_NO,0,$4.data(),0); 
+                       FlowNode::addFlowNode(FlowNode::NEXT_NO,$$.data(),0,$3.data());   
+                    }
+                    
+next_stat_2:  /* empty */      {$$=""; }
+next_stat_2: t_WHEN expr {$$="when "+$2; }
+next_stat_1:  /* empty */      {$$=""; }
+next_stat_1: t_Identifier      {$$=$1;lab=$$; }
 
-return_stat:   t_RETURN return_stat_1 t_Semicolon
-return_stat_1: /* empty */
-return_stat_1: expr
+null_stat: t_NULL t_Semicolon {$$="null"; $$+=";";}
 
-signal_assign_stat: target t_LESym wavefrm t_Semicolon
-                  | target t_LESym delay_mechanism wavefrm t_Semicolon
-                  | target t_LESym t_FORCE inout_stat  expr t_Semicolon
-                  | target t_LESym t_RELEASE inout_stat t_Semicolon
-                  | selected_signal_assignment
-                  | conditional_signal_assignment
+procedure_call_stat: name t_Semicolon 
+ {
+ $$=$1+";"; 
+ }
+
+return_stat:   t_RETURN return_stat_1 t_Semicolon {$$="return "+$2+";"  ;}
+return_stat_1: /* empty */  {$$=""; }
+return_stat_1:   expr {$$=$1; }
+
+signal_assign_stat: target t_LESym wavefrm t_Semicolon                     {$$=$1+" <="+$3+";"  ;}
+                  | target t_LESym delay_mechanism wavefrm t_Semicolon   {$$=$1+ "<= "+$3+$4 +";";}
+                  | target t_LESym t_FORCE inout_stat  expr t_Semicolon     {$$=$1+ "<= "+ " force  "+$4+";" ;}
+                  | target t_LESym t_RELEASE inout_stat t_Semicolon          {$$=$1+ "<= "+" release "+$4 +";";}
+                  | selected_signal_assignment                                                  {$$=$1; }
+                  | conditional_signal_assignment                                               {$$=$1; }
                   ;
 
-variable_assign_stat: variable_assign_stat_1 t_Semicolon
-                    | conditional_variable_assignment
-                    | lable selected_variable_assignment
-                    | selected_variable_assignment
+variable_assign_stat: variable_assign_stat_1 t_Semicolon   {$$=$1+";"; }
+                    | conditional_variable_assignment                       {$$=$1; }
+                    | lable selected_variable_assignment                  {$$=$1; }
+                    | selected_variable_assignment                           {$$=$1; }
 
-lable: t_Identifier t_Colon
-variable_assign_stat_1: target t_VarAsgn expr
-variable_assign_stat_1: lable target t_VarAsgn expr
+lable: t_Identifier t_Colon                                              { $$=$1+":"; }
+variable_assign_stat_1: target t_VarAsgn expr           {$$=$1+":="+$3; }
+variable_assign_stat_1: lable target t_VarAsgn expr  {$$=$1+$2+":="+$4; }
 
 wait_stat:   t_WAIT wait_stat_1 wait_stat_2 wait_stat_3 t_Semicolon
-wait_stat_3: /* empty */
-wait_stat_3: t_FOR expr
-wait_stat_2: /* empty */
-wait_stat_2: t_UNTIL expr
-wait_stat_1: /* empty */
-wait_stat_1: t_ON sensitivity_list
+                  {
+                     $$="wait "+$2+$3+$4+";";
+                  }
+
+wait_stat_3: /* empty */          {$$=""; }
+wait_stat_3: t_FOR expr       {$$="for "+$2; } 
+wait_stat_2: /* empty */          {$$=""; }
+wait_stat_2: t_UNTIL expr     {$$=" until "+$2; }
+wait_stat_1: /* empty */          {$$=""; }
+wait_stat_1: t_ON sensitivity_list  {$$=" on "+$2; }
 
 
 /*--------------------------------------------------
@@ -1715,11 +1856,11 @@ inst_list: t_OTHERS  { $$="others"; }
 
 binding_indic   : entity_aspect binding_indic_1 binding_indic_2 { $$=$1; }
 
-binding_indic_2:
-binding_indic_2: t_PORT t_MAP association_list
+binding_indic_2: {$$="";}
+binding_indic_2: t_PORT t_MAP association_list  {$$="port map "+$3;}
 
-binding_indic_1:
-binding_indic_1: t_GENERIC t_MAP association_list
+binding_indic_1: {$$="";}
+binding_indic_1: t_GENERIC t_MAP association_list {$$="generic map "+$3;}
 
 
 entity_aspect: t_ENTITY name { $$="entity "+$2; }
@@ -1748,9 +1889,10 @@ group_template_declaration :  t_GROUP  t_Identifier t_IS  t_LeftParen  entity_cl
                       addVhdlType($2,getParsedLine(t_GROUP),Entry::VARIABLE_SEC,VhdlDocGen::GROUP,$5.data(),0);
                     }
 
-group_template_declaration: t_GROUP  t_Identifier t_IS  t_LeftParen error t_Semicolon  t_RightParen { $$=""; }
+group_template_declaration: t_GROUP  t_Identifier t_IS  t_LeftParen error t_Semicolon  t_RightParen{ $$=""; }
+ 
 
-entity_class_entry : entity_class tbox
+entity_class_entry : entity_class tbox {$$=$1+$2;}
 
 tbox :  /* empty */ { $$="";   }
 tbox :  t_Box       { $$="<>"; }
@@ -1898,8 +2040,8 @@ when_stats:   when_stats_1
 ttend: t_END t_Semicolon
 ttend: t_END t_Identifier t_Semicolon
 
-conditional_signal_assignment: conditional_waveform_assignment
-conditional_signal_assignment: conditional_force_assignment
+conditional_signal_assignment: conditional_waveform_assignment {$$="";}
+conditional_signal_assignment: conditional_force_assignment {$$="";}
 
 conditional_waveform_assignment: target t_LESym wavefrm_element t_WHEN expr else_wave_list t_Semicolon
 conditional_waveform_assignment: target t_LESym delay_mechanism wavefrm_element t_WHEN expr else_wave_list t_Semicolon
@@ -1913,8 +2055,8 @@ else_wave_list: t_ELSE expr
 conditional_force_assignment:  target t_LESym t_FORCE  inout_stat expr t_WHEN expr else_stat t_Semicolon
 conditional_force_assignment:  target t_LESym t_FORCE  inout_stat expr t_WHEN expr t_Semicolon
 
-selected_signal_assignment : selected_waveform_assignment
-selected_signal_assignment : selected_force_assignment
+selected_signal_assignment : selected_waveform_assignment {$$="";}
+selected_signal_assignment : selected_force_assignment {$$="";}
 
 selected_waveform_assignment: t_WITH expr t_SELECT choice_stat
                               target t_LESym delay_stat sel_wave_list
@@ -1930,13 +2072,13 @@ sel_wave_list_1: wavefrm_element  t_WHEN choices t_Semicolon
 selected_force_assignment: t_WITH expr t_SELECT choice_stat target t_LESym t_FORCE
                                                   inout_stat sel_var_list
 
-inout_stat:
-inout_stat: t_IN
-inout_stat: t_OUT
+inout_stat: /* empty */ {$$="";}
+inout_stat: t_IN   {$$=" in ";}
+inout_stat: t_OUT {$$="out";}
 
-delay_mechanism : t_TRANSPORT
-                | t_REJECT expr t_INERTIAL
-                |  t_INERTIAL
+delay_mechanism : t_TRANSPORT { $$=" transport ";}
+                | t_REJECT expr t_INERTIAL { $$=" reject "+$2+"inertial ";}
+                |  t_INERTIAL { $$=" inertial ";}
 
 conditional_variable_assignment : variable_assign_stat_1 t_WHEN expr else_stat t_Semicolon
 conditional_variable_assignment : variable_assign_stat_1 t_WHEN expr t_Semicolon
@@ -1945,7 +2087,7 @@ else_stat: t_ELSE expr t_WHEN expr
 else_stat: else_stat t_ELSE expr t_WHEN expr
 else_stat: t_ELSE expr
 
-selected_variable_assignment: t_WITH expr t_SELECT choice_stat select_name t_VarAsgn sel_var_list
+selected_variable_assignment: t_WITH expr t_SELECT choice_stat select_name t_VarAsgn sel_var_list {$$="";}
 
 sel_var_list: expr t_WHEN choices t_Comma  sel_var_list
 sel_var_list: sel_var_list_1
@@ -2067,22 +2209,17 @@ extern YYSTYPE vhdlScanYYlval;
 
 void vhdlScanYYerror(const char* /*str*/)
 {
-//  fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
+ // fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
  // exit(0);
 }
 
+
 void vhdlParse()
 {
-//  //myconv=conv;
-  vhdlScanYYparse();
+vhdlScanYYparse();
 }
 
-//int lex(void)
-//{
-//  return myconv->doLex();
-//}
-
-VhdlContainer*  getVhdlCont()
+struct VhdlContainer*  getVhdlCont()
 {
   return &s_str;
 }
@@ -2109,7 +2246,7 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
   current->args=lastCompound->name;             // architecture name
   current->includeName=comp;                    // component/enity/configuration
 
-  //printf(" \n genlable: [%s]  inst: [%s]  name: [%s] \n",genLabels.data(),instName,n);
+  //printf(" \n genlable: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
 
   if (lastCompound)
   {
@@ -2147,12 +2284,13 @@ static void popConfig()
 {
   assert(currNode);
   currNode=currNode->prevNode;
-  // printf("\n pop arch %s ",currNode->arch.data());
+     printf("\n pop arch %s ",currNode->arch.data());
 }
 
 static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeave,bool inlineConf)
 {
-  VhdlConfNode* co;
+ assert(false);
+   VhdlConfNode* co;
   QCString ent,arch,lab;
   ent=a;
   lab =  VhdlDocGen::parseForConfig(ent,arch);
@@ -2190,7 +2328,7 @@ static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeav
   }
 }// addConfigure
 
-//------------------------------------------------------------------------------------------------------------
+//  ------------------------------------------------------------------------------------------------------------
 
 static bool isFuncProcProced()
 {
@@ -2215,7 +2353,6 @@ static void initEntry(Entry *e)
 static void addProto(const char *s1,const char *s2,const char *s3,
                      const char *s4,const char *s5,const char *s6)
 {
- // (void)s3; // avoid unused warning
   (void)s5; // avoid unused warning
   static QRegExp reg("[\\s]");
   QCString name=s2;
@@ -2258,9 +2395,10 @@ static void createFunction(const QCString &impure,int spec,
                            const QCString &fname)
 {
   int it=0;
-  current->bodyLine=getParsedLine(spec);
   current->spec=spec;
   current->section=Entry::FUNCTION_SEC;
+
+if(impure=="impure" || impure=="pure")  
   current->exception=impure;
 
   if (parse_sec==GEN_SEC)
@@ -2287,8 +2425,9 @@ static void createFunction(const QCString &impure,int spec,
     current->args=fname;
     current->name=impure;
     if (!fname.isEmpty())
+    VhdlDocGen::deleteAllChars(current->args,' ');
     {
-      QStringList q1=QStringList::split(',',fname);
+      QStringList q1=QStringList::split(",",fname);
       for (uint ii=0;ii<q1.count();ii++)
       {
         Argument *arg=new Argument;
@@ -2296,20 +2435,21 @@ static void createFunction(const QCString &impure,int spec,
         current->argList->append(arg);
       }
     }
+ return;
   }
 
-  current->startLine=getParsedLine(it);
-  current->bodyLine=getParsedLine(it);
+
+ current->startLine=getParsedLine(it);
+ current->bodyLine=getParsedLine(it);
+
 }
 
 static void addVhdlType(const QCString &name,int startLine,int section,int spec,
                         const char* args,const char* type,Protection prot)
 {
   static QRegExp reg("[\\s]");
-
-  //int startLine=getParsedLine(spec);
-
-  if (isFuncProcProced())
+  
+ if (isFuncProcProced() || VhdlDocGen::getFlowMember())
   {
     return;
   }
@@ -2379,3 +2519,50 @@ static void newEntry()
   initEntry(current);
 }
 
+void createFlow(QCString val)
+{
+                
+                 if(!VhdlDocGen::getFlowMember()) return;
+                QCString q,ret;
+                
+                 if(currP==VhdlDocGen::FUNCTION)
+                {
+                     q=":function( ";
+                    FlowNode::alignFuncProc(q,tempEntry->argList,true);
+                    q+=")";
+                }
+                 else if(currP==VhdlDocGen::PROCEDURE)
+                 {
+                     q=":procedure (";    
+                     FlowNode::alignFuncProc(q,tempEntry->argList,false);
+                     q+=")";
+                     }
+                 else  {  
+                     q=":process( "+tempEntry->args;
+                      q+=")";
+                     }
+            
+                 q.prepend(VhdlDocGen::getFlowMember()->name().data());
+           
+                 FlowNode::addFlowNode(FlowNode::START_NO,q,0);
+                 
+                 if(!val.isEmpty())
+                  FlowNode::addFlowNode(FlowNode::VARIABLE_NO,val,0);
+                 
+                 if(currP==VhdlDocGen::FUNCTION)
+                 {
+                  ret="end function ";  
+                  }
+                 else if(currP==VhdlDocGen::PROCEDURE)
+                  ret="end procedure";
+                 else 
+                 ret="end process ";
+             
+                 FlowNode::addFlowNode(FlowNode::END_NO,ret,0);
+               //  FlowNode::printFlowList();
+                 FlowNode::writeFlowNode();  
+                 currP=0;
+     }
+     
+
+          

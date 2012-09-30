@@ -124,7 +124,7 @@ QString QFileInfo::readLink() const
     char s[PATH_MAX+1];
     if ( !isSymLink() )
 	return QString();
-    int len = readlink( QFile::encodeName(fn).data(), s, PATH_MAX );
+    int len = (int)readlink( QFile::encodeName(fn).data(), s, PATH_MAX );
     if ( len >= 0 ) {
 	s[len] = '\0';
 	r = QFile::decodeName(s);
@@ -297,7 +297,7 @@ QDateTime QFileInfo::lastModified() const
     if ( !fic || !cache )
 	doStat();
     if ( fic )
-	dt.setTime_t( fic->st.st_mtime );
+	dt.setTime_t( (uint)fic->st.st_mtime );
     return dt;
 }
 
@@ -316,7 +316,7 @@ QDateTime QFileInfo::lastRead() const
     if ( !fic || !cache )
 	doStat();
     if ( fic )
-	dt.setTime_t( fic->st.st_atime );
+	dt.setTime_t( (uint)fic->st.st_atime );
     return dt;
 }
 

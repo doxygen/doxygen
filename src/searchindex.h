@@ -24,6 +24,7 @@
 #include <qdict.h>
 #include <qintdict.h>
 #include <qvector.h>
+#include "sortdict.h"
 
 class FTextStream;
 class Definition;
@@ -89,7 +90,8 @@ class SearchIndex : public SearchIndexIntf
     void addWord(const char *word,bool hiPrio,bool recurse);
     QDict<IndexWord> m_words;
     QVector< QList<IndexWord> > m_index;
-    QIntDict<URL>  m_urls;
+    QDict<int> m_url2IdMap;
+    QIntDict<URL> m_urls;
     int m_urlIndex;
 };
 

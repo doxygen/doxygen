@@ -117,10 +117,10 @@ static unsigned char tab_a_png[36] =
 // normal tab background luma
 static unsigned char tab_b_png[36] =
 {
-    221, 231, 238, 236, 233, 230, 228, 225, 224,
-    221, 220, 218, 217, 216, 215, 214, 213, 212,
-    212, 194, 195, 196, 197, 198, 199, 200, 201,
-    202, 204, 206, 208, 210, 214, 216, 203, 185 
+    218, 228, 235, 233, 230, 227, 225, 222, 221,
+    218, 217, 215, 214, 213, 212, 211, 210, 209,
+    209, 197, 198, 199, 200, 201, 202, 203, 204,
+    205, 207, 209, 211, 213, 217, 219, 206, 188 
 };
 
 // hovering tab background luma
@@ -907,7 +907,7 @@ QCString substitute(const char *s,const char *src,const char *dst)
   {
     int count;
     for (count=0, p=s; (q=strstr(p,src))!=0; p=q+srcLen) count++;
-    resLen = p-s+strlen(p)+count*(dstLen-srcLen);
+    resLen = (int)(p-s)+strlen(p)+count*(dstLen-srcLen);
   }
   else // result has same size as s
   {
@@ -939,7 +939,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
   int resLen = 0;
   for (p=s; (q=strstr(p,begin))!=0; p=q+endLen)
   {
-    resLen+=q-p;
+    resLen+=(int)(q-p);
     p=q+beginLen;
     if ((q=strstr(p,end))==0)
     {
@@ -1500,6 +1500,7 @@ void HtmlGenerator::writeSearchData(const char *dir)
   {
     FTextStream t(&f);
     QCString searchCss = replaceColorMarkers(search_styleSheet);
+    searchCss = substitute(searchCss,"$doxygenversion",versionString);
     if (Config_getBool("DISABLE_INDEX"))
     {
       // move up the search box if there are no tabs
@@ -1513,29 +1514,21 @@ void HtmlGenerator::writeSearchData(const char *dir)
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
 {
   FTextStream t(&file);
-  t << replaceColorMarkers(defaultStyleSheet);
+  t << replaceColorMarkers(substitute(defaultStyleSheet,"$doxygenversion",versionString));
 }
 
 void HtmlGenerator::writeHeaderFile(QFile &file, const char * /*cssname*/)
 {
   FTextStream t(&file);
+  t << "<!-- HTML header for doxygen " << versionString << "-->" << endl;
   QCString contents(defaultHtmlHeader);
   t << contents;
-  
-//  QString relPathStr = "$relpath$";
-
-//  QCString id(file.name().utf8());
-//  if (id.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension) 
-//  {
-//    id=id.left(id.length()-Doxygen::htmlFileExtension.length());
-//  }
-
-//  t << substitute(defaultHtmlHeader, "$stylesheet", cssname);
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   FTextStream t(&file);
+  t << "<!-- HTML footer for doxygen " << versionString << "-->" <<  endl;
   QCString contents(defaultHtmlFooter);
   t << contents;
 }
@@ -1675,7 +1668,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       //t << "H1 { text-align: center; border-width: thin none thin none;" << endl;
       //t << "     border-style : double; border-color : blue; padding-left : 1em; padding-right : 1em }" << endl;
 
-      t << replaceColorMarkers(defaultStyleSheet);
+      t << replaceColorMarkers(substitute(defaultStyleSheet,"$doxygenversion",versionString));
       endPlainFile();
       Doxygen::indexList.addStyleSheetFile("doxygen.css");
     }

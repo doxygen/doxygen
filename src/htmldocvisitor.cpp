@@ -29,7 +29,7 @@
 #include "parserintf.h"
 #include "msc.h"
 #include "util.h"
-
+#include "vhdldocgen.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -476,13 +476,38 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       break;
     case DocVerbatim::Msc:
       {
+        forceEndParagraph(s);
+
+#if 0 // TODO: this should get its own command and not hijack the \msc
+      // command. This should also work for Latex and RTF output (or at
+      // least produce valid output there.
+        static bool optimizeForVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+        if (optimizeForVhdl)
+        {
+          if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
+          {
+            QCString fname=FlowNode::convertNameToFileName(); 
+            m_t << "<div align=\"left\">" << endl;     
+            m_t << "<p>";
+            m_t << "flowchart:" ;
+            m_t << "<a href=\"";
+            m_t << fname.data(); 
+            m_t << ".svg\">";
+            m_t << VhdlDocGen::getFlowMember()->name().data(); 
+            m_t << "</a><br><br>";
+            m_t << s->text().data();
+            m_t << "</p>";
+            VhdlDocGen::setFlowMember(NULL);
+          }
+        }
+#endif
         static int mscindex = 1;
         QCString baseName(4096);
 
         baseName.sprintf("%s%d", 
             (Config_getString("HTML_OUTPUT")+"/inline_mscgraph_").data(), 
             mscindex++
-           );
+            );
         QFile file(baseName+".msc");
         if (!file.open(IO_WriteOnly))
         {
@@ -491,17 +516,16 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         QCString text = "msc {";
         text+=s->text();
         text+="}";
+
         file.writeBlock( text, text.length() );
         file.close();
 
-        forceEndParagraph(s);
         m_t << "<div align=\"center\">" << endl;
         writeMscFile(baseName+".msc",s->relPath(),s->context());
-        m_t << "</div>" << endl;
-        forceStartParagraph(s);
-
         if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
+      m_t << "</div>" << endl;
+      forceStartParagraph(s);
       break;
   }
 }
@@ -702,7 +726,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   //       e->scope()  ? e->scope()->name().data()  : "<null>",
   //       e->member() ? e->member()->name().data() : "<null>"
   //      );
-  Doxygen::indexList.addIndexItem(e->scope(),e->member(),e->entry());
+  Doxygen::indexList.addIndexItem(e->scope(),e->member(),anchor,e->entry());
 }
 
 void HtmlDocVisitor::visit(DocSimpleSectSep *)

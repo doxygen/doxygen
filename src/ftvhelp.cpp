@@ -1296,7 +1296,11 @@ void FTVHelp::generateTreeViewScripts()
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
-      t << replaceColorMarkers(navtree_css);
+      t << substitute(
+              replaceColorMarkers(navtree_css),
+              "$width",
+              QCString().setNum(Config_getInt("TREEVIEW_WIDTH"))+"px"
+             );
     }
   }
 }

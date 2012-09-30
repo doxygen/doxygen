@@ -787,7 +787,7 @@ STARTDOCSYMS      "##"
                         if (computeIndent(&yytext[1])<=g_indent) 
 			{
 			  int i;
-			  for (i=yyleng-1;i>=0;i--)
+			  for (i=(int)yyleng-1;i>=0;i--)
 			  {
 			    unput(yytext[i]);
 			  }
@@ -805,7 +805,7 @@ STARTDOCSYMS      "##"
                         if (computeIndent(&yytext[1])<=g_indent)
 			{
 			  int i;
-			  for (i=yyleng-1;i>=0;i--)
+			  for (i=(int)yyleng-1;i>=0;i--)
 			  {
 			    unput(yytext[i]);
 			  }

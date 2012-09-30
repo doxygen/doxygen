@@ -30,6 +30,7 @@
 #include "pagedef.h"
 #include "growbuf.h"
 #include "message.h"
+#include "version.h"
 
 
 // file format: (all multi-byte values are stored in big endian format)
@@ -70,10 +71,11 @@ void IndexWord::addUrlIndex(int idx,bool hiPriority)
 //--------------------------------------------------------------------
 
 SearchIndex::SearchIndex() : SearchIndexIntf(Internal), 
-      m_words(328829), m_index(numIndexEntries), m_urlIndex(-1)
+      m_words(328829), m_index(numIndexEntries), m_url2IdMap(10007), m_urls(10007), m_urlIndex(-1)
 {
   int i;
   m_words.setAutoDelete(TRUE);
+  m_url2IdMap.setAutoDelete(TRUE);
   m_urls.setAutoDelete(TRUE);
   m_index.setAutoDelete(TRUE);
   for (i=0;i<numIndexEntries;i++) m_index.insert(i,new QList<IndexWord>);
@@ -87,7 +89,6 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
   QCString url=isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString("HTML_FILE_EXTENSION");
   if (anchor) url+=QCString("#")+anchor;  
-  m_urlIndex++;
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
   {
@@ -159,7 +160,17 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
     }
   }
 
-  m_urls.insert(m_urlIndex,new URL(name,url));
+  int *pIndex = m_url2IdMap.find(url);
+  if (pIndex==0)
+  {
+    ++m_urlIndex;
+    m_url2IdMap.insert(url,new int(m_urlIndex));
+    m_urls.insert(m_urlIndex,new URL(name,url));
+  }
+  else
+  {
+    m_urls.insert(*pIndex,new URL(name,url));
+  }
 }
 
 static int charsToIndex(const char *word)
@@ -398,8 +409,8 @@ struct SearchDocEntry
 {
   QCString type;
   QCString name;
-  QCString tag;
-  QCString url;
+  QCString tagFile;
+  QCString url; 
   GrowBuf  importantText;
   GrowBuf  normalText;
 };
@@ -503,31 +514,23 @@ static QCString definitionToName(Definition *ctx)
 
 void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile)
 {
-  //if (p->openOk)
-  //{
+  QCString tagFile = stripPath(Config_getString("GENERATE_TAGFILE"));
+  QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
+  QCString url = baseName + Doxygen::htmlFileExtension;
+  if (anchor) url+=QCString("#")+anchor;
+  QCString key = tagFile+";"+url;
+
+  p->current = p->docEntries.find(key);
+  if (!p->current)
+  {
     SearchDocEntry *e = new SearchDocEntry;
-    e->type = definitionToName(ctx);
+    e->type = isSourceFile ? QCString("source") : definitionToName(ctx);
     e->name = ctx->qualifiedName();
-    e->tag  = stripPath(Config_getString("GENERATE_TAGFILE"));
-    QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
-    e->url  = baseName + Doxygen::htmlFileExtension;
-    if (anchor) e->url+=QCString("#")+anchor;
+    e->tagFile = tagFile;
+    e->url  = url;
     p->current = e;
-    p->docEntries.append(e->url,e);
-    //if (p->insideDoc)
-    //{
-    //  p->t << "  </doc>" << endl;
-    //}
-    //p->t << "  <doc>" << endl;
-    //QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
-    //p->t << "    <field name=\"type\">" << definitionToName(ctx) << "</field>" << endl;
-    //p->t << "    <field name=\"name\">" << convertToXML(ctx->qualifiedName()) << "</field>" << endl;
-    //p->t << "    <field name=\"tag\">"  << convertToXML(stripPath(Config_getString("GENERATE_TAGFILE"))) << "</field>" << endl;
-    //p->t << "    <field name=\"url\">" << baseName << Doxygen::htmlFileExtension;
-    //if (anchor) p->t << "#" << anchor;
-    //p->t << "</field>" << endl;
-    //p->insideDoc=TRUE;
-  //}
+    p->docEntries.append(key,e);
+  }
 }
 
 void SearchIndexExternal::addWord(const char *word,bool hiPriority)
@@ -536,14 +539,6 @@ void SearchIndexExternal::addWord(const char *word,bool hiPriority)
   GrowBuf *pText = hiPriority ? &p->current->importantText : &p->current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');
   pText->addStr(word);
-  //if (p->openOk)
-  //{
-  //  p->t << "    <field name=\"text";
-  //  if (hiPriority) p->t << "\" boost=\"yes";
-  //  p->t << "\">";
-  //  p->t << convertToXML(word);
-  //  p->t << "</field>" << endl;
-  //}
 }
 
 void SearchIndexExternal::write(const char *fileName)
@@ -561,10 +556,10 @@ void SearchIndexExternal::write(const char *fileName)
       doc->normalText.addChar(0);    // make sure buffer ends with a 0 terminator
       doc->importantText.addChar(0); // make sure buffer ends with a 0 terminator
       t << "  <doc>" << endl;
-      t << "    <field name=\"type\">" << doc->type << "</field>" << endl;
-      t << "    <field name=\"name\">" << convertToXML(doc->name) << "</field>" << endl;
-      t << "    <field name=\"tag\">"  << convertToXML(doc->tag)  << "</field>" << endl;
-      t << "    <field name=\"url\">"  << doc->url  << "</field>" << endl;
+      t << "    <field name=\"type\">"     << doc->type << "</field>" << endl;
+      t << "    <field name=\"name\">"     << convertToXML(doc->name) << "</field>" << endl;
+      t << "    <field name=\"tag\">"      << convertToXML(doc->tagFile)  << "</field>" << endl;
+      t << "    <field name=\"url\">"      << convertToXML(doc->url)  << "</field>" << endl;
       t << "    <field name=\"keywords\">" << convertToXML(doc->importantText.get())  << "</field>" << endl;
       t << "    <field name=\"text\">"     << convertToXML(doc->normalText.get())     << "</field>" << endl;
       t << "  </doc>" << endl;
@@ -1023,6 +1018,7 @@ void writeJavascriptSearchIndex()
               " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
             t << "<html><head><title></title>" << endl;
             t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
+            t << "<meta name=\"generator\" content=\"Doxygen " << versionString << "\">" << endl;
             t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
             t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
             t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;

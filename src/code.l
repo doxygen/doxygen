@@ -565,7 +565,7 @@ static void codifyLines(const char *text)
     {
       g_yyLineNr++;
       //*(p-1)='\0';
-      int l = p-sp-1;
+      int l = (int)(p-sp-1);
       char *tmp = (char*)malloc(l+1);
       memcpy(tmp,sp,l);
       tmp[l]='\0';

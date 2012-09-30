@@ -51,7 +51,11 @@
 #include "entry.h"
 
 #define YY_NEVER_INTERACTIVE 1
-  
+enum GuardType
+{
+  Guard_Cond,
+  Guard_CondNot
+}; 
 
 struct FileState
 {
@@ -356,6 +360,7 @@ static bool               g_isSource;
 
 static bool               g_lexInit = FALSE;
 
+static GuardType        guardType;           // kind of guard for conditional section
 //DefineDict* getGlobalDefineDict() 
 //{
 //  return g_globalDefineDict;
@@ -1651,9 +1656,19 @@ static void readIncludeFile(const QCString &inc)
 static void startCondSection(const char *sectId)
 {
   g_condStack.push(new bool(g_skip));
-  if (Config_getList("ENABLED_SECTIONS").find(sectId)==-1)
+  if (guardType == Guard_Cond)
   {
-    g_skip=TRUE;
+    if (Config_getList("ENABLED_SECTIONS").find(sectId)==-1)
+    {
+      g_skip=TRUE;
+    }
+  }
+  else if (guardType == Guard_CondNot)
+  {
+    if (Config_getList("ENABLED_SECTIONS").find(sectId)!=-1)
+    {
+      g_skip=TRUE;
+    }
   }
 }
 
@@ -1779,12 +1794,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <Start>^{B}*"#"				{ BEGIN(Command); }
 <Start>^{B}*/[^#]			{
- 					  outputArray(yytext,yyleng); 
+ 					  outputArray(yytext,(int)yyleng);
   					  BEGIN(CopyLine); 
 					}
 <Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
 					  int i;
-					  for (i=yyleng-1;i>=0;i--)
+					  for (i=(int)yyleng-1;i>=0;i--)
 					  {
 					    unput(yytext[i]);
 					  }
@@ -1814,7 +1829,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else // don't skip
 					  {
 					    int i;
-					    for (i=yyleng-1;i>=0;i--)
+					    for (i=(int)yyleng-1;i>=0;i--)
 					    {
 					      unput(yytext[i]);
 					    }
@@ -1824,7 +1839,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <CopyLine>"extern"{BN}{0,80}"\"C\""*{BN}{0,80}"{"	{
                                           QCString text=yytext;
   					  g_yyLineNr+=text.contains('\n');
-					  outputArray(yytext,yyleng);
+					  outputArray(yytext,(int)yyleng);
   					}
 <CopyLine>"{"				{ // count brackets inside the main file
   					  if (g_includeStack.isEmpty()) 
@@ -1841,23 +1856,23 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  outputChar(*yytext);
   					}
 <CopyLine>"'"\\[0-7]{1,3}"'"		{ 
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
 					}
 <CopyLine>"'"\\."'"			{ 
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
 					}
 <CopyLine>"'"."'"			{ 
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
 					}
 <CopyLine>\"				{
 					  outputChar(*yytext);
 					  BEGIN( CopyString );
 					}
 <CopyString>[^\"\\\r\n]+		{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
 					}
 <CopyString>\\.				{
-					  outputArray(yytext,yyleng);
+					  outputArray(yytext,(int)yyleng);
 					}
 <CopyString>\"				{
 					  outputChar(*yytext);
@@ -1897,7 +1912,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
-					    outputArray(yytext,yyleng);
+					    outputArray(yytext,(int)yyleng);
 					  }
   					}
 <CopyLine>{ID}				{
@@ -1915,7 +1930,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
-					    outputArray(yytext,yyleng);
+					    outputArray(yytext,(int)yyleng);
 					  }
   					}
 <CopyLine>"\\"\r?/\n			{ // strip line continuation characters
@@ -2404,7 +2419,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(CopyCComment);
   					}
 <DefineText>"//"[!/]?			{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					  g_lastCPPContext=YY_START;
 					  g_defLitText+=' ';
   					  BEGIN(SkipCPPComment);
@@ -2424,21 +2439,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <SkipCComment>"//"("/")*		{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment>"/*"			{
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
 <SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					  g_yyLineNr+=QCString(yytext).contains('\n');
   					}
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					  g_yyLineNr+=QCString(yytext).contains('\n');
 					  if (yytext[1]=='f')
 					  {
@@ -2451,18 +2466,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(SkipVerbatim);
   					}
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
+                                          guardType = Guard_Cond;
   					  g_condCtx = YY_START;
   					  outputArray(yytext,yyleng);
   					  BEGIN(CondLine);
   					}
+<SkipCComment,SkipCPPComment>[\\@]"condnot"[ \t]+	{ // conditional section
+                                          guardType = Guard_CondNot;
+  					  g_condCtx = YY_START;
+  					  outputArray(yytext,(int)yyleng);
+  					  BEGIN(CondLine);
+  					}
 <CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]*	{
   				          startCondSection(yytext);
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					  BEGIN(g_condCtx);
   					}
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n {
+                                          guardType = Guard_Cond;
   					  g_condCtx = YY_START;
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <CondLine>.				{
   					  unput(*yytext);
@@ -2470,11 +2493,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(g_condCtx);
   					}
 <SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9] {
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					  endCondSection();
   					}
 <SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
 					  if (yytext[1]=='f' && g_blockName=="f")
 					  {
 					    BEGIN(SkipCComment);
@@ -2485,10 +2508,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <SkipVerbatim>"*/"|"/*"			{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment,SkipVerbatim>[^*\\@\x06\n\/]+ {
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 
   					  g_yyLineNr++;
@@ -2528,7 +2551,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <RemoveCComment>\n			{ g_yyLineNr++; outputChar('\n'); }
 <RemoveCComment>.			
 <SkipCPPComment>[^\n\/\\@]+		{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCPPComment,RemoveCPPComment>\n	{
   					  unput(*yytext);
@@ -2541,7 +2564,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('/');
   					}
 <SkipCPPComment>[^\x06\@\\\n]+		{
-  					  outputArray(yytext,yyleng);
+  					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCPPComment>.			{
   					  outputChar(*yytext);
@@ -2715,14 +2738,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <*>"/*"/"*/"				|
 <*>"/*"[*]?				{
-					  outputArray(yytext,yyleng);
+					  outputArray(yytext,(int)yyleng);
   					  g_lastCContext=YY_START;
 					  g_commentCount=1;
 					  if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
 					  BEGIN(SkipCComment);
   					}
 <*>"//"[/]?				{
-					  outputArray(yytext,yyleng);
+					  outputArray(yytext,(int)yyleng);
   					  g_lastCPPContext=YY_START;
 					  if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
 					  BEGIN(SkipCPPComment);

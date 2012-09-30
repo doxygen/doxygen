@@ -499,6 +499,8 @@ class MemberDefImpl
                               // FALSE => block is put before declaration.
     ClassDef *category;
     MemberDef *categoryRelation;
+
+    bool tagDataWritten;
 };
 
 MemberDefImpl::MemberDefImpl() :
@@ -627,6 +629,7 @@ void MemberDefImpl::init(Definition *def,
   hasDocumentedReturnType = FALSE;
   docProvider = 0;
   isDMember = def->getDefFileName().right(2).lower()==".d";
+  tagDataWritten = FALSE;
 }
 
 
@@ -1336,7 +1339,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                bool inGroup,ClassDef *inheritedFrom,const char *inheritId
                )
 {
-  //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",name().data(),inGroup);
+  //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",qualifiedName().data(),inGroup);
 
   // hide enum value, since they appear already as part of the enum, unless they
   // are explicitly grouped.
@@ -1350,60 +1353,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
-  // write tag file information of this member
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !isReference())
-  {
-    Doxygen::tagFile << "    <member kind=\"";
-    switch (m_impl->mtype)
-    {
-      case Define:      Doxygen::tagFile << "define";      break;
-      case EnumValue:   Doxygen::tagFile << "enumvalue";   break;
-      case Property:    Doxygen::tagFile << "property";    break;
-      case Event:       Doxygen::tagFile << "event";       break;
-      case Variable:    Doxygen::tagFile << "variable";    break;
-      case Typedef:     Doxygen::tagFile << "typedef";     break;
-      case Enumeration: Doxygen::tagFile << "enumeration"; break;
-      case Function:    Doxygen::tagFile << "function";    break;
-      case Signal:      Doxygen::tagFile << "signal";      break;
-      //case Prototype:   Doxygen::tagFile << "prototype";   break;
-      case Friend:      Doxygen::tagFile << "friend";      break;
-      case DCOP:        Doxygen::tagFile << "dcop";        break;
-      case Slot:        Doxygen::tagFile << "slot";        break;
-    }
-    if (m_impl->prot!=Public)
-    {
-      Doxygen::tagFile << "\" protection=\"";
-      if (m_impl->prot==Protected)    Doxygen::tagFile << "protected";
-      else if (m_impl->prot==Package) Doxygen::tagFile << "package";
-      else /* Private */              Doxygen::tagFile << "private"; 
-    }
-    if (m_impl->virt!=Normal)
-    {
-      Doxygen::tagFile << "\" virtualness=\"";
-      if (m_impl->virt==Virtual) Doxygen::tagFile << "virtual";
-      else /* Pure */            Doxygen::tagFile << "pure"; 
-    }
-    if (isStatic())
-    {
-      Doxygen::tagFile << "\" static=\"yes";
-    }
-    Doxygen::tagFile << "\">" << endl;
-    Doxygen::tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
-    Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
-    Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
-    Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "    </member>" << endl;
-  }
-
-  // write search index info
-  if (Doxygen::searchIndex && isLinkableInProject())
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-    Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
-  }
+  _writeTagData();
 
   QCString cname  = d->name();
   QCString cdname = d->displayName();
@@ -2262,9 +2212,9 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
         {
           if (first)
           {
-            ol.startSimpleSect(BaseOutputDocInterface::EnumValues,0,0,theTranslator->trEnumerationValues()+": ");
-            ol.startDescForItem();
-            ol.startDescTable();
+            //ol.startSimpleSect(BaseOutputDocInterface::EnumValues,0,0,theTranslator->trEnumerationValues()+": ");
+            //ol.startDescForItem();
+            ol.startDescTable(theTranslator->trEnumerationValues());
           }
 
           ol.addIndexItem(fmd->name(),ciname);
@@ -2294,9 +2244,14 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           //ol.newParagraph();
           ol.startDescTableData();
 
-          if (!fmd->briefDescription().isEmpty())
+          bool hasBrief = !fmd->briefDescription().isEmpty();
+          bool hasDetails = !fmd->documentation().isEmpty();
+
+          if (hasBrief)
           { 
-            ol.parseDoc(fmd->briefFile(),fmd->briefLine(),getOuterScope()?getOuterScope():container,fmd,fmd->briefDescription(),TRUE,FALSE);
+            ol.parseDoc(fmd->briefFile(),fmd->briefLine(),
+                getOuterScope()?getOuterScope():container,
+                fmd,fmd->briefDescription(),TRUE,FALSE);
           }
           // FIXME:PARA
           //if (!fmd->briefDescription().isEmpty() && 
@@ -2304,9 +2259,11 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           //{
           //  ol.newParagraph();
           //}
-          if (!fmd->documentation().isEmpty())
+          if (hasDetails)
           { 
-            ol.parseDoc(fmd->docFile(),fmd->docLine(),getOuterScope()?getOuterScope():container,fmd,fmd->documentation()+"\n",TRUE,FALSE);
+            ol.parseDoc(fmd->docFile(),fmd->docLine(),
+                getOuterScope()?getOuterScope():container,
+                fmd,fmd->documentation()+"\n",TRUE,FALSE);
           }
           ol.endDescTableData();
         }
@@ -2317,9 +2274,9 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
     { 
       //ol.endItemList(); 
       ol.endDescTable();
-      ol.endDescForItem();
-      ol.endSimpleSect();
-      ol.writeChar('\n'); 
+      //ol.endDescForItem();
+      //ol.endSimpleSect();
+      //ol.writeChar('\n'); 
     }
   }
 }
@@ -2430,7 +2387,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-i-l));
-
+        
         found=TRUE;
       }
     }
@@ -3376,6 +3333,81 @@ Specifier MemberDef::virtualness(int count) const
   return v;
 }
 
+void MemberDef::_writeTagData()
+{
+  if (m_impl->tagDataWritten) return;
+  static bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
+  // write tag file information of this member
+  if (generateTagFile && isLinkableInProject())
+  {
+    Doxygen::tagFile << "    <member kind=\"";
+    switch (m_impl->mtype)
+    {
+      case Define:      Doxygen::tagFile << "define";      break;
+      case EnumValue:   Doxygen::tagFile << "enumvalue";   break;
+      case Property:    Doxygen::tagFile << "property";    break;
+      case Event:       Doxygen::tagFile << "event";       break;
+      case Variable:    Doxygen::tagFile << "variable";    break;
+      case Typedef:     Doxygen::tagFile << "typedef";     break;
+      case Enumeration: Doxygen::tagFile << "enumeration"; break;
+      case Function:    Doxygen::tagFile << "function";    break;
+      case Signal:      Doxygen::tagFile << "signal";      break;
+      case Friend:      Doxygen::tagFile << "friend";      break;
+      case DCOP:        Doxygen::tagFile << "dcop";        break;
+      case Slot:        Doxygen::tagFile << "slot";        break;
+    }
+    if (m_impl->prot!=Public)
+    {
+      Doxygen::tagFile << "\" protection=\"";
+      if (m_impl->prot==Protected)    Doxygen::tagFile << "protected";
+      else if (m_impl->prot==Package) Doxygen::tagFile << "package";
+      else /* Private */              Doxygen::tagFile << "private"; 
+    }
+    if (m_impl->virt!=Normal)
+    {
+      Doxygen::tagFile << "\" virtualness=\"";
+      if (m_impl->virt==Virtual) Doxygen::tagFile << "virtual";
+      else /* Pure */            Doxygen::tagFile << "pure"; 
+    }
+    if (isStatic())
+    {
+      Doxygen::tagFile << "\" static=\"yes";
+    }
+    Doxygen::tagFile << "\">" << endl;
+    Doxygen::tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
+    Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
+    Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
+    Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+    Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "    </member>" << endl;
+    _addToSearchIndex();
+  }
+  MemberList *fmdl=m_impl->enumFields;
+  if (fmdl)
+  {
+    MemberListIterator mli(*fmdl);
+    MemberDef *fmd;
+    for (mli.toFirst();(fmd=mli.current());++mli)
+    {
+      if (!fmd->isReference())
+      {
+        if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+        {
+          Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
+          Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
+          Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;              
+          Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
+          Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
+          Doxygen::tagFile << "    </member>" << endl;
+          fmd->_addToSearchIndex();
+        }
+      }
+    }
+  }
+  m_impl->tagDataWritten=TRUE;
+}
+
 void MemberDef::_computeIsConstructor()
 {
   KEEP_RESIDENT_DURING_CALL;
@@ -3503,15 +3535,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
   {
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !isReference())
-      {
-        Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
-        Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl; 
-        Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
-        Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl; 
-        Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl; 
-        Doxygen::tagFile << "    </member>" << endl;
-      }
+      _writeTagData();
       writeLink(typeDecl,cd,nd,fd,gd);
     }
     else
@@ -3558,15 +3582,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
 
           if (fmd->hasDocumentation()) // enum value has docs
           {
-            if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fmd->isReference())
-            {
-              Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
-              Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
-              Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;              
-              Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
-              Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
-              Doxygen::tagFile << "    </member>" << endl;
-            }
+            fmd->_writeTagData();
             fmd->writeLink(typeDecl,cd,nd,fd,gd);
           }
           else // no docs for this enum value
@@ -4759,6 +4775,7 @@ void MemberDef::flushToDisk() const
   marshalBool         (Doxygen::symbolStorage,m_impl->docsForDefinition);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->category);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->categoryRelation);
+  marshalBool         (Doxygen::symbolStorage,m_impl->tagDataWritten);
   marshalUInt(Doxygen::symbolStorage,END_MARKER);
 
   // function doesn't modify the object conceptually but compiler doesn't know this.
@@ -4862,6 +4879,7 @@ void MemberDef::loadFromDisk() const
   m_impl->docsForDefinition       = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->category                = (ClassDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->categoryRelation        = (MemberDef*)unmarshalObjPointer  (Doxygen::symbolStorage);
+  m_impl->tagDataWritten          = unmarshalBool         (Doxygen::symbolStorage);
   marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==END_MARKER);
 
@@ -4955,6 +4973,23 @@ QCString MemberDef::displayName(bool) const
 { 
   return Definition::name(); 
 }
+
+void MemberDef::_addToSearchIndex()
+{
+  // write search index info
+  if (Doxygen::searchIndex && isLinkableInProject())
+  {
+    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
+    QCString ln=localName(),qn=qualifiedName();
+    Doxygen::searchIndex->addWord(ln,TRUE);
+    if (ln!=qn)
+    {
+      Doxygen::searchIndex->addWord(qn,TRUE);
+    }
+  }
+}
+
+
 
 //----------------
 

@@ -65,7 +65,7 @@ QCString QUtf8Codec::fromUnicode(const QString& uc, int& len_in_out) const
 	    *cursor++ = 0x80 | (ch.cell()&0x3f);
 	}
     }
-    len_in_out = cursor - (uchar*)rstr.data();
+    len_in_out = (int)(cursor - (uchar*)rstr.data());
     rstr.truncate(len_in_out);
     return rstr;
 }
@@ -201,13 +201,13 @@ public:
     QCString fromUnicode(const QString& uc, int& len_in_out)
     {
 	if ( headerdone ) {
-	    len_in_out = uc.length()*sizeof(QChar);
+	    len_in_out = uc.length()*(int)sizeof(QChar);
 	    QCString d(len_in_out);
 	    memcpy(d.data(),uc.unicode(),len_in_out);
 	    return d;
 	} else {
 	    headerdone = TRUE;
-	    len_in_out = (1+uc.length())*sizeof(QChar);
+	    len_in_out = (1+uc.length())*(int)sizeof(QChar);
 	    QCString d(len_in_out);
 	    memcpy(d.data(),&QChar::byteOrderMark,sizeof(QChar));
 	    memcpy(d.data()+sizeof(QChar),uc.unicode(),uc.length()*sizeof(QChar));

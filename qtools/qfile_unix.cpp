@@ -403,7 +403,7 @@ uint QFile::size() const
     } else {
 	STAT( QFile::encodeName(fn), &st );
     }
-    return st.st_size;
+    return (uint)st.st_size;
 }
 
 /*!
@@ -500,13 +500,13 @@ int QFile::readBlock( char *p, uint len )
     
     if ( nread < (int)len ) {
 	if ( isRaw() ) {				// raw file
-	    nread += READ( fd, p, len-nread );
+	    nread += (int)READ( fd, p, len-nread );
 	    if ( len && nread <= 0 ) {
 		nread = 0;
 		setStatus(IO_ReadError);
 	    }
 	} else {					// buffered file
-	    nread += fread( p, 1, len-nread, fh );
+	    nread += (int)fread( p, 1, len-nread, fh );
 	    if ( (uint)nread != len ) {
 		if ( ferror( fh ) || nread==0 )
 		    setStatus(IO_ReadError);
@@ -552,9 +552,9 @@ int QFile::writeBlock( const char *p, uint len )
 #endif
     int nwritten;				// number of bytes written
     if ( isRaw() )				// raw file
-	nwritten = WRITE( fd, p, len );
+	nwritten = (int)WRITE( fd, p, len );
     else					// buffered file
-	nwritten = fwrite( p, 1, len, fh );
+	nwritten = (int)fwrite( p, 1, len, fh );
     if ( nwritten != (int)len ) {		// write error
 	if ( errno == ENOSPC )			// disk is full
 	    setStatus( IO_ResourceError );
@@ -661,7 +661,7 @@ bool QFile::seek( int64 pos )
   if (isOpen())
   {
     // TODO: support 64 bit size
-    return fseek( fh, pos, SEEK_SET )!=-1;
+    return fseek( fh, (long)pos, SEEK_SET )!=-1;
   }
   return FALSE;
 }

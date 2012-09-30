@@ -184,7 +184,7 @@ unsigned int ObjCache::hash(void *addr)
     key ^=  (key >> 15);
     key += ~(key << 27);
     key ^=  (key >> 31);
-    return key & (m_size-1);
+    return (unsigned int)(key & (m_size-1));
   }
   else
   {
@@ -196,7 +196,7 @@ unsigned int ObjCache::hash(void *addr)
     key ^=  (key >> 6);
     key += ~(key << 11);
     key ^=  (key >> 16);
-    return key & (m_size-1);
+    return (unsigned int)(key & (m_size-1));
   }
 }
 

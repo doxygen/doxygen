@@ -263,7 +263,8 @@ void DocSets::addContentsItem(bool isDir,
   }
 }
 
-void DocSets::addIndexItem(Definition *context,MemberDef *md,const char *)
+void DocSets::addIndexItem(Definition *context,MemberDef *md,
+                           const char *,const char *)
 {
   if (md==0 && context==0) return;
 

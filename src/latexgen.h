@@ -198,10 +198,15 @@ class LatexGenerator : public OutputGenerator
     void endContents() {}
     void writeNonBreakableSpace(int);
     
-    void startDescTable()
-    { t << "\\begin{description}" << endl; }
+    void startDescTable(const char *title)
+    { startSimpleSect(EnumValues,0,0,title);
+      startDescForItem();
+      t << "\\begin{description}" << endl; }
     void endDescTable()
-    { t << "\\end{description}" << endl; }
+    { t << "\\end{description}" << endl; 
+      endDescForItem();
+      endSimpleSect();
+    }
     void startDescTableTitle()
     { t << "\\item[{\\em " << endl; }
     void endDescTableTitle()

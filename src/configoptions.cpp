@@ -400,7 +400,12 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "IDL_PROPERTY_SUPPORT",
-                 "For Microsoft's IDL there are propget and propput attributes to indicate getter and setter methods for a property. Setting this option to YES (the default) will make doxygen replace the get and set methods by a property in the documentation. This will only work if the methods are indeed getting or setting a simple type. If this is not the case, or you want to show the methods anyway, you should set this option to NO.",
+                 "For Microsoft's IDL there are propget and propput attributes to indicate\n"
+                 "getter and setter methods for a property. Setting this option to YES (the\n"
+                 "default) will make doxygen replace the get and set methods by a property in\n"
+                 "the documentation. This will only work if the methods are indeed getting or\n"
+                 "setting a simple type. If this is not the case, or you want to show the\n"
+                 "methods anyway, you should set this option to NO.",
                  TRUE
                 );
   //----
@@ -801,7 +806,8 @@ void addConfigOptions(Config *cfg)
                  "requires the bibtex tool to be installed. See also\n"
                  "http://en.wikipedia.org/wiki/BibTeX for more info. For LaTeX the style\n"
                  "of the bibliography can be controlled using LATEX_BIB_STYLE. To use this\n"
-                 "feature you need bibtex and perl available in the search path."
+                 "feature you need bibtex and perl available in the search path. Do not use\n"
+                 "file names with spaces, bibtex cannot handle them."
                 );
   cl->setWidgetType(ConfigList::File);
   //---------------------------------------------------------------------------

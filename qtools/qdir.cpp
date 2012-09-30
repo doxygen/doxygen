@@ -1184,7 +1184,7 @@ int qt_cmp_si( const void *n1, const void *n2 )
 
     if ( r == 0 ) {
 	// Enforce an order - the order the items appear in the array
-	r = (char*)n1 - (char*)n2;
+	r = (int)((char*)n1 - (char*)n2);
     }
 
     if ( qt_cmp_si_sortSpec & QDir::Reversed )

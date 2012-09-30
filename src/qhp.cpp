@@ -124,9 +124,10 @@ void Qhp::initialize()
 
   // Add extra root node
   QCString fullProjectname = getFullProjectName();
+  QCString indexFile = "index"+Doxygen::htmlFileExtension;
   const char * const attributes[] =
   { "title", fullProjectname,
-    "ref",   QCString("index")+Doxygen::htmlFileExtension,
+    "ref",   indexFile,
     NULL
   };
   m_toc.open("section", attributes);
@@ -211,7 +212,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
 }
 
 void Qhp::addIndexItem(Definition *context,MemberDef *md,
-                       const char *word)
+                       const char *sectionAnchor,const char *word)
 {
   (void)word;
   //printf("addIndexItem(%s %s %s\n",
@@ -235,7 +236,7 @@ void Qhp::addIndexItem(Definition *context,MemberDef *md,
     QCString level1  = context->name();
     QCString level2  = word ? QCString(word) : md->name();
     QCString contRef = separateMemberPages ? cfname : cfiname;
-    QCString anchor  = md->anchor();
+    QCString anchor  = sectionAnchor ? QCString(sectionAnchor) : md->anchor();
 
     QCString ref;
 
@@ -256,7 +257,7 @@ void Qhp::addIndexItem(Definition *context,MemberDef *md,
     // <keyword name="Foo" id="Foo" ref="doc.html"/>
     QCString contRef = context->getOutputFileBase();
     QCString level1  = word ? QCString(word) : context->name();
-    QCString ref = makeFileName(contRef);
+    QCString ref = makeRef(contRef,sectionAnchor);
     const char * attributes[] =
     {
       "name", level1,

@@ -55,6 +55,7 @@ documentation:
 \refitem cmdclass \\class
 \refitem cmdcode \\code
 \refitem cmdcond \\cond
+\refitem cmdcondnot \\condnot
 \refitem cmdcopybrief \\copybrief
 \refitem cmdcopydetails \\copydetails
 \refitem cmdcopydoc \\copydoc
@@ -1125,7 +1126,29 @@ class Implementation : public Intf
 The output will be different depending on whether or not \c ENABLED_SECTIONS
 contains \c TEST, or \c DEV
 
-  \sa section \ref cmdendcond "\\endcond".
+  \sa section \ref cmdcondnot "\\condnot" and section \ref cmdendcond "\\endcond".
+
+<hr>
+\section cmdcondnot \\condnot <section-label>
+
+  \addindex \\condnot
+  Starts a conditional section that ends with a corresponding
+  \ref cmdendcond "\\endcond" command, which is typically found in
+  another comment block. The main purpose of this pair of
+  commands is to (conditionally) exclude part of a file from processing
+  (in older version of doxygen this could only be achieved using C preprocessor commands).
+
+  The section between \\condnot and \\endcond commands can be excluded by
+  adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
+  configuration option.
+
+  For conditional sections within a comment block one should
+  use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
+
+  Conditional sections can be nested. In this case a nested section will only
+  be shown if it and its containing section are included.
+
+  \sa section \ref cmdcond "\\cond" and section \ref cmdendcond "\\endcond".
 
 <hr>
 \section cmdcopyright \\copyright { copyright description }
@@ -1197,9 +1220,9 @@ contains \c TEST, or \c DEV
 \section cmdendcond \\endcond
 
   \addindex \\endcond
-  Ends a conditional section that was started by \ref cmdcond "\\cond".
+  Ends a conditional section that was started by \ref cmdcond "\\cond" or \ref cmdcondnot "\\condnot".
 
-  \sa section \ref cmdcond "\\cond".
+  \sa section \ref cmdcond "\\cond" and section \ref cmdcondnot "\\condnot".
 
 <hr>
 \section cmdendif \\endif

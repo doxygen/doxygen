@@ -195,8 +195,9 @@ class ManGenerator : public OutputGenerator
     void endContents() {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
     
-    void startDescTable() {}
-    void endDescTable() {}
+    void startDescTable(const char *t) 
+    { startSimpleSect(EnumValues,0,0,t); startDescForItem(); }
+    void endDescTable() { endDescForItem(); endSimpleSect(); }
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
     void startDescTableData() { t << endl; firstCol=TRUE; }

@@ -606,7 +606,7 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
   while (dr && !done)
   {
     int x=0,y=0;
-    float xf=0.0,yf=0.0;
+    float xf=0.0f,yf=0.0f;
     DiagramItem *di=dr->first();
     if (di->isInList()) // put boxes in a list
     {
@@ -623,8 +623,8 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
           }
           else
           {
-            if (doBase) yf += 1.0;
-            else        yf -= 1.0;
+            if (doBase) yf += 1.0f;
+            else        yf -= 1.0f;
           }
         }
         else
@@ -736,7 +736,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
     if (di->isInList()) // row consists of list connectors
     {
       int x=0,y=0,ys=0;
-      float xf=0.0,yf=0.0,ysf=0.0;
+      float xf=0.0f,yf=0.0f,ysf=0.0f;
       while (di)
       {
         DiagramItem *pi=di->parentItem();
@@ -808,12 +808,12 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             if (doBase)
             {
               ysf = di->yPos()/(float)gridHeight+superRows-1;
-              yf = ysf + 0.5;
+              yf = ysf + 0.5f;
             }
             else
             {
-              ysf = (float)superRows-0.25-di->yPos()/(float)gridHeight;
-              yf = ysf - 0.25;
+              ysf = (float)superRows-0.25f-di->yPos()/(float)gridHeight;
+              yf = ysf - 0.25f;
             }
           }
           while (di!=last) // more children to add
@@ -841,12 +841,12 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
               if (doBase)
               {
                 t << "1 " << xf << " " << yf << " hedge\n";
-                yf += 1.0;
+                yf += 1.0f;
               }
               else
               {
                 t << "0 " << xf << " " << yf << " hedge\n";
-                yf -= 1.0;
+                yf -= 1.0f;
               }
             }
             di=dr->next();
@@ -1092,9 +1092,9 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   uint estWidth  = cols*(20+QMAX(baseMaxLabelWidth,superMaxLabelWidth));
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
   
-  const float pageWidth = 14.0; // estimated page width in cm.
-                                // Somewhat lower to deal with estimation
-                                // errors. 
+  const float pageWidth = 14.0f; // estimated page width in cm.
+                                 // Somewhat lower to deal with estimation
+                                 // errors. 
   
   // compute the image height in centimeters based on the estimates
   float realHeight = QMIN(rows,12); // real height in cm

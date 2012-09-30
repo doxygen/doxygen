@@ -1408,7 +1408,6 @@ bool DotManager::run()
   return TRUE;
 }
 
-
 //--------------------------------------------------------------------
 
 
@@ -1682,6 +1681,18 @@ static void writeBoxMemberList(FTextStream &t,
   }
 }
 
+static QCString stripProtectionPrefix(const QCString &s)
+{
+  if (!s.isEmpty() && (s[0]=='-' || s[0]=='+' || s[0]=='~' || s[0]=='#'))
+  {
+    return s.mid(1);
+  }
+  else
+  {
+    return s;
+  }
+}
+
 void DotNode::writeBox(FTextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
@@ -1698,18 +1709,29 @@ void DotNode::writeBox(FTextStream &t,
 
   if (m_classDef && umlLook && (gt==Inheritance || gt==Collaboration))
   {
-    // add names shown as relation to a dictionary, so we don't show
+    // add names shown as relations to a dictionary, so we don't show
     // them as attributes as well
     QDict<void> arrowNames(17);
     if (m_edgeInfo)
     {
+      // for each edge
       QListIterator<EdgeInfo> li(*m_edgeInfo);
       EdgeInfo *ei;
       for (li.toFirst();(ei=li.current());++li)
       {
-        if (!ei->m_label.isEmpty())
+        if (!ei->m_label.isEmpty()) // labels joined by \n
         {
-          arrowNames.insert(ei->m_label,(void*)0x8);
+          int li=ei->m_label.find('\n');
+          int p=0;
+          QCString lab;
+          while ((li=ei->m_label.find('\n',p))!=-1)
+          {
+            lab = stripProtectionPrefix(ei->m_label.mid(p,li-p));
+            arrowNames.insert(lab,(void*)0x8);
+            p=li+1;
+          }
+          lab = stripProtectionPrefix(ei->m_label.right(ei->m_label.length()-p));
+          arrowNames.insert(lab,(void*)0x8);
         }
       }
     }

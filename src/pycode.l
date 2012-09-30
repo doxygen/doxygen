@@ -1217,7 +1217,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                  // should be improved.
 				 // (translate tabs to space, etc)
   		                 codifyLines(yytext);
-                                 adjustScopesAndSuites(yyleng);
+                                 adjustScopesAndSuites((int)yyleng);
                                }
 
     "\n"|({BB}"\n")            {

@@ -397,6 +397,8 @@ class MemberDef : public Definition
                           const QCString &cfname,const QCString &ciname,
                           const QCString &cname);
     void _writeCategoryRelation(OutputList &ol);
+    void _writeTagData();
+    void _addToSearchIndex();
 
     static int s_indentLevel;
     // disable copying of member defs
