@@ -1814,7 +1814,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
 bool MemberDef::isDetailedSectionLinkable() const          
 { 
-  static bool extractAll        = Config_getBool("EXTRACT_ALL");
+  // static bool extractAll        = Config_getBool("EXTRACT_ALL");
   static bool alwaysDetailedSec = Config_getBool("ALWAYS_DETAILED_SEC");
   static bool repeatBrief       = Config_getBool("REPEAT_BRIEF");
   static bool briefMemberDesc   = Config_getBool("BRIEF_MEMBER_DESC");
@@ -1824,7 +1824,9 @@ bool MemberDef::isDetailedSectionLinkable() const
   // the member has details documentation for any of the following reasons
   bool docFilter = 
          // treat everything as documented
-         extractAll ||          
+         // pmr: just because everything is documented, is doesn't
+         // mean everything has a detailed section
+         // extractAll ||          
          // has detailed docs
          !documentation().isEmpty() ||             
          // has inbody docs
