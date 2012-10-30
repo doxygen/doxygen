@@ -609,6 +609,13 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "SHOW_GROUPED_MEMBER_INCLUDES",
+                 "If the SHOW_GROUPED_MEMBER_INCLUDES tag is set to YES (the default is NO) then Doxygen\n"
+                 "will show the include file for each file member that is grouped.",
+                 FALSE
+                );
+  //----
+  cb = cfg->addBool(
                  "FORCE_LOCAL_INCLUDES",
                  "If the FORCE_LOCAL_INCLUDES tag is set to YES then Doxygen\n"
                  "will list include files with double quotes in the documentation\n"
