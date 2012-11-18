@@ -17,6 +17,7 @@
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
+#include <qfile.h>
 
 EclipseHelp::EclipseHelp() : m_depth(0), m_endtag(FALSE), m_tocfile(0) 
 {

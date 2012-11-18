@@ -15,7 +15,6 @@
  *
  */
 
-#include "qtbc.h"
 #include <ctype.h>
 #include <qregexp.h>
 #include "md5.h"
@@ -38,6 +37,10 @@
 #include "marshal.h"
 #include "debug.h"
 #include "vhdldocgen.h"
+#include "memberlist.h"
+#include "namespacedef.h"
+#include "filedef.h"
+#include "dirdef.h"
 
 #define START_MARKER 0x4445465B // DEF[
 #define END_MARKER   0x4445465D // DEF]
@@ -400,12 +403,12 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
   {
     //printf("Add section `%s' to definition `%s'\n",
     //    si->label.data(),name().data());
-    SectionInfo *gsi=Doxygen::sectionDict.find(si->label);
+    SectionInfo *gsi=Doxygen::sectionDict->find(si->label);
     //printf("===== label=%s gsi=%p\n",si->label.data(),gsi);
     if (gsi==0)
     {
       gsi = new SectionInfo(*si);
-      Doxygen::sectionDict.append(si->label,gsi);
+      Doxygen::sectionDict->append(si->label,gsi);
     }
     if (m_impl->sectionDict==0) 
     {
@@ -463,19 +466,19 @@ void Definition::addSectionsToIndex()
       {
         for (i=level;i<nextLevel;i++)
         {
-          Doxygen::indexList.incContentsDepth();
+          Doxygen::indexList->incContentsDepth();
         }
       }
       else if (nextLevel<level)
       {
         for (i=nextLevel;i<level;i++)
         {
-          Doxygen::indexList.decContentsDepth();
+          Doxygen::indexList->decContentsDepth();
         }
       }
       QCString title = si->title;
       if (title.isEmpty()) title = si->label;
-      Doxygen::indexList.addContentsItem(TRUE,title,
+      Doxygen::indexList->addContentsItem(TRUE,title,
                                          getReference(),
                                          getOutputFileBase(),
                                          si->label,
@@ -486,7 +489,7 @@ void Definition::addSectionsToIndex()
   }
   while (level>1)
   {
-    Doxygen::indexList.decContentsDepth();
+    Doxygen::indexList->decContentsDepth();
     level--;
   }
 }
@@ -1870,15 +1873,16 @@ void Definition::setLanguage(SrcLangExt lang)
   m_impl->lang=lang; 
 }
 
-void Definition::makeResident() const
-{
-}
-
-//---------------
 
 void Definition::_setSymbolName(const QCString &name) 
 { 
   m_symbolName=name; 
+}
+
+//---------------
+
+void Definition::makeResident() const
+{
 }
 
 void Definition::flushToDisk() const

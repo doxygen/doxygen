@@ -28,6 +28,8 @@
 #include "msc.h"
 #include "htmlattrib.h"
 #include "cite.h"
+#include "filedef.h"
+#include "config.h"
 
 static QCString escapeLabelName(const char *s)
 {
@@ -1547,6 +1549,16 @@ void LatexDocVisitor::visitPost(DocHtmlBlockQuote *)
 {
   if (m_hide) return;
   m_t << "\\end{quotation}" << endl;
+}
+
+void LatexDocVisitor::visitPre(DocVhdlFlow *)
+{
+  if (m_hide) return;
+}
+
+void LatexDocVisitor::visitPost(DocVhdlFlow *)
+{
+  if (m_hide) return;
 }
 
 void LatexDocVisitor::filter(const char *str)

@@ -18,7 +18,6 @@
 #ifndef HTMLGEN_H
 #define HTMLGEN_H
 
-#include "qtbc.h"
 #include "outputgen.h"
 #include "ftextstream.h"
 

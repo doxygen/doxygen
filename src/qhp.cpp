@@ -25,6 +25,7 @@
 
 #include <qstringlist.h>
 #include <string.h>
+#include <qfile.h>
 
 static QCString makeFileName(const char * withoutExtension)
 {
@@ -82,6 +83,8 @@ void Qhp::initialize()
   */
   QCString nameSpace       = Config_getString("QHP_NAMESPACE");
   QCString virtualFolder   = Config_getString("QHP_VIRTUAL_FOLDER");
+
+  m_doc.declaration("1.0", "UTF-8");
 
   const char * rootAttributes[] =
   { "version", "1.0", 0 };
@@ -189,7 +192,7 @@ void Qhp::decContentsDepth()
 
 void Qhp::addContentsItem(bool /*isDir*/, const char * name, 
                           const char * /*ref*/, const char * file, 
-                          const char * /*anchor*/,bool /* separateIndex */,
+                          const char *anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,
                           Definition * /*def*/)
 {
@@ -202,7 +205,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
   int diff = m_prevSectionLevel - m_sectionLevel;
 
   handlePrevSection();
-  setPrevSection(name, f, m_sectionLevel);
+  setPrevSection(name, f, anchor, m_sectionLevel);
 
   // Close sections as needed
   for (; diff > 0; diff--)
@@ -254,7 +257,7 @@ void Qhp::addIndexItem(Definition *context,MemberDef *md,
   }
   else if (context) // container
   {
-    // <keyword name="Foo" id="Foo" ref="doc.html"/>
+    // <keyword name="Foo" id="Foo" ref="doc.html#Foo"/>
     QCString contRef = context->getOutputFileBase();
     QCString level1  = word ? QCString(word) : context->name();
     QCString ref = makeRef(contRef,sectionAnchor);
@@ -309,7 +312,7 @@ void Qhp::handlePrevSection()
   // We skip "Main Page" as our extra root is pointing to that
   if (!((m_prevSectionLevel==1) && (m_prevSectionTitle==getFullProjectName())))
   {
-    QCString finalRef = makeFileName(m_prevSectionRef);
+    QCString finalRef = makeRef(m_prevSectionBaseName, m_prevSectionAnchor);
 
     const char * const attributes[] =
     { "title", m_prevSectionTitle,
@@ -332,17 +335,19 @@ void Qhp::handlePrevSection()
   clearPrevSection();
 }
 
-void Qhp::setPrevSection(const char * title, const char * ref, int level)
+void Qhp::setPrevSection(const char * title, const char * basename, const char * anchor, int level)
 {
   m_prevSectionTitle = title;
-  m_prevSectionRef   = ref;
+  m_prevSectionBaseName = basename;
+  m_prevSectionAnchor = anchor;
   m_prevSectionLevel = level;
 }
 
 void Qhp::clearPrevSection()
 {
   m_prevSectionTitle.resize(0);
-  m_prevSectionRef.resize(0);
+  m_prevSectionBaseName.resize(0);
+  m_prevSectionAnchor.resize(0);
 }
 
 void Qhp::addFile(const char * fileName)

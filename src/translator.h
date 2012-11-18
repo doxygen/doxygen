@@ -18,10 +18,7 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
-#include "qtbc.h"
 #include "classdef.h"
-#include "util.h"
-#include "config.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator

@@ -17,7 +17,6 @@
 
 #include <stdio.h>
 
-#include "qtbc.h"
 #include <qfile.h>
 #include <qdir.h>
 

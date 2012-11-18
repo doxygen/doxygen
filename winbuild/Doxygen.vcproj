@@ -695,6 +695,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\condparser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\config.cpp"
 				>
 			</File>
@@ -3607,6 +3611,10 @@
 			</File>
 			<File
 				RelativePath="..\src\compound_xsd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\condparser.h"
 				>
 			</File>
 			<File

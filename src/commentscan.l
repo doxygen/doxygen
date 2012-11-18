@@ -23,7 +23,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "qtbc.h"
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
@@ -46,6 +45,8 @@
 #include "parserintf.h"
 #include "cite.h"
 #include "markdown.h"
+#include "condparser.h"
+#include "formula.h"
 
 #define YY_NO_INPUT 1
 
@@ -580,7 +581,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
 	                            g_sectionTitle,SectionInfo::Anchor,
                                     g_sectionLevel);
-    Doxygen::sectionDict.append(anchorLabel,si);
+    Doxygen::sectionDict->append(anchorLabel,si);
     docEntry->anchors->append(si);
   }
   outputXRef.resize(0);
@@ -595,13 +596,13 @@ static QCString addFormula()
   QCString formLabel;
   QCString fText=formulaText.simplifyWhiteSpace();
   Formula *f=0;
-  if ((f=Doxygen::formulaDict[fText])==0)
+  if ((f=Doxygen::formulaDict->find(fText))==0)
   {
     f = new Formula(fText);
-    Doxygen::formulaList.append(f);
-    Doxygen::formulaDict.insert(fText,f);
+    Doxygen::formulaList->append(f);
+    Doxygen::formulaDict->insert(fText,f);
     formLabel.sprintf("\\form#%d",f->getId());
-    Doxygen::formulaNameDict.insert(formLabel,f);
+    Doxygen::formulaNameDict->insert(formLabel,f);
   }
   else
   {
@@ -637,7 +638,7 @@ static void addSection()
   current->anchors->append(si);
 
   // add section to the global dictionary
-  Doxygen::sectionDict.append(g_sectionLabel,si);
+  Doxygen::sectionDict->append(g_sectionLabel,si);
 
 }
 
@@ -1661,7 +1662,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
 <AnchorLabel>{LABELID}			{ // found argument
                                           SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor,0);
-                                          Doxygen::sectionDict.append(yytext,si);
+                                          Doxygen::sectionDict->append(yytext,si);
   					  current->anchors->append(si);
 					  addOutput(yytext);
 					  BEGIN( Comment );
@@ -1684,7 +1685,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
   					  addOutput(yytext);
 					  if (&yytext[4]==blockName) // found end of the block
 					  {
@@ -1724,8 +1725,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of if/ifnot commands ------- */
 
-<GuardParam>{LABELID}			{ // parameter of if/ifnot guard
-                                          bool sectionEnabled = Config_getList("ENABLED_SECTIONS").find(yytext)!=-1;
+<GuardParam>[!()&| \ta-z_A-Z0-9.\-]+ {// parameter of if/ifnot guard
+                                          CondParser prs;
+                                          bool sectionEnabled=prs.parse(yyFileName,yyLineNr,yytext);
 					  bool parentEnabled = TRUE;
 					  if (!guards.isEmpty()) parentEnabled = guards.top()->isEnabled();
 					  if (parentEnabled)

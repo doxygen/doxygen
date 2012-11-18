@@ -18,6 +18,7 @@
 %{
 
 #define YY_NEVER_INTERACTIVE 1
+
   
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +34,7 @@
 #include "config.h"
 #include "doxygen.h"
 #include "util.h"
+#include "condparser.h"
 
 #include <assert.h>
 
@@ -178,29 +180,21 @@ static inline void copyToOutput(const char *s,int len)
 
 static void startCondSection(const char *sectId)
 {
+  CondParser prs;
+  bool expResult = prs.parse(g_fileName,g_lineNr,sectId);
   g_condStack.push(new CondCtx(g_lineNr,sectId,g_skip));
   if (guardType == Guard_Cond)
   {
-    if (Config_getList("ENABLED_SECTIONS").find(sectId)!=-1)
+    if (expResult)
     {
-      //printf("*** Section is enabled!\n");
-    }
-    else
-    {
-      //printf("*** Section is disabled!\n");
       g_skip=TRUE;
     }
   }
   else if (guardType == Guard_CondNot)
   {
-    if (Config_getList("ENABLED_SECTIONS").find(sectId)!=-1)
+    if (!expResult)
     {
-      //printf("*** Section is disabled!\n");
       g_skip=TRUE;
-    }
-    else
-    {
-      //printf("*** Section is enabled!\n");
     }
   }
 }
@@ -276,7 +270,7 @@ void replaceComment(int offset);
 				       BEGIN(CComment);
 				     }
                                    }
-<Scan>"!>"			   {
+<Scan>"!>"|"!<"|"!!"		   {
   			             if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
@@ -360,7 +354,7 @@ void replaceComment(int offset);
 				       BEGIN(CComment);
 				     }
   				   }
-<Scan>"!>"			   {
+<Scan>"!>"|"!<"|"!!"		   {
                                      if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
@@ -709,7 +703,7 @@ void replaceComment(int offset);
 				       }
     				     }
 				    }
-<CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]* {
+<CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
   				     bool oldSkip=g_skip;
                                      startCondSection(yytext);
 				     if (g_condCtx==CComment && !oldSkip && g_skip) 

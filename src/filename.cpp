@@ -17,6 +17,7 @@
 
 #include "filename.h"
 #include "util.h"
+#include "config.h"
 
 FileName::FileName(const char *fn,const char *n) : FileList()
 {
@@ -97,7 +98,7 @@ void FileName::generateDiskNames()
   }
 }
 
-int FileName::compareItems(GCI item1, GCI item2)
+int FileName::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   FileName *f1=(FileName *)item1;
   FileName *f2=(FileName *)item2;
@@ -127,7 +128,7 @@ void FileNameList::generateDiskNames()
   }
 }
 
-int FileNameList::compareItems(GCI item1, GCI item2)
+int FileNameList::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   FileName *f1=(FileName *)item1;
   FileName *f2=(FileName *)item2;
@@ -142,3 +143,14 @@ FileNameListIterator::FileNameListIterator(const FileNameList &fnlist) :
   QListIterator<FileName>(fnlist)
 {
 }
+
+static bool getCaseSenseNames()
+{
+  static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
+  return caseSenseNames;
+}
+
+FileNameDict::FileNameDict(uint size) : QDict<FileName>(size,getCaseSenseNames()) 
+{
+}
+

@@ -51,12 +51,12 @@ static int compItems(void *item1,void *item2)
   }
 }
 
-int ClassList::compareItems(GCI item1, GCI item2)
+int ClassList::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   return compItems(item1,item2);
 }
 
-int ClassSDict::compareItems(GCI item1, GCI item2)
+int ClassSDict::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   return compItems(item1,item2);
 }

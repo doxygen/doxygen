@@ -18,13 +18,10 @@
 #ifndef GROUPDEF_H
 #define GROUPDEF_H
 
-#include "qtbc.h"
 #include "sortdict.h"
 #include "definition.h"
-#include "memberlist.h"
-#include "memberdef.h"
-#include "htmlhelp.h"
 
+class MemberList;
 class FileList;
 class ClassSDict;
 class FileDef;
@@ -41,6 +38,7 @@ class DirDef;
 class DirList;
 class FTVHelp;
 class Entry;
+class MemberDef;
 
 /** A model of a group of symbols. */
 class GroupDef : public Definition
@@ -90,7 +88,7 @@ class GroupDef : public Definition
     void setGroupScope(Definition *d) { groupScope = d; }
     Definition *getGroupScope() const { return groupScope; }
 
-    MemberList *getMemberList(MemberList::ListType lt) const;
+    MemberList *getMemberList(MemberListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }
 
     /* user defined member groups */
@@ -110,11 +108,11 @@ class GroupDef : public Definition
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
   private: 
-    MemberList *createMemberList(MemberList::ListType lt);
-    void addMemberToList(MemberList::ListType lt,MemberDef *md);
-    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
-    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
-    void removeMemberFromList(MemberList::ListType lt,MemberDef *md);
+    MemberList *createMemberList(MemberListType lt);
+    void addMemberToList(MemberListType lt,MemberDef *md);
+    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
+    void removeMemberFromList(MemberListType lt,MemberDef *md);
     void writeGroupGraph(OutputList &ol);
     void writeFiles(OutputList &ol,const QCString &title);
     void writeNamespaces(OutputList &ol,const QCString &title);
@@ -161,7 +159,7 @@ class GroupSDict : public SDict<GroupDef>
   public:
     GroupSDict(uint size) : SDict<GroupDef>(size) {}
     virtual ~GroupSDict() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return strcmp(((GroupDef*)item1)->groupTitle(),((GroupDef*)item2)->groupTitle());
     }
@@ -171,7 +169,7 @@ class GroupSDict : public SDict<GroupDef>
 class GroupList : public QList<GroupDef>
 {
   public:
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return strcmp(((GroupDef*)item1)->groupTitle(),((GroupDef*)item2)->groupTitle());
     }

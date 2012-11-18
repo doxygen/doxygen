@@ -16,7 +16,6 @@
  *
  */
 
-#include "qtbc.h"
 #include "image.h"
 #include <qfile.h>
 #include <math.h>

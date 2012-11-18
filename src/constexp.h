@@ -19,8 +19,8 @@
 #ifndef _CONSTEXP_H
 #define _CONSTEXP_H
 
-#include "qtbc.h"
 #include "cppvalue.h"
+#include <qcstring.h>
 
 extern bool parseCppExpression(const char *fileName,int line,const QCString &s);
 extern int cppExpYYparse();

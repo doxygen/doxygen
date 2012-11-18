@@ -29,7 +29,8 @@
 #include <qfileinfo.h> 
 #include "parserintf.h"
 #include "msc.h"
-
+#include "filedef.h"
+#include "config.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -1667,6 +1668,16 @@ void RTFDocVisitor::visitPost(DocHtmlBlockQuote *)
   decIndentLevel();
   m_t << "}"; // end desc
   m_lastIsPara=TRUE;
+}
+
+void RTFDocVisitor::visitPre(DocVhdlFlow *)
+{
+  if (m_hide) return;
+}
+
+void RTFDocVisitor::visitPost(DocVhdlFlow *)
+{
+  if (m_hide) return;
 }
 
 

@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 
-#include "qtbc.h"
 #include <qdir.h>
 #include "latexgen.h"
 #include "config.h"
@@ -33,6 +32,10 @@
 #include "latexdocvisitor.h"
 #include "dirdef.h"
 #include "cite.h"
+#include "groupdef.h"
+#include "classlist.h"
+#include "namespacedef.h"
+#include "filename.h"
 
 //static QCString filterTitle(const char *s)
 //{
@@ -794,7 +797,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        //"      \\arrayrulecolor{gray}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
-       "                          p{0.77\\textwidth}|}%\n"
+       "                          p{0.705\\textwidth}|}%\n"
        "      \\hline%\n"
        "}{%\n"
        "      \\end{longtable}%\n"
@@ -811,7 +814,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "      \\arrayrulecolor{gray}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
-       "                          p{0.77\\textwidth}|}%\n"
+       "                          p{0.705\\textwidth}|}%\n"
        "      \\hline%\n"
        "}{%\n"
        "      \\end{longtable}%\n"
@@ -828,7 +831,7 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "      \\arrayrulecolor{gray}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
-       "                          p{0.77\\textwidth}|}%\n"
+       "                          p{0.705\\textwidth}|}%\n"
        "      \\hline%\n"
        "}{%\n"
        "      \\end{longtable}%\n"
@@ -1972,7 +1975,7 @@ void LatexGenerator::codify(const char *str)
     //char cs[5];
     int spacesToNextTabStop;
     static int tabSize = Config_getInt("TAB_SIZE");
-    const int maxLineLen = 80;
+    const int maxLineLen = 108;
     QCString result(4*maxLineLen+1); // worst case for 1 line of 4-byte chars
     int i;
     while ((c=*p))

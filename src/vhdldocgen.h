@@ -24,12 +24,18 @@
 #include <qdict.h>
 #include <qcstring.h>
 #include "layout.h"
-#include "memberlist.h"
 #include "arguments.h"
 
 class Entry;
 class ClassDef;
+class MemberList;
 class MemberDef;
+class FTextStream;
+class OutputList;
+class Definition;
+class GroupDef;
+class FileDef;
+class NamespaceDef;
 struct Argument;
 
 /** Class for generating documentation specific for VHDL */
@@ -85,7 +91,6 @@ class VhdlDocGen
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
 
     static QCString getIndexWord(const char* ,int index);
-    static  bool    foundInsertedComponent(const QCString& name,Entry* root);
     static bool     deleteCharRev(QCString &s,char c);
     static void     deleteAllChars(QCString &s,char c);
     static void     parseFuncProto(const char* text,
@@ -106,7 +111,7 @@ class VhdlDocGen
                                 QDict<QCString>&);
     static MemberDef* findMemberDef(ClassDef* cd,
                                 const QCString& key,
-                                MemberList::ListType type);
+                                MemberListType type);
     static ClassDef *getClass(const char *name);
     static MemberDef* findFunction(const QList<Argument> &ql,
                                    const QCString& name,
@@ -117,60 +122,33 @@ class VhdlDocGen
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
 
-    static bool isConstraint(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::UCF_CONST; }   
-    static bool isConfig(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::CONFIG; }
-    static bool isAlias(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::ALIAS; }
-    static bool isLibrary(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY; }
-    static bool isGeneric(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::GENERIC; }
-    static bool isPort(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::PORT; }
-    static bool isComponent(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::COMPONENT; }
-    static bool isPackage(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::USE; }
-    static bool isEntity(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::ENTITY; }
-    static bool isConstant(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::CONSTANT; }
-    static bool isVType(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::TYPE; }
-    static bool isSubType(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::SUBTYPE; }
-    static bool isVhdlFunction(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::FUNCTION; }
-    static bool isProcess(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::PROCESS; }
-    static bool isSignal(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::SIGNAL; }
-    static bool isAttribute(const MemberDef *mdef)
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::ATTRIBUTE; }
-    static bool isSignals(const MemberDef *mdef)
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::SIGNAL; }
-    static bool isProcedure(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::PROCEDURE; }
-    static bool isRecord(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::RECORD; }
-    static bool isArchitecture(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::ARCHITECTURE; }
-    static bool isUnit(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::UNITS; }
-    static bool isPackageBody(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::PACKAGE_BODY; }
-    static bool isVariable(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::SHAREDVARIABLE; }
-    static bool isFile(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::VFILE; }
-    static bool isGroup(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
-    static bool isCompInst(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::INSTANTIATION; }
-    static bool isMisc(const MemberDef *mdef) 
-    { return mdef->getMemberSpecifiers()==VhdlDocGen::MISCELLANEOUS; }
+    static bool isConstraint(const MemberDef *mdef);
+    static bool isConfig(const MemberDef *mdef);
+    static bool isAlias(const MemberDef *mdef);
+    static bool isLibrary(const MemberDef *mdef);
+    static bool isGeneric(const MemberDef *mdef);
+    static bool isPort(const MemberDef *mdef);
+    static bool isComponent(const MemberDef *mdef);
+    static bool isPackage(const MemberDef *mdef);
+    static bool isEntity(const MemberDef *mdef);
+    static bool isConstant(const MemberDef *mdef);
+    static bool isVType(const MemberDef *mdef);
+    static bool isSubType(const MemberDef *mdef);
+    static bool isVhdlFunction(const MemberDef *mdef);
+    static bool isProcess(const MemberDef *mdef);
+    static bool isSignal(const MemberDef *mdef);
+    static bool isAttribute(const MemberDef *mdef);
+    static bool isSignals(const MemberDef *mdef);
+    static bool isProcedure(const MemberDef *mdef);
+    static bool isRecord(const MemberDef *mdef);
+    static bool isArchitecture(const MemberDef *mdef);
+    static bool isUnit(const MemberDef *mdef);
+    static bool isPackageBody(const MemberDef *mdef);
+    static bool isVariable(const MemberDef *mdef);
+    static bool isFile(const MemberDef *mdef);
+    static bool isGroup(const MemberDef *mdef);
+    static bool isCompInst(const MemberDef *mdef);
+    static bool isMisc(const MemberDef *mdef);
 
     //-----------------------------------------------------
     // translatable items
@@ -208,10 +186,10 @@ class VhdlDocGen
     static void writeFunctionProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
     static void writeProcessProto(OutputList& ol,const ArgumentList *al,const MemberDef*);
     static void writeProcedureProto(OutputList& ol, const ArgumentList *al,const MemberDef*);
-    static void writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList* al,bool type=false);
+    static bool writeFuncProcDocu(const MemberDef *mdef, OutputList& ol,const ArgumentList* al,bool type=false);
     static void writeRecordProto(const MemberDef *mdef, OutputList& ol,const ArgumentList *al);
 
-    static void writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
+    static bool writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
     static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*,FileDef*,NamespaceDef*);
 
@@ -260,17 +238,17 @@ class VhdlDocGen
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
+    static ClassDef* findVhdlClass(const char *className );
 
     static void writeOverview(OutputList &ol);
     static void writeOverview();
  
  // flowcharts
-    static void  createFlowChart( MemberDef*);
-    static void addFlowImage(FTextStream,QCString);
+    static void createFlowChart(const MemberDef*);
+    //static void addFlowImage(const FTextStream &,const QCString &);
     
     static void setFlowMember( const MemberDef *flowMember);
-    static const  MemberDef * getFlowMember();
-    static  void  resetFlowMember();
+    static const MemberDef *getFlowMember();
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
@@ -356,6 +334,7 @@ class FlowNode
     FlowNode(int typ,const char*  t,const char* ex,const char* label=NULL);
     ~FlowNode();
 
+private:
     int id;
     int stamp;
     int type;
@@ -364,7 +343,5 @@ class FlowNode
     QCString text;
     QCString exp;
 };
-
-
 
 #endif

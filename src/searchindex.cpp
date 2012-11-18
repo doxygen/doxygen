@@ -21,7 +21,6 @@
 #include <qfile.h>
 #include <qregexp.h>
 
-#include "qtbc.h"
 #include "searchindex.h"
 #include "config.h"
 #include "util.h"
@@ -31,7 +30,12 @@
 #include "growbuf.h"
 #include "message.h"
 #include "version.h"
-
+#include "groupdef.h"
+#include "classlist.h"
+#include "filedef.h"
+#include "memberdef.h"
+#include "filename.h"
+#include "membername.h"
 
 // file format: (all multi-byte values are stored in big endian format)
 //   4 byte header
@@ -625,7 +629,7 @@ class SearchIndexList : public SDict< QList<Definition> >
       }
       l->append(d);
     }
-    int compareItems(GCI item1, GCI item2)
+    int compareItems(QCollection::Item item1, QCollection::Item item2)
     {
       QList<Definition> *md1=(QList<Definition> *)item1;
       QList<Definition> *md2=(QList<Definition> *)item2;
@@ -1327,7 +1331,7 @@ void writeJavascriptSearchIndex()
       t << "</html>" << endl;
     }
   }
-  Doxygen::indexList.addStyleSheetFile("search/search.js");
+  Doxygen::indexList->addStyleSheetFile("search/search.js");
 }
 
 void writeSearchCategories(FTextStream &t)

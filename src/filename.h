@@ -18,8 +18,8 @@
 #ifndef FILENAME_H
 #define FILENAME_H
 
-#include "qtbc.h"
 #include <qdict.h>
+#include <qlist.h>
 #include "filedef.h"
 
 /** Class representing all files with a certain base name */
@@ -31,7 +31,7 @@ class FileName : public FileList
     const char *fileName() const { return name; }
     const char *fullName() const { return fName; }
     void generateDiskNames();
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
 
   private:
     QCString name;
@@ -52,7 +52,7 @@ class FileNameList : public QList<FileName>
     FileNameList();
    ~FileNameList();
     void generateDiskNames();
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
 };
 
 /** Iterator for FileName objects in a FileNameList. */
@@ -66,8 +66,7 @@ class FileNameListIterator : public QListIterator<FileName>
 class FileNameDict : public QDict<FileName>
 {
   public:
-    FileNameDict(uint size) : 
-       QDict<FileName>(size,Config_getBool("CASE_SENSE_NAMES")) {}
+    FileNameDict(uint size);
    ~FileNameDict() {}
 };
 

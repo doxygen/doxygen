@@ -18,13 +18,12 @@
 #ifndef NAMESPACEDEF_H
 #define NAMESPACEDEF_H
 
-#include "qtbc.h"
 #include <qstrlist.h>
 #include <qdict.h>
 #include "sortdict.h"
 #include "definition.h"
-#include "memberlist.h"
 
+class MemberList;
 class ClassDef;
 class ClassList;
 class OutputList;
@@ -76,7 +75,7 @@ class NamespaceDef : public Definition
     void addInnerCompound(Definition *d);
     void addListReferences();
     
-    MemberList *getMemberList(MemberList::ListType lt) const;
+    MemberList *getMemberList(MemberListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }
     MemberDef    *getMemberByName(const QCString &) const;
 
@@ -92,10 +91,10 @@ class NamespaceDef : public Definition
     bool visited;
 
   private:
-    MemberList *createMemberList(MemberList::ListType lt);
-    void addMemberToList(MemberList::ListType lt,MemberDef *md);
-    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
-    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    MemberList *createMemberList(MemberListType lt);
+    void addMemberToList(MemberListType lt,MemberDef *md);
+    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
     void startMemberDeclarations(OutputList &ol);
@@ -129,7 +128,7 @@ class NamespaceList : public QList<NamespaceDef>
 { 
   public:
    ~NamespaceList() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return stricmp(((NamespaceDef *)item1)->name(),
                     ((NamespaceDef *)item2)->name()
@@ -159,7 +158,7 @@ class NamespaceSDict : public SDict<NamespaceDef>
   public:
     NamespaceSDict(int size=17) : SDict<NamespaceDef>(size) {}
    ~NamespaceSDict() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return stricmp(((NamespaceDef *)item1)->name(),
                     ((NamespaceDef *)item2)->name()

@@ -18,8 +18,8 @@
 #ifndef EXAMPLE_H
 #define EXAMPLE_H
 
-#include "qtbc.h"
-#include <qdict.h>
+#include <qcstring.h>
+#include "sortdict.h"
 
 class ClassDef;
 class MemberName;
@@ -38,7 +38,7 @@ class ExampleSDict : public SDict<Example>
   public:
     ExampleSDict(int size=17) : SDict<Example>(size) {}
    ~ExampleSDict() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return stricmp(((Example *)item1)->name,((Example *)item2)->name);
     }

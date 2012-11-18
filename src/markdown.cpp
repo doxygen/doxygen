@@ -46,6 +46,8 @@
 #include "entry.h"
 #include "bufstr.h"
 #include "commentcnv.h"
+#include "config.h"
+#include "section.h"
 
 //-----------
 
@@ -224,7 +226,7 @@ static QCString isBlockCommand(const char *data,int offset,int size)
 /** looks for the next emph char, skipping other constructs, and
  *  stopping when either it is found, or we are at the end of a paragraph.
  */
-static int findEmphasisChar(const char *data, int size, char c)
+static int findEmphasisChar(const char *data, int size, char c, int c_size)
 {
   int i = 1;
 
@@ -242,16 +244,25 @@ static int findEmphasisChar(const char *data, int size, char c)
       i++;
       continue;
     }
-    else if (data[i] == c)
+    else
     {
-      if (i<size-1 && isIdChar(i+1)) // to prevent touching some_underscore_identifier
+      // get length of emphasis token
+      int len = 0;
+      while (i+len<size && data[i+len]==c)
       {
-        i++;
-        continue;
+        len++;
       }
-      return i; // found it
-    }
 
+      if (len>0)
+      {
+        if (len!=c_size || (i<size-len && isIdChar(i+len))) // to prevent touching some_underscore_identifier
+        {
+          i=i+len;
+          continue;
+        }
+        return i; // found it
+      }
+    }
 
     // skipping a code span
     if (data[i]=='`')
@@ -318,7 +329,7 @@ static int processEmphasis1(GrowBuf &out, const char *data, int size, char c)
 
   while (i<size)
   {
-    len = findEmphasisChar(data+i, size-i, c);
+    len = findEmphasisChar(data+i, size-i, c, 1);
     if (len==0) return 0; 
     i+=len;
     if (i>=size) return 0; 
@@ -346,7 +357,7 @@ static int processEmphasis2(GrowBuf &out, const char *data, int size, char c)
 
   while (i<size)
   {
-    len = findEmphasisChar(data+i, size-i, c);
+    len = findEmphasisChar(data+i, size-i, c, 2);
     if (len==0)
     {
       return 0;
@@ -375,7 +386,7 @@ static int processEmphasis3(GrowBuf &out, const char *data, int size, char c)
 
   while (i<size)
   {
-    len = findEmphasisChar(data+i, size-i, c);
+    len = findEmphasisChar(data+i, size-i, c, 3);
     if (len==0)
     {
       return 0;
@@ -1648,7 +1659,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
       {
         g_current->anchors->append(si);
       }
-      Doxygen::sectionDict.append(header,si);
+      Doxygen::sectionDict->append(header,si);
     }
     else
     {
@@ -1976,7 +1987,7 @@ static QCString processBlocks(const QCString &s,int indent)
             {
               g_current->anchors->append(si);
             }
-            Doxygen::sectionDict.append(header,si);
+            Doxygen::sectionDict->append(header,si);
           }
           else
           {
@@ -2207,10 +2218,17 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
   //g_correctSectionLevel = !title.isEmpty();
-  QCString baseName = substitute(QFileInfo(fileName).baseName().utf8()," ","_");
+  QCString baseFn = QFileInfo(fileName).baseName().utf8();
+  QCString fn     = QFileInfo(fileName).fileName().utf8();
+  QCString baseName = substitute(baseFn," ","_");
+  static QCString mdfileAsMainPage = Config_getString("USE_MDFILE_AS_MAINPAGE");
   if (id.isEmpty()) id = "md_"+baseName;
   if (title.isEmpty()) title = baseName;
-  if (id=="mainpage" || id=="index")
+  if (fn==mdfileAsMainPage)
+  {
+    docs.prepend("@mainpage\n");
+  }
+  else if (id=="mainpage" || id=="index")
   {
     docs.prepend("@mainpage "+title+"\n");
   }

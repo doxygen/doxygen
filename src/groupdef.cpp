@@ -17,7 +17,6 @@
 
 #include <ctype.h>
 #include <qregexp.h>
-#include "qtbc.h"
 #include "groupdef.h"
 #include "classdef.h"
 #include "filedef.h"
@@ -38,6 +37,9 @@
 #include "layout.h"
 #include "arguments.h"
 #include "entry.h"
+#include "membername.h"
+#include "dirdef.h"
+#include "config.h"
 
 //---------------------------------------------------------------------------
 
@@ -52,6 +54,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   exampleDict = new PageSDict(17);
   dirList = new DirList;
   allMemberNameInfoSDict = new MemberNameInfoSDict(17);
+  allMemberNameInfoSDict->setAutoDelete(TRUE);
   if (refFileName)
   {
     fileName=stripExtension(refFileName);
@@ -64,7 +67,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
 
-  allMemberList = new MemberList(MemberList::allMembersList);
+  allMemberList = new MemberList(MemberListType_allMembersList);
 
   visited = 0;
   groupScope = 0;
@@ -124,7 +127,7 @@ void GroupDef::findSectionsInDocumentation()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
       ml->findSectionsInDocumentation();
     }
@@ -236,7 +239,7 @@ void GroupDef::addMembersToMemberGroup()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
     }
@@ -311,101 +314,101 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
   allMemberList->append(md); 
   switch(md->memberType())
   {
-    case MemberDef::Variable:     
+    case MemberType_Variable:     
       if (!docOnly)
       {
-        addMemberToList(MemberList::decVarMembers,md);
+        addMemberToList(MemberListType_decVarMembers,md);
       }
-      addMemberToList(MemberList::docVarMembers,md);
+      addMemberToList(MemberListType_docVarMembers,md);
       break;
-    case MemberDef::Function: 
+    case MemberType_Function: 
       if (!docOnly)
       {
-        addMemberToList(MemberList::decFuncMembers,md);
+        addMemberToList(MemberListType_decFuncMembers,md);
       }
-      addMemberToList(MemberList::docFuncMembers,md);
+      addMemberToList(MemberListType_docFuncMembers,md);
       break;
-    case MemberDef::Typedef:      
+    case MemberType_Typedef:      
       if (!docOnly)
       {
-        addMemberToList(MemberList::decTypedefMembers,md);
+        addMemberToList(MemberListType_decTypedefMembers,md);
       }
-      addMemberToList(MemberList::docTypedefMembers,md);
+      addMemberToList(MemberListType_docTypedefMembers,md);
       break;
-    case MemberDef::Enumeration:  
+    case MemberType_Enumeration:  
       if (!docOnly)
       {
-        addMemberToList(MemberList::decEnumMembers,md);
+        addMemberToList(MemberListType_decEnumMembers,md);
       }
-      addMemberToList(MemberList::docEnumMembers,md);
+      addMemberToList(MemberListType_docEnumMembers,md);
       break;
-    case MemberDef::EnumValue:    
+    case MemberType_EnumValue:    
       if (!docOnly)
       {
-        addMemberToList(MemberList::decEnumValMembers,md);
+        addMemberToList(MemberListType_decEnumValMembers,md);
       }
-      addMemberToList(MemberList::docEnumValMembers,md);
+      addMemberToList(MemberListType_docEnumValMembers,md);
       break;
-    case MemberDef::Define:       
+    case MemberType_Define:       
       if (!docOnly)
       {
-        addMemberToList(MemberList::decDefineMembers,md);
+        addMemberToList(MemberListType_decDefineMembers,md);
       }
-      addMemberToList(MemberList::docDefineMembers,md);
+      addMemberToList(MemberListType_docDefineMembers,md);
       break;
-    case MemberDef::Signal:       
+    case MemberType_Signal:       
       if (!docOnly)
       {
-        addMemberToList(MemberList::decSignalMembers,md);
+        addMemberToList(MemberListType_decSignalMembers,md);
       }
-      addMemberToList(MemberList::docSignalMembers,md);
+      addMemberToList(MemberListType_docSignalMembers,md);
       break;
-    case MemberDef::Slot:       
+    case MemberType_Slot:       
       if (md->protection()==Public)
       {
         if (!docOnly)
         {
-          addMemberToList(MemberList::decPubSlotMembers,md);
+          addMemberToList(MemberListType_decPubSlotMembers,md);
         }
-        addMemberToList(MemberList::docPubSlotMembers,md);
+        addMemberToList(MemberListType_docPubSlotMembers,md);
       }
       else if (md->protection()==Protected)
       {
         if (!docOnly)
         {
-          addMemberToList(MemberList::decProSlotMembers,md);
+          addMemberToList(MemberListType_decProSlotMembers,md);
         }
-        addMemberToList(MemberList::docProSlotMembers,md);
+        addMemberToList(MemberListType_docProSlotMembers,md);
       }
       else
       {
         if (!docOnly)
         {
-          addMemberToList(MemberList::decPriSlotMembers,md);
+          addMemberToList(MemberListType_decPriSlotMembers,md);
         }
-        addMemberToList(MemberList::docPriSlotMembers,md);
+        addMemberToList(MemberListType_docPriSlotMembers,md);
       }
       break;
-    case MemberDef::Event:       
+    case MemberType_Event:       
       if (!docOnly)
       {
-        addMemberToList(MemberList::decEventMembers,md);
+        addMemberToList(MemberListType_decEventMembers,md);
       }
-      addMemberToList(MemberList::docEventMembers,md);
+      addMemberToList(MemberListType_docEventMembers,md);
       break;
-    case MemberDef::Property:       
+    case MemberType_Property:       
       if (!docOnly)
       {
-        addMemberToList(MemberList::decPropMembers,md);
+        addMemberToList(MemberListType_decPropMembers,md);
       }
-      addMemberToList(MemberList::docPropMembers,md);
+      addMemberToList(MemberListType_docPropMembers,md);
       break;
-    case MemberDef::Friend:       
+    case MemberType_Friend:       
       if (!docOnly)
       {
-        addMemberToList(MemberList::decFriendMembers,md);
+        addMemberToList(MemberListType_decFriendMembers,md);
       }
-      addMemberToList(MemberList::docFriendMembers,md);
+      addMemberToList(MemberListType_docFriendMembers,md);
       break;
     default:
       err("GroupDef::insertMembers(): "
@@ -439,65 +442,65 @@ void GroupDef::removeMember(MemberDef *md)
       delete mni;
     }
 
-    removeMemberFromList(MemberList::allMembersList,md);
+    removeMemberFromList(MemberListType_allMembersList,md);
     switch(md->memberType())
     {
-      case MemberDef::Variable:
-	removeMemberFromList(MemberList::decVarMembers,md);
-        removeMemberFromList(MemberList::docVarMembers,md);
+      case MemberType_Variable:
+	removeMemberFromList(MemberListType_decVarMembers,md);
+        removeMemberFromList(MemberListType_docVarMembers,md);
         break;
-      case MemberDef::Function: 
-        removeMemberFromList(MemberList::decFuncMembers,md);
-        removeMemberFromList(MemberList::docFuncMembers,md);
+      case MemberType_Function: 
+        removeMemberFromList(MemberListType_decFuncMembers,md);
+        removeMemberFromList(MemberListType_docFuncMembers,md);
         break;
-      case MemberDef::Typedef:      
-        removeMemberFromList(MemberList::decTypedefMembers,md);
-        removeMemberFromList(MemberList::docTypedefMembers,md);
+      case MemberType_Typedef:      
+        removeMemberFromList(MemberListType_decTypedefMembers,md);
+        removeMemberFromList(MemberListType_docTypedefMembers,md);
         break;
-      case MemberDef::Enumeration:  
-        removeMemberFromList(MemberList::decEnumMembers,md);
-        removeMemberFromList(MemberList::docEnumMembers,md);
+      case MemberType_Enumeration:  
+        removeMemberFromList(MemberListType_decEnumMembers,md);
+        removeMemberFromList(MemberListType_docEnumMembers,md);
         break;
-      case MemberDef::EnumValue:    
-        removeMemberFromList(MemberList::decEnumValMembers,md);
-        removeMemberFromList(MemberList::docEnumValMembers,md);
+      case MemberType_EnumValue:    
+        removeMemberFromList(MemberListType_decEnumValMembers,md);
+        removeMemberFromList(MemberListType_docEnumValMembers,md);
         break;
-      case MemberDef::Define:       
-        removeMemberFromList(MemberList::decDefineMembers,md);
-        removeMemberFromList(MemberList::docDefineMembers,md);
+      case MemberType_Define:       
+        removeMemberFromList(MemberListType_decDefineMembers,md);
+        removeMemberFromList(MemberListType_docDefineMembers,md);
         break;
-      case MemberDef::Signal:       
-        removeMemberFromList(MemberList::decSignalMembers,md);
-        removeMemberFromList(MemberList::docSignalMembers,md);
+      case MemberType_Signal:       
+        removeMemberFromList(MemberListType_decSignalMembers,md);
+        removeMemberFromList(MemberListType_docSignalMembers,md);
         break;
-      case MemberDef::Slot:       
+      case MemberType_Slot:       
         if (md->protection()==Public)
         {
-          removeMemberFromList(MemberList::decPubSlotMembers,md);
-          removeMemberFromList(MemberList::docPubSlotMembers,md);
+          removeMemberFromList(MemberListType_decPubSlotMembers,md);
+          removeMemberFromList(MemberListType_docPubSlotMembers,md);
         }
         else if (md->protection()==Protected)
         {
-          removeMemberFromList(MemberList::decProSlotMembers,md);
-          removeMemberFromList(MemberList::docProSlotMembers,md);
+          removeMemberFromList(MemberListType_decProSlotMembers,md);
+          removeMemberFromList(MemberListType_docProSlotMembers,md);
         }
         else
         {
-          removeMemberFromList(MemberList::decPriSlotMembers,md);
-          removeMemberFromList(MemberList::docPriSlotMembers,md);
+          removeMemberFromList(MemberListType_decPriSlotMembers,md);
+          removeMemberFromList(MemberListType_docPriSlotMembers,md);
         }
         break;
-      case MemberDef::Event:       
-        removeMemberFromList(MemberList::decEventMembers,md);
-        removeMemberFromList(MemberList::docEventMembers,md);
+      case MemberType_Event:       
+        removeMemberFromList(MemberListType_decEventMembers,md);
+        removeMemberFromList(MemberListType_docEventMembers,md);
         break;
-      case MemberDef::Property:       
-        removeMemberFromList(MemberList::decPropMembers,md);
-        removeMemberFromList(MemberList::docPropMembers,md);
+      case MemberType_Property:       
+        removeMemberFromList(MemberListType_decPropMembers,md);
+        removeMemberFromList(MemberListType_docPropMembers,md);
         break;
-      case MemberDef::Friend:       
-        removeMemberFromList(MemberList::decFriendMembers,md);
-        removeMemberFromList(MemberList::docFriendMembers,md);
+      case MemberType_Friend:       
+        removeMemberFromList(MemberListType_decFriendMembers,md);
+        removeMemberFromList(MemberListType_docFriendMembers,md);
         break;
       default:
         err("GroupDef::removeMember(): unexpected member remove in file!\n");
@@ -540,7 +543,7 @@ int GroupDef::countMembers() const
 void GroupDef::computeAnchors()
 {
   //printf("GroupDef::computeAnchors()\n");
-  setAnchors(0,'a',allMemberList);
+  setAnchors(allMemberList);
 }
 
 void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
@@ -801,7 +804,7 @@ void GroupDef::writePageDocumentation(OutputList &ol)
 
       SectionInfo *si=0;
       if (!pd->title().isEmpty() && !pd->name().isEmpty() &&
-          (si=Doxygen::sectionDict[pd->name()])!=0)
+          (si=Doxygen::sectionDict->find(pd->name()))!=0)
       {
         ol.startSection(si->label,si->title,SectionInfo::Subsection);
         ol.docify(si->title);
@@ -948,7 +951,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  Doxygen::indexList.addIndexItem(this,0,0,title);
+  Doxygen::indexList->addIndexItem(this,0,0,title);
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
@@ -1104,7 +1107,7 @@ void GroupDef::writeMemberPages(OutputList &ol)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
        ml->writeDocumentationPage(ol,name(),this);
     }
@@ -1388,14 +1391,14 @@ void GroupDef::addListReferences()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
       ml->addListReferences(this);
     }
   }
 }
 
-MemberList *GroupDef::createMemberList(MemberList::ListType lt)
+MemberList *GroupDef::createMemberList(MemberListType lt)
 {
   m_memberLists.setAutoDelete(TRUE);
   QListIterator<MemberList> mli(m_memberLists);
@@ -1414,14 +1417,14 @@ MemberList *GroupDef::createMemberList(MemberList::ListType lt)
   return ml;
 }
 
-void GroupDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
+void GroupDef::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   static bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   MemberList *ml = createMemberList(lt);
   ml->setNeedsSorting(
-      ((ml->listType()&MemberList::declarationLists) && sortBriefDocs) ||
-      ((ml->listType()&MemberList::documentationLists) && sortMemberDocs));
+      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
   ml->append(md);
 }
 
@@ -1436,7 +1439,7 @@ void GroupDef::sortMemberLists()
 }
 
 
-MemberList *GroupDef::getMemberList(MemberList::ListType lt) const
+MemberList *GroupDef::getMemberList(MemberListType lt) const
 {
   GroupDef *that = (GroupDef*)this;
   MemberList *ml = that->m_memberLists.first();
@@ -1451,7 +1454,7 @@ MemberList *GroupDef::getMemberList(MemberList::ListType lt) const
   return 0;
 }
 
-void GroupDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void GroupDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
 
@@ -1467,13 +1470,13 @@ void GroupDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
   }
 }
 
-void GroupDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void GroupDef::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,name(),this,title);
 }
 
-void GroupDef::removeMemberFromList(MemberList::ListType lt,MemberDef *md)
+void GroupDef::removeMemberFromList(MemberListType lt,MemberDef *md)
 {
     MemberList *ml = getMemberList(lt);
     if (ml) ml->remove(md); 

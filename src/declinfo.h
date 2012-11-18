@@ -18,8 +18,8 @@
 #ifndef DECLINFO_H
 #define DECLINFO_H
 
-#include "qtbc.h"
 #include <stdio.h>
+#include <qcstring.h>
 
 extern void parseFuncDecl(const QCString &decl,
                           bool objC,

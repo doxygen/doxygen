@@ -24,8 +24,6 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
-#include "qtbc.h"
-#include <qtextstream.h>
 #include <qlist.h>
 #include "index.h"
 

@@ -19,9 +19,7 @@
 #ifndef CITEDB_H
 #define CITEDB_H
 
-#include "qtbc.h"
 #include <qdict.h>
-#include <qlist.h>
 
 class FTextStream;
 

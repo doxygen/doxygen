@@ -25,7 +25,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "qtbc.h"
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
@@ -303,6 +302,7 @@ static inline int computeIndent(const char *s,int startIndent)
   while ((c=*p++))
   {
     if (c=='\t') col+=tabSize-(col%tabSize);
+    else if (c=='\n') col=0;
     else col++;
   }
   return col;
@@ -2454,7 +2454,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockInBody    = FALSE;
 					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
-					  docBlock.resize(0);
+
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext+1,g_column));
+                                          docBlock=indent;
+
 					  docBlockTerm = ';';
                                           if (YY_START==EnumBaseType && current->section==Entry::ENUM_SEC)
                                           {
@@ -2479,7 +2483,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockInBody    = FALSE;
 					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
-					  docBlock.resize(0);
+
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext+1,g_column));
+                                          docBlock=indent;
+
 					  docBlockTerm = ',';
                                           if (YY_START==EnumBaseType && current->section==Entry::ENUM_SEC)
                                           {
@@ -2508,7 +2516,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockInBody    = FALSE;
 					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
-					  docBlock.resize(0);
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock=indent;
+
 					  docBlockTerm = 0;
 					  if (yytext[yyleng-3]=='/')
 					  {
@@ -5611,11 +5622,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockInBody  = YY_START==SkipCurly;
                                           static bool javadocAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
 					  docBlockAutoBrief = javadocAutoBrief;
-					  docBlock.resize(0);
 
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,g_column));
-                                          docBlock+=indent;
+                                          docBlock=indent;
 
 					  if (docBlockAutoBrief)
 					  {

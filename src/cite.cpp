@@ -204,7 +204,7 @@ void CiteDict::generatePage() const
     }
   }
 
-  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QCString oldDir = QDir::currentDirPath().utf8();
   QDir::setCurrent(outputDir);
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
@@ -292,13 +292,13 @@ void CiteDict::generatePage() const
   }
 
   // 9. Remove temporary files
-  //thisDir.remove(citeListFile);
-  //thisDir.remove(doxygenBstFile);
-  //thisDir.remove(bib2xhtmlFile);
-  //while (!tempFiles.isEmpty()) 
-  //{
-  //  QCString *s=tempFiles.take();
-  //  thisDir.remove(*s);
-  //}
+  thisDir.remove(citeListFile);
+  thisDir.remove(doxygenBstFile);
+  thisDir.remove(bib2xhtmlFile);
+  while (!tempFiles.isEmpty()) 
+  {
+    QCString *s=tempFiles.take();
+    thisDir.remove(*s);
+  }
 }
 

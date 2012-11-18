@@ -18,17 +18,14 @@
 #ifndef CLASSDEF_H
 #define CLASSDEF_H
 
-#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
 #include <qptrdict.h>
-#include <qstrlist.h>
 
-#include "util.h"
-#include "memberlist.h"
 #include "definition.h"
-#include "sortdict.h"
 
+class MemberDef;
+class MemberList;
 class MemberDict;
 class ClassList;
 class ClassSDict;
@@ -47,8 +44,9 @@ class GroupDef;
 class StringDict;
 struct IncludeInfo;
 class ClassDefImpl;
+class ArgumentList;
 
-/** A model of a compound symbol.
+/** A class representing of a compound symbol.
  *
  *  A compound can be a class, struct, union, interface, or exception.
  *  \note This class should be renamed to CompoundDef
@@ -57,13 +55,13 @@ class ClassDef : public Definition
 {
   public:
     /** The various compound types */
-    enum CompoundType { Class, //=Entry::CLASS_SEC, 
-                        Struct, //=Entry::STRUCT_SEC, 
-                        Union, //=Entry::UNION_SEC,
+    enum CompoundType { Class,     //=Entry::CLASS_SEC, 
+                        Struct,    //=Entry::STRUCT_SEC, 
+                        Union,     //=Entry::UNION_SEC,
                         Interface, //=Entry::INTERFACE_SEC,
-                        Protocol, //=Entry::PROTOCOL_SEC,
-                        Category, //=Entry::CATEGORY_SEC,
-                        Exception //=Entry::EXCEPTION_SEC
+                        Protocol,  //=Entry::PROTOCOL_SEC,
+                        Category,  //=Entry::CATEGORY_SEC,
+                        Exception  //=Entry::EXCEPTION_SEC
                       };
 
     /** Creates a new compound definition.
@@ -262,7 +260,7 @@ class ClassDef : public Definition
     QCString className() const;
 
     /** Returns the members in the list identified by \a lt */
-    MemberList *getMemberList(MemberList::ListType lt);
+    MemberList *getMemberList(MemberListType lt);
 
     /** Returns the list containing the list of members sorted per type */
     const QList<MemberList> &getMemberLists() const;
@@ -347,14 +345,14 @@ class ClassDef : public Definition
                           ClassDef *inheritedFrom,const char *inheritId);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
     void writeSummaryLinks(OutputList &ol);
-    void reclassifyMember(MemberDef *md,MemberDef::MemberType t);
+    void reclassifyMember(MemberDef *md,MemberType t);
     void writeInlineDocumentation(OutputList &ol);
     void writeDeclarationLink(OutputList &ol,bool &found,
                               const char *header,bool localNames);
     void removeMemberFromLists(MemberDef *md);
-    void addGroupedInheritedMembers(OutputList &ol,MemberList::ListType lt,
+    void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               ClassDef *inheritedFrom,const QCString &inheritId);
-    int countMembersIncludingGrouped(MemberList::ListType lt,ClassDef *inheritedFrom,bool additional);
+    int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
     
     bool visited;
 
@@ -369,14 +367,14 @@ class ClassDef : public Definition
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     QCString getMemberListFileName() const;
-    void addMemberToList(MemberList::ListType lt,MemberDef *md,bool isBrief);
-    MemberList *createMemberList(MemberList::ListType lt);
-    void writeInheritedMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,ClassDef *inheritedFrom,bool invert,QPtrDict<void> *visitedClasses);
-    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
+    void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
+    MemberList *createMemberList(MemberListType lt);
+    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,ClassDef *inheritedFrom,bool invert,QPtrDict<void> *visitedClasses);
+    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
                                  const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,bool invert=FALSE,QPtrDict<void> *visitedClasses=0);
-    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title,bool showInline=FALSE);
-    void writeSimpleMemberDocumentation(OutputList &ol,MemberList::ListType lt);
-    void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
+    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE);
+    void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt);
+    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
     void writeBriefDescription(OutputList &ol,bool exampleFlag);
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString());
@@ -395,8 +393,8 @@ class ClassDef : public Definition
     void writeMoreLink(OutputList &ol,const QCString &anchor);
     void writeDetailedDocumentationBody(OutputList &ol);
     
-    int countInheritedDecMembersRec(MemberList::ListType lt,ClassDef *inheritedFrom);
-    int countInheritedDecMembers(MemberList::ListType lt);
+    int countInheritedDecMembersRec(MemberListType lt,ClassDef *inheritedFrom);
+    int countInheritedDecMembers(MemberListType lt);
     int countAdditionalInheritedMembers();
     void writeAdditionalInheritedMembers(OutputList &ol);
     void addClassAttributes(OutputList &ol);
@@ -496,7 +494,7 @@ class BaseClassList : public QList<BaseClassDef>
 {
   public:
    ~BaseClassList() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       ClassDef *c1=((BaseClassDef *)item1)->classDef;
       ClassDef *c2=((BaseClassDef *)item2)->classDef;

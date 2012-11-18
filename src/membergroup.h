@@ -18,14 +18,13 @@
 #ifndef MEMBERGROUP_H
 #define MEMBERGROUP_H
 
-#include "qtbc.h"
 #include <qlist.h>
-#include <qfile.h>
 #include "sortdict.h"
-#include "memberlist.h"
+#include "types.h"
 
 #define DOX_NOGROUP -1
 
+class MemberList;
 class MemberDef;
 class ClassDef;
 class NamespaceDef;
@@ -47,7 +46,7 @@ class MemberGroup
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
     void insertMember(MemberDef *md);
-    void setAnchors(ClassDef *);
+    void setAnchors();
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                ClassDef *inheritedFrom,const char *inheritId);
@@ -59,7 +58,7 @@ class MemberGroup
     void writeDocumentationPage(OutputList &ol,const char *scopeName,
                Definition *container);
     void addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
-               MemberList::ListType lt,
+               MemberListType lt,
                ClassDef *inheritedFrom,const QCString &inheritId);
 
     QCString documentation() { return doc; }
@@ -67,7 +66,7 @@ class MemberGroup
     void addToDeclarationSection();
     int countDecMembers(GroupDef *gd=0);
     int countDocMembers();
-    int countGroupedInheritedMembers(MemberList::ListType lt);
+    int countGroupedInheritedMembers(MemberListType lt);
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
     int varCount() const;
@@ -126,7 +125,7 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
   public:
     MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
    ~MemberGroupSDict() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return ((MemberGroup *)item1)->groupId() - ((MemberGroup*)item2)->groupId();
     }

@@ -19,11 +19,12 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
-#include "qtbc.h"
-#include "memberlist.h"
 #include <qlist.h>
+#include "types.h"
 
 class LayoutParser;
+class MemberList;
+class QTextStream;
 
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
@@ -87,12 +88,12 @@ private:
 /** @brief Represents of a member declaration list with configurable title and subtitle. */
 struct LayoutDocEntryMemberDecl: public LayoutDocEntry
 {
-  LayoutDocEntryMemberDecl(MemberList::ListType tp,
+  LayoutDocEntryMemberDecl(MemberListType tp,
                            const QCString &tl,const QCString &ss) 
     : type(tp), m_title(tl), m_subscript(ss) {}
 
   Kind kind() const { return MemberDecl; }
-  MemberList::ListType type;
+  MemberListType type;
   QCString title(SrcLangExt lang) const;
   QCString subtitle(SrcLangExt lang) const;
 private:
@@ -103,11 +104,11 @@ private:
 /** @brief Represents of a member definition list with configurable title. */
 struct LayoutDocEntryMemberDef: public LayoutDocEntry
 {
-  LayoutDocEntryMemberDef(MemberList::ListType tp,const QCString &tl) 
+  LayoutDocEntryMemberDef(MemberListType tp,const QCString &tl) 
     : type(tp), m_title(tl) {}
 
   Kind kind() const { return MemberDef; }
-  MemberList::ListType type;
+  MemberListType type;
   QCString title(SrcLangExt lang) const;
 private:
   QCString m_title;

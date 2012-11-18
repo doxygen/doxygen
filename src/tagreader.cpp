@@ -36,7 +36,9 @@
 #include "message.h"
 #include "defargs.h"
 #include "arguments.h"
-//#include "reflist.h"
+#include "filedef.h"
+#include "filename.h"
+#include "section.h"
 
 /** Information about an linkable anchor */
 class TagAnchorInfo
@@ -1035,13 +1037,13 @@ void TagFileParser::addDocAnchors(Entry *e,const TagAnchorInfoList &l)
   TagAnchorInfo *ta;
   for (tli.toFirst();(ta=tli.current());++tli)
   {
-    if (Doxygen::sectionDict.find(ta->label)==0)
+    if (Doxygen::sectionDict->find(ta->label)==0)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    ta->fileName.data(),ta->label.data());
       SectionInfo *si=new SectionInfo(ta->fileName,ta->label,ta->label,
           SectionInfo::Anchor,0,m_tagName);
-      Doxygen::sectionDict.append(ta->label,si);
+      Doxygen::sectionDict->append(ta->label,si);
       e->anchors->append(si);
     }
     else

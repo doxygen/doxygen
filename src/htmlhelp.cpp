@@ -22,15 +22,19 @@
 #include <qlist.h>
 #include <qdict.h>
 #include <qregexp.h>
+#include <qfile.h>
+
 #include "qtextcodec.h"
 #include "sortdict.h"
-
 #include "htmlhelp.h"
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
 #include "language.h"
 #include "portable.h"
+#include "groupdef.h"
+#include "memberdef.h"
+#include "filedef.h"
 
 //----------------------------------------------------------------------------
 
@@ -50,7 +54,7 @@ class IndexFieldSDict : public SDict<IndexField>
   public:
     IndexFieldSDict() : SDict<IndexField>(17) {}
    ~IndexFieldSDict() {}
-    int compareItems(GCI item1, GCI item2)
+    int compareItems(QCollection::Item item1, QCollection::Item item2)
     {
       return stricmp(((IndexField *)item1)->name,((IndexField *)item2)->name);
     }

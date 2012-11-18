@@ -22,7 +22,6 @@
 
 #include "md5.h"
 
-#include "qtbc.h"
 #include <qregexp.h>
 #include <qfileinfo.h>
 #include <qdir.h>
@@ -55,6 +54,13 @@
 #include "growbuf.h"
 #include "entry.h"
 #include "arguments.h"
+#include "memberlist.h"
+#include "classlist.h"
+#include "namespacedef.h"
+#include "membername.h"
+#include "filename.h"
+#include "membergroup.h"
+#include "dirdef.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -952,22 +958,25 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
   int i;
 
   Definition *itemScope=item->getOuterScope();
-
-  if ( 
-      itemScope==scope ||                                                  // same thing
+  bool memberAccessibleFromScope = 
       (item->definitionType()==Definition::TypeMember &&                   // a member
        itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
        scope->definitionType()==Definition::TypeClass &&                   // accessible
        ((ClassDef*)scope)->isAccessibleMember((MemberDef *)item)           // from scope
-      ) ||
+      );
+  bool nestedClassInsideBaseClass = 
       (item->definitionType()==Definition::TypeClass &&                    // a nested class
        itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base 
        scope->definitionType()==Definition::TypeClass &&                   // class of scope
        ((ClassDef*)scope)->isBaseClass((ClassDef*)itemScope,TRUE)          
-      )
-     ) 
+      );
+
+  if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass) 
   {
     //printf("> found it\n");
+    if (nestedClassInsideBaseClass) result++; // penalty for base class to prevent
+                                              // this is preferred over nested class in this class
+                                              // see bug 686956
   }
   else if (scope==Doxygen::globalScope)
   {
@@ -2146,9 +2155,9 @@ QCString tempArgListToString(ArgumentList *al)
 
 
 // compute the HTML anchors for a list of members
-void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId)
+void setAnchors(MemberList *ml)
 {
-  int count=0;
+  //int count=0;
   if (ml==0) return;
   MemberListIterator mli(*ml);
   MemberDef *md;
@@ -2156,13 +2165,13 @@ void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId)
   {
     if (!md->isReference())
     {
-      QCString anchor;
-      if (groupId==-1)
-        anchor.sprintf("%c%d",id,count++);
-      else
-        anchor.sprintf("%c%d_%d",id,groupId,count++);
-      if (cd) anchor.prepend(escapeCharsInString(cd->name(),FALSE));
-      md->setAnchor(anchor);
+      //QCString anchor;
+      //if (groupId==-1)
+      //  anchor.sprintf("%c%d",id,count++);
+      //else
+      //  anchor.sprintf("%c%d_%d",id,groupId,count++);
+      //if (cd) anchor.prepend(escapeCharsInString(cd->name(),FALSE));
+      md->setAnchor();
       //printf("setAnchors(): Member %s outputFileBase=%s anchor %s result %s\n",
       //    md->name().data(),md->getOutputFileBase().data(),anchor.data(),md->anchor().data());
     }
@@ -4561,7 +4570,7 @@ bool resolveLink(/* in */ const char *scName,
     if (gd)
     {
       SectionInfo *si=0;
-      if (!pd->name().isEmpty()) si=Doxygen::sectionDict[pd->name()];
+      if (!pd->name().isEmpty()) si=Doxygen::sectionDict->find(pd->name());
       *resContext=gd;
       if (si) resAnchor = si->label;
     }
@@ -4753,7 +4762,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
     cachedResult = new FindFileCacheElem(0,FALSE);
   }
 
-  QCString name=convertToQCString(QDir::cleanDirPath(n));
+  QCString name=QDir::cleanDirPath(n).utf8();
   QCString path;
   int slashPos;
   FileName *fn;
@@ -5778,6 +5787,62 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
   return -1;
 }
 
+QCString normalizeNonTemplateArgumentsInString(
+       const QCString &name,
+       Definition *context,
+       const ArgumentList * formalArgs)
+{
+  // skip until <
+  int p=name.find('<');
+  if (p==-1) return name;
+  p++;
+  QCString result = name.left(p);
+
+  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
+  int l,i;
+  // for each identifier in the template part (e.g. B<T> -> T)
+  while ((i=re.match(name,p,&l))!=-1)
+  {
+    result += name.mid(p,i-p);
+    QCString n = name.mid(i,l);
+    bool found=FALSE;
+    if (formalArgs) // check that n is not a formal template argument
+    {
+      ArgumentListIterator formAli(*formalArgs);
+      Argument *formArg;
+      for (formAli.toFirst();
+          (formArg=formAli.current()) && !found;
+          ++formAli
+          )
+      {
+        found = formArg->name==n;
+      }
+    }
+    if (!found)
+    {
+      // try to resolve the type
+      ClassDef *cd = getResolvedClass(context,0,n);
+      if (cd)
+      {
+        result+=cd->name();
+      }
+      else
+      {
+        result+=n;
+      }
+    }
+    else
+    {
+      result+=n;
+    }
+    p=i+l;
+  }
+  result+=name.right(name.length()-p);
+  //printf("normalizeNonTemplateArgumentInString(%s)=%s\n",name.data(),result.data());
+  return removeRedundantWhiteSpace(result);
+}
+
+
 /*! Substitutes any occurrence of a formal argument from argument list
  *  \a formalArgs in \a name by the corresponding actual argument in
  *  argument list \a actualArgs. The result after substitution
@@ -5873,7 +5938,10 @@ QCString substituteTemplateArgumentsInString(
         found=TRUE;
       }
     }
-    if (!found) result += n;
+    if (!found) 
+    {
+      result += n;
+    }
     p=i+l;
   }
   result+=name.right(name.length()-p);
@@ -6114,7 +6182,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       //      si->fileName.data());
       //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
       //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
-      Doxygen::sectionDict.append(pd->name(),si);
+      Doxygen::sectionDict->append(pd->name(),si);
     }
   }
   return pd;
@@ -7296,7 +7364,7 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
     {
       fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
     }
-    Doxygen::indexList.addImageFile(data->name);
+    Doxygen::indexList->addImageFile(data->name);
     data++;
   }
 }

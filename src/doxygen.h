@@ -19,26 +19,19 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
-#include "qtbc.h"
 #include <qdatetime.h>
 #include <qcache.h>
-#include "ftextstream.h"
-#include "groupdef.h"
-#include "filedef.h"
-#include "classdef.h"
-#include "memberdef.h"
-#include "classlist.h"
-#include "membername.h"
-#include "filename.h"
-#include "namespacedef.h"
-#include "formula.h"
-#include "section.h"
-#include "membergroup.h"
-#include "reflist.h"
-#include "dirdef.h"
-#include "index.h"
-#include "docsets.h"
+#include <qstrlist.h>
+#include <qdict.h>
+#include <qintdict.h>
 
+#include "ftextstream.h"
+#include "sortdict.h"
+#include "membergroup.h"
+#include "dirdef.h"
+#include "memberlist.h"
+
+class RefList;
 class PageSList;
 class PageSDict;
 class PageDef;
@@ -49,10 +42,31 @@ class Store;
 class QFileInfo;
 class BufStr;
 class CiteDict;
+class MemberDef;
+class GroupDef;
+class GroupSDict;
+class FileDef;
+class ClassDef;
+class ClassSDict;
+class GenericsSDict;
+class MemberNameSDict;
+class FileNameDict;
+class FileNameList;
+class NamespaceSDict;
+class NamespaceDef;
+class DefinitionIntf;
+class DirSDict;
+class DirRelation;
+class IndexList;
+class FormulaList;
+class FormulaDict;
+class FormulaNameDict;
+class SectionDict;
+struct MemberGroupInfo;
 
 typedef QList<QCString>    StringList;
-typedef QDict<FileDef>     FileDict;
-typedef QDict<GroupDef>    GroupDict;
+//typedef QDict<FileDef>     FileDict;
+//typedef QDict<GroupDef>    GroupDict;
 
 class StringDict : public QDict<QCString>
 {
@@ -98,13 +112,13 @@ class Doxygen
     static MemberNameSDict          *memberNameSDict;
     static MemberNameSDict          *functionNameSDict;
     static FTextStream               tagFile;
-    static SectionDict               sectionDict;
+    static SectionDict              *sectionDict;
     static StringDict                namespaceAliasDict;
     static GroupSDict               *groupSDict;
     static NamespaceSDict           *namespaceSDict;
-    static FormulaList               formulaList;
-    static FormulaDict               formulaDict;
-    static FormulaDict               formulaNameDict;
+    static FormulaList              *formulaList;
+    static FormulaDict              *formulaDict;
+    static FormulaDict              *formulaNameDict;
     static StringDict                tagDestinationDict; 
     static StringDict                aliasDict; 
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
@@ -130,12 +144,12 @@ class Doxygen
     static CiteDict                 *citeDict;
     static bool                      gatherDefines;
     static bool                      userComments;
-    static IndexList                 indexList;
+    static IndexList                *indexList;
     static int                       subpageNestingLevel;
     static QCString                  spaces;
     static bool                      generatingXmlOutput;
     static bool                      markdownSupport;
-    static GenericsSDict             genericsDict;
+    static GenericsSDict            *genericsDict;
 };
 
 void initDoxygen();
@@ -172,7 +186,5 @@ int readDir(QFileInfo *fi,
             QDict<void> *killDict
            );
 void copyAndFilterFile(const char *fileName,BufStr &dest);
-
-#define NEWMATCH
 
 #endif

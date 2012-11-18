@@ -84,6 +84,12 @@ void QhpXmlWriter::close(char const * elementName)
   newLine();
 }
 
+void QhpXmlWriter::declaration(char const * version, char const * encoding)
+{
+  m_out << "<?xml version=\"" << version << "\" encoding=\"" << encoding << "\"?>";
+  newLine();
+}
+
 void QhpXmlWriter::indent()
 {
   if (m_curLineIndented)

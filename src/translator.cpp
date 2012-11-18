@@ -7,6 +7,7 @@
  *  
  */
 #include "translator.h"
+#include <stdio.h>
 
 /*! The translation table used by Win1250ToISO88592() method. */
 const char Translator::Win1250ToISO88592Tab[] = 

@@ -80,6 +80,7 @@ class DocCopy; // TODO: no longer generated => remove
 class DocText;
 class DocSimpleSectSep;
 class DocHtmlBlockQuote;
+class DocVhdlFlow;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
  */
@@ -185,6 +186,8 @@ class DocVisitor
     virtual void visitPost(DocText *) = 0;
     virtual void visitPre(DocHtmlBlockQuote *) = 0;
     virtual void visitPost(DocHtmlBlockQuote *) = 0;
+    virtual void visitPre(DocVhdlFlow *) = 0;
+    virtual void visitPost(DocVhdlFlow *) = 0;
     /*! @} */
 };
 

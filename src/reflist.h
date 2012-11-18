@@ -19,7 +19,6 @@
 #ifndef _REFLIST_H
 #define _REFLIST_H
 
-#include "qtbc.h"
 #include <qintdict.h>
 #include <qlist.h>
 #include "sortdict.h"
@@ -45,7 +44,7 @@ class SortedRefItems : public SDict<RefItem>
   public:
     SortedRefItems(int size=17) : SDict<RefItem>(size) {}
     virtual ~SortedRefItems() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       RefItem *r1 = (RefItem*)item1;
       RefItem *r2 = (RefItem*)item2;

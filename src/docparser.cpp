@@ -31,7 +31,6 @@
 #include "debug.h"
 #include "util.h"
 #include "pagedef.h"
-
 #include "docparser.h"
 #include "doctokenizer.h"
 #include "cmdmapper.h"
@@ -44,6 +43,14 @@
 #include "cite.h"
 #include "arguments.h"
 #include "vhdldocgen.h"
+#include "groupdef.h"
+#include "classlist.h"
+#include "filedef.h"
+#include "memberdef.h"
+#include "namespacedef.h"
+#include "reflist.h"
+#include "formula.h"
+#include "config.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -271,7 +278,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
           outImage.writeBlock(buffer,inImage.size());
           outImage.flush();
           delete[] buffer;
-          if (type==DocImage::Html) Doxygen::indexList.addImageFile(result);
+          if (type==DocImage::Html) Doxygen::indexList->addImageFile(result);
         }
         else
         {
@@ -1789,7 +1796,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
   }
   else // found \anchor label
   {
-    SectionInfo *sec = Doxygen::sectionDict[id];
+    SectionInfo *sec = Doxygen::sectionDict->find(id);
     if (sec)
     {
       //printf("Found anchor %s\n",id.data());
@@ -2134,7 +2141,7 @@ DocFormula::DocFormula(DocNode *parent,int id) :
   m_parent = parent; 
   QCString formCmd;
   formCmd.sprintf("\\form#%d",id);
-  Formula *formula=Doxygen::formulaNameDict[formCmd];
+  Formula *formula=Doxygen::formulaNameDict->find(formCmd);
   if (formula)
   {
     m_id = formula->getId();
@@ -2206,7 +2213,7 @@ void DocSecRefItem::parse()
   SectionInfo *sec=0;
   if (!m_target.isEmpty())
   {
-    sec=Doxygen::sectionDict[m_target];
+    sec=Doxygen::sectionDict->find(m_target);
     if (sec)
     {
       m_file   = sec->fileName;
@@ -2360,7 +2367,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   //printf("DocRef::DocRef(target=%s,context=%s)\n",target.data(),context.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
-  SectionInfo *sec = Doxygen::sectionDict[target];
+  SectionInfo *sec = Doxygen::sectionDict->find(target);
   if (sec) // ref to section or anchor
   {
     PageDef *pd = 0;
@@ -2827,6 +2834,52 @@ void DocMscFile::parse()
   ASSERT(n==this);
 }
 
+//---------------------------------------------------------------------------
+
+DocVhdlFlow::DocVhdlFlow(DocNode *parent)
+{
+  m_parent = parent;
+}
+
+void DocVhdlFlow::parse()
+{
+  g_nodeStack.push(this);
+  DBG(("DocVhdlFlow::parse() start\n"));
+
+  doctokenizerYYsetStateTitle();
+  int tok;
+  while ((tok=doctokenizerYYlex()))
+  {
+    if (!defaultHandleToken(this,tok,m_children))
+    {
+      switch (tok)
+      {
+        case TK_COMMAND: 
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Illegal command %s as part of a \\mscfile",
+	       qPrint(g_token->name));
+          break;
+        case TK_SYMBOL: 
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unsupported symbol %s found",
+               qPrint(g_token->name));
+          break;
+        default:
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unexpected token %s",
+		tokToString(tok));
+          break;
+      }
+    }
+  }
+  tok=doctokenizerYYlex();
+
+  doctokenizerYYsetStatePara();
+  handlePendingStyleCommands(this,m_children);
+
+  DBG(("DocVhdlFlow::parse() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+
+  VhdlDocGen::createFlowChart(g_memberDef);
+}
 
 
 //---------------------------------------------------------------------------
@@ -4986,6 +5039,13 @@ void DocPara::handleMscFile(const QCString &cmdName)
   df->parse();
 }
 
+void DocPara::handleVhdlFlow()
+{
+  DocVhdlFlow *vf = new DocVhdlFlow(this);
+  m_children.append(vf);
+  vf->parse();
+}
+
 void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
 {
   int tok=doctokenizerYYlex();
@@ -5526,6 +5586,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_DOTFILE:
       handleDotFile(cmdName);
+      break;
+    case CMD_VHDLFLOW:
+      handleVhdlFlow();
       break;
     case CMD_MSCFILE:
       handleMscFile(cmdName);
@@ -6515,7 +6578,7 @@ int DocSection::parse()
   SectionInfo *sec;
   if (!m_id.isEmpty())
   {
-    sec=Doxygen::sectionDict[m_id];
+    sec=Doxygen::sectionDict->find(m_id);
     if (sec)
     {
       m_file   = sec->fileName;
@@ -6773,7 +6836,7 @@ void DocRoot::parse()
   // then parse any number of level1 sections
   while (retval==RetVal_Section)
   {
-    SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
+    SectionInfo *sec=Doxygen::sectionDict->find(g_token->sectionId);
     if (sec)
     {
       DocSection *s=new DocSection(this,

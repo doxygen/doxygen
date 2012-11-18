@@ -30,6 +30,8 @@
 #include "msc.h"
 #include "util.h"
 #include "vhdldocgen.h"
+#include "filedef.h"
+#include "memberdef.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -325,10 +327,12 @@ void HtmlDocVisitor::visit(DocLineBreak *)
   m_t << "<br/>\n";
 }
 
-void HtmlDocVisitor::visit(DocHorRuler *)
+void HtmlDocVisitor::visit(DocHorRuler *hr)
 {
   if (m_hide) return;
+  forceEndParagraph(hr);
   m_t << "<hr/>\n";
+  forceStartParagraph(hr);
 }
 
 void HtmlDocVisitor::visit(DocStyleChange *s)
@@ -474,33 +478,34 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
       break;
-    case DocVerbatim::Msc:
-      {
-        forceEndParagraph(s);
-
-#if 0 // TODO: this should get its own command and not hijack the \msc
-      // command. This should also work for Latex and RTF output (or at
-      // least produce valid output there.
-        static bool optimizeForVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-        if (optimizeForVhdl)
-        {
+#if 0
+      case DocVerbatim::Vhdf:  
           if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
           {
             QCString fname=FlowNode::convertNameToFileName(); 
-            m_t << "<div align=\"left\">" << endl;     
+     //       fprintf(stderr,"\n create flow mem %s \n",fname.data());
+            //m_t << "<div align=\"left\">" << endl; // TODO: use CSS
             m_t << "<p>";
-            m_t << "flowchart:" ;
+            m_t << "flowchart: " ; // TODO: translate me
             m_t << "<a href=\"";
             m_t << fname.data(); 
             m_t << ".svg\">";
             m_t << VhdlDocGen::getFlowMember()->name().data(); 
-            m_t << "</a><br><br>";
-            m_t << s->text().data();
+            m_t << "</a>";
+            if (!s->text().isEmpty())
+            {
+              m_t << "<br/>";
+              m_t << s->text().data();
+            }
             m_t << "</p>";
             VhdlDocGen::setFlowMember(NULL);
           }
-        }
+      break;
 #endif
+      case DocVerbatim::Msc:
+      {
+        forceEndParagraph(s);
+
         static int mscindex = 1;
         QCString baseName(4096);
 
@@ -726,7 +731,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   //       e->scope()  ? e->scope()->name().data()  : "<null>",
   //       e->member() ? e->member()->name().data() : "<null>"
   //      );
-  Doxygen::indexList.addIndexItem(e->scope(),e->member(),anchor,e->entry());
+  Doxygen::indexList->addIndexItem(e->scope(),e->member(),anchor,e->entry());
 }
 
 void HtmlDocVisitor::visit(DocSimpleSectSep *)
@@ -1783,6 +1788,37 @@ void HtmlDocVisitor::visitPost(DocHtmlBlockQuote *b)
   if (m_hide) return;
   m_t << "</blockquote>" << endl;
   forceStartParagraph(b);
+}
+
+void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
+{
+  if (m_hide) return;
+  if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
+  {
+    forceEndParagraph(vf);
+    QCString fname=FlowNode::convertNameToFileName(); 
+    m_t << "<p>";
+    m_t << "flowchart: " ; // TODO: translate me
+    m_t << "<a href=\"";
+    m_t << fname.data(); 
+    m_t << ".svg\">";
+    m_t << VhdlDocGen::getFlowMember()->name().data(); 
+    m_t << "</a>";
+    if (vf->hasCaption())
+    {
+      m_t << "<br/>";
+    }
+  }
+}
+
+void HtmlDocVisitor::visitPost(DocVhdlFlow *vf)
+{
+  if (m_hide) return;
+  if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
+  {
+    m_t << "</p>";
+    forceStartParagraph(vf);
+  }
 }
 
 void HtmlDocVisitor::filter(const char *str)

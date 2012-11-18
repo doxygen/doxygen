@@ -24,7 +24,6 @@
 #ifndef ECLIPSEHELP_H
 #define ECLIPSEHELP_H
 
-#include "qtbc.h"
 #include "index.h"
 #include "ftextstream.h"
 

@@ -16,6 +16,8 @@
  *
  */
 
+#include <qfileinfo.h> 
+
 #include "xmldocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -25,8 +27,9 @@
 #include "dot.h"
 #include "message.h"
 #include "util.h"
-#include <qfileinfo.h> 
 #include "parserintf.h"
+#include "filename.h"
+#include "config.h"
 
 XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci) 
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -1038,6 +1041,13 @@ void XmlDocVisitor::visitPost(DocHtmlBlockQuote *)
   m_t << "</blockquote>";
 }
 
+void XmlDocVisitor::visitPre(DocVhdlFlow *)
+{
+}
+
+void XmlDocVisitor::visitPost(DocVhdlFlow *)
+{
+}
 
 void XmlDocVisitor::filter(const char *str)
 { 

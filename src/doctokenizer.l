@@ -19,6 +19,8 @@
 
 %{
 
+#include <ctype.h>
+
 #include <qfile.h>
 #include <qstring.h>
 #include <qstack.h>
@@ -159,7 +161,7 @@ static void processSection()
     warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data()); 
   }
   SectionInfo *si=0;
-  if ((si=Doxygen::sectionDict.find(g_secLabel)))
+  if ((si=Doxygen::sectionDict->find(g_secLabel)))
   {
     si->fileName = file;
     //si = new SectionInfo(file,g_secLabel,g_secTitle,g_secType);
@@ -331,7 +333,8 @@ LISTITEM  {BLANK}*[-]("#")?{WS}
 MLISTITEM {BLANK}*[+*]{WS}
 OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
 ENDLIST   {BLANK}*"."{BLANK}*\n
-ATTRIB    {ID}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
+ATTRNAME  [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
+ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
@@ -344,7 +347,7 @@ SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM})
 SPCMD2    {CMD}[\\@<>&$#%~".|]
 SPCMD3    {CMD}form#[0-9]+
 SPCMD4    {CMD}"::"
-INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
+INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&\[\]]
@@ -793,7 +796,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <St_Dot>.              { /* dot text */
   			 g_token->verb+=yytext;
   		       }
-<St_Msc>{CMD}"endmsc"  {
+<St_Msc>{CMD}("endmsc"|"endvhdlflow")  {
                          return RetVal_OK;
                        }
 <St_Msc>[^\\@\n]+      |

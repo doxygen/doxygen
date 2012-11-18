@@ -15,7 +15,11 @@
 
 #include <stdlib.h>
 
-#include "qtbc.h"
+#include <qdir.h>
+#include <qfile.h>
+#include <qtextstream.h>
+#include <qintdict.h>
+
 #include "xmlgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -33,11 +37,14 @@
 #include "language.h"
 #include "parserintf.h"
 #include "arguments.h"
-
-#include <qdir.h>
-#include <qfile.h>
-#include <qtextstream.h>
-#include <qintdict.h>
+#include "memberlist.h"
+#include "groupdef.h"
+#include "memberdef.h"
+#include "namespacedef.h"
+#include "membername.h"
+#include "membergroup.h"
+#include "dirdef.h"
+#include "section.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -66,41 +73,41 @@ class XmlSectionMapper : public QIntDict<char>
   public:
     XmlSectionMapper() : QIntDict<char>(47)
     {
-      insert(MemberList::pubTypes,"public-type");
-      insert(MemberList::pubMethods,"public-func");
-      insert(MemberList::pubAttribs,"public-attrib");
-      insert(MemberList::pubSlots,"public-slot");
-      insert(MemberList::signals,"signal");
-      insert(MemberList::dcopMethods,"dcop-func");
-      insert(MemberList::properties,"property");
-      insert(MemberList::events,"event");
-      insert(MemberList::pubStaticMethods,"public-static-func");
-      insert(MemberList::pubStaticAttribs,"public-static-attrib");
-      insert(MemberList::proTypes,"protected-type");
-      insert(MemberList::proMethods,"protected-func");
-      insert(MemberList::proAttribs,"protected-attrib");
-      insert(MemberList::proSlots,"protected-slot");
-      insert(MemberList::proStaticMethods,"protected-static-func");
-      insert(MemberList::proStaticAttribs,"protected-static-attrib");
-      insert(MemberList::pacTypes,"package-type");
-      insert(MemberList::pacMethods,"package-func");
-      insert(MemberList::pacAttribs,"package-attrib");
-      insert(MemberList::pacStaticMethods,"package-static-func");
-      insert(MemberList::pacStaticAttribs,"package-static-attrib");
-      insert(MemberList::priTypes,"private-type");
-      insert(MemberList::priMethods,"private-func");
-      insert(MemberList::priAttribs,"private-attrib");
-      insert(MemberList::priSlots,"private-slot");
-      insert(MemberList::priStaticMethods,"private-static-func");
-      insert(MemberList::priStaticAttribs,"private-static-attrib");
-      insert(MemberList::friends,"friend");
-      insert(MemberList::related,"related");
-      insert(MemberList::decDefineMembers,"define");
-      insert(MemberList::decProtoMembers,"prototype");
-      insert(MemberList::decTypedefMembers,"typedef");
-      insert(MemberList::decEnumMembers,"enum");
-      insert(MemberList::decFuncMembers,"func");
-      insert(MemberList::decVarMembers,"var");
+      insert(MemberListType_pubTypes,"public-type");
+      insert(MemberListType_pubMethods,"public-func");
+      insert(MemberListType_pubAttribs,"public-attrib");
+      insert(MemberListType_pubSlots,"public-slot");
+      insert(MemberListType_signals,"signal");
+      insert(MemberListType_dcopMethods,"dcop-func");
+      insert(MemberListType_properties,"property");
+      insert(MemberListType_events,"event");
+      insert(MemberListType_pubStaticMethods,"public-static-func");
+      insert(MemberListType_pubStaticAttribs,"public-static-attrib");
+      insert(MemberListType_proTypes,"protected-type");
+      insert(MemberListType_proMethods,"protected-func");
+      insert(MemberListType_proAttribs,"protected-attrib");
+      insert(MemberListType_proSlots,"protected-slot");
+      insert(MemberListType_proStaticMethods,"protected-static-func");
+      insert(MemberListType_proStaticAttribs,"protected-static-attrib");
+      insert(MemberListType_pacTypes,"package-type");
+      insert(MemberListType_pacMethods,"package-func");
+      insert(MemberListType_pacAttribs,"package-attrib");
+      insert(MemberListType_pacStaticMethods,"package-static-func");
+      insert(MemberListType_pacStaticAttribs,"package-static-attrib");
+      insert(MemberListType_priTypes,"private-type");
+      insert(MemberListType_priMethods,"private-func");
+      insert(MemberListType_priAttribs,"private-attrib");
+      insert(MemberListType_priSlots,"private-slot");
+      insert(MemberListType_priStaticMethods,"private-static-func");
+      insert(MemberListType_priStaticAttribs,"private-static-attrib");
+      insert(MemberListType_friends,"friend");
+      insert(MemberListType_related,"related");
+      insert(MemberListType_decDefineMembers,"define");
+      insert(MemberListType_decProtoMembers,"prototype");
+      insert(MemberListType_decTypedefMembers,"typedef");
+      insert(MemberListType_decEnumMembers,"enum");
+      insert(MemberListType_decFuncMembers,"func");
+      insert(MemberListType_decVarMembers,"var");
     }
 };
 
@@ -589,7 +596,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   // - call graph
   
   // enum values are written as part of the enum
-  if (md->memberType()==MemberDef::EnumValue) return;
+  if (md->memberType()==MemberType_EnumValue) return;
   if (md->isHidden()) return;
   //if (md->name().at(0)=='@') return; // anonymous member
 
@@ -600,18 +607,18 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   bool isFunc=FALSE;
   switch (md->memberType())
   {
-    case MemberDef::Define:      memType="define";    break;
-    case MemberDef::EnumValue:   ASSERT(0);           break;
-    case MemberDef::Property:    memType="property";  break;
-    case MemberDef::Event:       memType="event";     break;
-    case MemberDef::Variable:    memType="variable";  break;
-    case MemberDef::Typedef:     memType="typedef";   break;
-    case MemberDef::Enumeration: memType="enum";      break;
-    case MemberDef::Function:    memType="function";  isFunc=TRUE; break;
-    case MemberDef::Signal:      memType="signal";    isFunc=TRUE; break;
-    case MemberDef::Friend:      memType="friend";    isFunc=TRUE; break;
-    case MemberDef::DCOP:        memType="dcop";      isFunc=TRUE; break;
-    case MemberDef::Slot:        memType="slot";      isFunc=TRUE; break;
+    case MemberType_Define:      memType="define";    break;
+    case MemberType_EnumValue:   ASSERT(0);           break;
+    case MemberType_Property:    memType="property";  break;
+    case MemberType_Event:       memType="event";     break;
+    case MemberType_Variable:    memType="variable";  break;
+    case MemberType_Typedef:     memType="typedef";   break;
+    case MemberType_Enumeration: memType="enum";      break;
+    case MemberType_Function:    memType="function";  isFunc=TRUE; break;
+    case MemberType_Signal:      memType="signal";    isFunc=TRUE; break;
+    case MemberType_Friend:      memType="friend";    isFunc=TRUE; break;
+    case MemberType_DCOP:        memType="dcop";      isFunc=TRUE; break;
+    case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
   }
 
   ti << "    <member refid=\"" << memberOutputFileBase(md) 
@@ -702,7 +709,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "\"";
   }
 
-  if (md->memberType() == MemberDef::Variable)
+  if (md->memberType() == MemberType_Variable)
   {
     //ArgumentList *al = md->argumentList();
     //t << " volatile=\"";
@@ -718,7 +725,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     }
     
   }
-  else if (md->memberType() == MemberDef::Property)
+  else if (md->memberType() == MemberType_Property)
   {
     t << " readable=\"";
     if (md->isReadable()) t << "yes"; else t << "no";
@@ -747,7 +754,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       t << "\"";
     }
   }
-  else if (md->memberType() == MemberDef::Event)
+  else if (md->memberType() == MemberType_Event)
   {
     t << " add=\"";
     if (md->isAddable()) t << "yes"; else t << "no";
@@ -764,11 +771,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
 
   t << ">" << endl;
 
-  if (md->memberType()!=MemberDef::Define &&
-      md->memberType()!=MemberDef::Enumeration
+  if (md->memberType()!=MemberType_Define &&
+      md->memberType()!=MemberType_Enumeration
      )
   {
-    if (md->memberType()!=MemberDef::Typedef)
+    if (md->memberType()!=MemberType_Typedef)
     {
       writeMemberTemplateLists(md,t);
     }
@@ -783,14 +790,14 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
 
   t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;
   
-  if (md->memberType() == MemberDef::Property)
+  if (md->memberType() == MemberType_Property)
   {
     if (md->isReadable())
       t << "        <read>" << convertToXML(md->getReadAccessor()) << "</read>" << endl;
     if (md->isWritable())
       t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>" << endl;
   }
-  if (md->memberType()==MemberDef::Variable && md->bitfieldString())
+  if (md->memberType()==MemberType_Variable && md->bitfieldString())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
@@ -877,7 +884,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       }
     }
   }
-  else if (md->memberType()==MemberDef::Define && 
+  else if (md->memberType()==MemberType_Define && 
           md->argsString()) // define
   {
     if (md->argumentList()->count()==0) // special case for "foo()" to
@@ -911,7 +918,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     t << "</exceptions>" << endl;
   }
   
-  if (md->memberType()==MemberDef::Enumeration) // enum
+  if (md->memberType()==MemberType_Enumeration) // enum
   {
     LockingPtr<MemberList> enumFields = md->enumFieldList();
     if (enumFields!=0)
@@ -1362,7 +1369,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::detailedLists)==0)
+    if ((ml->listType()&MemberListType_detailedLists)==0)
     {
       generateXMLSection(cd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }
@@ -1493,7 +1500,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,FTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::declarationLists)!=0)
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
     {
       generateXMLSection(nd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }
@@ -1636,7 +1643,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::declarationLists)!=0)
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
     {
       generateXMLSection(fd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }
@@ -1726,7 +1733,7 @@ static void generateXMLForGroup(GroupDef *gd,FTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::declarationLists)!=0)
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
     {
       generateXMLSection(gd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }
@@ -1829,7 +1836,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   t << "    <compoundname>" << convertToXML(pd->name()) 
     << "</compoundname>" << endl;
 
-  SectionInfo *si = Doxygen::sectionDict.find(pd->name());
+  SectionInfo *si = Doxygen::sectionDict->find(pd->name());
   if (si)
   {
     t << "    <title>" << convertToXML(si->title) << "</title>" << endl;

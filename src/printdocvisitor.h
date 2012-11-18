@@ -748,6 +748,16 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</blockquote>\n");
     }
+    void visitPre(DocVhdlFlow *)
+    {
+      indent_pre();
+      printf("<vhdlflow>\n");
+    }
+    void visitPost(DocVhdlFlow *)
+    {
+      indent_post();
+      printf("</vhdlflow>\n");
+    }
 
   private:
     // helper functions

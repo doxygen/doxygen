@@ -1451,6 +1451,13 @@ void Config::check()
     gamma=240;
   }
 
+  QCString mathJaxFormat = Config_getEnum("MATHJAX_FORMAT");
+  if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
+       mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
+  {
+    config_err("error: Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
+    Config_getEnum("MATHJAX_FORMAT")="HTML-CSS";
+  }
   
   // add default words if needed
   QStrList &annotationFromBrief = Config_getList("ABBREVIATE_BRIEF");

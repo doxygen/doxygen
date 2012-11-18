@@ -18,9 +18,8 @@
 #ifndef INDEX_H
 #define INDEX_H
 
-#include "qtbc.h"
-#include <qfile.h>
 #include <qlist.h>
+#include <qcstring.h>
 
 class Definition;
 class MemberDef;

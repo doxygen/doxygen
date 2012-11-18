@@ -1,3 +1,20 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
+#include <qregexp.h>
+
 #include "pagedef.h"
 #include "groupdef.h"
 #include "docparser.h"
@@ -6,8 +23,8 @@
 #include "outputlist.h"
 #include "doxygen.h"
 #include "language.h"
-#include <qregexp.h>
-
+#include "namespacedef.h"
+#include "reflist.h"
 
 PageDef::PageDef(const char *f,int l,const char *n,
                  const char *d,const char *t)
@@ -103,7 +120,7 @@ void PageDef::writeDocumentation(OutputList &ol)
     }
     ol.endQuickIndices();
   }
-  SectionInfo *si=Doxygen::sectionDict.find(name());
+  SectionInfo *si=Doxygen::sectionDict->find(name());
 
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
@@ -184,7 +201,7 @@ void PageDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  Doxygen::indexList.addIndexItem(this,0,0,filterTitle(title()));
+  Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title()));
 }
 
 void PageDef::writePageDocumentation(OutputList &ol)

@@ -1,9 +1,6 @@
 #ifndef VHDLCODE_H
 #define VHDLCODE_H
 
-#include "qtbc.h"
-#include <stdio.h>
-
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;

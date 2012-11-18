@@ -25,9 +25,6 @@
 #ifndef PYCODE_H
 #define PYCODE_H
 
-#include "qtbc.h"
-#include <stdio.h>
-
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;

@@ -10,6 +10,7 @@
 #include "dot.h"
 #include "layout.h"
 #include "ftextstream.h"
+#include "config.h"
 
 //----------------------------------------------------------------------
 // method implementation
@@ -574,7 +575,7 @@ bool DirDef::depGraphIsTrivial() const
 
 //----------------------------------------------------------------------
 
-int FilePairDict::compareItems(GCI item1,GCI item2)
+int FilePairDict::compareItems(QCollection::Item item1,QCollection::Item item2)
 {
   FilePair *left  = (FilePair*)item1;
   FilePair *right = (FilePair*)item2;

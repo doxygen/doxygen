@@ -31,7 +31,7 @@
  *******************************************************/
 /******************************************************************************
  * modified for doxygen by M. Kreis
- * extended to VHDL 93/2002/2008
+ * extended to VHDL 93/2008
  ******************************************************************************/
 
 
@@ -61,6 +61,7 @@ struct  YYMM
 #include "commentscan.h"
 #include "entry.h"
 #include "arguments.h"
+#include "memberdef.h"
 
 //-----------------------------variables ---------------------------------------------------------------------------
 //static MyParserVhdl* myconv=0;
@@ -81,9 +82,9 @@ static int levelCounter;
 static QCString confName;
 static QCString genLabels;
 static QCString lab;
-
+static QCString forL;
 static QList<VhdlConfNode> configL;
-static VhdlConfNode* currNode;
+
 
 static int currP=0;
 
@@ -107,9 +108,9 @@ static void addCompInst(char *n, char* instName,char* comp,int line);
 static void newEntry();
 static void initEntry(Entry *e);
 
-static void popConfig();
-static void pushLabel(const QCString &label);
-static void popLabel();
+
+static void pushLabel(QCString &,QCString&);
+static QCString popLabel(QCString&);
 static void addConfigureNode(const char* a,const char*b,
                          bool isRoot,bool isLeave,bool inlineConf=FALSE);
 //static bool addLibUseClause(const QCString &type);
@@ -497,7 +498,8 @@ arch_body     : arch_start error t_END arch_body_2 t_Semicolon
 arch_start    : t_ARCHITECTURE t_Identifier t_OF t_Identifier t_IS
                 {
                   $$=$4+"::"+$2;
-                  pushLabel($2);
+                  genLabels.resize(0);
+                  pushLabel(genLabels,$2);
                   lastCompound=current;
                   addVhdlType($$,getParsedLine(t_ARCHITECTURE),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
                 }
@@ -514,18 +516,25 @@ arch_body_3   :  block_decltve_item
 config_decl   : config_start error  t_END config_decl_2 t_Semicolon { genLabels.resize(0); }
 config_decl   : config_start config_decl_1 block_config t_END config_decl_2 t_Semicolon { genLabels.resize(0); }
                 {
+                  QCString k=$3;
+                  QCString k2=$2;        
                   confName="";
                 }
 
 
 config_start  : t_CONFIGURATION t_Identifier t_OF t_Identifier t_IS
                 {
+                  forL.resize(0);
                   confName=$2+"::"+$4;
                   addVhdlType($2.data(),getParsedLine(t_CONFIGURATION),Entry::VARIABLE_SEC,VhdlDocGen::CONFIG,"configuration",$4.data());
                 }
 
 config_decl_2 : /* empty */     { $$=""; }
-config_decl_2 : t_Identifier    { $$=$1; }
+config_decl_2 : t_Identifier    
+                { 
+                  QCString l=$1;
+                  $$=$1; 
+                }
 config_decl_2 : t_CONFIGURATION { $$="configuration"; }
 config_decl_2 : t_CONFIGURATION t_Identifier  { $$=$2; }
 config_decl_1 :  /* empty */    { $$=""; }
@@ -1360,9 +1369,13 @@ concurrent_stat : block_stat                 {$$=$1;}
                 | generate_stat              {$$=$1;}
                 | procs_stat                   
 
-block_stat: t_Identifier t_Colon t_BLOCK block_stat_0 block_stat_1 block_stat_2
+block_stat: t_Identifier t_Colon t_BLOCK  {pushLabel(genLabels,$1); }block_stat_0 block_stat_1 block_stat_2
             block_stat_3 block_stat_4 t_BEGIN concurrent_stats t_END t_BLOCK block_stat_5
-            t_Semicolon {$$=$1+":block"+$4+$5+$6+$7+$8+"begin "+$10+" block "+$13;}
+            t_Semicolon 
+            {
+              $$=$1+":block"; //+$4+$5+$6+$7+$8+"begin "+$10+" block "+$13;
+              genLabels=popLabel(genLabels);
+            }
 block_stat_5: /* empty */  {$$="";}
 block_stat_5: t_Identifier {$$=$1;}
 block_stat_4: /* empty */  {$$=""; }
@@ -1396,20 +1409,20 @@ vcomp_stat: t_COMPONENT          { $$="component";yyLineNr=s_str.iLine; }
 
 comp_inst_stat:  t_Identifier   t_Colon  name   { yyLineNr=s_str.iLine; }     t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
                              {
-                                addCompInst($1.data(),$3.data(),0,yyLineNr);$$="";
+                                addCompInst($1.lower().data(),$3.lower().data(),0,yyLineNr);$$="";
                                }
 comp_inst_stat:  t_Identifier   t_Colon     name   { yyLineNr=s_str.iLine; }    t_PORT t_MAP association_list t_Semicolon
                               {
-                               addCompInst($1.data(),$3.data(),0,yyLineNr);$$="222";
+                               addCompInst($1.lower().data(),$3.lower().data(),0,yyLineNr);$$="222";
                              }
 
 comp_inst_stat:  t_Identifier  t_Colon   vcomp_stat  mark_comp    t_PORT t_MAP association_list t_Semicolon
                              {
-                                  addCompInst($1.data(),$4.data(),$3.data(),yyLineNr);$$="";
+                                  addCompInst($1.lower().data(),$4.lower().data(),$3.data(),yyLineNr);$$="";
                               }
 comp_inst_stat:  t_Identifier  t_Colon  vcomp_stat   mark_comp        t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
                               {
-                                addCompInst($1.data(),$4.data(),$3.data(),yyLineNr);$$="";
+                                addCompInst($1.lower().data(),$4.lower().data(),$3.lower().data(),yyLineNr);$$="";
                               }
 comp_inst_stat_1:  /* empty                                       {$$="";} */  
 comp_inst_stat_1: t_PORT t_MAP association_list //    {$$="port map"+$3;}
@@ -1489,17 +1502,17 @@ gen_stat1: /* empty */  {$$="";}
 generate_statement_body:  gen_stat1 concurrent_stats
 
 generate_stat : t_Identifier  t_Colon
-                { pushLabel($1); }
+                { pushLabel(genLabels,$1); }
                 generation_scheme t_GENERATE
                 gen_stat1 concurrent_stats  opstat
 
 // stems from VHDL 2008 generate_statement_body
-opstat: end_stats t_END generate_stat_1 t_Semicolon { popLabel(); }
-opstat: t_END generate_stat_1 t_Semicolon           { popLabel(); }
+opstat: end_stats t_END generate_stat_1 t_Semicolon { genLabels=popLabel(genLabels); }
+opstat: t_END generate_stat_1 t_Semicolon           {genLabels=popLabel(genLabels); }
 
 generate_stat: t_Identifier  t_Colon
-               { pushLabel($1); }
-               if_generation_scheme opstat //    t_END   generate_stat_1 t_Semicolon { popLabel(); }
+               { pushLabel(genLabels,$1); }
+               if_generation_scheme opstat //    t_END   generate_stat_1 t_Semicolon { genLabels=popLabel(genLabels);}
 generate_stat: t_Identifier  t_Colon case_scheme
 
 generate_stat_1: t_GENERATE              { $$=""; }
@@ -1677,6 +1690,7 @@ if_stat_1  :  /* empty */                  {$$=""; }
 if_stat_1  : if_stat_1 if_stat_3      {$$=$1+$2; }
 if_stat_3  : t_ELSIF expr t_THEN 
   { 
+   $2.prepend("elsif ");
    FlowNode::addFlowNode(FlowNode::ELSIF_NO,0,$2.data());
   } seq_stats {$$="";}
   
@@ -1789,9 +1803,8 @@ comp_decl_2: t_PORT interf_list t_Semicolon    { $$=$2; }
 comp_decl_1:  /* empty */                      { $$=""; }
 comp_decl_1: t_GENERIC interf_list t_Semicolon { $$=$2; }
 
-block_config: t_FOR block_spec block_config_1 block_config_2 t_END t_FOR t_Semicolon
+block_config: t_FOR block_spec block_config_1 block_config_2 { levelCounter--;}  t_END t_FOR t_Semicolon
           {
-           popConfig();
           }
 
 block_config:   t_FOR error t_END t_FOR t_Semicolon { $$=""; }
@@ -1805,11 +1818,11 @@ block_config_4: use_clause                          { $$=$1; }
 block_spec: name
     {
       $$=$1;
-
       if (levelCounter==0)
         addConfigureNode($1.data(),NULL,TRUE,FALSE);
       else
         addConfigureNode($1.data(),NULL,FALSE,FALSE);
+        levelCounter++;
     }
 
 config_item: block_config { $$=$1; }
@@ -1818,31 +1831,41 @@ config_item: comp_config  { $$=$1; }
 comp_config: t_FOR comp_spec comp_config_1 comp_config_2 t_END t_FOR t_Semicolon
              {
                $$=$2+" "+$3+" "+$4;
-               popConfig();
              }
 comp_config_2:  /* empty */   { $$=""; }
 comp_config_2: block_config   { $$=$1; }
 comp_config_1:  /*empty*/     { $$=""; }
 
-comp_config_1: binding_indic_1  binding_indic_2  t_Semicolon   { $$=""; }
+comp_config_1: binding_indic_1  binding_indic_2  t_Semicolon  
+{ 
+  $$=""; 
+}
 comp_config_1: t_USE t_VUNIT idf_list  t_Semicolon             { $$=""; }
 comp_config_1: t_USE binding_indic t_Semicolon
              {
-               addConfigureNode(compSpec.data(),$2.data(),FALSE,FALSE);
+               addConfigureNode(compSpec.data(),$2.data(),FALSE,TRUE);
              }
 
 config_spec: t_FOR comp_spec comp_spec_stat t_Semicolon                         
              { 
-               addConfigureNode($2.data(),$3.data(),TRUE,FALSE,TRUE);currNode->confVhdl=lastCompound->name; 
+               addConfigureNode($2.data(),$3.data(),TRUE,FALSE,TRUE);
              }
 config_spec: t_FOR comp_spec comp_spec_stat t_Semicolon t_END t_FOR t_Semicolon 
              { 
-               addConfigureNode($2.data(),$3.data(),TRUE,FALSE,TRUE);currNode->confVhdl=lastCompound->name; 
-             }
+               addConfigureNode($2.data(),$3.data(),TRUE,FALSE,TRUE);
+              }
 
-comp_spec_stat: t_USE  binding_indic               { $$=$2; }
-comp_spec_stat: t_USE t_VUNIT idf_list t_Semicolon { $$=""; }
-comp_spec_stat: binding_indic_1  binding_indic_2   { $$=""; }
+comp_spec_stat: t_USE  binding_indic               { 
+                                                     $$=$2;
+                                                   }
+comp_spec_stat: t_USE t_VUNIT idf_list t_Semicolon 
+{ 
+  $$="";
+}
+comp_spec_stat: binding_indic_1  binding_indic_2   
+                          { 
+                          $$="";
+                           }
 
 comp_spec: inst_list t_Colon expr
              {
@@ -2209,14 +2232,13 @@ extern YYSTYPE vhdlScanYYlval;
 
 void vhdlScanYYerror(const char* /*str*/)
 {
- // fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
- // exit(0);
+  //  fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
+  //   exit(0);
 }
-
 
 void vhdlParse()
 {
-vhdlScanYYparse();
+  vhdlScanYYparse();
 }
 
 struct VhdlContainer*  getVhdlCont()
@@ -2241,12 +2263,17 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
   current->startLine=iLine;
   current->bodyLine=iLine;
   current->type=instName;                       // foo:instname e.g proto or work. proto(ttt)
-  current->exception=genLabels;                 // |arch|label1:label2...
+  current->exception=genLabels.lower();         // |arch|label1:label2...
   current->name=n;                              // foo
   current->args=lastCompound->name;             // architecture name
   current->includeName=comp;                    // component/enity/configuration
-
-  //printf(" \n genlable: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
+  int u=genLabels.find("|",1);
+  if (u>0)
+  {
+    current->write=genLabels.right(genLabels.length()-u);
+    current->read=genLabels.left(u);
+  }
+  //printf  (" \n genlable: [%s]  inst: [%s]  name: [%s] %d\n",n,instName,comp,iLine);
 
   if (lastCompound)
   {
@@ -2256,11 +2283,10 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
       initEntry(current);
       instFiles.append(new Entry(*current));
     }
-  
+
     Entry *temp=current;  // hold  current pointer  (temp=oldEntry)
     current=new Entry;     // (oldEntry != current)
     delete  temp;
-   
   }
   else
   {
@@ -2268,30 +2294,26 @@ static void addCompInst(char *n, char* instName, char* comp,int iLine)
   }
 }
 
-static void pushLabel(const QCString &label)
+static void pushLabel( QCString &label,QCString & val)
 {
-  genLabels+="|"+label;
+  label+="|";
+  label+=val;
 }
 
-static void popLabel()
+static QCString  popLabel(QCString & q)
 {
-  int u=genLabels.findRev("|");
-  if (u<0) return;
-  genLabels=genLabels.left(u);
+  QCString u=q;
+  int i=q.findRev("|");
+  if (i<0) return "";
+  q = q.left(i);
+  return q;
 }
 
-static void popConfig()
+static void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool inlineConf)
 {
-  assert(currNode);
-  currNode=currNode->prevNode;
-     printf("\n pop arch %s ",currNode->arch.data());
-}
-
-static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeave,bool inlineConf)
-{
- assert(false);
-   VhdlConfNode* co;
+  VhdlConfNode* co;
   QCString ent,arch,lab;
+  QCString l=genLabels;
   ent=a;
   lab =  VhdlDocGen::parseForConfig(ent,arch);
 
@@ -2300,32 +2322,45 @@ static void addConfigureNode(const char* a,const char*b, bool isRoot,bool isLeav
     ent=b;
     lab=VhdlDocGen::parseForBinding(ent,arch);
   }
+  int level=0;
 
-  co=new VhdlConfNode(a,b,confName.data());
+  if(!configL.isEmpty())
+  {
+    VhdlConfNode* vc=configL.last();
+    level=vc->level;
+    if (level<levelCounter)
+    {
+      if (!isLeaf)
+      {
+        pushLabel(forL,ent);
+      }
+    }
+    else if (level>levelCounter)
+    {
+      forL=popLabel(forL); 
+    }
+  }
+  else
+  {
+    pushLabel(forL,ent);
+  }
+
+
+  if (inlineConf)
+  {
+    confName=lastCompound->name;
+  }
+
+  //fprintf(stderr,"\n[%s %d %d]\n",forL.data(),levelCounter,level);
+  co=new VhdlConfNode(a,b,confName.lower().data(),forL.lower().data(),isLeaf);
+
   if (inlineConf)
   {
     co->isInlineConf=TRUE;
   }
 
-  if (isRoot)
-  {
-    co->isRoot=TRUE;
-    configL.append(co);
-    currNode=co;
-    currNode->prevNode=currNode;
-  }
-  else if (!isLeave)
-  {
-    currNode->addNode(co);
-    co->prevNode=currNode;
-    currNode=co;
-  }
-  else
-  {
-    assert(0);
-    co=new VhdlConfNode(a,b,confName.data());
-    currNode->addNode(co);
-  }
+  configL.append(co);
+
 }// addConfigure
 
 //  ------------------------------------------------------------------------------------------------------------
@@ -2351,7 +2386,7 @@ static void initEntry(Entry *e)
 }
 
 static void addProto(const char *s1,const char *s2,const char *s3,
-                     const char *s4,const char *s5,const char *s6)
+    const char *s4,const char *s5,const char *s6)
 {
   (void)s5; // avoid unused warning
   static QRegExp reg("[\\s]");
@@ -2392,14 +2427,16 @@ static void addProto(const char *s1,const char *s2,const char *s3,
 }
 
 static void createFunction(const QCString &impure,int spec,
-                           const QCString &fname)
+    const QCString &fname)
 {
   int it=0;
   current->spec=spec;
   current->section=Entry::FUNCTION_SEC;
 
-if(impure=="impure" || impure=="pure")  
-  current->exception=impure;
+  if (impure=="impure" || impure=="pure")  
+  {
+    current->exception=impure;
+  }
 
   if (parse_sec==GEN_SEC)
   {
@@ -2424,8 +2461,8 @@ if(impure=="impure" || impure=="pure")
     it=t_PROCESS;
     current->args=fname;
     current->name=impure;
-    if (!fname.isEmpty())
     VhdlDocGen::deleteAllChars(current->args,' ');
+    if (!fname.isEmpty())
     {
       QStringList q1=QStringList::split(",",fname);
       for (uint ii=0;ii<q1.count();ii++)
@@ -2435,21 +2472,19 @@ if(impure=="impure" || impure=="pure")
         current->argList->append(arg);
       }
     }
- return;
+    return;
   }
 
-
- current->startLine=getParsedLine(it);
- current->bodyLine=getParsedLine(it);
-
+  current->startLine=getParsedLine(it);
+  current->bodyLine=getParsedLine(it);
 }
 
 static void addVhdlType(const QCString &name,int startLine,int section,int spec,
-                        const char* args,const char* type,Protection prot)
+    const char* args,const char* type,Protection prot)
 {
   static QRegExp reg("[\\s]");
-  
- if (isFuncProcProced() || VhdlDocGen::getFlowMember())
+
+  if (isFuncProcProced() || VhdlDocGen::getFlowMember())
   {
     return;
   }
@@ -2465,11 +2500,11 @@ static void addVhdlType(const QCString &name,int startLine,int section,int spec,
   for (uint u=0;u<ql.count();u++)
   {
     current->name=ql[u].utf8();
- //   if (section==Entry::VARIABLE_SEC &&  !(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
- //   {
- //     current->name.prepend(VhdlDocGen::getRecordNumber());
- //   }
-   
+    //   if (section==Entry::VARIABLE_SEC &&  !(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
+    //   {
+    //     current->name.prepend(VhdlDocGen::getRecordNumber());
+    //   }
+
     current->startLine=startLine;
     current->bodyLine=startLine;
     current->section=section;
@@ -2521,48 +2556,55 @@ static void newEntry()
 
 void createFlow(QCString val)
 {
-                
-                 if(!VhdlDocGen::getFlowMember()) return;
-                QCString q,ret;
-                
-                 if(currP==VhdlDocGen::FUNCTION)
-                {
-                     q=":function( ";
-                    FlowNode::alignFuncProc(q,tempEntry->argList,true);
-                    q+=")";
-                }
-                 else if(currP==VhdlDocGen::PROCEDURE)
-                 {
-                     q=":procedure (";    
-                     FlowNode::alignFuncProc(q,tempEntry->argList,false);
-                     q+=")";
-                     }
-                 else  {  
-                     q=":process( "+tempEntry->args;
-                      q+=")";
-                     }
-            
-                 q.prepend(VhdlDocGen::getFlowMember()->name().data());
-           
-                 FlowNode::addFlowNode(FlowNode::START_NO,q,0);
-                 
-                 if(!val.isEmpty())
-                  FlowNode::addFlowNode(FlowNode::VARIABLE_NO,val,0);
-                 
-                 if(currP==VhdlDocGen::FUNCTION)
-                 {
-                  ret="end function ";  
-                  }
-                 else if(currP==VhdlDocGen::PROCEDURE)
-                  ret="end procedure";
-                 else 
-                 ret="end process ";
-             
-                 FlowNode::addFlowNode(FlowNode::END_NO,ret,0);
-               //  FlowNode::printFlowList();
-                 FlowNode::writeFlowNode();  
-                 currP=0;
-     }
-     
+  if (!VhdlDocGen::getFlowMember()) 
+  {
+    return;
+  }
+  QCString q,ret;
 
-          
+  if (currP==VhdlDocGen::FUNCTION)
+  {
+    q=":function( ";
+    FlowNode::alignFuncProc(q,tempEntry->argList,true);
+    q+=")";
+  }
+  else if (currP==VhdlDocGen::PROCEDURE)
+  {
+    q=":procedure (";    
+    FlowNode::alignFuncProc(q,tempEntry->argList,false);
+    q+=")";
+  }
+  else  
+  {  
+    q=":process( "+tempEntry->args;
+    q+=")";
+  }
+
+  q.prepend(VhdlDocGen::getFlowMember()->name().data());
+
+  FlowNode::addFlowNode(FlowNode::START_NO,q,0);
+
+  if (!val.isEmpty())
+  {
+    FlowNode::addFlowNode(FlowNode::VARIABLE_NO,val,0);
+  }
+
+  if (currP==VhdlDocGen::FUNCTION)
+  {
+    ret="end function ";  
+  }
+  else if (currP==VhdlDocGen::PROCEDURE)
+  {
+    ret="end procedure";
+  }
+  else 
+  {
+    ret="end process ";
+  }
+
+  FlowNode::addFlowNode(FlowNode::END_NO,ret,0);
+  //  FlowNode::printFlowList();
+  FlowNode::writeFlowNode();  
+  currP=0;
+}
+

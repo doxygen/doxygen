@@ -26,6 +26,7 @@ HEADERS      =	arguments.h \
 		commentcnv.h \
 		commentscan.h \
                 compound_xsd.h \
+		condparser.h \
                 config.h \
 		constexp.h \
 		cppvalue.h \
@@ -106,7 +107,6 @@ HEADERS      =	arguments.h \
                 dbusxmlscanner.h \
 		qhp.h \
 		qhpxmlwriter.h \
-		qtbc.h \
 		reflist.h \
 		resize_js.h \
                 rtfdocvisitor.h \
@@ -181,6 +181,7 @@ SOURCES      =	arguments.cpp \
 		code.cpp \
 		commentcnv.cpp \
 		commentscan.cpp \
+		condparser.cpp \
 		cppvalue.cpp \
                 dbusxmlscanner.cpp \
 		debug.cpp \

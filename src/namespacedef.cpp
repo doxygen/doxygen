@@ -15,7 +15,6 @@
  *
  */
 
-#include "qtbc.h"
 #include "namespacedef.h"
 #include "outputlist.h"
 #include "util.h"
@@ -29,6 +28,8 @@
 #include "searchindex.h"
 #include "vhdldocgen.h"
 #include "layout.h"
+#include "membergroup.h"
+#include "config.h"
 
 //------------------------------------------------------------------
 
@@ -67,6 +68,7 @@ NamespaceDef::~NamespaceDef()
   delete usingDirList;
   delete usingDeclList;
   delete memberGroupSDict;
+  delete m_allMembersDict;
 }
 
 void NamespaceDef::distributeMemberGroupDocumentation()
@@ -92,7 +94,7 @@ void NamespaceDef::findSectionsInDocumentation()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
       ml->findSectionsInDocumentation();
     }
@@ -152,7 +154,7 @@ void NamespaceDef::addMembersToMemberGroup()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
     }
@@ -177,10 +179,10 @@ void NamespaceDef::addMembersToMemberGroup()
 void NamespaceDef::insertMember(MemberDef *md)
 {
   if (md->isHidden()) return;
-  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList==0)
   {
-    allMemberList = new MemberList(MemberList::allMembersList);
+    allMemberList = new MemberList(MemberListType_allMembersList);
     m_memberLists.append(allMemberList);
   }
   allMemberList->append(md); 
@@ -194,27 +196,27 @@ void NamespaceDef::insertMember(MemberDef *md)
   //static bool sortBriefDocs=Config_getBool("SORT_BRIEF_DOCS");
   switch(md->memberType())
   {
-    case MemberDef::Variable:     
-      addMemberToList(MemberList::decVarMembers,md);
-      addMemberToList(MemberList::docVarMembers,md);
+    case MemberType_Variable:     
+      addMemberToList(MemberListType_decVarMembers,md);
+      addMemberToList(MemberListType_docVarMembers,md);
       break;
-    case MemberDef::Function: 
-      addMemberToList(MemberList::decFuncMembers,md);
-      addMemberToList(MemberList::docFuncMembers,md);
+    case MemberType_Function: 
+      addMemberToList(MemberListType_decFuncMembers,md);
+      addMemberToList(MemberListType_docFuncMembers,md);
       break;
-    case MemberDef::Typedef:      
-      addMemberToList(MemberList::decTypedefMembers,md);
-      addMemberToList(MemberList::docTypedefMembers,md);
+    case MemberType_Typedef:      
+      addMemberToList(MemberListType_decTypedefMembers,md);
+      addMemberToList(MemberListType_docTypedefMembers,md);
       break;
-    case MemberDef::Enumeration:  
-      addMemberToList(MemberList::decEnumMembers,md);
-      addMemberToList(MemberList::docEnumMembers,md);
+    case MemberType_Enumeration:  
+      addMemberToList(MemberListType_decEnumMembers,md);
+      addMemberToList(MemberListType_docEnumMembers,md);
       break;
-    case MemberDef::EnumValue:    
+    case MemberType_EnumValue:    
       break;
-    case MemberDef::Define:       
-      addMemberToList(MemberList::decDefineMembers,md);
-      addMemberToList(MemberList::docDefineMembers,md);
+    case MemberType_Define:       
+      addMemberToList(MemberListType_decDefineMembers,md);
+      addMemberToList(MemberListType_docDefineMembers,md);
       break;
     default:
       err("NamespaceDef::insertMembers(): "
@@ -227,8 +229,8 @@ void NamespaceDef::insertMember(MemberDef *md)
 
 void NamespaceDef::computeAnchors()
 {
-  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
-  if (allMemberList) setAnchors(0,'a',allMemberList);
+  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
+  if (allMemberList) setAnchors(allMemberList);
 }
 
 void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title)
@@ -470,7 +472,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
 
-  Doxygen::indexList.addIndexItem(this,0);
+  Doxygen::indexList->addIndexItem(this,0);
 
   //---------------------------------------- start flexible part -------------------------------
 
@@ -580,7 +582,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+    MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
     if (allMemberList) allMemberList->sort();
     writeMemberPages(ol);
   }
@@ -595,7 +597,7 @@ void NamespaceDef::writeMemberPages(OutputList &ol)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
       ml->writeDocumentationPage(ol,displayName(),this);
     }
@@ -610,7 +612,7 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList)
   {
     MemberListIterator mli(*allMemberList);
@@ -648,7 +650,7 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
 
 int NamespaceDef::countMembers()
 {
-  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList) allMemberList->countDocMembers();
   return (allMemberList ? allMemberList->numDocMembers() : 0)+classSDict->count();
 }
@@ -738,7 +740,7 @@ void NamespaceDef::addListReferences()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
       ml->addListReferences(this);
     }
@@ -895,7 +897,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
   ol.endMemberList();
 }
 
-MemberList *NamespaceDef::createMemberList(MemberList::ListType lt)
+MemberList *NamespaceDef::createMemberList(MemberListType lt)
 {
   m_memberLists.setAutoDelete(TRUE);
   QListIterator<MemberList> mli(m_memberLists);
@@ -913,14 +915,14 @@ MemberList *NamespaceDef::createMemberList(MemberList::ListType lt)
   return ml;
 }
 
-void NamespaceDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
+void NamespaceDef::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   static bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   MemberList *ml = createMemberList(lt);
   ml->setNeedsSorting(
-      ((ml->listType()&MemberList::declarationLists) && sortBriefDocs) ||
-      ((ml->listType()&MemberList::documentationLists) && sortMemberDocs));
+      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
   ml->append(md);
 
 #if 0
@@ -930,7 +932,7 @@ void NamespaceDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
     ml->append(md);
 #endif
 
-  if (ml->listType()&MemberList::declarationLists) md->setSectionList(this,ml);
+  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(this,ml);
 }
 
 void NamespaceDef::sortMemberLists()
@@ -945,7 +947,7 @@ void NamespaceDef::sortMemberLists()
 
 
 
-MemberList *NamespaceDef::getMemberList(MemberList::ListType lt) const
+MemberList *NamespaceDef::getMemberList(MemberListType lt) const
 {
   NamespaceDef *that = (NamespaceDef*)this;
   MemberList *ml = that->m_memberLists.first();
@@ -960,13 +962,13 @@ MemberList *NamespaceDef::getMemberList(MemberList::ListType lt) const
   return 0;
 }
 
-void NamespaceDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void NamespaceDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDeclarations(ol,0,this,0,0,title,0);
 }
 
-void NamespaceDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void NamespaceDef::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,displayName(),this,title);

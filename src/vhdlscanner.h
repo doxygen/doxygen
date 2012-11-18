@@ -30,7 +30,6 @@
 #include <qdict.h>
 
 #include "entry.h"
-#include "memberlist.h"
 
 class Entry;
 class ClassSDict;
@@ -38,6 +37,7 @@ class FileStorage;
 class ClassDef;
 class MemberDef;
 class QStringList;
+class MemberList;
 
 
 /** VHDL parser using state-based lexical scanning.
@@ -79,32 +79,32 @@ struct VhdlContainer
   Entry*  root;          // root
 };   
 
-/** Configuation node for VHDL */
+/** Configuration node for VHDL */
 struct VhdlConfNode
 { 
-  VhdlConfNode *prevNode;
-  VhdlConfNode(const char*  a,const char*  b,const char* config) 
+  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf) 
   { 
     arch=a;              // architecture  e.g. for iobuffer
+    arch=arch.lower();
     binding=b;           // binding e.g.  use entiy work.xxx(bev)
+    binding=binding.lower();
     confVhdl=config;     // configuration foo is bar
-    isBind=false;
-    prevNode=NULL;
-    isRoot=false;          
+    compSpec=cs;        
     isInlineConf=false;  // primary configuration?
+    isLeaf=leaf;
   };
 
   QCString confVhdl;
   QCString arch;
   QCString binding;
-  QList<VhdlConfNode> confN;
-  bool isBind;
+  QCString compSpec;
+  int level;
+  bool isLeaf;
   bool isInlineConf;
-  bool isRoot;
 
-  void addNode(VhdlConfNode* n) { confN.append(n); }
-  bool isBinding()          { return binding.isEmpty(); }
 };
+
+
 
 // returns the current conpound entity,architecture, package,package body 
 Entry* getVhdlCompound();

@@ -19,7 +19,6 @@
 #ifndef _DOT_H
 #define _DOT_H
 
-#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
 #include <qwaitcondition.h>

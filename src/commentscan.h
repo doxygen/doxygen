@@ -16,9 +16,9 @@
 #ifndef COMMENTSCAN_H
 #define COMMENTSCAN_H
 
-#include "qtbc.h"
-#include "entry.h"
+#include "types.h"
 
+class Entry;
 class ParserInterface;
 
 /** @file

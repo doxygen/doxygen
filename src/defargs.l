@@ -45,7 +45,6 @@
 /*
  *	includes
  */
-#include "qtbc.h"
 #include <stdio.h>
 //#include <iostream.h>
 #include <assert.h>

@@ -17,7 +17,8 @@
 
 #include <stdlib.h>
 
-#include "qtbc.h"
+#include <qfile.h>
+
 #include "outputgen.h"
 #include "message.h"
 #include "portable.h"

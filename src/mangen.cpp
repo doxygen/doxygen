@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 
-#include "qtbc.h"
 #include <qdir.h>
 #include "message.h"
 #include "mangen.h"
@@ -131,7 +130,7 @@ static QCString buildFileName(const char *name)
   }
 
   QCString &manExtension = Config_getString("MAN_EXTENSION");
-  if (convertToQCString(fileName.right(2))!=manExtension) 
+  if (fileName.right(2)!=manExtension) 
   {
     fileName+=manExtension;
   }

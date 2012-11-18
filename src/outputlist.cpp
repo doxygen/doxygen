@@ -27,8 +27,8 @@
 #include "config.h"
 #include "message.h"
 #include "definition.h"
-
 #include "docparser.h"
+#include "vhdldocgen.h"
 
 OutputList::OutputList(bool)
 {
@@ -169,6 +169,8 @@ void OutputList::parseDoc(const char *fileName,int startLine,
     if (og->isEnabled()) og->writeDoc(root,ctx,md);
     og=outputs->next();
   }
+
+  VhdlDocGen::setFlowMember(0);
 
   delete root;
 }

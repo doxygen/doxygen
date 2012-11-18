@@ -18,7 +18,6 @@
 #ifndef OUTPUTLIST_H
 #define OUTPUTLIST_H
 
-#include "qtbc.h"
 #include <qlist.h>
 #include "index.h" // for IndexSections
 #include "outputgen.h"

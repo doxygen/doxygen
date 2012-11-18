@@ -18,6 +18,12 @@
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
+#include "groupdef.h"
+#include "classdef.h"
+#include "filedef.h"
+#include "memberdef.h"
+#include "namespacedef.h"
+#include "util.h"
 
 DocSets::DocSets() : m_nodes(17), m_scopes(17)
 {
@@ -338,9 +344,9 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
 
     switch (md->memberType())
     {
-      case MemberDef::Define:
+      case MemberType_Define:
         type="macro"; break;
-      case MemberDef::Function:
+      case MemberType_Function:
         if (cd && (cd->compoundType()==ClassDef::Interface ||
               cd->compoundType()==ClassDef::Class))
         {
@@ -359,31 +365,31 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
         else
           type="func";
         break;
-      case MemberDef::Variable:
+      case MemberType_Variable:
         type="data"; break;
-      case MemberDef::Typedef:
+      case MemberType_Typedef:
         type="tdef"; break;
-      case MemberDef::Enumeration:
+      case MemberType_Enumeration:
         type="enum"; break;
-      case MemberDef::EnumValue:
+      case MemberType_EnumValue:
         type="econst"; break;
         //case MemberDef::Prototype:
         //  type="prototype"; break;
-      case MemberDef::Signal:
+      case MemberType_Signal:
         type="signal"; break;
-      case MemberDef::Slot:
+      case MemberType_Slot:
         type="slot"; break;
-      case MemberDef::Friend:
+      case MemberType_Friend:
         type="ffunc"; break;
-      case MemberDef::DCOP:
+      case MemberType_DCOP:
         type="dcop"; break;
-      case MemberDef::Property:
+      case MemberType_Property:
         if (cd && cd->compoundType()==ClassDef::Protocol) 
           type="intfp";         // interface property
         else 
           type="instp";         // instance property
         break;
-      case MemberDef::Event:
+      case MemberType_Event:
         type="event"; break;
     }
     cd = md->getClassDef();

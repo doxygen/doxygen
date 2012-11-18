@@ -18,10 +18,6 @@
 #ifndef PRE_H
 #define PRE_H
 
-#include "qtbc.h"
-#include <stdio.h>
-#include "define.h"
-
 class BufStr;
 
 void initPreprocessor();

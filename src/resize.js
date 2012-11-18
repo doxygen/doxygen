@@ -37,7 +37,7 @@ function writeCookie(cookie, val, expiration)
 function resizeWidth() 
 {
   var windowWidth = $(window).width() + "px";
-  var sidenavWidth = $(sidenav).width();
+  var sidenavWidth = $(sidenav).outerWidth();
   content.css({marginLeft:parseInt(sidenavWidth)+6+"px"}); //account for 6px-wide handle-bar
   writeCookie('width',sidenavWidth, null);
 }
@@ -51,8 +51,8 @@ function restoreWidth(navWidth)
 
 function resizeHeight() 
 {
-  var headerHeight = header.height();
-  var footerHeight = footer.height();
+  var headerHeight = header.outerHeight();
+  var footerHeight = footer.outerHeight();
   var windowHeight = $(window).height() - headerHeight - footerHeight;
   content.css({height:windowHeight + "px"});
   navtree.css({height:windowHeight + "px"});
