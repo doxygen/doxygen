@@ -18,10 +18,9 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include "qtbc.h"
-#include <qlist.h>
 #include "types.h"
 
+#include <qlist.h>
 #include <qgstring.h>
 
 struct SectionInfo;

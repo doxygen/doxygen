@@ -15,7 +15,6 @@
  *
  */
 
-#include "qtbc.h"
 #include "memberlist.h"
 #include "classlist.h"
 #include "filedef.h"
@@ -37,6 +36,11 @@
 #include "debug.h"
 #include "layout.h"
 #include "entry.h"
+#include "groupdef.h"
+#include "filename.h"
+#include "membergroup.h"
+#include "dirdef.h"
+#include "config.h"
 
 //---------------------------------------------------------------------------
 
@@ -122,8 +126,8 @@ FileDef::~FileDef()
 /*! Compute the HTML anchor names for all members in the class */ 
 void FileDef::computeAnchors()
 {
-  MemberList *ml = getMemberList(MemberList::allMembersList);
-  if (ml) setAnchors(0,'a',ml);
+  MemberList *ml = getMemberList(MemberListType_allMembersList);
+  if (ml) setAnchors(ml);
 }
 
 void FileDef::distributeMemberGroupDocumentation()
@@ -157,7 +161,7 @@ void FileDef::findSectionsInDocumentation()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
       ml->findSectionsInDocumentation();
     }
@@ -718,7 +722,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    MemberList *ml = getMemberList(MemberList::allMembersList);
+    MemberList *ml = getMemberList(MemberListType_allMembersList);
     if (ml) ml->sort();
     writeMemberPages(ol);
   }
@@ -733,7 +737,7 @@ void FileDef::writeMemberPages(OutputList &ol)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
       ml->writeDocumentationPage(ol,name(),this);
     }
@@ -749,7 +753,7 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList)
   {
     MemberListIterator mli(*allMemberList);
@@ -869,7 +873,7 @@ void FileDef::addMembersToMemberGroup()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
     }
@@ -897,7 +901,7 @@ void FileDef::insertMember(MemberDef *md)
   if (md->isHidden()) return;
   //printf("%s:FileDef::insertMember(%s (=%p) list has %d elements)\n",
   //    name().data(),md->name().data(),md,allMemberList.count());
-  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList && allMemberList->findRef(md)!=-1)  // TODO optimize the findRef!
   { 
     return;
@@ -905,35 +909,35 @@ void FileDef::insertMember(MemberDef *md)
 
   if (allMemberList==0)
   {
-    allMemberList = new MemberList(MemberList::allMembersList);;
+    allMemberList = new MemberList(MemberListType_allMembersList);
     m_memberLists.append(allMemberList);
   }
   allMemberList->append(md); 
   //::addFileMemberNameToIndex(md);
   switch (md->memberType())
   {
-    case MemberDef::Variable:     
-    case MemberDef::Property:     
-      addMemberToList(MemberList::decVarMembers,md);
-      addMemberToList(MemberList::docVarMembers,md);
+    case MemberType_Variable:     
+    case MemberType_Property:     
+      addMemberToList(MemberListType_decVarMembers,md);
+      addMemberToList(MemberListType_docVarMembers,md);
       break;
-    case MemberDef::Function: 
-      addMemberToList(MemberList::decFuncMembers,md);
-      addMemberToList(MemberList::docFuncMembers,md);
+    case MemberType_Function: 
+      addMemberToList(MemberListType_decFuncMembers,md);
+      addMemberToList(MemberListType_docFuncMembers,md);
       break;
-    case MemberDef::Typedef:      
-      addMemberToList(MemberList::decTypedefMembers,md);
-      addMemberToList(MemberList::docTypedefMembers,md);
+    case MemberType_Typedef:      
+      addMemberToList(MemberListType_decTypedefMembers,md);
+      addMemberToList(MemberListType_docTypedefMembers,md);
       break;
-    case MemberDef::Enumeration:  
-      addMemberToList(MemberList::decEnumMembers,md);
-      addMemberToList(MemberList::docEnumMembers,md);
+    case MemberType_Enumeration:  
+      addMemberToList(MemberListType_decEnumMembers,md);
+      addMemberToList(MemberListType_docEnumMembers,md);
       break;
-    case MemberDef::EnumValue:    // enum values are shown inside their enums
+    case MemberType_EnumValue:    // enum values are shown inside their enums
       break;
-    case MemberDef::Define:       
-      addMemberToList(MemberList::decDefineMembers,md);
-      addMemberToList(MemberList::docDefineMembers,md);
+    case MemberType_Define:       
+      addMemberToList(MemberListType_decDefineMembers,md);
+      addMemberToList(MemberListType_docDefineMembers,md);
       break;
     default:
        err("FileDef::insertMembers(): "
@@ -976,6 +980,14 @@ void FileDef::insertNamespace(NamespaceDef *nd)
       namespaceSDict->append(nd->name(),nd);
   }
 }
+
+QCString FileDef::name() const 
+{ 
+  if (Config_getBool("FULL_PATH_NAMES")) 
+    return filename; 
+  else 
+    return Definition::name(); 
+} 
 
 void FileDef::addSourceRef(int line,Definition *d,MemberDef *md)
 {
@@ -1209,7 +1221,7 @@ void FileDef::addListReferences()
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberList::documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
       ml->addListReferences(this);
     }
@@ -1567,7 +1579,7 @@ QCString FileDef::includeName() const
   }
 }
 
-MemberList *FileDef::createMemberList(MemberList::ListType lt)
+MemberList *FileDef::createMemberList(MemberListType lt)
 {
   m_memberLists.setAutoDelete(TRUE);
   QListIterator<MemberList> mli(m_memberLists);
@@ -1585,14 +1597,14 @@ MemberList *FileDef::createMemberList(MemberList::ListType lt)
   return ml;
 }
 
-void FileDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
+void FileDef::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   static bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   MemberList *ml = createMemberList(lt);
   ml->setNeedsSorting(
-       ((ml->listType()&MemberList::declarationLists) && sortBriefDocs) ||
-       ((ml->listType()&MemberList::documentationLists) && sortMemberDocs));
+       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
   ml->append(md);
 #if 0
   if (ml->needsSorting())
@@ -1600,11 +1612,11 @@ void FileDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
   else
     ml->append(md);
 #endif
-  if (lt&MemberList::documentationLists)
+  if (lt&MemberListType_documentationLists)
   {
     ml->setInFile(TRUE);
   }
-  if (ml->listType()&MemberList::declarationLists) md->setSectionList(this,ml);
+  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(this,ml);
 }
 
 void FileDef::sortMemberLists()
@@ -1617,7 +1629,7 @@ void FileDef::sortMemberLists()
   }
 }
 
-MemberList *FileDef::getMemberList(MemberList::ListType lt) const
+MemberList *FileDef::getMemberList(MemberListType lt) const
 {
   FileDef *that = (FileDef*)this;
   MemberList *ml = that->m_memberLists.first();
@@ -1632,7 +1644,7 @@ MemberList *FileDef::getMemberList(MemberList::ListType lt) const
   return 0;
 }
 
-void FileDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void FileDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
   static bool optVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   MemberList * ml = getMemberList(lt);
@@ -1650,7 +1662,7 @@ void FileDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,con
   }
 }
 
-void FileDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
+void FileDef::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,name(),this,title);

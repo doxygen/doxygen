@@ -22,11 +22,11 @@
 #include <qlist.h>
 #include <qintdict.h>
 #include <qdict.h>
-#include "config.h"
 #include "definition.h"
+#include "sortdict.h"
 #include "memberlist.h"
-#include "util.h"
 
+class MemberList;
 class FileDef;
 class FileList;
 class ClassSDict;
@@ -72,13 +72,7 @@ class FileDef : public Definition
     DefType definitionType() const { return TypeFile; }
 
     /*! Returns the unique file name (this may include part of the path). */
-    QCString name() const 
-    { 
-      if (Config_getBool("FULL_PATH_NAMES")) 
-        return filename; 
-      else 
-        return Definition::name(); 
-    } 
+    QCString name() const;
     QCString displayName(bool=TRUE) const { return name(); }
     QCString fileName() const { return filename; }
     
@@ -169,7 +163,7 @@ class FileDef : public Definition
     //bool includes(FileDef *incFile,QDict<FileDef> *includedFiles) const;
     //bool includesByName(const QCString &name) const;
 
-    MemberList *getMemberList(MemberList::ListType lt) const;
+    MemberList *getMemberList(MemberListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }
 
     /* user defined member groups */
@@ -186,10 +180,10 @@ class FileDef : public Definition
     void acquireFileVersion();
 
   private: 
-    MemberList *createMemberList(MemberList::ListType lt);
-    void addMemberToList(MemberList::ListType lt,MemberDef *md);
-    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
-    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    MemberList *createMemberList(MemberListType lt);
+    void addMemberToList(MemberListType lt,MemberDef *md);
+    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
     void writeIncludeFiles(OutputList &ol);
     void writeIncludeGraph(OutputList &ol);
     void writeIncludedByGraph(OutputList &ol);
@@ -238,7 +232,7 @@ class FileList : public QList<FileDef>
     FileList(const char *path) : QList<FileDef>(), m_pathName(path) {}
    ~FileList() {}
     QCString path() const { return m_pathName; }
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       FileDef *md1 = (FileDef *)item1;
       FileDef *md2 = (FileDef *)item2;
@@ -253,7 +247,7 @@ class OutputNameList : public QList<FileList>
   public:
     OutputNameList() : QList<FileList>() {}
    ~OutputNameList() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       FileList *fl1 = (FileList *)item1;
       FileList *fl2 = (FileList *)item2;

@@ -82,7 +82,7 @@ class PageSDict : public SDict<PageDef>
   public:
     PageSDict(int size) : SDict<PageDef>(size) {}
     virtual ~PageSDict() {}
-    int compareItems(GCI i1,GCI i2)
+    int compareItems(QCollection::Item i1,QCollection::Item i2)
     {
       return stricmp(((PageDef *)i1)->name(),((PageDef *)i2)->name());
     }

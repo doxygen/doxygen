@@ -18,8 +18,7 @@
 #ifndef _MSC_H
 #define _MSC_H
 
-#include "qtbc.h"
-
+class QCString;
 class FTextStream;
 
 enum MscOutputFormat { MSC_BITMAP , MSC_EPS };

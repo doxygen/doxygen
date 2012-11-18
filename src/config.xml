@@ -510,7 +510,8 @@ disable (NO) the deprecated list. This list is created by putting
 ' defval='1'/>
     <option type='list' id='ENABLED_SECTIONS' format='string' docs='
 The ENABLED_SECTIONS tag can be used to enable conditional 
-documentation sections, marked by \if sectionname ... \endif. 
+documentation sections, marked by \if section-label ... \endif 
+and \cond section-label ... \endcond blocks. 
 '>
     </option>
     <option type='int' id='MAX_INITIALIZER_LINES' docs='
@@ -757,6 +758,12 @@ and it is also possible to disable source filtering for a specific pattern
 using *.ext= (so without naming a filter). This option only has effect when 
 FILTER_SOURCE_FILES is enabled.
 ' depends='FILTER_SOURCE_FILES'/>
+    <option type='string' id='USE_MDFILE_AS_MAINPAGE' format='string' docs='
+If the USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that 
+is part of the input, its contents will be placed on the main page (index.html). 
+This can be useful if you have a project on for instance GitHub and want reuse 
+the introduction page also for the doxygen output.
+' defval=''/>
   </group>
   <group name='Source Browser' docs='configuration options related to source browsing'>
     <option type='bool' id='SOURCE_BROWSER' docs='
@@ -1105,6 +1112,16 @@ have LaTeX installed or if you want to formulas look prettier in the HTML
 output. When enabled you may also need to install MathJax separately and 
 configure the path to it using the MATHJAX_RELPATH option.
 ' defval='0'/> 
+    <option type='enum' id='MATHJAX_FORMAT' defval='HTML-CSS' docs='
+When MathJax is enabled you can set the default output format to be used for 
+thA MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and 
+SVG. The default value is HTML-CSS, which is slower, but has the best 
+compatibility. 
+'>
+      <value name="HTML-CSS"/>
+      <value name="NativeMML"/>
+      <value name="SVG"/>
+    </option>   
     <option type='string' id='MATHJAX_RELPATH' docs=' 
 When MathJax is enabled you need to specify the location relative to the 
 HTML output directory using the MATHJAX_RELPATH option. The destination 

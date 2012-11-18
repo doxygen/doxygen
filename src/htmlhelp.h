@@ -21,7 +21,6 @@
 #ifndef HTMLHELP_H
 #define HTMLHELP_H
 
-#include "qtbc.h"
 #include <qstrlist.h>
 #include "index.h"
 #include "ftextstream.h"

@@ -735,7 +735,8 @@ void addConfigOptions(Config *cfg)
   cl = cfg->addList(
                  "ENABLED_SECTIONS",
                  "The ENABLED_SECTIONS tag can be used to enable conditional\n"
-                 "documentation sections, marked by \\if sectionname ... \\endif."
+                 "documentation sections, marked by \\if section-label ... \\endif\n"
+                 "and \\cond section-label ... \\endcond blocks."
                 );
   //----
   ci = cfg->addInt(
@@ -1065,6 +1066,14 @@ void addConfigOptions(Config *cfg)
                  "FILTER_SOURCE_FILES is enabled."
                 );
   cl->addDependency("FILTER_SOURCE_FILES");
+  //----
+  cs = cfg->addString(
+                 "USE_MDFILE_AS_MAINPAGE",
+                 "If the USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that\n"
+                 "is part of the input, its contents will be placed on the main page (index.html).\n"
+                 "This can be useful if you have a project on for instance GitHub and want reuse\n"
+                 "the introduction page also for the doxygen output."
+                );
   //---------------------------------------------------------------------------
   cfg->addInfo("Source Browser","configuration options related to source browsing");
   //---------------------------------------------------------------------------
@@ -1621,6 +1630,18 @@ void addConfigOptions(Config *cfg)
                  "configure the path to it using the MATHJAX_RELPATH option.",
                  FALSE
                 );
+  //----
+  ce = cfg->addEnum(
+                 "MATHJAX_FORMAT",
+                 "When MathJax is enabled you can set the default output format to be used for\n"
+                 "thA MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and\n"
+                 "SVG. The default value is HTML-CSS, which is slower, but has the best\n"
+                 "compatibility.",
+                 "HTML-CSS"
+                );
+  ce->addValue("HTML-CSS");
+  ce->addValue("NativeMML");
+  ce->addValue("SVG");
   //----
   cs = cfg->addString(
                  "MATHJAX_RELPATH",

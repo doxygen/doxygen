@@ -34,7 +34,7 @@
  *******************************************************/
 /******************************************************************************
  * modified for doxygen by M. Kreis
- * extended to VHDL 93/2002/2008 
+ * extended to VHDL 93/2008 
  ******************************************************************************/
 %{
 
@@ -42,29 +42,27 @@
 	typedef int YYSTYPE;
 #endif
 
-#include <ctype.h>
 #include <search.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
+
+#include <qmap.h>
 #include "commentscan.h"
 #include "vhdlparser.h"
 #include "vhdlscanner.h"
-
 #include "doxygen.h"
 #include "searchindex.h"
-#include <ctype.h>
 #include "scanner.h"
 #include "vhdldocgen.h"
 #include "util.h"
 #include "bufstr.h"
 #include "message.h"
 #include "vhdlcode.h"
-#include <qmap.h>
 #include "entry.h"
+#include "config.h"
 
 #define YY_NO_INPUT 1
 

@@ -133,7 +133,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_8_2
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -2025,6 +2025,71 @@ class TranslatorGerman : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Weitere Geerbte Elemente"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button thatappears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is 
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "einzuschalten" : "auszuschalten";
+      return "Klicken um Panelsynchronisation "+opt;
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "Bestandteil der Kategorie @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "Erweitert Klasse @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Klassenmethoden";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Instanzmethoden";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Methodendokumentation";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "Übersicht";
+    }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 

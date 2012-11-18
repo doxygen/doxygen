@@ -21,6 +21,7 @@
 #include <qlist.h>
 #include "memberdef.h"
 #include "sortdict.h"
+#include "types.h"
 
 class GroupDef;
 class MemberGroup;
@@ -31,99 +32,15 @@ class StorageIntf;
 class MemberList : public QList<MemberDef> 
 { 
   public:
-    enum ListType
-    {
-      privateLists       = 0x0800,
-      detailedLists      = 0x1000,
-      declarationLists   = 0x2000,
-      documentationLists = 0x4000,
-
-      pubMethods              = 0,
-      proMethods              = 1,
-      pacMethods              = 2,
-      priMethods              = 3 + privateLists,
-      pubStaticMethods        = 4,
-      proStaticMethods        = 5,
-      pacStaticMethods        = 6,
-      priStaticMethods        = 7 + privateLists,
-      pubSlots                = 8,
-      proSlots                = 9,
-      priSlots                = 10 + privateLists,
-      pubAttribs              = 11,
-      proAttribs              = 12,
-      pacAttribs              = 13,
-      priAttribs              = 14 + privateLists,
-      pubStaticAttribs        = 15,
-      proStaticAttribs        = 16,
-      pacStaticAttribs        = 17,
-      priStaticAttribs        = 18 + privateLists,
-      pubTypes                = 19,
-      proTypes                = 20,
-      pacTypes                = 21,
-      priTypes                = 22 + privateLists,
-      related                 = 23,
-      signals                 = 24,
-      friends                 = 25,
-      dcopMethods             = 26,
-      properties              = 27,
-      events                  = 28,
-
-      typedefMembers          = 29 + detailedLists,
-      enumMembers             = 30 + detailedLists,
-      enumValMembers          = 31 + detailedLists,
-      functionMembers         = 32 + detailedLists,
-      relatedMembers          = 33 + detailedLists,
-      variableMembers         = 34 + detailedLists,
-      propertyMembers         = 35 + detailedLists,
-      eventMembers            = 36 + detailedLists,
-      constructors            = 37 + detailedLists,
-
-      allMembersList          = 38,
-
-      decDefineMembers        = 39 + declarationLists,
-      decProtoMembers         = 40 + declarationLists, 
-      decTypedefMembers       = 41 + declarationLists,
-      decEnumMembers          = 42 + declarationLists,
-      decFuncMembers          = 43 + declarationLists,
-      decVarMembers           = 44 + declarationLists,
-      decEnumValMembers       = 45 + declarationLists,
-      decPubSlotMembers       = 46 + declarationLists,
-      decProSlotMembers       = 47 + declarationLists,
-      decPriSlotMembers       = 48 + declarationLists,
-      decSignalMembers        = 49 + declarationLists,
-      decEventMembers         = 50 + declarationLists,
-      decFriendMembers        = 51 + declarationLists,
-      decPropMembers          = 52 + declarationLists,
-      
-      docDefineMembers        = 53 + documentationLists,
-      docProtoMembers         = 54 + documentationLists,
-      docTypedefMembers       = 55 + documentationLists,
-      docEnumMembers          = 56 + documentationLists,
-      docFuncMembers          = 57 + documentationLists,
-      docVarMembers           = 58 + documentationLists,
-      docEnumValMembers       = 59 + documentationLists,
-      docPubSlotMembers       = 60 + documentationLists,
-      docProSlotMembers       = 61 + documentationLists,
-      docPriSlotMembers       = 62 + documentationLists,
-      docSignalMembers        = 63 + documentationLists,
-      docEventMembers         = 64 + documentationLists,
-      docFriendMembers        = 65 + documentationLists,
-      docPropMembers          = 66 + documentationLists,
-
-      redefinedBy             = 67,
-      enumFields              = 68,
-      memberGroup             = 69
-    };
-
     MemberList();
-    MemberList(ListType lt);
+    MemberList(MemberListType lt);
    ~MemberList();
-    ListType listType() const { return m_listType; }
+    MemberListType listType() const { return m_listType; }
     QCString listTypeAsString() const;
     bool insert(uint index,const MemberDef *md);
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
     int varCount() const       { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
     int funcCount() const      { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
     int enumCount() const      { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
@@ -177,7 +94,7 @@ class MemberList : public QList<MemberDef>
     MemberGroupList *memberGroupList;
     bool m_inGroup; // is this list part of a group definition
     bool m_inFile;  // is this list part of a file definition
-    ListType m_listType;
+    MemberListType m_listType;
     bool m_needsSorting;
 };
 
@@ -203,7 +120,7 @@ class MemberSDict : public SDict<MemberDef>
   public:
     MemberSDict(int size=17) : SDict<MemberDef>(size) {}
     virtual ~MemberSDict() {}
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
 };
 
 

@@ -47,7 +47,7 @@ class Qhp : public IndexIntf
   private:
     void handlePrevSection();
     void clearPrevSection();
-    void setPrevSection(const char * title, const char * ref, int level);
+    void setPrevSection(const char * title, const char * basename, const char * anchor, int level);
     void addFile(const char * fileName);
 
     static QCString getFullProjectName();
@@ -58,7 +58,8 @@ class Qhp : public IndexIntf
     QhpXmlWriter m_files;
 
     QCString m_prevSectionTitle;
-    QCString m_prevSectionRef;
+    QCString m_prevSectionBaseName;
+    QCString m_prevSectionAnchor;
 
     int m_prevSectionLevel;
     int m_sectionLevel;

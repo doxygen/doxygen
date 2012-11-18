@@ -16,8 +16,8 @@
 #ifndef ARGUMENTS_H
 #define ARGUMENTS_H
 
-#include "qtbc.h"
 #include <qlist.h>
+#include <qcstring.h>
 
 class StorageIntf;
 

@@ -18,7 +18,6 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
-#include "qtbc.h"
 #include "sortdict.h"
 #include "definition.h"
 
@@ -38,7 +37,7 @@ class DirDef;
 class DirList : public QList<DirDef>
 {
   public:
-   int compareItems(GCI item1,GCI item2);
+   int compareItems(QCollection::Item item1,QCollection::Item item2);
 };
 
 /** A model of a directory symbol. */
@@ -122,7 +121,7 @@ class FilePairDict : public SDict<FilePair>
 {
   public:
     FilePairDict(int size) : SDict<FilePair>(size) {}
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
 };
 
 /** Usage information of a directory. */
@@ -160,7 +159,7 @@ class DirRelation
     UsedDir *m_dst;
 };
 
-inline int DirList::compareItems(GCI item1,GCI item2)
+inline int DirList::compareItems(QCollection::Item item1,QCollection::Item item2)
 {
   return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
 }
@@ -170,7 +169,7 @@ class DirSDict : public SDict<DirDef>
 {
   public:
     DirSDict(int size) : SDict<DirDef>(size) {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
     }

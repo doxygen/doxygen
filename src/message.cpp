@@ -23,6 +23,7 @@
 #include "debug.h"
 #include "doxygen.h"
 #include "portable.h"
+#include "filedef.h"
 
 static QCString outputFormat;
 //static int warnFormatOrder; // 1 = $file,$line,$text

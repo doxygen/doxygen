@@ -18,13 +18,11 @@
 #ifndef _SEARCHINDEX_H
 #define _SEARCHINDEX_H
 
-#include "qtbc.h"
 #include <qintdict.h>
 #include <qlist.h>
 #include <qdict.h>
 #include <qintdict.h>
 #include <qvector.h>
-#include "sortdict.h"
 
 class FTextStream;
 class Definition;

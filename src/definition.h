@@ -18,13 +18,11 @@
 #ifndef DEFINITION_H
 #define DEFINITION_H
 
-#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
-#include <sys/types.h>
 
+#include "types.h"
 #include "lockingptr.h"
-#include "util.h"
 
 class FileDef;
 class OutputList;
@@ -37,8 +35,6 @@ struct ListItemInfo;
 struct SectionInfo;
 class Definition;
 class DefinitionImpl;
-
-
   
 /** Data associated with a detailed description. */
 struct DocInfo
@@ -366,7 +362,7 @@ class DefinitionList : public QList<Definition>, public DefinitionIntf
   public:
     ~DefinitionList() {}
     DefType definitionType() const { return TypeSymbolList; }
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return stricmp(((Definition *)item1)->name(),
                      ((Definition *)item2)->name()

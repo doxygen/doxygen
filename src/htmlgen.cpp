@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 
-#include "qtbc.h"
 #include <qdir.h>
 #include <qregexp.h>
 #include "message.h"
@@ -808,7 +807,7 @@ static void writeImgData(const char *dir,img_data_item *data)
     {
       fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
     }
-    Doxygen::indexList.addImageFile(QCString("/search/")+data->name);
+    Doxygen::indexList->addImageFile(QCString("/search/")+data->name);
     data++;
   }
 }
@@ -1011,22 +1010,25 @@ static QCString removeEmptyLines(const QCString &s)
 {
   BufStr out(s.length()+1);
   char *p=s.data();
-  char c;
-  while ((c=*p++))
+  if (p)
   {
-    if (c=='\n')
+    char c;
+    while ((c=*p++))
     {
-      char *e = p;
-      while (*e==' ' || *e=='\t') e++;
-      if (*e=='\n') 
+      if (c=='\n')
       {
-        p=e;
+        char *e = p;
+        while (*e==' ' || *e=='\t') e++;
+        if (*e=='\n') 
+        {
+          p=e;
+        }
+        else out.addChar(c);
       }
-      else out.addChar(c);
-    }
-    else
-    {
-      out.addChar(c);
+      else
+      {
+        out.addChar(c);
+      }
     }
   }
   out.addChar('\0');
@@ -1055,6 +1057,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
   static bool searchEngine = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
   static bool mathJax = Config_getBool("USE_MATHJAX");
+  static QCString mathJaxFormat = Config_getEnum("MATHJAX_FORMAT");
   static bool disableIndex = Config_getBool("DISABLE_INDEX");
   static bool hasProjectName = !projectName.isEmpty();
   static bool hasProjectNumber = !Config_getString("PROJECT_NUMBER").isEmpty();
@@ -1099,6 +1102,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
                     "<script type=\"text/javascript\" src=\"$relpath$navtree.js\"></script>\n"
                     "<script type=\"text/javascript\">\n"
                     "  $(document).ready(initResizable);\n"
+                    "  $(window).load(resizeHeight);\n"
                     "</script>";
   }
 
@@ -1153,8 +1157,12 @@ static QCString substituteHtmlKeywords(const QCString &s,
       mathJaxJs+= ", \""+QCString(s)+".js\"";
       s = mathJaxExtensions.next();
     }
+    if (mathJaxFormat.isEmpty())
+    {
+      mathJaxFormat = "HTML-CSS";
+    }
     mathJaxJs += "],\n"
-                 "    jax: [\"input/TeX\",\"output/HTML-CSS\"],\n"
+                 "    jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n"
                  "});\n"
                  "</script>";
     mathJaxJs += "<script src=\"" + path + "MathJax.js\"></script>\n";
@@ -1478,7 +1486,7 @@ void HtmlGenerator::init()
 /// Additional initialization after indices have been created
 void HtmlGenerator::writeTabData()
 {
-  Doxygen::indexList.addStyleSheetFile("tabs.css");
+  Doxygen::indexList->addStyleSheetFile("tabs.css");
   QCString dname=Config_getString("HTML_OUTPUT");
   writeColoredImgData(dname,colored_tab_data);
 
@@ -1508,7 +1516,7 @@ void HtmlGenerator::writeSearchData(const char *dir)
     }
     t << searchCss;
   }
-  Doxygen::indexList.addStyleSheetFile("search/search.css");
+  Doxygen::indexList->addStyleSheetFile("search/search.css");
 }
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
@@ -1548,7 +1556,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   startPlainFile(fileName);
   m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(relPath);
-  Doxygen::indexList.addIndexFile(fileName);
+  Doxygen::indexList->addIndexFile(fileName);
   
   lastFile = fileName;
   t << substituteHtmlKeywords(g_header,convertToHtml(title),relPath);
@@ -1670,7 +1678,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 
       t << replaceColorMarkers(substitute(defaultStyleSheet,"$doxygenversion",versionString));
       endPlainFile();
-      Doxygen::indexList.addStyleSheetFile("doxygen.css");
+      Doxygen::indexList->addStyleSheetFile("doxygen.css");
     }
     else // write user defined style sheet
     {
@@ -1689,7 +1697,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         t << fileStr;
         endPlainFile();
       }
-      Doxygen::indexList.addStyleSheetFile(cssfi.fileName().utf8());
+      Doxygen::indexList->addStyleSheetFile(cssfi.fileName().utf8());
     }
   }
 }

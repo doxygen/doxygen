@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "qtbc.h"
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qtextstream.h>
@@ -55,7 +54,7 @@ void FormulaList::generateBitmaps(const char *path)
   QDir d(path);
   // store the original directory
   if (!d.exists()) { err("error: Output dir %s does not exist!\n",path); exit(1); }
-  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QCString oldDir = QDir::currentDirPath().utf8();
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
@@ -94,7 +93,7 @@ void FormulaList::generateBitmaps(const char *path)
         t << formula->getFormulaText() << endl << "\\pagebreak\n\n";
         pagesToGenerate.append(new int(page));
       }
-      Doxygen::indexList.addImageFile(resultName);
+      Doxygen::indexList->addImageFile(resultName);
       page++;
     }
     t << "\\end{document}" << endl;

@@ -26,7 +26,6 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include "qtbc.h"
 #include <qarray.h>
 #include <qstack.h>
 #include <qfile.h>
@@ -49,6 +48,11 @@
 #include "bufstr.h"
 #include "arguments.h"
 #include "entry.h"
+#include "condparser.h"
+#include "config.h"
+#include "filedef.h"
+#include "memberdef.h"
+#include "membername.h"
 
 #define YY_NEVER_INTERACTIVE 1
 enum GuardType
@@ -370,7 +374,7 @@ static void setFileName(const char *name)
 {
   bool ambig;
   QFileInfo fi(name);
-  g_yyFileName=convertToQCString(fi.absFilePath());
+  g_yyFileName=fi.absFilePath().utf8();
   g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
   if (g_yyFileDef==0) // if this is not an input file check if it is an
                       // include file
@@ -488,7 +492,7 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
     static QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
     if (patternMatch(fi,&exclPatterns)) return 0;
 
-    QCString absName = convertToQCString(fi.absFilePath());
+    QCString absName = fi.absFilePath().utf8();
 
     // global guard
     if (g_curlyCount==0) // not #include inside { ... }
@@ -1418,7 +1422,7 @@ void addDefine()
   MemberDef *md=new MemberDef(
       g_yyFileName,g_yyLineNr,
       "#define",g_defName,g_defArgsStr,0,
-      Public,Normal,FALSE,Member,MemberDef::Define,0,0);
+      Public,Normal,FALSE,Member,MemberType_Define,0,0);
   if (!g_defArgsStr.isEmpty())
   {
     ArgumentList *argList = new ArgumentList;
@@ -1655,17 +1659,19 @@ static void readIncludeFile(const QCString &inc)
 
 static void startCondSection(const char *sectId)
 {
+  CondParser prs;
+  bool expResult = prs.parse(g_yyFileName,g_yyLineNr,sectId);
   g_condStack.push(new bool(g_skip));
   if (guardType == Guard_Cond)
   {
-    if (Config_getList("ENABLED_SECTIONS").find(sectId)==-1)
+    if (expResult)
     {
       g_skip=TRUE;
     }
   }
   else if (guardType == Guard_CondNot)
   {
-    if (Config_getList("ENABLED_SECTIONS").find(sectId)!=-1)
+    if (!expResult)
     {
       g_skip=TRUE;
     }
@@ -1768,6 +1774,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x      Ifdef
 %x      Ifndef
 %x	SkipCComment
+%x	ArgCopyCComment
 %x	CopyCComment
 %x	SkipVerbatim
 %x	SkipCPPComment
@@ -1975,11 +1982,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindDefineArgs>{CHARLIT}		{
   					  g_defArgsStr+=yytext;
   					}
+<FindDefineArgs>"/*"[*]?                {
+                                          g_defArgsStr+=yytext;
+                                          BEGIN(ArgCopyCComment);
+                                        }
 <FindDefineArgs>\"			{
   					  g_defArgsStr+=*yytext;
   					  BEGIN(ReadString);
   					}
 <FindDefineArgs>\n			{
+                                          g_defArgsStr+=' ';
   					  g_yyLineNr++;
 					  outputChar('\n');
   					}
@@ -1989,6 +2001,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindDefineArgs>.			{
   					  g_defArgsStr+=*yytext;
   					}
+<ArgCopyCComment>[^*\n]+		{
+					  g_defArgsStr+=yytext;
+  					}
+<ArgCopyCComment>"*/"			{
+					  g_defArgsStr+=yytext;
+  					  BEGIN(FindDefineArgs);
+  					}
+<ArgCopyCComment>\n			{ 
+                                          g_defArgsStr+=' ';
+  					  g_yyLineNr++;
+					  outputChar('\n');
+  					}
+<ArgCopyCComment>.			{ 
+                                          g_defArgsStr+=yytext;
+                                        }
 <ReadString>"\""			{
   					  g_defArgsStr+=*yytext;
 					  BEGIN(FindDefineArgs);
@@ -2477,7 +2504,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,(int)yyleng);
   					  BEGIN(CondLine);
   					}
-<CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]*	{
+<CondLine>[!()&| \ta-z_A-Z0-9.\-]+      {
   				          startCondSection(yytext);
   					  outputArray(yytext,(int)yyleng);
   					  BEGIN(g_condCtx);

@@ -38,6 +38,7 @@ class QhpXmlWriter
                    char const * const * attributes = 0);
     void openCloseContent(char const * elementName, char const * content);
     void close(char const * elementName);
+    void declaration(char const * version, char const * encoding);
 
     static char * dupEscaped(const char * source);
 

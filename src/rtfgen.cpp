@@ -19,9 +19,9 @@
 
 #include <stdlib.h>
 
-#include "qtbc.h"
 #include <qdir.h>
 #include <qregexp.h>
+#include <qtextstream.h>
 
 #include "rtfgen.h"
 #include "config.h"
@@ -39,6 +39,10 @@
 #include "dirdef.h"
 #include "vhdldocgen.h"
 #include "portable.h"
+#include "groupdef.h"
+#include "classlist.h"
+#include "filename.h"
+#include "namespacedef.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -263,7 +267,7 @@ void RTFGenerator::beginRTFDocument()
     }
     if (array.at(index) != 0)
     {
-      QCString key(convertToQCString(iter.currentKey()));
+      QCString key(iter.currentKey());
       msg("Style '%s' redefines \\s%d.\n", key.data(), index);
     }
     array.at(index) = style;
@@ -2564,7 +2568,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
     err("error: Output dir %s does not exist!\n",path);
     return FALSE;
   }
-  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QCString oldDir = QDir::currentDirPath().utf8();
 
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());

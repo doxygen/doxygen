@@ -30,7 +30,7 @@ MemberName::~MemberName()
 {
 }
 
-int MemberName::compareItems(GCI item1, GCI item2)
+int MemberName::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   MemberDef *m1=(MemberDef *)item1;
   MemberDef *m2=(MemberDef *)item2;
@@ -52,7 +52,7 @@ MemberNameInfo::MemberNameInfo(const char *n) : QList<MemberInfo>()
   setAutoDelete(TRUE);
 }
 
-int MemberNameInfo::compareItems(GCI item1, GCI item2)
+int MemberNameInfo::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   MemberInfo *m1=(MemberInfo *)item1;
   MemberInfo *m2=(MemberInfo *)item2;
@@ -72,7 +72,7 @@ MemberNameIterator::MemberNameIterator(const MemberName &mnlist) :
 {
 }
 
-int MemberNameSDict::compareItems(GCI item1, GCI item2)
+int MemberNameSDict::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   MemberName *n1=(MemberName *)item1;
   MemberName *n2=(MemberName *)item2;

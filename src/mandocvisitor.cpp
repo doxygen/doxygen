@@ -16,6 +16,8 @@
  *
  */
 
+#include <qfileinfo.h> 
+
 #include "mandocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -25,8 +27,8 @@
 #include "dot.h"
 #include "util.h"
 #include "message.h"
-#include <qfileinfo.h> 
 #include "parserintf.h"
+#include "filedef.h"
 
 ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -191,7 +193,7 @@ void ManDocVisitor::visit(DocStyleChange *s)
 void ManDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
-  switch(s->type())
+  switch (s->type())
   {
     case DocVerbatim::Code: // fall though
       if (!m_firstCol) m_t << endl;
@@ -976,6 +978,14 @@ void ManDocVisitor::visitPost(DocHtmlBlockQuote *)
   m_t << ".RE" << endl;
   m_t << ".PP" << endl;
   m_firstCol=TRUE;
+}
+
+void ManDocVisitor::visitPre(DocVhdlFlow *)
+{
+}
+
+void ManDocVisitor::visitPost(DocVhdlFlow *)
+{
 }
 
 

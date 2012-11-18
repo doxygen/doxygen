@@ -208,6 +208,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_man_output MAN_OUTPUT
 \refitem cfg_markdown_support MARKDOWN_SUPPORT
 \refitem cfg_mathjax_extensions MATHJAX_EXTENSIONS
+\refitem cfg_mathjax_format MATHJAX_FORMAT
 \refitem cfg_mathjax_relpath MATHJAX_RELPATH
 \refitem cfg_max_dot_graph_depth MAX_DOT_GRAPH_DEPTH
 \refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
@@ -281,6 +282,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_uml_look UML_LOOK
 \refitem cfg_use_htags USE_HTAGS
 \refitem cfg_use_mathjax USE_MATHJAX
+\refitem cfg_use_mdfile_as_mainpage USE_MDFILE_AS_MAINPAGE
 \refitem cfg_use_pdflatex USE_PDFLATEX
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
 \refitem cfg_warn_format WARN_FORMAT
@@ -1204,6 +1206,14 @@ AClass::ANamespace, ANamespace::*Test
  using `*.ext=` (so without naming a filter). This option only has effect when 
  \c FILTER_SOURCE_FILES is enabled.
 
+\anchor cfg_use_mdfile_as_mainpage
+<dt>\c USE_MDFILE_AS_MAINPAGE <dd>
+ \addindex USE_MDFILE_AS_MAINPAGE
+If the \c USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that 
+is part of the input, its contents will be placed on the main page (index.html). 
+This can be useful if you have a project on for instance GitHub and want reuse 
+the introduction page also for the doxygen output.
+
 </dl>
 
 \section sourcebrowser_index Source browsing related options
@@ -1866,6 +1876,16 @@ and does not have live searching capabilities.
  output. When enabled you may also need to install MathJax separately and 
  configure the path to it using the \ref cfg_mathjax_relpath "MATHJAX_RELPATH" 
  option.
+
+\anchor cfg_mathjax_format
+<dt>\c MATHJAX_FORMAT <dd>
+ \addindex MATHJAX_FORMAT
+ When MathJax is enabled you can set the default output format to be used for 
+ the MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and 
+ SVG. The default value is HTML-CSS, which is slower, but has the best 
+ compatibility. See 
+<a href="http://docs.mathjax.org/en/latest/output.html">the MathJax site</a>
+for more details.
 
 \anchor cfg_mathjax_relpath
 <dt>\c MATHJAX_RELPATH <dd>

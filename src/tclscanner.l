@@ -19,13 +19,18 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
-#include "qtbc.h"
+#include <unistd.h> 
+
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qlist.h>
+#include <qmap.h>
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
-#include <unistd.h> 
 #include <qfile.h>
 #include <qdict.h>
+
 #include "entry.h"
 #include "message.h"
 #include "config.h"
@@ -42,11 +47,9 @@
 #include "commentcnv.h"
 #include "bufstr.h"
 #include "portable.h"
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qlist.h>
-#include <qmap.h>
 #include "arguments.h"
+#include "namespacedef.h"
+#include "filedef.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1

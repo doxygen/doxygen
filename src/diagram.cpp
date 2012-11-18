@@ -16,7 +16,6 @@
  *
  */
 
-#include "qtbc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <qlist.h>
@@ -33,6 +32,7 @@
 #include "doxygen.h"
 #include "portable.h"
 #include "index.h"
+#include "classlist.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1122,7 +1122,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   f1.setName(epsName.data());
   if (!f1.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n",convertToQCString(f1.name()).data());
+    err("Could not open file %s for writing\n",f1.name().data());
     exit(1);
   }
   FTextStream t(&f1);
@@ -1401,7 +1401,7 @@ void ClassDiagram::writeImage(FTextStream &t,const char *path,
 
 #define IMAGE_EXT ".png"
   image.save((QCString)path+"/"+fileName+IMAGE_EXT);
-  Doxygen::indexList.addImageFile(QCString(fileName)+IMAGE_EXT);
+  Doxygen::indexList->addImageFile(QCString(fileName)+IMAGE_EXT);
   
   if (generateMap) t << "</map>" << endl;
 }

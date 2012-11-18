@@ -22,11 +22,8 @@
  *  \brief A bunch of utility functions.
  */
 
-#include "qtbc.h"
 #include <qlist.h>
-#include <qtextstream.h>
 #include <ctype.h>
-#include "sortdict.h"
 #include "types.h"
 
 //--------------------------------------------------------------------
@@ -106,7 +103,7 @@ void linkifyText(const TextGeneratorIntf &ol,
                  int indentLevel=0
                 );
 
-void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId=-1);
+void setAnchors(MemberList *ml);
 
 QCString fileToString(const char *name,bool filter=FALSE,bool isSourceCode=FALSE);
 
@@ -260,6 +257,11 @@ void addMembersToMemberGroup(/* in */     MemberList *ml,
 
 int extractClassNameFromType(const QCString &type,int &pos,
                               QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt_Unknown);
+
+QCString normalizeNonTemplateArgumentsInString(
+       const QCString &name,
+       Definition *context,
+       const ArgumentList *formalArgs);
 
 QCString substituteTemplateArgumentsInString(
        const QCString &name,

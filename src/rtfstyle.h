@@ -19,7 +19,6 @@
 #ifndef RTFSTYLE_H
 #define RTFSTYLE_H
 
-#include "qtbc.h"
 #include <qregexp.h>
 #include <qdict.h>
 

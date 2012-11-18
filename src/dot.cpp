@@ -23,6 +23,13 @@
 
 #include <stdlib.h>
 
+#include <qdir.h>
+#include <qfile.h>
+#include <qqueue.h>
+#include <qthread.h>
+#include <qmutex.h>
+#include <qwaitcondition.h>
+
 #include "dot.h"
 #include "doxygen.h"
 #include "message.h"
@@ -36,15 +43,15 @@
 #include "portable.h"
 #include "dirdef.h"
 #include "vhdldocgen.h"
-#include <qdir.h>
-#include <qfile.h>
 #include "ftextstream.h"
 #include "md5.h"
-#include <qqueue.h>
-
-#include <qthread.h>
-#include <qmutex.h>
-#include <qwaitcondition.h>
+#include "memberlist.h"
+#include "groupdef.h"
+#include "classlist.h"
+#include "filename.h"
+#include "namespacedef.h"
+#include "memberdef.h"
+#include "membergroup.h"
 
 #define MAP_CMD "cmapx"
 
@@ -762,7 +769,7 @@ class DotNodeList : public QList<DotNode>
   public:
     DotNodeList() : QList<DotNode>() {}
    ~DotNodeList() {}
-   int compareItems(GCI item1,GCI item2)
+   int compareItems(QCollection::Item item1,QCollection::Item item2)
    {
      return stricmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
    }
@@ -1740,32 +1747,32 @@ void DotNode::writeBox(FTextStream &t,
     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
     t << "{" << convertLabel(m_label);
     t << "\\n|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubStaticAttribs),m_classDef,TRUE,&arrowNames);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::properties),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacStaticAttribs),m_classDef,TRUE,&arrowNames);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proStaticAttribs),m_classDef,TRUE,&arrowNames);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,TRUE,&arrowNames);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,FALSE,&arrowNames);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,TRUE,&arrowNames);
     if (extractPrivate)
     {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priAttribs),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priStaticAttribs),m_classDef,TRUE,&arrowNames);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
     }
     t << "|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubMethods),m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubSlots),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacMethods),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proMethods),m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proSlots),m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,TRUE);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,TRUE);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef);
     if (extractPrivate)
     {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priMethods),m_classDef);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priStaticMethods),m_classDef,TRUE);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priSlots),m_classDef);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
     }
     if (m_classDef->getLanguage()!=SrcLangExt_Fortran &&
         m_classDef->getMemberGroupSDict())
@@ -2274,7 +2281,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
     {
       removeDotGraph(absBaseName+".dot");
     }
-    Doxygen::indexList.addImageFile(imgName);
+    Doxygen::indexList->addImageFile(imgName);
     // write image and map in a table row
     QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
     out << "<tr><td>";
@@ -3088,7 +3095,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       DotManager::instance()->addRun(dotRun);
     }
   }
-  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
+  Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap) // produce HTML to include the image
   {
@@ -3408,7 +3415,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
             
     }    
   }
-  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
+  Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap)
   {
@@ -3700,7 +3707,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
 
     }
   }
-  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
+  Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap)
   {
@@ -3845,7 +3852,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
       DotManager::instance()->addRun(dotRun);
     }
   }
-  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
+  Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap)
   {
@@ -3945,8 +3952,7 @@ void generateGraphLegend(const char *path)
     QFile dotFile(absDotName);
     if (!dotFile.open(IO_WriteOnly))
     {
-      err("Could not open file %s for writing\n",
-          convertToQCString(dotFile.name()).data());
+      err("Could not open file %s for writing\n",dotFile.name().data());
       return;
     }
 
@@ -3964,7 +3970,7 @@ void generateGraphLegend(const char *path)
   {
     removeDotGraph(absDotName);
   }
-  Doxygen::indexList.addImageFile(imgName);
+  Doxygen::indexList->addImageFile(imgName);
 
   if (imgExt=="svg")
   {
@@ -4013,7 +4019,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 
   if (format==BITMAP) checkDotResult(absImgName);
 
-  Doxygen::indexList.addImageFile(imgName);
+  Doxygen::indexList->addImageFile(imgName);
 
 }
 
@@ -4150,7 +4156,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd)
   // Write collaboration
 
   // Add members
-  addMemberList( gd->getMemberList(MemberList::allMembersList) );
+  addMemberList( gd->getMemberList(MemberListType_allMembersList) );
 
   // Add classes
   if ( gd->getClasses() && gd->getClasses()->count() )

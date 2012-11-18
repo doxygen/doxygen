@@ -18,28 +18,4 @@
 #ifndef QTBC_H
 #define QTBC_H
 
-/*! This file contains some hacks to make Doxygen work with 
- *  Qt version 2.00 and Qt version 1.xx 
- */
-
-#include <qglobal.h>
-
-#if QT_VERSION >= 200
-
-#include <locale.h>
-
-#define GCI QCollection::Item
-
-#include <qcstring.h>
-#include <qstring.h>
-inline QCString convertToQCString(const QString &s) { return s.utf8(); }
-
-#else /* QT_VERSION < 200 */
-
-#include <qstring.h>
-#define QCString QString
-inline QCString convertToQCString(const QCString &s) { return s; }
-
-#endif
-
 #endif

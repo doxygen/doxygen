@@ -18,7 +18,6 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
 

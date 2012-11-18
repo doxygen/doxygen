@@ -33,7 +33,7 @@ class ClassList : public QList<ClassDef>
     ClassList();
    ~ClassList();
    
-   int compareItems(GCI item1,GCI item2);
+   int compareItems(QCollection::Item item1,QCollection::Item item2);
 };
 
 /** An iterator for ClassDef objects in a ClassList. */
@@ -57,7 +57,7 @@ class ClassSDict : public SDict<ClassDef>
   public:
     ClassSDict(int size=17) : SDict<ClassDef>(size) {}
    ~ClassSDict() {}
-   int compareItems(GCI item1,GCI item2);
+   int compareItems(QCollection::Item item1,QCollection::Item item2);
    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
                          const char *header=0,bool localNames=FALSE);
    void writeDocumentation(OutputList &ol,Definition *container=0);

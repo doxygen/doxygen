@@ -18,10 +18,8 @@
 #ifndef DEFARGS_H
 #define DEFARGS_H
 
-#include "qtbc.h"
-#include <stdio.h>
-
 class ArgumentList;
+class QCString;
 
 extern void stringToArgumentList(const char *argsString,ArgumentList* argList,
                                  QCString *extraTypeChars=0);

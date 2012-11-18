@@ -556,15 +556,16 @@ Example:
     2. Item2 of list 2
 
 With Markdown the actual numbers you use to mark the list have no 
-effect on the HTML output Markdown produces. I.e. it treats the 
-following as a list with 3 numbered items:
+effect on the HTML output Markdown produces. I.e. standard Markdown treats the 
+following as one list with 3 numbered items:
 
     1. Item1
     1. Item2
     1. Item3
 
 Doxygen however requires that the numbers used as marks are in 
-strictly ascending order; an item with a equal or lower number than 
+strictly ascending order, so the above example would produce 3 lists 
+with one item. An item with a equal or lower number than 
 the preceding item, will start a new list. For example:
 
     1. Item1 of list 1

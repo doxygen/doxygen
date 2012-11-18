@@ -15,7 +15,6 @@
  *
  */
 
-#include "qtbc.h"
 #include "membergroup.h"
 #include "memberlist.h"
 #include "outputlist.h"
@@ -46,7 +45,7 @@ MemberGroup::MemberGroup(Definition *parent,
       int id,const char *hdr,const char *d,const char *docFile) 
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
-  memberList      = new MemberList(MemberList::memberGroup);
+  memberList      = new MemberList(MemberListType_memberGroup);
   grpId           = id;
   grpHeader       = hdr;
   doc             = d;
@@ -101,9 +100,9 @@ void MemberGroup::insertMember(MemberDef *md)
 }
 
 
-void MemberGroup::setAnchors(ClassDef *context)
+void MemberGroup::setAnchors()
 {
-  ::setAnchors(context,'z',memberList,grpId);
+  ::setAnchors(memberList);
 }
 
 void MemberGroup::writeDeclarations(OutputList &ol,
@@ -138,7 +137,7 @@ void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
 }
 
 void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
-               MemberList::ListType lt,
+               MemberListType lt,
                ClassDef *inheritedFrom,const QCString &inheritId)
 {
   //printf("** addGroupedInheritedMembers()\n");
@@ -156,7 +155,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
   }
 }
 
-int MemberGroup::countGroupedInheritedMembers(MemberList::ListType lt)
+int MemberGroup::countGroupedInheritedMembers(MemberListType lt)
 {
   //printf("** countGroupedInheritedMembers()\n");
   int count=0;

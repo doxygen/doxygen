@@ -19,9 +19,6 @@
 #ifndef DIAGRAM_H
 #define DIAGRAM_H
 
-#include "qtbc.h"
-#include "types.h"
-
 class ClassDef;
 class TreeDiagram;
 class FTextStream;

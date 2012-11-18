@@ -19,7 +19,6 @@
 #ifndef _SORTDICT_H
 #define _SORTDICT_H
 
-#include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
 #include <qintdict.h>
@@ -83,7 +82,7 @@ class SList : public QList<T>
   public:
     SList(SDict<T> *owner) : m_owner(owner) {}
     virtual ~SList() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return m_owner->compareItems(item1,item2);
     }
@@ -265,7 +264,7 @@ class SDict
      *  Overload this to properly sort items.
      *  \sa inSort()
      */
-    virtual int compareItems(GCI item1,GCI item2)
+    virtual int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return item1!=item2;
     }
@@ -431,7 +430,7 @@ class SIntList : public QList<T>
   public:
     SIntList(SIntDict<T> *owner) : m_owner(owner) {}
     virtual ~SIntList() {}
-    int compareItems(GCI item1,GCI item2)
+    int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return m_owner->compareItems(item1,item2);
     }
@@ -574,7 +573,7 @@ class SIntDict
      *  Overload this to properly sort items.
      *  \sa inSort()
      */
-    virtual int compareItems(GCI item1,GCI item2)
+    virtual int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
       return item1!=item2;
     }

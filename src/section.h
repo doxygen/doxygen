@@ -19,9 +19,6 @@
 #ifndef SECTION_H
 #define SECTION_H
 
-#include "qtbc.h"
-#include <qlist.h>
-#include <qdict.h>
 #include "sortdict.h"
 
 class Definition;

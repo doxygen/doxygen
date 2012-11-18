@@ -112,7 +112,7 @@ The special HTML character entities that are recognized by Doxygen:
 
 <ul>
 <li><tt>\&copy;</tt> the copyright symbol
-<li><tt>\&tm;</tt> the trade mark symbol
+<li><tt>\&trade;</tt> the trade mark symbol
 <li><tt>\&reg;</tt> the registered trade mark symbol
 <li><tt>\&lt;</tt> less-than symbol
 <li><tt>\&gt;</tt> greater-than symbol

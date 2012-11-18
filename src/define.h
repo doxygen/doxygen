@@ -18,7 +18,6 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
-#include "qtbc.h"
 #include <qdict.h>
 #include <qlist.h>
 
@@ -54,7 +53,7 @@ class DefineList : public QList<Define>
   public:
     DefineList() : QList<Define>() {}
    ~DefineList() {}
-    int compareItems(GCI i1,GCI i2) 
+    int compareItems(QCollection::Item i1,QCollection::Item i2) 
     {
       return stricmp(((Define *)i1)->name,((Define *)i2)->name); 
     }
@@ -67,7 +66,7 @@ class DefineName : public QList<Define>
     DefineName(const char *n) : QList<Define>() { name=n; }
    ~DefineName() {}
     const char *nameString() const { return name; }
-    int compareItems(GCI i1,GCI i2) 
+    int compareItems(QCollection::Item i1,QCollection::Item i2) 
     {
       return stricmp(((Define *)i1)->name,((Define *)i2)->name); 
     }
@@ -82,7 +81,7 @@ class DefineNameList : public QList<DefineName>
   public:
     DefineNameList() : QList<DefineName>() {}
    ~DefineNameList() {}
-    int compareItems(GCI i1,GCI i2)
+    int compareItems(QCollection::Item i1,QCollection::Item i2)
     {
       return stricmp(((DefineName *)i1)->nameString(),
                     ((DefineName *)i2)->nameString());

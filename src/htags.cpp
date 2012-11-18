@@ -18,7 +18,6 @@
 #include <qdir.h>
 #include <qdict.h>
 
-#include "qtbc.h"
 #include "htags.h"
 #include "util.h"
 #include "message.h"
@@ -44,7 +43,7 @@ bool Htags::execute(const QCString &htmldir)
   static QCString projectName = Config_getString("PROJECT_NAME");
   static QCString projectNumber = Config_getString("PROJECT_NUMBER");
 
-  QCString cwd = convertToQCString(QDir::currentDirPath());
+  QCString cwd = QDir::currentDirPath().utf8();
   if (inputSource.isEmpty())
   {
     g_inputDir.setPath(cwd);
@@ -87,7 +86,7 @@ bool Htags::execute(const QCString &htmldir)
     commandLine += "\" ";
   }
   commandLine += " \"" + htmldir + "\"";
-  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QCString oldDir = QDir::currentDirPath().utf8();
   QDir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",commandLine.data());
   portable_sysTimerStart();
@@ -159,7 +158,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
 QCString Htags::path2URL(const QCString &path)
 {
   QCString url,symName=path;
-  QCString dir = convertToQCString(g_inputDir.absPath());
+  QCString dir = g_inputDir.absPath().utf8();
   int dl=dir.length();
   if ((int)symName.length()>dl+1)
   {

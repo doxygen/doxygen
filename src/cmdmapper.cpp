@@ -128,6 +128,7 @@ CommandMap cmdMap[] =
   { "mscfile",       CMD_MSCFILE },
   { "rtfonly",       CMD_RTFONLY },
   { "endrtfonly",    CMD_ENDRTFONLY },
+  { "vhdlflow",      CMD_VHDLFLOW },
   { 0,               0 },
 };
 

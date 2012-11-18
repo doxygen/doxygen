@@ -21,7 +21,9 @@
 #include "message.h"
 #include "docparser.h"
 #include "doxygen.h"
+#include "util.h"
 
+#include <qtextstream.h>
 #include <qdir.h>
 
 static const int maxCmdLine = 40960;
@@ -94,7 +96,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   absOutFile+=outFile;
 
   // chdir to the output dir, so dot can find the font file.
-  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QCString oldDir = QDir::currentDirPath().utf8();
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
@@ -151,7 +153,7 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
 
   //printf("*** running:getMscImageMapFromFile \n");
   // chdir to the output dir, so dot can find the font file.
-  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  QCString oldDir = QDir::currentDirPath().utf8();
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());

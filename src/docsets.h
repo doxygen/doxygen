@@ -16,8 +16,6 @@
 #ifndef DOCSETS_H
 #define DOCSETS_H
 
-#include "qtbc.h"
-#include <qstrlist.h>
 #include "sortdict.h"
 #include "ftextstream.h"
 #include "index.h"

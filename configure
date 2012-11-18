@@ -20,7 +20,7 @@ doxygen_version_minor=8
 doxygen_version_revision=2
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20120930
+doxygen_version_mmn=20121118
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -144,7 +144,7 @@ Options:
   --enable-langs list 	Include support for output languages listed in list.
   			[default: $f_langs]
   --with-doxywizard     Build the GUI frontend for doxygen. This
-                        requires Qt 3.3.x
+                        requires Qt version 4.
   --with-doxyapp        Example showing how to embed doxygen in an application.
 
 EOF

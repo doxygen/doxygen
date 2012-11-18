@@ -1736,7 +1736,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
       QCString result=(QCString)"Bu ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="mdoül"; break;
+        case ClassDef::Class:      result+="modül"; break;
         case ClassDef::Struct:     result+="tip"; break;
         case ClassDef::Union:      result+="birleşim(union)"; break;
         case ClassDef::Interface:  result+="arayüz"; break;

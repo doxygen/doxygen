@@ -30,7 +30,7 @@ class MemberName : public QList<MemberDef>
    ~MemberName();
     const char *memberName() const { return name; }
    
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
   private:
     QCString name;
 };
@@ -49,7 +49,7 @@ class MemberNameSDict : public SDict<MemberName>
     MemberNameSDict(int size) : SDict<MemberName>(size) {}
    ~MemberNameSDict() {}
 
-   int compareItems(GCI item1,GCI item2);
+   int compareItems(QCollection::Item item1,QCollection::Item item2);
 };
 
 /** Data associated with a MemberDef in an inheritance relation. */
@@ -74,7 +74,7 @@ class MemberNameInfo : public QList<MemberInfo>
     MemberNameInfo(const char *name);  
    ~MemberNameInfo() {}
     const char *memberName() const { return name; }
-    int compareItems(GCI item1,GCI item2);
+    int compareItems(QCollection::Item item1,QCollection::Item item2);
   private:
     QCString name;
 };
@@ -93,7 +93,7 @@ class MemberNameInfoSDict : public SDict<MemberNameInfo>
   public:
     MemberNameInfoSDict(int size) : SDict<MemberNameInfo>(size) {}
    ~MemberNameInfoSDict() {}
-    int compareItems(GCI item1,GCI item2) 
+    int compareItems(QCollection::Item item1,QCollection::Item item2) 
     { return stricmp(
                     ((MemberNameInfo *)item1)->memberName(),
                     ((MemberNameInfo *)item2)->memberName()

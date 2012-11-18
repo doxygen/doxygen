@@ -180,6 +180,7 @@ documentation:
 \refitem cmdverbatim \\verbatim
 \refitem cmdverbinclude \\verbinclude
 \refitem cmdversion \\version
+\refitem cmdvhdlflow \\vhdlflow
 \refitem cmdwarning \\warning
 \refitem cmdweakgroup \\weakgroup
 \refitem cmdxmlonly \\xmlonly
@@ -973,6 +974,15 @@ Structural indicators
   \sa section \ref cmdfn "\\fn", \ref cmdproperty "\\property", and \ref cmdtypedef "\\typedef".
 
 <hr>
+\section cmdvhdlflow \\vhdlflow [(title for the flow chart)]
+
+  \addindex \\vhdlflow
+  This is a VHDL specific command, which can be put in the documentation of a process to
+  produce a flow chart of the logic in the process. 
+  Optionally a title for the flow chart can be given.
+  \note Currently the flow chart will only appear in the HTML output.
+
+<hr>
 \section cmdweakgroup \\weakgroup <name> [(title)]
   \addindex \\addtogroup
   Can be used exactly like \ref cmdaddtogroup "\\addtogroup", but has
@@ -1061,7 +1071,7 @@ Section indicators
   for an example.
 
 <hr>
-\section cmdcond \\cond [<section-label>]
+\section cmdcond \\cond [(section-label)]
 
   \addindex \\cond
   Starts a conditional section that ends with a corresponding
@@ -1073,7 +1083,8 @@ Section indicators
   The section between \\cond and \\endcond commands can be included by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   configuration option. If the section label is omitted, the section will
-  be excluded from processing unconditionally.
+  be excluded from processing unconditionally. The section label can be a logical expression
+  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
 
   For conditional sections within a comment block one should
   use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
@@ -1129,7 +1140,7 @@ contains \c TEST, or \c DEV
   \sa section \ref cmdcondnot "\\condnot" and section \ref cmdendcond "\\endcond".
 
 <hr>
-\section cmdcondnot \\condnot <section-label>
+\section cmdcondnot \\condnot [(section-label)]
 
   \addindex \\condnot
   Starts a conditional section that ends with a corresponding
@@ -1140,7 +1151,8 @@ contains \c TEST, or \c DEV
 
   The section between \\condnot and \\endcond commands can be excluded by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  configuration option.
+  configuration option. The section label can be a logical expression
+  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
 
   For conditional sections within a comment block one should
   use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
@@ -1202,15 +1214,16 @@ contains \c TEST, or \c DEV
       \ref cmdendif "\\endif."
 
 <hr>
-\section cmdelseif \\elseif <section-label>
+\section cmdelseif \\elseif (section-label)
 
   \addindex \\elseif
   Starts a conditional documentation section if the previous section
   was not enabled. A conditional section is
   disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  tag in the configuration
-  file. Conditional blocks can be nested. A nested section is
+  tag in the configuration file.  The section label can be a logical expression
+  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
+  Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
 
   \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
@@ -1249,15 +1262,16 @@ contains \c TEST, or \c DEV
   example.
 
 <hr>
-\section cmdif \\if <section-label>
+\section cmdif \\if (section-label)
 
   \addindex \\if
   Starts a conditional documentation section. The section ends
   with a matching \c \\endif command. A conditional section is
   disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  tag in the configuration
-  file. Conditional blocks can be nested. A nested section is
+  tag in the configuration file.  The section label can be a logical expression
+  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
+  Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
 
   \par Example:
@@ -1309,15 +1323,15 @@ ALIASES  = "english=\if english" \
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
 
 <hr>
-\section cmdifnot \\ifnot <section-label>
+\section cmdifnot \\ifnot (section-label)
 
   \addindex \\ifnot
   Starts a conditional documentation section. The section ends
   with a matching \c \\endif command. This conditional section is
   enabled by default. To disable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  tag in the configuration
-  file.
+  tag in the configuration file.  The section label can be a logical expression
+  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
 
   \sa sections \ref cmdendif "\\endif", \ref cmdif "\\if",
               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
