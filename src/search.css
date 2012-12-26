@@ -236,3 +236,36 @@ DIV.searchresults {
     margin-left: 10px;
     margin-right: 10px;
 }
+
+/*---------------- External search page results */
+
+.searchresult {
+    background-color: ##F2;
+}
+
+.pages b {
+   color: white;
+   padding: 5px 5px 3px 5px;
+   background-image: url("../tab_a.png");
+   background-repeat: repeat-x;
+   text-shadow: 0 1px 1px #000000;
+}
+
+.pages {
+    line-height: 17px;
+    margin-left: 4px;
+    text-decoration: none;
+}
+
+.hl {
+    font-weight: bold;
+}
+
+#searchresults {
+    margin-bottom: 20px;
+}
+
+.searchpages {
+    margin-top: 10px;
+}
+

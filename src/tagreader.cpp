@@ -44,9 +44,13 @@
 class TagAnchorInfo
 {
   public:
-    TagAnchorInfo(const QCString &f,const QCString &l) : label(l), fileName(f) {}
+    TagAnchorInfo(const QCString &f,
+                  const QCString &l,
+                  const QCString &t=QCString()) 
+      : label(l), fileName(f), title(t) {}
     QCString label;
     QCString fileName;
+    QCString title;
 };
 
 /** List of TagAnchorInfo objects. */
@@ -417,7 +421,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InFile:      m_curFile->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
         case InNamespace: m_curNamespace->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
         case InGroup:     m_curGroup->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
-        case InPage:      m_curPage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InPage:      m_curPage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString,m_title)); break;
         case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
         case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
         case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
@@ -485,6 +489,7 @@ class TagFileParser : public QXmlDefaultHandler
     void startDocAnchor(const QXmlAttributes& attrib )
     {
       m_fileName = attrib.value("file").utf8();
+      m_title = attrib.value("title").utf8();
       m_curString = "";
     }
 
@@ -825,6 +830,7 @@ class TagFileParser : public QXmlDefaultHandler
     QCString                   m_curString;
     QCString                   m_tagName;
     QCString                   m_fileName;
+    QCString                   m_title;
     State                      m_state;
     QStack<State>              m_stateStack;
     QXmlLocator               *m_locator;
@@ -1041,7 +1047,7 @@ void TagFileParser::addDocAnchors(Entry *e,const TagAnchorInfoList &l)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    ta->fileName.data(),ta->label.data());
-      SectionInfo *si=new SectionInfo(ta->fileName,ta->label,ta->label,
+      SectionInfo *si=new SectionInfo(ta->fileName,ta->label,ta->title,
           SectionInfo::Anchor,0,m_tagName);
       Doxygen::sectionDict->append(ta->label,si);
       e->anchors->append(si);

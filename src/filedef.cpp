@@ -62,6 +62,8 @@ class DevNullCodeDocInterface : public CodeOutputInterface
     virtual void endFontClass() {}
     virtual void writeCodeAnchor(const char *) {}
     virtual void linkableSymbol(int, const char *,Definition *,Definition *) {}
+    virtual void setCurrentDoc(Definition *,const char *,bool) {}
+    virtual void addWord(const char *,bool) {}
 };
 
 //---------------------------------------------------------------------------

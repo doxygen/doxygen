@@ -80,7 +80,7 @@ document either the class or namespace.
 <li><b>How can I make doxygen ignore some code fragment?</b>
 
 The new and easiest way is to add one comment block 
-with a \ref cmdcond "\\cond" or \ref cmdcondnot "\\condnot" command at the start and one comment block 
+with a \ref cmdcond "\\cond" command at the start and one comment block 
 with a \ref cmdendcond "\\endcond" command at the end of the piece of
 code that should be ignored. This should be within the same file of course.
 

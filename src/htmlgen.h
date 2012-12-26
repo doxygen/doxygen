@@ -48,6 +48,8 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void endFontClass();
     void writeCodeAnchor(const char *anchor);
     void linkableSymbol(int,const char *,Definition *,Definition *);
+    void setCurrentDoc(Definition *,const char *,bool) {}
+    void addWord(const char *,bool) {}
 
   private:
     void docify(const char *str);
@@ -71,6 +73,7 @@ class HtmlGenerator : public OutputGenerator
     static void writeSearchInfo(FTextStream &t,const QCString &relPath);
     static void writeSearchData(const char *dir);
     static void writeSearchPage();
+    static void writeExternalSearchPage();
     static QCString writeLogoAsString(const char *path);
     static QCString writeSplitBarAsString(const char *name,const char *relpath);
    
@@ -111,6 +114,8 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.linkableSymbol(line,symName,symDef,context); }
     // ---------------------------
 
+    void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile);
+    void addWord(const char *word,bool hiPriority);
     void writeDoc(DocNode *,Definition *,MemberDef *);
 
     void startFile(const char *name,const char *manName,const char *title);

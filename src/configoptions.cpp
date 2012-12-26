@@ -1680,15 +1680,61 @@ void addConfigOptions(Config *cfg)
   cb = cfg->addBool(
                  "SERVER_BASED_SEARCH",
                  "When the SERVER_BASED_SEARCH tag is enabled the search engine will be\n"
-                 "implemented using a PHP enabled web server instead of at the web client\n"
-                 "using Javascript. Doxygen will generate the search PHP script and index\n"
-                 "file to put on the web server. The advantage of the server\n"
-                 "based approach is that it scales better to large projects and allows\n"
-                 "full text search. The disadvantages are that it is more difficult to setup\n"
-                 "and does not have live searching capabilities.",
+                 "implemented using a web server instead of a web client using Javascript.\n"
+                 "There are two flavours of web server based search depending on the\n"
+                 "EXTERNAL_SEARCH setting. When disabled, doxygen will generate a PHP script for\n"
+                 "searching and an index file used by the script. When EXTERNAL_SEARCH is\n"
+                 "enabled the indexing and searching needs to be provided by external tools.\n"
+                 "See the manual for details.",
                  FALSE
                 );
   cb->addDependency("SEARCHENGINE");
+  //----
+  cb = cfg->addBool(
+                 "EXTERNAL_SEARCH",
+                 "When EXTERNAL_SEARCH is enabled doxygen will no longer generate the PHP\n"
+                 "script for searching. Instead the search results are written to an XML file\n"
+                 "which needs to be processed by an external indexer. Doxygen will invoke an\n"
+                 "external search engine pointed to by the SEARCHENGINE_URL option to obtain\n"
+                 "the search results. Doxygen ships with an example indexer (doxyindexer) and\n"
+                 "search engine (doxysearch.cgi) which are based on the open source search engine\n"
+                 "library Xapian. See the manual for configuration details.",
+                 FALSE
+                );
+  cb->addDependency("SEARCHENGINE");
+  //----
+  cs = cfg->addString(
+                 "SEARCHENGINE_URL",
+                 "The SEARCHENGINE_URL should point to a search engine hosted by a web server\n"
+                 "which will returned the search results when EXTERNAL_SEARCH is enabled.\n"
+                 "Doxygen ships with an example search engine (doxysearch) which is based on\n"
+                 "the open source search engine library Xapian. See the manual for configuration\n"
+                 "details."
+                );
+  cs->addDependency("SEARCHENGINE");
+  //----
+  cs = cfg->addString(
+                 "SEARCHDATA_FILE",
+                 "When SERVER_BASED_SEARCH and EXTERNAL_SEARCH are both enabled the unindexed\n"
+                 "search data is written to a file for indexing by an external tool. With the\n"
+                 "SEARCHDATA_FILE tag the name of this file can be specified."
+                );
+  cs->setDefaultValue("searchdata.xml");
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("SEARCHENGINE");
+  //----
+  cl = cfg->addList(
+                 "EXTRA_SEARCH_MAPPINGS",
+                 "The EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through other\n"
+                 "doxygen projects that are not otherwise connected via tags files, but are\n"
+                 "all added to the same search index. Each project needs to have a tag file set\n"
+                 "via GENERATE_TAGFILE. The search mapping then maps the name of the tag file\n"
+                 "to a relative location where the documentation can be found,\n"
+                 "similar to the\n"
+                 "TAGFILES option but without actually processing the tag file.\n"
+                 "The format is: EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ..."
+                );
+  cl->addDependency("SEARCHENGINE");
   //---------------------------------------------------------------------------
   cfg->addInfo("LaTeX","configuration options related to the LaTeX output");
   //---------------------------------------------------------------------------

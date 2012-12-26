@@ -75,24 +75,22 @@ function getScript(scriptName,func,show)
 
 function createIndent(o,domNode,node,level)
 {
-  if (node.parentNode && node.parentNode.parentNode) {
-    createIndent(o,domNode,node.parentNode,level+1);
-  }
+  var level=-1;
+  var n = node;
+  while (n.parentNode) { level++; n=n.parentNode; }
   var imgNode = document.createElement("img");
-  imgNode.width = 16;
+  imgNode.style.paddingLeft=(16*level).toString()+'px';
+  imgNode.width  = 16;
   imgNode.height = 22;
-  if (level==0 && node.childrenData) {
+  imgNode.border = 0;
+  if (node.childrenData) {
     node.plus_img = imgNode;
     node.expandToggle = document.createElement("a");
     node.expandToggle.href = "javascript:void(0)";
     node.expandToggle.onclick = function() {
       if (node.expanded) {
         $(node.getChildrenUL()).slideUp("fast");
-        if (node.isLast) {
-          node.plus_img.src = node.relpath+"ftv2plastnode.png";
-        } else {
-          node.plus_img.src = node.relpath+"ftv2pnode.png";
-        }
+        node.plus_img.src = node.relpath+"ftv2pnode.png";
         node.expanded = false;
       } else {
         expandNode(o, node, false, false);
@@ -100,33 +98,11 @@ function createIndent(o,domNode,node,level)
     }
     node.expandToggle.appendChild(imgNode);
     domNode.appendChild(node.expandToggle);
+    imgNode.src = node.relpath+"ftv2pnode.png";
   } else {
+    imgNode.src = node.relpath+"ftv2node.png";
     domNode.appendChild(imgNode);
-  }
-  if (level==0) {
-    if (node.isLast) {
-      if (node.childrenData) {
-        imgNode.src = node.relpath+"ftv2plastnode.png";
-      } else {
-        imgNode.src = node.relpath+"ftv2lastnode.png";
-        domNode.appendChild(imgNode);
-      }
-    } else {
-      if (node.childrenData) {
-        imgNode.src = node.relpath+"ftv2pnode.png";
-      } else {
-        imgNode.src = node.relpath+"ftv2node.png";
-        domNode.appendChild(imgNode);
-      }
-    }
-  } else {
-    if (node.isLast) {
-      imgNode.src = node.relpath+"ftv2blank.png";
-    } else {
-      imgNode.src = node.relpath+"ftv2vertline.png";
-    }
-  }
-  imgNode.border = "0";
+  } 
 }
 
 var animationInProgress = false;
@@ -364,7 +340,7 @@ function showNode(o, node, index, hash)
           },true);
         } else {
           var rootBase = stripPath(o.toroot.replace(/\..+$/, ''));
-          if (rootBase=="index" || rootBase=="pages") {
+          if (rootBase=="index" || rootBase=="pages" || rootBase=="search") {
             expandNode(o, n, true, true);
           }
           selectAndHighlight(hash,n);
@@ -420,6 +396,7 @@ function navTo(o,root,hash,relpath)
   var url=root+hash;
   var i=-1;
   while (NAVTREEINDEX[i+1]<=url) i++;
+  if (i==-1) { i=0; root=NAVTREE[0][1]; } // fallback: show index
   if (navTreeSubIndices[i]) {
     gotoNode(o,i,root,hash,relpath)
   } else {

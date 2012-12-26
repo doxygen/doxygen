@@ -7638,4 +7638,3 @@ bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile)
          );
 }
 
-

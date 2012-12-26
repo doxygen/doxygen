@@ -258,6 +258,8 @@ class RTFGenerator : public OutputGenerator
 
     void writeCodeAnchor(const char *) {}
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
+    void setCurrentDoc(Definition *,const char *,bool) {}
+    void addWord(const char *,bool) {}
 
     static bool preProcessFileInplace(const char *path,const char *name);
     

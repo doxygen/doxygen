@@ -506,26 +506,9 @@ static FILE *tryPath(const char *path,const char *fileName)
 static void substEnvVarsInStrList(QStrList &sl);
 static void substEnvVarsInString(QCString &s);
 
-static bool isAbsolute(const char * fileName)
-{
-# ifdef _WIN32
-  if (isalpha (fileName [0]) && fileName[1] == ':')
-    fileName += 2;
-# endif
-  char const fst = fileName [0];
-  if (fst == '/')  {
-    return true;
-  }
-# ifdef _WIN32
-  if (fst == '\\')
-    return true;
-# endif
-  return false;
-}
-
 static FILE *findFile(const char *fileName)
 {
-  if(isAbsolute(fileName))
+  if(portable_isAbsolutePath(fileName))
     return tryPath(NULL, fileName);
   substEnvVarsInStrList(includePathList);
   char *s=includePathList.first();
@@ -1458,7 +1441,7 @@ void Config::check()
     config_err("error: Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
     Config_getEnum("MATHJAX_FORMAT")="HTML-CSS";
   }
-  
+
   // add default words if needed
   QStrList &annotationFromBrief = Config_getList("ABBREVIATE_BRIEF");
   if (annotationFromBrief.isEmpty())

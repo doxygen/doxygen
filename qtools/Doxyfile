@@ -1,4 +1,4 @@
-# Doxyfile 1.8.0
+# Doxyfile 1.8.3
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -34,6 +34,7 @@ OPTIMIZE_FOR_FORTRAN   = NO
 OPTIMIZE_OUTPUT_VHDL   = NO
 EXTENSION_MAPPING      =
 MARKDOWN_SUPPORT       = YES
+AUTOLINK_SUPPORT       = YES
 BUILTIN_STL_SUPPORT    = NO
 CPP_CLI_SUPPORT        = NO
 SIP_SUPPORT            = NO
@@ -114,10 +115,11 @@ INPUT_FILTER           =
 FILTER_PATTERNS        =
 FILTER_SOURCE_FILES    = NO
 FILTER_SOURCE_PATTERNS =
+USE_MDFILE_AS_MAINPAGE =
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
@@ -140,12 +142,14 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            =
 HTML_FOOTER            =
 HTML_STYLESHEET        =
+HTML_EXTRA_STYLESHEET  =
 HTML_EXTRA_FILES       =
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
 HTML_TIMESTAMP         = YES
 HTML_DYNAMIC_SECTIONS  = YES
+HTML_INDEX_NUM_ENTRIES = 100
 GENERATE_DOCSET        = YES
 DOCSET_FEEDNAME        = "Doxygen generated docs"
 DOCSET_BUNDLE_ID       = org.doxygen.Project
@@ -176,10 +180,15 @@ EXT_LINKS_IN_WINDOW    = NO
 FORMULA_FONTSIZE       = 10
 FORMULA_TRANSPARENT    = YES
 USE_MATHJAX            = NO
+MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        = http://cdn.mathjax.org/mathjax/latest
 MATHJAX_EXTENSIONS     =
 SEARCHENGINE           = YES
 SERVER_BASED_SEARCH    = YES
+EXTERNAL_SEARCH        = YES
+SEARCHENGINE_URL       = http://macbookpro/~dimitri/doxysearch.cgi
+SEARCHDATA_FILE        = searchdata.xml
+EXTRA_SEARCH_MAPPINGS  =
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------

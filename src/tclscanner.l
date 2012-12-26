@@ -1946,7 +1946,7 @@ static void tcl_command_NAMESPACE()
 {
 D
   QCString myNs, myName, myStr;
-  Entry *myEntryNs=NULL;
+  //Entry *myEntryNs=NULL;
   tcl_scan *myScan = tcl.scan.at(0);
 
   tcl_codify_cmd("keyword",0);
@@ -1967,7 +1967,7 @@ D
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl.entry_main->addSubEntry(tcl.entry_current);
   tcl.ns.insert(myName,tcl.entry_current);
-  myEntryNs = tcl.entry_current;
+  //myEntryNs = tcl.entry_current;
   myStr = (*tcl.list_commandwords.at(6)).utf8();
   if (tcl.list_commandwords.count() > 7)
   {

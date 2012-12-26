@@ -116,6 +116,7 @@ HEADERS      =	arguments.h \
 		searchindex.h \
 		search_css.h \
 		search_js.h \
+		extsearch_js.h \
 		search_functions_php.h \
 		search_opensearch_php.h \
 		section.h \

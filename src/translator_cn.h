@@ -543,7 +543,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
           if (i<numEntries-2) // not the fore last entry 
-            result+=",";
+            result+=","CN_SPC;
           else                // the fore last entry
             result+=CN_SPC", 以及"CN_SPC;
         }

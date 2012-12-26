@@ -257,6 +257,8 @@ class ManGenerator : public OutputGenerator
 
     void writeCodeAnchor(const char *) {}
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
+    void setCurrentDoc(Definition *,const char *,bool) {}
+    void addWord(const char *,bool) {}
 
   private:
     bool firstCol;

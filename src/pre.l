@@ -761,7 +761,7 @@ static inline void addTillEndOfString(const QCString &expr,QCString *rest,
                                        uint &pos,char term,QCString &arg)
 {
   int cc;
-  while ((cc=getNextChar(expr,rest,pos))!=EOF)
+  while ((cc=getNextChar(expr,rest,pos))!=EOF && cc!=0)
   {
     if (cc=='\\') arg+=(char)cc,cc=getNextChar(expr,rest,pos);
     else if (cc==term) return;
@@ -804,7 +804,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   // PHASE 1: read the macro arguments
   if (def->nargs==0)
   {
-    while ((cc=getNextChar(expr,rest,j))!=EOF)
+    while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
     {
       char c = (char)cc;
       if (c==')') break;
@@ -813,7 +813,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   else
   {
     while (!done && (argCount<def->nargs || def->varArgs) && 
-	((cc=getNextChar(expr,rest,j))!=EOF)
+	((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
 	  )
     {
       char c=(char)cc;
@@ -822,7 +822,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
 	int level=1;
 	arg+=c;
 	//char term='\0';
-	while ((cc=getNextChar(expr,rest,j))!=EOF)
+	while ((cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
 	{
 	  char c=(char)cc;
 	  //printf("processing %c: term=%c (%d)\n",c,term,term);
@@ -871,14 +871,14 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
       {
 	arg+=c; 
 	bool found=FALSE;
-	while (!found && (cc=getNextChar(expr,rest,j))!=EOF)
+	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
 	{
 	  found = cc=='"';
 	  if (cc=='\\')
 	  {
 	    c=(char)cc;	  
 	    arg+=c;
-	    if ((cc=getNextChar(expr,rest,j))==EOF) break;
+	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
 	  }
 	  c=(char)cc;	  
 	  arg+=c;
@@ -888,14 +888,14 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
       {
 	arg+=c;
 	bool found=FALSE;
-	while (!found && (cc=getNextChar(expr,rest,j))!=EOF)
+	while (!found && (cc=getNextChar(expr,rest,j))!=EOF && cc!=0)
 	{
 	  found = cc=='\'';
 	  if (cc=='\\')
 	  {
 	    c=(char)cc;	  
 	    arg+=c;
-	    if ((cc=getNextChar(expr,rest,j))==EOF) break;
+	    if ((cc=getNextChar(expr,rest,j))==EOF || cc==0) break;
 	  }
 	  c=(char)cc;
 	  arg+=c;
@@ -2498,12 +2498,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,yyleng);
   					  BEGIN(CondLine);
   					}
-<SkipCComment,SkipCPPComment>[\\@]"condnot"[ \t]+	{ // conditional section
-                                          guardType = Guard_CondNot;
-  					  g_condCtx = YY_START;
-  					  outputArray(yytext,(int)yyleng);
-  					  BEGIN(CondLine);
-  					}
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+      {
   				          startCondSection(yytext);
   					  outputArray(yytext,(int)yyleng);
@@ -2558,6 +2552,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyCComment>\n			{ 
   					  g_yyLineNr++;
+  					  outputChar('\n');
 					  g_defLitText+=yytext;
 					  g_defText+=' ';
   					}
@@ -2809,7 +2804,7 @@ static int getNextChar(const QCString &expr,QCString *rest,uint &pos)
   else
   {
     int cc=yyinput();
-    //printf("%c=yyinput()\n",cc);
+    //printf("%d=yyinput() %d\n",cc,EOF);
     return cc;
   }
 }

@@ -60,6 +60,7 @@ class EclipseHelp : public IndexIntf
   private:
     int m_depth;
     bool m_endtag;
+    int m_openTags;
 
     QFile * m_tocfile;
     FTextStream m_tocstream;

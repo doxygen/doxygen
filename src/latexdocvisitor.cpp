@@ -1663,7 +1663,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   }
   else
   {
-    m_t << "[width=\\textwidth]";
+    m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
   }
   m_t << "{" << baseName << "}";
 
@@ -1727,7 +1727,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   }
   else
   {
-    m_t << "[width=\\textwidth]";
+    m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
   }
   m_t << "{" << baseName << "}";
 

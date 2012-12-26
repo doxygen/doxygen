@@ -192,9 +192,9 @@ static int charsToIndex(const char *word)
   //return h;
 
   // Simple hashing that allows for substring searching
-  uint c1=word[0];
+  uint c1=((uchar *)word)[0];
   if (c1==0) return -1;
-  uint c2=word[1];
+  uint c2=((uchar *)word)[1];
   if (c2==0) return -1;
   return c1*256+c2;
 }
@@ -202,16 +202,16 @@ static int charsToIndex(const char *word)
 void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
 {
   static QRegExp nextPart("[_a-z:][A-Z]");
-  //printf("SearchIndex::addWord(%s,%d)\n",word,hiPriority);
   if (word==0 || word[0]=='\0') return;
   QCString wStr = QCString(word).lower();
+  //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,wStr.data());
   IndexWord *w = m_words[wStr];
   if (w==0)
   {
     int idx=charsToIndex(wStr);
+    //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     if (idx<0) return;
     w = new IndexWord(wStr);
-    //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     m_index[idx]->append(w);
     m_words.insert(wStr,w);
   }
@@ -413,6 +413,7 @@ struct SearchDocEntry
 {
   QCString type;
   QCString name;
+  QCString args;
   QCString tagFile;
   QCString url; 
   GrowBuf  importantText;
@@ -530,10 +531,15 @@ void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool 
     SearchDocEntry *e = new SearchDocEntry;
     e->type = isSourceFile ? QCString("source") : definitionToName(ctx);
     e->name = ctx->qualifiedName();
+    if (ctx->definitionType()==Definition::TypeMember)
+    {
+      e->args = ((MemberDef*)ctx)->argsString();
+    }
     e->tagFile = tagFile;
     e->url  = url;
     p->current = e;
     p->docEntries.append(key,e);
+    //printf("searchIndexExt %s : %s\n",e->name.data(),e->url.data());
   }
 }
 
@@ -543,6 +549,7 @@ void SearchIndexExternal::addWord(const char *word,bool hiPriority)
   GrowBuf *pText = hiPriority ? &p->current->importantText : &p->current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');
   pText->addStr(word);
+  //printf("addWord %s\n",word);
 }
 
 void SearchIndexExternal::write(const char *fileName)
@@ -562,7 +569,14 @@ void SearchIndexExternal::write(const char *fileName)
       t << "  <doc>" << endl;
       t << "    <field name=\"type\">"     << doc->type << "</field>" << endl;
       t << "    <field name=\"name\">"     << convertToXML(doc->name) << "</field>" << endl;
-      t << "    <field name=\"tag\">"      << convertToXML(doc->tagFile)  << "</field>" << endl;
+      if (!doc->args.isEmpty())
+      {
+        t << "    <field name=\"args\">"     << convertToXML(doc->args) << "</field>" << endl;
+      }
+      if (!doc->tagFile.isEmpty())
+      {
+        t << "    <field name=\"tag\">"      << convertToXML(doc->tagFile)  << "</field>" << endl;
+      }
       t << "    <field name=\"url\">"      << convertToXML(doc->url)  << "</field>" << endl;
       t << "    <field name=\"keywords\">" << convertToXML(doc->importantText.get())  << "</field>" << endl;
       t << "    <field name=\"text\">"     << convertToXML(doc->normalText.get())     << "</field>" << endl;
@@ -1356,12 +1370,19 @@ void writeSearchCategories(FTextStream &t)
 
 void initSearchIndexer()
 {
-  static bool searchEngine = Config_getBool("SEARCHENGINE");
+  static bool searchEngine      = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  static bool externalSearch    = Config_getBool("EXTERNAL_SEARCH");
   if (searchEngine && serverBasedSearch)
   {
-    //Doxygen::searchIndex = new SearchIndexExternal;
-    Doxygen::searchIndex = new SearchIndex;
+    if (externalSearch) // external tools produce search index and engine
+    {
+      Doxygen::searchIndex = new SearchIndexExternal;
+    }
+    else // doxygen produces search index and engine
+    {
+      Doxygen::searchIndex = new SearchIndex;
+    }
   }
   else // no search engine or pure javascript based search function
   {

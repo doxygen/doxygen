@@ -47,9 +47,24 @@ This is the GUI interface for doxygen.  It requires qt and X11 to
 install.
 %endif
 
+%if %{?_with_doxysearch:1}%{!?_with_doxysearch:0}
+%package doxysearch
+Group: Development/Libraries
+Summary: external indexer and search engine for doxygen.
+Requires: doxygen = %{mmn}
+Requires: libxapian-devel >= 1.2
+Provides: doxysearch.cgi = %{mmn}
+Provides: doxyindexer = %{mmn}
+# Obsoletes:
+
+%description doxysearch
+External indexing and search tools for searching through doxygen
+generated HTML documentation.
+%endif
+
 %prep
 %setup -q -n %{name}-%{version}
-./configure %{?_with_doxywizard} --prefix $RPM_BUILD_ROOT/usr
+./configure %{?_with_doxywizard} %{?_with_doxysearch} --prefix $RPM_BUILD_ROOT/usr
 
 %build
 make %{?_smp_mflags}
@@ -77,7 +92,19 @@ rm -rf $RPM_BUILD_ROOT
 %doc /usr/man/man1/doxywizard.1.gz
 %endif
 
+%if %{?_with_doxysearch:1}%{!?_with_doxysearch:0}
+%files doxysearch
+%defattr(-,root,root)
+%{_bindir}/doxyindexer
+%{_bindir}/doxysearch.cgi
+%doc /usr/man/man1/doxyindexer.1.gz
+%doc /usr/man/man1/doxysearch.1.gz
+%endif
+
 %changelog
+* Tue Dec 25 2012 Dimitri van Heesch <dimitri@stack.nl> 1.8.3
+- added doxyindexer and doxysearch
+
 * Fri Apr 18 2008 Kenneth Porter <shiva+doxygenspec@sewingwitch.com> 1.5.5-1
 - consolidate with and without doxywizard spec files with rpm macro
 - add gs BuildPrereq

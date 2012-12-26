@@ -404,6 +404,12 @@ class XMLCodeGenerator : public CodeOutputInterface
     void linkableSymbol(int, const char *,Definition *,Definition *) 
     {
     }
+    void setCurrentDoc(Definition *,const char *,bool)
+    {
+    }
+    void addWord(const char *,bool)
+    {
+    }
 
     void finish()
     {

@@ -17,10 +17,10 @@
 
 doxygen_version_major=1
 doxygen_version_minor=8
-doxygen_version_revision=2
+doxygen_version_revision=3
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20121118
+doxygen_version_mmn=NO
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -38,6 +38,7 @@ f_app=NO
 f_thread=NO
 f_flex=NO
 f_bison=NO
+f_search=NO
 f_langs=nl,sv,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,mk,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,sc,vi,tr,eo,am
 
 while test -n "$1";  do
@@ -93,6 +94,9 @@ while test -n "$1";  do
     --with-doxyapp | -with-doxyapp)
        f_app=YES
        ;;
+    --with-doxysearch | -with-doxysearch)
+       f_search=YES
+       ;;
     -h | -help | --help)
        f_help=y
        ;;
@@ -110,8 +114,8 @@ if test "$f_help" = y; then
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--flex name] [--bison name] [--make name] 
           [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
-          [--install name] [--english-only] [----enable-langs list] 
-          [--with-doxywizard] [--with-doxyapp]
+          [--install name] [--english-only] [--enable-langs list] 
+          [--with-doxywizard] [--with-doxysearch] [--with-doxyapp]
 
 Options: 
 
@@ -145,6 +149,8 @@ Options:
   			[default: $f_langs]
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt version 4.
+  --with-doxysearch     Build external search tools (doxysearch and doxyindexer)
+                        requires Xapian library version 1.2
   --with-doxyapp        Example showing how to embed doxygen in an application.
 
 EOF
@@ -289,6 +295,23 @@ if test "$f_wizard" = YES; then
     echo "Set the QTDIR environment variable such that \$QTDIR/bin/qmake exists."
     echo "check the Qt installation instructions!"
     exit 2
+  fi
+fi
+
+#- check for xapian -----------------------------------------------------------
+
+if test "$f_search" = YES; then
+  if test -z "$XAPIAN"; then
+    echo -n "  Checking for Xapian..."
+    for d in /usr /usr/local /opt/local; do
+      if test -e "$d/include/xapian.h"; then
+        XAPIAN=$d
+      fi
+    done
+  fi
+  if test -z "$XAPIAN"; then
+    echo "XAPIAN not set and xapian.h not found at standard locations!"
+    exit 2;
   fi
 fi
    
@@ -514,8 +537,7 @@ if test "$f_platform" = "macosx-uni-c++"; then
   cat >> .makeconfig <<EOF
 MKSPECS   = -spec macx-g++
 EOF
-  fi
-
+fi
 
 # Make doxygen.spec...
 #
@@ -592,7 +614,14 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libmd5/Makefile.in addon/doxyapp/Makefile.in"
+if test "$f_search" = YES; then
+  cat >> .tmakeconfig <<EOF
+LIBS += -L$XAPIAN/lib
+INCLUDEPATH += $XAPIAN/include
+EOF
+fi
+
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libmd5/Makefile.in addon/doxyapp/Makefile.in addon/doxysearch/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -607,12 +636,22 @@ EOF
      cat .makeconfig >> $DST
      if test $i = Makefile.in; then
        echo "" >> $DST
-       echo "all: src/version.cpp " >> $DST
+       EXTRADEPS=
+       if test $f_wizard = YES; then
+         EXTRADEPS=doxywizard
+       fi
+       if test $f_search = YES; then
+         EXTRADEPS="$EXTRADEPS doxysearch"
+       fi
+       echo "all: src/version.cpp $EXTRADEPS" >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
        echo "	\$(MAKE) -C libmd5" >> $DST
        echo "	\$(MAKE) -C src" >> $DST
        if test $f_wizard = YES; then
          echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxywizard" >> $DST
+       fi
+       if test $f_search = YES; then
+         echo "	\$(MAKE) -C addon/doxysearch" >> $DST
        fi
        if test $f_app = YES; then
          echo "	\$(MAKE) -C addon/doxyapp" >> $DST
@@ -621,6 +660,10 @@ EOF
        echo "doxywizard_install:" >> $DST
        if test $f_wizard = YES; then
          echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxywizard install" >> $DST
+       fi
+       echo "doxysearch_install:" >> $DST
+       if test $f_search = YES; then
+         echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxysearch install" >> $DST
        fi
        echo "" >> $DST
      fi
@@ -635,7 +678,7 @@ done
 cat src/libdoxycfg.t.in | sed -e "s|%%FLEX%%|$f_flex|g" -e "s|%%BISON%%|$f_bison|g" > src/libdoxycfg.t
 cat src/libdoxygen.t.in | sed -e "s|%%FLEX%%|$f_flex|g" -e "s|%%BISON%%|$f_bison|g" > src/libdoxygen.t
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libmd5/libmd5.pro.in addon/doxyapp/doxyapp.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libmd5/libmd5.pro.in addon/doxyapp/doxyapp.pro.in addon/doxysearch/doxysearch.pro.in addon/doxysearch/doxyindexer.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

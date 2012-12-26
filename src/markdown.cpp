@@ -299,6 +299,10 @@ static int findEmphasisChar(const char *data, int size, char c, int c_size)
           i++;
         }
       }
+      else if (i<size-1 && isIdChar(i+1)) // @cmd, stop processing, see bug 690385
+      {
+        return 0;
+      }
       else
       {
         i++;
@@ -1700,7 +1704,8 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
       else if (j>0 && data[j-1]=='>') indent=j+1;
       j++;
     }
-    if (j>0 && data[j-1]=='>') // disqualify last > if not followed by space
+    if (j>0 && data[j-1]=='>' && 
+        !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
       j--;

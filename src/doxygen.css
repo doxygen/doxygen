@@ -763,7 +763,7 @@ table.doxtable th {
 }
 
 table.fieldtable {
-        width: 100%;
+        /*width: 100%;*/
         margin-bottom: 10px;
         border: 1px solid ##B4;
         border-spacing: 0px;
@@ -786,9 +786,13 @@ table.fieldtable {
         vertical-align: top;
 }
 
+.fieldtable td.fieldname {
+        padding-top: 5px;
+}
+
 .fieldtable td.fielddoc {
         border-bottom: 1px solid ##B4;
-        width: 100%;
+        /*width: 100%;*/
 }
 
 .fieldtable td.fielddoc p:first-child {

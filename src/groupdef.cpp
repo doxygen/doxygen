@@ -934,8 +934,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
   ol.disable(OutputGenerator::Man);
   ol.parseText(title);
   ol.popGeneratorState();
-  ol.endTitleHead(getOutputFileBase(),title);
   addGroupListToTitle(ol,this);
+  ol.endTitleHead(getOutputFileBase(),title);
   ol.endHeaderSection();
   ol.startContents();
 

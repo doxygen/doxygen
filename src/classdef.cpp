@@ -2220,7 +2220,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           //ol.writeListItem();
           ol.writeString("  <tr bgcolor=\"#f0f0f0\"");
-          if ((idx&1)==0) ol.writeString("class=\"even\"");
+          if ((idx&1)==0) ol.writeString(" class=\"even\"");
           idx++;
           ol.writeString("><td class=\"entry\">");
           if (cd->isObjectiveC())
@@ -4106,15 +4106,14 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
         int lt1,lt2;
         convertProtectionLevel(lt,ibcd->prot,&lt1,&lt2);
         //printf("%s:convert %d->(%d,%d)\n",icd->name().data(),lt,lt1,lt2);
-        if (visitedClasses->find(icd)!=0) 
+        if (visitedClasses->find(icd)==0) 
         {
-          return; // already processed before (in case of multiple inheritance)
-        }
-        visitedClasses->insert(icd,icd);
-        if (lt1!=-1)
-        {
-          icd->writeMemberDeclarations(ol,(MemberListType)lt1,
-                      title,QCString(),FALSE,inheritedFrom,lt2,invert,visitedClasses);
+          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+          if (lt1!=-1)
+          {
+            icd->writeMemberDeclarations(ol,(MemberListType)lt1,
+                title,QCString(),FALSE,inheritedFrom,lt2,invert,visitedClasses);
+          }
         }
       }
     }

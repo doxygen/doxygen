@@ -413,6 +413,9 @@ static bool             g_spaceBeforeCmd;
 static bool             g_spaceBeforeIf;
 static QCString         g_copyDocArg;
 
+static QCString         g_guardExpr;
+static int              g_roundCount;
+
 //-----------------------------------------------------------------------------
 
 static QStack<Grouping> g_autoGroupStack;
@@ -807,6 +810,7 @@ static void endBrief(bool addToOutput=TRUE)
   }
 }
 
+static void handleGuard(const QCString &expr);
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -917,6 +921,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x      SkipLang
 %x	CiteLabel
 %x	CopyDoc
+%x      GuardExpr
 
 %%
 
@@ -1032,7 +1037,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    }
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
-                                            if (i>0) addOutput(QCString(yytext).left(i));
+                                            //if (i>0) addOutput(QCString(yytext).left(i)); // removed for bug 689341
 					    if (cmdPtr->func && cmdPtr->func(cmdName))
 					    {
 					      // implicit split of the comment block into two
@@ -1725,36 +1730,34 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of if/ifnot commands ------- */
 
-<GuardParam>[!()&| \ta-z_A-Z0-9.\-]+ {// parameter of if/ifnot guard
-                                          CondParser prs;
-                                          bool sectionEnabled=prs.parse(yyFileName,yyLineNr,yytext);
-					  bool parentEnabled = TRUE;
-					  if (!guards.isEmpty()) parentEnabled = guards.top()->isEnabled();
-					  if (parentEnabled)
-					  {
-					    if (
-						(sectionEnabled && guardType==Guard_If) ||  
-						(!sectionEnabled && guardType==Guard_IfNot)
-					       ) // section is visible
-					    {
-					      guards.push(new GuardedSection(TRUE,TRUE));
-					      enabledSectionFound=TRUE;
-					      BEGIN( GuardParamEnd );
-					    }
-					    else // section is invisible
-					    {
-					      if (guardType!=Guard_Skip)
-					      {
-					      	guards.push(new GuardedSection(FALSE,TRUE));
-					      }
-					      BEGIN( SkipGuardedSection );
-					    }
-					  }
-					  else // invisible because of parent
-					  {
-					    guards.push(new GuardedSection(FALSE,FALSE));
-					    BEGIN( SkipGuardedSection );
-					  }
+<GuardParam>"("                         {
+                                          g_guardExpr=yytext;
+                                          g_roundCount=1;
+                                          BEGIN(GuardExpr);
+                                        }
+<GuardExpr>[^()]*                       {
+                                          g_guardExpr+=yytext;
+                                        }
+<GuardExpr>"("                          {
+                                          g_guardExpr+=yytext;
+                                          g_roundCount++;
+                                        }
+<GuardExpr>")"                          {
+                                          g_guardExpr+=yytext;
+                                          g_roundCount--;
+                                          if (g_roundCount==0)
+                                          {
+                                            handleGuard(g_guardExpr);
+                                          }
+                                        }
+<GuardExpr>\n                           {
+					  warn(yyFileName,yyLineNr,
+						"warning: invalid expression '%s' for guard",g_guardExpr.data());
+                                          unput(*yytext);
+                                          BEGIN(GuardParam);
+                                        }
+<GuardParam>[a-z_A-Z0-9.\-]+            { // parameter of if/ifnot guard
+                                          handleGuard(yytext);
   					}
 <GuardParam>{DOCNL}			{ // end of argument
   					  if (*yytext=='\n') yyLineNr++;
@@ -2951,6 +2954,40 @@ static void groupAddDocs(Entry *e,const char *fileName)
     e->brief.resize(0);
   }
 }
+
+static void handleGuard(const QCString &expr)
+{
+  CondParser prs;
+  bool sectionEnabled=prs.parse(yyFileName,yyLineNr,expr);
+  bool parentEnabled = TRUE;
+  if (!guards.isEmpty()) parentEnabled = guards.top()->isEnabled();
+  if (parentEnabled)
+  {
+    if (
+        (sectionEnabled && guardType==Guard_If) ||  
+        (!sectionEnabled && guardType==Guard_IfNot)
+       ) // section is visible
+    {
+      guards.push(new GuardedSection(TRUE,TRUE));
+      enabledSectionFound=TRUE;
+      BEGIN( GuardParamEnd );
+    }
+    else // section is invisible
+    {
+      if (guardType!=Guard_Skip)
+      {
+        guards.push(new GuardedSection(FALSE,TRUE));
+      }
+      BEGIN( SkipGuardedSection );
+    }
+  }
+  else // invisible because of parent
+  {
+    guards.push(new GuardedSection(FALSE,FALSE));
+    BEGIN( SkipGuardedSection );
+  }
+}
+
 
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
