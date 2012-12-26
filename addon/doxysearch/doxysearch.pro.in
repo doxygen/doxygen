@@ -1,0 +1,12 @@
+TEMPLATE     =	app.t
+CONFIG       =	console warn_on debug
+HEADERS      =	
+SOURCES      =	doxysearch.cpp
+LIBS        += -lxapian 
+DESTDIR      = 
+OBJECTS_DIR  = ../../objects
+TARGET       = ../../bin/doxysearch.cgi
+INCLUDEPATH += 
+DEPENDPATH  += 
+TARGETDEPS   = 
+

@@ -409,3 +409,22 @@ void portable_sleep(int ms)
   usleep(1000*ms);
 #endif
 }
+
+bool portable_isAbsolutePath(const char *fileName)
+{
+# ifdef _WIN32
+  if (isalpha (fileName [0]) && fileName[1] == ':')
+    fileName += 2;
+# endif
+  char const fst = fileName [0];
+  if (fst == '/')  {
+    return true;
+  }
+# ifdef _WIN32
+  if (fst == '\\')
+    return true;
+# endif
+  return false;
+}
+
+

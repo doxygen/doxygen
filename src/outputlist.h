@@ -470,6 +470,11 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endFontClass); }
     void writeCodeAnchor(const char *name)
     { forall(&OutputGenerator::writeCodeAnchor,name); }
+    void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile)
+    { forall(&OutputGenerator::setCurrentDoc,context,anchor,isSourceFile); }
+    void addWord(const char *word,bool hiPriority)
+    { forall(&OutputGenerator::addWord,word,hiPriority); }
+
     void startPlainFile(const char *name)
     { 
       OutputGenerator *og=outputs->first();
@@ -529,6 +534,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);
     FORALLPROTO3(const ClassDiagram &,const char *,const char *);
+    FORALLPROTO3(Definition*,const char *,bool);
     FORALLPROTO4(SectionTypes,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);

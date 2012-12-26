@@ -6625,7 +6625,6 @@ static void findObjCMethodDefinitions(EntryNav *rootNav)
 static void findEnums(EntryNav *rootNav)
 {
   if (rootNav->section()==Entry::ENUM_SEC)
-    // non anonymous enumeration
   {
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
@@ -6791,74 +6790,7 @@ static void findEnums(EntryNav *rootNav)
         //       name.data(),mn->count());
       }
       addMemberToGroups(root,md);
-
-#if 0
-      if (rootNav->children())
-      {
-        EntryNavListIterator eli(*rootNav->children());
-        EntryNav *e;
-        for (;(e=eli.current());++eli)
-        {
-          //printf("e->name=%s isRelated=%d\n",e->name.data(),isRelated);
-          MemberName *fmn=0;
-          MemberNameSDict *emnsd = isRelated ? Doxygen::functionNameSDict : mnsd;
-          if (!e->name().isEmpty() && (fmn=(*emnsd)[e->name()])) 
-            // get list of members with the same name as the field
-          {
-            MemberNameIterator fmni(*fmn);
-            MemberDef *fmd;
-            for (fmni.toFirst(); (fmd=fmni.current()) ; ++fmni) 
-            {
-              if (fmd->isEnumValue())
-              {
-                //printf("found enum value with same name\n");
-                if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
-                {
-                  NamespaceDef *fnd=fmd->getNamespaceDef();
-                  if (fnd==nd) // enum value is inside a namespace
-                  {
-                    md->insertEnumField(fmd);
-                    fmd->setEnumScope(md);
-                  }
-                }
-                else if (isGlobal)
-                {
-                  FileDef *ffd=fmd->getFileDef();
-                  if (ffd==fd) // enum value has file scope
-                  {
-                    md->insertEnumField(fmd);
-                    fmd->setEnumScope(md);
-                  }
-                }
-                else if (isRelated && cd) // reparent enum value to
-                  // match the enum's scope
-                {
-                  md->insertEnumField(fmd);   // add field def to list
-                  fmd->setEnumScope(md);      // cross ref with enum name
-                  fmd->setEnumClassScope(cd); // cross ref with enum name
-                  fmd->setOuterScope(cd);
-                  fmd->makeRelated();
-                  cd->insertMember(fmd);
-                }
-                else
-                {
-                  ClassDef *fcd=fmd->getClassDef();
-                  if (fcd==cd) // enum value is inside a class
-                  {
-                    //printf("Inserting enum field %s in enum scope %s\n",
-                    //    fmd->name().data(),md->name().data());
-                    md->insertEnumField(fmd); // add field def to list
-                    fmd->setEnumScope(md);    // cross ref with enum name
-                  }
-                }
-              } 
-            }
-          }
-        }
-      }
-#endif
     }
-
     rootNav->releaseEntry();
   }
   else
@@ -10775,7 +10707,17 @@ void generateOutput()
     }
     else // write data for external search index
     {
-      Doxygen::searchIndex->write(Config_getString("OUTPUT_DIRECTORY")+"/searchdata.xml");
+      HtmlGenerator::writeExternalSearchPage();
+      QCString searchDataFile = Config_getString("SEARCHDATA_FILE");
+      if (searchDataFile.isEmpty())
+      {
+        searchDataFile="searchdata.xml";
+      }
+      if (!portable_isAbsolutePath(searchDataFile))
+      {
+        searchDataFile.prepend(Config_getString("OUTPUT_DIRECTORY")+"/");
+      }
+      Doxygen::searchIndex->write(searchDataFile);
     }
   }
 

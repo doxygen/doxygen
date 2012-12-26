@@ -402,21 +402,23 @@ void Store::dumpBlock(portable_off_t s,portable_off_t e)
   portable_fseek(m_file,s,SEEK_SET);
   int size = (int)(e-s);
   uchar *buf = new uchar[size];
-  (void)fread(buf,size,1,m_file);
-  int i,j;
-  for (i=0;i<size;i+=16)
+  if (fread(buf,size,1,m_file)==(size_t)size)
   {
-    printf("%08x: ",(int)s+i);
-    for (j=i;j<QMIN(size,i+16);j++)
+    int i,j;
+    for (i=0;i<size;i+=16)
     {
-      printf("%02x ",buf[i+j]);
+      printf("%08x: ",(int)s+i);
+      for (j=i;j<QMIN(size,i+16);j++)
+      {
+        printf("%02x ",buf[i+j]);
+      }
+      printf("  ");
+      for (j=i;j<QMIN(size,i+16);j++)
+      {
+        printf("%c",(buf[i+j]>=32 && buf[i+j]<128)?buf[i+j]:'.');
+      }
+      printf("\n");
     }
-    printf("  ");
-    for (j=i;j<QMIN(size,i+16);j++)
-    {
-      printf("%c",(buf[i+j]>=32 && buf[i+j]<128)?buf[i+j]:'.');
-    }
-    printf("\n");
   }
   delete[] buf;
   portable_fseek(m_file,m_cur,SEEK_SET);

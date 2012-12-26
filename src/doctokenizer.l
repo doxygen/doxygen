@@ -350,7 +350,7 @@ SPCMD4    {CMD}"::"
 INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
-FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&\[\]]
+FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\^\*\&\[\]]
 SCOPESEP  "::"|"#"|"."
 TEMPLPART "<"{TEMPCHAR}*">"
 SCOPEPRE  {ID}{TEMPLPART}?{SCOPESEP}

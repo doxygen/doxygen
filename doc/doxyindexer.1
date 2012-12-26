@@ -1,0 +1,17 @@
+.TH DOXYINDEXER "1" "DATE" "doxyindexer VERSION" "User Commands"
+.SH NAME
+doxyindexer \- creates a search index from raw search data
+.SH SYNOPSIS
+.B doxyindexer
+[\fI-o output_dir\fR] \fIsearchdata.xml \fR[\fIsearchdata2.xml\fR...] ]
+.SH DESCRIPTION
+Generates a search index called \fBdoxysearch.db\fR from one or more
+search data files produced by doxygen. Use
+doxysearch.cgi as a CGI program to search the data indexed by doxyindexer.
+.SH OPTIONS
+.TP
+\fB\-o\fR <output_dir>
+The directory where to write the doxysearch.db to. 
+If omitted the current directory is used.
+.SH SEE ALSO
+doxygen(1), doxysearch(1), doxywizard(1).

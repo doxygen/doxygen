@@ -34,6 +34,7 @@ void           portable_sysTimerStart();
 void           portable_sysTimerStop();
 double         portable_getSysElapsedTime();
 void           portable_sleep(int ms);
+bool           portable_isAbsolutePath(const char *fileName);
 
 extern "C" {
   void *         portable_iconv_open(const char* tocode, const char* fromcode);
@@ -41,7 +42,6 @@ extern "C" {
                                  char* * outbuf, size_t *outbytesleft);
   int            portable_iconv_close (void *cd);
 }
-
 
 #endif
 

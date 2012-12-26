@@ -4087,7 +4087,6 @@ void FlowNode::alignFuncProc( QCString & q,const ArgumentList* al,bool isFunc)
   prev.fill(' ',len+1);
 
   Argument *arg;
-  bool first=TRUE;
   q+="\n";
   for (;(arg=ali.current());++ali)
   {
@@ -4109,7 +4108,6 @@ void FlowNode::alignFuncProc( QCString & q,const ArgumentList* al,bool isFunc)
 
     attl.prepend(prev.data());
     temp+=attl;
-    first=FALSE;
   }
   q+=temp;
 } 

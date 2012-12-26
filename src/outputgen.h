@@ -73,6 +73,8 @@ class CodeOutputInterface
     virtual void writeCodeAnchor(const char *name) = 0;
     virtual void linkableSymbol(int line,const char *symName,
                  Definition *symDef,Definition *context) = 0;
+    virtual void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile) = 0;
+    virtual void addWord(const char *word,bool hiPriority) = 0;
 };
 
 /** Base Interface used for generating output outside of the

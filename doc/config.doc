@@ -114,7 +114,9 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_ext_links_in_window EXT_LINKS_IN_WINDOW
 \refitem cfg_extension_mapping EXTENSION_MAPPING
 \refitem cfg_external_groups EXTERNAL_GROUPS
+\refitem cfg_external_search EXTERNAL_SEARCH
 \refitem cfg_extra_packages EXTRA_PACKAGES
+\refitem cfg_extra_search_mappings EXTRA_SEARCH_MAPPINGS
 \refitem cfg_extract_all EXTRACT_ALL
 \refitem cfg_extract_anon_nspaces EXTRACT_ANON_NSPACES
 \refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
@@ -251,7 +253,9 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_rtf_output RTF_OUTPUT
 \refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
 \refitem cfg_search_includes SEARCH_INCLUDES
+\refitem cfg_searchdata_file SEARCHDATA_FILE
 \refitem cfg_searchengine SEARCHENGINE
+\refitem cfg_searchengine_url SEARCHENGINE_URL
 \refitem cfg_separate_member_pages SEPARATE_MEMBER_PAGES
 \refitem cfg_server_based_search SERVER_BASED_SEARCH
 \refitem cfg_short_names SHORT_NAMES
@@ -503,7 +507,7 @@ followed by the descriptions of the tags grouped by category.
 <dt>\c SIP_SUPPORT <dd>
  \addindex OPTIMIZE_OUTPUT_SIP
  Set the SIP_SUPPORT tag to YES if your project consists 
- of <a href="http://www.riverbankcomputing.co.uk/sip/">sip</a> sources only. 
+ of <a href="http://www.riverbankcomputing.co.uk/software/sip/intro">sip</a> sources only. 
  Doxygen will parse them like normal C++ but will assume all classes use public 
  instead of private inheritance when no explicit protection keyword is present. 
 
@@ -1762,43 +1766,6 @@ The GENERATE_PUBLISHER_NAME tag identifies the documentation publisher.
  the directory name containing the HTML and XML files should also have 
  this name. Each documentation set should have its own identifier.
 
-\anchor cfg_searchengine
-<dt>\c SEARCHENGINE <dd>
- \addindex SEARCHENGINE
-
- When the \c SEARCHENGINE tag is enabled doxygen will generate a search box
- for the HTML output. The underlying search engine uses javascript 
- and DHTML and should work on any modern browser. Note that when using
- HTML help (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), 
- Qt help (\ref cfg_generate_qhp "GENERATE_QHP"), or docsets
- (\ref cfg_generate_docset "GENERATE_DOCSET") there is already a search 
- function so this one should typically be disabled. For large projects 
- the javascript based search engine can be slow, then enabling 
- \ref cfg_server_based_search "SERVER_BASED_SEARCH" may provide a 
- better solution. 
-
- It is possible to search using the keyboard;
- to jump to the search box use access key + S (what the access key is
- depends on the OS and browser, but it is typically CTRL, ALT/option, or both).
- Inside the search box use the cursor down key to jump into the search 
- results window, the results can be navigated using the cursor keys.
- Press Enter to select an item or escape to cancel the search. The
- filter options can be selected when the cursor is inside the search box
- by pressing Shift+cursor down. Also here use the cursor keys to 
- select a filter and enter or escape to activate or cancel the filter option.
-
-\anchor cfg_server_based_search
-<dt>\c SERVER_BASED_SEARCH <dd>
- \addindex SERVER_BASED_SEARCH
-
-When the SERVER_BASED_SEARCH tag is enabled the search engine will be
-implemented using a PHP enabled web server instead of at the web client
-using Javascript. Doxygen will generate the search PHP script and index 
-file to put on the web server. The advantage of the server
-based approach is that it scales better to large projects and also allows
-full text search. The disadvantages are that it is more difficult to setup 
-and does not have live searching capabilities.
-
 \anchor cfg_disable_index
 <dt>\c DISABLE_INDEX <dd>
  \addindex DISABLE_INDEX
@@ -1907,6 +1874,91 @@ for more details.
 \verbatim
 MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
 \endverbatim
+
+\anchor cfg_searchengine
+<dt>\c SEARCHENGINE <dd>
+ \addindex SEARCHENGINE
+
+ When the \c SEARCHENGINE tag is enabled doxygen will generate a search box
+ for the HTML output. The underlying search engine uses javascript 
+ and DHTML and should work on any modern browser. Note that when using
+ HTML help (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), 
+ Qt help (\ref cfg_generate_qhp "GENERATE_QHP"), or docsets
+ (\ref cfg_generate_docset "GENERATE_DOCSET") there is already a search 
+ function so this one should typically be disabled. For large projects 
+ the javascript based search engine can be slow, then enabling 
+ \ref cfg_server_based_search "SERVER_BASED_SEARCH" may provide a 
+ better solution. 
+
+ It is possible to search using the keyboard;
+ to jump to the search box use access key + S (what the access key is
+ depends on the OS and browser, but it is typically CTRL, ALT/option, or both).
+ Inside the search box use the cursor down key to jump into the search 
+ results window, the results can be navigated using the cursor keys.
+ Press Enter to select an item or escape to cancel the search. The
+ filter options can be selected when the cursor is inside the search box
+ by pressing Shift+cursor down. Also here use the cursor keys to 
+ select a filter and enter or escape to activate or cancel the filter option.
+
+\anchor cfg_server_based_search
+<dt>\c SERVER_BASED_SEARCH <dd>
+ \addindex SERVER_BASED_SEARCH
+
+When the \c SERVER_BASED_SEARCH tag is enabled the search engine will be 
+implemented using a web server instead of a web client using Javascript. 
+
+There are two flavours of web server based searching depending on the 
+\ref cfg_external_search "EXTERNAL_SEARCH" setting. When disabled, 
+doxygen will generate a PHP script for searching and an index file used 
+by the script. When \ref cfg_external_search "EXTERNAL_SEARCH" is 
+enabled the indexing and searching needs to be provided by external tools. 
+See \ref extsearch for details.
+
+\anchor cfg_external_search
+<dt>\c EXTERNAL_SEARCH <dd>
+ \addindex EXTERNAL_SEARCH
+
+When \c EXTERNAL_SEARCH is enabled doxygen will no longer generate the PHP 
+script for searching. Instead the search results are written to an XML file 
+which needs to be processed by an external indexer. Doxygen will invoke an 
+external search engine pointed to by the 
+\ref cfg_searchengine_url "SEARCHENGINE_URL" option to obtain 
+the search results. See the section \ref extsearch for details.
+
+\anchor cfg_searchengine_url
+<dt>\c SEARCHENGINE_URL <dd>
+ \addindex SEARCHENGINE_URL
+
+The \c SEARCHENGINE_URL should point to a search engine hosted by a web server 
+which will returned the search results when \ref cfg_external_search "EXTERNAL_SEARCH" 
+is enabled.  See the section \ref extsearch for details.
+
+\anchor cfg_searchdata_file
+<dt>\c SEARCHDATA_FILE <dd>
+ \addindex SEARCHDATA_FILE
+
+When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and 
+\ref cfg_external_search "EXTERNAL_SEARCH" are both enabled the unindexed 
+search data is written to a file for indexing by an external tool. With the 
+\c SEARCHDATA_FILE tag the name of this file can be specified.
+The default is searchdata.xml.
+
+\anchor cfg_extra_search_mappings
+<dt>\c EXTRA_SEARCH_MAPPINGS <dd>
+ \addindex EXTRA_SEARCH_MAPPINGS
+
+The \c EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through other 
+doxygen projects that are not otherwise connected via tags files, but are 
+all added to the same search index. Each project needs to have a tag file set 
+via \ref cfg_generate_tagfile "GENERATE_TAGFILE". The search mapping then 
+maps the name of tag file to a relative location where the documentation 
+can be found, similar to the \ref cfg_tagfiles "TAGFILES" option but without 
+actually processing the tag file. The format is: 
+
+\verbatim
+EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... 
+\endverbatim
+
  
 </dl>
 \section latex_output LaTeX related options

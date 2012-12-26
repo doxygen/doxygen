@@ -871,7 +871,7 @@ div.header
 
 div.headertitle
 {
-	padding: 5px 5px 5px 7px;
+	padding: 5px 5px 5px 0px;
 }
 
 dl

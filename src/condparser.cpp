@@ -37,18 +37,19 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
   m_tokenType = NOTHING;
 
   // initialize all variables
-  m_e = m_expr.data();    // let m_e point to the start of the expression
+  m_e = m_expr;    // let m_e point to the start of the expression
 
+  bool answer=FALSE;
   getToken();
   if (m_tokenType==DELIMITER && m_token.isEmpty())
   {
-    return "Empty expression";
+    // empty expression: answer==FALSE
   }
-  bool answer=FALSE;
-  if (m_err.isEmpty())
+  else if (m_err.isEmpty())
   {
     answer = parseLevel1();
 
+#if 0
     // check for garbage at the end of the expression
     // an expression ends with a character '\0' and token_type = delimeter
     if (m_tokenType!=DELIMITER || !m_token.isEmpty())
@@ -70,12 +71,14 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
         m_err=QCString("Unexpected part '")+m_token+"'";
       }
     }
+#endif
   }
   if (m_err)
   {
     warn(fileName,lineNr,"Warning: problem evaluating expression '%s': %s",
         expr,m_err.data());
   }
+  //printf("expr='%s' answer=%d\n",expr,answer);
   return answer;
 }
 

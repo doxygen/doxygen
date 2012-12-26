@@ -55,7 +55,6 @@ documentation:
 \refitem cmdclass \\class
 \refitem cmdcode \\code
 \refitem cmdcond \\cond
-\refitem cmdcondnot \\condnot
 \refitem cmdcopybrief \\copybrief
 \refitem cmdcopydetails \\copydetails
 \refitem cmdcopydoc \\copydoc
@@ -1083,8 +1082,10 @@ Section indicators
   The section between \\cond and \\endcond commands can be included by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
   configuration option. If the section label is omitted, the section will
-  be excluded from processing unconditionally. The section label can be a logical expression
-  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
+  be excluded from processing unconditionally. The section label can be a 
+  logical expression build of section lavels, round brackets, && (AND), || (OR) and ! (NOT).
+  If you use an expression you need to wrap it in round brackets, i.e 
+  <tt>\\cond (!LABEL1 && LABEL2)</tt>.
 
   For conditional sections within a comment block one should
   use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
@@ -1137,30 +1138,7 @@ class Implementation : public Intf
 The output will be different depending on whether or not \c ENABLED_SECTIONS
 contains \c TEST, or \c DEV
 
-  \sa section \ref cmdcondnot "\\condnot" and section \ref cmdendcond "\\endcond".
-
-<hr>
-\section cmdcondnot \\condnot [(section-label)]
-
-  \addindex \\condnot
-  Starts a conditional section that ends with a corresponding
-  \ref cmdendcond "\\endcond" command, which is typically found in
-  another comment block. The main purpose of this pair of
-  commands is to (conditionally) exclude part of a file from processing
-  (in older version of doxygen this could only be achieved using C preprocessor commands).
-
-  The section between \\condnot and \\endcond commands can be excluded by
-  adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  configuration option. The section label can be a logical expression
-  build of section names, round brackets, && (AND), || (OR) and ! (NOT).
-
-  For conditional sections within a comment block one should
-  use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
-
-  Conditional sections can be nested. In this case a nested section will only
-  be shown if it and its containing section are included.
-
-  \sa section \ref cmdcond "\\cond" and section \ref cmdendcond "\\endcond".
+  \sa section \ref cmdendcond "\\endcond".
 
 <hr>
 \section cmdcopyright \\copyright { copyright description }
@@ -1233,9 +1211,9 @@ contains \c TEST, or \c DEV
 \section cmdendcond \\endcond
 
   \addindex \\endcond
-  Ends a conditional section that was started by \ref cmdcond "\\cond" or \ref cmdcondnot "\\condnot".
+  Ends a conditional section that was started by \ref cmdcond "\\cond".
 
-  \sa section \ref cmdcond "\\cond" and section \ref cmdcondnot "\\condnot".
+  \sa section \ref cmdcond "\\cond".
 
 <hr>
 \section cmdendif \\endif
@@ -1269,8 +1247,13 @@ contains \c TEST, or \c DEV
   with a matching \c \\endif command. A conditional section is
   disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS"
-  tag in the configuration file.  The section label can be a logical expression
+  tag in the configuration file.  
+
+  The section label can be a logical expression
   build of section names, round brackets, && (AND), || (OR) and ! (NOT).
+  If you use an expression you need to wrap it in round brackets, i.e 
+  <tt>\\cond (!LABEL1 && LABEL2)</tt>.
+
   Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
 

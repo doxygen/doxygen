@@ -460,7 +460,6 @@ void HtmlHelp::createProjectFile()
     FTextStream t(&f);
     
     QCString indexName="index"+Doxygen::htmlFileExtension;
-    //if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
     if (!Config_getString("CHM_FILE").isEmpty())
     {
@@ -496,52 +495,6 @@ void HtmlHelp::createProjectFile()
       t << s << endl;
       s = indexFiles.next();
     }
-#if 0
-    // items not found by the html help compiler scan.
-    t << "tabs.css" << endl;
-    t << "tab_a.png" << endl;
-    t << "tab_b.png" << endl;
-    t << "tab_h.png" << endl;
-    t << "tab_s.png" << endl;
-    t << "nav_h.png" << endl;
-    t << "nav_f.png" << endl;
-    t << "bc_s.png" << endl;
-    if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
-    {
-      t << "open.png" << endl;
-      t << "closed.png" << endl;
-    }
-    if (Config_getBool("GENERATE_HTMLHELP"))
-    {
-      t << "ftv2blank.png" << endl;
-      t << "ftv2doc.png" << endl;
-      t << "ftv2folderclosed.png" << endl;
-      t << "ftv2folderopen.png" << endl;
-      t << "ftv2lastnode.png" << endl;
-      t << "ftv2link.png" << endl;
-      t << "ftv2mlastnode.png" << endl;
-      t << "ftv2mnode.png" << endl;
-      t << "ftv2node.png" << endl;
-      t << "ftv2plastnode.png" << endl;
-      t << "ftv2pnode.png" << endl;
-      t << "ftv2vertline.png" << endl;
-    }
-    if (Config_getBool("SEARCHENGINE"))
-    {
-      t << "search_l.png" << endl;
-      t << "search_m.png" << endl;
-      t << "search_r.png" << endl;
-      if (Config_getBool("SERVER_BASED_SEARCH"))
-      {
-        t << "mag.png" << endl;
-      }
-      else
-      {
-        t << "mag_sel.png" << endl;
-        t << "close.png" << endl;
-      }
-    }
-#endif
     uint i;
     for (i=0;i<imageFiles.count();i++)
     {

@@ -3053,13 +3053,24 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
 
 <FindMembers>":"			{
-  					  if (current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
+					  if (current->type.isEmpty() &&
+                                              current->name=="enum") // see bug 69041, C++11 style anon enum: 'enum : unsigned int {...}'
 					  {
-					    addType(current);
-					    current->name.sprintf("__pad%d__",padCount++);
+                                            current->section=Entry::ENUM_SEC;
+					    current->name.resize(0);
+                                            current->args.resize(0);
+  					    BEGIN(EnumBaseType);
 					  }
-  					  BEGIN(BitFields);
-					  current->bitfields+=":";
+                                          else 
+                                          {
+                                            if (current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
+					    {
+					       addType(current);
+					      current->name.sprintf("__pad%d__",padCount++);
+					    }
+  					    BEGIN(BitFields);
+					    current->bitfields+=":";
+                                          }
   					}
 <BitFields>.				{
   					  current->bitfields+=*yytext;
@@ -3069,6 +3080,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <EnumBaseType>\n			{
                                           lineCount();
+  					  current->args+=' ';
   					}
 <FindMembers>[;,]			{ 
   					  QCString oldType = current->type;
@@ -3428,7 +3440,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                                 current->program += yytext; 
 					      }
                                             }
-<ReadBody,ReadNSBody,ReadBodyIntf>"{"       { current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>"{"   { current->program += yytext ;
 					  ++curlyCount ;
 					}
 <ReadBodyIntf>"}"			{
@@ -4672,11 +4684,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    }
 					  }
                                         }
+<SkipInits>{ID}{BN}*"{"                 { // C++11 style initializer (see bug 688647)
+                                          lineCount();
+                                          ++curlyCount;
+                                        }
 <SkipInits>"{"				{ // C++11 style initializer
-  				          //addToBody(yytext);
-  				          //lastCurlyContext = FindMembers;
-					  //curlyCount=0;
-  					  //BEGIN( SkipCurly ) ; 
   					  unput('{');
 					  BEGIN( Function );
 					}

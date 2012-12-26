@@ -4,6 +4,12 @@
 
 DESTDIR = 
 
+doxywizard:
+	cd addon/doxywizard ; $(MAKE) 
+
+doxysearch:
+	cd addon/doxysearch ; $(MAKE) 
+
 clean: FORCE
 	cd examples ; $(MAKE) clean
 	cd doc ; $(MAKE) clean
@@ -11,9 +17,11 @@ clean: FORCE
 	cd src ; $(MAKE) clean
 	cd libmd5 ; $(MAKE) clean
 	-cd addon/doxywizard ; $(MAKE) clean
-	cd addon/doxmlparser/src ; $(MAKE) clean
-	cd addon/doxmlparser/test ; $(MAKE) clean
-	cd addon/doxmlparser/examples/metrics ; $(MAKE) clean
+	-cd addon/doxysearch ; $(MAKE) clean
+	-cd addon/doxyapp ; $(MAKE) clean
+	-cd addon/doxmlparser/src ; $(MAKE) clean
+	-cd addon/doxmlparser/test ; $(MAKE) clean
+	-cd addon/doxmlparser/examples/metrics ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
@@ -21,10 +29,11 @@ distclean: clean
 	cd src ; $(MAKE) distclean
 	cd libmd5 ; $(MAKE) distclean
 	-cd addon/doxywizard ; $(MAKE) distclean
-	cd addon/doxmlparser/src ; $(MAKE) distclean
-	cd addon/doxmlparser/test ; $(MAKE) distclean
-	cd addon/doxmlparser/examples/metrics ; $(MAKE) distclean
-	cd addon/doxyapp ; $(MAKE) distclean
+	-cd addon/doxysearch ; $(MAKE) distclean
+	-cd addon/doxyapp ; $(MAKE) distclean
+	-cd addon/doxmlparser/src ; $(MAKE) distclean
+	-cd addon/doxmlparser/test ; $(MAKE) distclean
+	-cd addon/doxmlparser/examples/metrics ; $(MAKE) distclean
 	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html
@@ -46,9 +55,9 @@ DATE=$(shell date "+%B %Y")
 
 MAN1DIR = man/man1
 
-install: doxywizard_install 
+install: doxywizard_install doxysearch_install
 	$(INSTTOOL) -d $(DESTDIR)/$(INSTALL)/bin
-	$(INSTTOOL) -m 755 bin/doxygen    $(DESTDIR)/$(INSTALL)/bin
+	$(INSTTOOL) -m 755 bin/doxygen        $(DESTDIR)/$(INSTALL)/bin
 	$(INSTTOOL) -d $(DESTDIR)/$(INSTALL)/$(MAN1DIR)
 	cat doc/doxygen.1    | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > doxygen.1 
 	$(INSTTOOL) -m 644 doxygen.1 $(DESTDIR)/$(INSTALL)/$(MAN1DIR)/doxygen.1

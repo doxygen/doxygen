@@ -30,6 +30,13 @@
 #include "doxygen.h"
 #include "outputgen.h"
 #include "parserintf.h"
+#include "classdef.h"
+#include "namespacedef.h"
+#include "filedef.h"
+#include "util.h"
+#include "classlist.h"
+#include "config.h"
+#include "filename.h"
 
 class XRefDummyCodeGenerator : public CodeOutputInterface
 {
@@ -41,14 +48,16 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     // and cross-linked version of the source code, but who needs that anyway ;-)
     void codify(const char *) {}
     void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
-    void startCodeLine() {}
+    void writeLineNumber(const char *,const char *,const char *,int) {}
+    void startCodeLine(bool) {}
     void endCodeLine() {}
     void startCodeAnchor(const char *) {}
     void endCodeAnchor() {}
     void startFontClass(const char *) {}
     void endFontClass() {}
     void writeCodeAnchor(const char *) {}
-    void writeLineNumber(const char *,const char *,const char *,int) {}
+    void setCurrentDoc(Definition *,const char *,bool) {}
+    void addWord(const char *,bool) {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context) 

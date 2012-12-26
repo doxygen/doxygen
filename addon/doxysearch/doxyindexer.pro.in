@@ -1,0 +1,12 @@
+TEMPLATE     =	app.t
+CONFIG       =	console warn_on static release
+HEADERS      =	
+SOURCES      =	doxyindexer.cpp
+LIBS        += -lxapian -lqtools -L../../lib
+DESTDIR      = 
+OBJECTS_DIR  = ../../objects
+TARGET       = ../../bin/doxyindexer
+INCLUDEPATH += ../../qtools
+DEPENDPATH  += 
+TARGETDEPS   = 
+

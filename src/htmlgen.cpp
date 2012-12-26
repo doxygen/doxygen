@@ -98,6 +98,9 @@ static const char dynsections_script[]=
 #include "dynsections_js.h"
 ;
 
+static const char extsearch_script[]=
+#include "extsearch_js.h"
+;
 
 static QCString g_header;
 static QCString g_footer;
@@ -876,9 +879,19 @@ static void writeClientSearchBox(FTextStream &t,const char *relPath)
 
 static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlightSearch)
 {
+  static bool externalSearch = Config_getBool("EXTERNAL_SEARCH");
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
   t << "          <div class=\"left\">\n";
-  t << "            <form id=\"FSearchBox\" action=\"" << relPath << "search.php\" method=\"get\">\n";
+  t << "            <form id=\"FSearchBox\" action=\"" << relPath;
+  if (externalSearch)
+  {
+    t << "search" << Doxygen::htmlFileExtension;
+  }
+  else
+  {
+    t << "search.php";
+  }
+  t << "\" method=\"get\">\n";
   t << "              <img id=\"MSearchSelect\" src=\"" << relPath << "search/mag.png\" alt=\"\"/>\n";
   if (!highlightSearch)
   {
@@ -1698,6 +1711,15 @@ void HtmlGenerator::writeStyleInfo(int part)
         endPlainFile();
       }
       Doxygen::indexList->addStyleSheetFile(cssfi.fileName().utf8());
+    }
+    static QCString extraCssFile = Config_getString("HTML_EXTRA_STYLESHEET");
+    if (!extraCssFile.isEmpty())
+    {
+      QFileInfo fi(extraCssFile);
+      if (fi.exists())
+      {
+        Doxygen::indexList->addStyleSheetFile(fi.fileName().utf8());
+      }
     }
   }
 }
@@ -2950,7 +2972,7 @@ void HtmlGenerator::writeSearchPage()
     t << "  ),\n";
     t << "  'search_matches' => \"" << theTranslator->trSearchMatches() << "\",\n";
     t << "  'search' => \"" << theTranslator->trSearch() << "\",\n";
-    t << "  'split_bar' => \"" << substitute(substitute(writeSplitBarAsString("",""), "\"","\\\""), "\n","\\n") << "\",\n";
+    t << "  'split_bar' => \"" << substitute(substitute(writeSplitBarAsString("search",""), "\"","\\\""), "\n","\\n") << "\",\n";
     t << "  'logo' => \"" << substitute(substitute(writeLogoAsString(""), "\"","\\\""), "\n","\\n") << "\",\n";
     t << ");\n\n";
     t << "</script>\n";
@@ -2984,24 +3006,16 @@ void HtmlGenerator::writeSearchPage()
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
       << versionString << " -->" << endl;
-    //static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-    static bool searchEngine = Config_getBool("SEARCHENGINE");
-    if (searchEngine /* && !generateTreeView*/)
-    {
-      t << "<script type=\"text/javascript\">\n";
-      t << "var searchBox = new SearchBox(\"searchBox\", \""
-        << "search\",false,'" << theTranslator->trSearch() << "');\n";
-      t << "</script>\n";
-    }
+    t << "<script type=\"text/javascript\">\n";
+    t << "var searchBox = new SearchBox(\"searchBox\", \""
+      << "search\",false,'" << theTranslator->trSearch() << "');\n";
+    t << "</script>\n";
     if (!Config_getBool("DISABLE_INDEX"))
     {
       writeDefaultQuickLinks(t,TRUE,HLI_Search,0,"");
     }
     else
     {
-      //t << "&#160;\n<div class=\"qindex\">\n";
-      //t << "  <form class=\"search\" action=\"search.php\" "
-      //  << "method=\"get\">\n";
       t << "</div>" << endl;
     }
 
@@ -3009,8 +3023,6 @@ void HtmlGenerator::writeSearchPage()
     t << "require_once \"search-functions.php\";\n";
     t << "main();\n";
     t << "</script>\n";
-
-    writeSearchInfo(t,"");
 
     // Write empty navigation path, to make footer connect properly
     if (generateTreeView)
@@ -3027,37 +3039,123 @@ void HtmlGenerator::writeSearchPage()
   if (sf.open(IO_WriteOnly))
   {
     FTextStream t(&sf);
-    t << "function SearchBox(name, resultsPath, inFrame, label)\n";
-    t << "{\n";
-    t << "  this.searchLabel = label;\n";
-    t << "  this.DOMSearchField = function()\n";
-    t << "  {  return document.getElementById(\"MSearchField\");  }\n";
-    t << "  this.DOMSearchBox = function()\n";
-    t << "  {  return document.getElementById(\"MSearchBox\");  }\n";
-    t << "  this.OnSearchFieldFocus = function(isActive)\n";
-    t << "  {\n";
-    t << "    if (isActive)\n";
-    t << "    {\n";
-    t << "      this.DOMSearchBox().className = 'MSearchBoxActive';\n";
-    t << "      var searchField = this.DOMSearchField();\n";
-    t << "      if (searchField.value == this.searchLabel) \n";
-    t << "      {\n";
-    t << "        searchField.value = '';\n";
-    t << "      }\n";
-    t << "    }\n";
-    t << "    else\n";
-    t << "    {\n";
-    t << "      this.DOMSearchBox().className = 'MSearchBoxInactive';\n";
-    t << "      this.DOMSearchField().value   = this.searchLabel;\n";
-    t << "    }\n";
-    t << "  }\n";
-    t << "}\n";
+    t << extsearch_script;
   }
   else
   {
      err("Failed to open file '%s' for writing...\n",scriptName.data());
   }
+}
 
+void HtmlGenerator::writeExternalSearchPage()
+{
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  QCString fileName = Config_getString("HTML_OUTPUT")+"/search"+Doxygen::htmlFileExtension;
+  QFile f(fileName);
+  if (f.open(IO_WriteOnly))
+  {
+    FTextStream t(&f);
+    t << substituteHtmlKeywords(g_header,"Search","");
+
+    t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
+      << versionString << " -->" << endl;
+    t << "<script type=\"text/javascript\">\n";
+    t << "var searchBox = new SearchBox(\"searchBox\", \""
+      << "search\",false,'" << theTranslator->trSearch() << "');\n";
+    t << "</script>\n";
+    if (!Config_getBool("DISABLE_INDEX"))
+    {
+      writeDefaultQuickLinks(t,TRUE,HLI_Search,0,"");
+      t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+      t << "            </form>\n";
+      t << "          </div><div class=\"right\"></div>\n";
+      t << "        </div>\n";
+      t << "      </li>\n";
+      t << "    </ul>\n";
+      t << "  </div>\n";
+      t << "</div>\n";
+    }
+    else
+    {
+      t << "</div>" << endl;
+    }
+    t << writeSplitBarAsString("search","");
+    t << "<div class=\"header\">" << endl;
+    t << "  <div class=\"headertitle\">" << endl;
+    t << "    <div class=\"title\">" << theTranslator->trSearchResultsTitle() << "</div>" << endl;
+    t << "  </div>" << endl;
+    t << "</div>" << endl;
+    t << "<div class=\"contents\">" << endl;
+
+    t << "<div id=\"searchresults\"></div>" << endl;
+    t << "</div>" << endl;
+
+    if (generateTreeView)
+    {
+      t << "</div><!-- doc-contents -->" << endl;
+    }
+
+    writePageFooter(t,"Search","","");
+  }
+  QCString scriptName = Config_getString("HTML_OUTPUT")+"/search/search.js";
+  QFile sf(scriptName);
+  if (sf.open(IO_WriteOnly))
+  {
+    FTextStream t(&sf);
+    t << "var searchResultsText=["
+      << "\"" << theTranslator->trSearchResults(0) << "\","
+      << "\"" << theTranslator->trSearchResults(1) << "\","
+      << "\"" << theTranslator->trSearchResults(2) << "\"];" << endl;
+    t << "var serverUrl=\"" << Config_getString("SEARCHENGINE_URL") << "\";" << endl;
+    t << "var tagMap = {" << endl;
+    // add standard tag file mappings
+    QDictIterator<QCString> it(Doxygen::tagDestinationDict);
+    QCString *dest;
+    bool first=TRUE;
+    for (it.toFirst();(dest=it.current());++it)
+    {
+      if (!first) t << "," << endl;
+      t << "  \"" << it.currentKey() << "\": \"" << *dest << "\"";
+      first=FALSE;
+    }
+    // add additional user specified mappings
+    QStrList &extraSearchMappings = Config_getList("EXTRA_SEARCH_MAPPINGS");
+    char *ml=extraSearchMappings.first();
+    while (ml)
+    {
+      QCString mapLine = ml;
+      int eqPos = mapLine.find('=');
+      if (eqPos!=-1) // tag command contains a destination
+      {
+        QCString tagName = mapLine.left(eqPos).stripWhiteSpace();
+        QCString destName = mapLine.right(mapLine.length()-eqPos-1).stripWhiteSpace();
+        if (!tagName.isEmpty() && Doxygen::tagDestinationDict.find(tagName)==0)
+        {
+          if (!first) t << "," << endl;
+          t << "  \"" << tagName << "\": \"" << destName << "\"";
+          first=FALSE;
+        }
+      }
+      ml=extraSearchMappings.next();
+    }
+    if (!first) t << endl;
+    t << "};" << endl << endl;
+    t << extsearch_script;
+    t << endl;
+    t << "$(document).ready(function() {" << endl;
+    t << "  var query = trim(getURLParameter('query'));" << endl;
+    t << "  if (query) {" << endl;
+    t << "    searchFor(query,0,20);" << endl;
+    t << "  } else {" << endl;
+    t << "    var results = $('#results');" << endl;
+    t << "    results.html('<p>" << theTranslator->trSearchResults(0) << "</p>');" << endl;
+    t << "  }" << endl;
+    t << "});" << endl;
+  }
+  else
+  {
+     err("Failed to open file '%s' for writing...\n",scriptName.data());
+  }
 }
 
 void HtmlGenerator::startConstraintList(const char *header)
@@ -3282,5 +3380,21 @@ void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritI
     t << " inherit " << inheritId;
   }
   t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
+}
+
+void HtmlGenerator::setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile)
+{
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(context,anchor,isSourceFile);
+  }
+}
+
+void HtmlGenerator::addWord(const char *word,bool hiPriority)
+{
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->addWord(word,hiPriority);
+  }
 }
 

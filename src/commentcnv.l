@@ -183,16 +183,16 @@ static void startCondSection(const char *sectId)
   CondParser prs;
   bool expResult = prs.parse(g_fileName,g_lineNr,sectId);
   g_condStack.push(new CondCtx(g_lineNr,sectId,g_skip));
-  if (guardType == Guard_Cond)
+  if (guardType == Guard_Cond) // found @cond
   {
-    if (expResult)
+    if (!expResult) // not enabled
     {
       g_skip=TRUE;
     }
   }
-  else if (guardType == Guard_CondNot)
+  else if (guardType == Guard_CondNot) // found @notcond
   {
-    if (!expResult)
+    if (expResult) // enabled
     {
       g_skip=TRUE;
     }
@@ -294,7 +294,7 @@ void replaceComment(int offset);
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
-<Scan>("//!"|"///").*/\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+<Scan>("//!"|"///")/.*\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
   				     if (g_mlBrief) 
 				     {
 				       REJECT; // bail out if we do not need to convert
@@ -310,7 +310,9 @@ void replaceComment(int offset);
 				       copyToOutput("/**",3); 
 				       replaceAliases(yytext+i);
 				       g_inSpecialComment=TRUE;
-				       BEGIN(SComment); 
+				       //BEGIN(SComment); 
+				       g_readLineCtx=SComment;
+				       BEGIN(ReadLine);
 				     }
                                    }
 <Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
@@ -323,6 +325,7 @@ void replaceComment(int offset);
 				     BEGIN(SComment);
   				   }
 <Scan>"//"/.*\n	                   { /* one line C++ comment */ 
+				     g_inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yytext,(int)yyleng); 
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
@@ -679,11 +682,6 @@ void replaceComment(int offset);
                                      guardType = Guard_Cond;
   				     BEGIN(CondLine);
   				   }
-<CComment,ReadLine>[\\@]"condnot"[ \t]+	   { // conditional section
-  				     g_condCtx = YY_START; 
-                                     guardType = Guard_CondNot;
-  				     BEGIN(CondLine);
-  				   }
 <CComment,ReadLine>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
   				     bool oldSkip=g_skip;
   				     endCondSection();
@@ -706,9 +704,9 @@ void replaceComment(int offset);
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
   				     bool oldSkip=g_skip;
                                      startCondSection(yytext);
-				     if (g_condCtx==CComment && !oldSkip && g_skip) 
+				     if ((g_condCtx==CComment || g_readLineCtx==SComment) && 
+                                         !oldSkip && g_skip) 
     			             {
-				       //printf("** Adding terminator for comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
 					   g_lang!=SrcLangExt_VHDL &&
 					   g_lang!=SrcLangExt_Fortran)
@@ -717,7 +715,14 @@ void replaceComment(int offset);
      				         ADDCHAR('/');
 				       }
     				     }
-  				     BEGIN(g_condCtx);
+                                     if (g_readLineCtx==SComment)
+                                     {
+                                       BEGIN(SComment);
+                                     }
+                                     else
+                                     {
+  				       BEGIN(g_condCtx);
+                                     }
   				   }
 <CondLine>[ \t]*
 <CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
@@ -726,7 +731,8 @@ void replaceComment(int offset);
   				     if (YY_START!=CondLine) g_condCtx=YY_START;
   				     bool oldSkip=g_skip;
   				     startCondSection(" "); // fake section id causing the section to be hidden unconditionally
-				     if (g_condCtx==CComment && !oldSkip && g_skip) 
+				     if ((g_condCtx==CComment || g_readLineCtx==SComment) && 
+                                         !oldSkip && g_skip) 
     			             {
 				       //printf("** Adding terminator for comment!\n");
 				       if (g_lang!=SrcLangExt_Python &&
@@ -737,7 +743,14 @@ void replaceComment(int offset);
 				       }
     				     }
 				     if (*yytext=='\n') g_lineNr++;
-				     BEGIN(g_condCtx);
+                                     if (g_readLineCtx==SComment)
+                                     {
+                                       BEGIN(SComment);
+                                     }
+                                     else
+                                     {
+  				       BEGIN(g_condCtx);
+                                     }
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
 				     replaceAliases(yytext);
@@ -804,7 +817,7 @@ void replaceComment(int offset);
 
 void replaceComment(int offset)
 {
-  if (g_mlBrief)
+  if (g_mlBrief || g_skip)
   {
     copyToOutput(yytext,(int)yyleng);
   }
