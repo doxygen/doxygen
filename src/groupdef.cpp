@@ -439,7 +439,6 @@ void GroupDef::removeMember(MemberDef *md)
     if( mni->isEmpty() )
     {
       allMemberNameInfoSDict->remove(md->name());
-      delete mni;
     }
 
     removeMemberFromList(MemberListType_allMembersList,md);

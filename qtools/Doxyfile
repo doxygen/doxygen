@@ -184,9 +184,9 @@ MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        = http://cdn.mathjax.org/mathjax/latest
 MATHJAX_EXTENSIONS     =
 SEARCHENGINE           = YES
-SERVER_BASED_SEARCH    = YES
-EXTERNAL_SEARCH        = YES
-SEARCHENGINE_URL       = http://macbookpro/~dimitri/doxysearch.cgi
+SERVER_BASED_SEARCH    = NO
+EXTERNAL_SEARCH        = NO
+SEARCHENGINE_URL       = 
 SEARCHDATA_FILE        = searchdata.xml
 EXTRA_SEARCH_MAPPINGS  =
 #---------------------------------------------------------------------------
