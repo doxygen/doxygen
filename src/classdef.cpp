@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2206,7 +2206,7 @@ void ClassDef::writeMemberList(OutputList &ol)
               ol.parseText(" "+theTranslator->trEnumValue());
             else if (md->isTypedef())
               ol.docify(" typedef");
-            else if (md->isFriend() && !strcmp(md->typeString(),"friend class"))
+            else if (md->isFriend() && !qstrcmp(md->typeString(),"friend class"))
               ol.docify(" class");
             //ol.writeString("\n");
           }
@@ -2574,8 +2574,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
   //printf("isBaseClass(cd=%s) looking for %s\n",name().data(),bcd->name().data());
   if (level>256)
   {
-    err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(name()),qPrint(bcd->name()));
-    abort();
+    err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
     return FALSE;
   }
   if (baseClasses())
@@ -2592,6 +2591,31 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
         found=TRUE;
       else 
         found=ccd->isBaseClass(bcd,followInstances,level+1);
+    }
+  }
+  return found;
+}
+
+//----------------------------------------------------------------------
+
+bool ClassDef::isSubClass(ClassDef *cd,int level)
+{
+  bool found=FALSE;
+  if (level>256)
+  {
+    err("Possible recursive class relation while inside %s and looking for derived class %s\n",qPrint(name()),qPrint(cd->name()));
+    return FALSE;
+  }
+  if (subClasses())
+  {
+    BaseClassListIterator bcli(*subClasses());
+    for ( ; bcli.current() && !found ; ++bcli)
+    {
+      ClassDef *ccd=bcli.current()->classDef;
+      if (ccd==cd) 
+        found=TRUE;
+      else 
+        found=ccd->isSubClass(cd,level+1);
     }
   }
   return found;

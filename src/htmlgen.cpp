@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -804,7 +804,7 @@ static void writeImgData(const char *dir,img_data_item *data)
     if (f.open(IO_WriteOnly))
     {
       f.writeBlock((char*)data->content,
-                    data->len>0 ? data->len : strlen((char*)data->content));
+                    data->len>0 ? data->len : qstrlen((char*)data->content));
     }
     else
     {
@@ -912,18 +912,18 @@ QCString substitute(const char *s,const char *src,const char *dst)
 {
   if (s==0 || src==0) return s;
   const char *p, *q;
-  int srcLen = strlen(src);
-  int dstLen = dst ? strlen(dst) : 0;
+  int srcLen = qstrlen(src);
+  int dstLen = dst ? qstrlen(dst) : 0;
   int resLen;
   if (srcLen!=dstLen)
   {
     int count;
     for (count=0, p=s; (q=strstr(p,src))!=0; p=q+srcLen) count++;
-    resLen = (int)(p-s)+strlen(p)+count*(dstLen-srcLen);
+    resLen = (int)(p-s)+qstrlen(p)+count*(dstLen-srcLen);
   }
   else // result has same size as s
   {
-    resLen = strlen(s);
+    resLen = qstrlen(s);
   }
   QCString result(resLen+1);
   char *r;
@@ -935,7 +935,7 @@ QCString substitute(const char *s,const char *src,const char *dst)
     if (dst) memcpy(r,dst,dstLen);
     r+=dstLen;
   }
-  strcpy(r,p);
+  qstrcpy(r,p);
   //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
@@ -946,8 +946,8 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
 {
   if (s==0 || begin==0 || end==0) return s;
   const char *p, *q;
-  int beginLen = strlen(begin);
-  int endLen = strlen(end);
+  int beginLen = qstrlen(begin);
+  int endLen = qstrlen(end);
   int resLen = 0;
   for (p=s; (q=strstr(p,begin))!=0; p=q+endLen)
   {
@@ -959,7 +959,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
       break;
     }
   }
-  resLen+=strlen(p);
+  resLen+=qstrlen(p);
   // resLen is the length of the string without the marked block
 
   QCString result(resLen+1);
@@ -977,7 +977,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
       break;
     }
   }
-  strcpy(r,p);
+  qstrcpy(r,p);
   return result;
 }
 //----------------------------------------------------------------------
@@ -1098,7 +1098,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
   extraCssFile = Config_getString("HTML_EXTRA_STYLESHEET");
   if (!extraCssFile.isEmpty())
   {
-    extraCssText = "<link href=\"$relpath$"+stripPath(extraCssFile)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+    extraCssText = "<link href=\"$relpath^"+stripPath(extraCssFile)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   }
 
   if (timeStamp) {
@@ -1110,9 +1110,9 @@ static QCString substituteHtmlKeywords(const QCString &s,
 
   if (treeView)
   {
-    treeViewCssJs = "<link href=\"$relpath$navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
-                    "<script type=\"text/javascript\" src=\"$relpath$resize.js\"></script>\n"
-                    "<script type=\"text/javascript\" src=\"$relpath$navtree.js\"></script>\n"
+    treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
+                    "<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n"
                     "<script type=\"text/javascript\">\n"
                     "  $(document).ready(initResizable);\n"
                     "  $(window).load(resizeHeight);\n"
@@ -1121,8 +1121,8 @@ static QCString substituteHtmlKeywords(const QCString &s,
 
   if (searchEngine)
   {
-    searchCssJs = "<link href=\"$relpath$search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
-    searchCssJs += "<script type=\"text/javascript\" src=\"$relpath$search/search.js\"></script>\n";
+    searchCssJs = "<link href=\"$relpath^search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+    searchCssJs += "<script type=\"text/javascript\" src=\"$relpath^search/search.js\"></script>\n";
 
     if (!serverBasedSearch) 
     {
@@ -1196,7 +1196,8 @@ static QCString substituteHtmlKeywords(const QCString &s,
   result = substitute(result,"$mathjax",mathJaxJs);
   result = substitute(result,"$generatedby",generatedBy);
   result = substitute(result,"$extrastylesheet",extraCssText);
-  result = substitute(result,"$relpath$",relPath); //<-- must be last
+  result = substitute(result,"$relpath$",relPath); //<-- obsolete: for backwards compatibility only
+  result = substitute(result,"$relpath^",relPath); //<-- must be last
   
   // additional HTML only conditional blocks
   result = selectBlock(result,"DISABLE_INDEX",disableIndex);
@@ -1361,7 +1362,7 @@ void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
   m_t << ">";
   docify(name);
   m_t << "</a>";
-  m_col+=strlen(name);
+  m_col+=qstrlen(name);
 }
 
 void HtmlCodeGenerator::startCodeLine(bool hasLineNumbers) 
@@ -2926,7 +2927,7 @@ void HtmlGenerator::writeSplitBar(const char *name)
 
 void HtmlGenerator::writeNavigationPath(const char *s)
 {
-  t << substitute(s,"$relpath$",relPath);
+  t << substitute(s,"$relpath^",relPath);
 }
 
 void HtmlGenerator::startContents()
@@ -3108,17 +3109,8 @@ void HtmlGenerator::writeExternalSearchPage()
       << "\"" << theTranslator->trSearchResults(2) << "\"];" << endl;
     t << "var serverUrl=\"" << Config_getString("SEARCHENGINE_URL") << "\";" << endl;
     t << "var tagMap = {" << endl;
-    // add standard tag file mappings
-    QDictIterator<QCString> it(Doxygen::tagDestinationDict);
-    QCString *dest;
     bool first=TRUE;
-    for (it.toFirst();(dest=it.current());++it)
-    {
-      if (!first) t << "," << endl;
-      t << "  \"" << it.currentKey() << "\": \"" << *dest << "\"";
-      first=FALSE;
-    }
-    // add additional user specified mappings
+    // add search mappings
     QStrList &extraSearchMappings = Config_getList("EXTRA_SEARCH_MAPPINGS");
     char *ml=extraSearchMappings.first();
     while (ml)
@@ -3129,7 +3121,7 @@ void HtmlGenerator::writeExternalSearchPage()
       {
         QCString tagName = mapLine.left(eqPos).stripWhiteSpace();
         QCString destName = mapLine.right(mapLine.length()-eqPos-1).stripWhiteSpace();
-        if (!tagName.isEmpty() && Doxygen::tagDestinationDict.find(tagName)==0)
+        if (!tagName.isEmpty())
         {
           if (!first) t << "," << endl;
           t << "  \"" << tagName << "\": \"" << destName << "\"";

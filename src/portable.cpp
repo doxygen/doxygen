@@ -190,15 +190,15 @@ void portable_setenv(const char *name,const char *value)
 #else
     register char **ep = 0;
     register size_t size;
-    const size_t namelen=strlen(name);
-    const size_t vallen=strlen(value) + 1;
+    const size_t namelen=qstrlen(name);
+    const size_t vallen=qstrlen(value) + 1;
 
     size = 0;
     if (environ!=0)
     {
       for (ep = environ; *ep; ++ep)
       {
-        if (!strncmp (*ep, name, (uint)namelen) &&
+        if (!qstrncmp (*ep, name, (uint)namelen) &&
             (*ep)[namelen] == '=')
           break;
         else
@@ -244,7 +244,7 @@ void portable_setenv(const char *name,const char *value)
     }
     else /* replace existing string */
     {
-      size_t len = strlen (*ep);
+      size_t len = qstrlen (*ep);
       if (len + 1 < namelen + 1 + vallen)
       {
         /* The existing string is too short; malloc a new one.  */
@@ -277,12 +277,12 @@ void portable_unsetenv(const char *variable)
       return; // not properly formatted
     }
 
-    len = strlen(variable);
+    len = qstrlen(variable);
 
     ep = environ;
     while (*ep != NULL)
     {
-      if (!strncmp(*ep, variable, (uint)len) && (*ep)[len]=='=')
+      if (!qstrncmp(*ep, variable, (uint)len) && (*ep)[len]=='=')
       {
         /* Found it.  Remove this pointer by moving later ones back.  */
         char **dp = ep;
@@ -304,7 +304,9 @@ const char *portable_getenv(const char *variable)
 
 portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence)
 {
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(__MINGW32__)
+  return fseeko64(f,offset,whence);
+#elif defined(_WIN32) && !defined(__CYGWIN__)
   return _fseeki64(f,offset,whence);
 #else
   return fseeko(f,offset,whence);
@@ -313,7 +315,9 @@ portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence)
 
 portable_off_t portable_ftell(FILE *f)
 {
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(__MINGW32__)
+  return ftello64(f);  
+#elif defined(_WIN32) && !defined(__CYGWIN__)
   return _ftelli64(f);
 #else
   return ftello(f);

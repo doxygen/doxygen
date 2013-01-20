@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -102,7 +102,7 @@ int FileName::compareItems(QCollection::Item item1, QCollection::Item item2)
 {
   FileName *f1=(FileName *)item1;
   FileName *f2=(FileName *)item2;
-  return stricmp(f1->fileName(),f2->fileName());
+  return qstricmp(f1->fileName(),f2->fileName());
 }
 
 FileNameIterator::FileNameIterator(const FileName &fname) :
@@ -135,8 +135,8 @@ int FileNameList::compareItems(QCollection::Item item1, QCollection::Item item2)
   //printf("FileNameList::compareItems `%s'<->`%s'\n",
   //    f1->fileName(),f2->fileName());
   return Config_getBool("FULL_PATH_NAMES") ?
-         stricmp(f1->fullName(),f2->fullName()) :
-         stricmp(f1->fileName(),f2->fileName());
+         qstricmp(f1->fullName(),f2->fullName()) :
+         qstricmp(f1->fileName(),f2->fileName());
 }
 
 FileNameListIterator::FileNameListIterator(const FileNameList &fnlist) :

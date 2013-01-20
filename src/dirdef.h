@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -161,7 +161,7 @@ class DirRelation
 
 inline int DirList::compareItems(QCollection::Item item1,QCollection::Item item2)
 {
-  return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
+  return qstricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
 }
 
 /** A sorted dictionary of DirDef objects. */
@@ -171,7 +171,7 @@ class DirSDict : public SDict<DirDef>
     DirSDict(int size) : SDict<DirDef>(size) {}
     int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
-      return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
+      return qstricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
     }
 };
 

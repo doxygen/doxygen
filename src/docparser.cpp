@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1517,6 +1517,39 @@ handlepara:
   return TRUE;
 }
 
+//---------------------------------------------------------------------------
+
+static int handleDocCopy(DocNode *parent,QList<DocNode> &children)
+{
+  int tok=doctokenizerYYlex();
+  int cmdId = Mappers::cmdMapper->map(g_token->name);
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
+        qPrint(g_token->name));
+    return 0;
+  }
+  tok=doctokenizerYYlex();
+  if (tok==0)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
+        "argument of command %s\n", qPrint(g_token->name));
+    return 0;
+  }
+  else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
+        tokToString(tok),qPrint(g_token->name));
+    return 0;
+  }
+  DocCopy *cpy = new DocCopy(parent,g_token->name,
+      cmdId==CMD_COPYDOC || cmdId==CMD_COPYBRIEF,
+      cmdId==CMD_COPYDOC || cmdId==CMD_COPYDETAILS);
+  cpy->parse(children);
+  delete cpy;
+  return 0;
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -1686,6 +1719,10 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
     else
     {
       delete par;
+    }
+    if (retval==RetVal_CopyDoc)
+    {
+      retval=handleDocCopy(parent,children);
     }
   } while (retval==TK_NEWPARA);
   if (lastPar) lastPar->markLast();
@@ -3163,6 +3200,10 @@ int DocInternal::parse(int level)
     if (retval==TK_LISTITEM)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Invalid list item found",doctokenizerYYlineno);
+    }
+    else if (retval==RetVal_CopyDoc)
+    {
+      retval=handleDocCopy(this,m_children);
     }
   } while (retval!=0 && 
            retval!=RetVal_Section &&
@@ -5460,7 +5501,6 @@ int DocPara::handleCommand(const QCString &cmdName)
         m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: msc section ended without end marker");
         doctokenizerYYsetStatePara();
-        VhdlDocGen::createFlowChart(g_memberDef);
       }
       break;
     case CMD_ENDCODE:
@@ -5522,34 +5562,7 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_COPYDOC:   // fall through
     case CMD_COPYBRIEF: // fall through
     case CMD_COPYDETAILS:
-      {
-        int tok=doctokenizerYYlex();
-        if (tok!=TK_WHITESPACE)
-        {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
-              qPrint(cmdName));
-          break;
-        }
-        tok=doctokenizerYYlex();
-        if (tok==0)
-        {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected end of comment block while parsing the "
-              "argument of command %s\n", qPrint(cmdName));
-          break;
-        }
-        else if (tok!=TK_WORD && tok!=TK_LNKWORD)
-        {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
-              tokToString(tok),qPrint(cmdName));
-          break;
-        }
-        DocCopy *cpy = new DocCopy(this,g_token->name,
-            cmdId==CMD_COPYDOC || cmdId==CMD_COPYBRIEF,
-            cmdId==CMD_COPYDOC || cmdId==CMD_COPYDETAILS);
-        //m_children.append(cpy);
-        cpy->parse(m_children);
-        delete cpy;
-      }
+      retval = RetVal_CopyDoc;
       break;
     case CMD_INCLUDE:
       handleInclude(cmdName,DocInclude::Include);
@@ -6442,7 +6455,7 @@ reparsetoken:
           }
 
           // handle the command
-          retval=handleCommand(g_token->name.copy());
+          retval=handleCommand(g_token->name);
           DBG(("handleCommand returns %x\n",retval));
 
           // check the return value
@@ -6613,12 +6626,16 @@ int DocSection::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Invalid list item found");
     }
+    else if (retval==RetVal_CopyDoc)
+    {
+      retval=handleDocCopy(this,m_children);
+    }
   } while (retval!=0 && 
            retval!=RetVal_Internal      &&
            retval!=RetVal_Section       &&
            retval!=RetVal_Subsection    &&
            retval!=RetVal_Subsubsection &&
-           retval!=RetVal_Paragraph    
+           retval!=RetVal_Paragraph 
           );
 
   if (lastPar) lastPar->markLast();
@@ -6828,6 +6845,10 @@ void DocRoot::parse()
     else if (retval==RetVal_Paragraph)
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: found paragraph command outside of subsubsection context!");
+    }
+    else if (retval==RetVal_CopyDoc)
+    {
+      retval=handleDocCopy(this,m_children);
     }
   } while (retval!=0 && retval!=RetVal_Section && retval!=RetVal_Internal);
   if (lastPar) lastPar->markLast();

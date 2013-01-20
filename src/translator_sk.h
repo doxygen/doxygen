@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1172,7 +1172,7 @@ class TranslatorSlovak : public Translator
     /*! Used as ansicpg for RTF fcharset */
     virtual QCString trRTFCharSet()
     {
-      return "3";
+      return "238";
     }
 
     /*! Used as header RTF general index */

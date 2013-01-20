@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -573,7 +573,7 @@ static bool readSVGSize(const QCString &fileName,int *width,int *height)
     if (numBytes>0)
     {
       buf[numBytes]='\0';
-      if (strncmp(buf,"<!--zoomable ",13)==0)
+      if (qstrncmp(buf,"<!--zoomable ",13)==0)
       {
         *width=-1;
         *height=-1;
@@ -771,7 +771,7 @@ class DotNodeList : public QList<DotNode>
    ~DotNodeList() {}
    int compareItems(QCollection::Item item1,QCollection::Item item2)
    {
-     return stricmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
+     return qstricmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
    }
 };
 

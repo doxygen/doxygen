@@ -1,7 +1,7 @@
 #
 # 
 #
-# Copyright (C) 1997-2012 by Dimitri van Heesch.
+# Copyright (C) 1997-2013 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -26,7 +26,7 @@ win32-msvc:TMAKE_LFLAGS    += /LIBPATH:..\lib
 win32-borland:LIBS         += qtools.lib md5.lib doxygen.lib doxycfg.lib shell32.lib iconv.lib
 win32-borland:TMAKE_LFLAGS += -L..\lib -L$(BCB)\lib\psdk
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
-win32-g++:LIBS             = -L../lib -ldoxygen -ldoxycfg -lqtools -lmd5 -liconv -lpthread
+win32-g++:LIBS             = -L../lib -ldoxygen -ldoxycfg -lqtools -lmd5 -liconv -lpthread -Wl,--as-needed -lole32
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
 INCLUDEPATH                += ../qtools ../libmd5 .
 DESTDIR                    =  ../bin

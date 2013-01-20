@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -414,7 +414,7 @@ struct SearchDocEntry
   QCString type;
   QCString name;
   QCString args;
-  QCString tagFile;
+  QCString extId;
   QCString url; 
   GrowBuf  importantText;
   GrowBuf  normalText;
@@ -519,11 +519,11 @@ static QCString definitionToName(Definition *ctx)
 
 void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile)
 {
-  QCString tagFile = stripPath(Config_getString("GENERATE_TAGFILE"));
+  QCString extId = stripPath(Config_getString("EXTERNAL_SEARCH_ID"));
   QCString baseName = isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = baseName + Doxygen::htmlFileExtension;
   if (anchor) url+=QCString("#")+anchor;
-  QCString key = tagFile+";"+url;
+  QCString key = extId+";"+url;
 
   p->current = p->docEntries.find(key);
   if (!p->current)
@@ -535,7 +535,7 @@ void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool 
     {
       e->args = ((MemberDef*)ctx)->argsString();
     }
-    e->tagFile = tagFile;
+    e->extId = extId;
     e->url  = url;
     p->current = e;
     p->docEntries.append(key,e);
@@ -573,9 +573,9 @@ void SearchIndexExternal::write(const char *fileName)
       {
         t << "    <field name=\"args\">"     << convertToXML(doc->args) << "</field>" << endl;
       }
-      if (!doc->tagFile.isEmpty())
+      if (!doc->extId.isEmpty())
       {
-        t << "    <field name=\"tag\">"      << convertToXML(doc->tagFile)  << "</field>" << endl;
+        t << "    <field name=\"tag\">"      << convertToXML(doc->extId)  << "</field>" << endl;
       }
       t << "    <field name=\"url\">"      << convertToXML(doc->url)  << "</field>" << endl;
       t << "    <field name=\"keywords\">" << convertToXML(doc->importantText.get())  << "</field>" << endl;
@@ -649,7 +649,7 @@ class SearchIndexList : public SDict< QList<Definition> >
       QList<Definition> *md2=(QList<Definition> *)item2;
       QCString n1 = md1->first()->localName();
       QCString n2 = md2->first()->localName();
-      return stricmp(n1.data(),n2.data());
+      return qstricmp(n1.data(),n2.data());
     }
 };
 

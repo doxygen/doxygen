@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -3263,11 +3263,16 @@ static void buildFunctionList(EntryNav *rootNav)
             // in case of template functions, we need to check if the
             // functions have the same number of template parameters
             bool sameNumTemplateArgs = TRUE;
+            bool matchingReturnTypes = TRUE;
             if (mdTempl!=0 && root->tArgLists)
             {
               if (mdTempl->count()!=root->tArgLists->getLast()->count())
               {
                 sameNumTemplateArgs = FALSE;
+              }
+              if (md->typeString()!=removeRedundantWhiteSpace(root->type))
+              {
+                matchingReturnTypes = FALSE;
               }
             }
 
@@ -3279,6 +3284,7 @@ static void buildFunctionList(EntryNav *rootNav)
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
                                 FALSE) &&
                 sameNumTemplateArgs && 
+                matchingReturnTypes &&
                 !staticsInDifferentFiles
                )
             {
@@ -4517,10 +4523,22 @@ static bool findClassRelation(
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",usedName.data(),templSpec.data());
             }
-            if (Config_getBool("SIP_SUPPORT")) bi->prot=Public;
-            cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
-            // add this class as super class to the base class
-            baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+            static bool sipSupport = Config_getBool("SIP_SUPPORT");
+            if (sipSupport) bi->prot=Public;
+            if (!cd->isSubClass(baseClass)) // check for recursion, see bug690787
+            {
+              cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
+              // add this class as super class to the base class
+              baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+            }
+            else
+            {
+              warn(root->fileName,root->startLine,
+                  "Detected potential recursive class relation "
+                  "between class %s and base class %s!",
+                  cd->name().data(),baseClass->name().data()
+                  );
+            }
           }
           return TRUE;
         }
@@ -5131,6 +5149,7 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
 
 static bool findGlobalMember(EntryNav *rootNav, 
                            const QCString &namespaceName,
+                           const char *type,
                            const char *name, 
                            const char *tempArg,
                            const char *, 
@@ -5138,8 +5157,8 @@ static bool findGlobalMember(EntryNav *rootNav,
 {
   Entry *root = rootNav->entry();
   Debug::print(Debug::FindMembers,0,
-       "2. findGlobalMember(namespace=%s,name=%s,tempArg=%s,decl=%s)\n",
-          namespaceName.data(),name,tempArg,decl);
+       "2. findGlobalMember(namespace=%s,type=%s,name=%s,tempArg=%s,decl=%s)\n",
+          namespaceName.data(),type,name,tempArg,decl);
   QCString n=name;
   if (n.isEmpty()) return FALSE;
   if (n.find("::")!=-1) return FALSE; // skip undefined class members
@@ -5150,7 +5169,7 @@ static bool findGlobalMember(EntryNav *rootNav,
   }
   if (mn) // function name defined
   {
-    Debug::print(Debug::FindMembers,0,"3. Found function scope\n");
+    Debug::print(Debug::FindMembers,0,"3. Found symbol scope\n");
     //int count=0;
     MemberNameIterator mni(*mn);
     MemberDef *md;
@@ -5222,6 +5241,19 @@ static bool findGlobalMember(EntryNav *rootNav,
           matching = FALSE;
         }
 
+        // for template member we also need to check the return type
+        if (md->templateArguments()!=0 && root->tArgLists!=0)
+        {
+          //printf("Comparing return types '%s'<->'%s'\n",
+          //    md->typeString(),type);
+          if (md->templateArguments()->count()!=root->tArgLists->last()->count() ||
+              qstrcmp(md->typeString(),type)!=0)
+          {
+            //printf(" ---> no matching\n");
+            matching = FALSE;
+          }
+        }
+
         if (matching) // add docs to the member
         {
           Debug::print(Debug::FindMembers,0,"5. Match found\n");
@@ -5260,7 +5292,7 @@ static bool findGlobalMember(EntryNav *rootNav,
        )
     {
       warn(root->fileName,root->startLine,
-           "warning: documented function `%s' was not declared or defined.",decl
+           "warning: documented symbol `%s' was not declared or defined.",decl
           );
     }
   }
@@ -5847,6 +5879,21 @@ static void findMember(EntryNav *rootNav,
                 matching = FALSE; // don't match methods and attributes with the same name
               }
 
+              // for template member we also need to check the return type
+              if (md->templateArguments()!=0 && root->tArgLists!=0)
+              {
+                //printf("Comparing return types '%s'<->'%s' args %d<->%d\n",
+                //    md->typeString(),funcType.data(),
+                //    md->templateArguments()->count(),root->tArgLists->last()->count());
+                if (md->templateArguments()->count()!=root->tArgLists->last()->count() ||
+                    qstrcmp(md->typeString(),funcType))
+                {
+                  //printf(" ---> no matching\n");
+                  matching = FALSE;
+                }
+              }
+
+
               Debug::print(Debug::FindMembers,0,
                   "6. match results of matchArguments2 = %d\n",matching);
 
@@ -6131,7 +6178,7 @@ static void findMember(EntryNav *rootNav,
       }
       else // unrelated function with the same name as a member
       {
-        if (!findGlobalMember(rootNav,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
+        if (!findGlobalMember(rootNav,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl))
         {
           QCString fullFuncDecl=funcDecl.copy();
           if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -6338,7 +6385,7 @@ static void findMember(EntryNav *rootNav,
         }
         if (root->relatesType == Duplicate)
         {
-          if (!findGlobalMember(rootNav,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
+          if (!findGlobalMember(rootNav,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl))
           {
             QCString fullFuncDecl=funcDecl.copy();
             if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -6412,7 +6459,7 @@ localObjCMethod:
     }
     else // unrelated not overloaded member found
     {
-      bool globMem = findGlobalMember(rootNav,namespaceName,funcName,funcTempList,funcArgs,funcDecl);
+      bool globMem = findGlobalMember(rootNav,namespaceName,funcType,funcName,funcTempList,funcArgs,funcDecl);
       if (className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
@@ -6927,6 +6974,17 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                   fmd->setAnchor();
                   md->insertEnumField(fmd);
                   fmd->setEnumScope(md);
+                  MemberName *mn=mnsd->find(root->name);
+                  if (mn)
+                  {
+                    mn->append(fmd);
+                  }
+                  else 
+                  {
+                    mn = new MemberName(root->name);
+                    mn->append(fmd);
+                    mnsd->append(root->name,mn);
+                  }
                 }
                 e->releaseEntry();
               }
@@ -8573,7 +8631,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
       {
         msg("\n\nConfiguration file `%s' created.\n\n",configFile);
         msg("Now edit the configuration file and enter\n\n");
-        if (strcmp(configFile,"Doxyfile") || strcmp(configFile,"doxyfile"))
+        if (qstrcmp(configFile,"Doxyfile") || qstrcmp(configFile,"doxyfile"))
           msg("  doxygen %s\n\n",configFile);
         else
           msg("  doxygen\n\n");
@@ -8730,7 +8788,15 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
     QCString fileName=*s;
     QCString extension;
     int ei = fileName.findRev('.');
-    if (ei!=-1) extension=fileName.right(fileName.length()-ei);
+    if (ei!=-1)
+    {
+      extension=fileName.right(fileName.length()-ei);
+    }
+    else
+    {
+      extension = ".no_extension";
+    }
+
     ParserInterface *parser = Doxygen::parserManager->getParser(extension);
 
     QFileInfo fi(fileName);
@@ -9223,7 +9289,7 @@ void dumpConfigAsXML()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2012\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2013\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -9255,7 +9321,7 @@ static void usage(const char *name)
 static const char *getArg(int argc,char **argv,int &optind)
 {
   char *s=0;
-  if (strlen(&argv[optind][2])>0)
+  if (qstrlen(&argv[optind][2])>0)
     s=&argv[optind][2];
   else if (optind+1<argc && argv[optind+1][0]!='-')
     s=argv[++optind];
@@ -9434,7 +9500,7 @@ void readConfiguration(int argc, char **argv)
       case 'g':
         genConfig=TRUE;
         configName=getArg(argc,argv,optind);
-        if (strcmp(argv[optind+1],"-")==0)
+        if (optind+1<argc && qstrcmp(argv[optind+1],"-")==0)
         { configName="-"; optind++; }
         if (!configName) 
         { configName="Doxyfile"; }
@@ -9463,7 +9529,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
-        if (stricmp(formatName,"rtf")==0)
+        if (qstricmp(formatName,"rtf")==0)
         {
           if (optind+1>=argc)
           {
@@ -9491,7 +9557,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         } 
-        if (stricmp(formatName,"rtf")==0)
+        if (qstricmp(formatName,"rtf")==0)
         {
           if (optind+1>=argc)
           {
@@ -9507,7 +9573,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
-        else if (stricmp(formatName,"html")==0)
+        else if (qstricmp(formatName,"html")==0)
         {
           if (optind+4<argc || QFileInfo("Doxyfile").exists())
           {
@@ -9561,7 +9627,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
-        else if (stricmp(formatName,"latex")==0)
+        else if (qstricmp(formatName,"latex")==0)
         {
           if (optind+4<argc) // use config file to get settings
           {
@@ -9624,11 +9690,11 @@ void readConfiguration(int argc, char **argv)
         g_dumpConfigAsXML = TRUE;
         break;
       case '-':
-        if (strcmp(&argv[optind][2],"help")==0)
+        if (qstrcmp(&argv[optind][2],"help")==0)
         {
           usage(argv[0]);
         }
-        else if (strcmp(&argv[optind][2],"version")==0)
+        else if (qstrcmp(&argv[optind][2],"version")==0)
         {
           msg("%s\n",versionString); 
           cleanUpDoxygen();
@@ -9699,7 +9765,7 @@ void readConfiguration(int argc, char **argv)
   else
   {
     QFileInfo fi(argv[optind]);
-    if (fi.exists() || strcmp(argv[optind],"-")==0)
+    if (fi.exists() || qstrcmp(argv[optind],"-")==0)
     {
       configName=argv[optind];
     }
@@ -10060,9 +10126,10 @@ void parseInput()
   int cacheSize = Config_getInt("SYMBOL_CACHE_SIZE");
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
-  Doxygen::symbolCache   = new ObjCache(16+cacheSize); // 16 -> room for 65536 elements, 
-                                                       //       ~2.0 MByte "overhead"
+  //Doxygen::symbolCache   = new ObjCache(16+cacheSize); // 16 -> room for 65536 elements, 
+  //                                                     //       ~2.0 MByte "overhead"
   //Doxygen::symbolCache   = new ObjCache(1);  // only to stress test cache behaviour
+  Doxygen::symbolCache   = 0; //disable cache
   Doxygen::symbolStorage = new Store;
 
   // also scale lookup cache with SYMBOL_CACHE_SIZE

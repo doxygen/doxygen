@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -335,7 +335,62 @@ class Translator
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
+
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
+     * <pre>
+     * Codepage number:
+     * Charset Name       Charset Value(hex)  Codepage number
+     * ------------------------------------------------------
+     * DEFAULT_CHARSET           1 (x01)
+     * SYMBOL_CHARSET            2 (x02)
+     * OEM_CHARSET             255 (xFF)
+     * ANSI_CHARSET              0 (x00)            1252
+     * RUSSIAN_CHARSET         204 (xCC)            1251
+     * EE_CHARSET              238 (xEE)            1250
+     * GREEK_CHARSET           161 (xA1)            1253
+     * TURKISH_CHARSET         162 (xA2)            1254
+     * BALTIC_CHARSET          186 (xBA)            1257
+     * HEBREW_CHARSET          177 (xB1)            1255
+     * ARABIC _CHARSET         178 (xB2)            1256
+     * SHIFTJIS_CHARSET        128 (x80)             932
+     * HANGEUL_CHARSET         129 (x81)             949
+     * GB2313_CHARSET          134 (x86)             936
+     * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
+     *
+     */
     virtual QCString trRTFansicp() = 0;
+
+    /*! Character sets
+     *  <pre>
+     *   0 — ANSI
+     *   1 — Default
+     *   2 — Symbol
+     *   3 — Invalid
+     *  77 — Mac
+     * 128 — Shift Jis
+     * 129 — Hangul
+     * 130 — Johab
+     * 134 — GB2312
+     * 136 — Big5
+     * 161 — Greek
+     * 162 — Turkish
+     * 163 — Vietnamese
+     * 177 — Hebrew
+     * 178 — Arabic
+     * 179 — Arabic Traditional
+     * 180 — Arabic user
+     * 181 — Hebrew user
+     * 186 — Baltic
+     * 204 — Russian
+     * 222 — Thai
+     * 238 — Eastern European
+     * 254 — PC 437
+     * 255 — OEM 
+     * </pre>
+     */
     virtual QCString trRTFCharSet() = 0;
     virtual QCString trRTFGeneralIndex() = 0;
    

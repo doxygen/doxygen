@@ -1,8 +1,8 @@
-/******************************************************************************
+e******************************************************************************
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -115,6 +115,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_extension_mapping EXTENSION_MAPPING
 \refitem cfg_external_groups EXTERNAL_GROUPS
 \refitem cfg_external_search EXTERNAL_SEARCH
+\refitem cfg_external_search_id EXTERNAL_SEARCH_ID
 \refitem cfg_extra_packages EXTRA_PACKAGES
 \refitem cfg_extra_search_mappings EXTRA_SEARCH_MAPPINGS
 \refitem cfg_extract_all EXTRACT_ALL
@@ -623,9 +624,13 @@ followed by the descriptions of the tags grouped by category.
  Doxygen has a built-in mapping, but you can override or extend it using this tag.
  The format is ext=language, where ext is a file extension, and language is one of
  the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,
- Objective-C, Python, Fortran, VHDL. For instance to make doxygen treat
+ Objective-C, Python, Fortran, VHDL. 
+
+ For instance to make doxygen treat
  .inc files as Fortran files (default is PHP), and .f files as C (default is Fortran),
- use: inc=Fortran f=C
+ use: `inc=Fortran f=C`.
+
+ For files without extension you can use `no_extension` as a placeholder.
 
 \anchor cfg_subgrouping
 <dt>\c SUBGROUPING <dd>
@@ -1388,10 +1393,10 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  <dt><code>\$mathjax</code><dd>will be replaced with a links to 
             the javascript and style sheets needed for the MathJax feature 
             (or an empty string when \ref cfg_use_mathjax "USE_MATHJAX" is disabled).
- <dt><code>\$relpath\$</code><dd>
- If \c CREATE_SUBDIRS is enabled, the command <code>\$relpath\$</code> can be 
+ <dt><code>\$relpath^</code><dd>
+ If \c CREATE_SUBDIRS is enabled, the command <code>\$relpath^</code> can be 
  used to produce a relative path to the root of the HTML output directory,
- e.g. use \$relpath\$doxygen.css, to refer to the standard style sheet.
+ e.g. use \$relpath^doxygen.css, to refer to the standard style sheet.
  </dl>
 
  To cope with differences in the layout of the header and footer that depend on 
@@ -1515,7 +1520,7 @@ hr.footer {
  The \c HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
  other source files which should be copied to the HTML output directory. Note 
  that these files will be copied to the base HTML output directory. Use the 
- $relpath$ marker in the \c HTML_HEADER and/or \c HTML_FOOTER files to load these 
+ $relpath^ marker in the \c HTML_HEADER and/or \c HTML_FOOTER files to load these 
  files. In the \c HTML_STYLESHEET file, use the file name only. Also note that 
  the files will be copied as-is; there are no commands or markers available.
 
@@ -1943,18 +1948,27 @@ search data is written to a file for indexing by an external tool. With the
 \c SEARCHDATA_FILE tag the name of this file can be specified.
 The default is searchdata.xml.
 
+\anchor cfg_external_search_id 
+<dt>\c EXTERNAL_SEARCH_ID <dd>
+ \addindex EXTERNAL_SEARCH_ID
+
+When \c SERVER_BASED_SEARCH AND \c EXTERNAL_SEARCH are both enabled the 
+\c EXTERNAL_SEARCH_ID tag can be used as an identifier for the project. This is 
+useful in combination with \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" 
+to search through multiple projects and redirect the results back to the right project.
+
 \anchor cfg_extra_search_mappings
 <dt>\c EXTRA_SEARCH_MAPPINGS <dd>
  \addindex EXTRA_SEARCH_MAPPINGS
 
-The \c EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through other 
-doxygen projects that are not otherwise connected via tags files, but are 
-all added to the same search index. Each project needs to have a tag file set 
-via \ref cfg_generate_tagfile "GENERATE_TAGFILE". The search mapping then 
-maps the name of tag file to a relative location where the documentation 
-can be found, similar to the \ref cfg_tagfiles "TAGFILES" option but without 
-actually processing the tag file. The format is: 
+The \c EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through doxygen 
+projects other than the one defined by this configuration file, but that are 
+all added to the same external search index. Each project needs to have a 
+unique id set via \ref cfg_external_search_id "EXTERNAL_SEARCH_ID". 
+The search mapping then maps the id of to a relative location where the 
+documentation can be found. 
 
+The format is: 
 \verbatim
 EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... 
 \endverbatim

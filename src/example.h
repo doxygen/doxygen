@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -40,7 +40,7 @@ class ExampleSDict : public SDict<Example>
    ~ExampleSDict() {}
     int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
-      return stricmp(((Example *)item1)->name,((Example *)item2)->name);
+      return qstricmp(((Example *)item1)->name,((Example *)item2)->name);
     }
 };
 

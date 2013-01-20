@@ -579,8 +579,8 @@ int FilePairDict::compareItems(QCollection::Item item1,QCollection::Item item2)
 {
   FilePair *left  = (FilePair*)item1;
   FilePair *right = (FilePair*)item2;
-  int orderHi = stricmp(left->source()->name(),right->source()->name());
-  int orderLo = stricmp(left->destination()->name(),right->destination()->name());
+  int orderHi = qstricmp(left->source()->name(),right->source()->name());
+  int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
   return orderHi==0 ? orderLo : orderHi;
 }
 
@@ -629,7 +629,7 @@ bool DirDef::matchPath(const QCString &path,QStrList &l)
   while (s)
   {
     QCString prefix = s;
-    if (stricmp(prefix.left(path.length()),path)==0) // case insensitive compare
+    if (qstricmp(prefix.left(path.length()),path)==0) // case insensitive compare
     {
       return TRUE;
     }
@@ -785,7 +785,7 @@ static void computeCommonDirPrefix()
           QCString dirName = dir->name();
           if (dirName.length()>path.length())
           {
-            if (strncmp(dirName,path,l)!=0) // dirName does not start with path
+            if (qstrncmp(dirName,path,l)!=0) // dirName does not start with path
             {
               int i=path.findRev('/',l-2);
               if (i==-1) // no unique prefix -> stop

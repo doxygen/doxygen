@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -96,7 +96,8 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
 QCString LayoutNavEntry::url() const
 {
   QCString url = baseFile().stripWhiteSpace();
-  if (kind()!=LayoutNavEntry::User)
+  if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) || 
+      (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
   {
     url+=Doxygen::htmlFileExtension;
   }
@@ -1073,7 +1074,14 @@ class LayoutParser : public QXmlDefaultHandler
       }
       else if (kind==LayoutNavEntry::UserGroup)
       {
-        baseFile+=QCString().sprintf("%d",m_userGroupCount++);
+        if (!url.isEmpty())
+        {
+          baseFile=url;
+        }
+        else
+        {
+          baseFile+=QCString().sprintf("%d",m_userGroupCount++);
+        }
       }
       // create new item and make it the new root
       m_rootNav = new LayoutNavEntry(m_rootNav,kind,kind==LayoutNavEntry::MainPage?TRUE:isVisible,baseFile,title,intro);

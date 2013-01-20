@@ -1723,16 +1723,22 @@ void addConfigOptions(Config *cfg)
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("SEARCHENGINE");
   //----
+  cs = cfg->addString(
+                 "EXTERNAL_SEARCH_ID",
+                 "When SERVER_BASED_SEARCH AND EXTERNAL_SEARCH are both enabled the\n"
+                 "EXTERNAL_SEARCH_ID tag can be used as an identifier for the project. This is\n"
+                 "useful in combination with EXTRA_SEARCH_MAPPINGS to search through multiple\n"
+                 "projects and redirect the results back to the right project."
+                );
+  //----
   cl = cfg->addList(
                  "EXTRA_SEARCH_MAPPINGS",
-                 "The EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through other\n"
-                 "doxygen projects that are not otherwise connected via tags files, but are\n"
-                 "all added to the same search index. Each project needs to have a tag file set\n"
-                 "via GENERATE_TAGFILE. The search mapping then maps the name of the tag file\n"
-                 "to a relative location where the documentation can be found,\n"
-                 "similar to the\n"
-                 "TAGFILES option but without actually processing the tag file.\n"
-                 "The format is: EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ..."
+                 "The EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through doxygen\n"
+                 "projects other than the one defined by this configuration file, but that are\n"
+                 "all added to the same external search index. Each project needs to have a\n"
+                 "unique id set via EXTERNAL_SEARCH_ID. The search mapping then maps the id\n"
+                 "of to a relative location where the documentation can be found.\n"
+                 "The format is: EXTRA_SEARCH_MAPPINGS = id1=loc1 id2=loc2 ..."
                 );
   cl->addDependency("SEARCHENGINE");
   //---------------------------------------------------------------------------

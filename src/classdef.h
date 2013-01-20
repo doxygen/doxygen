@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -184,6 +184,11 @@ class ClassDef : public Definition
      *  inheritance tree.
      */
     bool isBaseClass(ClassDef *bcd,bool followInstances,int level=0);
+
+    /** Returns TRUE iff \a bcd is a direct or indirect sub class of this
+     *  class.
+     */
+    bool isSubClass(ClassDef *bcd,int level=0);
 
     /** returns TRUE iff \a md is a member of this class or of the
      *  the public/protected members of a base class 
@@ -501,7 +506,7 @@ class BaseClassList : public QList<BaseClassDef>
       if (c1==0 || c2==0) 
         return FALSE;
       else
-        return stricmp(c1->name(),c2->name());
+        return qstricmp(c1->name(),c2->name());
     }
 };
 

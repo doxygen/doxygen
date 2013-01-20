@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -983,12 +983,12 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2012";
+  //t << "Dimitri van Heesch \\copyright~1997-2013";
   writeDefaultStyleSheetPart2(t);
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2012";
+  //t << "Dimitri van Heesch \\copyright~1997-2013";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -1658,7 +1658,7 @@ void LatexGenerator::writeCodeLink(const char *ref,const char *f,
 {
   static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
-  int l = strlen(name);
+  int l = qstrlen(name);
   if (col+l>80)
   {
     t << "\n      ";
@@ -2433,7 +2433,7 @@ void LatexGenerator::escapeLabelName(const char *s)
   if (s==0) return;
   const char *p=s;
   char c;
-  QCString result(strlen(s)+1); // worst case allocation
+  QCString result(qstrlen(s)+1); // worst case allocation
   int i;
   while ((c=*p++))
   {
@@ -2462,7 +2462,7 @@ void LatexGenerator::escapeMakeIndexChars(const char *s)
   if (s==0) return;
   const char *p=s;
   char c;
-  QCString result(strlen(s)+1); // worst case allocation
+  QCString result(qstrlen(s)+1); // worst case allocation
   int i;
   while ((c=*p++))
   {

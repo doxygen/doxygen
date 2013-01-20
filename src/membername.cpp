@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -39,9 +39,9 @@ int MemberName::compareItems(QCollection::Item item1, QCollection::Item item2)
   FileDef  *f1=m1->getFileDef();
   FileDef  *f2=m2->getFileDef();
   if (c1 && c2)
-    return strcmp(c1->name(),c2->name());
+    return qstrcmp(c1->name(),c2->name());
   else if (f1 && f2)
-    return strcmp(f1->name(),f2->name());
+    return qstrcmp(f1->name(),f2->name());
   else 
     return 0;
 }
@@ -61,9 +61,9 @@ int MemberNameInfo::compareItems(QCollection::Item item1, QCollection::Item item
   FileDef  *f1=m1->memberDef->getFileDef();
   FileDef  *f2=m2->memberDef->getFileDef();
   if (c1 && c2)
-    return strcmp(c1->name(),c2->name());
+    return qstrcmp(c1->name(),c2->name());
   else if (f1 && f2)
-    return strcmp(f1->name(),f2->name());
+    return qstrcmp(f1->name(),f2->name());
   else 
     return 0;
 }
@@ -76,7 +76,7 @@ int MemberNameSDict::compareItems(QCollection::Item item1, QCollection::Item ite
 {
   MemberName *n1=(MemberName *)item1;
   MemberName *n2=(MemberName *)item2;
-  return stricmp(n1->memberName()+getPrefixIndex(n1->memberName()),
+  return qstricmp(n1->memberName()+getPrefixIndex(n1->memberName()),
                  n2->memberName()+getPrefixIndex(n2->memberName())
                 );
 }

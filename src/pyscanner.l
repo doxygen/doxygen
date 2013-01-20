@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1155,36 +1155,38 @@ STARTDOCSYMS      "##"
 <VariableDec>{
    "="                { // the assignment operator
                         //printf("====== VariableDec at line %d\n",yyLineNr);
+			current->initializer = yytext;
+			current->initializer += " ";
                       }
    {B}                { // spaces
 	              }
    {INTNUMBER}	      { // integer value
 			current->type = "int";
-			current->initializer = yytext;
+			current->initializer += yytext;
 			BEGIN(VariableEnd);
 		      }
    {FLOATNUMBER}      { // floating point value
 			current->type = "float";
-			current->initializer = yytext;
+			current->initializer += yytext;
 			BEGIN(VariableEnd);
 		      }
    {STRINGPREFIX}?"'" { // string
 			current->type = "string";
-			current->initializer = yytext;
+			current->initializer += yytext;
 			g_copyString=&current->initializer;
        			g_stringContext=VariableEnd;
                         BEGIN( SingleQuoteString );
      		      }
    {STRINGPREFIX}?"\"" { // string
 			current->type = "string";
-			current->initializer = yytext;
+			current->initializer += yytext;
 			g_copyString=&current->initializer;
        			g_stringContext=VariableEnd;
                         BEGIN( DoubleQuoteString );
      		      }
    {TRIDOUBLEQUOTE}   { // start of a comment block
 			current->type = "string";
-			current->initializer = yytext;
+			current->initializer += yytext;
 			g_doubleQuote=TRUE;
 			g_copyString=&current->initializer;
        			g_stringContext=VariableEnd;
@@ -1193,7 +1195,7 @@ STARTDOCSYMS      "##"
 
    {TRISINGLEQUOTE}   { // start of a comment block
 			current->type = "string";
-			current->initializer = yytext;
+			current->initializer += yytext;
 			g_doubleQuote=FALSE;
 			g_copyString=&current->initializer;
        			g_stringContext=VariableEnd;

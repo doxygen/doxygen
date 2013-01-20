@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -278,7 +278,7 @@ static QCString stripFromPath(const QCString &path,QStrList &l)
   {
     QCString prefix = s;
     if (prefix.length() > length &&
-        stricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
+        qstricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
       length = prefix.length();
       potential = path.right(path.length()-prefix.length());
@@ -2449,8 +2449,8 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   if (cd==bcd) return level; 
   if (level==256)
   {
-    err("error: Internal inconsistency: found class %s seem to have a recursive "
-        "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
+    err("warning: class %s seem to have a recursive "
+        "inheritance relation!\n",cd->name().data());
     return -1;
   }
   int m=maxInheritanceDepth; 
@@ -2889,11 +2889,11 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   stripIrrelevantConstVolatile(dstAType);
 
   // strip typename keyword
-  if (strncmp(srcAType,"typename ",9)==0)
+  if (qstrncmp(srcAType,"typename ",9)==0)
   {
     srcAType = srcAType.right(srcAType.length()-9); 
   }
-  if (strncmp(dstAType,"typename ",9)==0)
+  if (qstrncmp(dstAType,"typename ",9)==0)
   {
     dstAType = dstAType.right(dstAType.length()-9); 
   }
@@ -3802,7 +3802,7 @@ static void findMembersWithSpecificName(MemberName *mn,
     {
       bool match=TRUE;
       ArgumentList *argList=0;
-      if (args && !md->isDefine() && strcmp(args,"()")!=0)
+      if (args && !md->isDefine() && qstrcmp(args,"()")!=0)
       {
         argList=new ArgumentList;
         LockingPtr<ArgumentList> mdAl = md->argumentList();
@@ -3964,7 +3964,7 @@ bool getDefs(const QCString &scName,
         {
           delete argList; argList=0;
         }
-        if (mdist==maxInheritanceDepth && args && strcmp(args,"()")==0)
+        if (mdist==maxInheritanceDepth && args && qstrcmp(args,"()")==0)
           // no exact match found, but if args="()" an arbitrary member will do
         {
           //printf("  >Searching for arbitrary member\n");
@@ -4022,7 +4022,7 @@ bool getDefs(const QCString &scName,
     MemberListIterator mmli(*mn);
     MemberDef *mmd, *fuzzy_mmd = 0;
     ArgumentList *argList = 0;
-    bool hasEmptyArgs = args && strcmp(args, "()") == 0;
+    bool hasEmptyArgs = args && qstrcmp(args, "()") == 0;
 
     if (args)
       stringToArgumentList(args, argList = new ArgumentList);
@@ -4098,7 +4098,7 @@ bool getDefs(const QCString &scName,
           { // namespace is found
             bool match=TRUE;
             ArgumentList *argList=0;
-            if (args && strcmp(args,"()")!=0)
+            if (args && qstrcmp(args,"()")!=0)
             {
               argList=new ArgumentList;
               LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
@@ -4120,7 +4120,7 @@ bool getDefs(const QCString &scName,
             }
           }
         }
-        if (!found && args && !strcmp(args,"()")) 
+        if (!found && args && !qstrcmp(args,"()")) 
           // no exact match found, but if args="()" an arbitrary 
           // member will do
         {
@@ -4171,7 +4171,7 @@ bool getDefs(const QCString &scName,
         findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,forceTagFile,members);
       }
       //printf("found %d members\n",members.count());
-      if (members.count()!=1 && args && !strcmp(args,"()"))
+      if (members.count()!=1 && args && !qstrcmp(args,"()"))
       {
         // no exact match found, but if args="()" an arbitrary 
         // member will do
@@ -4295,10 +4295,18 @@ bool resolveRef(/* in */  const char *scName,
     bool checkScope
     )
 {
+  //printf("resolveRef(scope=%s,name=%s,inSeeBlock=%d)\n",scName,name,inSeeBlock);
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
-  fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
+  if (fullName.find("anonymous_namespace{")==-1)
+  {
+    fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
+  }
+  else
+  {
+    fullName = removeRedundantWhiteSpace(fullName);
+  }
 
   int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
   int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
@@ -4559,6 +4567,7 @@ bool resolveLink(/* in */ const char *scName,
   ClassDef *cd;
   DirDef   *dir;
   NamespaceDef *nd;
+  SectionInfo *si=0;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
   {
@@ -4569,7 +4578,6 @@ bool resolveLink(/* in */ const char *scName,
     GroupDef *gd = pd->getGroupDef();
     if (gd)
     {
-      SectionInfo *si=0;
       if (!pd->name().isEmpty()) si=Doxygen::sectionDict->find(pd->name());
       *resContext=gd;
       if (si) resAnchor = si->label;
@@ -4578,6 +4586,12 @@ bool resolveLink(/* in */ const char *scName,
     {
       *resContext=pd;
     }
+    return TRUE;
+  }
+  else if ((si=Doxygen::sectionDict->find(linkRef)))
+  {
+    *resContext=si->definition;
+    resAnchor = si->label;
     return TRUE;
   }
   else if ((pd=Doxygen::exampleSDict->find(linkRef))) // link to an example

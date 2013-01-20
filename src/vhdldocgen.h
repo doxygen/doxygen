@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -116,8 +116,8 @@ class VhdlDocGen
     static MemberDef* findFunction(const QList<Argument> &ql,
                                    const QCString& name,
                                    const QCString& package, bool type);
-    static bool compareString(const QCString& s1,
-                              const QCString& s2);
+    static int compareString(const QCString& s1,
+                             const QCString& s2);
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
@@ -259,11 +259,12 @@ class VhdlDocGen
     static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
 };
 
+//#define DEBUGFLOW
 
-class FlowNode
+class FlowChart
 {
   public:
-    enum nodeType {
+    enum nodeTypes {
       IF_NO        = 1<<1,
       ELSIF_NO     = 1<<2,
       ELSE_NO      = 1<<3,
@@ -282,9 +283,9 @@ class FlowNode
       RETURN_NO    = 1<<16,
       LOOP_NO      = 1<<17,
       NEXT_NO      = 1<<18,
-      EXIT_WHEN_NO = 1<<19,
-      NEXT_WHEN_NO = 1<<20,
-      EMPTY_NO     = 1<<21
+      EMPTY_NO     = 1<<19,
+      COMMENT_NO   = 1<<20,
+      BEGIN_NO     = 1<<21
     };
 
     //---------- create svg ------------------------------------------------------------- 
@@ -292,52 +293,49 @@ class FlowNode
     static void startDot(FTextStream &t);
     static void endDot(FTextStream &t);
     static void codify(FTextStream &t,const char *str);
-    static void writeShape(FTextStream &t,const FlowNode* fl);
-    static void writeEdge(FTextStream &t,int fl_from,int fl_to,int i);
-    static void writeEdge(FTextStream &t,const FlowNode* fl_from,const FlowNode* fl_to,int i);
-    //static void writeEndNode(FTextStream &t,const FlowNode* fl);
+    static void writeShape(FTextStream &t,const FlowChart* fl);
+    static void writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
+    static void writeEdge(FTextStream &t,const FlowChart* fl_from,const FlowChart* fl_to,int i);
     static void writeFlowLinks(FTextStream &t);
-    //static void writeStartNode(FTextStream &t,const FlowNode* fl);
-    static void checkNode(int);
-    static void checkNode(const FlowNode*);
 
     static QCString getNodeName(int n);
     static void colTextNodes();
 
-    static int getTextLink(const FlowNode* fl,uint index);
-    static int getNoLink(const FlowNode*,uint);
-    static int getNextNode(int);
+    static int getNextTextLink(const FlowChart* fl,uint index);
+    static int getNextIfLink(const FlowChart*,uint);
+    static int getNextNode(int,int);
     static int findNode(int index,int stamp,int type);
     static int findNode(int index,int type);
     static int findNextLoop(int j,int stamp);
-    static int findPrevLoop(int j,int stamp);
+    static int findPrevLoop(int j,int stamp,bool endif=FALSE);
     static int findLabel(int j,QCString &);
     static void delFlowList();
     static const char* getNodeType(int c);
 
-    static void addFlowNode(int type,const char* text,const char* exp,const char * label=NULL);
+    static void addFlowChart(int type,const char* text,const char* exp,const char * label=NULL);
     static void moveToPrevLevel();
-    static void printFlowList();
-    static void setLabel(const char* text);
     static int getTimeStamp();
-    static void printNodeList();
-    static void writeFlowNode();
+    static void writeFlowChart();
     static void alignFuncProc(QCString & q,const ArgumentList*  al,bool isFunc);
     static QCString convertNameToFileName();
+    static void printNode(const FlowChart* n);
+    static void printFlowTree();
+    static void buildCommentNodes(FTextStream &t);
+    static void alignCommentNode(FTextStream &t,QCString com);
 
-    static QList<FlowNode>  flowList;
-    static int ifcounter;
-    static int nodeCounter;
-    static int imageCounter;
-    static int caseCounter;
+    static QList<FlowChart> flowList;
 
-    FlowNode(int typ,const char*  t,const char* ex,const char* label=NULL);
-    ~FlowNode();
+    FlowChart(int typ,const char*  t,const char* ex,const char* label=0);
+    ~FlowChart();
 
 private:
     int id;
     int stamp;
     int type;
+
+#ifdef DEBUGFLOW  
+    int line;
+#endif
 
     QCString label;
     QCString text;

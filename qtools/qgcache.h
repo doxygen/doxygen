@@ -114,7 +114,7 @@ protected:
     QCollection::Item get() const;
     QString	      getKeyString() const;
     const char       *getKeyAscii()  const;
-    long	      getKeyInt()    const;
+    intptr_t	      getKeyInt()    const;
 
     QCollection::Item operator()();
     QCollection::Item operator++();

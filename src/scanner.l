@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -216,6 +216,9 @@ static void initParser()
   insideCode=FALSE;
   insideCli=Config_getBool("CPP_CLI_SUPPORT");
   previous = 0;
+  firstTypedefEntry = 0;
+  tempEntry = 0;
+  memspecEntry =0;
 }
 
 static void initEntry()
@@ -1198,7 +1201,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    roundCount=1;
 					    BEGIN( SkipRound );
 					  }
-					  else if (strncmp(yytext,"@property",9)==0) // ObjC 2.0 property
+					  else if (qstrncmp(yytext,"@property",9)==0) // ObjC 2.0 property
 					  {
   					    current->mtype = mtype = Property;
 					    current->spec|=Entry::Readable | Entry::Writable | Entry::Assign;
@@ -1255,17 +1258,17 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    // skip annotation
 					  }
-					  else if (strcmp(yytext,"@property")==0) // ObjC 2.0 property
+					  else if (qstrcmp(yytext,"@property")==0) // ObjC 2.0 property
 					  {
   					    current->mtype = mtype = Property;
 					    current->spec|=Entry::Writable | Entry::Readable;
 					    current->protection = Public ;
 					  }
-					  else if (strcmp(yytext,"@synthesize")==0)
+					  else if (qstrcmp(yytext,"@synthesize")==0)
 					  {
 					    BEGIN( ObjCSkipStatement );
 					  }
-					  else if (strcmp(yytext,"@dynamic")==0)
+					  else if (qstrcmp(yytext,"@dynamic")==0)
 					  {
 					    BEGIN( ObjCSkipStatement );
 					  }
@@ -2091,56 +2094,56 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 			 	        }
 <FindMembers,FindMemberName>{SCOPENAME}	{
 					  lineCount();
-                                          if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
+                                          if (insideIDL && yyleng==9 && qstrcmp(yytext,"cpp_quote")==0)
 					  {
 					    BEGIN(CppQuote);
 					  }
-					  else if ((insideIDL || insideJava || insideD) && yyleng==6 && strcmp(yytext,"import")==0)
+					  else if ((insideIDL || insideJava || insideD) && yyleng==6 && qstrcmp(yytext,"import")==0)
 					  {
 					    if (insideIDL)
 					      BEGIN(NextSemi);
 					    else // insideJava or insideD
 					      BEGIN(JavaImport);
 					  }
-					  else if (insidePHP && strcmp(yytext,"use")==0)
+					  else if (insidePHP && qstrcmp(yytext,"use")==0)
 					  {
 					    BEGIN(PHPUse);
 					  }
-					  else if (insideJava && strcmp(yytext,"package")==0)
+					  else if (insideJava && qstrcmp(yytext,"package")==0)
 					  {
   					    lineCount();
 					    BEGIN(PackageName);
 					  }
-					  else if (insideIDL && strcmp(yytext,"case")==0)
+					  else if (insideIDL && qstrcmp(yytext,"case")==0)
 					  {
 					    BEGIN(IDLUnionCase);
 					  }
-					  else if (insideTryBlock && strcmp(yytext,"catch")==0)
+					  else if (insideTryBlock && qstrcmp(yytext,"catch")==0)
 					  {
 					    insideTryBlock=FALSE;
 					    BEGIN(TryFunctionBlock);
 					  }
-					  else if (insideJS && strcmp(yytext,"var")==0)
+					  else if (insideJS && qstrcmp(yytext,"var")==0)
 					  { // javascript variable
 					    current->type="var";
 					  }
-					  else if (insideJS && strcmp(yytext,"function")==0)
+					  else if (insideJS && qstrcmp(yytext,"function")==0)
 					  { // javascript function
 					    current->type="function";
 					  }
-					  else if (insideCS && strcmp(yytext,"this")==0)
+					  else if (insideCS && qstrcmp(yytext,"this")==0)
 					  {
 					    // C# indexer
 					    addType( current ) ;
 					    current->name="this";
 					    BEGIN(CSIndexer);
 					  }
-                                          else if (insideCpp && strcmp(yytext,"static_assert")==0)
+                                          else if (insideCpp && qstrcmp(yytext,"static_assert")==0)
                                           {
                                             // C++11 static_assert
                                             BEGIN(StaticAssert);
                                           }
-                                          else if (insideCpp && strcmp(yytext,"decltype")==0)
+                                          else if (insideCpp && qstrcmp(yytext,"decltype")==0)
                                           {
                                             // C++11 decltype(x)
 					    current->type+=yytext;
@@ -2153,23 +2156,23 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      addType( current ) ;
 					    }
 					    bool javaLike = insideJava || insideCS || insideD || insidePHP || insideJS;
-					    if (javaLike && strcmp(yytext,"public")==0)
+					    if (javaLike && qstrcmp(yytext,"public")==0)
 					    {
 					      current->protection = Public;
 					    }
-					    else if (javaLike && strcmp(yytext,"protected")==0)
+					    else if (javaLike && qstrcmp(yytext,"protected")==0)
 					    {
 					      current->protection = Protected;
 					    }
-					    else if (javaLike && strcmp(yytext,"internal")==0)
+					    else if (javaLike && qstrcmp(yytext,"internal")==0)
 					    {
 					      current->protection = Package;
 					    }
-					    else if (javaLike && strcmp(yytext,"private")==0)
+					    else if (javaLike && qstrcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
 					    }
-					    else if (javaLike && strcmp(yytext,"static")==0)
+					    else if (javaLike && qstrcmp(yytext,"static")==0)
 					    {
 					      if (YY_START==FindMembers)
 					        current->name  = yytext;
@@ -4264,7 +4267,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
   */
 <FuncQual>[{:;,]                        {
-                                          if ( strcmp(yytext,";")==0 && 
+                                          if ( qstrcmp(yytext,";")==0 && 
 					       insidePHP && 
 					       !containsWord(current->type,"function") )
                                           {
@@ -4446,7 +4449,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           lineCount();
   					}
 <FuncQual>{ID}				{ // typically a K&R style C function
-                                          if (insideCS && strcmp(yytext,"where")==0)
+                                          if (insideCS && qstrcmp(yytext,"where")==0)
 					  { 
 					    // type contraint for a method
                                             delete current->typeConstr;
@@ -4979,6 +4982,12 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                             current->name = yytext;
                                             current->name=current->name.left(current->name.length()-1).stripWhiteSpace();
                                             //printf("template class declaration for %s!\n",current->name.data());
+					    QCString rn = current_root->name.copy();
+					    //printf("cn=`%s' rn=`%s' isTypedef=%d\n",cn.data(),rn.data(),isTypedef);
+					    if (!current->name.isEmpty() && !rn.isEmpty())
+					    {
+					      prependScope();
+					    }
                                             current_root->addSubEntry(current);
                                             current = new Entry;
                                           }
@@ -5026,7 +5035,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  BEGIN( ClassVar );
                                         }
 <ClassVar>{SCOPENAME}{BN}*/"("		{
-  					  if (insideIDL && strncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
+  					  if (insideIDL && qstrncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
 					  {
 					    // Corba IDL style union
 					    roundCount=0;
@@ -5069,13 +5078,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					}
 <ClassVar>{ID}				{
-  					  if (insideIDL && strcmp(yytext,"switch")==0)
+  					  if (insideIDL && qstrcmp(yytext,"switch")==0)
 					  {
 					    // Corba IDL style union
 					    roundCount=0;
 					    BEGIN(SkipUnionSwitch);
 					  }
-					  else if ((insideJava || insidePHP || insideJS) && (strcmp(yytext,"implements")==0 || strcmp(yytext,"extends")==0))
+					  else if ((insideJava || insidePHP || insideJS) && (qstrcmp(yytext,"implements")==0 || qstrcmp(yytext,"extends")==0))
 					  {
   					    current->type.resize(0);
 					    baseProt=Public;
@@ -5083,7 +5092,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    baseName.resize(0);
 					    BEGIN( BasesProt ) ;
 					  }
-					  else if (insideCS && strcmp(yytext,"where")==0) // C# type contraint
+					  else if (insideCS && qstrcmp(yytext,"where")==0) // C# type contraint
 					  {
                                             delete current->typeConstr;
                                             current->typeConstr = new ArgumentList;
@@ -5091,15 +5100,15 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    lastCSConstraint = YY_START;
 					    BEGIN( CSConstraintName );
 					  }
-					  else if (insideCli &&  strcmp(yytext,"abstract")==0)
+					  else if (insideCli &&  qstrcmp(yytext,"abstract")==0)
 					  {
 					    current->spec|=Entry::Abstract;
 					  }
-					  else if (insideCli &&  strcmp(yytext,"sealed")==0)
+					  else if (insideCli &&  qstrcmp(yytext,"sealed")==0)
 					  {
 					    current->spec|=Entry::Sealed;
 					  }
-                                          else if (strcmp(yytext,"final")==0)
+                                          else if (qstrcmp(yytext,"final")==0)
                                           {
                                             current->spec|=Entry::Final;
                                           }

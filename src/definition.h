@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -364,7 +364,7 @@ class DefinitionList : public QList<Definition>, public DefinitionIntf
     DefType definitionType() const { return TypeSymbolList; }
     int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
-      return stricmp(((Definition *)item1)->name(),
+      return qstricmp(((Definition *)item1)->name(),
                      ((Definition *)item2)->name()
                     );
     }

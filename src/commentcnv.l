@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -88,6 +88,7 @@ static bool     g_pythonDocString;
 static GuardType        guardType;           // kind of guard for conditional section
 
 static SrcLangExt g_lang;
+static bool       isFixedForm; // For Fortran
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -270,8 +271,8 @@ void replaceComment(int offset);
 				       BEGIN(CComment);
 				     }
                                    }
-<Scan>"!>"|"!<"|"!!"		   {
-  			             if (g_lang!=SrcLangExt_Fortran)
+<Scan>![><!]/.*\n	   {
+                                     if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
 				     }
@@ -279,6 +280,52 @@ void replaceComment(int offset);
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
+				     }
+  				   }
+<Scan>[Cc\*][><!]/.*\n	   {
+                                     if (g_lang!=SrcLangExt_Fortran)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       /* check for fixed format; we might have some conditional as part of multilene if like C<5 .and. & */
+                                       if (isFixedForm && (g_col == 0))
+                                       {
+                                         copyToOutput(yytext,(int)yyleng); 
+				         BEGIN(CComment);
+				       }
+				       else
+				       {
+				         REJECT;
+				       }
+				     }
+  				   }
+<Scan>!.*\n		   {
+  			             if (g_lang!=SrcLangExt_Fortran)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       copyToOutput(yytext,(int)yyleng); 
+				     }
+                                   }
+<Scan>[Cc\*].*\n		   {
+  			             if (g_lang!=SrcLangExt_Fortran)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       if (g_col == 0)
+                                       {
+                                         copyToOutput(yytext,(int)yyleng); 
+				       }
+				       else
+				       {
+				         REJECT;
+				       }
 				     }
                                    }
 <Scan>"\""                         { /* start of a string */ 
@@ -294,7 +341,7 @@ void replaceComment(int offset);
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
-<Scan>("//!"|"///")/.*\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+<Scan>("//!"|"///"[/]*)/.*\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
   				     if (g_mlBrief) 
 				     {
 				       REJECT; // bail out if we do not need to convert
@@ -357,7 +404,7 @@ void replaceComment(int offset);
 				       BEGIN(CComment);
 				     }
   				   }
-<Scan>"!>"|"!<"|"!!"		   {
+<Scan>![><!]		           {
                                      if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
@@ -402,7 +449,7 @@ void replaceComment(int offset);
 				     g_lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }
-<Scan>.                            { /* any other character */
+<Scan>.                            { /* any ather character */
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
@@ -549,6 +596,11 @@ void replaceComment(int offset);
   				   }
 <CComment>\n                       { /* new line in comment */
                                      copyToOutput(yytext,(int)yyleng); 
+                                     /* in case of Fortran always end of comment */
+  				     if (g_lang==SrcLangExt_Fortran)
+				     {
+				       BEGIN(Scan);
+				     }
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
                                      if (g_lang==SrcLangExt_Python)
@@ -574,17 +626,6 @@ void replaceComment(int offset);
   				   }
 <CComment>"\n"/[ \t]*[^\-]	   { /* end of VHDL comment */
                                      if (g_lang!=SrcLangExt_VHDL)
-				     {
-				       REJECT;
-				     }
-				     else
-				     {
-				       copyToOutput(yytext,(int)yyleng);
-				       BEGIN(Scan);
-				     }
-  				   }
-<CComment>"\n"/[ \t]*[^!]	   { /* end of Fortran comment */
-  				     if (g_lang!=SrcLangExt_Fortran)
 				     {
 				       REJECT;
 				     }
@@ -839,6 +880,45 @@ void replaceComment(int offset)
   }
 }
 
+// simplified way to know if this is fixed form
+// duplicate in fortrancode.l
+static bool recognizeFixedForm(const char* contents)
+{
+  int column=0;
+  bool skipLine=FALSE;
+
+  for(int i=0;;i++) {
+    column++;
+
+    switch(contents[i]) {
+      case '\n':
+        column=0;
+        skipLine=FALSE;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return FALSE;
+      case 'C':
+      case 'c':
+      case '*':
+        if(column==1) return TRUE;
+        if(skipLine) break;
+        return FALSE;
+      case '!':
+        if(column>1 && column<7) return FALSE;
+        skipLine=TRUE;
+        break;
+      default:
+        if(skipLine) break;
+        if(column==7) return TRUE;
+        return FALSE;
+    }
+  }
+  return FALSE;
+}
+
+
 /*! This function does three things:
  *  -# It converts multi-line C++ style comment blocks (that are aligned)
  *     to C style comment blocks (if MULTILINE_CPP_IS_BRIEF is set to NO).
@@ -860,6 +940,13 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_lineNr   = 1;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
+
+  isFixedForm = FALSE;
+  if (g_lang==SrcLangExt_Fortran)
+  {
+    isFixedForm = recognizeFixedForm(inBuf->data());
+  }
+
   if (g_lang==SrcLangExt_Markdown)
   {
     BEGIN(CComment);

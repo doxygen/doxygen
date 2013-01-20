@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -50,7 +50,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
     int numBytes = f.readLine(buf,maxLineLen);
     buf[numBytes-1]='\0';
     //printf("ReadLine `%s'\n",buf);
-    if (strncmp(buf,"rect",4)==0)
+    if (qstrncmp(buf,"rect",4)==0)
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
       sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);

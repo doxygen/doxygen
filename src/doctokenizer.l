@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -353,7 +353,8 @@ TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\^\*\&\[\]]
 SCOPESEP  "::"|"#"|"."
 TEMPLPART "<"{TEMPCHAR}*">"
-SCOPEPRE  {ID}{TEMPLPART}?{SCOPESEP}
+ANONNS    "anonymous_namespace{"[^}]*"}"
+SCOPEPRE  (({ID}{TEMPLPART}?)|{ANONNS}){SCOPESEP}
 SCOPEKEYS ":"({ID}":")*
 SCOPECPP  {SCOPEPRE}*(~)?{ID}("<"{TEMPCHAR}*">")?
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
@@ -379,7 +380,7 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
-REFWORD2  ("#"|"::")?({ID}{TEMPLPART}?("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
+REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
 REFWORD3  ({ID}":")*{ID}":"?
 REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 
@@ -1091,13 +1092,13 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 				      BEGIN(St_SecSkip);
                                     }
 <St_SecSkip>{CMD}{ID}		    {
-                                      if (strcmp(yytext+1,g_endMarker)==0)
+                                      if (qstrcmp(yytext+1,g_endMarker)==0)
 				      {
 					BEGIN(St_Sections);
 				      }
                                     }
 <St_SecSkip>"-->"		    {
-                                      if (strcmp(yytext,g_endMarker)==0)
+                                      if (qstrcmp(yytext,g_endMarker)==0)
 				      {
 					BEGIN(St_Sections);
 				      }

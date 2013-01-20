@@ -1,3 +1,17 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
 
 /*********************************************************************************************
  * The original was a VHDL parser description to be used with GMD Compiler
@@ -121,7 +135,7 @@ static void addProto(const char *s1,const char *s2,const char *s3,
 static void createFunction(const QCString &impure,int spec,
                            const QCString &fname);
 
-static void createFlow(QCString s);    
+static void createFlow();    
 
 void newVhdlEntry()
 {
@@ -400,7 +414,7 @@ physical_literal_1   : /* empty */        { $$=""; }
 physical_literal_no_default : t_AbstractLit t_Identifier   { $$=$1+" "+$2; }
 
 idf_list : t_Identifier { $$=$1; }
-         | idf_list t_Comma t_Identifier { $$=$1+","+$3}
+         | idf_list t_Comma t_Identifier { $$=$1+","+$3; }
          ;
 
 /*------------------------------------------
@@ -487,7 +501,7 @@ entity_decl_2 : /* empty */  { $$=""; }
               | t_PORT { currP=VhdlDocGen::PORT; }  interf_list t_Semicolon  { currP=0; }
               ;
 entity_decl_1 :  /* empty */  { $$=""; }
-              | t_GENERIC { currP=VhdlDocGen::GENERIC;parse_sec=GEN_SEC} interf_list t_Semicolon{ currP=0;parse_sec=0; }
+              | t_GENERIC { currP=VhdlDocGen::GENERIC;parse_sec=GEN_SEC; } interf_list t_Semicolon{ currP=0;parse_sec=0; }
               | t_GENERIC error t_Semicolon{ currP=0; }
               ;
 
@@ -601,24 +615,24 @@ common_decltve_item_1: package_body
 common_decltve_item_1: subprogram_instantiation_decl
 
 
-common_decltve_item: type_decl{$$=$1;}
-common_decltve_item: subtype_decl{$$=$1;}
-common_decltve_item: constant_decl{  $$=$1;}
-common_decltve_item: file_decl{$$=$1;}
-common_decltve_item: alias_decl{$$=$1;}
-common_decltve_item: subprog_decl{$$=$1;}
-common_decltve_item: use_clause {$$=$1;}
+common_decltve_item: type_decl{ $$=$1; }
+common_decltve_item: subtype_decl{ $$=$1; }
+common_decltve_item: constant_decl{  $$=$1; }
+common_decltve_item: file_decl{ $$=$1; }
+common_decltve_item: alias_decl{ $$=$1; }
+common_decltve_item: subprog_decl{ $$=$1; }
+common_decltve_item: use_clause { $$=$1; }
 
-entity_decltve_item: common_decltve_item  {$$=$1;}
-entity_decltve_item: subprog_body {$$=$1;}
-entity_decltve_item: attribute_decl {$$=$1;}
-entity_decltve_item: attribute_spec {$$=$1;}
-entity_decltve_item: disconnection_spec {$$=$1;}
-entity_decltve_item: signal_decl {$$=$1;}
-entity_decltve_item: variable_decl {$$=$1;}
-entity_decltve_item: group_template_declaration {$$=$1;}
-entity_decltve_item: group_declaration {$$=$1;}
-entity_decltve_item: common_decltve_item_1 {$$="";}
+entity_decltve_item: common_decltve_item  { $$=$1; }
+entity_decltve_item: subprog_body { $$=$1; }
+entity_decltve_item: attribute_decl { $$=$1; }
+entity_decltve_item: attribute_spec { $$=$1; }
+entity_decltve_item: disconnection_spec { $$=$1; }
+entity_decltve_item: signal_decl { $$=$1; }
+entity_decltve_item: variable_decl { $$=$1; }
+entity_decltve_item: group_template_declaration { $$=$1; }
+entity_decltve_item: group_declaration { $$=$1; }
+entity_decltve_item: common_decltve_item_1 { $$=""; }
 
 
 block_decltve_item: common_decltve_item 
@@ -632,8 +646,8 @@ block_decltve_item: signal_decl
 block_decltve_item: variable_decl
 block_decltve_item: group_template_declaration
 block_decltve_item: group_declaration
-block_decltve_item: common_decltve_item_1 {$$="";}
-block_decltve_item: tool_directive {$$="";}
+block_decltve_item: common_decltve_item_1 { $$=""; }
+block_decltve_item: tool_directive { $$=""; }
 
 block_declarative_part: block_decltve_item
                       | block_declarative_part  block_decltve_item
@@ -661,16 +675,16 @@ package_body_decltve_item: attribute_decl
 package_body_decltve_item: attribute_spec
 package_body_decltve_item: common_decltve_item_1
 
-subprog_decltve_item: common_decltve_item {$$=$1;}
-subprog_decltve_item: subprog_body  {$$="";}
-subprog_decltve_item: attribute_decl {$$=$1;}
-subprog_decltve_item: attribute_spec {$$=$1;}
-subprog_decltve_item: variable_decl {$$=$1;}
+subprog_decltve_item: common_decltve_item { $$=$1; }
+subprog_decltve_item: subprog_body  { $$=""; }
+subprog_decltve_item: attribute_decl { $$=$1; }
+subprog_decltve_item: attribute_spec { $$=$1; }
+subprog_decltve_item: variable_decl { $$=$1; }
 subprog_decltve_item: group_template_declaration
-subprog_decltve_item: group_declaration {$$="";}
-subprog_decltve_item: common_decltve_item_1 {$$="";}
+subprog_decltve_item: group_declaration { $$=""; }
+subprog_decltve_item: common_decltve_item_1 { $$=""; }
 
-procs_decltve_item: subprog_decltve_item {$$=$1;}
+procs_decltve_item: subprog_decltve_item { $$=$1; }
 
 config_decltve_item: attribute_spec    { $$=$1; }
 config_decltve_item: use_clause        { $$=$1; }
@@ -736,11 +750,19 @@ subprog_spec_2: subprog_spec_22
 
 subprog_spec_1: subprog_spec_2
 
-subprog_body: subprog_spec t_IS  subprog_body_1 t_BEGIN   seq_stats t_END subprog_body_2 t_Semicolon
+subprog_body: subprog_spec t_IS subprog_body_1 
     {
-               tempEntry->endBodyLine=s_str.yyLineNr;
-               createFlow($3);    
-                currP=0;
+      if ($3.data())
+      {
+        FlowChart::addFlowChart(FlowChart::VARIABLE_NO,$3,0);
+      }
+      FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
+    } 
+    t_BEGIN seq_stats t_END subprog_body_2 t_Semicolon
+    {
+      tempEntry->endBodyLine=s_str.yyLineNr;
+      createFlow();    
+      currP=0;
     }
 subprog_body: subprog_spec t_IS error  t_END subprog_body_2 t_Semicolon
     {
@@ -754,11 +776,11 @@ subprog_body_2: t_PROCEDURE t_Identifier
 subprog_body_2: t_FUNCTION t_Identifier
 subprog_body_2: t_FUNCTION t_STRING
 
-subprog_body_1:  /* empty */ {$$="";}
+subprog_body_1:  /* empty */ { $$=""; }
 //subprog_body_1    :  subprogram_instantiation_decl
-subprog_body_1: subprog_body_1 subprog_body_3  {$$=$1+$2; }
+subprog_body_1: subprog_body_1 subprog_body_3  { $$=$1+$2; }
 
-subprog_body_3: subprog_decltve_item  {      $$=$1; }
+subprog_body_3: subprog_decltve_item  { $$=$1; }
                                                               
 /*--------------------------------------------------
 --  Interface Lists and Associaton Lists
@@ -881,19 +903,19 @@ shift_op: t_SLL { $$="sll"; }
         | t_ROR    { $$="ror"; }
         | t_ROL   { $$="rol"; }
         ;
-and_relation: relation shift_op relation {$$= $1+$2+$3; }
-and_relation: relation t_AND    relation  {$$= $1+" and "+$3; }
-and_relation: relation t_XOR    relation  {$$= $1+" xor "+$3; }
-and_relation: relation t_OR     relation  {$$= $1+" or "+$3; }
-and_relation: relation t_NOR    relation  {$$= $1+" nor "+$3; }
-and_relation: relation t_XNOR   relation  {$$= $1+"xnor"+$3; }
-and_relation: relation t_NAND   relation {$$= $1+"nand"+$3; }
-and_relation: and_relation t_NAND relation {$$= $1+"nand"+$3; }
-and_relation: and_relation t_NOR  relation{$$= $1+"nor"+$3; }
-and_relation: and_relation t_XNOR relation  {$$= $1+"nand"+$3; }
-and_relation: and_relation t_AND  relation {$$= $1+" and "+$3; }
-and_relation: and_relation t_OR   relation  {$$= $1+" or "+$3; }
-and_relation: and_relation t_XOR  relation  {$$= $1+" xor "+$3; }
+and_relation: relation shift_op relation { $$= $1+$2+$3; }
+and_relation: relation t_AND    relation  { $$= $1+" and "+$3; }
+and_relation: relation t_XOR    relation  { $$= $1+" xor "+$3; }
+and_relation: relation t_OR     relation  { $$= $1+" or "+$3; }
+and_relation: relation t_NOR    relation  { $$= $1+" nor "+$3; }
+and_relation: relation t_XNOR   relation  { $$= $1+"xnor"+$3; }
+and_relation: relation t_NAND   relation { $$= $1+"nand"+$3; }
+and_relation: and_relation t_NAND relation { $$= $1+"nand"+$3; }
+and_relation: and_relation t_NOR  relation{ $$= $1+"nor"+$3; }
+and_relation: and_relation t_XNOR relation  { $$= $1+"nand"+$3; }
+and_relation: and_relation t_AND  relation { $$= $1+" and "+$3; }
+and_relation: and_relation t_OR   relation  { $$= $1+" or "+$3; }
+and_relation: and_relation t_XOR  relation  { $$= $1+" xor "+$3; }
 
 /* ;relation   : unary_operator primary   */
 
@@ -908,25 +930,25 @@ relation: t_Minus primary t_DoubleStar primary { $$=$2+" ** "+$4; }
 
 /*   relation : relation binary_operator primary */
 
-relation: relation t_MOD   relation       { $$=$1+" mod  "+$3; }
-relation: relation t_REM   relation       { $$=$1+" rem "+$3;  }
-relation: relation t_Ampersand relation   { $$=$1+" & "+$3;    }
-relation: relation t_Star  relation       { $$=$1+" * "+$3;    }
-relation: relation t_Plus  relation       { $$=$1+" + "+$3;    }
-relation: relation t_Minus relation       { $$=$1+" -  "+$3;   }
-relation: relation t_LESym relation       { $$=$1+" <= "+$3;   }
-relation: relation t_GESym relation       { $$=$1+" >= "+$3;   }
-relation: relation t_LTSym relation       { $$=$1+" <  "+$3;   }
-relation: relation t_GTSym relation       { $$=$1+" >  "+$3;   }
-relation: relation t_EQSym relation       { $$=$1+" ==  "+$3;  }
-relation: relation t_NESym relation       { $$=$1+" != "+$3;   }
-relation: relation t_Slash relation       { $$=$1+" /"+$3;     }
-relation: relation t_QNEQU relation       { $$=$1+" ?/="+$3;   }
-relation: relation t_QEQU  relation       { $$=$1+" ?="+$3;    }
-relation: relation t_QL    relation       { $$=$1+" ?<"+$3;    }
-relation: relation t_QG    relation       { $$=$1+" ?>"+$3;    }
-relation: relation t_QLT   relation       { $$=$1+" ?<="+$3;   }
-relation: relation t_QGT   relation       { $$=$1+" ?>="+$3;   }
+relation: relation t_MOD   relation       { $$=$1+" mod "+$3; }
+relation: relation t_REM   relation       { $$=$1+" rem "+$3; }
+relation: relation t_Ampersand relation   { $$=$1+" & "+$3; }
+relation: relation t_Star  relation       { $$=$1+" * "+$3; }
+relation: relation t_Plus  relation       { $$=$1+" + "+$3; }
+relation: relation t_Minus relation       { $$=$1+" - "+$3; }
+relation: relation t_LESym relation       { $$=$1+" <= "+$3; }
+relation: relation t_GESym relation       { $$=$1+" >= "+$3; }
+relation: relation t_LTSym relation       { $$=$1+" < "+$3; }
+relation: relation t_GTSym relation       { $$=$1+" > "+$3; }
+relation: relation t_EQSym relation       { $$=$1+" == "+$3; }
+relation: relation t_NESym relation       { $$=$1+" != "+$3; }
+relation: relation t_Slash relation       { $$=$1+" / "+$3; }
+relation: relation t_QNEQU relation       { $$=$1+" ?/= "+$3; }
+relation: relation t_QEQU  relation       { $$=$1+" ?= "+$3; }
+relation: relation t_QL    relation       { $$=$1+" ?< "+$3; }
+relation: relation t_QG    relation       { $$=$1+" ?> "+$3; }
+relation: relation t_QLT   relation       { $$=$1+" ?<= "+$3; }
+relation: relation t_QGT   relation       { $$=$1+" ?>= "+$3; }
 
 simple_exp: t_Minus  term  { $$ = "-"+$2; }
           | t_Plus term    { $$ = "+"+$2; }
@@ -1072,7 +1094,7 @@ physical_type_definition_2: secondary_unit_decl  { $$=$1+"#"; }
 
 base_unit_decl: t_Identifier t_Semicolon { $$=$1; }
 
-secondary_unit_decl: t_Identifier t_EQSym physical_literal t_Semicolon { $$=$1+"="+$3 }
+secondary_unit_decl: t_Identifier t_EQSym physical_literal t_Semicolon { $$=$1+"="+$3; }
 
 unconstrained_array_definition: t_ARRAY t_LeftParen
                                 index_subtype_definition unconstrained_array_definition_1 t_RightParen t_OF
@@ -1084,8 +1106,8 @@ unconstrained_array_definition: t_ARRAY t_LeftParen
     }
 
 unconstrained_array_definition_1: { $$=""; }
-unconstrained_array_definition_1: unconstrained_array_definition_1 unconstrained_array_definition_2 { $$=$1+"  "+$2 }
-unconstrained_array_definition_2: t_Comma index_subtype_definition { $$=", "+$2 }
+unconstrained_array_definition_1: unconstrained_array_definition_1 unconstrained_array_definition_2 { $$=$1+"  "+$2; }
+unconstrained_array_definition_2: t_Comma index_subtype_definition { $$=", "+$2; }
 
 index_subtype_definition: mark t_RANGE t_Box { $$=$1+" range<> "; }
 
@@ -1247,14 +1269,14 @@ file_decl_1:  /* empty */   { $$=""; }
 file_decl_1: mode           { $$=$1; }
 
 disconnection_spec: t_DISCONNECT signal_list t_Colon mark t_AFTER expr t_Semicolon
-                                      { $$="disconnect "+$2+":"+$4+" after "+$6;}
+                                      { $$="disconnect "+$2+":"+$4+" after "+$6; }
                                       
-signal_list:   name signal_list_1 { $$=$1+$2;}
-signal_list:   t_OTHERS   { $$="others";}
-signal_list:   t_ALL             { $$="all";}
-signal_list_1:  /* empty */  { $$="";}
-signal_list_1: signal_list_1 signal_list_2    { $$=$1+$2;}
-signal_list_2: t_Comma name {$$=" , "+$2;}
+signal_list:   name signal_list_1 { $$=$1+$2; }
+signal_list:   t_OTHERS   { $$="others"; }
+signal_list:   t_ALL             { $$="all"; }
+signal_list_1:  /* empty */  { $$=""; }
+signal_list_1: signal_list_1 signal_list_2    { $$=$1+$2; }
+signal_list_2: t_Comma name { $$=" , "+$2; }
 
 /*--------------------------------------------------
 --  Attribute Declarations and Specifications
@@ -1273,7 +1295,7 @@ attribute_spec: t_ATTRIBUTE t_Identifier t_OF entity_spec t_IS expr t_Semicolon
                   $$="attribute "+att+";";
                 }
 
-entity_spec : entity_name_list signature  t_Colon entity_class { $$=$1+$2+":"+$4;}	
+entity_spec : entity_name_list signature  t_Colon entity_class { $$=$1+$2+":"+$4; }	
 
 entity_name_list:   designator entity_name_list_1         { $$=$1+" "+$2; }
 entity_name_list:   t_OTHERS                              { $$="others";  }
@@ -1309,8 +1331,8 @@ entity_class: t_PROPERTY      { $$="property";      }
 
 if_generation_scheme: if_scheme { $$=$1; }
 
-if_scheme: t_IF expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2 {$$="";}
-if_scheme: t_IF lable expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2 {$$="";}
+if_scheme: t_IF expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2 { $$=""; }
+if_scheme: t_IF lable expr t_GENERATE  generate_statement_body  if_scheme_1 if_scheme_2 { $$=""; }
 
 if_scheme_2: /* empty */ { $$=""; }
 if_scheme_2: t_ELSE t_GENERATE  generate_statement_body { $$="else generate "+$3; }
@@ -1320,79 +1342,81 @@ if_scheme_1: if_scheme_1 if_scheme_3  { $$=$1+$2; }
 if_scheme_3: t_ELSIF expr t_GENERATE generate_statement_body { $$="elsif "+$2+" generate "+$4; }
 if_scheme_3: t_ELSIF lable expr t_GENERATE generate_statement_body  { $$="elsif "+$2+$3+" generate "+$5; }
 
-generation_scheme: for_scheme {$$=$1;}
+generation_scheme: for_scheme { $$=$1; }
 
-iteration_scheme: for_scheme     {$$=$1;}
-iteration_scheme: while_scheme {$$=$1;}
+iteration_scheme: for_scheme     { $$=$1; }
+iteration_scheme: while_scheme { $$=$1; }
 
 for_scheme: t_FOR t_Identifier t_IN discrete_range 
   {
- if(!lab.isEmpty())
-    $$=lab+" :for "+$2+" in "+$4;
-  else
-    $$=" for "+$2+" in "+$4;
-  FlowNode::addFlowNode(FlowNode::FOR_NO,0,$$,lab.data());
-  lab.resize(0);
+    if (!lab.isEmpty())
+    {
+      $$=lab+" :for "+$2+" in "+$4;
+    }
+    else
+    {
+      $$=" for "+$2+" in "+$4;
+    }
+    FlowChart::addFlowChart(FlowChart::FOR_NO,0,$$,lab.data());
+    lab.resize(0);
   }
 for_scheme: t_FOR lable t_Identifier t_IN discrete_range 
- {
- $$=lab+" for "+$2+$3+" in "+$5;
-   FlowNode::addFlowNode(FlowNode::FOR_NO,0,$$,lab.data());
- lab="";
- }
+  {
+    $$=lab+" for "+$2+$3+" in "+$5;
+    FlowChart::addFlowChart(FlowChart::FOR_NO,0,$$,lab.data());
+    lab="";
+  }
 
 while_scheme: t_WHILE expr {
-                                             $$=" while "+$2;
-                                              FlowNode::addFlowNode(FlowNode::WHILE_NO,0,$$,lab.data());
-                                              lab="";
-                                             }
+                             $$=" while "+$2;
+                             FlowChart::addFlowChart(FlowChart::WHILE_NO,0,$$,lab.data());
+                             lab="";
+                           }
 
 /*--------------------------------------------------
 --  Concurrent Statements
 ----------------------------------------------------*/
 
-concurrent_stats:   concurrent_stats_1 {$$=$1;}
-concurrent_stats_1: /* empty */             {$$="";}
-concurrent_stats_1: concurrent_stats_1 concurrent_stats_2 {$$=$1+$2;}
-concurrent_stats_2: concurrent_stat  {$$=$1;}
+concurrent_stats:   concurrent_stats_1      { $$=$1; }
+concurrent_stats_1: /* empty */             { $$=""; }
+concurrent_stats_1: concurrent_stats_1 concurrent_stats_2 { $$=$1+$2; }
+concurrent_stats_2: concurrent_stat         { $$=$1; }
 
-concurrent_stat : block_stat                 {$$=$1;}
-                | concurrent_assertion_stat {$$=$1;}
-                | concurrent_procedure_call {$$=$1;}
-                | concurrent_signal_assign_stat {$$=$1;}
-                | comp_inst_stat         
-                                          {
-                                          QCString li=$1;
-                                          $$=$1;
-                                          
-                                          }
-                | generate_stat              {$$=$1;}
+concurrent_stat : block_stat                { $$=$1; }
+                | concurrent_assertion_stat { $$=$1; }
+                | concurrent_procedure_call { $$=$1; }
+                | concurrent_signal_assign_stat { $$=$1; }
+                | comp_inst_stat            {
+                                              QCString li=$1;
+                                              $$=$1;
+                                            }
+                | generate_stat             { $$=$1; }
                 | procs_stat                   
 
-block_stat: t_Identifier t_Colon t_BLOCK  {pushLabel(genLabels,$1); }block_stat_0 block_stat_1 block_stat_2
+block_stat: t_Identifier t_Colon t_BLOCK { pushLabel(genLabels,$1); } block_stat_0 block_stat_1 block_stat_2
             block_stat_3 block_stat_4 t_BEGIN concurrent_stats t_END t_BLOCK block_stat_5
             t_Semicolon 
             {
               $$=$1+":block"; //+$4+$5+$6+$7+$8+"begin "+$10+" block "+$13;
               genLabels=popLabel(genLabels);
             }
-block_stat_5: /* empty */  {$$="";}
-block_stat_5: t_Identifier {$$=$1;}
-block_stat_4: /* empty */  {$$=""; }
-block_stat_4: block_stat_4 block_stat_6 {$$=$1+$2;}
-block_stat_6: block_decltve_item {$$=$1;}
-block_stat_3: /* empty */  {$$="";}
-block_stat_3: t_PORT interf_list t_Semicolon block_stat_7   {$$="port "+$2+";"+$4; }
-//block_sta_7:  /* empty */  {$$="";}
-block_stat_7: t_PORT t_MAP association_list t_Semicolon  {$$="port map "+$3; }
-block_stat_2: /* empty */  {$$="";}
-block_stat_2: t_GENERIC interf_list t_Semicolon block_stat_8  {$$="generic "+$2+";"+$4; }
-block_stat_8: /* empty */  {$$="";}
-block_stat_8: t_GENERIC t_MAP association_list t_Semicolon  {$$="generic map "+$3; }
-block_stat_1: /* empty */  {$$="";}
-block_stat_1: t_LeftParen expr t_RightParen  block_stat_0  {$$="("+$2+")"+$4; }
-block_stat_0: /* empty */  {$$=""; }
-block_stat_0: t_IS  {$$=" is ";}
+block_stat_5: /* empty */  { $$=""; }
+block_stat_5: t_Identifier { $$=$1; }
+block_stat_4: /* empty */  { $$=""; }
+block_stat_4: block_stat_4 block_stat_6 { $$=$1+$2; }
+block_stat_6: block_decltve_item { $$=$1; }
+block_stat_3: /* empty */  { $$=""; }
+block_stat_3: t_PORT interf_list t_Semicolon block_stat_7   { $$="port "+$2+";"+$4; }
+//block_sta_7:  /* empty */ { $$=""; }
+block_stat_7: t_PORT t_MAP association_list t_Semicolon     { $$="port map "+$3; }
+block_stat_2: /* empty */  { $$=""; }
+block_stat_2: t_GENERIC interf_list t_Semicolon block_stat_8 { $$="generic "+$2+";"+$4; }
+block_stat_8: /* empty */  { $$=""; }
+block_stat_8: t_GENERIC t_MAP association_list t_Semicolon  { $$="generic map "+$3; }
+block_stat_1: /* empty */  { $$=""; }
+block_stat_1: t_LeftParen expr t_RightParen  block_stat_0  { $$="("+$2+")"+$4; }
+block_stat_0: /* empty */  { $$=""; }
+block_stat_0: t_IS  { $$=" is "; }
 
 dot_name: t_Identifier                 { $$=$1; }
         | dot_name  t_Dot t_Identifier { $$=$1+"."+$3; }
@@ -1407,93 +1431,93 @@ vcomp_stat: t_CONFIGURATION      { $$="configurátion";yyLineNr=s_str.iLine; }
 vcomp_stat: t_ENTITY             { $$="entity";yyLineNr=s_str.iLine; }
 vcomp_stat: t_COMPONENT          { $$="component";yyLineNr=s_str.iLine; }
 
-comp_inst_stat:  t_Identifier   t_Colon  name   { yyLineNr=s_str.iLine; }     t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
-                             {
-                                addCompInst($1.lower().data(),$3.lower().data(),0,yyLineNr);$$="";
+comp_inst_stat: t_Identifier t_Colon name { yyLineNr=s_str.iLine; }     t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
+                               {
+                                 addCompInst($1.lower().data(),$3.lower().data(),0,yyLineNr);$$="";
                                }
-comp_inst_stat:  t_Identifier   t_Colon     name   { yyLineNr=s_str.iLine; }    t_PORT t_MAP association_list t_Semicolon
-                              {
-                               addCompInst($1.lower().data(),$3.lower().data(),0,yyLineNr);$$="222";
-                             }
+comp_inst_stat: t_Identifier t_Colon name { yyLineNr=s_str.iLine; }    t_PORT t_MAP association_list t_Semicolon
+                               {
+                                 addCompInst($1.lower().data(),$3.lower().data(),0,yyLineNr);$$="222";
+                               }
 
-comp_inst_stat:  t_Identifier  t_Colon   vcomp_stat  mark_comp    t_PORT t_MAP association_list t_Semicolon
-                             {
-                                  addCompInst($1.lower().data(),$4.lower().data(),$3.data(),yyLineNr);$$="";
-                              }
-comp_inst_stat:  t_Identifier  t_Colon  vcomp_stat   mark_comp        t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
-                              {
-                                addCompInst($1.lower().data(),$4.lower().data(),$3.lower().data(),yyLineNr);$$="";
-                              }
-comp_inst_stat_1:  /* empty                                       {$$="";} */  
-comp_inst_stat_1: t_PORT t_MAP association_list //    {$$="port map"+$3;}
+comp_inst_stat: t_Identifier t_Colon vcomp_stat  mark_comp t_PORT t_MAP association_list t_Semicolon
+                               {
+                                 addCompInst($1.lower().data(),$4.lower().data(),$3.data(),yyLineNr);$$="";
+                               }
+comp_inst_stat: t_Identifier t_Colon vcomp_stat mark_comp t_GENERIC t_MAP association_list comp_inst_stat_1 t_Semicolon
+                               {
+                                 addCompInst($1.lower().data(),$4.lower().data(),$3.lower().data(),yyLineNr);$$="";
+                               }
+comp_inst_stat_1:  /* empty                                       { $$=""; } */  
+comp_inst_stat_1: t_PORT t_MAP association_list //    { $$="port map"+$3; }
 
-concurrent_assertion_stat:  t_Identifier t_Colon  assertion_stat  {$$=$1+":"+$3;}
-concurrent_assertion_stat:  assertion_stat              {$$=$1; }
+concurrent_assertion_stat:  t_Identifier t_Colon  assertion_stat  { $$=$1+":"+$3; }
+concurrent_assertion_stat:  assertion_stat              { $$=$1; }
 
-concurrent_assertion_stat:  t_Identifier t_Colon  t_POSTPONED  assertion_stat {$$=$1+":"+"postponed "+$4; }
-concurrent_assertion_stat:   t_POSTPONED assertion_stat {$$="postponed "+$2; }
+concurrent_assertion_stat:  t_Identifier t_Colon  t_POSTPONED  assertion_stat { $$=$1+":"+"postponed "+$4; }
+concurrent_assertion_stat:   t_POSTPONED assertion_stat { $$="postponed "+$2; }
 
-concurrent_procedure_call: t_Identifier t_Colon procedure_call_stat {$$=$1+":"+$3; }
-concurrent_procedure_call: procedure_call_stat {$$=$1;}
+concurrent_procedure_call: t_Identifier t_Colon procedure_call_stat { $$=$1+":"+$3; }
+concurrent_procedure_call: procedure_call_stat { $$=$1; }
 
-concurrent_procedure_call: t_Identifier t_Colon t_POSTPONED procedure_call_stat {$$=$1+":"+"postponed "+$4; }
-concurrent_procedure_call: t_POSTPONED procedure_call_stat {$$="postponed "+$2; }
+concurrent_procedure_call: t_Identifier t_Colon t_POSTPONED procedure_call_stat { $$=$1+":"+"postponed "+$4; }
+concurrent_procedure_call: t_POSTPONED procedure_call_stat { $$="postponed "+$2; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon condal_signal_assign {$$=$1+":"+$3; }
-concurrent_signal_assign_stat: condal_signal_assign  {$$=$1;}
+concurrent_signal_assign_stat: t_Identifier t_Colon condal_signal_assign { $$=$1+":"+$3; }
+concurrent_signal_assign_stat: condal_signal_assign  { $$=$1; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon  t_POSTPONED  condal_signal_assign {$$=$1+":"+"postponed "+$4; }
-concurrent_signal_assign_stat: t_POSTPONED  condal_signal_assign {$$="postponed "+$2; }
+concurrent_signal_assign_stat: t_Identifier t_Colon  t_POSTPONED  condal_signal_assign { $$=$1+":"+"postponed "+$4; }
+concurrent_signal_assign_stat: t_POSTPONED  condal_signal_assign { $$="postponed "+$2; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon t_POSTPONED sel_signal_assign {$$=$1+":"+"postponed "+$4; }
-concurrent_signal_assign_stat: t_POSTPONED sel_signal_assign {$$="postponed "+$2; }
+concurrent_signal_assign_stat: t_Identifier t_Colon t_POSTPONED sel_signal_assign { $$=$1+":"+"postponed "+$4; }
+concurrent_signal_assign_stat: t_POSTPONED sel_signal_assign { $$="postponed "+$2; }
 
-concurrent_signal_assign_stat: t_Identifier t_Colon sel_signal_assign  {$$=$1+":"+$3; }
-concurrent_signal_assign_stat: sel_signal_assign  {$$=$1; }
+concurrent_signal_assign_stat: t_Identifier t_Colon sel_signal_assign  { $$=$1+":"+$3; }
+concurrent_signal_assign_stat: sel_signal_assign  { $$=$1; }
 
-condal_signal_assign: target t_LESym opts   condal_wavefrms t_Semicolon {$$=$1+"<="+$3+$4; }
+condal_signal_assign: target t_LESym opts   condal_wavefrms t_Semicolon { $$=$1+"<="+$3+$4; }
 
-condal_wavefrms: wavefrm {$$=$1;}
-condal_wavefrms: wavefrm t_WHEN expr  {$$=$1+" when "+$3;}
-condal_wavefrms: wavefrm t_WHEN expr t_ELSE condal_wavefrms {$$=$1+" when "+$3+"else"+$5;}
+condal_wavefrms: wavefrm { $$=$1; }
+condal_wavefrms: wavefrm t_WHEN expr  { $$=$1+" when "+$3; }
+condal_wavefrms: wavefrm t_WHEN expr t_ELSE condal_wavefrms { $$=$1+" when "+$3+"else"+$5; }
 
-wavefrm:   wavefrm_element wavefrm_1 {$$=$1+$2;}
-wavefrm:   t_UNAFFECTED {$$="unaffected";}
-wavefrm_1: /* empty */  {$$="";}
-wavefrm_1: wavefrm_1 wavefrm_2 {$$=$1+$2;}
-wavefrm_2: t_Comma wavefrm_element {$$=","+$2;}
+wavefrm:   wavefrm_element wavefrm_1 { $$=$1+$2; }
+wavefrm:   t_UNAFFECTED { $$="unaffected"; }
+wavefrm_1: /* empty */  { $$=""; }
+wavefrm_1: wavefrm_1 wavefrm_2 { $$=$1+$2; }
+wavefrm_2: t_Comma wavefrm_element { $$=","+$2; }
 
-wavefrm_element:   expr wavefrm_element_1 {$$=$1+$2;}
-wavefrm_element_1: /* empty */ {$$="";}
-wavefrm_element_1: t_AFTER expr {$$="after "+$2;}
-wavefrm_element_1: t_NULL wavefrm_element_2 {$$=" null "+$2;}
-wavefrm_element_1: t_NULL {$$=" null ";}
-wavefrm_element_2: t_AFTER expr {$$="after "+$2;}
+wavefrm_element:   expr wavefrm_element_1 { $$=$1+$2; }
+wavefrm_element_1: /* empty */ { $$=""; }
+wavefrm_element_1: t_AFTER expr { $$="after "+$2; }
+wavefrm_element_1: t_NULL wavefrm_element_2 { $$=" null "+$2; }
+wavefrm_element_1: t_NULL { $$=" null "; }
+wavefrm_element_2: t_AFTER expr { $$="after "+$2; }
 
-target: name {$$=$1;}
-target: aggregate   {$$=$1;}
+target: name { $$=$1; }
+target: aggregate   { $$=$1; }
 
-opts: opts_1 opts_2   {$$=$1+$2;}
+opts: opts_1 opts_2   { $$=$1+$2; }
 
-opts_2: /* empty */  {$$="";}
-opts_2: t_TRANSPORT  {$$="transport ";}
-opts_2: t_REJECT expr t_INERTIAL  {$$="transport"+$2+" intertial ";}
-opts_2: t_INERTIAL  {$$=" intertial ";}
+opts_2: /* empty */  { $$=""; }
+opts_2: t_TRANSPORT  { $$="transport "; }
+opts_2: t_REJECT expr t_INERTIAL  { $$="transport"+$2+" intertial "; }
+opts_2: t_INERTIAL  { $$=" intertial "; }
 
-opts_1: /* empty */ {$$="";}
-opts_1: t_GUARDED {$$=" guarded ";}
+opts_1: /* empty */ { $$=""; }
+opts_1: t_GUARDED { $$=" guarded "; }
 
 sel_signal_assign: t_WITH expr t_SELECT target t_LESym opts sel_wavefrms t_Semicolon 
- {$$="with "+$2+" select "+$4+"<="+$6+$7;}
+ { $$="with "+$2+" select "+$4+"<="+$6+$7; }
  
-sel_wavefrms:   sel_wavefrms_1 wavefrm t_WHEN choices  {$$=$1+$2;}
-sel_wavefrms_1: /* empty */  {$$="";}
-sel_wavefrms_1: sel_wavefrms_1 sel_wavefrms_2 {$$=$1+$2;}
-sel_wavefrms_2: wavefrm t_WHEN choices t_Comma {$$=$1+" when "+$3;}
+sel_wavefrms:   sel_wavefrms_1 wavefrm t_WHEN choices  { $$=$1+$2; }
+sel_wavefrms_1: /* empty */  { $$=""; }
+sel_wavefrms_1: sel_wavefrms_1 sel_wavefrms_2 { $$=$1+$2; }
+sel_wavefrms_2: wavefrm t_WHEN choices t_Comma { $$=$1+" when "+$3; }
 
-gen_stat1: /* empty */  {$$="";}
-        |  block_declarative_part  t_BEGIN {$$=$1+" begin ";}
-        | t_BEGIN {$$="begin ";}
+gen_stat1: /* empty */  { $$=""; }
+        |  block_declarative_part  t_BEGIN { $$=$1+" begin "; }
+        | t_BEGIN { $$="begin "; }
 
  // problem with double end
  // end;
@@ -1512,7 +1536,7 @@ opstat: t_END generate_stat_1 t_Semicolon           {genLabels=popLabel(genLabel
 
 generate_stat: t_Identifier  t_Colon
                { pushLabel(genLabels,$1); }
-               if_generation_scheme opstat //    t_END   generate_stat_1 t_Semicolon { genLabels=popLabel(genLabels);}
+               if_generation_scheme opstat //    t_END   generate_stat_1 t_Semicolon { genLabels=popLabel(genLabels); }
 generate_stat: t_Identifier  t_Colon case_scheme
 
 generate_stat_1: t_GENERATE              { $$=""; }
@@ -1552,7 +1576,7 @@ procs_stat1: procs_stat1_5
                 tempEntry=current;
                 currP=0;
                 createFunction(currName,VhdlDocGen::PROCESS,$4.data());
-                createFlow($5);
+                createFlow();
                 currName="";
                }
 procs_stat1: error t_END procs_stat1_3  t_Semicolon { currP=0; }
@@ -1566,8 +1590,8 @@ procs_stat1_5: t_POSTPONED  { $$="postponed"; }
 procs_stat1_6:  /* empty */ { $$=""; }
 procs_stat1_6: t_Identifier { $$=$1; }
 
-procs_stat1_2:  /* empty */  {$$="";}
-procs_stat1_2:  t_IS {$$="";}   
+procs_stat1_2:  /* empty */  { $$=""; }
+procs_stat1_2:  t_IS { $$=""; }   
 procs_stat1_2: procs_stat1_2 procs_stat1_4   { $$+=$2; }
 procs_stat1_4: procs_decltve_item           { $$=$1; }
 procs_stat1_1:  /* empty */                                    { $$=""; }
@@ -1583,202 +1607,188 @@ sensitivity_list_2: t_Comma name                               { $$=","+$2; }
 --  Sequential Statements
 ----------------------------------------------------*/
 
-seq_stats:   seq_stats_1                         {$$=$1;}
-seq_stats_1: /* empty */                           {$$="";}
-seq_stats_1: seq_stats_1 seq_stats_2 {$$=$1+$2;}
-seq_stats_2: seq_stat                              {$$=$1;}
+seq_stats: seq_stats_1               { $$=$1; }
+seq_stats_1: /* empty */             { $$=""; }
+seq_stats_1: seq_stats_1 seq_stats_2 { $$=$1+$2; }
+seq_stats_2: seq_stat                { $$=$1; }
+seq_stat: assertion_stat             { $$=$1;    FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: lable assertion_stat       { $$=$1+$2; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: case_stat                  { $$=$1; }
+seq_stat: exit_stat                  { $$=$1; }
+seq_stat: if_stat                    { $$=""; } 
+seq_stat: loop_stat                  { $$=$1; }
+seq_stat: next_stat                  { $$=$1; }
+seq_stat: null_stat                  { $$=$1; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: procedure_call_stat        { $$=$1; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); } 
+seq_stat: return_stat                { $$=$1; FlowChart::addFlowChart(FlowChart::RETURN_NO,$$.data(),0); }
+seq_stat: lable signal_assign_stat   { $$=$1+$2; }
+seq_stat: signal_assign_stat         { $$=$1; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: variable_assign_stat       { $$=$1; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: wait_stat                  { $$=$1; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: lable wait_stat            { $$=$1+$2; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
+seq_stat: report_statement           { $$=$1; FlowChart::addFlowChart(FlowChart::TEXT_NO,$$.data(),0); }
 
-seq_stat: assertion_stat                        {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
-seq_stat: lable assertion_stat               {$$=$1+$2; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
-seq_stat: case_stat                              {$$=$1;}
-seq_stat: exit_stat                                   {
-                                                                   $$=$1;
-                                                              }
-seq_stat: if_stat                                     {$$="";} 
-seq_stat: loop_stat                               {$$=$1;}
-seq_stat: next_stat                                  {
-                                                                $$=$1;
-                                                                }
-seq_stat: null_stat                                    {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
-seq_stat: procedure_call_stat                   {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);} 
-seq_stat: return_stat                                    {$$=$1; FlowNode::addFlowNode(FlowNode::RETURN_NO,$$.data(),0);}
-seq_stat: lable signal_assign_stat                    {$$=$1+$2;}
-seq_stat: signal_assign_stat                              
-                                                 {
-                                                   $$=$1;
-                                                    FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);
-                                                   }
-seq_stat: variable_assign_stat                             {   $$=$1;    FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
-seq_stat: wait_stat                                          {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
-seq_stat: lable wait_stat                                     {$$=$1+$2; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
-seq_stat: report_statement                              {$$=$1; FlowNode::addFlowNode(FlowNode::TEXT_NO,$$.data(),0);}
+report_statement: loop_stat_1 t_REPORT expr assertion_stat_2  t_Semicolon { $$=$1+"report "+$3+$4+";";  }
 
-report_statement: loop_stat_1 t_REPORT expr assertion_stat_2  t_Semicolon {$$=$1+"report "+$3+$4+";";  }
+assertion_stat: t_ASSERT expr assertion_stat_1 assertion_stat_2 t_Semicolon  { $$="assert "+$2+$3+$4+";"; }
+assertion_stat_2:  /* empty */                    { $$=""; }
+assertion_stat_2     : t_SEVERITY expr  { $$=" serverity "+$2; } 
+assertion_stat_1     :  /* empty */            { $$=""; }
+assertion_stat_1     : t_REPORT expr  { $$=" report "+$2; }
 
-assertion_stat: t_ASSERT expr assertion_stat_1 assertion_stat_2 t_Semicolon  {$$="assert "+$2+$3+$4+";";}
-assertion_stat_2:  /* empty */                    {$$="";}
-assertion_stat_2     : t_SEVERITY expr  {$$=" serverity "+$2;} 
-assertion_stat_1     :  /* empty */            {$$="";}
-assertion_stat_1     : t_REPORT expr  {$$=" report "+$2;}
+choice_stat :  /* empty */ { $$=""; }
+choice_stat :  t_Q            { $$="?"; }
 
-choice_stat :  /* empty */ {$$="";}
-choice_stat :  t_Q            {$$="?";}
-
-choice_stat_1:  /* empty */   {$$="";}
-choice_stat_1 :                  t_Q     {$$="?";}
-choice_stat_1 : t_Identifier  {$$=$1;}
+choice_stat_1:  /* empty */   { $$=""; }
+choice_stat_1 :                  t_Q     { $$="?"; }
+choice_stat_1 : t_Identifier  { $$=$1; }
 
 
 case_stat  : t_CASE choice_stat expr 
                    {
                      QCString ca="case "+$2+$3;
-                    FlowNode::addFlowNode(FlowNode::CASE_NO,0,ca);
+                     FlowChart::addFlowChart(FlowChart::CASE_NO,0,ca);
                    }                 
-                     t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
-                    { 
-                     FlowNode::addFlowNode(FlowNode::END_CASE,"end case",0);
-                     FlowNode::moveToPrevLevel();
-                    }
+                   t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
+                   { 
+                     FlowChart::moveToPrevLevel();
+                     FlowChart::addFlowChart(FlowChart::END_CASE,"end case",0);
+                   }
           
 
 case_stat  : lable t_CASE choice_stat expr
                    {
-                   QCString ca="case "+$3+$4;
-                   FlowNode::addFlowNode(FlowNode::CASE_NO,0,ca);
+                     QCString ca="case "+$3+$4;
+                     FlowChart::addFlowChart(FlowChart::CASE_NO,0,ca);
                    } 
-                    t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
-                    {
-                     FlowNode::addFlowNode(FlowNode::END_CASE,0,0);
-                    FlowNode::moveToPrevLevel();
-                    }
+                   t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
+                   {
+                     FlowChart::addFlowChart(FlowChart::END_CASE,0,0);
+                     FlowChart::moveToPrevLevel();
+                   }
 
-case_stat  : t_CASE error t_END t_CASE choice_stat_1  t_Semicolon  {$$="";}
-case_stat_1     :  /* empty */                          {$$="";}
-case_stat_1     : case_stat_1 case_stat_2  {$$=$1+$2;}
-case_stat_2     : case_stat_alternative         {$$=$1;}
+case_stat       : t_CASE error t_END t_CASE choice_stat_1  t_Semicolon  { $$=""; }
+case_stat_1     :  /* empty */             { $$=""; }
+case_stat_1     : case_stat_1 case_stat_2  { $$=$1+$2; }
+case_stat_2     : case_stat_alternative    { $$=$1; }
 case_stat_alternative     : t_WHEN choices t_Arrow
- { 
-  QCString t="when ";
-  t+=$2+"=> ";
-   FlowNode::addFlowNode(FlowNode::WHEN_NO,0,t);
+  { 
+    QCString t="when ";
+    t+=$2+"=> ";
+    FlowChart::addFlowChart(FlowChart::WHEN_NO,0,t);
   }
-seq_stats  {$$="";}
+  seq_stats { $$=""; FlowChart::moveToPrevLevel(); }
 
-
-
-if_stat    : t_IF expr  t_THEN
+if_stat: t_IF expr t_THEN
   {
-     $2.prepend("if ");
-    FlowNode::addFlowNode(FlowNode::IF_NO,0,$2);
+    $2.prepend("if ");
+    FlowChart::addFlowChart(FlowChart::IF_NO,0,$2);
   }  
   seq_stats   
  
   if_stat_1 if_stat_2 t_END t_IF t_Semicolon 
   {
-  FlowNode::addFlowNode(FlowNode::ENDIF_NO,0,0);
-   FlowNode::moveToPrevLevel();
+    FlowChart::moveToPrevLevel();
+    FlowChart::addFlowChart(FlowChart::ENDIF_NO,0,0);
   } 
      
-if_stat_2  :  /* empty */                 {$$=""; }
+if_stat_2  :  /* empty */             { $$=""; }
 if_stat_2  : t_ELSE    
-   {
-      FlowNode::addFlowNode(FlowNode::ELSE_NO,0,0);
-    } seq_stats  {$$=""; }
+  {
+    FlowChart::addFlowChart(FlowChart::ELSE_NO,0,0);
+  } 
+  seq_stats  
+  { 
+    $$=""; FlowChart::moveToPrevLevel();
+  }
  
 
-if_stat_1  :  /* empty */                  {$$=""; }
-if_stat_1  : if_stat_1 if_stat_3      {$$=$1+$2; }
+if_stat_1  :  /* empty */             { $$=""; }
+if_stat_1  : if_stat_1 if_stat_3      { $$=$1+$2; }
 if_stat_3  : t_ELSIF expr t_THEN 
   { 
-   $2.prepend("elsif ");
-   FlowNode::addFlowNode(FlowNode::ELSIF_NO,0,$2.data());
-  } seq_stats {$$="";}
+    $2.prepend("elsif ");
+    FlowChart::addFlowChart(FlowChart::ELSIF_NO,0,$2.data());
+  } seq_stats { $$=""; }
   
 loop_stat:   loop_stat_1 loop_stat_2 t_LOOP seq_stats t_END t_LOOP loop_stat_3 t_Semicolon
-                    {
-                      
-                       $$=$1+$2+" loop "+$4+" end loop" +$7;
-                       QCString endLoop="end loop" + $7;
-                        FlowNode::addFlowNode(FlowNode::END_LOOP,endLoop.data(),0);
-                        FlowNode::moveToPrevLevel();
-                     }
+  {
+    $$=$1+$2+" loop "+$4+" end loop" +$7;
+    QCString endLoop="end loop" + $7;
+    FlowChart::moveToPrevLevel();
+    FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop.data(),0);
+  }
 
-loop_stat_3: /* empty */ {$$=""; }
-loop_stat_3: t_Identifier {$$=$1; }
-loop_stat_2: /* empty */ {
-                                     $$=""; 
-                                      FlowNode::addFlowNode(FlowNode::LOOP_NO,0,"infinite loop");
-                                     }
+loop_stat_3: /* empty */ { $$=""; }
+loop_stat_3: t_Identifier { $$=$1; }
+loop_stat_2: /* empty */ { $$=""; 
+                           FlowChart::addFlowChart(FlowChart::LOOP_NO,0,"infinite loop");
+                         }
 loop_stat_2: iteration_scheme
-loop_stat_1: /* empty */ {$$=""; }
-loop_stat_1: t_Identifier t_Colon {$$=$1+":";lab=$1;}
+loop_stat_1: /* empty */ { $$=""; }
+loop_stat_1: t_Identifier t_Colon { $$=$1+":";lab=$1; }
 
 exit_stat  : loop_stat_1 t_EXIT exit_stat_1 exit_stat_2 t_Semicolon   
                        {
-                         $$=$1+"exit "+$3+";";
-                        if($4.data())
-                             FlowNode::addFlowNode(FlowNode::EXIT_WHEN_NO,0,$4.data(),0);                                                                      
-                    
-                              FlowNode::addFlowNode(FlowNode::EXIT_NO,$$.data(),0,$3.data());                                                       
-                        }
-exit_stat_2     :  /* empty */        {$$="";}
-exit_stat_2     : t_WHEN expr  {$$="when "+$2;}
-exit_stat_1     :  /* empty */    {$$="";}
-exit_stat_1     : t_Identifier    {$$=$1;lab=$$;}
+                         FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",$4.data(),$3.data()); 
+                         lab.resize(0);
+                       }
+exit_stat_2     :  /* empty */    { $$=""; }
+exit_stat_2     : t_WHEN expr     { $$="when "+$2; }
+exit_stat_1     :  /* empty */    { $$=""; }
+exit_stat_1     : t_Identifier    { $$=$1;lab=$$; }
 
 
 next_stat: loop_stat_1  t_NEXT next_stat_1 next_stat_2 t_Semicolon
-                   {
-                     $$=$1+"next "+$3+";" ;
-                         if($4.data())
-                             FlowNode::addFlowNode(FlowNode::EXIT_WHEN_NO,0,$4.data(),0); 
-                       FlowNode::addFlowNode(FlowNode::NEXT_NO,$$.data(),0,$3.data());   
-                    }
+                       {
+                         FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",$4.data(),$3.data()); 
+                         lab.resize(0);
+                       }
                     
-next_stat_2:  /* empty */      {$$=""; }
-next_stat_2: t_WHEN expr {$$="when "+$2; }
-next_stat_1:  /* empty */      {$$=""; }
-next_stat_1: t_Identifier      {$$=$1;lab=$$; }
+next_stat_2:  /* empty */      { $$=""; }
+next_stat_2: t_WHEN expr { $$="when "+$2; }
+next_stat_1:  /* empty */      { $$=""; }
+next_stat_1: t_Identifier      { $$=$1;lab=$$; }
 
-null_stat: t_NULL t_Semicolon {$$="null"; $$+=";";}
+null_stat: t_NULL t_Semicolon { $$="null"; $$+=";"; }
 
 procedure_call_stat: name t_Semicolon 
  {
- $$=$1+";"; 
+   $$=$1+";"; 
  }
 
-return_stat:   t_RETURN return_stat_1 t_Semicolon {$$="return "+$2+";"  ;}
-return_stat_1: /* empty */  {$$=""; }
-return_stat_1:   expr {$$=$1; }
+return_stat:   t_RETURN return_stat_1 t_Semicolon { $$="return "+$2+";"  ; }
+return_stat_1: /* empty */  { $$=""; }
+return_stat_1:   expr { $$=$1; }
 
-signal_assign_stat: target t_LESym wavefrm t_Semicolon                     {$$=$1+" <="+$3+";"  ;}
-                  | target t_LESym delay_mechanism wavefrm t_Semicolon   {$$=$1+ "<= "+$3+$4 +";";}
-                  | target t_LESym t_FORCE inout_stat  expr t_Semicolon     {$$=$1+ "<= "+ " force  "+$4+";" ;}
-                  | target t_LESym t_RELEASE inout_stat t_Semicolon          {$$=$1+ "<= "+" release "+$4 +";";}
-                  | selected_signal_assignment                                                  {$$=$1; }
-                  | conditional_signal_assignment                                               {$$=$1; }
+signal_assign_stat: target t_LESym wavefrm t_Semicolon                   { $$=$1+" <="+$3+";"  ; }
+                  | target t_LESym delay_mechanism wavefrm t_Semicolon   { $$=$1+ "<= "+$3+$4 +";"; }
+                  | target t_LESym t_FORCE inout_stat  expr t_Semicolon  { $$=$1+ "<= "+ " force  "+$4+";" ; }
+                  | target t_LESym t_RELEASE inout_stat t_Semicolon      { $$=$1+ "<= "+" release "+$4 +";"; }
+                  | selected_signal_assignment                           { $$=$1; }
+                  | conditional_signal_assignment                        { $$=$1; }
                   ;
 
-variable_assign_stat: variable_assign_stat_1 t_Semicolon   {$$=$1+";"; }
-                    | conditional_variable_assignment                       {$$=$1; }
-                    | lable selected_variable_assignment                  {$$=$1; }
-                    | selected_variable_assignment                           {$$=$1; }
+variable_assign_stat: variable_assign_stat_1 t_Semicolon                 { $$=$1+";"; }
+                    | conditional_variable_assignment                    { $$=$1; }
+                    | lable selected_variable_assignment                 { $$=$1; }
+                    | selected_variable_assignment                       { $$=$1; }
 
 lable: t_Identifier t_Colon                                              { $$=$1+":"; }
-variable_assign_stat_1: target t_VarAsgn expr           {$$=$1+":="+$3; }
-variable_assign_stat_1: lable target t_VarAsgn expr  {$$=$1+$2+":="+$4; }
+variable_assign_stat_1: target t_VarAsgn expr                            { $$=$1+":="+$3; }
+variable_assign_stat_1: lable target t_VarAsgn expr                      { $$=$1+$2+":="+$4; }
 
 wait_stat:   t_WAIT wait_stat_1 wait_stat_2 wait_stat_3 t_Semicolon
                   {
                      $$="wait "+$2+$3+$4+";";
                   }
 
-wait_stat_3: /* empty */          {$$=""; }
-wait_stat_3: t_FOR expr       {$$="for "+$2; } 
-wait_stat_2: /* empty */          {$$=""; }
-wait_stat_2: t_UNTIL expr     {$$=" until "+$2; }
-wait_stat_1: /* empty */          {$$=""; }
-wait_stat_1: t_ON sensitivity_list  {$$=" on "+$2; }
+wait_stat_3: /* empty */            { $$=""; }
+wait_stat_3: t_FOR expr             { $$="for "+$2; } 
+wait_stat_2: /* empty */            { $$=""; }
+wait_stat_2: t_UNTIL expr           { $$=" until "+$2; }
+wait_stat_1: /* empty */            { $$=""; }
+wait_stat_1: t_ON sensitivity_list  { $$=" on "+$2; }
 
 
 /*--------------------------------------------------
@@ -1803,7 +1813,7 @@ comp_decl_2: t_PORT interf_list t_Semicolon    { $$=$2; }
 comp_decl_1:  /* empty */                      { $$=""; }
 comp_decl_1: t_GENERIC interf_list t_Semicolon { $$=$2; }
 
-block_config: t_FOR block_spec block_config_1 block_config_2 { levelCounter--;}  t_END t_FOR t_Semicolon
+block_config: t_FOR block_spec block_config_1 block_config_2 { levelCounter--; }  t_END t_FOR t_Semicolon
           {
           }
 
@@ -1879,11 +1889,11 @@ inst_list: t_OTHERS  { $$="others"; }
 
 binding_indic   : entity_aspect binding_indic_1 binding_indic_2 { $$=$1; }
 
-binding_indic_2: {$$="";}
-binding_indic_2: t_PORT t_MAP association_list  {$$="port map "+$3;}
+binding_indic_2: { $$=""; }
+binding_indic_2: t_PORT t_MAP association_list  { $$="port map "+$3; }
 
-binding_indic_1: {$$="";}
-binding_indic_1: t_GENERIC t_MAP association_list {$$="generic map "+$3;}
+binding_indic_1: { $$=""; }
+binding_indic_1: t_GENERIC t_MAP association_list { $$="generic map "+$3; }
 
 
 entity_aspect: t_ENTITY name { $$="entity "+$2; }
@@ -1915,7 +1925,7 @@ group_template_declaration :  t_GROUP  t_Identifier t_IS  t_LeftParen  entity_cl
 group_template_declaration: t_GROUP  t_Identifier t_IS  t_LeftParen error t_Semicolon  t_RightParen{ $$=""; }
  
 
-entity_class_entry : entity_class tbox {$$=$1+$2;}
+entity_class_entry : entity_class tbox { $$=$1+$2; }
 
 tbox :  /* empty */ { $$="";   }
 tbox :  t_Box       { $$="<>"; }
@@ -2063,8 +2073,8 @@ when_stats:   when_stats_1
 ttend: t_END t_Semicolon
 ttend: t_END t_Identifier t_Semicolon
 
-conditional_signal_assignment: conditional_waveform_assignment {$$="";}
-conditional_signal_assignment: conditional_force_assignment {$$="";}
+conditional_signal_assignment: conditional_waveform_assignment { $$=""; }
+conditional_signal_assignment: conditional_force_assignment { $$=""; }
 
 conditional_waveform_assignment: target t_LESym wavefrm_element t_WHEN expr else_wave_list t_Semicolon
 conditional_waveform_assignment: target t_LESym delay_mechanism wavefrm_element t_WHEN expr else_wave_list t_Semicolon
@@ -2078,8 +2088,8 @@ else_wave_list: t_ELSE expr
 conditional_force_assignment:  target t_LESym t_FORCE  inout_stat expr t_WHEN expr else_stat t_Semicolon
 conditional_force_assignment:  target t_LESym t_FORCE  inout_stat expr t_WHEN expr t_Semicolon
 
-selected_signal_assignment : selected_waveform_assignment {$$="";}
-selected_signal_assignment : selected_force_assignment {$$="";}
+selected_signal_assignment : selected_waveform_assignment { $$=""; }
+selected_signal_assignment : selected_force_assignment { $$=""; }
 
 selected_waveform_assignment: t_WITH expr t_SELECT choice_stat
                               target t_LESym delay_stat sel_wave_list
@@ -2095,13 +2105,13 @@ sel_wave_list_1: wavefrm_element  t_WHEN choices t_Semicolon
 selected_force_assignment: t_WITH expr t_SELECT choice_stat target t_LESym t_FORCE
                                                   inout_stat sel_var_list
 
-inout_stat: /* empty */ {$$="";}
-inout_stat: t_IN   {$$=" in ";}
-inout_stat: t_OUT {$$="out";}
+inout_stat: /* empty */ { $$=""; }
+inout_stat: t_IN   { $$=" in "; }
+inout_stat: t_OUT { $$="out"; }
 
-delay_mechanism : t_TRANSPORT { $$=" transport ";}
-                | t_REJECT expr t_INERTIAL { $$=" reject "+$2+"inertial ";}
-                |  t_INERTIAL { $$=" inertial ";}
+delay_mechanism : t_TRANSPORT { $$=" transport "; }
+                | t_REJECT expr t_INERTIAL { $$=" reject "+$2+"inertial "; }
+                |  t_INERTIAL { $$=" inertial "; }
 
 conditional_variable_assignment : variable_assign_stat_1 t_WHEN expr else_stat t_Semicolon
 conditional_variable_assignment : variable_assign_stat_1 t_WHEN expr t_Semicolon
@@ -2110,7 +2120,7 @@ else_stat: t_ELSE expr t_WHEN expr
 else_stat: else_stat t_ELSE expr t_WHEN expr
 else_stat: t_ELSE expr
 
-selected_variable_assignment: t_WITH expr t_SELECT choice_stat select_name t_VarAsgn sel_var_list {$$="";}
+selected_variable_assignment: t_WITH expr t_SELECT choice_stat select_name t_VarAsgn sel_var_list { $$=""; }
 
 sel_var_list: expr t_WHEN choices t_Comma  sel_var_list
 sel_var_list: sel_var_list_1
@@ -2554,7 +2564,7 @@ static void newEntry()
   initEntry(current);
 }
 
-void createFlow(QCString val)
+void createFlow()
 {
   if (!VhdlDocGen::getFlowMember()) 
   {
@@ -2565,13 +2575,13 @@ void createFlow(QCString val)
   if (currP==VhdlDocGen::FUNCTION)
   {
     q=":function( ";
-    FlowNode::alignFuncProc(q,tempEntry->argList,true);
+    FlowChart::alignFuncProc(q,tempEntry->argList,true);
     q+=")";
   }
   else if (currP==VhdlDocGen::PROCEDURE)
   {
     q=":procedure (";    
-    FlowNode::alignFuncProc(q,tempEntry->argList,false);
+    FlowChart::alignFuncProc(q,tempEntry->argList,false);
     q+=")";
   }
   else  
@@ -2582,12 +2592,7 @@ void createFlow(QCString val)
 
   q.prepend(VhdlDocGen::getFlowMember()->name().data());
 
-  FlowNode::addFlowNode(FlowNode::START_NO,q,0);
-
-  if (!val.isEmpty())
-  {
-    FlowNode::addFlowNode(FlowNode::VARIABLE_NO,val,0);
-  }
+  FlowChart::addFlowChart(FlowChart::START_NO,q,0);
 
   if (currP==VhdlDocGen::FUNCTION)
   {
@@ -2602,9 +2607,9 @@ void createFlow(QCString val)
     ret="end process ";
   }
 
-  FlowNode::addFlowNode(FlowNode::END_NO,ret,0);
-  //  FlowNode::printFlowList();
-  FlowNode::writeFlowNode();  
+  FlowChart::addFlowChart(FlowChart::END_NO,ret,0);
+  //  FlowChart::printFlowList();
+  FlowChart::writeFlowChart();  
   currP=0;
 }
 

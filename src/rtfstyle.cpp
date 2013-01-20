@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -394,9 +394,9 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     }
     else if (*end == '\\')
     {
-      if (0 == strncmp(end, "\\snext", 6))
+      if (0 == qstrncmp(end, "\\snext", 6))
         break;
-      if (0 == strncmp(end, "\\sbasedon", 9))
+      if (0 == qstrncmp(end, "\\sbasedon", 9))
         break;
       if (0 != any_clause.match(end, 0, &len))
         break;

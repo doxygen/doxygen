@@ -83,11 +83,11 @@ private:
 class QIntBucket : public QBaseBucket
 {
 public:
-    QIntBucket( long k, QCollection::Item d, QBaseBucket *n )
+    QIntBucket( intptr_t k, QCollection::Item d, QBaseBucket *n )
 	: QBaseBucket(d,n), key(k) {}
-    long  getKey() const { return key; }
+    intptr_t  getKey() const { return key; }
 private:
-    long  key;
+    intptr_t  key;
 };
 
 class QPtrBucket : public QBaseBucket
@@ -178,7 +178,7 @@ public:
     QCollection::Item get()	     const;
     QString	      getKeyString() const;
     const char	     *getKeyAscii()  const;
-    long	      getKeyInt()    const;
+    intptr_t	      getKeyInt()    const;
     void	     *getKeyPtr()    const;
 
     QCollection::Item operator()();
@@ -208,7 +208,7 @@ inline const char *QGDictIterator::getKeyAscii() const
     return curNode ? ((QAsciiBucket*)curNode)->getKey() : 0;
 }
 
-inline long QGDictIterator::getKeyInt() const
+inline intptr_t QGDictIterator::getKeyInt() const
 {
     return curNode ? ((QIntBucket*)curNode)->getKey() : 0;
 }

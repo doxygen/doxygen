@@ -74,7 +74,7 @@ enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 // {{{ ----- Helper structs -----
 //! Holds modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers {
-  enum Protection {NONE_P, PUBLIC, PRIVATE};
+  enum Protection {NONE_P, PUBLIC, PRIVATE, PROTECTED};
   enum Direction {NONE_D, IN, OUT, INOUT};
 
   //!< This is only used with function return value.
@@ -252,8 +252,8 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE)
-ACCESS_SPEC (PRIVATE|PUBLIC)
+ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE)
+ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
@@ -545,6 +545,9 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
   /*------- access specification --------------------------------------------------------------------------*/
 
+<ModuleBody>protected/{BS}(\n|"!")       { defaultProtection = Protected;
+                                           current->protection = defaultProtection ;
+                                         }
 <ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private;
                                            current->protection = defaultProtection ;
                                          }
@@ -585,6 +588,10 @@ public                                  {
 private                                 {
                                           current->protection = Private;
                                           typeProtection = Private;
+                                        }
+protected                               {
+                                          current->protection = Protected;
+                                          typeProtection = Protected;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -1527,6 +1534,10 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
   {
     newMdf.protection = SymbolModifiers::PRIVATE;
   }
+  else if (mdfString=="protected") 
+  {
+    newMdf.protection = SymbolModifiers::PROTECTED;
+  }
   else if (mdfString=="optional") 
   {
     newMdf.optional = TRUE;
@@ -1717,6 +1728,11 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "private";
   }
+  else if (mdfs.protection == SymbolModifiers::PROTECTED)
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += "protected";
+  }
 
   return typeName;
 }
@@ -1738,6 +1754,8 @@ static void applyModifiers(Entry *ent, SymbolModifiers& mdfs)
     ent->protection = Public;
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
     ent->protection = Private;
+  else if (mdfs.protection == SymbolModifiers::PROTECTED)
+    ent->protection = Protected;
 }
 
 /*! Starts the new scope in fortran program. Consider using this function when

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -56,7 +56,7 @@ class IndexFieldSDict : public SDict<IndexField>
    ~IndexFieldSDict() {}
     int compareItems(QCollection::Item item1, QCollection::Item item2)
     {
-      return stricmp(((IndexField *)item1)->name,((IndexField *)item2)->name);
+      return qstricmp(((IndexField *)item1)->name,((IndexField *)item2)->name);
     }
 };
 

@@ -190,10 +190,17 @@
 
 #else						// all other systems
 
+#ifdef __MINGW32__
+# define STATBUF       struct _stat
+# define STATBUF4TSTAT struct _stat
+# define STAT          _stat
+# define FSTAT         _fstat
+#else
 # define STATBUF	struct stat
 # define STATBUF4TSTAT	struct stat
 # define STAT		::stat
 # define FSTAT		::fstat
+#endif
 # define STAT_REG	S_IFREG
 # define STAT_DIR	S_IFDIR
 # define STAT_MASK	S_IFMT
