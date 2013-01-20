@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -306,7 +306,7 @@ class XMLCodeGenerator : public CodeOutputInterface
         m_normalHLNeedStartTag=FALSE;
       }
       writeXMLLink(m_t,ref,file,anchor,name,tooltip);
-      col+=strlen(name);
+      col+=qstrlen(name);
     }
     void startCodeLine(bool) 
     {
@@ -1842,10 +1842,26 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   t << "    <compoundname>" << convertToXML(pd->name()) 
     << "</compoundname>" << endl;
 
-  SectionInfo *si = Doxygen::sectionDict->find(pd->name());
-  if (si)
+  if (pd==Doxygen::mainPage) // main page is special
   {
-    t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
+    QCString title;
+    if (!pd->title().isEmpty() && pd->title().lower()!="notitle")
+    {
+      title = filterTitle(Doxygen::mainPage->title());
+    }
+    else 
+    {
+      title = Config_getString("PROJECT_NAME");
+    }
+    t << "    <title>" << convertToXML(title) << "</title>" << endl;
+  }
+  else
+  {
+    SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+    if (si)
+    {
+      t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
+    }
   }
   writeInnerPages(pd->getSubPages(),t);
   t << "    <detaileddescription>" << endl;
@@ -1923,7 +1939,7 @@ void generateXML()
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  f.writeBlock(index_xsd,strlen(index_xsd));
+  f.writeBlock(index_xsd,qstrlen(index_xsd));
   f.close();
 
   fileName=outputDirectory+"/compound.xsd";
@@ -1933,7 +1949,7 @@ void generateXML()
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  f.writeBlock(compound_xsd,strlen(compound_xsd));
+  f.writeBlock(compound_xsd,qstrlen(compound_xsd));
   f.close();
 
   fileName=outputDirectory+"/index.xml";

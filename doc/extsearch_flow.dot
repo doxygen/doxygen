@@ -1,0 +1,18 @@
+digraph Flow {
+  edge [fontname="helvetica",fontsize="10pt"];
+  node [shape=ellipse,fontname="helvetica",fontsize="10pt"];
+  doxygen;
+  doxyindexer;
+  doxysearch [label="doxysearch.cgi"];
+  browser [label="HTML page\nin browser"];
+  node [shape=note];
+  searchdata [label="searchdata.xml"];
+  searchindex [label="doxysearch.db"];
+
+  doxygen -> searchdata [label=" writes"];
+  searchdata -> doxyindexer [label=" reads"];
+  doxyindexer -> searchindex [label=" writes"];
+  searchindex -> doxysearch [label=" reads"];
+  doxysearch -> browser [label=" get results "];
+  browser -> doxysearch [label=" query "];
+}

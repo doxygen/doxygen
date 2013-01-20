@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1200,7 +1200,7 @@ QCString removeIdsAndMarkers(const char *s)
       }
       else if (c=='d' && !inNum) // identifier starting with a `d'
       {
-	if (strncmp(p,"defined ",8)==0 || strncmp(p,"defined(",8)==0) 
+	if (qstrncmp(p,"defined ",8)==0 || qstrncmp(p,"defined(",8)==0) 
 	           // defined keyword
 	{
 	  p+=7; // skip defined
@@ -1481,7 +1481,6 @@ static inline void outputArray(const char *a,int len)
 static void readIncludeFile(const QCString &inc)
 {
   static bool searchIncludes = Config_getBool("SEARCH_INCLUDES");
-  if (!searchIncludes) return; // do not read include files
   uint i=0;
 
   // find the start of the include file name
@@ -1516,7 +1515,6 @@ static void readIncludeFile(const QCString &inc)
     // absIncFileName avoids difficulties for incFileName starting with "../" (bug 641336)
     QCString absIncFileName = incFileName;
     {
-      static bool searchIncludes = Config_getBool("SEARCH_INCLUDES");
       QFileInfo fi(g_yyFileName);
       if (fi.exists())
       {

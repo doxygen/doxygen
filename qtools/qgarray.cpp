@@ -635,7 +635,7 @@ extern "C" {
 static int cmp_arr( const void *n1, const void *n2 )
 {
     return ( n1 && n2 ) ? memcmp( n1, n2, cmp_item_size ) 
-	                : (int)((long)n1 - (long)n2);
+	                : (int)((intptr_t)n1 - (intptr_t)n2);
     // Qt 3.0: Add a virtual compareItems() method and call that instead
 }
 

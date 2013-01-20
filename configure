@@ -17,7 +17,7 @@
 
 doxygen_version_major=1
 doxygen_version_minor=8
-doxygen_version_revision=3
+doxygen_version_revision=3.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
 doxygen_version_mmn=NO
@@ -640,9 +640,9 @@ EOF
        if test $f_wizard = YES; then
          EXTRADEPS=doxywizard
        fi
-       if test $f_search = YES; then
-         EXTRADEPS="$EXTRADEPS doxysearch"
-       fi
+#       if test $f_search = YES; then
+#         EXTRADEPS="$EXTRADEPS doxysearch"
+#       fi
        echo "all: src/version.cpp $EXTRADEPS" >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
        echo "	\$(MAKE) -C libmd5" >> $DST

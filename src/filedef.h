@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -236,7 +236,7 @@ class FileList : public QList<FileDef>
     {
       FileDef *md1 = (FileDef *)item1;
       FileDef *md2 = (FileDef *)item2;
-      return stricmp(md1->name(),md2->name());
+      return qstricmp(md1->name(),md2->name());
     }
   private:
     QCString m_pathName;
@@ -251,7 +251,7 @@ class OutputNameList : public QList<FileList>
     {
       FileList *fl1 = (FileList *)item1;
       FileList *fl2 = (FileList *)item2;
-      return stricmp(fl1->path(),fl2->path());
+      return qstricmp(fl1->path(),fl2->path());
     }
 };
 

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -179,10 +179,10 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
-    bool found=FALSE;
+    bool found = name()=="citelist";
     QDictIterator<RefList> rli(*Doxygen::xrefLists);
     RefList *rl;
-    for (rli.toFirst();(rl=rli.current());++rli)
+    for (rli.toFirst();(rl=rli.current()) && !found;++rli)
     {
       if (rl->listName()==name())
       {

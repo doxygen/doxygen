@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -130,7 +130,7 @@ class NamespaceList : public QList<NamespaceDef>
    ~NamespaceList() {}
     int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
-      return stricmp(((NamespaceDef *)item1)->name(),
+      return qstricmp(((NamespaceDef *)item1)->name(),
                     ((NamespaceDef *)item2)->name()
                    );
     }
@@ -160,7 +160,7 @@ class NamespaceSDict : public SDict<NamespaceDef>
    ~NamespaceSDict() {}
     int compareItems(QCollection::Item item1,QCollection::Item item2)
     {
-      return stricmp(((NamespaceDef *)item1)->name(),
+      return qstricmp(((NamespaceDef *)item1)->name(),
                     ((NamespaceDef *)item2)->name()
                    );
     }

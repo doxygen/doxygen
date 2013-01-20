@@ -593,7 +593,7 @@ int QIODevice::readLine( char *data, uint maxlen )
 	    break;
     }
     *p++ = '\0';
-    return (int)((long)p - (long)data);
+    return (int)((intptr_t)p - (intptr_t)data);
 }
 
 

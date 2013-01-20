@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -89,7 +89,7 @@ GroupDef::~GroupDef()
 
 void GroupDef::setGroupTitle( const char *t )
 {
-  if ( t && strlen(t) )
+  if ( t && qstrlen(t) )
   {
     title = t;
     titleSet = TRUE;

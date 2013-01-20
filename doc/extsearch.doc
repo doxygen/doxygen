@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -13,6 +13,8 @@
  *
  */
 /*! \page extsearch External Indexing and Searching
+
+[TOC]
 
 \section extsearch_intro Introduction
 
@@ -34,26 +36,9 @@ engine, doxygen provides an example tool for each action: `doxyindexer`
 for indexing the data and `doxysearch.cgi` for searching through the index.
 
 The data flow is shown in the following diagram:
-\dot
-digraph Flow {
-  edge [fontname="helvetica",fontsize="10pt"];
-  node [shape=ellipse,fontname="helvetica",fontsize="10pt"];
-  doxygen;
-  doxyindexer;
-  doxysearch [label="doxysearch.cgi"];
-  browser [label="HTML page\nin browser"];
-  node [shape=note];
-  searchdata [label="searchdata.xml"];
-  searchindex [label="doxysearch.db"];
 
-  doxygen -> searchdata [label=" writes"];
-  searchdata -> doxyindexer [label=" reads"];
-  doxyindexer -> searchindex [label=" writes"];
-  searchindex -> doxysearch [label=" reads"];
-  doxysearch -> browser [label=" get results "];
-  browser -> doxysearch [label=" query "];
-}
-\enddot
+\image html extsearch_flow.png "External Search Data Flow"
+\image latex extsearch_flow.eps "External Search Data Flow" height=10cm
 
 - `doxygen` produces the raw search data
 - `doxyindexer` indexes the data into a search database `doxysearch.db`
@@ -135,47 +120,49 @@ Now you should be enable to search for words and symbols from the HTML output.
 
 \subsection extsearch_multi Multi project index
 
-In case you have two doxygen projects A and B where B depends on A via a 
-tag file, i.e. the configuration of project A says:
-
-    GENERATE_TAGFILES = A.tag
-
-and the configuration of project B has its dependency on A configured as 
-follows:
-
-    TAGFILES = ../project_A/A.tag=../../project_A/html
-
-then it may be desirable to allow searching for words in both projects.
+In case you have more than one doxygen project and these projects are related, 
+it may be desirable to allow searching for words in all projects from within 
+the documentation of any of the projects.
 
 To make this possible all that is needed is to combine the search data
-for both projects into one index, i.e. run
+for all projects into a single index, e.g. for two projects A and B for which the
+searchdata.xml is generated in directories project_A and project_B run:
 
     doxyindexer project_A/searchdata.xml project_B/searchdata.xml
 
 and then copy the resulting `doxysearch.db` to the directory where also
-`doxysearch.cgi` used by project B is located.
+`doxysearch.cgi` is located.
 
-In case you also want to link to search results in project B 
-from the search page of project A (or in general 
-between two projects that are otherwise unrelated),
-you need to give some additional information in order for doxygen to make 
-the right links. This is what the 
-\ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" option is for.
+The `searchdata.xml` file doesn't contain any absolute paths or links, 
+so how can the search results from multiple projects be linked back to the right documentation set?
+This is where the `EXTERNAL_SEARCH_ID` and `EXTRA_SEARCH_MAPPINGS` options come into play.
 
-Each project needs to have a tag file defined, i.e. in the above example 
-involving project A and B, also project B should define a tag file:
+To be able to identify the different projects, one needs to
+set a unique ID using \ref cfg_external_search_id "EXTERNAL_SEARCH_ID"
+for each project.
 
-    GENERATE_TAGFILES = B.tag
+To link the search results to the right project, you need to define a
+mapping per project using the \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" tag.
+With this option to can define the mapping from IDs of other projects to the
+(relative) location of documentation of those projects.
 
-then project A can define the mapping as follows:
+So for projects A and B the relevant part of the configuration file 
+could look as follows:
 
-    EXTRA_SEARCH_MAPPINGS = B.tag=../../project_B/html
+    project_A/Doxyfile
+    ------------------
+    EXTERNAL_SEARCH_ID    = A
+    EXTRA_SEARCH_MAPPINGS = B=../../project_B/html
 
-with this addition, projects A and B can share the same search database.
+for project A and for project B
 
-@note The mapping defined by `EXTRA_SEARCH_MAPPINGS` is treated as an 
-extension of the mappings already defined by `TAGFILES`. In case the same 
-tag file is mentioned in both options, the one in `TAGFILES` is used.
+    project_B/Doxyfile
+    ------------------
+    EXTERNAL_SEARCH_ID    = B
+    EXTRA_SEARCH_MAPPINGS = A=../../project_A/html
+    
+with these settings, projects A and B can share the same search database,
+and the search results will link to the right documentation set.
 
 \section extsearch_update Updating the index
 

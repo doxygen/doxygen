@@ -53,6 +53,20 @@
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_TOP_STATE 1
 #define YY_NO_INPUT 1
+
+/*
+ * For fixed formatted code position 6 is of importance (continuation character).
+ * The following variables and macros keep track of the column number
+ * YY_USER_ACTION is always called for each scan action
+ * YY_FTN_REST    is used to handle end of lines and reset the column counter
+ * YY_FTN_REJECT  resets the column counters when a pattern is rejected and thus rescanned.
+ */
+int yy_old_start = 0;
+int yy_my_start  = 0;
+int yy_end       = 1;
+#define YY_USER_ACTION {yy_old_start = yy_my_start; yy_my_start = yy_end; yy_end += yyleng;}
+#define YY_FTN_RESET   {yy_old_start = 0; yy_my_start = 0; yy_end = 1;}
+#define YY_FTN_REJECT  {yy_end = yy_my_start; yy_my_start = yy_old_start; REJECT;}
    
 //--------------------------------------------------------------------------------
 
@@ -680,8 +694,8 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLEX|DOUBLE{BS_}PRECISION|{CHAR})
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|ELEMENTAL)
-ACCESS_SPEC (PRIVATE|PUBLIC)
+ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|ELEMENTAL)
+ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
 FLOW  (DO|SELECT|CASE|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT)
@@ -729,6 +743,10 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  endFontClass();
 					}
 <Start>{FLOW}/[,( \t\n].*               {
+                                          if (g_isFixedForm)
+                                          {
+                                            if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
+                                          }
    					  /* font class is defined e.g. in doxygen.css */
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
@@ -777,7 +795,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  BEGIN(UseOnly);     
                                         }           
 <UseOnly>{BS},{BS}                      { codifyLines(yytext); }
-<UseOnly>{BS}&{BS}"\n"                  { codifyLines(yytext); }
+<UseOnly>{BS}&{BS}"\n"                  { codifyLines(yytext); YY_FTN_RESET}
 <UseOnly>{ID}                           {
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
@@ -786,7 +804,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
 <Use,UseOnly>"\n"                       {
                                           unput(*yytext);
-                                          yy_pop_state();
+                                          yy_pop_state();YY_FTN_RESET
                                         }
        
  /*-------- fortran module  -----------------------------------------*/
@@ -797,7 +815,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  endFontClass();
                                           yy_push_state(YY_START);
 					  BEGIN(ClassName); 
-	                                  if (!stricmp(yytext,"module")) currentModule="module";
+	                                  if (!qstricmp(yytext,"module")) currentModule="module";
 					}
 <ClassName>{ID}               	        {
 	                                  if (currentModule == "module")
@@ -810,11 +828,11 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
  					}
 <ClassName>\n				{ // interface may be without name
                                           yy_pop_state();
-					  REJECT;
+					  YY_FTN_REJECT;
 					}
 <Start>"end"({BS_}"module").*          { // just reset currentModule, rest is done in following rule
                                           currentModule=0;
-					  REJECT;
+					  YY_FTN_REJECT;
                                         }
  /*-------- subprog definition -------------------------------------*/
 <Start>({PREFIX}{BS_})?{TYPE_SPEC}{BS_}({PREFIX}{BS_})?{BS}/{SUBPROG}{BS_}  {   // TYPE_SPEC is for old function style function result
@@ -839,6 +857,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
 <Subprog,Subprogend>"\n"                { codifyLines(yytext);
                                           yy_pop_state();
+                                          YY_FTN_RESET
                                         }
 <Start>^{BS}"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"type"|"interface"){BS}     {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
@@ -926,11 +945,13 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           codifyLines(yytext);
 					  bracketCount = 0;
                                           yy_pop_state();
+                                          YY_FTN_RESET
  				 	}
 <Declaration>"\n"                       { // end declaration line
 					  codifyLines(yytext);
 					  bracketCount = 0;
                                           yy_pop_state();
+                                          YY_FTN_RESET
  					}
 
  /*-------- subprog calls  -----------------------------------------*/
@@ -954,6 +975,14 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*-------- comments ---------------------------------------------------*/
 <Start>\n?{BS}"!>"|"!<"                 { // start comment line or comment block
+                                          if (yytext[0] == '\n')
+                                          {
+                                            yy_old_start = 0;
+                                            yy_my_start = 1;
+                                            yy_end = yyleng;
+                                          }
+                                          // Actually we should see if ! on position 6, can be continuation
+                                          // but the chance is very unlikely, so no effort to solve it here
                                           yy_push_state(YY_START);
 					  BEGIN(DocBlock);
                                           docBlock=yytext;
@@ -967,7 +996,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <DocBlock>.*    			{ // contents of current comment line
                                           docBlock+=yytext;
   					}
-<DocBlock>"\n"{BS}("!>"|"!<"|"!!")	{ //| comment block (next line is also comment line)
+<DocBlock>"\n"{BS}("!>"|"!<"|"!!")	{ // comment block (next line is also comment line)
+                                          yy_old_start = 0;
+                                          yy_my_start = 1;
+                                          yy_end = yyleng;
+                                          // Actually we should see if ! on position 6, can be continuation
+                                          // but the chance is very unlikely, so no effort to solve it here
 					  docBlock+=yytext; 
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
@@ -989,17 +1023,19 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    endFontClass();
 					  }
                                          yy_pop_state();
+                                          YY_FTN_RESET
 					}
 
 <*>"!"[^><\n].*|"!"$ 			{ // normal comment
-					  if(YY_START == String) REJECT; // ignore in strings
+					  if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                          if (g_isFixedForm && yy_my_start == 6) YY_FTN_REJECT;
   					  startFontClass("comment");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
 
 <*>^[Cc*].*              		{ // normal comment
-                                          if(! g_isFixedForm) REJECT;
+                                          if(! g_isFixedForm) YY_FTN_REJECT;
 
   					  startFontClass("comment");
   					  codifyLines(yytext);
@@ -1007,9 +1043,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					}
 
  /*------ preprocessor  --------------------------------------------*/ 
-<Start>"#".*\n                          { startFontClass("preprocessor");
+<Start>"#".*\n                          {
+                                          if (g_isFixedForm && yy_my_start == 6) YY_FTN_REJECT;
+                                          startFontClass("preprocessor");
   					  codifyLines(yytext);
 					  endFontClass();
+                                          YY_FTN_RESET
                                         }
  /*------ variable references?  -------------------------------------*/ 
 
@@ -1031,9 +1070,10 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
   					  codifyLines(str);
 					  endFontClass();
                                           str = "";
+                                          YY_FTN_RESET
                                         }           
 <String>\"|\'                           { // string ends with next quote without previous backspace 
-                                          if(yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
+                                          if(yytext[0]!=stringStartSymbol) YY_FTN_REJECT; // single vs double quote
                                           str+=yytext;
   					  startFontClass("stringliteral");
   					  codifyLines(str);
@@ -1043,7 +1083,8 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <String>.                               {str+=yytext;}
 
 <*>\"|\'                                { /* string starts */
-					  /* if(YY_START == StrIgnore) REJECT; // ignore in simple comments */
+					  /* if(YY_START == StrIgnore) YY_FTN_REJECT; // ignore in simple comments */
+                                          if (g_isFixedForm && yy_my_start == 6) YY_FTN_REJECT;
                                           yy_push_state(YY_START);
                                           stringStartSymbol=yytext[0]; // single or double quote
                                           BEGIN(String);
@@ -1053,6 +1094,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
 <*>\n					{
   					  codifyLines(yytext); 
+                                          YY_FTN_RESET
   					}
 <*>.					{ 
   					  g_code->codify(yytext);

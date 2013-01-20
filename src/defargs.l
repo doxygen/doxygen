@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -408,7 +408,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_curArgTypeName+=*yytext;
 					}
 
-<ReadFuncArgDef,CopyArgString>"->"|">="|">>"	{
+<ReadFuncArgDef,CopyArgString>"<="|"->"|">="|">>"|"<<"	{
   					  g_curArgDefValue+=yytext;
   					}
 <ReadFuncArgDef,CopyArgString,CopyRawString>.		{

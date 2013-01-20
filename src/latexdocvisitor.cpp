@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1665,7 +1665,16 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   {
     m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
   }
-  m_t << "{" << baseName << "}";
+  m_t << "{" << baseName;
+  //if (Config_getBool("USE_PDFLATEX"))
+  //{
+  //  m_t << ".pdf";
+  //}
+  //else
+  //{
+  //  m_t << ".eps";
+  //}
+  m_t << "}";
 
   if (hasCaption)
   {
@@ -1729,7 +1738,16 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   {
     m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
   }
-  m_t << "{" << baseName << "}";
+  m_t << "{" << baseName;
+  //if (Config_getBool("USE_PDFLATEX"))
+  //{
+  //  m_t << ".pdf";
+  //}
+  //else
+  //{
+  //  m_t << ".eps";
+  //}
+  m_t << "}";
 
   if (hasCaption)
   {

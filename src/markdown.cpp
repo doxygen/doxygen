@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -291,7 +291,7 @@ static int findEmphasisChar(const char *data, int size, char c, int c_size)
           if ((data[i]=='\\' || data[i]=='@') && // command
               data[i-1]!='\\' && data[i-1]!='@') // not escaped
           {
-            if (strncmp(&data[i+1],endBlockName,l)==0)
+            if (qstrncmp(&data[i+1],endBlockName,l)==0)
             {
               break;
             }
@@ -960,7 +960,7 @@ static int processSpecialCommand(GrowBuf &out, const char *data, int offset, int
       if ((data[i]=='\\' || data[i]=='@') && // command
           data[i-1]!='\\' && data[i-1]!='@') // not escaped
       {
-        if (strncmp(&data[i+1],endBlockName,l)==0)
+        if (qstrncmp(&data[i+1],endBlockName,l)==0)
         {
           //printf("found end at %d\n",i);
           out.addStr(data,i+1+l);
@@ -1814,7 +1814,7 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
               data[end-1]!='\\' && data[end-1]!='@'
              )
           {
-            if (strncmp(&data[end+1],endBlockName,l)==0)
+            if (qstrncmp(&data[end+1],endBlockName,l)==0)
             {
               if (pi!=-1) // output previous line if available
               {
@@ -2212,10 +2212,10 @@ void MarkdownFileParser::parseInput(const char *fileName,
   current->lang = SrcLangExt_Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;
-  int len = strlen(fileBuf);
+  int len = qstrlen(fileBuf);
   BufStr input(len);
   BufStr output(len);
-  input.addArray(fileBuf,strlen(fileBuf));
+  input.addArray(fileBuf,qstrlen(fileBuf));
   input.addChar('\0');
   convertCppComments(&input,&output,fileName);
   output.addChar('\0');

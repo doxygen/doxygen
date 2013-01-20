@@ -466,7 +466,7 @@ QCollection::Item QGDict::look_int( long key, QCollection::Item d, int op )
 QCollection::Item QGDict::look_ptr( void *key, QCollection::Item d, int op )
 {
     QPtrBucket *n;
-    int index = (int)((ulong)key % vlen);	// simple hash
+    int index = (int)((uintptr_t)key % vlen);	// simple hash
     if ( op == op_find ) {			// find
 	for ( n=(QPtrBucket*)vec[index]; n;
 	      n=(QPtrBucket*)n->getNext() ) {
@@ -681,7 +681,7 @@ QPtrBucket *QGDict::unlink_ptr( void *key, QCollection::Item d )
 	return 0;
     QPtrBucket *n;
     QPtrBucket *prev = 0;
-    int index = (int)((ulong)key % vlen);
+    int index = (int)((uintptr_t)key % vlen);
     for ( n=(QPtrBucket *)vec[index]; n; n=(QPtrBucket *)n->getNext() ) {
 	bool found = (n->getKey() == key);
 	if ( found && d )
@@ -1012,7 +1012,7 @@ QDataStream &QGDict::read( QDataStream &s )
 		    // but hey, serializing pointers?  can it be done
 		    // at all, ever?
 		    if ( k )
-			look_ptr( (void *)k, d, op_insert );
+			look_ptr( (void *)(uintptr_t)k, d, op_insert );
 		}
 		break;
 	}

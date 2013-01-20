@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1008,11 +1008,12 @@ void Definition::setBodyDef(FileDef *fd)
 /*! Write code of this definition into the documentation */
 void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 {
+  static bool inlineSources = Config_getBool("INLINE_SOURCES");
   makeResident();
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        m_startBodyLine,m_endBodyLine,m_bodyDef);
-  if (Config_getBool("INLINE_SOURCES") && 
+  if (inlineSources && 
       m_impl->body && m_impl->body->startLine!=-1 && 
       m_impl->body->endLine>=m_impl->body->startLine && m_impl->body->fileDef)
   {
@@ -1031,7 +1032,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
 
       // vhdl  parser can' t start at an arbitrary point in the source code
-      if(this->getLanguage()==SrcLangExt_VHDL)
+      if (getLanguage()==SrcLangExt_VHDL)
       {
         if (thisMd) VhdlDocGen::writeCodeFragment(ol,actualStart,codeFragment,thisMd);
         return;
@@ -1048,7 +1049,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
                        actualEnd,        // endLine
                        TRUE,             // inlineFragment
                        thisMd,           // memberDef
-                       FALSE             // show line numbers
+                       TRUE              // show line numbers
                       );
       ol.endCodeFragment();
     }
@@ -1404,7 +1405,7 @@ int Definition::_getXRefListId(const char *listName) const
     ListItemInfo *lii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      if (strcmp(lii->type,listName)==0)
+      if (qstrcmp(lii->type,listName)==0)
       {
         return lii->itemId;
       }
@@ -1489,12 +1490,12 @@ QCString Definition::navigationPathAsString() const
   {
     if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
     {
-      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               ((const GroupDef*)this)->groupTitle()+"</a>";
     }
     else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               ((const PageDef*)this)->title()+"</a>";
     }
     else if (definitionType()==Definition::TypeClass)
@@ -1504,13 +1505,13 @@ QCString Definition::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension;
+      result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension;
       if (!anchor().isEmpty()) result+="#"+anchor();
       result+="\">"+name+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\"$relpath$"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
               locName+"</a>";
     }
   }

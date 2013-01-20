@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -478,31 +478,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
       break;
-#if 0
-      case DocVerbatim::Vhdf:  
-          if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
-          {
-            QCString fname=FlowNode::convertNameToFileName(); 
-     //       fprintf(stderr,"\n create flow mem %s \n",fname.data());
-            //m_t << "<div align=\"left\">" << endl; // TODO: use CSS
-            m_t << "<p>";
-            m_t << "flowchart: " ; // TODO: translate me
-            m_t << "<a href=\"";
-            m_t << fname.data(); 
-            m_t << ".svg\">";
-            m_t << VhdlDocGen::getFlowMember()->name().data(); 
-            m_t << "</a>";
-            if (!s->text().isEmpty())
-            {
-              m_t << "<br/>";
-              m_t << s->text().data();
-            }
-            m_t << "</p>";
-            VhdlDocGen::setFlowMember(NULL);
-          }
-      break;
-#endif
-      case DocVerbatim::Msc:
+    case DocVerbatim::Msc:
       {
         forceEndParagraph(s);
 
@@ -1796,7 +1772,7 @@ void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
   if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
   {
     forceEndParagraph(vf);
-    QCString fname=FlowNode::convertNameToFileName(); 
+    QCString fname=FlowChart::convertNameToFileName(); 
     m_t << "<p>";
     m_t << "flowchart: " ; // TODO: translate me
     m_t << "<a href=\"";
@@ -1880,6 +1856,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
                                const QCString &relPath,const QCString &anchor,
                                const QCString &tooltip)
 {
+  //printf("HtmlDocVisitor: file=%s anchor=%s\n",file.data(),anchor.data());
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";

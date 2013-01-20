@@ -216,7 +216,7 @@ public:
     bool  remove_ascii( QCacheItem *item )
 	{ return QGDict::remove_ascii((const char *)item->key,item); }
     bool  remove_int( QCacheItem *item )
-	{ return QGDict::remove_int((long)item->key,item);}
+	{ return QGDict::remove_int((intptr_t)item->key,item);}
 
     void  statistics()			{ QGDict::statistics(); }
 };
@@ -406,7 +406,7 @@ bool QGCache::insert_other( const char *key, QCollection::Item data,
     if ( keytype == AsciiKey )
 	dict->insert_ascii( key, ci );
     else
-	dict->insert_int( (long)key, ci );
+	dict->insert_int( (intptr_t)key, ci );
     tCost += cost;
     return TRUE;
 }
@@ -469,7 +469,7 @@ QCollection::Item QGCache::take_other( const char *key )
     if ( keytype == AsciiKey )
 	ci = dict->take_ascii( key );
     else
-	ci = dict->take_int( (long)key );
+	ci = dict->take_int( (intptr_t)key );
     Item d;
     if ( ci ) {
 	d = ci->data;
@@ -549,7 +549,7 @@ QCollection::Item QGCache::find_string( const QString &key, bool ref ) const
 QCollection::Item QGCache::find_other( const char *key, bool ref ) const
 {
     QCacheItem *ci = keytype == AsciiKey ? dict->find_ascii(key)
-					 : dict->find_int((long)key);
+					 : dict->find_int((intptr_t)key);
 #if defined(DEBUG)
     lruList->finds++;
 #endif
@@ -816,10 +816,10 @@ const char *QGCacheIterator::getKeyAscii() const
   Returns the key of the current item, as a long.
 */
 
-long QGCacheIterator::getKeyInt() const
+intptr_t QGCacheIterator::getKeyInt() const
 {
     QCacheItem *item = it->current();
-    return item ? (long)item->key : 0;
+    return item ? (intptr_t)item->key : 0;
 }
 
 /*!

@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1196,7 +1194,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trRTFansicp()
     {
-      return "1252";
+      return "1257";
     }
     
 
@@ -1205,7 +1203,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trRTFCharSet()
     {
-      return "0";
+      return "186";
     }
 
     /*! Used as header RTF general index */

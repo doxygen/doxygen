@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -67,7 +67,7 @@ int MemberList::compareItems(QCollection::Item item1, QCollection::Item item2)
     else if (ord2 > ord1)
       return 1;
   }
-  int cmp = stricmp(c1->name(),c2->name());
+  int cmp = qstricmp(c1->name(),c2->name());
   return cmp!=0 ? cmp : c1->getDefLine()-c2->getDefLine();
 }
 
@@ -926,7 +926,7 @@ int MemberSDict::compareItems(QCollection::Item item1, QCollection::Item item2)
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
   //printf("MemberSDict::compareItems(%s,%s)\n",c1->name().data(),c2->name().data());
-  int cmp = stricmp(c1->name(),c2->name());
+  int cmp = qstricmp(c1->name(),c2->name());
   if (cmp)
   {
     return cmp;

@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -835,7 +835,10 @@ void XmlDocVisitor::visitPost(DocLink *)
 void XmlDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-   if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+  if (!ref->file().isEmpty()) 
+  {
+    startLink(ref->ref(),ref->file(),ref->isSubPage() ? QCString() : ref->anchor());
+  }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
@@ -1056,6 +1059,7 @@ void XmlDocVisitor::filter(const char *str)
 
 void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
+  //printf("XmlDocVisitor: file=%s anchor=%s\n",file.data(),anchor.data());
   m_t << "<ref refid=\"" << file;
   if (!anchor.isEmpty()) m_t << "_1" << anchor;
   m_t << "\" kindref=\"";

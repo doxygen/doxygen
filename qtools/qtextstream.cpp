@@ -1894,7 +1894,7 @@ QTextStream &QTextStream::operator<<( void *ptr )
     setf( hex, basefield );
     setf( showbase );
     unsetf( uppercase );
-    output_int( I_LONG | I_UNSIGNED, (ulong)ptr, FALSE );
+    output_int( I_LONG | I_UNSIGNED, (uintptr_t)ptr, FALSE );
     flags( f );
     return *this;
 }

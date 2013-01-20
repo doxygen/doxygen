@@ -46,6 +46,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !defined(_OS_WIN32_)
+#include <stdint.h>
+#endif
+
 #if defined(_OS_SUN_) && defined(_CC_GNU_)
 #include <strings.h>
 #endif
@@ -98,25 +102,26 @@ Q_EXPORT inline char *cstrcpy( char *dst, const char *src )
 Q_EXPORT inline char *qstrcpy( char *dst, const char *src )
 { return src ? strcpy(dst, src) : 0; }
 
-Q_EXPORT char *qstrncpy( char *dst, const char *src, uint len );
+Q_EXPORT char * qstrncpy(char *src,const char *dst, uint len);
 
 Q_EXPORT inline int cstrcmp( const char *str1, const char *str2 )
 { return strcmp(str1,str2); }
 
 Q_EXPORT inline int qstrcmp( const char *str1, const char *str2 )
-{ return (str1 && str2) ? strcmp(str1,str2) : (int)((long)str2 - (long)str1); }
+{ return (str1 && str2) ? strcmp(str1,str2) : (int)((intptr_t)str2 - (intptr_t)str1); }
 
 Q_EXPORT inline int cstrncmp( const char *str1, const char *str2, uint len )
 { return strncmp(str1,str2,len); }
 
 Q_EXPORT inline int qstrncmp( const char *str1, const char *str2, uint len )
 { return (str1 && str2) ? strncmp(str1,str2,len) :
-			  (int)((long)str2 - (long)str1); }
+			  (int)((intptr_t)str2 - (intptr_t)str1); }
 
-Q_EXPORT int qstricmp( const char *, const char * );
+Q_EXPORT int qstricmp( const char *str1, const char *str2 );
 
-Q_EXPORT int qstrnicmp( const char *, const char *, uint len );
+Q_EXPORT int qstrnicmp( const char *str1, const char *str2, uint len );
 
+#if 0
 // ### TODO for 3.0: these and the cstr* functions should be used if
 //                   !defined(QT_CLEAN_NAMESPACE)
 //                   We want to keep source compatibility for 2.x
@@ -142,6 +147,7 @@ Q_EXPORT int qstrnicmp( const char *, const char *, uint len );
 #undef	strnicmp
 #define strnicmp qstrnicmp
 
+#endif
 #endif
 
 // qChecksum: Internet checksum
@@ -274,24 +280,28 @@ inline void QCString::duplicate( const QCString &s )
 {
   if (!s.isEmpty()) 
   {
-    uint l = strlen(s.data());
+    uint l = (uint)strlen(s.data());
     m_data = (char *)malloc(l+1);
     if (m_data) memcpy(m_data,s.data(),l+1);
   }
   else 
+  {
     m_data=0; 
+  }
 }
 
 inline void QCString::duplicate( const char *str)
 {
   if (str && str[0]!='\0') 
   {
-    uint l = strlen(str);
+    uint l = (uint)strlen(str);
     m_data = (char *)malloc(l+1);
     if (m_data) memcpy(m_data,str,l+1);
   }
   else 
+  {
     m_data=0;
+  }
 }
 
 inline QCString &QCString::duplicate( const char *str, int)

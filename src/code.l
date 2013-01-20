@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2414,14 +2414,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  codifyLines(yytext);
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
-					  g_inForEachExpression = (strcmp(yytext,"for each")==0 || strcmp(yytext, "foreach")==0);
+					  g_inForEachExpression = (qstrcmp(yytext,"for each")==0 || qstrcmp(yytext, "foreach")==0);
 					  BEGIN(FuncCall);
   					}
 <Body>{FLOWKW}/([^a-z_A-Z0-9]) 		{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
-					  if (g_inFunctionTryBlock && (strcmp(yytext,"catch")==0 || strcmp(yytext,"finally")==0))
+					  if (g_inFunctionTryBlock && (qstrcmp(yytext,"catch")==0 || qstrcmp(yytext,"finally")==0))
 					  {
 					    g_inFunctionTryBlock=FALSE;
 					  }
@@ -2773,7 +2773,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
   /*
 <ObjCMemberCall>{ID}			{
-  					  if (strcmp(yytext,"self")==0 || strcmp(yytext,"super")==0)
+  					  if (qstrcmp(yytext,"self")==0 || qstrcmp(yytext,"super")==0)
 					  {
 					    // TODO: get proper base class for "super"
 					    g_theCallContext.setClass(getClass(g_curClassName));
@@ -2944,10 +2944,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					}
 <MemberCall2,FuncCall>{OPERATOR}        { // operator
-  					  if (strcmp(yytext,"*") && 
-					      strcmp(yytext,"&") &&
-					      strcmp(yytext,"^") &&
-					      strcmp(yytext,"%")) // typically a pointer or reference
+  					  if (qstrcmp(yytext,"*") && 
+					      qstrcmp(yytext,"&") &&
+					      qstrcmp(yytext,"^") &&
+					      qstrcmp(yytext,"%")) // typically a pointer or reference
 					  {
 					    // not a * or &, or C++/CLI's ^ or %
 					    g_parmType.resize(0);g_parmName.resize(0);

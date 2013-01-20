@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -41,12 +41,12 @@ static int compItems(void *item1,void *item2)
   //printf("compItems: %d %s<->%s\n",b,c1->name().data(),c2->name().data());
   if (b) 
   { 
-     return stricmp(c1->name(),
+     return qstricmp(c1->name(),
                     c2->name());
   }
   else
   {
-     return stricmp(c1->className(),
+     return qstricmp(c1->className(),
                     c2->className());
   }
 }

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -125,7 +125,7 @@ class MemberIndexList : public QList<MemberDef>
     {
       MemberDef *md1=(MemberDef *)item1;
       MemberDef *md2=(MemberDef *)item2;
-      return stricmp(md1->name(),md2->name());
+      return qstricmp(md1->name(),md2->name());
     }
 };
 
@@ -1384,13 +1384,13 @@ void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalO
           ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
               cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd); 
           if (addToIndex && 
-              cd->partOfGroups()==0 &&
+              /*cd->partOfGroups()==0 &&*/
               (cd->getOuterScope()==0 || 
                cd->getOuterScope()->definitionType()!=Definition::TypeClass
               )
              )
           {
-            addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor());
+            addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),cd->partOfGroups()==0);
           }
           if (count>0)
           {
@@ -1461,7 +1461,7 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
           file = nd->getOutputFileBase();
           if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
           {
-            file=file.replace(0,strlen("namespace"),"class");
+            file=file.replace(0,qstrlen("namespace"),"class");
           }
         }
 
@@ -1537,7 +1537,7 @@ static void writeNamespaceIndex(OutputList &ol)
       ol.startIndexKey();
       if (nd->getLanguage()==SrcLangExt_VHDL)
       {
-        ol.writeObjectLink(0, nd->getOutputFileBase().replace(0,strlen("namespace"),"class"),0,nd->displayName());
+        ol.writeObjectLink(0, nd->getOutputFileBase().replace(0,qstrlen("namespace"),"class"),0,nd->displayName());
       }
       else
       {
@@ -1722,7 +1722,7 @@ public:
 
     QCString n1 = c1->className();
     QCString n2 = c2->className();
-    return stricmp (n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
+    return qstricmp (n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
   }
 };
 
@@ -3907,35 +3907,38 @@ static void writeDirIndex(OutputList &ol)
 
 static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
 {
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,lne->baseFile(),0,lne->title(),HLI_UserGroup);
-  startTitle(ol,0);
-  ol.parseText(lne->title());
-  endTitle(ol,0,0);
-  ol.startContents();
-  QListIterator<LayoutNavEntry> li(lne->children());
-  LayoutNavEntry *entry;
-  int count=0;
-  for (li.toFirst();(entry=li.current());++li)
+  if (lne->baseFile().left(9)=="usergroup")
   {
-    if (entry->visible()) count++;
-  }
-  if (count>0)
-  {
-    ol.writeString("<ul>\n");
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    startFile(ol,lne->baseFile(),0,lne->title(),HLI_UserGroup);
+    startTitle(ol,0);
+    ol.parseText(lne->title());
+    endTitle(ol,0,0);
+    ol.startContents();
+    QListIterator<LayoutNavEntry> li(lne->children());
+    LayoutNavEntry *entry;
+    int count=0;
     for (li.toFirst();(entry=li.current());++li)
     {
-      if (entry->visible())
-      {
-        ol.writeString("<li><a href=\""+entry->url()+"\"><span>"+
-            fixSpaces(entry->title())+"</span></a></li>\n");
-      }
+      if (entry->visible()) count++;
     }
-    ol.writeString("</ul>\n");
+    if (count>0)
+    {
+      ol.writeString("<ul>\n");
+      for (li.toFirst();(entry=li.current());++li)
+      {
+        if (entry->visible())
+        {
+          ol.writeString("<li><a href=\""+entry->url()+"\"><span>"+
+              fixSpaces(entry->title())+"</span></a></li>\n");
+        }
+      }
+      ol.writeString("</ul>\n");
+    }
+    endFile(ol);
+    ol.popGeneratorState();
   }
-  endFile(ol);
-  ol.popGeneratorState();
 }
 
 //----------------------------------------------------------------------------
@@ -3945,13 +3948,14 @@ static void writeIndex(OutputList &ol)
 {
   static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static QCString projectName = Config_getString("PROJECT_NAME");
   // save old generator state
   ol.pushGeneratorState();
 
   QCString projPrefix;
-  if (!Config_getString("PROJECT_NAME").isEmpty())
+  if (!projectName.isEmpty())
   {
-    projPrefix=Config_getString("PROJECT_NAME")+" ";
+    projPrefix=projectName+" ";
   }
 
   //--------------------------------------------------------------------
@@ -3979,8 +3983,8 @@ static void writeIndex(OutputList &ol)
   
   if (Doxygen::mainPage)
   {
-    if (/*Doxygen::mainPage->hasSubPages() || */
-        (!Config_getString("PROJECT_NAME").isEmpty() && mainPageHasTitle())
+    if (
+        (!projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0)
        ) // to avoid duplicate entries in the treeview
     {
       Doxygen::indexList->addContentsItem(Doxygen::mainPage->hasSubPages(),title,0,indexName,0,Doxygen::mainPage->hasSubPages(),TRUE); 
@@ -4014,7 +4018,7 @@ static void writeIndex(OutputList &ol)
   }
   else
   {
-    if (!Config_getString("PROJECT_NAME").isEmpty())
+    if (!projectName.isEmpty())
     {
       ol.startHeaderSection();
       ol.startTitleHead(0);
@@ -4391,18 +4395,40 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
           {
             // prepend a ! or ^ marker to the URL to avoid tampering with it
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
-            if (!url.isEmpty() && url.at(0)!='!') // absolute URL
+            bool isRelative=url.at(0)=='!';
+            if (!url.isEmpty() && !isRelative) // absolute URL
             {
               url.prepend("^"); // prepend ^ to absolute URL
             }
             bool isRef = lne->baseFile().left(4)=="@ref" || lne->baseFile().left(4)=="\\ref";
-            Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,url,0,FALSE,isRef); 
+            Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,url,0,FALSE,isRef || isRelative); 
           }
           break;
         case LayoutNavEntry::UserGroup:
           if (addToIndex)
           {
-            Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,lne->baseFile(),0,TRUE,TRUE); 
+            QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
+            if (!url.isEmpty())
+            {
+              if (url=="![none]")
+              {
+                Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,0,0,FALSE,FALSE); 
+              }
+              else
+              {
+                bool isRelative=url.at(0)=='!';
+                if (!isRelative) // absolute URL
+                {
+                  url.prepend("^"); // prepend ^ to absolute URL
+                }
+                bool isRef = lne->baseFile().left(4)=="@ref" || lne->baseFile().left(4)=="\\ref";
+                Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,url,0,FALSE,isRef || isRelative); 
+              }
+            }
+            else 
+            {
+              Doxygen::indexList->addContentsItem(TRUE,lne->title(),0,lne->baseFile(),0,TRUE,TRUE); 
+            }
             Doxygen::indexList->incContentsDepth();
             needsClosing=TRUE;
           }

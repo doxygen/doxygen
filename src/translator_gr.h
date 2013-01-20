@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -1183,11 +1183,10 @@ class TranslatorGreek : public Translator
 
 
     /*! Used as ansicpg for RTF fcharset
-     *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
     {
-      return "0";
+      return "161";
     }
 
     /*! Used as header RTF general index */

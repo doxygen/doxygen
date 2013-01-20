@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -97,6 +97,39 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
   return result;
 }
 
+// ol.startMemberDocName has already been done before this is called.
+// when this function returns TRUE, ol.endParameterList will be called.
+//
+// typical sequence:
+//   ol.startMemberDoc
+//   ol.startMemberDocName
+//   --- enter writeDefArgumentList
+//   ol.endMemberDocName
+//   ol.startParameterList
+//     ...
+//     ol.startParameterType(first=TRUE)
+//     ol.endParameterType
+//     ol.startParameterName
+//     ol.endParameterName(last==FALSE)
+//     ...
+//     ol.startParameterType(first=FALSE)
+//     ol.endParamtereType
+//     ol.startParameterName
+//     ol.endParameterName(last==TRUE)
+//     ...
+//   --- leave writeDefArgumentList with return value TRUE
+//   ol.endParameterList
+//   ol.endMemberDoc(hasArgs=TRUE)
+//
+//  For an empty list the function should return FALSE, the sequence is
+//   ol.startMemberDoc
+//   ol.startMemberDocName
+//   --- enter writeDefArgumentList
+//   --- leave writeDefArgumentList with return value FALSE
+//   ol.endMemberDocName
+//   ol.endMemberDoc(hasArgs=FALSE);
+//  
+
 static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString & /*scopeName*/,MemberDef *md)
 {
@@ -112,7 +145,12 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   // simple argument list for tcl
   if (md->getLanguage()==SrcLangExt_Tcl)
   {
+    if (defArgList->count()==0) return FALSE;
     Argument *a=defArgList->first();
+    ol.endMemberDocName();
+    ol.startParameterList(FALSE);
+    ol.startParameterType(TRUE,0);
+    ol.endParameterType();
     ol.startParameterName(FALSE);
     while (a) 
     {
@@ -126,8 +164,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       }
       a=defArgList->next();
     }
-    ol.endParameterName(FALSE,FALSE,FALSE);
-    ol.endMemberDocName();
+    ol.endParameterName(TRUE,FALSE,FALSE);
     return TRUE;
   }
 
@@ -1733,6 +1770,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         ol.startTextLink(0,anchor());
       }
+      ol.parseText(theTranslator->trMore());
       ol.endTextLink();
       //ol.startEmphasis();
       ol.popGeneratorState();
@@ -2874,7 +2912,7 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
     const char **p = prefixes;
     while (*p)
     {
-      int l=strlen(*p);
+      int l=qstrlen(*p);
       if (ts.left(l)==*p)
       {
         ol.writeString(*p);

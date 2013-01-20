@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -48,7 +48,7 @@ class SortedRefItems : public SDict<RefItem>
     {
       RefItem *r1 = (RefItem*)item1;
       RefItem *r2 = (RefItem*)item2;
-      return stricmp(r1->title,r2->title);
+      return qstricmp(r1->title,r2->title);
     }
 };
 

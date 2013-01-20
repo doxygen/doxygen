@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -526,7 +526,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     QListIterator<ListItemInfo> slii(*docEntry->sli);
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      if (strcmp(lii->type,listName)==0) 
+      if (qstrcmp(lii->type,listName)==0) 
       {
         //printf("found %s lii->type=%s\n",listName,lii->type);
         break;
@@ -1074,7 +1074,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{B}*{CMD}"~"[a-z_A-Z]*		{ // language switch command
                                           QCString langId = QString(yytext).stripWhiteSpace().data()+2;
 			       	          if (!langId.isEmpty() &&
-					      stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
+					      qstricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
 				          { // enable language specific section
 				            BEGIN(SkipLang);
 				          }
@@ -1159,6 +1159,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                         }
 <Comment>"--"                           { // ndash
                                           addOutput(insidePre || Doxygen::markdownSupport ? yytext : "&ndash;");
+                                        }
+<Comment>"-#"{B}+                       { // numbered item
+                                          addOutput(yytext);
                                         }
 <Comment>("."+)[a-z_A-Z0-9\)]		{ // . at start or in the middle of a word, or ellipsis
   					  addOutput(yytext);
@@ -2057,7 +2060,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <SkipLang>[\\@]"~"[a-zA-Z]*        { /* language switch */
                                      QCString langId = &yytext[2];
 				     if (langId.isEmpty() ||
-					 stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)==0)
+					 qstricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)==0)
 				     { // enable language specific section
 				       BEGIN(Comment);
 				     }
@@ -2407,6 +2410,11 @@ static bool handleSubpage(const QCString &s)
   {
     warn(yyFileName,yyLineNr,
 	"warning: found \\subpage command in a comment block that is not marked as a page!");
+  }
+  if (g_spaceBeforeCmd) 
+  {
+    addOutput(' ');
+    g_spaceBeforeCmd=FALSE;
   }
   addOutput("@"+s+" ");
   BEGIN(SubpageLabel);
@@ -2849,7 +2857,7 @@ static int findExistingGroup(int &groupId,const MemberGroupInfo *info)
   {
     if (g_compoundName==mi->compoundName &&  // same file or scope
 	!mi->header.isEmpty() &&             // not a nameless group
-	stricmp(mi->header,info->header)==0  // same header name
+	qstricmp(mi->header,info->header)==0  // same header name
        )
     {
       //printf("Found it!\n");

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -19,6 +19,9 @@
 #include <assert.h>
 #include <qglobal.h>
 #include "objcache.h"
+#if !defined(_OS_WIN32_)
+#include <stdint.h>
+#endif
 
 //----------------------------------------------------------------------
 
@@ -189,7 +192,7 @@ unsigned int ObjCache::hash(void *addr)
   else
   {
     // Thomas Wang's 32 bit Mix Function
-    unsigned long key = (unsigned long)addr;
+    uintptr_t key = (uintptr_t)addr;
     key += ~(key << 15);
     key ^=  (key >> 10);
     key +=  (key << 3);

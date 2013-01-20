@@ -532,6 +532,13 @@ BR                         [ \t\n\r]
 	  {
 	    REJECT;
 	  }
+          else if (qcs.stripPrefix("--#"))
+          {
+            if (VhdlDocGen::getFlowMember())
+            {
+              FlowChart::addFlowChart(FlowChart::COMMENT_NO,0,0,qcs.data());
+            }
+          }
         }               
 .	{ /* unknown characters */ }
 									

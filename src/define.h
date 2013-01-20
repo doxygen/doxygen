@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2012 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -55,7 +55,7 @@ class DefineList : public QList<Define>
    ~DefineList() {}
     int compareItems(QCollection::Item i1,QCollection::Item i2) 
     {
-      return stricmp(((Define *)i1)->name,((Define *)i2)->name); 
+      return qstricmp(((Define *)i1)->name,((Define *)i2)->name); 
     }
 };
 
@@ -68,7 +68,7 @@ class DefineName : public QList<Define>
     const char *nameString() const { return name; }
     int compareItems(QCollection::Item i1,QCollection::Item i2) 
     {
-      return stricmp(((Define *)i1)->name,((Define *)i2)->name); 
+      return qstricmp(((Define *)i1)->name,((Define *)i2)->name); 
     }
     
   private:
@@ -83,7 +83,7 @@ class DefineNameList : public QList<DefineName>
    ~DefineNameList() {}
     int compareItems(QCollection::Item i1,QCollection::Item i2)
     {
-      return stricmp(((DefineName *)i1)->nameString(),
+      return qstricmp(((DefineName *)i1)->nameString(),
                     ((DefineName *)i2)->nameString());
     }
 };
