@@ -37,7 +37,7 @@ class NamespaceSDict;
 class NamespaceDef : public Definition
 {
   public:
-    NamespaceDef(const char *defFileName,int defLine,
+    NamespaceDef(const char *defFileName,int defLine,int defColumn,
                  const char *name,const char *ref=0,
                  const char *refFile=0);
    ~NamespaceDef();

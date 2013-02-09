@@ -8,17 +8,17 @@ distclean: clean
 	$(RM) -rf Makefile doxyindexer.pro Makefile.doxyindexer
 
 tmake:
-	$(ENV) $(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
-	$(ENV) $(PERL) $(TMAKE) doxyindexer.pro >Makefile.doxyindexer
+	$(ENV) $(PERL) "$(TMAKE)" doxysearch.pro >Makefile.doxysearch
+	$(ENV) $(PERL) "$(TMAKE)" doxyindexer.pro >Makefile.doxyindexer
 
 strip:
 	strip doxysearch
 
 Makefile.doxysearch: doxysearch.pro
-	$(ENV) $(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
+	$(ENV) $(PERL) "$(TMAKE)" doxysearch.pro >Makefile.doxysearch
 
 Makefile.doxyindexer: doxyindexer.pro
-	$(ENV) $(PERL) $(TMAKE) doxyindexer.pro >Makefile.doxyindexer
+	$(ENV) $(PERL) "$(TMAKE)" doxyindexer.pro >Makefile.doxyindexer
 
 install:
 	$(INSTTOOL) -d $(INSTALL)/bin	

@@ -221,59 +221,6 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
     FTextStream &m_t;
 };
 
-/** Helper class representing a stack of objects stored by value */
-template<class T> class ValStack
-{
-  public:
-    ValStack() : m_values(10), m_sp(0), m_size(10) {}
-    virtual ~ValStack() {}
-    ValStack(const ValStack<T> &s)
-    {
-      m_values=s.m_values.copy();
-      m_sp=s.m_sp;
-      m_size=s.m_size;
-    }
-    ValStack &operator=(const ValStack<T> &s)
-    {
-      m_values=s.m_values.copy();
-      m_sp=s.m_sp;
-      m_size=s.m_size;
-      return *this;
-    }
-    void push(T v)
-    {
-      m_sp++;
-      if (m_sp>=m_size)
-      {
-        m_size+=10;
-        m_values.resize(m_size);
-      }
-      m_values[m_sp]=v;
-    }
-    T pop()
-    {
-      ASSERT(m_sp!=0);
-      return m_values[m_sp--];
-    }
-    T& top()
-    {
-      ASSERT(m_sp!=0);
-      return m_values[m_sp];
-    }
-    bool isEmpty()
-    {
-      return m_sp==0;
-    }
-    uint count() const
-    {
-      return m_sp;
-    }
-    
-  private:
-    QArray<T> m_values;
-    int m_sp;
-    int m_size;
-};
 
 /** Generator for producing XML formatted source code. */
 class XMLCodeGenerator : public CodeOutputInterface
@@ -979,7 +926,8 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   {
     t << "        <location file=\"" 
       << md->getDefFileName() << "\" line=\"" 
-      << md->getDefLine() << "\"";
+      << md->getDefLine() << "\"" << " column=\"" 
+      << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
     {
       FileDef *bodyDef = md->getBodyDef();
@@ -1434,7 +1382,8 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
   }
   t << "    <location file=\"" 
     << cd->getDefFileName() << "\" line=\"" 
-    << cd->getDefLine() << "\"";
+    << cd->getDefLine() << "\"" << " column=\"" 
+    << cd->getDefColumn() << "\"" ;
     if (cd->getStartBodyLine()!=-1)
     {
       FileDef *bodyDef = cd->getBodyDef();
@@ -1526,9 +1475,10 @@ static void generateXMLForNamespace(NamespaceDef *nd,FTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
   t << "    </detaileddescription>" << endl;
-  t << "    <location file=\"" 
-    << nd->getDefFileName() << "\" line=\"" 
-    << nd->getDefLine() << "\"/>" << endl;
+  t << "    <location file=\""
+    << nd->getDefFileName() << "\" line=\""
+    << nd->getDefLine() << "\"" << " column=\""
+    << nd->getDefColumn() << "\"/>" << endl ;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 
@@ -1885,7 +1835,6 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
 
 void generateXML()
 {
-
   // + classes
   // + namespaces
   // + files
@@ -1894,42 +1843,6 @@ void generateXML()
   // - examples
   
   QCString outputDirectory = Config_getString("XML_OUTPUT");
-  if (outputDirectory.isEmpty())
-  {
-    outputDirectory=QDir::currentDirPath().utf8();
-  }
-  else
-  {
-    QDir dir(outputDirectory);
-    if (!dir.exists())
-    {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDirectory))
-      {
-        err("error: tag XML_OUTPUT: Output directory `%s' does not "
-            "exist and cannot be created\n",outputDirectory.data());
-        exit(1);
-      }
-      else if (!Config_getBool("QUIET"))
-      {
-        err("notice: Output directory `%s' does not exist. "
-            "I have created it for you.\n", outputDirectory.data());
-      }
-      dir.cd(outputDirectory);
-    }
-    outputDirectory=dir.absPath().utf8();
-  }
-
-  QDir dir(outputDirectory);
-  if (!dir.exists())
-  {
-    dir.setPath(QDir::currentDirPath());
-    if (!dir.mkdir(outputDirectory))
-    {
-      err("Cannot create directory %s\n",outputDirectory.data());
-      return;
-    }
-  }
   QDir xmlDir(outputDirectory);
   createSubDirs(xmlDir);
   QCString fileName=outputDirectory+"/index.xsd";

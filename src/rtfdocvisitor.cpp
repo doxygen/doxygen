@@ -446,7 +446,8 @@ void RTFDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::XmlOnly: 
-    case DocVerbatim::ManOnly: 
+    case DocVerbatim::ManOnly:
+    case DocVerbatim::DocbookOnly:
       /* nothing */
       break;
     case DocVerbatim::Dot: 

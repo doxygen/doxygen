@@ -439,6 +439,7 @@ class MemberDefImpl
     NamespaceDef *nspace;     // the namespace this member is in.
 
     MemberDef  *enumScope;    // the enclosing scope, if this is an enum field
+    bool        livesInsideEnum; 
     MemberDef  *annEnumType;  // the anonymous enum that is the type of this member
     MemberList *enumFields;   // enumeration fields
 
@@ -591,6 +592,7 @@ void MemberDefImpl::init(Definition *def,
   exampleSDict=0;
   enumFields=0;
   enumScope=0;
+  livesInsideEnum=FALSE;
   defTmpArgLists=0;
   hasCallGraph = FALSE;
   hasCallerGraph = FALSE;
@@ -680,6 +682,7 @@ void MemberDefImpl::init(Definition *def,
  *
  * \param df File containing the definition of this member.
  * \param dl Line at which the member definition was found.
+ * \param dc Column at which the member definition was found.
  * \param t  A string representing the type of the member.
  * \param na A string representing the name of the member.
  * \param a  A string representing the arguments of the member.
@@ -690,18 +693,18 @@ void MemberDefImpl::init(Definition *def,
  *           \c Normal, \c Virtual, \c Pure.
  * \param s  A boolean that is true iff the member is static.
  * \param r  The relationship between the class and the member.
- * \param mt The kind of member. See #MemberDef::MemberType for a list of 
+ * \param mt The kind of member. See #MemberType for a list of 
  *           all types.
  * \param tal The template arguments of this member.
  * \param al  The arguments of this member. This is a structured form of 
  *            the string past as argument \a a.
  */
 
-MemberDef::MemberDef(const char *df,int dl,
+MemberDef::MemberDef(const char *df,int dl,int dc,
                      const char *t,const char *na,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
                      const ArgumentList *tal,const ArgumentList *al
-                    ) : Definition(df,dl,removeRedundantWhiteSpace(na))
+                    ) : Definition(df,dl,dc,removeRedundantWhiteSpace(na))
 {
   //printf("MemberDef::MemberDef(%s)\n",na);
   m_storagePos=-1;
@@ -1178,6 +1181,10 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
   QCString n = name();
   if (!hideScopeNames)
   {
+    if (m_impl->enumScope && m_impl->livesInsideEnum)
+    {
+      n.prepend(m_impl->enumScope->displayName()+sep);
+    }
     if (m_impl->classDef && gd && !isRelated()) 
     {
       n.prepend(m_impl->classDef->displayName()+sep);
@@ -2902,6 +2909,9 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
   {
     type = m_impl->type;
   }
+
+  if (isTypedef()) type.prepend("typedef ");
+
   QCString ts = simplifyTypeForTable(type);
 
   if (cd) // cd points to an anonymous struct pointed to by this member
@@ -3165,10 +3175,11 @@ void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
   m_isLinkableCached = 0; 
 }
 
-void MemberDef::setEnumScope(MemberDef *md) 
+void MemberDef::setEnumScope(MemberDef *md,bool livesInsideEnum) 
 { 
   makeResident();
   m_impl->enumScope=md; 
+  m_impl->livesInsideEnum=livesInsideEnum;
   if (md->getGroupDef())
   {
     m_impl->group=md->getGroupDef();
@@ -3224,7 +3235,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
   }
 
   MemberDef *imd = new MemberDef(
-                       getDefFileName(),getDefLine(),
+                       getDefFileName(),getDefLine(),getDefColumn(),
                        substituteTemplateArgumentsInString(m_impl->type,formalArgs,actualArgs), 
                        methodName, 
                        substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs), 
@@ -4751,6 +4762,7 @@ void MemberDef::flushToDisk() const
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->fileDef);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->nspace);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->enumScope);
+  marshalBool         (Doxygen::symbolStorage,m_impl->livesInsideEnum); 
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->annEnumType);
   marshalMemberList   (Doxygen::symbolStorage,m_impl->enumFields);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->redefines);
@@ -4855,6 +4867,7 @@ void MemberDef::loadFromDisk() const
   m_impl->fileDef                 = (FileDef*)unmarshalObjPointer      (Doxygen::symbolStorage);
   m_impl->nspace                  = (NamespaceDef*)unmarshalObjPointer (Doxygen::symbolStorage);
   m_impl->enumScope               = (MemberDef*)unmarshalObjPointer    (Doxygen::symbolStorage);
+  m_impl->livesInsideEnum         = unmarshalBool                      (Doxygen::symbolStorage);
   m_impl->annEnumType             = (MemberDef*)unmarshalObjPointer    (Doxygen::symbolStorage);
   m_impl->enumFields              = unmarshalMemberList                (Doxygen::symbolStorage);
   m_impl->redefines               = (MemberDef*)unmarshalObjPointer    (Doxygen::symbolStorage);

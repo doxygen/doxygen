@@ -22,6 +22,7 @@ Define::Define()
 { 
   fileDef=0; 
   lineNr=1;
+  columnNr=1;
   nargs=-1;
   undef=FALSE; 
   varArgs=FALSE;
@@ -34,6 +35,7 @@ Define::Define(const Define &d)
 { 
   //name=d.name; definition=d.definition; fileName=d.fileName; 
   lineNr=d.lineNr; 
+  lineNr=d.columnNr;
   nargs=d.nargs; 
   undef=d.undef; 
   varArgs=d.varArgs;

@@ -277,12 +277,13 @@ void Definition::removeFromMap(Definition *d)
   }
 }
 
-Definition::Definition(const char *df,int dl,
+Definition::Definition(const char *df,int dl,int dc,
                        const char *name,const char *b,
                        const char *d,bool isSymbol)
 {
   m_name = name;
   m_defLine = dl;
+  m_defColumn = dc;
   m_impl = new DefinitionImpl;
   m_impl->init(df,name);
   m_isSymbol = isSymbol;
@@ -1031,13 +1032,6 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
 
-      // vhdl  parser can' t start at an arbitrary point in the source code
-      if (getLanguage()==SrcLangExt_VHDL)
-      {
-        if (thisMd) VhdlDocGen::writeCodeFragment(ol,actualStart,codeFragment,thisMd);
-        return;
-      }
-
       ol.startCodeFragment();
       pIntf->parseCode(ol,               // codeOutIntf
                        scopeName,        // scope
@@ -1226,18 +1220,26 @@ bool Definition::hasUserDocumentation() const
   return hasDocs;
 }
 
-void Definition::addSourceReferencedBy(MemberDef *md)
+
+
+void Definition::addSourceReferencedBy(MemberDef *md, const char *floc/*=NULL*/)
 {
+  QCString name ;
+  QCString scope = md->getScopeString();
+
+  if (floc)
+    name = floc;
+  else
+  {
+     name = md->name();
+     if (!scope.isEmpty())
+     {
+       name.prepend(scope+"::");
+     }
+  }
   if (md)
   {
     makeResident();
-    QCString name  = md->name();
-    QCString scope = md->getScopeString();
-
-    if (!scope.isEmpty())
-    {
-      name.prepend(scope+"::");
-    }
 
     if (m_impl->sourceRefByDict==0)
     {
@@ -1250,19 +1252,32 @@ void Definition::addSourceReferencedBy(MemberDef *md)
   }
 }
 
-void Definition::addSourceReferences(MemberDef *md)
+void Definition::addSourceReferences(MemberDef *md, const char *floc)
 {
+  QCString name  = md->name();
+  QCString scope = md->getScopeString();
+
+  if (floc)
+    name = floc;
+#if 0
+  else
+  {
+     name = md->name();
+     if (!scope.isEmpty())
+     {
+       name.prepend(scope+"::");
+     }
+  }
+#endif
   if (md)
   {
-    QCString name  = md->name();
-    QCString scope = md->getScopeString();
     makeResident();
-
+#if 0
     if (!scope.isEmpty())
     {
       name.prepend(scope+"::");
     }
-
+#endif
     if (m_impl->sourceRefsDict==0)
     {
       m_impl->sourceRefsDict = new MemberSDict;

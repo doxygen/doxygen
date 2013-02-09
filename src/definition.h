@@ -95,7 +95,7 @@ class Definition : public DefinitionIntf, public LockableObj
     
     /*! Create a new definition */
     Definition(
-        const char *defFileName,int defLine,
+        const char *defFileName,int defLine,int defColumn,
         const char *name,const char *b=0,const char *d=0,
         bool isSymbol=TRUE);
 
@@ -179,6 +179,9 @@ class Definition : public DefinitionIntf, public LockableObj
 
     /*! returns the line number at which the definition was found */
     int getDefLine() const { return m_defLine; }
+
+    /*! returns the column number at which the definition was found */
+    int getDefColumn() const { return m_defColumn; }
 
     /*! Returns TRUE iff the definition is documented 
      *  (which could be generated documentation) 
@@ -287,8 +290,8 @@ class Definition : public DefinitionIntf, public LockableObj
     // source references
     void setBodySegment(int bls,int ble);
     void setBodyDef(FileDef *fd);
-    void addSourceReferencedBy(MemberDef *d);
-    void addSourceReferences(MemberDef *d);
+    void addSourceReferencedBy(MemberDef *d, const char *floc=NULL);
+    void addSourceReferences(MemberDef *d, const char *floc);
 
     void setRefItems(const QList<ListItemInfo> *sli);
     void mergeRefItems(Definition *d);
@@ -354,6 +357,7 @@ class Definition : public DefinitionIntf, public LockableObj
     bool m_isSymbol;
     QCString m_symbolName;
     int m_defLine;
+    int m_defColumn;
 };
 
 /** A list of Definition objects. */

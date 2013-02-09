@@ -543,7 +543,7 @@ BR                         [ \t\n\r]
 .	{ /* unknown characters */ }
 									
 
-<*>{BR}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
+<*>{BR}*"--!"[^{}\n]*[^\n]*\n/{B}*"--!" { // multi line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qc(vhdlScanYYtext);
   int len=qc.contains('\n')+yyLineNr-1;

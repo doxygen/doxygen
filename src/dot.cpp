@@ -1801,16 +1801,10 @@ void DotNode::writeBox(FTextStream &t,
   else 
   {
     static bool dotTransparent = Config_getBool("DOT_TRANSPARENT");
-    static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
     if (!dotTransparent)
     {
-      ClassDef* ccd=m_classDef;
-
       t << ",color=\"" << labCol << "\", fillcolor=\"";
-      if (ccd && vhdlOpt && (VhdlDocGen::VhdlClasses)ccd->protection()==VhdlDocGen::ARCHITECTURECLASS)
-        t << "khaki";	
-      else
-        t << "white";
+      t << "white";
       t << "\", style=\"filled\"";
     }
     else
@@ -2016,6 +2010,74 @@ void DotNode::writeXML(FTextStream &t,bool isClassGraph)
   t << "      </node>" << endl;
 }
 
+void DotNode::writeDocbook(FTextStream &t,bool isClassGraph)
+{
+  t << "      <node id=\"" << m_number << "\">" << endl;
+  t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
+  if (!m_url.isEmpty())
+  {
+    QCString url(m_url);
+    char *refPtr = url.data();
+    char *urlPtr = strchr(url.data(),'$');
+    if (urlPtr)
+    {
+      *urlPtr++='\0';
+      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
+      if (*refPtr!='\0')
+      {
+        t << " external=\"" << convertToXML(refPtr) << "\"";
+      }
+      t << "/>" << endl;
+    }
+  }
+  if (m_children)
+  {
+    QListIterator<DotNode> nli(*m_children);
+    QListIterator<EdgeInfo> eli(*m_edgeInfo);
+    DotNode *childNode;
+    EdgeInfo *edgeInfo;
+    for (;(childNode=nli.current());++nli,++eli)
+    {
+      edgeInfo=eli.current();
+      t << "        <childnode refid=\"" << childNode->m_number << "\" relation=\"";
+      if (isClassGraph)
+      {
+        switch(edgeInfo->m_color)
+        {
+          case EdgeInfo::Blue:    t << "public-inheritance"; break;
+          case EdgeInfo::Green:   t << "protected-inheritance"; break;
+          case EdgeInfo::Red:     t << "private-inheritance"; break;
+          case EdgeInfo::Purple:  t << "usage"; break;
+          case EdgeInfo::Orange:  t << "template-instance"; break;
+          case EdgeInfo::Grey:    ASSERT(0); break;
+        }
+      }
+      else // include graph
+      {
+        t << "include";
+      }
+      t << "\">" << endl;
+      if (!edgeInfo->m_label.isEmpty())
+      {
+        int p=0;
+        int ni;
+        while ((ni=edgeInfo->m_label.find('\n',p))!=-1)
+        {
+          t << "          <edgelabel>"
+            << convertToXML(edgeInfo->m_label.mid(p,ni-p))
+            << "</edgelabel>" << endl;
+          p=ni+1;
+        }
+        t << "          <edgelabel>"
+          << convertToXML(edgeInfo->m_label.right(edgeInfo->m_label.length()-p))
+          << "</edgelabel>" << endl;
+      }
+      t << "        </childnode>" << endl;
+    }
+  }
+  t << "      </node>" << endl;
+}
+
 
 void DotNode::writeDEF(FTextStream &t)
 {
@@ -2190,8 +2252,6 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
   
-  static bool vhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-
   if (m_rootSubgraphs->count()==0) return;
 
   QDir d(path);
@@ -2210,18 +2270,6 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
   for (dnli.toFirst();(n=dnli.current());++dnli)
   {
     QCString baseName;
-
-    if (vhdl)
-    {   
-      QCString l=n->m_url;
-      l=VhdlDocGen::convertFileNameToClassName(l);
-      ClassDef *cd=Doxygen::classSDict->find(l);
-      if (cd==0) continue;
-      // only entities are shown
-      if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
-        continue;
-    }
-
     QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
     baseName.sprintf("inherit_graph_%d",count++);
     //baseName = convertNameToFile(baseName);
@@ -2398,6 +2446,8 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
   for (cli.toLast();(cd=cli.current());--cli)
   {
     //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
+    if (cd->getLanguage()==SrcLangExt_VHDL  && !(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS)
+      continue; 
     if (!hasVisibleRoot(cd->baseClasses()) &&
         cd->isVisibleInHierarchy()
        ) // root node in the forest
@@ -3169,6 +3219,16 @@ void DotClassGraph::writeXML(FTextStream &t)
   }
 }
 
+void DotClassGraph::writeDocbook(FTextStream &t)
+{
+  QDictIterator<DotNode> dni(*m_usedNodes);
+  DotNode *node;
+  for (;(node=dni.current());++dni)
+  {
+    node->writeDocbook(t,TRUE);
+  }
+}
+
 void DotClassGraph::writeDEF(FTextStream &t)
 {
   QDictIterator<DotNode> dni(*m_usedNodes);
@@ -3481,6 +3541,16 @@ void DotInclDepGraph::writeXML(FTextStream &t)
   for (;(node=dni.current());++dni)
   {
     node->writeXML(t,FALSE);
+  }
+}
+
+void DotInclDepGraph::writeDocbook(FTextStream &t)
+{
+  QDictIterator<DotNode> dni(*m_usedNodes);
+  DotNode *node;
+  for (;(node=dni.current());++dni)
+  {
+    node->writeDocbook(t,FALSE);
   }
 }
 

@@ -50,6 +50,10 @@
 #include "filedef.h"
 #include "namespacedef.h"
 
+// Toggle for some debugging info
+//#define DBG_CTX(x) fprintf x
+#define DBG_CTX(x) do { } while(0)
+
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_TOP_STATE 1
 #define YY_NO_INPUT 1
@@ -364,6 +368,16 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
+static const char* fileLocation() 
+{
+  const int maxLen=4096;
+  static char floc[maxLen+1];
+  floc[maxLen]='\0';
+  snprintf(floc,maxLen,"%s:%d:%d",g_sourceFileDef?g_sourceFileDef->absFilePath().data():"[unknown]",g_yyLineNr,1);
+  return floc;
+}
+
+
 /**
   generates dictionay entries that are used if REFERENCED_BY_RELATION ... options are set
   (e.g. the "referenced by ..." list after the function documentation) 
@@ -376,11 +390,11 @@ static void addDocCrossReference(MemberDef *src, MemberDef *dst)
   if ((Config_getBool("REFERENCED_BY_RELATION") || Config_getBool("CALLER_GRAPH")) && 
       (src->isFunction()))
   {
-    dst->addSourceReferencedBy(src);
+    dst->addSourceReferencedBy(src,fileLocation());
   }
   if ((Config_getBool("REFERENCES_RELATION") || Config_getBool("CALL_GRAPH")) && (src->isFunction()))
   {
-    src->addSourceReferences(dst);
+    src->addSourceReferences(dst,fileLocation());
   }
 }
 
@@ -619,7 +633,7 @@ static int countLines()
 /** start scope */
 static void startScope() 
 {
-  // fprintf(stderr, "===> startScope %s",yytext);
+  DBG_CTX((stderr, "===> startScope %s",yytext));
   Scope *scope = new Scope;
   scopeStack.append(scope);
 }
@@ -627,10 +641,10 @@ static void startScope()
 /** end scope */
 static void endScope() 
 {
-  // fprintf(stderr,"===> endScope %s",yytext);
+  DBG_CTX((stderr,"===> endScope %s",yytext));
   if (scopeStack.isEmpty()) 
   {
-    //fprintf(stderr,"WARNING: fortrancode.l: stack empty!\n"); 
+    DBG_CTX((stderr,"WARNING: fortrancode.l: stack empty!\n")); 
     return;
   }
 
@@ -848,7 +862,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           BEGIN(Subprog);
                                         }
 <Subprog>{ID}                           { // subroutine/function name
-                                          // fprintf(stderr, "===> start subprogram %s\n", yytext);
+                                          DBG_CTX((stderr, "===> start subprogram %s\n", yytext));
 					  startScope();
 					  generateLink(*g_code,yytext);
                                         }

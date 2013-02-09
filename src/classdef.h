@@ -69,6 +69,8 @@ class ClassDef : public Definition
      *                   found.
      *  \param startLine line number where the definition of this compound
      *                   starts.
+     *  \param startColumn column number where the definition of this compound
+     *                   starts.
      *  \param name      the name of this compound (including scope)
      *  \param ct        the kind of Compound
      *  \param ref       the tag file from which this compound is extracted
@@ -82,7 +84,7 @@ class ClassDef : public Definition
      *                    I didn't add this to CompoundType to avoid having
      *                    to adapt all translators.
      */
-    ClassDef(const char *fileName,int startLine,
+    ClassDef(const char *fileName,int startLine,int startColumn,
              const char *name,CompoundType ct,
              const char *ref=0,const char *fName=0,
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
@@ -310,7 +312,7 @@ class ClassDef : public Definition
     void setProtection(Protection p);
     void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
-    ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,
+    ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance);
     void addUsedClass(ClassDef *cd,const char *accessName,Protection prot);
     void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot);

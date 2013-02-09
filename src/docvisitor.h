@@ -27,6 +27,7 @@ const int DocVisitor_RTF   = 3;
 const int DocVisitor_Man   = 4;
 const int DocVisitor_Text  = 5;
 const int DocVisitor_Other = 6;
+const int DocVisitor_Docbook = 7;
 
 // forward declarations
 class DocWord;

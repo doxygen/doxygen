@@ -718,14 +718,15 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
       m_output.add("</programlisting>");
 #endif
       return;
-    case DocVerbatim::Verbatim:	 type = "preformatted"; break;
-    case DocVerbatim::HtmlOnly:	 type = "htmlonly";     break;
-    case DocVerbatim::RtfOnly:	 type = "rtfonly";      break;
-    case DocVerbatim::ManOnly:	 type = "manonly";      break;
+    case DocVerbatim::Verbatim:  type = "preformatted"; break;
+    case DocVerbatim::HtmlOnly:  type = "htmlonly";     break;
+    case DocVerbatim::RtfOnly:   type = "rtfonly";      break;
+    case DocVerbatim::ManOnly:   type = "manonly";      break;
     case DocVerbatim::LatexOnly: type = "latexonly";    break;
-    case DocVerbatim::XmlOnly:	 type = "xmlonly";      break;
-    case DocVerbatim::Dot:	 type = "dot";          break;
-    case DocVerbatim::Msc:	 type = "msc";          break;
+    case DocVerbatim::XmlOnly:   type = "xmlonly";      break;
+    case DocVerbatim::DocbookOnly: type = "docbookonly"; break;
+    case DocVerbatim::Dot:         type = "dot"; break;
+    case DocVerbatim::Msc:       type = "msc";          break;
   }
   openItem(type);
   m_output.addFieldQuotedString("content", s->text());

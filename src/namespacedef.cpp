@@ -33,10 +33,10 @@
 
 //------------------------------------------------------------------
 
-NamespaceDef::NamespaceDef(const char *df,int dl,
+NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
                            const char *name,const char *lref,
                            const char *fName) : 
-   Definition(df,dl,name)
+   Definition(df,dl,dc,name)
 {
   if (fName)
   {

@@ -113,6 +113,7 @@ Entry::Entry(const Entry &e)
   anchors     = new QList<SectionInfo>;
   fileName    = e.fileName;
   startLine   = e.startLine;
+  startColumn = e.startColumn;
   if (e.sli)
   {
     sli = new QList<ListItemInfo>;
@@ -239,6 +240,7 @@ void Entry::reset()
   initializer.resize(0);
   initLines = -1;
   startLine = 1;
+  startColumn = 1;
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;

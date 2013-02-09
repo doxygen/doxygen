@@ -40,6 +40,7 @@ class Define
     QCString anchor;
     FileDef *fileDef;
     int lineNr;
+    int columnNr;
     int nargs;
     bool undef;
     bool varArgs;

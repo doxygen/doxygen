@@ -57,7 +57,9 @@
 #include "ftvhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
+#include "sqlite3gen.h"
 #include "xmlgen.h"
+#include "docbookgen.h"
 #include "defgen.h"
 #include "perlmodgen.h"
 #include "reflist.h"
@@ -94,6 +96,7 @@
 #include "membergroup.h"
 #include "docsets.h"
 #include "formula.h"
+#include "settings.h"
 
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
@@ -176,29 +179,66 @@ static bool             g_dumpConfigAsXML = FALSE;
 
 void clearAll()
 {
-  g_inputFiles.clear();      
-  //g_excludeNameDict.clear();  
+  g_inputFiles.clear();
+  //g_excludeNameDict.clear();
   //delete g_outputList; g_outputList=0;
 
-  Doxygen::classSDict->clear();       
-  Doxygen::namespaceSDict->clear();   
-  Doxygen::pageSDict->clear();         
-  Doxygen::exampleSDict->clear();      
-  Doxygen::inputNameList->clear();   
-  Doxygen::formulaList->clear();     
-  Doxygen::sectionDict->clear();       
-  Doxygen::inputNameDict->clear();    
-  Doxygen::includeNameDict->clear();  
-  Doxygen::exampleNameDict->clear();  
-  Doxygen::imageNameDict->clear();     
-  Doxygen::dotFileNameDict->clear();     
-  Doxygen::mscFileNameDict->clear();     
-  Doxygen::formulaDict->clear();      
-  Doxygen::formulaNameDict->clear();  
+  Doxygen::classSDict->clear();
+  Doxygen::namespaceSDict->clear();
+  Doxygen::pageSDict->clear();
+  Doxygen::exampleSDict->clear();
+  Doxygen::inputNameList->clear();
+  Doxygen::formulaList->clear();
+  Doxygen::sectionDict->clear();
+  Doxygen::inputNameDict->clear();
+  Doxygen::includeNameDict->clear();
+  Doxygen::exampleNameDict->clear();
+  Doxygen::imageNameDict->clear();
+  Doxygen::dotFileNameDict->clear();
+  Doxygen::mscFileNameDict->clear();
+  Doxygen::formulaDict->clear();
+  Doxygen::formulaNameDict->clear();
   Doxygen::tagDestinationDict.clear();
   delete Doxygen::citeDict;
   delete Doxygen::mainPage; Doxygen::mainPage=0;
 }
+
+class Statistics 
+{
+  public:
+    Statistics() {}
+    void begin(const char *name)
+    {
+      msg(name);
+      stat *entry= new stat(name,0);
+      stats.append(entry);
+      time.restart();
+    }
+    void end()
+    {
+      stats.last()->elapsed=((double)time.elapsed())/1000.0;
+    }
+    void print()
+    {
+      QListIterator<stat> sli(stats);
+      stat *s;
+      for ( sli.toFirst(); (s=sli.current()); ++sli )
+      {
+        msg("Spent %.3f seconds in %s",s->elapsed,s->name);
+      }
+    }
+  private:
+    struct stat 
+    {
+      const char *name;
+      double elapsed;
+      stat() : name(NULL),elapsed(0) {}
+      stat(const char *n, double el) : name(n),elapsed(el) {}
+    };
+    QList<stat> stats;
+    QTime       time;
+} g_s;
+
 
 void statistics()
 {
@@ -950,7 +990,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level,Src
       // introduce bogus namespace
       //printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
       nd=new NamespaceDef(
-        "[generated]",1,fullScope);
+        "[generated]",1,1,fullScope);
       nd->setLanguage(lang);
 
       // add namespace to the list
@@ -1217,7 +1257,7 @@ static void addClassToContext(EntryNav *rootNav)
       tagName     = rootNav->tagInfo()->tagName;
       refFileName = rootNav->tagInfo()->fileName;
     }
-    cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
+    cd=new ClassDef(root->fileName,root->startLine,root->startColumn,fullName,sec,
         tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
         fullName.data(),sec,root->tArgLists ? (int)root->tArgLists->count() : -1);
@@ -1415,6 +1455,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
   fullName+="."+fieldName;
   ClassDef *cd = new ClassDef(templ->getDefFileName(),
                               templ->getDefLine(),
+                              templ->getDefColumn(),
                               fullName,
                               templ->compoundType());
   cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
@@ -1458,7 +1499,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
     for (li.toFirst();(md=li.current());++li)
     {
       //printf("    Member %s type=%s\n",md->name().data(),md->typeString());
-      MemberDef *imd = new MemberDef(md->getDefFileName(),md->getDefLine(),
+      MemberDef *imd = new MemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
                                      md->typeString(),md->name(),md->argsString(),md->excpString(),
                                      md->protection(),md->virtualness(),md->isStatic(),Member,
                                      md->memberType(),
@@ -1665,7 +1706,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           tagFileName=rootNav->tagInfo()->fileName;
         }
         //printf("++ new namespace %s lang=%s\n",fullName.data(),langToString(root->lang).data());
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName,tagFileName);
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,root->startColumn,fullName,tagName,tagFileName);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1834,7 +1875,7 @@ static void findUsingDirectives(EntryNav *rootNav)
       else // unknown namespace, but add it anyway.
       {
         //printf("++ new unknown namespace %s lang=%s\n",name.data(),langToString(root->lang).data());
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,name);
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,root->startColumn,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1950,7 +1991,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
         Debug::print(Debug::Classes,0,"  New using class `%s' (sec=0x%08x)! #tArgLists=%d\n",
              name.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
         usingCd = new ClassDef(
-                     "<using>",1,
+                     "<using>",1,1,
                      name,ClassDef::Class);
         Doxygen::hiddenClasses->append(root->name,usingCd);
         usingCd->setArtificial(TRUE);
@@ -2032,7 +2073,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
                     LockingPtr<ArgumentList> templAl = md->templateArguments();
                     LockingPtr<ArgumentList> al = md->templateArguments();
                     newMd = new MemberDef(
-                      root->fileName,root->startLine,
+                      root->fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
                       md->isStatic(),Member,md->memberType(),
@@ -2219,7 +2260,7 @@ static MemberDef *addVariableToClass(
 
   // new member variable, typedef or enum value
   MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,
+      root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,0,
       prot,Normal,root->stat,related,
       mtype,root->tArgLists ? root->tArgLists->last() : 0,0);
@@ -2455,7 +2496,7 @@ static MemberDef *addVariableToFile(
     "    new variable, nd=%s!\n",nd?nd->name().data():"<global>");
   // new global variable, enum value or typedef
   MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,
+      root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,0,
       Public, Normal,root->stat,Member,
       mtype,root->tArgLists ? root->tArgLists->last() : 0,0);
@@ -2994,7 +3035,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
 
   // adding class member
   MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,
+      root->fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       root->protection,root->virt,
       root->stat && root->relatesType != MemberOf,
@@ -3386,7 +3427,7 @@ static void buildFunctionList(EntryNav *rootNav)
           ArgumentList *tArgList = root->tArgLists ? root->tArgLists->last() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
           md=new MemberDef(
-              root->fileName,root->startLine,
+              root->fileName,root->startLine,root->startColumn,
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,Member,
               MemberType_Function,tArgList,root->argList);
@@ -3697,25 +3738,27 @@ static void transferFunctionReferences()
         LockingPtr<MemberSDict> decDict = mdec->getReferencesMembers();
         if (defDict!=0)
         {
-          MemberSDict::Iterator msdi(*defDict);
+          MemberSDict::IteratorDict msdi(*defDict);
           MemberDef *rmd;
           for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
             if (decDict==0 || decDict->find(rmd->name())==0)
             {
-              mdec->addSourceReferences(rmd);
+              printf("CURRENT_KEY:%s\n",msdi.currentKey().data());
+              mdec->addSourceReferences(rmd,msdi.currentKey());
             }
           }
         }
         if (decDict!=0)
         {
-          MemberSDict::Iterator msdi(*decDict);
+          MemberSDict::IteratorDict msdi(*decDict);
           MemberDef *rmd;
           for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
             if (defDict==0 || defDict->find(rmd->name())==0)
             {
-              mdef->addSourceReferences(rmd);
+              printf("CURRENT_KEY:%s\n",msdi.currentKey().data());
+              mdef->addSourceReferences(rmd,msdi.currentKey());
             }
           }
         }
@@ -3724,25 +3767,25 @@ static void transferFunctionReferences()
         decDict = mdec->getReferencedByMembers();
         if (defDict!=0)
         {
-          MemberSDict::Iterator msdi(*defDict);
+          MemberSDict::IteratorDict msdi(*defDict);
           MemberDef *rmd;
           for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
             if (decDict==0 || decDict->find(rmd->name())==0)
             {
-              mdec->addSourceReferencedBy(rmd);
+              mdec->addSourceReferencedBy(rmd,msdi.currentKey());
             }
           }
         }
         if (decDict!=0)
         {
-          MemberSDict::Iterator msdi(*decDict);
+          MemberSDict::IteratorDict msdi(*decDict);
           MemberDef *rmd;
           for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
             if (defDict==0 || defDict->find(rmd->name())==0)
             {
-              mdef->addSourceReferencedBy(rmd);
+              mdef->addSourceReferencedBy(rmd,msdi.currentKey());
             }
           }
         }
@@ -3983,7 +4026,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                   if (usedCd==0)
                   {
                     usedCd = new ClassDef(
-                        masterCd->getDefFileName(),masterCd->getDefLine(),
+                        masterCd->getDefFileName(),masterCd->getDefLine(),masterCd->getDefColumn(),
                         usedName,ClassDef::Class);
                     //printf("making %s a template argument!!!\n",usedCd->name().data());
                     usedCd->makeTemplateArgument();
@@ -4033,7 +4076,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
               }
               Debug::print(Debug::Classes,0,"  New undocumented used class `%s'\n", type.data());
               usedCd = new ClassDef(
-                  masterCd->getDefFileName(),masterCd->getDefLine(),
+                  masterCd->getDefFileName(),masterCd->getDefLine(),masterCd->getDefColumn(),
                   type,ClassDef::Class);
               usedCd->setUsedOnly(TRUE);
               usedCd->setLanguage(masterCd->getLanguage());
@@ -4149,7 +4192,7 @@ static bool findTemplateInstanceRelation(Entry *root,
 
   bool freshInstance=FALSE;
   ClassDef *instanceClass = templateClass->insertTemplateInstance(
-                     root->fileName,root->startLine,templSpec,freshInstance);
+                     root->fileName,root->startLine,root->startColumn,templSpec,freshInstance);
   if (isArtificial) instanceClass->setArtificial(TRUE);
   instanceClass->setLanguage(root->lang);
 
@@ -4554,7 +4597,7 @@ static bool findClassRelation(
             baseClass=Doxygen::hiddenClasses->find(baseClassName);
             if (baseClass==0)
             {
-              baseClass=new ClassDef(root->fileName,root->startLine,
+              baseClass=new ClassDef(root->fileName,root->startLine,root->startColumn,
                                  baseClassName,ClassDef::Class);
               Doxygen::hiddenClasses->append(baseClassName,baseClass);
               if (isArtificial) baseClass->setArtificial(TRUE);
@@ -4568,7 +4611,7 @@ static bool findClassRelation(
             //    baseClassName.data(),baseClass,biName.data(),templSpec.data());
             if (baseClass==0)
             {
-              baseClass=new ClassDef(root->fileName,root->startLine,
+              baseClass=new ClassDef(root->fileName,root->startLine,root->startColumn,
                   baseClassName,ClassDef::Class);
               Doxygen::classSDict->append(baseClassName,baseClass);
               if (isArtificial) baseClass->setArtificial(TRUE);
@@ -6080,7 +6123,7 @@ static void findMember(EntryNav *rootNav,
           ArgumentList *tArgList = new ArgumentList;
           //  getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
           md=new MemberDef(
-              root->fileName,root->startLine,
+              root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               declMd ? declMd->protection() : root->protection,
               root->virt,root->stat,Member,
@@ -6146,7 +6189,7 @@ static void findMember(EntryNav *rootNav,
             getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
           //printf("new related member %s args=`%s'\n",md->name().data(),funcArgs.data());
           MemberDef *md=new MemberDef(
-              root->fileName,root->startLine,
+              root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,Related,
               mtype,tArgList,root->argList);
@@ -6276,7 +6319,7 @@ static void findMember(EntryNav *rootNav,
           // the related function, which don't have to do with
           // those of the related class.
           MemberDef *md=new MemberDef(
-              root->fileName,root->startLine,
+              root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
               root->stat && !isMemberOf,
@@ -6416,7 +6459,7 @@ localObjCMethod:
               "  scopeName=%s className=%s\n",root->name.data(),scopeName.data(),className.data());
         //printf("Local objective C method `%s' of class `%s' found\n",root->name.data(),cd->name().data());
         MemberDef *md=new MemberDef(
-            root->fileName,root->startLine,
+            root->fileName,root->startLine,root->startColumn,
             funcType,funcName,funcArgs,exceptions,
             root->protection,root->virt,root->stat,Member,
             MemberType_Function,0,root->argList);
@@ -6742,7 +6785,7 @@ static void findEnums(EntryNav *rootNav)
     {
       // new enum type
       md = new MemberDef(
-          root->fileName,root->startLine,
+          root->fileName,root->startLine,root->startColumn,
           0,name,0,0,
           root->protection,Normal,FALSE,
           isMemberOf ? Foreign : isRelated ? Related : Member,
@@ -6953,7 +6996,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                     substitute(rootNav->name(),"::",".")) // enum value scope matches that of the enum
                 {
                   MemberDef *fmd=new MemberDef(
-                      root->fileName,root->startLine,
+                      root->fileName,root->startLine,root->startColumn,
                       root->type,root->name,root->args,0,
                       Public, Normal,root->stat,Member,
                       MemberType_EnumValue,0,0);
@@ -6973,7 +7016,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                   fmd->setRefItems(root->sli);
                   fmd->setAnchor();
                   md->insertEnumField(fmd);
-                  fmd->setEnumScope(md);
+                  fmd->setEnumScope(md,TRUE);
                   MemberName *mn=mnsd->find(root->name);
                   if (mn)
                   {
@@ -7970,7 +8013,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
 
     if (rootNav->tagInfo() && !root->name.isEmpty()) // define read from a tag file
     {
-      MemberDef *md=new MemberDef("<tagfile>",1,
+      MemberDef *md=new MemberDef("<tagfile>",1,1,
                     "#define",root->name,root->args,0,
                     Public,Normal,FALSE,Member,MemberType_Define,0,0);
       md->setTagInfo(rootNav->tagInfo());
@@ -8674,7 +8717,7 @@ static void readTagFile(Entry *root,const char *tl)
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     QFileInfo fi(fileName);
-    Doxygen::tagDestinationDict.insert(fi.fileName().utf8(),new QCString(destName));
+    Doxygen::tagDestinationDict.insert(fi.absFilePath().utf8(),new QCString(destName));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
   }
   else
@@ -8695,7 +8738,7 @@ static void readTagFile(Entry *root,const char *tl)
   else
     msg("Reading tag file `%s'...\n",fileName.data());
 
-  parseTagFile(root,fi.absFilePath().utf8(),fi.fileName().utf8());
+  parseTagFile(root,fi.absFilePath().utf8());
 }
 
 //----------------------------------------------------------------------------
@@ -8754,9 +8797,9 @@ static void copyLogo()
   }
 }
 
-static void copyExtraFiles()
+static void copyExtraFiles(const QCString& filesOption,const QCString &outputOption)
 {
-  QStrList files = Config_getList("HTML_EXTRA_FILES");
+  QStrList files = Config_getList(filesOption);
   uint i;
   for (i=0; i<files.count(); ++i)
   {
@@ -8767,12 +8810,12 @@ static void copyExtraFiles()
       QFileInfo fi(fileName);
       if (!fi.exists()) 
       {
-        err("Extra HTML file '%s' specified in HTML_EXTRA_FILES does not exist!\n", fileName.data());
+        err("Extra file '%s' specified in" + filesOption + " does not exist!\n", fileName.data());
       }
       else
       {
-        QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
-        Doxygen::indexList->addImageFile(fi.fileName().data());
+        QCString destFileName = Config_getString(outputOption)+"/"+fi.fileName().data();
+        Doxygen::indexList->addImageFile(fi.fileName().utf8());
         copyFile(fileName, destFileName);
       }
     }
@@ -9368,7 +9411,7 @@ void initDoxygen()
   Doxygen::functionNameSDict->setAutoDelete(TRUE);
   Doxygen::groupSDict = new GroupSDict(17);          
   Doxygen::groupSDict->setAutoDelete(TRUE);
-  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
+  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,1,"<globalScope>");
   Doxygen::namespaceSDict = new NamespaceSDict(20);      
   Doxygen::namespaceSDict->setAutoDelete(TRUE);
   Doxygen::classSDict = new ClassSDict(1009);         
@@ -9975,7 +10018,7 @@ void searchInputFiles(StringList &inputFiles)
   excludeNameDict.setAutoDelete(TRUE);
 
   // gather names of all files in the include path
-  msg("Searching for include files...\n");
+  g_s.begin("Searching for include files...\n");
   QStrList &includePathList = Config_getList("INCLUDE_PATH");
   char *s=includePathList.first();
   while (s)
@@ -9990,8 +10033,9 @@ void searchInputFiles(StringList &inputFiles)
                         alwaysRecursive);
     s=includePathList.next(); 
   }
-  
-  msg("Searching for example files...\n");
+  g_s.end();
+
+  g_s.begin("Searching for example files...\n");
   QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
   s=examplePathList.first();
   while (s)
@@ -10002,8 +10046,9 @@ void searchInputFiles(StringList &inputFiles)
                         (alwaysRecursive || Config_getBool("EXAMPLE_RECURSIVE")));
     s=examplePathList.next(); 
   }
+  g_s.end();
 
-  msg("Searching for images...\n");
+  g_s.begin("Searching for images...\n");
   QStrList &imagePathList=Config_getList("IMAGE_PATH");
   s=imagePathList.first();
   while (s)
@@ -10013,8 +10058,9 @@ void searchInputFiles(StringList &inputFiles)
                         alwaysRecursive);
     s=imagePathList.next(); 
   }
+  g_s.end();
 
-  msg("Searching for dot files...\n");
+  g_s.begin("Searching for dot files...\n");
   QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
   s=dotFileList.first();
   while (s)
@@ -10024,8 +10070,9 @@ void searchInputFiles(StringList &inputFiles)
                         alwaysRecursive);
     s=dotFileList.next(); 
   }
+  g_s.end();
 
-  msg("Searching for msc files...\n");
+  g_s.begin("Searching for msc files...\n");
   QStrList &mscFileList=Config_getList("MSCFILE_DIRS");
   s=mscFileList.first();
   while (s)
@@ -10035,9 +10082,9 @@ void searchInputFiles(StringList &inputFiles)
                         alwaysRecursive);
     s=mscFileList.next(); 
   }
+  g_s.end();
 
-
-  msg("Searching for files to exclude\n");
+  g_s.begin("Searching for files to exclude\n");
   QStrList &excludeList = Config_getList("EXCLUDE");
   s=excludeList.first();
   while (s)
@@ -10048,12 +10095,13 @@ void searchInputFiles(StringList &inputFiles)
                         FALSE);
     s=excludeList.next();
   }
+  g_s.end();
 
   /**************************************************************************
    *             Determine Input Files                                      *
    **************************************************************************/
 
-  msg("Searching for files to process...\n");
+  g_s.begin("Searching for files to process...\n");
   QDict<void> *killDict = new QDict<void>(10007);
   int inputSize=0;
   QStrList &inputList=Config_getList("INPUT");
@@ -10080,6 +10128,7 @@ void searchInputFiles(StringList &inputFiles)
     s=inputList.next();
   }
   delete killDict;
+  g_s.end();
 }
 
   
@@ -10179,6 +10228,11 @@ void parseInput()
   if (generateHtml)
     htmlOutput = createOutputDirectory(outputDirectory,"HTML_OUTPUT","/html");
 
+  QCString docbookOutput;
+  bool &generateDocbook = Config_getBool("GENERATE_DOCBOOK");
+  if (generateDocbook)
+    docbookOutput = createOutputDirectory(outputDirectory,"DOCBOOK_OUTPUT","/docbook");
+
   QCString xmlOutput;
   bool &generateXml = Config_getBool("GENERATE_XML");
   if (generateXml)
@@ -10199,6 +10253,10 @@ void parseInput()
   if (generateMan)
     manOutput = createOutputDirectory(outputDirectory,"MAN_OUTPUT","/man");
 
+  //QCString sqlOutput;
+  //bool &generateSql = Config_getBool("GENERATE_SQLITE3");
+  //if (generateSql)
+  //  sqlOutput = createOutputDirectory(outputDirectory,"SQLITE3_OUTPUT","/sqlite3");
 
   if (Config_getBool("HAVE_DOT"))
   {
@@ -10255,11 +10313,11 @@ void parseInput()
   // prevent search in the output directories
   QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
   if (generateHtml)  exclPatterns.append(htmlOutput);
+  if (generateDocbook)  exclPatterns.append(docbookOutput);
   if (generateXml)   exclPatterns.append(xmlOutput);
   if (generateLatex) exclPatterns.append(latexOutput);
   if (generateRtf)   exclPatterns.append(rtfOutput);
   if (generateMan)   exclPatterns.append(manOutput);
-
 
   searchInputFiles(g_inputFiles);
 
@@ -10305,8 +10363,10 @@ void parseInput()
     addSTLClasses(rootNav);
   }
 
+  g_s.begin("Parsing files\n");
   parseFiles(root,rootNav);
   g_storage->close();
+  g_s.end();
 
   // we are done with input scanning now, so free up the buffers used by flex
   // (can be around 4MB)
@@ -10324,34 +10384,41 @@ void parseInput()
   /**************************************************************************
    *             Gather information                                         * 
    **************************************************************************/
-  
-  msg("Building group list...\n");
+
+  g_s.begin("Building group list...\n");
   buildGroupList(rootNav);
   organizeSubGroups(rootNav);
+  g_s.end();
 
-  msg("Building directory list...\n");
+  g_s.begin("Building directory list...\n");
   buildDirectories();
   findDirDocumentation(rootNav);
+  g_s.end();
 
-  msg("Building namespace list...\n");
+  g_s.begin("Building namespace list...\n");
   buildNamespaceList(rootNav);
   findUsingDirectives(rootNav);
+  g_s.end();
 
-  msg("Building file list...\n");
+  g_s.begin("Building file list...\n");
   buildFileList(rootNav);
+  g_s.end();
   //generateFileTree();
-  
-  msg("Building class list...\n");
-  buildClassList(rootNav);
 
-  msg("Associating documentation with classes...\n");
+  g_s.begin("Building class list...\n");
+  buildClassList(rootNav);
+  g_s.end();
+
+  g_s.begin("Associating documentation with classes...\n");
   buildClassDocList(rootNav);
 
   // build list of using declarations here (global list)
   buildListOfUsingDecls(rootNav);
-  
-  msg("Computing nesting relations for classes...\n");
+  g_s.end();
+
+  g_s.begin("Computing nesting relations for classes...\n");
   resolveClassNestingRelations();
+  g_s.end();
   // 1.8.2-20121111: no longer add nested classes to the group as well
   //distributeClassGroupRelations(); 
 
@@ -10362,97 +10429,121 @@ void parseInput()
   // we don't need the list of using declaration anymore
   g_usingDeclarations.clear();
 
-  msg("Building example list...\n");
+  g_s.begin("Building example list...\n");
   buildExampleList(rootNav);
-  
-  msg("Searching for enumerations...\n");
+  g_s.end();
+
+  g_s.begin("Searching for enumerations...\n");
   findEnums(rootNav);
-  
+  g_s.end();
+
   // Since buildVarList calls isVarWithConstructor
   // and this calls getResolvedClass we need to process
   // typedefs first so the relations between classes via typedefs
   // are properly resolved. See bug 536385 for an example.
-  msg("Searching for documented typedefs...\n");
+  g_s.begin("Searching for documented typedefs...\n");
   buildTypedefList(rootNav);
+  g_s.end();
 
-  msg("Searching for members imported via using declarations...\n");
+  g_s.begin("Searching for members imported via using declarations...\n");
   findUsingDeclImports(rootNav);
   // this should be after buildTypedefList in order to properly import
   // used typedefs
   findUsingDeclarations(rootNav);
+  g_s.end();
 
-  msg("Searching for included using directives...\n");
+  g_s.begin("Searching for included using directives...\n");
   findIncludedUsingDirectives();
+  g_s.end();
 
-  msg("Searching for documented variables...\n");
+  g_s.begin("Searching for documented variables...\n");
   buildVarList(rootNav);
+  g_s.end();
 
-  msg("Building member list...\n"); // using class info only !
+  g_s.begin("Building member list...\n"); // using class info only !
   buildFunctionList(rootNav);
+  g_s.end();
 
-  msg("Searching for friends...\n");
+  g_s.begin("Searching for friends...\n");
   findFriends();
-  
-  msg("Searching for documented defines...\n");
-  findDefineDocumentation(rootNav); 
-  
-  findClassEntries(rootNav);         
-  msg("Computing class inheritance relations...\n");
-  findInheritedTemplateInstances();       
-  msg("Computing class usage relations...\n");
-  findUsedTemplateInstances();       
+  g_s.end();
+
+  g_s.begin("Searching for documented defines...\n");
+  findDefineDocumentation(rootNav);
+  g_s.end();
+
+  g_s.begin("Computing class inheritance relations...\n");
+  findClassEntries(rootNav);
+  findInheritedTemplateInstances();
+  g_s.end();
+
+  g_s.begin("Computing class usage relations...\n");
+  findUsedTemplateInstances();
+  g_s.end();
+
   if (Config_getBool("INLINE_SIMPLE_STRUCTS"))
   {
-    msg("Searching for tag less structs...\n");
+    g_s.begin("Searching for tag less structs...\n");
     findTagLessClasses();
+    g_s.end();
   }
 
-  msg("Flushing cached template relations that have become invalid...\n");
+  g_s.begin("Flushing cached template relations that have become invalid...\n");
   flushCachedTemplateRelations();
-  
-  msg("Creating members for template instances...\n");
-  createTemplateInstanceMembers();
+  g_s.end();
 
-  msg("Computing class relations...\n");
-  computeTemplateClassRelations(); 
+  g_s.begin("Creating members for template instances...\n");
+  createTemplateInstanceMembers();
+  g_s.end();
+
+  g_s.begin("Computing class relations...\n");
+  computeTemplateClassRelations();
   flushUnresolvedRelations();
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
   {
     VhdlDocGen::computeVhdlComponentRelations(); 
   }
-  computeClassRelations();        
-  g_classEntries.clear();          
+  computeClassRelations();
+  g_classEntries.clear();
+  g_s.end();
 
-  msg("Add enum values to enums...\n");
+  g_s.begin("Add enum values to enums...\n");
   addEnumValuesToEnums(rootNav);
   findEnumDocumentation(rootNav);
+  g_s.end();
 
-  msg("Searching for member function documentation...\n");
+  g_s.begin("Searching for member function documentation...\n");
   findObjCMethodDefinitions(rootNav);
   findMemberDocumentation(rootNav); // may introduce new members !
 
   transferRelatedFunctionDocumentation();
   transferFunctionDocumentation();
-  
-  msg("Building page list...\n");
+  g_s.end();
+
+  g_s.begin("Building page list...\n");
   buildPageList(rootNav);
+  g_s.end();
 
-  msg("Search for main page...\n");
+  g_s.begin("Search for main page...\n");
   findMainPage(rootNav);
+  g_s.end();
 
-  msg("Computing page relations...\n");
+  g_s.begin("Computing page relations...\n");
   computePageRelations(rootNav);
   checkPageRelations();
+  g_s.end();
 
-  msg("Determining the scope of groups...\n");
+  g_s.begin("Determining the scope of groups...\n");
   findGroupScope(rootNav);
+  g_s.end();
 
-  msg("Sorting lists...\n");
+  g_s.begin("Sorting lists...\n");
   Doxygen::memberNameSDict->sort();
   Doxygen::functionNameSDict->sort();
   Doxygen::hiddenClasses->sort();
   Doxygen::classSDict->sort();
-  
+  g_s.end();
+
   msg("Freeing entry tree\n");
   delete rootNav;
   g_storage->close();
@@ -10461,78 +10552,98 @@ void parseInput()
 
   QDir thisDir;
   thisDir.remove(Doxygen::entryDBFileName);
-  
-  msg("Determining which enums are documented\n");
-  findDocumentedEnumValues();
 
-  msg("Computing member relations...\n");
+  g_s.begin("Determining which enums are documented\n");
+  findDocumentedEnumValues();
+  g_s.end();
+
+  g_s.begin("Computing member relations...\n");
   mergeCategories();
   computeMemberRelations();
+  g_s.end();
 
-  msg("Building full member lists recursively...\n");
+  g_s.begin("Building full member lists recursively...\n");
   buildCompleteMemberLists();
-  
-  msg("Adding members to member groups.\n");
+  g_s.end();
+
+  g_s.begin("Adding members to member groups.\n");
   addMembersToMemberGroup();
+  g_s.end();
 
   if (Config_getBool("DISTRIBUTE_GROUP_DOC"))
   {
-    msg("Distributing member group documentation.\n");
+    g_s.begin("Distributing member group documentation.\n");
     distributeMemberGroupDocumentation();
+    g_s.end();
   }
-  
-  msg("Computing member references...\n");
-  computeMemberReferences(); 
+
+  g_s.begin("Computing member references...\n");
+  computeMemberReferences();
+  g_s.end();
 
   if (Config_getBool("INHERIT_DOCS"))
   {
-    msg("Inheriting documentation...\n");
+    g_s.begin("Inheriting documentation...\n");
     inheritDocumentation();
+    g_s.end();
   }
 
   // compute the shortest possible names of all files
   // without losing the uniqueness of the file names.
-  msg("Generating disk names...\n");
+  g_s.begin("Generating disk names...\n");
   Doxygen::inputNameList->generateDiskNames();
-  
-  msg("Adding source references...\n");
-  addSourceReferences();
+  g_s.end();
 
-  msg("Adding xrefitems...\n");
+  g_s.begin("Adding source references...\n");
+  addSourceReferences();
+  g_s.end();
+
+  g_s.begin("Adding xrefitems...\n");
   addListReferences();
   generateXRefPages();
+  g_s.end();
 
-  msg("Sorting member lists...\n");
+  g_s.begin("Sorting member lists...\n");
   sortMemberLists();
+  g_s.end();
 
   if (Config_getBool("DIRECTORY_GRAPH"))
   {
-    msg("Computing dependencies between directories...\n");
+    g_s.begin("Computing dependencies between directories...\n");
     computeDirDependencies();
+    g_s.end();
   }
 
-  //msg("Resolving citations...\n");
+  //g_s.begin("Resolving citations...\n");
   //Doxygen::citeDict->resolve();
 
-  msg("Generating citations page...\n");
+  g_s.begin("Generating citations page...\n");
   Doxygen::citeDict->generatePage();
+  g_s.end();
 
-  msg("Counting data structures...\n");
+  g_s.begin("Counting data structures...\n");
   countDataStructures();
- 
-  msg("Resolving user defined references...\n");
+  g_s.end();
+
+  g_s.begin("Resolving user defined references...\n");
   resolveUserReferences();
+  g_s.end();
 
-  msg("Finding anchors and sections in the documentation...\n");
+  g_s.begin("Finding anchors and sections in the documentation...\n");
   findSectionsInDocumentation();
+  g_s.end();
 
+  g_s.begin("Transferring function references...\n");
   transferFunctionReferences();
+  g_s.end();
 
-  msg("Combining using relations...\n");
+  g_s.begin("Combining using relations...\n");
   combineUsingRelations();
+  g_s.end();
 
-  msg("Adding members to index pages...\n");
+  g_s.begin("Adding members to index pages...\n");
   addMembersToIndex();
+  g_s.end();
 
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
       Config_getBool("HAVE_DOT") &&
@@ -10586,13 +10697,16 @@ void generateOutput()
     // copy static stuff
     copyStyleSheet();
     copyLogo();
-    copyExtraFiles();
+    copyExtraFiles("HTML_EXTRA_FILES","HTML_OUTPUT");
     FTVHelp::generateTreeViewImages();
   }
   if (generateLatex) 
   {
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
+
+    // copy static stuff
+    copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
   }
   if (generateMan)
   {
@@ -10604,7 +10718,6 @@ void generateOutput()
     g_outputList->add(new RTFGenerator);
     RTFGenerator::init();
   }
-
   if (Config_getBool("USE_HTAGS"))
   {
     Htags::useHtags = TRUE;
@@ -10641,7 +10754,7 @@ void generateOutput()
   if (generateLatex) writeDoxFont(Config_getString("LATEX_OUTPUT"));
   if (generateRtf)   writeDoxFont(Config_getString("RTF_OUTPUT"));
 
-  msg("Generating style sheet...\n");
+  g_s.begin("Generating style sheet...\n");
   //printf("writing style info\n");
   QCString genString = 
         theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"));
@@ -10656,7 +10769,8 @@ void generateOutput()
   //parseText(*g_outputList,theTranslator->trWrittenBy());
   g_outputList->writeStyleInfo(4); // write last part
   g_outputList->enableAll();
-  
+  g_s.end();
+
   static bool searchEngine      = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
 
@@ -10665,7 +10779,7 @@ void generateOutput()
   // what categories we find in this function.
   if (generateHtml && searchEngine)
   {
-    msg("Generating search indices...\n");
+    g_s.begin("Generating search indices...\n");
     QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
@@ -10679,40 +10793,50 @@ void generateOutput()
     {
       writeJavascriptSearchIndex();
     }
+    g_s.end();
   }
 
-  msg("Generating example documentation...\n");
+  g_s.begin("Generating example documentation...\n");
   generateExampleDocs();
+  g_s.end();
 
   msg("Generating file sources...\n");
   if (!Htags::useHtags)
   {
+    g_s.begin("Generating file sources...\n");
     generateFileSources();
+    g_s.end();
   }
 
-  msg("Generating file documentation...\n");
+  g_s.begin("Generating file documentation...\n");
   generateFileDocs();
-  
-  msg("Generating page documentation...\n");
-  generatePageDocs();
-  
-  msg("Generating group documentation...\n");
-  generateGroupDocs();
+  g_s.end();
 
-  msg("Generating class documentation...\n");
+  g_s.begin("Generating page documentation...\n");
+  generatePageDocs();
+  g_s.end();
+
+  g_s.begin("Generating group documentation...\n");
+  generateGroupDocs();
+  g_s.end();
+
+  g_s.begin("Generating class documentation...\n");
   generateClassDocs();
-  
-  msg("Generating namespace index...\n");
+  g_s.end();
+
+  g_s.begin("Generating namespace index...\n");
   generateNamespaceDocs();
-  
+  g_s.end();
+
   if (Config_getBool("GENERATE_LEGEND"))
   {
     msg("Generating graph info page...\n");
     writeGraphInfo(*g_outputList);
   }
 
-  msg("Generating directory documentation...\n");
+  g_s.begin("Generating directory documentation...\n");
   generateDirDocs(*g_outputList);
+  g_s.end();
 
   if (Doxygen::formulaList->count()>0 && generateHtml
       && !Config_getBool("USE_MATHJAX"))
@@ -10728,8 +10852,9 @@ void generateOutput()
     writeIndexHierarchy(*g_outputList);
   }
 
-  msg("finalizing index lists...\n");
+  g_s.begin("finalizing index lists...\n");
   Doxygen::indexList->finalize();
+  g_s.end();
 
   if (!generateTagFile.isEmpty())
   {
@@ -10749,24 +10874,41 @@ void generateOutput()
 
   if (Config_getBool("GENERATE_XML"))
   {
-    msg("Generating XML output...\n");
+    g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;
     generateXML();
     Doxygen::generatingXmlOutput=FALSE;
+    g_s.end();
   }
+  if (USE_SQLITE3)
+  {
+    g_s.begin("Generating SQLITE3 output...\n");
+    generateSqlite3();
+    g_s.end();
+  }
+
+  if (Config_getBool("GENERATE_DOCBOOK"))
+  {
+    g_s.begin("Generating Docbook output...\n");
+    generateDocbook();
+    g_s.end();
+  }
+
   if (Config_getBool("GENERATE_AUTOGEN_DEF"))
   {
-    msg("Generating AutoGen DEF output...\n");
+    g_s.begin("Generating AutoGen DEF output...\n");
     generateDEF();
+    g_s.end();
   }
   if (Config_getBool("GENERATE_PERLMOD"))
   {
-    msg("Generating Perl module output...\n");
+    g_s.begin("Generating Perl module output...\n");
     generatePerlMod();
+    g_s.end();
   }
   if (generateHtml && searchEngine && serverBasedSearch)
   {
-    msg("Generating search index\n");
+    g_s.begin("Generating search index\n");
     if (Doxygen::searchIndex->kind()==SearchIndexIntf::Internal) // write own search index
     {
       HtmlGenerator::writeSearchPage();
@@ -10786,15 +10928,17 @@ void generateOutput()
       }
       Doxygen::searchIndex->write(searchDataFile);
     }
+    g_s.end();
   }
 
   if (generateRtf)
   {
-    msg("Combining RTF output...\n");
+    g_s.begin("Combining RTF output...\n");
     if (!RTFGenerator::preProcessFileInplace(Config_getString("RTF_OUTPUT"),"refman.rtf"))
     {
       err("An error occurred during post-processing the RTF files!\n");
     }
+    g_s.end();
   }
 
   if (Config_getBool("HAVE_DOT"))
@@ -10862,6 +11006,7 @@ void generateOutput()
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
   }
 
+  g_s.print();
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",

@@ -277,11 +277,11 @@ ClassDefImpl::~ClassDefImpl()
 
 // constructs a new class definition
 ClassDef::ClassDef(
-    const char *defFileName,int defLine,
+    const char *defFileName,int defLine,int defColumn,
     const char *nm,CompoundType ct,
     const char *lref,const char *fName,
     bool isSymbol,bool isJavaEnum) 
- : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm),0,0,isSymbol) 
+ : Definition(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol)
 {
   visited=FALSE;
   setReference(lref);
@@ -535,6 +535,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
                   break;
                 case Public:    
                   addMemberToList(MemberListType_pubTypes,md,TRUE);
+                  isSimple=QCString(md->typeString()).find(")(")==-1;
                   break;
                 case Private:   
                   addMemberToList(MemberListType_priTypes,md,TRUE);
@@ -3491,7 +3492,7 @@ Definition *ClassDef::findInnerCompound(const char *name)
 //}
 
 ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
-    int startLine, const QCString &templSpec,bool &freshInstance)
+    int startLine, int startColumn, const QCString &templSpec,bool &freshInstance)
 {
   freshInstance = FALSE;
   if (m_impl->templateInstances==0) 
@@ -3503,7 +3504,7 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
   {
     Debug::print(Debug::Classes,0,"      New template instance class `%s'`%s'\n",name().data(),templSpec.data());
     templateClass = new ClassDef(
-        fileName,startLine,localName()+templSpec,ClassDef::Class);
+        fileName,startLine,startColumn,localName()+templSpec,ClassDef::Class);
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
     templateClass->setHidden(isHidden());
@@ -3524,7 +3525,7 @@ ClassDef *ClassDef::getVariableInstance(const char *templSpec)
   if (templateClass==0)
   {
     Debug::print(Debug::Classes,0,"      New template variable instance class `%s'`%s'\n",qPrint(name()),qPrint(templSpec));
-    templateClass = new ClassDef("<code>",1,name()+templSpec,
+    templateClass = new ClassDef("<code>",1,1,name()+templSpec,
                         ClassDef::Class,0,0,FALSE);
     templateClass->addMembersToTemplateInstance( this, templSpec );
     templateClass->setTemplateMaster(this);

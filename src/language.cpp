@@ -127,6 +127,9 @@
 #ifdef LANG_LT
 #include "translator_lt.h"
 #endif
+#ifdef LANG_LV
+#include "translator_lv.h"
+#endif
 #ifdef LANG_ZA
 #include "translator_za.h"
 #endif
@@ -367,6 +370,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("lithuanian"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorLithuanian);
+  }
+#endif
+#ifdef LANG_LV
+  else if (L_EQUAL("latvian"))
+  {
+    theTranslator=new TranslatorDecoder(new TranslatorLatvian);
   }
 #endif
 #ifdef LANG_ZA

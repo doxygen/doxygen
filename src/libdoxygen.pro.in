@@ -81,6 +81,7 @@ HEADERS      =	arguments.h \
 		logos.h \
 		mandocvisitor.h \
 		mangen.h \
+		sqlite3gen.h \
 		markdown.h \
                 marshal.h \
 		memberdef.h \
@@ -170,7 +171,9 @@ HEADERS      =	arguments.h \
 		vhdldocgen.h \
 		vhdlscanner.h \
 		xmldocvisitor.h \
-                xmlgen.h
+                xmlgen.h \
+                docbookvisitor.h \
+                docbookgen.h
 
 SOURCES      =	arguments.cpp \
                 ce_lex.cpp \
@@ -222,6 +225,7 @@ SOURCES      =	arguments.cpp \
 		logos.cpp \
 		mandocvisitor.cpp \
 		mangen.cpp \
+		sqlite3gen.cpp \
 		markdown.cpp \
                 marshal.cpp \
 		memberdef.cpp \
@@ -259,7 +263,9 @@ SOURCES      =	arguments.cpp \
 		vhdlparser.cpp \
 		vhdlscanner.cpp \
 		xmldocvisitor.cpp \
-                xmlgen.cpp
+                xmlgen.cpp \
+                docbookvisitor.cpp \
+                docbookgen.cpp
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200

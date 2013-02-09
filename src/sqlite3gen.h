@@ -1,13 +1,12 @@
 /******************************************************************************
  *
- * 
  *
  *
- * Copyright (C) 1997-2013 by Dimitri van Heesch.
+ * Copyright (C) 1997-2012 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,11 +15,9 @@
  *
  */
 
-#ifndef TAGREADER_H
-#define TAGREADER_H
+#ifndef SQLITE3GEN_H
+#define SQLITE3GEN_H
 
-class Entry;
-
-void parseTagFile(Entry *root,const char *fullPathName);
+void generateSqlite3();
 
 #endif

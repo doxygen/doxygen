@@ -358,7 +358,8 @@ void LatexDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
     case DocVerbatim::ManOnly: 
-    case DocVerbatim::RtfOnly: 
+    case DocVerbatim::RtfOnly:
+    case DocVerbatim::DocbookOnly:
       /* nothing */ 
       break;
     case DocVerbatim::LatexOnly: 
