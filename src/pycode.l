@@ -43,6 +43,10 @@
 #include "filedef.h"
 #include "namespacedef.h"
 
+// Toggle for some debugging info
+//#define DBG_CTX(x) fprintf x
+#define DBG_CTX(x) do { } while(0)
+
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 
@@ -479,6 +483,15 @@ static void codifyLines(char *text)
   }
 }
 
+static const char* fileLocation() 
+{
+  const int maxLen=4096;
+  static char floc[maxLen+1];
+  floc[maxLen]='\0';
+  snprintf(floc,maxLen,"%s:%d:%d",g_sourceFileDef?g_sourceFileDef->absFilePath().data():"[unknown]",g_yyLineNr,1);
+  return floc;
+}
+
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
   static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
@@ -489,11 +502,11 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
   //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if ((referencedByRelation || callerGraph) && (src->isFunction() || src->isSlot()))
   {
-    dst->addSourceReferencedBy(src);
+    dst->addSourceReferencedBy(src,fileLocation());
   }
   if ((referencesRelation || callGraph) && (src->isFunction() || src->isSlot()))
   {
-    src->addSourceReferences(dst);
+    src->addSourceReferences(dst,fileLocation());
   }
 }
 
@@ -580,7 +593,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   // Don't do anything for empty text
   if (className.isEmpty()) return;
 
-  //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
+  DBG_CTX((stderr,"generateClassOrGlobalLink(className=%s)\n",className.data()));
 
   ClassDef *cd=0,*lcd=0;  /** Class def that we may find */
   MemberDef *md=0;        /** Member def that we may find */
@@ -593,10 +606,10 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 
     cd = getResolvedClass(d,g_sourceFileDef,substitute(className,".","::"),&md);
 
-    //fprintf(stderr,"d=%s g_sourceFileDef=%s\n",
-    //	d?d->displayName().data():"<null>",
-    //	g_currentDefinition?g_currentDefinition->displayName().data():"<null>");
-    //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
+    DBG_CTX((stderr,"d=%s g_sourceFileDef=%s\n",
+        d?d->displayName().data():"<null>",
+        g_currentDefinition?g_currentDefinition->displayName().data():"<null>"));
+    DBG_CTX((stderr,"is found as a type %s\n",cd?cd->name().data():"<null>"));
 
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
@@ -620,7 +633,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
       g_theCallContext.setClass(lcd);
     }
     //isLocal=TRUE;
-    //fprintf(stderr,"is a local variable cd=%p!\n",cd);
+    DBG_CTX((stderr,"is a local variable cd=%p!\n",cd));
   }
 
   if (cd && cd->isLinkable()) // is it a linkable class
@@ -646,7 +659,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
       QCString scope = substitute(className.left(scopeEnd),".","::");
       QCString locName = className.right(className.length()-scopeEnd-1);
       ClassDef *mcd = getClass(scope);
-      //fprintf(stderr,"scope=%s locName=%s mcd=%p\n",scope.data(),locName.data(),mcd);
+      DBG_CTX((stderr,"scope=%s locName=%s mcd=%p\n",scope.data(),locName.data(),mcd));
       if (mcd)
       {
 	MemberDef *md = mcd->getMemberByName(locName);
@@ -709,7 +722,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   ClassDef *ccd=0;
   QCString locScope=g_classScope.copy();
   QCString locFunc=removeRedundantWhiteSpace(funcName);
-  //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
+  DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data()));
   int i=locFunc.findRev("::");
   if (i>0)
   {
@@ -759,7 +772,7 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
 	addDocCrossReference(g_currentMemberDef,(MemberDef*)sym);
       }
     }
-    //fprintf(stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>");
+    DBG_CTX((stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>"));
 
     // TODO: find the nearest base class in case cd is a base class of
     // thisCd 
@@ -1045,7 +1058,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
                                       // Push a class scope
 
-                                      ClassDef *classDefToAdd = new ClassDef("<code>",1,g_curClassName,ClassDef::Class,0,0,FALSE);
+                                      ClassDef *classDefToAdd = new ClassDef("<code>",1,1,g_curClassName,ClassDef::Class,0,0,FALSE);
                                       g_codeClassSDict.append(g_curClassName,classDefToAdd);
                                       char *s=g_curClassBases.first();
                                       while (s) 

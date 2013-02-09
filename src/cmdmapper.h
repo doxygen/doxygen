@@ -118,7 +118,9 @@ enum CommandType
   CMD_RTFONLY      = 88, 
   CMD_ENDRTFONLY   = 89,
   CMD_PIPE         = 90,
-  CMD_VHDLFLOW     = 91
+  CMD_VHDLFLOW     = 91,
+  CMD_DBONLY       = 92,
+  CMD_ENDDBONLY    = 93
 };
 
 enum HtmlTagType

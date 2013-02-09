@@ -1399,11 +1399,11 @@ void TagFileParser::addIncludes()
   }
 }
 
-void parseTagFile(Entry *root,const char *fullName,const char *tagName)
+void parseTagFile(Entry *root,const char *fullName)
 {
   QFileInfo fi(fullName);
   if (!fi.exists()) return;
-  TagFileParser handler( tagName );
+  TagFileParser handler( fullName ); // tagName
   handler.setFileName(fullName);
   TagFileErrorHandler errorHandler;
   QFile xmlFile( fullName );

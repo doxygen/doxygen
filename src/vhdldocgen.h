@@ -259,6 +259,11 @@ class VhdlDocGen
     static void  writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDef *mdef);
 };
 
+//-------------------------------------------------------------------------------------------------------------------
+//-------------- VHDL Flowcharts -------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+
 //#define DEBUGFLOW
 
 class FlowChart
@@ -333,9 +338,7 @@ private:
     int stamp;
     int type;
 
-#ifdef DEBUGFLOW  
     int line;
-#endif
 
     QCString label;
     QCString text;

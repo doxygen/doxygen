@@ -74,7 +74,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 */
 FileDef::FileDef(const char *p,const char *nm,
                  const char *lref,const char *dn)
-   : Definition((QCString)p+nm,1,nm)
+   : Definition((QCString)p+nm,1,1,nm)
 {
   path=p;
   filepath=path+nm;

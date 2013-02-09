@@ -51,6 +51,10 @@
 #include "pycode.h"
 #include "arguments.h"
 
+// Toggle for some debugging info
+//#define DBG_CTX(x) fprintf x
+#define DBG_CTX(x) do { } while(0)
+
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 
@@ -226,7 +230,7 @@ static QCString findPackageScope(const char *fileName)
 
 static void lineCount()
 {
-  //fprintf(stderr,"yyLineNr=%d\n",yyLineNr);
+  DBG_CTX((stderr,"yyLineNr=%d\n",yyLineNr));
   for (const char *p = yytext; *p; ++p)
   {
     yyLineNr += (*p == '\n') ;
@@ -235,7 +239,7 @@ static void lineCount()
 
 static void incLineNr()
 {
-  //fprintf(stderr,"yyLineNr=%d\n",yyLineNr);
+  DBG_CTX((stderr,"yyLineNr=%d\n",yyLineNr));
   yyLineNr++;
 }
 
@@ -537,7 +541,7 @@ STARTDOCSYMS      "##"
 <Search>{
 
     ^{B}"def"{BB}       { // start of a function/method definition with indent
-      			  //fprintf(stderr,"Found def at %d\n",yyLineNr);
+      			  DBG_CTX((stderr,"Found def at %d\n",yyLineNr));
       			  g_indent=computeIndent(yytext);
 			  searchFoundDef();
 			  BEGIN( FunctionDec );
@@ -548,7 +552,7 @@ STARTDOCSYMS      "##"
                         }
 
      ^{B}"class"{BB}	{ // start of a class definition with indent
-       			  //fprintf(stderr,"Found class at %d\n",yyLineNr);
+       			  DBG_CTX((stderr,"Found class at %d\n",yyLineNr));
       			  g_indent=computeIndent(yytext);
 			  searchFoundClass();
 			  BEGIN( ClassDec ) ;
@@ -731,7 +735,7 @@ STARTDOCSYMS      "##"
 
 <SearchMemVars>{
     "self."{IDENTIFIER}/{B}"=" {
-                        //fprintf(stderr,"Found member variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr);
+                        DBG_CTX((stderr,"Found member variable %s in %s at %d\n",&yytext[5],current_root->name.data(),yyLineNr));
 			current->name=&yytext[5];
 			current->section=Entry::VARIABLE_SEC;
 			current->fileName  = yyFileName;
@@ -782,7 +786,7 @@ STARTDOCSYMS      "##"
 
 <FunctionBody>{
     \n{B}/{IDENTIFIER}{BB}  {
-                        //fprintf(stderr,"indent %d<=%d\n",computeIndent(&yytext[1]),g_indent);
+                        DBG_CTX((stderr,"indent %d<=%d\n",computeIndent(&yytext[1]),g_indent));
                         if (computeIndent(&yytext[1])<=g_indent) 
 			{
 			  int i;
@@ -1002,7 +1006,7 @@ STARTDOCSYMS      "##"
       		      }
     ^{BB}	      { // something at indent >0
                         g_curIndent=computeIndent(yytext);
-			//fprintf(stderr,"g_curIndent=%d g_indent=%d\n",g_curIndent,g_indent);
+			DBG_CTX((stderr,"g_curIndent=%d g_indent=%d\n",g_curIndent,g_indent));
                         if (g_curIndent<=g_indent) 
 			  // jumped out of the class/method
 			{
@@ -1133,7 +1137,7 @@ STARTDOCSYMS      "##"
 			         //current->startLine = yyLineNr;
 				 g_curIndent=computeIndent(yytext);
 				 bodyEntry = current;
-				 //fprintf(stderr,"setting indent %d\n",g_curIndent);
+				 DBG_CTX((stderr,"setting indent %d\n",g_curIndent));
 				 //printf("current->program=[%s]\n",current->program.data());
 				 //g_hideClassDocs = TRUE;
 			         BEGIN(ClassBody);
@@ -1352,11 +1356,11 @@ STARTDOCSYMS      "##"
 			  { // strip g_curIndent amount of whitespace
 			    int i;
 			    for (i=0;i<indent-g_curIndent;i++) docBlock+=' ';
-			    //fprintf(stderr,"stripping indent %d\n",g_curIndent);
+			    DBG_CTX((stderr,"stripping indent %d\n",g_curIndent));
 			  }
 			  else
 			  {
-			    //fprintf(stderr,"not stripping: %d<%d\n",indent,g_curIndent);
+			    DBG_CTX((stderr,"not stripping: %d<%d\n",indent,g_curIndent));
 			    docBlock += yytext;
 			  }
       			}

@@ -6166,9 +6166,12 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     if (tagInfo)
     {
       pd->setReference(tagInfo->tagName);
+      pd->setFileName(tagInfo->fileName);
     }
-
-    pd->setFileName(convertNameToFile(pd->name(),FALSE,TRUE));
+    else
+    {
+      pd->setFileName(convertNameToFile(pd->name(),FALSE,TRUE));
+    }
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pd);

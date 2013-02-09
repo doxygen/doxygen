@@ -383,6 +383,7 @@ void HtmlHelp::initialize()
 	 0x422 Ukrainian
 	 0x81A Serbian (Serbia, Latin)
 	 0x403 Catalan
+	 0x426 Latvian
 	 0x427 Lithuanian
 	 0x436 Afrikaans
 	 0x42A Vietnamese
@@ -431,6 +432,7 @@ void HtmlHelp::initialize()
   s_languageDict.insert("vietnamese",  new QCString("0x42A Vietnamese"));
   s_languageDict.insert("persian",     new QCString("0x429 Persian (Iran)"));
   s_languageDict.insert("arabic",      new QCString("0xC01 Arabic (Egypt)"));
+  s_languageDict.insert("latvian",     new QCString("0x426 Latvian"));
 }
 
 

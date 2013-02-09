@@ -82,6 +82,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_directory_graph DIRECTORY_GRAPH
 \refitem cfg_disable_index DISABLE_INDEX 
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
+\refitem cfg_docbook_output DOCBOOK_OUTPUT
 \refitem cfg_docset_bundle_id DOCSET_BUNDLE_ID
 \refitem cfg_docset_feedname DOCSET_FEEDNAME
 \refitem cfg_docset_publisher_id DOCSET_PUBLISHER_ID
@@ -114,6 +115,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_ext_links_in_window EXT_LINKS_IN_WINDOW
 \refitem cfg_extension_mapping EXTENSION_MAPPING
 \refitem cfg_external_groups EXTERNAL_GROUPS
+\refitem cfg_external_pages EXTERNAL_PAGES
 \refitem cfg_external_search EXTERNAL_SEARCH
 \refitem cfg_external_search_id EXTERNAL_SEARCH_ID
 \refitem cfg_extra_packages EXTRA_PACKAGES
@@ -137,6 +139,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_buglist GENERATE_BUGLIST
 \refitem cfg_generate_chi GENERATE_CHI
 \refitem cfg_generate_deprecatedlist GENERATE_DEPRECIATEDLIST
+\refitem cfg_generate_docbook GENERATE_DOCBOOK
 \refitem cfg_generate_docset GENERATE_DOCSET
 \refitem cfg_generate_eclipsehelp GENERATE_ECLIPSEHELP
 \refitem cfg_generate_html GENERATE_HTML
@@ -187,6 +190,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_inline_grouped_classes INLINE_GROUPED_CLASSES
 \refitem cfg_inline_info INLINE_INFO
 \refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
+\refitem cfg_inline_simple_structs INLINE_SIMPLE_STRUCTS
 \refitem cfg_inline_sources INLINE_SOURCES
 \refitem cfg_input INPUT
 \refitem cfg_input_encoding INPUT_ENCODING
@@ -197,6 +201,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_latex_batchmode LATEX_BATCHMODE
 \refitem cfg_latex_bib_style LATEX_BIB_STYLE
 \refitem cfg_latex_cmd_name LATEX_CMD_NAME
+\refitem cfg_latex_extra_files LATEX_EXTRA_FILES
 \refitem cfg_latex_footer LATEX_FOOTER
 \refitem cfg_latex_header LATEX_HEADER
 \refitem cfg_latex_hide_indices LATEX_HIDE_INDICES
@@ -369,8 +374,8 @@ followed by the descriptions of the tags grouped by category.
  The default language is English, other supported languages are:
  Afrikaans, Arabic, Brazilian, Catalan, Chinese, Croatian, Czech, Danish, Dutch, 
  Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean, 
- Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian, 
- Serbian-Cyrillic, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+ Latvian, Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, 
+ Serbian,  Serbian-Cyrillic, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
@@ -649,6 +654,16 @@ unions are shown inside the group in which they are included
 (e.g. using @@ingroup) instead of on a separate page (for HTML and Man pages) 
 or section (for LaTeX and RTF). Note that this feature does not work in
 combination with \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".
+
+\anchor cfg_inline_simple_structs
+<dt>\c INLINE_SIMPLE_STRUCTS <dd>
+ \addindex INLINE_SIMPLE_STRUCTS
+When the \c INLINE_SIMPLE_STRUCTS tag is set to \c YES, structs, classes, and 
+unions with only public data fields or simple typedef fields will be shown 
+inline in the documentation of the scope in which they are defined (i.e. file, 
+namespace, or group documentation), provided this scope is documented. If set 
+to NO (the default), structs, classes, and unions are shown on a separate 
+page (for HTML and Man pages) or section (for LaTeX and RTF).
 
 \anchor cfg_typedef_hides_struct 
 <dt>\c TYPEDEF_HIDES_STRUCT <dd>
@@ -2069,7 +2084,15 @@ EXTRA_PACKAGES = times
  the generated latex document. The footer should contain everything after 
  the last chapter. If it is left blank doxygen will generate a 
  standard footer. Notice: only use this tag if you know what you are doing! 
-   
+
+\anchor cfg_latex_extra_files
+<dt>\c LATEX_EXTRA_FILES <dd>
+ \addindex LATEX_EXTRA_FILES
+ The \c LATEX_EXTRA_FILES tag can be used to specify one or more extra images
+ or other source files which should be copied to the LaTeX output directory.
+ Note that the files will be copied as-is; there are no commands or markers
+ available.
+
 \anchor cfg_pdf_hyperlinks
 <dt>\c PDF_HYPERLINKS <dd>
  \addindex PDF_HYPERLINKS
@@ -2254,6 +2277,24 @@ EXTRA_PACKAGES = times
 
 </dl>
 
+\section docbook_output Docbook related options
+\anchor cfg_generate_docbook
+<dl>
+
+<dt>\c GENERATE_DOCBOOK <dd>
+ \addindex GENERATE_DOCBOOK
+If the \c GENERATE_DOCBOOK tag is set to \c YES Doxygen will generate Docbook files 
+that can be used to generate PDF.
+
+\anchor cfg_docbook_output
+<dt>\c DOCBOOK_OUTPUT <dd>
+ \addindex DOCBOOK_OUTPUT
+The \c DOCBOOK_OUTPUT tag is used to specify where the Docbook pages will be put. 
+If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be put in 
+front of it. If left blank docbook will be used as the default path.
+
+</dl>
+
 \section autogen_output AUTOGEN_DEF related options
 \anchor cfg_generate_autogen_def
 <dl>
@@ -2418,6 +2459,13 @@ EXTRA_PACKAGES = times
  If the \c EXTERNAL_GROUPS tag is set to \c YES all external groups will be listed
  in the modules index. If set to \c NO, only the current project's groups will
  be listed.
+
+\anchor cfg_external_pages
+<dt>\c EXTERNAL_PAGES <dd>
+ \addindex EXTERNAL_PAGES
+ If the \c EXTERNAL_PAGES tag is set to \c YES all external pages will be listed 
+ in the related pages index. If set to \c NO, only the current project's 
+ pages will be listed. 
  
 \anchor cfg_perl_path
 <dt>\c PERL_PATH <dd>

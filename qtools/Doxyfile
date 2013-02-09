@@ -1,4 +1,4 @@
-# Doxyfile 1.8.3
+# Doxyfile 1.8.3.1
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -87,7 +87,7 @@ CITE_BIB_FILES         =
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
 #---------------------------------------------------------------------------
-QUIET                  = YES
+QUIET                  = NO
 WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
@@ -186,8 +186,9 @@ MATHJAX_EXTENSIONS     =
 SEARCHENGINE           = YES
 SERVER_BASED_SEARCH    = NO
 EXTERNAL_SEARCH        = NO
-SEARCHENGINE_URL       = 
+SEARCHENGINE_URL       =
 SEARCHDATA_FILE        = searchdata.xml
+EXTERNAL_SEARCH_ID     =
 EXTRA_SEARCH_MAPPINGS  =
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
@@ -201,6 +202,7 @@ PAPER_TYPE             = a4wide
 EXTRA_PACKAGES         =
 LATEX_HEADER           =
 LATEX_FOOTER           =
+LATEX_EXTRA_FILES      =
 PDF_HYPERLINKS         = YES
 USE_PDFLATEX           = YES
 LATEX_BATCHMODE        = NO
@@ -232,6 +234,11 @@ XML_SCHEMA             =
 XML_DTD                =
 XML_PROGRAMLISTING     = YES
 #---------------------------------------------------------------------------
+# configuration options related to the DOCBOOK output
+#---------------------------------------------------------------------------
+GENERATE_DOCBOOK       = YES
+DOCBOOK_OUTPUT         = docbook
+#---------------------------------------------------------------------------
 # configuration options for the AutoGen Definitions output
 #---------------------------------------------------------------------------
 GENERATE_AUTOGEN_DEF   = NO
@@ -261,6 +268,7 @@ TAGFILES               =
 GENERATE_TAGFILE       = ../qtools_docs/qtools.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
+EXTERNAL_PAGES         = YES
 PERL_PATH              = /usr/bin/perl
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
@@ -268,7 +276,7 @@ PERL_PATH              = /usr/bin/perl
 CLASS_DIAGRAMS         = NO
 MSCGEN_PATH            =
 HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 DOT_NUM_THREADS        = 0
 DOT_FONTNAME           =
 DOT_FONTSIZE           = 10

@@ -180,6 +180,7 @@ static DocCmdMap docCmdMap[] =
   { "latexonly",       &handleFormatBlock,      FALSE },
   { "htmlonly",        &handleFormatBlock,      FALSE },
   { "xmlonly",         &handleFormatBlock,      FALSE },
+  { "docbookonly",     &handleFormatBlock,      FALSE },
   { "rtfonly",         &handleFormatBlock,      FALSE },
   { "manonly",         &handleFormatBlock,      FALSE },
   { "dot",             &handleFormatBlock,      TRUE  },
@@ -314,6 +315,7 @@ class DocCmdMapper
 
 DocCmdMapper *DocCmdMapper::s_instance=0;
   
+bool inInternalDocs = FALSE;
   
 #define YY_NEVER_INTERACTIVE 1
 
@@ -1018,9 +1020,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN(HtmlComment);
 					}
 <Comment>{B}*{CMD}"endinternal"{B}*	{
-  					  warn(yyFileName,yyLineNr,
+                                          if (!inInternalDocs)
+  					    warn(yyFileName,yyLineNr,
                                                "warning: found \\endinternal without matching \\internal"
                                               );
+                                          inInternalDocs = FALSE;
   					}
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*	{ // potentially interesting command
                                           // the {B}* in the front was added for bug620924
@@ -1693,7 +1697,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
   					  addOutput(yytext);
 					  if (&yytext[4]==blockName) // found end of the block
 					  {
@@ -2569,6 +2573,7 @@ static bool handleInternal(const QCString &)
   {
     // re-enabled for bug640828
     addOutput("\\internal "); 
+    inInternalDocs = TRUE;
   }
   return FALSE;
 }

@@ -135,6 +135,11 @@ void DocSets::initialize()
         "     <string>" << publisherId << "</string>\n"
         "     <key>DocSetPublisherName</key>\n"
         "     <string>" << publisherName << "</string>\n"
+        // markers for Dash
+        "     <key>DashDocSetFamily</key>\n" 
+        "     <string>doxy</string>\n"
+        "     <key>DocSetPlatformFamily</key>\n"
+        "     <string>doxygen</string>\n"
         "</dict>\n"
         "</plist>\n";
   }

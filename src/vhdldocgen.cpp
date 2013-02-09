@@ -2901,18 +2901,18 @@ void assignBinding(VhdlConfNode * conf)
   entBind=conf->binding;
   QCString conf2=VhdlDocGen::parseForBinding(entBind,arcBind);
 
-  if (conf2=="configuration")
+  if (qstricmp(conf2,"configuration")==0)
   {
     QList<VhdlConfNode> confList =  getVhdlConfiguration();
     VhdlConfNode* vconf;
-    bool found=false;
+    //  bool found=false;
     for (uint iter=0;iter<confList.count(); iter++)
     {
       vconf= (VhdlConfNode *)confList.at(iter);
       QCString n=VhdlDocGen::getIndexWord(vconf->confVhdl.data(),0);
       if (n==entBind)
       {
-        found=true;
+        // found=true;
         entBind=VhdlDocGen::getIndexWord(vconf->confVhdl.data(),1);   
         QCString a=VhdlDocGen::getIndexWord(conf->compSpec.data(),0);
         QCString e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),1);    
@@ -2922,18 +2922,22 @@ void assignBinding(VhdlConfNode * conf)
         break;
       }
     }
-    if (!found) 
+  }
+  else  // conf2!=configuration
+  {
+    QCString a,c,e;
+    if (conf->isInlineConf)
     {
-      err("error: %s%s",conf->binding.data()," could not be found");
+      c=conf->confVhdl;
+      e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),0);    
     }
-    //return;
-  }// if
-  else
-  { // find entity work.entname(arch?)
-    QCString a=VhdlDocGen::getIndexWord(conf->compSpec.data(),0);
-    QCString e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),1);    
-    a=e+"::"+a;
-    archClass= VhdlDocGen::findVhdlClass(a.data());//Doxygen::classSDict->find(a.data());
+    else
+    {
+      a=VhdlDocGen::getIndexWord(conf->compSpec.data(),0);
+      e=VhdlDocGen::getIndexWord(conf->confVhdl.data(),1);    
+      c=e+"::"+a;
+    } 
+    archClass= VhdlDocGen::findVhdlClass(c.data());//Doxygen::classSDict->find(a.data());
     entClass= VhdlDocGen::findVhdlClass(e.data()); //Doxygen::classSDict->find(e.data());
   }
 
@@ -2942,7 +2946,7 @@ void assignBinding(VhdlConfNode * conf)
 
   if (!archClass)
   {
-    err("\n error:architecture %s not found ! ",conf->confVhdl.data());
+ //   err("\n error:architecture %s not found ! ",conf->confVhdl.data());
     return;
   }
 
@@ -2951,27 +2955,30 @@ void assignBinding(VhdlConfNode * conf)
   all=allOt.lower()=="all" ;
   others= allOt.lower()=="others"; 
 
-  for (;(cur=eli.current());++eli){
-
+  for (;(cur=eli.current());++eli)
+  {
     if (cur->exception.lower()==label || conf->isInlineConf)
     {
       QCString sign,archy;
 
       if (all || others)
+      {
         archy=VhdlDocGen::getIndexWord(conf->arch.data(),1);
+      }
       else
+      {
         archy=conf->arch;
-
+      }
 
       QCString	  inst1=VhdlDocGen::getIndexWord(archy.data(),0).lower();
       QCString	  comp=VhdlDocGen::getIndexWord(archy.data(),1).lower();
 
       QStringList ql=QStringList::split(",",inst1);
 
-      for(uint j=0;j<ql.count();j++)
+      for (uint j=0;j<ql.count();j++)
       {
         QCString archy1,sign1;
-        if(all || others) 
+        if (all || others) 
         { 
           archy1=VhdlDocGen::getIndexWord(conf->arch.data(),1);
           sign1=cur->type;
@@ -2998,11 +3005,9 @@ void assignBinding(VhdlConfNode * conf)
         }
       }// for
     }
-  }//for
+  }//for each element in instList
 
 }//assignBinding
-
-
 
 /*
 
@@ -3016,7 +3021,7 @@ void assignBinding(VhdlConfNode * conf)
 //          ........
 //  end architecture
 
- */
+*/
 void VhdlDocGen::computeVhdlComponentRelations()
 {
 
@@ -3027,7 +3032,9 @@ void VhdlDocGen::computeVhdlComponentRelations()
   {
     VhdlConfNode* conf= (VhdlConfNode *)confList.at(iter);
     if (!(conf->isInlineConf || conf->isLeaf))
+    {
       continue;
+    }
     assignBinding(conf);
   }
 
@@ -3038,7 +3045,9 @@ void VhdlDocGen::computeVhdlComponentRelations()
   for (eli.toFirst();(cur=eli.current());++eli)
   {
     if (cur->stat ) //  was bind
+    {
       continue;
+    }
 
     if (cur->includeName=="entity" || cur->includeName=="component" )
     {
@@ -3055,10 +3064,13 @@ void VhdlDocGen::computeVhdlComponentRelations()
     ClassDef *cd=Doxygen::classSDict->find(inst);
     ClassDef *ar=Doxygen::classSDict->find(cur->args);
 
-    if (cd==0) continue;
+    if (cd==0) 
+    {
+      continue;
+    }
 
-    if (classEntity==0)
-      err("error: %s:%d:Entity:%s%s",cur->fileName.data(),cur->startLine,entity.data()," could not be found");
+ //   if (classEntity==0)
+ //     err("error: %s:%d:Entity:%s%s",cur->fileName.data(),cur->startLine,entity.data()," could not be found");
     
     addInstance(classEntity,ar,cd,cur);
   }
@@ -3103,7 +3115,7 @@ static void addInstance(ClassDef* classEntity, ClassDef* ar,
 ferr:
   QCString uu=cur->name;
   MemberDef *md=new MemberDef(
-      ar->getDefFileName(), cur->startLine,
+      ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, 0,
       Public, Normal, cur->stat,Member,
       MemberType_Variable,
@@ -3129,6 +3141,7 @@ ferr:
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
 
+#if 0
   QCString info="Info: Elaborating entity "+n1; 
   fd=ar->getFileDef();
   info+=" for hierarchy ";
@@ -3137,6 +3150,8 @@ ferr:
   label.replace(epr,":");
   info+=label;
   fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data()); 
+#endif
+  
   ar->insertMember(md);
 
 }
@@ -3158,8 +3173,7 @@ void  VhdlDocGen::writeRecorUnit(QCString & largs,OutputList& ol ,const MemberDe
 void VhdlDocGen::writeRecUnitDocu(
     const MemberDef *md,
     OutputList& ol,
-    QCString largs
-    )
+    QCString largs)
 {
 
   QStringList ql=QStringList::split("#",largs,FALSE);
@@ -3430,6 +3444,43 @@ QList<FlowChart>  FlowChart::flowList;
 static QMap<QCString,int> keyMap;
 #endif
 
+void alignText(QCString & q)
+{
+  if (q.length()<=80) return;
+ 
+  if (q.length()>200)
+  {
+    q.resize(200);
+  }
+
+  q.append(" ...");
+ 
+  QRegExp reg("[\\s|]");
+  QCString str(q.data());
+  QCString temp;
+  
+  while (str.length()>80)
+  {
+    int j=str.findRev(reg,80);
+    if (j<=0)
+    {
+      temp+=str;
+      q=temp;
+      return;
+    }
+    else
+    {
+      QCString qcs=str.left(j);
+      temp+=qcs+"\\";
+      temp+="n";
+      str.remove(0,j);
+    }
+  }//while
+  
+ q=temp+str;
+// #endif
+}
+
 void FlowChart::printNode(const FlowChart* flo)
 {
   if (flo==0) return;  
@@ -3518,7 +3569,7 @@ void  FlowChart::colTextNodes()
       {
         flno->text+=flo->text;
         flowList.remove(flo);
-        if (j>0)j=j-1;
+        if (j>0) j=j-1;
       }
       found=TRUE;
     }  
@@ -3644,10 +3695,13 @@ void FlowChart::buildCommentNodes(FTextStream & t)
         //  comment between function/process .. begin is linked to start node
         to=flowList.at(0);
       }
-      else  
-      {
-        to=flowList.at(j+1);
-      }
+      else 
+      { 
+        if (j>0 && flowList.at(j-1)->line==fll->line)
+          to=flowList.at(j-1);
+        else
+          to=flowList.at(j+1);
+       }
       t << getNodeName(fll->id);
       t << "[shape=none, label=<\n";
       t << "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"2\" >\n ";
@@ -3725,7 +3779,7 @@ FlowChart::FlowChart(int typ,const char * t,const char* ex,const char* lab)
 
   if (typ & (START_NO | END_NO | VARIABLE_NO))
   {
-    stamp=-1;
+    stamp=0;
   }
 
   id=nodeCounter++;
@@ -3754,10 +3808,7 @@ void FlowChart::addFlowChart(int type,const char* text,const char* exp, const ch
 
   FlowChart *fl=new FlowChart(type,typeString.data(),expression.data(),label);
 
-#ifdef DEBUGFLOW
-  VhdlContainer* vc= getVhdlCont();
-  fl->line=vc->yyLineNr;
-#endif
+  fl->line=getVhdlCont()->yyLineNr;
 
   if (type & (START_NO | VARIABLE_NO))
   {
@@ -3931,6 +3982,9 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
   }
   if (dec)
   {
+    QCString exp=fl->exp;
+    alignText(exp);
+
     t << " [shape=diamond,style=filled,color=\"";
     t << flowCol.decisionNode;
     t << "\",label=\" ";
@@ -3939,11 +3993,11 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
 
     if (fl->label)
     {
-      kl+=fl->label+":"+fl->exp+var;
+      kl+=fl->label+":"+exp+var;
     }
     else
     {
-      kl+=fl->exp+var;
+      kl+=exp+var;
     }
 
     FlowChart::alignCommentNode(t,kl);
@@ -4274,6 +4328,14 @@ void FlowChart::writeFlowLinks(FTextStream &t)
     }
     else if (kind & WHEN_NO)
     {
+      // default value
+      if (qstricmp(fll->text.simplifyWhiteSpace().data(),"others")==0)
+      { 
+        writeEdge(t,fll,flowList.at(j+1),2);
+        continue;
+      }  
+
+     
       writeEdge(t,fll,flowList.at(j+1),0);
       int u=findNode(j,stamp,WHEN_NO);
       int v=findNode(j,stamp-1,END_CASE);

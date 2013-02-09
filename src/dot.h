@@ -81,6 +81,7 @@ class DotNode
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(FTextStream &t,bool isClassGraph);
+    void writeDocbook(FTextStream &t,bool isClassGraph);
     void writeDEF(FTextStream &t);
     QCString label() const { return m_label; }
     int  number() const { return m_number; }
@@ -169,6 +170,7 @@ class DotClassGraph
                     bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1) const;
 
     void writeXML(FTextStream &t);
+    void writeDocbook(FTextStream &t);
     void writeDEF(FTextStream &t);
     QCString diskName() const;
 
@@ -201,7 +203,7 @@ class DotInclDepGraph
     bool isTooBig() const;
     QCString diskName() const;
     void writeXML(FTextStream &t);
-
+    void writeDocbook(FTextStream &t);
   private:
     void buildGraph(DotNode *n,FileDef *fd,int distance);
     void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);

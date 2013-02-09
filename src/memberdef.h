@@ -44,7 +44,7 @@ class MemberDef : public Definition
 {
   public:
     
-    MemberDef(const char *defFileName,int defLine,
+    MemberDef(const char *defFileName,int defLine,int defColumn,
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList *tal,
@@ -274,7 +274,7 @@ class MemberDef : public Definition
 
     // enumeration specific members
     void insertEnumField(MemberDef *md);
-    void setEnumScope(MemberDef *md);
+    void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE);
     void setEnumClassScope(ClassDef *cd);
     void setDocumentedEnumValues(bool value);
     void setAnonymousEnumType(MemberDef *md);

@@ -1195,6 +1195,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\docbookgen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\docbookvisitor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\docparser.cpp"
 				>
 				<FileConfiguration
@@ -3159,6 +3167,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\sqlite3gen.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\tagreader.cpp"
 				>
 				<FileConfiguration
@@ -3663,6 +3675,14 @@
 			</File>
 			<File
 				RelativePath="..\src\dirdef.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\docbookgen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\docbookvisitor.h"
 				>
 			</File>
 			<File

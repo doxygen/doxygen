@@ -28,7 +28,7 @@
 
 PageDef::PageDef(const char *f,int l,const char *n,
                  const char *d,const char *t)
- : Definition(f,l,n), m_title(t)
+ : Definition(f,l,1,n), m_title(t)
 {
   setDocumentation(d,f,l);
   m_subPageDict = new PageSDict(7);
@@ -265,16 +265,11 @@ void PageDef::writePageDocumentation(OutputList &ol)
 
 bool PageDef::visibleInIndex() const
 {
-  static bool allExternals = Config_getBool("ALLEXTERNALS");
+  static bool externalPages = Config_getBool("EXTERNAL_PAGES");
   return // not part of a group
          !getGroupDef() && 
          // not an externally defined page
-         (!isReference() || allExternals) 
-         // &&
-         // not a subpage
-         //(getOuterScope()==0 || 
-         // getOuterScope()->definitionType()!=Definition::TypePage
-         //)
+         (!isReference() || externalPages) 
          ;
 }
 

@@ -41,12 +41,12 @@
 #include "filename.h"
 #include "namespacedef.h"
 
-#define YY_NEVER_INTERACTIVE 1
-  
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
-  
+
+#define YY_NEVER_INTERACTIVE 1
+
 #define CLASSBLOCK (int *)4
 #define SCOPEBLOCK (int *)8
 #define INNERBLOCK (int *)12
@@ -68,6 +68,7 @@ static const char *  g_inputString;     //!< the code fragment as text
 static int	     g_inputPosition;   //!< read offset during parsing 
 static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
+static int	     g_yyColNr;         //!< current column number
 static bool          g_needsTermination;
 
 static bool          g_exampleBlock;
@@ -565,10 +566,11 @@ static void codifyLines(const char *text)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n') { }
+    while ((c=*p++) && c!='\n') { g_yyColNr++; }
     if (c=='\n')
     {
       g_yyLineNr++;
+      g_yyColNr=1;
       //*(p-1)='\0';
       int l = (int)(p-sp-1);
       char *tmp = (char*)malloc(l+1);
@@ -702,7 +704,7 @@ static ClassDef *stripClassName(const char *s,Definition *d=g_currentDefinition)
 static MemberDef *setCallContextForVar(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  //fprintf(stderr,"setCallContextForVar(%s) g_classScope=%s\n",name.data(),g_classScope.data());
+  DBG_CTX((stderr,"setCallContextForVar(%s) g_classScope=%s\n",name.data(),g_classScope.data()));
 
   int scopeEnd = name.findRev("::");
   if (scopeEnd!=-1) // name with explicit scope
@@ -741,28 +743,28 @@ static MemberDef *setCallContextForVar(const QCString &name)
   ClassDef *mcd = g_theVarContext.findVariable(name);
   if (mcd) // local variable
   {
-    //fprintf(stderr,"local variable?\n");
+    DBG_CTX((stderr,"local variable?\n"));
     if (mcd!=VariableContext::dummyContext)
     {
-      //fprintf(stderr,"local var `%s' mcd=%s\n",name.data(),mcd->name().data());
+      DBG_CTX((stderr,"local var `%s' mcd=%s\n",name.data(),mcd->name().data()));
       g_theCallContext.setClass(mcd);
     }
   }
   else
   {
-    //fprintf(stderr,"class member? scope=%s\n",g_classScope.data());
+    DBG_CTX((stderr,"class member? scope=%s\n",g_classScope.data()));
     // look for a class member 
     mcd = getClass(g_classScope);
     if (mcd)
     {
-      //fprintf(stderr,"Inside class %s\n",mcd->name().data());
+      DBG_CTX((stderr,"Inside class %s\n",mcd->name().data()));
       MemberDef *md=mcd->getMemberByName(name);
       if (md) 
       {
-        //fprintf(stderr,"Found member %s\n",md->name().data());
+        DBG_CTX((stderr,"Found member %s\n",md->name().data()));
 	if (g_scopeStack.top()!=CLASSBLOCK)
 	{
-          //fprintf(stderr,"class member `%s' mcd=%s\n",name.data(),mcd->name().data());
+          DBG_CTX((stderr,"class member `%s' mcd=%s\n",name.data(),mcd->name().data()));
 	  g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
 	}
 	return md;
@@ -828,6 +830,15 @@ static void updateCallContextForSmartPointer()
   }
 }
 
+static const char* fileLocation() 
+{
+  const int maxLen=4096;
+  static char floc[maxLen+1];
+  floc[maxLen]='\0';
+  snprintf(floc,maxLen,"%s:%d:%d",g_sourceFileDef?g_sourceFileDef->absFilePath().data():"[unknown]",g_yyLineNr,g_yyColNr);
+  return floc;
+}
+
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
   static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
@@ -841,32 +852,32 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
       (src->isFunction() || src->isSlot()) 
      )
   {
-    dst->addSourceReferencedBy(src);
+    dst->addSourceReferencedBy(src,fileLocation());
     MemberDef *mdDef = dst->memberDefinition();
     if (mdDef)
     {
-      mdDef->addSourceReferencedBy(src);
+      mdDef->addSourceReferencedBy(src,fileLocation());
     }
     MemberDef *mdDecl = dst->memberDeclaration();
     if (mdDecl)
     {
-      mdDecl->addSourceReferencedBy(src);
+      mdDecl->addSourceReferencedBy(src,fileLocation());
     }
   }
   if ((referencesRelation || callGraph || src->hasCallGraph()) && 
       (src->isFunction() || src->isSlot())
      )
   {
-    src->addSourceReferences(dst);
+    src->addSourceReferences(dst,fileLocation());
     MemberDef *mdDef = src->memberDefinition();
     if (mdDef)
     {
-      mdDef->addSourceReferences(dst);
+      mdDef->addSourceReferences(dst,fileLocation());
     }
     MemberDef *mdDecl = src->memberDeclaration();
     if (mdDecl)
     {
-      mdDecl->addSourceReferences(dst);
+      mdDecl->addSourceReferences(dst,fileLocation());
     }
   }
 
@@ -885,7 +896,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   FileDef      *fd;
   NamespaceDef *nd;
   GroupDef     *gd;
-  //fprintf(stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly);
+  DBG_CTX((stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly));
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef,FALSE,g_forceTagReference) && 
       md->isLinkable() && (!varOnly || md->isVariable()))
   {
@@ -981,20 +992,20 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     Definition *d = g_currentDefinition;
     //printf("d=%s g_sourceFileDef=%s\n",d?d->name().data():"<none>",g_sourceFileDef?g_sourceFileDef->name().data():"<none>");
     cd = getResolvedClass(d,g_sourceFileDef,className,&md);
-    //fprintf(stderr,"non-local variable name=%s context=%d cd=%s md=%s!\n",
-    //	className.data(),g_theVarContext.count(),cd?cd->name().data():"<none>",
-    //    md?md->name().data():"<none>");
+    DBG_CTX((stderr,"non-local variable name=%s context=%d cd=%s md=%s!\n",
+    className.data(),g_theVarContext.count(),cd?cd->name().data():"<none>",
+        md?md->name().data():"<none>"));
     if (cd==0 && md==0 && (i=className.find('<'))!=-1)
     {
       QCString bareName = className.left(i); //stripTemplateSpecifiersFromScope(className);
-      //fprintf(stderr,"bareName=%s\n",bareName.data());
+      DBG_CTX((stderr,"bareName=%s\n",bareName.data()));
       if (bareName!=className)
       {
 	cd=getResolvedClass(d,g_sourceFileDef,bareName,&md); // try unspecialized version
       }
     }
     //printf("md=%s\n",md?md->name().data():"<none>");
-    //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
+    DBG_CTX((stderr,"is found as a type %s\n",cd?cd->name().data():"<null>"));
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
       if (getLink(g_classScope,clName,ol,clName,varOnly))
@@ -1020,11 +1031,11 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
       //}
     }
     isLocal=TRUE;
-    //fprintf(stderr,"is a local variable cd=%p!\n",cd);
+    DBG_CTX((stderr,"is a local variable cd=%p!\n",cd));
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
-    //fprintf(stderr,"is linkable class %s\n",clName);
+    DBG_CTX((stderr,"is linkable class %s\n",clName));
     if (g_exampleBlock)
     {
       QCString anchor;
@@ -1055,7 +1066,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
   }
   else // not a class, maybe a global member
   {
-    //fprintf(stderr,"class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
+    DBG_CTX((stderr,"class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly));
     if (!isLocal && (md!=0 || (cd==0 && !typeOnly))) // not a class, see if it is a global enum/variable/typedef.
     {
       if (md==0) // not found as a typedef
@@ -1064,10 +1075,10 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	//printf("setCallContextForVar(%s) md=%p g_currentDefinition=%p\n",clName,md,g_currentDefinition);
 	if (md && g_currentDefinition)
 	{
-	  //fprintf(stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
-	  //    md->name().data(),g_currentDefinition->name().data(),
-	  //    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md),
-	  //    md->getOuterScope()->name().data());
+	  DBG_CTX((stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
+	      md->name().data(),g_currentDefinition->name().data(),
+	      isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md),
+	      md->getOuterScope()->name().data()));
 	}
 	     
         if (md && g_currentDefinition && 
@@ -1078,7 +1089,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
       }
       if (md && (!varOnly || md->isVariable()))
       {
-        //fprintf(stderr,"is a global md=%p g_currentDefinition=%s linkable=%d\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>",md->isLinkable());
+        DBG_CTX((stderr,"is a global md=%p g_currentDefinition=%s linkable=%d\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>",md->isLinkable()));
 	if (md->isLinkable())
 	{
 	  QCString text;
@@ -1112,7 +1123,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     }
     
     // nothing found, just write out the word
-    //fprintf(stderr,"not found!\n");
+    DBG_CTX((stderr,"not found!\n"));
     ol.linkableSymbol(g_yyLineNr,clName,0,
 	              g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
     codifyLines(clName);
@@ -1143,7 +1154,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   }
 
   ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()),xmd->getOuterScope());
-  //fprintf(stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass);
+  DBG_CTX((stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass));
   g_theCallContext.setClass(typeClass);
 
   Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
@@ -1315,7 +1326,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,const char *funcName)
   QCString funcWithScope=locFunc;
   QCString funcWithFullScope=locFunc;
   QCString fullScope=locScope;
-  //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
+  DBG_CTX((stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data()));
   int len=2;
   int i=locFunc.findRev("::");
   if (g_currentMemberDef && g_currentMemberDef->getClassDef() &&
@@ -2099,7 +2110,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
   					  g_code->codify(yytext);
 
-					  //fprintf(stderr,"g_bodyCurlyCount=%d\n",g_bodyCurlyCount);
+					  DBG_CTX((stderr,"g_bodyCurlyCount=%d\n",g_bodyCurlyCount));
 					  if (--g_bodyCurlyCount<=0)
 					  {
 					    g_insideBody=FALSE;
@@ -2200,7 +2211,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  BEGIN( Bases ); 
 					}
 <ClassVar>("sealed"|"abstract")/{BN}*(":"|"{") {
-					  //fprintf(stderr,"***** C++/CLI modifier %s on g_curClassName=%s\n",yytext,g_curClassName.data());
+					  DBG_CTX((stderr,"***** C++/CLI modifier %s on g_curClassName=%s\n",yytext,g_curClassName.data()));
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2241,11 +2252,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                             DBG_CTX((stderr,"** scope stack push CLASSBLOCK\n"));
   					    g_scopeStack.push(CLASSBLOCK);
 					    pushScope(g_curClassName);
-					    //fprintf(stderr,"***** g_curClassName=%s\n",g_curClassName.data());
+					    DBG_CTX((stderr,"***** g_curClassName=%s\n",g_curClassName.data()));
 					    if (getResolvedClass(g_currentDefinition,g_sourceFileDef,g_curClassName)==0)
 					    {
-					      //fprintf(stderr,"Adding new class %s\n",g_curClassName.data());
-					      ClassDef *ncd=new ClassDef("<code>",1,
+					      DBG_CTX((stderr,"Adding new class %s\n",g_curClassName.data()));
+					      ClassDef *ncd=new ClassDef("<code>",1,1,
 				 		  g_curClassName,ClassDef::Class,0,0,FALSE);
 					      g_codeClassSDict->append(g_curClassName,ncd);
 					      // insert base classes.
@@ -2279,7 +2290,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  endFontClass();
 					}
 <Bases>{SEP}?({ID}{SEP})*{ID}           { 
-					  //fprintf(stderr,"%s:addBase(%s)\n",g_curClassName.data(),yytext);
+					  DBG_CTX((stderr,"%s:addBase(%s)\n",g_curClassName.data(),yytext));
   					  g_curClassBases.inSort(yytext); 
 					  generateClassOrGlobalLink(*g_code,yytext);
 					}
@@ -2700,7 +2711,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <MemberCall>{SCOPENAME}/{B}*		{
 					  if (g_theCallContext.getClass())
 					  {
-					    //fprintf(stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getClass());
+					    DBG_CTX((stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getClass()));
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
                                               g_code->linkableSymbol(g_yyLineNr,yytext,0,
@@ -2712,7 +2723,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					  else
 					  {
-					    //fprintf(stderr,"no class context!\n");
+					    DBG_CTX((stderr,"no class context!\n"));
   					    g_code->codify(yytext);
 					    addToSearchIndex(yytext);
   					    g_name.resize(0);
@@ -2991,7 +3002,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  if (*yytext==';') g_searchingForBody=FALSE; 
 					  if (!g_type.isEmpty())
 					  {
-					    //fprintf(stderr,"add variable g_type=%s g_name=%s)\n",g_type.data(),g_name.data());
+					    DBG_CTX((stderr,"add variable g_type=%s g_name=%s)\n",g_type.data(),g_name.data()));
 					    g_theVarContext.addVariable(g_type,g_name);
 					  }
 					  g_parmType.resize(0);g_parmName.resize(0);
@@ -3025,7 +3036,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  //g_theCallContext.popScope();
 					  g_parmType.resize(0);g_parmName.resize(0);
 					  int index = g_name.findRev("::");
-					  //fprintf(stderr,"g_name=%s\n",g_name.data());
+					  DBG_CTX((stderr,"g_name=%s\n",g_name.data()));
 					  if (index!=-1) 
 					  {
 					    QCString scope = g_name.left(index);
@@ -3470,9 +3481,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_theCallContext.popScope();
   					}
 <*>\n					{
+					  g_yyColNr++;
   					  codifyLines(yytext); 
   					}
 <*>.					{
+					  g_yyColNr++;
   					  g_code->codify(yytext);
 					}
   /*

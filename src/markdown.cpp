@@ -192,15 +192,16 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   {
     return "}";
   }
-  else if (blockName=="dot"       || 
-           blockName=="code"      || 
-           blockName=="msc"       ||
-           blockName=="verbatim"  || 
-           blockName=="latexonly" || 
-           blockName=="htmlonly"  ||
-           blockName=="xmlonly"   ||
-           blockName=="rtfonly"   ||
-           blockName=="manonly"
+  else if (blockName=="dot"         || 
+           blockName=="code"        || 
+           blockName=="msc"         ||
+           blockName=="verbatim"    || 
+           blockName=="latexonly"   || 
+           blockName=="htmlonly"    ||
+           blockName=="xmlonly"     ||
+           blockName=="rtfonly"     ||
+           blockName=="manonly"     ||
+           blockName=="docbookonly"
      )
   {
     return "end"+blockName;

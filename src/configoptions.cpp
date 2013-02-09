@@ -90,7 +90,7 @@ void addConfigOptions(Config *cfg)
                  "Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional,\n"
                  "Croatian, Czech, Danish, Dutch, Esperanto, Farsi, Finnish, French, German,\n"
                  "Greek, Hungarian, Italian, Japanese, Japanese-en (Japanese with English\n"
-                 "messages), Korean, Korean-en, Lithuanian, Norwegian, Macedonian, Persian,\n"
+                 "messages), Korean, Korean-en, Latvian, Lithuanian, Norwegian, Macedonian, Persian,\n"
                  "Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrillic, Slovak,\n"
                  "Slovene, Spanish, Swedish, Ukrainian, and Vietnamese.",
                  "English"
@@ -118,6 +118,7 @@ void addConfigOptions(Config *cfg)
   ce->addValue("Japanese-en");
   ce->addValue("Korean");
   ce->addValue("Korean-en");
+  ce->addValue("Latvian");
   ce->addValue("Norwegian");
   ce->addValue("Macedonian");
   ce->addValue("Persian");
@@ -440,11 +441,11 @@ void addConfigOptions(Config *cfg)
   cb = cfg->addBool(
                  "INLINE_SIMPLE_STRUCTS",
                  "When the INLINE_SIMPLE_STRUCTS tag is set to YES, structs, classes, and\n"
-                 "unions with only public data fields will be shown inline in the documentation\n"
-                 "of the scope in which they are defined (i.e. file, namespace, or group\n"
-                 "documentation), provided this scope is documented. If set to NO (the default),\n"
-                 "structs, classes, and unions are shown on a separate page (for HTML and Man\n"
-                 "pages) or section (for LaTeX and RTF).",
+                 "unions with only public data fields or simple typedef fields will be shown\n"
+                 "inline in the documentation of the scope in which they are defined (i.e. file,\n"
+                 "namespace, or group documentation), provided this scope is documented. If set\n"
+                 "to NO (the default), structs, classes, and unions are shown on a separate\n"
+                 "page (for HTML and Man pages) or section (for LaTeX and RTF).",
                  FALSE
                 );
   //----
@@ -1261,7 +1262,7 @@ void addConfigOptions(Config *cfg)
                  "The HTML_EXTRA_FILES tag can be used to specify one or more extra images or\n"
                  "other source files which should be copied to the HTML output directory. Note\n"
                  "that these files will be copied to the base HTML output directory. Use the\n"
-                 "$relpath$ marker in the HTML_HEADER and/or HTML_FOOTER files to load these\n"
+                 "$relpath^ marker in the HTML_HEADER and/or HTML_FOOTER files to load these\n"
                  "files. In the HTML_STYLESHEET file, use the file name only. Also note that\n"
                  "the files will be copied as-is; there are no commands or markers available."
                 );
@@ -1835,6 +1836,16 @@ void addConfigOptions(Config *cfg)
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_LATEX");
   //----
+  cl = cfg->addList(
+                 "LATEX_EXTRA_FILES",
+                 "The LATEX_EXTRA_FILES tag can be used to specify one or more extra images\n"
+                 "or other source files which should be copied to the LaTeX output directory.\n"
+                 "Note that the files will be copied as-is; there are no commands or markers\n"
+                 "available."
+                );
+  cl->addDependency("GENERATE_LATEX");
+  cl->setWidgetType(ConfigList::File);
+  //----
   cb = cfg->addBool(
                  "PDF_HYPERLINKS",
                  "If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated\n"
@@ -2039,6 +2050,27 @@ void addConfigOptions(Config *cfg)
                 );
   cb->addDependency("GENERATE_XML");
   //---------------------------------------------------------------------------
+  cfg->addInfo("DOCBOOK","configuration options related to the DOCBOOK output");
+  //---------------------------------------------------------------------------
+
+  //----
+  cb = cfg->addBool(
+                 "GENERATE_DOCBOOK",
+                 "If the GENERATE_DOCBOOK tag is set to YES Doxygen will generate DOCBOOK files\n"
+                 "that can be used to generate PDF.",
+                 FALSE
+                );
+  //----
+  cs = cfg->addString(
+                 "DOCBOOK_OUTPUT",
+                 "The DOCBOOK_OUTPUT tag is used to specify where the DOCBOOK pages will be put.\n"
+                 "If a relative path is entered the value of OUTPUT_DIRECTORY will be put in\n"
+                 "front of it. If left blank docbook will be used as the default path."
+                );
+  cs->setDefaultValue("docbook");
+  cs->setWidgetType(ConfigString::Dir);
+  cs->addDependency("GENERATE_DOCBOOK");
+  //---------------------------------------------------------------------------
   cfg->addInfo("DEF","configuration options for the AutoGen Definitions output");
   //---------------------------------------------------------------------------
 
@@ -2228,6 +2260,14 @@ void addConfigOptions(Config *cfg)
                  "If the EXTERNAL_GROUPS tag is set to YES all external groups will be listed\n"
                  "in the modules index. If set to NO, only the current project's groups will\n"
                  "be listed.",
+                 TRUE
+                );
+  //----
+  cb = cfg->addBool(
+                 "EXTERNAL_PAGES",
+                 "If the EXTERNAL_PAGES tag is set to YES all external pages will be listed\n"
+                 "in the related pages index. If set to NO, only the current project's\n"
+                 "pages will be listed.",
                  TRUE
                 );
   //----

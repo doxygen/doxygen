@@ -402,6 +402,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 %x St_LatexOnly
 %x St_RtfOnly
 %x St_XmlOnly
+%x St_DbOnly
 %x St_Verbatim
 %x St_Dot
 %x St_Msc
@@ -778,6 +779,14 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 <St_XmlOnly>[^\\@\n]+  |
 <St_XmlOnly>\n         |
 <St_XmlOnly>.          {
+  			 g_token->verb+=yytext;
+  		       }
+<St_DbOnly>{CMD}"enddocbookonly" {
+                         return RetVal_OK;
+                       }
+<St_DbOnly>[^\\@\n]+  |
+<St_DbOnly>\n         |
+<St_DbOnly>.          {
   			 g_token->verb+=yytext;
   		       }
 <St_Verbatim>{CMD}"endverbatim" {
@@ -1228,6 +1237,12 @@ void doctokenizerYYsetStateXmlOnly()
 {
   g_token->verb="";
   BEGIN(St_XmlOnly);
+}
+
+void doctokenizerYYsetStateDbOnly()
+{
+  g_token->verb="";
+  BEGIN(St_DbOnly);
 }
 
 void doctokenizerYYsetStateLatexOnly()

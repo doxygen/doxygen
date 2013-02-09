@@ -44,7 +44,7 @@
 //---------------------------------------------------------------------------
 
 GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
-                   const char *refFileName) : Definition(df,dl,na)
+                   const char *refFileName) : Definition(df,dl,1,na)
 {
   fileList = new FileList;
   classSDict = new ClassSDict(17);

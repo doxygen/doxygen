@@ -1346,6 +1346,15 @@ reparsetoken:
             doctokenizerYYsetStatePara();
           }
           break;
+        case CMD_DBONLY:
+          {
+            doctokenizerYYsetStateDbOnly();
+            tok = doctokenizerYYlex();
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: xmlonly section ended without end marker",doctokenizerYYlineno);
+            doctokenizerYYsetStatePara();
+          }
+          break;
         case CMD_FORMULA:
           {
             DocFormula *form=new DocFormula(parent,g_token->id);
@@ -1547,7 +1556,7 @@ static int handleDocCopy(DocNode *parent,QList<DocNode> &children)
       cmdId==CMD_COPYDOC || cmdId==CMD_COPYDETAILS);
   cpy->parse(children);
   delete cpy;
-  return 0;
+  return TK_NEWPARA;
 }
 
 
@@ -5509,6 +5518,7 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_ENDRTFONLY:
     case CMD_ENDLATEXONLY:
     case CMD_ENDXMLONLY:
+    case CMD_ENDDBONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
     case CMD_ENDDOT:

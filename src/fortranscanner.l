@@ -65,6 +65,10 @@
 #include "pre.h"
 #include "arguments.h"
 
+// Toggle for some debugging info
+//#define DBG_CTX(x) fprintf x
+#define DBG_CTX(x) do { } while(0)
+
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 
@@ -309,7 +313,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <*>^.*\n                                { // prepass: look for line continuations
   					  functionLine = FALSE;
 
-                                          //fprintf(stderr, "---%s", yytext);
+                                          DBG_CTX((stderr, "---%s", yytext));
 
                                             int indexStart = getAmpersandAtTheStart(yytext, (int)yyleng);
                                             int indexEnd = getAmpOrExclAtTheEnd(yytext, (int)yyleng);
@@ -391,11 +395,11 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                             yy_push_state(YY_START);
                                             BEGIN(StrIgnore); 
                                             debugStr="*!";
-                                            //fprintf(stderr,"start comment %d\n",yyLineNr);
+                                            DBG_CTX((stderr,"start comment %d\n",yyLineNr));
                                            }      
                                         }
 <StrIgnore>.?/\n                        { yy_pop_state(); // comment ends with endline character
-                                          //fprintf(stderr,"end comment %d %s\n",yyLineNr,debugStr.data());
+                                          DBG_CTX((stderr,"end comment %d %s\n",yyLineNr,debugStr.data()));
                                         } // comment line ends
 <StrIgnore>.                            { debugStr+=yytext; } 
 
@@ -411,7 +415,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                           yy_push_state(Use);
                                         }
 <Use>{ID}                               { 
-                                          //fprintf(stderr,"using dir %s\n",yytext);
+                                          DBG_CTX((stderr,"using dir %s\n",yytext));
                                           current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
@@ -723,7 +727,7 @@ protected                               {
 {ATTR_STMT}/{BS_}{ID}		       |
 {ATTR_STMT}/{BS}"::"                   { 
                                           /* attribute statement starts */
-                                          //fprintf(stderr,"5=========> Attribute statement: %s\n", yytext); 
+                                          DBG_CTX((stderr,"5=========> Attribute statement: %s\n", yytext)); 
                                           QCString tmp = yytext;
                                           currentModifiers |= tmp.stripWhiteSpace();
 					  argType="";
@@ -1113,7 +1117,7 @@ protected                               {
 <*><<EOF>>                              {
                                           if ( include_stack_ptr <= 0 ) {
                                             if (YY_START!=INITIAL && YY_START!=Start) {
-                                              //fprintf(stderr,"==== Error: EOF reached in wrong state (end missing)");
+                                              DBG_CTX((stderr,"==== Error: EOF reached in wrong state (end missing)"));
                                               scanner_abort();
                                             }
                                             yyterminate();
@@ -1408,12 +1412,12 @@ static void pushBuffer(QCString& buffer)
   include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(yy_scan_string(buffer));
 
-  //fprintf(stderr, "--PUSH--%s", (const char *)buffer);
+  DBG_CTX((stderr, "--PUSH--%s", (const char *)buffer));
   buffer = NULL;
 }
 
 static void popBuffer() {
-  //fprintf(stderr, "--POP--");
+  DBG_CTX((stderr, "--POP--"));
   include_stack_ptr --;
   yy_delete_buffer( YY_CURRENT_BUFFER );
   yy_switch_to_buffer( include_stack[include_stack_ptr] );
@@ -1935,7 +1939,7 @@ static int max(int a, int b) {return a>b?a:b;}
 
 static void addModule(const char *name, bool isModule)
 {
-  //fprintf(stderr, "0=========> got module %s\n", name);
+  DBG_CTX((stderr, "0=========> got module %s\n", name));
 
   if (isModule)
     current->section = Entry::CLASS_SEC;
@@ -1965,7 +1969,7 @@ static void addModule(const char *name, bool isModule)
 
 static void addSubprogram(const char *text)
 {
-  //fprintf(stderr,"1=========> got subprog, type: %s\n",text); 
+  DBG_CTX((stderr,"1=========> got subprog, type: %s\n",text)); 
   subrCurrent.prepend(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
@@ -2073,7 +2077,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   static bool hideInBodyDocs = Config_getBool("HIDE_IN_BODY_DOCS");
   int position=0;
   if (docBlockInBody && hideInBodyDocs) return;
-  //fprintf(stderr,"call parseCommentBlock [%s]\n",doc.data());
+  DBG_CTX((stderr,"call parseCommentBlock [%s]\n",doc.data()));
   int lineNr = brief ? current->briefLine : current->docLine;
   while (parseCommentBlock(
 	g_thisParser,
@@ -2089,10 +2093,10 @@ static void handleCommentBlock(const QCString &doc,bool brief)
         needsEntry
         )) 
   {
-	   //fprintf(stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry);
+	   DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
    if (needsEntry) addCurrentEntry(0);
   }
-  //fprintf(stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry);
+  DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
 
   if (needsEntry) addCurrentEntry(0);
 }

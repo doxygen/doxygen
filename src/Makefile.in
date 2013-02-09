@@ -20,18 +20,18 @@ all: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile
 	$(MAKE) -f Makefile.doxygen    PERL=$(PERL) $@
 
 Makefile.libdoxygen: libdoxygen.pro libdoxygen.t 
-	$(ENV) $(PERL) $(TMAKE) libdoxygen.pro >Makefile.libdoxygen
+	$(ENV) $(PERL) "$(TMAKE)" libdoxygen.pro >Makefile.libdoxygen
 
 Makefile.libdoxycfg: libdoxycfg.pro libdoxycfg.t 
-	$(ENV) $(PERL) $(TMAKE) libdoxycfg.pro >Makefile.libdoxycfg
+	$(ENV) $(PERL) "$(TMAKE)" libdoxycfg.pro >Makefile.libdoxycfg
 
 Makefile.doxygen: doxygen.pro 
-	$(ENV) $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
+	$(ENV) $(PERL) "$(TMAKE)" doxygen.pro >Makefile.doxygen
 
 tmake: 
-	$(ENV) $(PERL) $(TMAKE) libdoxygen.pro >Makefile.libdoxygen
-	$(ENV) $(PERL) $(TMAKE) libdoxycfg.pro >Makefile.libdoxycfg
-	$(ENV) $(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
+	$(ENV) $(PERL) "$(TMAKE)" libdoxygen.pro >Makefile.libdoxygen
+	$(ENV) $(PERL) "$(TMAKE)" libdoxycfg.pro >Makefile.libdoxycfg
+	$(ENV) $(PERL) "$(TMAKE)" doxygen.pro >Makefile.doxygen
 
 # clean objects
 clean: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen 

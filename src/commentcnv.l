@@ -443,7 +443,7 @@ void replaceComment(int offset);
 				     g_lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
   			           }
-<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yytext,(int)yyleng); 
 				     g_blockName=&yytext[1];
 				     g_lastCommentContext = YY_START;
@@ -452,7 +452,7 @@ void replaceComment(int offset);
 <Scan>.                            { /* any ather character */
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"docbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
                                      copyToOutput(yytext,(int)yyleng);
 				     if (yytext[1]=='f') // end of formula
 				     {

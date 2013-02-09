@@ -1573,7 +1573,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   {
     setParameterList(memberDef);
   }
-  int iLine=countLines();
+  /*int iLine=*/countLines();
   vhdlcodeYYrestart( vhdlcodeYYin );
   BEGIN( Bases );
   vhdlcodeYYlex();
@@ -1588,7 +1588,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
     delete g_sourceFileDef;
     g_sourceFileDef=0;
   }
-  assert(g_yyLineNr==iLine);
+ 
   return;
 }
 

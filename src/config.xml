@@ -49,7 +49,7 @@ The default language is English, other supported languages are:
 Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional, 
 Croatian, Czech, Danish, Dutch, Esperanto, Farsi, Finnish, French, German, 
 Greek, Hungarian, Italian, Japanese, Japanese-en (Japanese with English 
-messages), Korean, Korean-en, Lithuanian, Norwegian, Macedonian, Persian, 
+messages), Korean, Korean-en, Latvian, Lithuanian, Norwegian, Macedonian, Persian, 
 Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrillic, Slovak, 
 Slovene, Spanish, Swedish, Ukrainian, and Vietnamese. 
 '>
@@ -76,6 +76,7 @@ Slovene, Spanish, Swedish, Ukrainian, and Vietnamese.
       <value name='Japanese-en'/>
       <value name='Korean'/>
       <value name='Korean-en'/>
+      <value name='Latvian'/>
       <value name='Norwegian'/>
       <value name='Macedonian'/>
       <value name='Persian'/>
@@ -312,11 +313,12 @@ section (for LaTeX and RTF).
 ' defval='0'/>
     <option type='bool' id='INLINE_SIMPLE_STRUCTS' docs='
 When the INLINE_SIMPLE_STRUCTS tag is set to YES, structs, classes, and 
-unions with only public data fields will be shown inline in the documentation 
-of the scope in which they are defined (i.e. file, namespace, or group 
-documentation), provided this scope is documented. If set to NO (the default), 
-structs, classes, and unions are shown on a separate page (for HTML and Man 
-pages) or section (for LaTeX and RTF).' defval='0'/>
+unions with only public data fields or simple typedef fields will be shown 
+inline in the documentation of the scope in which they are defined (i.e. file, 
+namespace, or group documentation), provided this scope is documented. If set 
+to NO (the default), structs, classes, and unions are shown on a separate 
+page (for HTML and Man pages) or section (for LaTeX and RTF).
+' defval='0'/>
     <option type='bool' id='TYPEDEF_HIDES_STRUCT' docs='
 When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum 
 is documented as struct, union, or enum with the name of the typedef. So 
@@ -882,7 +884,7 @@ the output directory.
 The HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
 other source files which should be copied to the HTML output directory. Note 
 that these files will be copied to the base HTML output directory. Use the 
-$relpath$ marker in the HTML_HEADER and/or HTML_FOOTER files to load these 
+$relpath^ marker in the HTML_HEADER and/or HTML_FOOTER files to load these 
 files. In the HTML_STYLESHEET file, use the file name only. Also note that 
 the files will be copied as-is; there are no commands or markers available.
 ' depends='GENERATE_HTML'/>
@@ -1246,6 +1248,12 @@ the generated latex document. The footer should contain everything after
 the last chapter. If it is left blank doxygen will generate a 
 standard footer. Notice: only use this tag if you know what you are doing! 
 ' defval='' depends='GENERATE_LATEX'/>
+    <option type='list' id='LATEX_EXTRA_FILES' format='file' docs='
+The LATEX_EXTRA_FILES tag can be used to specify one or more extra images 
+or other source files which should be copied to the LaTeX output directory. 
+Note that the files will be copied as-is; there are no commands or markers 
+available. 
+' depends='GENERATE_LATEX'/>
     <option type='bool' id='PDF_HYPERLINKS' docs='
 If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated 
 is prepared for conversion to pdf (using ps2pdf). The pdf file will 
@@ -1364,6 +1372,17 @@ and cross-referencing information) to the XML output. Note that
 enabling this will significantly increase the size of the XML output. 
 ' defval='1' depends='GENERATE_XML'/>
   </group>
+  <group name='DOCBOOK' docs='configuration options related to the DOCBOOK output'>
+    <option type='bool' id='GENERATE_DOCBOOK' docs='
+If the GENERATE_DOCBOOK tag is set to YES Doxygen will generate DOCBOOK files 
+that can be used to generate PDF.
+' defval='0'/>
+    <option type='string' id='DOCBOOK_OUTPUT' format='dir' docs='
+The DOCBOOK_OUTPUT tag is used to specify where the DOCBOOK pages will be put. 
+If a relative path is entered the value of OUTPUT_DIRECTORY will be put in 
+front of it. If left blank docbook will be used as the default path.
+' defval='docbook' depends='GENERATE_DOCBOOK'/>
+  </group>
   <group name='DEF' docs='configuration options for the AutoGen Definitions output'>
     <option type='bool' id='GENERATE_AUTOGEN_DEF' docs='
 If the GENERATE_AUTOGEN_DEF tag is set to YES Doxygen will 
@@ -1373,6 +1392,19 @@ documentation. Note that this feature is still experimental
 and incomplete at the moment. 
 ' defval='0'/>
   </group>
+<!--
+  <group name='Sqlite3' docs='configuration options related to Sqlite3 output'>
+    <option type='bool' id='GENERATE_SQLITE3' docs='
+If the GENERATE_SQLITE3 tag is set to YES doxygen will generate an  
+sqlite database with symbols found by doxygen stored in tables.
+' defval='0'/>
+    <option type='string' id='SQLITE3_OUTPUT' format='dir' docs='
+The SQLITE3_OUTPUT tag is used to specify where the Sqlite3 database will be put. 
+If a relative path is entered the value of OUTPUT_DIRECTORY will be 
+put in front of it. If left blank sqlite3 will be used as the default path. 
+' defval='' depends='GENERATE_SQLITE3'/>
+  </group>
+-->
   <group name='PerlMod' docs='configuration options related to the Perl module output'>
     <option type='bool' id='GENERATE_PERLMOD' docs='
 If the GENERATE_PERLMOD tag is set to YES Doxygen will 
@@ -1485,6 +1517,11 @@ will be listed.
 If the EXTERNAL_GROUPS tag is set to YES all external groups will be listed 
 in the modules index. If set to NO, only the current project&apos;s groups will 
 be listed. 
+' defval='1'/>
+    <option type='bool' id='EXTERNAL_PAGES' docs='
+If the EXTERNAL_PAGES tag is set to YES all external pages will be listed 
+in the related pages index. If set to NO, only the current project&apos;s 
+pages will be listed. 
 ' defval='1'/>
     <option type='string' id='PERL_PATH' format='dir' docs='
 The PERL_PATH should be the absolute path and name of the perl script 

@@ -65,6 +65,7 @@ documentation:
 \refitem cmddeprecated \\deprecated
 \refitem cmddetails \\details
 \refitem cmddir \\dir
+\refitem cmddocbookonly \\docbookonly
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
 \refitem cmddotfile \\dotfile
@@ -74,6 +75,7 @@ documentation:
 \refitem cmdem \\em
 \refitem cmdendcode \\endcode
 \refitem cmdendcond \\endcond
+\refitem cmdenddocbookonly \\enddocbookonly
 \refitem cmdenddot \\enddot
 \refitem cmdendhtmlonly \\endhtmlonly
 \refitem cmdendif \\endif
@@ -2276,6 +2278,14 @@ Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
 only copy the detailed documentation, not the brief description.
 
 <hr>
+\section cmddocbookonly \\docbookonly
+
+  \addindex \\docbookonly
+  Starts a block of text that will be verbatim included in the
+  generated docbook documentation only. The block ends with a
+  \ref cmdenddocbookonly "\\enddocbookonly" command.
+
+<hr>
 \section cmddot \\dot
 
   \addindex \\dot
@@ -2439,6 +2449,14 @@ class Receiver
   \addindex \\endcode
   Ends a block of code.
   \sa section \ref cmdcode "\\code"
+
+<hr>
+\section cmdenddocbookonly \\enddocbookonly
+
+  \addindex \\enddocbookonly
+  Ends a block of text that was started with a \\docbookonly command.
+
+  \sa section \ref cmddocbookonly "\\docbookonly".
 
 <hr>
 \section cmdenddot \\enddot

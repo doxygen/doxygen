@@ -96,6 +96,9 @@ Kim Taedong: fly1004 at gmail dot com
 SooYoung Jung: jung5000 at gmail dot com
 Richard Kim: [unreachable] ryk at dspwiz dot com
 
+TranslatorLatvian
+Lauris: lauris at nix.lv
+
 TranslatorLithuanian
 Tomas Simonaitis: [unreachable] haden at homelan dot lt
 Mindaugas Radzius: [unreachable] mindaugasradzius at takas dot lt

@@ -787,7 +787,7 @@ table.fieldtable {
 }
 
 .fieldtable td.fieldname {
-        padding-top: 5px;
+        padding-top: 3px;
 }
 
 .fieldtable td.fielddoc {
@@ -796,7 +796,7 @@ table.fieldtable {
 }
 
 .fieldtable td.fielddoc p:first-child {
-        margin-top: 2px;
+        margin-top: 0px;
 }       
         
 .fieldtable td.fielddoc p:last-child {

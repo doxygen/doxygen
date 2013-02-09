@@ -43,6 +43,10 @@
 #include "code.h"
 #include "arguments.h"
 
+// Toggle for some debugging info
+#define DBG_CTX(x) fprintf x
+//#define DBG_CTX(x) do { } while(0)
+
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 
@@ -89,6 +93,9 @@ static Entry*		tempEntry    = 0 ;
 static Entry*		firstTypedefEntry = 0 ;
 static Entry*		memspecEntry = 0 ;
 static int		yyLineNr     = 1 ;
+static int		yyBegLineNr  = yyLineNr ;
+static int		yyColNr      = 1 ;
+static int		yyBegColNr   = yyColNr ;
 static int              anonCount    = 0 ;        
 static int              anonNSCount  = 0 ;        
 static QCString		yyFileName;
@@ -288,11 +295,17 @@ static void lineCount()
   for (p = yytext ; *p ; ++p )
   {
     if (*p=='\n') 
-      yyLineNr++,g_column=0;
+    {
+      yyLineNr++,g_column=0,yyColNr=1;
+    }
     else if (*p=='\t') 
+    {
       g_column+=tabSize - (g_column%tabSize);
+    }
     else 
-      g_column++;
+    {
+      g_column++,yyColNr++;
+    }
   }
 }
 
@@ -508,7 +521,7 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
       oldStyleArgName=current->args.copy().stripWhiteSpace();
     }
   }
-  //fprintf(stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data());
+  DBG_CTX((stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data()));
 }
 
 //-----------------------------------------------------------------------------
@@ -595,7 +608,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"callergraph"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"{"|"verbatim"|"dotfile"|"dot"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"callergraph"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"manonly"|"{"|"verbatim"|"dotfile"|"dot"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -1084,6 +1097,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					    lineCount();
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
 					    current->bodyLine  = yyLineNr;
 					    current->section = Entry::FUNCTION_SEC;
 					    current->protection = protection = Public ;
@@ -1290,6 +1304,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type = "namespace" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
   					}
@@ -1363,6 +1378,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type = "namespace" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
 					  if (insidePHP)
@@ -1383,6 +1399,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->type = "module" ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
 					    current->bodyLine  = yyLineNr;
   					    BEGIN( CompoundName ); 
 					  }
@@ -1406,6 +1423,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->type = "library" ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
 					    current->bodyLine  = yyLineNr;
   					    BEGIN( CompoundName ); 
 					  }
@@ -1426,6 +1444,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->type += " interface" ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
 					    current->bodyLine  = yyLineNr;
 					    BEGIN( CompoundName );
 					  }
@@ -1464,6 +1483,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " interface" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  BEGIN( CompoundName );
   					}
@@ -1479,6 +1499,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " protocol" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  BEGIN( CompoundName );
   					}
@@ -1490,6 +1511,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " exception" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
 					  BEGIN( CompoundName );
@@ -1503,6 +1525,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  if (yytext[0]=='@')
 					  {
@@ -1527,6 +1550,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " value class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1541,6 +1565,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " ref class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1555,6 +1580,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " interface class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1569,6 +1595,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->type += " coclass" ;
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
 					    current->bodyLine  = yyLineNr;
 					    lineCount() ;
 					    BEGIN( CompoundName ) ;
@@ -1592,6 +1619,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1606,6 +1634,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " value struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1620,6 +1649,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " ref struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1634,6 +1664,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " interface struct";
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1650,6 +1681,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1677,6 +1709,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           }
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
@@ -1822,6 +1855,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <FindMembers>"using"{BN}+		{ 
 					  current->startLine=yyLineNr; 
+					  current->startColumn = yyColNr;
                                           lineCount(); 
                                           BEGIN(Using); 
                                         }
@@ -1843,6 +1877,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->name=yytext;
 					    current->fileName = yyFileName; 
 					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
 					    current->section=Entry::USINGDIR_SEC;
 					    current_root->addSubEntry(current);
 					    current             = new Entry ;
@@ -2093,6 +2128,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 				          BEGIN(FindMembers);
 			 	        }
 <FindMembers,FindMemberName>{SCOPENAME}	{
+					  yyBegColNr=yyColNr;
+					  yyBegLineNr=yyLineNr;
 					  lineCount();
                                           if (insideIDL && yyleng==9 && qstrcmp(yytext,"cpp_quote")==0)
 					  {
@@ -2378,6 +2415,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           lineCount();
 					  current->fileName   = yyFileName;
 					  current->startLine  = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->type.resize(0);
   					  current->args       = current->args.simplifyWhiteSpace();
   					  current->name       = current->name.stripWhiteSpace();
@@ -2391,6 +2429,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  //printf("End define\n");
 					  current->fileName   = yyFileName;
 					  current->startLine  = yyLineNr;
+					  current->startColumn = yyColNr;
 					  current->type.resize(0);
                                           current->type       = "const";
                                           QCString init = current->initializer.data();
@@ -2619,6 +2658,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    current->fileName   = yyFileName;
 					    current->startLine  = yyLineNr;
+					    current->startColumn = yyColNr;
   					    current->args       = current->args.simplifyWhiteSpace();
   					    current->name       = current->name.stripWhiteSpace();
 					    current->section    = Entry::VARIABLE_SEC;
@@ -3111,7 +3151,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    }
 					    current->section = Entry::VARIABLE_SEC ;
 					    current->fileName = yyFileName;
-					    current->startLine = yyLineNr;
+					    current->startLine = yyBegLineNr;
+					    current->startColumn = yyBegColNr;
 					    current_root->addSubEntry( current ) ;
 					    needNewCurrent=TRUE;
 					  }
@@ -3213,6 +3254,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  current->name = yytext;
 					  current->name = current->name.left(current->name.length()-1).stripWhiteSpace();
   					  current->startLine = yyLineNr;
+					  current->startColumn = yyColNr;
 					  BEGIN( IDLProp );
 					}
 <IDLProp>{BN}*"["[^\]]*"]"{BN}*		{  // attribute of a parameter
@@ -3318,6 +3360,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    {
 					      current->fileName   = yyFileName;
 					      current->startLine  = yyLineNr;
+					      current->startColumn = yyColNr;
 					      current->type       = "@"; // enum marker
 					      current->args       = current->args.simplifyWhiteSpace();
 					      current->name       = current->name.stripWhiteSpace();
@@ -3346,6 +3389,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    current->fileName   = yyFileName;
 					    current->startLine  = yyLineNr;
+					    current->startColumn = yyColNr;
 					    if (!(current_root->spec&Entry::Enum))
 					    {
 					      current->type       = "@"; // enum marker
@@ -3694,6 +3738,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      }
 					      varEntry->fileName = yyFileName;
 					      varEntry->startLine = yyLineNr;
+					      varEntry->startColumn = yyColNr;
 					      varEntry->doc = current->doc.copy();
 					      varEntry->brief = current->brief.copy();
 					      varEntry->mGrpId = current->mGrpId;
@@ -4134,7 +4179,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  fullArgString+=yytext;
   					  BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9] { // end of verbatim block
   					  fullArgString+=yytext;
 				          if (yytext[1]=='f') // end of formula
 				          {
@@ -4460,7 +4505,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					  else if (checkForKnRstyleC())
 					  {
-					    //fprintf(stderr,"===> got a K&R style function\n");
+					    DBG_CTX((stderr,"===> got a K&R style function\n"));
                                             current->args = yytext; 
 					    oldStyleArgType.resize(0);
 					    BEGIN(OldStyleArgs);
@@ -4565,7 +4610,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->args=removeRedundantWhiteSpace(current->args);
 					                // was: current->args.simplifyWhiteSpace();
 					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
+					  current->startLine = yyBegLineNr;
+					  current->startColumn = yyBegColNr;
 					  static QRegExp re("([^)]*[*&][^)]*)"); // (...*...)
 					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
 					  {
@@ -5272,6 +5318,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->program+=yytext;
                                             current->fileName = yyFileName ;
 					    current->startLine = yyLineNr ;
+					    current->startColumn = yyColNr;
 					    curlyCount=0;
 					    BEGIN( ReadBodyIntf );
 					  }
@@ -5290,6 +5337,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->program+=yytext;
                                             current->fileName = yyFileName ;
 					    current->startLine = yyLineNr ;
+					    current->startColumn = yyColNr;
 					    curlyCount=0;
 					    BEGIN( ReadBodyIntf );
 					  }
@@ -5297,6 +5345,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <CompoundName,ClassVar>{B}*"{"{B}*	{ 
                                           current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
+					  current->startColumn = yyColNr;
 					  current->name = removeRedundantWhiteSpace(current->name);
 					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
 					  {
@@ -5552,6 +5601,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <Bases>{B}*"{"{B}*			{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
+					  current->startColumn = yyColNr;
 					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (!baseName.isEmpty())
   					    current->extends->append(
@@ -5619,7 +5669,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockAutoBrief = Config_getBool("QT_AUTOBRIEF");
-					  docBlock.resize(0);
+
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock=indent;
+
 					  if (docBlockAutoBrief)
 					  {
 					    current->briefLine = yyLineNr;
@@ -5666,7 +5720,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockAutoBrief = FALSE;
-					  docBlock.resize(0);
+
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock=indent;
+
 					  startCommentBlock(current->brief.isEmpty());
 					  BEGIN( DocLine );
 					}
@@ -5680,7 +5738,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockAutoBrief = FALSE;
-					  docBlock.resize(0);
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock=indent;
 					  startCommentBlock(current->brief.isEmpty());
 					  BEGIN( DocLine );
 					}
@@ -5874,7 +5934,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  docBlock+=yytext;
 					  BEGIN(DocBlock);
   					}
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endmanonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
   					  docBlock+=yytext;
 					  if (&yytext[4]==docBlockName)
 					  {
@@ -6207,6 +6267,7 @@ static void parseCompounds(Entry *rt)
       yyFileName = ce->fileName;
       //setContext();
       yyLineNr = ce->startLine ;
+      yyColNr = ce->startColumn ;
       insideObjC = ce->lang==SrcLangExt_ObjC;
       //printf("---> Inner block starts at line %d objC=%d\n",yyLineNr,insideObjC);
       //current->reset();

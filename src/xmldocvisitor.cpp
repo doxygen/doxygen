@@ -283,6 +283,11 @@ void XmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::XmlOnly: 
       m_t << s->text();
       break;
+    case DocVerbatim::DocbookOnly:
+      m_t << "<docbookonly>";
+      filter(s->text());
+      m_t << "</docbookonly>";
+      break;
     case DocVerbatim::Dot: 
       m_t << "<dot>";
       filter(s->text());

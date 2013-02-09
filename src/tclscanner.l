@@ -1651,7 +1651,7 @@ static void tcl_codify_link(QCString name)
     if (tcl.memberdef)
     {
         myDef->addSourceReferencedBy(tcl.memberdef);
-        tcl.memberdef->addSourceReferences(myDef);
+        tcl.memberdef->addSourceReferences(myDef,NULL);
     }
   }
   else if (tcl_keyword(myName)) // check keyword

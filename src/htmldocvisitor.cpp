@@ -447,7 +447,8 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::XmlOnly: 
-    case DocVerbatim::RtfOnly: 
+    case DocVerbatim::RtfOnly:
+    case DocVerbatim::DocbookOnly:
       /* nothing */ 
       break;
 
@@ -536,7 +537,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                         -1,    // endLine
                                         TRUE,  // inlineFragment
                                         0,     // memberDef
-                                        TRUE,  // show line numbers
+                                        FALSE, // show line numbers
                                         m_ctx  // search context 
                                        );
       m_t << PREFRAG_END;

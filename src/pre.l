@@ -54,6 +54,10 @@
 #include "memberdef.h"
 #include "membername.h"
 
+// Toggle for some debugging info
+//#define DBG_CTX(x) fprintf x
+#define DBG_CTX(x) do { } while(0)
+
 #define YY_NEVER_INTERACTIVE 1
 enum GuardType
 {
@@ -317,6 +321,8 @@ void DefineManager::DefinesPerFile::collectDefines(
  */
 
 static int                g_yyLineNr   = 1;
+static int                g_yyMLines   = 1;
+static int                g_yyColNr   = 1;
 static QCString           g_yyFileName;
 static FileDef           *g_yyFileDef;
 static FileDef           *g_inputFileDef;
@@ -1398,7 +1404,8 @@ Define *newDefine()
   def->nargs      = g_defArgs;
   def->fileName   = g_yyFileName; 
   def->fileDef    = g_yyFileDef;
-  def->lineNr     = g_yyLineNr;
+  def->lineNr     = g_yyLineNr-g_yyMLines;
+  def->columnNr   = g_yyColNr;
   def->varArgs    = g_defVarArgs;
   //printf("newDefine: %s %s file: %s\n",def->name.data(),def->definition.data(),
   //    def->fileDef ? def->fileDef->name().data() : def->fileName.data());
@@ -1420,7 +1427,7 @@ void addDefine()
   //ArgumentList *al = new ArgumentList;
   //stringToArgumentList(g_defArgsStr,al);
   MemberDef *md=new MemberDef(
-      g_yyFileName,g_yyLineNr,
+      g_yyFileName,g_yyLineNr-g_yyMLines,g_yyColNr,
       "#define",g_defName,g_defArgsStr,0,
       Public,Normal,FALSE,Member,MemberType_Define,0,0);
   if (!g_defArgsStr.isEmpty())
@@ -1598,7 +1605,7 @@ static void readIncludeFile(const QCString &inc)
       lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
       outputArray(lineStr.data(),lineStr.length());
 
-      //fprintf(stderr,"Switching to include file %s\n",incFileName.data());
+      DBG_CTX((stderr,"Switching to include file %s\n",incFileName.data()));
       g_expectGuard=TRUE;
       g_inputBuf   = &fs->fileBuf;
       g_inputBufPos=0;
@@ -1797,7 +1804,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <*>"??"[=/'()!<>-]			{ // Trigraph
   					  unput(resolveTrigraph(yytext[2]));
   					}
-<Start>^{B}*"#"				{ BEGIN(Command); }
+<Start>^{B}*"#"				{ BEGIN(Command); g_yyColNr+=yyleng; g_yyMLines=0;}
 <Start>^{B}*/[^#]			{
  					  outputArray(yytext,(int)yyleng);
   					  BEGIN(CopyLine); 
@@ -1947,6 +1954,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('\n');
 					  BEGIN(Start);
 					  g_yyLineNr++;
+					  g_yyColNr=1;
   					}
 <FindDefineArgs>"("			{
   					  g_defArgsStr+='(';
@@ -2041,6 +2049,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <Command>("cmake")?"define"{B}+		{ 
   			                  //printf("!!!DefName\n"); 
+					  g_yyColNr+=yyleng;
   					  BEGIN(DefName); 
 					}
 <Command>"ifdef"/{B}*"("		{
@@ -2124,7 +2133,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_yyLineNr++;
 					}
 <IgnoreLine>.
-<Command>.
+<Command>. {g_yyColNr+=yyleng;}
 <UndefName>{ID}				{
   					  Define *def;
   					  if ((def=DefineManager::instance().isDefined(yytext)) 
@@ -2473,11 +2482,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
+<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
   					  outputArray(yytext,(int)yyleng);
   					  g_yyLineNr+=QCString(yytext).contains('\n');
   					}
-<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
+<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
   					  outputArray(yytext,(int)yyleng);
   					  g_yyLineNr+=QCString(yytext).contains('\n');
 					  if (yytext[1]=='f')
@@ -2515,7 +2524,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,(int)yyleng);
   					  endCondSection();
   					}
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
   					  outputArray(yytext,(int)yyleng);
 					  if (yytext[1]=='f' && g_blockName=="f")
 					  {
@@ -2637,7 +2646,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefineText>\\[\r]?\n			{ 
 					  g_defLitText+=yytext;
 					  outputChar('\n');
-  					  g_defText += ' '; g_yyLineNr++; 
+					  g_defText += ' ';
+					  g_yyLineNr++;
+					  g_yyMLines++;
 					}
 <DefineText>\n				{
 					  QCString comment=extractTrailingComment(g_defLitText);
@@ -2679,7 +2690,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					      def->definition = g_defText.stripWhiteSpace();
 					      def->nargs = g_defArgs;
 					      def->fileName = g_yyFileName.copy(); 
-					      def->lineNr = g_yyLineNr;
+					      def->lineNr = g_yyLineNr-g_yyMLines;
+					      def->columnNr = g_yyColNr;
 					    }
 					    else
 					    {
@@ -2688,6 +2700,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  delete g_argDict; g_argDict=0;
 					  g_yyLineNr++;
+					  g_yyColNr=1;
 					  g_lastGuardName.resize(0);
 					  BEGIN(Start);
   					}
@@ -2726,11 +2739,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipSingleQuote>.			{ g_defText += *yytext; g_defLitText+=yytext; }
 <DefineText>.				{ g_defText += *yytext; g_defLitText+=yytext; }
 <<EOF>>					{
-                                          //fprintf(stderr,"End of include file\n");
+                                          DBG_CTX((stderr,"End of include file\n"));
 					  //printf("Include stack depth=%d\n",g_includeStack.count());
   					  if (g_includeStack.isEmpty())
 					  {
-					    //fprintf(stderr,"Terminating scanner!\n");
+					    DBG_CTX((stderr,"Terminating scanner!\n"));
 					    yyterminate();
 					  }
 					  else
@@ -2745,7 +2758,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             g_inputBuf    = fs->oldFileBuf;
 					    g_inputBufPos = fs->oldFileBufPos;
 					    setFileName(fs->fileName);
-					    //fprintf(stderr,"######## FileName %s\n",g_yyFileName.data());
+					    DBG_CTX((stderr,"######## FileName %s\n",g_yyFileName.data()));
 					    
                                             // Deal with file changes due to 
                                             // #include's within { .. } blocks
@@ -2765,10 +2778,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(SkipCComment);
   					}
 <*>"//"[/]?				{
-					  outputArray(yytext,(int)yyleng);
-  					  g_lastCPPContext=YY_START;
-					  if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
-					  BEGIN(SkipCPPComment);
+                                          if (YY_START==SkipVerbatim)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+					    outputArray(yytext,(int)yyleng);
+  					    g_lastCPPContext=YY_START;
+					    if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
+					    BEGIN(SkipCPPComment);
+                                          }
 					}
 <*>\n					{ 
   					  outputChar('\n');
@@ -3013,6 +3033,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   }
  
   g_yyLineNr = 1;
+  g_yyColNr  = 1;
   g_level    = 0;
   g_ifcount  = 0;
 

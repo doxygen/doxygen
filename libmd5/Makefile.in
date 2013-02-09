@@ -8,9 +8,9 @@ distclean: clean
 	$(RM) -f Makefile.libmd5 libmd5.pro Makefile 
 
 tmake:
-	$(ENV) $(PERL) $(TMAKE) libmd5.pro >Makefile.libmd5
+	$(ENV) $(PERL) "$(TMAKE)" libmd5.pro >Makefile.libmd5
 
 Makefile.libmd5: libmd5.pro
-	$(ENV) $(PERL) $(TMAKE) libmd5.pro >Makefile.libmd5
+	$(ENV) $(PERL) "$(TMAKE)" libmd5.pro >Makefile.libmd5
 
 install:

@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 1997-2012 by Dimitri van Heesch.
+# Copyright (C) 1997-2013 by Dimitri van Heesch.
 # 
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -20,7 +20,7 @@ doxygen_version_minor=8
 doxygen_version_revision=3.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=NO
+doxygen_version_mmn=20130209
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -40,6 +40,7 @@ f_flex=NO
 f_bison=NO
 f_search=NO
 f_langs=nl,sv,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,mk,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,sc,vi,tr,eo,am
+f_sqlite3=NO
 
 while test -n "$1";  do
   case $1 in
@@ -97,6 +98,9 @@ while test -n "$1";  do
     --with-doxysearch | -with-doxysearch)
        f_search=YES
        ;;
+    --with-sqlite3 | -with-sqlite3)
+       f_sqlite3=YES
+       ;;
     -h | -help | --help)
        f_help=y
        ;;
@@ -114,7 +118,7 @@ if test "$f_help" = y; then
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--flex name] [--bison name] [--make name] 
           [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
-          [--install name] [--english-only] [--enable-langs list] 
+          [--install name] [--english-only] [--enable-langs list] [--with-sqlite3]
           [--with-doxywizard] [--with-doxysearch] [--with-doxyapp]
 
 Options: 
@@ -147,6 +151,7 @@ Options:
   --english-only        Include support for English only.
   --enable-langs list 	Include support for output languages listed in list.
   			[default: $f_langs]
+  --with-sqlite3        Add support for sqlite3 output [experimental]
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt version 4.
   --with-doxysearch     Build external search tools (doxysearch and doxyindexer)
@@ -400,6 +405,41 @@ else
   echo "using $f_dot"
 fi
 
+# - check for sqlite3 ---------------------------------------------------------
+
+if test "$f_sqlite3" = YES; then
+  echo -n "  Checking for sqlite3 ... "
+  sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
+  sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
+  sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
+  sqlite3_hdr=NO
+  sqlite3_lib=NO
+  sqlite3_link=
+  for j in $sqlite3_hdr_dir; do
+    if test -f "$j/sqlite3.h"; then
+      sqlite3_hdr="$j/sqlite3.h"
+      break
+    fi
+  done
+  for i in $sqlite3_lib_dir; do
+    if test "$sqlite3_lib" = NO; then
+      for j in $sqlite3_lib_name; do
+        if test -f "$i/$j"; then
+          sqlite3_lib="$i/$j"
+          sqlite3_link="-L $i -lsqlite3"
+          break
+        fi
+      done
+    fi
+  done
+  if test "$sqlite3_hdr" = NO -o "$sqlite3_lib" = NO; then
+    echo "not found!";
+  else
+    echo "using header $sqlite3_hdr and library $sqlite3_lib...";
+  fi
+fi
+
+
 # - check for perl ------------------------------------------------------------
 
 echo -n "  Checking for perl... "
@@ -502,7 +542,7 @@ configPWD=`pwd`
 cat > .makeconfig <<EOF
 DOXYGEN   = $configPWD
 TMAKEPATH = $configPWD/tmake/lib/$f_platform
-ENV       = env TMAKEPATH=\$(TMAKEPATH)
+ENV       = env TMAKEPATH="\$(TMAKEPATH)"
 TMAKE     = $configPWD/tmake/bin/tmake
 MAKE      = $f_make
 PERL      = $f_perl
@@ -521,6 +561,7 @@ if test "$f_dot" != NO; then
 HAVE_DOT  = $f_dot
 EOF
 fi
+
 
 if test "$f_platform" = "m68k-atari-mint-g++"; then
   cat >> .makeconfig <<EOF
@@ -698,7 +739,7 @@ EOF
      #if test "$f_thread" = YES; then
      #  realopts="$realopts thread"
      #fi
-     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" >> $DST
+     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" >> $DST
      echo "  Created $DST from $SRC..."
 done
 
@@ -707,7 +748,7 @@ done
 if test -f "src/lang_cfg.h"; then
     chmod u+w src/lang_cfg.h   # make sure file can be overwritten
 fi
-echo -n "  Generating src/lang_cfg.h..."
+echo "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
 	@allowed=(split(/,/,"NL,SV,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA,SC,VI,TR,EO,AM"));
@@ -720,4 +761,17 @@ echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>);
 	     if ($r!=1) { die "ERROR: Invalid language $elem was selected!\n"; } 
 	     print "#define LANG_$elem\n";
         };' > ./src/lang_cfg.h   
+
+if test -f "src/config.h"; then
+    chmod u+w src/config.h
+fi
+echo "  Generating src/settings.h..."
+echo "#ifndef SETTINGS_H" > src/settings.h
+echo "#define SETTINGS_H" >> src/settings.h
+if test "$f_sqlite3" != NO; then
+echo "#define USE_SQLITE3 1" >> src/settings.h
+else
+echo "#define USE_SQLITE3 0" >> src/settings.h
+fi
+echo "#endif" >> src/settings.h
 echo

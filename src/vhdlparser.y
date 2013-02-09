@@ -726,7 +726,6 @@ subprog_spec  :  t_FUNCTION designator
               subprog_spec_2 t_RETURN mark
               {
                 tempEntry=current;
-                current->bodyLine=getParsedLine(t_FUNCTION);
                 current->type=$6;
                 newEntry();
 
@@ -940,7 +939,7 @@ relation: relation t_LESym relation       { $$=$1+" <= "+$3; }
 relation: relation t_GESym relation       { $$=$1+" >= "+$3; }
 relation: relation t_LTSym relation       { $$=$1+" < "+$3; }
 relation: relation t_GTSym relation       { $$=$1+" > "+$3; }
-relation: relation t_EQSym relation       { $$=$1+" == "+$3; }
+relation: relation t_EQSym relation       { $$=$1+" = "+$3; }
 relation: relation t_NESym relation       { $$=$1+" != "+$3; }
 relation: relation t_Slash relation       { $$=$1+" / "+$3; }
 relation: relation t_QNEQU relation       { $$=$1+" ?/= "+$3; }
@@ -1569,7 +1568,14 @@ procs_stat1: procs_stat1_5
                current->startLine=s_str.yyLineNr;
                current->bodyLine=s_str.yyLineNr;
                }
-               t_PROCESS procs_stat1_1 procs_stat1_2 t_BEGIN seq_stats t_END
+               t_PROCESS procs_stat1_1 procs_stat1_2
+               {
+                 if ($5.data())
+                  FlowChart::addFlowChart(FlowChart::VARIABLE_NO,$5.data(),0);
+                FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
+               }
+               t_BEGIN seq_stats t_END
+
                procs_stat1_3 t_Semicolon
                { 
                 $5.stripPrefix($4.data());
@@ -1663,8 +1669,9 @@ case_stat  : lable t_CASE choice_stat expr
                    } 
                    t_IS case_stat_alternative case_stat_1 t_END t_CASE choice_stat_1  t_Semicolon
                    {
-                     FlowChart::addFlowChart(FlowChart::END_CASE,0,0);
                      FlowChart::moveToPrevLevel();
+             
+                     FlowChart::addFlowChart(FlowChart::END_CASE,0,0);
                    }
 
 case_stat       : t_CASE error t_END t_CASE choice_stat_1  t_Semicolon  { $$=""; }
@@ -1675,7 +1682,7 @@ case_stat_alternative     : t_WHEN choices t_Arrow
   { 
     QCString t="when ";
     t+=$2+"=> ";
-    FlowChart::addFlowChart(FlowChart::WHEN_NO,0,t);
+    FlowChart::addFlowChart(FlowChart::WHEN_NO,$2.data(),t);
   }
   seq_stats { $$=""; FlowChart::moveToPrevLevel(); }
 
@@ -1697,10 +1704,9 @@ if_stat_2  : t_ELSE
   {
     FlowChart::addFlowChart(FlowChart::ELSE_NO,0,0);
   } 
-  seq_stats  
-  { 
-    $$=""; FlowChart::moveToPrevLevel();
-  }
+  seq_stats   { $$=""; }
+
+ 
  
 
 if_stat_1  :  /* empty */             { $$=""; }
@@ -2242,8 +2248,8 @@ extern YYSTYPE vhdlScanYYlval;
 
 void vhdlScanYYerror(const char* /*str*/)
 {
-  //  fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
-  //   exit(0);
+  // fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
+  //  exit(0);
 }
 
 void vhdlParse()
@@ -2321,7 +2327,7 @@ static QCString  popLabel(QCString & q)
 
 static void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool inlineConf)
 {
-  VhdlConfNode* co;
+  VhdlConfNode* co=0;
   QCString ent,arch,lab;
   QCString l=genLabels;
   ent=a;
@@ -2338,7 +2344,9 @@ static void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool i
   {
     VhdlConfNode* vc=configL.last();
     level=vc->level;
-    if (level<levelCounter)
+    if (levelCounter==0)
+      pushLabel(forL,ent);
+    else if (level<levelCounter)
     {
       if (!isLeaf)
       {
@@ -2439,7 +2447,7 @@ static void addProto(const char *s1,const char *s2,const char *s3,
 static void createFunction(const QCString &impure,int spec,
     const QCString &fname)
 {
-  int it=0;
+
   current->spec=spec;
   current->section=Entry::FUNCTION_SEC;
 
@@ -2458,17 +2466,15 @@ static void createFunction(const QCString &impure,int spec,
   {
     current->name=impure;
     current->exception="";
-    it=t_PROCEDURE;
   }
   else
   {
     current->name=fname;
-    it=t_FUNCTION;
   }
 
   if (spec==VhdlDocGen::PROCESS)
   {
-    it=t_PROCESS;
+
     current->args=fname;
     current->name=impure;
     VhdlDocGen::deleteAllChars(current->args,' ');
@@ -2485,8 +2491,9 @@ static void createFunction(const QCString &impure,int spec,
     return;
   }
 
-  current->startLine=getParsedLine(it);
-  current->bodyLine=getParsedLine(it);
+  current->startLine=s_str.iLine;
+  current->bodyLine=s_str.iLine;
+
 }
 
 static void addVhdlType(const QCString &name,int startLine,int section,int spec,

@@ -129,6 +129,8 @@ CommandMap cmdMap[] =
   { "rtfonly",       CMD_RTFONLY },
   { "endrtfonly",    CMD_ENDRTFONLY },
   { "vhdlflow",      CMD_VHDLFLOW },
+  { "docbookonly",   CMD_DBONLY },
+  { "enddocbookonly",CMD_ENDDBONLY },
   { 0,               0 },
 };
 
