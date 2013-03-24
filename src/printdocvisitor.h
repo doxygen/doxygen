@@ -19,6 +19,7 @@
 #ifndef _PRINTDOCVISITOR_H
 #define _PRINTDOCVISITOR_H
 
+#include <qglobal.h>
 #include "docvisitor.h"
 
 /*! Concrete visitor implementation for pretty printing */

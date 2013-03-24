@@ -46,12 +46,12 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit 
-    <a href="http://qt.nokia.com/">Qt</A>
+    <a href="http://qt-project.org/">Qt</A>
     \addindex Qt
     version 4.3 or higher.
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
-    <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
+    <a href="http://www.tug.org/interest.html#free">TeX Live</a>
     This is needed for generating LaTeX, Postscript, and PDF output.
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10 or higher</a>
@@ -536,7 +536,7 @@ install <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and
 
 For LaTeX a number of distributions exists. Popular ones that should work with
 doxygen are <a href="http://www.miktex.org">MikTex</a> 
-and <a href="http://www.xemtex.org">XemTex</a>.
+and <a href="http://www.tug.org/protext/">proTeXt</a>.
 
 Ghostscript can be <a href="http://sourceforge.net/projects/ghostscript/">downloaded</a> 
 from Sourceforge.
@@ -616,16 +616,12 @@ features:
 Doxygen was developed and tested under Linux &amp; MacOSX using the following 
 open-source tools:
 <ul>
-<li>GCC version 3.3.6 (Linux) and 4.0.1 (MacOSX)
-<li>GNU flex version 2.5.33 (Linux) and 2.5.4 (MacOSX)
-<li>GNU bison version 1.75
-<li>GNU make version 3.80
-<li>Perl version 5.8.1
-<li>VIM version 6.2
-<li>Firefox 1.5
-<li>Trolltech's tmake version 1.3 (included in the distribution) 
-<li>teTeX version 2.0.2
-<li>CVS 1.12.12
+<li>GCC version 4.6.3 (Linux) and 4.2.1 (MacOSX)
+<li>GNU flex version 2.5.35 
+<li>GNU bison version 2.5 (Linux) and 2.3 (MacOSX)
+<li>GNU make version 3.81
+<li>Perl version 5.12
+<li>TeX Live 2009 (or later)
 </ul>
 
 \htmlonly

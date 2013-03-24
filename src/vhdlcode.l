@@ -450,7 +450,6 @@ static void generateFuncLink(CodeOutputInterface &ol,MemberDef* mdef)
     addToSearchIndex(memberName);
     return;
   }
-  ol.linkableSymbol(g_yyLineNr,memberName,0,g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   codifyLines(memberName.data());
   addToSearchIndex(memberName);
 } // generateFuncLink
@@ -493,7 +492,6 @@ static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& m
     return;
   }
   // nothing found, just write out the word
-  ol.linkableSymbol(g_yyLineNr,memberName,0,g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   codifyLines(memberName.data());
   addToSearchIndex(memberName);
 }// generateMemLink
@@ -521,10 +519,6 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
       //{
       //  temp=VhdlDocGen::getClassName(cd);
       //}
-      ol.linkableSymbol(g_yyLineNr,temp,cd,
-                        g_currentMemberDef ? 
-			g_currentMemberDef : 
-			g_currentDefinition);
       writeMultiLineCodeLink(ol,cd->getReference(),
 	                        cd->getOutputFileBase(),
 				cd->anchor(),
@@ -545,7 +539,6 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
   }
 
   // nothing found, just write out the word
-  ol.linkableSymbol(g_yyLineNr,clName,0,g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   codifyLines(clName);
   addToSearchIndex(clName);
 }// generateClasss or global link
@@ -1515,7 +1508,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   if (memberDef)
   {
     ClassDef *dd=memberDef->getClassDef();
-    if (dd) g_CurrClass=dd->className();
+    if (dd) g_CurrClass=dd->name();
     startLine--;
   }
   resetVhdlCodeParserState();

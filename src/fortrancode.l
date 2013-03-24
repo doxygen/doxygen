@@ -368,15 +368,13 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
-static const char* fileLocation() 
+static QCString fileLocation() 
 {
-  const int maxLen=4096;
-  static char floc[maxLen+1];
-  floc[maxLen]='\0';
-  snprintf(floc,maxLen,"%s:%d:%d",g_sourceFileDef?g_sourceFileDef->absFilePath().data():"[unknown]",g_yyLineNr,1);
-  return floc;
+  QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
+  result+=":"+QCString().setNum(g_yyLineNr);
+  result+=":"+QCString().setNum(1);
+  return result;
 }
-
 
 /**
   generates dictionay entries that are used if REFERENCED_BY_RELATION ... options are set
@@ -558,8 +556,6 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
       { 
 	addDocCrossReference(g_currentMemberDef,md); 
       }     
-      ol.linkableSymbol(g_yyLineNr,md->name(),md,
-	                g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
       writeMultiLineCodeLink(ol,md->getReference(),
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
@@ -588,7 +584,6 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
     } 
     else 
     { // write type or interface link
-      ol.linkableSymbol(g_yyLineNr, tmp, cd, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
       writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),tmp);
       addToSearchIndex(tmp.data());
     }
@@ -601,7 +596,6 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
   else 
   {
     // nothing found, just write out the word
-    ol.linkableSymbol(g_yyLineNr, tmp, 0, g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
     //startFontClass("charliteral"); //test
     codifyLines(tmp);
     //endFontClass(); //test

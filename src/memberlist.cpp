@@ -296,7 +296,8 @@ bool MemberList::declVisible() const
 }
 
 void MemberList::writePlainDeclarations(OutputList &ol,
-                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+                       ClassDef *cd,NamespaceDef *nd,FileDef *fd,
+                       GroupDef *gd, const DefinitionIntf::DefType compoundType,
                        ClassDef *inheritedFrom,const char *inheritId
                       )
 {
@@ -336,7 +337,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberType_Event:  
           {
             if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
             break;
           }
         case MemberType_Enumeration: 
@@ -373,7 +374,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.startMemberItem(md->anchor(),0,inheritId);
               ol.writeString("enum ");
               ol.insertMemberAlign();
-              md->writeEnumDeclaration(ol,cd,nd,fd,gd);
+              md->writeEnumDeclaration(ol,cd,nd,fd,gd,compoundType);
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
               {
@@ -409,7 +410,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.startMemberList();
               first=FALSE;
             }
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
             break;
           }
         case MemberType_EnumValue: 
@@ -418,7 +419,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
-              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
+              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
             }
           }
           break;
@@ -444,7 +445,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.startMemberList();
             first=FALSE;
           }
-          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType);
         }
         md->setFromAnonymousScope(TRUE);
       }
@@ -476,7 +477,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
  */
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-             const char *title,const char *subtitle, bool showEnumValues,
+             const char *title,const char *subtitle,
+             const DefinitionIntf::DefType compoundType,bool showEnumValues,
              bool showInline,ClassDef *inheritedFrom)
 {
   (void)showEnumValues; // unused
@@ -562,7 +564,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
     else
     {
-      writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
+      writePlainDeclarations(ol,cd,nd,fd,gd,compoundType,inheritedFrom,inheritId);
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);

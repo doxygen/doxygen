@@ -1974,6 +1974,10 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   // start a new member declaration
   bool isAnonymous = annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
+  int mm=mdef->getMemberSpecifiers();
+  if (mm==VhdlDocGen::MISCELLANEOUS)
+      isAnonymous=TRUE;
+
   ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
@@ -1999,7 +2003,6 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   ltype=ltype.replace(reg," ");
   QCString largs(mdef->argsString());
   largs=largs.replace(reg," ");
-  int mm=mdef->getMemberSpecifiers();
   mdef->setType(ltype.data());
   mdef->setArgsString(largs.data());
   //ClassDef * plo=mdef->getClassDef();
@@ -2011,7 +2014,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   switch (mm)
   {
     case VhdlDocGen::MISCELLANEOUS:
-      VhdlDocGen::writeCodeFragment(mdef,ol);
+      VhdlDocGen::writeSource(mdef,ol,nn);
       break;
     case VhdlDocGen::PROCEDURE:
     case VhdlDocGen::FUNCTION:
@@ -2264,8 +2267,6 @@ void VhdlDocGen::writePlainVHDLDeclarations(
 {
 
   SDict<QCString> pack(1009);
-
-  ol.pushGeneratorState();
 
   bool first=TRUE;
   MemberDef *md;
@@ -2538,55 +2539,58 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
   VhdlDocGen::startFonts(mem,"vhdlchar",ol);
 }// found component
 
-void VhdlDocGen::writeCodeFragment( MemberDef *mdef,OutputList& ol)
-{
-  QCString codeFragment=mdef->documentation();
-  QStringList qsl=QStringList::split("\n",codeFragment);
-  writeLink(mdef,ol);
-  ol.docify(" ");
-  ol.insertMemberAlign();
-  int len= qsl.count();
-  for(int j=0;j<len;j++)
-  {
-    QCString q=qsl[j].utf8();
-    VhdlDocGen::writeFormatString(q,ol,mdef);
-    ol.lineBreak();
-    if (j==2) // only the first three lines are shown
-    {
-      q = "...";
-      VhdlDocGen::writeFormatString(q,ol,mdef);
-      break;
-    }
-  }
-}
+
 
 void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
 {
+  ParserInterface *pIntf = Doxygen::parserManager->getParser(".vhd");
+  pIntf->resetCodeParserState();
+   
   QCString codeFragment=mdef->documentation();
-  int start=mdef->getStartBodyLine();
-  QStringList qsl=QStringList::split("\n",codeFragment);
-  ol.startCodeFragment();
-  int len = qsl.count();
-  QCString lineNumber;
-  int j;
-  for (j=0;j<len;j++)
+
+  if(cname.isEmpty()) 
   {
-    lineNumber.sprintf("%05d",start++);
-    lineNumber+=" ";
-    ol.startBold();
-    ol.docify(lineNumber.data());
-    ol.endBold();
-    ol.insertMemberAlign();
-    QCString q=qsl[j].utf8();
-    VhdlDocGen::writeFormatString(q,ol,mdef);
-    ol.lineBreak();
+    writeLink(mdef,ol);
+    int fi=0;
+    int j=0;
+    do {
+     fi=codeFragment.find("\n",++fi);
+    } while(fi>=0 && j++ <3);
+   
+    // show only the first four lines 
+    if(j==4)
+    {
+      codeFragment=codeFragment.left(fi);
+      codeFragment.append("\n    ....    ");
+    }
   }
+  
+  codeFragment.prepend("\n");
+  ol.pushGeneratorState();
+  ol.startCodeFragment();
+  pIntf->parseCode(ol,                   // codeOutIntf
+                       0,                // scope
+                       codeFragment,     // input
+                       FALSE,            // isExample
+                       0,                // exampleName
+                       mdef->getFileDef(),            // fileDef
+                       mdef->getStartBodyLine(),      // startLine
+                       mdef->getEndBodyLine(),        // endLine
+                       TRUE,             // inlineFragment
+                       mdef,             // memberDef
+                       TRUE              // show line numbers
+                      );
+ 
   ol.endCodeFragment();
+  ol.popGeneratorState();
+ 
+  if (cname.isEmpty()) return;
 
   mdef->writeSourceDef(ol,cname);
   mdef->writeSourceRefs(ol,cname);
   mdef->writeSourceReffedBy(ol,cname);
 }
+
 
 
 QCString VhdlDocGen::convertFileNameToClassName(QCString name)
@@ -3069,8 +3073,8 @@ void VhdlDocGen::computeVhdlComponentRelations()
       continue;
     }
 
- //   if (classEntity==0)
- //     err("error: %s:%d:Entity:%s%s",cur->fileName.data(),cur->startLine,entity.data()," could not be found");
+    // if (classEntity==0)
+    //   err("error: %s:%d:Entity:%s%s",cur->fileName.data(),cur->startLine,entity.data()," could not be found");
     
     addInstance(classEntity,ar,cd,cur);
   }
@@ -3141,7 +3145,7 @@ ferr:
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
 
-#if 0
+
   QCString info="Info: Elaborating entity "+n1; 
   fd=ar->getFileDef();
   info+=" for hierarchy ";
@@ -3150,7 +3154,7 @@ ferr:
   label.replace(epr,":");
   info+=label;
   fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data()); 
-#endif
+
   
   ar->insertMember(md);
 
@@ -3198,27 +3202,7 @@ void VhdlDocGen::writeRecUnitDocu(
   }
 }//#
 
-void VhdlDocGen::writeCodeFragment(OutputList& ol,int start, QCString & codeFragment,const MemberDef* mdef)
-{
-  QStringList qsl=QStringList::split("\n",codeFragment);
-  ol.startCodeFragment();
-  int len = qsl.count();
-  QCString lineNumber;
-  int j;
-  for (j=0;j<len;j++)
-  {
-    lineNumber.sprintf("%05d",start++);
-    lineNumber+=" ";
-    ol.startBold();
-    ol.docify(lineNumber.data());
-    ol.endBold();
-    ol.insertMemberAlign();
-    QCString q=qsl[j].utf8();
-    VhdlDocGen::writeFormatString(q,ol,mdef);
-    ol.docify("\n");
-  }
-  ol.endCodeFragment();
-}
+
 
 bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level)
 {

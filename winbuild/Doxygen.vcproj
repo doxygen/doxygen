@@ -50,7 +50,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/Doxygen.tlb"
+				TypeLibraryName=".\Debug\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -151,7 +151,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Debug64/Doxygen.tlb"
+				TypeLibraryName=".\Debug64\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -251,7 +251,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/Doxygen.tlb"
+				TypeLibraryName=".\Release\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -353,7 +353,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Release64/Doxygen.tlb"
+				TypeLibraryName=".\Release64\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -484,6 +484,10 @@
 			</File>
 			<File
 				RelativePath="..\src\cite.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\clangparser.cpp"
 				>
 			</File>
 			<File
@@ -3595,6 +3599,10 @@
 			</File>
 			<File
 				RelativePath="..\src\cite.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\clangparser.h"
 				>
 			</File>
 			<File

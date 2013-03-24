@@ -369,6 +369,7 @@ static bool               g_insideCS; // C# has simpler preprocessor
 static bool               g_isSource;
 
 static bool               g_lexInit = FALSE;
+static int                g_fenceSize = 0;
 
 static GuardType        guardType;           // kind of guard for conditional section
 //DefineDict* getGlobalDefineDict() 
@@ -1669,18 +1670,19 @@ static void startCondSection(const char *sectId)
   g_condStack.push(new bool(g_skip));
   if (guardType == Guard_Cond)
   {
-    if (expResult)
+    if (!expResult)
     {
       g_skip=TRUE;
     }
   }
   else if (guardType == Guard_CondNot)
   {
-    if (!expResult)
+    if (expResult)
     {
       g_skip=TRUE;
     }
   }
+  //printf("startCondSection(%s)=%d expResult=%d\n",sectId,g_skip,expResult);
 }
 
 static void endCondSection()
@@ -1795,6 +1797,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	FindDefineArgs
 %x	ReadString
 %x	CondLine
+%x      SkipCond
 
 %%
 
@@ -2482,20 +2485,37 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
+<SkipCComment>"~~~"[~]*                 {
+                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+                                          if (!markdownSupport)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+  					    outputArray(yytext,(int)yyleng);
+                                            g_fenceSize=yyleng;
+                                            BEGIN(SkipVerbatim);
+                                          }
+                                        }
+<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
   					  outputArray(yytext,(int)yyleng);
   					  g_yyLineNr+=QCString(yytext).contains('\n');
   					}
-<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
+<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+	{
   					  outputArray(yytext,(int)yyleng);
   					  g_yyLineNr+=QCString(yytext).contains('\n');
+                                          g_fenceSize=0;
 					  if (yytext[1]=='f')
 					  {
 					    g_blockName="f";
 					  }
 					  else
 					  {
-					    g_blockName=QCString(&yytext[1]).stripWhiteSpace();
+                                            QCString bn=&yytext[1];
+                                            int i = bn.find('{'); // for \code{.c}
+                                            if (i!=-1) bn=bn.left(i);
+					    g_blockName=bn.stripWhiteSpace();
 					  }
 					  BEGIN(SkipVerbatim);
   					}
@@ -2508,7 +2528,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+      {
   				          startCondSection(yytext);
   					  outputArray(yytext,(int)yyleng);
-  					  BEGIN(g_condCtx);
+                                          if (g_skip)
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                          else
+                                          {
+  					    BEGIN(g_condCtx);
+                                          }
   					}
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n {
                                           guardType = Guard_Cond;
@@ -2518,11 +2545,29 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <CondLine>.				{
   					  unput(*yytext);
   					  startCondSection(" ");
-					  BEGIN(g_condCtx);
+                                          if (g_skip)
+                                          {
+                                            BEGIN(SkipCond);
+                                          }
+                                          else
+                                          {
+					    BEGIN(g_condCtx);
+                                          }
   					}
+<SkipCond>\n                            { g_yyLineNr++; outputChar('\n'); }
+<SkipCond>.                             { }
+<SkipCond>[^\/\!*\\@\n]+                { }
+<SkipCond>[\\@]"endcond"/[^a-z_A-Z0-9]  { 
+  					  outputArray(yytext,(int)yyleng);
+                                          endCondSection(); 
+                                        }
 <SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9] {
   					  outputArray(yytext,(int)yyleng);
   					  endCondSection();
+                                          if (!g_skip) 
+                                          {
+                                            BEGIN(g_condCtx);
+                                          }
   					}
 <SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
   					  outputArray(yytext,(int)yyleng);
@@ -2535,10 +2580,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(SkipCComment);
 					  }
   					}
+<SkipVerbatim>"~~~"[~]*                 {
+  					  outputArray(yytext,(int)yyleng);
+                                          if (g_fenceSize==yyleng)
+                                          {
+                                            BEGIN(SkipCComment);
+                                          }
+                                        }
 <SkipVerbatim>"*/"|"/*"			{
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment,SkipVerbatim>[^*\\@\x06\n\/]+ {
+<SkipCComment,SkipVerbatim>[^*\\@\x06~\n\/]+ {
   					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 

@@ -1188,11 +1188,23 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  {
 					    // see bug 613024, we need to put the newlines after ending the XRef section.
 					    setOutput(OutputDoc);
-  					    addOutput("\n\n");
+                                            int i;
+                                            for (i=0;i<yyleng;)
+                                            {
+                                              if (yytext[i]=='\n') addOutput('\n'),i++;
+                                              else if (strcmp(yytext+i,"\\_linebr")==0) addOutput('\n'),i+=8;
+                                              else i++;
+                                            }
 					  }
 					  else if (inContext!=OutputBrief)
 					  {
-  					    addOutput("\n\n");
+                                            int i;
+                                            for (i=0;i<yyleng;)
+                                            {
+                                              if (yytext[i]=='\n') addOutput('\n'),i++;
+                                              else if (strcmp(yytext+i,"\\_linebr")==0) addOutput('\n'),i+=8;
+                                              else i++;
+                                            }
 					    setOutput(OutputDoc);
 					  }
 					  else // inContext==OutputBrief

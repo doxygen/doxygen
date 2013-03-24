@@ -140,7 +140,7 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
       case '&':  t << "&amp;"; col++;  break;
       case '\'': t << "&apos;"; col++; break; 
       case '"':  t << "&quot;"; col++; break;
-      default:   t << c; col++;        break;         
+      default:   s=writeUtf8Char(t,s-1); col++; break;         
     }
   } 
 }
@@ -347,9 +347,6 @@ class XMLCodeGenerator : public CodeOutputInterface
         m_isMemberRef = anchorId!=0;
         if (extRef) m_external=extRef;
       }
-    }
-    void linkableSymbol(int, const char *,Definition *,Definition *) 
-    {
     }
     void setCurrentDoc(Definition *,const char *,bool)
     {

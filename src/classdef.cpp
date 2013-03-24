@@ -3503,8 +3503,9 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
   if (templateClass==0)
   {
     Debug::print(Debug::Classes,0,"      New template instance class `%s'`%s'\n",name().data(),templSpec.data());
+    QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
     templateClass = new ClassDef(
-        fileName,startLine,startColumn,localName()+templSpec,ClassDef::Class);
+        fileName,startLine,startColumn,tcname,ClassDef::Class);
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
     templateClass->setHidden(isHidden());
@@ -3525,7 +3526,8 @@ ClassDef *ClassDef::getVariableInstance(const char *templSpec)
   if (templateClass==0)
   {
     Debug::print(Debug::Classes,0,"      New template variable instance class `%s'`%s'\n",qPrint(name()),qPrint(templSpec));
-    templateClass = new ClassDef("<code>",1,1,name()+templSpec,
+    QCString tcname = removeRedundantWhiteSpace(name()+templSpec);
+    templateClass = new ClassDef("<code>",1,1,tcname,
                         ClassDef::Class,0,0,FALSE);
     templateClass->addMembersToTemplateInstance( this, templSpec );
     templateClass->setTemplateMaster(this);
@@ -4164,13 +4166,13 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QC
     //static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
     if (ml) 
     {
-      ml->writeDeclarations(ol,this,0,0,0,title,subTitle,FALSE,showInline,inheritedFrom); 
+      ml->writeDeclarations(ol,this,0,0,0,title,subTitle,definitionType(),FALSE,showInline,inheritedFrom); 
       if (lt2!=-1)
       {
         MemberList * ml2 = getMemberList((MemberListType)lt2);
         if (ml2)
         {
-          ml2->writeDeclarations(ol,this,0,0,0,0,0,FALSE,showInline,inheritedFrom); 
+          ml2->writeDeclarations(ol,this,0,0,0,0,0,definitionType(),FALSE,showInline,inheritedFrom); 
         }
       }
     }
@@ -4226,7 +4228,7 @@ void ClassDef::writePlainMemberDeclaration(OutputList &ol,
   if (ml) 
   {
     ml->setInGroup(inGroup);
-    ml->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId); 
+    ml->writePlainDeclarations(ol,this,0,0,0,definitionType(),inheritedFrom,inheritId); 
   }
 }
 

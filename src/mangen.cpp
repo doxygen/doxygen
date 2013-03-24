@@ -313,7 +313,7 @@ void ManGenerator::codify(const char *str)
         case '\n':  t << "\n"; firstCol=TRUE; col=0; break;
         case '\\':  t << "\\"; col++; break;
         case '\"':  c = '\''; // no break!
-        default:    t << c; firstCol=FALSE; col++; break;
+        default:    p=writeUtf8Char(t,p-1); firstCol=FALSE; col++; break;
       }
     }
     //printf("%s",str);fflush(stdout);

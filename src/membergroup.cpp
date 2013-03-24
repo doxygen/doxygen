@@ -112,7 +112,7 @@ void MemberGroup::writeDeclarations(OutputList &ol,
   //printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
   QCString ldoc = doc;
   if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,DefinitionIntf::TypeGroup,FALSE,showInline);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
@@ -121,7 +121,7 @@ void MemberGroup::writePlainDeclarations(OutputList &ol,
               )
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
+  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,DefinitionIntf::TypeGroup,inheritedFrom,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
@@ -150,7 +150,7 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,ClassDef *cd,
     {
       MemberList ml(lt);
       ml.append(md);
-      ml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
+      ml.writePlainDeclarations(ol,cd,0,0,0,DefinitionIntf::TypeGroup,inheritedFrom,inheritId);
     }
   }
 }

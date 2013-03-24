@@ -493,9 +493,6 @@ class OutputList : public OutputDocInterface
         og=outputs->next();
       }
     }
-    void linkableSymbol(int,const char *,Definition *,Definition *) {}
-
-
 
   private:
     void debug();

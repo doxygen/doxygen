@@ -492,7 +492,6 @@ static void startCodeLine()
     {
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
-      //printf("->startCodeLine(%s)=%p\n",d->name().data(),g_currentMemberDef);
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name();
@@ -526,6 +525,7 @@ static void startCodeLine()
       g_code->writeLineNumber(0,0,0,g_yyLineNr);
     }
   }
+  DBG_CTX((stderr,"startCodeLine(%d)\n",g_yyLineNr));
   g_code->startCodeLine(g_sourceFileDef && g_lineNumbers); 
   if (g_currentFontClass)
   {
@@ -539,6 +539,7 @@ static void startFontClass(const char *s);
 
 static void endCodeLine()
 {
+  DBG_CTX((stderr,"endCodeLine(%d)\n",g_yyLineNr));
   endFontClass();
   g_code->endCodeLine();
 }
@@ -830,13 +831,12 @@ static void updateCallContextForSmartPointer()
   }
 }
 
-static const char* fileLocation() 
+static QCString fileLocation() 
 {
-  const int maxLen=4096;
-  static char floc[maxLen+1];
-  floc[maxLen]='\0';
-  snprintf(floc,maxLen,"%s:%d:%d",g_sourceFileDef?g_sourceFileDef->absFilePath().data():"[unknown]",g_yyLineNr,g_yyColNr);
-  return floc;
+  QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
+  result+=":"+QCString().setNum(g_yyLineNr);
+  result+=":"+QCString().setNum(g_yyColNr);
+  return result;
 }
 
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
@@ -930,8 +930,6 @@ static bool getLinkInScope(const QCString &c,  // scope
       }
       //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
-      ol.linkableSymbol(g_yyLineNr,md->name(),md,
-	                g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
       writeMultiLineCodeLink(ol,md->getReference(),
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
@@ -1048,8 +1046,6 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	g_anchorCount++;
       }
     }
-    ol.linkableSymbol(g_yyLineNr,cd->name(),cd,
-                      g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
     writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),clName,cd->briefDescriptionAsTooltip());
     addToSearchIndex(className);
     g_theCallContext.setClass(cd);
@@ -1109,8 +1105,6 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	  {
 	    text=clName;
 	  }
-          ol.linkableSymbol(g_yyLineNr,md->name(),md,
-	                    g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),text,md->briefDescriptionAsTooltip());
           addToSearchIndex(clName);
 	  if (g_currentMemberDef)
@@ -1124,8 +1118,6 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     
     // nothing found, just write out the word
     DBG_CTX((stderr,"not found!\n"));
-    ol.linkableSymbol(g_yyLineNr,clName,0,
-	              g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
     codifyLines(clName);
     addToSearchIndex(clName);
   }
@@ -1177,8 +1169,6 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
       }
 
       // write the actual link
-      ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
-	  g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
       writeMultiLineCodeLink(ol,xmd->getReference(),
 	  xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
       addToSearchIndex(memName);
@@ -1298,8 +1288,6 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
     }
   }
   // nothing found -> write result as is
-  ol.linkableSymbol(g_yyLineNr,memName,0,
-	            g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   codifyLines(memName);
   addToSearchIndex(memName);
   return;
@@ -1552,8 +1540,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  {
 	    if (ctx->method && ctx->method->isLinkable())
 	    {
-              g_code->linkableSymbol(g_yyLineNr,ctx->method->name(),ctx->method,
-                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
               writeMultiLineCodeLink(*g_code,
 		                     ctx->method->getReference(),
 	                             ctx->method->getOutputFileBase(),
@@ -1567,8 +1553,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	    }
 	    else
 	    {
-              g_code->linkableSymbol(g_yyLineNr,pName->data(),0,
-                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
    	      codifyLines(pName->data());
 	    }
 	  }
@@ -1640,8 +1624,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	    }
 	    else if (ctx->objectVar && ctx->objectVar->isLinkable()) // object is class variable
 	    {
-              g_code->linkableSymbol(g_yyLineNr,ctx->objectVar->name(),ctx->objectVar,
-                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	      writeMultiLineCodeLink(*g_code,
 		    ctx->objectVar->getReference(),
 		    ctx->objectVar->getOutputFileBase(),
@@ -1659,8 +1641,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    ) // object is class name
 	    {
 	      ClassDef *cd = ctx->objectType;
-              g_code->linkableSymbol(g_yyLineNr,cd->name(),cd,
-                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	      writeMultiLineCodeLink(*g_code,
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
@@ -1675,8 +1655,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      if (cd && cd->isLinkable())
 	      {
 		if (ctx->objectType==0) ctx->objectType=cd;
-                g_code->linkableSymbol(g_yyLineNr,cd->name(),cd,
-                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	   	writeMultiLineCodeLink(*g_code,
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
@@ -1686,8 +1664,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      }
 	      else
 	      {
-                g_code->linkableSymbol(g_yyLineNr,pObject->data(),0,
-                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 		codifyLines(pObject->data());
 	      }
 	    }
@@ -1750,8 +1726,6 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  QCString *pWord = g_wordDict.find(refId);
 	  if (pWord)
 	  {
-            g_code->linkableSymbol(g_yyLineNr,pWord->data(),0,
-                         g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
             codifyLines(pWord->data());
 	  }
 	}
@@ -1831,7 +1805,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
@@ -1986,8 +1960,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  BEGIN(ObjCParams);
   					}
 <ObjCParams>{ID}			{
-                                          g_code->linkableSymbol(g_yyLineNr,yytext,0,
-	                                     g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   					  g_code->codify(yytext);
   					  g_parmName=yytext;
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
@@ -2682,8 +2654,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
-                                              g_code->linkableSymbol(g_yyLineNr,yytext,0,
-	                                                        g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
 					      g_code->codify(yytext);
 					      addToSearchIndex(yytext);
 					    }
@@ -2691,8 +2661,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					  else
 					  {
-                                            g_code->linkableSymbol(g_yyLineNr,yytext,0,
-	                                                        g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   					    g_code->codify(yytext);
 					    addToSearchIndex(yytext);
   					    g_name.resize(0);
@@ -2714,8 +2682,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    DBG_CTX((stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getClass()));
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
-                                              g_code->linkableSymbol(g_yyLineNr,yytext,0,
-	                                                        g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
 					      g_code->codify(yytext);
 					      addToSearchIndex(yytext);
 					    }
@@ -3356,7 +3322,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr++;
-					    nextCodeLine();
+					    //nextCodeLine();
 					  }
 					  else
 					  {
@@ -3645,6 +3611,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   if (g_needsTermination)
   {
     endFontClass();
+    DBG_CTX((stderr,"endCodeLine(%d)\n",g_yyLineNr));
     g_code->endCodeLine();
   }
   if (cleanupSourceDef)

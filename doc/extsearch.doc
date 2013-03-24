@@ -304,4 +304,10 @@ The fields for such an item have the following meaning:
           These words should be wrapped in `<span class="hl">` and `</span>` tags to highlight them
           in the output.
 
+
+\htmlonly
+Go to the <a href="customize.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */

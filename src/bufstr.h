@@ -18,6 +18,10 @@
 #ifndef _BUFSTR_H
 #define _BUFSTR_H
 
+#include <qglobal.h>
+#include <qcstring.h>
+#include <stdlib.h>
+
 /*! @brief Buffer used to store strings
  *  
  *  This buffer is used append characters and strings. It will automatically

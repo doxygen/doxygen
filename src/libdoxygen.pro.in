@@ -19,6 +19,7 @@ CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =	arguments.h \
                 bufstr.h \
 		cite.h \
+		clangparser.h \
                 classdef.h \
                 classlist.h \
                 cmdmapper.h \
@@ -179,6 +180,7 @@ SOURCES      =	arguments.cpp \
                 ce_lex.cpp \
                 ce_parse.cpp \
 		cite.cpp \
+		clangparser.cpp \
 		classdef.cpp \
 		classlist.cpp \
                 cmdmapper.cpp \

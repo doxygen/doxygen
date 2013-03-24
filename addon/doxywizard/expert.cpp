@@ -8,6 +8,7 @@
 #include <QtXml>
 #include "config.h"
 #include "version.h"
+#include "../../src/settings.h"
 
 #undef  SA
 #define SA(x) QString::fromAscii(x)
@@ -120,144 +121,148 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
   int row=0;
   while (!child.isNull())
   {
-    QString type = child.attribute(SA("type"));
-    if (type==SA("bool"))
+    QString setting = child.attribute(SA("setting"));
+    if (setting.isEmpty() || IS_SUPPORTED(setting.toAscii()))
     {
-      InputBool *boolOption = 
+      QString type = child.attribute(SA("type"));
+      if (type==SA("bool"))
+      {
+        InputBool *boolOption = 
           new InputBool(
-            layout,row,
+              layout,row,
+              child.attribute(SA("id")),
+              child.attribute(SA("defval"))==SA("1"),
+              child.attribute(SA("docs"))
+              );
+        m_options.insert(
             child.attribute(SA("id")),
-            child.attribute(SA("defval"))==SA("1"),
-            child.attribute(SA("docs"))
-           );
-      m_options.insert(
-          child.attribute(SA("id")),
-          boolOption
-         );
-      connect(boolOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-      connect(boolOption,SIGNAL(changed()),SIGNAL(changed()));
-    }
-    else if (type==SA("string"))
-    {
-      InputString::StringMode mode;
-      QString format = child.attribute(SA("format"));
-      if (format==SA("dir"))
-      {
-        mode = InputString::StringDir;
+            boolOption
+            );
+        connect(boolOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+        connect(boolOption,SIGNAL(changed()),SIGNAL(changed()));
       }
-      else if (format==SA("file"))
+      else if (type==SA("string"))
       {
-        mode = InputString::StringFile;
-      }
-      else // format=="string"
-      {
-        mode = InputString::StringFree;
-      }
-      InputString *stringOption = 
+        InputString::StringMode mode;
+        QString format = child.attribute(SA("format"));
+        if (format==SA("dir"))
+        {
+          mode = InputString::StringDir;
+        }
+        else if (format==SA("file"))
+        {
+          mode = InputString::StringFile;
+        }
+        else // format=="string"
+        {
+          mode = InputString::StringFree;
+        }
+        InputString *stringOption = 
           new InputString(
-            layout,row,
+              layout,row,
+              child.attribute(SA("id")),
+              child.attribute(SA("defval")),
+              mode,
+              child.attribute(SA("docs")),
+              child.attribute(SA("abspath"))
+              );
+        m_options.insert(
             child.attribute(SA("id")),
-            child.attribute(SA("defval")),
-            mode,
-            child.attribute(SA("docs")),
-            child.attribute(SA("abspath"))
-           );
-      m_options.insert(
-          child.attribute(SA("id")),
-          stringOption
-         );
-      connect(stringOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-      connect(stringOption,SIGNAL(changed()),SIGNAL(changed()));
-    }
-    else if (type==SA("enum"))
-    {
-      InputString *enumList = new InputString(
+            stringOption
+            );
+        connect(stringOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+        connect(stringOption,SIGNAL(changed()),SIGNAL(changed()));
+      }
+      else if (type==SA("enum"))
+      {
+        InputString *enumList = new InputString(
             layout,row,
             child.attribute(SA("id")),
             child.attribute(SA("defval")),
             InputString::StringFixed,
             child.attribute(SA("docs"))
-           );
-      QDomElement enumVal = child.firstChildElement();
-      while (!enumVal.isNull())
-      {
-        enumList->addValue(enumVal.attribute(SA("name")));
-        enumVal = enumVal.nextSiblingElement();
-      }
-      enumList->setDefault();
+            );
+        QDomElement enumVal = child.firstChildElement();
+        while (!enumVal.isNull())
+        {
+          enumList->addValue(enumVal.attribute(SA("name")));
+          enumVal = enumVal.nextSiblingElement();
+        }
+        enumList->setDefault();
 
-      m_options.insert(child.attribute(SA("id")),enumList);
-      connect(enumList,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-      connect(enumList,SIGNAL(changed()),SIGNAL(changed()));
-    }
-    else if (type==SA("int"))
-    {
-      InputInt *intOption = 
+        m_options.insert(child.attribute(SA("id")),enumList);
+        connect(enumList,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+        connect(enumList,SIGNAL(changed()),SIGNAL(changed()));
+      }
+      else if (type==SA("int"))
+      {
+        InputInt *intOption = 
           new InputInt(
-            layout,row,
+              layout,row,
+              child.attribute(SA("id")),
+              child.attribute(SA("defval")).toInt(),
+              child.attribute(SA("minval")).toInt(),
+              child.attribute(SA("maxval")).toInt(),
+              child.attribute(SA("docs"))
+              );
+        m_options.insert(
             child.attribute(SA("id")),
-            child.attribute(SA("defval")).toInt(),
-            child.attribute(SA("minval")).toInt(),
-            child.attribute(SA("maxval")).toInt(),
-            child.attribute(SA("docs"))
-          );
-      m_options.insert(
-          child.attribute(SA("id")),
-          intOption
-        );
-      connect(intOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-      connect(intOption,SIGNAL(changed()),SIGNAL(changed()));
-    }
-    else if (type==SA("list"))
-    {
-      InputStrList::ListMode mode;
-      QString format = child.attribute(SA("format"));
-      if (format==SA("dir"))
-      {
-        mode = InputStrList::ListDir;
+            intOption
+            );
+        connect(intOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+        connect(intOption,SIGNAL(changed()),SIGNAL(changed()));
       }
-      else if (format==SA("file"))
+      else if (type==SA("list"))
       {
-        mode = InputStrList::ListFile;
-      }
-      else if (format==SA("filedir"))
-      {
-        mode = InputStrList::ListFileDir;
-      }
-      else // format=="string"
-      {
-        mode = InputStrList::ListString;
-      }
-      QStringList sl;
-      QDomElement listVal = child.firstChildElement();
-      while (!listVal.isNull())
-      {
-        sl.append(listVal.attribute(SA("name")));
-        listVal = listVal.nextSiblingElement();
-      }
-      InputStrList *listOption = 
+        InputStrList::ListMode mode;
+        QString format = child.attribute(SA("format"));
+        if (format==SA("dir"))
+        {
+          mode = InputStrList::ListDir;
+        }
+        else if (format==SA("file"))
+        {
+          mode = InputStrList::ListFile;
+        }
+        else if (format==SA("filedir"))
+        {
+          mode = InputStrList::ListFileDir;
+        }
+        else // format=="string"
+        {
+          mode = InputStrList::ListString;
+        }
+        QStringList sl;
+        QDomElement listVal = child.firstChildElement();
+        while (!listVal.isNull())
+        {
+          sl.append(listVal.attribute(SA("name")));
+          listVal = listVal.nextSiblingElement();
+        }
+        InputStrList *listOption = 
           new InputStrList(
-            layout,row,
+              layout,row,
+              child.attribute(SA("id")),
+              sl,
+              mode,
+              child.attribute(SA("docs"))
+              );
+        m_options.insert(
             child.attribute(SA("id")),
-            sl,
-            mode,
-            child.attribute(SA("docs"))
-          );
-      m_options.insert(
-          child.attribute(SA("id")),
-          listOption
-        );
-      connect(listOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
-      connect(listOption,SIGNAL(changed()),SIGNAL(changed()));
-    }
-    else if (type==SA("obsolete"))
-    {
-      // ignore
-    }
-    else // should not happen
-    {
-      printf("Unsupported type %s\n",qPrintable(child.attribute(SA("type"))));
-    }
+            listOption
+            );
+        connect(listOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+        connect(listOption,SIGNAL(changed()),SIGNAL(changed()));
+      }
+      else if (type==SA("obsolete"))
+      {
+        // ignore
+      }
+      else // should not happen
+      {
+        printf("Unsupported type %s\n",qPrintable(child.attribute(SA("type"))));
+      }
+    } // IS_SUPPORTED
     child = child.nextSiblingElement();
   }
 

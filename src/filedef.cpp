@@ -41,6 +41,8 @@
 #include "membergroup.h"
 #include "dirdef.h"
 #include "config.h"
+#include "clangparser.h"
+#include "settings.h"
 
 //---------------------------------------------------------------------------
 
@@ -794,7 +796,7 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
   QCString title = docname;
@@ -843,14 +845,29 @@ void FileDef::writeSource(OutputList &ol)
     if (latexSourceCode) ol.enable(OutputGenerator::Latex);
   }
 
-  ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
-  pIntf->resetCodeParserState();
-  ol.startCodeFragment();
-  pIntf->parseCode(ol,0,
-            fileToString(absFilePath(),filterSourceFiles,TRUE),
-            FALSE,0,this
-           );
-  ol.endCodeFragment();
+#if USE_LIBCLANG
+  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+  if (clangAssistedParsing && 
+      (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
+  {
+    ol.startCodeFragment();
+    ClangParser::instance()->start(absFilePath());
+    ClangParser::instance()->writeSources(ol,this);
+    ClangParser::instance()->finish();
+    ol.endCodeFragment();
+  }
+  else
+#endif
+  {
+    ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
+    pIntf->resetCodeParserState();
+    ol.startCodeFragment();
+    pIntf->parseCode(ol,0,
+        fileToString(absFilePath(),filterSourceFiles,TRUE),
+        FALSE,0,this
+        );
+    ol.endCodeFragment();
+  }
   ol.endContents();
   endFileWithNavPath(this,ol);
   ol.enableAll();
@@ -1659,7 +1676,7 @@ void FileDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCS
     }
     else
     {
-      ml->writeDeclarations(ol,0,0,this,0,title,0);
+      ml->writeDeclarations(ol,0,0,this,0,title,0,definitionType());
     }
   }
 }

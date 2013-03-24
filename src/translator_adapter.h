@@ -2,12 +2,13 @@
 #define TRANSLATOR_ADAPTER_H
 
 #include "version.h"
+#include "translator.h"
 
 /** Base of the translator adapter tree.
  *
  *  This abstract class provides access to the english
  *  translations, to be used as a substitute for not implemented
- *  local translations. 
+ *  local translations.
  */
 class TranslatorAdapterBase : public Translator
 {
@@ -22,18 +23,18 @@ class TranslatorAdapterBase : public Translator
                                               const QCString & versionString)
     {
       return QCString("Warning: The selected output language \"")
-             + languageName 
+             + languageName
              + "\" has not been updated\nsince "
              + versionString
              + ".  As a result some sentences may appear in English.\n\n";
     }
-  
+
   public:
     /*! This method is used to generate a warning message to signal
      *  the user that the translation of his/her language of choice
      *  needs updating.  It must be implemented by the translator
      *  adapter class (pure virtual).
-     * 
+     *
      *  \sa createUpdateNeededMessage()
      */
     virtual QCString updateNeededMessage() = 0;
@@ -69,8 +70,8 @@ class TranslatorAdapter_1_8_2 : public TranslatorAdapterBase
 };
 
 
-/** Adapter class for languages that only contain translations upto 
- *  version 1.8.0. 
+/** Adapter class for languages that only contain translations upto
+ *  version 1.8.0.
  */
 class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
 {
@@ -101,7 +102,7 @@ class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
 
 };
 
-/** Adapter class for languages that only contain translations upto 
+/** Adapter class for languages that only contain translations upto
  *  version 1.7.5.
  */
 class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
@@ -120,7 +121,7 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     { return english.trDirDepGraph(name); }
 };
 
-/** Adapter class for languages that only contain translations upto 
+/** Adapter class for languages that only contain translations upto
  *  version 1.6.3.
  */
 class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
@@ -141,7 +142,7 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
 };
 
-/** Adapter class for languages that only contain translations upto 
+/** Adapter class for languages that only contain translations upto
  *  version 1.6.0.
  */
 class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
@@ -166,7 +167,7 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
     { return english.trNoMatches(); }
 };
 
-/** Adapter class for languages that only contain translations upto 
+/** Adapter class for languages that only contain translations upto
  *  version 1.5.4
  */
 class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
@@ -245,7 +246,7 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
     { return english.trTypeConstraints(); }
 };
 
-/** Adapter class for languages that only contain translations upto 
+/** Adapter class for languages that only contain translations upto
  *  version 1.4.6
  */
 class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
@@ -262,19 +263,6 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
     {
       return english.trEnumerationValueDocumentation();
     }
-};
-
-/** Adapter class for languages that only contain translations upto 
- *  version 1.4.1
- */
-class TranslatorAdapter_1_4_1 : public TranslatorAdapter_1_4_6
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.4.1"); }
-    
-    virtual QCString trOverloadText()
-    { return english.trOverloadText(); }
 };
 
 #endif

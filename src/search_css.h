@@ -48,7 +48,7 @@
 "    height:19px;\n"
 "    background:url('search_m.png') repeat-x;\n"
 "    border:none;\n"
-"    width:116px;\n"
+"    width:111px;\n"
 "    margin-left:20px;\n"
 "    padding-left:4px;\n"
 "    color: #909090;\n"

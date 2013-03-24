@@ -21,6 +21,7 @@
 
 #include <qcstring.h>
 #include <qlist.h>
+#include <stdio.h>
 #include "htmlattrib.h"
 
 class Definition;

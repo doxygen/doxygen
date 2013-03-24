@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <qfile.h>
 #include <qdict.h>
-
+#include "vhdldocgen.h"
 #include "entry.h"
 
 class Entry;
@@ -129,8 +129,13 @@ void vhdlParse();
 // return the list of component instantiations e.g. foo: component bar 
 QList<Entry> &  getVhdlInstList();
 
-// returns the list of found configurations
+// returns   configuration list
 QList<VhdlConfNode>& getVhdlConfiguration();
 
+// returns library/used list
+QList<Entry> &  getLibUse();
+
 void isVhdlDocPending();
+
+
 #endif

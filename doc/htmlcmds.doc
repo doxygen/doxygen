@@ -216,4 +216,11 @@ comments can be used:
 /*! <!-- This is a comment with a comment block --> Visible text */
 \endverbatim
 
+
+\htmlonly
+<br/>
+Go to the <a href="xmlcmds.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */

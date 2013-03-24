@@ -92,29 +92,37 @@ static const char svgZoomHeader[] =
 ;
 
 static const char svgZoomFooter[] =
+// navigation panel
 "        <g id=\"navigator\" transform=\"translate(0 0)\" fill=\"#404254\">\n"
 "                <rect fill=\"#f2f5e9\" fill-opacity=\"0.5\" stroke=\"#606060\" stroke-width=\".5\" x=\"0\" y=\"0\" width=\"60\" height=\"60\"/>\n"
+// zoom in
 "                <use id=\"zoomplus\" xlink:href=\"#zoomPlus\" x=\"17\" y=\"9\" onmousedown=\"handleZoom(evt,'in')\"/>\n"
+// zoom out
 "                <use id=\"zoomminus\" xlink:href=\"#zoomMin\" x=\"42\" y=\"9\" onmousedown=\"handleZoom(evt,'out')\"/>\n"
+// reset zoom
 "                <use id=\"reset\" xlink:href=\"#resetDef\" x=\"30\" y=\"36\" onmousedown=\"handleReset()\"/>\n"
+// arrow up
 "                <g id=\"arrowUp\" xlink:href=\"#dirArrow\" transform=\"translate(30 24)\" onmousedown=\"handlePan(0,-1)\">\n"
 "                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
 "                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowUp.mouseover\" end=\"arrowUp.mouseout\"/>\n"
 "                  </use>\n"
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
+// arrow right
 "                <g id=\"arrowRight\" xlink:href=\"#dirArrow\" transform=\"rotate(90) translate(36 -43)\" onmousedown=\"handlePan(1,0)\">\n"
 "                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
 "                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowRight.mouseover\" end=\"arrowRight.mouseout\"/>\n"
 "                  </use>\n"
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
+// arrow down
 "                <g id=\"arrowDown\" xlink:href=\"#dirArrow\" transform=\"rotate(180) translate(-30 -48)\" onmousedown=\"handlePan(0,1)\">\n"
 "                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
 "                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowDown.mouseover\" end=\"arrowDown.mouseout\"/>\n"
 "                  </use>\n"
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
+// arrow left
 "                <g id=\"arrowLeft\" xlink:href=\"#dirArrow\" transform=\"rotate(270) translate(-36 17)\" onmousedown=\"handlePan(-1,0)\">\n"
 "                  <use xlink:href=\"#rim\" fill=\"#404040\">\n"
 "                        <set attributeName=\"fill\" to=\"#808080\" begin=\"arrowLeft.mouseover\" end=\"arrowLeft.mouseout\"/>\n"
@@ -122,15 +130,7 @@ static const char svgZoomFooter[] =
 "                  <path fill=\"none\" stroke=\"white\" stroke-width=\"1.5\" d=\"M0,-3.0v7 M-2.5,-0.5L0,-3.0L2.5,-0.5\"/>\n"
 "                </g>\n"
 "        </g>\n"
-/*
-"        <svg viewBox=\"0 0 25 25\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\"> \n"
-"          <g id=\"printButton\" transform=\"scale(0.4 0.4)\" onmousedown=\"handlePrint(evt)\">\n"
-"            <rect height=\"23.33753581\" id=\"paper\" rx=\"2\" style=\"fill:#f2f5e9;fill-rule:evenodd;stroke:#111111;stroke-width:3.224;stroke-linejoin:round;\" transform=\"matrix(1.000000,0.000000,-0.339266,0.940691,0.000000,0.000000)\" width=\"25.55231285\" x=\"26.69387353\" y=\"7.36162977\"/>\n"
-"            <rect height=\"26.272097\" id=\"body\" rx=\"2\" style=\"fill:#404040;fill-rule:evenodd;stroke:#111111;stroke-width:3.125;stroke-linejoin:round;\" width=\"50\" x=\"4.5295201\" y=\"27.078951\"/>\n"
-"            <rect height=\"8.27750969\" id=\"tray\" style=\"fill:#d2d5c9;fill-rule:evenodd;stroke:#111111;stroke-width:3.125;stroke-linecap:round;stroke-linejoin:round;\" width=\"40\" x=\"10.28778839\" y=\"44.96812282\"/>\n"
-"          </g>\n"
-"        </svg>\n"
-*/
+// link to orginial SVG
 "        <svg viewBox=\"0 0 15 15\" width=\"100%\" height=\"30px\" preserveAspectRatio=\"xMaxYMin meet\">\n"
 "         <g id=\"arrow_out\" transform=\"scale(0.3 0.3)\">\n"
 "          <a xlink:href=\"$orgname\" target=\"_base\">\n"

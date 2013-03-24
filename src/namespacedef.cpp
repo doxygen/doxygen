@@ -965,7 +965,7 @@ MemberList *NamespaceDef::getMemberList(MemberListType lt) const
 void NamespaceDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title)
 {
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,0,this,0,0,title,0);
+  if (ml) ml->writeDeclarations(ol,0,this,0,0,title,0,DefinitionIntf::TypeNamespace);
 }
 
 void NamespaceDef::writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title)

@@ -29,11 +29,14 @@ def parseOption(node):
 	defval  = node.getAttribute('defval')
 	adefval = node.getAttribute('altdefval')
 	depends = node.getAttribute('depends')
+	setting = node.getAttribute('setting')
 	# replace \ by \\, replace " by \", and '  ' by a newline with end string and start string at next line
         docC    = doc.strip().replace('\\','\\\\').replace('"','\\"').replace('  ','\\n"\n                 "')
+	if len(setting)>0:
+	    	print "#if %s" % (setting)
 	print "  //----"
         if type=='bool':
-        	if len(adefval)>0:
+	     	if len(adefval)>0:
 			enabled = adefval
 		elif defval=='1':
 			enabled = "TRUE"
@@ -94,6 +97,8 @@ def parseOption(node):
 			print "  cl->setWidgetType(ConfigList::FileAndDir);"
 	elif type=='obsolete':
 		print "  cfg->addObsolete(\"%s\");" % (name)
+	if len(setting)>0:
+	    	print "#endif"
 		
 
 
@@ -121,6 +126,7 @@ def main():
         print "#include \"configoptions.h\""
         print "#include \"config.h\""
         print "#include \"portable.h\""
+        print "#include \"settings.h\""
         print ""
         print "void addConfigOptions(Config *cfg)"
         print "{"

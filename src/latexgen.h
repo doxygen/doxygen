@@ -267,7 +267,6 @@ class LatexGenerator : public OutputGenerator
     void endFontClass(); // {}
 
     void writeCodeAnchor(const char *) {}
-    void linkableSymbol(int,const char *,Definition *,Definition *) {}
     void setCurrentDoc(Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 

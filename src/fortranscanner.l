@@ -893,11 +893,13 @@ protected                               {
                                           pushBuffer(inputStringSemi);
                                         }
 
+<Initialization,ArrayInitializer>"["    |
 <Initialization,ArrayInitializer>"(/"   { initializer+=yytext;
                                            initializerArrayScope++;
                                            BEGIN(ArrayInitializer); // initializer may contain comma
                                         }
-<ArrayInitializer>"/)"                   { initializer+=yytext;
+<ArrayInitializer>"]"                   |
+<ArrayInitializer>"/)"                  { initializer+=yytext;
                                            initializerArrayScope--;
                                            if(initializerArrayScope<=0)
                                            {

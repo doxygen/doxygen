@@ -61,4 +61,10 @@ The following output formats are \e indirectly supported by doxygen:
     \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS".
 </dl>
 
+
+\htmlonly
+Go to the <a href="searching.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */

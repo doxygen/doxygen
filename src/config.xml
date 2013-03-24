@@ -49,9 +49,9 @@ The default language is English, other supported languages are:
 Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional, 
 Croatian, Czech, Danish, Dutch, Esperanto, Farsi, Finnish, French, German, 
 Greek, Hungarian, Italian, Japanese, Japanese-en (Japanese with English 
-messages), Korean, Korean-en, Latvian, Lithuanian, Norwegian, Macedonian, Persian, 
-Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrillic, Slovak, 
-Slovene, Spanish, Swedish, Ukrainian, and Vietnamese. 
+messages), Korean, Korean-en, Latvian, Lithuanian, Norwegian, Macedonian, 
+Persian, Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrillic, 
+Slovak, Slovene, Spanish, Swedish, Ukrainian, and Vietnamese. 
 '>
       <value name='Afrikaans'/>
       <value name='Arabic'/>
@@ -262,10 +262,10 @@ can mix doxygen, HTML, and XML commands with Markdown formatting.
 Disable only in case of backward compatibilities issues. 
 ' defval='1'/>
     <option type='bool' id='AUTOLINK_SUPPORT' docs='
-When enabled doxygen tries to link words that correspond to documented classes, 
-or namespaces to their corresponding documentation. Such a link can be 
-prevented in individual cases by by putting a % sign in front of the word or 
-globally by setting AUTOLINK_SUPPORT to NO.
+When enabled doxygen tries to link words that correspond to documented 
+classes, or namespaces to their corresponding documentation. Such a link can 
+be prevented in individual cases by by putting a % sign in front of the word 
+or globally by setting AUTOLINK_SUPPORT to NO.
 ' defval='1'/>
     <option type='bool' id='BUILTIN_STL_SUPPORT' docs='
 If you use STL classes (i.e. std::string, std::vector, etc.) but do not want 
@@ -736,8 +736,10 @@ invoke to filter for each input file. Doxygen will invoke the filter program
 by executing (via popen()) the command &lt;filter&gt; &lt;input-file&gt;, where &lt;filter&gt; 
 is the value of the INPUT_FILTER tag, and &lt;input-file&gt; is the name of an 
 input file. Doxygen will then use the output that the filter program writes 
-to standard output.  If FILTER_PATTERNS is specified, this tag will be 
-ignored. 
+to standard output.  If FILTER_PATTERNS is specified, this tag will be ignored. 
+Note that the filter must not add or remove lines; it is applied before the 
+code is scanned, but not when the output code is generated. If lines are added 
+or removed, the anchors will not be placed correctly.
 ' defval=''/>
     <option type='list' id='FILTER_PATTERNS' format='string' docs='
 The FILTER_PATTERNS tag can be used to specify filters on a per file pattern 
@@ -762,9 +764,9 @@ FILTER_SOURCE_FILES is enabled.
 ' depends='FILTER_SOURCE_FILES'/>
     <option type='string' id='USE_MDFILE_AS_MAINPAGE' format='string' docs='
 If the USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that 
-is part of the input, its contents will be placed on the main page (index.html). 
-This can be useful if you have a project on for instance GitHub and want reuse 
-the introduction page also for the doxygen output.
+is part of the input, its contents will be placed on the main page 
+(index.html). This can be useful if you have a project on for instance GitHub 
+and want reuse the introduction page also for the doxygen output.
 ' defval=''/>
   </group>
   <group name='Source Browser' docs='configuration options related to source browsing'>
@@ -811,6 +813,18 @@ If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen
 will generate a verbatim copy of the header file for each class for 
 which an include is specified. Set to NO to disable this. 
 ' defval='1'/>
+     <option type='bool' id='CLANG_ASSISTED_PARSING' setting='USE_LIBCLANG' docs='
+If CLANG_ASSISTED_PARSING is set to YES, then doxygen will use the clang parser 
+for better parsing at the cost of reduced performance. This can be particularly 
+helpful with template rich C++ code for which doxygen&apos;s built-in 
+parser lacks the necessairy type information.
+' defval='0'/>
+     <option type='string' id='CLANG_OPTIONS' settings='USE_LIBCLANG' docs='
+If clang assisted parsing is enabled you can provide the compiler with command 
+line options that you would normally use when invoking the compiler. Note that 
+the include paths will be set by doxygen based on the files and directory 
+specified at INPUT and INCLUDE_PATH.
+' defval='' depends='CLANG_ASSISTED_PARSING'/>
   </group>
   <group name='Index' docs='configuration options related to the alphabetical class index'>
     <option type='bool' id='ALPHABETICAL_INDEX' docs='
@@ -1163,8 +1177,8 @@ script for searching. Instead the search results are written to an XML file
 which needs to be processed by an external indexer. Doxygen will invoke an 
 external search engine pointed to by the SEARCHENGINE_URL option to obtain 
 the search results. Doxygen ships with an example indexer (doxyindexer) and 
-search engine (doxysearch.cgi) which are based on the open source search engine 
-library Xapian. See the manual for configuration details. 
+search engine (doxysearch.cgi) which are based on the open source search 
+engine library Xapian. See the manual for configuration details. 
 ' defval='0' depends='SEARCHENGINE'/>
     <option type='string' id='SEARCHENGINE_URL' docs='
 The SEARCHENGINE_URL should point to a search engine hosted by a web server 

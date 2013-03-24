@@ -157,7 +157,7 @@ Emin Ilker Cetinbas: niw3 at yahoo dot com
 
 TranslatorUkrainian
 Olexij Tkatchenko: [resigned] olexij at tkatchenko dot com
--- searching for the maintainer --: [Please, try to help to find someone.]
+Petro  Yermolenko: python at i dot ua
 
 TranslatorVietnamese
 Dang Minh Tuan: tuanvietkey at gmail dot com

@@ -20,7 +20,7 @@ doxygen_version_minor=8
 doxygen_version_revision=3.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20130209
+doxygen_version_mmn=20130324
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -41,6 +41,7 @@ f_bison=NO
 f_search=NO
 f_langs=nl,sv,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,mk,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,sc,vi,tr,eo,am
 f_sqlite3=NO
+f_libclang=NO
 
 while test -n "$1";  do
   case $1 in
@@ -101,6 +102,9 @@ while test -n "$1";  do
     --with-sqlite3 | -with-sqlite3)
        f_sqlite3=YES
        ;;
+    --with-libclang | -with-libclang)
+       f_libclang=YES
+       ;;
     -h | -help | --help)
        f_help=y
        ;;
@@ -152,6 +156,7 @@ Options:
   --enable-langs list 	Include support for output languages listed in list.
   			[default: $f_langs]
   --with-sqlite3        Add support for sqlite3 output [experimental]
+  --with-libclang       Add support for libclang parsing [experimental]
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt version 4.
   --with-doxysearch     Build external search tools (doxysearch and doxyindexer)
@@ -270,7 +275,7 @@ if test -z "$f_docdir"; then
 fi
 
 if test "$f_plf_auto" = NO; then
-  echo -n "  Checking for platform $f_platform... "
+  printf "  Checking for platform $f_platform... "
   if test '!' -d tmake/lib/$f_platform; then
     echo "not supported!" 
     echo
@@ -284,7 +289,7 @@ fi
 if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "  QTDIR environment variable not set!"
-    echo -n "  Checking for Qt..."
+    printf "  Checking for Qt..."
     for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4} /usr; do
       if test -x "$d/bin/qmake"; then
         QTDIR=$d
@@ -292,7 +297,7 @@ if test "$f_wizard" = YES; then
     done
   else
     echo "  Detected Qt via the QTDIR environment variable..."
-    echo -n "                    "
+    printf "                    "
   fi
   if test -z "$QTDIR"; then
     echo "QTDIR not set and Qt not found at standard locations!"
@@ -307,7 +312,7 @@ fi
 
 if test "$f_search" = YES; then
   if test -z "$XAPIAN"; then
-    echo -n "  Checking for Xapian..."
+    printf "  Checking for Xapian..."
     for d in /usr /usr/local /opt/local; do
       if test -e "$d/include/xapian.h"; then
         XAPIAN=$d
@@ -322,7 +327,7 @@ fi
    
 # - check for make ------------------------------------------------------------
 
-echo -n "  Checking for GNU make tool... "
+printf "  Checking for GNU make tool... "
 if test "$f_make" = NO; then
   make_names="gmake make"
   make_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
@@ -349,7 +354,7 @@ echo "using $f_make"
 
 # - check for install ------------------------------------------------------------
 
-echo -n "  Checking for GNU install tool... "
+printf "  Checking for GNU install tool... "
 if test "$f_insttool" = NO; then
   install_names="ginstall install"
   install_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin /usr/ucb"
@@ -386,7 +391,7 @@ echo "using $f_insttool";
 
 # - check for dot ------------------------------------------------------------
 
-echo -n "  Checking for dot (part of GraphViz)... "
+printf "  Checking for dot (part of GraphViz)... "
 if test "$f_dot" = NO; then
   dot_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   dot_prog=NO
@@ -408,7 +413,7 @@ fi
 # - check for sqlite3 ---------------------------------------------------------
 
 if test "$f_sqlite3" = YES; then
-  echo -n "  Checking for sqlite3 ... "
+  printf "  Checking for sqlite3 ... "
   sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
   sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
   sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
@@ -439,10 +444,43 @@ if test "$f_sqlite3" = YES; then
   fi
 fi
 
+# - check for libclang ---------------------------------------------------------
+
+if test "$f_libclang" = YES; then
+  printf "  Checking for libclang ... "
+  libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
+  libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
+  libclang_lib_name="libclang.so libclang.dylib libclang.a"
+  libclang_hdr=NO
+  libclang_lib=NO
+  libclang_link=
+  for j in $libclang_hdr_dir; do
+    if test -f "$j/clang-c/Index.h"; then
+      libclang_hdr="$j/clang-c/Index.h"
+      break
+    fi
+  done
+  for i in $libclang_lib_dir; do
+    if test "$libclang_lib" = NO; then
+      for j in $libclang_lib_name; do
+        if test -f "$i/$j"; then
+          libclang_lib="$i/$j"
+          libclang_link="-L $i -lclang"
+          break
+        fi
+      done
+    fi
+  done
+  if test "$libclang_hdr" = NO -o "$libclang_lib" = NO; then
+    echo "not found!";
+  else
+    echo "using header $libclang_hdr and library $libclang_lib...";
+  fi
+fi
 
 # - check for perl ------------------------------------------------------------
 
-echo -n "  Checking for perl... "
+printf "  Checking for perl... "
 if test "$f_perl" = NO; then
   perl_names="perl perl5"
   perl_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
@@ -475,7 +513,7 @@ echo "using $f_perl";
 
 # - check for flex ------------------------------------------------------------
 
-echo -n "  Checking for flex... "
+printf "  Checking for flex... "
 if test "$f_flex" = NO; then
   flex_dirs="$bin_dirs /usr/bin /usr/local/bin /bin"
   flex_prog=NO
@@ -499,7 +537,7 @@ fi
 
 # - check for bison ------------------------------------------------------------
 
-echo -n "  Checking for bison... "
+printf "  Checking for bison... "
 if test "$f_bison" = NO; then
   bison_dirs="$bin_dirs /usr/bin /usr/local/bin /bin"
   bison_prog=NO
@@ -739,7 +777,7 @@ EOF
      #if test "$f_thread" = YES; then
      #  realopts="$realopts thread"
      #fi
-     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" >> $DST
+     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
      echo "  Created $DST from $SRC..."
 done
 
@@ -768,10 +806,22 @@ fi
 echo "  Generating src/settings.h..."
 echo "#ifndef SETTINGS_H" > src/settings.h
 echo "#define SETTINGS_H" >> src/settings.h
+echo "" >> src/settings.h
 if test "$f_sqlite3" != NO; then
-echo "#define USE_SQLITE3 1" >> src/settings.h
+echo "#define USE_SQLITE3  1" >> src/settings.h
 else
-echo "#define USE_SQLITE3 0" >> src/settings.h
+echo "#define USE_SQLITE3  0" >> src/settings.h
 fi
+if test "$f_libclang" != NO; then
+echo "#define USE_LIBCLANG 1" >> src/settings.h
+else
+echo "#define USE_LIBCLANG 0" >> src/settings.h
+fi
+echo "" >> src/settings.h
+echo "#define IS_SUPPORTED(x) \\" >> src/settings.h
+echo "  ((USE_SQLITE3  && strcmp(\"USE_SQLITE3\",(x))==0)  || \\" >> src/settings.h 
+echo "   (USE_LIBCLANG && strcmp(\"USE_LIBCLANG\",(x))==0) || \\" >> src/settings.h 
+echo "  0)" >> src/settings.h 
+echo "" >> src/settings.h
 echo "#endif" >> src/settings.h
 echo

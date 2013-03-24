@@ -341,7 +341,8 @@ void replaceComment(int offset);
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
-<Scan>("//!"|"///"[/]*)/.*\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+<Scan>"//!"/.*\n[ \t]*"//"[\/!][^\/] | /* start C++ style special comment block */
+<Scan>("///"[/]*)/[^/].*\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
   				     if (g_mlBrief) 
 				     {
 				       REJECT; // bail out if we do not need to convert

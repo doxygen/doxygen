@@ -122,4 +122,11 @@ which will expand to
 \endverbatim
 
 
+\htmlonly
+<br/>
+Go to the <a href="external.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+
 */

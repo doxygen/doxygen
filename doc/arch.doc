@@ -237,6 +237,10 @@ utime $now, $now, $file
 
 \endverbatim
 
+\htmlonly
+Return to the <a href="index.html">index</a>.
+\endhtmlonly
+
 */
 
 

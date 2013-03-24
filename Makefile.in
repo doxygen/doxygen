@@ -45,7 +45,7 @@ distclean: clean
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
-	-rm -f src/version.cpp
+	-rm -f src/version.cpp 
 	-rm -r addon/doxywizard/Makefile
 	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f VERSION

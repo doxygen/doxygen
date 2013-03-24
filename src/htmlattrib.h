@@ -15,6 +15,9 @@
 #ifndef _HTMLATTRIB_H
 #define _HTMLATTRIB_H
 
+#include <qcstring.h>
+#include <qlist.h>
+
 /*! A Html option. A name, value pair */
 struct HtmlAttrib
 {

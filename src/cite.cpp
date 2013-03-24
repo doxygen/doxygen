@@ -88,11 +88,19 @@ static QCString getListOfBibFiles(const QCString &sep,bool namesOnly)
 
 void CiteDict::writeLatexBibliography(FTextStream &t)
 {
-  if (m_entries.count()==0) return;
+  if (m_entries.isEmpty())
+    return;
+
   QCString style = Config_getString("LATEX_BIB_STYLE");
-  if (style.isEmpty()) style="plain";
-  t << "\\newpage \\bibliographystyle{" << style << "}" << endl;
-  t << "\\bibliography{" << getListOfBibFiles(",",TRUE) << "}" << endl;
+  if (style.isEmpty())
+    style="plain";
+  t << "% Bibliography\n"
+       "\\newpage\n"
+       "\\phantomsection\n"
+       "\\addcontentsline{toc}{part}{" << theTranslator->trCiteReferences() << "}\n"
+       "\\bibliographystyle{" << style << "}\n"
+       "\\bibliography{" << getListOfBibFiles(",",TRUE) << "}\n"
+       "\n";
 }
 
 void CiteDict::insert(const char *label)

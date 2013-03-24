@@ -25,6 +25,7 @@
 #include <qcstring.h>
 #include "layout.h"
 #include "arguments.h"
+#include "entry.h"
 
 class Entry;
 class ClassDef;
@@ -229,9 +230,7 @@ class VhdlDocGen
     static ClassDef*  findArchitecture(const ClassDef *cd);
     static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
-    static void writeCodeFragment( MemberDef *mdef,OutputList& ol);
-    static void writeCodeFragment (OutputList& ol,int start, QCString & codeFragment,const MemberDef* mdef);
-
+    
     static void writeSource(MemberDef *mdef,OutputList& ol,QCString & cname);
     static void writeAlphbeticalClass(OutputList& ol,const ClassDef* cd,const QCString &);
 
@@ -249,6 +248,16 @@ class VhdlDocGen
     
     static void setFlowMember( const MemberDef *flowMember);
     static const MemberDef *getFlowMember();
+
+    static  bool isVhdlClass (const Entry *cu) 
+    {
+      return cu->spec==VhdlDocGen::ENTITY       ||
+             cu->spec==VhdlDocGen::PACKAGE      ||
+             cu->spec==VhdlDocGen::ARCHITECTURE ||
+             cu->spec==VhdlDocGen::PACKAGE_BODY;
+    }
+
+
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);

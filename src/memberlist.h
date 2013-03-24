@@ -56,11 +56,12 @@ class MemberList : public QList<MemberDef>
     void countDocMembers(bool countEnumValues=FALSE);
     int countInheritableMembers(ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,
+               GroupDef *gd,const DefinitionIntf::DefType compoundType,
                ClassDef *inheritedFrom,const char *inheritId);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *title,const char *subtitle,
+               const char *title,const char *subtitle,const DefinitionIntf::DefType compoundType,
                bool showEnumValues=FALSE,bool showInline=FALSE,
                ClassDef *inheritedFrom=0);
     void writeDocumentation(OutputList &ol,const char *scopeName,

@@ -1,16 +1,16 @@
-(1.8.3)
+(1.8.3.1)
 
-Doxygen supports the following 39 languages (sorted alphabetically):
+Doxygen supports the following 40 languages (sorted alphabetically):
 
 Afrikaans, Arabic, Armenian, Brazilian Portuguese, Catalan, Chinese,
 Chinese Traditional, Croatian, Czech, Danish, Dutch, English,
 Esperanto, Finnish, French, German, Greek, Hungarian, Indonesian,
-Italian, Japanese (+En), Korean (+En), Lithuanian, Macedonian,
-Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian,
-SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
-and Vietnamese.
+Italian, Japanese (+En), Korean (+En), Latvian, Lithuanian,
+Macedonian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian,
+Serbian, SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish,
+Ukrainian, and Vietnamese.
 
-Of them, 8 translators are up-to-date, 31 translators are based on
+Of them, 10 translators are up-to-date, 30 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -25,8 +25,10 @@ still may be some details listed even for them:
   TranslatorEsperanto
   TranslatorGerman
   TranslatorGreek
+  TranslatorLatvian -- Reimplementation using UTF-8 suggested.
   TranslatorSlovak
   TranslatorSpanish
+  TranslatorUkrainian
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -94,9 +96,6 @@ must be implemented to become up-to-date:
 	Note: Reimplementation using UTF-8 suggested.
 
   TranslatorArabic                1.4.6 	49 methods to implement (20 %)
-	Note: Reimplementation using UTF-8 suggested.
-
-  TranslatorUkrainian             1.4.1 	50 methods to implement (20 %)
 	Note: Reimplementation using UTF-8 suggested.
 
 
@@ -629,6 +628,12 @@ TranslatorKoreanEn   (TranslatorEnglish)  237 methods to implement (97 %)
     virtual QCString latexLanguageSupportCommand()
 
 
+TranslatorLatvian   (Translator)
+-----------------
+
+  Implements 242 of the required methods (100 %).
+
+
 TranslatorLithuanian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
 --------------------
 
@@ -1119,77 +1124,6 @@ TranslatorTurkish   (TranslatorAdapter_1_7_5)  17 methods to implement (7 %)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
     virtual QCString trInstanceMethods()
-
-
-TranslatorUkrainian   (TranslatorAdapter_1_4_1)  50 methods to implement (20 %)
--------------------
-
-  Implements 192 of the required methods (79 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDetailLevel()
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
-    virtual QCString trSearching()
-    virtual QCString trTemplateParameters()
-    virtual QCString trOverloadText()
-    virtual QCString trNoMatches()
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
-    virtual QCString trLoading()
-    virtual QCString trSubprograms()
-    virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
-    virtual QCString trModulesListDescription(bool extractAll)
-    virtual QCString trModulesList()
-    virtual QCString trTypeConstraints()
-    virtual QCString trFileIn(const char * name)
-    virtual QCString trClassMethods()
-    virtual QCString trProvidedByCategory()
-    virtual QCString trGlobalNamespace()
-    virtual QCString trMemberFunctionDocumentationFortran()
-    virtual QCString trCompoundListDescriptionFortran()
-    virtual QCString trDesignOverview()
-    virtual QCString trTypeDocumentation()
-    virtual QCString trAndMore(const QCString & number)
-    virtual QCString trModuleReference(const char * namespaceName)
-    virtual QCString trModulesMemberDescription(bool extractAll)
-    virtual QCString trModulesMembers()
-    virtual QCString trDirDepGraph(const char * name)
-    virtual QCString trModulesIndex()
-    virtual QCString trDirRelation(const char * name)
-    virtual QCString trMethodDocumentation()
-    virtual QCString trCompoundListFortran()
-    virtual QCString trDataTypes()
-    virtual QCString trEnumReference(const char * name)
-    virtual QCString trInheritedFrom(const char * members, const char * what)
-    virtual QCString trCiteReferences()
-    virtual QCString trAdditionalInheritedMembers()
-    virtual QCString trDirDependency(const char * name)
-    virtual QCString trCopyright()
-    virtual QCString trIncludesFileIn(const char * name)
-    virtual QCString trEnumGeneratedFromFiles(bool single)
-    virtual QCString trCompoundIndexFortran()
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
-    virtual QCString trCallerGraph()
-    virtual QCString trExtendsClass()
-    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
-    virtual QCString trType(bool first_capital, bool singular)
-    virtual QCString trModule(bool first_capital, bool singular)
-    virtual QCString trCompoundMembersFortran()
-    virtual QCString trSubprogramDocumentation()
-    virtual QCString trInstanceMethods()
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trNoDescriptionAvailable()
 
 
 TranslatorVietnamese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)

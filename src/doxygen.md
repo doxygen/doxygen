@@ -92,7 +92,7 @@ For doxygen specific concepts the following subclasses are available
 - GroupDef: for storing grouping related data
 - PageDef: for storing page related data
 
-Finally the data for members of classes, namespaces, and files is stored is
+Finally the data for members of classes, namespaces, and files is stored in
 the subclass MemberDef.
 
 Producing output

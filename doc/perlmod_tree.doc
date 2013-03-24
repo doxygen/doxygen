@@ -374,4 +374,10 @@ The meaning of each node in the documentation tree is as follows:
 </ul>
 </ul>
 
+
+\htmlonly
+Go to the <a href="arch.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */

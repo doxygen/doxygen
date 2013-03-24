@@ -71,15 +71,19 @@ doxygen -w html header.html footer.html stylesheet.css <config_file>
   a file named Doxyfile and process that. When this is also not found it
   will used the default settings.
 
-<li>For LaTeX output, you can generate the first part of \c refman.tex 
-    (see \ref cfg_latex_header "LATEX_HEADER") and the style sheet included
-    by that header (normally <code>doxygen.sty</code>), using:
+<li>For LaTeX output, you can generate the first and last part of \c refman.tex 
+    (see \ref cfg_latex_header "LATEX_HEADER" and
+     \ref cfg_latex_footer "LATEX_FOOTER") and the style sheet included
+    by that header (normally <code>doxygen.sty</code>), using the following
+    command:
 \verbatim
-doxygen -w latex header.tex doxygen.sty
+doxygen -w latex header.tex footer.tex doxygen.sty <config_file>
 \endverbatim
-If you need non-default options (for instance to use pdflatex) you need
-to make a config file with those options set correctly and then specify
-that config file as the third argument. 
+If you need non-default options (for instance to use extra latex packages) 
+you need to make a config file with those options set correctly and then specify
+that config file after the generated files (make a backup of the configuration
+file first so you don't loose it in case you forget to specify one of the 
+output files).
 <li>For RTF output, you can generate the default style sheet file (see
     \ref cfg_rtf_stylesheet_file "RTF_STYLESHEET_FILE") using:
 \verbatim
@@ -102,5 +106,11 @@ doxygen -w rtf rtfstyle.cfg
 <li> To make doxygen read/write to standard input/output instead of from/to 
      a file, use \c - for the file name.
 </ul>
+
+
+\htmlonly
+Go to the <a href="doxywizard_usage.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
 
 */

@@ -113,4 +113,10 @@ members or classes belonging to the Qt toolkit, a link will be generated to
 the Qt documentation. This is done independent of where this documentation 
 is located! 
 
+
+\htmlonly
+Go to the <a href="doxygen_usage.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */

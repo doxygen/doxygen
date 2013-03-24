@@ -1176,13 +1176,13 @@ static int isHRuler(const char *data,int size)
 static QCString extractTitleId(QCString &title)
 {
   //static QRegExp r1("^[a-z_A-Z][a-z_A-Z0-9\\-]*:");
-  static QRegExp r2("\\{#[a-z_A-Z][a-z_A-Z0-9\\-]*\\}$");
+  static QRegExp r2("\\{#[a-z_A-Z][a-z_A-Z0-9\\-]*\\}");
   int l=0;
   int i = r2.match(title,0,&l);
-  if (i!=-1) // found {#id} style id
+  if (i!=-1 && title.mid(i+l).stripWhiteSpace().isEmpty()) // found {#id} style id
   {
     QCString id = title.mid(i+2,l-3);
-    title = title.left(i)+title.mid(i+l);
+    title = title.left(i);
     //printf("found id='%s' title='%s'\n",id.data(),title.data());
     return id;
   }
@@ -1978,6 +1978,7 @@ static QCString processBlocks(const QCString &s,int indent)
         QCString header,id;
         convertStringFragment(header,data+pi,i-pi-1);
         id = extractTitleId(header);
+        //printf("header='%s' is='%s'\n",header.data(),id.data());
         if (!header.isEmpty())
         {
           if (!id.isEmpty())
@@ -1986,7 +1987,7 @@ static QCString processBlocks(const QCString &s,int indent)
             out.addStr(id);
             out.addStr(" ");
             out.addStr(header);
-            out.addStr("\n");
+            out.addStr("\n\n");
             SectionInfo *si = new SectionInfo(g_fileName,id,header,
                 level==1 ? SectionInfo::Section : SectionInfo::Subsection,level);
             if (g_current)
@@ -1999,7 +2000,7 @@ static QCString processBlocks(const QCString &s,int indent)
           {
             out.addStr(level==1?"<h1>":"<h2>");
             out.addStr(header);
-            out.addStr(level==1?"</h1>\n":"</h2>\n");
+            out.addStr(level==1?"\n</h1>\n":"\n</h2>\n");
           }
         }
         else
@@ -2082,12 +2083,17 @@ static QCString processBlocks(const QCString &s,int indent)
 
 static QCString extractPageTitle(QCString &docs,QCString &id)
 {
+  int ln=0;
   // first first non-empty line
   QCString title;
   const char *data = docs.data();
   int i=0;
   int size=docs.size();
-  while (i<size && (data[i]==' ' || data[i]=='\n')) i++;
+  while (i<size && (data[i]==' ' || data[i]=='\n')) 
+  {
+    if (data[i]=='\n') ln++;
+    i++;
+  }
   if (i>=size) return "";
   int end1=i+1;
   while (end1<size && data[end1-1]!='\n') end1++;
@@ -2095,13 +2101,16 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
   // first line from i..end1
   if (end1<size)
   {
+    ln++;
     // second line form end1..end2
     int end2=end1+1;
     while (end2<size && data[end2-1]!='\n') end2++;
     if (isHeaderline(data+end1,size-end1))
     {
       convertStringFragment(title,data+i,end1-i-1);
-      docs=docs.mid(end2);
+      QCString lns;
+      lns.fill('\n',ln);
+      docs=lns+docs.mid(end2);
       id = extractTitleId(title);
       //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
       return title;
@@ -2149,6 +2158,18 @@ static QCString detab(const QCString &s,int &refIndent)
         break;
       default: // non-whitespace => update minIndent
         out.addChar(c);
+        if (c<0 && i<size) // multibyte sequence
+        {
+          out.addChar(data[i++]); // >= 2 bytes
+          if (((uchar)c&0xE0)==0xE0 && i<size)
+          {
+            out.addChar(data[i++]); // 3 bytes
+          }
+          if (((uchar)c&0xF0)==0xF0 && i<size)
+          {
+            out.addChar(data[i++]); // 4 byres
+          }
+        }
         if (col<minIndent) minIndent=col;
         col++;
     }
@@ -2213,6 +2234,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   current->lang = SrcLangExt_Markdown;
   current->fileName = fileName;
   current->docFile  = fileName;
+  current->docLine  = 1;
   int len = qstrlen(fileBuf);
   BufStr input(len);
   BufStr output(len);

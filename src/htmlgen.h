@@ -47,7 +47,6 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void startFontClass(const char *s);
     void endFontClass();
     void writeCodeAnchor(const char *anchor);
-    void linkableSymbol(int,const char *,Definition *,Definition *);
     void setCurrentDoc(Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
@@ -109,9 +108,6 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.endFontClass(); }
     void writeCodeAnchor(const char *anchor) 
     { m_codeGen.writeCodeAnchor(anchor); }
-    void linkableSymbol(int line,const char *symName,
-                        Definition *symDef,Definition *context) 
-    { m_codeGen.linkableSymbol(line,symName,symDef,context); }
     // ---------------------------
 
     void setCurrentDoc(Definition *context,const char *anchor,bool isSourceFile);
