@@ -21,6 +21,8 @@
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;
+class QCString;
+class Definition;
 
 void parseCCode(CodeOutputInterface &,const char *,const QCString &, 
             bool ,const char *,FileDef *fd,

@@ -1,4 +1,4 @@
-# Doxyfile 1.8.0
+# Doxyfile 1.8.3.1
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -34,6 +34,7 @@ OPTIMIZE_FOR_FORTRAN   = NO
 OPTIMIZE_OUTPUT_VHDL   = NO
 EXTENSION_MAPPING      =
 MARKDOWN_SUPPORT       = YES
+AUTOLINK_SUPPORT       = YES
 BUILTIN_STL_SUPPORT    = NO
 CPP_CLI_SUPPORT        = NO
 SIP_SUPPORT            = NO
@@ -100,7 +101,7 @@ INPUT                  = src
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
                          *.cpp \
-			 *.md
+                         *.md
 RECURSIVE              = NO
 EXCLUDE                = src/code.cpp \
                          src/ce_lex.cpp \
@@ -115,8 +116,6 @@ EXCLUDE                = src/code.cpp \
                          src/logos.cpp \
                          src/suffixtree.cpp \
                          src/suffixtree.h \
-                         src/searchindex.cpp \
-                         src/searchindex.h \
                          src/commentcnv.cpp \
                          src/commentscan.cpp \
                          src/pycode.cpp \
@@ -128,7 +127,7 @@ EXCLUDE                = src/code.cpp \
                          src/vhdlparser.cpp \
                          src/vhdlcode.cpp \
                          src/tclscanner.cpp \
-			 src/lodepng.cpp \
+                         src/lodepng.cpp \
                          src/doxygen_css.h \
                          src/doxygen_js.h \
                          src/doxygen_php.h \
@@ -147,9 +146,14 @@ EXCLUDE                = src/code.cpp \
                          src/search_functions_php.h \
                          src/search_opensearch_php.h \
                          src/search_js.h \
-                         src/sizzle_js.h
+                         src/sizzle_js.h \
+			 src/navtree_js.h \
+			 src/resize_js.h \
+		         src/svgpan_js.h \
+		         src/dynsections_js.h \
+			 src/extsearch_js.h \
+			 src/footer_html.h \
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       =
@@ -159,6 +163,7 @@ INPUT_FILTER           =
 FILTER_PATTERNS        =
 FILTER_SOURCE_FILES    = NO
 FILTER_SOURCE_PATTERNS =
+USE_MDFILE_AS_MAINPAGE =
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
@@ -170,6 +175,8 @@ REFERENCES_RELATION    = YES
 REFERENCES_LINK_SOURCE = YES
 USE_HTAGS              = NO
 VERBATIM_HEADERS       = YES
+CLANG_ASSISTED_PARSING = YES
+CLANG_OPTIONS          =
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
@@ -185,12 +192,14 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            =
 HTML_FOOTER            =
 HTML_STYLESHEET        =
+HTML_EXTRA_STYLESHEET  =
 HTML_EXTRA_FILES       =
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
 HTML_TIMESTAMP         = YES
 HTML_DYNAMIC_SECTIONS  = YES
+HTML_INDEX_NUM_ENTRIES = 100
 GENERATE_DOCSET        = YES
 DOCSET_FEEDNAME        = "Doxygen docs"
 DOCSET_BUNDLE_ID       = org.doxygen.Doxygen
@@ -221,10 +230,16 @@ EXT_LINKS_IN_WINDOW    = NO
 FORMULA_FONTSIZE       = 10
 FORMULA_TRANSPARENT    = YES
 USE_MATHJAX            = NO
+MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        = http://cdn.mathjax.org/mathjax/latest
 MATHJAX_EXTENSIONS     =
 SEARCHENGINE           = YES
 SERVER_BASED_SEARCH    = YES
+EXTERNAL_SEARCH        = NO
+SEARCHENGINE_URL       =
+SEARCHDATA_FILE        = searchdata.xml
+EXTERNAL_SEARCH_ID     =
+EXTRA_SEARCH_MAPPINGS  =
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
@@ -237,6 +252,7 @@ PAPER_TYPE             = a4wide
 EXTRA_PACKAGES         =
 LATEX_HEADER           =
 LATEX_FOOTER           =
+LATEX_EXTRA_FILES      =
 PDF_HYPERLINKS         = YES
 USE_PDFLATEX           = NO
 LATEX_BATCHMODE        = NO
@@ -268,6 +284,11 @@ XML_SCHEMA             =
 XML_DTD                =
 XML_PROGRAMLISTING     = YES
 #---------------------------------------------------------------------------
+# configuration options related to the DOCBOOK output
+#---------------------------------------------------------------------------
+GENERATE_DOCBOOK       = NO
+DOCBOOK_OUTPUT         = docbook
+#---------------------------------------------------------------------------
 # configuration options for the AutoGen Definitions output
 #---------------------------------------------------------------------------
 GENERATE_AUTOGEN_DEF   = NO
@@ -285,7 +306,7 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           =
+INCLUDE_PATH           = qtools libmd5
 INCLUDE_FILE_PATTERNS  =
 PREDEFINED             =
 EXPAND_AS_DEFINED      =
@@ -297,6 +318,7 @@ TAGFILES               = qtools_docs/qtools.tag=../../qtools_docs/html
 GENERATE_TAGFILE       = doxygen.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
+EXTERNAL_PAGES         = YES
 PERL_PATH              = /usr/bin/perl
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool

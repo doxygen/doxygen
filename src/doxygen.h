@@ -103,6 +103,7 @@ class Doxygen
     static bool                      insideMainPage;
     static FileNameDict             *includeNameDict;
     static FileNameDict             *exampleNameDict;
+    static QDict<void>               inputPaths;
     static FileNameDict             *inputNameDict;
     static FileNameList             *inputNameList;
     static FileNameDict             *imageNameDict;
@@ -130,6 +131,7 @@ class Doxygen
     static QTime                     runningTime;
     static SearchIndexIntf          *searchIndex;
     static QDict<DefinitionIntf>    *symbolMap;
+    static QDict<Definition>        *clangUsrMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>       *lookupCache;
@@ -161,6 +163,7 @@ void parseInput();
 void generateOutput();
 void readAliases();
 void readFormulaRepository();
+void cleanUpDoxygen();
 int readFileOrDirectory(const char *s,
                         FileNameList *fnList,
                         FileNameDict *fnDict,
@@ -171,7 +174,8 @@ int readFileOrDirectory(const char *s,
                         StringDict *resultDict,
                         bool recursive,
                         bool errorIfNotExist=TRUE,
-                        QDict<void> *killDict = 0
+                        QDict<void> *killDict = 0,
+                        QDict<void> *paths = 0
                        );
 int readDir(QFileInfo *fi,
             FileNameList *fnList,

@@ -341,14 +341,16 @@ class MemberDef : public Definition
     // output generation
     void writeDeclaration(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                   bool inGroup,ClassDef *inheritFrom=0,const char *inheritId=0); 
+                   bool inGroup, const DefType compoundType,
+                   ClassDef *inheritFrom=0,const char *inheritId=0); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName,Definition *container,
                             bool inGroup,bool showEnumValues=FALSE,bool
                             showInline=FALSE);
     void writeMemberDocSimple(OutputList &ol,Definition *container);
     void writeEnumDeclaration(OutputList &typeDecl,
-            ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+            ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd, 
+            const DefType compoundType);
     void warnIfUndocumented();
     
     MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
@@ -380,7 +382,7 @@ class MemberDef : public Definition
                           const QCString &cfname,const QCString &ciname,
                           const QCString &cname);
     void _writeCategoryRelation(OutputList &ol);
-    void _writeTagData();
+    void _writeTagData(const DefType);
     void _addToSearchIndex();
 
     static int s_indentLevel;

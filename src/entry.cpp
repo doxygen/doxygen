@@ -133,6 +133,7 @@ Entry::Entry(const Entry &e)
   hidden      = e.hidden;
   artificial  = e.artificial;
   groupDocType = e.groupDocType;
+  id          = e.id;
 
   m_parent    = e.m_parent;
   m_sublist   = new QList<Entry>;
@@ -259,6 +260,7 @@ void Entry::reset()
   subGrouping = TRUE;
   protection = Public;
   groupDocType = GROUPDOC_NORMAL;
+  id.resize(0);
   m_sublist->clear();
   extends->clear();
   groups->clear();

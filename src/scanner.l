@@ -43,6 +43,8 @@
 #include "code.h"
 #include "arguments.h"
 
+#include "clangparser.h"
+
 // Toggle for some debugging info
 #define DBG_CTX(x) fprintf x
 //#define DBG_CTX(x) do { } while(0)
@@ -173,7 +175,6 @@ static QCString         g_skipBlockName;
 static QCString         oldStyleArgType;
 static QCString         docBackup;
 static QCString         briefBackup;
-static bool             g_inputFromFile;
 
 static int              docBlockContext;
 static QGString         docBlock;
@@ -191,6 +192,8 @@ static bool             externC;
 static QCString         g_delimiter;
 
 static int              g_column;
+
+static int              g_fencedSize=0;
 
 //-----------------------------------------------------------------------------
 
@@ -587,19 +590,11 @@ void fixArgumentListForJavaScript(ArgumentList *al)
 static int yyread(char *buf,int max_size)
 {
     int c=0;
-    if (g_inputFromFile)
+    while( c < max_size && inputString[inputPosition] )
     {
-       c = inputFile.readBlock(buf,max_size);
-       if (c==-1) yy_fatal_error("input in flex scanner failed");
-    }
-    else
-    {
-      while( c < max_size && inputString[inputPosition] )
-      {
-	*buf = inputString[inputPosition++] ;
-	//printf("%d (%c)\n",*buf,*buf);
-	c++; buf++;
-      }
+      *buf = inputString[inputPosition++] ;
+      //printf("%d (%c)\n",*buf,*buf);
+      c++; buf++;
     }
     return c;
 }
@@ -2128,6 +2123,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 				          BEGIN(FindMembers);
 			 	        }
 <FindMembers,FindMemberName>{SCOPENAME}	{
+                                          if (insideCpp || insideObjC) 
+                                          {
+                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                                          }
 					  yyBegColNr=yyColNr;
 					  yyBegLineNr=yyLineNr;
 					  lineCount();
@@ -2406,6 +2405,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   */
 <Define>{ID}				{
   					  //printf("Define `%s' without args\n",yytext);
+                                          if (insideCpp || insideObjC) 
+                                          {
+                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                                          }
   					  current->bodyLine = yyLineNr;
   					  current->name = yytext;
 					  BEGIN(DefineEnd);
@@ -3336,6 +3339,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <Sharp>.				{ current->type += *yytext ; }
 <FindFields>{ID}			{
+                                          if (insideCpp || insideObjC) 
+                                          {
+                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                                          }
   					  current->bodyLine = yyLineNr;
   					  current->name     = yytext;
 					}
@@ -5063,6 +5070,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
+                                          if (insideCpp || insideObjC) 
+                                          {
+                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                                          }
 					  lineCount();
 					  if (current->spec & Entry::Protocol)
 					  {
@@ -5124,6 +5135,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					}
 <ClassVar>{ID}				{
+                                          if (insideCpp || insideObjC) 
+                                          {
+                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                                          }
   					  if (insideIDL && qstrcmp(yytext,"switch")==0)
 					  {
 					    // Corba IDL style union
@@ -5855,6 +5870,12 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   				          handleCommentBlock(docBlock.data(),FALSE);
 					  BEGIN(docBlockContext);
   					}
+<DocBlock>^{B}*"*"+/[^/]		{ 
+
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock+=indent;
+  					}
 <DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*]	{ // start of a comment line
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,g_column));
@@ -5879,18 +5900,26 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 				            docBlockName.at(1)='}';
 					  }
+                                          g_fencedSize=0;
   					  BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"<"{PRE}">"			{
                                           docBlock+=yytext;
 				          docBlockName="<pre>";
+                                          g_fencedSize=0;
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
                                           docBlock+=yytext;
 				          docBlockName=&yytext[1];
+                                          g_fencedSize=0;
   					  BEGIN(DocCopyBlock);
   					}
+<DocBlock>"~~~"[~]*                     {
+                                          docBlock+=yytext;
+                                          g_fencedSize=yyleng;
+                                          BEGIN(DocCopyBlock);
+                                        }
 <DocBlock>{B}*"<code>"                  {
   					  if (insideCS)
 					  {
@@ -5903,7 +5932,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    REJECT;
 					  }
   					}
-<DocBlock>[^@*\/\\\n]+			{ // any character that isn't special
+<DocBlock>[^@*~\/\\\n]+			{ // any character that isn't special
   					  docBlock+=yytext;
   					}
 <DocBlock>\n				{ // newline
@@ -5946,6 +5975,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  {
 					    REJECT;
 					  }
+  					  else if (docBlockName=="code")
+					  {
+					    REJECT;
+					  }
                                           else
                                           {
                                             QCString indent;
@@ -5953,7 +5986,26 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                             docBlock+=indent;
                                           }
   					}
-<DocCopyBlock>[^\<@/*\]\$\\\n]+		{ // any character that is not special
+<DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line
+  					  if (docBlockName=="code")
+                                          {
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,0));
+                                            docBlock+=indent;
+                                          }
+                                          else
+					  {
+					    REJECT;
+					  }
+  					}
+<DocCopyBlock>"~~~"[~]*                 {
+                                          docBlock+=yytext;
+                                          if (g_fencedSize==yyleng)
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
+                                        }
+<DocCopyBlock>[^\<@/*\]~\$\\\n]+	{ // any character that is not special
   					  docBlock+=yytext;
   					}
 <DocCopyBlock>"/*"|"*/"|"//"		{
@@ -6243,7 +6295,6 @@ static void handleParametersCommentBlocks(ArgumentList *al)
 static void parseCompounds(Entry *rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
-  g_inputFromFile = FALSE;
   EntryListIterator eli(*rt->children());
   Entry *ce;
   for (;(ce=eli.current());++eli)
@@ -6273,13 +6324,12 @@ static void parseCompounds(Entry *rt)
       //current->reset();
       if (current) delete current;
       current = new Entry;
-      initEntry();
       gstat = FALSE;
+      initEntry();
       int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-
         if (insidePHP || insideD || insideJS)
 	{
           current->protection = protection = Public ; 
@@ -6353,11 +6403,9 @@ static void parseCompounds(Entry *rt)
 static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 {
   initParser();
-  //g_inputFromFile = TRUE;
 
   inputString = fileBuf;
   inputPosition = 0;
-  g_inputFromFile = FALSE;
   g_column = 0;
 
   //anonCount     = 0;  // don't reset per file
@@ -6374,6 +6422,10 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     yyLineNr= 1 ; 
     yyFileName = fileName;
     setContext();
+    if (insideCpp || insideObjC)
+    {
+      ClangParser::instance()->start(fileName);
+    }
     rt->lang = language;
     msg("Parsing file %s...\n",yyFileName.data());
 
@@ -6431,6 +6483,11 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     inputFile.close();
 
     anonNSCount++;
+
+    if (insideCpp || insideObjC)
+    {
+      ClangParser::instance()->finish();
+    }
   }
 }
 
@@ -6448,20 +6505,17 @@ static void parsePrototype(const QCString &text)
   const char *orgInputString;
   int orgInputPosition;
   YY_BUFFER_STATE orgState;
-  bool orgInputFromFile;
   
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(yy_create_buffer(scanYYin, YY_BUF_SIZE));
   orgInputString = inputString; 
   orgInputPosition = inputPosition;
-  orgInputFromFile = g_inputFromFile;
 
   // set new string
   inputString = text;
   inputPosition = 0;
   g_column = 0;
-  g_inputFromFile = FALSE;
   scanYYrestart( scanYYin );
   BEGIN(Prototype);
   scanYYlex();
@@ -6477,7 +6531,6 @@ static void parsePrototype(const QCString &text)
   yy_delete_buffer(tmpState);
   inputString = orgInputString; 
   inputPosition = orgInputPosition;
-  g_inputFromFile = orgInputFromFile;
 
   //printf("**** parsePrototype end\n");
 }

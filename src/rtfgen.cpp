@@ -1773,21 +1773,6 @@ void RTFGenerator::codify(const char *str)
 
       c=*p++;
 
-#if 0
-      if( MultiByte )
-      {
-        t << getMultiByte( c );
-        MultiByte = FALSE;
-        continue;
-      }
-      if( c >= 0x80 )
-      {
-        MultiByte = TRUE;
-        t << getMultiByte( c );
-        continue;
-      }
-#endif
-
       switch(c)
       {
         case '\t':  spacesToNextTabStop = Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
@@ -1800,7 +1785,7 @@ void RTFGenerator::codify(const char *str)
         case '{':   t << "\\{"; col++;          break;
         case '}':   t << "\\}"; col++;          break;
         case '\\':  t << "\\\\"; col++;         break;
-        default:    t << (char)c; col++;           break;
+        default:    p=(const unsigned char *)writeUtf8Char(t,(const char *)p-1); col++; break;
       }
     }
   }

@@ -6,6 +6,7 @@
 #include "configoptions.h"
 #include "config.h"
 #include "portable.h"
+#include "settings.h"
 
 void addConfigOptions(Config *cfg)
 {
@@ -90,9 +91,9 @@ void addConfigOptions(Config *cfg)
                  "Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional,\n"
                  "Croatian, Czech, Danish, Dutch, Esperanto, Farsi, Finnish, French, German,\n"
                  "Greek, Hungarian, Italian, Japanese, Japanese-en (Japanese with English\n"
-                 "messages), Korean, Korean-en, Latvian, Lithuanian, Norwegian, Macedonian, Persian,\n"
-                 "Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrillic, Slovak,\n"
-                 "Slovene, Spanish, Swedish, Ukrainian, and Vietnamese.",
+                 "messages), Korean, Korean-en, Latvian, Lithuanian, Norwegian, Macedonian,\n"
+                 "Persian, Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrillic,\n"
+                 "Slovak, Slovene, Spanish, Swedish, Ukrainian, and Vietnamese.",
                  "English"
                 );
   ce->addValue("Afrikaans");
@@ -366,10 +367,10 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "AUTOLINK_SUPPORT",
-                 "When enabled doxygen tries to link words that correspond to documented classes,\n"
-                 "or namespaces to their corresponding documentation. Such a link can be\n"
-                 "prevented in individual cases by by putting a % sign in front of the word or\n"
-                 "globally by setting AUTOLINK_SUPPORT to NO.",
+                 "When enabled doxygen tries to link words that correspond to documented\n"
+                 "classes, or namespaces to their corresponding documentation. Such a link can\n"
+                 "be prevented in individual cases by by putting a % sign in front of the word\n"
+                 "or globally by setting AUTOLINK_SUPPORT to NO.",
                  TRUE
                 );
   //----
@@ -1033,8 +1034,10 @@ void addConfigOptions(Config *cfg)
                  "is the value of the INPUT_FILTER tag, and <input-file> is the name of an\n"
                  "input file. Doxygen will then use the output that the filter program writes\n"
                  "to standard output.\n"
-                 "If FILTER_PATTERNS is specified, this tag will be\n"
-                 "ignored."
+                 "If FILTER_PATTERNS is specified, this tag will be ignored.\n"
+                 "Note that the filter must not add or remove lines; it is applied before the\n"
+                 "code is scanned, but not when the output code is generated. If lines are added\n"
+                 "or removed, the anchors will not be placed correctly."
                 );
   cs->setWidgetType(ConfigString::File);
   //----
@@ -1071,9 +1074,9 @@ void addConfigOptions(Config *cfg)
   cs = cfg->addString(
                  "USE_MDFILE_AS_MAINPAGE",
                  "If the USE_MD_FILE_AS_MAINPAGE tag refers to the name of a markdown file that\n"
-                 "is part of the input, its contents will be placed on the main page (index.html).\n"
-                 "This can be useful if you have a project on for instance GitHub and want reuse\n"
-                 "the introduction page also for the doxygen output."
+                 "is part of the input, its contents will be placed on the main page\n"
+                 "(index.html). This can be useful if you have a project on for instance GitHub\n"
+                 "and want reuse the introduction page also for the doxygen output."
                 );
   //---------------------------------------------------------------------------
   cfg->addInfo("Source Browser","configuration options related to source browsing");
@@ -1148,6 +1151,26 @@ void addConfigOptions(Config *cfg)
                  "which an include is specified. Set to NO to disable this.",
                  TRUE
                 );
+#if USE_LIBCLANG
+  //----
+  cb = cfg->addBool(
+                 "CLANG_ASSISTED_PARSING",
+                 "If CLANG_ASSISTED_PARSING is set to YES, then doxygen will use the clang parser\n"
+                 "for better parsing at the cost of reduced performance. This can be particularly\n"
+                 "helpful with template rich C++ code for which doxygen's built-in\n"
+                 "parser lacks the necessairy type information.",
+                 FALSE
+                );
+#endif
+  //----
+  cs = cfg->addString(
+                 "CLANG_OPTIONS",
+                 "If clang assisted parsing is enabled you can provide the compiler with command\n"
+                 "line options that you would normally use when invoking the compiler. Note that\n"
+                 "the include paths will be set by doxygen based on the files and directory\n"
+                 "specified at INPUT and INCLUDE_PATH."
+                );
+  cs->addDependency("CLANG_ASSISTED_PARSING");
   //---------------------------------------------------------------------------
   cfg->addInfo("Index","configuration options related to the alphabetical class index");
   //---------------------------------------------------------------------------
@@ -1698,8 +1721,8 @@ void addConfigOptions(Config *cfg)
                  "which needs to be processed by an external indexer. Doxygen will invoke an\n"
                  "external search engine pointed to by the SEARCHENGINE_URL option to obtain\n"
                  "the search results. Doxygen ships with an example indexer (doxyindexer) and\n"
-                 "search engine (doxysearch.cgi) which are based on the open source search engine\n"
-                 "library Xapian. See the manual for configuration details.",
+                 "search engine (doxysearch.cgi) which are based on the open source search\n"
+                 "engine library Xapian. See the manual for configuration details.",
                  FALSE
                 );
   cb->addDependency("SEARCHENGINE");

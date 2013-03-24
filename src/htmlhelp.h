@@ -22,6 +22,7 @@
 #define HTMLHELP_H
 
 #include <qstrlist.h>
+#include <qdict.h>
 #include "index.h"
 #include "ftextstream.h"
 

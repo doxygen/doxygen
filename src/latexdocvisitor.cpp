@@ -15,6 +15,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
+#include "htmlattrib.h"
 #include <qfileinfo.h> 
 #include "latexdocvisitor.h"
 #include "docparser.h"
@@ -26,7 +27,6 @@
 #include "message.h"
 #include "parserintf.h"
 #include "msc.h"
-#include "htmlattrib.h"
 #include "cite.h"
 #include "filedef.h"
 #include "config.h"

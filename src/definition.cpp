@@ -394,6 +394,16 @@ void Definition::setName(const char *name)
   m_name = name;
 }
 
+void Definition::setId(const char *id)
+{
+  if (id==0) return;
+  if (Doxygen::clangUsrMap) 
+  {
+    //printf("Definition::setId '%s'->'%s'\n",id,m_name.data());
+    Doxygen::clangUsrMap->insert(id,this);
+  }
+}
+
 void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
 {
   if (!anchorList) return;
@@ -798,12 +808,12 @@ bool readCodeFragment(const char *fileName,
         }
         // copy until end of line
         result+=c;
+        startLine=lineNr;
         if (c==':') 
         {
           result+=cn;
           if (cn=='\n') lineNr++;
         }
-        startLine=lineNr;
         const int maxLineLength=4096;
         char lineStr[maxLineLength];
         do 
@@ -852,6 +862,7 @@ bool readCodeFragment(const char *fileName,
     }
   }
   result = transcodeCharacterStringToUTF8(result);
+  //fprintf(stderr,"readCodeFragement(%d-%d)=%s\n",startLine,endLine,result.data());
   return found;
 }
 

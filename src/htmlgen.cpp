@@ -1278,7 +1278,7 @@ void HtmlCodeGenerator::codify(const char *str)
                      m_t << "\\";
                    m_col++;
                    break;
-        default:   m_t << c;    
+        default:   p=writeUtf8Char(m_t,p-1);    
                    m_col++;                    
                    break;
       }
@@ -1402,11 +1402,6 @@ void HtmlCodeGenerator::writeCodeAnchor(const char *anchor)
 { 
   if (m_streamSet) m_t << "<a name=\"" << anchor << "\"></a>"; 
 }
-
-void HtmlCodeGenerator::linkableSymbol(int,const char *,Definition *,Definition *) 
-{
-}
-
 
 //--------------------------------------------------------------------------
 

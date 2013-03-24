@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -13,26 +13,14 @@
  *
  * The translation into Ukrainian was provided by
  *   Olexij Tkatchenko (olexij.tkatchenko@parcs.de)
+ *   Petro  Yermolenko (python@i.ua)
  */
 
 #ifndef TRANSLATOR_UA_H
 #define TRANSLATOR_UA_H
 
-class TranslatorUkrainian : public TranslatorAdapter_1_4_1
+class TranslatorUkrainian : public Translator
 {
-  private:
-    /*! The Decode() inline assumes the source written in the 
-        Koi8-U encoding (maintainer dependent). 
-     */
-    inline QCString decode(const QCString & sInput)
-    { 
-//#ifdef _WIN32
-//      return Koi8RToWindows1251(sInput);
-//#else
-      return sInput;
-//#endif
-    }
-
   public:
     /*! Used for identification of the language. */
     virtual QCString idLanguage()
@@ -41,155 +29,143 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-//#ifdef _WIN32
-//      return "\\usepackage[cp1251]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; 
-//#else
-      return "\\usepackage[T2A]{fontenc}\n\\usepackage[ukrainian]{babel}\n"; 
-//#endif
+      return "\\usepackage[T2A]{fontenc}\n\\usepackage[ukrainian]{babel}\n";
     }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-//#ifdef _WIN32
-//      return "Windows-1251"; 
-//#else
-      return "koi8-u";
-//#endif
+        return "utf-8";
     }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return decode("Спор╕днен╕ фукц╕╖"); }
+    { return "п║п©п╬я─я√п╢п╫п╣п╫я√ я└я┐п╨я├я√я≈"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return decode("(не методи компонент)"); }
+    { return "(п╫п╣ п╪п╣я┌п╬п╢п╦ п╨п╬п╪п©п╬п╫п╣п╫я┌)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return decode("Детальний опис"); }
+    { return "п■п╣я┌п╟п╩я▄п╫п╦п╧ п╬п©п╦я│"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return decode("Опис тип╕в користувача"); }
+    { return "п·п©п╦я│ я┌п╦п©я√п╡ п╨п╬я─п╦я│я┌я┐п╡п╟я┤п╟"; }
 
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return decode("Опис перел╕к╕в користувача"); }
+    { return "п·п©п╦я│ п©п╣я─п╣п╩я√п╨я√п╡ п╨п╬я─п╦я│я┌я┐п╡п╟я┤п╟"; }
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return decode("Опис метод╕в компонент"); }
+    { return "п·п©п╦я│ п╪п╣я┌п╬п╢я√п╡ п╨п╬п╪п©п╬п╫п╣п╫я┌"; }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Поля" );
+        return  "п÷п╬п╩я▐" ;
       }
       else
       {
-        return decode( "Компонентн╕ дан╕" );
+        return  "п п╬п╪п©п╬п╫п╣п╫я┌п╫я√ п╢п╟п╫я√" ;
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
-    { return decode("Детальн╕ше..."); }
+    { return "п■п╣я┌п╟п╩я▄п╫я√я┬п╣..."; }
 
     /*! put in the class documentation */
     /* Dosn't use when optimization for C is on. */
     virtual QCString trListOfAllMembers()
     {
-      return decode( "Список вс╕х елемент╕в" );
+      return  "п║п©п╦я│п╬п╨ п╡я│я√я┘ п╣п╩п╣п╪п╣п╫я┌я√п╡" ;
     }
 
     /*! used as the title of the "list of all members" page of a class */
     /* Dosn't use when optimization for C is on. */
     virtual QCString trMemberList()
     {
-      return decode( "Cписок елемент╕в" );
+      return  "Cп©п╦я│п╬п╨ п╣п╩п╣п╪п╣п╫я┌я√п╡" ;
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
     /* Dosn't use when optimization for C is on. */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return decode("Повний список елемент╕в"); }
+    { return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п╣п╩п╣п╪п╣п╫я┌я√п╡"; }
 
     /*! this is the remainder of the sentence after the class name */
     /* Dosn't use when optimization for C is on. */
     virtual QCString trIncludingInheritedMembers()
-    { return decode(", включаючи вс╕ успадкован╕ елементи"); }
+    { return ", п╡п╨п╩я▌я┤п╟я▌я┤п╦ п╡я│я√ я┐я│п©п╟п╢п╨п╬п╡п╟п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const char *s)
-    { QCString result=decode("Автоматично створено за допомогою Doxygen");
-      if (s) result+=decode(" для ")+s;
-      result+=decode(" з тексту програми."); 
+    { QCString result="п░п╡я┌п╬п╪п╟я┌п╦я┤п╫п╬ я│я┌п╡п╬я─п╣п╫п╬ п╥п╟ п╢п╬п©п╬п╪п╬пЁп╬я▌ Doxygen";
+      if (s) result+=QCString(" п╢п╩я▐ ")+s;
+      result+=" п╥ я┌п╣п╨я│я┌я┐ п©я─п╬пЁя─п╟п╪п╦.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return decode("Перел╕к"); }
+    { return "п÷п╣я─п╣п╩я√п╨"; }
 
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return decode("Елемент перел╕ку"); }
+    { return "п∙п╩п╣п╪п╣п╫я┌ п©п╣я─п╣п╩я√п╨я┐"; }
 
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return decode("визначено в "); }
+    { return "п╡п╦п╥п╫п╟я┤п╣п╫п╬ п╡ "; }
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
-    { return decode("Програмн╕ модул╕"); }
+    { return "п÷я─п╬пЁя─п╟п╪п╫я√ п╪п╬п╢я┐п╩я√"; }
 
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return decode("╤╓рарх╕я клас╕в"); }
+    { return "п├я■я─п╟я─я┘я√я▐ п╨п╩п╟я│я√п╡"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Структури даних" );
+        return  "п║я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘" ;
       }
       else
       {
-        return decode( "Класи" );
+        return  "п п╩п╟я│п╦" ;
       }
     }
 
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return decode("Файли"); }
-
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return decode("Заголовочн╕ файли"); }
+    { return "п╓п╟п╧п╩п╦"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Поля структур" );
+        return  "п÷п╬п╩я▐ я│я┌я─я┐п╨я┌я┐я─" ;
       }
       else
       {
-        return decode( "Елементи клас╕в" );
+        return  "п∙п╩п╣п╪п╣п╫я┌п╦ п╨п╩п╟я│я√п╡" ;
       }
     }
 
@@ -197,34 +173,34 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*??*/
     virtual QCString trFileMembers()
     {
-      return decode( "Елементи файлу" );
+      return  "п∙п╩п╣п╪п╣п╫я┌п╦ я└п╟п╧п╩я┐" ;
     }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    /* ?? Вариант перевода "См. также: " более удачный, но не в заголовке,
-     как в данном случае. */
-    { return decode("Додаткова ╕нформац╕я"); }
+    /* ?? п▓п╟я─п╦п╟п╫я┌ п©п╣я─п╣п╡п╬п╢п╟ "п║п╪. я┌п╟п╨п╤п╣: " п╠п╬п╩п╣п╣ я┐п╢п╟я┤п╫я▀п╧, п╫п╬ п╫п╣ п╡ п╥п╟пЁп╬п╩п╬п╡п╨п╣,
+     п╨п╟п╨ п╡ п╢п╟п╫п╫п╬п╪ я│п╩я┐я┤п╟п╣. */
+    { return "п■п╬п╢п╟я┌п╨п╬п╡п╟ я√п╫я└п╬я─п╪п╟я├я√я▐"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
-    { return decode("Приклади"); }
+    { return "п÷я─п╦п╨п╩п╟п╢п╦"; }
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return decode("Пошук"); }
+    { return "п÷п╬я┬я┐п╨"; }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return decode("Список успадкувань впорядковано наближено до алфав╕ту"); }
+    { return "п║п©п╦я│п╬п╨ я┐я│п©п╟п╢п╨я┐п╡п╟п╫я▄ п╡п©п╬я─я▐п╢п╨п╬п╡п╟п╫п╬ п╫п╟п╠п╩п╦п╤п╣п╫п╬ п╢п╬ п╟п╩я└п╟п╡я√я┌я┐"; }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
-      QCString result="Повний список ";
-      if (!extractAll) result+="документованих ";
-      result+="файл╕в.";
-      return decode(result);
+      QCString result="п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ ";
+      if (!extractAll) result+="п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
+      result+="я└п╟п╧п╩я√п╡.";
+      return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
@@ -232,117 +208,106 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Структури даних з коротким описом." );
+        return  "п║я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘ п╥ п╨п╬я─п╬я┌п╨п╦п╪ п╬п©п╦я│п╬п╪." ;
       }
       else
       {
-        return decode( "Класи, структури, об'╓днання та ╕нтерфейси  з коротким описом." );
+        return  "п п╩п╟я│п╦, я│я┌я─я┐п╨я┌я┐я─п╦, п╬п╠'я■п╢п╫п╟п╫п╫я▐ я┌п╟ я√п╫я┌п╣я─я└п╣п╧я│п╦  п╥ п╨п╬я─п╬я┌п╨п╦п╪ п╬п©п╦я│п╬п╪." ;
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-        QCString result="Список вс╕х ";
-        if(!extractAll) result+="документоаних ";
+        QCString result="п║п©п╦я│п╬п╨ п╡я│я√я┘ ";
+        if(!extractAll) result+="п╢п╬п╨я┐п╪п╣п╫я┌п╬п╟п╫п╦я┘ ";
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-          result+="елемент╕в структур даних з посиланням на ";
+          result+="п╣п╩п╣п╪п╣п╫я┌я√п╡ я│я┌я─я┐п╨я┌я┐я─ п╢п╟п╫п╦я┘ п╥ п©п╬я│п╦п╩п╟п╫п╫я▐п╪ п╫п╟ ";
         else
-          result+="елемент╕в клас╕в даних з посиланням на ";
+          result+="п╣п╩п╣п╪п╣п╫я┌я√п╡ п╨п╩п╟я│я√п╡ п╢п╟п╫п╦я┘ п╥ п©п╬я│п╦п╩п╟п╫п╫я▐п╪ п╫п╟ ";
         if(extractAll)
         {
           if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-            result+="документац╕ю по структур╕/об'╓днанню кожного елементу.";
+            result+="п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ п©п╬ я│я┌я─я┐п╨я┌я┐я─я√/п╬п╠'я■п╢п╫п╟п╫п╫я▌ п╨п╬п╤п╫п╬пЁп╬ п╣п╩п╣п╪п╣п╫я┌я┐.";
           else
-            result+="документац╕ю по класу кожного елементу.";
+            result+="п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ п©п╬ п╨п╩п╟я│я┐ п╨п╬п╤п╫п╬пЁп╬ п╣п╩п╣п╪п╣п╫я┌я┐.";
         }
         else
         {
           if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-            result += "в╕дпов╕дн╕ структури";
+            result += "п╡я√п╢п©п╬п╡я√п╢п╫я√ я│я┌я─я┐п╨я┌я┐я─п╦";
           else
-            result += "в╕дпов╕дн╕ класи";
-          result+=", до яких вони належать.";
+            result += "п╡я√п╢п©п╬п╡я√п╢п╫я√ п╨п╩п╟я│п╦";
+          result+=", п╢п╬ я▐п╨п╦я┘ п╡п╬п╫п╦ п╫п╟п╩п╣п╤п╟я┌я▄.";
         }
-        return decode( result );
+        return  result ;
     }
 
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Список вс╕х ";
-      if (!extractAll) result+="документованих ";
+      QCString result="п║п©п╦я│п╬п╨ п╡я│я√я┘ ";
+      if (!extractAll) result+="п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="функц╕й, зм╕нних, макроозначень, "
-                "перел╕к╕в ╕ означень тип╕в";
+        result+="я└я┐п╫п╨я├я√п╧, п╥п╪я√п╫п╫п╦я┘, п╪п╟п╨я─п╬п╡п╦п╥п╫п╟я┤п╣п╫я▄, "
+                "п©п╣я─п╣п╩я√п╨я√п╡ я√ п╡п╦п╥п╫п╟я┤п╣п╫я▄ я┌п╦п©я√п╡";
       }
       else
       {
-        result+="елемент╕в файл╕в ";
+        result+="п╣п╩п╣п╪п╣п╫я┌я√п╡ я└п╟п╧п╩я√п╡ ";
       }
-      result+=" з посиланям на ";
+      result+=" п╥ п©п╬я│п╦п╩п╟п╫я▐п╪ п╫п╟ ";
       if (extractAll)
-        result+="файли, до яких вони належать.";
+        result+="я└п╟п╧п╩п╦, п╢п╬ я▐п╨п╦я┘ п╡п╬п╫п╦ п╫п╟п╩п╣п╤п╟я┌я▄.";
       else
-        result+="документац╕ю.";
-      return decode( result );
+        result+="п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌.";
+      return  result ;
     }
-
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return decode("Повний список заголовочних файл╕в."); }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return decode("Повний список приклад╕в."); }
+    { return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п©я─п╦п╨п╩п╟п╢я√п╡."; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return decode("Повний список додаткових опис╕в."); }
+    { return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п╢п╬п╢п╟я┌п╨п╬п╡п╦я┘ п╬п©п╦я│я√п╡."; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return decode("Повний список модул╕в."); }
+    { return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п╪п╬п╢я┐п╩я√п╡."; }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return decode("Опис в╕дсутн╕й"); }
-
-    // index titles (the project name is prepended for these) 
-
+    // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
-    { return decode("Документац╕я"); }
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return decode("Алфав╕тний покажчик модул╕в"); }
+    { return "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ п╪п╬п╢я┐п╩я√п╡"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return decode("╤╓рарх╕чний покажчик клас╕в"); }
+    { return "п├я■я─п╟я─я┘я√я┤п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ п╨п╩п╟я│я√п╡"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Алфав╕тний покажчик структур даних" );
+        return  "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ я│я┌я─я┐п╨я┌я┐я─ п╢п╟п╫п╦я┘" ;
       }
       else
       {
-        return decode( "Алфав╕тний покажчик клас╕в" );
+        return  "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ п╨п╩п╟я│я√п╡" ;
       }
     }
 
@@ -350,13 +315,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      * list of all files.
      */
     virtual QCString trFileIndex()
-    { return decode( "Покажчик файлв" ); }
+    { return  "п÷п╬п╨п╟п╤я┤п╦п╨ я└п╟п╧п╩п╡" ; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return decode("Програмн╕ Модул╕"); }
+    { return "п÷я─п╬пЁя─п╟п╪п╫я√ п°п╬п╢я┐п╩я√"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -365,11 +330,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Структури даних" );
+        return  "п║я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘" ;
       }
       else
       {
-        return decode( "Класи" );
+        return  "п п╩п╟я│п╦" ;
       }
     }
 
@@ -377,230 +342,214 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return decode("Файли"); }
+    { return "п╓п╟п╧п╩п╦"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return decode("Приклади"); }
+    { return "п÷я─п╦п╨п╩п╟п╢п╦"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
-    { return decode("Документац╕я по тем╕"); }
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ п©п╬ я┌п╣п╪я√"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return decode("Дов╕дковий пос╕бник"); }
+    { return "п■п╬п╡я√п╢п╨п╬п╡п╦п╧ п©п╬я│я√п╠п╫п╦п╨"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
-    { return decode("Макроозначення"); }
+    { return "п°п╟п╨я─п╬п╡п╦п╥п╫п╟я┤п╣п╫п╫я▐"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
-    { return decode("Прототипи фукц╕й"); }
+    { return "п÷я─п╬я┌п╬я┌п╦п©п╦ я└я┐п╨я├я√п╧"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return decode("Означення тип╕в"); }
+    { return "п▓п╦п╥п╫п╟я┤п╣п╫п╫я▐ я┌п╦п©я√п╡"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return decode("Перел╕ки"); }
+    { return "п÷п╣я─п╣п╩я√п╨п╦"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
-    { return decode("Функц╕╖"); }
+    { return "п╓я┐п╫п╨я├я√я≈"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
-    { return decode("Зм╕нн╕"); }
+    { return "п≈п╪я√п╫п╫я√"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return decode("Елементи перел╕к╕в"); }
+    { return "п∙п╩п╣п╪п╣п╫я┌п╦ п©п╣я─п╣п╩я√п╨я√п╡"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return decode("Опис макроозначень"); }
+    { return "п·п©п╦я│ п╪п╟п╨я─п╬п╡п╦п╥п╫п╟я┤п╣п╫я▄"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
-    { return decode("Опис прототип╕в функц╕й"); }
+    { return "п·п©п╦я│ п©я─п╬я┌п╬я┌п╦п©я√п╡ я└я┐п╫п╨я├я√п╧"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return decode("Опис означень тип╕в"); }
+    { return "п·п©п╦я│ п╡п╦п╥п╫п╟я┤п╣п╫я▄ я┌п╦п©я√п╡"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return decode("Опис перел╕к╕в"); }
+    { return "п·п©п╦я│ п©п╣я─п╣п╩я√п╨я√п╡"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return decode("Опис елемент╕в перел╕ку"); }
-
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return decode("Опис функц╕й"); }
+    { return "п·п©п╦я│ я└я┐п╫п╨я├я√п╧"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return decode("Опис зм╕нних"); }
+    { return "п·п©п╦я│ п╥п╪я√п╫п╫п╦я┘"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Структури даних" );
+        return  "п║я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘" ;
       }
       else
-      { 
-        return decode( "Класи" );
+      {
+        return  "п п╩п╟я│п╦" ;
       }
 
     }
 
-    /*! This is used in the documentation of a group before the list of 
+    /*! This is used in the documentation of a group before the list of
      *  links to documented files
      */
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
-      QCString result=decode("Документац╕я ");
-      if (projName) result+=decode("до ")+projName;
-      result+=decode(" створена ")+date;
-      result+=decode(" системою");
+    {
+      QCString result="п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ ";
+      if (projName) result+=QCString("п╢п╬ ")+projName;
+      result+=QCString(" я│я┌п╡п╬я─п╣п╫п╟ ")+date;
+      result+=" я│п╦я│я┌п╣п╪п╬я▌";
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
     virtual QCString trWrittenBy()
     {
-      return decode("Автор:");
+      return "п░п╡я┌п╬я─:";
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return decode("Схема успадкувань для ")+clName;
+      return QCString("п║я┘п╣п╪п╟ я┐я│п©п╟п╢п╨я┐п╡п╟п╫я▄ п╢п╩я▐ ")+clName;
     }
 
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
-    { return decode("Т╕льки для внутр╕шнього користування"); }
-
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    /*??*/
-    { return decode("Зм╕нено з внутр╕шн╕х причин. Зм╕ни не торкаються API."); 
-    }
+    { return "п╒я√п╩я▄п╨п╦ п╢п╩я▐ п╡п╫я┐я┌я─я√я┬п╫я▄п╬пЁп╬ п╨п╬я─п╦я│я┌я┐п╡п╟п╫п╫я▐"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
-    { return decode("Застереження"); }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return decode("Помилки та обмеження застосування"); }
+    { return "п≈п╟я│я┌п╣я─п╣п╤п╣п╫п╫я▐"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
-    { return decode("Верс╕я"); }
+    { return "п▓п╣я─я│я√я▐"; }
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
-    { return decode("Дата"); }
+    { return "п■п╟я┌п╟"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return decode("Поверта╓"); }
+    { return "п÷п╬п╡п╣я─я┌п╟я■"; }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return decode("Див. також"); }
+    { return "п■п╦п╡. я┌п╟п╨п╬п╤"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
-    { return decode("Аргументи"); }
+    { return "п░я─пЁя┐п╪п╣п╫я┌п╦"; }
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return decode("Обробка виняткових ситуац╕й"); }
+    { return "п·п╠я─п╬п╠п╨п╟ п╡п╦п╫я▐я┌п╨п╬п╡п╦я┘ я│п╦я┌я┐п╟я├я√п╧"; }
 
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
-    { return decode("Створено системою"); }
-    
+    { return "п║я┌п╡п╬я─п╣п╫п╬ я│п╦я│я┌п╣п╪п╬я▌"; }
+
 //////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307 
+// new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return decode("Прост╕р ╕мен"); }
+    { return "п÷я─п╬я│я┌я√я─ я√п╪п╣п╫"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="Повний перел╕к ";
-      if (!extractAll) result+="документованих ";
-      result+="простор╕в ╕мен.";
-      return decode(result);
+      QCString result="п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ ";
+      if (!extractAll) result+="п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
+      result+="п©я─п╬я│я┌п╬я─я√п╡ я√п╪п╣п╫.";
+      return result;
     }
 
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return decode("Дружн╕ класи"); }
+    { return "п■я─я┐п╤п╫я√ п╨п╩п╟я│п╦"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-      { return decode("Документация до дружн╕х клас╕в та в╕дпов╕дних функц╕й"); }
-    
+      { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├п╦я▐ п╢п╬ п╢я─я┐п╤п╫я√я┘ п╨п╩п╟я│я√п╡ я┌п╟ п╡я√п╢п©п╬п╡я√п╢п╫п╦я┘ я└я┐п╫п╨я├я√п╧"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -611,70 +560,70 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
                                  bool isTemplate)
     {
       QCString result;
-      if (isTemplate) 
+      if (isTemplate)
       {
-        result="Шаблон ";
+        result="п╗п╟п╠п╩п╬п╫ ";
         switch(compType)
         {
-          case ClassDef::Class:  result+="класу"; break;
-          case ClassDef::Struct: result+="структури"; break;
-          case ClassDef::Union:  result+="об'╓днання"; break;
-          case ClassDef::Interface:  result+="╕нтерфейсу"; break;
-          case ClassDef::Protocol:   result+="протоколу"; break;
-          case ClassDef::Category:   result+="категор╕╖"; break;
-          case ClassDef::Exception:  result+="Виняток"; break;
+          case ClassDef::Class:  result+="п╨п╩п╟я│я┐"; break;
+          case ClassDef::Struct: result+="я│я┌я─я┐п╨я┌я┐я─п╦"; break;
+          case ClassDef::Union:  result+="п╬п╠'я■п╢п╫п╟п╫п╫я▐"; break;
+          case ClassDef::Interface:  result+="я√п╫я┌п╣я─я└п╣п╧я│я┐"; break;
+          case ClassDef::Protocol:   result+="п©я─п╬я┌п╬п╨п╬п╩я┐"; break;
+          case ClassDef::Category:   result+="п╨п╟я┌п╣пЁп╬я─я√я≈"; break;
+          case ClassDef::Exception:  result+="п▓п╦п╫я▐я┌п╬п╨"; break;
         }
       }
       else
       {
         switch(compType)
         {
-          case ClassDef::Class:  result+="Клас"; break;
-          case ClassDef::Struct: result+="Структура"; break;
-          case ClassDef::Union:  result+="Об'╓днання"; break;
-          case ClassDef::Interface:  result+="╤нтерфейс"; break;
-          case ClassDef::Protocol:   result+="Протокол"; break;
-          case ClassDef::Category:   result+="Категор╕я"; break;
-          case ClassDef::Exception:  result+="Виняток"; break;
+          case ClassDef::Class:  result+="п п╩п╟я│"; break;
+          case ClassDef::Struct: result+="п║я┌я─я┐п╨я┌я┐я─п╟"; break;
+          case ClassDef::Union:  result+="п·п╠'я■п╢п╫п╟п╫п╫я▐"; break;
+          case ClassDef::Interface:  result+="п├п╫я┌п╣я─я└п╣п╧я│"; break;
+          case ClassDef::Protocol:   result+="п÷я─п╬я┌п╬п╨п╬п╩"; break;
+          case ClassDef::Category:   result+="п п╟я┌п╣пЁп╬я─я√я▐"; break;
+          case ClassDef::Exception:  result+="п▓п╦п╫я▐я┌п╬п╨"; break;
         }
       }
       result+=" ";
-      return decode(result)+clName;
+      return result+clName;
     }
 
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      return decode("Файл ")+fileName;
+      return QCString("п╓п╟п╧п╩ ")+fileName;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      return decode("Прост╕р ╕мен ")+namespaceName;
+      return QCString("п÷я─п╬я│я┌я√я─ я√п╪п╣п╫ ")+namespaceName;
     }
-    
+
     virtual QCString trPublicMembers()
-    { return decode("Загальнодоступн╕ елементи"); }
+    { return "п≈п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
     virtual QCString trPublicSlots()
-    { return decode("Загальнодоступн╕ слоти"); }
+    { return "п≈п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫я√ я│п╩п╬я┌п╦"; }
     virtual QCString trSignals()
-    { return decode("Сигнали"); }
+    { return "п║п╦пЁп╫п╟п╩п╦"; }
     virtual QCString trStaticPublicMembers()
-    { return decode("Загальнодоступн╕ статичн╕ елементи"); }
+    { return "п≈п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫я√ я│я┌п╟я┌п╦я┤п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
     virtual QCString trProtectedMembers()
-    { return decode("Захищен╕ елементи"); }
+    { return "п≈п╟я┘п╦я┴п╣п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
     virtual QCString trProtectedSlots()
-    { return decode("Захищен╕ слоти"); }
+    { return "п≈п╟я┘п╦я┴п╣п╫я√ я│п╩п╬я┌п╦"; }
     virtual QCString trStaticProtectedMembers()
-    { return decode("Захищен╕ статичн╕ елементи"); }
+    { return "п≈п╟я┘п╦я┴п╣п╫я√ я│я┌п╟я┌п╦я┤п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
     virtual QCString trPrivateMembers()
-    { return decode("Приватн╕ елементи"); }
+    { return "п÷я─п╦п╡п╟я┌п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
     virtual QCString trPrivateSlots()
-    { return decode("Приватн╕ слоти"); }
+    { return "п÷я─п╦п╡п╟я┌п╫я√ я│п╩п╬я┌п╦"; }
     virtual QCString trStaticPrivateMembers()
-    { return decode("Приватн╕ статичн╕ елементи"); }
-    
+    { return "п÷я─п╦п╡п╟я┌п╫я√ я│я┌п╟я┌п╦я┤п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -683,29 +632,29 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
-            result+=decode( " ╕ " );
+            result+= " я√ " ;
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return decode("Успадкову╓ клас ")+trWriteList(numEntries)+".";
+      return "пёя│п©п╟п╢п╨п╬п╡я┐я■ п╨п╩п╟я│ "+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -713,15 +662,15 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return decode("Успадковано класами ")+trWriteList(numEntries)+".";
+      return "пёя│п©п╟п╢п╨п╬п╡п╟п╫п╬ п╨п╩п╟я│п╟п╪п╦ "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return decode("Переозначення з ")+trWriteList(numEntries)+".";
+      return "п÷п╣я─п╣п╬п╥п╫п╟я┤п╣п╫п╫я▐ п╥ "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -729,37 +678,37 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return decode("Переознача╓ться в ")+trWriteList(numEntries)+".";
+      return "п÷п╣я─п╣п╬п╥п╫п╟я┤п╟я■я┌я▄я│я▐ п╡ "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return decode("Елементи простору ╕мен"); }
+    { return "п∙п╩п╣п╪п╣п╫я┌п╦ п©я─п╬я│я┌п╬я─я┐ я√п╪п╣п╫"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
-      QCString result="Повний перел╕к ";
-      if (!extractAll) result+="документованих ";
-      result+="елемет╕в простору ╕мен з посиланням ";
-      if (extractAll) 
-        result+="на документац╕ю для кожного елементу:";
-      else 
-        result+="на прост╕р ╕мен до якого вони належать:";
-      return decode(result);
+      QCString result="п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ ";
+      if (!extractAll) result+="п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
+      result+="п╣п╩п╣п╪п╣я┌я√п╡ п©я─п╬я│я┌п╬я─я┐ я√п╪п╣п╫ п╥ п©п╬я│п╦п╩п╟п╫п╫я▐п╪ ";
+      if (extractAll)
+        result+="п╫п╟ п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ п╢п╩я▐ п╨п╬п╤п╫п╬пЁп╬ п╣п╩п╣п╪п╣п╫я┌я┐:";
+      else
+        result+="п╫п╟ п©я─п╬я│я┌я√я─ я√п╪п╣п╫ п╢п╬ я▐п╨п╬пЁп╬ п╡п╬п╫п╦ п╫п╟п╩п╣п╤п╟я┌я▄:";
+      return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return decode("Алфав╕тний покажчик простору ╕мен"); }
+    { return "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ п©я─п╬я│я┌п╬я─я┐ я√п╪п╣п╫"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return decode("Опис простору ╕мен"); }
+    { return "п·п©п╦я│ п©я─п╬я│я┌п╬я─я┐ я√п╪п╣п╫"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -769,7 +718,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return decode( "Простори ╕мен" ); }
+    { return  "п÷я─п╬я│я┌п╬я─п╦ я√п╪п╣п╫" ; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -782,41 +731,41 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Документац╕я  ";
+      QCString result=(QCString)"п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐  ";
       switch(compType)
       {
         case ClassDef::Class:
-          if (single) result+="цього класу"; else result+="цих клас╕в";
+          if (single) result+="я├я▄п╬пЁп╬ п╨п╩п╟я│я┐"; else result+="я├п╦я┘ п╨п╩п╟я│я√п╡";
           break;
         case ClassDef::Struct:
-          if (single) result+="ц╕╓╖ структури"; else result+="цих структур";
+          if (single) result+="я├я√я■я≈ я│я┌я─я┐п╨я┌я┐я─п╦"; else result+="я├п╦я┘ я│я┌я─я┐п╨я┌я┐я─";
           break;
         case ClassDef::Union:
-          if (single) result+="цього об'╓днання"; else result+="цих об'╓днань";
+          if (single) result+="я├я▄п╬пЁп╬ п╬п╠'я■п╢п╫п╟п╫п╫я▐"; else result+="я├п╦я┘ п╬п╠'я■п╢п╫п╟п╫я▄";
           break;
         case ClassDef::Interface:
-          if (single) result+="цього ╕нтерфейсу"; else result+="цих ╕нтерфейс╕в";
+          if (single) result+="я├я▄п╬пЁп╬ я√п╫я┌п╣я─я└п╣п╧я│я┐"; else result+="я├п╦я┘ я√п╫я┌п╣я─я└п╣п╧я│я√п╡";
           break;
-        case ClassDef::Protocol:  
-          if (single) result+="цього протоколу"; else result+="цих протокол╕в";
-          break; 
+        case ClassDef::Protocol:
+          if (single) result+="я├я▄п╬пЁп╬ п©я─п╬я┌п╬п╨п╬п╩я┐"; else result+="я├п╦я┘ п©я─п╬я┌п╬п╨п╬п╩я√п╡";
+          break;
         case ClassDef::Category:
-          if (single) result+="ц╕╓╖ категор╕╖"; else result+="цих категор╕й";
-          break; 
+          if (single) result+="я├я√я■я≈ п╨п╟я┌п╣пЁп╬я─я√я≈"; else result+="я├п╦я┘ п╨п╟я┌п╣пЁп╬я─я√п╧";
+          break;
         case ClassDef::Exception:
-          if (single) result+="цього винятку"; else result+="цих винятк╕в";
+          if (single) result+="я├я▄п╬пЁп╬ п╡п╦п╫я▐я┌п╨я┐"; else result+="я├п╦я┘ п╡п╦п╫я▐я┌п╨я√п╡";
           break;
       }
-      result+=" була створена з файл";
-      if (single) result+="у:"; else result+="╕в:";
-      return decode(result);
+      result+=" п╠я┐п╩п╟ я│я┌п╡п╬я─п╣п╫п╟ п╥ я└п╟п╧п╩";
+      if (single) result+="я┐:"; else result+="я√п╡:";
+      return result;
     }
 
     /*! This is in the (quick) index as a link to the alphabetical compound
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return decode("Алфав╕тний покажчик"); }
+    { return "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -824,34 +773,30 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return decode("Значення, що повертаються"); }
+    { return "п≈п╫п╟я┤п╣п╫п╫я▐, я┴п╬ п©п╬п╡п╣я─я┌п╟я▌я┌я▄я│я▐"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return decode("Титульна стор╕нка"); }
+    { return "п╒п╦я┌я┐п╩я▄п╫п╟ я│я┌п╬я─я√п╫п╨п╟"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
-    { return decode("стор."); }
+    { return "я│я┌п╬я─."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return decode("Вих╕дн╕ тексти.");
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return decode("Див. означення в файл╕ @1, рядок @0");
+      return "п■п╦п╡. п╡п╦п╥п╫п╟я┤п╣п╫п╫я▐ п╡ я└п╟п╧п╩я√ @1, я─я▐п╢п╬п╨ @0";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return decode("Див. означення в файл╕ @0");
+      return "п■п╦п╡. п╡п╦п╥п╫п╟я┤п╣п╫п╫я▐ п╡ я└п╟п╧п╩я√ @0";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -860,7 +805,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
 
     virtual QCString trDeprecated()
     {
-      return decode("Не рекомендовано");
+      return "п²п╣ я─п╣п╨п╬п╪п╣п╫п╢п╬п╡п╟п╫п╬";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -870,120 +815,120 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)decode("Д╕аграма зв'язк╕в класу ")+clName+":";
+      return (QCString)"п■я√п╟пЁя─п╟п╪п╟ п╥п╡'я▐п╥п╨я√п╡ п╨п╩п╟я│я┐ "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return decode("Д╕аграма включених заголовочних файл╕в для ")+fName+":";
+      return QCString("п■я√п╟пЁя─п╟п╪п╟ п╡п╨п╩я▌я┤п╣п╫п╦я┘ п╥п╟пЁп╬п╩п╬п╡п╬я┤п╫п╦я┘ я└п╟п╧п╩я√п╡ п╢п╩я▐ ")+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return decode("Конструктор(и)"); 
+      return "п п╬п╫я│я┌я─я┐п╨я┌п╬я─(п╦)";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return decode("Див. вих╕дн╕ тексти.");
+      return "п■п╦п╡. п╡п╦я┘я√п╢п╫я√ я┌п╣п╨я│я┌п╦.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return decode("Див. документац╕ю.");
+      return "п■п╦п╡. п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌.";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return decode("Передумови");
+      return "п÷п╣я─п╣п╢я┐п╪п╬п╡п╦";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
-      return decode("П╕сляумови");
+      return "п÷я√я│п╩я▐я┐п╪п╬п╡п╦";
     }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
-      return decode("╤нвар╕ант");
+      return "п├п╫п╡п╟я─я√п╟п╫я┌";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return decode("Початков╕ значення");
+      return "п÷п╬я┤п╟я┌п╨п╬п╡я√ п╥п╫п╟я┤п╣п╫п╫я▐";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return decode("Вих╕дн╕ тексти");
+      return "п▓п╦я┘я√п╢п╫я√ я┌п╣п╨я│я┌п╦";
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return decode("Граф╕чна ╕╓рарх╕я клас╕в");
+      return "п⌠я─п╟я└я√я┤п╫п╟ я√я■я─п╟я─я┘я√я▐ п╨п╩п╟я│я√п╡";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return decode("див. граф╕чну ╕╓рарх╕ю");
+      return "п╢п╦п╡. пЁя─п╟я└я√я┤п╫я┐ я√я■я─п╟я─я┘я√я▌";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return decode("див. текстову ╕╓рарх╕ю");
+      return "п╢п╦п╡. я┌п╣п╨я│я┌п╬п╡я┐ я√я■я─п╟я─я┘я√я▌";
     }
     virtual QCString trPageIndex()
     {
-      return decode("Алфав╕тний покажчик тематичних опис╕в");
+      return "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ я┌п╣п╪п╟я┌п╦я┤п╫п╦я┘ п╬п©п╦я│я√п╡";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
-      return decode("Нотатки");
+      return "п²п╬я┌п╟я┌п╨п╦";
     }
     virtual QCString trPublicTypes()
     {
-      return decode("Загальнодоступн╕ типи");
+      return "п≈п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫я√ я┌п╦п©п╦";
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Поля даних" );
+        return  "п÷п╬п╩я▐ п╢п╟п╫п╦я┘" ;
       }
       else
       {
-        return decode( "Загальнодоступн╕ атрибути" );
+        return  "п≈п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫я√ п╟я┌я─п╦п╠я┐я┌п╦" ;
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return decode("Статичн╕ загальнодоступн╕ данн╕");
+      return "п║я┌п╟я┌п╦я┤п╫я√ п╥п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫я√ п╢п╟п╫п╫я√";
     }
     virtual QCString trProtectedTypes()
     {
-      return decode("Захищен╕ типи");
+      return "п≈п╟я┘п╦я┴п╣п╫я√ я┌п╦п©п╦";
     }
     virtual QCString trProtectedAttribs()
     {
-      return decode("Захищен╕ дан╕");
+      return "п≈п╟я┘п╦я┴п╣п╫я√ п╢п╟п╫я√";
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return decode("Статичн╕ захищен╕ дан╕");
+      return "п║я┌п╟я┌п╦я┤п╫я√ п╥п╟я┘п╦я┴п╣п╫я√ п╢п╟п╫я√";
     }
     virtual QCString trPrivateTypes()
     {
-      return decode("Приватн╕ типи");
+      return "п÷я─п╦п╡п╟я┌п╫я√ я┌п╦п©п╦";
     }
     virtual QCString trPrivateAttribs()
     {
-      return decode("Приватн╕ дан╕");
+      return "п÷я─п╦п╡п╟я┌п╫я√ п╢п╟п╫я√";
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return decode("Приватн╕ статичн╕ дан╕");
+      return "п÷я─п╦п╡п╟я┌п╫я√ я│я┌п╟я┌п╦я┤п╫я√ п╢п╟п╫я√";
     }
 
 
@@ -995,13 +940,13 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     virtual QCString trTodo()
     /*??*/
     {
-      return decode("Необх╕дно зробити");
+      return "п²п╣п╬п╠я┘я√п╢п╫п╬ п╥я─п╬п╠п╦я┌п╦";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     /*??*/
     {
-      return decode("Перел╕к завдань");
+      return "п║п©п╦я│п╬п╨ п╥п╟п╡п╢п╟п╫я▄";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1010,26 +955,26 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
 
     virtual QCString trReferencedBy()
     {
-      return decode("Вжива╓ться в");
+      return "п▓п╤п╦п╡п╟я■я┌я▄я│я▐ п╡";
     }
     virtual QCString trRemarks()
     {
-      return decode("Прим.");
+      return "п÷я─п╦п╪.";
     }
     virtual QCString trAttention()
     {
-      return decode("Увага");
+      return "пёп╡п╟пЁп╟";
     }
     virtual QCString trInclByDepGraph()
     {
-      return decode("Граф файл╕в, як╕ включають цей файл:");
+      return "п⌠я─п╟я└ я└п╟п╧п╩я√п╡, я▐п╨я√ п╡п╨п╩я▌я┤п╟я▌я┌я▄ я├п╣п╧ я└п╟п╧п╩:";
     }
     virtual QCString trSince()
     /*??*/
     {
-      return decode("Починаючи з");
+      return "п÷п╬я┤п╦п╫п╟я▌я┤п╦ п╥";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -1037,32 +982,32 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return decode("Легенда");
+      return "п⌡п╣пЁп╣п╫п╢п╟";
     }
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      return decode( 
-        "Позначення, що використовуються у графах.<p>\n"
-        "Розглянемо наступний приклад:\n"
+      return
+        "п÷п╬п╥п╫п╟я┤п╣п╫п╫я▐, я┴п╬ п╡п╦п╨п╬я─п╦я│я┌п╬п╡я┐я▌я┌я▄я│я▐ я┐ пЁя─п╟я└п╟я┘.<p>\n"
+        "п═п╬п╥пЁп╩я▐п╫п╣п╪п╬ п╫п╟я│я┌я┐п©п╫п╦п╧ п©я─п╦п╨п╩п╟п╢:\n"
         "\\code\n"
-        "/*! Невидимий клас через зр╕зання */\n"
+        "/*! п²п╣п╡п╦п╢п╦п╪п╦п╧ п╨п╩п╟я│ я┤п╣я─п╣п╥ п╥я─я√п╥п╟п╫п╫я▐ */\n"
         "class Invisible { };\n\n"
-        "/*! Обмежений клас, в╕дношення успадкування приховане */\n"
+        "/*! п·п╠п╪п╣п╤п╣п╫п╦п╧ п╨п╩п╟я│, п╡я√п╢п╫п╬я┬п╣п╫п╫я▐ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я▐ п©я─п╦я┘п╬п╡п╟п╫п╣ */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* Недокументований клас */\n"
+        "/* п²п╣п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦п╧ п╨п╩п╟я│ */\n"
         "class Undocumented { };\n\n"
-        "/*! Загальнодоступне успадкування */\n"
+        "/*! п≈п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫п╣ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я▐ */\n"
         "class PublicBase : public Truncated { };\n\n"
         "/*! A template class */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! Захищене успадкування */\n"
+        "/*! п≈п╟я┘п╦я┴п╣п╫п╣ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я▐ */\n"
         "class ProtectedBase { };\n\n"
-        "/*! Приватне успадкування */\n"
+        "/*! п÷я─п╦п╡п╟я┌п╫п╣ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я▐ */\n"
         "class PrivateBase { };\n\n"
-        "/*! Клас, що використову╓ться класом Inherited */\n"
+        "/*! п п╩п╟я│, я┴п╬ п╡п╦п╨п╬я─п╦я│я┌п╬п╡я┐я■я┌я▄я│я▐ п╨п╩п╟я│п╬п╪ Inherited */\n"
         "class Used { };\n\n"
-        "/*! Клас, що успадкову╓ ╕нш╕ класи */\n"
+        "/*! п п╩п╟я│, я┴п╬ я┐я│п©п╟п╢п╨п╬п╡я┐я■ я√п╫я┬я√ п╨п╩п╟я│п╦ */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -1073,51 +1018,50 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Якщо \\c MAX_DOT_GRAPH_HEIGHT в конф╕гурац╕йному файл╕ "
-        "установлене на 200, отрима╓мо наступний граф:"
+        "п╒п╟п╨п╦п╪ я┤п╦п╫п╬п╪, п╬я┌я─п╦п╪я┐я■п╪п╬ п╫п╟я│я┌я┐п©п╫п╦п╧ пЁя─п╟я└:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "Прямокутники в цьому граф╕ мають наступний зм╕ст:\n"
+        "п÷я─я▐п╪п╬п╨я┐я┌п╫п╦п╨п╦ п╡ я├я▄п╬п╪я┐ пЁя─п╟я└я√ п╪п╟я▌я┌я▄ п╫п╟я│я┌я┐п©п╫п╦п╧ п╥п╪я√я│я┌:\n"
         "<ul>\n"
-        "<li>Заповнений чорний прямокутник в╕добража╓ структуру або клас, "
-        "для якого створено граф.\n"
-        "<li>Прямокутник з чорною межею в╕добража╓ документовану структуру або клас.\n"
-        "<li>Прямокутник з с╕рою межею в╕добража╓ недокументовану структуру або клас.\n"
-        "<li>Прямокутник з червоною межею в╕добража╓ документовану структуру або клас, для яких\n"
-        " не вс╕ сп╕вв╕дношення успадкування/зм╕сту показан╕. Граф зр╕заниЙ, "
-        "якщо в╕н не вм╕ща╓ться у вказан╕ меж╕."
+        "<li>п≈п╟п©п╬п╡п╫п╣п╫п╦п╧ я┤п╬я─п╫п╦п╧ п©я─я▐п╪п╬п╨я┐я┌п╫п╦п╨ п╡я√п╢п╬п╠я─п╟п╤п╟я■ я│я┌я─я┐п╨я┌я┐я─я┐ п╟п╠п╬ п╨п╩п╟я│, "
+        "п╢п╩я▐ я▐п╨п╬пЁп╬ я│я┌п╡п╬я─п╣п╫п╬ пЁя─п╟я└.\n"
+        "<li>п÷я─я▐п╪п╬п╨я┐я┌п╫п╦п╨ п╥ я┤п╬я─п╫п╬я▌ п╪п╣п╤п╣я▌ п╡я√п╢п╬п╠я─п╟п╤п╟я■ п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫я┐ я│я┌я─я┐п╨я┌я┐я─я┐ п╟п╠п╬ п╨п╩п╟я│.\n"
+        "<li>п÷я─я▐п╪п╬п╨я┐я┌п╫п╦п╨ п╥ я│я√я─п╬я▌ п╪п╣п╤п╣я▌ п╡я√п╢п╬п╠я─п╟п╤п╟я■ п╫п╣п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫я┐ я│я┌я─я┐п╨я┌я┐я─я┐ п╟п╠п╬ п╨п╩п╟я│.\n"
+        "<li>п÷я─я▐п╪п╬п╨я┐я┌п╫п╦п╨ п╥ я┤п╣я─п╡п╬п╫п╬я▌ п╪п╣п╤п╣я▌ п╡я√п╢п╬п╠я─п╟п╤п╟я■ п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫я┐ я│я┌я─я┐п╨я┌я┐я─я┐ п╟п╠п╬ п╨п╩п╟я│, п╢п╩я▐ я▐п╨п╦я┘\n"
+        " п╫п╣ п╡я│я√ я│п©я√п╡п╡я√п╢п╫п╬я┬п╣п╫п╫я▐ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я▐/п╥п╪я√я│я┌я┐ п©п╬п╨п╟п╥п╟п╫я√. п⌠я─п╟я└ п╥я─я√п╥п╟п╫п╦п≥, "
+        "я▐п╨я┴п╬ п╡я√п╫ п╫п╣ п╡п╪я√я┴п╟я■я┌я▄я│я▐ я┐ п╡п╨п╟п╥п╟п╫я√ п╪п╣п╤я√."
         "</ul>\n"
-        "Стр╕лки мають наступний зм╕ст:\n"
+        "п║я┌я─я√п╩п╨п╦ п╪п╟я▌я┌я▄ п╫п╟я│я┌я┐п©п╫п╦п╧ п╥п╪я√я│я┌:\n"
         "<ul>\n"
-        "<li>Темносиня стр╕лка в╕добража╓ в╕дношення загальнодоступного успадкування "
-        "м╕ж двома класами.\n"
-        "<li>Темнозелена стр╕лка використову╓ться при захищеному успадкуванн╕.\n"
-        "<li>Темночервона стр╕лка використову╓ться при приватному успадкуванн╕.\n"
-        "<li>Пурпурна стр╕лка використову╓ться, якщо клас м╕ститься в"
-        "╕ншому клас╕ або ним використову╓ться."
-        "Стр╕лка етикету╓ться зм╕нною, "
-        "через яку в╕дбува╓ться доступ до вказано╖ структури або класу. \n"
-        "</ul>\n");
+        "<li>п╒п╣п╪п╫п╬я│п╦п╫я▐ я│я┌я─я√п╩п╨п╟ п╡я√п╢п╬п╠я─п╟п╤п╟я■ п╡я√п╢п╫п╬я┬п╣п╫п╫я▐ п╥п╟пЁп╟п╩я▄п╫п╬п╢п╬я│я┌я┐п©п╫п╬пЁп╬ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я▐ "
+        "п╪я√п╤ п╢п╡п╬п╪п╟ п╨п╩п╟я│п╟п╪п╦.\n"
+        "<li>п╒п╣п╪п╫п╬п╥п╣п╩п╣п╫п╟ я│я┌я─я√п╩п╨п╟ п╡п╦п╨п╬я─п╦я│я┌п╬п╡я┐я■я┌я▄я│я▐ п©я─п╦ п╥п╟я┘п╦я┴п╣п╫п╬п╪я┐ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я√.\n"
+        "<li>п╒п╣п╪п╫п╬я┤п╣я─п╡п╬п╫п╟ я│я┌я─я√п╩п╨п╟ п╡п╦п╨п╬я─п╦я│я┌п╬п╡я┐я■я┌я▄я│я▐ п©я─п╦ п©я─п╦п╡п╟я┌п╫п╬п╪я┐ я┐я│п©п╟п╢п╨я┐п╡п╟п╫п╫я√.\n"
+        "<li>п÷я┐я─п©я┐я─п╫п╟ я│я┌я─я√п╩п╨п╟ п╡п╦п╨п╬я─п╦я│я┌п╬п╡я┐я■я┌я▄я│я▐, я▐п╨я┴п╬ п╨п╩п╟я│ п╪я√я│я┌п╦я┌я▄я│я▐ п╡"
+        "я√п╫я┬п╬п╪я┐ п╨п╩п╟я│я√ п╟п╠п╬ п╫п╦п╪ п╡п╦п╨п╬я─п╦я│я┌п╬п╡я┐я■я┌я▄я│я▐."
+        "п║я┌я─я√п╩п╨п╟ п╣я┌п╦п╨п╣я┌я┐я■я┌я▄я│я▐ п╥п╪я√п╫п╫п╬я▌, "
+        "я┤п╣я─п╣п╥ я▐п╨я┐ п╡я√п╢п╠я┐п╡п╟я■я┌я▄я│я▐ п╢п╬я│я┌я┐п© п╢п╬ п╡п╨п╟п╥п╟п╫п╬я≈ я│я┌я─я┐п╨я┌я┐я─п╦ п╟п╠п╬ п╨п╩п╟я│я┐. \n"
+        "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return decode("див. легенду");
+      return "п╢п╦п╡. п╩п╣пЁп╣п╫п╢я┐";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
-      return decode("Тест");
+      return "п╒п╣я│я┌";
     }
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-      return decode("Перел╕к тест╕в");
+      return "п║п©п╦я│п╬п╨ я┌п╣я│я┌я√п╡";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1127,7 +1071,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return decode("DCOP Методи");
+      return "DCOP п°п╣я┌п╬п╢п╦";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1137,79 +1081,69 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return decode("Властивост╕");
+      return "п▓п╩п╟я│я┌п╦п╡п╬я│я┌я√";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return decode("Повний перел╕к властивостей");
+      return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п╡п╩п╟я│я┌п╦п╡п╬я│я┌п╣п╧";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return decode("╤нтерфейси");
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Структури даних" );
+        return  "п║я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘" ;
       }
       else
       {
-        return decode( "Класи" );
+        return  "п п╩п╟я│п╦" ;
       }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-      return decode("Пакет ")+name;
+      return QCString("п÷п╟п╨п╣я┌ ")+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-      return decode("Повний перел╕к пакет╕в");
+      return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п©п╟п╨п╣я┌я√п╡";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return decode("Повний перел╕к документованих пакет╕в.");
+      return "п÷п╬п╡п╫п╦п╧ я│п©п╦я│п╬п╨ п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ п©п╟п╨п╣я┌я√п╡.";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-      return decode("Пакети");
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return decode("Опис пакет╕в");
+      return "п÷п╟п╨п╣я┌п╦";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return decode("Макроозначення:");
+      return "п°п╟п╨я─п╬п╡п╦п╥п╫п╟я┤п╣п╫п╫я▐:";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return decode("Дефект");
+      return "п■п╣я└п╣п╨я┌";
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return decode("Перел╕к дефект╕в");
+      return "п║п©п╦я│п╬п╨ п╢п╣я└п╣п╨я┌я√п╡";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1228,103 +1162,92 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return decode("Предметний покажчик");
+      return "п÷я─п╣п╢п╪п╣я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨";
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        QCString result((first_capital ? "Структури даних" : "структури даних"));
-        return decode(result); 
+        QCString result((first_capital ? "п║я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘" : "я│я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘"));
+        return result;
       }
       else
       {
-        QCString result((first_capital ? "Клас" : "клас"));
-        if(!singular) result+="и";
-        return decode(result); 
+        QCString result((first_capital ? "п п╩п╟я│" : "п╨п╩п╟я│"));
+        if(!singular) result+="п╦";
+        return result;
       }
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Файл" : "файл"));
-      if (!singular)  result+="и";
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п╓п╟п╧п╩" : "я└п╟п╧п╩"));
+      if (!singular)  result+="п╦";
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Прост" : "прост"));
-      result+=(singular?"╕р ╕мен":"ори ╕мен");
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п÷я─п╬я│я┌" : "п©я─п╬я│я┌"));
+      result+=(singular?"я√я─ я√п╪п╣п╫":"п╬я─п╦ я√п╪п╣п╫");
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Груп" : "груп"));
-      result+=(singular ? "а" : "и");
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п⌠я─я┐п©" : "пЁя─я┐п©"));
+      result+=(singular ? "п╟" : "п╦");
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Стор╕нк" : "стор╕нк"));
-      result+=(singular ? "а" : "и");
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п║я┌п╬я─я√п╫п╨" : "я│я┌п╬я─я√п╫п╨"));
+      result+=(singular ? "п╟" : "п╦");
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Елемент" : "елемент"));
-      if (!singular)  result+="и";
-      return decode(result); 
-    }
-   
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Пол" : "пол"));
-      result+=(singular ? "е" : "я");
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п∙п╩п╣п╪п╣п╫я┌" : "п╣п╩п╣п╪п╣п╫я┌"));
+      if (!singular)  result+="п╦";
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Глобальн" : "глобальн"));
-      result+=(singular ? "ий" : "╕");
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п⌠п╩п╬п╠п╟п╩я▄п╫" : "пЁп╩п╬п╠п╟п╩я▄п╫"));
+      result+=(singular ? "п╦п╧" : "я√");
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1334,10 +1257,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
-      QCString result((first_capital ? "Автор" : "автор"));
-      if (!singular) result+="и";
-      return decode(result); 
+    {
+      QCString result((first_capital ? "п░п╡я┌п╬я─" : "п╟п╡я┌п╬я─"));
+      if (!singular) result+="п╦";
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1348,19 +1271,19 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     virtual QCString trReferences()
     {
-      return "Використову╓";
+      return "п▓п╦п╨п╬я─п╦я│я┌п╬п╡я┐я■";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return "Реал╕зу╓ " + trWriteList(numEntries) + ".";
+      return "п═п╣п╟п╩я√п╥я┐я■ " + trWriteList(numEntries) + ".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1368,7 +1291,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "Реал╕зу╓ в " + trWriteList(numEntries) + ".";
+      return "п═п╣п╟п╩я√п╥я┐я■ п╡ " + trWriteList(numEntries) + ".";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1380,37 +1303,37 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "Зм╕ст";
+      return "п≈п╪я√я│я┌";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
-      return "Застар╕л╕ елементи";
+      return "п≈п╟я│я┌п╟я─я√п╩я√ п╣п╩п╣п╪п╣п╫я┌п╦";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
     {
-      return "Под╕╖";
+      return "п÷п╬п╢я√я≈";
     }
 
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Документац╕я под╕й";
+      return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ п©п╬п╢я√п╧";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1420,83 +1343,83 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
-      return "Типи пакет╕в";
+    {
+      return "п╒п╦п©п╦ п©п╟п╨п╣я┌я√п╡";
     }
 
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
-      return "Функц╕╖ пакет╕в";
+    {
+      return "п╓я┐п╫п╨я├я√я≈ п©п╟п╨п╣я┌я√п╡";
     }
 
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
-      return "Статичн╕ функц╕ю пакет╕в";
+    {
+      return "п║я┌п╟я┌п╦я┤п╫я√ я└я┐п╫п╨я├я√я▌ п©п╟п╨п╣я┌я√п╡";
     }
-    
-    /*! Used as a heading for a list of Java class variables with package 
+
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
     {
-      return "Атрибути пакет╕в";
+      return "п░я┌я─п╦п╠я┐я┌п╦ п©п╟п╨п╣я┌я√п╡";
     }
-    
-    /*! Used as a heading for a list of static Java class variables with 
+
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     {
-      return "Статичн╕ атрибути пакет╕в";
+      return "п║я┌п╟я┌п╦я┤п╫я√ п╟я┌я─п╦п╠я┐я┌п╦ п©п╟п╨п╣я┌я√п╡";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
     {
-      return "Вс╕";
+      return "п▓я│я√";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Граф вс╕х виклик╕в ц╕╓╖ функц╕╖:";
+      return "п⌠я─п╟я└ п╡я│я√я┘ п╡п╦п╨п╩п╦п╨я√п╡ я├я√я■я≈ я└я┐п╫п╨я├я√я≈:";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
      */
     virtual QCString trSearchForIndex()
     {
-      return "Шукати";
+      return "п╗я┐п╨п╟я┌п╦";
     }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
     virtual QCString trSearchResultsTitle()
     {
-      return "Результати пошуку";
+      return "п═п╣п╥я┐п╩я▄я┌п╟я┌п╦ п©п╬я┬я┐п╨я┐";
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1504,24 +1427,24 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     {
       if (numDocuments==0)
       {
-        return "Не знайдено документ╕в в╕дпов╕дно до вашого запиту.";
+        return "п²п╣ п╥п╫п╟п╧п╢п╣п╫п╬ п╢п╬п╨я┐п╪п╣п╫я┌я√п╡ п╡я√п╢п©п╬п╡я√п╢п╫п╬ п╢п╬ п╡п╟я┬п╬пЁп╬ п╥п╟п©п╦я┌я┐.";
       }
       else if (numDocuments==1)
       {
-        return "Було знайдено <b>1</b> документ в╕дпов╕дно до вашого запиту.";
+        return "п▒я┐п╩п╬ п╥п╫п╟п╧п╢п╣п╫п╬ <b>1</b> п╢п╬п╨я┐п╪п╣п╫я┌ п╡я√п╢п©п╬п╡я√п╢п╫п╬ п╢п╬ п╡п╟я┬п╬пЁп╬ п╥п╟п©п╦я┌я┐.";
       }
-      else 
+      else
       {
-        return "Було знайдено <b>$num</b> документ╕в в╕дпов╕дно до вашого запиту. "
-	       "Найкращ╕ в╕дпов╕дност╕ показано спочатку.";
+        return "п▒я┐п╩п╬ п╥п╫п╟п╧п╢п╣п╫п╬ <b>$num</b> п╢п╬п╨я┐п╪п╣п╫я┌я√п╡ п╡я√п╢п©п╬п╡я√п╢п╫п╬ п╢п╬ п╡п╟я┬п╬пЁп╬ п╥п╟п©п╦я┌я┐. "
+	       "п²п╟п╧п╨я─п╟я┴я√ п╡я√п╢п©п╬п╡я√п╢п╫п╬я│я┌я√ п©п╬п╨п╟п╥п╟п╫п╬ я│п©п╬я┤п╟я┌п╨я┐.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
     {
-      return "В╕дпов╕дн╕сть:";
+      return "п▓я√п╢п©п╬п╡я√п╢п╫я√я│я┌я▄:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1532,7 +1455,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     virtual QCString trSourceFile(QCString& filename)
     {
-      return "Текст програми "+filename;
+      return "п╒п╣п╨я│я┌ п©я─п╬пЁя─п╟п╪п╦ "+filename;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1543,43 +1466,497 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      *  hierarchy.
      */
     virtual QCString trDirIndex()
-    { return "Дерево каталог╕в"; }
+    { return "п■п╣я─п╣п╡п╬ п╨п╟я┌п╟п╩п╬пЁя√п╡"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     virtual QCString trDirDocumentation()
-    { return "Документац╕я каталог╕в"; }
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ п╨п╟я┌п╟п╩п╬пЁя√п╡"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
-    { return "Каталоги"; }
+    { return "п п╟я┌п╟п╩п╬пЁп╦"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-    { return "Дерево каталог╕в впорядковано наближено "
-	     "до алфав╕ту:";
+    { return "п■п╣я─п╣п╡п╬ п╨п╟я┌п╟п╩п╬пЁя√п╡ п╡п©п╬я─я▐п╢п╨п╬п╡п╟п╫п╬ п╫п╟п╠п╩п╦п╤п╣п╫п╬ "
+	     "п╢п╬ п╟п╩я└п╟п╡я√я┌я┐:";
     }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const char *dirName)
-    { QCString result="Дов╕дник каталогу "; result+=dirName; return result; }
+    { QCString result="п■п╬п╡я√п╢п╫п╦п╨ п╨п╟я┌п╟п╩п╬пЁя┐ "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool, bool singular)
-    { 
-      QCString result("Каталог");
-      if (!singular) result+="и";
-      return result; 
+    {
+      QCString result("п п╟я┌п╟п╩п╬пЁ");
+      if (!singular) result+="п╦";
+      return result;
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "п╕п╣ п©п╣я─п╣п╥п╟п╡п╟п╫я┌п╟п╤я┐п╡п╟п╫п╦п╧ п╪п╣я┌п╬п╢, "
+              "п╡п╡п╨п╢п╨п╫п╦п╧ п╢п╩я▐ п╥я─я┐я┤п╫п╬я│я┌я√. п▓я√п╫ п╡я√п╢я─я√п╥п╫я▐я■я┌я▄я│я▐ п╡я√п╢ "
+              "п╬п©п╦я│п╟п╫п╬я≈ п╡п╦я┴п╣ я└я┐п╫п╨я├я√я≈ п╩п╦я┬п╣ я│п©п╦я│п╨п╬п╪ п╟я─пЁя┐п╪п╣я┌п╫я√п╡.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "п⌠я─п╟я└ п╡п╦п╨п╩п╦п╨я√п╡ п╢п╩я▐ я├я√я■я≈ я└я┐п╫п╨я├я√я≈:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ п©п╣я─п╣п╩я√п╨я┐"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ я└я┐п╫п╨я├я√я≈/п©я√п╢п©я─п╬пЁя─п╟п╪п╦"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
+    virtual QCString trCompoundListFortran()
+    { return "п║п©п╦я│п╬п╨ я┌п╦п©я√п╡ п╢п╟п╫п╦я┘"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "п÷п╬п╩я▐ п╢п╟п╫п╦я┘"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "п╒п╦п©п╦ п╢п╟п╫п╦я┘ п╥ п╨п╬я─п╬я┌п╨п╦п╪ п╬п©п╦я│п╬п╪:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="п║п©п╦я│п╬п╨ я┐я│я√я┘ ";
+      if (!extractAll)
+      {
+        result+="п╥п╟п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
+      }
+      result+="п╣п╩п╣п╪п╣п╫я┌я√п╡ я┌п╦п©я√п╡ п╢п╟п╫п╦я┘";
+      result+=" п╥ п©п╬я│п╦п╩п╟п╫п╫я▐п╪п╦ п╫п╟ ";
+      if (!extractAll)
+      {
+         result+="п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ я│я┌я─я┐п╨я┌я┐я─п╦ п╢п╟п╫п╦я┘ п╨п╬п╤п╫п╬пЁп╬ п╣п╩п╣п╪п╣п╫я┌п╟";
+      }
+      else
+      {
+         result+="я┌п╦п©п╦ п╢п╟п╫п╦я┘, п╢п╬ я▐п╨п╦я┘ п╡п╬п╫п╦ п╫п╟п╩п╣п╤п╟я┌я▄:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "п║п©п╦я│п╬п╨ я┌п╦п©я√п╡ п╢п╟п╫п╦я┘"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ я┌п╦п©я√п╡ п╢п╟п╫п╦я┘"; }
+
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "п╓я┐п╫п╨я├я√я≈/п©я√п╢п©я─п╬пЁя─п╟п╪п╦"; }
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ я└я┐п╫п╨я├я√п╧/п©я√п╢п©я─п╬пЁя─п╟п╪"; }
+
+    /*! This is used in the documentation of a file/namespace/group before
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "п╒п╦п©п╦ п╢п╟п╫п╦я┘"; }
+
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "п║п©п╦я│п╬п╨ п╪п╬п╢я┐п╩я√п╡"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="п║п©п╦я│п╬п╨ я┐я│я√я┘ ";
+      if (!extractAll) result+="п╥п╟п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
+      result+="п╪п╬п╢я┐п╩я√п╡ п╥ п╨п╬я─п╬я┌п╨п╦п╪ п╬п©п╦я│п╬п╪:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      if (isTemplate)
+      {
+	switch(compType)
+	{
+	  case ClassDef::Class:      result+=" п°п╬п╢я┐п╩я▄"; break;
+	  case ClassDef::Struct:     result+=" п╒п╦п©"; break;
+	  case ClassDef::Union:      result+=" п·п╠'я■п╢п╫п╟п╫п╫я▐"; break;
+	  case ClassDef::Interface:  result+=" п├п╫я┌п╣я─я└п╣п╧я│"; break;
+	  case ClassDef::Protocol:   result+=" п÷я─п╬я┌п╬п╨п╬п╩"; break;
+	  case ClassDef::Category:   result+=" п п╟я┌п╣пЁп╬я─я√я▐"; break;
+	  case ClassDef::Exception:  result+=" п▓п╦п╫я▐я┌п╬п╨"; break;
+	}
+      }
+      else
+      {
+	if (isTemplate) result+=" п╗п╟п╠п╩п╬п╫ ";
+	switch(compType)
+	{
+	  case ClassDef::Class:      result+="п╪п╬п╢я┐п╩я▐"; break;
+	  case ClassDef::Struct:     result+="я┌п╦п©я┐"; break;
+	  case ClassDef::Union:      result+="п╬п╠'я■п╢п╫п╟п╫п╫я▐"; break;
+	  case ClassDef::Interface:  result+="я√п╫я┌п╣я─я└п╣п╧я│я┐"; break;
+	  case ClassDef::Protocol:   result+="п©я─п╬я┌п╬п╨п╬п╩я┐"; break;
+	  case ClassDef::Category:   result+="п╨п╟я┌п╣пЁп╬я─я√я≈"; break;
+	  case ClassDef::Exception:  result+="п╡п╦п╫я▐я┌п╨п╟"; break;
+	}
+      }
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" п°п╬п╢я┐п╩я▄";
+      return result;
+    }
+
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "п∙п╩п╣п╪п╣п╫я┌п╦ п╪п╬п╢я┐п╩я▐"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    {
+      QCString result="п║п©п╦я│п╬п╨ я┐я│я√я┘ ";
+      if (!extractAll) result+="п╥п╟п╢п╬п╨я┐п╪п╣п╫я┌п╬п╡п╟п╫п╦я┘ ";
+      result+="п╣п╩п╣п╪п╣п╫я┌я√п╡ п╪п╬п╢я┐п╩я√п╡ п╥ п©п╬я│п╦п╩п╟п╫п╫я▐п╪п╦ п╫п╟ ";
+      if (extractAll)
+      {
+        result+="п╢п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ п╪п╬п╢я┐п╩я▐ п╢п╩я▐ п╨п╬п╤п╫п╬пЁп╬ п╣п╩п╣п╪п╣п╫я┌п╟:";
+      }
+      else
+      {
+        result+="п╪п╬п╢я┐п╩я√, п╢п╬ я▐п╨п╦я┘ п╡п╬п╫п╦ п╫п╟п╩п╣п╤п╟я┌я▄:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "п░п╩я└п╟п╡я√я┌п╫п╦п╧ п©п╬п╨п╟п╤я┤п╦п╨ п╪п╬п╢я┐п╩я√п╡"; }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {
+    	    QCString result((first_capital ? "п°п╬п╢я┐п╩" : "п╪п╬п╢я┐п╩"));
+    	    result+=(singular? "я▄": "я√");
+      return result;
+    }
+
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ п╢п╩я▐ ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="я├я▄п╬пЁп╬ п╪п╬п╢я┐п╩я▐"; break;
+        case ClassDef::Struct:     result+="я├я▄п╬пЁп╬ я┌п╦п©я┐"; break;
+        case ClassDef::Union:      result+="я├я▄п╬пЁп╬ п╬п╠'я■п╢п╫п╟п╫п╫я▐"; break;
+        case ClassDef::Interface:  result+="я├я▄п╬пЁп╬ я√п╫я┌п╣я─я└п╣п╧я│я┐"; break;
+        case ClassDef::Protocol:   result+="я├я▄п╬пЁп╬ п©я─п╬я┌п╬п╨п╬п╩я┐"; break;
+        case ClassDef::Category:   result+="я├я√я■я≈ п╨п╟я┌п╣пЁп╬я─я√я≈"; break;
+        case ClassDef::Exception:  result+="я├я▄п╬пЁп╬ п╡п╦п╫я▐я┌п╨я┐"; break;
+      }
+      result+=" п╠я┐п╩п╬ п╥пЁп╣п╫п╣я─п╬п╡п╟п╫п╬ п╥ ";
+      if (single) result+="п╫п╟я│я┌я┐п©п╫п╬пЁп╬ я└п╟п╧п╩я┐:"; else result+="п╫п╟я│я┌я┐п©п╫п╦я┘ я└п╟п╧п╩я√п╡:";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "п╒п╦п©" : "я┌п╦п©"));
+      if (!singular)  result+="п╦";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "п÷я√п╢п©я─п╬пЁя─п╟п╪" : "п©я√п╢п©я─п╬пЁя─п╟п╪"));
+      result+= (singular? "п╟": "п╦");
+      return result;
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "п·п╠п╪п╣п╤п╣п╫п╫я▐ я┌п╦п©я┐";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return "п≈п╡'я▐п╥п╬п╨ п╥ "+QCString(name);
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "п≈п╟п╡п╟п╫я┌п╟п╤п╣п╫п╫я▐...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "п⌠п╩п╬п╠п╟п╩я▄п╫п╦п╧ п©я─п╬я│я┌я√я─ я√п╪п╣п╫";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "п÷п╬я┬я┐п╨...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "п²я√я┤п╬пЁп╬ п╫п╣ п╥п╫п╟п╧п╢п╣п╫п╬";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"п⌠я─п╟я└ п╥п╟п╩п╣п╤п╫п╬я│я┌п╣п╧ п╨п╟я┌п╟п╩п╬пЁя┐ п╢п╩я▐ "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"п╓п╟п╧п╩ я┐ "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"п▓п╨п╩я▌я┤п╟я■ я└п╟п╧п╩п╦ п╡ "+name;
+    }
+
+    /** Compiles a date string.
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "п÷п╬п╫п╣п╢я√п╩п╬п╨","п▓я√п╡я┌п╬я─п╬п╨","п║п╣я─п╣п╢п╟","п╖п╣я┌п╡п╣я─","п÷'я▐я┌п╫п╦я├я▐","п║я┐п╠п╬я┌п╟","п²п╣п╢я√п╩я▐" };
+      static const char *months[] = { "я│я√я┤п╫я▐","п╩я▌я┌п╬пЁп╬","п╠п╣я─п╣п╥п╫я▐","п╨п╡я√я┌п╫я▐","я┌я─п╟п╡п╫я▐","я┤п╣я─п╡п╫я▐","п╩п╦п©п╫я▐","я│п╣я─п©п╫я▐","п╡п╣я─п╣я│п╫я▐","п╤п╬я┌п╫я▐","п╩п╦я│я┌п╬п©п╟п╢п╟","пЁя─я┐п╢п╫я▐" };
+      QCString sdate;
+      sdate.sprintf("%s, %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "п▒я√п╠п╩я√п╬пЁя─п╟я└я√я┤п╫я√ п©п╬я│п╦п╩п╟п╫п╫я▐"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "п п╬п©я√я─п╟п╧я┌"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("п⌠я─п╟я└ п╥п╟п╩п╣п╤п╫п╬я│я┌п╣п╧ п╨п╟я┌п╟п╩п╬пЁя┐ п╢п╩я▐ ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "я─я√п╡п╣п╫я▄ п╣п╩п╣п╪п╣п╫я┌п╟"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "п÷п╟я─п╟п╪п╣я┌я─п╦ я┬п╟п╠п╩п╬п╫п╟"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "я√ я┴п╣  "+number+"..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▌ п╢п╩я▐ я├я▄п╬пЁп╬ п©п╣я─п╣п╩я√п╨я┐ п╠я┐п╩п╬п╥пЁп╣п╫п╣я─п╬п╡п╟п╫п╬ п╥ ";
+    	    result += (single? "п╫п╟я│я┌я┐п©п╫п╬пЁп╬ я└п╟п╧п╩п╟": "п╫п╟я│я┌я┐п©п╫п╦я┘ я└п╟п╧п╩я√п╡");
+      result+=":";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString(name)+" п÷п╣я─п╣п╩я√п╨"; }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" я┐я│п©п╟п╢п╨п╬п╡п╟п╫п╬ п╥ "+what; }
+
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "п■п╬п╢п╟я┌п╨п╬п╡я√ я┐я│п©п╟п╢п╨п╬п╡п╟п╫я√ п╣п╩п╣п╪п╣п╫я┌п╦"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "п╢п╬п╥п╡п╬п╩п╦я┌п╦" : "п╥п╟п╠п╬я─п╬п╫п╦я┌п╦";
+      return "п╨п╩п╟я├п╫я√я┌я▄ п╪п╦я┬п╨п╬я▌, я┴п╬п╠ "+opt+" я│п╦п╫я┘я─п╬п╫я√п╥п╟я├я√я▌ п©п╟п╫п╣п╩я√";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "п≈п╟п╠п╣п╥п©п╣я┤п╣п╫п╬ п╨п╟я┌п╣пЁп╬я─я√я■я▌ @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "п═п╬п╥я┬п╦я─я▌я■ п╨п╩п╟я│ @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "п°п╣я┌п╬п╢п╦ п╨п╩п╟я│я┐";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "п°п╣я┌п╬п╢п╦ п╬п╠'я■п╨я┌п╟";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "п■п╬п╨я┐п╪п╣п╫я┌п╟я├я√я▐ п╪п╣я┌п╬п╢п╟";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "п·пЁп╩я▐п╢ п╢п╦п╥п╟п╧п╫я┐ п©я─п╬п╣п╨я┌я┐";
+    }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 

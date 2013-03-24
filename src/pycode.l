@@ -483,13 +483,12 @@ static void codifyLines(char *text)
   }
 }
 
-static const char* fileLocation() 
+static QCString fileLocation() 
 {
-  const int maxLen=4096;
-  static char floc[maxLen+1];
-  floc[maxLen]='\0';
-  snprintf(floc,maxLen,"%s:%d:%d",g_sourceFileDef?g_sourceFileDef->absFilePath().data():"[unknown]",g_yyLineNr,1);
-  return floc;
+  QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
+  result+=":"+QCString().setNum(g_yyLineNr);
+  result+=":"+QCString().setNum(1);
+  return result;
 }
 
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)

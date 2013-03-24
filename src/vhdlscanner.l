@@ -96,7 +96,7 @@ static QMap<QCString, int> keyMap;
 static QList<Entry>  lineEntry;
 static bool  checkMultiComment(QCString& qcs,int line);
 static void handleCommentBlock(const QCString &doc,bool brief);
-static void mapLibPackage(const Entry* ce);
+static void mapLibPackage(Entry* ce);
 static QList<Entry>* getEntryAtLine(const Entry* ce,int line);
 static bool addLibUseClause(const QCString &type);
 static Entry* oldEntry;
@@ -819,73 +819,43 @@ void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
  * .....
  * and so on..
  */
-static void mapLibPackage(const Entry* ce)
+static void mapLibPackage( Entry* root)
 {
-  Entry *lastComp=0;
-  while (TRUE)
+  QList<Entry> epp=getLibUse();
+  EntryListIterator eli(epp);
+  Entry *rt;
+  for (;(rt=eli.current());++eli)
   {
-    bool found = FALSE;
-    Entry *rt=0;
-    //const QList<Entry> *epp=ce->children();
-    EntryListIterator eli(*ce->children());
-    EntryListIterator eli1=eli;
-    for (;(rt=eli.current()),eli1=eli;++eli)
+    if (addLibUseClause(rt->name))
     {
-      if (rt->spec==VhdlDocGen::LIBRARY || rt->spec==VhdlDocGen::USE)
-        // top level library or use statement
+      Entry *current;
+      EntryListIterator eLib(*root->children());
+      bool bFound=FALSE;
+      for (eLib.toFirst();(current=eLib.current());++eLib)
       {
-        Entry *temp=0;
-        if(!addLibUseClause(rt->name))
-        {
-          rt->spec=-1;
-          rt->section=0;
-          //  continue;
-        }
-
-        for (;(temp=eli1.current());++eli1) // find next entity
-        {
-          if (temp->spec==VhdlDocGen::ENTITY || 
-              temp->spec==VhdlDocGen::PACKAGE || 
-              temp->spec==VhdlDocGen::ARCHITECTURE || 
-              temp->spec==VhdlDocGen::PACKAGE_BODY)
+        if (VhdlDocGen::isVhdlClass(current))
+          if (current->startLine > rt->startLine)
           {
-            Entry *ee=new Entry(*rt); //append a copy to entries sublist
-            temp->addSubEntry(ee);
-            found=TRUE;
-            rt->spec=-1; //nullify entry
-            rt->section=0;
-            lastComp=temp;
-            break;
+            bFound=TRUE;
+            current->addSubEntry(rt);
+            break;     
           }
-        }//for
-        if (lastComp && rt->spec!=-1)
-        {
-          Entry *ee=new Entry(*rt); //append a copy to entries sublist
-          lastComp->addSubEntry(ee);
-          found=TRUE;
-          rt->spec=-1; //nullify entry
-          rt->section=0;
-        }
-      }//if
-    }//for
-    if (!found) // nothing left to do
-    {
-      return; 
-    }
-  }//while
+      }//for
+      if (!bFound)
+      {
+        root->addSubEntry(rt);
+      }
+    } //if
+  }// for
+
+  epp.clear();
 }//MapLib
 
 static bool addLibUseClause(const QCString &type)
 {
-  static bool show=Config_getBool("SHOW_INCLUDE_FILES");
   static bool showIEEESTD=Config_getBool("FORCE_LOCAL_INCLUDES");
 
-  if (!show)  // all libraries and included packages will not  be shown
-  {
-    return FALSE;
-  }
-
-  if (!showIEEESTD) // all standard packages and libraries will not be shown
+  if (showIEEESTD) // all standard packages and libraries will not be shown
   {  
     if (type.lower().stripPrefix("ieee")) return FALSE;
     if (type.lower().stripPrefix("std")) return FALSE;
@@ -990,7 +960,9 @@ int getParsedLine(int object)
 void isVhdlDocPending()
 {
   if (!str_doc.pending)
+  {
     return;
+  }
   str_doc.pending=FALSE;
   oldEntry=0; // prevents endless recursion
   iDocLine=str_doc.iDocLine;

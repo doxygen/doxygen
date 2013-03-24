@@ -88,6 +88,12 @@ Q_EXPORT void *qmemmove( void *dst, const void *src, uint len );
 #define memmove(s1,s2,n) qmemmove((s1),(s2),(n))
 #endif
 
+#if defined(_OS_WIN32_)
+#define qsnprintf _snprintf
+#else
+#define qsnprintf snprintf
+#endif
+
 Q_EXPORT char *qstrdup( const char * );
 
 Q_EXPORT inline uint cstrlen( const char *str )

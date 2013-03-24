@@ -199,11 +199,6 @@ Here Group1 is displayed as a subsection of the "Public Members". And
 Group2 is a separate section because it contains members with
 different protection levels (i.e. public and protected).
 
-\htmlonly
-Go to the <a href="formulas.html">next</a> section or return to the
- <a href="index.html">index</a>.
-\endhtmlonly
-
 \section subpaging Subpaging
 
 Information can be grouped into pages using the \ref cmdpage "\\page" and

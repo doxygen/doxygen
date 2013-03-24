@@ -1465,7 +1465,7 @@ void GroupDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QC
   }
   if (ml) 
   {
-    ml->writeDeclarations(ol,0,0,0,this,title,0);
+    ml->writeDeclarations(ol,0,0,0,this,title,0,definitionType());
   }
 }
 

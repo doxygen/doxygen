@@ -96,6 +96,15 @@ PREDEFINED             = __declspec(x)=
 This will make sure the __declspec(dllexport) is removed before doxygen
 parses the source code.
 
+Similar settings can be used for removing __attribute__ expressions from the input:
+
+\verbatim  
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = __attribute__(x)=
+\endverbatim
+
 For a more complex example, suppose you have the following obfuscated 
 code fragment of an abstract base class called \c IUnknown:
 
@@ -256,7 +265,7 @@ preprocessing has been done (Hint: set <code>QUIET = YES</code> and
 output).
 
 \htmlonly
-Go to the <a href="external.html">next</a> section or return to the
+Go to the <a href="autolink.html">next</a> section or return to the
  <a href="index.html">index</a>.
 \endhtmlonly
 

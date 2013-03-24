@@ -1567,6 +1567,7 @@ ClassDef *getResolvedClass(Definition *scope,
     QCString *pResolvedType
     )
 {
+  static bool optimizeOutputVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   g_resolvedTypedefs.clear();
   if (scope==0 ||
       (scope->definitionType()!=Definition::TypeClass && 
@@ -1583,7 +1584,15 @@ ClassDef *getResolvedClass(Definition *scope,
   //    n,
   //    mayBeUnlinkable
   //   );
-  ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec,pResolvedType);
+  ClassDef *result;
+  if (optimizeOutputVhdl)
+  {
+    result = getClass(n);
+  }
+  else
+  {
+    result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec,pResolvedType);
+  }
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
     if (!mayBeHidden || !result->isHidden())
@@ -6212,7 +6221,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
     const char *prefix, const char *name,const char *title,const char *args)
 {
   //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
-  if (sli)
+  if (sli && key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
   {
     QListIterator<ListItemInfo> slii(*sli);
     ListItemInfo *lii;
@@ -6729,6 +6738,24 @@ bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
     return FALSE;
 }
 
+const char *writeUtf8Char(FTextStream &t,const char *s)
+{
+  char c=*s++;
+  t << c;
+  if (c<0) // multibyte character
+  {
+    t << *s++;
+    if (((uchar)c&0xE0)==0xE0)
+    {
+      t << *s++; // 111x.xxxx: >=3 byte character
+    }
+    if (((uchar)c&0xF0)==0xF0)
+    {
+      t << *s++; // 1111.xxxx: 4 byte character
+    }
+  }
+  return s;
+}
 
 int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos)
 {

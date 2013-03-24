@@ -267,6 +267,7 @@ class Entry
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;
+    QCString    id;           //!< libclang id
 
 
     static int  num;          //!< counts the total number of entries

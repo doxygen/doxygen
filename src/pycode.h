@@ -28,6 +28,7 @@
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;
+class QCString;
 class Definition;
 
 extern void parsePythonCode(CodeOutputInterface &,const char *,const QCString &, 

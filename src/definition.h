@@ -265,6 +265,9 @@ class Definition : public DefinitionIntf, public LockableObj
     /*! Sets a new \a name for the definition */
     void setName(const char *name);
 
+    /*! Sets a unique id for the symbol. Used for libclang integration. */
+    void setId(const char *name);
+
     /*! Sets the documentation of this definition to \a d. */
     virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
 

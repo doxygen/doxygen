@@ -72,6 +72,7 @@ class ClassDef : public Definition
      *  \param startColumn column number where the definition of this compound
      *                   starts.
      *  \param name      the name of this compound (including scope)
+     *  \param symId     unique Id for this symbol
      *  \param ct        the kind of Compound
      *  \param ref       the tag file from which this compound is extracted
      *                   or 0 if the compound doesn't come from a tag file

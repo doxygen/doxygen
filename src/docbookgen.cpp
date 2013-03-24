@@ -276,9 +276,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
         if (extRef) m_external=extRef;
       }
     }
-    void linkableSymbol(int, const char *,Definition *,Definition *)
-    {
-    }
     void setCurrentDoc(Definition *,const char *,bool)
     {
     }

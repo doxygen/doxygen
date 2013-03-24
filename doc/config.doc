@@ -2840,5 +2840,11 @@ Here doxygen's preprocessor is used to substitute some
 macro names that are normally substituted by the C preprocessor,
 but without doing full macro expansion.
 
+
+\htmlonly
+Go to the <a href="commands.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */
 

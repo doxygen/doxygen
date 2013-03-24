@@ -2909,5 +2909,11 @@ browser generator. Do \e not use these commands in your own documentation.
 </ul>
 <hr>
 
+
+\htmlonly
+Go to the <a href="htmlcmds.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
 */
 

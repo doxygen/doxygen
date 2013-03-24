@@ -53,6 +53,7 @@
 #include <stdio.h>
 #include <qcstring.h>
 #include <qstringlist.h>
+#include "config.h"
 
 #ifndef YYSTYPE
 typedef int YYSTYPE;
@@ -63,6 +64,9 @@ struct  YYMM
   int itype;
   QCString qstr;
 };
+
+ 
+
 
 // define struct instead of union
 #define YYSTYPE YYMM
@@ -76,13 +80,20 @@ struct  YYMM
 #include "entry.h"
 #include "arguments.h"
 #include "memberdef.h"
+#include "vhdldocgen.h"
 
 //-----------------------------variables ---------------------------------------------------------------------------
-//static MyParserVhdl* myconv=0;
+
+
+    
+
 
 static VhdlContainer s_str;
 
 static QList<Entry>instFiles;
+static QList<Entry>libUse;
+
+
 static int yyLineNr;
 static Entry* lastCompound;
 static Entry* currentCompound;
@@ -156,6 +167,7 @@ void initVhdlParser()
   current_root=s_str.root;
   current=new Entry();
   initEntry(current);
+  libUse.clear();
 }
 
 QList<Entry> & getVhdlInstList()
@@ -163,6 +175,10 @@ QList<Entry> & getVhdlInstList()
   return instFiles;
 }
 
+QList<Entry> & getLibUse()
+{
+  return libUse;
+}
 
 %}
 
@@ -381,12 +397,13 @@ t_ToolDir
 
 
 %%
-start: design_file
-      | procs_stat
-      | subprog_body
-
+start: design_file 
+    
 
 design_file     : design_unit_list
+                    /* parse function/process/procedure for vhdlflow */
+                     | procs_stat
+                     | subprog_body
 
 design_unit_list: design_unit
                 | design_unit_list design_unit
@@ -441,9 +458,9 @@ context_item     : lib_clause
 
 lib_clause       : t_LIBRARY idf_list t_Semicolon
                  {
-                   if ( parse_sec == 0)
+                   if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
                    {
-                    addVhdlType($2,getParsedLine(t_LIBRARY),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,$2.data(),"_library_");
+                     addVhdlType($2,getParsedLine(t_LIBRARY),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,$2.data(),"_library_");
                    }
                    $$="library "+$2;
                  }
@@ -453,9 +470,9 @@ use_clause : t_USE sel_list t_Semicolon
                    QStringList ql1=QStringList::split(",",$2,FALSE);
                    for (uint j=0;j<ql1.count();j++)
                    {
-                     QStringList ql=QStringList::split(".",ql1[j],FALSE);
-                     QCString it=ql[1].utf8();
-                     if ( parse_sec == 0 )
+                     //QStringList ql=QStringList::split(".",ql1[j],FALSE);
+                     QCString it=ql1[j].utf8();
+                     if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
                      {
                        addVhdlType(it,getParsedLine(t_USE),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_");
                      }
@@ -506,8 +523,8 @@ entity_decl_1 :  /* empty */  { $$=""; }
               ;
 
 
-arch_body     : arch_start arch_body_1 t_BEGIN concurrent_stats t_END arch_body_2 t_Semicolon
-arch_body     : arch_start error t_END arch_body_2 t_Semicolon
+arch_body     : arch_start arch_body_1 t_BEGIN concurrent_stats t_END arch_body_2 t_Semicolon {lastCompound=0;}
+arch_body     : arch_start error t_END arch_body_2 t_Semicolon {lastCompound=0;}
 
 arch_start    : t_ARCHITECTURE t_Identifier t_OF t_Identifier t_IS
                 {
@@ -586,8 +603,8 @@ package_decl_22: gen_interface_list
 package_decl_22: gen_interface_list gen_assoc_list
 package_decl_22: gen_interface_list gen_assoc_list t_Semicolon
 
-package_body    : pack_body_start error t_END package_body_2 t_Semicolon
-package_body    : pack_body_start package_body_1 t_END package_body_2 t_Semicolon
+package_body    : pack_body_start error t_END package_body_2 t_Semicolon                   {lastCompound=0;}
+package_body    : pack_body_start package_body_1 t_END package_body_2 t_Semicolon {lastCompound=0;}
 pack_body_start : t_PACKAGE t_BODY t_Identifier t_IS
                       {
                         $$=$3;
@@ -1803,7 +1820,7 @@ wait_stat_1: t_ON sensitivity_list  { $$=" on "+$2; }
 comp_end_dec : t_END                              { lastEntity=0; lastCompound=0; genLabels.resize(0); }
              | t_END t_COMPONENT entity_decl_5
              | t_END t_ARCHITECTURE entity_decl_5 { lastCompound=0; genLabels.resize(0); }
-             | t_END t_ENTITY entity_decl_5       { lastEntity=0; genLabels.resize(0); }
+             | t_END t_ENTITY entity_decl_5       { lastEntity=0;lastCompound=0; genLabels.resize(0); }
              | t_END t_Identifier                 { lastEntity=0; lastCompound=0; genLabels.resize(0); }
 
 iss :/*empty*/ { currP=VhdlDocGen::COMPONENT; }
@@ -2501,11 +2518,8 @@ static void addVhdlType(const QCString &name,int startLine,int section,int spec,
 {
   static QRegExp reg("[\\s]");
 
-  if (isFuncProcProced() || VhdlDocGen::getFlowMember())
-  {
-    return;
-  }
-
+  if (isFuncProcProced() || VhdlDocGen::getFlowMember())   return;
+    
   if (parse_sec==GEN_SEC)
   {
     spec= VhdlDocGen::GENERIC;
@@ -2517,10 +2531,7 @@ static void addVhdlType(const QCString &name,int startLine,int section,int spec,
   for (uint u=0;u<ql.count();u++)
   {
     current->name=ql[u].utf8();
-    //   if (section==Entry::VARIABLE_SEC &&  !(spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
-    //   {
-    //     current->name.prepend(VhdlDocGen::getRecordNumber());
-    //   }
+  
 
     current->startLine=startLine;
     current->bodyLine=startLine;
@@ -2535,17 +2546,20 @@ static void addVhdlType(const QCString &name,int startLine,int section,int spec,
     current->type=type;
     current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
     current->protection=prot;
+ 
+       if (!lastCompound && (section==Entry::VARIABLE_SEC) &&  (spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
+       {
+         libUse.append(new Entry(*current));
+         current->reset();
+       }
     newEntry();
   }
 }
 
 static void newEntry()
 {
-  if (current->spec==VhdlDocGen::ENTITY       ||
-      current->spec==VhdlDocGen::PACKAGE      ||
-      current->spec==VhdlDocGen::ARCHITECTURE ||
-      current->spec==VhdlDocGen::PACKAGE_BODY
-     )
+
+  if (VhdlDocGen::isVhdlClass(current))
   {
     current_root->addSubEntry(current);
   }
