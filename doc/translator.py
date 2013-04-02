@@ -1714,7 +1714,7 @@ class TrManager:
                     in the Translator class but their identifiers do not appear
                     in source files. The situation should be checked. The .cpp
                     files and .h files excluding the '*translator*' files
-                    in doxygen/src directory were simply searched for occurence
+                    in doxygen/src directory were simply searched for occurrence
                     of the method identifiers:'''
                 f.write('\n' + '=' * 70 + '\n')
                 f.write(fill(s) + '\n\n')

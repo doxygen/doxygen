@@ -644,6 +644,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Reference";
@@ -803,6 +804,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+="Â–« «·»—Ê ÊﬂÊ·"; break;
         case ClassDef::Category:   result+="Â–« «· ’‰Ì›"; break;
         case ClassDef::Exception:  result+="Â–« «·≈” À‰«¡"; break;
+        default: break;
       }
       result+="  „  ﬂÊÌ‰Â „‰ ";
 	  if (single) result+="Â–« «·„·›:"; else result+="Â–Â «·„·›« :";

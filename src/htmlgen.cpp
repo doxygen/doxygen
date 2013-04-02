@@ -104,6 +104,7 @@ static const char extsearch_script[]=
 
 static QCString g_header;
 static QCString g_footer;
+static QCString g_mathjax_code;
 
 //------------------------- Pictures for the Tabs ------------------------
 
@@ -1176,8 +1177,13 @@ static QCString substituteHtmlKeywords(const QCString &s,
     }
     mathJaxJs += "],\n"
                  "    jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n"
-                 "});\n"
-                 "</script>";
+                 "});\n";
+    if (!g_mathjax_code.isEmpty())
+    {
+      mathJaxJs += g_mathjax_code;
+      mathJaxJs += "\n";
+    }
+    mathJaxJs += "</script>";
     mathJaxJs += "<script src=\"" + path + "MathJax.js\"></script>\n";
   }
 
@@ -1444,6 +1450,15 @@ void HtmlGenerator::init()
   else 
   {
     g_footer = defaultHtmlFooter;
+  }
+
+  if (Config_getBool("USE_MATHJAX"))
+  {
+    if (!Config_getString("MATHJAX_CODEFILE").isEmpty()) 
+    {
+      g_mathjax_code=fileToString(Config_getString("MATHJAX_CODEFILE"));
+      //printf("g_mathjax_code='%s'\n",g_mathjax_code.data());
+    }
   }
   createSubDirs(d);
 
@@ -2383,7 +2398,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
   {
     if (emptyList)
     {
-      if (closeBracket) t << "</td><td>)";
+      if (closeBracket) t << ")</td><td>";
       t << "</td>" << endl;
       t << "          <td>";
     }
@@ -2411,6 +2426,22 @@ void HtmlGenerator::endParameterList()
   DBG_HTML(t << "<!-- endParameterList -->" << endl;)
   t << "</td>" << endl;
   t << "        </tr>" << endl;
+}
+
+void HtmlGenerator::exceptionEntry(const char* prefix,bool closeBracket)
+{
+  DBG_HTML(t << "<!-- exceptionEntry -->" << endl;)
+  t << "</td>" << endl;
+  t << "        </tr>" << endl;
+  t << "        <tr>" << endl;
+  t << "          <td align=\"right\">";
+  // colspan 2 so it gets both parameter type and parameter name columns
+  if (prefix)
+    t << prefix << "</td><td>(</td><td colspan=\"2\">";
+  else if (closeBracket)
+    t << "</td><td>)</td><td></td><td>";
+  else
+    t << "</td><td></td><td colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberDoc(bool hasArgs)     

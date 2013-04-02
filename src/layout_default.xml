@@ -31,6 +31,8 @@
     <memberdecl>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
+      <services title=""/>
+      <interfaces title=""/>
       <publicslots title=""/>
       <signals title=""/>
       <publicmethods title=""/>
@@ -65,6 +67,8 @@
       <inlineclasses title=""/>
       <typedefs title=""/>
       <enums title=""/>
+      <services title=""/>
+      <interfaces title=""/>
       <constructors title=""/>
       <functions title=""/>
       <related title=""/>
@@ -82,6 +86,7 @@
     <briefdescription visible="yes"/>
     <memberdecl>
       <nestednamespaces visible="yes" title=""/>
+      <constantgroups visible="yes" title=""/>
       <classes visible="yes" title=""/>
       <typedefs title=""/>
       <enums title=""/>
@@ -110,6 +115,7 @@
     <memberdecl>
       <classes visible="yes" title=""/>
       <namespaces visible="yes" title=""/>
+      <constantgroups visible="yes" title=""/>
       <defines title=""/>
       <typedefs title=""/>
       <enums title=""/>

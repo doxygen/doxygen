@@ -2387,6 +2387,14 @@ void LatexGenerator::endParameterName(bool last,bool /* emptyList */,bool closeB
   }
 }
 
+void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
+{
+  if (prefix)
+      t << " " << prefix;
+  else if (closeBracket)
+      t << ")";
+  t << " ";
+}
 
 void LatexGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {

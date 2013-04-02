@@ -621,6 +621,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="l Protocol "; break;
         case ClassDef::Category:   result+=" la Categoria "; break;
         case ClassDef::Exception:  result+=" l'Excepció "; break;
+        default: break;
       }
       if (isTemplate) result+="Template ";
       result+=(QCString)clName;
@@ -780,6 +781,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" protocol"; break;
         case ClassDef::Category:   result+="a categoria"; break;
         case ClassDef::Exception:  result+="a excepció"; break;
+        default: break;
       }
       result+=" es va generar a partir del";
       if (!single) result+="s";
@@ -1674,6 +1676,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="l Protocol "; break;
         case ClassDef::Category:   result+=" la Categoria "; break;
         case ClassDef::Exception:  result+=" l'Excepció "; break;
+        default: break;
       }
       if (isTemplate) result+="Template ";
       result+=(QCString)clName;
@@ -1745,6 +1748,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" protocol"; break;
         case ClassDef::Category:   result+="a categoria"; break;
         case ClassDef::Exception:  result+="a excepció"; break;
+        default: break;
       }
       result+=" es va generar a partir del";
       if (!single) result+="s";

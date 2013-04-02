@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public Translator
+class TranslatorDutch : public TranslatorAdapter_1_8_2
 {
   public:
     QCString idLanguage()
@@ -268,6 +268,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Protocol:  result+=" Protocol"; break;
         case ClassDef::Category:  result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       result+=" Referentie";
       return result;
@@ -416,6 +417,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Protocol:   result+="dit protocol"; break;
         case ClassDef::Category:   result+="deze categorie"; break;
         case ClassDef::Exception:  result+="deze exceptie"; break;
+        default: break;
       }
       result+=" is gegenereerd op grond van ";
       if (single) result+="het"; else result+="de";
@@ -1277,6 +1279,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Referentie";
@@ -1340,6 +1343,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Protocol:   result+="dit protocol"; break;
         case ClassDef::Category:   result+="deze category"; break;
         case ClassDef::Exception:  result+="deze exception"; break;
+        default: break;
       }
       result+=" is gegenereerd op grond van ";
       if (single) result+="het"; else result+="de";

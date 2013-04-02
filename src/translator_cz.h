@@ -84,7 +84,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_8_2
 {
   public:
     // --- Language control methods -------------------
@@ -657,6 +657,7 @@ class TranslatorCzech : public Translator
         case ClassDef::Protocol:   result += "protokolu "; break;
         case ClassDef::Category:   result += "kategorie "; break;
         case ClassDef::Exception:  result += "výjimky "; break;
+        default: break;
       }
       result += clName;
       return result;
@@ -829,6 +830,7 @@ class TranslatorCzech : public Translator
         case ClassDef::Protocol:   result+="tento protokol "; break;
         case ClassDef::Category:   result+="tuto kategorii "; break;
         case ClassDef::Exception:  result+="tuto výjimku"; break;
+        default: break;
       }
       result+=" byla generována z ";
       if (single) result+="následujícího souboru:";
@@ -1719,6 +1721,7 @@ class TranslatorCzech : public Translator
         case ClassDef::Protocol:   result += "protokolu "; break;
         case ClassDef::Category:   result += "kategorie "; break;
         case ClassDef::Exception:  result += "výjimky "; break;
+        default: break;
       }
       result += clName;
       return result;
@@ -1786,6 +1789,7 @@ class TranslatorCzech : public Translator
         case ClassDef::Protocol:   result+="k tomuto protokolu"; break;
         case ClassDef::Category:   result+="k této kategorii"; break;
         case ClassDef::Exception:  result+="k této výjimce"; break;
+        default: break;
       }
       result+=" byla vygenerována z ";
       if (single) result+="následujícího souboru:";

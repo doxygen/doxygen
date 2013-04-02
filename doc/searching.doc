@@ -59,7 +59,7 @@ has its own advantages and disadvantages:
    Advantages over the client side search engine are that it provides full
    text search and it scales well to medium side projects.
 
-   Disadvantages are that it does not work locally (i.e. using a file:// URL)
+   Disadvantages are that it does not work locally (i.e. using a "file://" URL)
    and that it does not provide live search capabilities.
 
    @note In the future this option will probably be replaced by the next 
@@ -80,7 +80,7 @@ has its own advantages and disadvantages:
    \ref cfg_server_based_search "SERVER_BASED_SEARCH" and
    \ref cfg_external_search "EXTERNAL_SEARCH" all to \c YES.
 
-   See \ref extsearch for configuration details.
+   See \subpage extsearch for configuration details.
 
    Advantages over option 2 are that this method (potentially) scales to 
    very large projects. It is also possible to combine multiple doxygen 
@@ -126,7 +126,7 @@ has its own advantages and disadvantages:
    options you may want to set. After doxygen has finished you will find
    a Makefile in the HTML output directory. Running "make install" on this
    Makefile will compile and install the doc set.
-   See <a href="http://developer.apple.com/tools/creatingdocsetswithdoxygen.html">this 
+   See <a href="https://developer.apple.com/library/mac/#featuredarticles/DoxygenXcode/_index.html">this 
    article</a> for more info.
 
    Advantage of this method is that it nicely integrates with the Xcode
@@ -139,7 +139,7 @@ has its own advantages and disadvantages:
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,
    you will get an application 
-   called <a href="http://doc.trolltech.com/4.6/assistant-manual.html">Qt assistant</a>. 
+   called <a href="http://qt-project.org/doc/qt-4.8/assistant-manual.html">Qt assistant</a>. 
    This is a help viewer for Qt Compressed Help files (.qch).
 
    To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.
@@ -147,7 +147,7 @@ has its own advantages and disadvantages:
    \ref cfg_qhp_namespace "QHP_NAMESPACE", 
    \ref cfg_qhg_location "QHG_LOCATION", 
    \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER".
-   See <a href="http://doc.trolltech.com/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
+   See <a href="http://doc.qt.digia.com/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
    for more info.
 
    Feature wise the Qt compressed help feature is comparable with the CHM 

@@ -627,6 +627,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" 協定"; break; 
         case ClassDef::Category:   result+=" 分類"; break;
         case ClassDef::Exception:  result+=" 例外"; break;
+        default: break;
       }
       if (isTemplate) result+=" 樣版";
       result+=" 參考文件";
@@ -786,6 +787,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="協定(protocol)"; break;
         case ClassDef::Category:   result+="分類(category)"; break;
         case ClassDef::Exception:  result+="例外(exception)"; break;
+        default: break;
       }
       result+=" 文件是由下列檔案中產生";
       if (single) result+=":"; else result+=":";
@@ -1659,6 +1661,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="協議"; break;
         case ClassDef::Category:   result+="分類"; break;
         case ClassDef::Exception:  result+="例外"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+="參考文件";
@@ -1725,6 +1728,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="協議"; break;
         case ClassDef::Category:   result+="分類"; break;
         case ClassDef::Exception:  result+="例外"; break;
+        default: break;
       }
       result+="文件由下列檔案產生";
       return result;

@@ -819,7 +819,7 @@ for better parsing at the cost of reduced performance. This can be particularly
 helpful with template rich C++ code for which doxygen&apos;s built-in 
 parser lacks the necessairy type information.
 ' defval='0'/>
-     <option type='string' id='CLANG_OPTIONS' settings='USE_LIBCLANG' docs='
+     <option type='string' id='CLANG_OPTIONS' setting='USE_LIBCLANG' docs='
 If clang assisted parsing is enabled you can provide the compiler with command 
 line options that you would normally use when invoking the compiler. Note that 
 the include paths will be set by doxygen based on the files and directory 
@@ -923,7 +923,7 @@ the luminance component of the colors in the HTML output. Values below
 the output darker. The value divided by 100 is the actual gamma applied, 
 so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2, 
 and 100 does not change the gamma.
-' minval='40' maxval='240' defval='80'/>
+' minval='40' maxval='240' defval='80' depends='GENERATE_HTML'/>
     <option type='bool' id='HTML_TIMESTAMP' docs='
 If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML 
 page will contain the date and time when the page was generated. Setting 
@@ -943,7 +943,7 @@ visible (unless a fully collapsed tree already exceeds this amount).
 So setting the number of entries 1 will produce a full collapsed tree by 
 default. 0 is a special value representing an infinite number of entries 
 and will result in a full expanded tree by default.
-' minval='0' maxval='9999' defval='100'/>
+' minval='0' maxval='9999' defval='100' depends='GENERATE_HTML'/>
     <option type='bool' id='GENERATE_DOCSET' docs='
 If the GENERATE_DOCSET tag is set to YES, additional index files 
 will be generated that can be used as input for Apple&apos;s Xcode 3 
@@ -1130,7 +1130,7 @@ configure the path to it using the MATHJAX_RELPATH option.
 ' defval='0'/> 
     <option type='enum' id='MATHJAX_FORMAT' defval='HTML-CSS' docs='
 When MathJax is enabled you can set the default output format to be used for 
-thA MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and 
+the MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and 
 SVG. The default value is HTML-CSS, which is slower, but has the best 
 compatibility. 
 '>
@@ -1151,6 +1151,11 @@ copy of MathJax from http://www.mathjax.org before deployment.
     <option type='list' id='MATHJAX_EXTENSIONS' format='string' docs='
 The MATHJAX_EXTENSIONS tag can be used to specify one or MathJax extension 
 names that should be enabled during MathJax rendering. 
+' depends='USE_MATHJAX'>
+    </option>
+    <option type='string' id='MATHJAX_CODEFILE' format='string' docs='
+The MATHJAX_CODEFILE tag can be used to specify a file with javascript 
+pieces of code that will be used on startup of the MathJax code. 
 ' depends='USE_MATHJAX'>
     </option>
     <option type='bool' id='SEARCHENGINE' docs='
@@ -1300,7 +1305,7 @@ such as SOURCE_BROWSER.
 The LATEX_BIB_STYLE tag can be used to specify the style to use for the 
 bibliography, e.g. plainnat, or ieeetr. The default style is &quot;plain&quot;. See 
 http://en.wikipedia.org/wiki/BibTeX for more info.
-' defval='plain'/>
+' defval='plain' depends='GENERATE_LATEX'/>
   </group>
   <group name='RTF' docs='configuration options related to the RTF output'>
     <option type='bool' id='GENERATE_RTF' docs='
@@ -1575,7 +1580,7 @@ allowed to run in parallel. When set to 0 (the default) doxygen will
 base this on the number of processors available in the system. You can set it 
 explicitly to a value larger than 0 to get control over the balance 
 between CPU load and processing speed.  
-' defval='0' minval='0' maxval='32'/>
+' defval='0' minval='0' maxval='32' dependes='HAVE_DOT'/>
     <option type='string' id='DOT_FONTNAME' format='string' docs='
 By default doxygen will use the Helvetica font for all dot files that 
 doxygen generates. When you want a differently looking font you can specify 
@@ -1619,7 +1624,7 @@ If the UML_LOOK tag is enabled, the fields and methods are shown inside
 the class node. If there are many fields or methods and many nodes the 
 graph may become too big to be useful. The UML_LIMIT_NUM_FIELDS 
 threshold limits the number of items for each type to make the size more 
-managable. Set this to 0 for no limit. Note that the threshold may be 
+manageable. Set this to 0 for no limit. Note that the threshold may be 
 exceeded by 50% before the limit is enforced.
 ' defval='10' minval='0' maxval='100' depends='HAVE_DOT'/>
     <option type='bool' id='TEMPLATE_RELATIONS' docs='

@@ -1834,11 +1834,11 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
        // it's enough to replace these two, provided that the declaration
        // for the HTML version we generate (and as supported by the browser)
        // specifies that all the other symbols used in rawVal are
-       // within the right charachter class (i.e., they're not
-       // some multinational weird charachters not in the BASESET).
+       // within the right character class (i.e., they're not
+       // some multinational weird characters not in the BASESET).
        // We assume that 1) the browser will support whatever is remaining
        // in the formula and 2) the TeX formulae are generally governed
-       // by even stricter charachter restrictions so it should be enough.
+       // by even stricter character restrictions so it should be enough.
        //
        // On some incompliant browsers, additional translation of
        // '>' and '<' into "&gt;" and "&lt;", respectively, might be needed;

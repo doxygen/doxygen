@@ -43,12 +43,6 @@
 #define ADDCHAR(c)    g_outBuf->addChar(c)
 #define ADDARRAY(a,s) g_outBuf->addArray(a,s)
   
-enum GuardType
-{
-  Guard_Cond,
-  Guard_CondNot
-}; 
-
 struct CondCtx
 {
   CondCtx(int line,QCString id,bool b) 
@@ -84,8 +78,6 @@ static int      g_blockCount;
 static bool     g_lastEscaped;
 static int      g_lastBlockContext;
 static bool     g_pythonDocString;
-
-static GuardType        guardType;           // kind of guard for conditional section
 
 static SrcLangExt g_lang;
 static bool       isFixedForm; // For Fortran
@@ -181,22 +173,13 @@ static inline void copyToOutput(const char *s,int len)
 
 static void startCondSection(const char *sectId)
 {
+  //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(g_fileName,g_lineNr,sectId);
   g_condStack.push(new CondCtx(g_lineNr,sectId,g_skip));
-  if (guardType == Guard_Cond) // found @cond
+  if (!expResult) // not enabled
   {
-    if (!expResult) // not enabled
-    {
-      g_skip=TRUE;
-    }
-  }
-  else if (guardType == Guard_CondNot) // found @notcond
-  {
-    if (expResult) // enabled
-    {
-      g_skip=TRUE;
-    }
+    g_skip=TRUE;
   }
 }
 
@@ -212,6 +195,7 @@ static void endCondSection()
     CondCtx *ctx = g_condStack.pop();
     g_skip=ctx->skip;
   }
+  //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
 }
 
 /** copies string \a s with length \a len to the output, while 
@@ -721,7 +705,6 @@ void replaceComment(int offset);
   				   }
 <CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
   				     g_condCtx = YY_START; 
-                                     guardType = Guard_Cond;
   				     BEGIN(CondLine);
   				   }
 <CComment,ReadLine>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
@@ -769,7 +752,6 @@ void replaceComment(int offset);
 <CondLine>[ \t]*
 <CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
 <CondLine>.			   { // forgot section id?
-                                     guardType = Guard_Cond;
   				     if (YY_START!=CondLine) g_condCtx=YY_START;
   				     bool oldSkip=g_skip;
   				     startCondSection(" "); // fake section id causing the section to be hidden unconditionally

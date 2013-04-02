@@ -51,7 +51,7 @@
  *  2001/05: adopted new translation mechanism (trough adapters),
  *           translated new items used since version 1.2.5 and 1.2.6,
  *           revised those function returning strings in OPTIMIZE_OTPUT_FOR_C case,
- *           corrections regarding the plurals of some english terms mantained in the translation,
+ *           corrections regarding the plurals of some english terms maintained in the translation,
  *           changed some terms to better suit the sense
  *  2001/02: translated new items used since version 1.2.4
  *  2000/11: modified slightly the translation in trLegendDocs() function,
@@ -633,6 +633,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="il protocollo "; break;
         case ClassDef::Category:   result+="la categoria "; break;
         case ClassDef::Exception:  result+="l'eccezione "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -794,6 +795,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="o protocollo"; break;
         case ClassDef::Category:   result+="a categoria"; break;
         case ClassDef::Exception:  result+="a eccezione"; break;
+        default: break;
       }
       result+=" è stata generata a partire ";
       if (single) result+="dal seguente file:";
@@ -1657,6 +1659,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+=" il protocollo"; break;
         case ClassDef::Category:   result+=" la categoria"; break;
         case ClassDef::Exception:  result+=" l'eccezione"; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -1725,6 +1728,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="o protocollo"; break;
         case ClassDef::Category:   result+="a categoria"; break;
         case ClassDef::Exception:  result+="a eccezione"; break;
+        default: break;
       }
       result+=" è stata generata a partire ";
       if (single) result+="dal seguente file:"; else result+="dai seguenti file:";

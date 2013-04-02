@@ -623,6 +623,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result=" Protocol"; break;
         case ClassDef::Category:   result=" Category"; break;
         case ClassDef::Exception:  result=" استثناء"; break;
+        default: break;
       }
       if (isTemplate) result+=" قالب";
       result=QCString(clName) + " مرجع" +result ;
@@ -779,6 +780,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" از روی پرونده ";
       if (single) result+=""; else result+="های ";
@@ -1651,6 +1653,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Reference";
@@ -1708,6 +1711,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" was generated from the following file";
       if (single) result+=":"; else result+="s:";

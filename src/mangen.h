@@ -95,7 +95,7 @@ class ManGenerator : public OutputGenerator
     void startMemberSections() {}
     void endMemberSections() {}
     void startHeaderSection() {}
-    void endHeaderSection() {}
+    void endHeaderSection();
     void startMemberHeader(const char *);
     void endMemberHeader();
     void insertMemberAlign(bool) {}
@@ -229,6 +229,7 @@ class ManGenerator : public OutputGenerator
     void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}
     void endParameterList() {}
+    void exceptionEntry(const char*,bool) {}
 
     void startFontClass(const char *) {}
     void endFontClass() {}

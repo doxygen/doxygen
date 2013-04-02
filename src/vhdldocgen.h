@@ -117,8 +117,6 @@ class VhdlDocGen
     static MemberDef* findFunction(const QList<Argument> &ql,
                                    const QCString& name,
                                    const QCString& package, bool type);
-    static int compareString(const QCString& s1,
-                             const QCString& s2);
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
@@ -154,8 +152,8 @@ class VhdlDocGen
     //-----------------------------------------------------
     // translatable items
     
-    static QCString trTypeString(int type);
-    static QCString trVhdlType(int type,bool sing=true);
+    static QCString trTypeString(uint64 type);
+    static QCString trVhdlType(uint64 type,bool sing=true);
 
     // trClassHierarchy.
     static QCString trDesignUnitHierarchy();
@@ -206,25 +204,16 @@ class VhdlDocGen
         const char *title,const char *subtitle,bool showEnumValues,int type);
 
     static bool writeClassType(ClassDef *&,OutputList &ol ,QCString & cname);
-   
 
     static QCString convertArgumentListToString(const ArgumentList* al,bool f);
     static QCString getProcessNumber();
     static QCString getRecordNumber();
    
     static QCString getClassName(const ClassDef*);
-    // obsolete
-    // static void adjustRecordMember(MemberDef *mdef);
-
-    static void writeLink(const MemberDef* mdef,OutputList &ol);
-    static void adjustMemberName(QCString& nn);
-    static bool membersHaveSpecificType(MemberList *ml,int type);
-    static void startFonts(const QCString& q, const char *keyword,OutputList& ol);
     static bool isNumber(const QCString& s);
     static QCString getProtectionName(int prot);
-    static QCString splitString(QCString & str,  char c);
+
     static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
-	
     static bool findConstraintFile( LayoutNavEntry *lne);
 
     static ClassDef*  findArchitecture(const ClassDef *cd);

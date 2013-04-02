@@ -473,6 +473,25 @@ static int processNmdash(GrowBuf &out,const char *data,int,int size)
   return 0;
 }
 
+/** Process quoted section "...", can contain one embedded newline */
+static int processQuoted(GrowBuf &out,const char *data,int,int size)
+{
+  int i=1;
+  int nl=0;
+  while (i<size && data[i]!='"' && nl<2) 
+  {
+    if (data[i]=='\n') nl++;
+    i++;
+  }
+  if (i<size && data[i]=='"' && nl<2)
+  {
+    out.addStr(data,i+1);
+    return i+1;
+  }
+  // not a quoted section
+  return 0;
+}
+
 /** Process a HTML tag. Note that <pre>..</pre> are treated specially, in
  *  the sense that all code inside is written unprocessed
  */
@@ -2197,6 +2216,7 @@ QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input
     g_actions[(unsigned int)'!']=processLink;
     g_actions[(unsigned int)'<']=processHtmlTag;
     g_actions[(unsigned int)'-']=processNmdash;
+    g_actions[(unsigned int)'"']=processQuoted;
     init=TRUE;
   }
 

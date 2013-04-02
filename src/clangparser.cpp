@@ -122,6 +122,19 @@ static QStrList getClangOptions()
   return options;
 }
 
+#if 0
+static void inclusionVisitor(CXFile includedFile,
+                             CXSourceLocation* inclusionStack,
+                             unsigned includeLen,
+                             CXClientData clientData)
+{
+  const char *fileName = (const char *)clientData;
+  CXString incFileName = clang_getFileName(includedFile);
+  printf("--- file %s includes %s\n",fileName,clang_getCString(incFileName));
+  clang_disposeString(incFileName);
+}
+#endif
+
 void ClangParser::start(const char *fileName)
 {
   static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
@@ -177,6 +190,10 @@ void ClangParser::start(const char *fileName)
 
   if (p->tu)
   {
+    //clang_getInclusions(p->tu,
+    //                    inclusionVisitor,
+    //                    (CXClientData)fileName
+    //                   );
     for (uint i=0, n=clang_getNumDiagnostics(p->tu); i!=n; ++i) 
     {
       CXDiagnostic diag = clang_getDiagnostic(p->tu, i); 
@@ -610,7 +627,7 @@ void ClangParser::writeSources(OutputList &ol,FileDef *fd)
     char const *s = clang_getCString(tokenString);
     CXCursorKind cursorKind  = clang_getCursorKind(p->cursors[i]);
     CXTokenKind tokenKind = clang_getTokenKind(p->tokens[i]);
-    printf("%d:%d %s cursorKind=%d tokenKind=%d\n",line,column,s,cursorKind,tokenKind);
+    //printf("%d:%d %s cursorKind=%d tokenKind=%d\n",line,column,s,cursorKind,tokenKind);
     switch (tokenKind)
     {
       case CXToken_Keyword: 

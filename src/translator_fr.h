@@ -679,6 +679,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
             case ClassDef::Protocol:   result+="le protocol "; break; 
             case ClassDef::Category:   result+="la catégorie "; break; 
             case ClassDef::Exception:  result+="l'exception "; break;
+            default: break;
          }
          result+=(QCString)clName;
          return result;
@@ -838,6 +839,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
             case ClassDef::Protocol:   result+="ce protocol"; female = false; break;
             case ClassDef::Category:   result+="cette catégorie"; break; 
             case ClassDef::Exception:  result+="cette exception"; break;
+            default: break;
          }
          if (female) result+= " a été générée à partir ";
          else result+=" a été généré à partir ";
@@ -1739,6 +1741,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="du protocole "; break;
         case ClassDef::Category:   result+="de la catégorie "; break;
         case ClassDef::Exception:  result+="de l'exception "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -1806,6 +1809,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="ce protocole"; break;
         case ClassDef::Category:   result+="cette catégorie"; break;
         case ClassDef::Exception:  result+="cette exception"; break;
+        default: break;
       }
       result+=" a été générée à partir ";
       if (single) result+="du fichier suivant :"; else result+="des fichiers suivants :";

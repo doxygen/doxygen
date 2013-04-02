@@ -59,12 +59,6 @@
 #define DBG_CTX(x) do { } while(0)
 
 #define YY_NEVER_INTERACTIVE 1
-enum GuardType
-{
-  Guard_Cond,
-  Guard_CondNot
-}; 
-
 struct FileState
 {
   FileState(int size) : fileBuf(size), 
@@ -370,8 +364,8 @@ static bool               g_isSource;
 
 static bool               g_lexInit = FALSE;
 static int                g_fenceSize = 0;
+static bool               g_ccomment;
 
-static GuardType        guardType;           // kind of guard for conditional section
 //DefineDict* getGlobalDefineDict() 
 //{
 //  return g_globalDefineDict;
@@ -1665,24 +1659,14 @@ static void readIncludeFile(const QCString &inc)
 
 static void startCondSection(const char *sectId)
 {
+  //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(g_yyFileName,g_yyLineNr,sectId);
   g_condStack.push(new bool(g_skip));
-  if (guardType == Guard_Cond)
+  if (!expResult)
   {
-    if (!expResult)
-    {
-      g_skip=TRUE;
-    }
+    g_skip=TRUE;
   }
-  else if (guardType == Guard_CondNot)
-  {
-    if (expResult)
-    {
-      g_skip=TRUE;
-    }
-  }
-  //printf("startCondSection(%s)=%d expResult=%d\n",sectId,g_skip,expResult);
 }
 
 static void endCondSection()
@@ -1696,6 +1680,7 @@ static void endCondSection()
     bool *ctx = g_condStack.pop();
     g_skip=*ctx;
   }
+  //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
 }
 
 static void forceEndCondSection()
@@ -1796,7 +1781,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	IgnoreLine
 %x	FindDefineArgs
 %x	ReadString
-%x	CondLine
+%x	CondLineC
+%x	CondLineCpp
 %x      SkipCond
 
 %%
@@ -2519,17 +2505,28 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  BEGIN(SkipVerbatim);
   					}
-<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
-                                          guardType = Guard_Cond;
-  					  g_condCtx = YY_START;
-  					  outputArray(yytext,yyleng);
-  					  BEGIN(CondLine);
+<SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
+                                          g_ccomment=TRUE;  
+  					  BEGIN(CondLineCpp);
   					}
-<CondLine>[!()&| \ta-z_A-Z0-9.\-]+      {
+<SkipCComment>[\\@]"cond"[ \t]+	{ // conditional section
+                                          g_ccomment=FALSE;  
+  					  BEGIN(CondLineC);
+  					}
+<CondLineC,CondLineCpp>[!()&| \ta-z_A-Z0-9.\-]+      {
   				          startCondSection(yytext);
-  					  outputArray(yytext,(int)yyleng);
                                           if (g_skip)
                                           {
+                                            if (YY_START==CondLineC)
+                                            {
+                                              // end C comment
+  					      outputArray("*/",2);
+                                              g_ccomment=TRUE;
+                                            }
+                                            else
+                                            {
+                                              g_ccomment=FALSE;
+                                            }
                                             BEGIN(SkipCond);
                                           }
                                           else
@@ -2537,16 +2534,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    BEGIN(g_condCtx);
                                           }
   					}
-<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n {
-                                          guardType = Guard_Cond;
-  					  g_condCtx = YY_START;
-  					  outputArray(yytext,(int)yyleng);
-  					}
-<CondLine>.				{
+<CondLineC,CondLineCpp>.		{ // non-guard character
   					  unput(*yytext);
   					  startCondSection(" ");
                                           if (g_skip)
                                           {
+                                            if (YY_START==CondLineC)
+                                            {
+                                              // end C comment
+  					      outputArray("*/",2);
+                                              g_ccomment=TRUE;
+                                            }
+                                            else
+                                            {
+                                              g_ccomment=FALSE;
+                                            }
                                             BEGIN(SkipCond);
                                           }
                                           else
@@ -2554,15 +2556,36 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(g_condCtx);
                                           }
   					}
+<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n { // no guard
+                                          if (YY_START==SkipCComment)
+                                          {
+                                            g_ccomment=TRUE;
+                                            // end C comment
+  					    outputArray("*/",2);
+                                          }
+                                          else
+                                          {
+                                            g_ccomment=FALSE;
+                                          }
+                                          BEGIN(SkipCond);
+  					}
 <SkipCond>\n                            { g_yyLineNr++; outputChar('\n'); }
 <SkipCond>.                             { }
 <SkipCond>[^\/\!*\\@\n]+                { }
+<SkipCond>"//"[/!]                      { g_ccomment=FALSE; }
+<SkipCond>"/*"[*!]                      { g_ccomment=TRUE; }
 <SkipCond>[\\@]"endcond"/[^a-z_A-Z0-9]  { 
-  					  outputArray(yytext,(int)yyleng);
                                           endCondSection(); 
+                                          if (!g_skip)
+                                          {
+                                            if (g_ccomment)
+                                            {
+                                              outputArray("/** ",4);
+                                            }
+                                            BEGIN(g_condCtx);
+                                          }
                                         }
 <SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9] {
-  					  outputArray(yytext,(int)yyleng);
   					  endCondSection();
                                           if (!g_skip) 
                                           {
@@ -2823,14 +2846,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <*>"/*"/"*/"				|
 <*>"/*"[*]?				{
-					  outputArray(yytext,(int)yyleng);
-  					  g_lastCContext=YY_START;
-					  g_commentCount=1;
-					  if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
-					  BEGIN(SkipCComment);
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+					    outputArray(yytext,(int)yyleng);
+  					    g_lastCContext=YY_START;
+					    g_commentCount=1;
+					    if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
+					    BEGIN(SkipCComment);
+                                          }
   					}
 <*>"//"[/]?				{
-                                          if (YY_START==SkipVerbatim)
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond)
                                           {
                                             REJECT;
                                           }

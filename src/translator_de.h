@@ -133,7 +133,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public Translator
+class TranslatorGerman : public TranslatorAdapter_1_8_2
 {
   public:
 
@@ -684,6 +684,7 @@ class TranslatorGerman : public Translator
         case ClassDef::Protocol:  result+="Protokoll"; break;
         case ClassDef::Category:  result+="Kategorie"; break; 
         case ClassDef::Exception:  result+="Ausnahmen"; break;
+        default: break;
       }
       result+="referenz";
       return result;
@@ -851,6 +852,7 @@ class TranslatorGerman : public Translator
         case ClassDef::Protocol:   result+="s Protokoll"; break; 
         case ClassDef::Category:   result+=" Kategorie"; break;
         case ClassDef::Exception:  result+=" Ausnahme"; break;
+        default: break;
       }
       result+=" wurde erzeugt aufgrund der Datei";
       if (single) result+=":"; else result+="en:";
@@ -1776,6 +1778,7 @@ class TranslatorGerman : public Translator
         case ClassDef::Protocol:   result+="Protokoll"; break;
         case ClassDef::Category:   result+="Kategorie"; break;
         case ClassDef::Exception:  result+="Ausnahmen"; break;
+        default: break;
       }
       if (isTemplate) result+="-Template";
       result+="-Referenz";
@@ -1844,6 +1847,7 @@ class TranslatorGerman : public Translator
         case ClassDef::Protocol:   result+="dieses Protokoll"; break;
         case ClassDef::Category:   result+="diese Kategorie"; break;
         case ClassDef::Exception:  result+="diese Ausnahme"; break;
+        default: break;
       }
       if (single)
         result+=" wurde aus der folgenden Datei erzeugt:";

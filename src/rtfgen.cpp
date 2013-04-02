@@ -2701,6 +2701,16 @@ void RTFGenerator::endParameterType()
   t << " ";
 }
 
+void RTFGenerator::exceptionEntry(const char* prefix,bool closeBracket)
+{
+  DBG_RTF(t << "{\\comment (exceptionEntry)}"    << endl)
+  if (prefix)
+      t << " " << prefix;
+  else if (closeBracket)
+      t << ")";
+  t << " ";
+}
+
 void RTFGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
   RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));

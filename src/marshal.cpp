@@ -33,6 +33,12 @@ void marshalUInt(StorageIntf *s,uint v)
   s->write((const char *)b,4);
 }
 
+void marshalUInt64(StorageIntf *s,uint64 v)
+{
+  marshalUInt(s, uint(v>>32));
+  marshalUInt(s, uint(v&0xFFFFFFFF));
+}
+
 void marshalBool(StorageIntf *s,bool b)
 {
   char c = b;
@@ -345,7 +351,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalInt(s,e->section);
   marshalInt(s,(int)e->protection);
   marshalInt(s,(int)e->mtype);
-  marshalInt(s,e->spec);
+  marshalUInt64(s,e->spec);
   marshalInt(s,e->initLines);
   marshalBool(s,e->stat);
   marshalBool(s,e->explicitExternal);
@@ -423,6 +429,13 @@ uint unmarshalUInt(StorageIntf *s)
   s->read((char *)b,4);
   uint result=(((uint)b[0])<<24)+((uint)b[1]<<16)+((uint)b[2]<<8)+(uint)b[3];
   //printf("unmarshalUInt: %x %x %x %x: %x offset=%llx\n",b[0],b[1],b[2],b[3],result,f.pos());
+  return result;
+}
+
+uint64 unmarshalUInt64(StorageIntf *s)
+{
+  uint64 result=uint64(unmarshalUInt(s))<<32;
+  result|=unmarshalUInt(s);
   return result;
 }
 
@@ -719,7 +732,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->section          = unmarshalInt(s);
   e->protection       = (Protection)unmarshalInt(s);
   e->mtype            = (MethodTypes)unmarshalInt(s);
-  e->spec             = unmarshalInt(s);
+  e->spec             = unmarshalUInt64(s);
   e->initLines        = unmarshalInt(s);
   e->stat             = unmarshalBool(s);
   e->explicitExternal = unmarshalBool(s);

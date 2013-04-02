@@ -39,7 +39,8 @@ class NamespaceDef : public Definition
   public:
     NamespaceDef(const char *defFileName,int defLine,int defColumn,
                  const char *name,const char *ref=0,
-                 const char *refFile=0);
+                 const char *refFile=0,const char*type=0,
+                 bool isPublished=false);
    ~NamespaceDef();
     DefType definitionType() const { return TypeNamespace; }
     QCString getOutputFileBase() const;
@@ -63,7 +64,10 @@ class NamespaceDef : public Definition
     void combineUsingRelations();
     QCString displayName(bool=TRUE) const;
     QCString localName() const;
-    
+
+    bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
+    bool isModule()        const { return MODULE == m_type; }
+
     bool isLinkableInProject() const;
     bool isLinkable() const;
     void addMembersToMemberGroup();
@@ -101,12 +105,14 @@ class NamespaceDef : public Definition
     void endMemberDeclarations(OutputList &ol);
     void writeClassDeclarations(OutputList &ol,const QCString &title);
     void writeInlineClasses(OutputList &ol);
-    void writeNamespaceDeclarations(OutputList &ol,const QCString &title);
+    void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
+            bool isConstantGroup=false);
     void writeMemberGroups(OutputList &ol);
     void writeAuthorSection(OutputList &ol);
     void startMemberDocumentation(OutputList &ol);
     void endMemberDocumentation(OutputList &ol);
     void writeSummaryLinks(OutputList &ol);
+    void addNamespaceAttributes(OutputList &ol);
 
     QCString              fileName;
     QStrList              files;
@@ -121,6 +127,8 @@ class NamespaceDef : public Definition
     ClassSDict           *classSDict;
     NamespaceSDict       *namespaceSDict;
     bool                  m_subGrouping;
+    enum { NAMESPACE, MODULE, CONSTANT_GROUP } m_type;
+    bool m_isPublished;
 };
 
 /** A list of NamespaceDef objects. */
@@ -164,7 +172,8 @@ class NamespaceSDict : public SDict<NamespaceDef>
                     ((NamespaceDef *)item2)->name()
                    );
     }
-    void writeDeclaration(OutputList &ol,const char *title,bool localName=FALSE);
+    void writeDeclaration(OutputList &ol,const char *title,
+            bool isConstantGroup=false, bool localName=FALSE);
     bool declVisible() const;
 };
 

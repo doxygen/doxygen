@@ -104,7 +104,7 @@ when the translator was updated.
     <td>Czech</td>
     <td>Petr Přikryl</td>
     <td>prikryl at atlas dot cz</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Danish</td>
@@ -116,7 +116,7 @@ when the translator was updated.
     <td>Dutch</td>
     <td>Dimitri van Heesch</td>
     <td>dimitri at stack dot nl</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>English</td>
@@ -128,7 +128,7 @@ when the translator was updated.
     <td>Esperanto</td>
     <td>Ander Martínez</td>
     <td>ander dot basaundi at gmail dot com</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Finnish</td>
@@ -146,13 +146,13 @@ when the translator was updated.
     <td>German</td>
     <td>Peter Grotrian<br/>Jens Seidel</td>
     <td>Peter dot Grotrian at pdv-FS dot de<br/>jensseidel at users dot sf dot net</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Greek</td>
     <td>Paul Gessos</td>
     <td>gessos dot paul at yahoo dot gr</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Hungarian</td>
@@ -266,7 +266,7 @@ when the translator was updated.
     <td>Slovak</td>
     <td>Kali+Laco Švec<br/>Petr Přikryl</td>
     <td><span style="color: brown">[the Slovak language advisors]</span><br/>prikryl at atlas dot cz</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Slovene</td>
@@ -278,7 +278,7 @@ when the translator was updated.
     <td>Spanish</td>
     <td>Bartomeu<br/>Francisco Oltra Thennet<br/>David Vaquero</td>
     <td>bartomeu at loteria3cornella dot com<br/><span style="color: brown">[unreachable]</span><br/>david at grupoikusnet dot com</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Swedish</td>
@@ -296,7 +296,7 @@ when the translator was updated.
     <td>Ukrainian</td>
     <td>Olexij Tkatchenko<br/>Petro  Yermolenko</td>
     <td><span style="color: brown">[resigned]</span><br/>python at i dot ua</td>
-    <td>up-to-date</td>
+    <td>1.8.04</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Vietnamese</td>
@@ -341,26 +341,26 @@ when the translator was updated.
   \hline
   Croatian & Boris Bralo & {\tt\tiny boris dot bralo at gmail dot com} & 1.8.2 \\
   \hline
-  Czech & Petr Přikryl & {\tt\tiny prikryl at atlas dot cz} & up-to-date \\
+  Czech & Petr Přikryl & {\tt\tiny prikryl at atlas dot cz} & 1.8.04 \\
   \hline
   Danish & Poul-Erik Hansen & {\tt\tiny pouhan at gnotometrics dot dk} & 1.8.0 \\
   ~ & Erik Søe Sørensen & {\tt\tiny eriksoe+doxygen at daimi dot au dot dk} & ~ \\
   \hline
-  Dutch & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & up-to-date \\
+  Dutch & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & 1.8.04 \\
   \hline
   English & Dimitri van Heesch & {\tt\tiny dimitri at stack dot nl} & up-to-date \\
   \hline
-  Esperanto & Ander Martínez & {\tt\tiny ander dot basaundi at gmail dot com} & up-to-date \\
+  Esperanto & Ander Martínez & {\tt\tiny ander dot basaundi at gmail dot com} & 1.8.04 \\
   \hline
   Finnish & Antti Laine & {\tt\tiny antti dot a dot laine at tut dot fi} & 1.6.0 \\
   \hline
   French & David Martinet & {\tt\tiny contact at e-concept-applications dot fr} & 1.8.0 \\
   ~ & Xavier Outhier & {\tt\tiny xouthier at yahoo dot fr} & ~ \\
   \hline
-  German & Peter Grotrian & {\tt\tiny Peter dot Grotrian at pdv-FS dot de} & up-to-date \\
+  German & Peter Grotrian & {\tt\tiny Peter dot Grotrian at pdv-FS dot de} & 1.8.04 \\
   ~ & Jens Seidel & {\tt\tiny jensseidel at users dot sf dot net} & ~ \\
   \hline
-  Greek & Paul Gessos & {\tt\tiny gessos dot paul at yahoo dot gr} & up-to-date \\
+  Greek & Paul Gessos & {\tt\tiny gessos dot paul at yahoo dot gr} & 1.8.04 \\
   \hline
   Hungarian & Ákos Kiss & {\tt\tiny akiss at users dot sourceforge dot net} & 1.4.6 \\
   ~ & Földvári György & {\tt\tiny [unreachable] foldvari lost at cyberspace} & ~ \\
@@ -412,12 +412,12 @@ when the translator was updated.
   \hline
   SerbianCyrilic & Nedeljko Stefanovic & {\tt\tiny stenedjo at yahoo dot com} & 1.6.0 \\
   \hline
-  Slovak & Kali+Laco Švec & {\tt\tiny [the Slovak language advisors]} & up-to-date \\
+  Slovak & Kali+Laco Švec & {\tt\tiny [the Slovak language advisors]} & 1.8.04 \\
   ~ & Petr Přikryl & {\tt\tiny prikryl at atlas dot cz} & ~ \\
   \hline
   Slovene & Matjaž Ostroveršnik & {\tt\tiny matjaz dot ostroversnik at ostri dot org} & 1.4.6 \\
   \hline
-  Spanish & Bartomeu & {\tt\tiny bartomeu at loteria3cornella dot com} & up-to-date \\
+  Spanish & Bartomeu & {\tt\tiny bartomeu at loteria3cornella dot com} & 1.8.04 \\
   ~ & Francisco Oltra Thennet & {\tt\tiny [unreachable] foltra at puc dot cl} & ~ \\
   ~ & David Vaquero & {\tt\tiny david at grupoikusnet dot com} & ~ \\
   \hline
@@ -425,7 +425,7 @@ when the translator was updated.
   \hline
   Turkish & Emin Ilker Cetinbas & {\tt\tiny niw3 at yahoo dot com} & 1.7.5 \\
   \hline
-  Ukrainian & Olexij Tkatchenko & {\tt\tiny [resigned] olexij at tkatchenko dot com} & up-to-date \\
+  Ukrainian & Olexij Tkatchenko & {\tt\tiny [resigned] olexij at tkatchenko dot com} & 1.8.04 \\
   ~ & Petro  Yermolenko & {\tt\tiny python at i dot ua} & ~ \\
   \hline
   Vietnamese & Dang Minh Tuan & {\tt\tiny tuanvietkey at gmail dot com} & 1.6.0 \\
@@ -651,8 +651,8 @@ for the supported languages, the \c translator.py Python
 script was developed (located in \c doxygen/doc directory). 
 It extracts the important information about obsolete and
 new methods from the source files for each of the languages.  
-The information is stored in the <em>translator report</em> ASCII file
-(translator_report.txt). 
+The information is stored in the translator report ASCII file
+(\c translator_report.txt). 
 
 \htmlonly If you compiled this documentation
 from sources and if you have also doxygen sources available the
@@ -750,6 +750,11 @@ methods.  Because of that, the translator adapter classes should be
 used if possible.  On the other hand, implementation of adapters for
 really obsolete translators brings too much maintenance and
 run-time overhead.
+
+\htmlonly
+Go to the <a href="perlmod.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
 
 */
 

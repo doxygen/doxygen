@@ -19,7 +19,7 @@
 #define TRANSLATOR_CN_H
 
 /*!
-   If you want insert a space whenever Chinese meets English charactors, set
+   If you want insert a space whenever Chinese meets English characters, set
    CN_SPC to " ", else null.
 */
 #define CN_SPC " "
@@ -30,7 +30,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     /*! Used for identification of the language. The identification
      * should not be translated. It should be replaced by the name
      * of the language in English using lower-case characters only
-     * (e.g. "czech", "japanese", "russian", etc.). It sould be equal to
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in the language.cpp.
      */
     
@@ -475,6 +475,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="协议"; break;
         case ClassDef::Category:   result+="分类"; break;
         case ClassDef::Exception:  result+="异常"; break;
+        default: break;
       }
       result+=CN_SPC"参考";
       return result;
@@ -643,6 +644,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="协议"; break;
         case ClassDef::Category:   result+="分类"; break;
         case ClassDef::Exception:  result+="异常"; break;
+        default: break;
       }
       result+="的文档由以下文件生成:";
       return result;
@@ -1609,6 +1611,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+=CN_SPC"协议"; break;
         case ClassDef::Category:   result+=CN_SPC"目录"; break;
         case ClassDef::Exception:  result+=CN_SPC"异常"; break;
+        default: break;
       }
       if (isTemplate) result+="模板"CN_SPC;
       result+="参考手册";
@@ -1683,6 +1686,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+=CN_SPC"协议"; break;
         case ClassDef::Category:   result+=CN_SPC"目录"; break;
         case ClassDef::Exception:  result+=CN_SPC"异常"; break;
+        default: break;
       }
       result+=CN_SPC"的文档由以下文件生成:";
       return result;

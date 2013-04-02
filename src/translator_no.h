@@ -650,6 +650,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         case ClassDef::Exception:  result+=" Unntak"; break;
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
+        default: break;
       }
       if (isTemplate) result+=" Mal";
       result+=" Referanse";
@@ -809,6 +810,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         case ClassDef::Exception:  result+="dette unntak"; break;
         case ClassDef::Protocol:   result+="denne protocol"; break;
         case ClassDef::Category:   result+="denne category"; break;
+        default: break;
       }
       result+=" ble generert fra følgende fil";
       if (single) result+=":"; else result+="er:";

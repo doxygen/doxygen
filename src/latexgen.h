@@ -240,6 +240,7 @@ class LatexGenerator : public OutputGenerator
     void endParameterName(bool,bool,bool);
     void startParameterList(bool);
     void endParameterList();
+    void exceptionEntry(const char*,bool);
 
     void startConstraintList(const char *);
     void startConstraintParam();

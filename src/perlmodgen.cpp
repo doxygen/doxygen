@@ -1575,6 +1575,8 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
   case MemberType_DCOP:        memType="dcop";      isFunc=TRUE; break;
   case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
   case MemberType_Event:       memType="event";     break;
+  case MemberType_Interface:   memType="interface"; break;
+  case MemberType_Service:     memType="service";   break;
   }
 
   m_output.openHash()

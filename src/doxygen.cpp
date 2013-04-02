@@ -295,6 +295,24 @@ static void findMember(EntryNav *rootNav,
                        bool isFunc
                       );
 
+enum FindBaseClassRelation_Mode
+{
+  TemplateInstances,
+  DocumentedOnly,
+  Undocumented
+};
+
+static bool findClassRelation(
+                           EntryNav *rootNav,
+                           Definition *context,
+                           ClassDef *cd,
+                           BaseInfo *bi,
+                           QDict<int> *templateNames,
+                           /*bool insertUndocumented*/
+                           FindBaseClassRelation_Mode mode,
+                           bool isArtificial
+                          );
+
 /** A struct contained the data for an STL class */
 struct STLInfo
 {
@@ -1138,7 +1156,8 @@ ArgumentList *getTemplateArgumentsFromName(
   return ali.current();
 }
 
-static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
+static
+ClassDef::CompoundType convertToCompoundType(int section,uint64 specifier)
 {
   ClassDef::CompoundType sec=ClassDef::Class; 
   if (specifier&Entry::Struct) 
@@ -1153,6 +1172,10 @@ static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
     sec=ClassDef::Protocol;
   else if (specifier&Entry::Exception) 
     sec=ClassDef::Exception;
+  else if (specifier&Entry::Service)
+    sec=ClassDef::Service;
+  else if (specifier&Entry::Singleton)
+    sec=ClassDef::Singleton;
 
   switch(section)
   {
@@ -1179,6 +1202,12 @@ static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
       //case Entry::EXCEPTION_SEC:
     case Entry::EXCEPTIONDOC_SEC:
       sec=ClassDef::Exception; 
+      break;
+    case Entry::SERVICEDOC_SEC:
+      sec=ClassDef::Service;
+      break;
+    case Entry::SINGLETONDOC_SEC:
+      sec=ClassDef::Singleton;
       break;
   }
   return sec;
@@ -1716,7 +1745,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           tagFileName=rootNav->tagInfo()->fileName;
         }
         //printf("++ new namespace %s lang=%s\n",fullName.data(),langToString(root->lang).data());
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,root->startColumn,fullName,tagName,tagFileName);
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,root->startColumn,fullName,tagName,tagFileName,root->type,root->spec&Entry::Published);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -2275,7 +2304,7 @@ static MemberDef *addVariableToClass(
   // new member variable, typedef or enum value
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,root->startColumn,
-      root->type,name,root->args,0,
+      root->type,name,root->args,root->exception,
       prot,Normal,root->stat,related,
       mtype,root->tArgLists ? root->tArgLists->last() : 0,0);
   md->setTagInfo(rootNav->tagInfo());
@@ -3002,6 +3031,148 @@ static void buildVarList(EntryNav *rootNav)
 }
 
 //----------------------------------------------------------------------
+// Searches the Entry tree for Interface sections (UNO IDL only).
+// If found they are stored in their service or in the global list.
+//
+
+static void addInterfaceOrServiceToServiceOrSingleton(
+        EntryNav *const rootNav,
+        ClassDef *const cd,
+        QCString const& rname)
+{
+  Entry *const root = rootNav->entry();
+  FileDef *const fd = rootNav->fileDef();
+  enum MemberType const type = (rootNav->section()==Entry::EXPORTED_INTERFACE_SEC)
+      ? MemberType_Interface
+      : MemberType_Service;
+  MemberDef *const md = new MemberDef(
+      root->fileName, root->startLine, root->startColumn, root->type, rname,
+      "", "", root->protection, root->virt, root->stat, Member,
+      type, 0, root->argList);
+  md->setTagInfo(rootNav->tagInfo());
+  md->setMemberClass(cd);
+  md->setDocumentation(root->doc,root->docFile,root->docLine);
+  md->setDocsForDefinition(false);
+  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setMemberSpecifiers(root->spec);
+  md->setMemberGroupId(root->mGrpId);
+  md->setTypeConstraints(root->typeConstr);
+  md->setLanguage(root->lang);
+  md->setBodyDef(fd);
+  md->setFileDef(fd);
+  md->addSectionsToDefinition(root->anchors);
+  QCString const def = root->type + " " + rname;
+  md->setDefinition(def);
+  md->enableCallGraph(root->callGraph);
+  md->enableCallerGraph(root->callerGraph);
+
+  Debug::print(Debug::Functions,0,
+      "  Interface Member:\n"
+      "    `%s' `%s' proto=%d\n"
+      "    def=`%s'\n",
+      root->type.data(),
+      rname.data(),
+      root->proto,
+      def.data()
+              );
+
+  // add member to the global list of all members
+  MemberName *mn;
+  if ((mn=Doxygen::memberNameSDict->find(rname)))
+  {
+    mn->append(md);
+  }
+  else
+  {
+    mn = new MemberName(rname);
+    mn->append(md);
+    Doxygen::memberNameSDict->append(rname,mn);
+  }
+
+  // add member to the class cd
+  cd->insertMember(md);
+  // also add the member as a "base" (to get nicer diagrams)
+  // hmm... should "optional" interface/service be handled differently?
+  BaseInfo base(rname,Public,Normal);
+  findClassRelation(rootNav,cd,cd,&base,0,DocumentedOnly,true)
+  || findClassRelation(rootNav,cd,cd,&base,0,Undocumented,true);
+  // add file to list of used files
+  cd->insertUsedFile(root->fileName);
+
+  addMemberToGroups(root,md);
+  rootNav->changeSection(Entry::EMPTY_SEC);
+  md->setRefItems(root->sli);
+}
+
+static void buildInterfaceAndServiceList(EntryNav *const rootNav)
+{
+  if (rootNav->section()==Entry::EXPORTED_INTERFACE_SEC ||
+      rootNav->section()==Entry::INCLUDED_SERVICE_SEC)
+  {
+    rootNav->loadEntry(g_storage);
+    Entry *const root = rootNav->entry();
+
+    Debug::print(Debug::Functions,0,
+                 "EXPORTED_INTERFACE_SEC:\n"
+                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesType=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d spec=%lld proto=%d docFile=%s\n",
+                 root->type.data(),
+                 rootNav->parent()->name().data(),
+                 root->name.data(),
+                 root->args.data(),
+                 root->relates.data(),
+                 root->relatesType,
+                 root->fileName.data(),
+                 root->startLine,
+                 root->bodyLine,
+                 root->tArgLists ? (int)root->tArgLists->count() : -1,
+                 root->mGrpId,
+                 root->spec,
+                 root->proto,
+                 root->docFile.data()
+                );
+
+    QCString const rname = removeRedundantWhiteSpace(root->name);
+
+    if (!rname.isEmpty())
+    {
+      QCString const scope = rootNav->parent()->name();
+      ClassDef *const cd = getClass(scope);
+      assert(cd);
+      if (cd && ((ClassDef::Interface == cd->compoundType()) ||
+                 (ClassDef::Service   == cd->compoundType()) ||
+                 (ClassDef::Singleton == cd->compoundType())))
+      {
+        addInterfaceOrServiceToServiceOrSingleton(rootNav,cd,rname);
+      }
+      else
+      {
+        assert(false); // was checked by scanner.l
+      }
+    }
+    else if (rname.isEmpty())
+    {
+      warn(root->fileName,root->startLine,
+           "warning: Illegal member name found.");
+    }
+
+    rootNav->releaseEntry();
+  }
+  // can only have these in IDL anyway
+  switch (rootNav->lang())
+  {
+    case SrcLangExt_Unknown: // fall through (root node always is Unknown)
+    case SrcLangExt_IDL:
+        RECURSE_ENTRYTREE(buildInterfaceAndServiceList,rootNav);
+        break;
+    default:
+        return; // nothing to do here
+  }
+}
+
+
+//----------------------------------------------------------------------
 // Searches the Entry tree for Function sections.
 // If found they are stored in their class or in the global list.
 
@@ -3188,7 +3359,7 @@ static void buildFunctionList(EntryNav *rootNav)
 
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesType=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d spec=%d proto=%d docFile=%s\n",
+                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesType=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d spec=%lld proto=%d docFile=%s\n",
                  root->type.data(),
                  rootNav->parent()->name().data(),
                  root->name.data(),
@@ -3929,24 +4100,6 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   //      );
   return result;
 }
-
-enum FindBaseClassRelation_Mode 
-{ 
-  TemplateInstances, 
-  DocumentedOnly, 
-  Undocumented 
-};
-
-static bool findClassRelation(
-                           EntryNav *rootNav,
-                           Definition *context,
-                           ClassDef *cd,
-                           BaseInfo *bi,
-                           QDict<int> *templateNames,
-                           /*bool insertUndocumented*/
-                           FindBaseClassRelation_Mode mode,
-                           bool isArtificial
-                          );
 
 
 static void findUsedClassesForClass(EntryNav *rootNav,
@@ -5528,7 +5681,7 @@ static void findMember(EntryNav *rootNav,
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl=`%s',related=`%s',overload=%d,"
                "isFunc=%d mGrpId=%d tArgList=%p (#=%d) "
-               "spec=%d lang=%x\n",
+               "spec=%lld lang=%x\n",
                root,funcDecl.data(),root->relates.data(),overloaded,isFunc,root->mGrpId,
                root->tArgLists,root->tArgLists ? root->tArgLists->count() : 0,
                root->spec,root->lang
@@ -6563,7 +6716,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
   Entry *root = rootNav->entry();
   int i=-1,l;
   Debug::print(Debug::FindMembers,0,
-      "findMemberDocumentation(): root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->spec=%d root->mGrpId=%d\n",
+      "findMemberDocumentation(): root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->spec=%lld root->mGrpId=%d\n",
       root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->spec,root->mGrpId
       );
   //printf("rootNav->parent()->name()=%s\n",rootNav->parent()->name().data());
@@ -6668,6 +6821,11 @@ static void filterMemberDocumentation(EntryNav *rootNav)
     //if (!root->relates.isEmpty()) printf("  Relates %s\n",root->relates.data());
     findMember(rootNav,root->name,FALSE,FALSE);
   }
+  else if (root->section==Entry::EXPORTED_INTERFACE_SEC ||
+           root->section==Entry::INCLUDED_SERVICE_SEC)
+  {
+    findMember(rootNav,root->type + " " + root->name,FALSE,FALSE);
+  }
   else
   {
     // skip section 
@@ -6682,7 +6840,9 @@ static void findMemberDocumentation(EntryNav *rootNav)
       rootNav->section()==Entry::FUNCTION_SEC ||
       rootNav->section()==Entry::VARIABLE_SEC ||
       rootNav->section()==Entry::VARIABLEDOC_SEC ||
-      rootNav->section()==Entry::DEFINE_SEC
+      rootNav->section()==Entry::DEFINE_SEC ||
+      rootNav->section()==Entry::INCLUDED_SERVICE_SEC ||
+      rootNav->section()==Entry::EXPORTED_INTERFACE_SEC
      )
   {
     rootNav->loadEntry(g_storage);
@@ -6824,6 +6984,7 @@ static void findEnums(EntryNav *rootNav)
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       md->setBodyDef(rootNav->fileDef());
+      md->setMemberSpecifiers(root->spec); // UNO IDL "published"
       md->setEnumBaseType(root->args);
       //printf("Enum %s definition at line %d of %s: protection=%d\n",
       //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);
@@ -10503,6 +10664,9 @@ void parseInput()
   g_s.begin("Searching for documented variables...\n");
   buildVarList(rootNav);
   g_s.end();
+
+  g_s.begin("Building interface member list...\n");
+  buildInterfaceAndServiceList(rootNav); // UNO IDL
 
   g_s.begin("Building member list...\n"); // using class info only !
   buildFunctionList(rootNav);

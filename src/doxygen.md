@@ -6,7 +6,7 @@ Introduction
 
 This page provides a high-level overview of the internals of doxygen, with
 links to the relevant parts of the code. This document is intended for
-developers who want to work on doxygen. Users of doxygen are refered to the
+developers who want to work on doxygen. Users of doxygen are referred to the
 [User Manual](http://www.doxygen.org/manual.html).
 
 The generic starting point of the application is of cource the main() function.

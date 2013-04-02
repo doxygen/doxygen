@@ -620,6 +620,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+=" Protokol"; break;
         case ClassDef::Category:   result+=" Kategori"; break;
         case ClassDef::Exception:  result+=" İstisna"; break;
+        default: break;
       }
       if (isTemplate) result+=" Şablon";
       result+=" Referans";
@@ -779,6 +780,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategori"; break;
         case ClassDef::Exception:  result+="istisna"; break;
+        default: break;
       }
       result+=" için dokümantasyon aşağıdaki dosya";
       if (single) result+=""; else result+="lar";
@@ -1676,6 +1678,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+=" Protokol"; break;
         case ClassDef::Category:   result+=" Kategori"; break;
         case ClassDef::Exception:  result+=" İstisna"; break;
+        default: break;
       }
       if (isTemplate) result+=" Şablon";
       result+=" Referans";
@@ -1743,6 +1746,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategori"; break;
         case ClassDef::Exception:  result+="istisna"; break;
+        default: break;
       }
       result+=" için dokümantasyon aşağıdaki dosya";
       if (single) result+=":"; else result+="lar";

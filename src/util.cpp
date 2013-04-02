@@ -1824,6 +1824,49 @@ nextChar:
   return growBuf.get();
 }  
 
+/**
+ * Returns the position in the string where a function parameter list
+ * begins, or -1 if one is not found.
+ */
+int findParameterList(const QString &name)
+{
+  int pos=-1;
+  int templateDepth=0;
+  do
+  {
+    if (templateDepth > 0)
+    {
+      int nextOpenPos=name.findRev('>', pos);
+      int nextClosePos=name.findRev('<', pos);
+      if (nextOpenPos!=-1 && nextOpenPos>nextClosePos)
+      {
+        ++templateDepth;
+        pos=nextOpenPos-1;
+      }
+      else
+      {
+        --templateDepth;
+        pos=nextClosePos-1;
+      }
+    }
+    else
+    {
+      int lastAnglePos=name.findRev('>', pos);
+      int bracePos=name.findRev('(', pos);
+      if (lastAnglePos!=-1 && lastAnglePos>bracePos)
+      {
+        ++templateDepth;
+        pos=lastAnglePos-1;
+      }
+      else
+      {
+        return bracePos;
+      }
+    }
+  } while (pos!=-1);
+  return -1;
+}
+
 bool rightScopeMatch(const QCString &scope, const QCString &name)
 {
   return (name==scope || // equal 
@@ -4308,7 +4351,7 @@ bool resolveRef(/* in */  const char *scName,
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
-  if (fullName.find("anonymous_namespace{")==-1)
+  if (fullName.find("anonymous_namespace{")==-1 && fullName.find('<')==-1)
   {
     fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
   }
@@ -4317,7 +4360,7 @@ bool resolveRef(/* in */  const char *scName,
     fullName = removeRedundantWhiteSpace(fullName);
   }
 
-  int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
+  int bracePos=findParameterList(fullName);
   int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
   int scopePos=fullName.findRev("::",endNamePos);
   bool explicitScope = fullName.left(2)=="::" &&   // ::scope or #scope
@@ -4474,7 +4517,7 @@ QCString linkToText(SrcLangExt lang,const char *link,bool isFileName)
     // replace # by ::
     result=substitute(result,"#","::");
     // replace . by ::
-    if (!isFileName) result=substitute(result,".","::");
+    if (!isFileName && result.find('<')==-1) result=substitute(result,".","::");
     // strip leading :: prefix if present
     if (result.at(0)==':' && result.at(1)==':')
     {
@@ -5463,7 +5506,7 @@ QCString convertToJSString(const char *s)
     }
   }
   growBuf.addChar(0);
-  return growBuf.get();
+  return convertCharEntitiesToUTF8(growBuf.get());
 }
 
 
@@ -5610,25 +5653,31 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
     init=FALSE;
   }
 
-  if (s==0) return result;
+  if (s.length()==0) return result;
+  static GrowBuf growBuf;
+  growBuf.clear();
   int p,i=0,l;
   while ((p=entityPat.match(s,i,&l))!=-1)
   {
-    if (p>i) result+=s.mid(i,p-i);
+    if (p>i) 
+    {
+      growBuf.addStr(s.mid(i,p-i));
+    }
     QCString entity = s.mid(p+1,l-2);
     char *code = entityMap.find(entity);
     if (code)
     {
-      result+=code;
+      growBuf.addStr(code);
     }
     else
     {
-      result+=s.mid(p,l);
+      growBuf.addStr(s.mid(p,l));
     }
     i=p+l;
   }
-  result+=s.mid(i,s.length()-i);
-  return result;
+  growBuf.addStr(s.mid(i,s.length()-i));
+  growBuf.addChar(0);
+  return growBuf.get();
 }
 
 /*! Returns the standard string that is generated when the \\overload
@@ -6430,6 +6479,11 @@ QCString stripPath(const char *s)
 {
   QCString result=s;
   int i=result.findRev('/');
+  if (i!=-1)
+  {
+    result=result.mid(i+1);
+  }
+  i=result.findRev('\\');
   if (i!=-1)
   {
     result=result.mid(i+1);

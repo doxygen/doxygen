@@ -63,6 +63,18 @@
 
 static const char svgZoomHeader[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
+"<style type=\"text/css\"><![CDATA[\n"
+".edge:hover path { stroke: red; }\n"
+".edge:hover polygon { stroke: red; fill: red; }\n"
+"]]></style>\n"
+"<script type=\"text/javascript\"><![CDATA[\n"
+"var edges = document.getElementsByTagName('g');\n"
+"for (var i=0;i<edges.length;i++) {\n"
+"  if (edges[i].id.substr(0,4)=='edge') {\n"
+"    edges[i].setAttribute('class','edge');\n"
+"  }\n"
+"}\n"
+"]]></script>\n"
 "        <defs>\n"
 "                <circle id=\"rim\" cx=\"0\" cy=\"0\" r=\"7\"/>\n"
 "                <circle id=\"rim2\" cx=\"0\" cy=\"0\" r=\"3.5\"/>\n"

@@ -51,7 +51,7 @@
 \endverbatim
   then doxygen will remove the braces and correctly parse the result.
 <li>Not all names in code fragments that are included in the documentation
-    are replaced by links (for instance when using \c SOURCE_BROWSER = \c YES)
+    are replaced by links (for instance when using \ref cfg_source_browser "SOURCE_BROWSER" = `YES`)
     and links to overloaded members may point to the wrong member.
     This also holds for the "Referenced by" list that is generated for
     each function.
@@ -62,7 +62,8 @@
     documentation, because of possible ambiguities or lack of
     information about the context in which the code fragment is found.  
 <li>It is not possible to insert a non-member function f in a class A 
-    using the \\relates or \\relatesalso command, if class A already
+    using the \ref cmdrelates "\\relates" or \ref cmdrelatesalso "\\relatesalso" 
+    command, if class A already
     has a member with name f and the same argument list.
 <li>There is only very limited support for member specialization at the
     moment. It only works if there is a specialized template class as

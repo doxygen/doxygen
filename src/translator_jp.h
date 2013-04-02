@@ -601,6 +601,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=decode("プロトコル "); break;
         case ClassDef::Category:   result+=decode("カテゴリ "); break;
         case ClassDef::Exception:  result+=decode("例外 "); break;
+        default: break;
       }
       if (isTemplate) result+=decode("テンプレート ");
       result+=(QCString)clName;
@@ -759,6 +760,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=decode("プロトコル"); break;
         case ClassDef::Category:   result+=decode("カテゴリ"); break;
         case ClassDef::Exception:  result+=decode("例外"); break;
+        default: break;
       }
       result+=decode("の説明は次のファイルから生成されました:");
       return result;
@@ -1660,6 +1662,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=decode("プロトコル "); break;
         case ClassDef::Category:   result+=decode("カテゴリ "); break;
         case ClassDef::Exception:  result+=decode("例外 "); break;
+        default: break;
       }
       if (isTemplate) result += decode("テンプレート ");
       result+=(QCString)clName;
@@ -1720,6 +1723,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=decode("プロトコル"); break;
         case ClassDef::Category:   result+=decode("カテゴリ"); break;
         case ClassDef::Exception:  result+=decode("例外"); break;
+        default: break;
       }
       result+=decode(decode("の説明は次のファイルから生成されました:"));
       return result;

@@ -1162,6 +1162,7 @@ void addConfigOptions(Config *cfg)
                  FALSE
                 );
 #endif
+#if USE_LIBCLANG
   //----
   cs = cfg->addString(
                  "CLANG_OPTIONS",
@@ -1171,6 +1172,7 @@ void addConfigOptions(Config *cfg)
                  "specified at INPUT and INCLUDE_PATH."
                 );
   cs->addDependency("CLANG_ASSISTED_PARSING");
+#endif
   //---------------------------------------------------------------------------
   cfg->addInfo("Index","configuration options related to the alphabetical class index");
   //---------------------------------------------------------------------------
@@ -1324,6 +1326,7 @@ void addConfigOptions(Config *cfg)
                  "and 100 does not change the gamma.",
                  40,240,80
                 );
+  ci->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
                  "HTML_TIMESTAMP",
@@ -1355,6 +1358,7 @@ void addConfigOptions(Config *cfg)
                  "and will result in a full expanded tree by default.",
                  0,9999,100
                 );
+  ci->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
                  "GENERATE_DOCSET",
@@ -1658,7 +1662,7 @@ void addConfigOptions(Config *cfg)
   ce = cfg->addEnum(
                  "MATHJAX_FORMAT",
                  "When MathJax is enabled you can set the default output format to be used for\n"
-                 "thA MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and\n"
+                 "the MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and\n"
                  "SVG. The default value is HTML-CSS, which is slower, but has the best\n"
                  "compatibility.",
                  "HTML-CSS"
@@ -1687,6 +1691,13 @@ void addConfigOptions(Config *cfg)
                  "names that should be enabled during MathJax rendering."
                 );
   cl->addDependency("USE_MATHJAX");
+  //----
+  cs = cfg->addString(
+                 "MATHJAX_CODEFILE",
+                 "The MATHJAX_CODEFILE tag can be used to specify a file with javascript\n"
+                 "pieces of code that will be used on startup of the MathJax code."
+                );
+  cs->addDependency("USE_MATHJAX");
   //----
   cb = cfg->addBool(
                  "SEARCHENGINE",
@@ -1924,6 +1935,7 @@ void addConfigOptions(Config *cfg)
                  "http://en.wikipedia.org/wiki/BibTeX for more info."
                 );
   cs->setDefaultValue("plain");
+  cs->addDependency("GENERATE_LATEX");
   //---------------------------------------------------------------------------
   cfg->addInfo("RTF","configuration options related to the RTF output");
   //---------------------------------------------------------------------------
@@ -2424,7 +2436,7 @@ void addConfigOptions(Config *cfg)
                  "the class node. If there are many fields or methods and many nodes the\n"
                  "graph may become too big to be useful. The UML_LIMIT_NUM_FIELDS\n"
                  "threshold limits the number of items for each type to make the size more\n"
-                 "managable. Set this to 0 for no limit. Note that the threshold may be\n"
+                 "manageable. Set this to 0 for no limit. Note that the threshold may be\n"
                  "exceeded by 50% before the limit is enforced.",
                  0,100,10
                 );

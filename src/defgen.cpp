@@ -96,6 +96,8 @@ void generateDEFForMember(MemberDef *md,
     case MemberType_Variable:    memType="variable";  break;
     case MemberType_Typedef:     memType="typedef";   break;
     case MemberType_Enumeration: memType="enum";      break;
+    case MemberType_Interface:   memType="interface"; break;
+    case MemberType_Service:     memType="service";   break;
     case MemberType_Function:    memType="function";  isFunc=TRUE; break;
     case MemberType_Signal:      memType="signal";    isFunc=TRUE; break;
     case MemberType_Friend:      memType="friend";    isFunc=TRUE; break;
@@ -428,6 +430,8 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
   if (numMembers>0)
   {
     generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubTypes),"public-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_interfaces),"interfaces");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_services),"services");
     generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubMethods),"public-func");
     generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubAttribs),"public-attrib");
     generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_pubSlots),"public-slot");

@@ -433,8 +433,8 @@ config file.
 
 For VHDL a comment normally start with "--". Doxygen will extract comments
 starting with "--!". There are only two types of comment blocks in VHDL;
-a one line --! comment representing a brief description, and a multi-line
---! comment (where the --! prefix is repeated for each line) representing
+a one line "--!" comment representing a brief description, and a multi-line
+"--!" comment (where the "--!" prefix is repeated for each line) representing
 a detailed description.
 
 Comments are always located in front of the item that is being documented

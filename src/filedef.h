@@ -190,7 +190,8 @@ class FileDef : public Definition
     void writeMemberGroups(OutputList &ol);
     void writeAuthorSection(OutputList &ol);
     void writeSourceLink(OutputList &ol);
-    void writeNamespaceDeclarations(OutputList &ol,const QCString &title);
+    void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
+            bool isConstantGroup);
     void writeClassDeclarations(OutputList &ol,const QCString &title);
     void writeInlineClasses(OutputList &ol);
     void startMemberDeclarations(OutputList &ol);

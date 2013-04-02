@@ -308,6 +308,7 @@ class HtmlGenerator : public OutputGenerator
     void endParameterName(bool last,bool emptyList,bool closeBracket);
     void startParameterList(bool);
     void endParameterList();
+    virtual void exceptionEntry(const char*,bool);
 
     void startConstraintList(const char *);
     void startConstraintParam();

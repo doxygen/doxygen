@@ -374,6 +374,68 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   return TRUE;
 }
 
+static void writeExceptionListImpl(
+        OutputList &ol, ClassDef *cd, MemberDef *md, QCString const& exception)
+{
+  // this is ordinary exception spec - there must be a '('
+  int index = exception.find('(');
+  if (-1!=index)
+  {
+    ol.exceptionEntry(exception.left(index),false);
+    ++index; // paren in second column so skip it here
+    for (int comma = exception.find(',', index); -1!=comma; )
+    {
+      ++comma; // include comma
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,
+                  exception.mid(index,comma-index));
+      ol.exceptionEntry(0,false);
+      index=comma;
+      comma = exception.find(',', index);
+    }
+    int close = exception.find(')', index);
+    if (-1!=close)
+    {
+      QCString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
+      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,type);
+      ol.exceptionEntry(0,true);
+    }
+    else
+        warn(md->getDefFileName(),md->getDefLine(),
+            "missing ) in exception list on member %s",qPrint(md->name()));
+  }
+  else
+  {
+    // fallback - is it possible to get here?
+    warn(md->getDefFileName(),md->getDefLine(),
+            "missing ( in exception list on member %s",qPrint(md->name()));
+    ol.docify(" ");
+    linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,exception);
+  }
+}
+
+static void writeExceptionList(OutputList &ol, ClassDef *cd, MemberDef *md)
+{
+  QCString exception(QCString(md->excpString()).stripWhiteSpace());
+  if ('{'==exception.at(0))
+  {
+    // this is an UNO IDL attribute - need special handling
+    int index = exception.find(';');
+    int oldIndex = 1;
+    while (-1 != index) // there should be no more than 2 (set / get)
+    {
+      // omit '{' and ';' -> "set raises (...)"
+      writeExceptionListImpl(ol,cd,md,exception.mid(oldIndex,index-oldIndex));
+      oldIndex=index+1;
+      index = exception.find(';',oldIndex);
+    }
+    // the rest is now just '}' - omit that
+  }
+  else
+  {
+    writeExceptionListImpl(ol,cd,md,exception);
+  }
+}
+
 static void writeTemplatePrefix(OutputList &ol,ArgumentList *al)
 {
   ol.docify("template<");
@@ -467,7 +529,7 @@ class MemberDefImpl
     QCString enumBaseType;    // base type of the enum (C++11)
     int initLines;            // number of lines in the initializer
 
-    int  memSpec;             // The specifiers present for this member
+    uint64  memSpec;          // The specifiers present for this member
     MemberType mtype;         // returns the kind of member
     int maxInitLines;         // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
@@ -1828,6 +1890,8 @@ bool MemberDef::isDetailedSectionLinkable() const
          (hasMultiLineInitializer() && !hideUndocMembers) ||
          // has one or more documented arguments
          (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation()) ||
+         // is an attribute or property - need to display that tag
+         (m_impl->memSpec & (Entry::Attribute|Entry::Property)) ||
          // has user comments
          Doxygen::userComments
          ; 
@@ -1917,7 +1981,7 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
         if      (isGettable())            sl.append("get");
         if      (isSettable())            sl.append("set");
         if      (isAddable())             sl.append("add");
-        if      (isRemovable())           sl.append("remove");
+        if      (!isUNOProperty() && isRemovable()) sl.append("remove");
         if      (isRaisable())            sl.append("raise");
         if      (isReadable())            sl.append("read");
         if      (isWritable())            sl.append("write");
@@ -1954,6 +2018,17 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
           if      (isDefault())             sl.append("default");
           if      (isDelete())              sl.append("delete");
           if      (isNoExcept())            sl.append("noexcept");
+          if      (isAttribute())           sl.append("attribute");
+          if      (isUNOProperty())         sl.append("property");
+          if      (isReadonly())            sl.append("readonly");
+          if      (isBound())               sl.append("bound");
+          if      (isUNOProperty() && isRemovable()) sl.append("removable");
+          if      (isConstrained())         sl.append("constrained");
+          if      (isTransient())           sl.append("transient");
+          if      (isMaybeVoid())           sl.append("maybevoid");
+          if      (isMaybeDefault())        sl.append("maybedefault");
+          if      (isMaybeAmbiguous())      sl.append("maybeambiguous");
+          if      (isPublished())           sl.append("published"); // enum
         }
         if (isObjCProperty() && isImplementation())
         {
@@ -2595,8 +2670,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     if (excpString()) // add exception list
     {
-      ol.docify(" ");
-      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,excpString());
+      writeExceptionList(ol,cd,this);
+      hasParameterList=true; // call endParameterList below
     }
   }
 
@@ -3001,6 +3076,8 @@ QCString MemberDef::memberTypeName() const
     case MemberType_DCOP:        return "dcop";
     case MemberType_Property:    return "property";
     case MemberType_Event:       return "event";
+    case MemberType_Interface:   return "interface";
+    case MemberType_Service:     return "service";
     default:          return "unknown";
   }
 }
@@ -3409,6 +3486,8 @@ void MemberDef::_writeTagData(const DefType compoundType)
       case MemberType_Friend:      Doxygen::tagFile << "friend";      break;
       case MemberType_DCOP:        Doxygen::tagFile << "dcop";        break;
       case MemberType_Slot:        Doxygen::tagFile << "slot";        break;
+      case MemberType_Interface:   Doxygen::tagFile << "interface";   break;
+      case MemberType_Service:     Doxygen::tagFile << "service";     break;
     }
     if (m_impl->prot!=Public)
     {
@@ -3883,7 +3962,7 @@ int MemberDef::initializerLines() const
   return m_impl->initLines; 
 }
 
-int  MemberDef::getMemberSpecifiers() const
+uint64 MemberDef::getMemberSpecifiers() const
 { 
   makeResident();
   return m_impl->memSpec; 
@@ -4231,6 +4310,65 @@ bool MemberDef::isNoExcept() const
   return (m_impl->memSpec&Entry::NoExcept)!=0;
 }
 
+bool MemberDef::isAttribute() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Attribute)!=0;
+}
+
+bool MemberDef::isUNOProperty() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Property)!=0;
+}
+
+bool MemberDef::isReadonly() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Readonly)!=0;
+}
+
+bool MemberDef::isBound() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Bound)!=0;
+}
+
+bool MemberDef::isConstrained() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Constrained)!=0;
+}
+
+bool MemberDef::isTransient() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Transient)!=0;
+}
+
+bool MemberDef::isMaybeVoid() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::MaybeVoid)!=0;
+}
+
+bool MemberDef::isMaybeDefault() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::MaybeDefault)!=0;
+}
+
+bool MemberDef::isMaybeAmbiguous() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::MaybeAmbiguous)!=0;
+}
+
+bool MemberDef::isPublished() const
+{
+  makeResident();
+  return (m_impl->memSpec&Entry::Published)!=0;
+}
 
 
 bool MemberDef::isImplementation() const
@@ -4461,13 +4599,13 @@ void MemberDef::setProtection(Protection p)
   m_isLinkableCached = 0;
 }
 
-void MemberDef::setMemberSpecifiers(int s)
+void MemberDef::setMemberSpecifiers(uint64 s)
 { 
   makeResident();
   m_impl->memSpec=s; 
 }
 
-void MemberDef::mergeMemberSpecifiers(int s)
+void MemberDef::mergeMemberSpecifiers(uint64 s)
 { 
   makeResident();
   m_impl->memSpec|=s; 
@@ -4787,7 +4925,7 @@ void MemberDef::flushToDisk() const
   marshalQCString     (Doxygen::symbolStorage,m_impl->initializer);
   marshalQCString     (Doxygen::symbolStorage,m_impl->extraTypeChars);
   marshalInt          (Doxygen::symbolStorage,m_impl->initLines);
-  marshalInt          (Doxygen::symbolStorage,m_impl->memSpec);
+  marshalUInt64       (Doxygen::symbolStorage,m_impl->memSpec);
   marshalInt          (Doxygen::symbolStorage,(int)m_impl->mtype);
   marshalInt          (Doxygen::symbolStorage,m_impl->maxInitLines);
   marshalInt          (Doxygen::symbolStorage,m_impl->userInitLines);
@@ -4892,7 +5030,7 @@ void MemberDef::loadFromDisk() const
   m_impl->initializer             = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->extraTypeChars          = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->initLines               = unmarshalInt          (Doxygen::symbolStorage);
-  m_impl->memSpec                 = unmarshalInt          (Doxygen::symbolStorage);
+  m_impl->memSpec                 = unmarshalUInt64       (Doxygen::symbolStorage);
   m_impl->mtype                   = (MemberType)unmarshalInt          (Doxygen::symbolStorage);
   m_impl->maxInitLines            = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->userInitLines           = unmarshalInt          (Doxygen::symbolStorage);
@@ -5128,7 +5266,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       }
       if (!mdef->documentation().isEmpty())
       {
-        //printf("transfering docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
+        //printf("transferring docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
         mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
         mdec->setDocsForDefinition(mdef->isDocsForDefinition());
         if (mdefAl!=0)
@@ -5141,7 +5279,7 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       }
       else if (!mdec->documentation().isEmpty())
       {
-        //printf("transfering docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
+        //printf("transferring docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
         mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
         mdef->setDocsForDefinition(mdec->isDocsForDefinition());
         if (mdecAl!=0)

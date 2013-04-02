@@ -20,7 +20,7 @@ doxygen_version_minor=8
 doxygen_version_revision=3.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20130324
+doxygen_version_mmn=20130402
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 

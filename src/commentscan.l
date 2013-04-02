@@ -665,7 +665,7 @@ static void stripTrailingWhiteSpace(QCString &s)
   while (i>=0 && ((c = s.at(i))==' ' || c=='\t' || c=='\r')) i--;
   if (i!=(int)len-1) 
   {
-    s.resize(i+2); // string upto and including char at pos i and \0 terminator
+    s.resize(i+2); // string up to and including char at pos i and \0 terminator
   }
 }
 
@@ -877,7 +877,7 @@ LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 CITEID    [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-:/]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
-MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
+MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
 %option noyywrap
@@ -939,7 +939,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
    *   words and whitespace and other characters (#,?!, etc).
    *   grouping commands (e.g. @{ and @})
    *   language switch (e.g. \~english or \~).
-   *   mail adress (e.g. dimitri@stack.nl).
+   *   mail address (e.g. dimitri@stack.nl).
    *   quoted text, such as "foo@bar"
    *   XML commands, <summary></summary><remarks></remarks>
    */
@@ -950,7 +950,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{CMD}{CMD}"~"[a-z_A-Z]*	{ // escaped command
   					  addOutput(yytext);
   					}
-<Comment>{MAILADR}			{ // mail adress
+<Comment>{MAILADDR}			{ // mail address
   					  addOutput(yytext);
   					}
 <Comment>"\""[^"\n]*"\""		{ // quoted text

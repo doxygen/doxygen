@@ -187,7 +187,7 @@ class ClassDefImpl
 
     bool isGeneric;
 
-    int spec;
+    uint64 spec;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -435,6 +435,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
     {
       switch (md->memberType())
       {
+        case MemberType_Service: // UNO IDL
+          addMemberToList(MemberListType_services,md,TRUE);
+          break;
+        case MemberType_Interface: // UNO IDL
+          addMemberToList(MemberListType_interfaces,md,TRUE);
+          break;
         case MemberType_Signal: // Qt specific
           addMemberToList(MemberListType_signals,md,TRUE);
           break;
@@ -581,6 +587,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
     {
       switch (md->memberType())
       {
+        case MemberType_Service: // UNO IDL
+          addMemberToList(MemberListType_serviceMembers,md,FALSE);
+          break;
+        case MemberType_Interface: // UNO IDL
+          addMemberToList(MemberListType_interfaceMembers,md,FALSE);
+          break;
         case MemberType_Property:
           addMemberToList(MemberListType_propertyMembers,md,FALSE);
           break;
@@ -1034,6 +1046,14 @@ void ClassDef::showUsedFiles(OutputList &ol)
   else if (isJavaEnum())
   {
     ol.parseText(theTranslator->trEnumGeneratedFromFiles(m_impl->files.count()==1));
+  }
+  else if (m_impl->compType==Service)
+  {
+    ol.parseText(theTranslator->trServiceGeneratedFromFiles(m_impl->files.count()==1));
+  }
+  else if (m_impl->compType==Singleton)
+  {
+    ol.parseText(theTranslator->trSingletonGeneratedFromFiles(m_impl->files.count()==1));
   }
   else
   {
@@ -1811,6 +1831,7 @@ void ClassDef::addClassAttributes(OutputList &ol)
   if (isFinal())    sl.append("final");
   if (isSealed())   sl.append("sealed");
   if (isAbstract()) sl.append("abstract");
+  if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.append("published");
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1923,10 +1944,12 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
         writeAuthorSection(ol);
         break;
       case LayoutDocEntry::NamespaceNestedNamespaces:
+      case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::FileClasses:
       case LayoutDocEntry::FileNamespaces:
+      case LayoutDocEntry::FileConstantGroups:
       case LayoutDocEntry::FileIncludes:
       case LayoutDocEntry::FileIncludeGraph:
       case LayoutDocEntry::FileIncludedByGraph: 
@@ -1979,6 +2002,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
   else if (isJavaEnum())
   {
     pageTitle = theTranslator->trEnumReference(displayName());
+  }
+  else if (m_impl->compType==Service)
+  {
+    pageTitle = theTranslator->trServiceReference(displayName());
+  }
+  else if (m_impl->compType==Singleton)
+  {
+    pageTitle = theTranslator->trSingletonReference(displayName());
   }
   else
   {
@@ -2288,6 +2319,8 @@ void ClassDef::writeMemberList(OutputList &ol)
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
+             (getLanguage()==SrcLangExt_IDL &&
+              (md->isOptional() || md->isAttribute() || md->isUNOProperty())) ||
              md->isStatic() || lang==SrcLangExt_VHDL
             )
             && memberWritten)
@@ -2315,6 +2348,18 @@ void ClassDef::writeMemberList(OutputList &ol)
             if (md->isStatic())        sl.append("static");
             if (md->isSignal())        sl.append("signal");
             if (md->isSlot())          sl.append("slot");
+// this is the extra member page
+            if (md->isOptional())      sl.append("optional");
+            if (md->isAttribute())     sl.append("attribute");
+            if (md->isUNOProperty())   sl.append("property");
+            if (md->isReadonly())      sl.append("readonly");
+            if (md->isBound())         sl.append("bound");
+            if (md->isRemovable())     sl.append("removable");
+            if (md->isConstrained())   sl.append("constrained");
+            if (md->isTransient())     sl.append("transient");
+            if (md->isMaybeVoid())     sl.append("maybevoid");
+            if (md->isMaybeDefault())  sl.append("maybedefault");
+            if (md->isMaybeAmbiguous())sl.append("maybeambiguous");
           }
           const char *s=sl.first();
           while (s)
@@ -3159,7 +3204,7 @@ void ClassDef::determineImplUsageRelation()
               cd=getResolvedClass(getNamespaceDef()->name()+"::"+usedClassName,0,&templSpec);
             }
             if (cd==0) cd=getResolvedClass(name()+"::"+usedClassName,0,&templSpec);
-            if (cd==0) cd=getResolvedClass(usedClassName,0,&templSpec); // TODO: also try inbetween scopes!
+            if (cd==0) cd=getResolvedClass(usedClassName,0,&templSpec); // TODO: also try in-between scopes!
             //printf("Search for class %s result=%p\n",usedClassName.data(),cd);
             if (cd) // class exists 
             {
@@ -3221,7 +3266,7 @@ void ClassDef::addUsedInterfaceClasses(MemberDef *md,const char *typeStr)
   while ((i=re.match(type,p,&l))!=-1) // for each class name in the type
   {
     ClassDef *cd=getClass(name()+"::"+type.mid(i,l));
-    if (cd==0) cd=getClass(type.mid(i,l)); // TODO: also try inbetween scopes!
+    if (cd==0) cd=getClass(type.mid(i,l)); // TODO: also try in-between scopes!
     if (cd && cd!=this && !isBaseClass(cd))
     {
       if (m_impl->usesIntfClassDict==0) 
@@ -3317,6 +3362,8 @@ QCString ClassDef::compoundTypeString() const
       case Protocol:  return "protocol";
       case Category:  return "category";
       case Exception: return "exception";
+      case Service:   return "service";
+      case Singleton: return "singleton";
       default:        return "unknown";
     }
   }
@@ -4337,6 +4384,11 @@ bool ClassDef::isSealed() const
   return m_impl->spec&Entry::Sealed;
 }
 
+bool ClassDef::isPublished() const
+{
+  return m_impl->spec&Entry::Published;
+}
+
 bool ClassDef::isObjectiveC() const 
 { 
   return getLanguage()==SrcLangExt_ObjC; 
@@ -4537,7 +4589,7 @@ bool ClassDef::isGeneric() const
   return m_impl->isGeneric;
 }
 
-void ClassDef::setClassSpecifier(int spec)
+void ClassDef::setClassSpecifier(uint64 spec)
 {
   m_impl->spec = spec;
 }

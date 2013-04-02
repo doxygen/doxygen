@@ -641,6 +641,7 @@ class TranslatorKorean : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+=" 프로토콜"; break;
         case ClassDef::Category:   result+=" 카테고리"; break;
         case ClassDef::Exception:  result+=" 예외"; break;
+        default: break;
       }
       if (isTemplate) result+=" 템플릿";
       result+=" 참조";
@@ -800,6 +801,7 @@ class TranslatorKorean : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="프로토콜"; break;
         case ClassDef::Category:   result+="카테고리"; break;
         case ClassDef::Exception:  result+="예외"; break;
+        default: break;
       }
       result+="에 대한 문서화 페이지는 다음의 파일";
       if (!single) result+="들";
@@ -1691,6 +1693,7 @@ class TranslatorKorean : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+=" 프로토콜"; break;
         case ClassDef::Category:   result+=" 카테고리"; break;
         case ClassDef::Exception:  result+=" 예외"; break;
+        default: break;
       }
       if (isTemplate) result+=" 템플릿";
       result+=" 참조";
@@ -1761,6 +1764,7 @@ class TranslatorKorean : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="프로토콜"; break;
         case ClassDef::Category:   result+="카테고리"; break;
         case ClassDef::Exception:  result+="예외"; break;
+        default: break;
       }
       result+="의 문서화 페이지:";
       return result;

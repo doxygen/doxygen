@@ -361,7 +361,7 @@ You can now build the Release or Debug flavor of Doxygen by right-clicking
 the project in the solutions explorer, and selecting Build.
 
 Note that compiling Doxywizard currently requires Qt version 4
-(see http://qt.nokia.com/products/platform/qt-for-windows).
+(see http://qt-project.org/).
 
 Also read the next section for additional tools you may need to install to run
 doxygen with certain features enabled.
@@ -446,7 +446,7 @@ Here is what is required:
     of Qt that is needed for to compile doxygen.
     The Windows specific part were also created.
     As a result doxygen (without the wizard) can be compiled on systems 
-    without X11 or (the commerical version of) Qt. 
+    without X11 or (the commercial version of) Qt.
 
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders
@@ -523,12 +523,12 @@ If you want to produce compressed HTML files (see \ref
 cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the config file, then 
 you need the Microsoft HTML help workshop. 
 You can download it from 
-<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp">Microsoft</a>.
+<a href="http://www.microsoft.com/en-us/download/details.aspx?id=21138">Microsoft</a>.
 
 If you want to produce Qt Compressed Help files (see \ref 
 cfg_qhg_location "QHG_LOCATION") in the config file, then 
 you need qhelpgenerator which is part of Qt. 
-You can download Qt from <a href="http://trolltech.com/downloads/">Qt Software Downloads</a>.
+You can download Qt from <a href="http://qt-project.org/downloads">Qt Software Downloads</a>.
 
 In order to generate PDF output or use scientific formulas you will also need to
 install <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
@@ -601,7 +601,7 @@ features:
     cfg_qhelgenerator_loc "QHG_LOCATION") in the config file,
     then you need qhelpgenerator which is part of Qt. 
     You can download Qt from
-    <a href="http://trolltech.com/downloads/">Qt Software Downloads</a>.
+    <a href="http://qt-project.org/downloads">Qt Software Downloads</a>.
 
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10</a><br>

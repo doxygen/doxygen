@@ -19,7 +19,7 @@
 <ol>
 <li><b>How to get information on the index page in HTML?</b>
 <p>
-You should use the \\mainpage command inside a comment block like this:
+You should use the \ref cmdmainpage "\\mainpage" command inside a comment block like this:
 \verbatim
 /*! \mainpage My Personal Index Page
  *
@@ -41,9 +41,9 @@ You should use the \\mainpage command inside a comment block like this:
   Check the following:
   <ol>
   <li>Is your class / file / namespace documented? If not, it will not 
-      be extracted from the sources unless \c EXTRACT_ALL is set to \c YES
+      be extracted from the sources unless \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES
       in the config file.
-  <li>Are the members private? If so, you must set \c EXTRACT_PRIVATE to \c YES
+  <li>Are the members private? If so, you must set \ref cfg_extract_private "EXTRACT_PRIVATE" to \c YES
       to make them appear in the documentation.
   <li>Is there a function macro in your class that does not end with a 
       semicolon (e.g. MY_MACRO())? If so then you have to instruct 
@@ -67,12 +67,12 @@ PREDEFINED             = MY_MACRO()=
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
-located using a comment block containing a \\file (or \@file) 
+located using a comment block containing a \ref cmdfile "\\file" (or \ref cmdfile "\@file") 
 command. 
 
 Alternatively, you can put all members in a group (or module)
-using the \\ingroup command and then document the group using a comment
-block containing the \\defgroup command.
+using the \ref cmdingroup "\\ingroup" command and then document the group using a comment
+block containing the \ref cmddefgroup "\\defgroup" command.
 
 For member functions or functions that are part of a namespace you should
 document either the class or namespace.
@@ -98,12 +98,13 @@ around the blocks that should be hidden and put:
   PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS
 \endverbatim
 in the config file then all blocks should be skipped by Doxygen as long
-as <code>PREPROCESSING = YES</code>.
+as \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to `YES`.
 
-<li><b>How can I change what is after the <code>\#include</code> in the class documentation?</b>
+<li><b>How can I change what is after the <code>\#include</code> 
+in the class documentation?</b>
 
-In most cases you can use STRIP_FROM_INC_PATH to strip a user defined
-part of a path.
+In most cases you can use \ref cfg_strip_from_inc_path "STRIP_FROM_INC_PATH" 
+to strip a user defined part of a path.
 
 You can also document your class as follows
 
@@ -160,9 +161,9 @@ installdox -lb.tag@b.chm::
 
 <li><b>I don't like the quick index that is put above each HTML page, what do I do?</b>
 
-You can disable the index by setting DISABLE_INDEX to YES. Then you can
+You can disable the index by setting \ref cfg_disable_index "DISABLE_INDEX" to `YES`. Then you can
 put in your own header file by writing your own header and feed that to
-HTML_HEADER.
+\ref cfg_html_header "HTML_HEADER".
 
 <li><b>The overall HTML output looks different, while I only wanted to 
        use my own html header file</b>
@@ -237,8 +238,8 @@ various buffers and then run "texconfig init".
 
 <li><b>Why are dependencies via STL classes not shown in the dot graphs?</b>
 
-Doxygen is unaware of the STL classes, unless the option BUILTIN_STL_SUPPORT is
-turned on.
+Doxygen is unaware of the STL classes, unless the 
+option \ref cfg_builtin_stl_support "BUILTIN_STL_SUPPORT" is turned on.
 
 <li><b>I have problems getting the search engine to work with PHP5 and/or windows</b>
 
@@ -248,7 +249,7 @@ Please read <a href="searchengine.html">this</a> for hints on where to look.
 
 Not via command line options, but doxygen can read from <code>stdin</code>,
 so you can pipe things through it. Here's an example how to override an option
-in a configuration file from the command line (assuming a UNIX environment):
+in a configuration file from the command line (assuming a UNIX like environment):
 
 \verbatim
 ( cat Doxyfile ; echo "PROJECT_NUMBER=1.0" ) | doxygen -
@@ -280,9 +281,10 @@ At the time I was looking into lex and yacc, where a lot of things start with
 <li><b>What was the reason to develop doxygen?</b>
 
 I once wrote a GUI widget based on the Qt library (it is still available at
-http://qdbttabular.sourceforge.net/ and maintained by Sven Meyer). 
+http://sourceforge.net/projects/qdbttabular/ but hasn't been updated since 2002). 
 Qt had nicely generated documentation (using an internal tool which 
-they didn't want to release) and I wrote similar docs by hand. 
+<a href="http://rant.gulbrandsen.priv.no/udoc/history">they didn't want to release</a>) 
+and I wrote similar docs by hand. 
 This was a nightmare to maintain, so I wanted a similar tool. I looked at
 Doc++ but that just wasn't good enough (it didn't support signals and
 slots and did not have the Qt look and feel I had grown to like), 

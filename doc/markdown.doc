@@ -520,7 +520,7 @@ stars, so the following will appear as-is:
 
     a_nice_identifier
 
-Futhermore, a `*` or `_` only starts an emphasis if
+Furthermore, a `*` or `_` only starts an emphasis if
 - it is followed by an alphanumberical character, and
 - it is preceded by a space, newline, or one the following characters `<{([,:;`
 

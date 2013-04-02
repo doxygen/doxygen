@@ -615,6 +615,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+=" protokołu "; break;
         case ClassDef::Category:   result+=" kategorii "; break;
         case ClassDef::Exception:  result+=" wyjątku "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -774,6 +775,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="go protokołu"; break;
         case ClassDef::Category:   result+="j kategorii"; break;
         case ClassDef::Exception:  result+="go wyjątku"; break;
+        default: break;
       }
       result+=" została wygenerowana z plik";
       if (single) result+="u:"; else result+="ów:";
@@ -1669,6 +1671,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+=" protokołu "; break;
         case ClassDef::Category:   result+=" kategorii "; break;
         case ClassDef::Exception:  result+=" wyjątku "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -1735,6 +1738,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="go protokołu"; break;
         case ClassDef::Category:   result+="j kategorii"; break;
         case ClassDef::Exception:  result+="go wyjątku"; break;
+        default: break;
       }
       result+=" została wygenerowana z plik";
       if (single) result+="u:"; else result+="ów:";

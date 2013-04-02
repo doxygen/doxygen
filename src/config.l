@@ -77,11 +77,11 @@ static QCString configStringRecode(
 
 /* -----------------------------------------------------------------
  */
-QCString ConfigOption::convertToComment(const QCString &s)
+QCString ConfigOption::convertToComment(const QCString &s, const QCString &u)
 {
+  //printf("convertToComment(%s)=%s\n",s.data(),u.data());
   QCString result;
-  if (s.isEmpty()) return result;
-  else
+  if (!s.isEmpty())
   {
     QCString tmp=s.stripWhiteSpace();
     char *p=tmp.data();
@@ -100,6 +100,11 @@ QCString ConfigOption::convertToComment(const QCString &s)
       else result+=c;
     }
     result+='\n';
+  }
+  if (!u.isEmpty())
+  {
+    if (!result.isEmpty()) result+='\n';
+    result+= u;
   }
   return result;
 }
@@ -589,7 +594,8 @@ static void readIncludeFile(const char *incName)
 %%
 
 <*>\0x0d
-<Start,GetString,GetStrList,GetBool,SkipInvalid>"#"	 { BEGIN(SkipComment); }
+<Start,GetString,GetStrList,GetBool,SkipInvalid>"##".*"\n" { config->appendUserComment(yytext);}
+<Start,GetString,GetStrList,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
                                            cmd=cmd.left(cmd.length()-1).stripWhiteSpace(); 
 					   ConfigOption *option = config->get(cmd);
@@ -601,6 +607,7 @@ static void readIncludeFile(const char *incName)
 					   }
 					   else // known tag
 					   {
+                                             option->setUserComment(config->takeUserComment());
 					     option->setEncoding(encoding);
 					     switch(option->kind())
 					     {
@@ -654,6 +661,7 @@ static void readIncludeFile(const char *incName)
 					  }
 					  else // known tag
 					  {
+                                            option->setUserComment(config->takeUserComment());
 					    switch(option->kind())
 					    {
 					      case ConfigOption::O_Info:
@@ -798,6 +806,8 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
     t << "# This file describes the settings to be used by the documentation system\n";
     t << "# doxygen (www.doxygen.org) for a project.\n";
     t << "#\n";
+    t << "# All text after a double hash (##) is considered a comment and is placed\n";
+    t << "# in front of the TAG it is preceding .\n";
     t << "# All text after a hash (#) is considered a comment and will be ignored.\n";
     t << "# The format is:\n";
     t << "#       TAG = value [value, ...]\n";
@@ -810,6 +820,12 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
   {
     option->writeTemplate(t,sl,upd);
     option = m_options->next();
+  }
+  /* print last lines of user comment that were at the end of the file */
+  if (m_userComment)
+  {
+    t << "\n";
+    t << m_userComment;
   }
 }
 
@@ -1128,6 +1144,21 @@ void Config::check()
       config_err("error: tag HTML_FOOTER: footer file `%s' "
 	  "does not exist\n",footerFile.data());
       exit(1);
+    }
+  }
+  // Test to see if MathJax code file is valid
+  if (Config_getBool("USE_MATHJAX"))
+  {
+    QCString &MathJaxCodefile = Config_getString("MATHJAX_CODEFILE");
+    if (!MathJaxCodefile.isEmpty())
+    {
+      QFileInfo fi(MathJaxCodefile);
+      if (!fi.exists())
+      {
+        config_err("error: tag MATHJAX_CODEFILE file `%s' "
+	    "does not exist\n",MathJaxCodefile.data());
+        exit(1);
+      }
     }
   }
   // Test to see if LaTeX header is valid
@@ -1504,6 +1535,24 @@ void Config::init()
   while (option)
   {
     option->init();
+    option = m_options->next();
+  }
+
+  // sanity check if all depends relations are valid
+  option = m_options->first();
+  while (option)
+  {
+    QCString depName = option->dependsOn();
+    if (!depName.isEmpty())
+    {
+      ConfigOption * opt = Config::instance()->get(depName);
+      if (opt==0)
+      {
+        config_err("Config option '%s' has invalid depends relation on unknown option '%s'\n",
+            option->name().data(),depName.data());
+        exit(1);
+      }
+    }
     option = m_options->next();
   }
 }

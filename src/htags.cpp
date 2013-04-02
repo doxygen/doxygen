@@ -32,7 +32,7 @@ static QDict<QCString> g_symbolDict(10007);
 
 /*! constructs command line of htags(1) and executes it.
  *  \retval TRUE success
- *  \retval FALSE an error has occured.
+ *  \retval FALSE an error has occurred.
  */
 bool Htags::execute(const QCString &htmldir)
 {

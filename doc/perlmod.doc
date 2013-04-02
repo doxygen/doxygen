@@ -23,27 +23,27 @@ doxygen-develop mailing list.  Suggestions are welcome as well.
 
 \section using_perlmod_fmt Usage
 
-<p>When the <b>GENERATE_PERLMOD</b> tag is enabled in the Doxyfile, 
-running Doxygen generates a number of files in the <b>perlmod/</b> 
+<p>When the \ref cfg_generate_perlmod "GENERATE_PERLMOD" tag is enabled in the Doxyfile, 
+running Doxygen generates a number of files in the `perlmod/` 
 subdirectory of your output directory.  These files are the following:
 
 <ul>
 
-<li><b>DoxyDocs.pm</b>.  This is the Perl module that actually
+<li>`DoxyDocs.pm`:  This is the Perl module that actually
 contains the documentation, in the Perl Module format described 
 \ref doxydocs_format "below".
 
-<li><b>DoxyModel.pm</b>.  This Perl module describes the structure of
-<b>DoxyDocs.pm</b>, independently of the actual documentation.  See 
+<li>`DoxyModel.pm`:  This Perl module describes the structure of
+`DoxyDocs.pm`, independently of the actual documentation.  See 
 \ref doxymodel_format "below" for details.
 
-<li><b>doxyrules.make</b>.  This file contains the make rules to build 
+<li>`doxyrules.make`:  This file contains the make rules to build 
 and clean the files that are generated from the Doxyfile.  Also 
 contains the paths to those files and other relevant information. This 
 file is intended to be included by your own Makefile.
 
-<li><b>Makefile</b>.  This is a simple Makefile including 
-<b>doxyrules.make</b>.
+<li>`Makefile`:  This is a simple Makefile including 
+`doxyrules.make`.
 
 </ul>
 
@@ -65,70 +65,71 @@ within files and classes and can be customized quite a lot by
 redefining TeX macros.  However, there is still no documentation on
 how to do this.
 
-<p>Setting the <b>PERLMOD_LATEX</b> tag to <b>YES</b> in the Doxyfile 
-enables the creation of some additional files in the <b>perlmod/</b> 
+<p>Setting the \ref cfg_perlmod_latex "PERLMOD_LATEX" tag to \c YES in the 
+\c Doxyfile enables the creation of some additional files in the `perlmod/` 
 subdirectory of your output directory.  These files contain the Perl 
 scripts and LaTeX code necessary to generate PDF and DVI output from 
-the Perl Module output, using PDFLaTeX and LaTeX respectively.  Rules 
+the Perl Module output, using `pdflatex` and `latex` respectively.  Rules 
 to automate the use of these files are also added to 
-<b>doxyrules.make</b> and the <b>Makefile</b>.
+`doxyrules.make` and the `Makefile`.
 
 <p>The additional generated files are the following:
 
 <ul>
 
-<li><b>doxylatex.pl</b>.  This Perl script uses DoxyDocs.pm and 
-DoxyModel.pm to generate <b>doxydocs.tex</b>, a TeX file containing 
+<li>`doxylatex.pl`: This Perl script uses `DoxyDocs.pm` and 
+DoxyModel.pm to generate `doxydocs.tex`, a TeX file containing 
 the documentation in a format that can be accessed by LaTeX code. This 
 file is not directly LaTeXable.
 
-<li><b>doxyformat.tex</b>.  This file contains the LaTeX code that 
+<li>`doxyformat.tex`: This file contains the \f$\mbox{\LaTeX}\f$ code that 
 transforms the documentation from doxydocs.tex into LaTeX text 
-suitable to be LaTeX'ed and presented to the user.
+suitable to be \f$\mbox{\LaTeX}\f$'ed and presented to the user.
 
-<li><b>doxylatex-template.pl</b>.  This Perl script uses DoxyModel.pm 
-to generate <b>doxytemplate.tex</b>, a TeX file defining default 
+<li>`doxylatex-template.pl`:  This Perl script uses `DoxyModel.pm` 
+to generate `doxytemplate.tex`, a \f$\mbox{\TeX}\f$ file defining default 
 values for some macros.  doxytemplate.tex is included by 
 doxyformat.tex to avoid the need of explicitly defining some macros.
 
-<li><b>doxylatex.tex</b>.  This is a very simple LaTeX document that 
+<li>`doxylatex.tex`:  This is a very simple \f$\mbox{\LaTeX}\f$ document that 
 loads some packages and includes doxyformat.tex and doxydocs.tex. This 
-document is LaTeX'ed to produce the PDF and DVI documentation by the 
-rules added to <b>doxyrules.make</b>.
+document is \f$\mbox{\LaTeX}\f$'ed to produce the PDF and DVI documentation by the 
+rules added to `doxyrules.make`.
 
 </ul>
 
 \subsection pm_pdf_gen Creation of PDF and DVI output 
 
 <p>To try this you need to have installed LaTeX, PDFLaTeX and the 
-packages used by <b>doxylatex.tex</b>.
+packages used by `doxylatex.tex`.
 
 <ol>
 
-<li>Update your Doxyfile to the latest version using:
+<li>Update your `Doxyfile` to the latest version using:
 
 <pre>doxygen -u Doxyfile</pre>
 
-<li>Set both <b>GENERATE_PERLMOD</b> and <b>PERLMOD_LATEX</b> tags to 
-YES in your Doxyfile.
+<li>Set both \ref cfg_generate_perlmod "GENERATE_PERLMOD" and 
+\ref cfg_perlmod_latex "PERLMOD_LATEX" tags to 
+\c YES in your Doxyfile.
 
 <li>Run Doxygen on your Doxyfile:
 
 <pre>doxygen Doxyfile</pre>
 
-<li>A <b>perlmod/</b> subdirectory should have appeared in your output 
-directory.  Enter the <b>perlmod/</b> subdirectory and run:
+<li>A `perlmod/` subdirectory should have appeared in your output 
+directory.  Enter the `perlmod/` subdirectory and run:
 
 <pre>make pdf</pre>
 
-<p>This should generate a <b>doxylatex.pdf</b> with the documentation 
+<p>This should generate a `doxylatex.pdf` with the documentation 
 in PDF format.
 
 <li>Run:
 
 <pre>make dvi</pre>
 
-<p>This should generate a <b>doxylatex.dvi</b> with the documentation 
+<p>This should generate a `doxylatex.dvi` with the documentation 
 in DVI format.
 
 </ol>
@@ -136,29 +137,29 @@ in DVI format.
 \section doxydocs_format Documentation format.
 
 <p>The Perl Module documentation generated by Doxygen is stored in 
-<b>DoxyDocs.pm</b>.  This is a very simple Perl module that contains 
-only two statements: an assignment to the variable <b>$doxydocs</b> and 
-the customary <b>1;</b> statement which usually ends Perl modules.  
-The documentation is stored in the variable <b>$doxydocs</b>, which 
-can then be accessed by a Perl script using <b>DoxyDocs.pm</b>.
+`DoxyDocs.pm`.  This is a very simple Perl module that contains 
+only two statements: an assignment to the variable `$doxydocs` and 
+the customary `1;` statement which usually ends Perl modules.  
+The documentation is stored in the variable `$doxydocs`, which 
+can then be accessed by a Perl script using `DoxyDocs.pm`.
 
-<p><b>$doxydocs</b> contains a tree-like structure composed of three 
+<p>`$doxydocs` contains a tree-like structure composed of three 
 types of nodes: strings, hashes and lists.
 
 <ul>
 
-<li><b>Strings</b>.  These are normal Perl strings.  They can be of 
+<li>`Strings`: These are normal Perl strings.  They can be of 
 any length can contain any character.  Their semantics depends on 
 their location within the tree.  This type of node has no children.
 
-<li><b>Hashes</b>.  These are references to anonymous Perl hashes.  A 
+<li>`Hashes`:  These are references to anonymous Perl hashes.  A 
 hash can have multiple fields, each with a different key.  The value 
 of a hash field can be a string, a hash or a list, and its semantics 
 depends on the key of the hash field and the location of the hash 
 within the tree.  The values of the hash fields are the children of 
 the node.
 
-<li><b>Lists</b>.  These are references to anonymous Perl lists.  A 
+<li>`Lists`:  These are references to anonymous Perl lists.  A 
 list has an undefined number of elements, which are the children of 
 the node.  Each element has the same type (string, hash or list) and 
 the same semantics, depending on the location of the list within the 
@@ -166,12 +167,12 @@ tree.
 
 </ul>
 
-<p>As you can see, the documentation contained in <b>$doxydocs</b>
+<p>As you can see, the documentation contained in `$doxydocs`
 does not present any special impediment to be processed by a simple
 Perl script.  
 <!--
 To be able to generate meaningful output using the
-documentation contained in <b>$doxydocs</b> you'll probably need to
+documentation contained in `$doxydocs` you'll probably need to
 know the semantics of the nodes of the documentation tree, which we
 present in \ref perlmod_tree "this page".
 -->
@@ -179,16 +180,16 @@ present in \ref perlmod_tree "this page".
 \section doxymodel_format Data structure
 
 <p>You might be interested in processing the documentation contained
-in <b>DoxyDocs.pm</b> without needing to take into account the
+in `DoxyDocs.pm` without needing to take into account the
 semantics of each node of the documentation tree.  For this purpose,
-Doxygen generates a <b>DoxyModel.pm</b> file which contains a data
+Doxygen generates a `DoxyModel.pm` file which contains a data
 structure describing the type and children of each node in the
 documentation tree.
 
 <p>The rest of this section is to be written yet, but in the meantime
 you can look at the Perl scripts generated by Doxygen (such as
-<b>doxylatex.pl</b> or <b>doxytemplate-latex.pl</b>) to get an idea on
-how to use <b>DoxyModel.pm</b>.
+`doxylatex.pl` or `doxytemplate-latex.pl`) to get an idea on
+how to use `DoxyModel.pm`.
 
 
 \htmlonly

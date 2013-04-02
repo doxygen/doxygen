@@ -73,7 +73,7 @@ class MemberDef : public Definition
     const char *extraTypeChars() const;
     const QCString &initializer() const;
     int initializerLines() const;
-    int  getMemberSpecifiers() const;
+    uint64 getMemberSpecifiers() const;
     MemberList *getSectionList(Definition *d) const;
 
     // scope query members
@@ -148,6 +148,16 @@ class MemberDef : public Definition
     bool isDefault() const;
     bool isDelete() const;
     bool isNoExcept() const;
+    bool isAttribute() const; // UNO IDL attribute
+    bool isUNOProperty() const; // UNO IDL property
+    bool isReadonly() const;
+    bool isBound() const;
+    bool isConstrained() const;
+    bool isTransient() const;
+    bool isMaybeVoid() const;
+    bool isMaybeDefault() const;
+    bool isMaybeAmbiguous() const;
+    bool isPublished() const; // UNO IDL published
     bool isTemplateSpecialization() const;
     bool hasDocumentedParams() const;
     bool hasDocumentedReturnType() const;
@@ -240,8 +250,8 @@ class MemberDef : public Definition
     void setFileDef(FileDef *fd);
     void setAnchor();
     void setProtection(Protection p);
-    void setMemberSpecifiers(int s);
-    void mergeMemberSpecifiers(int s);
+    void setMemberSpecifiers(uint64 s);
+    void mergeMemberSpecifiers(uint64 s);
     void setInitializer(const char *i);
     void setBitfields(const char *s);
     void setMaxInitLines(int lines);

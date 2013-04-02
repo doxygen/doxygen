@@ -44,6 +44,7 @@ class Entry;
 
 void marshalInt(StorageIntf *s,int v);
 void marshalUInt(StorageIntf *s,uint v);
+void marshalUInt64(StorageIntf *s,uint64 v);
 void marshalBool(StorageIntf *s,bool b);
 void marshalQCString(StorageIntf *s,const QCString &str);
 void marshalQGString(StorageIntf *s,const QGString &str);
@@ -70,6 +71,7 @@ void marshalEntryTree(StorageIntf *s,Entry *e);
 
 int                  unmarshalInt(StorageIntf *s);
 uint                 unmarshalUInt(StorageIntf *s);
+uint64               unmarshalUInt64(StorageIntf *s);
 bool                 unmarshalBool(StorageIntf *s);
 QCString             unmarshalQCString(StorageIntf *s);
 QGString             unmarshalQGString(StorageIntf *s);

@@ -1,7 +1,7 @@
 /* The standard CSS for doxygen $doxygenversion */
 
 body, table, div, p, dl {
-	font: 400 14px/19px Roboto,sans-serif;
+	font: 400 14px/22px Roboto,sans-serif;
 }
 
 /* @group Heading Levels */
@@ -687,6 +687,7 @@ div.directory {
 .directory td.entry {
         white-space: nowrap;
         padding-right: 6px;
+	padding-top: 3px;
 }
 
 .directory td.entry a {
