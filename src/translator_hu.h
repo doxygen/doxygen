@@ -602,6 +602,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
         case ClassDef::Category:   result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" kivétel"; break;
+        default: break;
       }
       if (isTemplate) result+="sablon-";
       result+="referencia";
@@ -761,6 +762,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+="protocol"; break; // translate me!
         case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="a kivételrõl"; break;
+        default: break;
       }
       result+=" a következõ fájl";
       if (!single) result+="ok";

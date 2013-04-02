@@ -632,10 +632,11 @@ class TranslatorRomanian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protocolul "; break;
         case ClassDef::Category:   result+="categoria "; break;
         case ClassDef::Exception:  result+="excepţia "; break;
+        default: break;
       }
-	  if (isTemplate) result+=" (Template) ";
-	  result+=(QCString)clName;
-      
+      if (isTemplate) result+=" (Template) ";
+      result+=(QCString)clName;
+
       return result;
     }
 
@@ -794,6 +795,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="categorie"; break;
         case ClassDef::Exception:  result+="excepţie"; break;
+        default: break;
       }
       result+=" a fost generată din fişier";
       if (single) result+="ul:"; else result+="ele:";
@@ -1690,6 +1692,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="Protocolul "; break;
         case ClassDef::Category:   result+="Categoria "; break;
         case ClassDef::Exception:  result+="Excepţia "; break;
+        default: break;
       }
       if (isTemplate) result+="(Template) ";
 	  result+=(QCString)clName;
@@ -1758,6 +1761,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protocolului"; break;
         case ClassDef::Category:   result+="categoriei"; break;
         case ClassDef::Exception:  result+="excepţiei"; break;
+        default: break;
       }
       result+=" a fost generată din următo";
       if (single) result+="rul fişier:"; else result+="arele fişiere:";

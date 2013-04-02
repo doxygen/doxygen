@@ -67,11 +67,11 @@ afterwards:
 \verbatim
 doxygen -w html header.html footer.html stylesheet.css <config_file>
 \endverbatim
-  The config_file is optional. When omitted doxygen will search for 
-  a file named Doxyfile and process that. When this is also not found it
+  The `config_file` is optional. When omitted doxygen will search for 
+  a file named `Doxyfile` and process that. When this is also not found it
   will used the default settings.
 
-<li>For LaTeX output, you can generate the first and last part of \c refman.tex 
+<li>For \f$\mbox{\LaTeX}\f$ output, you can generate the first and last part of \c refman.tex 
     (see \ref cfg_latex_header "LATEX_HEADER" and
      \ref cfg_latex_footer "LATEX_FOOTER") and the style sheet included
     by that header (normally <code>doxygen.sty</code>), using the following
@@ -79,7 +79,7 @@ doxygen -w html header.html footer.html stylesheet.css <config_file>
 \verbatim
 doxygen -w latex header.tex footer.tex doxygen.sty <config_file>
 \endverbatim
-If you need non-default options (for instance to use extra latex packages) 
+If you need non-default options (for instance to use extra \f$\mbox{\LaTeX}\f$ packages) 
 you need to make a config file with those options set correctly and then specify
 that config file after the generated files (make a backup of the configuration
 file first so you don't loose it in case you forget to specify one of the 

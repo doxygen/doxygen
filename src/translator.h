@@ -582,6 +582,18 @@ class Translator
     virtual QCString trMethodDocumentation() = 0;
     virtual QCString trDesignOverview() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trInterfaces() = 0;
+    virtual QCString trServices() = 0;
+    virtual QCString trConstantGroups() = 0;
+    virtual QCString trConstantGroupReference(const char *namespaceName) = 0;
+    virtual QCString trServiceReference(const char *sName) = 0;
+    virtual QCString trSingletonReference(const char *sName) = 0;
+    virtual QCString trServiceGeneratedFromFiles(bool single) = 0;
+    virtual QCString trSingletonGeneratedFromFiles(bool single) = 0;
 };
 
 #endif

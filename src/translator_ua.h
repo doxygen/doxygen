@@ -19,7 +19,7 @@
 #ifndef TRANSLATOR_UA_H
 #define TRANSLATOR_UA_H
 
-class TranslatorUkrainian : public Translator
+class TranslatorUkrainian : public TranslatorAdapter_1_8_2
 {
   public:
     /*! Used for identification of the language. */
@@ -572,6 +572,7 @@ class TranslatorUkrainian : public Translator
           case ClassDef::Protocol:   result+="протоколу"; break;
           case ClassDef::Category:   result+="категорії"; break;
           case ClassDef::Exception:  result+="Виняток"; break;
+          default: break;
         }
       }
       else
@@ -585,6 +586,7 @@ class TranslatorUkrainian : public Translator
           case ClassDef::Protocol:   result+="Протокол"; break;
           case ClassDef::Category:   result+="Категорія"; break;
           case ClassDef::Exception:  result+="Виняток"; break;
+          default: break;
         }
       }
       result+=" ";
@@ -754,6 +756,8 @@ class TranslatorUkrainian : public Translator
           break;
         case ClassDef::Exception:
           if (single) result+="цього винятку"; else result+="цих винятків";
+          break;
+        default: 
           break;
       }
       result+=" була створена з файл";
@@ -1635,6 +1639,7 @@ class TranslatorUkrainian : public Translator
 	  case ClassDef::Protocol:   result+=" Протокол"; break;
 	  case ClassDef::Category:   result+=" Категорія"; break;
 	  case ClassDef::Exception:  result+=" Виняток"; break;
+          default: break;
 	}
       }
       else
@@ -1649,6 +1654,7 @@ class TranslatorUkrainian : public Translator
 	  case ClassDef::Protocol:   result+="протоколу"; break;
 	  case ClassDef::Category:   result+="категорії"; break;
 	  case ClassDef::Exception:  result+="винятка"; break;
+          default: break;
 	}
       }
       return result;
@@ -1716,6 +1722,7 @@ class TranslatorUkrainian : public Translator
         case ClassDef::Protocol:   result+="цього протоколу"; break;
         case ClassDef::Category:   result+="цієї категорії"; break;
         case ClassDef::Exception:  result+="цього винятку"; break;
+        default: break;
       }
       result+=" було згенеровано з ";
       if (single) result+="наступного файлу:"; else result+="наступних файлів:";

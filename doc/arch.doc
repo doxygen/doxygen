@@ -58,7 +58,7 @@ of macros. This is to allow macro names to appear in the type of
 function parameters for instance.
 
 Another difference is that the preprocessor parses, but not actually includes 
-code when it encounters a \#include (with the exception of \#include 
+code when it encounters a \c \#include (with the exception of \c \#include
 found inside { ... } blocks). The reasons behind this deviation from 
 the standard is to prevent feeding multiple definitions of the 
 same functions/classes to doxygen's parser. If all source files would 
@@ -67,7 +67,7 @@ definitions (and their documentation) would be present in each
 translation unit. 
 
 The preprocessor is written using \c flex and can be found in
-\c src/pre.l. For condition blocks (\#if) evaluation of constant expressions 
+\c src/pre.l. For condition blocks (\c \#if) evaluation of constant expressions 
 is needed. For this a \c yacc based parser is used, which can be found 
 in \c src/constexp.y and \c src/constexp.l.
 

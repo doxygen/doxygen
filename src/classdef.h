@@ -48,7 +48,8 @@ class ArgumentList;
 
 /** A class representing of a compound symbol.
  *
- *  A compound can be a class, struct, union, interface, or exception.
+ *  A compound can be a class, struct, union, interface, service, singleton,
+ *  or exception.
  *  \note This class should be renamed to CompoundDef
  */
 class ClassDef : public Definition
@@ -61,7 +62,9 @@ class ClassDef : public Definition
                         Interface, //=Entry::INTERFACE_SEC,
                         Protocol,  //=Entry::PROTOCOL_SEC,
                         Category,  //=Entry::CATEGORY_SEC,
-                        Exception  //=Entry::EXCEPTION_SEC
+                        Exception, //=Entry::EXCEPTION_SEC
+                        Service,   //=Entry::CLASS_SEC
+                        Singleton, //=Entry::CLASS_SEC
                       };
 
     /** Creates a new compound definition.
@@ -256,6 +259,9 @@ class ClassDef : public Definition
     /** Returns TRUE if this class is marked as sealed */
     bool isSealed() const;
 
+    /** Returns TRUE if this class is marked as published */
+    bool isPublished() const;
+
     /** Returns TRUE if this class represents an Objective-C 2.0 extension (nameless category) */
     bool isExtension() const;
 
@@ -320,7 +326,7 @@ class ClassDef : public Definition
     void setIsStatic(bool b);
     void setCompoundType(CompoundType t);
     void setClassName(const char *name);
-    void setClassSpecifier(int spec);
+    void setClassSpecifier(uint64 spec);
 
     void setTemplateArguments(ArgumentList *al);
     void setTemplateBaseClassNames(QDict<int> *templateNames);

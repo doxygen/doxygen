@@ -789,6 +789,28 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trDesignOverview()); }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trInterfaces()
+    { return toUtf8(m_translator->trInterfaces()); }
+    QCString trServices()
+    { return toUtf8(m_translator->trServices()); }
+    QCString trConstantGroups()
+    { return toUtf8(m_translator->trConstantGroups()); }
+    QCString trConstantGroupReference(const char *namespaceName)
+    { return toUtf8(m_translator->trConstantGroupReference(fromUtf8(namespaceName))); }
+    QCString trServiceReference(const char *sName)
+    { return toUtf8(m_translator->trServiceReference(fromUtf8(sName))); }
+    QCString trSingletonReference(const char *sName)
+    { return toUtf8(m_translator->trSingletonReference(fromUtf8(sName))); }
+    QCString trServiceGeneratedFromFiles(bool single)
+    { return toUtf8(m_translator->trServiceGeneratedFromFiles(single)); }
+    QCString trSingletonGeneratedFromFiles(bool single)
+    { return toUtf8(m_translator->trSingletonGeneratedFromFiles(single)); }
+
+
+//////////////////////////////////////////////////////////////////////////
   private:
     Translator *m_translator;
     void *m_toUtf8;

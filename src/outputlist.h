@@ -422,6 +422,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParameterList,openBracket); }
     void endParameterList()
     { forall(&OutputGenerator::endParameterList); }
+    void exceptionEntry(const char* prefix,bool closeBracket)
+    { forall(&OutputGenerator::exceptionEntry,prefix,closeBracket); }
 
     void startConstraintList(const char *header) 
     { forall(&OutputGenerator::startConstraintList,header); }

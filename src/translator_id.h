@@ -603,6 +603,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" Protokol "; break;
         case ClassDef::Category:   result+=" Kategori "; break;
         case ClassDef::Exception:  result+=" Eksepsi "; break;
+        default: break;
       }
       if (isTemplate) result+=" Template ";
       result+=(QCString)clName;
@@ -762,6 +763,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategori"; break;
         case ClassDef::Exception:  result+="eksepsi"; break;
+        default: break;
       }
       result+=" ini dibangkitkan dari file";
       result+=single ? "" : "-file";
@@ -1658,6 +1660,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="Protokol "; break;
         case ClassDef::Category:   result+="Kategori "; break;
         case ClassDef::Exception:  result+="Eksepsi "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -1724,6 +1727,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" ini dibangkitkan dari file";
       if (!single) result+="-file ";

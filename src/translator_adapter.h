@@ -41,7 +41,38 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_8_2 : public TranslatorAdapterBase
+class TranslatorAdapter_1_8_4 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.4"); }
+
+    virtual QCString trInterfaces()
+    { return english.trInterfaces(); }
+
+    virtual QCString trServices()
+    { return english.trServices(); }
+
+    virtual QCString trConstantGroups()
+    { return english.trConstantGroups(); }
+
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    { return english.trConstantGroupReference(namespaceName); }
+
+    virtual QCString trServiceReference(const char *sName)
+    { return english.trServiceReference(sName); }
+
+    virtual QCString trSingletonReference(const char *sName)
+    { return english.trSingletonReference(sName); }
+
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    { return english.trServiceGeneratedFromFiles(single); }
+
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    { return english.trSingletonGeneratedFromFiles(single); }
+};
+
+class TranslatorAdapter_1_8_2 : public TranslatorAdapter_1_8_4
 {
   public:
     virtual QCString updateNeededMessage()
@@ -70,7 +101,7 @@ class TranslatorAdapter_1_8_2 : public TranslatorAdapterBase
 };
 
 
-/** Adapter class for languages that only contain translations upto
+/** Adapter class for languages that only contain translations up to
  *  version 1.8.0.
  */
 class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
@@ -102,7 +133,7 @@ class TranslatorAdapter_1_8_0 : public TranslatorAdapter_1_8_2
 
 };
 
-/** Adapter class for languages that only contain translations upto
+/** Adapter class for languages that only contain translations up to
  *  version 1.7.5.
  */
 class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
@@ -121,7 +152,7 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
     { return english.trDirDepGraph(name); }
 };
 
-/** Adapter class for languages that only contain translations upto
+/** Adapter class for languages that only contain translations up to
  *  version 1.6.3.
  */
 class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
@@ -142,7 +173,7 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
     { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
 };
 
-/** Adapter class for languages that only contain translations upto
+/** Adapter class for languages that only contain translations up to
  *  version 1.6.0.
  */
 class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
@@ -167,7 +198,7 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
     { return english.trNoMatches(); }
 };
 
-/** Adapter class for languages that only contain translations upto
+/** Adapter class for languages that only contain translations up to
  *  version 1.5.4
  */
 class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
@@ -246,7 +277,7 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
     { return english.trTypeConstraints(); }
 };
 
-/** Adapter class for languages that only contain translations upto
+/** Adapter class for languages that only contain translations up to
  *  version 1.4.6
  */
 class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4

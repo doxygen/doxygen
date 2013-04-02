@@ -254,8 +254,8 @@ for the supported languages, the \c translator.py Python
 script was developed (located in \c doxygen/doc directory). 
 It extracts the important information about obsolete and
 new methods from the source files for each of the languages.  
-The information is stored in the <em>translator report</em> ASCII file
-(%(translatorReportFileName)s). 
+The information is stored in the translator report ASCII file
+(\c %(translatorReportFileName)s). 
 
 \htmlonly If you compiled this documentation
 from sources and if you have also doxygen sources available the
@@ -352,6 +352,11 @@ methods.  Because of that, the translator adapter classes should be
 used if possible.  On the other hand, implementation of adapters for
 really obsolete translators brings too much maintenance and
 run-time overhead.
+
+\htmlonly
+Go to the <a href="perlmod.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
 
 */
 

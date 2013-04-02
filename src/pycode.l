@@ -1173,7 +1173,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					  codifyLines(yytext);
 		                          endFontClass();
 
-					  // No indentation necesary
+					  // No indentation necessary
 					  g_noSuiteFound = FALSE;
                                        }
 
@@ -1182,7 +1182,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					  codifyLines(yytext);
 		                          endFontClass();
 
-					  // No indentation necesary
+					  // No indentation necessary
 					  g_noSuiteFound = FALSE;
                                        }
     {IDENTIFIER}                       {

@@ -611,6 +611,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+=" Protokolas"; break;
         case ClassDef::Category:   result+=" Kategorija"; break;
         case ClassDef::Exception:  result+=" Iðimtis"; break;
+        default: break;
       }
       if (isTemplate) result+=" Ðablonas";
       return result;
@@ -769,6 +770,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+="ðiam protocolui"; break;
         case ClassDef::Category:   result+="ðiai kategorijai"; break;
         case ClassDef::Exception:  result+="ðiai iðimèiai"; break;
+        default: break;
       }
       result+=" sugeneruota ið ";
       if (single) result+="ðio failo:"; else result+="ðiø failø:";

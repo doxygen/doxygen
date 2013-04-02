@@ -607,6 +607,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Протокол"; break;
         case ClassDef::Category:   result+=" Категорија"; break;
         case ClassDef::Exception:  result+=" Исклучок"; break;
+        default: break;
       }
       if (isTemplate) result+=" Образец";
       result+=" Повикување";
@@ -766,6 +767,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="овој протокол"; break;
         case ClassDef::Category:   result+="оваа категорија"; break;
         case ClassDef::Exception:  result+="овој исклучок"; break;
+        default: break;
       }
       result+=" беше создадена од ";
       if (single) result+="следнава датотека:"; else result+="следниве датотеки:";
@@ -1660,6 +1662,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Протокол"; break;
         case ClassDef::Category:   result+=" Категорија"; break;
         case ClassDef::Exception:  result+=" Исклучок"; break;
+        default: break;
       }
       if (isTemplate) result+=" Образец";
       return result;
@@ -1726,6 +1729,7 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="овој протокол"; break;
         case ClassDef::Category:   result+="оваа категорија"; break;
         case ClassDef::Exception:  result+="овој исклучок"; break;
+        default: break;
       }
       result+=" беше создадена од ";
       if (single) result+="следнава датотека:"; else result+="следниве датотеки:";

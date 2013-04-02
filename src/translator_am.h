@@ -572,36 +572,38 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
     {
-		QCString result=(QCString)clName;
-		if (isTemplate)
-		{		  
-		  switch(compType)
-		  {
-			case ClassDef::Class:      result+=" Դասի"; break;
-			case ClassDef::Struct:     result+=" Կառուցվածքի"; break;
-			case ClassDef::Union:      result+=" Միավորման"; break;
-			case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
-			case ClassDef::Protocol:   result+=" Արձանագրության"; break;
-			case ClassDef::Category:   result+=" Դասակարգման"; break;
-			case ClassDef::Exception:  result+=" Բացառության"; break;
-		  }
-		  result+=" Ձևանմուշներ";
-		}
-		else
-		{
-		  switch(compType)
-		  {
-			case ClassDef::Class:      result+=" Դաս"; break;
-			case ClassDef::Struct:     result+=" Կառուցվածք"; break;
-			case ClassDef::Union:      result+=" Միավորում"; break;
-			case ClassDef::Interface:  result+=" Ինտերֆեյս"; break;
-			case ClassDef::Protocol:   result+=" Արձանագրություն"; break;
-			case ClassDef::Category:   result+=" Դասակարգում"; break;
-			case ClassDef::Exception:  result+=" Բացառություն"; break;
-		  }
-		}
-		return result;
-	}
+      QCString result=(QCString)clName;
+      if (isTemplate)
+      {		  
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" Դասի"; break;
+          case ClassDef::Struct:     result+=" Կառուցվածքի"; break;
+          case ClassDef::Union:      result+=" Միավորման"; break;
+          case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
+          case ClassDef::Protocol:   result+=" Արձանագրության"; break;
+          case ClassDef::Category:   result+=" Դասակարգման"; break;
+          case ClassDef::Exception:  result+=" Բացառության"; break;
+          default: break;
+        }
+        result+=" Ձևանմուշներ";
+      }
+      else
+      {
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" Դաս"; break;
+          case ClassDef::Struct:     result+=" Կառուցվածք"; break;
+          case ClassDef::Union:      result+=" Միավորում"; break;
+          case ClassDef::Interface:  result+=" Ինտերֆեյս"; break;
+          case ClassDef::Protocol:   result+=" Արձանագրություն"; break;
+          case ClassDef::Category:   result+=" Դասակարգում"; break;
+          case ClassDef::Exception:  result+=" Բացառություն"; break;
+          default: break;
+        }
+      }
+      return result;
+    }
 
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
@@ -755,6 +757,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="արձանագրության"; break;
         case ClassDef::Category:   result+="դասակարգման"; break;
         case ClassDef::Exception:  result+="բացառության"; break;
+        default: break;
       }
       result+=" փաստագրությունը ստեղծվել է հետևյալ ֆայլ";
       if (single) result+="ից."; else result+="երից.";
@@ -1623,30 +1626,32 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       QCString result=(QCString)clName;
       if (!isTemplate) 
       {
-		switch(compType)
-		{
-		  case ClassDef::Class:      result+=" Մոդուլ"; break;
-		  case ClassDef::Struct:     result+=" Տիպ"; break;
-		  case ClassDef::Union:      result+=" Միավորում"; break;
-		  case ClassDef::Interface:  result+=" Ինտերֆեյս"; break;
-		  case ClassDef::Protocol:   result+=" Արձանագրություն"; break;
-		  case ClassDef::Category:   result+=" Դասակարգում"; break;
-		  case ClassDef::Exception:  result+=" Բացառություն"; break;
-		}
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" Մոդուլ"; break;
+          case ClassDef::Struct:     result+=" Տիպ"; break;
+          case ClassDef::Union:      result+=" Միավորում"; break;
+          case ClassDef::Interface:  result+=" Ինտերֆեյս"; break;
+          case ClassDef::Protocol:   result+=" Արձանագրություն"; break;
+          case ClassDef::Category:   result+=" Դասակարգում"; break;
+          case ClassDef::Exception:  result+=" Բացառություն"; break;
+          default: break;
+        }
       }
       else
       {
-		switch(compType)
-		{
-		  case ClassDef::Class:      result+=" Մոդուլի"; break;
-		  case ClassDef::Struct:     result+=" Տիպի"; break;
-		  case ClassDef::Union:      result+=" Միավորման"; break;
-		  case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
-		  case ClassDef::Protocol:   result+=" Արձանագրության"; break;
-		  case ClassDef::Category:   result+=" Դասակարգման"; break;
-		  case ClassDef::Exception:  result+=" Բացառության"; break;
-		}
-		result+=" Ձևանմուշ";
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" Մոդուլի"; break;
+          case ClassDef::Struct:     result+=" Տիպի"; break;
+          case ClassDef::Union:      result+=" Միավորման"; break;
+          case ClassDef::Interface:  result+=" Ինտերֆեյսի"; break;
+          case ClassDef::Protocol:   result+=" Արձանագրության"; break;
+          case ClassDef::Category:   result+=" Դասակարգման"; break;
+          case ClassDef::Exception:  result+=" Բացառության"; break;
+          default: break;
+        }
+        result+=" Ձևանմուշ";
       }
       return result;
     }
@@ -1710,6 +1715,7 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="արձանագրության"; break;
         case ClassDef::Category:   result+="դասակարգման"; break;
         case ClassDef::Exception:  result+="բացառության"; break;
+        default: break;
       }
       result+=" փաստագրությունը ստեղծվել է հետևալ ֆայլ";
       if (single) result+="ից."; else result+="երից.";

@@ -33,7 +33,7 @@
  * Updated to 1.8.2 by Bartomeu Creus Navarro (01-julio-2012)
  */
 
-class TranslatorSpanish : public Translator
+class TranslatorSpanish : public TranslatorAdapter_1_8_2
 {
   public:
 
@@ -613,6 +613,7 @@ class TranslatorSpanish : public Translator
         case ClassDef::Protocol:   result+="l Protocolo "; break;
         case ClassDef::Category:   result+=" la Categoria "; break;
         case ClassDef::Exception:  result+=" la Excepción "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -780,6 +781,7 @@ class TranslatorSpanish : public Translator
         case ClassDef::Protocol:   result+="e protocolo"; break;
         case ClassDef::Category:   result+="a categoría"; break;
         case ClassDef::Exception:  result+="a excepción"; break;
+        default: break;
       }
       result+=" fue generada a partir de";
       if (single) result+="l siguiente fichero:"; 
@@ -1737,6 +1739,7 @@ class TranslatorSpanish : public Translator
         case ClassDef::Protocol:   result+="l protocolo"; break;
         case ClassDef::Category:   result+=" la categoría"; break;
         case ClassDef::Exception:  result+=" la excepción"; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -1805,6 +1808,7 @@ class TranslatorSpanish : public Translator
     	case ClassDef::Protocol:   result+="e protocolo"; break;
     	case ClassDef::Category:   result+="a categoría"; break;
     	case ClassDef::Exception:  result+="a excepción"; break;
+        default: break;
       }
       result+=" fue generada de";
       if (single) result+="l siguiente fichero:";

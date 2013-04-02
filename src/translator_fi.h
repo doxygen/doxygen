@@ -686,6 +686,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" protokolla"; break; // " Protocol"
         case ClassDef::Category:   result+=" kategoria"; break; // " Category"
         case ClassDef::Exception:  result+=" poikkeus"; break; // " Exception"
+        default: break;
       }
       if (isTemplate) result+="malli"; // " Template"
       result+="referenssi"; // " Reference"
@@ -845,6 +846,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protokollalle"; break; // "protocol"
         case ClassDef::Category:   result+="kategorialle"; break; // "category"
         case ClassDef::Exception:  result+="poikkeukselle"; break; // "exception"
+        default: break;
       }
       if (single) result+=" luotiin seuraavasta tiedostosta:"; // " was generated from the following file"
       else result+=" luotiin seuraavista tiedostoista:"; // ":" or "s:"
@@ -1799,6 +1801,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" protokolla"; break; // " Protocol"
         case ClassDef::Category:   result+=" kategoria"; break; // " Category"
         case ClassDef::Exception:  result+=" poikkeus"; break; // " Exception"
+        default: break;
       }
       if (isTemplate) result+="malli"; // " Template"
       result+="referenssi"; // " Reference"
@@ -1866,6 +1869,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protokollalle"; break; // "protocol"
         case ClassDef::Category:   result+="kategorialle"; break; // "category"
         case ClassDef::Exception:  result+="poikkeukselle"; break; // "exception"
+        default: break;
       }
       result+=" luotiin "; // " was generated from the following file"
       if (single) result+="seuraavasta tiedostosta:"; else result+="seuraavista tiedostoista:"; // ":" / "s:"

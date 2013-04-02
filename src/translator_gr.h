@@ -19,14 +19,14 @@
  * 15 Dec 2001 : Translation to greek by
  *               Harry Kalogirou <no email>
  *
- * 01 Jan 2009 : Greek maintainance by
+ * 01 Jan 2009 : Greek maintenance by
  *               Paul Gessos <gessos.paul@yahoo.gr>
  */
 
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_8_2
 {
   public:
 
@@ -593,8 +593,9 @@ class TranslatorGreek : public Translator
         case ClassDef::Protocol:   result+=" Πρωτοκόλλου "; break;
         case ClassDef::Category:   result+=" Κατηγορίας "; break;
         case ClassDef::Exception:  result+=" Εξαίρεσης "; break;
+        default: break;
       }
-	  result+=clName;
+      result+=clName;
       return result;
     }
 
@@ -751,6 +752,7 @@ class TranslatorGreek : public Translator
         case ClassDef::Protocol:   result+="αυτό το πρωτόκολλο"; break;
         case ClassDef::Category:   result+="αυτή την κατηγορία"; break;
         case ClassDef::Exception:  result+="αυτή την εξαίρεση"; break;
+        default: break;
       }
       result+=" δημιουργήθηκε απο τ";
       if (single) result+="ο ακόλουθο αρχείο:"; else result+="α ακόλουθα αρχεία:";
@@ -1650,6 +1652,7 @@ class TranslatorGreek : public Translator
         case ClassDef::Protocol:   result+=" Πρωτόκολλο"; break;
         case ClassDef::Category:   result+=" Κατηγορία"; break;
         case ClassDef::Exception:  result+=" Εξαίρεση"; break;
+        default: break;
       }
       if (isTemplate) result+=" Πρότυπο";
       result+=" Δήλωση";
@@ -1717,6 +1720,7 @@ class TranslatorGreek : public Translator
         case ClassDef::Protocol:   result+="αυτό το πρωτόκολλο"; break;
         case ClassDef::Category:   result+="αυτή την κατηγορία"; break;
         case ClassDef::Exception:  result+="αυτή την εξαίρεση"; break;
+        default: break;
       }
       result+=" δημιουργήθηκε από ";
       if (single) result+="το παρακάτω αρχείο:"; else result+="τα παρακάτω αρχεία:";

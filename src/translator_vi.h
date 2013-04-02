@@ -627,6 +627,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Tham chiếu";
@@ -786,6 +787,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" được biên soạn từ các file sau đây";
       if (single) result+=":"; else result+=":";
@@ -1683,6 +1685,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Tham chiếu";
@@ -1750,6 +1753,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" được biên soạn từ các file sau đây";
       if (single) result+=":"; else result+="s:";

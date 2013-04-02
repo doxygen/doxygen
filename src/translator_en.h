@@ -621,6 +621,7 @@ class TranslatorEnglish : public Translator
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Reference";
@@ -779,6 +780,7 @@ class TranslatorEnglish : public Translator
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" was generated from the following file";
       if (single) result+=":"; else result+="s:";
@@ -1679,6 +1681,7 @@ class TranslatorEnglish : public Translator
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Reference";
@@ -1747,6 +1750,7 @@ class TranslatorEnglish : public Translator
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        default: break;
       }
       result+=" was generated from the following file";
       if (single) result+=":"; else result+="s:";
@@ -1985,6 +1989,62 @@ class TranslatorEnglish : public Translator
     virtual QCString trDesignOverview()
     {
       return "Design Overview";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Exported Interfaces"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Included Services"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Constant Groups"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Constant Group Reference";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Service Reference";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Singleton Reference";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"The documentation for this service "
+                                "was generated from the following file";
+      if (single) result+=":"; else result+="s:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"The documentation for this singleton "
+                                "was generated from the following file";
+      if (single) result+=":"; else result+="s:";
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////

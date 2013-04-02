@@ -411,10 +411,11 @@ void FileDef::writeSourceLink(OutputList &ol)
   }
 }
 
-void FileDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title)
+void FileDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title,
+            bool const isConstantGroup)
 {
   // write list of namespaces
-  if (namespaceSDict) namespaceSDict->writeDeclaration(ol,title);
+  if (namespaceSDict) namespaceSDict->writeDeclaration(ol,title,isConstantGroup);
 }
 
 void FileDef::writeClassDeclarations(OutputList &ol,const QCString &title)
@@ -646,9 +647,15 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeNamespaceDeclarations(ol,ls->title(lang));
+          writeNamespaceDeclarations(ol,ls->title(lang),false);
         }
         break; 
+      case LayoutDocEntry::FileConstantGroups:
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeNamespaceDeclarations(ol,ls->title(lang),true);
+        }
+        break;
       case LayoutDocEntry::MemberGroups: 
         writeMemberGroups(ol);
         break; 
@@ -693,6 +700,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::ClassUsedFiles:
       case LayoutDocEntry::ClassInlineClasses:
       case LayoutDocEntry::NamespaceNestedNamespaces:
+      case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
       case LayoutDocEntry::NamespaceInlineClasses:
       case LayoutDocEntry::GroupClasses: 

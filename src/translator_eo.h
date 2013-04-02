@@ -42,7 +42,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorEsperanto : public Translator
+class TranslatorEsperanto : public TranslatorAdapter_1_8_2
 {
   public:
 
@@ -623,6 +623,7 @@ class TranslatorEsperanto : public Translator
         case ClassDef::Protocol:   result+="protokolo "; break;
         case ClassDef::Category:   result+="kategorio "; break;
         case ClassDef::Exception:  result+="escepto "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -780,6 +781,7 @@ class TranslatorEsperanto : public Translator
         case ClassDef::Protocol:   result+="protokolo"; break;
         case ClassDef::Category:   result+="kategorio"; break;
         case ClassDef::Exception:  result+="escepto"; break;
+        default: break;
       }
       result+=" generitas el la ";
       if (single) result+="sekva dosiero:";
@@ -1679,6 +1681,7 @@ class TranslatorEsperanto : public Translator
         case ClassDef::Protocol:   result+="protokolo "; break;
         case ClassDef::Category:   result+="kategorio "; break;
         case ClassDef::Exception:  result+="escepto "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -1745,6 +1748,7 @@ class TranslatorEsperanto : public Translator
         case ClassDef::Protocol:   result+="protokolo"; break;
         case ClassDef::Category:   result+="kategorio"; break;
         case ClassDef::Exception:  result+="escepto"; break;
+        default: break;
       }
       result+=" kreiĝis el la ";
       if (single) result+="sekva dosiero:"; else result+="sekvaj dosieroj:";

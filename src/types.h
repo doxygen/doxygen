@@ -169,7 +169,14 @@ enum MemberListType
 
   MemberListType_redefinedBy             = 67,
   MemberListType_enumFields              = 68,
-  MemberListType_memberGroup             = 69
+  MemberListType_memberGroup             = 69,
+
+  // this one is for the summary section on the class page
+  MemberListType_interfaces              = 70,
+  // this one is for the detailed section on the class page
+  MemberListType_interfaceMembers        = 71 + MemberListType_detailedLists,
+  MemberListType_services                = 72,
+  MemberListType_serviceMembers          = 73 + MemberListType_detailedLists,
 };
 
 enum MemberType 
@@ -185,7 +192,9 @@ enum MemberType
   MemberType_Friend,
   MemberType_DCOP,
   MemberType_Property,
-  MemberType_Event
+  MemberType_Event,
+  MemberType_Interface,
+  MemberType_Service,
 };
 
 #endif

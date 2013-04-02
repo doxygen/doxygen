@@ -78,7 +78,7 @@ enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 // {{{ ----- Helper structs -----
 //! Holds modifiers (ie attributes) for one symbol (variable, function, etc)
 struct SymbolModifiers {
-  enum Protection {NONE_P, PUBLIC, PRIVATE, PROTECTED};
+  enum Protection {NONE_P, PUBLIC, PRIVATE};
   enum Direction {NONE_D, IN, OUT, INOUT};
 
   //!< This is only used with function return value.
@@ -86,6 +86,7 @@ struct SymbolModifiers {
   Protection protection;
   Direction direction;
   bool optional;
+  bool protect;
   QCString dimension;
   bool allocatable;
   bool external;
@@ -101,7 +102,7 @@ struct SymbolModifiers {
   QCString passVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
-    optional(FALSE), dimension(), allocatable(FALSE),
+    optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
     external(FALSE), intrinsic(FALSE), parameter(FALSE),
     pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
     nopass(FALSE), pass(FALSE), passVar() {}
@@ -145,9 +146,9 @@ struct CommentInPrepass {
 };
 static QList<CommentInPrepass>  comments;
 
-#define MAX_INCLUDE_DEPTH 10
-YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
+YY_BUFFER_STATE *include_stack = NULL;
 int include_stack_ptr = 0;
+int include_stack_cnt = 0;
 
 static QFile            inputFile;
 static QCString		yyFileName;
@@ -257,7 +258,7 @@ TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}COMPLE
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE)
-ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
+ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
@@ -549,9 +550,6 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
   /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>protected/{BS}(\n|"!")       { defaultProtection = Protected;
-                                           current->protection = defaultProtection ;
-                                         }
 <ModuleBody>private/{BS}(\n|"!")         { defaultProtection = Private;
                                            current->protection = defaultProtection ;
                                          }
@@ -592,10 +590,6 @@ public                                  {
 private                                 {
                                           current->protection = Private;
                                           typeProtection = Private;
-                                        }
-protected                               {
-                                          current->protection = Protected;
-                                          typeProtection = Protected;
                                         }
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
@@ -1406,10 +1400,10 @@ static const char* prepassFixedForm(const char* contents)
 
 static void pushBuffer(QCString& buffer)
 {
-  if ( include_stack_ptr >= MAX_INCLUDE_DEPTH )
+  if (include_stack_cnt <= include_stack_ptr)
   {
-    fprintf( stderr, "Stack buffers nested too deeply" );
-    exit( 1 );
+     include_stack_cnt++;
+     include_stack = (YY_BUFFER_STATE *)realloc(include_stack, include_stack_cnt * sizeof(YY_BUFFER_STATE));
   }
   include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(yy_scan_string(buffer));
@@ -1501,6 +1495,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   allocatable |= mdfs.allocatable;
   external |= mdfs.external;
   intrinsic |= mdfs.intrinsic;
+  protect |= mdfs.protect;
   parameter |= mdfs.parameter;
   pointer |= mdfs.pointer;
   target |= mdfs.target;
@@ -1542,7 +1537,7 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
   }
   else if (mdfString=="protected") 
   {
-    newMdf.protection = SymbolModifiers::PROTECTED;
+    newMdf.protect = TRUE;
   }
   else if (mdfString=="optional") 
   {
@@ -1734,7 +1729,7 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "private";
   }
-  else if (mdfs.protection == SymbolModifiers::PROTECTED)
+  if (mdfs.protect)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "protected";
@@ -1760,8 +1755,6 @@ static void applyModifiers(Entry *ent, SymbolModifiers& mdfs)
     ent->protection = Public;
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
     ent->protection = Private;
-  else if (mdfs.protection == SymbolModifiers::PROTECTED)
-    ent->protection = Protected;
 }
 
 /*! Starts the new scope in fortran program. Consider using this function when
@@ -2107,6 +2100,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 
 static void subrHandleCommentBlock(const QCString &doc,bool brief)
 {
+  QCString loc_doc;
   Entry *tmp_entry = current; 
   current = subrCurrent.first(); // temporarily switch to the entry of the subroutine / function
   if (docBlock.stripWhiteSpace().find("\\param") == 0)
@@ -2120,8 +2114,57 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   else 
   {
     int dir1 = modifiers[current_root][argName.lower()].direction;
-    handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
-	               argName + " " + doc,brief);
+    loc_doc = doc.stripWhiteSpace();
+    if (loc_doc.lower().find(directionParam[SymbolModifiers::IN]) == 0)
+    {
+      if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
+          (directionParam[dir1] == directionParam[SymbolModifiers::IN]))
+      {
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " + 
+	                   argName + " " + loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN])),brief);
+      }
+      else
+      {
+        warn(yyFileName,yyLineNr, "warning: inconsistency between intent attribute and documenation for variable: "+argName);
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
+	                   argName + " " + doc,brief);
+      }
+    }
+    else if (loc_doc.lower().find(directionParam[SymbolModifiers::OUT]) == 0)
+    {
+      if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
+          (directionParam[dir1] == directionParam[SymbolModifiers::OUT]))
+      {
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::OUT] + " " + 
+	                   argName + " " + loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::OUT])),brief);
+      }
+      else
+      {
+        warn(yyFileName,yyLineNr, "warning: inconsistency between intent attribute and documenation for variable: "+argName);
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
+	                   argName + " " + doc,brief);
+      }
+    }
+    else if (loc_doc.lower().find(directionParam[SymbolModifiers::INOUT]) == 0)
+    {
+      if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
+          (directionParam[dir1] == directionParam[SymbolModifiers::INOUT]))
+      {
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[SymbolModifiers::INOUT] + " " + 
+	                   argName + " " + loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::INOUT])),brief);
+      }
+      else
+      {
+        warn(yyFileName,yyLineNr, "warning: inconsistency between intent attribute and documenation for variable: "+argName);
+        handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
+	                   argName + " " + doc,brief);
+      }
+    }
+    else
+    {
+      handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
+	                 argName + " " + doc,brief);
+    }
   }
   current=tmp_entry;
 }

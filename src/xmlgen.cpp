@@ -81,6 +81,8 @@ class XmlSectionMapper : public QIntDict<char>
       insert(MemberListType_dcopMethods,"dcop-func");
       insert(MemberListType_properties,"property");
       insert(MemberListType_events,"event");
+      insert(MemberListType_interfaces,"interfaces");
+      insert(MemberListType_services,"services");
       insert(MemberListType_pubStaticMethods,"public-static-func");
       insert(MemberListType_pubStaticAttribs,"public-static-attrib");
       insert(MemberListType_proTypes,"protected-type");
@@ -558,17 +560,19 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   switch (md->memberType())
   {
     case MemberType_Define:      memType="define";    break;
-    case MemberType_EnumValue:   ASSERT(0);           break;
-    case MemberType_Property:    memType="property";  break;
-    case MemberType_Event:       memType="event";     break;
+    case MemberType_Function:    memType="function";  isFunc=TRUE; break;
     case MemberType_Variable:    memType="variable";  break;
     case MemberType_Typedef:     memType="typedef";   break;
     case MemberType_Enumeration: memType="enum";      break;
-    case MemberType_Function:    memType="function";  isFunc=TRUE; break;
+    case MemberType_EnumValue:   ASSERT(0);           break;
     case MemberType_Signal:      memType="signal";    isFunc=TRUE; break;
+    case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
     case MemberType_Friend:      memType="friend";    isFunc=TRUE; break;
     case MemberType_DCOP:        memType="dcop";      isFunc=TRUE; break;
-    case MemberType_Slot:        memType="slot";      isFunc=TRUE; break;
+    case MemberType_Property:    memType="property";  break;
+    case MemberType_Event:       memType="event";     break;
+    case MemberType_Interface:   memType="interface"; break;
+    case MemberType_Service:     memType="service";   break;
   }
 
   ti << "    <member refid=\"" << memberOutputFileBase(md) 
@@ -673,7 +677,47 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     {
       t << " initonly=\"yes\"";
     }
-    
+
+    if (md->isAttribute())
+    {
+      t << " attribute=\"yes\"";
+    }
+    if (md->isUNOProperty())
+    {
+      t << " property=\"yes\"";
+    }
+    if (md->isReadonly())
+    {
+      t << " readonly=\"yes\"";
+    }
+    if (md->isBound())
+    {
+      t << " bound=\"yes\"";
+    }
+    if (md->isRemovable())
+    {
+      t << " removable=\"yes\"";
+    }
+    if (md->isConstrained())
+    {
+      t << " constrained=\"yes\"";
+    }
+    if (md->isTransient())
+    {
+      t << " transient=\"yes\"";
+    }
+    if (md->isMaybeVoid())
+    {
+      t << " maybevoid=\"yes\"";
+    }
+    if (md->isMaybeDefault())
+    {
+      t << " maybedefault=\"yes\"";
+    }
+    if (md->isMaybeAmbiguous())
+    {
+      t << " maybeambiguous=\"yes\"";
+    }
   }
   else if (md->memberType() == MemberType_Property)
   {

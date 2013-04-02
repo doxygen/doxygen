@@ -313,6 +313,12 @@ class LayoutParser : public QXmlDefaultHandler
                                            SrcLangExt_VHDL,VhdlDocGen::trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                            SrcLangExt_Fortran,theTranslator->trDataTypes()
                                          )));
+      m_sHandler.insert("class/memberdecl/services",
+          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
+                                        MemberListType_services,theTranslator->trServices()));
+      m_sHandler.insert("class/memberdecl/interfaces",
+          new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
+                                        MemberListType_interfaces,theTranslator->trInterfaces()));
       m_sHandler.insert("class/memberdecl/publictypes", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
                                         MemberListType_pubTypes,theTranslator->trPublicTypes()));
@@ -422,6 +428,12 @@ class LayoutParser : public QXmlDefaultHandler
       m_sHandler.insert("class/memberdef/enums", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
                                         MemberListType_enumMembers,theTranslator->trMemberEnumerationDocumentation()));
+      m_sHandler.insert("class/memberdef/services",
+          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
+                                        MemberListType_serviceMembers,theTranslator->trInterfaces()));
+      m_sHandler.insert("class/memberdef/interfaces",
+          new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
+                                        MemberListType_interfaceMembers,theTranslator->trInterfaces()));
       m_sHandler.insert("class/memberdef/constructors", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDefEntry,
                                         MemberListType_constructors,theTranslator->trConstructorDocumentation()));
@@ -465,12 +477,16 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandler(this,&LayoutParser::startMemberDecl));
       m_sHandler.insert("namespace/memberdecl/nestednamespaces", 
           new StartElementHandlerSection(this,LayoutDocEntry::NamespaceNestedNamespaces,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_3_OPTIONS(
+                                         COMPILE_FOR_4_OPTIONS(
                                            theTranslator->trNamespaces(),
                                            SrcLangExt_Java,theTranslator->trPackages(),
                                            SrcLangExt_VHDL,theTranslator->trPackages(),
+                                           SrcLangExt_IDL,theTranslator->trModules(),
                                            SrcLangExt_Fortran,theTranslator->trModules()
                                          )));
+      m_sHandler.insert("namespace/memberdecl/constantgroups",
+          new StartElementHandlerSection(this,LayoutDocEntry::NamespaceNestedConstantGroups,&LayoutParser::startSectionEntry,
+                                         theTranslator->trConstantGroups()));
       m_sHandler.insert("namespace/memberdecl/classes", 
           new StartElementHandlerSection(this,LayoutDocEntry::NamespaceClasses,&LayoutParser::startSectionEntry,
                                          COMPILE_FOR_2_OPTIONS(
@@ -559,11 +575,15 @@ class LayoutParser : public QXmlDefaultHandler
                                          )));
       m_sHandler.insert("file/memberdecl/namespaces", 
           new StartElementHandlerSection(this,LayoutDocEntry::FileNamespaces,&LayoutParser::startSectionEntry,
-                                         COMPILE_FOR_2_OPTIONS(
+                                         COMPILE_FOR_3_OPTIONS(
                                            theTranslator->trNamespaces(),
                                            SrcLangExt_Java,theTranslator->trPackages(),
+                                           SrcLangExt_IDL,theTranslator->trModules(),
                                            SrcLangExt_Fortran,theTranslator->trModules()
                                          )));
+      m_sHandler.insert("file/memberdecl/constantgroups",
+          new StartElementHandlerSection(this,LayoutDocEntry::FileNamespaces,&LayoutParser::startSectionEntry,
+                                         theTranslator->trConstantGroups()));
       m_sHandler.insert("file/memberdecl/defines", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
                                         MemberListType_decDefineMembers,theTranslator->trDefines()));

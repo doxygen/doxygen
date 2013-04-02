@@ -623,6 +623,7 @@ private:
         case ClassDef::Protocol:   result+="protokola "; break;
         case ClassDef::Category:   result+="kategorije "; break;
         case ClassDef::Exception:  result+="izuzetka "; break;
+        default: break;
       }
       if (isTemplate) result += "šablona ";  
       result += clName;
@@ -782,6 +783,7 @@ private:
         case ClassDef::Protocol:   result+="ovog protokola"; break;
         case ClassDef::Category:   result+="ove kategorije"; break;
         case ClassDef::Exception:  result+="ovog izuzetka"; break;
+        default: break;
       }
       result+=" je napravljena na osnovu ";
       if (single) result+="datoteke "; else result+="sledećih datoteka:";
@@ -1680,6 +1682,7 @@ private:
         case ClassDef::Protocol:   result+=" Protokol"; break;
         case ClassDef::Category:   result+=" Kategorija"; break;
         case ClassDef::Exception:  result+=" Izuzetak"; break;
+        default: break;
       }
       result+=" - sažet pregled";
       if (isTemplate) result+=" šablona";
@@ -1747,6 +1750,7 @@ private:
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategoriju"; break;
         case ClassDef::Exception:  result+="izuzetak"; break;
+        default: break;
       }
       result+=" napravljena je automatski od sledeć";
       if (single) result+="e datoteke:"; else result+="ih datoteka:";

@@ -31,7 +31,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public Translator
+class TranslatorSlovak : public TranslatorAdapter_1_8_2
 {
   public:
     // --- Language control methods -------------------
@@ -593,6 +593,7 @@ class TranslatorSlovak : public Translator
         case ClassDef::Protocol:   result+="protokol "; break;
         case ClassDef::Category:   result+="kategória "; break;
         case ClassDef::Exception:  result+="výnimky "; break;
+        default: break;
       }
       result+=clName;
       return result;
@@ -765,6 +766,7 @@ class TranslatorSlovak : public Translator
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategória"; break;
         case ClassDef::Exception:  result+="túto výnimku"; break;
+        default: break;
       }
       result+=" bola generovaná z ";
       if (single) result+="nasledujúceho súboru:";
@@ -1645,6 +1647,7 @@ class TranslatorSlovak : public Translator
         case ClassDef::Protocol:   result += "protokolu "; break;
         case ClassDef::Category:   result += "kategórie "; break;
         case ClassDef::Exception:  result += "výnimky "; break;
+        default: break;
       }
       result += clName;
       return result;
@@ -1712,6 +1715,7 @@ class TranslatorSlovak : public Translator
         case ClassDef::Protocol:   result+="k tomuto protokolu"; break;
         case ClassDef::Category:   result+="k tejto kategórii"; break;
         case ClassDef::Exception:  result+="k tejto výnimke"; break;
+        default: break;
       }
       result+=" bola vygenerovaná z ";
       if (single) result+="nasledujúceho súboru:";

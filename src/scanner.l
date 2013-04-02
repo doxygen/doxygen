@@ -608,9 +608,6 @@ BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
 BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
-FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+]
-FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+]
-FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+"\"")
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
@@ -713,6 +710,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 %x	QtPropRead
 %x	QtPropWrite
 %x	ReadInitializer
+%x	UNOIDLAttributeBlock
 %x	GetCallType
 %x	CppQuote
 %x	EndCppQuote
@@ -1332,6 +1330,17 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  current->virt = Virtual;
 					  lineCount();
 					}
+<FindMembers>{B}*"published"{BN}+	{ // UNO IDL published keyword
+					  if (insideIDL)
+					  {
+					    lineCount();
+					    current->spec |= Entry::Published;
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+					}
 <FindMembers>{B}*"abstract"{BN}+    	{ 
                                           if (!insidePHP) 
 					  {
@@ -1428,13 +1437,77 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
-<FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL/Java interface
+<FindMembers>{B}*"constants"{BN}+	{  // UNO IDL constant group
+					  lineCount();
+					  if (insideIDL)
+					  {
+					    isTypedef=FALSE;
+					    current->section = Entry::NAMESPACE_SEC;
+					    current->type = "constants";
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->startColumn = yyColNr;
+					    current->bodyLine  = yyLineNr;
+					    BEGIN( CompoundName );
+					  }
+					  else
+					  {
+					    addType( current ) ;
+					    current->name = QCString(yytext).stripWhiteSpace();
+					  }
+					}
+<FindMembers>{BN}*("service"){BN}+ 	{ // UNO IDL service
+					  lineCount();
+					  if (insideIDL)
+					  {
+					    isTypedef=FALSE;
+					    current->section = Entry::CLASS_SEC;
+					    current->spec = Entry::Service |
+					      // preserve UNO IDL [optional] or published
+					      (current->spec & (Entry::Optional|Entry::Published));
+					    addType( current ) ;
+					    current->type += " service " ;
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+					    BEGIN( CompoundName );
+					  }
+					  else // TODO is addType right? just copy/pasted
+					  {
+					    addType( current ) ;
+					    current->name = QCString(yytext).stripWhiteSpace();
+					  }
+					}
+<FindMembers>{BN}*("singleton"){BN}+ 	{ // UNO IDL singleton
+					  lineCount();
+					  if (insideIDL)
+					  {
+					    isTypedef=FALSE;
+					    current->section = Entry::CLASS_SEC;
+					    current->spec = Entry::Singleton |
+					      (current->spec & Entry::Published); // preserve
+					    addType( current ) ;
+					    current->type += " singleton " ;
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+					    BEGIN( CompoundName );
+					  }
+					  else // TODO is addType right? just copy/pasted
+					  {
+					    addType( current ) ;
+					    current->name = QCString(yytext).stripWhiteSpace();
+					  }
+					}
+<FindMembers>{BN}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba/UNO IDL/Java interface
 					  lineCount();
                                           if (insideIDL || insideJava || insideCS || insideD || insidePHP)
 					  {
   					    isTypedef=FALSE;
 					    current->section = Entry::CLASS_SEC;
-                                            current->spec = Entry::Interface;
+                        current->spec = Entry::Interface |
+                          // preserve UNO IDL [optional] or published
+                          (current->spec & (Entry::Optional|Entry::Published));
 					    addType( current ) ;
 					    current->type += " interface" ;
 					    current->fileName  = yyFileName;
@@ -1501,7 +1574,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
   					  isTypedef=FALSE;
 					  current->section = Entry::CLASS_SEC;
-                                          current->spec = Entry::Exception;
+					  current->spec    = Entry::Exception |
+					    (current->spec & Entry::Published); // preserve UNO IDL
 					  addType( current ) ;
 					  current->type += " exception" ;
 					  current->fileName  = yyFileName;
@@ -1607,7 +1681,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC ;
-                                          current->spec    = Entry::Struct;
+					  current->spec    = Entry::Struct |
+					    (current->spec & Entry::Published); // preserve UNO IDL
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
@@ -2640,6 +2715,15 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  initBracketCount=0;
 					  BEGIN(ReadInitializer);
   					}
+<UNOIDLAttributeBlock>{BN}*[gs]"et"{BN}+"raises"{BN}*"("{BN}*{SCOPENAME}{BN}*(","{BN}*{SCOPENAME}{BN}*)*")"{BN}*";"	{
+					  lineCount();
+					  current->exception += " ";
+					  current->exception += removeRedundantWhiteSpace(yytext);
+					}
+<UNOIDLAttributeBlock>"}"		{
+					  current->exception += " }";
+					  BEGIN(FindMembers);
+					}
   /* Read initializer rules */
 <ReadInitializer>"("			{
   					  lastRoundContext=YY_START;
@@ -3247,6 +3331,39 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->mtype = Property;
 					  }
 					  current->spec |= Entry::Gettable;
+					}
+<IDLAttribute>"property" { // UNO IDL property
+					  current->spec |= Entry::Property;
+					}
+<IDLAttribute>"attribute" { // UNO IDL attribute
+					  current->spec |= Entry::Attribute;
+					}
+<IDLAttribute>"optional" { // on UNO IDL interface/service/attribute/property
+                           current->spec |= Entry::Optional;
+                         }
+<IDLAttribute>"readonly" { // on UNO IDL attribute or property
+					  current->spec |= Entry::Readonly;
+					}
+<IDLAttribute>"bound" { // on UNO IDL attribute or property
+					  current->spec |= Entry::Bound;
+					}
+<IDLAttribute>"removable" { // on UNO IDL property
+					  current->spec |= Entry::Removable;
+					}
+<IDLAttribute>"constrained" { // on UNO IDL property
+					  current->spec |= Entry::Constrained;
+					}
+<IDLAttribute>"transient" { // on UNO IDL property
+					  current->spec |= Entry::Transient;
+					}
+<IDLAttribute>"maybevoid" { // on UNO IDL property
+					  current->spec |= Entry::MaybeVoid;
+					}
+<IDLAttribute>"maybedefault" { // on UNO IDL property
+					  current->spec |= Entry::MaybeDefault;
+					}
+<IDLAttribute>"maybeambiguous" { // on UNO IDL property
+					  current->spec |= Entry::MaybeAmbiguous;
 					}
 <IDLAttribute>.				{
 					}
@@ -5044,6 +5161,28 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                             current_root->addSubEntry(current);
                                             current = new Entry;
                                           }
+					  else if (insideIDL &&
+					           (((current_root->spec & (Entry::Interface |
+					                                    Entry::Service)) &&
+					             (current->spec & Entry::Interface)) ||
+					            ((current_root->spec & (Entry::Service |
+					                                    Entry::Singleton)) &&
+					             (current->spec & Entry::Service))))
+					  {
+					    // interface inside of UNO IDL service or interface
+					    // service inside of UNO IDL service or singleton
+					    // there may be documentation on the member,
+					    // so do not throw it away...
+					    current->name = yytext;
+					    current->name=current->name.left(current->name.length()-1).stripWhiteSpace();
+					    current->section = (current->spec & Entry::Interface)
+					        ? Entry::EXPORTED_INTERFACE_SEC
+					        : Entry::INCLUDED_SERVICE_SEC;
+//					    current->section = Entry::MEMBERDOC_SEC;
+					    current->spec &= ~(Entry::Interface|Entry::Service); // FIXME: horrible: Interface == Gettable, so need to clear it - actually we're mixing values from different enums in this case... granted only Optional and Interface are actually valid in this context but urgh...
+					    current_root->addSubEntry(current);
+					    current = new Entry;
+					  }
 
     					  unput(';');
 					  current->reset();
@@ -5299,7 +5438,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						(current->spec & Entry::Struct)    || 
 						(current->spec & Entry::Ref)       || 
 						(current->spec & Entry::Value)     || 
-						insidePHP || insideCS || insideD || insideObjC
+						insidePHP || insideCS || insideD || insideObjC || insideIDL
 					       )
 					      baseProt=Public;
 					    else
@@ -5583,7 +5722,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
 					  if ((current->spec & (Entry::Interface|Entry::Struct)) || 
 					      insideJava || insidePHP || insideCS || 
-					      insideD || insideObjC)
+					      insideD || insideObjC || insideIDL)
 					  {
 					    baseProt=Public;
 					  }
@@ -5783,6 +5922,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->bodyLine = yyLineNr;
 					    curlyCount=0;
 					    BEGIN( CSAccessorDecl );
+					  }
+					  else if (insideIDL && (current->spec & Entry::Attribute))
+					  {
+					    // UNO IDL: attributes may have setter and getter
+					    // exception specifications
+					    current->exception = " {";
+					    BEGIN(UNOIDLAttributeBlock);
 					  }
 					  else
 					  {
@@ -6330,7 +6476,7 @@ static void parseCompounds(Entry *rt)
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-        if (insidePHP || insideD || insideJS)
+        if (insidePHP || insideD || insideJS || insideIDL)
 	{
           current->protection = protection = Public ; 
 	}

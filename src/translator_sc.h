@@ -611,30 +611,35 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
                                     bool isTemplate)
     {
       QCString result=(QCString)clName;
-      if (isTemplate) {
-	result+=" Шаблон";
-	switch(compType)
-	{
-		case ClassDef::Class:      result+="ска класа"; break;
-		case ClassDef::Struct:     result+="ска структура"; break;
-		case ClassDef::Union:      result+="ска унија"; break;
-		case ClassDef::Interface:  result+="ски интерфејс"; break;
-		case ClassDef::Protocol:   result+="ски протокол"; break;
-		case ClassDef::Category:   result+="ска категорија"; break;
-		case ClassDef::Exception:  result+="ски изузетак"; break;
-	}
-      } else {
-	result+=" Референца";
-	switch(compType)
-	{
-		case ClassDef::Class:      result+=" класе"; break;
-		case ClassDef::Struct:     result+=" структуре"; break;
-		case ClassDef::Union:      result+=" уније"; break;
-		case ClassDef::Interface:  result+=" интерфејса"; break;
-		case ClassDef::Protocol:   result+=" протокола"; break;
-		case ClassDef::Category:   result+=" категорије"; break;
-		case ClassDef::Exception:  result+=" изузетка"; break;
-	}
+      if (isTemplate) 
+      {
+        result+=" Шаблон";
+        switch(compType)
+        {
+          case ClassDef::Class:      result+="ска класа"; break;
+          case ClassDef::Struct:     result+="ска структура"; break;
+          case ClassDef::Union:      result+="ска унија"; break;
+          case ClassDef::Interface:  result+="ски интерфејс"; break;
+          case ClassDef::Protocol:   result+="ски протокол"; break;
+          case ClassDef::Category:   result+="ска категорија"; break;
+          case ClassDef::Exception:  result+="ски изузетак"; break;
+          default: break;
+        }
+      } 
+      else 
+      {
+        result+=" Референца";
+        switch(compType)
+        {
+          case ClassDef::Class:      result+=" класе"; break;
+          case ClassDef::Struct:     result+=" структуре"; break;
+          case ClassDef::Union:      result+=" уније"; break;
+          case ClassDef::Interface:  result+=" интерфејса"; break;
+          case ClassDef::Protocol:   result+=" протокола"; break;
+          case ClassDef::Category:   result+=" категорије"; break;
+          case ClassDef::Exception:  result+=" изузетка"; break;
+          default: break;
+        }
       }
       return result;
     }
@@ -792,6 +797,7 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="овај протокол"; break;
         case ClassDef::Category:   result+="ову категорију"; break;
         case ClassDef::Exception:  result+="овај изузетак"; break;
+        default: break;
       }
       result+=" је произведена из";
       if (single) result+="следеће датотеке:"; else result+="следећих датотека:";
@@ -1703,6 +1709,7 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" протокола"; break;
         case ClassDef::Category:   result+=" категорије"; break;
         case ClassDef::Exception:  result+=" изузетка"; break;
+        default: break;
       }
       return result;
     }
@@ -1768,6 +1775,7 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="овај протокол"; break;
         case ClassDef::Category:   result+="ову категорију"; break;
         case ClassDef::Exception:  result+="овај изузетак"; break;
+        default: break;
       }
       result+=" је направљен из следећ";
       if (single) result+="е датотеке:"; else result+="их датотека:";

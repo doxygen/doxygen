@@ -606,6 +606,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Kategorie"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Verwysing";
@@ -765,6 +766,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protokol"; break;
         case ClassDef::Category:   result+="kategorie"; break;
         case ClassDef::Exception:  result+="eksepsie"; break;
+        default: break;
       }
       result+=" is gegenereer vanaf die volgende le&euml;r";
       if (single) result+=":"; else result+="s:";
@@ -1663,6 +1665,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Protokol"; break;
         case ClassDef::Category:   result+=" Kategorie"; break;
         case ClassDef::Exception:  result+=" Eksepsie"; break;
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Bron";
@@ -1730,6 +1733,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protokcol"; break;
         case ClassDef::Category:   result+="kategorie"; break;
         case ClassDef::Exception:  result+="eksepsie"; break;
+        default: break;
       }
       result+=" is gegenereer vanaf die foldende leer";
       if (single) result+=":"; else result+="s:";

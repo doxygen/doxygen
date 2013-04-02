@@ -33,15 +33,33 @@
 
 static QCString getExtension()
 {
+  /*
+   * [.][nuber][rest]
+   * in case of . missing, just ignore it
+   * in case number missing, just place a 3 in front of it
+   */
   QCString ext = Config_getString("MAN_EXTENSION");
-  if( ext.length() >= 2 &&
-      ext.data()[0] == '.')
+  if (ext.isEmpty())
   {
-    ext = ext.mid(1, ext.length()-1);
+    ext = "3"; 
   }
   else
   {
-    ext = "3"; 
+    if (ext.at(0)=='.')
+    {
+      if (ext.length()==1)
+      {
+        ext = "3"; 
+      }
+      else // strip .
+      {
+        ext = ext.mid(1);
+      }
+    }
+    if (ext.at(0)<='0' || ext.at(0)>='9')
+    {
+      ext.prepend("3");
+    }
   }
   return ext;
 }
@@ -50,7 +68,7 @@ ManGenerator::ManGenerator() : OutputGenerator()
 {
   dir=Config_getString("MAN_OUTPUT")+"/man" + getExtension();
   firstCol=TRUE;
-  paragraph=FALSE;
+  paragraph=TRUE;
   col=0;
   upperCase=FALSE;
   insideTabbing=FALSE;
@@ -129,8 +147,8 @@ static QCString buildFileName(const char *name)
     }
   }
 
-  QCString &manExtension = Config_getString("MAN_EXTENSION");
-  if (fileName.right(2)!=manExtension) 
+  QCString manExtension = "." + getExtension();
+  if (fileName.right(manExtension.length())!=manExtension) 
   {
     fileName+=manExtension;
   }
@@ -796,6 +814,14 @@ void ManGenerator::writeLabel(const char *l,bool isLast)
 
 void ManGenerator::endLabels()
 {
+}
+
+void ManGenerator::endHeaderSection()
+{
+  if (!firstCol) 
+  { 
+    t<< endl; firstCol=TRUE; 
+  }
 }
 
 

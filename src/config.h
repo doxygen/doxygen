@@ -67,6 +67,7 @@ class ConfigOption
     QCString dependsOn() const { return m_dependency; }
     void addDependency(const char *dep) { m_dependency = dep; }
     void setEncoding(const QCString &e) { m_encoding = e; }
+    void setUserComment(const QCString &u) { m_userComment = u; }
 
   protected:
     virtual void writeTemplate(FTextStream &t,bool sl,bool upd) = 0;
@@ -75,7 +76,7 @@ class ConfigOption
     virtual void writeXML(FTextStream&) {}
     virtual void init() {}
 
-    QCString convertToComment(const QCString &s);
+    QCString convertToComment(const QCString &s, const QCString &u);
     void writeBoolValue(FTextStream &t,bool v);
     void writeIntValue(FTextStream &t,int i);
     void writeStringValue(FTextStream &t,QCString &s);
@@ -86,6 +87,7 @@ class ConfigOption
     QCString m_doc;
     QCString m_dependency;
     QCString m_encoding;
+    QCString m_userComment;
     OptionType m_kind;
 };
 
@@ -135,8 +137,12 @@ class ConfigList : public ConfigOption
       if (!sl)
       {
         t << endl;
-        t << convertToComment(m_doc);
+        t << convertToComment(m_doc, m_userComment);
         t << endl;
+      }
+      else if (!m_userComment.isEmpty())
+      {
+        t << convertToComment("", m_userComment);
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       writeStringList(t,m_value);
@@ -175,8 +181,12 @@ class ConfigEnum : public ConfigOption
       if (!sl)
       {
         t << endl;
-        t << convertToComment(m_doc);
+        t << convertToComment(m_doc, m_userComment);
         t << endl;
+      }
+      else if (!m_userComment.isEmpty())
+      {
+        t << convertToComment("", m_userComment);
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       writeStringValue(t,m_value);
@@ -216,8 +226,12 @@ class ConfigString : public ConfigOption
       if (!sl)
       {
         t << endl;
-        t << convertToComment(m_doc);
+        t << convertToComment(m_doc, m_userComment);
         t << endl;
+      }
+      else if (!m_userComment.isEmpty())
+      {
+        t << convertToComment("", m_userComment);
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       writeStringValue(t,m_value);
@@ -259,8 +273,12 @@ class ConfigInt : public ConfigOption
       if (!sl)
       {
         t << endl;
-        t << convertToComment(m_doc);
+        t << convertToComment(m_doc, m_userComment);
         t << endl;
+      }
+      else if (!m_userComment.isEmpty())
+      {
+        t << convertToComment("", m_userComment);
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       if (upd && !m_valueString.isEmpty())
@@ -306,8 +324,12 @@ class ConfigBool : public ConfigOption
       if (!sl)
       {
         t << endl;
-        t << convertToComment(m_doc);
+        t << convertToComment(m_doc, m_userComment);
         t << endl;
+      }
+      else if (!m_userComment.isEmpty())
+      {
+        t << convertToComment("", m_userComment);
       }
       t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       if (upd && !m_valueString.isEmpty())
@@ -570,6 +592,22 @@ class Config
      */
     void create();
 
+    /*! Append user comment
+     */
+    void appendUserComment(const QCString &u)
+    {
+      m_userComment += u;
+    }
+    /*! Take the user comment and reset it internally
+     *  \returns user comment
+     */
+    QCString takeUserComment()
+    {
+      QCString result=m_userComment;
+      m_userComment.resize(0);
+      return result;
+    }
+
   protected:
 
     Config()
@@ -594,6 +632,7 @@ class Config
     QList<ConfigOption> *m_obsolete;
     QDict<ConfigOption> *m_dict;
     static Config *m_instance;
+    QCString m_userComment;
     bool m_initialized;
 };
 

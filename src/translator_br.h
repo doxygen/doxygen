@@ -609,6 +609,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" Protocolo "; break;
         case ClassDef::Category:   result+=" Categoria "; break;
         case ClassDef::Exception:  result+=" Exceção "; break;
+        default: break;
       }
       result+=(QCString)clName;
       return result;
@@ -767,6 +768,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="protocolo "; break;
         case ClassDef::Category:   result+="categoria "; break;
         case ClassDef::Exception:  result+="exceção "; break;
+        default: break;
       }
       result+=" foi gerada a partir ";
       if (single) result+="do seguinte arquivo:"; else result+="dos seguintes arquivos:";
@@ -1671,6 +1673,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="do Protocolo "; break;
         case ClassDef::Category:   result+="da Categoria "; break;
         case ClassDef::Exception:  result+="da Exceção "; break;
+        default: break;
       }
       result += clName; 
      
@@ -1738,6 +1741,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="esto protocolo "; break;
         case ClassDef::Category:   result+="esta categoria "; break;
         case ClassDef::Exception:  result+="esta exceção "; break;
+        default: break;
       }
       
       result+=" foi gerada a partir do";

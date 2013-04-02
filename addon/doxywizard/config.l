@@ -408,7 +408,7 @@ static void substEnvVarsInStrList(QStringList &sl)
 
     if (!wasQuoted) /* as a result of the expansion, a single string
 		       may have expanded into a list, which we'll
-		       add to sl. If the orginal string already 
+		       add to sl. If the original string already
 		       contained multiple elements no further 
 		       splitting is done to allow quoted items with spaces! */
     {

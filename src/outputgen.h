@@ -404,6 +404,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endParameterName(bool,bool,bool) = 0;
     virtual void startParameterList(bool) = 0;
     virtual void endParameterList() = 0;
+    virtual void exceptionEntry(const char*,bool) = 0;
 
     virtual void startConstraintList(const char *) = 0;
     virtual void startConstraintParam() = 0;

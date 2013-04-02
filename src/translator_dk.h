@@ -632,6 +632,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" Protokol-"; break;
         case ClassDef::Category:   result+=" Kategori-"; break; // " Category-"
         case ClassDef::Exception:  result+=" Undtagelse-"; break;   //  " Exception"
+        default: break;
       }
       if (isTemplate) result+="skabelon-";  // "template-"
       result+="reference";
@@ -789,6 +790,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="protokol"; break; // "protocol"
         case ClassDef::Category:   result+="kategori"; break; // "category"
         case ClassDef::Exception:  result+="undtagelse"; break;  // "exception"
+        default: break;
       }
       result+=" blev genereret ud fra fil";
       if (single) result+="en:"; else result+="erne:";
@@ -1604,6 +1606,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+=" Protocol"; break;      // " Protocol"
         case ClassDef::Category:   result+=" Kategori"; break;      // " Category"
         case ClassDef::Exception:  result+=" Undtagelse"; break; // " Exception"
+        default: break;
       }
       if (isTemplate) result+=" Template";
       result+=" Reference";
@@ -1673,6 +1676,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         case ClassDef::Protocol:   result+="protokol"; break;     // "protocol"
         case ClassDef::Category:   result+="kategori"; break;     // "category"
         case ClassDef::Exception:  result+="undtagelse"; break;   // "exception"
+        default: break;
       }
       result+=" var lavet udfra følgende file";                   // " was generated from the following file"
       if (single) result+=":"; else result+="r:";                 // ":" / "s:"

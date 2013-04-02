@@ -30,7 +30,7 @@ Version: $(VERSION)
 Doxygen is the de facto standard tool for generating documentation from
 annotated C++ sources, but it also supports other popular programming 
 languages such as C, Objective-C, C#, PHP, Java, Python, IDL 
-(Corba and Microsoft flavors), Fortran, VHDL, Tcl, and to some extent D.
+(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL, Tcl, and to some extent D.
 
 Doxygen can help you in three ways:
 <ol>
@@ -164,8 +164,8 @@ You can submit enhancement requests in
 <a href="https://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_severity=enhancement">the bug tracker</a>.
 Make sure the severity of the bug report is set to "enhancement".
 
-<h2>Acknowledgements</h2>
-\addindex acknowledgements
+<h2>Acknowledgments</h2>
+\addindex acknowledgments
 Thanks go to:
 <ul>
 <li>\addindex Doc++

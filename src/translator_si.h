@@ -281,8 +281,9 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+=" protocol "; break; // translate me!
         case ClassDef::Category:   result+=" category "; break; // translate me!
         case ClassDef::Exception:  result+=" IDL prekinitev "; break;
+        default: break;
       }
-	  result += (QCString)clName;
+      result += (QCString)clName;
       
       return result;
     }
@@ -429,6 +430,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
         case ClassDef::Protocol:   result+="protocol"; break; // translate me!
         case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="prekinitve (exception)"; break;
+        default: break;
       }
       result+=" je zgrajen na podlagi naslednj";
       if (single) result+="e "; else result+="ih";

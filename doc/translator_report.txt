@@ -10,25 +10,17 @@ Macedonian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian,
 Serbian, SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish,
 Ukrainian, and Vietnamese.
 
-Of them, 10 translators are up-to-date, 30 translators are based on
+Of them, 2 translators are up-to-date, 38 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
 The following translator classes are up-to-date (sorted
 alphabetically). This means that they derive from the Translator class
-and they implement all 242 of the required methods. Anyway, there
+and they implement all 250 of the required methods. Anyway, there
 still may be some details listed even for them:
 
-  TranslatorCzech
-  TranslatorDutch
   TranslatorEnglish
-  TranslatorEsperanto
-  TranslatorGerman
-  TranslatorGreek
   TranslatorLatvian -- Reimplementation using UTF-8 suggested.
-  TranslatorSlovak
-  TranslatorSpanish
-  TranslatorUkrainian
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -36,66 +28,90 @@ obsolete at the end). The other info shows the estimation of Doxygen
 version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
-  TranslatorPolish                1.8.2 	 7 methods to implement (2 %)
-  TranslatorKorean                1.8.02	 7 methods to implement (2 %)
+  TranslatorUkrainian             1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorSpanish               1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorSlovak                1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorGreek                 1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorGerman                1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorEsperanto             1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorDutch                 1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorCzech                 1.8.04	 8 methods to implement (3 %)
+	Note: Change the base class to TranslatorAdapter_1_8_4.
+
+  TranslatorPolish                1.8.2 	14 methods to implement (5 %)
+  TranslatorKorean                1.8.02	15 methods to implement (6 %)
 	Note: Change the base class to TranslatorAdapter_1_8_2.
 
-  TranslatorItalian               1.8.2 	 7 methods to implement (2 %)
-  TranslatorCroatian              1.8.2 	 7 methods to implement (2 %)
-  TranslatorChinese               1.8.2 	 7 methods to implement (2 %)
-  TranslatorPortuguese            1.8.0 	14 methods to implement (5 %)
-  TranslatorIndonesian            1.8.0 	14 methods to implement (5 %)
+  TranslatorItalian               1.8.2 	15 methods to implement (6 %)
+  TranslatorCroatian              1.8.2 	15 methods to implement (6 %)
+  TranslatorChinese               1.8.2 	15 methods to implement (6 %)
+  TranslatorPortuguese            1.8.0 	22 methods to implement (8 %)
+  TranslatorIndonesian            1.8.0 	22 methods to implement (8 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorFrench                1.8.0 	14 methods to implement (5 %)
+  TranslatorFrench                1.8.0 	22 methods to implement (8 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorDanish                1.8.0 	14 methods to implement (5 %)
+  TranslatorDanish                1.8.0 	22 methods to implement (8 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorChinesetraditional    1.8.0 	14 methods to implement (5 %)
+  TranslatorChinesetraditional    1.8.0 	22 methods to implement (8 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorCatalan               1.8.0 	14 methods to implement (5 %)
-  TranslatorBrazilian             1.8.0 	14 methods to implement (5 %)
-  TranslatorArmenian              1.8.0 	14 methods to implement (5 %)
-  TranslatorTurkish               1.7.5 	17 methods to implement (7 %)
-  TranslatorRussian               1.7.5 	17 methods to implement (7 %)
+  TranslatorCatalan               1.8.0 	22 methods to implement (8 %)
+  TranslatorBrazilian             1.8.0 	22 methods to implement (8 %)
+  TranslatorArmenian              1.8.0 	22 methods to implement (8 %)
+  TranslatorTurkish               1.7.5 	25 methods to implement (10 %)
+  TranslatorRussian               1.7.5 	25 methods to implement (10 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorPersian               1.7.5 	17 methods to implement (7 %)
-  TranslatorVietnamese            1.6.0 	26 methods to implement (10 %)
-  TranslatorSwedish               1.6.0 	26 methods to implement (10 %)
+  TranslatorPersian               1.7.5 	25 methods to implement (10 %)
+  TranslatorVietnamese            1.6.0 	34 methods to implement (13 %)
+  TranslatorSwedish               1.6.0 	34 methods to implement (13 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorSerbian               1.6.0 	26 methods to implement (10 %)
+  TranslatorSerbian               1.6.0 	34 methods to implement (13 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorSerbianCyrilic        1.6.0 	26 methods to implement (10 %)
-  TranslatorRomanian              1.6.0 	26 methods to implement (10 %)
+  TranslatorSerbianCyrilic        1.6.0 	34 methods to implement (13 %)
+  TranslatorRomanian              1.6.0 	34 methods to implement (13 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorMacedonian            1.6.0 	26 methods to implement (10 %)
-  TranslatorJapanese              1.6.0 	26 methods to implement (10 %)
+  TranslatorMacedonian            1.6.0 	34 methods to implement (13 %)
+  TranslatorJapanese              1.6.0 	33 methods to implement (13 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorFinnish               1.6.0 	26 methods to implement (10 %)
-  TranslatorAfrikaans             1.6.0 	26 methods to implement (10 %)
+  TranslatorFinnish               1.6.0 	34 methods to implement (13 %)
+  TranslatorAfrikaans             1.6.0 	34 methods to implement (13 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorSlovene               1.4.6 	50 methods to implement (20 %)
+  TranslatorSlovene               1.4.6 	58 methods to implement (23 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorNorwegian             1.4.6 	49 methods to implement (20 %)
+  TranslatorNorwegian             1.4.6 	56 methods to implement (22 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorLithuanian            1.4.6 	50 methods to implement (20 %)
+  TranslatorLithuanian            1.4.6 	58 methods to implement (23 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorHungarian             1.4.6 	50 methods to implement (20 %)
+  TranslatorHungarian             1.4.6 	58 methods to implement (23 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorArabic                1.4.6 	49 methods to implement (20 %)
+  TranslatorArabic                1.4.6 	56 methods to implement (22 %)
 	Note: Reimplementation using UTF-8 suggested.
 
 
@@ -113,7 +129,7 @@ WARNING: The following translator methods are declared in the
 Translator class but their identifiers do not appear in source files.
 The situation should be checked. The .cpp files and .h files excluding
 the '*translator*' files in doxygen/src directory were simply searched
-for occurence of the method identifiers:
+for occurrence of the method identifiers:
 
   QCString idLanguageCharset()
   QCString trAlphabeticalList()
@@ -122,6 +138,7 @@ for occurence of the method identifiers:
   QCString trFuncProtos()
   QCString trFunctionPrototypeDocumentation()
   QCString trSearchForIndex()
+  QCString trWrittenBy()
 
 
 ======================================================================
@@ -129,10 +146,10 @@ Details for translators (classes sorted alphabetically):
 
 
 
-TranslatorAfrikaans   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorAfrikaans   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 -------------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -142,12 +159,16 @@ TranslatorAfrikaans   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -156,18 +177,22 @@ TranslatorAfrikaans   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorArabic   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
+TranslatorArabic   (TranslatorAdapter_1_4_6)  56 methods to implement (22 %)
 ----------------
 
-  Implements 193 of the required methods (79 %).
+  Implements 194 of the required methods (77 %).
 
   Missing methods (should be implemented):
 
@@ -180,18 +205,22 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trLoading()
     virtual QCString trSubprograms()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trModulesListDescription(bool extractAll)
     virtual QCString trModulesList()
     virtual QCString trTypeConstraints()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
     virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trTypeDocumentation()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trModuleReference(const char * namespaceName)
     virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trModulesMembers()
@@ -208,9 +237,11 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trDirDependency(const char * name)
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
     virtual QCString trCompoundIndexFortran()
     virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trCallerGraph()
     virtual QCString trExtendsClass()
@@ -219,6 +250,7 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
   Obsolete methods (should be removed, never used):
@@ -228,163 +260,269 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trPackageDocumentation()
     virtual QCString trSources()
     virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorArmenian   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorArmenian   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 ------------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorBrazilian   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorBrazilian   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 -------------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorCatalan   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorCatalan   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 -----------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorChinese   (TranslatorAdapter_1_8_2)  7 methods to implement (2 %)
+TranslatorChinese   (TranslatorAdapter_1_8_2)  15 methods to implement (6 %)
 -----------------
 
-  Implements 235 of the required methods (97 %).
+  Implements 235 of the required methods (94 %).
 
   Missing methods (should be implemented):
 
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorChinesetraditional   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorChinesetraditional   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 ----------------------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorCroatian   (TranslatorAdapter_1_8_2)  7 methods to implement (2 %)
+TranslatorCroatian   (TranslatorAdapter_1_8_2)  15 methods to implement (6 %)
 ------------------
 
-  Implements 235 of the required methods (97 %).
+  Implements 235 of the required methods (94 %).
 
   Missing methods (should be implemented):
 
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorDanish   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorCzech   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+---------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorDanish   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 ----------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorFinnish   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorDutch   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+---------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorEsperanto   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+-------------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorFinnish   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 -----------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -394,12 +532,16 @@ TranslatorFinnish   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -408,41 +550,87 @@ TranslatorFinnish   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorFrench   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorFrench   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 ----------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorHungarian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
+TranslatorGerman   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+----------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorGreek   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+---------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorHungarian   (TranslatorAdapter_1_4_6)  58 methods to implement (23 %)
 -------------------
 
-  Implements 192 of the required methods (79 %).
+  Implements 192 of the required methods (76 %).
 
   Missing methods (should be implemented):
 
@@ -455,18 +643,22 @@ TranslatorHungarian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trLoading()
     virtual QCString trSubprograms()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trModulesListDescription(bool extractAll)
     virtual QCString trModulesList()
     virtual QCString trTypeConstraints()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
     virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trTypeDocumentation()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trModuleReference(const char * namespaceName)
     virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trModulesMembers()
@@ -481,11 +673,14 @@ TranslatorHungarian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
     virtual QCString trCompoundIndexFortran()
     virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trCallerGraph()
     virtual QCString trExtendsClass()
@@ -495,52 +690,69 @@ TranslatorHungarian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorIndonesian   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorIndonesian   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 --------------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorItalian   (TranslatorAdapter_1_8_2)  7 methods to implement (2 %)
+TranslatorItalian   (TranslatorAdapter_1_8_2)  15 methods to implement (6 %)
 -----------------
 
-  Implements 235 of the required methods (97 %).
+  Implements 235 of the required methods (94 %).
 
   Missing methods (should be implemented):
 
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorJapanese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorJapanese   (TranslatorAdapter_1_6_0)  33 methods to implement (13 %)
 ------------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 217 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -550,12 +762,16 @@ TranslatorJapanese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -566,9 +782,12 @@ TranslatorJapanese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trDirDependency(const char * name)
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
   Obsolete methods (should be removed, never used):
@@ -578,13 +797,12 @@ TranslatorJapanese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trPackageDocumentation()
     virtual QCString trSources()
     virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorJapaneseEn   (TranslatorEnglish)  237 methods to implement (97 %)
+TranslatorJapaneseEn   (TranslatorEnglish)  245 methods to implement (98 %)
 --------------------
 
   Implements 5 of the required methods (2 %).
@@ -598,23 +816,31 @@ TranslatorJapaneseEn   (TranslatorEnglish)  237 methods to implement (97 %)
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorKorean   (TranslatorAdapter_1_7_5)  7 methods to implement (2 %)
+TranslatorKorean   (TranslatorAdapter_1_7_5)  15 methods to implement (6 %)
 ----------------
 
-  Implements 235 of the required methods (97 %).
+  Implements 235 of the required methods (94 %).
 
   Missing methods (should be implemented):
 
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorKoreanEn   (TranslatorEnglish)  237 methods to implement (97 %)
+TranslatorKoreanEn   (TranslatorEnglish)  245 methods to implement (98 %)
 ------------------
 
   Implements 5 of the required methods (2 %).
@@ -628,16 +854,27 @@ TranslatorKoreanEn   (TranslatorEnglish)  237 methods to implement (97 %)
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorLatvian   (Translator)
+TranslatorLatvian   (Translator)  8 methods to implement (3 %)
 -----------------
 
-  Implements 242 of the required methods (100 %).
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
 
 
-TranslatorLithuanian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
+TranslatorLithuanian   (TranslatorAdapter_1_4_6)  58 methods to implement (23 %)
 --------------------
 
-  Implements 192 of the required methods (79 %).
+  Implements 192 of the required methods (76 %).
 
   Missing methods (should be implemented):
 
@@ -650,18 +887,22 @@ TranslatorLithuanian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trLoading()
     virtual QCString trSubprograms()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trModulesListDescription(bool extractAll)
     virtual QCString trModulesList()
     virtual QCString trTypeConstraints()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
     virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trTypeDocumentation()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trModuleReference(const char * namespaceName)
     virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trModulesMembers()
@@ -676,11 +917,14 @@ TranslatorLithuanian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
     virtual QCString trCompoundIndexFortran()
     virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trCallerGraph()
     virtual QCString trExtendsClass()
@@ -690,13 +934,14 @@ TranslatorLithuanian   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorMacedonian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorMacedonian   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 --------------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -706,12 +951,16 @@ TranslatorMacedonian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -720,18 +969,22 @@ TranslatorMacedonian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorNorwegian   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
+TranslatorNorwegian   (TranslatorAdapter_1_4_6)  56 methods to implement (22 %)
 -------------------
 
-  Implements 193 of the required methods (79 %).
+  Implements 194 of the required methods (77 %).
 
   Missing methods (should be implemented):
 
@@ -744,18 +997,22 @@ TranslatorNorwegian   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trLoading()
     virtual QCString trSubprograms()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trModulesListDescription(bool extractAll)
     virtual QCString trModulesList()
     virtual QCString trTypeConstraints()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
     virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trTypeDocumentation()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trModuleReference(const char * namespaceName)
     virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trModulesMembers()
@@ -772,9 +1029,11 @@ TranslatorNorwegian   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trDirDependency(const char * name)
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
     virtual QCString trCompoundIndexFortran()
     virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trCallerGraph()
     virtual QCString trExtendsClass()
@@ -783,6 +1042,7 @@ TranslatorNorwegian   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
   Obsolete methods (should be removed, never used):
@@ -792,51 +1052,65 @@ TranslatorNorwegian   (TranslatorAdapter_1_4_6)  49 methods to implement (20 %)
     virtual QCString trPackageDocumentation()
     virtual QCString trSources()
     virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorPersian   (TranslatorAdapter_1_7_5)  17 methods to implement (7 %)
+TranslatorPersian   (TranslatorAdapter_1_7_5)  25 methods to implement (10 %)
 -----------------
 
-  Implements 225 of the required methods (92 %).
+  Implements 225 of the required methods (90 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorPolish   (TranslatorAdapter_1_8_2)  7 methods to implement (2 %)
+TranslatorPolish   (TranslatorAdapter_1_8_2)  14 methods to implement (5 %)
 ----------------
 
-  Implements 235 of the required methods (97 %).
+  Implements 236 of the required methods (94 %).
 
   Missing methods (should be implemented):
 
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
   Obsolete methods (should be removed, never used):
@@ -846,39 +1120,46 @@ TranslatorPolish   (TranslatorAdapter_1_8_2)  7 methods to implement (2 %)
     virtual QCString trPackageDocumentation()
     QCString trSources()
     QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
     QCString trHeaderFiles()
     QCString trBugsAndLimitations()
     QCString trNoDescriptionAvailable()
 
 
-TranslatorPortuguese   (TranslatorAdapter_1_8_0)  14 methods to implement (5 %)
+TranslatorPortuguese   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 --------------------
 
-  Implements 228 of the required methods (94 %).
+  Implements 228 of the required methods (91 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorRomanian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorRomanian   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 ------------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -888,12 +1169,16 @@ TranslatorRomanian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -902,44 +1187,56 @@ TranslatorRomanian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorRussian   (TranslatorAdapter_1_7_5)  17 methods to implement (7 %)
+TranslatorRussian   (TranslatorAdapter_1_7_5)  25 methods to implement (10 %)
 -----------------
 
-  Implements 225 of the required methods (92 %).
+  Implements 225 of the required methods (90 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorSerbian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorSerbian   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 -----------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -949,12 +1246,16 @@ TranslatorSerbian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -963,18 +1264,22 @@ TranslatorSerbian   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 ------------------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -984,12 +1289,16 @@ TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  26 methods to implement (1
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -998,18 +1307,39 @@ TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  26 methods to implement (1
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorSlovene   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
+TranslatorSlovak   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+----------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorSlovene   (TranslatorAdapter_1_4_6)  58 methods to implement (23 %)
 -----------------
 
-  Implements 192 of the required methods (79 %).
+  Implements 192 of the required methods (76 %).
 
   Missing methods (should be implemented):
 
@@ -1022,18 +1352,22 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trLoading()
     virtual QCString trSubprograms()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trModulesListDescription(bool extractAll)
     virtual QCString trModulesList()
     virtual QCString trTypeConstraints()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
     virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trTypeDocumentation()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trModuleReference(const char * namespaceName)
     virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trModulesMembers()
@@ -1048,11 +1382,14 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
     virtual QCString trCompoundIndexFortran()
     virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trCallerGraph()
     virtual QCString trExtendsClass()
@@ -1062,13 +1399,31 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  50 methods to implement (20 %)
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorSwedish   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorSpanish   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
 -----------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorSwedish   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
+-----------------
+
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -1078,12 +1433,16 @@ TranslatorSwedish   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -1092,44 +1451,73 @@ TranslatorSwedish   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorTurkish   (TranslatorAdapter_1_7_5)  17 methods to implement (7 %)
+TranslatorTurkish   (TranslatorAdapter_1_7_5)  25 methods to implement (10 %)
 -----------------
 
-  Implements 225 of the required methods (92 %).
+  Implements 225 of the required methods (90 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trDetailLevel()
     virtual QCString trTemplateParameters()
+    virtual QCString trServices()
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trMethodDocumentation()
     virtual QCString trEnumReference(const char * name)
     virtual QCString trInheritedFrom(const char * members, const char * what)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()
 
 
-TranslatorVietnamese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
+TranslatorUkrainian   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+-------------------
+
+  Implements 242 of the required methods (96 %).
+
+  Missing methods (should be implemented):
+
+    virtual QCString trServices()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trServiceReference(const char * sName)
+    virtual QCString trConstantGroups()
+    virtual QCString trInterfaces()
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
+    virtual QCString trSingletonReference(const char * sName)
+
+
+TranslatorVietnamese   (TranslatorAdapter_1_6_0)  34 methods to implement (13 %)
 --------------------
 
-  Implements 216 of the required methods (89 %).
+  Implements 216 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -1139,12 +1527,16 @@ TranslatorVietnamese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trNoMatches()
     virtual QCString trLoading()
     virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
+    virtual QCString trServices()
     virtual QCString trFileIn(const char * name)
     virtual QCString trClassMethods()
     virtual QCString trProvidedByCategory()
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     virtual QCString trGlobalNamespace()
+    virtual QCString trServiceReference(const char * sName)
     virtual QCString trDesignOverview()
     virtual QCString trAndMore(const QCString & number)
+    virtual QCString trConstantGroups()
     virtual QCString trDirDepGraph(const char * name)
     virtual QCString trDirRelation(const char * name)
     virtual QCString trMethodDocumentation()
@@ -1153,9 +1545,13 @@ TranslatorVietnamese   (TranslatorAdapter_1_6_0)  26 methods to implement (10 %)
     virtual QCString trCiteReferences()
     virtual QCString trAdditionalInheritedMembers()
     virtual QCString trDirDependency(const char * name)
+    virtual QCString trInterfaces()
     virtual QCString trCopyright()
     virtual QCString trIncludesFileIn(const char * name)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     virtual QCString trEnumGeneratedFromFiles(bool single)
+    virtual QCString trConstantGroupReference(const char * namespaceName)
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     virtual QCString trExtendsClass()
+    virtual QCString trSingletonReference(const char * sName)
     virtual QCString trInstanceMethods()

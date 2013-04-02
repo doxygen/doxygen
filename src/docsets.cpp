@@ -396,6 +396,10 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
         break;
       case MemberType_Event:
         type="event"; break;
+      case MemberType_Interface:
+        type="ifc"; break;
+      case MemberType_Service:
+        type="svc"; break;
     }
     cd = md->getClassDef();
     nd = md->getNamespaceDef();

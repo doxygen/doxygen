@@ -125,7 +125,7 @@ int vhdlScanYYlex ();
 void vhdlScanYYerror (char const *);
 
 static void addVhdlType(const QCString &name,int startLine,
-                        int section,int spec,
+                        int section,uint64 spec,
 			const char* args,const char* type,
 			Protection prot=Public);
 static void addCompInst(char *n, char* instName,char* comp,int line);
@@ -143,7 +143,7 @@ static bool isFuncProcProced();
 static void initEntry(Entry *e);
 static void addProto(const char *s1,const char *s2,const char *s3,
                      const char *s4,const char *s5,const char *s6);
-static void createFunction(const QCString &impure,int spec,
+static void createFunction(const QCString &impure,uint64 spec,
                            const QCString &fname);
 
 static void createFlow();    
@@ -2461,7 +2461,7 @@ static void addProto(const char *s1,const char *s2,const char *s3,
   }
 }
 
-static void createFunction(const QCString &impure,int spec,
+static void createFunction(const QCString &impure,uint64 spec,
     const QCString &fname)
 {
 
@@ -2513,8 +2513,8 @@ static void createFunction(const QCString &impure,int spec,
 
 }
 
-static void addVhdlType(const QCString &name,int startLine,int section,int spec,
-    const char* args,const char* type,Protection prot)
+static void addVhdlType(const QCString &name,int startLine,int section,
+    uint64 spec,const char* args,const char* type,Protection prot)
 {
   static QRegExp reg("[\\s]");
 

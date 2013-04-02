@@ -172,6 +172,18 @@
     <xsd:attribute name="required" type="DoxBool" use="optional"/>
     <!-- Objective-C 2.0 property accessor -->
     <xsd:attribute name="accessor" type="DoxAccessor" use="optional"/>
+    <!-- UNO IDL -->
+    <xsd:attribute name="attribute" type="DoxBool" use="optional"/>
+    <xsd:attribute name="property" type="DoxBool" use="optional"/>
+    <xsd:attribute name="readonly" type="DoxBool" use="optional"/>
+    <xsd:attribute name="bound" type="DoxBool" use="optional"/>
+    <xsd:attribute name="removable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="contrained" type="DoxBool" use="optional"/>
+    <xsd:attribute name="transient" type="DoxBool" use="optional"/>
+    <xsd:attribute name="maybevoid" type="DoxBool" use="optional"/>
+    <xsd:attribute name="maybedefault" type="DoxBool" use="optional"/>
+    <xsd:attribute name="maybeambiguous" type="DoxBool" use="optional"/>
+
   </xsd:complexType>
 
   <xsd:complexType name="descriptionType" mixed="true">
@@ -742,6 +754,8 @@
       <xsd:enumeration value="friend" />
       <xsd:enumeration value="dcop" />
       <xsd:enumeration value="slot" />
+      <xsd:enumeration value="interface" />
+      <xsd:enumeration value="service" />
     </xsd:restriction>
   </xsd:simpleType>
 
@@ -771,6 +785,10 @@
       <xsd:enumeration value="protocol" />
       <xsd:enumeration value="category" />
       <xsd:enumeration value="exception" />
+      <xsd:enumeration value="service" />
+      <xsd:enumeration value="singleton" />
+      <xsd:enumeration value="module" />
+      <xsd:enumeration value="type" />
       <xsd:enumeration value="file" />
       <xsd:enumeration value="namespace" />
       <xsd:enumeration value="group" />

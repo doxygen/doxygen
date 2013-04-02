@@ -45,11 +45,11 @@ struct LayoutDocEntry
               ClassUsedFiles,
 
               // Namespace specific items
-              NamespaceNestedNamespaces, NamespaceClasses,
-              NamespaceInlineClasses,
+              NamespaceNestedNamespaces, NamespaceNestedConstantGroups,
+              NamespaceClasses, NamespaceInlineClasses,
 
               // File specific items
-              FileClasses, FileNamespaces, 
+              FileClasses, FileNamespaces, FileConstantGroups,
               FileIncludes, FileIncludeGraph, 
               FileIncludedByGraph, FileSourceLink,
               FileInlineClasses,

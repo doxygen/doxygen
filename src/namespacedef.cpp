@@ -35,8 +35,10 @@
 
 NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
                            const char *name,const char *lref,
-                           const char *fName) : 
+                           const char *fName, const char*type,
+                           bool isPublished) :
    Definition(df,dl,dc,name)
+  ,m_isPublished(isPublished)
 {
   if (fName)
   {
@@ -58,6 +60,18 @@ NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
   memberGroupSDict->setAutoDelete(TRUE);
   visited=FALSE;
   m_subGrouping=Config_getBool("SUBGROUPING");
+  if (type && !strcmp("module", type))
+  {
+    m_type = MODULE;
+  }
+  else if (type && !strcmp("constants", type))
+  {
+    m_type = CONSTANT_GROUP;
+  }
+  else
+  {
+    m_type = NAMESPACE;
+  }
 }
 
 NamespaceDef::~NamespaceDef()
@@ -347,9 +361,10 @@ void NamespaceDef::writeInlineClasses(OutputList &ol)
   if (classSDict) classSDict->writeDocumentation(ol,this);
 }
 
-void NamespaceDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title)
+void NamespaceDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title,
+            bool const isConstantGroup)
 {
-  if (namespaceSDict) namespaceSDict->writeDeclaration(ol,title,TRUE);
+  if (namespaceSDict) namespaceSDict->writeDeclaration(ol,title,isConstantGroup,TRUE);
 }
 
 void NamespaceDef::writeMemberGroups(OutputList &ol)
@@ -421,6 +436,20 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
   ol.popGeneratorState();
 }
 
+void NamespaceDef::addNamespaceAttributes(OutputList &ol)
+{
+  // UNO IDL constant groups may be published
+  if (getLanguage()==SrcLangExt_IDL && isConstantGroup() && m_isPublished)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.startLabels();
+    ol.writeLabel("published",false);
+    ol.endLabels();
+    ol.popGeneratorState();
+  }
+}
+
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
@@ -436,6 +465,12 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   else if (lang==SrcLangExt_Fortran)
   {
     pageTitle = theTranslator->trModuleReference(displayName());
+  }
+  else if (lang==SrcLangExt_IDL)
+  {
+    pageTitle = isConstantGroup()
+        ? theTranslator->trConstantGroupReference(displayName())
+        : theTranslator->trModuleReference(displayName());
   }
   else
   {
@@ -455,6 +490,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
+  addNamespaceAttributes(ol);
   endTitle(ol,getOutputFileBase(),displayName());
   ol.startContents();
   
@@ -498,9 +534,15 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces: 
         {
           LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-          writeNamespaceDeclarations(ol,ls->title(lang));
+          writeNamespaceDeclarations(ol,ls->title(lang),false);
         }
         break; 
+      case LayoutDocEntry::NamespaceNestedConstantGroups:
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeNamespaceDeclarations(ol,ls->title(lang),true);
+        }
+        break;
       case LayoutDocEntry::MemberGroups: 
         writeMemberGroups(ol);
         break; 
@@ -546,6 +588,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::ClassInlineClasses:
       case LayoutDocEntry::FileClasses:
       case LayoutDocEntry::FileNamespaces:
+      case LayoutDocEntry::FileConstantGroups:
       case LayoutDocEntry::FileIncludes:
       case LayoutDocEntry::FileIncludeGraph:
       case LayoutDocEntry::FileIncludedByGraph: 
@@ -825,7 +868,8 @@ bool NamespaceSDict::declVisible() const
   return FALSE;
 }
 
-void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool localName)
+void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
+        bool const isConstantGroup,bool localName)
 {
  
 
@@ -839,7 +883,27 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
   bool found=FALSE;
   for (ni.toFirst();(nd=ni.current()) && !found;++ni)
   {
-    if (nd->isLinkable()) found=TRUE;
+    if (nd->isLinkable())
+    {
+      SrcLangExt lang = nd->getLanguage();
+      if (SrcLangExt_IDL==lang)
+      {
+        if (isConstantGroup == nd->isConstantGroup())
+        {
+          found=TRUE;
+          break;
+        }
+      }
+      else if (!isConstantGroup) // ensure we only get extra section in IDL
+      {
+        if (nd->isConstantGroup())
+        {
+          err("Internal inconsistency: constant group but not IDL?");
+        }
+        found=TRUE;
+        break;
+      }
+    }
   }
   if (!found) return; // no linkable namespaces in the list
 
@@ -855,6 +919,8 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
     if (nd->isLinkable())
     {
       SrcLangExt lang = nd->getLanguage();
+      if (lang==SrcLangExt_IDL && (isConstantGroup != nd->isConstantGroup()))
+          continue; // will be output in another pass, see layout_default.xml
       ol.startMemberDeclaration();
       ol.startMemberItem(nd->getOutputFileBase(),0);
       if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
@@ -865,9 +931,20 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
       {
         ol.docify("module ");
       }
-      else
+      else if (lang==SrcLangExt_IDL)
       {
-        ol.docify("namespace ");
+        if (nd->isModule())
+        {
+          ol.docify("module ");
+        }
+        else if (nd->isConstantGroup())
+        {
+          ol.docify("constants");
+        }
+        else
+        {
+          err("Internal inconsistency: namespace in IDL not module or cg");
+        }
       }
       ol.insertMemberAlign();
       QCString name;

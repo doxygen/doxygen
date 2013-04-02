@@ -509,6 +509,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
         case ClassDef::Category:   result+=" category"; break; // translate me!
         case ClassDef::Exception:  result+=" undantag"; break;
+        default: break;
       }
       if (isTemplate) result+="template";
       result+="referens";
@@ -650,6 +651,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protocol"; break; // translate me!
         case ClassDef::Category:   result+="category"; break; // translate me!
         case ClassDef::Exception:  result+="detta undantag "; break;
+        default: break;
       }
       result+="var genererad från följande fil";
       if (single) result+=":"; else result+="er:";
@@ -1548,6 +1550,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+=" Protokoll"; break;
         case ClassDef::Category:   result+=" Kategori"; break;
         case ClassDef::Exception:  result+=" Undantag"; break;
+        default: break;
       }
       if (isTemplate) result+=" Mall";
       result+=" Referens";
@@ -1613,6 +1616,7 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
         case ClassDef::Protocol:   result+="protokoll"; break;
         case ClassDef::Category:   result+="kategori"; break;
         case ClassDef::Exception:  result+="undantag"; break;
+        default: break;
       }
       result+=" genererades från följade fil";
       if (single) result+=":"; else result+="er:";

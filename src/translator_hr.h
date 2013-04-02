@@ -18,7 +18,7 @@
 // Updates:
 // --------
 // 2000/08/20 
-//  - Better handling of ISO-8859-2/ WIN 1250 stuff based on (actualy stolen from :-)) Czech translations
+//  - Better handling of ISO-8859-2/ WIN 1250 stuff based on (actually stolen from :-)) Czech translations
 //    implemented by Petr Prikryl (prikrylp@skil.cz).
 //    As opposed to Czech translation this one assumes that Doxygen strings are written in Linux ( it's true,
 //    I don't have QT pro licence ) , and uses ISOToWin function when built in WIN32
@@ -367,9 +367,9 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+=" protokola "; break; 
         case ClassDef::Category:   result+=" kategorije "; break; 
         case ClassDef::Exception:  result+=" iznimke (exception) "; break;
+        default: break;
       }
-          result += clName;
-      
+      result += clName;
       return result;
     }
     QCString trFileReference(const char *fileName)
@@ -517,6 +517,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
         case ClassDef::Protocol:   result+="protokola"; break; 
         case ClassDef::Category:   result+="kategorije"; break; 
         case ClassDef::Exception:  result+="iznimke (exception)"; break;
+        default: break;
       }
       result+=" je napravljena iz " + trFile(FALSE, single) + ": ";
 	  return result;
@@ -1359,13 +1360,14 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       QCString result=(QCString)clName;
       switch(compType)
       {
-      case ClassDef::Class:      result+=" Modul"; break;
-      case ClassDef::Struct:     result+=" Tip"; break;
-      case ClassDef::Union:      result+=" Unija"; break;
-      case ClassDef::Interface:  result+=" Sučelje"; break;
-      case ClassDef::Protocol:   result+=" Protokol"; break;
-      case ClassDef::Category:   result+=" Kategorija"; break;
-      case ClassDef::Exception:  result+=" Iznimka"; break;
+        case ClassDef::Class:      result+=" Modul"; break;
+        case ClassDef::Struct:     result+=" Tip"; break;
+        case ClassDef::Union:      result+=" Unija"; break;
+        case ClassDef::Interface:  result+=" Sučelje"; break;
+        case ClassDef::Protocol:   result+=" Protokol"; break;
+        case ClassDef::Category:   result+=" Kategorija"; break;
+        case ClassDef::Exception:  result+=" Iznimka"; break;
+        default: break;
       }
       if (isTemplate) result+=" Predložak";
       result+=" Referenca";
@@ -1426,13 +1428,14 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       QCString result=(QCString)"Dokumentacija ovog ";
       switch(compType)
       {
-      case ClassDef::Class:      result+="modula"; break;
-      case ClassDef::Struct:     result+="tipa"; break;
-      case ClassDef::Union:      result+="unije"; break;
-      case ClassDef::Interface:  result+="sučelja"; break;
-      case ClassDef::Protocol:   result+="protokola"; break;
-      case ClassDef::Category:   result+="kategorije"; break;
-      case ClassDef::Exception:  result+="iznimke"; break;
+        case ClassDef::Class:      result+="modula"; break;
+        case ClassDef::Struct:     result+="tipa"; break;
+        case ClassDef::Union:      result+="unije"; break;
+        case ClassDef::Interface:  result+="sučelja"; break;
+        case ClassDef::Protocol:   result+="protokola"; break;
+        case ClassDef::Category:   result+="kategorije"; break;
+        case ClassDef::Exception:  result+="iznimke"; break;
+        default: break;
       }
       result+=" je napravljena iz :";
       return result;

@@ -581,6 +581,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
           case ClassDef::Protocol:   result+="протокола"; break;
           case ClassDef::Category:   result+="категории"; break;
           case ClassDef::Exception:  result+="исключения"; break;
+          default: break;
         }
       }
       else
@@ -594,6 +595,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
           case ClassDef::Protocol:   result+="Протокол"; break;
           case ClassDef::Category:   result+="Категория"; break;
           case ClassDef::Exception:  result+="Исключение"; break;
+          default: break;
         }
       }
       result+=" ";
@@ -764,6 +766,8 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
           break;
         case ClassDef::Exception:  result+="исключени";
           if (single) result+="я"; else result+="й";
+          break;
+        default: 
           break;
       }
       result+=" находятся в файл";
@@ -1644,6 +1648,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 	  case ClassDef::Protocol:   result+=" Протокол"; break;
 	  case ClassDef::Category:   result+=" Категория"; break;
 	  case ClassDef::Exception:  result+=" Исключение"; break;
+          default: break;
 	}
       }
       else
@@ -1658,6 +1663,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 	  case ClassDef::Protocol:   result+="протокола"; break;
 	  case ClassDef::Category:   result+="категории"; break;
 	  case ClassDef::Exception:  result+="исключения"; break;
+          default: break;
 	}
       }
       return result;
@@ -1722,6 +1728,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
         case ClassDef::Protocol:   result+="протоколу"; break;
         case ClassDef::Category:   result+="кетегории"; break;
         case ClassDef::Exception:  result+="исключению"; break;
+        default: break;
       }
       result+=" сгенерирована на основе следующ";
       if (single) result+="его файла:"; else result+="их файлов:";
