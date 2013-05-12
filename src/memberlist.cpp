@@ -31,6 +31,7 @@
 #include "filedef.h"
 #include "membergroup.h"
 #include "config.h"
+#include "docparser.h"
 
 MemberList::MemberList()
 {
@@ -160,7 +161,7 @@ void MemberList::countDecMembers(bool countEnumValues,GroupDef *gd)
         case MemberType_Friend:      m_friendCnt++,m_numDecMembers++;  
                                      break;
         default:
-          err("Error: Unknown member type found for member `%s'\n!",md->name().data());
+          err("Unknown member type found for member `%s'\n!",md->name().data());
       }
     }
   }
@@ -385,24 +386,29 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
               {
-                ol.startMemberDescription(md->anchor());
-                ol.parseDoc(
+                DocRoot *rootNode = validatingParseDoc(
                     md->briefFile(),md->briefLine(),
                     cd,md,
                     md->briefDescription(),
                     TRUE,FALSE,0,TRUE,FALSE
                     );
-                if (md->isDetailedSectionLinkable())
+                if (rootNode && !rootNode->isEmpty())
                 {
-                  ol.disableAllBut(OutputGenerator::Html);
-                  ol.docify(" ");
-                  ol.startTextLink(md->getOutputFileBase(),
-                                   md->anchor());
-                  ol.parseText(theTranslator->trMore());
-                  ol.endTextLink();
-                  ol.enableAll();
+                  ol.startMemberDescription(md->anchor());
+                  ol.writeDoc(rootNode,cd,md);
+                  if (md->isDetailedSectionLinkable())
+                  {
+                    ol.disableAllBut(OutputGenerator::Html);
+                    ol.docify(" ");
+                    ol.startTextLink(md->getOutputFileBase(),
+                        md->anchor());
+                    ol.parseText(theTranslator->trMore());
+                    ol.endTextLink();
+                    ol.enableAll();
+                  }
+                  ol.endMemberDescription();
                 }
-                ol.endMemberDescription();
+                delete rootNode;
               }
               ol.endMemberDeclaration(md->anchor(),inheritId);
             }
@@ -476,6 +482,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
  *  @param gd non-null if this list is part of group documentation.
  *  @param title Title to use for the member list.
  *  @param subtitle Sub title to use for the member list.
+ *  @param compoundType Container type for this member list.
  *  @param showEnumValues Obsolete, always set to FALSE.
  *  @param showInline if set to TRUE if title is rendered differently
  *  @param inheritedFrom if not 0, the list is shown inside the
@@ -552,7 +559,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       if (!st.isEmpty())
       {
         ol.startMemberSubtitle();
-        ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,FALSE,FALSE);
+        ol.generateDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE,0,FALSE,FALSE);
         ol.endMemberSubtitle();
       }
     }
@@ -595,7 +602,7 @@ void MemberList::writeDeclarations(OutputList &ol,
           {
             //printf("Member group has docs!\n");
             ol.startMemberGroupDocs();
-            ol.parseDoc("[generated]",-1,ctx,0,mg->documentation()+"\n",FALSE,FALSE);
+            ol.generateDoc("[generated]",-1,ctx,0,mg->documentation()+"\n",FALSE,FALSE);
             ol.endMemberGroupDocs();
           }
           ol.startMemberGroup();
@@ -756,8 +763,8 @@ void MemberList::addListReferences(Definition *def)
     if (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup)
     {
       md->addListReference(def);
-      LockingPtr<MemberList> enumFields = md->enumFieldList();
-      if (md->memberType()==MemberType_Enumeration && enumFields!=0)
+      MemberList *enumFields = md->enumFieldList();
+      if (md->memberType()==MemberType_Enumeration && enumFields)
       {
         //printf("  Adding enum values!\n");
         MemberListIterator vmli(*enumFields);

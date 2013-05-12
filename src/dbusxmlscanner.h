@@ -29,9 +29,13 @@ class DBusXMLScanner : public ParserInterface
 public:
     DBusXMLScanner();
     virtual ~DBusXMLScanner();
+    void startTranslationUnit(const char *) {}
+    void finishTranslationUnit() {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    Entry *root);
+                    Entry *root,
+                    bool sameTranslationUnit,
+                    QStrList &filesInSameTranslationUnit);
 
     bool needsPreprocessing(const QCString &extension);
 

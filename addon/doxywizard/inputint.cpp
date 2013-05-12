@@ -17,6 +17,15 @@
 
 #include <QtGui>
 
+class NoWheelSpinBox : public QSpinBox
+{
+  protected:
+    void wheelEvent(QWheelEvent *e)
+    {
+      e->ignore();
+    }
+};
+
 InputInt::InputInt( QGridLayout *layout,int &row,
                     const QString & id, 
                     int defVal, int minVal,int maxVal,
@@ -24,7 +33,7 @@ InputInt::InputInt( QGridLayout *layout,int &row,
   : m_default(defVal), m_minVal(minVal), m_maxVal(maxVal), m_docs(docs), m_id(id)
 {
   m_lab = new HelpLabel(id);
-  m_sp  = new QSpinBox;
+  m_sp  = new NoWheelSpinBox;
   m_sp->setMinimum(minVal);
   m_sp->setMaximum(maxVal);
   m_sp->setSingleStep(1);
@@ -56,7 +65,14 @@ void InputInt::setValue(int val)
     m_val = val;
     m_sp->setValue(val);
     m_value = m_val;
-    if (m_val==m_default)
+    updateDefault();
+  }
+}
+
+void InputInt::updateDefault()
+{
+  {
+    if (m_val==m_default || !m_lab->isEnabled())
     {
       m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
     }
@@ -72,6 +88,7 @@ void InputInt::setEnabled(bool state)
 {
   m_lab->setEnabled(state);
   m_sp->setEnabled(state);
+  updateDefault();
 }
 
 QVariant &InputInt::value() 

@@ -180,7 +180,7 @@ void ConfigInt::convertStrToVal()
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
     {
-      config_warn("warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
+      config_warn("Warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
                 "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
     }
     m_value=val;
@@ -202,7 +202,7 @@ void ConfigBool::convertStrToVal()
     }
     else
     {
-      config_warn("warning: argument `%s' for option %s is not a valid boolean value\n"
+      config_warn("Warning: argument `%s' for option %s is not a valid boolean value\n"
                 "Using the default: %s!\n",m_valueString.data(),m_name.data(),m_value?"YES":"NO");
     }
   }
@@ -382,6 +382,12 @@ void ConfigObsolete::writeXML(FTextStream &t)
        "id='" << convertToXML(name()) << "'/>" << endl;
 }
 
+void ConfigDisabled::writeXML(FTextStream &t)
+{
+  t << "    <option type='disabled' "
+       "id='" << convertToXML(name()) << "'/>" << endl;
+}
+
 
 /* -----------------------------------------------------------------
  *
@@ -464,7 +470,7 @@ static QCString configStringRecode(
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    fprintf(stderr,"error: unsupported character conversion: '%s'->'%s'\n",
+    fprintf(stderr,"Error: unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding.data());
     exit(1);
   }
@@ -481,7 +487,7 @@ static QCString configStringRecode(
   }
   else
   {
-    fprintf(stderr,"error: failed to translate characters from %s to %s: %s\n",
+    fprintf(stderr,"Error: failed to translate characters from %s to %s: %s\n",
         inputEncoding.data(),outputEncoding.data(),strerror(errno));
     exit(1);
   }
@@ -502,7 +508,7 @@ static FILE *tryPath(const char *path,const char *fileName)
   if (fi.exists() && fi.isFile())
   {
     FILE *f=portable_fopen(absName,"r");
-    if (!f) config_err("error: could not open file %s for reading\n",absName.data());
+    if (!f) config_err("Error: could not open file %s for reading\n",absName.data());
     return f;
   }
   return 0;
@@ -513,8 +519,14 @@ static void substEnvVarsInString(QCString &s);
 
 static FILE *findFile(const char *fileName)
 {
-  if(portable_isAbsolutePath(fileName))
+  if (fileName==0)
+  {
+    return 0;
+  }
+  if (portable_isAbsolutePath(fileName))
+  {
     return tryPath(NULL, fileName);
+  }
   substEnvVarsInStrList(includePathList);
   char *s=includePathList.first();
   while (s) // try each of the include paths
@@ -530,7 +542,7 @@ static FILE *findFile(const char *fileName)
 static void readIncludeFile(const char *incName)
 {
   if (includeDepth==MAX_INCLUDE_DEPTH) {
-    config_err("error: maximum include depth (%d) reached, %s is not included. Aborting...\n",
+    config_err("Error: maximum include depth (%d) reached, %s is not included. Aborting...\n",
 	MAX_INCLUDE_DEPTH,incName);
     exit(1);
   } 
@@ -539,7 +551,7 @@ static void readIncludeFile(const char *incName)
   substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
   uint incLen = inc.length();
-  if (inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
+  if (incLen>0 && inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
   {
     inc=inc.mid(1,incLen-2);
   }
@@ -570,7 +582,7 @@ static void readIncludeFile(const char *incName)
   } 
   else
   {
-    config_err("error: @INCLUDE = %s: not found!\n",inc.data());
+    config_err("Error: @INCLUDE = %s: not found!\n",inc.data());
     exit(1);
   }
 }
@@ -601,7 +613,7 @@ static void readIncludeFile(const char *incName)
 					   ConfigOption *option = config->get(cmd);
 					   if (option==0) // oops not known
 					   {
-					     config_err("warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+					     config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
 						 yytext,yyLineNr,yyFileName.data()); 
 					     BEGIN(SkipInvalid);
 					   }
@@ -642,9 +654,15 @@ static void readIncludeFile(const char *incName)
 					         BEGIN(GetString);
 						 break;
 					       case ConfigOption::O_Obsolete:
-					         config_err("warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please remove this line from your configuration "
 							    "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+					         BEGIN(SkipInvalid);
+						 break;
+					       case ConfigOption::O_Disabled:
+					         config_err("Warning: Tag `%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
+						            "To avoid this warning please remove this line from your configuration "
+							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -655,7 +673,7 @@ static void readIncludeFile(const char *incName)
 					  ConfigOption *option = config->get(cmd);
 					  if (option==0) // oops not known
 					  {
-					    config_err("warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+					    config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
 						yytext,yyLineNr,yyFileName.data()); 
 					    BEGIN(SkipInvalid);
 					  }
@@ -677,14 +695,20 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_String:
 					      case ConfigOption::O_Int:
 					      case ConfigOption::O_Bool:
-					        config_err("warning: operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
+					        config_err("Warning: operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
 						    yytext,yyLineNr,yyFileName.data()); 
 					        BEGIN(SkipInvalid);
 						break;
 					       case ConfigOption::O_Obsolete:
-					         config_err("warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
 							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+					         BEGIN(SkipInvalid);
+						 break;
+					       case ConfigOption::O_Disabled:
+					         config_err("Warning: Tag `%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
+						            "To avoid this warning please remove this line from your configuration "
+							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -719,7 +743,7 @@ static void readIncludeFile(const char *incName)
 					  }
   					}
 
-<Start>[a-z_A-Z0-9]+			{ config_err("warning: ignoring unknown tag `%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
+<Start>[a-z_A-Z0-9]+			{ config_err("Warning: ignoring unknown tag `%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
 <GetString,GetBool,SkipInvalid>\n	{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
   					  yyLineNr++; 
@@ -760,7 +784,7 @@ static void readIncludeFile(const char *incName)
 					  }
 					  if (*yytext=='\n')
 					  {
-					    config_err("warning: Missing end quote (\") on line %d, file %s\n",yyLineNr,yyFileName.data());
+					    config_err("Warning: Missing end quote (\") on line %d, file %s\n",yyLineNr,yyFileName.data());
 					    yyLineNr++;
 					  }
 					  BEGIN(lastState);
@@ -779,7 +803,7 @@ static void readIncludeFile(const char *incName)
 					  else 
 					  {
 					    *b=FALSE; 
-					    config_warn("warning: Invalid value `%s' for "
+					    config_warn("Warning: Invalid value `%s' for "
 						 "boolean tag in line %d, file %s; use YES or NO\n",
 						 bs.data(),yyLineNr,yyFileName.data());
 					  }
@@ -1060,15 +1084,15 @@ void Config::check()
   {
     if (warnFormat.find("$file")==-1)
     {
-      config_err("warning: warning format does not contain a $file tag!\n");
+      config_err("Warning: warning format does not contain a $file tag!\n");
     }
     if (warnFormat.find("$line")==-1)
     {
-      config_err("warning: warning format does not contain a $line tag!\n");
+      config_err("Warning: warning format does not contain a $line tag!\n");
     }
     if (warnFormat.find("$text")==-1)
     {
-      config_err("warning: warning format foes not contain a $text tag!\n");
+      config_err("Warning: warning format foes not contain a $text tag!\n");
     }
   }
 
@@ -1089,7 +1113,7 @@ void Config::check()
   if (paperType!="a4" && paperType!="a4wide" && paperType!="letter" && 
       paperType!="legal" && paperType!="executive")
   {
-    config_err("error: Unknown page type specified");
+    config_err("Error: Unknown page type specified");
   }
   
   QCString &outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
@@ -1129,7 +1153,7 @@ void Config::check()
     QFileInfo fi(headerFile);
     if (!fi.exists())
     {
-      config_err("error: tag HTML_HEADER: header file `%s' "
+      config_err("Error: tag HTML_HEADER: header file `%s' "
 	  "does not exist\n",headerFile.data());
       exit(1);
     }
@@ -1141,7 +1165,7 @@ void Config::check()
     QFileInfo fi(footerFile);
     if (!fi.exists())
     {
-      config_err("error: tag HTML_FOOTER: footer file `%s' "
+      config_err("Error: tag HTML_FOOTER: footer file `%s' "
 	  "does not exist\n",footerFile.data());
       exit(1);
     }
@@ -1155,7 +1179,7 @@ void Config::check()
       QFileInfo fi(MathJaxCodefile);
       if (!fi.exists())
       {
-        config_err("error: tag MATHJAX_CODEFILE file `%s' "
+        config_err("Error: tag MATHJAX_CODEFILE file `%s' "
 	    "does not exist\n",MathJaxCodefile.data());
         exit(1);
       }
@@ -1168,7 +1192,7 @@ void Config::check()
     QFileInfo fi(latexHeaderFile);
     if (!fi.exists())
     {
-      config_err("error: tag LATEX_HEADER: header file `%s' "
+      config_err("Error: tag LATEX_HEADER: header file `%s' "
 	  "does not exist\n",latexHeaderFile.data());
       exit(1);
     }
@@ -1179,7 +1203,7 @@ void Config::check()
   while (s)
   {
     QFileInfo fi(s);
-    if (!fi.exists()) config_err("warning: tag INCLUDE_PATH: include path `%s' "
+    if (!fi.exists()) config_err("Warning: tag INCLUDE_PATH: include path `%s' "
 	                  "does not exist\n",s);
     s=includePath.next();
   }
@@ -1195,7 +1219,7 @@ void Config::check()
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      config_err("Illegal alias format `%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
+      config_err("Error: Illegal alias format `%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();
@@ -1204,19 +1228,19 @@ void Config::check()
   // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
   if (Config_getBool("GENERATE_TREEVIEW") && Config_getBool("GENERATE_HTMLHELP"))
   {
-    config_err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
+    config_err("Error: When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
     Config_getBool("GENERATE_TREEVIEW")=FALSE;
   }
   if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTMLHELP"))
   {
-    config_err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
+    config_err("Error: When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
     Config_getBool("SEARCHENGINE")=FALSE;
   }
 
   // check if SEPARATE_MEMBER_PAGES and INLINE_GROUPED_CLASSES are both enabled
   if (Config_getBool("SEPARATE_MEMBER_PAGES") && Config_getBool("INLINE_GROUPED_CLASSES"))
   {
-    config_err("When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
+    config_err("Error: When enabling INLINE_GROUPED_CLASSES the SEPARATE_MEMBER_PAGES option should be disabled. I'll do it for you.\n");
     Config_getBool("SEPARATE_MEMBER_PAGES")=FALSE;
   }
     
@@ -1232,6 +1256,13 @@ void Config::check()
   //  config_err("Invalid value for DOT_IMAGE_FORMAT: `%s'. Using the default.\n",dotImageFormat.data());
   //  dotImageFormat = "png";
   //}
+
+  QCString &dotFontName=Config_getString("DOT_FONTNAME");
+  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
+  {
+    config_err("Warning: doxygen no longer ships with the FreeSans font.\n"
+               "You may want to clear DOT_FONTPATH or risk wrong fonts being used for dot generated graphs.\n");
+  }
   
   
   // check dot path
@@ -1248,7 +1279,7 @@ void Config::check()
       QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
       if (!dp.exists() || !dp.isFile())
       {
-	config_err("warning: the dot tool could not be found at %s\n",dotPath.data());
+	config_err("Warning: the dot tool could not be found at %s\n",dotPath.data());
 	dotPath="";
       }
       else
@@ -1273,7 +1304,7 @@ void Config::check()
     QFileInfo dp(mscgenPath+"/mscgen"+portable_commandExtension());
     if (!dp.exists() || !dp.isFile())
     {
-      config_err("warning: the mscgen tool could not be found at %s\n",mscgenPath.data());
+      config_err("Warning: the mscgen tool could not be found at %s\n",mscgenPath.data());
       mscgenPath="";
     }
     else
@@ -1306,7 +1337,7 @@ void Config::check()
       QFileInfo fi(s);
       if (!fi.exists())
       {
-	config_err("warning: tag INPUT: input source `%s' does not exist\n",s);
+	config_err("Warning: tag INPUT: input source `%s' does not exist\n",s);
       }
       s=inputSources.next();
     }
@@ -1321,7 +1352,7 @@ void Config::check()
     filePatternList.append("*.cxx");
     filePatternList.append("*.cpp");
     filePatternList.append("*.c++");
-    filePatternList.append("*.d");
+    //filePatternList.append("*.d");
     filePatternList.append("*.java");
     filePatternList.append("*.ii");
     filePatternList.append("*.ixx");
@@ -1397,14 +1428,14 @@ void Config::check()
       Config_getString("GENERATE_TAGFILE").isEmpty()
      )
   {
-    config_err("warning: No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
+    config_err("Warning: No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
   }
 
   // check HTMLHELP creation requirements
   if (!Config_getBool("GENERATE_HTML") && 
       Config_getBool("GENERATE_HTMLHELP"))
   {
-    config_err("warning: GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
+    config_err("Warning: GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
   }
 
   // check QHP creation requirements
@@ -1412,13 +1443,13 @@ void Config::check()
   {
     if (Config_getString("QHP_NAMESPACE").isEmpty())
     {
-      config_err("error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
+      config_err("Error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
       Config_getString("QHP_NAMESPACE")="org.doxygen.doc";
     }
 
     if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
     {
-      config_err("error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
+      config_err("Error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
       Config_getString("QHP_VIRTUAL_FOLDER")="doc";
     }
   }
@@ -1469,7 +1500,7 @@ void Config::check()
   if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
        mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
   {
-    config_err("error: Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
+    config_err("Error: Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
     Config_getEnum("MATHJAX_FORMAT")="HTML-CSS";
   }
 
@@ -1515,7 +1546,7 @@ void Config::check()
     if (!b6) s6="  EXTRACT_PACKAGE        = YES (was NO)\n"; else s6="";
 
 
-    config_err("warning: enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
+    config_err("Warning: enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
 	       "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
 	      );
 
@@ -1548,7 +1579,7 @@ void Config::init()
       ConfigOption * opt = Config::instance()->get(depName);
       if (opt==0)
       {
-        config_err("Config option '%s' has invalid depends relation on unknown option '%s'\n",
+        config_err("Warning: Config option '%s' has invalid depends relation on unknown option '%s'\n",
             option->name().data(),depName.data());
         exit(1);
       }
@@ -1596,7 +1627,7 @@ static QCString configFileToString(const char *name)
     QFileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
-      config_err("error: file `%s' not found\n",name);
+      config_err("Error: file `%s' not found\n",name);
       return "";
     }
     f.setName(name);
@@ -1617,7 +1648,7 @@ static QCString configFileToString(const char *name)
   }
   if (!fileOpened)  
   {
-    config_err("error: cannot open file `%s' for reading\n",name);
+    config_err("Error: cannot open file `%s' for reading\n",name);
   }
   return "";
 }

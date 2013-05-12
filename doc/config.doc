@@ -128,6 +128,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_extract_anon_nspaces EXTRACT_ANON_NSPACES
 \refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
 \refitem cfg_extract_local_methods EXTRACT_LOCAL_METHODS
+\refitem cfg_extract_package EXTRACT_PACKAGE
 \refitem cfg_extract_private EXTRACT_PRIVATE
 \refitem cfg_extract_static EXTRACT_STATIC
 \refitem cfg_file_patterns FILE_PATTERNS
@@ -142,7 +143,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
 \refitem cfg_generate_buglist GENERATE_BUGLIST
 \refitem cfg_generate_chi GENERATE_CHI
-\refitem cfg_generate_deprecatedlist GENERATE_DEPRECIATEDLIST
+\refitem cfg_generate_deprecatedlist GENERATE_DEPRECATEDLIST
 \refitem cfg_generate_docbook GENERATE_DOCBOOK
 \refitem cfg_generate_docset GENERATE_DOCSET
 \refitem cfg_generate_eclipsehelp GENERATE_ECLIPSEHELP
@@ -282,13 +283,14 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 \refitem cfg_sort_members_constructors_first SORT_MEMBERS_CTORS_1ST
 \refitem cfg_source_browser SOURCE_BROWSER
+\refitem cfg_strict_proto_matching STRICT_PROTO_MATCHING
 \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 \refitem cfg_strip_from_inc_path STRIP_FROM_INC_PATH
 \refitem cfg_strip_from_path STRIP_FROM_PATH
 \refitem cfg_subgrouping SUBGROUPING
-\refitem cfg_symbol_cache_size SYMBOL_CACHE_SIZE
 \refitem cfg_tab_size TAB_SIZE
 \refitem cfg_tagfiles TAGFILES
+\refitem cfg_tcl_subst TCL_SUBST
 \refitem cfg_template_relations TEMPLATE_RELATIONS
 \refitem cfg_toc_expand TOC_EXPAND
 \refitem cfg_treeview_width TREEVIEW_WIDTH
@@ -599,6 +601,14 @@ followed by the descriptions of the tags grouped by category.
  will result in a user-defined paragraph with heading "Side Effects:".
  You can put \\n's in the value part of an alias to insert newlines.
 
+\anchor cfg_tcl_subst
+<dt>\c TCL_SUBST <dd>
+ \addindex TCL_SUBST
+ This tag can be used to specify a number of word-keyword mappings (TCL only). 
+ A mapping has the form "name=value". For example adding 
+ "class=itcl::class" will allow you to use the command class in the 
+ itcl::class meaning.
+
 \anchor cfg_optimize_output_for_c
 <dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
  \addindex OPTIMIZE_OUTPUT_FOR_C
@@ -682,34 +692,19 @@ page (for HTML and Man pages) or section (for LaTeX and RTF).
  be useful for C code in case the coding convention dictates that all compound 
  types are typedef'ed and only the typedef is referenced, never the tag name.
 
-\anchor cfg_symbol_cache_size
-<dt>\c SYMBOL_CACHE_SIZE <dd>
- \addindex SYMBOL_CACHE_SIZE
- The \c SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
- determine which symbols to keep in memory and which to flush to disk.
- When the cache is full, less often used symbols will be written to disk.
- For small to medium size projects (<1000 input files) the default value is
- probably good enough. For larger projects a too small cache size can cause 
- doxygen to be busy swapping symbols to and from disk most of the time
- causing a significant performance penalty.
- If the system has enough physical memory increasing the cache will improve the
- performance by keeping more symbols in memory. Note that the value works on
- a logarithmic scale so increasing the size by one will roughly double the
- memory usage. The cache size is given by this formula: 
- \f$2^{(16+\mbox{SYMBOL\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
- corresponding to a cache size of \f$2^{16} = 65536\f$ symbols.
-
 \anchor cfg_lookup_cache_size
 <dt>\c LOOKUP_CACHE_SIZE <dd>
  \addindex LOOKUP_CACHE_SIZE
- Similar to the \c SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be 
+ The size of the symbol lookup cache can be 
  set using \c LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given 
  their name and scope. Since this can be an expensive process and often the 
- same symbol appear multiple times in the code, doxygen keeps a cache of 
+ same symbol appears multiple times in the code, doxygen keeps a cache of 
  pre-resolved symbols. If the cache is too small doxygen will become slower. 
  If the cache is too large, memory is wasted. The cache size is given by this 
  formula: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
  corresponding to a cache size of \f$2^{16} = 65536\f$ symbols. 
+ At the end of a run doxygen will report the cache usage and suggest the
+ optimal cache size from a speed point of view.
 
 </dl>
 
@@ -733,6 +728,12 @@ page (for HTML and Man pages) or section (for LaTeX and RTF).
  \addindex EXTRACT_PRIVATE
  If the \c EXTRACT_PRIVATE tag is set to \c YES all private members of a 
  class will be included in the documentation.
+
+\anchor cfg_extract_package
+<dt>\c EXTRACT_PACKAGE <dd>
+ \addindex EXTRACT_PACKAGE
+ If the \c EXTRACT_PACKAGE tag is set to \c YES all members with package 
+ or internal scope will be included in the documentation. 
 
 \anchor cfg_extract_static
 <dt>\c EXTRACT_STATIC <dd>
@@ -877,6 +878,16 @@ function's detailed documentation block.
  @note This option is not very useful if \c HIDE_SCOPE_NAMES is set to \c YES.
  @note This option applies only to the class list, not to the 
        alphabetical list.
+
+\anchor cfg_strict_proto_matching
+<dt>\c STRICT_PROTO_MATCHING <dd>
+ \addindex STRICT_PROTO_MATCHING
+ If the \c STRICT_PROTO_MATCHING option is enabled and doxygen fails to 
+ do proper type resolution of all parameters of a function it will reject a 
+ match between the prototype and the implementation of a member function even 
+ if there is only one candidate or it is obvious which candidate to choose 
+ by doing a simple string match. By disabling \c STRICT_PROTO_MATCHING doxygen 
+ will still accept a match between prototype and implementation in such cases.
 
 \anchor cfg_sort_members_constructors_first
 <dt>\c SORT_MEMBERS_CTORS_1ST <dd>

@@ -92,7 +92,9 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
   QCString url=isSourceFile ? ((FileDef*)ctx)->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString("HTML_FILE_EXTENSION");
+  QCString baseUrl = url;
   if (anchor) url+=QCString("#")+anchor;  
+  if (!isSourceFile) baseUrl=url;
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
   {
@@ -164,11 +166,11 @@ void SearchIndex::setCurrentDoc(Definition *ctx,const char *anchor,bool isSource
     }
   }
 
-  int *pIndex = m_url2IdMap.find(url);
+  int *pIndex = m_url2IdMap.find(baseUrl);
   if (pIndex==0)
   {
     ++m_urlIndex;
-    m_url2IdMap.insert(url,new int(m_urlIndex));
+    m_url2IdMap.insert(baseUrl,new int(m_urlIndex));
     m_urls.insert(m_urlIndex,new URL(name,url));
   }
   else
@@ -422,11 +424,7 @@ struct SearchDocEntry
 
 struct SearchIndexExternal::Private
 {
-  Private() : docEntries(257) {}
-  //QFile f;
-  //bool openOk;
-  //FTextStream t;
-  //bool insideDoc;
+  Private() : docEntries(12251) {}
   SDict<SearchDocEntry> docEntries;
   SearchDocEntry *current;
 };
@@ -436,29 +434,11 @@ SearchIndexExternal::SearchIndexExternal() : SearchIndexIntf(External)
   p = new SearchIndexExternal::Private;
   p->docEntries.setAutoDelete(TRUE);
   p->current=0;
-  //p->f.setName(fileName);
-  //p->openOk = p->f.open(IO_WriteOnly);
-  //if (p->openOk) 
-  //{
-  //  p->t.setDevice(&p->f);
-  //  p->t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  //  p->t << "<add>" << endl;
-  //  p->insideDoc=FALSE;
-  //}
 }
 
 SearchIndexExternal::~SearchIndexExternal()
 {
-  //if (p->openOk)
-  //{
-  //  if (p->insideDoc)
-  //  {
-  //    p->t << "  </doc>" << endl;
-  //  }
-  //  p->t << "</add>" << endl;
-  //  p->f.close();
-  //  p->openOk=FALSE;
-  //}
+  //printf("p->docEntries.count()=%d\n",p->docEntries.count());
   delete p;
 }
 
@@ -526,6 +506,7 @@ void SearchIndexExternal::setCurrentDoc(Definition *ctx,const char *anchor,bool 
   QCString key = extId+";"+url;
 
   p->current = p->docEntries.find(key);
+  //printf("setCurrentDoc(url=%s,isSourceFile=%d) current=%p\n",url.data(),isSourceFile,p->current);
   if (!p->current)
   {
     SearchDocEntry *e = new SearchDocEntry;

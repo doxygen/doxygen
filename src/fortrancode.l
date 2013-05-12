@@ -368,6 +368,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
+#if 0
 static QCString fileLocation() 
 {
   QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
@@ -375,6 +376,7 @@ static QCString fileLocation()
   result+=":"+QCString().setNum(1);
   return result;
 }
+
 
 /**
   generates dictionay entries that are used if REFERENCED_BY_RELATION ... options are set
@@ -395,6 +397,7 @@ static void addDocCrossReference(MemberDef *src, MemberDef *dst)
     src->addSourceReferences(dst,fileLocation());
   }
 }
+#endif
 
 //-------------------------------------------------------------------------------
 /**

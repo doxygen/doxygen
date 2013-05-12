@@ -740,7 +740,11 @@ void VHDLLanguageScanner::parsePrototype(const char *text)
 //  return token;
 //}
 
-void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
+void VHDLLanguageScanner::parseInput(const char *fileName,
+                                     const char *fileBuf,
+                                     Entry *root,
+                                     bool /*sameTranslationUnit*/,
+                                     QStrList & /*filesInSameTranslationUnit*/)
 {
   yyFileName=QCString(fileName);
 

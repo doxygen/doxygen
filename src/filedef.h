@@ -69,20 +69,22 @@ class FileDef : public Definition
 
     FileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
    ~FileDef();
+
+    // ----------------------------------------------------------------------
+
     DefType definitionType() const { return TypeFile; }
 
     /*! Returns the unique file name (this may include part of the path). */
     QCString name() const;
     QCString displayName(bool=TRUE) const { return name(); }
-    QCString fileName() const { return filename; }
+    QCString fileName() const { return m_fileName; }
     
     QCString getOutputFileBase() const 
-    { return convertNameToFile(diskname); }
-    QCString anchor() const
-    { return QCString(); }
+    { return convertNameToFile(m_diskName); }
 
-    QCString getFileBase() const
-    { return diskname; }
+    QCString anchor() const { return QCString(); }
+
+    QCString getFileBase() const { return m_diskName; }
 
     QCString getSourceFileBase() const;
     
@@ -90,59 +92,71 @@ class FileDef : public Definition
     QCString includeName() const;
     
     /*! Returns the absolute path including the file name. */
-    QCString absFilePath() const { return filepath; }
-    
+    QCString absFilePath() const { return m_filePath; }
     
     /*! Returns the name as it is used in the documentation */
-    QCString docName() const { return docname; }
-    
-    void addSourceRef(int line,Definition *d,MemberDef *md);
-    Definition *getSourceDefinition(int lineNr);
-    MemberDef *getSourceMember(int lineNr);
+    QCString docName() const { return m_docname; }
 
-    /* Sets the name of the include file to \a n. */
-    //void setIncludeName(const char *n_) { incName=n_; }
+    /*! Returns TRUE if this file is a source file. */
+    bool isSource() const { return m_isSource; }
+
+    bool isDocumentationFile() const;
     
+    Definition *getSourceDefinition(int lineNr) const;
+    MemberDef *getSourceMember(int lineNr) const;
+
     /*! Returns the absolute path of this file. */ 
-    QCString getPath() const { return path; }
+    QCString getPath() const { return m_path; }
 
     /*! Returns version of this file. */
-    QCString getVersion() const { return fileVersion; }
+    QCString getVersion() const { return m_fileVersion; }
     
     bool isLinkableInProject() const;
 
-    bool isLinkable() const
-    {
-      return isLinkableInProject() || isReference();
-    }
+    bool isLinkable() const { return isLinkableInProject() || isReference(); }
     bool isIncluded(const QCString &name) const;
 
-    //bool isJava() const { return m_isJava; }
-    //bool isCSharp() const { return m_isCSharp; }
+    PackageDef *packageDef() const { return m_package; }
+    DirDef *getDirDef() const      { return m_dir; }
+    NamespaceSDict *getUsedNamespaces() const;
+    SDict<Definition> *getUsedClasses() const      { return m_usingDeclList; }
+    QList<IncludeInfo> *includeFileList() const    { return m_includeList; }
+    QList<IncludeInfo> *includedByFileList() const { return m_includedByList; }
+    void getAllIncludeFilesRecursively(QStrList &incFiles) const;
+
+    MemberList *getMemberList(MemberListType lt) const;
+    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+
+    /* user defined member groups */
+    MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
+    NamespaceSDict *getNamespaceSDict() const     { return m_namespaceSDict; }
+    ClassSDict *getClassSDict() const             { return m_classSDict; }
+    
+    //---------------------------------
+
+    void addSourceRef(int line,Definition *d,MemberDef *md);
 
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
     void writeSummaryLinks(OutputList &ol);
 
-    void writeSource(OutputList &ol);
-    void parseSource();
+    void startParsing();
+    void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu);
+    void parseSource(bool sameTu,QStrList &filesInSameTu);
+    void finishParsing();
+
     friend void generatedFileNames();
     void insertMember(MemberDef *md);
     void insertClass(ClassDef *cd);
     void insertNamespace(NamespaceDef *nd);
     void computeAnchors();
 
-    void setPackageDef(PackageDef *pd) { package=pd; }
-    PackageDef *packageDef() const { return package; }
-    
-    void setDirDef(DirDef *dd) { dir=dd; }
-    DirDef *getDirDef() const { return dir; }
+    void setPackageDef(PackageDef *pd) { m_package=pd; }
+    void setDirDef(DirDef *dd) { m_dir=dd; }
 
     void addUsingDirective(NamespaceDef *nd);
-    NamespaceSDict *getUsedNamespaces() const;
     void addUsingDeclaration(Definition *def);
-    SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();
 
     bool generateSourceFile() const;
@@ -150,8 +164,6 @@ class FileDef : public Definition
 
     void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported,bool indirect);
     void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported);
-    QList<IncludeInfo> *includeFileList() const { return includeList; }
-    QList<IncludeInfo> *includedByFileList() const { return includedByList; }
 
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
@@ -159,18 +171,8 @@ class FileDef : public Definition
     void addIncludedUsingDirectives();
 
     void addListReferences();
-    bool isDocumentationFile() const;
     //bool includes(FileDef *incFile,QDict<FileDef> *includedFiles) const;
     //bool includesByName(const QCString &name) const;
-
-    MemberList *getMemberList(MemberListType lt) const;
-    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
-
-    /* user defined member groups */
-    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
-    NamespaceSDict *getNamespaceSDict() const     { return namespaceSDict; }
-    ClassSDict *getClassSDict() const             { return classSDict; }
-    
     bool visited;
 
   protected:
@@ -201,27 +203,27 @@ class FileDef : public Definition
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
 
-    QDict<IncludeInfo>   *includeDict;
-    QList<IncludeInfo>   *includeList;
-    QDict<IncludeInfo>   *includedByDict;
-    QList<IncludeInfo>   *includedByList;
-    NamespaceSDict       *usingDirList;
-    SDict<Definition>    *usingDeclList;
-    QCString              path;
-    QCString              filepath;
-    QCString              diskname;
-    QCString              filename;
-    QCString              docname;
-    QIntDict<Definition> *srcDefDict;
-    QIntDict<MemberDef>  *srcMemberDict;
-    bool                  isSource;
-    QCString              fileVersion;
-    PackageDef           *package;
-    DirDef               *dir;
+    QDict<IncludeInfo>   *m_includeDict;
+    QList<IncludeInfo>   *m_includeList;
+    QDict<IncludeInfo>   *m_includedByDict;
+    QList<IncludeInfo>   *m_includedByList;
+    NamespaceSDict       *m_usingDirList;
+    SDict<Definition>    *m_usingDeclList;
+    QCString              m_path;
+    QCString              m_filePath;
+    QCString              m_diskName;
+    QCString              m_fileName;
+    QCString              m_docname;
+    QIntDict<Definition> *m_srcDefDict;
+    QIntDict<MemberDef>  *m_srcMemberDict;
+    bool                  m_isSource;
+    QCString              m_fileVersion;
+    PackageDef           *m_package;
+    DirDef               *m_dir;
     QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *memberGroupSDict;
-    NamespaceSDict       *namespaceSDict;
-    ClassSDict           *classSDict;
+    MemberGroupSDict     *m_memberGroupSDict;
+    NamespaceSDict       *m_namespaceSDict;
+    ClassSDict           *m_classSDict;
     bool                  m_subGrouping;
 };
 

@@ -1363,7 +1363,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
-       err("error: Problems running epstopdf. Check your TeX installation!\n");
+       err("Problems running epstopdf. Check your TeX installation!\n");
        portable_sysTimerStop();
        return;
     }

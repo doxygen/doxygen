@@ -304,7 +304,7 @@ void HtmlHelp::initialize()
   m_fromUtf8 = portable_iconv_open(str,"UTF-8"); 
   if (m_fromUtf8==(void *)(-1))
   {
-    err("Error: unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", str);
+    err("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", str);
     exit(1);
   }
 

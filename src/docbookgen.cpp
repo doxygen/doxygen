@@ -354,7 +354,7 @@ static void writeDocbookDocBlock(FTextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text+"\n",FALSE,FALSE);
+  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text,FALSE,FALSE);
   // create a code generator
   DocbookCodeGenerator *docbookCodeGen = new DocbookCodeGenerator(t);
   // create a parse tree visitor for Docbook
@@ -468,7 +468,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
     bool closePara=TRUE;
     if (md->memberType()==MemberType_Enumeration) 
     {
-      LockingPtr<MemberList> enumFields = md->enumFieldList();
+      MemberList *enumFields = md->enumFieldList();
       t << "                            <para>" << memType << " <link linkend=\"";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
@@ -588,9 +588,9 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
       }
       t << "_1" << md->anchor() << "\">" << convertToXML(md->name()) << "</link>";
       t << " (" << endl;
-      LockingPtr<ArgumentList> declAl = md->declArgumentList();
-      LockingPtr<ArgumentList> defAl = md->argumentList();
-      if (declAl!=0 && declAl->count()>0)
+      ArgumentList *declAl = md->declArgumentList();
+      ArgumentList *defAl = md->argumentList();
+      if (declAl && declAl->count()>0)
       {
         ArgumentListIterator declAli(*declAl);
         ArgumentListIterator defAli(*defAl);
@@ -629,7 +629,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
   {
     if (md->memberType()==MemberType_Enumeration) 
     {
-      LockingPtr<MemberList> enumFields = md->enumFieldList();
+      MemberList *enumFields = md->enumFieldList();
       t << "            <section xml:id=\"";
       if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
       {
@@ -1676,13 +1676,13 @@ void generateDocbook()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("error: tag DOCBOOK_OUTPUT: Output directory `%s' does not "
+        err("tag DOCBOOK_OUTPUT: Output directory `%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
         exit(1);
       }
-      else if (!Config_getBool("QUIET"))
+      else
       {
-        err("notice: Output directory `%s' does not exist. "
+        msg("Notice: Output directory `%s' does not exist. "
             "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);

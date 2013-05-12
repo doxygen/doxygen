@@ -11,6 +11,7 @@ h1.groupheader {
 }
 
 .title {
+	font: 400 14px/28px Roboto,sans-serif;
 	font-size: 150%;
 	font-weight: bold;
 	margin: 10px 2px;
@@ -168,8 +169,8 @@ pre.fragment {
 }
 
 div.fragment {
-        padding: 4px;
-        margin: 4px;
+        padding: 0px;
+        margin: 0px;
 	background-color: ##FC;
 	border: 1px solid ##CC;
 }

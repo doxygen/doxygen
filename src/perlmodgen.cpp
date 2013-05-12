@@ -642,7 +642,7 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
     case DocSymbol::RightCeil:     symbol = "rceil"; break;
     case DocSymbol::LeftFloor:     symbol = "lfloor"; break;
     case DocSymbol::RightFloor:    symbol = "rfloor"; break;
-    case DocSymbol::Unknown: err("error: unknown symbol found\n");
+    case DocSymbol::Unknown: err("unknown symbol found\n");
                              break;
   }
   if (c != 0) 
@@ -910,7 +910,7 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
   case DocSimpleSect::User:		type = "par"; break;
   case DocSimpleSect::Rcs:		type = "rcs"; break;
   case DocSimpleSect::Unknown:
-    err("error: unknown simple section found\n");
+    err("unknown simple section found\n");
     break;
   }
   leaveText();
@@ -1283,7 +1283,7 @@ void PerlModDocVisitor::visitPre(DocParamSect *s)
   case DocParamSect::Exception: type = "exceptions"; break;
   case DocParamSect::TemplateParam: type = "templateparam"; break;
   case DocParamSect::Unknown:
-    err("error: unknown parameter section found\n");
+    err("unknown parameter section found\n");
     break;
   }
   openOther();
@@ -1592,16 +1592,16 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
       md->memberType()!=MemberType_Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
   
-  LockingPtr<ArgumentList> al = md->argumentList();
+  ArgumentList *al = md->argumentList();
   if (isFunc) //function
   {
     m_output.addFieldBoolean("const", al!=0 && al->constSpecifier)
       .addFieldBoolean("volatile", al!=0 && al->volatileSpecifier);
 
     m_output.openList("parameters");
-    LockingPtr<ArgumentList> declAl = md->declArgumentList();
-    LockingPtr<ArgumentList> defAl  = md->argumentList();
-    if (declAl!=0 && declAl->count()>0)
+    ArgumentList *declAl = md->declArgumentList();
+    ArgumentList *defAl  = md->argumentList();
+    if (declAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -1662,8 +1662,8 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
   
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    LockingPtr<MemberList> enumFields = md->enumFieldList();
-    if (enumFields!=0)
+    MemberList *enumFields = md->enumFieldList();
+    if (enumFields)
     {
       m_output.openList("values");
       MemberListIterator emli(*enumFields);
@@ -1692,8 +1692,8 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
       .addFieldQuotedString("name", rmd->name())
       .closeHash();
 
-  LockingPtr<MemberList> rbml = md->reimplementedBy();
-  if (rbml!=0)
+  MemberList *rbml = md->reimplementedBy();
+  if (rbml)
   {
     MemberListIterator mli(*rbml);
     m_output.openList("reimplemented_by");
@@ -2258,13 +2258,13 @@ bool PerlModGenerator::createOutputDir(QDir &perlModDir)
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-	err("error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+	err("tag OUTPUT_DIRECTORY: Output directory `%s' does not "
 	    "exist and cannot be created\n",outputDirectory.data());
 	exit(1);
       }
-      else if (!Config_getBool("QUIET"))
+      else
       {
-	err("notice: Output directory `%s' does not exist. "
+	msg("Notice: Output directory `%s' does not exist. "
 	    "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);

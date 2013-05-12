@@ -22,7 +22,6 @@
 #include <qdict.h>
 
 #include "types.h"
-#include "lockingptr.h"
 
 class FileDef;
 class OutputList;
@@ -89,7 +88,7 @@ class DefinitionIntf
  *  This can be a class or a member function, or a file, or a namespace, etc.
  *  Use definitionType() to find which type of definition this is.
  */
-class Definition : public DefinitionIntf, public LockableObj
+class Definition : public DefinitionIntf
 {
   public:
     
@@ -246,17 +245,19 @@ class Definition : public DefinitionIntf, public LockableObj
     /** Returns the programming language this definition was written in. */
     SrcLangExt getLanguage() const;
 
-    LockingPtr<GroupList> partOfGroups() const;
+    GroupList *partOfGroups() const;
 
-    LockingPtr< QList<ListItemInfo> > xrefListItems() const;
+    QList<ListItemInfo> *xrefListItems() const;
 
     virtual Definition *findInnerCompound(const char *name);
     virtual Definition *getOuterScope() const;
 
-    LockingPtr<MemberSDict> getReferencesMembers() const;
-    LockingPtr<MemberSDict> getReferencedByMembers() const;
+    MemberSDict *getReferencesMembers() const;
+    MemberSDict *getReferencedByMembers() const;
 
     bool hasSections() const;
+
+    QCString id() const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -293,8 +294,8 @@ class Definition : public DefinitionIntf, public LockableObj
     // source references
     void setBodySegment(int bls,int ble);
     void setBodyDef(FileDef *fd);
-    void addSourceReferencedBy(MemberDef *d, const char *floc=NULL);
-    void addSourceReferences(MemberDef *d, const char *floc);
+    void addSourceReferencedBy(MemberDef *d);
+    void addSourceReferences(MemberDef *d);
 
     void setRefItems(const QList<ListItemInfo> *sli);
     void mergeRefItems(Definition *d);
@@ -333,12 +334,6 @@ class Definition : public DefinitionIntf, public LockableObj
     void writeToc(OutputList &ol);
 
   protected:
-
-    virtual void flushToDisk() const;
-    virtual void loadFromDisk() const;
-    virtual void makeResident() const;
-    void lock() const {}
-    void unlock() const {}
 
     Definition(const Definition &d);
 

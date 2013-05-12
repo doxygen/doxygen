@@ -2125,7 +2125,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       }
       else
       {
-        warn(yyFileName,yyLineNr, "warning: inconsistency between intent attribute and documenation for variable: "+argName);
+        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documenation for variable: "+argName);
         handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	                   argName + " " + doc,brief);
       }
@@ -2140,7 +2140,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       }
       else
       {
-        warn(yyFileName,yyLineNr, "warning: inconsistency between intent attribute and documenation for variable: "+argName);
+        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documenation for variable: "+argName);
         handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	                   argName + " " + doc,brief);
       }
@@ -2155,7 +2155,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       }
       else
       {
-        warn(yyFileName,yyLineNr, "warning: inconsistency between intent attribute and documenation for variable: "+argName);
+        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documenation for variable: "+argName);
         handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	                   argName + " " + doc,brief);
       }
@@ -2264,7 +2264,11 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
 //----------------------------------------------------------------------------
 
-void FortranLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
+void FortranLanguageScanner::parseInput(const char *fileName,
+                                        const char *fileBuf,
+                                        Entry *root,
+                                        bool /*sameTranslationUnit*/,
+                                        QStrList & /*filesInSameTranslationUnit*/)
 {
   g_thisParser = this;
   ::parseMain(fileName,fileBuf,root);
@@ -2300,7 +2304,7 @@ void FortranLanguageScanner::resetCodeParserState()
 
 void FortranLanguageScanner::parsePrototype(const char *text)
 {
-  (void)text;
+  current->name = QCString(text).lower();
 }
 
 static void scanner_abort() 

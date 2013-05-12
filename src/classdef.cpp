@@ -921,8 +921,8 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
   if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
     ol.startParagraph();
-    ol.parseDoc(briefFile(),briefLine(),this,0,
-                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+    ol.generateDoc(briefFile(),briefLine(),this,0,
+                   briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
@@ -956,7 +956,7 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
   // repeat brief description
   if (!briefDescription().isEmpty() && repeatBrief)
   {
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+    ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
   }
   if (!briefDescription().isEmpty() && repeatBrief &&
       !documentation().isEmpty())
@@ -969,7 +969,7 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
   // write documentation
   if (!documentation().isEmpty())
   {
-    ol.parseDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
+    ol.generateDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
   }
   // write type constraints
   writeTypeConstraints(ol,this,m_impl->typeConstraints);
@@ -1249,7 +1249,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
       }
       else
       {
-        err("error: invalid marker %d in inherits list!\n",entryIndex);
+        err("invalid marker %d in inherits list!\n",entryIndex);
       }
       index=newIndex+matchLen;
     } 
@@ -1558,6 +1558,11 @@ void ClassDef::writeTagFileMarker()
     {
       Doxygen::tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
     }
+    QCString idStr = id();
+    if (!idStr.isEmpty())
+    {
+      Doxygen::tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+    }
     if (m_impl->tempArgs)
     {
       ArgumentListIterator ali(*m_impl->tempArgs);
@@ -1812,14 +1817,19 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
     {
-      ol.startMemberDescription(anchor());
-      ol.parseDoc(briefFile(),briefLine(),this,0,
-          briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
-      if (isLinkableInProject())
+      DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+                                briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+      if (rootNode && !rootNode->isEmpty())
       {
-        writeMoreLink(ol,anchor());
+        ol.startMemberDescription(anchor());
+        ol.writeDoc(rootNode,this,0);
+        if (isLinkableInProject())
+        {
+          writeMoreLink(ol,anchor());
+        }
+        ol.endMemberDescription();
       }
-      ol.endMemberDescription();
+      delete rootNode;
     }
     ol.endMemberDeclaration(anchor(),0);
   }
@@ -2744,11 +2754,11 @@ void ClassDef::mergeMembers()
                   if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE)) 
                     // member is in the same or a base class
                   {
-                    LockingPtr<ArgumentList> srcAl = srcMd->argumentList();
-                    LockingPtr<ArgumentList> dstAl = dstMd->argumentList();
+                    ArgumentList *srcAl = srcMd->argumentList();
+                    ArgumentList *dstAl = dstMd->argumentList();
                     found=matchArguments2(
-                        srcMd->getOuterScope(),srcMd->getFileDef(),srcAl.pointer(),
-                        dstMd->getOuterScope(),dstMd->getFileDef(),dstAl.pointer(),
+                        srcMd->getOuterScope(),srcMd->getFileDef(),srcAl,
+                        dstMd->getOuterScope(),dstMd->getFileDef(),dstAl,
                         TRUE
                         );
                     //printf("  Yes, matching (%s<->%s): %d\n",
@@ -3772,8 +3782,8 @@ void ClassDef::addListReferences()
   if (!isLinkableInProject()) return;
   //printf("ClassDef(%s)::addListReferences()\n",name().data());
   {
-    LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
-    addRefItem(xrefItems.pointer(),
+    QList<ListItemInfo> *xrefItems = xrefListItems();
+    addRefItem(xrefItems,
              qualifiedName(),
              lang==SrcLangExt_Fortran ? theTranslator->trType(TRUE,TRUE)
                                       : theTranslator->trClass(TRUE,TRUE),

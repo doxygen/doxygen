@@ -270,11 +270,18 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
   child = elem.firstChildElement();
   while (!child.isNull())
   {
+    QString setting = child.attribute(SA("setting"));
     QString dependsOn = child.attribute(SA("depends"));
     QString id        = child.attribute(SA("id"));
-    if (!dependsOn.isEmpty())
+    if (!dependsOn.isEmpty() && 
+        (setting.isEmpty() || IS_SUPPORTED(setting.toAscii())))
     {
        Input *parentOption = m_options[dependsOn];
+       if (parentOption==0)
+       {
+         printf("%s has depends=%s that is not valid\n",
+             qPrintable(id),qPrintable(dependsOn));
+       }
        Input *thisOption   = m_options[id];
        Q_ASSERT(parentOption);
        Q_ASSERT(thisOption);

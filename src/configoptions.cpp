@@ -463,33 +463,15 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   ci = cfg->addInt(
-                 "SYMBOL_CACHE_SIZE",
-                 "The SYMBOL_CACHE_SIZE determines the size of the internal cache use to\n"
-                 "determine which symbols to keep in memory and which to flush to disk.\n"
-                 "When the cache is full, less often used symbols will be written to disk.\n"
-                 "For small to medium size projects (<1000 input files) the default value is\n"
-                 "probably good enough. For larger projects a too small cache size can cause\n"
-                 "doxygen to be busy swapping symbols to and from disk most of the time\n"
-                 "causing a significant performance penalty.\n"
-                 "If the system has enough physical memory increasing the cache will improve the\n"
-                 "performance by keeping more symbols in memory. Note that the value works on\n"
-                 "a logarithmic scale so increasing the size by one will roughly double the\n"
-                 "memory usage. The cache size is given by this formula:\n"
-                 "2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0,\n"
-                 "corresponding to a cache size of 2^16 = 65536 symbols.",
-                 0,9,0
-                );
-  //----
-  ci = cfg->addInt(
                  "LOOKUP_CACHE_SIZE",
-                 "Similar to the SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be\n"
-                 "set using LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given\n"
-                 "their name and scope. Since this can be an expensive process and often the\n"
-                 "same symbol appear multiple times in the code, doxygen keeps a cache of\n"
-                 "pre-resolved symbols. If the cache is too small doxygen will become slower.\n"
-                 "If the cache is too large, memory is wasted. The cache size is given by this\n"
-                 "formula: 2^(16+LOOKUP_CACHE_SIZE). The valid range is 0..9, the default is 0,\n"
-                 "corresponding to a cache size of 2^16 = 65536 symbols.",
+                 "The size of the symbol lookup cache can be set using LOOKUP_CACHE_SIZE. This\n"
+                 "cache is used to resolve symbols given their name and scope. Since this can\n"
+                 "be an expensive process and often the same symbol appear multiple times in\n"
+                 "the code, doxygen keeps a cache of pre-resolved symbols. If the cache is too\n"
+                 "small doxygen will become slower. If the cache is too large, memory is wasted.\n"
+                 "The cache size is given by this formula: 2^(16+LOOKUP_CACHE_SIZE). The valid\n"
+                 "range is 0..9, the default is 0, corresponding to a cache size of 2^16 = 65536\n"
+                 "symbols.",
                  0,9,0
                 );
   //---------------------------------------------------------------------------
@@ -1161,6 +1143,8 @@ void addConfigOptions(Config *cfg)
                  "parser lacks the necessairy type information.",
                  FALSE
                 );
+#else
+  cfg->addDisabled("CLANG_ASSISTED_PARSING");
 #endif
 #if USE_LIBCLANG
   //----
@@ -1172,6 +1156,8 @@ void addConfigOptions(Config *cfg)
                  "specified at INPUT and INCLUDE_PATH."
                 );
   cs->addDependency("CLANG_ASSISTED_PARSING");
+#else
+  cfg->addDisabled("CLANG_OPTIONS");
 #endif
   //---------------------------------------------------------------------------
   cfg->addInfo("Index","configuration options related to the alphabetical class index");
@@ -2085,7 +2071,7 @@ void addConfigOptions(Config *cfg)
                 );
   cb->addDependency("GENERATE_XML");
   //---------------------------------------------------------------------------
-  cfg->addInfo("DOCBOOK","configuration options related to the DOCBOOK output");
+  cfg->addInfo("Docbook","configuration options related to the DOCBOOK output");
   //---------------------------------------------------------------------------
 
   //----
@@ -2658,4 +2644,6 @@ void addConfigOptions(Config *cfg)
   cfg->addObsolete("SHOW_DIRECTORIES");
   //----
   cfg->addObsolete("HTML_ALIGN_MEMBERS");
+  //----
+  cfg->addObsolete("SYMBOL_CACHE_SIZE");
 }

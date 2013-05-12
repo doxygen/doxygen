@@ -10,7 +10,7 @@ Macedonian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian,
 Serbian, SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish,
 Ukrainian, and Vietnamese.
 
-Of them, 2 translators are up-to-date, 38 translators are based on
+Of them, 3 translators are up-to-date, 37 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -20,6 +20,7 @@ and they implement all 250 of the required methods. Anyway, there
 still may be some details listed even for them:
 
   TranslatorEnglish
+  TranslatorKorean -- Change the base class to Translator.
   TranslatorLatvian -- Reimplementation using UTF-8 suggested.
 
 ----------------------------------------------------------------------
@@ -53,9 +54,6 @@ must be implemented to become up-to-date:
 	Note: Change the base class to TranslatorAdapter_1_8_4.
 
   TranslatorPolish                1.8.2 	14 methods to implement (5 %)
-  TranslatorKorean                1.8.02	15 methods to implement (6 %)
-	Note: Change the base class to TranslatorAdapter_1_8_2.
-
   TranslatorItalian               1.8.2 	15 methods to implement (6 %)
   TranslatorCroatian              1.8.2 	15 methods to implement (6 %)
   TranslatorChinese               1.8.2 	15 methods to implement (6 %)
@@ -112,8 +110,6 @@ must be implemented to become up-to-date:
 	Note: Reimplementation using UTF-8 suggested.
 
   TranslatorArabic                1.4.6 	56 methods to implement (22 %)
-	Note: Reimplementation using UTF-8 suggested.
-
 
 ----------------------------------------------------------------------
 The following translator classes derive directly from the
@@ -816,28 +812,10 @@ TranslatorJapaneseEn   (TranslatorEnglish)  245 methods to implement (98 %)
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorKorean   (TranslatorAdapter_1_7_5)  15 methods to implement (6 %)
+TranslatorKorean   (TranslatorAdapter_1_7_5)
 ----------------
 
-  Implements 235 of the required methods (94 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trServices()
-    virtual QCString trClassMethods()
-    virtual QCString trProvidedByCategory()
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
-    virtual QCString trServiceReference(const char * sName)
-    virtual QCString trDesignOverview()
-    virtual QCString trConstantGroups()
-    virtual QCString trMethodDocumentation()
-    virtual QCString trInterfaces()
-    virtual QCString trServiceGeneratedFromFiles(bool single)
-    virtual QCString trConstantGroupReference(const char * namespaceName)
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
-    virtual QCString trExtendsClass()
-    virtual QCString trSingletonReference(const char * sName)
-    virtual QCString trInstanceMethods()
+  Implements 250 of the required methods (100 %).
 
 
 TranslatorKoreanEn   (TranslatorEnglish)  245 methods to implement (98 %)

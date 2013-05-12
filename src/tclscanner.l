@@ -1651,7 +1651,7 @@ static void tcl_codify_link(QCString name)
     if (tcl.memberdef)
     {
         myDef->addSourceReferencedBy(tcl.memberdef);
-        tcl.memberdef->addSourceReferences(myDef,NULL);
+        tcl.memberdef->addSourceReferences(myDef);
     }
   }
   else if (tcl_keyword(myName)) // check keyword
@@ -1899,7 +1899,7 @@ D
   tcl.entry_current->endBodyLine = tcl.line_body1;
   tcl_protection(tcl.entry_current);
   tcl_command_ARGLIST(*tcl.list_commandwords.at(2));
-  myEntryCl->addSubEntry(tcl.entry_current);
+  if (myEntryCl) myEntryCl->addSubEntry(tcl.entry_current);
   myEntry = tcl.entry_current;
   tcl.fn.insert(myName,myEntry);
   myScan = tcl_scan_start(tcl.word_is,*tcl.list_commandwords.at(4),
@@ -2527,7 +2527,11 @@ static void tcl_parse(const QCString ns, const QCString cls)
 }
 
 //! Parse text file and build up entry tree.
-void TclLanguageScanner::parseInput(const char *fileName,const char *input,Entry *root)
+void TclLanguageScanner::parseInput(const char *fileName,
+                                    const char *input,
+                                    Entry *root,
+                                    bool /*sameTranslationUnit*/,
+                                    QStrList & /*filesInSameTranslationUnit*/)
 {
   QFile            myFile;
 tcl_inf("%s\n",fileName);

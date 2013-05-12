@@ -138,7 +138,7 @@ void CiteDict::generatePage() const
   f.setName(citeListFile);
   if (!f.open(IO_WriteOnly)) 
   {
-    err("error: could not open file %s for writing\n",citeListFile.data());
+    err("could not open file %s for writing\n",citeListFile.data());
   }
   FTextStream t(&f);
   t << "<!-- BEGIN CITATIONS -->" << endl;
@@ -161,7 +161,7 @@ void CiteDict::generatePage() const
   QCString bib2xhtml = bib2xhtml_pl;
   if (!f.open(IO_WriteOnly)) 
   {
-    err("error: could not open file %s for writing\n",bib2xhtmlFile.data());
+    err("could not open file %s for writing\n",bib2xhtmlFile.data());
   }
   f.writeBlock(bib2xhtml, bib2xhtml.length());
   f.close();
@@ -172,7 +172,7 @@ void CiteDict::generatePage() const
   f.setName(doxygenBstFile);
   if (!f.open(IO_WriteOnly)) 
   {
-    err("error: could not open file %s for writing\n",doxygenBstFile.data());
+    err("could not open file %s for writing\n",doxygenBstFile.data());
   }
   f.writeBlock(bstData, bstData.length());
   f.close();
@@ -206,7 +206,7 @@ void CiteDict::generatePage() const
       }
       else if (!fi.exists())
       {
-        err("Error: bib file %s not found!\n",bibFile.data());
+        err("bib file %s not found!\n",bibFile.data());
       }
       bibdata = citeDataList.next();
     }
@@ -226,7 +226,7 @@ void CiteDict::generatePage() const
   f.setName(citeListFile);
   if (!f.open(IO_ReadOnly)) 
   {
-    err("error: could not open file %s/citelist.doc for reading\n",outputDir.data());
+    err("could not open file %s/citelist.doc for reading\n",outputDir.data());
   }
   bool insideBib=FALSE;
   
@@ -293,7 +293,7 @@ void CiteDict::generatePage() const
       }
       else
       {
-        err("Error: bib file %s not found!\n",bibFile.data());
+        err("bib file %s not found!\n",bibFile.data());
       }
       bibdata = citeDataList.next();
     }

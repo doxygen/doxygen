@@ -11,6 +11,7 @@
 #include "layout.h"
 #include "ftextstream.h"
 #include "config.h"
+#include "docparser.h"
 
 //----------------------------------------------------------------------
 // method implementation
@@ -137,7 +138,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     // separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
@@ -156,7 +157,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
   }
 }
@@ -165,29 +166,31 @@ void DirDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
-    ol.startParagraph();
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.writeString(" \n");
-    ol.enable(OutputGenerator::RTF);
-
-    if (Config_getBool("REPEAT_BRIEF") ||
-        !documentation().isEmpty()
-       )
+    DocRoot *rootNode = validatingParseDoc(
+         briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+    if (rootNode && !rootNode->isEmpty())
     {
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"details");
-      ol.parseText(theTranslator->trMore());
-      ol.endTextLink();
-    }
-    ol.popGeneratorState();
+      ol.startParagraph();
+      ol.writeDoc(rootNode,this,0);
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::RTF);
+      ol.writeString(" \n");
+      ol.enable(OutputGenerator::RTF);
 
-    //ol.pushGeneratorState();
-    //ol.disable(OutputGenerator::RTF);
-    //ol.newParagraph();
-    //ol.popGeneratorState();
-    ol.endParagraph();
+      if (Config_getBool("REPEAT_BRIEF") ||
+          !documentation().isEmpty()
+         )
+      {
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.startTextLink(0,"details");
+        ol.parseText(theTranslator->trMore());
+        ol.endTextLink();
+      }
+      ol.popGeneratorState();
+
+      ol.endParagraph();
+    }
+    delete rootNode;
   }
   ol.writeSynopsis();
 }
@@ -237,7 +240,7 @@ void DirDef::writeSubDirList(OutputList &ol)
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(dd->getOutputFileBase());
-        ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
+        ol.generateDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
             FALSE, // indexWords
             FALSE, // isExample
             0,     // exampleName
@@ -300,7 +303,7 @@ void DirDef::writeFileList(OutputList &ol)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
-        ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
+        ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
             FALSE, // indexWords
             FALSE, // isExample
             0,     // exampleName

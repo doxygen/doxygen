@@ -273,19 +273,19 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
       bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
           // both inside a file => definition and declaration do not have to be in the same file
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
-            md->getOuterScope()->definitionType()==Definition::TypeFile); 
+               md->getOuterScope()->definitionType()==Definition::TypeFile); 
 
-      LockingPtr<ArgumentList> srcMdAl  = srcMd->argumentList();
-      LockingPtr<ArgumentList> mdAl     = md->argumentList();
-      LockingPtr<ArgumentList> tSrcMdAl = srcMd->templateArguments();
-      LockingPtr<ArgumentList> tMdAl    = md->templateArguments();
+      ArgumentList *srcMdAl  = srcMd->argumentList();
+      ArgumentList *mdAl     = md->argumentList();
+      ArgumentList *tSrcMdAl = srcMd->templateArguments();
+      ArgumentList *tMdAl    = md->templateArguments();
       
       if (srcMd->isFunction() && md->isFunction() && // both are a function
-          ((tSrcMdAl.pointer()==0 && tMdAl.pointer()==0) || 
-           (tSrcMdAl.pointer()!=0 && tMdAl.pointer()!=0 && tSrcMdAl->count()==tMdAl->count())
+          ((tSrcMdAl==0 && tMdAl==0) || 
+           (tSrcMdAl!=0 && tMdAl!=0 && tSrcMdAl->count()==tMdAl->count())
           ) &&       // same number of template arguments
-          matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMdAl.pointer(),
-                          md->getOuterScope(),md->getFileDef(),mdAl.pointer(),
+          matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMdAl,
+                          md->getOuterScope(),md->getFileDef(),mdAl,
                           TRUE
                          ) && // matching parameters
           sameScope // both are found in the same scope
@@ -295,7 +295,7 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
         {
           md->setGroupAlias(srcMd); 
         }
-        else
+        else if (md!=srcMd->getGroupAlias())
         {
           md->setGroupAlias(srcMd->getGroupAlias()); 
         }
@@ -523,7 +523,7 @@ void GroupDef::addGroup(const GroupDef *def)
 
 bool GroupDef::isASubGroup() const
 {
-  LockingPtr<GroupList> groups = partOfGroups();
+  GroupList *groups = partOfGroups();
   return groups!=0 && groups->count()!=0;
 }
 
@@ -569,7 +569,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     // write separator between brief and details
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
@@ -588,13 +588,13 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     // write detailed documentation
     if (!documentation().isEmpty())
     {
-      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
 
     // write inbody documentation
     if (!inbodyDocumentation().isEmpty())
     {
-      ol.parseDoc(inbodyFile(),inbodyLine(),this,0,inbodyDocumentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(inbodyFile(),inbodyLine(),this,0,inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
 }
@@ -603,25 +603,30 @@ void GroupDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
-    ol.startParagraph();
-    ol.parseDoc(briefFile(),briefLine(),this,0,
-                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.writeString(" \n");
-    ol.enable(OutputGenerator::RTF);
-
-    if (Config_getBool("REPEAT_BRIEF") ||
-        !documentation().isEmpty()
-       )
+    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+                                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+    if (rootNode && !rootNode->isEmpty())
     {
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"details");
-      ol.parseText(theTranslator->trMore());
-      ol.endTextLink();
+      ol.startParagraph();
+      ol.writeDoc(rootNode,this,0);
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::RTF);
+      ol.writeString(" \n");
+      ol.enable(OutputGenerator::RTF);
+
+      if (Config_getBool("REPEAT_BRIEF") ||
+          !documentation().isEmpty()
+         )
+      {
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.startTextLink(0,"details");
+        ol.parseText(theTranslator->trMore());
+        ol.endTextLink();
+      }
+      ol.popGeneratorState();
+      ol.endParagraph();
     }
-    ol.popGeneratorState();
-    ol.endParagraph();
+    delete rootNode;
   }
 }
 
@@ -670,7 +675,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(fd->getOutputFileBase());
-        ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+        ol.generateDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);
@@ -728,7 +733,7 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
         if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
         {
           ol.startMemberDescription(gd->getOutputFileBase());
-          ol.parseDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+          ol.generateDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
           ol.endMemberDescription();
         }
         ol.endMemberDeclaration(0,0);
@@ -764,7 +769,7 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(dd->getOutputFileBase());
-        ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
+        ol.generateDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);
@@ -810,7 +815,7 @@ void GroupDef::writePageDocumentation(OutputList &ol)
         ol.endSection(si->label,SectionInfo::Subsection);
       }
       ol.startTextBlock();
-      ol.parseDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE,0,TRUE,FALSE);
+      ol.generateDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE,0,TRUE,FALSE);
       ol.endTextBlock();
     }
   }
@@ -1257,7 +1262,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       if (fgd && gd!=fgd && g->pri==pri) 
       {
         warn(root->fileName.data(), root->startLine,
-            "warning: Member %s found in multiple %s groups! "
+            "Member %s found in multiple %s groups! "
             "The member will be put in group %s, and not in group %s",
             md->name().data(), Grouping::getGroupPriName( pri ),
             gd->name().data(), fgd->name().data()
@@ -1302,7 +1307,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
           else if (!root->doc.isEmpty() && md->getGroupHasDocs())
           {
             warn(md->getGroupFileName(),md->getGroupStartLine(),
-                "warning: Member documentation for %s found several times in %s groups!\n"
+                "Member documentation for %s found several times in %s groups!\n"
                 "%s:%d: The member will remain in group %s, and won't be put into group %s",
                 md->name().data(), Grouping::getGroupPriName( pri ),
                 root->fileName.data(), root->startLine,
@@ -1374,8 +1379,8 @@ QCString GroupDef::getOutputFileBase() const
 void GroupDef::addListReferences()
 {
   {
-    LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
-    addRefItem(xrefItems.pointer(),
+    QList<ListItemInfo> *xrefItems = xrefListItems();
+    addRefItem(xrefItems,
              getOutputFileBase(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name(),

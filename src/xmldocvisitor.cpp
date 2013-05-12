@@ -173,7 +173,7 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::LeftFloor:     m_t << "<lfloor>"; break;
     case DocSymbol::RightFloor:    m_t << "<rfloor>"; break;
     default:
-                             err("error: unknown symbol found\n");
+                             err("unknown symbol found\n");
   }
 }
 

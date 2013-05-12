@@ -82,7 +82,7 @@ pdf: docs
 DISTFILES =  Doxyfile libmd5 addon tmake doc examples bin lib objects \
              qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
              Makefile.win_make.in INSTALL LANGUAGE.HOWTO LICENSE PLATFORMS \
-             VERSION packages winbuild
+             VERSION packages winbuild jquery
 
 archive: clean
 	tar zcvf dx`date +%y%m%d`.tgz $(DISTFILES)

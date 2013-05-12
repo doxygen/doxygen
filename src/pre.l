@@ -221,7 +221,9 @@ class DefineManager
      */
     Define *isDefined(const char *name) const
     {
-      return m_contextDefines.find(name);
+      Define *d = m_contextDefines.find(name);
+      //printf("isDefined(%s)=%p\n",name,d);
+      return d;
     }
     /** Returns a reference to the defines found in the current context. */
     const DefineDict &defineContext() const
@@ -407,7 +409,7 @@ static void decrLevel()
   }
   else
   {
-    warn(g_yyFileName,g_yyLineNr,"warning: More #endif's than #if's found.\n");
+    warn(g_yyFileName,g_yyLineNr,"More #endif's than #if's found.\n");
   }
 }
 
@@ -415,7 +417,7 @@ static bool otherCaseDone()
 {
   if (g_level==0)
   {
-    warn(g_yyFileName,g_yyLineNr,"warning: Found an #else without a preceding #if.\n");
+    warn(g_yyFileName,g_yyLineNr,"Found an #else without a preceding #if.\n");
     return TRUE;
   }
   else
@@ -428,57 +430,6 @@ static void setCaseDone(bool value)
 {
   g_levelGuard[g_level-1]=value;
 }
-
-#if 0
-static bool macroIsAccessible(Define *def)
-{
-  //printf("macroIsAccessible(%s) input=%s def=%s\n",
-  //    def->name.data(),g_inputFileDef?g_inputFileDef->name().data():"<none>",
-  //    def->fileDef ? def->fileDef->name().data() : "<none>");
-  if (def && def->isPredefined) // predefined macro -> globally accessible
-  {
-    //printf("%s: predefined macro %s\n",g_inputFileDef->name().data(),def->name.data());
-    return TRUE;
-  }
-  if (def && def->fileDef==g_inputFileDef)
-  {
-    //printf("%s: macro %s defined in this file at line %d now at %d\n",
-    //	g_inputFileDef->name().data(),def->name.data(),def->lineNr,g_yyLineNr);
-    return def->lineNr<=g_yyLineNr;
-  }
-  if (g_inputFileDef && def && def->fileDef) // check if g_inputFileDef actually includes def->fileDef
-  {
-    QDict<FileDef> includedFiles(257);
-    bool b = g_inputFileDef->includes(def->fileDef,&includedFiles);
-    //printf("%s: Checking for accessibility of define '%s' (defined in %s): result=%d\n",
-    //       g_inputFileDef->name().data(),def->name.data(),def->fileDef->name().data(),b);
-    return b;
-  }
-  if (g_inputFileDef && def && !def->fileName.isEmpty())
-  {
-    bool b = g_inputFileDef->includesByName(def->fileName);
-    //printf("%s: Checking for accessibility of define '%s' (defined in %s): result=%d\n",
-    //       g_inputFileDef->name().data(),def->name.data(),def->fileName.data(),b);
-    return b;
-  }
-  //printf("not accessible!\n");
-  return FALSE;
-}
-
-static Define *isDefined(const char *name)
-{
-  Define *def=0;
-  if (name)
-  {
-    def=g_globalDefineDict->find(name);
-    if (def && def->undef) def=0;
-    if (def && !macroIsAccessible(def)) def=0;
-  }
-  //printf("isDefined(%s)=%p\n",name,def);
-  return def;
-}
-#endif
-
 
 static QDict<void> g_allIncludes(10009);
 
@@ -1649,7 +1600,7 @@ static void readIncludeFile(const QCString &inc)
       }
       if (g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
       {
-	warn(g_yyFileName,g_yyLineNr,"Warning: include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
+	warn(g_yyFileName,g_yyLineNr,"include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
       }
     }
   }
@@ -1667,6 +1618,7 @@ static void startCondSection(const char *sectId)
   {
     g_skip=TRUE;
   }
+  //printf("  expResult=%d skip=%d\n",expResult,g_skip);
 }
 
 static void endCondSection()
@@ -2326,7 +2278,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defVarArgs = FALSE;
 					  //printf("Guard check: %s!=%s || %d\n",
 					  //    g_defName.data(),g_lastGuardName.data(),g_expectGuard);
-					  if ( g_defName!=g_lastGuardName || !g_expectGuard)
+					  if (g_curlyCount>0 || g_defName!=g_lastGuardName || !g_expectGuard)
 					  { // define may appear in the output
 					    QCString tmp=(QCString)"#define "+g_defName;
 					    outputArray(tmp.data(),tmp.length());
@@ -2356,7 +2308,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defVarArgs = FALSE;
 					  //printf("Guard check: %s!=%s || %d\n",
 					  //    g_defName.data(),g_lastGuardName.data(),g_expectGuard);
-					  if ( g_defName!=g_lastGuardName || !g_expectGuard)
+					  if (g_curlyCount>0 || g_defName!=g_lastGuardName || !g_expectGuard)
 					  { // define may appear in the output
 					    QCString tmp=(QCString)"#define "+g_defName;
 					    outputArray(tmp.data(),tmp.length());
@@ -2507,10 +2459,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
                                           g_ccomment=TRUE;  
+                                          g_condCtx=YY_START;
   					  BEGIN(CondLineCpp);
   					}
 <SkipCComment>[\\@]"cond"[ \t]+	{ // conditional section
                                           g_ccomment=FALSE;  
+                                          g_condCtx=YY_START;
   					  BEGIN(CondLineC);
   					}
 <CondLineC,CondLineCpp>[!()&| \ta-z_A-Z0-9.\-]+      {
@@ -2567,6 +2521,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           {
                                             g_ccomment=FALSE;
                                           }
+                                          g_condCtx=YY_START;
                                           BEGIN(SkipCond);
   					}
 <SkipCond>\n                            { g_yyLineNr++; outputChar('\n'); }
@@ -2575,8 +2530,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCond>"//"[/!]                      { g_ccomment=FALSE; }
 <SkipCond>"/*"[*!]                      { g_ccomment=TRUE; }
 <SkipCond>[\\@]"endcond"/[^a-z_A-Z0-9]  { 
+                                          bool oldSkip = g_skip;
                                           endCondSection(); 
-                                          if (!g_skip)
+                                          if (oldSkip && !g_skip)
                                           {
                                             if (g_ccomment)
                                             {
@@ -2586,8 +2542,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           }
                                         }
 <SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9] {
+                                          bool oldSkip = g_skip;
   					  endCondSection();
-                                          if (!g_skip) 
+                                          if (oldSkip && !g_skip) 
                                           {
                                             BEGIN(g_condCtx);
                                           }

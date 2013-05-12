@@ -142,7 +142,7 @@ void generateDEFForMember(MemberDef *md,
   if (isFunc) //function
   {
     ArgumentList *declAl = new ArgumentList;
-    LockingPtr<ArgumentList> defAl = md->argumentList();
+    ArgumentList *defAl = md->argumentList();
     stringToArgumentList(md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
@@ -218,7 +218,7 @@ void generateDEFForMember(MemberDef *md,
   // TODO: exceptions, const volatile
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    LockingPtr<MemberList> enumList = md->enumFieldList();
+    MemberList *enumList = md->enumFieldList();
     if (enumList!=0)
     {
       MemberListIterator emli(*enumList);
@@ -246,8 +246,8 @@ void generateDEFForMember(MemberDef *md,
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
 
-  LockingPtr<MemberSDict> mdict = md->getReferencesMembers();
-  if (!mdict.isNull())
+  MemberSDict *mdict = md->getReferencesMembers();
+  if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
@@ -280,7 +280,7 @@ void generateDEFForMember(MemberDef *md,
     } /* for (mdi.toFirst...) */
   }
   mdict = md->getReferencedByMembers();
-  if (!mdict.isNull())
+  if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
@@ -570,13 +570,13 @@ void generateDEF()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+        err("tag OUTPUT_DIRECTORY: Output directory `%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
         exit(1);
       }
-      else if (!Config_getBool("QUIET"))
+      else
       {
-        err("notice: Output directory `%s' does not exist. "
+        msg("Notice: Output directory `%s' does not exist. "
             "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);

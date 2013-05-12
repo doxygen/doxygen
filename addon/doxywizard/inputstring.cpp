@@ -19,6 +19,16 @@
 
 #include <QtGui>
 
+class NoWheelComboBox : public QComboBox
+{
+  protected:
+    void wheelEvent(QWheelEvent *e)
+    {
+      e->ignore();
+    }
+};
+
+
 InputString::InputString( QGridLayout *layout,int &row,
                           const QString & id, const QString &s, 
                           StringMode m, const QString &docs,
@@ -30,7 +40,7 @@ InputString::InputString( QGridLayout *layout,int &row,
   if (m==StringFixed)
   {
     layout->addWidget( m_lab, row, 0 );
-    m_com = new QComboBox; 
+    m_com = new NoWheelComboBox; 
     layout->addWidget( m_com, row, 1, 1, 3, Qt::AlignLeft );
     m_le=0;
     m_br=0;
@@ -95,7 +105,13 @@ void InputString::setValue(const QString &s)
   {
     m_str = s;
     m_value = m_str;
-    if (m_str==m_default)
+    updateDefault();
+  }
+}
+void InputString::updateDefault()
+{
+  {
+    if (m_str==m_default || !m_lab->isEnabled())
     {
       m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
     }
@@ -114,6 +130,7 @@ void InputString::setEnabled(bool state)
   if (m_le)  m_le->setEnabled(state);
   if (m_br)  m_br->setEnabled(state);
   if (m_com) m_com->setEnabled(state);
+  updateDefault();
 }
 
 void InputString::browse()

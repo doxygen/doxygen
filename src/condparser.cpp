@@ -75,7 +75,7 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
   }
   if (m_err)
   {
-    warn(fileName,lineNr,"Warning: problem evaluating expression '%s': %s",
+    warn(fileName,lineNr,"problem evaluating expression '%s': %s",
         expr,m_err.data());
   }
   //printf("expr='%s' answer=%d\n",expr,answer);

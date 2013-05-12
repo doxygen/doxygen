@@ -139,7 +139,6 @@ class Doxygen
     static SDict<DirRelation>        dirRelations;
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
-    static ObjCache                 *symbolCache;
     static Store                    *symbolStorage;
     static QCString                  objDBFileName;
     static QCString                  entryDBFileName;

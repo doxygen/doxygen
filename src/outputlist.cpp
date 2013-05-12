@@ -130,14 +130,14 @@ void OutputList::popGeneratorState()
   }
 }
 
-void OutputList::parseDoc(const char *fileName,int startLine,
+bool OutputList::generateDoc(const char *fileName,int startLine,
                   Definition *ctx,MemberDef * md,
                   const QCString &docStr,bool indexWords,
                   bool isExample,const char *exampleName,
                   bool singleLine,bool linkFromIndex)
 {
   int count=0;
-  if (docStr.isEmpty()) return;
+  if (docStr.isEmpty()) return TRUE;
   
   OutputGenerator *og=outputs->first();
   while (og)
@@ -145,23 +145,25 @@ void OutputList::parseDoc(const char *fileName,int startLine,
     if (og->isEnabled()) count++;
     og=outputs->next();
   }
-  if (count==0) return; // no output formats enabled.
+  if (count==0) return TRUE; // no output formats enabled.
 
-  DocNode *root=0;
-  if (docStr.at(docStr.length()-1)=='\n')
-  {
-    root = validatingParseDoc(fileName,startLine,
-                              ctx,md,docStr,indexWords,isExample,exampleName,
-                              singleLine,linkFromIndex);
-  }
-  else
-  {
-    root = validatingParseDoc(fileName,startLine,
-                              ctx,md,docStr+"\n",indexWords,isExample,exampleName,
-                              singleLine,linkFromIndex);
-  }
+  DocRoot *root=0;
+  root = validatingParseDoc(fileName,startLine,
+                            ctx,md,docStr,indexWords,isExample,exampleName,
+                            singleLine,linkFromIndex);
 
-  og=outputs->first();
+  writeDoc(root,ctx,md);
+
+  bool isEmpty = root->isEmpty();
+
+  delete root;
+
+  return isEmpty;
+}
+
+void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
+{
+  OutputGenerator *og=outputs->first();
   while (og)
   {
     //printf("og->printDoc(extension=%s)\n",
@@ -171,11 +173,9 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   }
 
   VhdlDocGen::setFlowMember(0);
-
-  delete root;
 }
 
-void OutputList::parseText(const QCString &textStr)
+bool OutputList::parseText(const QCString &textStr)
 {
   int count=0;
   OutputGenerator *og=outputs->first();
@@ -184,9 +184,9 @@ void OutputList::parseText(const QCString &textStr)
     if (og->isEnabled()) count++;
     og=outputs->next();
   }
-  if (count==0) return; // no output formats enabled.
+  if (count==0) return TRUE; // no output formats enabled.
 
-  DocNode *root = validatingParseText(textStr);
+  DocText *root = validatingParseText(textStr);
 
   og=outputs->first();
   while (og)
@@ -195,7 +195,11 @@ void OutputList::parseText(const QCString &textStr)
     og=outputs->next();
   }
 
+  bool isEmpty = root->isEmpty();
+
   delete root;
+
+  return isEmpty;
 }
 
 

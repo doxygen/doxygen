@@ -213,7 +213,6 @@ class DotInclDepGraph
     QDict<DotNode> *m_usedNodes;
     static int      m_curNodeNumber;
     QCString        m_diskName;
-    int             m_maxDistance;
     bool            m_inverse;
 };
 
@@ -237,7 +236,6 @@ class DotCallGraph
     DotNode        *m_startNode;
     static int      m_curNodeNumber;
     QDict<DotNode> *m_usedNodes;
-    int             m_maxDistance;
     int             m_recDepth;
     bool            m_inverse;
     QCString        m_diskName;

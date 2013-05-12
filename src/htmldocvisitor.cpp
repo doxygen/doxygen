@@ -39,26 +39,30 @@ static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
 static QCString convertIndexWordToAnchor(const QString &word)
 {
   static char hex[] = "0123456789abcdef";
-  uint i;
   QCString result;
-  for (i=0;i<word.length();i++)
+  const char *str = word.data();
+  unsigned char c;
+  while ((c = *str++)) 
   {
-    int c = word.at(i);
-    if (isId(c))
+    if ((c >= 'a' && c <= 'z') || // ALPHA
+        (c >= 'A' && c <= 'A') || // ALPHA
+        (c >= '0' && c <= '9') || // DIGIT
+        c == '-' || 
+        c == '.' || 
+        c == '_' || 
+        c == '~'
+       )
     {
-      result+=c;
+      result += c;
     }
-    else if (isspace(c))
+    else 
     {
-      result+="_";
-    }
-    else
-    {
-      char cs[3];
-      cs[0]=hex[c>>4];
-      cs[1]=hex[c&0xf];
-      cs[2]=0;
-      result+=cs;
+      char enc[4];
+      enc[0] = '%';
+      enc[1] = hex[(c & 0xf0) >> 4];
+      enc[2] = hex[c & 0xf];
+      enc[3] = 0;
+      result += enc;
     }
   }
   return result;
@@ -153,6 +157,7 @@ void HtmlDocVisitor::visit(DocWord *w)
 void HtmlDocVisitor::visit(DocLinkedWord *w)
 {
   if (m_hide) return;
+  //printf("linked word: %s\n",w->word().data());
   startLink(w->ref(),w->file(),w->relPath(),w->anchor(),w->tooltip());
   filter(w->word());
   endLink();
@@ -277,7 +282,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::LeftFloor:     m_t << "&lfloor;"; break;
     case DocSymbol::RightFloor:    m_t << "&rfloor;"; break;
     default:
-       err("error: unknown symbol found\n");
+       err("unknown symbol found\n");
   }
 }
 

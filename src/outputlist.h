@@ -42,6 +42,7 @@ class DotInclDepGraph;
 class DotGfxHierarchyTable;
 class SectionDict;
 class DotGroupCollaboration;
+class DocRoot;
 
 /** Class representing a list of output generators that are written to
  *  in parallel. 
@@ -69,11 +70,12 @@ class OutputList : public OutputDocInterface
     // OutputDocInterface implementation
     //////////////////////////////////////////////////
 
-    void parseDoc(const char *fileName,int startLine,
-                  Definition *ctx,MemberDef *md,const QCString &docStr,
-                  bool indexWords,bool isExample,const char *exampleName=0,
-                  bool singleLine=FALSE,bool linkFromIndex=FALSE);
-    void parseText(const QCString &textStr);
+    bool generateDoc(const char *fileName,int startLine,
+                     Definition *ctx,MemberDef *md,const QCString &docStr,
+                     bool indexWords,bool isExample,const char *exampleName=0,
+                     bool singleLine=FALSE,bool linkFromIndex=FALSE);
+    void writeDoc(DocRoot *root,Definition *ctx,MemberDef *md);
+    bool parseText(const QCString &textStr);
     
 
     void startIndexSection(IndexSections is)

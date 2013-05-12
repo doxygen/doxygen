@@ -1449,11 +1449,11 @@ static bool isCodeBlock(const char *data,int offset,int size,int &indent)
  */
 int findTableColumns(const char *data,int size,int &start,int &end,int &columns)
 {
-  int i=0;
+  int i=0,n=0;
   int eol;
   // find start character of the table line
   while (i<size && data[i]==' ') i++;
-  if (i<size && data[i]=='|') i++; // leading | does not count
+  if (i<size && data[i]=='|' && data[i]!='\n') i++,n++; // leading | does not count
   start = i;
 
   // find end character of the table line
@@ -1461,15 +1461,19 @@ int findTableColumns(const char *data,int size,int &start,int &end,int &columns)
   eol=i+1;
   i--;
   while (i>0 && data[i]==' ') i--;
-  if (i>0 && data[i]=='|') i--; // trailing | does not count
+  if (i>0 && data[i]=='|') i--,n++; // trailing | does not count
   end = i;
 
   // count columns between start and end
-  columns=1;
+  columns=0;
+  if (n==2) // table row has | ... |
+  {
+    columns++;
+  }
   if (end>start)
   {
     i=start;
-    while (i<=end)
+    while (i<=end) // look for more column markers
     {
       if (data[i]=='|' && (i==0 || data[i-1]!='\\')) columns++;
       i++;
@@ -1487,7 +1491,7 @@ static bool isTableBlock(const char *data,int size)
 
   // the first line should have at least two columns separated by '|'
   int i = findTableColumns(data,size,start,end,cc0);
-  if (i>=size || cc0<2) 
+  if (i>=size || cc0<1) 
   {
     //printf("isTableBlock: no |'s in the header\n");
     return FALSE;
@@ -1580,9 +1584,9 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
     out.addStr("<th");
     switch (columnAlignment[k])
     {
-      case AlignLeft:   out.addStr(" align=left"); break;
-      case AlignRight:  out.addStr(" align=right"); break;
-      case AlignCenter: out.addStr(" align=center"); break;
+      case AlignLeft:   out.addStr(" align=\"left\""); break;
+      case AlignRight:  out.addStr(" align=\"right\""); break;
+      case AlignCenter: out.addStr(" align=\"center\""); break;
       case AlignNone:   break;
     }
     out.addStr(">");
@@ -1592,6 +1596,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
     }
     m++;
   }
+  out.addStr("\n</th>\n");
 
   // write table cells
   while (i<size)
@@ -1611,9 +1616,9 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
         out.addStr("<td");
         switch (columnAlignment[k])
         {
-          case AlignLeft:   out.addStr(" align=left"); break;
-          case AlignRight:  out.addStr(" align=right"); break;
-          case AlignCenter: out.addStr(" align=center"); break;
+          case AlignLeft:   out.addStr(" align=\"left\""); break;
+          case AlignRight:  out.addStr(" align=\"right\""); break;
+          case AlignCenter: out.addStr(" align=\"center\""); break;
           case AlignNone:   break;
         }
         out.addStr(">");
@@ -1635,7 +1640,7 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
     i+=ret;
   }
 
-  out.addStr("</table>\n");
+  out.addStr("</table> ");
 
   delete[] columnAlignment;
   return i;
@@ -2248,7 +2253,9 @@ QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input
 
 void MarkdownFileParser::parseInput(const char *fileName, 
                 const char *fileBuf, 
-                Entry *root)
+                Entry *root,
+                bool /*sameTranslationUnit*/,
+                QStrList & /*filesInSameTranslationUnit*/)
 {
   Entry *current = new Entry;
   current->lang = SrcLangExt_Markdown;
@@ -2266,12 +2273,15 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
   //g_correctSectionLevel = !title.isEmpty();
-  QCString baseFn = QFileInfo(fileName).baseName().utf8();
-  QCString fn     = QFileInfo(fileName).fileName().utf8();
-  QCString baseName = substitute(baseFn," ","_");
+  QCString baseFn  = stripFromPath(QFileInfo(fileName).absFilePath().utf8());
+  int i = baseFn.findRev('.');
+  if (i!=-1) baseFn = baseFn.left(i);
+  QCString titleFn = QFileInfo(fileName).baseName().utf8();
+  QCString fn      = QFileInfo(fileName).fileName().utf8();
+  QCString baseName = substitute(substitute(baseFn," ","_"),"/","_");
   static QCString mdfileAsMainPage = Config_getString("USE_MDFILE_AS_MAINPAGE");
   if (id.isEmpty()) id = "md_"+baseName;
-  if (title.isEmpty()) title = baseName;
+  if (title.isEmpty()) title = titleFn;
   if (fn==mdfileAsMainPage)
   {
     docs.prepend("@mainpage\n");

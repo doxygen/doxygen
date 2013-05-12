@@ -44,7 +44,6 @@ SUBGROUPING            = YES
 INLINE_GROUPED_CLASSES = NO
 INLINE_SIMPLE_STRUCTS  = NO
 TYPEDEF_HIDES_STRUCT   = NO
-SYMBOL_CACHE_SIZE      = 0
 LOOKUP_CACHE_SIZE      = 0
 #---------------------------------------------------------------------------
 # Build related configuration options
@@ -120,7 +119,7 @@ USE_MDFILE_AS_MAINPAGE =
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
-INLINE_SOURCES         = YES
+INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
@@ -187,9 +186,9 @@ MATHJAX_RELPATH        = http://cdn.mathjax.org/mathjax/latest
 MATHJAX_EXTENSIONS     =
 MATHJAX_CODEFILE       =
 SEARCHENGINE           = YES
-SERVER_BASED_SEARCH    = NO
-EXTERNAL_SEARCH        = NO
-SEARCHENGINE_URL       =
+SERVER_BASED_SEARCH    = YES
+EXTERNAL_SEARCH        = YES
+SEARCHENGINE_URL       = http://macbookpro/~dimitri/doxysearch.cgi
 SEARCHDATA_FILE        = searchdata.xml
 EXTERNAL_SEARCH_ID     =
 EXTRA_SEARCH_MAPPINGS  =

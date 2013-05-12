@@ -49,7 +49,7 @@ void PageDef::findSectionsInDocumentation()
 
 GroupDef *PageDef::getGroupDef() const 
 { 
-  LockingPtr<GroupList> groups = partOfGroups();
+  GroupList *groups = partOfGroups();
   return groups!=0 ? groups->getFirst() : 0; 
 }
 
@@ -130,7 +130,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.endTitleHead(pageName, pageName);
   if (si)
   {
-    ol.parseDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
+    ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
     ol.endSection(si->label,si->type);
   }
   ol.popGeneratorState();
@@ -146,7 +146,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
-    ol.parseDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
+    ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
     //stringToSearchIndex(getOutputFileBase(),
     //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
     //                    si->title);
@@ -214,7 +214,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
   }
 
   ol.startTextBlock();
-  ol.parseDoc(
+  ol.generateDoc(
       docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
