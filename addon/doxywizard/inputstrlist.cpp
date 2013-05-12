@@ -141,6 +141,7 @@ void InputStrList::setEnabled(bool state)
   m_lb->setEnabled(state);
   if (m_brFile) m_brFile->setEnabled(state);
   if (m_brDir)  m_brDir->setEnabled(state);
+  updateDefault();
 }
 
 void InputStrList::browseFiles()
@@ -222,7 +223,7 @@ void InputStrList::update()
 
 void InputStrList::updateDefault()
 {
-  if (m_strList==m_default)
+  if (m_strList==m_default || !m_lab->isEnabled())
   {
     m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
   }

@@ -337,7 +337,7 @@ ATTRNAME  [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
-FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
+FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+@&#]
 FILEECHAR [a-z_A-Z0-9\-\+]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
@@ -1136,7 +1136,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          BEGIN(St_Sections);
 		       }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(g_fileName,yylineno,"warning: Unexpected character `%s' while looking for section label or title",yytext); 
+                         warn(g_fileName,yylineno,"Unexpected character `%s' while looking for section label or title",yytext); 
                        }
 
 <St_Snippet>[^\n]+     |
@@ -1148,15 +1148,15 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
    
      /* Generic rules that work for all states */ 
 <*>\n                  { 
-                         warn(g_fileName,yylineno,"warning: Unexpected new line character"); 
+                         warn(g_fileName,yylineno,"Unexpected new line character"); 
 		       }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
-                         //warn(g_fileName,yylineno,"warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
+                         //warn(g_fileName,yylineno,"Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND;
                        }
 <*>.                   { 
-                         warn(g_fileName,yylineno,"warning: Unexpected character `%s'",yytext); 
+                         warn(g_fileName,yylineno,"Unexpected character `%s'",yytext); 
 		       }
 %%
 

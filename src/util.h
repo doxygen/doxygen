@@ -408,5 +408,7 @@ QCString stripIndentation(const QCString &s);
 
 bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile);
 
+void addDocCrossReference(MemberDef *src,MemberDef *dst);
+
 #endif
 

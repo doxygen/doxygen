@@ -52,14 +52,14 @@ bool Htags::execute(const QCString &htmldir)
   {
     g_inputDir.setPath(inputSource.first());
     if (!g_inputDir.exists())
-      err("error: Cannot find directory %s. "
+      err("Cannot find directory %s. "
           "Check the value of the INPUT tag in the configuration file.\n",
           inputSource.first()
          );
   }
   else
   {
-    err("error: If you use USE_HTAGS then INPUT should specific a single directory. \n");
+    err("If you use USE_HTAGS then INPUT should specific a single directory. \n");
     return FALSE;
   }
 
@@ -145,7 +145,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
     }
     else
     {
-      err("error: file %s cannot be opened\n",fileMapName.data()); 
+      err("file %s cannot be opened\n",fileMapName.data()); 
     }
   }
   return FALSE;

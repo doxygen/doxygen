@@ -1355,7 +1355,7 @@ void generateSqlite3()
 #else // USE_SQLITE3
 void generateSqlite3()
 {
-  err("Error: sqlite3 support has not been compiled in!");
+  err("sqlite3 support has not been compiled in!");
 }
 #endif
 

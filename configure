@@ -20,7 +20,7 @@ doxygen_version_minor=8
 doxygen_version_revision=3.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20130402
+doxygen_version_mmn=20130512
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -42,6 +42,7 @@ f_search=NO
 f_langs=nl,sv,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,mk,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,sc,vi,tr,eo,am
 f_sqlite3=NO
 f_libclang=NO
+f_libclangstatic=NO
 
 while test -n "$1";  do
   case $1 in
@@ -105,6 +106,10 @@ while test -n "$1";  do
     --with-libclang | -with-libclang)
        f_libclang=YES
        ;;
+    --with-libclang-static | -with-libclang-static)
+       f_libclang=YES
+       f_libclangstatic=YES
+       ;;
     -h | -help | --help)
        f_help=y
        ;;
@@ -122,7 +127,8 @@ if test "$f_help" = y; then
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
           [--perl name] [--flex name] [--bison name] [--make name] 
           [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
-          [--install name] [--english-only] [--enable-langs list] [--with-sqlite3]
+          [--install name] [--english-only] [--enable-langs list] 
+          [--with-sqlite3] [--with-libclang]
           [--with-doxywizard] [--with-doxysearch] [--with-doxyapp]
 
 Options: 
@@ -156,7 +162,7 @@ Options:
   --enable-langs list 	Include support for output languages listed in list.
   			[default: $f_langs]
   --with-sqlite3        Add support for sqlite3 output [experimental]
-  --with-libclang       Add support for libclang parsing [experimental]
+  --with-libclang       Add support for libclang parsing
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt version 4.
   --with-doxysearch     Build external search tools (doxysearch and doxyindexer)
@@ -450,7 +456,11 @@ if test "$f_libclang" = YES; then
   printf "  Checking for libclang ... "
   libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
   libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
-  libclang_lib_name="libclang.so libclang.dylib libclang.a"
+  if test "$f_libclangstatic" = NO; then
+    libclang_lib_name="libclang.so libclang.dylib libclang.a"
+  else
+    libclang_lib_name="libclang.a"
+  fi
   libclang_hdr=NO
   libclang_lib=NO
   libclang_link=
@@ -465,7 +475,11 @@ if test "$f_libclang" = YES; then
       for j in $libclang_lib_name; do
         if test -f "$i/$j"; then
           libclang_lib="$i/$j"
-          libclang_link="-L $i -lclang"
+          if test "$f_libclangstatic" = NO; then
+            libclang_link="-L $i -lclang"
+          else
+            libclang_link="$i/libLLVMBitReader.a $i/libLLVMMC.a $i/libLLVMMCParser.a $i/libLLVMSupport.a $i/libclang.a $i/libclangAST.a $i/libclangAnalysis.a $i/libclangBasic.a $i/libclangDriver.a $i/libclangEdit.a $i/libclangFrontend.a $i/libclangLex.a $i/libclangParse.a $i/libclangRewriteCore.a $i/libclangSema.a $i/libclangSerialization.a $i/libclangStaticAnalyzerCore.a"
+          fi
           break
         fi
       done

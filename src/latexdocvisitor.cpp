@@ -257,7 +257,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
     case DocSymbol::LeftFloor:     m_t << "{$\\lfloor$}"; break;
     case DocSymbol::RightFloor:    m_t << "{$\\rfloor$}"; break;
     default:
-                             err("error: unknown symbol found\n");
+                             err("unknown symbol found\n");
   }
 }
 
@@ -424,10 +424,10 @@ void LatexDocVisitor::visit(DocVerbatim *s)
 void LatexDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  m_t << "\\label{" << anc->file() << "_" << anc->anchor() << "}%" << endl;
+  m_t << "\\label{" << stripPath(anc->file()) << "_" << anc->anchor() << "}%" << endl;
   if (!anc->file().isEmpty() && Config_getBool("PDF_HYPERLINKS")) 
   {
-    m_t << "\\hypertarget{" << anc->file() << "_" << anc->anchor() 
+    m_t << "\\hypertarget{" << stripPath(anc->file()) << "_" << anc->anchor() 
       << "}{}%" << endl;
   }    
 }
@@ -798,11 +798,11 @@ void LatexDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   if (Config_getBool("PDF_HYPERLINKS"))
   {
-    m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
+    m_t << "\\hypertarget{" << stripPath(s->file()) << "_" << s->anchor() << "}{}";
   }
   m_t << "\\" << getSectionName(s->level()) << "{";
   filter(convertCharEntitiesToUTF8(s->title().data()));
-  m_t << "}\\label{" << s->file() << "_" << s->anchor() << "}" << endl;
+  m_t << "}\\label{" << stripPath(s->file()) << "_" << s->anchor() << "}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocSection *) 

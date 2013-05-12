@@ -48,7 +48,7 @@ void FileName::generateDiskNames()
     while (fd && fd->isReference()) fd=next();
     // name if unique, so diskname is simply the name
     //printf("!!!!!!!! Unique disk name=%s for fd=%s\n",name.data(),fd->diskname.data());
-    fd->diskname=name.copy();
+    fd->m_diskName=name;
   }
   else if (count>1) // multiple occurrences of the same file name
   {
@@ -59,7 +59,7 @@ void FileName::generateDiskNames()
     {
       fd=first();
       while (fd && fd->isReference()) fd=next();
-      char c=fd->path.at(i);
+      char c=fd->m_path.at(i);
       if (c=='/') j=i; // remember last position of dirname
       fd=next();
       while (fd && !found)
@@ -67,13 +67,13 @@ void FileName::generateDiskNames()
         if (!fd->isReference())
         {
           //printf("i=%d j=%d fd->path=`%s' fd->name=`%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
-          if (i==(int)fd->path.length())
+          if (i==(int)fd->m_path.length())
           {
-            //warning("Warning: Input file %s found multiple times!\n"
+            //warning("Input file %s found multiple times!\n"
             //        "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
             found=TRUE;
           }
-          else if (fd->path[i]!=c)
+          else if (fd->m_path[i]!=c)
           {
             found=TRUE;  
           }
@@ -88,10 +88,10 @@ void FileName::generateDiskNames()
       //printf("fd->setName(%s)\n",(fd->path.right(fd->path.length()-j-1)+name).data());
       if (!fd->isReference())
       {
-        QCString prefix = fd->path.right(fd->path.length()-j-1);
+        QCString prefix = fd->m_path.right(fd->m_path.length()-j-1);
         fd->setName(prefix+name);
         //printf("!!!!!!!! non unique disk name=%s for fd=%s\n",(prefix+name).data(),fd->diskname.data());
-        fd->diskname=prefix+name;
+        fd->m_diskName=prefix+name;
       }
       fd=next();
     }

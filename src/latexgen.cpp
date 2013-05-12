@@ -777,7 +777,7 @@ static void writeDefaultStyleSheet(FTextStream &t)
   t << "% Used by parameter lists\n"
        "\\newenvironment{DoxyParams}[2][]{%\n"
        "  \\begin{DoxyDesc}{#2}%\n"
-       "    \\item[] \\hspace{\\fill} \\vspace{-40pt}%\n"
+       "    \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
        "    \\settowidth{\\labelwidth}{40pt}%\n"
        "    \\setlength{\\LTleft}{0pt}%\n"
        "    \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
@@ -801,7 +801,7 @@ static void writeDefaultStyleSheet(FTextStream &t)
   t << "% Used for fields of simple structs\n"
        "\\newenvironment{DoxyFields}[1]{%\n"
        "  \\begin{DoxyDesc}{#1}%\n"
-       "    \\item[] \\hspace{\\fill} \\vspace{-40pt}%\n"
+       "    \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
        "    \\settowidth{\\labelwidth}{40pt}%\n"
        "    \\setlength{\\LTleft}{0pt}%\n"
        "    \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
@@ -840,9 +840,6 @@ static void writeDefaultStyleSheet(FTextStream &t)
        "  \\begin{DoxyDesc}{#1}%\n"
        "    \\begin{description}%\n"
        "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
-       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
-       "      \\rowcolors{1}{white}{tableShade}%\n"
-       "      \\arrayrulecolor{gray}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
        "                          p{0.705\\textwidth}|}%\n"
@@ -858,9 +855,6 @@ static void writeDefaultStyleSheet(FTextStream &t)
        "  \\begin{DoxyDesc}{#1}%\n"
        "    \\begin{description}%\n"
        "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
-       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
-       "      \\rowcolors{1}{white}{tableShade}%\n"
-       "      \\arrayrulecolor{gray}%\n"
        "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
        "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
        "                          p{0.705\\textwidth}|}%\n"
@@ -1715,7 +1709,7 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   t << "}" << endl;
   if (name)
   {
-    t << "\\label{" << fileName << "}\\index{";
+    t << "\\label{" << stripPath(fileName) << "}\\index{";
     escapeLabelName(name);
     t << "@{";
     escapeMakeIndexChars(name);
@@ -1875,7 +1869,7 @@ void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
     t << "}";
   }
   t << "\\label{";
-  if (fName) t << fName;
+  if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;
   t << "}" << endl;
 }

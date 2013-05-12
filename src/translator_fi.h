@@ -95,7 +95,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     /*virtual QCString updateNeededMessage()
     {
-      return "Warning: The Finnish translator is really obsolete.\n"
+      return "The Finnish translator is really obsolete.\n"
              "It was not updated since version 1.0.0.  As a result,\n"
              "some sentences may appear in English.\n\n";
     }*/

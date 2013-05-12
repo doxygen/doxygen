@@ -1,0 +1,1743 @@
+/** \page changelog Changelog
+\tableofcontents
+\section log_1_8 Release 1.8
+\subsection log_1_8_3_1 Release 1.8.3.1
+\htmlonly
+<b>(release date 20-01-2013)</b>
+<a name="1.8.3.1"></a>
+<h3>Changes</h3>
+<ul>
+<li>   Changed to way the search results for multiple projects can be linked 
+       together. A project is now no longer identified by the tag files name but
+       via new option EXTERNAL_SEARCH_ID giving a bit more flexibility.
+<li>   Disabled the disk cache for member data. Allows removing quite some complexity
+       in doxygen and is not really needed now that 64bit systems with &gt;4GB RAM 
+       are becoming more common. Let me know if you think you benefit from this caching.
+<li>   id 691607: Using $relpath$ in a custom footer could lead to ambiguities
+       when followed by a name that could also be a marker, like 'search'.
+       Now $relpath^ should be used instead. $relpath$ is still supported for
+       backward compatibility.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   You can now use EXTENSION_MAPPING on files without any extension using
+       no_extension as placeholder (thanks to Jason Majors for the patch).
+<li>   To make navindex section inside a layout file that links to 
+       a specific URL you can use usergroup with the url attribute.
+<li>   To make navindex section without any link inside a layout file you 
+       can use usergroup with special title [none].
+</ul>
+<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database)</h3>
+<ul>
+<li>   id 644350: Fortran: Included patch to improve parsing line continuation 
+       characters.
+<li>   id 645423: Fortran: added support for protected attribute
+<li>   id 682550,691315: When using @copydoc, paragraphs breaks did not appear 
+       in the copied documentation.
+<li>   id 686581: Fortran: handle single quotes in normal Fortran comment.
+<li>   id 686689, 691335: Scope of forwardly declared template class was lost 
+       in the output.
+<li>   id 689713: Tcl: Inline source code was not rendered correctly.
+<li>   id 690787: Fixed case were a cyclic inheritance relation could crash 
+       doxygen.
+<li>   id 690831: Using @subpage in a -# style list was not handled properly.
+<li>   id 691000: For a mainpage without title the project name is now shown as
+       the title in the XML output.
+<li>   id 691277: The generated list of citations is now no longer included in 
+       the tag file.
+<li>   id 691073: Documenting strongly typed enum values outside of the enum 
+       did not work.
+<li>   id 691310: Python: = was missing in the output for variable assignment.
+<li>   id 691323: Doxygen could crash when creating inline msc graphs.
+<li>   id 691340: Members didn't have a More.. link to jump to detailed docs.
+<li>   id 691602: Doxygen did not probably distinguish between two template
+<li>   id 691798: regression: C++ style comments that started with a line of 
+       slashes did not get processed correctly anymore. 
+<li>   id 692031: Fixed parse error when left shift operator occurred as a 
+       default parameter.
+       members or functions that only differ in the return type.
+<li>   Setting SEARCH_INCLUDES to NO resulted in no include graphs and no
+       include files being listed in the output.
+<li>   Improved support for MinGW (thanks to a patch by Brecht Sanders).
+<li>   Removed the Graphviz/dot dependency when building the doxygen 
+       documentation.
+<li>   Anchors to sub pages were wrong in the XML output.
+<li>   Included VHDL patch by Martin Kreis that improves the flow chart 
+       generation.
+<li>   corrected several code pages and fontsets for proper RTF output for
+       a number of languages such as Greek.
+</ul>
+\endhtmlonly
+\subsection log_1_8_3 Release 1.8.3
+\htmlonly
+<a name="1.8.3"></a>
+<b>(release date 26-12-2012)</b>
+<h3>Changes</h3>
+<ul>
+<li>   Expanding the tree in an index page of the HTML output, will now 
+       expand only one level instead of the whole sub-tree (thanks to
+       Pez Cuckow for the patch).
+<li>   A blockquote in Markdown does no longer require a whitespace
+       after the last '&gt;' if the '&gt;' is followed by a newline.
+<li>   id 682718: Included patch to add version info to all generated 
+       template files (headers, footers, stylesheets, layout files, etc).
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added support for using external tools to index and search through 
+       the HTML documentation. An example index tool is provided (doxyindexer) 
+       and an example search engine (doxysearch.cgi).
+       To configure the external search engine the following new options
+       are added to the configuration file: EXTERNAL_SEARCH (to enable the
+       feature), SEARCHENGINE_URL (to specify the URL of the search engine),
+       SEARCHDATA_FILE (to specify the name of the raw search data to index),
+       EXTRA_SEARCH_MAPPINGS (for search through multiple projects).
+       See the <a href="extsearch.html">manual</a> for details.
+<li>   Added USE_MDFILE_AS_MAINPAGE config option to select a markdown page to
+       be used as the main page.
+<li>   id 630645: This patch (contributed by Albert) adds support for 
+       simple logic expressions for \cond, \if, and friends, i.e. you can do
+       \if (SOME_SECTION_NAME &amp;&amp; (!THIS_ALTERNATIVE || THAT_ALTERNATIVE))
+<li>   id 684152: Patch (contributed by Albert) adds a new configuration 
+       option MATHJAX_FORMAT to select the MathJax output format. Options are
+       HTML-CSS, NativeMML, or SVG.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 670853: Fixed compile issues with 0 to QCString cast for 
+       old compilers.
+<li>   id 678139: A class A deriving from another class B inside a namespace
+       not known to doxygen, caused class B to appear in the global scope.
+<li>   id 681209: Fixed problem processing .bib files when they were located
+       in a path containing spaces.
+<li>   id 681830: Using \addindex in a page will now produce a link to the
+       word, instead of the start of the page.
+<li>   id 681831: The TREEVIEW_WIDTH option did not have any effect.
+<li>   id 681898: Jumping from a level 3 section to a level 1 section did
+       not appear correctly in the page TOC.
+<li>   id 681976: C++11: Improved handling of noexcept expressions, e.g.:
+       <code>Test() noexcept ( noexcept(T::T()) ) = default;</code>
+<li>   id 682048: Improved SIGINT handling when running multiple dot instances.
+<li>   id 682602: Fixed problem processing .bib files when using a non default
+       output directory.
+<li>   id 682713: Comment for IDL_PROPERTY_SUPPORT in the config file template 
+       did not have line wrapping.
+<li>   id 682728: Setting SHOW_FILES to NO prevented call graphs from being
+       generated.
+<li>   id 682740: Fortran: In initialization statement the "=" was missing
+<li>   id 683284: Fortran: ALIASes where not replaced in !! and !&lt; comments.
+<li>   id 683976: Added meta tag "generator" to HTML output (thanks to
+       Albert for the patch).
+<li>   id 684781: Sections of the main page did not appear in the 
+       navigation tree until the main page had sub pages.
+       Also fixed bug in treeview that caused mainpage with title and
+       sections to appear at the same level as the sections.
+<li>   id 685125: Doxygen could select the wrong overloaded method when 
+       the only difference in parameter types was the template type of 
+       a typedef.
+<li>   id 685181: Inheriting member documentation did not work in combination
+       with Java interfaces.
+<li>   id 685623: Enum values did not appear in the detailed documentation 
+       when using C++11 style enums.
+<li>   id 685879: Even though HIDE_UNDOC_MEMBERS was enabled, the navigation
+       still showed undocumented members.
+<li>   id 685940: Fixed back button behaviour when using the navigation tree.
+<li>   id 686284: Added anchors to refs in the index.qhp TOC.
+<li>   id 686826: Added XML declaration to index.qhp TOC.
+<li>   id 686956: When a class and its base class has the same nested class,
+       the collaboration diagram could point to the wrong class.
+<li>   id 686983: Comments inside a function macro parameter appeared before 
+       the expanded macro, instead of being treated as part of the parameter.
+<li>   id 687301: Allow minus in the name of a HTML attribute.
+<li>   id 687572: Code fragments were wrapped too early in the latex output.
+<li>   id 688226: Fixed Qt version number in ./configure --help text.
+<li>   id 688463: Included patch to prevent processing identifiers starting
+       with _ or __ as markdown.
+<li>   id 688531: Horizontal ruler inside paragraph caused missing &lt;/p&gt;
+<li>   id 688542: Using "usergroup" in the layout.xml caused missing &lt;div&gt;
+<li>   id 688739: Fixed problem with user defined entries in the eclipse help
+       index (thanks to Rene Papenhoven for the fix).
+<li>   id 688647: Fixed problem parsing initializer list with C++11 style
+       uniform types.
+<li>   id 689341: \if around list item preceded by whitespace caused wrong
+       list in the output. 
+<li>   id 689461: Correct link in documentation of SIP_SUPPORT option.
+<li>   id 689720: Fixed bug that could prevent refman.tex from being generated.
+<li>   id 689833: Fixed missing space in Chinese translation.
+<li>   id 690093: Files added via HTML_EXTRA_STYLESHEET did not correct refer 
+       to files that where placed in a subdirectory.
+<li>   id 690190: Searching for multibyte characters did not work with the 
+       server based search engine.
+<li>   id 690250: Fixed case where line numbers got out of sync with the code.
+<li>   id 690341: First member of an anonymous C++11 style enum was not shown
+       properly.
+<li>   id 690385: Fixed case where _'s where falsely converted to Markdown 
+       emphasis.
+<li>   id 690403: Title not used when \ref'ing to a \section imported via 
+       a tag file.
+<li>   id 690418: Behavior of @cond was accidentally reversed by new expression
+       parser.
+<li>   id 690602: Fixed problems handling @cond inside /// comments.
+<li>   id 690629: Fixed case where doxygen would during preprocessing.
+<li>   id 690685: A file specified using HTML_EXTRA_STYLEHSHEET did not end
+       up in the Qt Help index.
+<li>   Improved the way enum's are rendered in the HTML output.
+<li>   When inlining structs (INLINE_SIMPLE_STRUCTS=YES) a &lt;p&gt; was missing
+       for members with a detailed description, causing invalid XHTML.
+<li>   Fixed problem loading the navigation tree when using .xhtml as the
+       file extension.
+<li>   The navigation tree was not always correctly positioned upon initial
+       load when using Chrome.
+<li>   HTML Navigation tree showed static members even when EXTRACT_STATIC was
+       set to NO.
+<li>   Same word could appear multiple times in the match list for an entry 
+       in the search results when using server based search.
+</ul>
+\endhtmlonly
+\subsection log_1_8_2 Release 1.8.2
+\htmlonly
+<a name="1.8.2"></a>
+<b>(release date 11-08-2012)</b>
+<h3>Changes</h3>
+<ul>
+<li>   Using a fenched block (~~~~) in Markdown without explicit extension will 
+       now be interpreted as a @code..@endcode block instead 
+       of @verbatim..@endverbatim.
+<li>   Classes inheriting from an class that is outside the scope of doxygen
+       are still shown in diagrams. This does not hold for usage relations.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added support for C++11:
+       <ul>
+       <li> strongly typed enums, e.g.:
+            <pre>enum class E</pre>
+       <li> enums with explicit type, e.g.: 
+            <pre>enum E : unsigned int { ... }</pre>
+       <li> id 678097: added support for final keyword on classes and methods.
+       <li> support for override keyword for methods.
+       <li> <code>nullptr</code> is new a type keyword in code fragments.
+       <li> support for variables with initializer lists, 
+         e.g.: <pre>const int var {10};</pre>
+       <li> support for trailing return types, 
+         e.g.: <pre>auto foo() -&gt; Bar;</pre>
+       <li> id 672372: added support for template aliases, 
+         e.g.: <pre>template&lt;typename T&gt; using A = B&lt;T&gt;;</pre>
+       <li> support for C++11 variadic templates, 
+         e.g.: <pre>template&lt;typename... Values&gt; class C;</pre>
+       <li> support for documenting template class declarations.
+       <li> id 680098: <code>static_assert(...);</code> inside a class is now ignored.
+       <li> id 679740: Add support parameters with default lambda functions, 
+         e.g.:  <pre>int foo(int i, std::function&lt;int(int)&gt; f = [](int x) -&gt; int { return x / 2; })</pre>
+       <li> default initializers for non-static data members, 
+         e.g.:  <pre>class C { public: int x = 4; int y {6}; int z = y*func(); };</pre>
+       <li> support for decltype as a way selecting a type for a variable, 
+         e.g.: <pre>int x; decltype(x) y;</pre>
+       <li> support for new string literals, 
+         e.g.  <pre>u8"utf8", u"utf-16", U"utf-32", L"wchar"</pre>
+       <li> support for raw string literals (with and without user defined 
+         delimiter), 
+         e.g.  <pre>R"(some"thing)", u8R"raw(some)"thing)raw"</pre>
+       <li> support for explictly deleted and defaulted special members 
+         (<code>=default</code> and <code>=delete</code>).
+       </ul>
+<li>   Made several improvements to the way Objective-C categories and protocols 
+       are handled:
+       <ul>
+       <li> Class extensions are now treated as part of the class, whereas 
+         categories are listed separately.
+       <li> Fixed parse problem where category had a { } section.
+       <li> Fixed parse problem for categories that implemented protocols.
+       <li> Fixed render bug for protocols in class diagrams.
+       <li> Attributes with the same name as a method are now no longer matched.
+       <li> Internal properties are now also marked with [implementation]
+       <li> Members of categories are shown in the class they extend as well, and 
+         cross reference links are made between these members.
+       <li> Class extension implementing protocols are now shown as protocols
+         inherited by the class itself, including the "Implemented by" relation.
+       </ul>
+<li>   Added option HTML_EXTRA_STYLESHEET which allows adding an additional
+       stylesheet without completely replacing doxygen.css.
+<li>   Added option AUTOLINK_SUPPORT which can be used to enable/disable
+       autolinking globally.
+<li>   Included language updates for Czech, Spanish, Greek, Slovak, and 
+       Esparanto.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   Fixed render glitch where template member of a base class was not
+       properly hidden in the derived class.
+<li>   Privately nested classes no longer appear in the declaration section 
+       of their parent if EXTRACT_PRIVATE is disabled.
+<li>   In the declaration section the separator line was in between the
+       member and its brief description.
+<li>   Fixed a couple of compiler warning with the new XCode 4.4 compiler.
+<li>   Added compilation support for Mountain Lion (Mac OS X 10.8).
+<li>   id 679631: Nested namespaces did not appear in the namespace list if the 
+       parent namespace was undocumented.
+<li>   id 680227: Fixed some spelling errors in the code comments.
+<li>   id 680398: Fortran:  comma at begin of argument list description in 
+       case of implicit type
+<li>   id 680405: Fortran: Entities on line with USE, ONLY were not hyperlinked 
+       in code.
+<li>   id 680408: Fortran: handle carriage return in non terminated strings.
+<li>   id 680492: Using Markdown formatting in @todo/@bug/.. like descriptions
+       did not work.
+<li>   id 680575: Fixed potential crash when &lt;code&gt; appeared inside &lt;summary&gt;
+       for C# code.
+<li>   id 680697: \xrefitems of the same type are not grouped together under
+       the same heading (just like \todo and friends). 
+<li>   Fixed case where full directory path was shown even though
+       FULL_PATH_NAMES was set to NO.
+<li>   id 680709: HTML output of template-derived classes contained unescaped 
+       characters.
+<li>   id 679963: "Class Index" appeared twice in the PDF TOC, Index at the 
+       end did not appear at all.
+<li>   In a declaration no link was created when referring to a class inside 
+       an undocumented namespace imported via a tag file.
+<li>   id 681281: Make default for TAB_SIZE 4 and added remark in Markdown
+       section of the manual about the effect of TAB_SIZE on code block 
+       processing when using tabs in the comment block.
+<li>   id 681023: Project logo was not included in the Qt help output.
+<li>   id 680992: Fixed a couple of typos in the comments.
+<li>   id 681350: Fixed a problem with Markdown processing of a @code block
+       inside an indented /// style comment.
+<li>   id 679928: Disabled section level correction for Markdown pages as
+       is was confusing.
+</ul>
+\endhtmlonly
+\subsection log_1_8_1_2 Release 1.8.1.2
+\htmlonly
+<a name="1.8.1.2"></a>
+<b>(release date 12-07-2012)</b>
+<h3>Changes</h3>
+<ul>
+<li>   doxygen now strips the leading indentation shared by the lines in a 
+       @code..@endcode block.
+<li>   id 678218: Changed title of the SVG graphs from 'G' to the root node
+       of the graph.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added button in the navigation tree to allow enabling/disabling 
+       syncing the navigation tree with the content.
+<li>   Extended the number of HTML entities with Greek letters and other 
+       symbols (thanks to Charles Karney for the patch).
+<li>   id 663645: Added support for C++11 strongly typed enums 
+       (enum class E { ... }).
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 590518: Added missing class member initialization to a
+       class in doxmlparser and made the library compile again.
+<li>   id 667678: Added support for Obj-C property attribute "unsafe_retained".
+<li>   id 674842,676984: Unmatched quote in a comment prevented alias expansion.
+<li>   id 676019: Fixed another case where local include path did not appear
+       correctly in the class documentation.
+<li>   id 676966: Fortran: Some keyword were not colored in the source view.
+<li>   id 676981: Fortran: Argument type was wrong type of in case of out of 
+       place !&gt; comment
+<li>   id 677935: Included patch to fix problem compiling for x86 release on
+       Windows.
+<li>   id 677992: Section without title could result in an invalid Qt Help
+       index.
+<li>   id 678022: Anonymous enum could result in an invalid Qt Help index.
+<li>   id 678102: Superfluous trailing comma in javascript 
+       prevented navigation tree to load in IE7.
+<li>   id 678177: a + at the start of a line inside a &lt;pre&gt; block, 
+       triggered the start of a list. Also -- and --- where not kept untouched 
+       inside a &lt;pre&gt; block.
+<li>   id 678180: ndash (--) appearing in a brief description could lead 
+       to invalid SVG images.
+<li>   id 678288: -- and --- inside a Markdown code block were not handled
+       properly.
+<li>   id 679331,675766: In body documentation with a different indentation then the
+       main documentation was not rendered correctly (MARKDOWN=YES).
+<li>   id 679436: Using an escaped pipe symbol in a Markdown table did not get 
+       unescaped in the output.
+<li>   id 679533: Code fragments did not appear properly in the doxygen manual.
+<li>   id 679615: Added missing delete call in a piece of debugging code.
+<li>   id 679626: Fixed some navigation issues in the manual
+<li>   Not all inherited members appeared in the "Additional inherited members"
+       list.
+<li>   Link to call after "Inherited members" was not correct when
+       CREATE_SUBDIRS was enabled.
+<li>   New VHDL diagram was not generated if the path contained spaces.
+<li>   Fixed a couple of problems handling Objective-C categories.
+</ul>
+\endhtmlonly
+\subsection log_1_8_1_1 Release 1.8.1.1
+\htmlonly
+<a name="1.8.1.1"></a>
+<b>(release date 10-06-2012)</b>
+<h3>Changes</h3>
+<ul>
+<li>   Integrated the root navigation tree in navtree.js for faster loading.
+<li>   When the navigation tree is enabled, clicking jump to a line in 
+       the source code view will now highlight the line.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   VHDL code now has a new Design Overview page (thanks for Martin Kreis
+       for the patch). Requires HAVE_DOT=YES, and DOT_IMAGE_FORMAT=svg.
+<li>   id 677678: Added support for strong and weak attributes in Objective-C
+       properties.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 618462: Fortran: Appearance of comments in the HTML output 
+       are now customizable via CSS again.
+<li>   id 673660: &lt;code&gt; inside a &lt;summary&gt; or &lt;remarks&gt; section is now treated
+       as @code (was already the code for C#).
+<li>   id 673921: When a comment started at indent &gt;= 4 after a /** and 
+       continued at the same indent without leading * after a blank line, 
+       the continued part appeared at as a code block when Markdown was enabled.
+<li>   id 675036: If a file was not indexed, the navigation tree became empty.
+<li>   id 676019: Include path using quotes did not work as documented.
+<li>   id 676877: @warning did not end at blank line when followed by
+       a numbered list.
+<li>   id 676902: An anonymous namespace could introduce an invalid entry in
+       the navigation list.
+<li>   id 676948: Breadcrumb navigation path had wrong links when 
+       CREATE_SUBDIRS was enabled.
+<li>   id 677315: Fixed case where function was incorrectly detected as a 
+       variable.
+<li>   id 677589: Fixed typo in the documentation of the LAYOUT_FILE option.
+<li>   id 677771: Fixed visual misalignment for first argument.
+<li>   The "arrow out" button in interactive SVG did not work when 
+       served from a web server, due to the use of an absolute path.
+<li>   If a declation was too wide for a page, the content in HTML spilled 
+       over the boundary of its box, which looked ugly.
+<li>   Empty lines in a code fragment were collapsed.
+<li>   Navigation tree entries of the hierarchy appeared under class index as
+       well.
+<li>   Grouped globals and enum values were not added to the navigation index.
+<li>   Inlined class were not properly shows in the navigation index.
+<li>   Documented class in undocumented namespace did not show up in 
+       class list and navigation tree.
+<li>   ALLEXTERNALS=YES did not show all external classes in the class list.
+<li>   External reference via URL did not work for new
+       "Additional Inherited Members" section + inherited from class link.
+<li>   Objective-C protocols and C# generics were not index and listed 
+       properly in the navigation tree and indices.
+<li>   Undocumented files could produce a broken link in the navigation tree.
+<li>   Additional Inherited Members could turn up empty of all members of
+       the inherited class were grouped and SUBGROUPING was set to NO.
+</ul>
+<\endhtmlonly
+\subsection log_1_8_1 Release 1.8.1
+\htmlonly
+<a name="1.8.1"></a>
+<b>(release date 19-05-2012)</b>
+<h3>Changes</h3>
+<ul>
+<li>   Changed the way indexes (Class,File,Namespace,Groups) are rendered:
+       <p>
+       There are now shown in a uniform way in the HTML output as a tree.
+       Trees can be expanded and collapsed interactively 
+       (this makes USE_INLINE_TREES obsolete). 
+       <p>
+       The class list now also shows namespaces and nested classes. 
+       The file list now also shows directories (this makes SHOW_DIRECTORIES 
+       obsolete). 
+       <p>
+       Member sections are now each rendered in a separate table.
+       This makes the HTML_ALIGN_MEMBERS option obsolete.
+       <p>
+<b>Note:</b> If you use a custom header for the HTML output (HTML_HEADER) 
+make sure you add the following:
+       <pre>
+&lt;script type="text/javascript" src="$relpath$jquery.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="$relpath$dynsections.js"&gt;&lt;/script&gt;</pre>
+       Otherwise the interactivity of the trees does not work.
+       <p>
+
+<li>   Included a couple of performance improvements (thanks to Dirk Reiners)
+<li>   Changed the way member attributes (like protected, virtual, and static)
+       are rendered in the HTML output.
+<li>   Changed the look of the source code output.
+<li>   Included language updates for Chinese, Czech, German, Esperanto, 
+       Italian, Slovak, Spanish, Hungarian, and Polish.
+<li>   Syntax highlighing in source code fragments is no longer dependent
+       on LATEX_SOURCE_CODE being set to YES.
+<li>   Added natural scrolling for tablet devices (like the iPad) 
+       when using the treeview.
+<li>   For interactive SVGs the print button has been replaced by a 
+       "arrow out" button that opens the original non-interactive SVG in a 
+       new window for easy printing or saving. 
+<li>   id 661499: Long names are now wrapped in the dot nodes to avoid
+       very wide graphs.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   id 666527: Added support for &lt;inheritdoc/&gt; C# XML command
+       (thanks to John Werner for the patch).
+<li>   id 670965, Added support for resolving environment variables of the
+       form $(PROGRAMFILES(X86)) inside the config file
+<li>   Doxygen now shows Objective-C properties in collaboration diagrams
+       (thanks to Sven Weidauer for the patch).
+<li>   Added ability to search for group or page titles.
+<li>   Inherited class members are now shown as expandable sections in the
+       member overview (default is collapsed). Each section is rendered as
+       a table. 
+<li>   id 674349: Included build support for NetBSD.
+<li>   A -- will now be rendered as an 'en dash', similarly, --- will produce an
+       mdash.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 523156: Fortran: Prefix of routines got stripped.
+<li>   id 666088: Include VHDL patch (thanks to Martin Kreis).
+<li>   id 670235: Fixed include guard detection problem when using
+       #pragma once
+<li>   id 670805: A numbered list (1. 2. 3.) where each list item ended with 
+       an empty line is no longer treated as a set of separate lists (all 
+       starting with 1.).
+<li>   id 670889: Java: last enum value did not appear in the output unless it was
+       followed by a comma.
+<li>   id 671023, 671312: Regression: Autolist items starting on a new paragraph 
+       at indent level larger than 0 were not processed correctly. 
+<li>   id 671076: Sections could be missing from the navigation tree in 
+       some situations.
+<li>   id 671158: @tableofcontents did not work for the main page (@mainpage)
+<li>   id 671159: Sections in a separate markdown page did not appear in the 
+       table of contents.
+<li>   id 671166: Fortran: Fixed problem causing call/caller graphs not to be
+       generated.
+<li>   id 671171: RPM spec file was updated to make it work with RHEL 6.2
+       (thanks to Peter Klotz for the patch)
+<li>   id 671240: Corrected line number of error message reported for
+       pages.
+<li>   id 671291: C# regression: enum values where not shown in the docs.
+<li>   id 671395: When #some_member appeared at the start of a line it was
+       seen as a level one header instead of a link to a member when
+       Markdown processing was enable. Now at least one space is required
+       after the # to make it a header.
+<li>   id 671426: Fixed case where doxygen could crash when a section and
+       subsection had the same label.
+<li>   id 671591: docset creating could fail due to invalid Nodes.xml
+<li>   id 671702: Using \internal in a group or member did not hide it
+       from the navigation tree if there was no documentation.
+<li>   id 671709: Backticks in C# comments did not appear as inline 
+       fragments, like was the case for other languages.
+<li>   id 672119: PHP: defines are now shown as constants rather than enums.
+<li>   id 672662: File with .md or .markdown extension were not included
+       with the default setting of FILE_PATTERNS.
+<li>   id 672366: mailto style URLs did not work correctly in combination with
+       CREATE_SUBDIRS = YES.
+<li>   id 672472: Removed bogus &lt;/b&gt; when using @par.
+<li>   id 672475: Added "warning:" prefix to "missing \endcode" message.
+<li>   id 672479: Doxygen comments after a macro definition were not
+       removed in the source browser view.
+<li>   id 672526: Removed black line in front of custom paragraphs.
+<li>   id 672536: PHP: use keyword was not handled correctly when importing
+       classes from another namespace.
+<li>   id 672620: Switched to using "Macro" in the output instead of "Define".
+<li>   id 672656: Using ![caption](filename.png) did not work correctly for 
+       local images pointed to with IMAGE_PATH.
+<li>   id 673045: A block of ///'s inside a verbatim block inside a .md 
+       file was replaced by /** ..  */
+<li>   id 673066: Doxygen now skips scanning files in directories starting with
+       a dot (e.g. .svn).
+<li>   id 673219: Included patch by Ryan Schmidt to make the Mac versions
+       in qglobal.h match that of Apple header files.
+<li>   id 673870: Added C++11 classes when BUILTIN_STL_SUPPORT is enabled.
+<li>   id 673983: Using a backslash in a section cause 026E30F to appear in the
+       latex TOC.
+<li>   id 674563: Fortran: case sensitiveness for routines and functions 
+       did not work
+<li>   id 674583: Fortran: continuation by ampersand not placed in code output.
+<li>   id 675757: Fixed indenting issue after the end of a markdown code block
+       inside a list.
+<li>   id 676116: Use new index style for page index.
+<li>   id 676294: Fixed LaTeX error when backslash appeared in a hyperlinked
+       code fragment.
+<li>   Tag files had wrong character encoding set in the header.
+<li>   C# in/out did not appear in generics using covariance or contravariance.
+<li>   When marker of an alias appeared at the end of the alias text it was
+       not expanded.
+<li>   Aliases did not work in Markdown files.
+<li>   Fixed some problems with the navigation tree for IE9 and Opera.
+<li>   Included patch by Jake Colman to make the configgen.py work with older
+       Python version such as 2.4.3.
+<li>   Fixed problem parsing \code{.py}...\endcode 
+<li>   UML_LIMIT_NUM_FIELDS did not work correctly in all cases.
+<li>   Setting SORT_GROUP_NAMES to YES, had no effect on child groups within
+       a group.
+</ul>
+\endhtmlonly
+\subsection log_1_8_0 Release 1.8.0
+\htmlonly
+<a name="1.8.0"></a>
+<b>(release date 25-02-2012)</b>
+<h3>Changes</h3>
+<ul>
+<li>   Auto list items can now consist of multiple paragraphs.
+       The indentation of the (first line) of a new paragraph detemines
+       to which list item the paragraph belongs or if it marks the end of the
+       list. 
+<li>   When UML_LOOK is enabled, relations shown on the edge of a graph
+       are not shown as attributes (conform to the UML notation)
+<li>   Updated the manual and improved the look.
+<li>   Made the contents in the navigation tree more consistent for
+       groups, pages with subpages, and grouped subpages.
+<li>   id 669079: Latex: made the margins of latex page layout smaller using 
+       the geometry package.
+<li>   The tool doxytag has been declared obsolete and is removed
+       (it wasn't working properly anyway). Same goes for the installdox 
+       script.
+<li>   Updated the copyright in source code and doxywizard "about" to 2012.
+<li>   id 668008: HTML version of the manual now has the treeview enabled
+       for easier navigation.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added support for 
+       <a href="http://daringfireball.net/projects/markdown/">Markdown</a>
+       formatting.
+       This is enabled by default, but can be disabled by 
+       setting MARKDOWN_SUPPORT to NO. When enabled the following is 
+       processed differently:
+       <ul>
+       <li> tabs are converted to spaces according to TAB_SIZE.
+       <li> blockquotes are created for lines that start with one or more &gt;'s
+            (amount of &gt;'s detemine the indentation level).
+       <li> emphasis using *emphasize this* or _emphasis this_ or
+            strong emphasis using **emphasis this**. Unlike classic
+            Markdown 'some_great_indentifier' is not touched.
+       <li> code spans can be created using back-ticks, i.e. `here's an example`
+       <li> Using three or more -'s or *'s alone on a line with only spaces
+            will produce a horizontal ruler.
+       <li> A header can be created by putting a ===== (for h1) or ----- (for h2)
+            on the next line or by using 1 to 6 #'s at the start of a line
+            for h1-h6.
+       <li> auto lists item can also start with + or * instead of only -
+       <li> ordered lists can be made using 1. 2. ... labels.
+       <li> verbatim blocks can be produced by indenting 4 additional spaces.
+            Note that doxygen uses a relative indent of 4 spaces, not an
+            absolute indent like Markdown does. 
+       <li> Markdown style hyperlinks and hyperlink references.
+       <li> Simple tables can be created using the <a href="http://michelf.com/projects/php-markdown/extra/#table">Markdown Extra format</a>.
+       <li> <a href="http://freewisdom.org/projects/python-markdown/Fenced_Code_Blocks">Fenced code blocks</a> are also supported, include language selection.
+       <li> files with extension .md or .markdown are converted to related pages.
+       </ul>
+       See the section about Markdown support in the manual for details.
+<li>   It is now possible to add user defined tabs or groups of tabs to
+       the navigation menu using the layout file (see the section of the manual
+       about customizing the output for details).
+<li>   Added new command \tableofcontents (or [TOC] if you prefer Markdown)
+       which can be used in a related page with sections to produce a 
+       table of contents at the top of the HTML page (for other formats the
+       command has no effect).
+<li>   When using SVG images and INTERACTIVE_SVG is enabled, a print icon
+       will be visible along with the navigation controls to facilitate 
+       printing of the part of the graph that is visible on screen.
+<li>   Added obfuscation of email addresses for the HTML output to make
+       email harvesting more difficult.
+<li>   Added build targets for 64 bit Windows (thanks to Vladimir Simonov).
+       The installer script is also updated to install a 64 bit version of
+       doxygen on 64 bit systems and the 32 bit version on 32 bit systems.
+<li>   Added support for using the HTML tag &lt;blockquote&gt; in comments.
+<li>   Included patch by Gauthier Haderer that fixes some issues with the
+       dbus XML parser.
+<li>   Added support for Markdown style fenced code blocks.
+<li>   Added option to @code command to force parsing and syntax highlighting
+       according to a particular language.
+<li>   Section of pages are now added to the navigation index.
+<li>   Added support for cell alignment and table header shading in
+       LaTeX and RTF output. 
+<li>   Added -d filteroutput option to show the output of an input filter
+       (thanks to Albert for the patch).
+<li>   id 668010: Latex: for Windows doxygen new generates a makepdf.bat
+       file in the latex output dir to create the latex documentation.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 498703: Fixed encoding issue in CHM index file for group titles.
+<li>   id 510975: FORTRAN: Keywords like .GT. recognized as symbols for 
+       cross ref.
+<li>   id 511906, 581303, 622749: \copydoc did copy the brief description 
+       into the detailed section, causing a difference between the original  
+       and the copy.
+<li>   id 555327: Using @ref for an example file, caused it to appear as
+       file::ext.
+<li>   id 567494: Fortran: Included patch for blockdata sub-programs.
+<li>   id 628417: Fortran: doxygen filter, preparsing fixed form of null
+<li>   id 662286: TCL: Inlcuded patch to fixed UTF-8 support.
+<li>   id 662289: TCL: Included patch to prevent ##### from appearing in the
+       output.
+<li>   id 646319: Using a file name with path for HTML_STYLESHEET caused the
+       path to appear in the HTML output.
+<li>   id 664826: Fixed one more problem with include guard detection.
+<li>   id 665629: Fixed parse problem when a #define appeared inside an enum.
+<li>   id 665855: Fixed problem parsing C++ template specialization of the
+       form A&lt;func(T*)&gt; such as used in boost::signal2 types.
+<li>   id 666047: A &lt;/p&gt; followed by an htmlonly..endhtmlonly section
+       caused invalid XHTML output.
+<li>   id 666085: Fixed include handling in case the include guard was 
+       documented.
+<li>   id 666124: Fixed problem loading the navigation tree in IE8 when
+       serving pages via a web server.
+<li>   id 666337: Included patch to avoid hypenation hints in front of the 
+       first captial in a word.
+<li>   id 666568: When SHOW_FILES was NO, a grouped function did not appear
+       in the javascript based search index.
+<li>   id 666909: \copybrief introduced extra spacing in the HTML output.
+<li>   id 666986: Fixed case where search engine specific code appeared
+       twice in the HTML output.
+<li>   id 666993: Fixed bug in the generated makefile causing index not
+       to be generated when using pdflatex.
+<li>   id 667020: HTML output for example pages was not well-formed.
+<li>   id 667192: Include statements in latex output where placed all on 
+       one line in the LaTeX output.
+<li>   id 667835: PHP: Fixed problem handling heredoc blocks
+<li>   id 667844: For aliases with a single argument it is no longer required 
+       to escape commas that appear inside the argument text.
+<li>   id 668037: Latex: tables can now span multiple pages by using the xtab
+       package.
+<li>   id 668218: Doxygen will ignore the common prefix shared by all
+       directories when computing a names for the directory's output files.
+       This will make the names of the output more stable.
+<li>   id 668519: Added missing newline in man page output.
+<li>   id 669071, 669072: Fixed parse problem for Q_PROPERTY when a template
+       with a namespaced type was used.
+<li>   id 669078: Included patch which changes MATHJAX_RELPATH to use the
+       content delivery network by default.
+<li>   id 669138: Fortran: Fixed problem handling multiple definition 
+       statements on one line.
+<li>   id 669406: Using -d Preprocessor now also works when QUIET is YES.
+<li>   id 669434: Latex: citations where only generated properly if the
+       bib files specified via CITE_BIB_FILES did not have a path.
+<li>   id 669758: Tcl: Same function in multiple Tcl namespaces not added.
+<li>   id 670289: Fixed case where doxygen would not correctly detect
+       &gt;&gt; as a termination of a nested template.
+<li>   id 670571: subpages generate empty pages in latex/rtf output and
+       broken links when SHORT_NAME was set to YES.
+<li>   Included VHDL fixes provided by Martin Kreis.
+<li>   The word "dummy" wrongly appeared before the first parameter type in 
+       the LaTeX output for an Objective-C method.
+<li>   Fixed several small glitches in the tree view javascript code.
+<li>   Included a patch by Vladimir Simonov to make it possible to compile
+       doxygen with Visual Studio 2005.
+<li>   Fixed some typos in the manual (thanks Albert).
+</ul>
+\endhtmlonly
+\section log_1_7 Release 1.7
+\htmlonly
+<a name="1.7.6.1"></a>
+<h1>Doxygen Release 1.7.6.1</h1>
+<h2>(release date 10-12-2011)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   Doxygen now reports its cache usage (for the symbol and the 
+       lookup cache) at the end of a run (if QUIET=NO), and recommends 
+       settings for SYMBOL_CACHE_SIZE and LOOKUP_CACHE_SIZE for your 
+       project if either cache is too small.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added new option LOOKUP_CACHE_SIZE to control the internal cache
+       doxygen uses to find symbols given their name and a context.
+<li>   Python: added support for @staticmethod
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   Python: scopes are now shown with . instead of ::
+<li>   id 665313: Space before @if was not preserved, causing problems
+       with inline @if .. @endif constructs.
+<li>   id 665583: Fixed XHTML validity problem when using mscgen graphs.
+<li>   id 665641: Fixed XHTML validity problem when GENERATE_TREEVIEW was
+       disabled.
+<li>   id 665720: Included patch to fix hang issue when non-empty 
+       INCLUDE_PATH was used.
+<li>   id 665778: Fixed parse issue when a comma appeared as part of an 
+       enum's value.
+</ul>
+<a name="1.7.6"></a>
+<h1>Doxygen Release 1.7.6</h1>
+<h2>(release date 03-12-2011)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   To improve the performance of loading the navigation tree,
+       the data is now split into multiple javascript files which
+       are loaded dynamically.
+<li>   The selected member is now briefly highlighted in the HTML output
+       (when GENERATE_TREEVIEW is enabled).
+<li>   The navigation tree (GENERATE_TREEVIEW) now shows the same information
+       as the index.
+<li>   The navindex section of layout now also controls what is shown in
+       the navigation tree.
+<li>   Improved HTML output support for IE9.
+<li>   Included redesigned VHDL parser (thanks to Martin Kreis for the patch)
+<li>   When a class/structs has many (&gt;15) members of the same type, only 
+       the first 10 are shown in the UML diagram.  
+<li>   Made the output of the javascript based search engine more compact.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Update of the French translation.
+<li>   id 607305: Added support for PHP heredoc and nowdoc constructs.
+<li>   Added support for cross-referencing in case of operator-&gt; overloading.
+       This includes support for std::auto_ptr,std::smart_ptr,std::unique_ptr 
+       and std::weak_ptr when BUILTIN_STL_SUPPORT is enabled.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   Regression: some information was no longer available for a class, 
+       due to accidental deletion of a code block.
+<li>   Regression: fixed matching problem in the code parser.
+<li>   Included fixes for TCL to support commands with \ and command 
+       definitions preceded by whitespace (thanks to Rene Zaumseil)
+<li>   When using "static int a,b" variable "b" incorrectly appeared in the 
+       output even though EXTRACT_STATIC was set to NO.
+<li>   id 521717: .spec file was only updated after running ./configure
+<li>   id 656642: Fixed potential crash when using doxygen for large projects.
+<li>   id 656878: Fixed problem running bibtex with \cite command on Windows.
+<li>   id 657152: Fixed constant expression evaluation error in the 
+       preprocessor.
+<li>   id 652277: Removed bogus ' from the man page output.
+<li>   id 659244: Quotes in the brief description could appear unescaped in 
+       the tooltip.
+<li>   id 641336: #includes with ../ were not always processed correctly.
+<li>   Fixed potential crash when INLINE_GROUPED_CLASSES and INLINE_SIMPLE_STRUCTS 
+       are set to YES.
+<li>   id 658896: Fixed preprocessor problem handling #defines whose value was
+       a constant string containing ///.
+<li>   id 660332: Using a \ at the end of a comment line could cause 
+       parsing problems for C# as the \ was treated as a line continuation.
+<li>   id 658033: Fixed parser problem when using multiple member groups 
+       inside a macro definition.
+<li>   id 503239: Fixed several issues related to \cite handling.
+<li>   id 658587: Improved the way macro definitions are collected.
+<li>   id 660501: Fixed LaTeX error when using \name with a description.
+<li>   id 661292: The documentation for \mainpage incorrectly mentioned that
+       one has to use \ref main in case GENERATE_TREEVIEW was set to YES, which
+       is no longer the case.
+<li>   id 659096: Nested aliases definitions where not always expanded properly
+       (regression w.r.t version 1.7.4)
+<li>   id 658038: Fixed preprocessor problem where the @ character inside a
+       macro definition could appear as @@.
+<li>   id 658646: Fixed problem running mscgen for LaTeX and RTF output.
+<li>   id 661723: Using ClassName%'s did not work anymore, and also
+       ClassName's wasn't autolinked.
+<li>   id 662044: Fixed potential printing of null pointer when using
+       a version filter that returned blanks.
+<li>   id 625518: Fortran: first problem where subroutine using results 
+       variable appeared as a function.
+<li>   id 654153: If an URL appeared at the end of a sentence, the period
+       was included in the URL.
+<li>   id 656560: Fortran: Added support for the Double Complex type.
+<li>   id 663640: Included workaround for Solaris CC issue in index.cpp
+<li>   id 662190: Included patch to fix some TCL issues and add the TCL_SUBST 
+       configuration option.
+<li>   id 661672: Fortran: Added support for ALIAS expansion in comment blocks.
+<li>   id 663101: Fixed case where a macro was not corrected found in the header
+       file when it could only be found via INCLUDE_PATH.
+<li>   id 664718: using multiple &lt;para&gt;'s inside a &lt;summary&gt; block caused 
+       text to be joined without spacing.
+<li>   id 656556: Java enums are now parsed as classes. 
+<li>   id 664826: Fixed problem in the preprocessor regarding the handling 
+       of include guards.
+<li>   id 664893: Fixed typo in the docs for EXCLUDE_SYMLINKS.
+<li>   id 665466: Using a relative URL with &lt;a href&gt; did not work when
+       CREATE_SUBDIRS was enabled.
+<li>   id 665464: Using an absolute URL with &lt;img&gt; did not work when
+       CREATE_SUBDIRS was enabled.
+</ul>
+<a name="1.7.5.1"></a>
+<h1>Doxygen Release 1.7.5.1</h1>
+<h2>(release date 21-08-2011)</h2>
+<h3>New features</h3>
+<ul>
+<li>Update of the French translation.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>id 521717: .spec file was only updated after running ./configure
+<li>id 656642: Fixed potential crash when using doxygen for large projects.
+<li>id 656878: Fixed problem running bibtex with \cite command on Windows.
+<li>Regression: some information was no longer available for a class, 
+    due to accidental deletion of a code block.
+<li>Regression: fixed matching problem in the code parser.
+</ul>
+<a name="1.7.5"></a>
+<h1>Doxygen Release 1.7.5</h1>
+<h2>(release date 14-08-2011)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   id 641904: Function in the call graphs are now shown based on first 
+       appearance rather then alphabetical order.
+<li>   id 616213: When customizing the HTML header $title now only generates
+       the title excluding the project name (which can still be added using
+       $projectname)
+<li>   Improved the look of the class index: all items now have equal spacing.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   New option INTERACTIVE_SVG which when set to YES in combination
+       with DOT_IMAGE_FORMAT=svg will make doxygen
+       generate interactive SVG diagrams that support zooming and 
+       panning via the mouse (only for large graphs). 
+<li>   Added support for the Tcl programming language 
+       (thanks to Rene Zaumseil and Samuel Bentley for the patch).
+<li>   Added @copyright command.
+<li>   added option MATHJAX_EXTENSIONS to provide additional extensions for
+       MathJax (thanks to David Munger for the patch).
+<li>   added option INLINE_SIMPLE_STRUCTS which when enabled shows the fields
+       of simple classes and structs (with only public data fields) as a table
+       and inline in context (file/group/namespace/class) provided this context 
+       is documented.
+<li>   When using the server based search engine (SEARCHENGINE=YES and
+       SERVER_BASED_SEARCH=YES) doxygen now advertises a opensearch provider
+       for your project, that allows integrating the search directly in
+       the search field of the browser (thanks to Phil Lello for the patch).
+<li>   id 503239: Added new option CITE_BIB_FILES and LATEX_BIB_STYLE and a new 
+       command \cite, allowing you to make references to literature (as defined 
+       in one or more .bib files). This also works for output formats other 
+       than LaTeX. The tool bibtex is required for this to work though. Thanks
+       to David Munger for the initial patch upon which this feature is based.
+<li>   PHP namespaces are now shown as A\B in the output.
+<li>   Added new \snippet command that can be used to include marked 
+       sections from a source file. See 
+       http://www.doxygen.org/commands.html#cmdsnippet for more info.
+<li>   Added translation support for Armenian, thank to Armen Tangamyan.
+       and included translation updates for a number of languages.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   Fixed a couple of potential race conditions found by Helgrind while 
+       running dot from multiple threads.
+<li>   Graphs did not appear when enabling both INTERACTIVE_SVG and 
+       HTML_DYNAMIC_SECTIONS.
+<li>   PDFs generated by newer versions of dot (i.e. 2.28) did not appear 
+       in the output, because doxygen failed to extract the bounding box.
+<li>   Improved call graph and cross-reference support for Python.
+<li>   INTERACTIVE_SVG now also works with IE9 if the html file extension is
+       set to xhtml.
+<li>   Fixed several cases where the LaTeX output could produce too long
+       lines.
+<li>   id 318061: Putting two functions in the same group that only
+       different in the number of template arguments did not work.
+<li>   id 437346,564614: Fixed proper encoding of multibyte output in RTF
+       depending on the code page (thanks to Hirao for the patch).
+<li>   id 521717: The .spec file in the source distribution did not get
+       updated to the latest version.
+<li>   id 521861: Fortran: Continuation character was not recognised in 
+       fixed format code.
+<li>   id 522496: Fortran: @param checking was not case insensitive.
+<li>   id 560105: Fixed problem combining @cond with preprocessor directives.
+<li>   id 577359: Using "struct A : C, D {};" showed a private inheritance
+       relation for D.
+<li>   id 584194: Some links to typedef where pointing to the typedef'ed
+       class instead. 
+<li>   id 619560: Anonymous enums caused an invalid entry in the LaTeX TOC.
+<li>   id 622935: Deriving from an unknown template class could cause the
+       class to appear with a -g postfix in C# 
+<li>   id 625731: Fortran: Fixed issue handling private subroutines.
+<li>   id 632946: LaTeX now starts a new page when starting a new module.
+<li>   id 634837: Fortran: Prefix of function was overwritten and the word 
+       'function' not specified.
+<li>   id 637099: Fortran: Included fix for using collaboration diagrams.
+<li>   id 642468: Added PHP support for namespace with curly braces.
+<li>   id 643219: Fortran: Improved handling of semicolons.
+<li>   id 643617: Fortran: Added support for "type is".
+<li>   id 643944: A macro added to a group appeared twice in the group 
+       documentation if was also made related to a class using \relates.
+<li>   id 646321: Fixed problem were the search box was missing when using
+       a custom HTML header.
+<li>   id 646447: Fixed unterminated img tab in the XHTML output.
+<li>   id 646463: Fixed problem handling MSCFILE_DIRS option with multiple
+       paths.
+<li>   id 646533: Included patch to sort overloaded members by appearance in
+       the code.
+<li>   id 646747,646879: Putting an autolist inside a @todo, @bug or similar
+       section did not work anymore.
+<li>   id 646922: Referring to a logo with a relative path, caused 
+       a broken image target when using a custom HTML header.
+<li>   id 647499: Fixed HTML rendering problem on older browsers when 
+       GENERATE_TREEVIEW was enabled.
+<li>   id 647768: Linking to a section on the main page could result in a
+       broken link when GENERATE_TREEVIEW was enabled.
+<li>   id 647889: Fixed invalid warning when using @deparated method with
+       default values for parameters.
+<li>   id 648302: A function made related using @relates could end up in
+       the wrong class if there was already a method with a matching
+       argument list in that other class.
+<li>   id 649103: Return types containing multiple *'s ended up in the
+       output with only one * in some cases.
+<li>   id 650397: Fixed problem with alias substitution if the alias had
+       more then 9 parameters.
+<li>   id 650430: For nested anonymous structs @xx markers could appear in
+       the output.
+<li>   id 650463: Added compilation support for MacOSX 10.7 (aka Lion).
+<li>   id 650958: Fixed issue printing HTML pages when the
+       GENERATE_TREEVIEW option is set to YES.
+<li>   id 651611: Fixed broken link to an undocumented namespace.
+<li>   id 652138: Fixed potential crash while parsing Fortran code.
+<li>   id 652188: Fixed problem parsing comment which included 
+       an unterminated alias within quotes (i.e. "\word{")
+<li>   id 652277: Lines starting with . did not appear in the man page output.
+<li>   id 652389: Fortran: Fixed text is detailed function section.
+<li>   id 652396: When enabling INTERACTIVE_SVG wide graphs are now also
+       fit to the screen width.
+<li>   id 652695: Added missing space between parameter type and name in 
+       the RTF output.
+<li>   id 652741: Use background-color instead of background in doxygen.css.
+<li>   id 653344: Fixed potential segfault while creating man pages.
+<li>   id 653666: Fortran: add a space to "type" in argument list.
+<li>   id 653801: Fixed problem handling include guard when multiple 
+       blocks guarded by the same guard were used in a header file. 
+<li>   id 653963: Fortran: Unified handling of @params at various places.
+<li>   id 654108: make clean failed on a system without qmake.
+<li>   id 654244: Fixed compile issue for HP Itanium.
+<li>   id 654779: Fortran: Interface was seen as a class with constructor / 
+       destructor.
+<li>   id 654869: Using the word "property" as a type in C caused wrong 
+       results.
+<li>   id 654866: Fortran: fixed issue parsing function type that looked like
+       C function pointers.
+<li>   id 655178: Fortran: Fixed parse issue when using variable name 
+                  starting with the word interface.
+<li>   id 655591: Improved error handling for empty html style list.
+<li>   id 655935: Fixed case where %s could end up in a warning messge.
+<li>   id 656005: Methods of Objective-C categories defined in an .m file are
+       now marked as private.
+</ul>
+<a name="1.7.4"></a>
+<h1>Doxygen Release 1.7.4</h1>
+<h2>(release date 28-03-2011)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   doxygen -w html now reads the default Doxyfile even if not specified
+       explicitly
+<li>   doxygen -w html now produces a template header and footer that can
+       be used independent of the configuration options used.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   New option INLINE_GROUPED_CLASSES that when enabled shows grouped
+       classes inside the group documentation, instead of on a separate page.
+<li>   Included updates for the Italian and Russian translation.
+<li>   id 640875: Added option HTML_EXTRA_FILES which makes it easier to copy
+       additional files to the HTML output and also add them to the index files.
+<li>   id 642579: Included patch that adds new LATEX_FOOTER option to 
+       customize the end of refman.tex in the LaTeX output.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 140259: Jumping to a @section did not work in the RTF output.
+<li>   id 521854: Fortran: included patch for supporting multiple argument 
+                  declarations on one line.
+<li>   id 521861: Fixed problem with line continuation in Fortran.
+<li>   id 566921: %A::B now prevents a link for A::B, instead of only for A
+                  and generating a warning that ::B cannot be linked.
+<li>   id 598481: Fortran: Added support for extends keyword.
+<li>   id 618374: Added support for inlining code in the VHDL output.
+<li>   id 625519: Fortran: argument name starting with a reserved word was
+                  not handled properly.
+<li>   id 634415: Fixed problem parsing an array of character literals.
+<li>   id 635537: Links to file members were not made when found in tag files.
+<li>   id 638637: The Doxyfile documentation contained some very long lines.
+<li>   id 638655: Double quote in page or group title broke treeview.
+<li>   id 638733: Improved documentation for DOT_IMAGE_FORMAT option.
+<li>   id 638829: Added documentation to warn for consequences of using
+                  HTML_HEADER.
+<li>   id 638856: Fixed problem autolinking to struct field using #S::a
+<li>   id 639272: using @dot...@endot produced an image referenced with
+                  absolute path.
+<li>   id 639521: \mscfile did not work properly for LaTeX output.
+<li>   id 639716: Fixed problem where #include's could cause phantom __pad__
+                  members to appear in the output (appeared on Windows only).
+<li>   id 640259: Options PROJECT_LOGO and PROJECT_BRIEF were missing
+                  from the manual.
+<li>   id 640463: Fixed problem parsing PHP "use" statement when the argument
+                  did not have a namespace scope.
+<li>   id 640588: Included fix for proper splitting of multiple arguments
+                  given to the QHP_CUST_FILTER_ATTRS option.
+<li>   id 640646: Long error messages could cause memory corruption.
+<li>   id 640742: XML: switched indent option to no in the combine.xslt script.
+<li>   id 640754: Comment with XML style list of type table was not rendered 
+                  properly.
+<li>   id 640822: Added support for overloading of C# indexer operators.
+<li>   id 640828: Internal section marked with @internal was not shown as
+                  such anymore in the XML output.
+<li>   id 640847: PHP: Fixed parse problem referring to class in global  
+                  namespace.
+<li>   id 640924: Included patch by Haffmans to make the custom header and
+                  footer independent of the chosen config options.
+<li>   id 640927: Included fix to prevent a warning in the server side PHP
+                  search script.
+<li>   id 641026: Included patch to fix broken hyperlink to page entry 
+                  in xreflists.
+<li>   id 641188: Header of \page was wrong in Man page output.
+<li>   id 641336: #include's to other directories were not always linked.
+<li>   id 641673: Using "use Foo\Foo;" in PHP could cause doxygen to hang.
+<li>   id 641814: In some cases the HTML output could contain an extra &lt;/p&gt;.
+<li>   id 642030: Tooltips with HTML entities could be wrongly truncated.
+<li>   id 642475: Include graphs could be incomplete.
+<li>   id 643056: Fixed problem with macro expansion.
+<li>   id 643279: Fixed potential crash when generating a warning for
+                  void f(int %x) style parameter, which is valid in C++/CLI.
+<li>   id 643280: Included patch to enabled LargeAddressAware for Windows 
+                  builds.
+<li>   id 643276: Fixed cases where FILE_VERSION_FILTER was called for 
+                  dummy files with name "generated".
+<li>   id 643655: Fixed argument matching issue when one of match candidates
+                  was a typedef of a method pointer.
+<li>   id 645754: mscfile tag was closed with dotfile in the XML output.
+<li>   doxygen -w html now ignores the values for HTML_HEADER and HTML_FOOTER
+       found in the config file.
+<li>   Importing a group via a tag file could overrule a local group with 
+       the same name even when EXTERNAL_GROUPS was disabled.
+</ul>
+<a name="1.7.3"></a>
+<h1>Doxygen Release 1.7.3</h1>
+<h2>(release date 03-01-2011)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   Added a header for each HTML page above the navigation menu, 
+       showing the project name and logo and a short descriptin (all optional).
+       Disabling the index (with DISABLE_INDEX) still shows the new header
+       (you can still customize this using HTML_HEADER). This now works
+       nicely in combination with GENERATE_TREEVIEW = YES and/or
+       SEARCH_ENGINE = YES.
+<li>   Redesigned the treeview feature. Instead of using frames, the
+       navigation tree is now loaded on each page dynamically. This allows
+       bookmarking a page and always keeps the top menu visible. Also the
+       current item is automatically highlighted in the tree.
+       Also updated the icons in the treeview to match the overall look'n'feel.
+       Note: if you now use a custom HTML header, please update it using
+       doxygen with the -w and the edit the default header.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   id 499544: Added SVG support to doxygen's dot output 
+       (setting DOT_IMAGE_FORMAT to svg now works as expected)
+<li>   Added control to the wizard to configure the color of the output
+       visually.
+<li>   Added options to specify project synopsis and select a 
+       project logo to the wizard.
+<li>   Added option PROJECT_LOGO which can be used to specify an image
+       which will be shown in the header of each HTML page along with
+       the project name (PROJECT_NAME option).
+<li>   Added option PROJECT_BRIEF which can be used to specify a brief
+       description which will be shown in the header of each HTML page
+       just below the project name.
+<li>   Added new option FILTER_SOURCE_PATTERNS which can be used 
+       in combination with FILTER_SOURCE_FILES to filter files used for 
+       the source browser based on file extension, which can overwrite 
+       the filter set by FILTER_PATTERNS and/or INPUT_FILTER.
+<li>   Added new option STRICT_PROTO_MATCHING which is disabled by default,
+       and makes the parameter matching to be less strict, resulting in 
+       fewer "No matching class member found" warnings.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 306076: code blocks with using directives did not get hyperlinked.
+<li>   id 313527: enum values with bitfields did not get parsed correctly.
+<li>   id 565715,630582: Included a patch that fixes a couple of Fortran issues
+       (thanks to Albert).
+<li>   id 615507: Fixed problem handling @cond..@endcond in Fortran code.
+<li>   id 619040: Scope was missing in Tokens.xml when using docsets.
+<li>   id 625517,523156: Applied patch tp avoid stripping prefixes for Fortran 
+       subroutines.
+<li>   id 626476: allow label before end statement in Fortran
+<li>   id 630901: &lt;/see&gt; was not handled properly in comment block.
+<li>   id 632311: Fixed potential crash for empty verbatim section.
+<li>   id 632426: closing brace of a function with one parameter has wrong
+       color in HTML.
+<li>   id 632543: Added support for Fortan TYPEs with languge bindings.
+       (thanks to a patch by Daniel Franke)
+<li>   id 632879: An explicit link request such as #blah did not longer produce
+       a warning if no symbol named blah was found.
+<li>   id 633891: warnings in "inbody" documentation were shown with "unknown"
+       file name.
+<li>   id 634116: Titles customized via the layout file did not appear in
+       the title page and navigation tree, only in the top menu.
+<li>   id 634600: Fixed problem resolving typedef.
+<li>   id 634775: Fixed a problem were // inside a code block got removed.
+<li>   id 634857: Added support for escaping :: by using \:: (or @::)
+<li>   id 634962: #include with relative path to parent dir did not get
+       hyperlinked.
+<li>   id 634986: Removed double definition of docParamName in compound.xsd.
+<li>   id 635198: C++/CLI Finalizer methods were not parsed properly.
+<li>   id 636475: Objective-C method names can now be used as the 
+       the first argument of \ref.
+<li>   id 636588: Fixed a couple of problems in the compound.xsd schema used
+       for XML output.
+<li>   id 636598: DISTRIBUTE_GROUP_DOC now works again for enum values.
+<li>   id 636947: Improved matching of typedef'ed array parameter and non 
+       typedef'ed array parameter.
+<li>   id 637610: Added a number of fixed for Fortran interfaces.
+<li>   id 637712: Handle files with the .for extension as Fortran.
+<li>   id 637987: Fixed error in the grouping documentation.
+<li>   Fixed line number sync problem when using Objective-C #import 
+       statements.
+<li>   Fixed problem handling /** @cond */ in the preprocessor.
+<li>   Member groups could get reordered in the output.
+</ul>
+<a name="1.7.2"></a>
+<h1>Doxygen Release 1.7.2</h1>
+<h2>(release date 09-10-2010)</h2>
+
+<h3>Changes</h3>
+<ul>
+<li>   Changed the default font of the LaTeX output to helvetica.
+<li>   Changed the way parameters and return values are represented in the
+       LaTeX and RTF output. They are now listed using tables.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   added support for Apple's block object extension for C/Obj-C/C++.
+<li>   added support for detecting Python constructors and destructors.
+<li>   id 624575: Added \endinternal command that can be used to force
+       the end of a section started with \internal.
+<li>   id 552605: Added parsing support for PHP 5.3+ style namespaces.
+<li>   id 582532: added \mscfile command which can be used to insert a 
+       message sequence chart given a .msc file. 
+       Also added a new config option MSCFILE_DIRS to provide directories
+       were msc files are searched (Thanks to Adrien for the patch).
+<li>   Added support for type specifiers for documenting PHP parameters,
+       format: "@param type $paramname docs"
+<li>   Added support for rendering formulas in the HTML output 
+       using MathJax instead of using prerendered bitmaps. 
+       For this purpose the options USE_MATHJAX and MATHJAX_RELPATH were
+       added.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 306076: Fixed case where using of a namespace did not work inside
+       an example.
+<li>   id 336053,487871: /// were not stripped from formulas and \dot..\enddot
+<li>   id 563698: dropped support for a4wide paper format for LaTeX, since
+       it is on the LaTeX taboo list.
+<li>   id 571014: Behaviour of CLASS_DIAGRAM=NO in combination with
+       HAVE_DOT=YES, was not propely documented.
+<li>   id 576291: Python comments for next class or method could end up in
+       code of a method/class when enabling INLINE_SOURCES.
+<li>   id 611174: Fixed problem handling nestes classes in Python.
+<li>   id 621733: removed unexpected warnings about undocumented return types
+<li>   id 622737: Undefined function macros could cause constant expression
+       errors.
+<li>   id 622780: updated copyright statement in PDF docs.
+<li>   id 622935: C# generics appeared with -g extension in the output in 
+       some situations.
+<li>   id 623023: Fixed parsing problem for "int &amp;foo1(),&amp;foo2();"
+<li>   id 623052: Link to destructor was wrong in the member index.
+<li>   id 623424: Fixed problem where struct description gets added to variable
+       of struct type.
+<li>   id 623673: Anchors were missing in the Qhp index for members.
+<li>   id 623733: Fixed potential crash due to uninitialized line number.
+<li>   id 623765: closed.png was wrongly linked when GENERATE_SUBDIRS and
+       HTML_DYNAMIC_SECTIONS were enabled.
+<li>   id 624014: Function macro was not handled properly when there was
+       a line continuation directly after the name.
+<li>   id 624095: Linking to a class via a tag file did not work if the class
+       was in an undocumented namespace.
+<li>   id 624104: Fixed a couple of typos in lodepng.h
+<li>   id 624323: Graph legend image was missing form the index files.
+<li>   Fixed a number of typos in the config file documentation 
+       (thanks to Jens Schweikhardt)
+<li>   id 624514: Some enums were not cross-referenced.
+<li>   id 624829: Missing \endcond could cause preprocessor issues in 
+       next file(s) to be parsed.
+<li>   id 625070: a function definition in a namespace, documented in the
+       header did not always get cross-referenced.
+<li>   id 625296: Removed superfluous &lt;td&gt;&lt;/td&gt; from parameter list in
+       HTML output.
+<li>   id 625317: Unterminated comment could crash doxygen.
+<li>   id 625531: Inherited documentation was only included for the
+       last derived class in case of multiple inheritance.
+<li>   id 625578: In the HTML output &lt;/div&gt; was missing for built-in
+       class diagrams.
+<li>   id 625555: References in example files with underscores were wrong.
+<li>   id 625982: When using japanese characters mixed with ascii characters
+       doxygen incorrected ended the brief description with a dot.
+<li>   id 625952: setting MULTILINE_CPP_IS_BRIEF to YES, cause /// to appear
+       in the output.
+<li>   id 626033,567774: EXTENSION_MAPPING did not work if a the mapped 
+       language was handled by the same parser as used for the original  
+       extension.
+<li>   id 626175: Fixed bracket bug in LaTeX fancy headers.
+<li>   id 626508: Allow hyphen in key argument of \xrefitem.
+<li>   id 626647: \copydoc did not work for array type arguments (e.g. int[]).
+<li>   Use \dotfile did not produce the correct map file, so URLs in dot
+       files did not work.
+<li>   id 627371: #define's in files only found via INCLUDE_PATH were not
+       correctly handled.
+<li>   id 628065: auto brief description ending with .) cause the ) to
+       end up in the detailed part.
+<li>   id 628242: Fixed encoding issue for the Spanish translation.
+<li>   id 628678: Fixed segmentation fault in case of very long errors.
+<li>   id 629040: Fixed type in search page of the documentation.
+<li>   id 629182: Fixed problem detecting include guard.
+<li>   id 629270: Made file extension to parser mapping case insensitive.
+<li>   id 629485: Latex makefile clean target used rm command also for Windows.
+<li>   id 629942: the EXCLUDE_SYMBOLS option was missing form the online docs.
+<li>   id 631094: \htmlinclude and \verbinclude ended the brief description.
+<li>   id 631380: Inconsistent behaviour when a brief description was given 
+       following by a detailed comment block with JAVADOC_AUTOBRIEF enabled.
+<li>   Fixed a number of typos in the documentation 
+       (thanks to Albert van der Meer)
+<li>   Fixed potential hangup when scanning directories defined as 
+       symlinks to absolute paths.
+<li>   HTML attributes other than src were not copied for the &lt;img&gt; tag.
+</ul>
+<a name="1.7.1"></a>
+<h1>Doxygen Release 1.7.1</h1>
+<h2>(release date 25-06-2010)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   id 621695: Made warning and error messages appear with lower case 
+       "warning:" and "error:" prefix to make it easier to use the messages 
+       from Visual Studio.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   id 621908: Added new config option FORMULA_TRANSPARENT which allows
+       selecting between transparent (YES) or non-transparent (NO) PNGs for
+       formulas in the HTML output.
+<li>   Update for Turkish translation.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 533821: Inheritance relation for a C# class deriving from
+       a generic class was not handled correctly.
+<li>   id 554638: Changing DOT_IMAGE_FORMAT did not cause the graphs to be
+       regenerated.
+<li>   id 576533: A field of the form "enum E *p" was ignore.
+<li>   id 597016: Hide scope name was not working properly for todo items
+       inside class members, where the class was inside a namespace.
+<li>   id 617761: In dot graphs now also @ref worked (previously only \ref was
+       supported).
+<li>   id 621653: Fixed error when compiling doxygen for Solaris 8.
+<li>   id 621733: Removed bogus warning about undocument return type for 
+       define when WARN_NO_PARAMDOC was enabled.
+<li>   id 621780: Fixed parsing support for a function that returns a 
+       struct definition.
+<li>   id 621785: Doxygen could hang when using \copydoc in a function with
+       \param.
+<li>   id 621805: Using //!&lt; after a #define no longer worked.
+<li>   id 621854,622219,622593: html help compiler (and also the Qt 
+       help compiler) was called before all dot images were generated.
+<li>   id 621984: Using a auto-list in combination with \subpage cause the
+       items to be inlined.
+<li>   id 622018: Fixed problem parsing a @param command where the
+       text part started with a formula.
+<li>   id 622019: Added some instructions how to document Fortran code.
+<li>   id 622041: Using \var multiple times in a comment block did not
+       work properly.
+<li>   id 622413: Tooltips could get wrongly truncated when multi-byte
+       UTF-8 characters were used.
+<li>   id 622471: Argument matching failed for typedef in another namespace.
+<li>   Fixed crash situation while handling commands inside a @ref section.
+<li>   Treeview icons were missing in the HTML output when setting
+       GENERATE_TREEVIEW to NO and USE_INLINE_TREES to YES.
+</ul>
+
+<a name="1.7.0"></a>
+<h1>Doxygen Release 1.7.0</h1>
+<h2>(release date 15-06-2010)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   Changed the look of the HTML output.
+<li>   Made several internal changes that should have a positive effect on the 
+       overall performance.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   The color of the HTML output can now easily be adjusted using three new 
+       options: HTML_COLORSTYLE_HUE, HTML_COLORSTYLE_SAT, 
+       and HTML_COLORSTYLE_GAMMA, which control respectively the hue, 
+       saturation, and gamma of all elements in the HTML output.
+<li>   Moved dot invocations to the end of a doxygen run. Doxygen will now
+       run multiple instances of dot in parallel (for better CPU utilisation
+       on multi-core systems). The new config option DOT_NUM_THREADS 
+       determines the number of threads used (were 0 is auto-detect).
+<li>   Added option EXT_LINKS_IN_WINDOW which controls whether or not
+       links to symbols imported via tag files will be opened in a new window.
+<li>   Included various language updates (thanks to Petr for coordinating).
+<li>   Included patch by Stefan Oberhumer that allows customizing the
+       way parameter lists are shown in the LaTeX output.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 306076: source browser could miss links for used namespaces.
+<li>   id 361476,620924: \if and \endif did not work properly inside auto lists.
+<li>   id 557164: No warning for missing return type documentation even though
+       WARN_NO_PARAMDOC was set to YES.
+<li>   id 577005: Handling of nesting \defgroup's was not always working
+       properly.
+<li>   id 578739: &oslash; was not translated correctly in the LaTeX output.
+<li>   id 583526: Use relative paths for mscgen diagrams to avoid errors in the
+       LaTeX output.
+<li>   id 592991: The "Use current settings at startup" feature of Doxywizard
+       was broken.
+<li>   id 593679: Links in the search results were broken if they pointed to
+       symbols imported via tag files using an absolute path or URL.
+<li>   id 593760,615682: Fixed man page output problem when using @par.
+<li>   id 594021: A C comment before a #endif caused the preprocessor 
+       statement to be ignored.
+<li>   id 597013: When HIDE_SCOPE_NAMES was enabled also the scope for
+       nested classes was stripped. Now only the namespace scope will be 
+       stripped as before.
+<li>   id 600829: Autolinks to namespace members did not work if
+       an explicit # or :: was used.
+<li>   id 602732: Slashes inside strings in java annotations were not handled
+       properly.
+<li>   id 606335: Fixed the "show html output" button in doxywizard 
+       for Windows when IE was set as the default browser.
+<li>   id 608292: Formatting was lost for section copied with \copydoc.
+<li>   id 608359: Fixed C++ parse issue for "class : public base {} var;" 
+       construct.
+<li>   id 611056: Generated HTML footer file did not have UTF-8 encoding and
+       the relative path marker needed when using CREATE_SUBDIRS = YES.
+<li>   id 611193: Fixed parsing problem with try-functions having multiple
+       catch handlers.
+<li>   id 611642: Specialized private template member function appeared as 
+       public.
+<li>   id 611888: Include dependency graphs were sometimes wrong.
+<li>   id 612170: Some lines in the generated Doxyfile where too long.
+<li>   id 612275: Fixed auto-link problem for certain URLs.
+<li>   id 612292: Improved handling of ellipsis inside brief description when
+       JAVADOC_AUTOBRIEF is enabled.
+<li>   id 612364: Accessibility of macros was not handled properly in all cases.
+<li>   id 612310: Enabling REFERENCED_BY_RELATION without SOURCE_BROWSER could
+       result in broken links.
+<li>   id 612458: Fixed problem handling @copydoc for function operators.
+<li>   id 612609: A raw C# string constant could end up in the next string.
+<li>   id 612969: subpages were not part of the XML output.
+<li>   id 613024: First list item in the paragraph after a @todo
+       item was not parsed properly.
+<li>   id 614204: Generated man page links were having a heading underscore.
+<li>   id 614443: Made include guard detect a bit more strict to avoid false
+       positives.
+<li>   id 614447: The labels of CVS tags were missing a colon.
+<li>   id 614438: Fixed problem parsing Q_PROPERTY with template type and
+       spaces.
+<li>   id 615165: Made the date string in the HTML footer translatable, 
+       along with some other sentences on the directory pages.
+<li>   id 612858: Inline attribute was shown also for non-inline template 
+       members.
+<li>   id 615583: Fixed problem handling @copy for operators with 
+       const qualifier.
+<li>   id 615755: Fixed problem handling '"' inside comments.
+<li>   id 615957: Made the LaTeX output a bit less spatious using \input.
+<li>   id 615695: Fixed preprocessor issue where a macro that was redefined
+       was not resolved.
+<li>   Fixed character encoding issue on the search results page.
+<li>   id 615670: C# namespaces are now extracted also without comment block
+       (the language spec does not allow XML documentation).
+<li>   id 616209: included patch that fixes some typos in the code.
+<li>   id 616344,610604: Pages with an underscore in the label generated a 
+       file name containing two underscores.
+<li>   id 616387: text of the form something.symbol got autolinked when
+       symbol had a global scope.
+<li>   id 616761: Call graph could be wrong when local variable has the same
+       name as a global function.
+<li>   id 616947: Added documentation patch on how to create URL links with 
+       custom text.
+<li>   id 616988: Doxywizard now removes non-existant files from the 
+       recent list and has an option to clear the list completely.
+<li>   id 617051: A macro defined via PREDEFINED did not always overrule a
+       macro definition in the code.
+<li>   id 617278: Enabling call graphs produced invalid XHTML output.
+<li>   id 617871: Non ascii characters in file or directory names 
+       caused problems on Windows.
+<li>   id 618079: An ALIAS with parameters spanning multiple lines
+       caused problems with /// style comments. 
+<li>   id 618632: Included patch to prevent image overflowing the page in 
+       the LaTeX output.
+<li>   id 619728: Fixed problem using EXTENSION_MAPPING for C# (thanks to
+       Vsevolod Kukol for the patch).
+<li>   id 619978: Links to external files could be wrong when CREATE_SUBDIR
+       was enabled.
+<li>   id 620229: /* characters in a print broke parsing within an conditional
+       section.
+<li>   id 620926: \if and \endif did not work properly inside HTML tables.
+<li>   Using @include in combination with LATEX_SOURCE_CODE caused wrong
+       output.
+<li>   Included a patch by Guido Tack which adds two new options
+       for docsets (DOCSET_PUBLISHER_ID and DOCSET_PUBLISHER_NAME) and 
+       fixes an issue with linking to docset members.
+<li>   Included patch by Stefan Oberhumer to support escaped {}'s in alias
+       definition and parameters.
+
+</ul>
+\endhtmlonly
+\section log_1_6 Release 1.6
+\htmlonly
+<a name="1.6.3"></a>
+<h1>Doxygen Release 1.6.3</h1>
+<h2>(release date 21-02-2010)</h2>
+<h3>New features</h3>
+<ul>
+<li>   id 608480: Using \dir without argument will create directory 
+                  documentation for the directory in which the \dir command 
+                  was found.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 590161: perlmod output was wrong when using paragraph commands.
+<li>   id 600525: Included patch for VHDL.
+<li>   id 605698: Replaced size attribute of hr tag by class attribute in the
+                  HTML output.
+<li>   id 606030,606192,607563: 
+                  Using \dot produced "Error opening map file" or 
+                  could even crash doxygen.
+<li>   id 606084: Loading a new config file in doxywizard did not reset all
+                  values of a previously loaded config file.
+<li>   id 606104: Grouped members with todo-like items were shown with 
+                  "GlobalScope" prefix.
+<li>   id 606156: Fixed RTF rendering problem with group index.
+<li>   id 606206,610133: Added missing line break in LaTeX output.
+<li>   id 606330, 608056: The title of pages whose label had an underscore
+                  was not shown
+<li>   id 606717: Include guard not starting with #ifndef SOME_GUARD_H were not
+                  recognised as such.
+<li>   id 606718: Setting SEARCHENGINE to YES and GENERATE_HTML to NO caused
+                  error that search results directory could not be created.
+<li>   id 606772,608493: typedef'ed enums or struct with the same as the 
+                  typedef did no longer show up.
+<li>   id 607088,607946: Related pages (manual and automatic like the todo page) 
+                  caused broken links when SHORT_NAMES was enabled.
+<li>   id 607432,608002: Automatically generated related pages (like the 
+                  todo page) caused broken links when CREATE_SUBDIR was enabled.
+<li>   id 607736: comments after #if could cause next function call not to be
+                  cross-referenced.
+<li>   id 607743: \internal inside a conditional section caused warning.
+<li>   id 608016: Using \internal inside a \section did not end at the
+       next \section as documented.
+<li>   id 608018: \internal command produced message with .: in 
+       the LaTeX output.
+<li>   id 608072: HTML Tables with custom attributes were not rendered 
+                  properly.
+<li>   id 608227: Man pages with underscore got double underscore in the name.
+<li>   id 608590: Buffer overflow when using non-ascii characters as class
+                  name.
+<li>   id 608921: Macro definition had effect even if the definition was not
+                  actually included.
+<li>   id 609504: config.h and config.l where missing from the SVN repository.
+<li>   id 609624: Todo items were merged for overloaded functions.
+<li>   id 609709: C# enum values with @todo items were missing from the todo
+                  list.
+<li>   id 610437: Removed bogus warning when using &lt;br/&gt; tag.
+<li>   Fixed parsing problem for function pointer type starting with
+       "typedef enum".
+<li>   Preprocessor did not take EXCLUDE_PATTERNS into account, which 
+       could cause parse issues when importing a .tlb file.
+</ul>
+
+
+<a name="1.6.2"></a>
+<h1>Doxygen Release 1.6.2</h1>
+<h2>(release date 30-12-2009)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   id 594787: Autolinking to all-lower case words has been disabled,
+                  in accordance with the documentation.
+<li>   id 604543: Doxygen now allows any extension supported by dot via the
+       DOT_IMAGE_FORMAT option.
+<li>   Switched back to using PNGs for built-in diagrams and formulas using
+       the Lode Vandevenne's PNG encoder.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added new option SERVER_BASED_SEARCH to re-enable searching via a
+       PHP enabled web browser instead of only using javascript locally.
+       This method better scales to larger projects and allows full text
+       search.
+<li>   Added new options GENERATE_ECLIPSEHELP and ECLIPSE_DOC_ID
+       to generate an index file that can be used to embed doxygen's HTML 
+       output into Eclipse as a help plugin 
+       (thanks to a patch by Ondrej Starek).
+<li>   Wrote new <a href="http://www.doxygen.org/searching.html">documentation</a> 
+       regarding the methods of searching in the HTML output.
+<li>   Included patch by Ed Rosten to render formulas with 
+       proper anti-aliasing on non-white backgrounds using transparency.
+<li>   Add new option FORCE_LOCAL_INCLUDES to make the default #include
+       appearance in class documentation with "" i.s.o sharp brackets.
+<li>   id 558457: Make \addindex put keywords into the .qhp file.
+<li>   id 595214: #cmakedefine is now treated the same was as #define
+                  (for users of the CMake build system).
+<li>   Added compilation support for OSX 10.6 (aka Snow Leopard)
+<li>   Included language update for Brazilian.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   Doxywizard did not warn when it failed to save its config file.
+<li>   id 557035: Empty class definitions were not included in Tokens file
+                  for docsets.
+<li>   id 563233: GENERATE_QHP details was considered even though it is
+                  not defined.
+<li>   id 567346: Comment parser could get stuck in certain cases.
+<li>   id 570369: GENERATE_QHP should generate keywords for classes in
+                  generated *.qhc.
+<li>   id 571964: Fixed two issues in the compound.xsd schema definition.
+<li>   id 592991: Fixed wrong default destination directory.
+<li>   id 593040: Fixed problem with distributing member group documentation
+                  for anonymous member groups.
+<li>   id 593273: GENERATE_TODOLIST=NO and friends not longer worked.
+<li>   id 593928: Added support for UCS-2 encoded input files.
+<li>   id 594391: Fixed problem parsing fully-qualified java annotations.
+<li>   id 594592,596815: Fixed problem handling quotes.
+<li>   id 595191: Not all configuration options appeared in the index of
+                  the documentation and some were not sorted correctly.
+<li>   id 595253: formulas had the .png extension while they were gifs.
+<li>   id 595833: Fixed recursive lockup while resolving template relations.
+<li>   id 595935: Doxygen's preprocessor got confused when /**/ appeared as
+                  part of a macro definition.
+<li>   id 596085: Removed obsolete option USE_WINDOWS_ENCODING from the docs.
+<li>   id 596233: RTF output was missing a new paragraph for brief 
+                  member descriptions.
+<li>   id 596807,596819: Code reformatting done for the LaTeX output could 
+                  break multibyte UTF-8 characters causing invalid output.
+<li>   id 596809: Using multibyte characters in a page label caused invalid
+                  output.
+<li>   id 596816: Documented the interaction between LATEX_CMD_NAME and 
+                  USE_PDFLATEX.
+<li>   id 597015: Todo items for two inner classes with the same name where
+                  collapsed together in the todo list when HIDE_SCOPE_NAMES 
+                  was enabled.
+<li>   id 597016: Scope was not hidden for members in the todo list even
+                  though HIDE_SCOPE_NAMES was set to YES.
+<li>   id 598497: Struct variable with explicit struct keyword got labelled 
+                  with [read] attribute.
+<li>   id 596902: PHP was not parsed properly when it appeared in a
+                  &lt;script language="php"&gt; section.
+<li>   id 597415: Fixed problem matching base class member against the
+                  member in the derived class.
+<li>   id 597518: Makefile for Docsets now honors DESTDIR.
+<li>   id 598298: Made browsing for HHC_LOCATION via the wizard 
+                  yield an absolute path.
+<li>   id 599128: Changed default for CHM_INDEX_ENCODING to CP1250 to avoid
+                  issues in a Solaris environment.
+<li>   id 595931: Removed unnecessary paragraphs from HTML table cells.
+<li>   id 597541: referring to page labels of the form a-1 did not work.
+<li>   id 599224: Code generators could produce extra &lt;/span&gt; tags.
+<li>   id 599974: Included the PHP search engine again (with new config 
+                  option SERVER_BASED_SEARCH to enable it)
+<li>   id 600544: Doxygen produced invalid Latex output for RCS tags.
+<li>   id 600563: Fixed issue with include dependency tracking that could 
+                  cause macro expansion not to work properly.
+<li>   id 600940: Fixed issue with VHDL call graph (thank to Martin Kreis
+                  for the fix).
+<li>   id 601138: Fixed problem parsing C++ function-try-blocks.
+<li>   id 601222: #include inside a class could cause line numbers to be off.
+<li>   id 601223: Fixed parsing problem skipping over /**/ comment.
+<li>   id 601694: Fixed problem handling Javadoc style {@code ... } blocks.
+<li>   id 601771: Special commands did not work in the title of 
+                  the @mainpage.
+<li>   id 602818: Fixed problem parsing files that start with UTF-8 BOM.
+<li>   id 603001: Fixed problem parsing friend function with explicit scope.
+<li>   id 603238: Fixed perlmod generation issue.
+<li>   id 604948: Project number was not centered anymore in the HTML output.
+<li>   id 604503: Using %word in a page title incorrectly did show the %.
+</ul>
+
+<a name="1.6.1"></a>
+<h1>Doxygen Release 1.6.1</h1>
+<h2>(release date 25-08-2009)</h2>
+<h3>Bug fixes</h3>
+<ul>
+<li>   Fixed file handle leak when parsing include files. Also fixed
+       the logic that determines whether or not an include file need to be
+       parsed.
+<li>   Search result pages were not using UTF-8 character encoding.
+<li>   Search results pointing to external references were not linked correctly.
+<li>   id 133418: Multiline second argument of \ref caused unexpected " warning.
+<li>   id 592454: Feeding invalid XML could crash doxygen's DBus XML parser.
+<li>   id 592485: Include patch to fix problem with building rpms.
+<li>   id 592511,592625: Doxywizard problem with GENERATE_TREEVIEW.
+<li>   id 592650: SHOW_USED_FILES now works again.
+<li>   id 592808: xrefitems (like @todo) did not appear in the list when
+       found in comments marked with @enum or @name.
+</ul>
+<h1>Doxygen Release 1.6.0</h1>
+<h2>(release date 20-08-2009)</h2>
+<h3>Changes</h3>
+<ul>
+<li>   id 580924, 541234: Replaced the PHP based search engine by a 
+       Javascript/DHTML based one.
+       As a result the search feature no longer requires a HTTP server
+       with PHP enabled to be usable. Searching is limited to symbols
+       though, but it is now possible to filter on symbol type.
+<li>   id 519886: Make the HTML output XHTML 1.0 compliant.
+<li>   id 579950: Objective-C categories are now merged with their base 
+       class, unless there is no base class.
+<li>   Member groups with the same header within the same scope are now
+       merged. This also works for Objective-C categories.
+<li>   Changed the LaTeX style sheet such that more of the markup is 
+       configurable. Please update your style sheet if you use a custom one.
+<li>   id 584844: Treat \details inside a brief description as a new paragraph
+       command.
+<li>   Split GENERATE_TREEVIEW into two separate options:
+       GENERATE_TREEVIEW and USE_INLINE_TREES.
+<li>   Removed the dependencies on libpng and libz, doxygen now generates
+       gifs again for internal class diagrams (like it did 7 years ago ;-)
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added option SORT_MEMBERS_CTORS_1ST, which when enabled places the
+       constructors and destructors first in an otherwise sorted list.
+<li>   id 581518: Applied patch by Tobias Hunger that adds support for
+       documenting DBus XML interface descriptions. 
+<li>   Included QtHelp patch by Karsten Heimrich which adds missing 
+       reference and keyword for methods.
+<li>   Included updates for the Korean and Polish translation.
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>   id 131989: Fixed preprocessor handling for C# code.  
+<li>   id 133418: -- was not rendered correctly for LaTeX output
+<li>   id 157485: Missing link in todo page.
+<li>   id 318061: Two template functions that only differed in the number
+       of template arguments were seen as the same function.
+<li>   id 443939: HIDE_UNDOC_CLASSES did not work properly.
+<li>   id 509348: Fixed problem with syncing the information of 
+       declaration and definition in the presence of an extra forward 
+       declaration in the source code.
+<li>   id 522193: For C# enum values were merged together if the same enum 
+       name was used in different scopes.
+<li>   id 523167: Included patch to handle PROGRAM statement in Fortran as
+       subroutines/functions.
+<li>   id 554636: Remove spacing around brackets for Obj-C protocols.
+<li>   id 557026: Included patch for fixing wrongly labeled items in docsets.
+<li>   id 560512: Improved parser to better disambiguate
+       nested templates ending with &gt;&gt; from the bitshift right operator.
+<li>   id 570238: Fixed matching problem for method in nested class, where
+       the outer class is a template.
+<li>   id 581746: Segfault/realloc error when a very long path was used.
+<li>   id 582469: documented #define with guard caused wrong documentation.
+<li>   id 582276: Doxywizard could crash on exit in some cases.
+<li>   id 582676: Regression: a struct ivar in ObjC class screws up method 
+                  identification.
+<li>   id 583213: Included patch that avoids trailing spaces in the
+       generated Doxyfile template.
+<li>   id 584192: Included VHDL patch by Martin Klein
+<li>   id 585543: Fixed case where matching declaration and definition did
+       not work correctly.
+<li>   id 585260: The "more..." link for files was broken, since the anchor
+       was not generated.
+<li>   id 586925: Fixed parsing problem when an unpaired apostrophe 
+       appeared in a Python comment.
+<li>   id 588291: Included fix for doxywizard makefile. 
+<li>   id 588587: Added missing virtual destructor to CompAccept base class.
+<li>   id 588968: Fixed segmentation fault for specific case in PHP code.
+<li>   Fixed some issues building for Windows.
+<li>   id 589514: Fixed problem handling strings like a"\b" within a comment.
+<li>   id 589616: Fixed problem matching explicitly scoped parameter in a 
+       template class.
+<li>   id 590712: A namespaced with name "internal" (C++/CLI keyword)
+       could confuse doxygen's C++ parser.
+<li>   id 591749: @optional/@required attributes for Objective-C were missing
+       from the XML output.
+</ul>
+<h1><a href="http://www.doxygen.org/changelog_1.5.html">Doxygen Release 1.5 and earlier</a></h1>
+<p>
+<hr>
+<p>
+Go <a href="index.html">back</a> to the main page.
+
+\endhtmlonly
+*/

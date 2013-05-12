@@ -29,9 +29,13 @@ class TclLanguageScanner : public ParserInterface
 {
   public:
     virtual ~TclLanguageScanner() {}
+    void startTranslationUnit(const char *) {}
+    void finishTranslationUnit() {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    Entry *root);
+                    Entry *root,
+                    bool sameTranslationUnit,
+                    QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension);
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,

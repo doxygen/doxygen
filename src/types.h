@@ -22,11 +22,22 @@
  *  @brief This file contains a number of basic enums and types. 
  */
 
+/** Protection level of members */
 enum Protection   { Public, Protected, Private, Package } ;
+
+/** Virtualness of a member. */
 enum Specifier    { Normal, Virtual, Pure } ;
+
+/** Kind of method */
 enum MethodTypes  { Method, Signal, Slot, DCOP, Property, Event };
+
+/** Type of member relation */
 enum RelatesType  { Simple, Duplicate, MemberOf };
+
+/** Kind of member relationship */
 enum Relationship { Member, Related, Foreign };
+
+/** Language as given by extension */
 enum SrcLangExt
 {
   SrcLangExt_Unknown  = 0x00000,
@@ -46,8 +57,10 @@ enum SrcLangExt
   SrcLangExt_Markdown = 0x10000
 };
 
+/** Grouping info */
 struct Grouping 
 {
+  /** Grouping priority */
   enum GroupPri_t 
   {
     GROUPING_LOWEST,

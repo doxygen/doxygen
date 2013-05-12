@@ -79,6 +79,7 @@ static int              lastRawStringContext;
 static int              lastCSConstraint;
 static int              lastHereDocContext;
 static int              lastDefineContext;
+static int              lastAlignAsContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -310,6 +311,7 @@ static void lineCount()
       g_column++,yyColNr++;
     }
   }
+  //printf("lineCount()=%d\n",g_column);
 }
 
 static inline int computeIndent(const char *s,int startIndent)
@@ -627,6 +629,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
   /* language parsing states */
 
+%x      AlignAs
+%x      AlignAsEnd
 %x	Define
 %x	DefineEnd
 %x	CompoundName
@@ -2031,9 +2035,12 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  // *currentTemplateSpec+=yytext; 
   					}
 <EndTemplate>"<"			{ 
-  					  current->name+='<';
-  					  // *currentTemplateSpec+='<'; 
-					  sharpCount++; 
+                                          if (roundCount==0)
+                                          {
+  					    // *currentTemplateSpec+='<'; 
+					    sharpCount++; 
+                                          }
+  					  current->name+=yytext;
 					}
 <ClassTemplSpec,EndTemplate>">>"	{
   					  if (insideJava || insideCS || insideCli || roundCount==0)
@@ -2051,7 +2058,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <EndTemplate>">"			{
   					  current->name+='>';
 					  // *currentTemplateSpec+='>';
-					  if (--sharpCount<=0)
+					  if (roundCount==0 && --sharpCount<=0)
 					  {  
 					    //printf("Found %s\n",current->name.data());
 					    BEGIN(FindMembers);
@@ -2061,7 +2068,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  lineCount();
   					  current->name+='>';
 					  // *currentTemplateSpec+='>';
-					  if (--sharpCount<=0)
+					  if (roundCount==0 && --sharpCount<=0)
 					  {
 					    current->bodyLine = yyLineNr;
 					    current->args = "(";
@@ -2075,13 +2082,16 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <EndTemplate>">"{BN}*/"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
   					  lineCount();
   					  current->name+='>';
-					  BEGIN(FindMembers);
+                                          if (roundCount==0)
+                                          {
+					    BEGIN(FindMembers);
+                                          }
   					}
 <EndTemplate>">"{BN}*/"::"		{
   					  lineCount();
   					  current->name+='>';
   					  // *currentTemplateSpec+='>';
-					  if (--sharpCount<=0)
+					  if (roundCount==0 && --sharpCount<=0)
 					  {
 					    BEGIN(FindMemberName);
 					  }
@@ -2234,6 +2244,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    insideTryBlock=FALSE;
 					    BEGIN(TryFunctionBlock);
 					  }
+                                          else if (insideCpp && qstrcmp(yytext,"alignas")==0)
+                                          {
+                                            lastAlignAsContext = YY_START;
+                                            BEGIN(AlignAs);
+                                          }
 					  else if (insideJS && qstrcmp(yytext,"var")==0)
 					  { // javascript variable
 					    current->type="var";
@@ -2565,7 +2580,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  addType( current );
 					}
 <FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
-  					  lineCount();
 					  if (current->bodyLine==-1)
 					  {
 					    current->bodyLine=yyLineNr;
@@ -2576,8 +2590,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 
                                           QCString indent;
-                                          indent.fill(' ',computeIndent(yytext+1,g_column));
+                                          indent.fill(' ',computeIndent(yytext,g_column));
                                           docBlock=indent;
+                                          //printf("indent=%d\n",computeIndent(yytext+1,g_column));
+  					  lineCount();
 
 					  docBlockTerm = ';';
                                           if (YY_START==EnumBaseType && current->section==Entry::ENUM_SEC)
@@ -2598,15 +2614,15 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <MemberSpec,FindFields,FindMembers,NextSemi,EnumBaseType,BitFields,ReadInitializer,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
-  					  lineCount();
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
 					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
 					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 
                                           QCString indent;
-                                          indent.fill(' ',computeIndent(yytext+1,g_column));
+                                          indent.fill(' ',computeIndent(yytext,g_column));
                                           docBlock=indent;
+  					  lineCount();
 
 					  docBlockTerm = ',';
                                           if (YY_START==EnumBaseType && current->section==Entry::ENUM_SEC)
@@ -2627,7 +2643,6 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <DefineEnd,FindFields,FindFieldArg,ReadInitializer,OldStyleArgs>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
-  					  lineCount();
 					  if (current->bodyLine==-1)
 					  {
 					    current->bodyLine=yyLineNr;
@@ -2639,6 +2654,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,g_column));
                                           docBlock=indent;
+  					  lineCount();
 
 					  docBlockTerm = 0;
 					  if (yytext[yyleng-3]=='/')
@@ -3130,7 +3146,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  yyLineNr = line.mid(s,e-s).toInt();
 					  if (yytext[yyleng-1]=='\n')
 					  {
-					    yyLineNr++;
+                                            lineCount();
                                             g_column=0;
 					  }
   					}
@@ -3674,7 +3690,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						}
 						else
 						{
-						  if (!isTypedef) // not typedef 
+                                                  static QRegExp re("@[0-9]+$");
+						  if (!isTypedef && memspecEntry &&
+                                                      memspecEntry->name.find(re)==-1) // not typedef or anonymous type (see bug691071)
 						  {
 						    // enabled the next two lines for bug 623424
 						    current->doc.resize(0);
@@ -4320,7 +4338,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <CopyArgComment,CopyArgVerbatim>.	{ fullArgString+=*yytext; }
 <CopyArgComment>{CMD}("brief"|"short"){B}+ {
   					  warn(yyFileName,yyLineNr,
-					      "warning: Ignoring %cbrief command inside argument documentation",*yytext
+					      "Ignoring %cbrief command inside argument documentation",*yytext
 					     );
                                           fullArgString+=' ';
                                         }
@@ -5019,7 +5037,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					}
 <SkipInits>;	                        {
   					  warn(yyFileName,yyLineNr,
-					      "warning: Found ';' while parsing initializer list! "
+					      "Found ';' while parsing initializer list! "
 					      "(doxygen could be confused by a macro call without semicolon)"
 					     );
 					  BEGIN( FindMembers );
@@ -5065,12 +5083,43 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  unput(':');
 					  BEGIN(ClassVar);
   					}
-<Bases,CompoundName>";"			{ 
+<CompoundName>";"			{
 					  current->section = Entry::EMPTY_SEC ;
 					  current->type.resize(0) ;
 					  current->name.resize(0) ;
 					  current->args.resize(0) ;
 					  current->argList->clear();
+					  BEGIN( FindMembers ) ;
+					}
+<Bases>";"			{
+					  if (insideIDL && (current->spec & (Entry::Singleton |
+					                                     Entry::Service)))
+					  {
+					    // in UNO IDL a service or singleton may be defined
+					    // completely like this: "service Foo : XFoo;"
+					    if (!current->name.isEmpty() && !current_root->name.isEmpty())
+					    {
+					      prependScope();
+					    }
+					    current->name = current->name.stripWhiteSpace();
+					    // there can be only one base class here
+					    if (!baseName.isEmpty())
+					    {
+					      current->extends->append(
+					        new BaseInfo(baseName,Public,Normal));
+					      baseName.resize(0);
+					    }
+					    current_root->addSubEntry( current ) ;
+					    current = new Entry;
+					  }
+					  else
+					  {
+					    current->section = Entry::EMPTY_SEC ;
+					    current->type.resize(0) ;
+					    current->name.resize(0) ;
+					    current->args.resize(0) ;
+					    current->argList->clear();
+					  }
 					  BEGIN( FindMembers ) ;
 					}
 <CompoundName>{SCOPENAME}{BN}*/"<"	{
@@ -5196,12 +5245,33 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <CompoundName>{SCOPENAME}/{BN}*"("	{ 
 					  current->name = yytext ;
 					  lineCount();
-					  if (current->spec & Entry::Protocol)
-					  {
-					    current->name += "-p";
-					  }
-					  BEGIN( ClassVar );
+                                          if (insideCpp && current->name=="alignas") // C++11
+                                          {
+                                            lastAlignAsContext = YY_START;
+                                            BEGIN( AlignAs );
+                                          }
+                                          else
+                                          {
+                                            if (current->spec & Entry::Protocol)
+                                            {
+                                              current->name += "-p";
+                                            }
+                                            BEGIN( ClassVar );
+                                          }
 					}
+<AlignAs>"("                            { roundCount=1; 
+                                          BEGIN( AlignAsEnd ); 
+                                        }
+<AlignAs>\n                             { lineCount(); }
+<AlignAs>.
+<AlignAsEnd>"("                         { roundCount++; }
+<AlignAsEnd>")"                         { if (--roundCount<=0) 
+                                          {
+                                            BEGIN( lastAlignAsContext ); 
+                                          }
+                                        }
+<AlignAsEnd>\n                          { lineCount(); }
+<AlignAsEnd>.
 <CompoundName>{SCOPENAME}/{BN}*","	{  // multiple forward declarations on one line
                                            // e.g. @protocol A,B;
 					  current->reset();
@@ -6166,7 +6236,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <DocCopyBlock><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-					      "warning: reached end of file while inside a %s block!\n"
+					      "reached end of file while inside a %s block!\n"
 					      "The command that should end the block seems to be missing!\n",
 					      docBlockName.data());
   					  yyterminate();
@@ -6546,7 +6616,11 @@ static void parseCompounds(Entry *rt)
 
 //----------------------------------------------------------------------------
 
-static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
+static void parseMain(const char *fileName,
+                      const char *fileBuf,
+                      Entry *rt,
+                      bool sameTranslationUnit,
+                      QStrList & filesInSameTranslationUnit)
 {
   initParser();
 
@@ -6568,9 +6642,17 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     yyLineNr= 1 ; 
     yyFileName = fileName;
     setContext();
-    if (insideCpp || insideObjC)
+    bool processWithClang = insideCpp || insideObjC;
+    if (processWithClang)
     {
-      ClangParser::instance()->start(fileName);
+      if (!sameTranslationUnit) // new file
+      {
+        ClangParser::instance()->start(fileName,filesInSameTranslationUnit);
+      }
+      else
+      {
+        ClangParser::instance()->switchToFile(fileName);
+      }
     }
     rt->lang = language;
     msg("Parsing file %s...\n",yyFileName.data());
@@ -6605,7 +6687,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
     if (YY_START==Comment)
     {
-      warn(yyFileName,yyLineNr,"warning: File ended in the middle of a comment block! Perhaps a missing \\endcode?");
+      warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
     }
 
     //forceEndGroup();
@@ -6630,10 +6712,6 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
     anonNSCount++;
 
-    if (insideCpp || insideObjC)
-    {
-      ClangParser::instance()->finish();
-    }
   }
 }
 
@@ -6645,6 +6723,10 @@ static void parsePrototype(const QCString &text)
   if (text.isEmpty()) 
   {
     warn(yyFileName,yyLineNr,"Empty prototype found!");
+    return;
+  }
+  if (!current) // nothing to store (see bug683516)
+  {
     return;
   }
 
@@ -6705,10 +6787,28 @@ void scanFreeScanner()
 
 //----------------------------------------------------------------------------
 
-void CLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
+void CLanguageScanner::startTranslationUnit(const char *)
+{
+}
+
+void CLanguageScanner::finishTranslationUnit()
+{
+  bool processWithClang = insideCpp || insideObjC;
+  if (processWithClang)
+  {
+    ClangParser::instance()->finish();
+  }
+}
+
+void CLanguageScanner::parseInput(const char *fileName,
+                                  const char *fileBuf,
+                                  Entry *root,
+                                  bool sameTranslationUnit,
+                                  QStrList & filesInSameTranslationUnit)
 {
   g_thisParser = this;
-  ::parseMain(fileName,fileBuf,root);
+  ::parseMain(fileName,fileBuf,root,
+              sameTranslationUnit,filesInSameTranslationUnit);
 }
 
 void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,

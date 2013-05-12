@@ -26,6 +26,8 @@
 #include "filedef.h"
 
 static QCString outputFormat;
+static const char *warning_str = "Warning: ";
+static const char *error_str = "Error: ";
 //static int warnFormatOrder; // 1 = $file,$line,$text
 //                            // 2 = $text,$line,$file
 //                            // 3 = $line,$text,$file
@@ -149,11 +151,17 @@ static void format_warn(const char *file,int line,const char *text)
   fwrite(msgText.data(),1,msgText.length(),warnFile);
 }
 
-static void do_warn(const char *tag, const char *file, int line, const char *fmt, va_list args)
+static void do_warn(const char *tag, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!Config_getBool(tag)) return; // warning type disabled
   char text[4096];
-  vsnprintf(text, 4096, fmt, args);
+  int l=0;
+  if (prefix)
+  {
+    strcpy(text,prefix);
+    l=strlen(prefix);
+  }
+  vsnprintf(text+l, 4096-l, fmt, args);
   text[4095]='\0';
   format_warn(file,line,text);
 }
@@ -162,21 +170,21 @@ void warn(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn("WARNINGS", file, line, fmt, args);
+  do_warn("WARNINGS", file, line, warning_str, fmt, args);
   va_end(args); 
 }
 
 void warn_simple(const char *file,int line,const char *text)
 {
   if (!Config_getBool("WARNINGS")) return; // warning type disabled
-  format_warn(file,line,text);
+  format_warn(file,line,QCString(warning_str) + text);
 }
 
 void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn("WARN_IF_UNDOCUMENTED", file, line, fmt, args);
+  do_warn("WARN_IF_UNDOCUMENTED", file, line, warning_str, fmt, args);
   va_end(args);
 }
   
@@ -184,14 +192,22 @@ void warn_doc_error(const char *file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  do_warn("WARN_IF_DOC_ERROR", file, line, fmt, args);
+  do_warn("WARN_IF_DOC_ERROR", file, line, warning_str, fmt, args);
   va_end(args);
+}
+
+void warn_uncond(const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  vfprintf(warnFile, (QCString(warning_str) + fmt).data(), args);
+  va_end(args); 
 }
 
 void err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(warnFile, fmt, args);
+  vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
   va_end(args); 
 }

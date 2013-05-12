@@ -412,7 +412,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
 static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  LockingPtr<ArgumentList> al = md->argumentList();
+  ArgumentList *al = md->argumentList();
   if (al==0) return; 
   Argument *a = al->first();
   while (a)

@@ -174,7 +174,7 @@ void DocbookDocVisitor::visit(DocSymbol *s)
     case DocSymbol::LeftFloor:     m_t << "&#8970;"; break;
     case DocSymbol::RightFloor:    m_t << "&#8971;"; break;
     default:
-                                   err("error: unknown symbol found\n");
+                                   err("unknown symbol found\n");
   }
 }
 

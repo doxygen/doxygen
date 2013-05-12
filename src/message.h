@@ -25,6 +25,7 @@ extern void warn(const char *file,int line,const char *fmt, ...);
 extern void warn_simple(const char *file,int line,const char *text);
 extern void warn_undoc(const char *file,int line,const char *fmt, ...);
 extern void warn_doc_error(const char *file,int line,const char *fmt, ...);
+extern void warn_uncond(const char *fmt, ...);
 extern void err(const char *fmt, ...);
 void initWarningFormat();
 

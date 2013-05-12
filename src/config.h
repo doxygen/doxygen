@@ -42,7 +42,8 @@ class ConfigOption
       O_String,    //<! A single item
       O_Int,       //<! An integer value
       O_Bool,      //<! A boolean value
-      O_Obsolete   //<! An obsolete option
+      O_Obsolete,  //<! An obsolete option
+      O_Disabled   //<! Disabled compile time option
     };
     enum 
     { 
@@ -355,7 +356,19 @@ class ConfigBool : public ConfigOption
 class ConfigObsolete : public ConfigOption
 {
   public:
-    ConfigObsolete(const char *name,OptionType t) : ConfigOption(t)  
+    ConfigObsolete(const char *name) : ConfigOption(O_Obsolete)  
+    { m_name = name; }
+    void writeTemplate(FTextStream &,bool,bool) {}
+    void substEnvVars() {}
+    void writeXML(FTextStream&);
+};
+
+/** Section marker for compile time optional options
+ */
+class ConfigDisabled : public ConfigOption
+{
+  public:
+    ConfigDisabled(const char *name) : ConfigOption(O_Disabled)  
     { m_name = name; }
     void writeTemplate(FTextStream &,bool,bool) {}
     void substEnvVars() {}
@@ -537,9 +550,17 @@ class Config
     /*! Adds an option that has become obsolete. */
     ConfigOption *addObsolete(const char *name)
     {
-      ConfigObsolete *option = new ConfigObsolete(name,ConfigOption::O_Obsolete);
+      ConfigObsolete *option = new ConfigObsolete(name);
       m_dict->insert(name,option);
       m_obsolete->append(option);
+      return option;
+    }
+    /*! Adds an option that has been disabled at compile time. */
+    ConfigOption *addDisabled(const char *name)
+    {
+      ConfigDisabled *option = new ConfigDisabled(name);
+      m_dict->insert(name,option);
+      m_disabled->append(option);
       return option;
     }
     /*! @} */
@@ -614,6 +635,7 @@ class Config
     { 
       m_options  = new QList<ConfigOption>;
       m_obsolete = new QList<ConfigOption>;
+      m_disabled = new QList<ConfigOption>;
       m_dict     = new QDict<ConfigOption>(257);
       m_options->setAutoDelete(TRUE);
       m_obsolete->setAutoDelete(TRUE);
@@ -624,12 +646,14 @@ class Config
     {
       delete m_options;
       delete m_obsolete;
+      delete m_disabled;
       delete m_dict;
     }
 
   private:
     QList<ConfigOption> *m_options;
     QList<ConfigOption> *m_obsolete;
+    QList<ConfigOption> *m_disabled;
     QDict<ConfigOption> *m_dict;
     static Config *m_instance;
     QCString m_userComment;

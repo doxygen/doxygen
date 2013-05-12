@@ -2577,8 +2577,10 @@ class Receiver
     HTML-only block.
 
   \sa section \ref cmdmanonly "\\manonly", section
-              \ref cmdlatexonly "\\latexonly", and section
-              \ref cmdrtfonly "\\rtfonly".
+              \ref cmdlatexonly "\\latexonly", section
+              \ref cmdrtfonly "\\rtfonly", section
+              \ref cmdxmlonly "\\xmlonly", and
+              \ref cmddocbookonly "\\docbookonly".
 
 <hr>
 \section cmdimage \\image <format> <file> ["caption"] [<sizeindication>=<size>]

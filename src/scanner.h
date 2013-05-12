@@ -30,9 +30,13 @@ class CLanguageScanner : public ParserInterface
 {
   public:
     virtual ~CLanguageScanner() {}
+    void startTranslationUnit(const char *fileName);
+    void finishTranslationUnit();
     void parseInput(const char *fileName,
                     const char *fileBuf,
-                    Entry *root);
+                    Entry *root,
+                    bool sameTranslationUnit,
+                    QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &extension);
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,

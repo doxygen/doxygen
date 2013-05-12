@@ -498,7 +498,7 @@ NamespaceDef *getResolvedNamespace(const char *name)
     }
     if (count==10)
     {
-      err("warning: possible recursive namespace alias detected for %s!\n",name);
+      warn_uncond("possible recursive namespace alias detected for %s!\n",name);
     }
     return Doxygen::namespaceSDict->find(subst->data());
   }
@@ -2339,7 +2339,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    err("error: unsupported character conversion: '%s'->'%s'\n",
+    err("unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding);
     error=TRUE;
   }
@@ -2358,7 +2358,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
     }
     else
     {
-      err("error: failed to translate characters from %s to %s: check INPUT_ENCODING\ninput=[%s]\n",
+      err("failed to translate characters from %s to %s: check INPUT_ENCODING\ninput=[%s]\n",
           inputEncoding.data(),outputEncoding,input.data());
       error=TRUE;
     }
@@ -2403,7 +2403,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
     QFileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
-      err("error: file `%s' not found\n",name);
+      err("file `%s' not found\n",name);
       return "";
     }
     QCString filterName = getFileFilter(name,isSourceCode);
@@ -2437,7 +2437,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       FILE *f=portable_popen(cmd,"r");
       if (!f)
       {
-        err("error: could not execute filter %s\n",filterName.data());
+        err("could not execute filter %s\n",filterName.data());
         return "";
       }
       const int bSize=4096;
@@ -2461,7 +2461,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
   }
   if (!fileOpened)  
   {
-    err("error: cannot open file `%s' for reading\n",name);
+    err("cannot open file `%s' for reading\n",name);
   }
   return "";
 }
@@ -2501,7 +2501,7 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   if (cd==bcd) return level; 
   if (level==256)
   {
-    err("warning: class %s seem to have a recursive "
+    warn_uncond("class %s seem to have a recursive "
         "inheritance relation!\n",cd->name().data());
     return -1;
   }
@@ -2533,7 +2533,7 @@ Protection classInheritedProtectionLevel(ClassDef *cd,ClassDef *bcd,Protection p
   }
   if (level==256)
   {
-    err("error: Internal inconsistency: found class %s seem to have a recursive "
+    err("Internal inconsistency: found class %s seem to have a recursive "
         "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
   }
   else if (cd->baseClasses())
@@ -3857,10 +3857,10 @@ static void findMembersWithSpecificName(MemberName *mn,
       if (args && !md->isDefine() && qstrcmp(args,"()")!=0)
       {
         argList=new ArgumentList;
-        LockingPtr<ArgumentList> mdAl = md->argumentList();
+        ArgumentList *mdAl = md->argumentList();
         stringToArgumentList(args,argList);
         match=matchArguments2(
-            md->getOuterScope(),fd,mdAl.pointer(),
+            md->getOuterScope(),fd,mdAl,
             Doxygen::globalScope,fd,argList,
             checkCV); 
         delete argList; argList=0;
@@ -3989,9 +3989,9 @@ bool getDefs(const QCString &scName,
         {
           //if (mmd->isLinkable())
           //{
-          LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
+          ArgumentList *mmdAl = mmd->argumentList();
           bool match=args==0 || 
-            matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl.pointer(),
+            matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
                 fcd,fcd->getFileDef(),argList,
                 checkCV
                 );  
@@ -4089,8 +4089,8 @@ bool getDefs(const QCString &scName,
 
       QCString className = mmd->getClassDef()->name();
 
-      LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
-      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl.pointer(),
+      ArgumentList *mmdAl = mmd->argumentList();
+      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
             Doxygen::globalScope,mmd->getFileDef(),argList,
             checkCV
             )
@@ -4153,10 +4153,10 @@ bool getDefs(const QCString &scName,
             if (args && qstrcmp(args,"()")!=0)
             {
               argList=new ArgumentList;
-              LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
+              ArgumentList *mmdAl = mmd->argumentList();
               stringToArgumentList(args,argList);
               match=matchArguments2(
-                  mmd->getOuterScope(),mmd->getFileDef(),mmdAl.pointer(),
+                  mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
                   fnd,mmd->getFileDef(),argList,
                   checkCV); 
             }
@@ -5677,6 +5677,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
   }
   growBuf.addStr(s.mid(i,s.length()-i));
   growBuf.addChar(0);
+  //printf("convertCharEntitiesToUTF8(%s)->%s\n",s.data(),growBuf.get());
   return growBuf.get();
 }
 
@@ -5705,7 +5706,7 @@ void addMembersToMemberGroup(MemberList *ml,
   {
     if (md->isEnumerate()) // insert enum value of this enum into groups
     {
-      LockingPtr<MemberList> fmdl=md->enumFieldList();
+      MemberList *fmdl=md->enumFieldList();
       if (fmdl!=0)
       {
         MemberDef *fmd=fmdl->first();
@@ -6305,8 +6306,8 @@ void addRefItem(const QList<ListItemInfo> *sli,
 
 void addGroupListToTitle(OutputList &ol,Definition *d)
 {
-  LockingPtr<GroupList> groups = d->partOfGroups();
-  if (groups!=0) // write list of group to which this definition belongs
+  GroupList *groups = d->partOfGroups();
+  if (groups) // write list of group to which this definition belongs
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -7163,7 +7164,7 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al)
     linkifyText(TextGeneratorOLImpl(ol),d,0,0,a->type);
     ol.endConstraintType();
     ol.startConstraintDocs();
-    ol.parseDoc(d->docFile(),d->docLine(),d,0,a->docs,TRUE,FALSE);
+    ol.generateDoc(d->docFile(),d->docLine(),d,0,a->docs,TRUE,FALSE);
     ol.endConstraintDocs();
   }
   ol.endConstraintList();
@@ -7206,7 +7207,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    err("error: unsupported character conversion: '%s'->'%s': %s\n"
+    err("unsupported character conversion: '%s'->'%s': %s\n"
         "Check the INPUT_ENCODING setting in the config file!\n",
         inputEncoding,outputEncoding,strerror(errno));
     exit(1);
@@ -7227,7 +7228,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
   }
   else
   {
-    err("%s: error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+    err("%s: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
         fileName,inputEncoding,outputEncoding);
     exit(1);
   }
@@ -7251,7 +7252,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     QFile f(fileName);
     if (!f.open(IO_ReadOnly))
     {
-      err("error: could not open file %s\n",fileName);
+      err("could not open file %s\n",fileName);
       return FALSE;
     }
     size=fi.size();
@@ -7259,7 +7260,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     inBuf.skip(size);
     if (f.readBlock(inBuf.data()/*+oldPos*/,size)!=size)
     {
-      err("error: problems while reading file %s\n",fileName);
+      err("problems while reading file %s\n",fileName);
       return FALSE;
     }
   }
@@ -7270,7 +7271,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     FILE *f=portable_popen(cmd,"r");
     if (!f)
     {
-      err("error: could not execute filter %s\n",filterName.data());
+      err("could not execute filter %s\n",filterName.data());
       return FALSE;
     }
     const int bufSize=1024;
@@ -7536,13 +7537,13 @@ bool copyFile(const QCString &src,const QCString &dest)
     }
     else
     {
-      err("error: could not write to file %s\n",dest.data());
+      err("could not write to file %s\n",dest.data());
       return FALSE;
     }
   }
   else
   {
-    err("error: could not open user specified file %s\n",src.data());
+    err("could not open user specified file %s\n",src.data());
     return FALSE;
   }
   return TRUE;
@@ -7734,5 +7735,48 @@ bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile)
            ) && 
            !isDocFile
          );
+}
+
+void addDocCrossReference(MemberDef *src,MemberDef *dst)
+{
+  static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
+  static bool referencesRelation   = Config_getBool("REFERENCES_RELATION");
+  static bool callerGraph          = Config_getBool("CALLER_GRAPH");
+  static bool callGraph            = Config_getBool("CALL_GRAPH");
+
+  //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
+  if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
+  if ((referencedByRelation || callerGraph || dst->hasCallerGraph()) && 
+      src->showInCallGraph()
+     )
+  {
+    dst->addSourceReferencedBy(src);
+    MemberDef *mdDef = dst->memberDefinition();
+    if (mdDef)
+    {
+      mdDef->addSourceReferencedBy(src);
+    }
+    MemberDef *mdDecl = dst->memberDeclaration();
+    if (mdDecl)
+    {
+      mdDecl->addSourceReferencedBy(src);
+    }
+  }
+  if ((referencesRelation || callGraph || src->hasCallGraph()) && 
+      src->showInCallGraph()
+     )
+  {
+    src->addSourceReferences(dst);
+    MemberDef *mdDef = src->memberDefinition();
+    if (mdDef)
+    {
+      mdDef->addSourceReferences(dst);
+    }
+    MemberDef *mdDecl = src->memberDeclaration();
+    if (mdDecl)
+    {
+      mdDecl->addSourceReferences(dst);
+    }
+  }
 }
 

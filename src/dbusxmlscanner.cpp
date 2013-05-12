@@ -830,7 +830,9 @@ DBusXMLScanner::~DBusXMLScanner()
 
 void DBusXMLScanner::parseInput(const char * fileName,
                                 const char * /* fileBuf */,
-                                Entry * root)
+                                Entry *root,
+                                bool /*sameTranslationUnit*/,
+                                QStrList & /*filesInSameTranslationUnit*/)
 {
     QFile inputFile(fileName);
 

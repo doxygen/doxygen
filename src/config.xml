@@ -328,30 +328,15 @@ namespace, or class. And the struct will be named TypeS. This can typically
 be useful for C code in case the coding convention dictates that all compound 
 types are typedef&apos;ed and only the typedef is referenced, never the tag name. 
 ' defval='0'/>
-    <option type='int' id='SYMBOL_CACHE_SIZE' docs='
-The SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
-determine which symbols to keep in memory and which to flush to disk. 
-When the cache is full, less often used symbols will be written to disk. 
-For small to medium size projects (&lt;1000 input files) the default value is 
-probably good enough. For larger projects a too small cache size can cause 
-doxygen to be busy swapping symbols to and from disk most of the time 
-causing a significant performance penalty. 
-If the system has enough physical memory increasing the cache will improve the 
-performance by keeping more symbols in memory. Note that the value works on 
-a logarithmic scale so increasing the size by one will roughly double the 
-memory usage. The cache size is given by this formula: 
-2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0, 
-corresponding to a cache size of 2^16 = 65536 symbols. 
-' minval='0' maxval='9' defval='0'/>
     <option type='int' id='LOOKUP_CACHE_SIZE' docs='
-Similar to the SYMBOL_CACHE_SIZE the size of the symbol lookup cache can be 
-set using LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given 
-their name and scope. Since this can be an expensive process and often the 
-same symbol appear multiple times in the code, doxygen keeps a cache of 
-pre-resolved symbols. If the cache is too small doxygen will become slower. 
-If the cache is too large, memory is wasted. The cache size is given by this 
-formula: 2^(16+LOOKUP_CACHE_SIZE). The valid range is 0..9, the default is 0, 
-corresponding to a cache size of 2^16 = 65536 symbols. 
+The size of the symbol lookup cache can be set using LOOKUP_CACHE_SIZE. This 
+cache is used to resolve symbols given their name and scope. Since this can 
+be an expensive process and often the same symbol appear multiple times in 
+the code, doxygen keeps a cache of pre-resolved symbols. If the cache is too 
+small doxygen will become slower. If the cache is too large, memory is wasted. 
+The cache size is given by this formula: 2^(16+LOOKUP_CACHE_SIZE). The valid 
+range is 0..9, the default is 0, corresponding to a cache size of 2^16 = 65536 
+symbols. 
 ' minval='0' maxval='9' defval='0'/>
   </group>
   <group name='Build' docs='Build related configuration options'>
@@ -1391,7 +1376,7 @@ and cross-referencing information) to the XML output. Note that
 enabling this will significantly increase the size of the XML output. 
 ' defval='1' depends='GENERATE_XML'/>
   </group>
-  <group name='DOCBOOK' docs='configuration options related to the DOCBOOK output'>
+  <group name='Docbook' docs='configuration options related to the DOCBOOK output'>
     <option type='bool' id='GENERATE_DOCBOOK' docs='
 If the GENERATE_DOCBOOK tag is set to YES Doxygen will generate DOCBOOK files 
 that can be used to generate PDF.
@@ -1760,5 +1745,6 @@ the various graphs.
     <option type='obsolete' id='USE_INLINE_TREES'/>
     <option type='obsolete' id='SHOW_DIRECTORIES'/>
     <option type='obsolete' id='HTML_ALIGN_MEMBERS'/>
+    <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
   </group>
 </doxygenconfig>

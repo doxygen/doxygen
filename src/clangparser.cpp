@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "message.h"
 #include "sortdict.h"
-#include "outputlist.h"
+#include "outputgen.h"
 #include "filedef.h"
 #include "memberdef.h"
 #include "doxygen.h"
@@ -17,6 +17,13 @@
 #include "growbuf.h"
 #include "membername.h"
 #include "filename.h"
+
+static Definition *g_currentDefinition=0;
+static MemberDef  *g_currentMemberDef=0;
+static uint        g_currentLine=0;
+static bool        g_searchForBody=FALSE;
+static bool        g_insideBody=FALSE;
+static uint        g_bracketCount=0;
 #endif
 
 ClangParser *ClangParser::instance()
@@ -33,6 +40,9 @@ ClangParser *ClangParser::s_instance = 0;
 class ClangParser::Private
 {
   public:
+    Private() : tu(0), tokens(0), numTokens(0), cursors(0), 
+                ufs(0), sources(0), numFiles(0), fileMapping(257) 
+    { fileMapping.setAutoDelete(TRUE); }
     int getCurrentTokenLine();
     CXIndex index;
     CXTranslationUnit tu;
@@ -42,8 +52,10 @@ class ClangParser::Private
     CXCursor *cursors;
     uint curLine;
     uint curToken;
-    CXUnsavedFile uf;
-    QCString source;
+    CXUnsavedFile *ufs;
+    QCString *sources;
+    uint numFiles;
+    QDict<uint> fileMapping;
 };
 
 static QCString detab(const QCString &s)
@@ -122,20 +134,46 @@ static QStrList getClangOptions()
   return options;
 }
 
-#if 0
+/** Callback function called for each include in a translation unit */
 static void inclusionVisitor(CXFile includedFile,
-                             CXSourceLocation* inclusionStack,
-                             unsigned includeLen,
+                             CXSourceLocation* /*inclusionStack*/,
+                             unsigned /*includeLen*/,
                              CXClientData clientData)
 {
-  const char *fileName = (const char *)clientData;
+  QDict<void> *fileDict = (QDict<void> *)clientData;
   CXString incFileName = clang_getFileName(includedFile);
-  printf("--- file %s includes %s\n",fileName,clang_getCString(incFileName));
+  //printf("--- file %s includes %s\n",fileName,clang_getCString(incFileName));
+  fileDict->insert(clang_getCString(incFileName),(void*)0x8);
   clang_disposeString(incFileName);
 }
-#endif
 
-void ClangParser::start(const char *fileName)
+/** filter the \a files and only keep those that are found as include files
+ *  within the current translation unit.
+ *  @param[in,out] files The list of files to filter.
+ */ 
+void ClangParser::determineInputFilesInSameTu(QStrList &files)
+{
+  // put the files in this translation unit in a dictionary
+  QDict<void> incFound(257);
+  clang_getInclusions(p->tu,
+      inclusionVisitor,
+      (CXClientData)&incFound
+      );
+  // create a new filtered file list
+  QStrList resultIncludes;
+  QStrListIterator it2(files);
+  for (it2.toFirst();it2.current();++it2)
+  {
+    if (incFound.find(it2.current()))
+    {
+      resultIncludes.append(it2.current());
+    }
+  }
+  // replace the original list
+  files=resultIncludes;
+}
+
+void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
 {
   static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
   static QStrList &includePath = Config_getList("INCLUDE_PATH");
@@ -146,7 +184,7 @@ void ClangParser::start(const char *fileName)
   p->index    = clang_createIndex(0, 0);
   p->curLine  = 1;
   p->curToken = 0;
-  char *argv[4+Doxygen::inputPaths.count()+includePath.count()+clangOptions.count()];
+  char **argv = (char**)malloc(sizeof(char*)*(4+Doxygen::inputPaths.count()+includePath.count()+clangOptions.count()));
   QDictIterator<void> di(Doxygen::inputPaths);
   int argc=0;
   // add include paths for input files
@@ -171,44 +209,70 @@ void ClangParser::start(const char *fileName)
   argv[argc++]=strdup("-ferror-limit=0");
   argv[argc++]=strdup("-x"); // force C++
   argv[argc++]=strdup("c++"); 
-  // the file name
+
+  // provide the input and and its dependencies as unsaved files so we can
+  // pass the filtered versions
   argv[argc++]=strdup(fileName);
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
-  p->source = detab(fileToString(fileName,filterSourceFiles,TRUE));
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());
-  p->uf.Filename = strdup(fileName);
-  p->uf.Contents = p->source.data();
-  p->uf.Length   = p->source.length();
+  uint numUnsavedFiles = filesInTranslationUnit.count()+1;
+  p->numFiles = numUnsavedFiles;
+  p->sources = new QCString[numUnsavedFiles];
+  p->ufs     = new CXUnsavedFile[numUnsavedFiles];
+  p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE));
+  p->ufs[0].Filename = strdup(fileName);
+  p->ufs[0].Contents = p->sources[0].data();
+  p->ufs[0].Length   = p->sources[0].length();
+  QStrListIterator it(filesInTranslationUnit);
+  uint i=1;
+  for (it.toFirst();it.current() && i<numUnsavedFiles;++it,i++)
+  {
+    p->fileMapping.insert(it.current(),new uint(i));
+    p->sources[i]      = detab(fileToString(it.current(),filterSourceFiles,TRUE));
+    p->ufs[i].Filename = strdup(it.current());
+    p->ufs[i].Contents = p->sources[i].data();
+    p->ufs[i].Length   = p->sources[i].length();
+  }
+
+  // let libclang do the actual parsing
   p->tu = clang_parseTranslationUnit(p->index, 0,
-                                     argv, argc, &p->uf, 1, 
+                                     argv, argc, p->ufs, numUnsavedFiles, 
                                      CXTranslationUnit_DetailedPreprocessingRecord);
+  // free arguments
   for (int i=0;i<argc;++i)
   {
     free(argv[i]);
   }
+  free(argv);
 
   if (p->tu)
   {
-    //clang_getInclusions(p->tu,
-    //                    inclusionVisitor,
-    //                    (CXClientData)fileName
-    //                   );
+    // filter out any includes not found by the clang parser
+    determineInputFilesInSameTu(filesInTranslationUnit);
+
+    // show any warnings that the compiler produced
     for (uint i=0, n=clang_getNumDiagnostics(p->tu); i!=n; ++i) 
     {
       CXDiagnostic diag = clang_getDiagnostic(p->tu, i); 
       CXString string = clang_formatDiagnostic(diag,
           clang_defaultDiagnosticDisplayOptions()); 
-      err("%s\n",clang_getCString(string));
+      err("%s [clang]\n",clang_getCString(string));
       clang_disposeString(string);
+      clang_disposeDiagnostic(diag);
     }
+
+    // create a source range for the given file
     QFileInfo fi(fileName);
     CXFile f = clang_getFile(p->tu, fileName);
     CXSourceLocation fileBegin = clang_getLocationForOffset(p->tu, f, 0);
-    CXSourceLocation fileEnd   = clang_getLocationForOffset(p->tu, f, p->uf.Length);
+    CXSourceLocation fileEnd   = clang_getLocationForOffset(p->tu, f, p->ufs[0].Length);
     CXSourceRange    fileRange = clang_getRange(fileBegin, fileEnd);
 
+    // produce a token stream for the file
     clang_tokenize(p->tu,fileRange,&p->tokens,&p->numTokens);
+
+    // produce cursors for each token in the stream
     p->cursors=new CXCursor[p->numTokens];
     clang_annotateTokens(p->tu,p->tokens,p->numTokens,p->cursors);
   }
@@ -217,7 +281,42 @@ void ClangParser::start(const char *fileName)
     p->tokens    = 0;
     p->numTokens = 0;
     p->cursors   = 0;
-    err("Failed to parse translation unit %s\n",fileName);
+    err("clang: Failed to parse translation unit %s\n",fileName);
+  }
+}
+
+void ClangParser::switchToFile(const char *fileName)
+{
+  if (p->tu)
+  {
+    delete[] p->cursors;
+    clang_disposeTokens(p->tu,p->tokens,p->numTokens);
+    p->tokens    = 0;
+    p->numTokens = 0;
+    p->cursors   = 0;
+
+    QFileInfo fi(fileName);
+    CXFile f = clang_getFile(p->tu, fileName);
+    uint *pIndex=p->fileMapping.find(fileName);
+    if (pIndex && *pIndex<p->numFiles)
+    {
+      uint i=*pIndex;
+      //printf("switchToFile %s: len=%ld\n",fileName,p->ufs[i].Length);
+      CXSourceLocation fileBegin = clang_getLocationForOffset(p->tu, f, 0);
+      CXSourceLocation fileEnd   = clang_getLocationForOffset(p->tu, f, p->ufs[i].Length);
+      CXSourceRange    fileRange = clang_getRange(fileBegin, fileEnd);
+
+      clang_tokenize(p->tu,fileRange,&p->tokens,&p->numTokens);
+      p->cursors=new CXCursor[p->numTokens];
+      clang_annotateTokens(p->tu,p->tokens,p->numTokens,p->cursors);
+
+      p->curLine  = 1;
+      p->curToken = 0;
+    }
+    else
+    {
+      err("clang: Failed to find input file %s in mapping\n",fileName);
+    }
   }
 }
 
@@ -225,19 +324,28 @@ void ClangParser::finish()
 {
   static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
   if (!clangAssistedParsing) return;
-  //printf("ClangParser::finish()\n");
-  delete[] p->cursors;
-  clang_disposeTokens(p->tu,p->tokens,p->numTokens);
-  clang_disposeTranslationUnit(p->tu);
-  clang_disposeIndex(p->index);
-  free((void *)p->uf.Filename);
-  p->source.resize(0);
-  p->uf.Contents = 0;
-  p->uf.Filename = 0;
-  p->uf.Contents = 0;
-  p->tokens    = 0;
-  p->numTokens = 0;
-  p->cursors   = 0;
+  if (p->tu)
+  {
+    //printf("ClangParser::finish()\n");
+    delete[] p->cursors;
+    clang_disposeTokens(p->tu,p->tokens,p->numTokens);
+    clang_disposeTranslationUnit(p->tu);
+    clang_disposeIndex(p->index);
+    p->fileMapping.clear();
+    p->tokens    = 0;
+    p->numTokens = 0;
+    p->cursors   = 0;
+  }
+  for (uint i=0;i<p->numFiles;i++)
+  {
+    free((void *)p->ufs[i].Filename);
+  }
+  delete[] p->ufs;
+  delete[] p->sources;
+  p->ufs       = 0;
+  p->sources   = 0;
+  p->numFiles  = 0;
+  p->tu        = 0;
 }
 
 int ClangParser::Private::getCurrentTokenLine()
@@ -251,9 +359,6 @@ int ClangParser::Private::getCurrentTokenLine()
   return l;
 }
 
-/** Looks for \a symbol which should be found at \a line and returns
- *  a Clang unique identifier for the symbol. 
- */
 QCString ClangParser::lookup(uint line,const char *symbol)
 {
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
@@ -405,14 +510,23 @@ static QCString keywordToType(const char *keyword)
   return "keyword";
 }
 
-static void writeLineNumber(OutputList &ol,FileDef *fd,uint line)
+static void writeLineNumber(CodeOutputInterface &ol,FileDef *fd,uint line)
 {
   Definition *d = fd ? fd->getSourceDefinition(line) : 0;
   if (d && d->isLinkable())
   {
+    g_currentDefinition=d;
+    g_currentLine=line;
     MemberDef *md = fd->getSourceMember(line);
     if (md && md->isLinkable())  // link to member
     {
+      if (g_currentMemberDef!=md) // new member, start search for body
+      {
+        g_searchForBody=TRUE;
+        g_insideBody=FALSE;
+        g_bracketCount=0;
+      }
+      g_currentMemberDef=md;
       ol.writeLineNumber(md->getReference(),
                          md->getOutputFileBase(),
                          md->anchor(),
@@ -420,6 +534,7 @@ static void writeLineNumber(OutputList &ol,FileDef *fd,uint line)
     }
     else // link to compound
     {
+      g_currentMemberDef=0;
       ol.writeLineNumber(d->getReference(),
                          d->getOutputFileBase(),
                          d->anchor(),
@@ -430,9 +545,19 @@ static void writeLineNumber(OutputList &ol,FileDef *fd,uint line)
   {
     ol.writeLineNumber(0,0,0,line);
   }
+
+  // set search page target
+  if (Doxygen::searchIndex)
+  {
+    QCString lineAnchor;
+    lineAnchor.sprintf("l%05d",line);
+    ol.setCurrentDoc(fd,lineAnchor,TRUE);
+  }
+
+  //printf("writeLineNumber(%d) g_searchForBody=%d\n",line,g_searchForBody);
 }
 
-static void codifyLines(OutputList &ol,FileDef *fd,const char *text,
+static void codifyLines(CodeOutputInterface &ol,FileDef *fd,const char *text,
                         uint &line,uint &column,const char *fontClass=0)
 {
   if (fontClass) ol.startFontClass(fontClass);
@@ -468,7 +593,7 @@ static void codifyLines(OutputList &ol,FileDef *fd,const char *text,
   if (fontClass) ol.endFontClass();
 }
 
-static void writeMultiLineCodeLink(OutputList &ol,
+static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   FileDef *fd,uint &line,uint &column,
                   const char *ref,const char *file,
                   const char *anchor,const char *text,
@@ -500,23 +625,26 @@ static void writeMultiLineCodeLink(OutputList &ol,
   }
 }
 
-void ClangParser::linkInclude(OutputList &ol,FileDef *fd,
+void ClangParser::linkInclude(CodeOutputInterface &ol,FileDef *fd,
     uint &line,uint &column,const char *text)
 {
   QCString incName = text;
   incName = incName.mid(1,incName.length()-2); // strip ".." or  <..>
   FileDef *ifd=0;
-  FileName *fn = Doxygen::inputNameDict->find(incName);
-  if (fn)
+  if (!incName.isEmpty())
   {
-    bool found=false;
-    FileNameIterator fni(*fn);
-    // for each include name
-    for (fni.toFirst();!found && (ifd=fni.current());++fni)
+    FileName *fn = Doxygen::inputNameDict->find(incName);
+    if (fn)
     {
-      // see if this source file actually includes the file
-      found = fd->isIncluded(ifd->absFilePath());
-      //printf("      include file %s found=%d\n",ifd->absFilePath().data(),found);
+      bool found=false;
+      FileNameIterator fni(*fn);
+      // for each include name
+      for (fni.toFirst();!found && (ifd=fni.current());++fni)
+      {
+        // see if this source file actually includes the file
+        found = fd->isIncluded(ifd->absFilePath());
+        //printf("      include file %s found=%d\n",ifd->absFilePath().data(),found);
+      }
     }
   }
   if (ifd)
@@ -529,7 +657,7 @@ void ClangParser::linkInclude(OutputList &ol,FileDef *fd,
   }
 }
 
-void ClangParser::linkMacro(OutputList &ol,FileDef *fd,
+void ClangParser::linkMacro(CodeOutputInterface &ol,FileDef *fd,
     uint &line,uint &column,const char *text)
 {
   MemberName *mn=Doxygen::functionNameSDict->find(text);
@@ -556,7 +684,8 @@ void ClangParser::linkMacro(OutputList &ol,FileDef *fd,
   codifyLines(ol,fd,text,line,column);
 }
 
-void ClangParser::linkIdentifier(OutputList &ol,FileDef *fd,
+
+void ClangParser::linkIdentifier(CodeOutputInterface &ol,FileDef *fd,
     uint &line,uint &column,const char *text,int tokenIndex)
 {
   CXCursor c = p->cursors[tokenIndex];
@@ -587,6 +716,12 @@ void ClangParser::linkIdentifier(OutputList &ol,FileDef *fd,
   //}
   if (d && d->isLinkable())
   {
+    if (g_insideBody &&
+        g_currentMemberDef && d->definitionType()==Definition::TypeMember && 
+        (g_currentMemberDef!=d || g_currentLine<line)) // avoid self-reference
+    {
+      addDocCrossReference(g_currentMemberDef,(MemberDef*)d);
+    }
     writeMultiLineCodeLink(ol,
         fd,line,column,
         d->getReference(),
@@ -603,8 +738,46 @@ void ClangParser::linkIdentifier(OutputList &ol,FileDef *fd,
   clang_disposeString(usr);
 }
 
-void ClangParser::writeSources(OutputList &ol,FileDef *fd)
+static void detectFunctionBody(const char *s)
 {
+  //printf("punct=%s g_searchForBody=%d g_insideBody=%d g_bracketCount=%d\n",
+  //  s,g_searchForBody,g_insideBody,g_bracketCount);
+
+  if (g_searchForBody && (qstrcmp(s,":")==0 || qstrcmp(s,"{")==0)) // start of 'body' (: is for constructor)
+  {
+    g_searchForBody=FALSE;
+    g_insideBody=TRUE;
+  }
+  else if (g_searchForBody && qstrcmp(s,";")==0) // declaration only
+  {
+    g_searchForBody=FALSE;
+    g_insideBody=FALSE;
+  }
+  if (g_insideBody && qstrcmp(s,"{")==0) // increase scoping level
+  {
+    g_bracketCount++;
+  }
+  if (g_insideBody && qstrcmp(s,"}")==0) // decrease scoping level
+  {
+    g_bracketCount--;
+    if (g_bracketCount<=0) // got outside of function body
+    {
+      g_insideBody=FALSE;
+      g_bracketCount=0;
+    }
+  }
+}
+
+void ClangParser::writeSources(CodeOutputInterface &ol,FileDef *fd)
+{
+  // (re)set global parser state
+  g_currentDefinition=0;
+  g_currentMemberDef=0;
+  g_currentLine=0;
+  g_searchForBody=FALSE;
+  g_insideBody=FALSE;
+  g_bracketCount=0;
+
   unsigned int line=1,column=1;
   QCString lineNumber,lineAnchor;
   ol.startCodeLine(TRUE);
@@ -659,9 +832,12 @@ void ClangParser::writeSources(OutputList &ol,FileDef *fd)
       case CXToken_Comment: 
         codifyLines(ol,fd,s,line,column,"comment");
         break;
-        //case CXToken_Punctuation: return "CXToken_Punctation";
-        //case CXToken_Identifier: return "CXToken_Indentifier";
-      default: 
+      default:  // CXToken_Punctuation or CXToken_Identifier
+        if (tokenKind==CXToken_Punctuation)
+        {
+          detectFunctionBody(s);
+          //printf("punct %s: %d\n",s,cursorKind);
+        }
         switch (cursorKind)
         {
           case CXCursor_PreprocessingDirective:
@@ -677,9 +853,20 @@ void ClangParser::writeSources(OutputList &ol,FileDef *fd)
             linkMacro(ol,fd,line,column,s);
             break;
           default:
-            if (tokenKind==CXToken_Identifier)
+            if (tokenKind==CXToken_Identifier ||
+                (tokenKind==CXToken_Punctuation && // for operators
+                 (cursorKind==CXCursor_DeclRefExpr ||
+                  cursorKind==CXCursor_MemberRefExpr ||
+                  cursorKind==CXCursor_CallExpr ||
+                  cursorKind==CXCursor_ObjCMessageExpr)
+                 )
+               )
             {
               linkIdentifier(ol,fd,line,column,s,i);
+              if (Doxygen::searchIndex)
+              {
+                ol.addWord(s,FALSE);
+              }
             }
             else
             {
@@ -706,7 +893,11 @@ ClangParser::~ClangParser()
 //--------------------------------------------------------------------------
 #else // use stubbed functionality in case libclang support is disabled.
 
-void ClangParser::start(const char *)
+void ClangParser::start(const char *,QStrList &)
+{
+}
+
+void ClangParser::switchToFile(const char *)
 {
 }
 
@@ -719,7 +910,7 @@ QCString ClangParser::lookup(uint,const char *)
   return "";
 }
 
-void ClangParser::writeSources(OutputList &,FileDef *)
+void ClangParser::writeSources(CodeOutputInterface &,FileDef *)
 {
 }
 

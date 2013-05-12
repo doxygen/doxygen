@@ -155,7 +155,6 @@ SDict<DirRelation> Doxygen::dirRelations(257);
 ParserManager   *Doxygen::parserManager = 0;
 QCString Doxygen::htmlFileExtension;
 bool             Doxygen::suppressDocWarnings = FALSE;
-ObjCache        *Doxygen::symbolCache = 0;
 Store           *Doxygen::symbolStorage;
 QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
@@ -208,7 +207,7 @@ void clearAll()
 class Statistics 
 {
   public:
-    Statistics() {}
+    Statistics() { stats.setAutoDelete(TRUE); }
     void begin(const char *name)
     {
       msg(name);
@@ -778,7 +777,7 @@ static void buildFileList(EntryNav *rootNav)
       {
         warn(
             root->fileName,root->startLine,
-            "warning: file %s already documented. "
+            "file %s already documented. "
             "Skipping documentation.",
             root->name.data()
             );
@@ -812,7 +811,7 @@ static void buildFileList(EntryNav *rootNav)
     {
       const char *fn = root->fileName.data();
       QCString text(4096);
-      text.sprintf("warning: the name `%s' supplied as "
+      text.sprintf("the name `%s' supplied as "
           "the second argument in the \\file statement ",
           qPrint(root->name));
       if (ambig) // name is ambiguous
@@ -867,7 +866,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
        )
     { // explicit request
       QCString text;
-      text.sprintf("warning: the name `%s' supplied as "
+      text.sprintf("the name `%s' supplied as "
                   "the argument of the \\class, \\struct, \\union, or \\include command ",
                   qPrint(includeFile)
                  );
@@ -1442,7 +1441,7 @@ static void resolveClassNestingRelations()
         d->addInnerCompound(cd);
         cd->setOuterScope(d);
         warn(cd->getDefFileName(),cd->getDefLine(),
-            "warning: Internal inconsistency: scope for class %s not "
+            "Internal inconsistency: scope for class %s not "
             "found!",name.data()
             );
       }
@@ -1515,7 +1514,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
     cd->setFileDef(fd);
     fd->insertClass(cd);
   }
-  LockingPtr<GroupList> groups = rootCd->partOfGroups();
+  GroupList *groups = rootCd->partOfGroups();
   if ( groups!=0 )
   {
     GroupListIterator gli(*groups);
@@ -2112,14 +2111,14 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   //printf("found member %s\n",mni->memberName());
                   MemberDef *newMd = 0;
                   {
-                    LockingPtr<ArgumentList> templAl = md->templateArguments();
-                    LockingPtr<ArgumentList> al = md->templateArguments();
+                    ArgumentList *templAl = md->templateArguments();
+                    ArgumentList *al = md->templateArguments();
                     newMd = new MemberDef(
                       root->fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
                       md->isStatic(),Member,md->memberType(),
-                      templAl.pointer(),al.pointer()
+                      templAl,al
                       );
                   }
                   newMd->setMemberClass(cd);
@@ -3094,8 +3093,9 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   // add member to the class cd
   cd->insertMember(md);
   // also add the member as a "base" (to get nicer diagrams)
-  // hmm... should "optional" interface/service be handled differently?
-  BaseInfo base(rname,Public,Normal);
+  // "optional" interface/service get Protected which turns into dashed line
+  BaseInfo base(rname,
+          (root->spec & (Entry::Optional)) ? Protected : Public,Normal);
   findClassRelation(rootNav,cd,cd,&base,0,DocumentedOnly,true)
   || findClassRelation(rootNav,cd,cd,&base,0,Undocumented,true);
   // add file to list of used files
@@ -3154,7 +3154,7 @@ static void buildInterfaceAndServiceList(EntryNav *const rootNav)
     else if (rname.isEmpty())
     {
       warn(root->fileName,root->startLine,
-           "warning: Illegal member name found.");
+           "Illegal member name found.");
     }
 
     rootNav->releaseEntry();
@@ -3486,8 +3486,8 @@ static void buildFunctionList(EntryNav *rootNav)
             if (rnd) rnsName = rnd->name().copy();
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
-            LockingPtr<ArgumentList> mdAl = md->argumentList();
-            LockingPtr<ArgumentList> mdTempl = md->templateArguments();
+            ArgumentList *mdAl = md->argumentList();
+            ArgumentList *mdTempl = md->templateArguments();
 
             // in case of template functions, we need to check if the
             // functions have the same number of template parameters
@@ -3509,7 +3509,7 @@ static void buildFunctionList(EntryNav *rootNav)
                     root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
 
             if (
-                matchArguments2(md->getOuterScope(),mfd,mdAl.pointer(),
+                matchArguments2(md->getOuterScope(),mfd,mdAl,
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
                                 FALSE) &&
                 sameNumTemplateArgs && 
@@ -3543,7 +3543,7 @@ static void buildFunctionList(EntryNav *rootNav)
               if (found)
               {
                 // merge argument lists
-                mergeArguments(mdAl.pointer(),root->argList,!root->doc.isEmpty());
+                mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
                 // merge documentation
                 if (md->documentation().isEmpty() && !root->doc.isEmpty())
                 {
@@ -3762,7 +3762,7 @@ static void buildFunctionList(EntryNav *rootNav)
     else if (rname.isEmpty())
     {
         warn(root->fileName,root->startLine,
-             "warning: Illegal member name found."
+             "Illegal member name found."
             );
     }
 
@@ -3796,18 +3796,18 @@ static void findFriends()
           //printf("Checking for matching arguments 
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
-          LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
-          LockingPtr<ArgumentList> fmdAl = fmd->argumentList();
+          ArgumentList *mmdAl = mmd->argumentList();
+          ArgumentList *fmdAl = fmd->argumentList();
           if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
-              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmdAl.pointer(),
-                              fmd->getOuterScope(), fmd->getFileDef(), fmdAl.pointer(),
+              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmdAl,
+                              fmd->getOuterScope(), fmd->getFileDef(), fmdAl,
                               TRUE
                              )
                              
              ) // if the member is related and the arguments match then the 
                // function is actually a friend.
           {
-            mergeArguments(mmdAl.pointer(),fmdAl.pointer());
+            mergeArguments(mmdAl,fmdAl);
             if (!fmd->documentation().isEmpty())
             {
               mmd->setDocumentation(fmd->documentation(),fmd->docFile(),fmd->docLine());
@@ -3914,17 +3914,17 @@ static void transferFunctionReferences()
     }
     if (mdef && mdec)
     {
-      LockingPtr<ArgumentList> mdefAl = mdef->argumentList();
-      LockingPtr<ArgumentList> mdecAl = mdec->argumentList();
+      ArgumentList *mdefAl = mdef->argumentList();
+      ArgumentList *mdecAl = mdec->argumentList();
       if (
-          matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdefAl.pointer(),
-                          mdec->getOuterScope(),mdec->getFileDef(),mdecAl.pointer(),
+          matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdefAl,
+                          mdec->getOuterScope(),mdec->getFileDef(),mdecAl,
                           TRUE
             )
          ) /* match found */
       {
-        LockingPtr<MemberSDict> defDict = mdef->getReferencesMembers();
-        LockingPtr<MemberSDict> decDict = mdec->getReferencesMembers();
+        MemberSDict *defDict = mdef->getReferencesMembers();
+        MemberSDict *decDict = mdec->getReferencesMembers();
         if (defDict!=0)
         {
           MemberSDict::IteratorDict msdi(*defDict);
@@ -3933,8 +3933,7 @@ static void transferFunctionReferences()
           {
             if (decDict==0 || decDict->find(rmd->name())==0)
             {
-              printf("CURRENT_KEY:%s\n",msdi.currentKey().data());
-              mdec->addSourceReferences(rmd,msdi.currentKey());
+              mdec->addSourceReferences(rmd);
             }
           }
         }
@@ -3946,8 +3945,7 @@ static void transferFunctionReferences()
           {
             if (defDict==0 || defDict->find(rmd->name())==0)
             {
-              printf("CURRENT_KEY:%s\n",msdi.currentKey().data());
-              mdef->addSourceReferences(rmd,msdi.currentKey());
+              mdef->addSourceReferences(rmd);
             }
           }
         }
@@ -3962,7 +3960,7 @@ static void transferFunctionReferences()
           {
             if (decDict==0 || decDict->find(rmd->name())==0)
             {
-              mdec->addSourceReferencedBy(rmd,msdi.currentKey());
+              mdec->addSourceReferencedBy(rmd);
             }
           }
         }
@@ -3974,7 +3972,7 @@ static void transferFunctionReferences()
           {
             if (defDict==0 || defDict->find(rmd->name())==0)
             {
-              mdef->addSourceReferencedBy(rmd,msdi.currentKey());
+              mdef->addSourceReferencedBy(rmd);
             }
           }
         }
@@ -4007,12 +4005,12 @@ static void transferRelatedFunctionDocumentation()
         MemberNameIterator rmni(*rmn);
         for (rmni.toFirst();(rmd=rmni.current());++rmni) // for each member with the same name
         {
-          LockingPtr<ArgumentList>  mdAl = md->argumentList();
-          LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
+          ArgumentList *mdAl = md->argumentList();
+          ArgumentList *rmdAl = rmd->argumentList();
           //printf("  Member found: related=`%d'\n",rmd->isRelated());
           if ((rmd->isRelated() || rmd->isForeign()) && // related function
-              matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
-                              rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
+              matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl,
+                              rmd->getOuterScope(),rmd->getFileDef(),rmdAl,
                               TRUE
                              )
              )
@@ -4592,7 +4590,13 @@ static bool findClassRelation(
       //   ) // Check for base class with the same name.
       //     // If found then look in the outer scope for a match
       //     // and prevent recursion.
-      if (!isRecursiveBaseClass(rootNav->name(),baseClassName) || explicitGlobalScope)
+      if (!isRecursiveBaseClass(rootNav->name(),baseClassName)
+          || explicitGlobalScope
+          // sadly isRecursiveBaseClass always true for UNO IDL ifc/svc members
+          // (i.e. this is needed for addInterfaceOrServiceToServiceOrSingleton)
+          || (rootNav->lang()==SrcLangExt_IDL &&
+              (rootNav->section()==Entry::EXPORTED_INTERFACE_SEC ||
+               rootNav->section()==Entry::INCLUDED_SERVICE_SEC)))
       {
         Debug::print(
             Debug::Classes,0,"    class relation %s inherited/used by %s found (%s and %s) templSpec='%s'\n",
@@ -4983,7 +4987,7 @@ static void computeClassRelations()
          )
         warn_undoc(
                    root->fileName,root->startLine,
-                   "warning: Compound %s is not documented.",
+                   "Compound %s is not documented.",
                    root->name.data()
              );
     }
@@ -5172,8 +5176,8 @@ static void addListReferences()
       name = pd->getGroupDef()->getOutputFileBase();
     }
     {
-      LockingPtr< QList<ListItemInfo> > xrefItems = pd->xrefListItems();
-      addRefItem(xrefItems.pointer(),
+      QList<ListItemInfo> *xrefItems = pd->xrefListItems();
+      addRefItem(xrefItems,
           name,
           theTranslator->trPage(TRUE,TRUE),
           name,pd->title(),0);
@@ -5188,8 +5192,8 @@ static void addListReferences()
     //{
     //  name = dd->getGroupDef()->getOutputFileBase();
     //}
-    LockingPtr< QList<ListItemInfo> > xrefItems = dd->xrefListItems();
-    addRefItem(xrefItems.pointer(),
+    QList<ListItemInfo> *xrefItems = dd->xrefListItems();
+    addRefItem(xrefItems,
         name,
         theTranslator->trDir(TRUE,TRUE),
         name,dd->displayName(),0);
@@ -5244,23 +5248,23 @@ static void addMemberDocs(EntryNav *rootNav,
   // TODO determine scope based on root not md
   Definition *rscope = md->getOuterScope();
 
-  LockingPtr<ArgumentList> mdAl = md->argumentList();
+  ArgumentList *mdAl = md->argumentList();
   if (al)
   {
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    mergeArguments(mdAl.pointer(),al,!root->doc.isEmpty());
+    mergeArguments(mdAl,al,!root->doc.isEmpty());
   }
   else
   {
     if ( 
-          matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
+          matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl,
                            rscope,rfd,root->argList,
                            TRUE
                          )
        ) 
     {
       //printf("merging arguments (2)\n");
-      mergeArguments(mdAl.pointer(),root->argList,!root->doc.isEmpty());
+      mergeArguments(mdAl,root->argList,!root->doc.isEmpty());
     }
   }
   if (over_load)  // the \overload keyword was used
@@ -5335,7 +5339,7 @@ static void addMemberDocs(EntryNav *rootNav,
       {
         warn(
              root->fileName,root->startLine,
-             "warning: member %s belongs to two different groups. The second "
+             "member %s belongs to two different groups. The second "
              "one found here will be ignored.",
              md->name().data()
             );
@@ -5422,11 +5426,11 @@ static bool findGlobalMember(EntryNav *rootNav,
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
 
-        LockingPtr<ArgumentList> mdAl = md->argumentList();
+        ArgumentList *mdAl = md->argumentList();
         bool matching=
           (mdAl==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-          matchArguments2(md->getOuterScope(),md->getFileDef(),mdAl.pointer(),
+          matchArguments2(md->getOuterScope(),md->getFileDef(),mdAl,
                           rnd ? rnd : Doxygen::globalScope,fd,root->argList,
                           FALSE);
 
@@ -5435,8 +5439,8 @@ static bool findGlobalMember(EntryNav *rootNav,
         // different functions.
         if (matching && root->tArgLists)
         {
-          LockingPtr<ArgumentList> mdTempl = md->templateArguments();
-          if (mdTempl!=0)
+          ArgumentList *mdTempl = md->templateArguments();
+          if (mdTempl)
           {
             if (root->tArgLists->getLast()->count()!=mdTempl->count())
             {
@@ -5486,7 +5490,7 @@ static bool findGlobalMember(EntryNav *rootNav,
       QCString fullFuncDecl=decl;
       if (root->argList) fullFuncDecl+=argListToString(root->argList,TRUE);
       QCString warnMsg =
-         QCString("warning: no matching file member found for \n")+substitute(fullFuncDecl,"%","%%");
+         QCString("no matching file member found for \n")+substitute(fullFuncDecl,"%","%%");
       if (mn->count()>0)
       {
         warnMsg+="\nPossible candidates:\n";
@@ -5511,7 +5515,7 @@ static bool findGlobalMember(EntryNav *rootNav,
        )
     {
       warn(root->fileName,root->startLine,
-           "warning: documented symbol `%s' was not declared or defined.",decl
+           "documented symbol `%s' was not declared or defined.",decl
           );
     }
   }
@@ -6040,10 +6044,10 @@ static void findMember(EntryNav *rootNav,
               // get the template parameter lists found at the member declaration
               QList<ArgumentList> declTemplArgs;
               cd->getTemplateParameterLists(declTemplArgs);
-              LockingPtr<ArgumentList> templAl = md->templateArguments();
-              if (templAl!=0)
+              ArgumentList *templAl = md->templateArguments();
+              if (templAl)
               {
-                declTemplArgs.append(templAl.pointer());
+                declTemplArgs.append(templAl);
               }
 
               // get the template parameter lists found at the member definition
@@ -6057,10 +6061,10 @@ static void findMember(EntryNav *rootNav,
               /* substitute the occurrences of class template names in the 
                * argument list before matching 
                */
-              LockingPtr<ArgumentList> mdAl = md->argumentList();
+              ArgumentList *mdAl = md->argumentList();
               if (declTemplArgs.count()>0 && defTemplArgs &&
                   declTemplArgs.count()==defTemplArgs->count() &&
-                  mdAl.pointer()
+                  mdAl
                  )
               {
                 /* the function definition has template arguments
@@ -6070,13 +6074,13 @@ static void findMember(EntryNav *rootNav,
                  */
                 argList = new ArgumentList;
                 substituteTemplatesInArgList(declTemplArgs,*defTemplArgs,
-                    mdAl.pointer(),argList);
+                    mdAl,argList);
 
                 substDone=TRUE;
               }
               else /* no template arguments, compare argument lists directly */
               {
-                argList = mdAl.pointer();
+                argList = mdAl;
               }
 
               Debug::print(Debug::FindMembers,0,
@@ -6087,7 +6091,7 @@ static void findMember(EntryNav *rootNav,
 
               bool matching=
                 md->isVariable() || md->isTypedef() || // needed for function pointers
-                (mdAl.pointer()==0 && root->argList->count()==0) || 
+                (mdAl==0 && root->argList->count()==0) || 
                 matchArguments2(
                     md->getClassDef(),md->getFileDef(),argList, 
                     cd,fd,root->argList,
@@ -6173,7 +6177,7 @@ static void findMember(EntryNav *rootNav,
                 //printf("ccd->name()==%s className=%s\n",ccd->name().data(),className.data());
                 if (ccd!=0 && rightScopeMatch(ccd->name(),className)) 
                 {
-                  LockingPtr<ArgumentList> templAl = md->templateArguments();
+                  ArgumentList *templAl = md->templateArguments();
                   if (root->tArgLists && templAl!=0 &&
                       root->tArgLists->getLast()->count()<=templAl->count())
                   { 
@@ -6220,7 +6224,7 @@ static void findMember(EntryNav *rootNav,
               }
             }
 
-            QCString warnMsg = "warning: no ";
+            QCString warnMsg = "no ";
             if (noMatchCount>1) warnMsg+="uniquely ";
             warnMsg+="matching class member found for \n";
 
@@ -6250,11 +6254,11 @@ static void findMember(EntryNav *rootNav,
                 ClassDef *cd=md->getClassDef();
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
-                  LockingPtr<ArgumentList> templAl = md->templateArguments();
+                  ArgumentList *templAl = md->templateArguments();
                   if (templAl!=0)
                   {
                     warnMsg+="  'template ";
-                    warnMsg+=tempArgListToString(templAl.pointer());
+                    warnMsg+=tempArgListToString(templAl);
                     warnMsg+='\n';
                   }
                   warnMsg+="  ";
@@ -6404,7 +6408,7 @@ static void findMember(EntryNav *rootNav,
           QCString fullFuncDecl=funcDecl.copy();
           if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
           warn(root->fileName,root->startLine,
-               "warning: Cannot determine class for function\n%s",
+               "Cannot determine class for function\n%s",
                fullFuncDecl.data()
               );   
         }
@@ -6448,11 +6452,11 @@ static void findMember(EntryNav *rootNav,
           MemberDef *rmd=mn->first();
           while (rmd && newMember) // see if we got another member with matching arguments
           {
-            LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
+            ArgumentList *rmdAl = rmd->argumentList();
 
             newMember=
               className!=rmd->getOuterScope()->name() ||
-              !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
+              !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl,
                                cd,fd,root->argList,
                                TRUE);
             if (newMember) rmd=mn->next();
@@ -6542,10 +6546,10 @@ static void findMember(EntryNav *rootNav,
               MemberDef *rmd=rmn->first();
               while (rmd && !found) // see if we got another member with matching arguments
               {
-                LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
+                ArgumentList *rmdAl = rmd->argumentList();
                 // check for matching argument lists
                 if (
-                    matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
+                    matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl,
                                     cd,fd,root->argList,
                                     TRUE)
                    )
@@ -6612,7 +6616,7 @@ static void findMember(EntryNav *rootNav,
             QCString fullFuncDecl=funcDecl.copy();
             if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
             warn(root->fileName,root->startLine,
-               "warning: Cannot determine file/namespace for relatedalso function\n%s",
+               "Cannot determine file/namespace for relatedalso function\n%s",
                fullFuncDecl.data()
               );   
           }
@@ -6621,7 +6625,7 @@ static void findMember(EntryNav *rootNav,
       else
       {
         warn_undoc(root->fileName,root->startLine,
-                   "warning: class `%s' for related function `%s' is not "
+                   "class `%s' for related function `%s' is not "
                    "documented.", 
                    className.data(),funcName.data()
                   );
@@ -6686,14 +6690,14 @@ localObjCMethod:
       if (className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
-             "warning: class for member `%s' cannot "
+             "class for member `%s' cannot "
              "be found.", funcName.data()
             ); 
       }
       else if (!className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
-             "warning: member `%s' of class `%s' cannot be found",
+             "member `%s' of class `%s' cannot be found",
              funcName.data(),className.data());
       }
     }
@@ -6702,7 +6706,7 @@ localObjCMethod:
   {
     // this should not be called
     warn(root->fileName,root->startLine,
-         "warning: member with no name found.");
+         "member with no name found.");
   }
   return;
 } 
@@ -7428,7 +7432,7 @@ static void findEnumDocumentation(EntryNav *rootNav)
       if (!found)
       {
         warn(root->fileName,root->startLine,
-             "warning: Documentation for undefined enum `%s' found.",
+             "Documentation for undefined enum `%s' found.",
              name.data()
             );
       }
@@ -7455,9 +7459,9 @@ static void findDEV(const MemberNameSDict &mnsd)
     {
       if (md->isEnumerate()) // member is an enum
       {
-        LockingPtr<MemberList> fmdl = md->enumFieldList();
+        MemberList *fmdl = md->enumFieldList();
         int documentedEnumValues=0;
-        if (fmdl!=0) // enum has values
+        if (fmdl) // enum has values
         {
           MemberListIterator fmni(*fmdl);
           MemberDef *fmd;
@@ -7557,15 +7561,15 @@ static void computeMemberRelations()
               mcd->isBaseClass(bmcd,TRUE))
           {
             //printf("  derived scope\n");
-            LockingPtr<ArgumentList> bmdAl = bmd->argumentList();
-            LockingPtr<ArgumentList>  mdAl =  md->argumentList();
+            ArgumentList *bmdAl = bmd->argumentList();
+            ArgumentList *mdAl =  md->argumentList();
             //printf(" Base argList=`%s'\n Super argList=`%s'\n",
             //        argListToString(bmdAl.pointer()).data(),
             //        argListToString(mdAl.pointer()).data()
             //      );
             if ( 
-                matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmdAl.pointer(),
-                  md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
+                matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmdAl,
+                  md->getOuterScope(), md->getFileDef(), mdAl,
                   TRUE
                   ) 
                )
@@ -7679,24 +7683,136 @@ static void generateFileSources()
 {
   if (Doxygen::inputNameList->count()>0)
   {
-    FileNameListIterator fnli(*Doxygen::inputNameList); 
-    FileName *fn;
-    for (;(fn=fnli.current());++fnli)
+#if USE_LIBCLANG
+    static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+    if (clangAssistedParsing)
     {
-      FileNameIterator fni(*fn);
-      FileDef *fd;
-      for (;(fd=fni.current());++fni)
+      QDict<void> g_processedFiles(10007);
+
+      // create a dictionary with files to process
+      QDict<void> g_filesToProcess(10007);
+      FileNameListIterator fnli(*Doxygen::inputNameList); 
+      FileName *fn;
+      for (fnli.toFirst();(fn=fnli.current());++fnli)
       {
-        if (fd->generateSourceFile()) // sources need to be shown in the output
+        FileNameIterator fni(*fn);
+        FileDef *fd;
+        for (;(fd=fni.current());++fni)
         {
-          msg("Generating code for file %s...\n",fd->docName().data());
-          fd->writeSource(*g_outputList);
+          g_filesToProcess.insert(fd->absFilePath(),(void*)0x8);
         }
-        else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
-          // we needed to parse the sources even if we do not show them
+      }
+      // process source files (and their include dependencies)
+      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      {
+        FileNameIterator fni(*fn);
+        FileDef *fd;
+        for (;(fd=fni.current());++fni)
         {
-          msg("Parsing code for file %s...\n",fd->docName().data());
-          fd->parseSource();
+          if (fd->isSource() && !fd->isReference())
+          {
+            QStrList filesInSameTu;
+            fd->getAllIncludeFilesRecursively(filesInSameTu);
+            fd->startParsing();
+            if (fd->generateSourceFile()) // sources need to be shown in the output
+            {
+              msg("Generating code for file %s...\n",fd->docName().data());
+              fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+
+            }
+            else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
+              // we needed to parse the sources even if we do not show them
+            {
+              msg("Parsing code for file %s...\n",fd->docName().data());
+              fd->parseSource(FALSE,filesInSameTu);
+            }
+
+            char *incFile = filesInSameTu.first();
+            while (incFile && g_filesToProcess.find(incFile))
+            {
+              if (fd->absFilePath()!=incFile && !g_processedFiles.find(incFile))
+              {
+                QStrList moreFiles;
+                bool ambig;
+                FileDef *ifd=findFileDef(Doxygen::inputNameDict,incFile,ambig);
+                if (ifd && !ifd->isReference())
+                {
+                  if (ifd->generateSourceFile()) // sources need to be shown in the output
+                  {
+                    msg(" Generating code for file %s...\n",ifd->docName().data());
+                    ifd->writeSource(*g_outputList,TRUE,moreFiles);
+
+                  }
+                  else if (!ifd->isReference() && Doxygen::parseSourcesNeeded)
+                    // we needed to parse the sources even if we do not show them
+                  {
+                    msg(" Parsing code for file %s...\n",ifd->docName().data());
+                    ifd->parseSource(TRUE,moreFiles);
+                  }
+                  g_processedFiles.insert(incFile,(void*)0x8);
+                }
+              }
+              incFile = filesInSameTu.next();
+            }
+            fd->finishParsing();
+            g_processedFiles.insert(fd->absFilePath(),(void*)0x8);
+          }
+        }
+      }
+      // process remaining files
+      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      {
+        FileNameIterator fni(*fn);
+        FileDef *fd;
+        for (;(fd=fni.current());++fni)
+        {
+          if (!g_processedFiles.find(fd->absFilePath())) // not yet processed
+          {
+            QStrList filesInSameTu;
+            fd->startParsing();
+            if (fd->generateSourceFile()) // sources need to be shown in the output
+            {
+              msg("Generating code for file %s...\n",fd->docName().data());
+              fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+
+            }
+            else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
+              // we needed to parse the sources even if we do not show them
+            {
+              msg("Parsing code for file %s...\n",fd->docName().data());
+              fd->parseSource(FALSE,filesInSameTu);
+            }
+            fd->finishParsing();
+          }
+        }
+      }
+    }
+    else
+#endif
+    {
+      FileNameListIterator fnli(*Doxygen::inputNameList); 
+      FileName *fn;
+      for (;(fn=fnli.current());++fnli)
+      {
+        FileNameIterator fni(*fn);
+        FileDef *fd;
+        for (;(fd=fni.current());++fni)
+        {
+          QStrList filesInSameTu;
+          fd->startParsing();
+          if (fd->generateSourceFile()) // sources need to be shown in the output
+          {
+            msg("Generating code for file %s...\n",fd->docName().data());
+            fd->writeSource(*g_outputList,FALSE,filesInSameTu);
+
+          }
+          else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
+            // we needed to parse the sources even if we do not show them
+          {
+            msg("Parsing code for file %s...\n",fd->docName().data());
+            fd->parseSource(FALSE,filesInSameTu);
+          }
+          fd->finishParsing();
         }
       }
     }
@@ -8304,7 +8420,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
           }
           md=mn->next();
         }
-        //warn("warning: define %s found in the following files:\n",root->name.data());
+        //warn("define %s found in the following files:\n",root->name.data());
         //warn("Cannot determine where to add the documentation found "
         //     "at line %d of file %s. \n",
         //     root->startLine,root->fileName.data());
@@ -8316,14 +8432,14 @@ static void findDefineDocumentation(EntryNav *rootNav)
       if (preEnabled)
       {
         warn(root->fileName,root->startLine,
-             "warning: documentation for unknown define %s found.\n",
+             "documentation for unknown define %s found.\n",
              root->name.data()
             );
       }
       else
       {
         warn(root->fileName,root->startLine,
-             "warning: found documented #define but ignoring it because "
+             "found documented #define but ignoring it because "
              "ENABLE_PREPROCESSING is NO.\n",
              root->name.data()
             );
@@ -8370,7 +8486,7 @@ static void findDirDocumentation(EntryNav *rootNav)
         if (matchingDir)
         {
            warn(root->fileName,root->startLine,
-             "warning: \\dir command matches multiple directories.\n"
+             "\\dir command matches multiple directories.\n"
              "  Applying the command for directory %s\n"
              "  Ignoring the command for directory %s\n",
              matchingDir->name().data(),dir->name().data()
@@ -8392,7 +8508,7 @@ static void findDirDocumentation(EntryNav *rootNav)
     }
     else
     {
-      warn(root->fileName,root->startLine,"warning: No matching "
+      warn(root->fileName,root->startLine,"No matching "
           "directory found for command \\dir %s\n",normalizedName.data());
     }
     rootNav->releaseEntry();
@@ -8474,7 +8590,7 @@ static void findMainPage(EntryNav *rootNav)
     else
     {
       warn(root->fileName,root->startLine,
-           "warning: found more than one \\mainpage comment block! Skipping this "
+           "found more than one \\mainpage comment block! Skipping this "
            "block."
           );
     }
@@ -8530,7 +8646,7 @@ static void checkPageRelations()
     {
       if (ppd==pd)
       {
-        err("warning: page defined at line %d of file %s with label %s is a subpage "
+        err("page defined at line %d of file %s with label %s is a subpage "
             "of itself! Please remove this cyclic dependency.\n",
             pd->docLine(),pd->docFile().data(),pd->name().data());
         exit(1);
@@ -8645,7 +8761,7 @@ static void buildExampleList(EntryNav *rootNav)
     if (Doxygen::exampleSDict->find(root->name))
     {
       warn(root->fileName,root->startLine,
-          "warning: Example %s was already documented. Ignoring "
+          "Example %s was already documented. Ignoring "
           "documentation found here.",
           root->name.data()
           );
@@ -8707,7 +8823,7 @@ static void generateExampleDocs()
     g_outputList->docify(pd->name());
     endTitle(*g_outputList,n,0);
     g_outputList->startContents();
-    g_outputList->parseDoc(pd->docFile(),                            // file
+    g_outputList->generateDoc(pd->docFile(),                            // file
                          pd->docLine(),                            // startLine
                          pd,                                       // context
                          0,                                        // memberDef
@@ -8878,7 +8994,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   }
   else
   {
-    err("error: Cannot open file %s for writing\n",configFile);
+    err("Cannot open file %s for writing\n",configFile);
     exit(1);
   }
 }
@@ -8918,7 +9034,7 @@ static void readTagFile(Entry *root,const char *tl)
   QFileInfo fi(fileName);
   if (!fi.exists() || !fi.isFile())
   {
-    err("error: Tag file `%s' does not exist or is not a file. Skipping it...\n",
+    err("Tag file `%s' does not exist or is not a file. Skipping it...\n",
         fileName.data());
     return;
   }
@@ -9012,62 +9128,174 @@ static void copyExtraFiles(const QCString& filesOption,const QCString &outputOpt
   }
 }
 
+//----------------------------------------------------------------------------
+
+static ParserInterface *getParserForFile(const char *fn)
+{
+  QCString fileName=fn;
+  QCString extension;
+  int ei = fileName.findRev('.');
+  if (ei!=-1)
+  {
+    extension=fileName.right(fileName.length()-ei);
+  }
+  else
+  {
+    extension = ".no_extension";
+  }
+
+  return Doxygen::parserManager->getParser(extension);
+}
+
+static void parseFile(ParserInterface *parser,
+                      Entry *root,EntryNav *rootNav,FileDef *fd,const char *fn,
+                      bool sameTu,QStrList &filesInSameTu)
+{
+#if USE_LIBCLANG
+  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+#else
+  static bool clangAssistedParsing = FALSE;
+#endif
+  QCString fileName=fn;
+  QCString extension;
+  int ei = fileName.findRev('.');
+  if (ei!=-1)
+  {
+    extension=fileName.right(fileName.length()-ei);
+  }
+  else
+  {
+    extension = ".no_extension";
+  }
+
+  QFileInfo fi(fileName);
+  BufStr preBuf(fi.size()+4096);
+
+  if (Config_getBool("ENABLE_PREPROCESSING") && 
+      parser->needsPreprocessing(extension))
+  {
+    BufStr inBuf(fi.size()+4096);
+    msg("Preprocessing %s...\n",fn);
+    readInputFile(fileName,inBuf);
+    preprocessFile(fileName,inBuf,preBuf);
+  }
+  else // no preprocessing
+  {
+    msg("Reading %s...\n",fn);
+    readInputFile(fileName,preBuf);
+  }
+
+  BufStr convBuf(preBuf.curPos()+1024);
+
+  // convert multi-line C++ comments to C style comments
+  convertCppComments(&preBuf,&convBuf,fileName);
+
+  convBuf.addChar('\0');
+
+  if (clangAssistedParsing && !sameTu)
+  {
+    fd->getAllIncludeFilesRecursively(filesInSameTu);
+  }
+
+  // use language parse to parse the file
+  parser->parseInput(fileName,convBuf.data(),root,sameTu,filesInSameTu);
+
+  // store the Entry tree in a file and create an index to
+  // navigate/load entries
+  //printf("root->createNavigationIndex for %s\n",fd->name().data());
+  root->createNavigationIndex(rootNav,g_storage,fd);
+}
+
 //! parse the list of input files
 static void parseFiles(Entry *root,EntryNav *rootNav)
 {
-  QCString *s=g_inputFiles.first();
-  while (s)
+#if USE_LIBCLANG
+  static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
+  if (clangAssistedParsing)
   {
-    QCString fileName=*s;
-    QCString extension;
-    int ei = fileName.findRev('.');
-    if (ei!=-1)
+    QDict<void> g_processedFiles(10007);
+
+    // create a dictionary with files to process
+    QDict<void> g_filesToProcess(10007);
+    QCString *s=g_inputFiles.first();
+    while (s)
     {
-      extension=fileName.right(fileName.length()-ei);
+      g_filesToProcess.insert(*s,(void*)0x8);
+      s=g_inputFiles.next();
     }
-    else
+    s=g_inputFiles.first();
+
+    // process source files (and their include dependencies)
+    while (s)
     {
-      extension = ".no_extension";
+      bool ambig;
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
+      ASSERT(fd!=0);
+      if (fd->isSource() && !fd->isReference()) // this is a source file
+      {
+        QStrList filesInSameTu;
+        ParserInterface * parser = getParserForFile(s->data());
+        parser->startTranslationUnit(s->data());
+        parseFile(parser,root,rootNav,fd,s->data(),FALSE,filesInSameTu);
+        //printf("  got %d extra files in tu\n",filesInSameTu.count());
+
+        // Now process any include files in the same translation unit 
+        // first. When libclang is used this is much more efficient.
+        char *incFile = filesInSameTu.first();
+        while (incFile && g_filesToProcess.find(incFile))
+        {
+          if (qstrcmp(incFile,s->data()) && !g_processedFiles.find(incFile))
+          {
+            FileDef *ifd=findFileDef(Doxygen::inputNameDict,incFile,ambig);
+            if (ifd && !ifd->isReference())
+            {
+              QStrList moreFiles;
+              //printf("  Processing %s in same translation unit as %s\n",incFile,s->data());
+              parseFile(parser,root,rootNav,ifd,incFile,TRUE,moreFiles);
+              g_processedFiles.insert(incFile,(void*)0x8);
+            }
+          }
+          incFile = filesInSameTu.next();
+        }
+        parser->finishTranslationUnit();
+        g_processedFiles.insert(*s,(void*)0x8);
+      }
+      s=g_inputFiles.next();
     }
-
-    ParserInterface *parser = Doxygen::parserManager->getParser(extension);
-
-    QFileInfo fi(fileName);
-    BufStr preBuf(fi.size()+4096);
-
-    if (Config_getBool("ENABLE_PREPROCESSING") && 
-        parser->needsPreprocessing(extension))
+    // process remaining files
+    s=g_inputFiles.first();
+    while (s)
     {
-      BufStr inBuf(fi.size()+4096);
-      msg("Preprocessing %s...\n",s->data());
-      readInputFile(fileName,inBuf);
-      preprocessFile(fileName,inBuf,preBuf);
+      if (!g_processedFiles.find(*s)) // not yet processed
+      {
+        bool ambig;
+        QStrList filesInSameTu;
+        FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
+        ASSERT(fd!=0);
+        ParserInterface * parser = getParserForFile(s->data());
+        parser->startTranslationUnit(s->data());
+        parseFile(parser,root,rootNav,fd,s->data(),FALSE,filesInSameTu);
+        parser->finishTranslationUnit();
+        g_processedFiles.insert(*s,(void*)0x8);
+      }
+      s=g_inputFiles.next();
     }
-    else // no preprocessing
+  }
+  else // normal pocessing
+#endif
+  {
+    QCString *s=g_inputFiles.first();
+    while (s)
     {
-      msg("Reading %s...\n",s->data());
-      readInputFile(fileName,preBuf);
+      bool ambig;
+      QStrList filesInSameTu;
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,s->data(),ambig);
+      ASSERT(fd!=0);
+      ParserInterface * parser = getParserForFile(s->data());
+      parser->startTranslationUnit(s->data());
+      parseFile(parser,root,rootNav,fd,s->data(),FALSE,filesInSameTu);
+      s=g_inputFiles.next();
     }
-
-    BufStr convBuf(preBuf.curPos()+1024);
-
-    // convert multi-line C++ comments to C style comments
-    convertCppComments(&preBuf,&convBuf,fileName);
-
-    convBuf.addChar('\0');
-
-    // use language parse to parse the file
-    parser->parseInput(fileName,convBuf.data(),root);
-
-    // store the Entry tree in a file and create an index to
-    // navigate/load entries
-    bool ambig;
-    FileDef *fd=findFileDef(Doxygen::inputNameDict,fileName,ambig);
-    ASSERT(fd!=0);
-    //printf("root->createNavigationIndex for %s\n",fd->name().data());
-    root->createNavigationIndex(rootNav,g_storage,fd);
-
-    s=g_inputFiles.next();
   }
 }
 
@@ -9194,7 +9422,7 @@ int readDir(QFileInfo *fi,
         {
           if (errorIfNotExist)
           {
-            err("warning: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+            warn_uncond("source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
           }
         }
         else if (cfi->isFile() && 
@@ -9286,7 +9514,7 @@ int readFileOrDirectory(const char *s,
       {
         if (errorIfNotExist)
         {
-          err("warning: source %s is not a readable file or directory... skipping.\n",s);
+          warn_uncond("source %s is not a readable file or directory... skipping.\n",s);
         }
       }
       else if (!Config_getBool("EXCLUDE_SYMLINKS") || !fi.isSymLink())
@@ -9361,7 +9589,7 @@ void readFormulaRepository()
       int se=line.find(':'); // find name and text separator.
       if (se==-1)
       {
-        err("warning: formula.repository is corrupted!\n");
+        warn_uncond("formula.repository is corrupted!\n");
         break;
       }
       else
@@ -9784,7 +10012,7 @@ void readConfiguration(int argc, char **argv)
         formatName=getArg(argc,argv,optind);
         if (!formatName)
         {
-          err("error: option -e is missing format specifier rtf.\n");
+          err("option -e is missing format specifier rtf.\n");
           cleanUpDoxygen();
           exit(1);
         }
@@ -9792,7 +10020,7 @@ void readConfiguration(int argc, char **argv)
         {
           if (optind+1>=argc)
           {
-            err("error: option \"-e rtf\" is missing an extensions file name\n");
+            err("option \"-e rtf\" is missing an extensions file name\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9804,7 +10032,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
-        err("error: option \"-e\" has invalid format specifier.\n");
+        err("option \"-e\" has invalid format specifier.\n");
         cleanUpDoxygen();
         exit(1);
         break; 
@@ -9812,7 +10040,7 @@ void readConfiguration(int argc, char **argv)
         formatName=getArg(argc,argv,optind);
         if (!formatName)
         {
-          err("error: option -w is missing format specifier rtf, html or latex\n");
+          err("option -w is missing format specifier rtf, html or latex\n");
           cleanUpDoxygen();
           exit(1);
         } 
@@ -9820,7 +10048,7 @@ void readConfiguration(int argc, char **argv)
         {
           if (optind+1>=argc)
           {
-            err("error: option \"-w rtf\" is missing a style sheet file name\n");
+            err("option \"-w rtf\" is missing a style sheet file name\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9857,7 +10085,7 @@ void readConfiguration(int argc, char **argv)
           }
           if (optind+3>=argc)
           {
-            err("error: option \"-w html\" does not have enough arguments\n");
+            err("option \"-w html\" does not have enough arguments\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9865,7 +10093,7 @@ void readConfiguration(int argc, char **argv)
           QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
           if (!setTranslator(outputLanguage))
           {
-            err("warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+            warn_uncond("Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
           QFile f;
@@ -9906,7 +10134,7 @@ void readConfiguration(int argc, char **argv)
           }
           if (optind+3>=argc)
           {
-            err("error: option \"-w latex\" does not have enough arguments\n");
+            err("option \"-w latex\" does not have enough arguments\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9914,7 +10142,7 @@ void readConfiguration(int argc, char **argv)
           QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
           if (!setTranslator(outputLanguage))
           {
-            err("warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+            warn_uncond("Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
           QFile f;
@@ -9937,7 +10165,7 @@ void readConfiguration(int argc, char **argv)
         }
         else
         {
-          err("error: Illegal format specifier %s: should be one of rtf, html, latex, or bst\n",formatName);
+          err("Illegal format specifier %s: should be one of rtf, html, latex, or bst\n",formatName);
           cleanUpDoxygen();
           exit(1);
         }
@@ -10030,7 +10258,7 @@ void readConfiguration(int argc, char **argv)
     }
     else
     {
-      err("error: configuration file %s not found!\n",argv[optind]);
+      err("configuration file %s not found!\n",argv[optind]);
       usage(argv[0]);
     }
   }
@@ -10038,7 +10266,7 @@ void readConfiguration(int argc, char **argv)
 
   if (!Config::instance()->parse(configName))
   {
-    err("error: could not open or read configuration file %s!\n",configName);
+    err("could not open or read configuration file %s!\n",configName);
     cleanUpDoxygen();
     exit(1);
   }
@@ -10073,7 +10301,7 @@ void adjustConfiguration()
   QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
   if (!setTranslator(outputLanguage))
   {
-    err("warning: Output language %s not supported! Using English instead.\n",
+    warn_uncond("Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
   }
   QStrList &includePath = Config_getList("INCLUDE_PATH");
@@ -10327,21 +10555,24 @@ void searchInputFiles()
   {
     QCString path=s;
     uint l = path.length();
-    // strip trailing slashes
-    if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
-
-    inputSize+=readFileOrDirectory(
-        path,
-        Doxygen::inputNameList,
-        Doxygen::inputNameDict,
-        &excludeNameDict,
-        &Config_getList("FILE_PATTERNS"),
-        &exclPatterns,
-        &g_inputFiles,0,
-        alwaysRecursive,
-        TRUE,
-        killDict,
-        &Doxygen::inputPaths);
+    if (l>0)
+    {
+      // strip trailing slashes
+      if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
+  
+      inputSize+=readFileOrDirectory(
+          path,
+          Doxygen::inputNameList,
+          Doxygen::inputNameDict,
+          &excludeNameDict,
+          &Config_getList("FILE_PATTERNS"),
+          &exclPatterns,
+          &g_inputFiles,0,
+          alwaysRecursive,
+          TRUE,
+          killDict,
+          &Doxygen::inputPaths);
+    }
     s=inputList.next();
   }
   delete killDict;
@@ -10370,14 +10601,14 @@ void parseInput()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+        err("tag OUTPUT_DIRECTORY: Output directory `%s' does not "
 	    "exist and cannot be created\n",outputDirectory.data());
         cleanUpDoxygen();
         exit(1);
       }
-      else if (!Config_getBool("QUIET"))
+      else
       {
-	err("Notice: Output directory `%s' does not exist. "
+	msg("Notice: Output directory `%s' does not exist. "
 	    "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);
@@ -10389,17 +10620,10 @@ void parseInput()
    *            Initialize global lists and dictionaries
    **************************************************************************/
 
-  int cacheSize = Config_getInt("SYMBOL_CACHE_SIZE");
-  if (cacheSize<0) cacheSize=0;
-  if (cacheSize>9) cacheSize=9;
-  //Doxygen::symbolCache   = new ObjCache(16+cacheSize); // 16 -> room for 65536 elements, 
-  //                                                     //       ~2.0 MByte "overhead"
-  //Doxygen::symbolCache   = new ObjCache(1);  // only to stress test cache behaviour
-  Doxygen::symbolCache   = 0; //disable cache
   Doxygen::symbolStorage = new Store;
 
   // also scale lookup cache with SYMBOL_CACHE_SIZE
-  cacheSize = Config_getInt("LOOKUP_CACHE_SIZE");
+  int cacheSize = Config_getInt("LOOKUP_CACHE_SIZE");
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
   uint lookupSize = 65536 << cacheSize;
@@ -10508,7 +10732,7 @@ void parseInput()
   }
   else if (!defaultLayoutUsed)
   {
-    err("warning: failed to open layout file '%s' for reading!\n",layoutFileName.data());
+    warn_uncond("failed to open layout file '%s' for reading!\n",layoutFileName.data());
   }
 
   /**************************************************************************
@@ -10931,9 +11155,9 @@ void generateOutput()
     Htags::useHtags = TRUE;
     QCString htmldir = Config_getString("HTML_OUTPUT");
     if (!Htags::execute(htmldir))
-       err("error: USE_HTAGS is YES but htags(1) failed. \n");
+       err("USE_HTAGS is YES but htags(1) failed. \n");
     if (!Htags::loadFilemap(htmldir))
-       err("error: htags(1) ended normally but failed to load the filemap. \n");
+       err("htags(1) ended normally but failed to load the filemap. \n");
   }
   
   /**************************************************************************
@@ -10947,7 +11171,7 @@ void generateOutput()
     tag=new QFile(generateTagFile);
     if (!tag->open(IO_WriteOnly))
     {
-      err("error: cannot open tag file %s for writing\n",
+      err("cannot open tag file %s for writing\n",
           generateTagFile.data()
          );
       cleanUpDoxygen();
@@ -10980,7 +11204,7 @@ void generateOutput()
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
-      err("error: Could not create search results directory '%s' $PWD='%s'\n",
+      err("Could not create search results directory '%s' $PWD='%s'\n",
           searchDirName.data(),QDir::currentDirPath().data());
       exit(1);
     }
@@ -10996,7 +11220,6 @@ void generateOutput()
   generateExampleDocs();
   g_s.end();
 
-  msg("Generating file sources...\n");
   if (!Htags::useHtags)
   {
     g_s.begin("Generating file sources...\n");
@@ -11037,8 +11260,9 @@ void generateOutput()
   if (Doxygen::formulaList->count()>0 && generateHtml
       && !Config_getBool("USE_MATHJAX"))
   {
-    msg("Generating bitmaps for formulas in HTML...\n");
+    g_s.begin("Generating bitmaps for formulas in HTML...\n");
     Doxygen::formulaList->generateBitmaps(Config_getString("HTML_OUTPUT"));
+    g_s.end();
   }
   
   writeMainPageTagFileData();
@@ -11139,29 +11363,32 @@ void generateOutput()
 
   if (Config_getBool("HAVE_DOT"))
   {
+    g_s.begin("Running dot...\n");
     DotManager::instance()->run();
+    g_s.end();
   }
 
   if (generateHtml &&
       Config_getBool("GENERATE_HTMLHELP") && 
       !Config_getString("HHC_LOCATION").isEmpty())
   {
-    msg("Running html help compiler...\n");
+    g_s.begin("Running html help compiler...\n");
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString("HTML_OUTPUT"));
     portable_sysTimerStart();
     if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
     {
-      err("error: failed to run html help compiler on index.hhp\n");
+      err("failed to run html help compiler on index.hhp\n");
     }
     portable_sysTimerStop();
     QDir::setCurrent(oldDir);
+    g_s.end();
   }
   if ( generateHtml &&
        Config_getBool("GENERATE_QHP") && 
       !Config_getString("QHG_LOCATION").isEmpty())
   {
-    msg("Running qhelpgenerator...\n");
+    g_s.begin("Running qhelpgenerator...\n");
     QCString const qhpFileName = Qhp::getQhpFileName();
     QCString const qchFileName = getQchFileName();
 
@@ -11171,26 +11398,14 @@ void generateOutput()
     portable_sysTimerStart();
     if (portable_system(Config_getString("QHG_LOCATION"), args.data(), FALSE))
     {
-      err("error: failed to run qhelpgenerator on index.qhp\n");
+      err("failed to run qhelpgenerator on index.qhp\n");
     }
     portable_sysTimerStop();
     QDir::setCurrent(oldDir);
+    g_s.end();
   }
 
   int cacheParam;
-  if (Doxygen::symbolCache)
-  {
-    msg("symbol cache used %d/%d hits=%d misses=%d\n",
-        Doxygen::symbolCache->count(),
-        Doxygen::symbolCache->size(),
-        Doxygen::symbolCache->hits(),
-        Doxygen::symbolCache->misses());
-    cacheParam = computeIdealCacheParam(Doxygen::symbolCache->misses());
-    if (cacheParam>Config_getInt("SYMBOL_CACHE_SIZE"))
-    {
-      msg("Note: based on cache misses the ideal setting for SYMBOL_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);
-    }
-  }
   msg("lookup cache used %d/%d hits=%d misses=%d\n",
       Doxygen::lookupCache->count(),
       Doxygen::lookupCache->size(),
@@ -11227,7 +11442,6 @@ void generateOutput()
   thisDir.remove(Doxygen::objDBFileName);
   Config::deleteInstance();
   QTextCodec::deleteAllCodecs();
-  delete Doxygen::symbolCache;
   delete Doxygen::symbolMap;
   delete Doxygen::clangUsrMap;
   delete Doxygen::symbolStorage;

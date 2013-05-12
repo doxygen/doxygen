@@ -22,7 +22,7 @@ class TranslatorAdapterBase : public Translator
     inline QCString createUpdateNeededMessage(const QCString & languageName,
                                               const QCString & versionString)
     {
-      return QCString("Warning: The selected output language \"")
+      return QCString("The selected output language \"")
              + languageName
              + "\" has not been updated\nsince "
              + versionString

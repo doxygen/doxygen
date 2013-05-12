@@ -178,7 +178,7 @@ void RTFGenerator::init()
   while(def->reference != 0)
   {
     if (def->definition == 0)
-      err("Internal error: rtf_Style_Default[%s] has no definition.\n", def->name);
+      err("Internal: rtf_Style_Default[%s] has no definition.\n", def->name);
     StyleData* styleData = new StyleData(def->reference, def->definition);
     rtf_Style.insert(def->name, styleData);
     def++;
@@ -2009,7 +2009,7 @@ void RTFGenerator::incrementIndentLevel()
   m_listLevel++;
   if (m_listLevel>rtf_maxIndentLevels-1)
   {
-    err("error: Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
+    err("Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
     m_listLevel=rtf_maxIndentLevels-1;
   }
 }
@@ -2019,7 +2019,7 @@ void RTFGenerator::decrementIndentLevel()
   m_listLevel--;
   if (m_listLevel<0)
   {
-    err("error: Negative indent level while generating RTF output!\n");
+    err("Negative indent level while generating RTF output!\n");
     m_listLevel=0;
   }
 }
@@ -2337,7 +2337,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
   QFile f(infName);
   if (!f.open(IO_ReadOnly))
   {
-    err("error: problems opening rtf file %s for reading\n",infName.data());
+    err("problems opening rtf file %s for reading\n",infName.data());
     return FALSE;
   }
 
@@ -2352,7 +2352,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
   {
     if (f.readLine(lineBuf.data(),maxLineLength)==-1)
     {
-      err("ERROR - read error in %s before end of RTF header!\n",infName.data());
+      err("read error in %s before end of RTF header!\n",infName.data());
       return FALSE;
     }
     if (bIncludeHeader) encodeForOutput(t,lineBuf);
@@ -2535,9 +2535,9 @@ void testRTFOutput(const char *name)
   }
   if (bcount==0) return; // file is OK.
 err:
-  err("error: RTF integrity test failed at line %d of %s due to a bracket mismatch.\n",line,name);
-  err("       Please try to create a small code example that produces this error \n"
-      "       and send that to dimitri@stack.nl.\n");
+  err("RTF integrity test failed at line %d of %s due to a bracket mismatch.\n"
+      "       Please try to create a small code example that produces this error \n"
+      "       and send that to dimitri@stack.nl.\n",line,name);
 }
 
 /**
@@ -2550,7 +2550,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   // store the original directory
   if (!d.exists())
   {
-    err("error: Output dir %s does not exist!\n",path);
+    err("Output dir %s does not exist!\n",path);
     return FALSE;
   }
   QCString oldDir = QDir::currentDirPath().utf8();

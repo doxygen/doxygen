@@ -38,7 +38,7 @@
 "{\n"
 "  var windowWidth = $(window).width() + \"px\";\n"
 "  var sidenavWidth = $(sidenav).outerWidth();\n"
-"  content.css({marginLeft:parseInt(sidenavWidth)+6+\"px\"}); //account for 6px-wide handle-bar\n"
+"  content.css({marginLeft:parseInt(sidenavWidth)+\"px\"}); \n"
 "  writeCookie('width',sidenavWidth, null);\n"
 "}\n"
 "\n"

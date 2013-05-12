@@ -417,7 +417,7 @@ static void popScope()
   }
   else
   {
-    //err("Error: Too many end of scopes found!\n");
+    //err("Too many end of scopes found!\n");
   }
   //printf("popScope() result: `%s'\n",g_classScope.data());
 }
@@ -656,7 +656,7 @@ static void addUsingDirective(const char *name)
 static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  LockingPtr<ArgumentList> al = md->argumentList();
+  ArgumentList *al = md->argumentList();
   if (al==0) return; 
   Argument *a = al->first();
   while (a)
@@ -829,58 +829,6 @@ static void updateCallContextForSmartPointer()
       //printf("Found smart pointer call %s->%s!\n",cd->name().data(),ncd->name().data());
     }
   }
-}
-
-static QCString fileLocation() 
-{
-  QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
-  result+=":"+QCString().setNum(g_yyLineNr);
-  result+=":"+QCString().setNum(g_yyColNr);
-  return result;
-}
-
-static void addDocCrossReference(MemberDef *src,MemberDef *dst)
-{
-  static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
-  static bool referencesRelation   = Config_getBool("REFERENCES_RELATION");
-  static bool callerGraph          = Config_getBool("CALLER_GRAPH");
-  static bool callGraph            = Config_getBool("CALL_GRAPH");
-
-  //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
-  if ((referencedByRelation || callerGraph || dst->hasCallerGraph()) && 
-      (src->isFunction() || src->isSlot()) 
-     )
-  {
-    dst->addSourceReferencedBy(src,fileLocation());
-    MemberDef *mdDef = dst->memberDefinition();
-    if (mdDef)
-    {
-      mdDef->addSourceReferencedBy(src,fileLocation());
-    }
-    MemberDef *mdDecl = dst->memberDeclaration();
-    if (mdDecl)
-    {
-      mdDecl->addSourceReferencedBy(src,fileLocation());
-    }
-  }
-  if ((referencesRelation || callGraph || src->hasCallGraph()) && 
-      (src->isFunction() || src->isSlot())
-     )
-  {
-    src->addSourceReferences(dst,fileLocation());
-    MemberDef *mdDef = src->memberDefinition();
-    if (mdDef)
-    {
-      mdDef->addSourceReferences(dst,fileLocation());
-    }
-    MemberDef *mdDecl = src->memberDeclaration();
-    if (mdDecl)
-    {
-      mdDecl->addSourceReferences(dst,fileLocation());
-    }
-  }
-
 }
 
 static bool getLinkInScope(const QCString &c,  // scope
@@ -1805,7 +1753,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
@@ -1834,6 +1782,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 %x      MemberCall2
 %x      SkipInits
 %x      ClassName
+%x      AlignAs
+%x      AlignAsEnd
 %x      PackageName
 %x      ClassVar
 %x	CppCliTypeModifierFollowup
@@ -2146,9 +2096,42 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ClassName>{ID}("::"{ID})*	        {
                                           g_curClassName=yytext;
 					  addType();
-					  generateClassOrGlobalLink(*g_code,yytext);
-					  BEGIN( ClassVar );
+                                          if (g_curClassName=="alignas")
+                                          {
+  					    startFontClass("keyword");
+					    g_code->codify(yytext);
+                                            endFontClass();
+                                            BEGIN( AlignAs );
+                                          }
+                                          else
+                                          {
+					    generateClassOrGlobalLink(*g_code,yytext);
+					    BEGIN( ClassVar );
+                                          }
 					}
+<AlignAs>"("                            { 
+                                          g_bracketCount=1;
+					  g_code->codify(yytext);
+                                          BEGIN( AlignAsEnd );
+                                        }
+<AlignAs>\n                             { g_yyLineNr++; 
+                                          codifyLines(yytext);
+                                        }
+<AlignAs>.                              { g_code->codify(yytext); }
+<AlignAsEnd>"("                         { g_code->codify(yytext);
+                                          g_bracketCount++; 
+                                        }
+<AlignAsEnd>")"                         { 
+                                          g_code->codify(yytext);
+                                          if (--g_bracketCount<=0)
+                                          {
+                                            BEGIN(ClassName);
+                                          }
+                                        }
+<AlignAsEnd>\n                          { g_yyLineNr++; 
+                                          codifyLines(yytext); 
+                                        }
+<AlignAsEnd>.                           { g_code->codify(yytext); }
 <ClassName>{ID}("\\"{ID})*		{ // PHP namespace
                                           g_curClassName=substitute(yytext,"\\","::");
   					  g_scopeStack.push(CLASSBLOCK);

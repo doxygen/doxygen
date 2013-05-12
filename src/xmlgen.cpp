@@ -417,10 +417,10 @@ static void writeTemplateArgumentList(ArgumentList *al,
 
 static void writeMemberTemplateLists(MemberDef *md,FTextStream &t)
 {
-  LockingPtr<ArgumentList> templMd = md->templateArguments();
-  if (templMd!=0) // function template prefix
+  ArgumentList *templMd = md->templateArguments();
+  if (templMd) // function template prefix
   {
-    writeTemplateArgumentList(templMd.pointer(),t,md->getClassDef(),md->getFileDef(),8);
+    writeTemplateArgumentList(templMd,t,md->getClassDef(),md->getFileDef(),8);
   }
 }
 
@@ -439,7 +439,7 @@ static void writeXMLDocBlock(FTextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text+"\n",FALSE,FALSE);
+  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text,FALSE,FALSE);
   // create a code generator
   XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
   // create a parse tree visitor for XML
@@ -614,7 +614,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
 
   if (isFunc)
   {
-    LockingPtr<ArgumentList> al = md->argumentList();
+    ArgumentList *al = md->argumentList();
     t << " const=\"";
     if (al!=0 && al->constSpecifier)    t << "yes"; else t << "no"; 
     t << "\"";
@@ -805,8 +805,8 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
       << convertToXML(rmd->name()) << "</reimplements>" << endl;
   }
-  LockingPtr<MemberList> rbml = md->reimplementedBy();
-  if (rbml!=0)
+  MemberList *rbml = md->reimplementedBy();
+  if (rbml)
   {
     MemberListIterator mli(*rbml);
     for (mli.toFirst();(rmd=mli.current());++mli)
@@ -819,9 +819,9 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
 
   if (isFunc) //function
   {
-    LockingPtr<ArgumentList> declAl = md->declArgumentList();
-    LockingPtr<ArgumentList> defAl = md->argumentList();
-    if (declAl!=0 && declAl->count()>0)
+    ArgumentList *declAl = md->declArgumentList();
+    ArgumentList *defAl = md->argumentList();
+    if (declAl && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -914,8 +914,8 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    LockingPtr<MemberList> enumFields = md->enumFieldList();
-    if (enumFields!=0)
+    MemberList *enumFields = md->enumFieldList();
+    if (enumFields)
     {
       MemberListIterator emli(*enumFields);
       MemberDef *emd;
@@ -983,8 +983,8 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   }
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
-  LockingPtr<MemberSDict> mdict = md->getReferencesMembers();
-  if (mdict!=0)
+  MemberSDict *mdict = md->getReferencesMembers();
+  if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
@@ -994,7 +994,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     }
   }
   mdict = md->getReferencedByMembers();
-  if (mdict!=0)
+  if (mdict)
   {
     MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;

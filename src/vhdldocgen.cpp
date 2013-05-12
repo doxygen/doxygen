@@ -876,11 +876,11 @@ MemberDef* VhdlDocGen::findFunction(const QList<Argument> &ql,
       QCString mname=mdef->name();
       if ((VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isVhdlFunction(mdef)) && (compareString(funcname,mname)==0))
       {
-        LockingPtr<ArgumentList> alp = mdef->argumentList();
+        ArgumentList *alp = mdef->argumentList();
 
         //  ArgumentList* arg2=mdef->getArgumentList();
         if (alp==0) break;
-        ArgumentListIterator ali(*alp.pointer());
+        ArgumentListIterator ali(*alp);
         ArgumentListIterator ali1(ql);
 
         if (ali.count() != ali1.count()) break;
@@ -1844,7 +1844,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
       ol.docify(" ");
     }
     ol.docify(mdef->name());
-    hasParams = VhdlDocGen::writeFuncProcDocu(mdef,ol, mdef->argumentList().pointer());
+    hasParams = VhdlDocGen::writeFuncProcDocu(mdef,ol, mdef->argumentList());
   }
 
 
@@ -1903,7 +1903,6 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     bool /*inGroup*/)
 {
   static QRegExp reg("[%]");
-  LockingPtr<MemberDef> lock(mdef,mdef);
 
   Definition *d=0;
 
@@ -1962,9 +1961,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     Doxygen::tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>" << endl;
 
     if (VhdlDocGen::isVhdlFunction(mdef))
-      Doxygen::tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList().pointer(),TRUE)) << "</arglist>" << endl;
+      Doxygen::tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),TRUE)) << "</arglist>" << endl;
     else if (VhdlDocGen::isProcedure(mdef))
-      Doxygen::tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList().pointer(),FALSE)) << "</arglist>" << endl;
+      Doxygen::tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),FALSE)) << "</arglist>" << endl;
     else
       Doxygen::tagFile << "      <arglist>" << convertToXML(mdef->argsString()) << "</arglist>" << endl;
 
@@ -2027,7 +2026,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   mdef->setArgsString(largs.data());
   //ClassDef * plo=mdef->getClassDef();
   ClassDef *kl=0;
-  LockingPtr<ArgumentList> alp = mdef->argumentList();
+  ArgumentList *alp = mdef->argumentList();
   QCString nn;
   //VhdlDocGen::adjustRecordMember(mdef);
   if (gd) gd=0;
@@ -2046,10 +2045,10 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
 
       writeLink(mdef,ol);
       if (alp!=0 && mm==VhdlDocGen::FUNCTION)
-        VhdlDocGen::writeFunctionProto(ol,alp.pointer(),mdef);
+        VhdlDocGen::writeFunctionProto(ol,alp,mdef);
 
       if (alp!=0 && mm==VhdlDocGen::PROCEDURE)
-        VhdlDocGen::writeProcedureProto(ol,alp.pointer(),mdef);
+        VhdlDocGen::writeProcedureProto(ol,alp,mdef);
 
       break;
     case VhdlDocGen::USE:
@@ -2112,7 +2111,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::PROCESS:
       writeLink(mdef,ol);
       ol.insertMemberAlign();
-      VhdlDocGen::writeProcessProto(ol,alp.pointer(),mdef);
+      VhdlDocGen::writeProcessProto(ol,alp,mdef);
       break;
     case VhdlDocGen::PACKAGE:
     case VhdlDocGen::ENTITY:
@@ -2244,7 +2243,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
     ol.startMemberDescription(mdef->anchor());
-    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),
+    ol.generateDoc(mdef->briefFile(),mdef->briefLine(),
         mdef->getOuterScope()?mdef->getOuterScope():d,
         mdef,mdef->briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     if (detailsVisible)
@@ -2350,7 +2349,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
   if (subtitle && subtitle[0]!=0)
   {
     ol.startMemberSubtitle();
-    ol.parseDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE,0,TRUE,FALSE);
+    ol.generateDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE,0,TRUE,FALSE);
     ol.endMemberSubtitle();
   } //printf("memberGroupList=%p\n",memberGroupList);
 
@@ -2376,7 +2375,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
         {
           //printf("Member group has docs!\n");
           ol.startMemberGroupDocs();
-          ol.parseDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE);
+          ol.generateDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE);
           ol.endMemberGroupDocs();
         }
         ol.startMemberGroup();
@@ -2951,7 +2950,7 @@ void assignBinding(VhdlConfNode * conf)
 
   if (!archClass)
   {
- //   err("\n error:architecture %s not found ! ",conf->confVhdl.data());
+ //   err("architecture %s not found ! ",conf->confVhdl.data());
     return;
   }
 
@@ -3075,7 +3074,7 @@ void VhdlDocGen::computeVhdlComponentRelations()
     }
 
     // if (classEntity==0)
-    //   err("error: %s:%d:Entity:%s%s",cur->fileName.data(),cur->startLine,entity.data()," could not be found");
+    //   err("%s:%d:Entity:%s%s",cur->fileName.data(),cur->startLine,entity.data()," could not be found");
     
     addInstance(classEntity,ar,cd,cur);
   }
@@ -3315,7 +3314,10 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   VHDLLanguageScanner *pIntf =(VHDLLanguageScanner*) Doxygen::parserManager->getParser(".vhd");
   VhdlDocGen::setFlowMember(mdef);
   Entry root;
-  pIntf->parseInput("",codeFragment.data(),&root);
+  QStrList filesInSameTu;
+  pIntf->startTranslationUnit("");
+  pIntf->parseInput("",codeFragment.data(),&root,FALSE,filesInSameTu);
+  pIntf->finishTranslationUnit();
 }
 
 bool VhdlDocGen::isConstraint(const MemberDef *mdef) 
@@ -3906,7 +3908,7 @@ void FlowChart::writeFlowChart()
 
   if (!f.open(IO_WriteOnly))
   {
-    err("Error: Cannot open file %s for writing\n",fileName.data());
+    err("Cannot open file %s for writing\n",fileName.data());
     return;
   }
 

@@ -1938,6 +1938,125 @@ class TranslatorKorean : public TranslatorAdapter_1_7_5
     { return "추가로 상속된 멤버들"; }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is 
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "활성화" : "비활성화";
+      return "패널 동기화를 "+opt+"하기 위해 클릭하십시오";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "카테고리 @1에 의해 제공됨.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "클래스 @1 확장.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "클래스 메소드들";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "인스턴스 메소드들";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "메소드 문서화";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "디자인 개요";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "익스포트된 인터페이스들"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "포함된 서비스들"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "상수 그룹들"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" 상수 그룹 레퍼런스";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" 서비스 레퍼런스";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" 싱글톤 레퍼런스";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"이 서비스에 대한 문서화는 다음의 파일";
+      if (!single) result+="들";
+	  result+="로부터 생성되었습니다.:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"이 싱글톤에 대한 문서화는 다음의 파일";
+      if (!single) result+="들";
+	  result+="로부터 생성되었습니다.:";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 

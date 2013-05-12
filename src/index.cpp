@@ -332,7 +332,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           MemberDef *md;
           for (mi.toFirst();(md=mi.current());++mi)
           {
-            LockingPtr<MemberList> enumList = md->enumFieldList();
+            MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
             bool isAnonymous = md->name().find('@')!=-1;
             static bool hideUndocMembers = Config_getBool("HIDE_UNDOC_MEMBERS");
@@ -602,7 +602,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   if (level>20)
   {
     warn(dd->getDefFileName(),dd->getDefLine(),
-        "warning: maximum nesting level exceeded for directory %s: "
+        "maximum nesting level exceeded for directory %s: "
         "check for possible recursive directory relation!\n",dd->name().data()
         );
     return;
@@ -1265,7 +1265,7 @@ static void writeFileIndex(OutputList &ol)
         if (hasBrief)
         {
           //ol.docify(" (");
-          ol.parseDoc(
+          ol.generateDoc(
               fd->briefFile(),fd->briefLine(),
               fd,0,
               fd->briefDescription(TRUE),
@@ -1550,7 +1550,7 @@ static void writeNamespaceIndex(OutputList &ol)
       if (hasBrief)
       {
         //ol.docify(" (");
-        ol.parseDoc(
+        ol.generateDoc(
                  nd->briefFile(),nd->briefLine(),
                  nd,0,
                  nd->briefDescription(TRUE),
@@ -1667,7 +1667,7 @@ static void writeAnnotatedClassList(OutputList &ol)
       ol.startIndexValue(hasBrief);
       if (hasBrief)
       {
-        ol.parseDoc(
+        ol.generateDoc(
                  cd->briefFile(),cd->briefLine(),
                  cd,0,
                  cd->briefDescription(TRUE),
@@ -3458,7 +3458,7 @@ void writeGraphInfo(OutputList &ol)
     //printf("legendDocs=%s\n",legendDocs.data());
   }
   FileDef fd("","graph_legend");
-  ol.parseDoc("graph_legend",1,&fd,0,legendDocs,FALSE,FALSE);
+  ol.generateDoc("graph_legend",1,&fd,0,legendDocs,FALSE,FALSE);
   stripCommentsStateRef = oldStripCommentsState;
   endFile(ol);
   ol.popGeneratorState();
@@ -3477,7 +3477,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
   if (level>20)
   {
     warn(gd->getDefFileName(),gd->getDefLine(),
-        "warning: maximum nesting level exceeded for group %s: check for possible recursive group relation!\n",gd->name().data()
+        "maximum nesting level exceeded for group %s: check for possible recursive group relation!\n",gd->name().data()
         );
     return;
   }
@@ -3558,7 +3558,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           MemberDef *md;
           for (mi.toFirst();(md=mi.current());++mi)
           {
-            LockingPtr<MemberList> enumList = md->enumFieldList();
+            MemberList *enumList = md->enumFieldList();
             bool isDir = enumList!=0 && md->isEnumerate();
             if (md->isVisible() && md->name().find('@')==-1)
             {
@@ -4010,7 +4010,7 @@ static void writeIndex(OutputList &ol)
     {
       ol.startHeaderSection();
       ol.startTitleHead(0);
-      ol.parseDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->docLine(),
+      ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->docLine(),
                   Doxygen::mainPage,0,Doxygen::mainPage->title(),
                   TRUE,FALSE,0,TRUE,FALSE);
       headerWritten = TRUE;
@@ -4047,7 +4047,7 @@ static void writeIndex(OutputList &ol)
     }
 
     ol.startTextBlock();
-    ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
                 Doxygen::mainPage->documentation(),TRUE,FALSE
                 /*,Doxygen::mainPage->sectionDict*/);
     ol.endTextBlock();
@@ -4083,7 +4083,7 @@ static void writeIndex(OutputList &ol)
   if (!Config_getString("PROJECT_NUMBER").isEmpty())
   {
     ol.startProjectNumber(); 
-    ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString("PROJECT_NUMBER"),FALSE,FALSE);
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString("PROJECT_NUMBER"),FALSE,FALSE);
     ol.endProjectNumber();
   }
   ol.endIndexSection(isTitlePageStart);
@@ -4238,7 +4238,7 @@ static void writeIndex(OutputList &ol)
     startFile(ol,Doxygen::mainPage->name(),0,Doxygen::mainPage->title());
     ol.startContents();
     ol.startTextBlock();
-    ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
                 Doxygen::mainPage->documentation(),FALSE,FALSE
                );
     ol.endTextBlock();

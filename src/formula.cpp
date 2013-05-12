@@ -53,7 +53,7 @@ void FormulaList::generateBitmaps(const char *path)
   int x1,y1,x2,y2;
   QDir d(path);
   // store the original directory
-  if (!d.exists()) { err("error: Output dir %s does not exist!\n",path); exit(1); }
+  if (!d.exists()) { err("Output dir %s does not exist!\n",path); exit(1); }
   QCString oldDir = QDir::currentDirPath().utf8();
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
@@ -149,7 +149,7 @@ void FormulaList::generateBitmaps(const char *path)
         }
         else
         {
-          err("error: Couldn't extract bounding box!\n");
+          err("Couldn't extract bounding box!\n");
         }
       } 
       // next we generate a postscript file which contains the eps
@@ -207,7 +207,7 @@ void FormulaList::generateBitmaps(const char *path)
         if (!t.eof())
           s=t.readLine().utf8();
         if (s.length()<2 || s.left(2)!="P6")
-          err("error: ghostscript produced an illegal image format!");
+          err("ghostscript produced an illegal image format!");
         else
         {
           // assume the size is after the first line that does not start with

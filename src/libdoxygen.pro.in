@@ -78,7 +78,6 @@ HEADERS      =	arguments.h \
 		latexgen.h \
                 layout.h \
                 layout_default.h \
-                lockingptr.h \
 		logos.h \
 		mandocvisitor.h \
 		mangen.h \

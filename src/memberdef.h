@@ -168,6 +168,7 @@ class MemberDef : public Definition
     bool hasOneLineInitializer() const;
     bool hasMultiLineInitializer() const;
     bool protectionVisible() const;
+    bool showInCallGraph() const;
 
     // output info
     bool isLinkableInProject() const;
@@ -181,7 +182,7 @@ class MemberDef : public Definition
     bool isDocumentedFriendClass() const;
 
     MemberDef *reimplements() const;
-    LockingPtr< MemberList > reimplementedBy() const;
+    MemberList *reimplementedBy() const;
     bool isReimplementedBy(ClassDef *cd) const;
 
     //int inbodyLine() const;
@@ -194,19 +195,19 @@ class MemberDef : public Definition
     MemberDef *getAnonymousEnumType() const;
     bool isDocsForDefinition() const;
     MemberDef *getEnumScope() const;
-    LockingPtr< MemberList > enumFieldList() const;
+    MemberList *enumFieldList() const;
     void setEnumBaseType(const QCString &type);
     QCString enumBaseType() const;
 
     bool hasExamples();
-    LockingPtr<ExampleSDict> getExamples() const;
+    ExampleSDict *getExamples() const;
     bool isPrototype() const;
 
     // argument related members
-    LockingPtr<ArgumentList> argumentList() const;
-    LockingPtr<ArgumentList> declArgumentList() const;
-    LockingPtr<ArgumentList> templateArguments() const;
-    LockingPtr< QList<ArgumentList> > definitionTemplateParameterLists() const;
+    ArgumentList *argumentList() const;
+    ArgumentList *declArgumentList() const;
+    ArgumentList *templateArguments() const;
+    QList<ArgumentList> *definitionTemplateParameterLists() const;
 
     // member group related members
     int getMemberGroupId() const;
@@ -405,9 +406,6 @@ class MemberDef : public Definition
                    bool onlyText=FALSE);
 
     MemberDefImpl *m_impl;
-    int m_cacheHandle;
-    off_t m_storagePos;     // location where the item is stored in file (if impl==0)
-    bool m_flushPending;
     uchar m_isLinkableCached;    // 0 = not cached, 1=FALSE, 2=TRUE
     uchar m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
     uchar m_isDestructorCached;  // 0 = not cached, 1=FALSE, 2=TRUE

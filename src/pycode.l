@@ -483,6 +483,7 @@ static void codifyLines(char *text)
   }
 }
 
+#if 0
 static QCString fileLocation() 
 {
   QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
@@ -508,6 +509,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
     src->addSourceReferences(dst,fileLocation());
   }
 }
+#endif
 
 
 

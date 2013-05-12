@@ -98,6 +98,8 @@ def parseOption(node):
 	elif type=='obsolete':
 		print "  cfg->addObsolete(\"%s\");" % (name)
 	if len(setting)>0:
+	    	print "#else"
+		print "  cfg->addDisabled(\"%s\");" % (name)
 	    	print "#endif"
 		
 

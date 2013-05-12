@@ -268,7 +268,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+      ol.generateDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
@@ -284,7 +284,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
     }
     if (!documentation().isEmpty())
     {
-      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      ol.generateDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
     ol.endTextBlock();
   }
@@ -294,25 +294,30 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
   {
-    ol.startParagraph();
-    ol.parseDoc(briefFile(),briefLine(),this,0,
-                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.writeString(" \n");
-    ol.enable(OutputGenerator::RTF);
-
-    if (Config_getBool("REPEAT_BRIEF") ||
-        !documentation().isEmpty()
-       )
+    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+                        briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
+    if (rootNode && !rootNode->isEmpty())
     {
-      ol.disableAllBut(OutputGenerator::Html);
-      ol.startTextLink(0,"details");
-      ol.parseText(theTranslator->trMore());
-      ol.endTextLink();
+      ol.startParagraph();
+      ol.writeDoc(rootNode,this,0);
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::RTF);
+      ol.writeString(" \n");
+      ol.enable(OutputGenerator::RTF);
+
+      if (Config_getBool("REPEAT_BRIEF") ||
+          !documentation().isEmpty()
+         )
+      {
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.startTextLink(0,"details");
+        ol.parseText(theTranslator->trMore());
+        ol.endTextLink();
+      }
+      ol.popGeneratorState();
+      ol.endParagraph();
     }
-    ol.popGeneratorState();
-    ol.endParagraph();
+    delete rootNode;
 
     // FIXME:PARA
     //ol.pushGeneratorState();
@@ -506,6 +511,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+    QCString idStr = id();
+    if (!idStr.isEmpty())
+    {
+      Doxygen::tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+    }
   }
 
   Doxygen::indexList->addIndexItem(this,0);
@@ -763,8 +773,8 @@ void NamespaceDef::addListReferences()
 {
   //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   {
-    LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
-    addRefItem(xrefItems.pointer(),
+    QList<ListItemInfo> *xrefItems = xrefListItems();
+    addRefItem(xrefItems,
         qualifiedName(),
         getLanguage()==SrcLangExt_Fortran ? 
           theTranslator->trModule(TRUE,TRUE) : 
@@ -965,7 +975,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(nd->getOutputFileBase());
-        ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE,0,TRUE);
+        ol.generateDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE,0,TRUE);
         ol.endMemberDescription();
       }
       ol.endMemberDeclaration(0,0);

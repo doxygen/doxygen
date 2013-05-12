@@ -72,6 +72,7 @@ class InputString : public QObject, public Input
     void help();
 
   private:
+    void updateDefault();
     QLabel       *m_lab;
     QLineEdit    *m_le;
     QToolBar     *m_br;

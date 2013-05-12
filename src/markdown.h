@@ -28,9 +28,13 @@ class MarkdownFileParser : public ParserInterface
 {
   public:
     virtual ~MarkdownFileParser() {}
+    void startTranslationUnit(const char *) {}
+    void finishTranslationUnit() {}
     void parseInput(const char *fileName, 
                     const char *fileBuf, 
-                    Entry *root);
+                    Entry *root,
+                    bool sameTranslationUnit,
+                    QStrList &filesInSameTranslationUnit);
     bool needsPreprocessing(const QCString &) { return FALSE; }
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,

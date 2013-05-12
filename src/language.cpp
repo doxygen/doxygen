@@ -387,7 +387,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_AR
   else if (L_EQUAL("arabic"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorArabic);
+    theTranslator=new TranslatorArabic;
   }
 #endif
 #ifdef LANG_FA
@@ -428,6 +428,6 @@ bool setTranslator(const char *langName)
   }
   
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) err(msg);
+  if (!msg.isEmpty()) warn_uncond(msg);
   return TRUE;
 }

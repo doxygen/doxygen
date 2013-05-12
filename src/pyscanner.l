@@ -1679,7 +1679,11 @@ void pyscanFreeScanner()
 
 //----------------------------------------------------------------------------
 
-void PythonLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
+void PythonLanguageScanner::parseInput(const char *fileName,
+                                       const char *fileBuf,
+                                       Entry *root,
+                                       bool /*sameTranslationUnit*/,
+                                       QStrList & /*filesInSameTranslationUnit*/)
 {
   g_thisParser = this;
   ::parseMain(fileName,fileBuf,root);

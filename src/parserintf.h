@@ -19,6 +19,7 @@
 #define PARSERINTF_H
 
 #include <qdict.h>
+#include <qstrlist.h>
 
 class Entry;
 class FileDef;
@@ -36,15 +37,37 @@ class ParserInterface
 {
   public:
     virtual ~ParserInterface() {}
+
+    /** Starts processing a translation unit (source files + headers).
+     *  After this call parseInput() is called with sameTranslationUnit
+     *  set to FALSE. If parseInput() returns additional include files,
+     *  these are also processed using parseInput() with 
+     *  sameTranslationUnit set to TRUE. After that
+     *  finishTranslationUnit() is called.
+     */
+    virtual void startTranslationUnit(const char *fileName) = 0;
+
+    /** Called after all files in a translation unit have been 
+     *  processed.
+     */
+    virtual void finishTranslationUnit() = 0;
+
     /** Parses a single input file with the goal to build an Entry tree. 
      *  @param[in] fileName    The full name of the file.
      *  @param[in] fileBuf     The contents of the file (zero terminated).
      *  @param[in,out] root    The root of the tree of Entry *nodes 
      *             representing the information extracted from the file.
+     *  @param[in] sameTranslationUnit TRUE if this file was found in the same
+     *             translation unit (in the filesInSameTranslationUnit list
+     *             returned for another file).
+     *  @param[in,out] filesInSameTranslationUnit other files expected to be
+     *              found in the same translation unit (used for libclang)
      */
     virtual void parseInput(const char *fileName,
                             const char *fileBuf,
-                            Entry *root) = 0;
+                            Entry *root,
+                            bool sameTranslationUnit,
+                            QStrList &filesInSameTranslationUnit) = 0;
 
     /** Returns TRUE if the language identified by \a extension needs
      *  the C preprocessor to be run before feed the result to the input

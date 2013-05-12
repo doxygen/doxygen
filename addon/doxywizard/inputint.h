@@ -56,6 +56,7 @@ class InputInt : public QObject, public Input
     void showHelp(Input *);
 
   private:
+    void updateDefault();
     QLabel   *m_lab;
     QSpinBox *m_sp;
     int       m_val;

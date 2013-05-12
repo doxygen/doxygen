@@ -1710,7 +1710,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       QFileInfo cssfi(cssname);
       if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
       {
-        err("error: style sheet %s does not exist or is not readable!", Config_getString("HTML_STYLESHEET").data());
+        err("style sheet %s does not exist or is not readable!", Config_getString("HTML_STYLESHEET").data());
       }
       else
       {

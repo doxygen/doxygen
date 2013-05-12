@@ -56,7 +56,7 @@ class SectionDict;
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
-DocNode *validatingParseDoc(const char *fileName,int startLine,
+DocRoot *validatingParseDoc(const char *fileName,int startLine,
                             Definition *context, MemberDef *md,
                             const char *input,bool indexWords,
                             bool isExample,const char *exampleName=0,
@@ -65,7 +65,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.
  */
-DocNode *validatingParseText(const char *input);
+DocText *validatingParseText(const char *input);
 
 /*! Searches for section and anchor commands in the input */
 void docFindSections(const char *input,
@@ -1265,6 +1265,7 @@ class DocText : public CompAccept<DocText>, public DocNode
     Kind kind() const       { return Kind_Text; }
     void accept(DocVisitor *v) { CompAccept<DocText>::accept(this,v); }
     void parse();
+    bool isEmpty() const    { return m_children.isEmpty(); }
 };
 
 /** Root node of documentation tree */
@@ -1277,6 +1278,7 @@ class DocRoot : public CompAccept<DocRoot>, public DocNode
     void parse();
     bool indent() const { return m_indent; }
     bool singleLine() const { return m_singleLine; }
+    bool isEmpty() const { return m_children.isEmpty(); }
 
   private:
     bool m_indent;

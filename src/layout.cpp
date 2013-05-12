@@ -64,7 +64,7 @@ static bool elemIsVisible(const QXmlAttributes &attrib,bool defVal=TRUE)
     }
     else if (!opt)
     {
-      err("error: found unsupported value %s for visible attribute in layout file\n",
+      err("found unsupported value %s for visible attribute in layout file\n",
           visible.data());
     }
   }
@@ -120,7 +120,7 @@ QCString LayoutNavEntry::url() const
     }
     if (!found)
     {
-      msg("warning: explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString("LAYOUT_FILE")));
+      msg("explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString("LAYOUT_FILE")));
     }
   }
   //printf("LayoutNavEntry::url()=%s\n",url.data());
@@ -1061,11 +1061,11 @@ class LayoutParser : public QXmlDefaultHandler
       {
         if (type.isEmpty())
         {
-          err("error: an entry tag within a navindex has no type attribute! Check your layout file!\n");
+          err("an entry tag within a navindex has no type attribute! Check your layout file!\n");
         }
         else
         {
-          err("error: the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n",type.data());
+          err("the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n",type.data());
         }
         m_invalidEntry=TRUE;
         return;
@@ -1239,7 +1239,7 @@ class LayoutParser : public QXmlDefaultHandler
       }
       else
       {
-        err("error: Unexpected start tag `%s' found in scope='%s'!\n",
+        err("Unexpected start tag `%s' found in scope='%s'!\n",
             name.data(),m_scope.data());
       }
       return TRUE;
@@ -1289,21 +1289,21 @@ class LayoutErrorHandler : public QXmlErrorHandler
     LayoutErrorHandler(const char *fn) : fileName(fn) {}
     bool warning( const QXmlParseException &exception )
     {
-      err("warning: at line %d column %d of %s: %s\n",
+      warn_uncond("at line %d column %d of %s: %s\n",
           exception.lineNumber(),exception.columnNumber(),fileName.data(),
           exception.message().data());
       return FALSE;
     }
     bool error( const QXmlParseException &exception )
     {
-      err("error: at line %d column %d of %s: %s\n",
+      err("at line %d column %d of %s: %s\n",
           exception.lineNumber(),exception.columnNumber(),fileName.data(),
           exception.message().data());
       return FALSE;
     }
     bool fatalError( const QXmlParseException &exception )
     {
-      err("fatal error: at line %d column %d of %s: %s\n",
+      err("fatal: at line %d column %d of %s: %s\n",
           exception.lineNumber(),exception.columnNumber(),fileName.data(),
           exception.message().data());
       return FALSE;
