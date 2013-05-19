@@ -4447,6 +4447,7 @@ int DocAutoList::parse()
   int retval = RetVal_OK;
   int num=1;
   g_nodeStack.push(this);
+  doctokenizerYYstartAutoList();
 	  // first item or sub list => create new list
   do
   {
@@ -4469,6 +4470,7 @@ int DocAutoList::parse()
          (g_token->id==-1 || g_token->id>=num)  // increasing number (or no number)
         );
 
+  doctokenizerYYendAutoList();
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval;
