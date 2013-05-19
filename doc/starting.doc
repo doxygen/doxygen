@@ -163,10 +163,10 @@ doxygen <config-file>
 \endverbatim
 
 Depending on your settings doxygen will create \c html, \c rtf, 
-\c latex, \c xml and/or \c man directories inside the output directory. 
+\c latex, \c xml, \c man, and/or docbook directories inside the output directory. 
 As the names suggest these directories contain the
-generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$, XML and 
-Unix-Man page format.
+generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$, XML,
+Unix-Man page, and DocBook format.
 
 The default output directory is the directory in which \c doxygen
 is started. The root directory to which the output is written can be changed 
@@ -174,7 +174,7 @@ using the \ref cfg_output_directory "OUTPUT_DIRECTORY". The format specific
 directory within the output directory can be selected using the
 \ref cfg_html_output "HTML_OUTPUT", \ref cfg_rtf_output "RTF_OUTPUT",
 \ref cfg_latex_output "LATEX_OUTPUT", \ref cfg_xml_output "XML_OUTPUT",
-and \ref cfg_man_output "MAN_OUTPUT" 
+\ref cfg_man_output "MAN_OUTPUT", and \ref cfg_docbook_output "DOCBOOK_OUTPUT".
 tags of the configuration file. If the output directory does not exist, 
 \c doxygen will try to create it for you (but it will \e not try to create
 a whole path recursively, like <code>mkdir -p</code> does). 
@@ -250,11 +250,18 @@ the XML output produced by doxygen in an incremental way
 (see `addon/doxmlparser/include/doxmlintf.h` for the interface of the library)
 
 \subsection man_out Man page output
+\addindex man
 The generated man pages can be viewed using the \c man program. You do need
 to make sure the man directory is in the man path (see the \c MANPATH
 environment variable). Note that there are some limitations to the 
 capabilities of the man page format, so some information 
 (like class diagrams, cross references and formulas) will be lost.
+
+\subsection docbook_out DocBook output
+\addindex docbook
+Doxygen can also generate output in the 
+<a href="http://www.docbook.org/">DocBook</a> format. How to process the
+DocBook output is beyond the scope of this manual.
 
 \section step3 Step 3: Documenting the sources
 

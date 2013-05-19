@@ -11249,8 +11249,9 @@ void generateOutput()
 
   if (Config_getBool("GENERATE_LEGEND"))
   {
-    msg("Generating graph info page...\n");
+    g_s.begin("Generating graph info page...\n");
     writeGraphInfo(*g_outputList);
+    g_s.end();
   }
 
   g_s.begin("Generating directory documentation...\n");

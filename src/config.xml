@@ -344,7 +344,7 @@ symbols.
 If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in 
 documentation are documented, even if no documentation was available. 
 Private class members and static file members will be hidden unless 
-the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES 
+the EXTRACT_PRIVATE respectively EXTRACT_STATIC tags are set to YES 
 ' defval='0'/>
     <option type='bool' id='EXTRACT_PRIVATE' docs='
 If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
@@ -800,14 +800,14 @@ which an include is specified. Set to NO to disable this.
 ' defval='1'/>
      <option type='bool' id='CLANG_ASSISTED_PARSING' setting='USE_LIBCLANG' docs='
 If CLANG_ASSISTED_PARSING is set to YES, then doxygen will use the clang parser 
-for better parsing at the cost of reduced performance. This can be particularly 
-helpful with template rich C++ code for which doxygen&apos;s built-in 
+for more acurate parsing at the cost of reduced performance. This can be 
+particularly helpful with template rich C++ code for which doxygen&apos;s built-in 
 parser lacks the necessairy type information.
 ' defval='0'/>
-     <option type='string' id='CLANG_OPTIONS' setting='USE_LIBCLANG' docs='
+     <option type='list' id='CLANG_OPTIONS' setting='USE_LIBCLANG' docs='
 If clang assisted parsing is enabled you can provide the compiler with command 
 line options that you would normally use when invoking the compiler. Note that 
-the include paths will be set by doxygen based on the files and directory 
+the include paths will already be set by doxygen for the files and directories 
 specified at INPUT and INCLUDE_PATH.
 ' defval='' depends='CLANG_ASSISTED_PARSING'/>
   </group>
@@ -821,13 +821,13 @@ contains a lot of classes, structs, unions or interfaces.
 If the alphabetical index is enabled (see ALPHABETICAL_INDEX) then 
 the COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns 
 in which this list will be split (can be a number in the range [1..20]) 
-' minval='1' maxval='20' defval='5'/>
+' minval='1' maxval='20' defval='5' depends='ALPHABETICAL_INDEX'/>
     <option type='list' id='IGNORE_PREFIX' format='string' docs='
 In case all classes in a project start with a common prefix, all 
 classes will be put under the same header in the alphabetical index. 
 The IGNORE_PREFIX tag can be used to specify one or more prefixes that 
 should be ignored while generating the index headers. 
-'>
+' depends='ALPHABETICAL_INDEX'>
     </option>
   </group>
   <group name='HTML' docs='configuration options related to the HTML output'>
@@ -1112,13 +1112,13 @@ rendering instead of using prerendered bitmaps. Use this if you do not
 have LaTeX installed or if you want to formulas look prettier in the HTML 
 output. When enabled you may also need to install MathJax separately and 
 configure the path to it using the MATHJAX_RELPATH option.
-' defval='0'/> 
+' defval='0' depends='GENERATE_HTML'/> 
     <option type='enum' id='MATHJAX_FORMAT' defval='HTML-CSS' docs='
 When MathJax is enabled you can set the default output format to be used for 
 the MathJax output. Supported types are HTML-CSS, NativeMML (i.e. MathML) and 
 SVG. The default value is HTML-CSS, which is slower, but has the best 
 compatibility. 
-'>
+' depends='USE_MATHJAX'>
       <value name="HTML-CSS"/>
       <value name="NativeMML"/>
       <value name="SVG"/>
@@ -1132,7 +1132,7 @@ MATHJAX_RELPATH should be ../mathjax. The default value points to
 the MathJax Content Delivery Network so you can quickly see the result without 
 installing MathJax.  However, it is strongly recommended to install a local 
 copy of MathJax from http://www.mathjax.org before deployment.
-' defval='http://cdn.mathjax.org/mathjax/latest'/>
+' defval='http://cdn.mathjax.org/mathjax/latest' depends='USE_MATHJAX'/>
     <option type='list' id='MATHJAX_EXTENSIONS' format='string' docs='
 The MATHJAX_EXTENSIONS tag can be used to specify one or MathJax extension 
 names that should be enabled during MathJax rendering. 
@@ -1187,7 +1187,7 @@ When SERVER_BASED_SEARCH AND EXTERNAL_SEARCH are both enabled the
 EXTERNAL_SEARCH_ID tag can be used as an identifier for the project. This is 
 useful in combination with EXTRA_SEARCH_MAPPINGS to search through multiple 
 projects and redirect the results back to the right project.
-' defval='' dependes='SEARCHENGINE'/>
+' defval='' depends='SEARCHENGINE'/>
     <option type='list' id='EXTRA_SEARCH_MAPPINGS' docs='
 The EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through doxygen 
 projects other than the one defined by this configuration file, but that are 
@@ -1227,10 +1227,9 @@ save some trees in general.
     <option type='enum' id='PAPER_TYPE' defval='a4' docs='
 The PAPER_TYPE tag can be used to set the paper type that is used 
 by the printer. Possible values are: a4, letter, legal and 
-executive. If left blank a4wide will be used. 
+executive. If left blank a4 will be used. 
 ' depends='GENERATE_LATEX'>
       <value name='a4'/>
-      <value name='a4wide'/>
       <value name='letter'/>
       <value name='legal'/>
       <value name='executive'/>
@@ -1460,7 +1459,7 @@ pointed to by INCLUDE_PATH will be searched when a #include is found.
 The INCLUDE_PATH tag can be used to specify one or more directories that 
 contain include files that are not input files but should be processed by 
 the preprocessor. 
-' depends='ENABLE_PREPROCESSING'>
+' depends='SEARCH_INCLUDES'>
     </option>
     <option type='list' id='INCLUDE_FILE_PATTERNS' format='string' docs='
 You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard 
@@ -1565,7 +1564,7 @@ allowed to run in parallel. When set to 0 (the default) doxygen will
 base this on the number of processors available in the system. You can set it 
 explicitly to a value larger than 0 to get control over the balance 
 between CPU load and processing speed.  
-' defval='0' minval='0' maxval='32' dependes='HAVE_DOT'/>
+' defval='0' minval='0' maxval='32' depends='HAVE_DOT'/>
     <option type='string' id='DOT_FONTNAME' format='string' docs='
 By default doxygen will use the Helvetica font for all dot files that 
 doxygen generates. When you want a differently looking font you can specify 

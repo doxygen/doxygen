@@ -1113,7 +1113,7 @@ void Config::check()
   if (paperType!="a4" && paperType!="a4wide" && paperType!="letter" && 
       paperType!="legal" && paperType!="executive")
   {
-    config_err("Error: Unknown page type specified");
+    config_err("Error: Unknown page type specified\n");
   }
   
   QCString &outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
@@ -1261,7 +1261,8 @@ void Config::check()
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     config_err("Warning: doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear DOT_FONTPATH or risk wrong fonts being used for dot generated graphs.\n");
+               "You may want to clear or change DOT_FONTPATH.\n"
+               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
   
   

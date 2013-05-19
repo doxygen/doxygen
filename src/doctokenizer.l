@@ -338,7 +338,7 @@ ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+@&#]
-FILEECHAR [a-z_A-Z0-9\-\+]
+FILEECHAR [a-z_A-Z0-9\-\+@&#]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
@@ -690,34 +690,37 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          g_token->name = yytext;
                          return TK_COMMAND;
   		       }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
+                         if (g_insidePre)
+                         {
+                           REJECT;
+                         }
+                       }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
+                         if (!Doxygen::markdownSupport || g_insidePre)
+                         {
+                           REJECT;
+                         }
+                       }
+<St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
+                         if (!Doxygen::markdownSupport || g_insidePre)
+                         {
+                           REJECT;
+                         }
+                       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n{BLANK}* {
-                         // g_insidePre was always FALSE, so the next section
-                         // was never executed, now g_insidePre is set properly
-                         // again, so the section is commented out to keep the
-                         // old behavior.
-                         //if (g_insidePre)
-			 //{
-			 //  /* Inside a <pre>..</pre> blank lines are treated
-			 //   * as whitespace.
-			 //   */
-                         //  g_token->chars=yytext;
-			 //  return TK_WHITESPACE;
-			 //}
-			 //else // found end of a paragraph
-			 {
-                           g_token->indent=computeIndent(yytext,(int)yyleng);
-                           int i;
-                           // put back the indentation (needed for list items)
-                           for (i=0;i<g_token->indent;i++)
-                           {
-                             unput(' ');
-                           }
-                           // tell flex that after putting the last indent 
-                           // back we are at the beginning of the line
-                           YY_CURRENT_BUFFER->yy_at_bol=1;
-                           // start of a new paragraph
-  		           return TK_NEWPARA;
-			 }
+                         g_token->indent=computeIndent(yytext,(int)yyleng);
+                         int i;
+                         // put back the indentation (needed for list items)
+                         for (i=0;i<g_token->indent;i++)
+                         {
+                           unput(' ');
+                         }
+                         // tell flex that after putting the last indent 
+                         // back we are at the beginning of the line
+                         YY_CURRENT_BUFFER->yy_at_bol=1;
+                         // start of a new paragraph
+  		         return TK_NEWPARA;
                        }
 <St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
                          g_token->name = yytext;

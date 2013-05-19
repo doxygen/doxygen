@@ -40,8 +40,10 @@ ClangParser *ClangParser::s_instance = 0;
 class ClangParser::Private
 {
   public:
+    enum DetectedLang { Detected_Cpp, Detected_ObjC, Detected_ObjCpp };
     Private() : tu(0), tokens(0), numTokens(0), cursors(0), 
-                ufs(0), sources(0), numFiles(0), fileMapping(257) 
+                ufs(0), sources(0), numFiles(0), fileMapping(257),
+                detectedLang(Detected_Cpp)
     { fileMapping.setAutoDelete(TRUE); }
     int getCurrentTokenLine();
     CXIndex index;
@@ -56,6 +58,7 @@ class ClangParser::Private
     QCString *sources;
     uint numFiles;
     QDict<uint> fileMapping;
+    DetectedLang detectedLang;
 };
 
 static QCString detab(const QCString &s)
@@ -112,28 +115,6 @@ static QCString detab(const QCString &s)
   return out.get();
 }
 
-static QStrList getClangOptions()
-{
-  static QCString clangOptions = Config_getString("CLANG_OPTIONS");
-  int p=0,i;
-  QStrList options;
-  while ((i=clangOptions.find(' ',p))!=-1)
-  {
-    QCString opt = clangOptions.mid(p,i-p).stripWhiteSpace();
-    if (!opt.isEmpty())
-    {
-      options.append(opt);
-    }
-    p=i+1;
-  }
-  QCString opt = clangOptions.right(clangOptions.length()-p).stripWhiteSpace();
-  if (!opt.isEmpty())
-  {
-    options.append(opt);
-  }
-  return options;
-}
-
 /** Callback function called for each include in a translation unit */
 static void inclusionVisitor(CXFile includedFile,
                              CXSourceLocation* /*inclusionStack*/,
@@ -177,7 +158,7 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
 {
   static bool clangAssistedParsing = Config_getBool("CLANG_ASSISTED_PARSING");
   static QStrList &includePath = Config_getList("INCLUDE_PATH");
-  static QStrList clangOptions = getClangOptions();
+  static QStrList clangOptions = Config_getList("CLANG_OPTIONS");
   if (!clangAssistedParsing) return;
   //printf("ClangParser::start(%s)\n",fileName);
   p->fileName = fileName;
@@ -207,8 +188,43 @@ void ClangParser::start(const char *fileName,QStrList &filesInTranslationUnit)
   }
   // extra options
   argv[argc++]=strdup("-ferror-limit=0");
-  argv[argc++]=strdup("-x"); // force C++
-  argv[argc++]=strdup("c++"); 
+  argv[argc++]=strdup("-x");
+
+  // Since we can be presented with a .h file that can contain C/C++ or
+  // Objective C code and we need to configure the parser before knowing this,
+  // we use the source file to detected the language. Detection will fail if you
+  // pass a bunch of .h files containing ObjC code, and no sources :-(
+  SrcLangExt lang = getLanguageFromFileName(fileName);
+  if (lang==SrcLangExt_ObjC || p->detectedLang!=ClangParser::Private::Detected_Cpp)
+  {
+    QCString fn = fileName;
+    if (p->detectedLang==ClangParser::Private::Detected_Cpp && 
+        (fn.right(4).lower()==".cpp" || fn.right(4).lower()==".cxx" ||
+         fn.right(3).lower()==".cc" || fn.right(2).lower()==".c"))
+    { // fall back to C/C++ once we see an extension that indicates this
+      p->detectedLang = ClangParser::Private::Detected_Cpp;
+    }
+    else if (fn.right(3).lower()==".mm") // switch to Objective C++
+    {
+      p->detectedLang = ClangParser::Private::Detected_ObjCpp;
+    }
+    else if (fn.right(2).lower()==".m") // switch to Objective C
+    {
+      p->detectedLang = ClangParser::Private::Detected_ObjC;
+    }
+  }
+  switch(p->detectedLang)
+  {
+    case ClangParser::Private::Detected_Cpp: 
+      argv[argc++]=strdup("c++"); 
+      break;
+    case ClangParser::Private::Detected_ObjC: 
+      argv[argc++]=strdup("objective-c"); 
+      break;
+    case ClangParser::Private::Detected_ObjCpp: 
+      argv[argc++]=strdup("objective-c++"); 
+      break;
+  }
 
   // provide the input and and its dependencies as unsaved files so we can
   // pass the filtered versions

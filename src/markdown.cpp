@@ -1466,18 +1466,19 @@ int findTableColumns(const char *data,int size,int &start,int &end,int &columns)
 
   // count columns between start and end
   columns=0;
-  if (n==2) // table row has | ... |
-  {
-    columns++;
-  }
   if (end>start)
   {
     i=start;
     while (i<=end) // look for more column markers
     {
       if (data[i]=='|' && (i==0 || data[i-1]!='\\')) columns++;
+      if (columns==1) columns++; // first | make a non-table into a two column table
       i++;
     }
+  }
+  if (n==2 && columns==0) // table row has | ... |
+  {
+    columns++;
   }
   //printf("findTableColumns(start=%d,end=%d,columns=%d) eol=%d\n",
   //    start,end,columns,eol);

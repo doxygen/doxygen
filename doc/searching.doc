@@ -140,7 +140,7 @@ has its own advantages and disadvantages:
    If you develop for or want to install the Qt application framework,
    you will get an application 
    called <a href="http://qt-project.org/doc/qt-4.8/assistant-manual.html">Qt assistant</a>. 
-   This is a help viewer for Qt Compressed Help files (.qch).
+   This is a help viewer for Qt Compressed Help files (<code>.qch</code>).
 
    To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.
    You also need to fill in the other Qt help related options, such as

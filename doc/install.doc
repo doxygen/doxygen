@@ -29,16 +29,16 @@ If you downloaded the source distribution, you need at least the
 following to build the executable:
 <ul>
 <li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools 
-    flex, bison and GNU make, and strip
+    \c flex, \c bison and <code>GNU make</code>, and \c strip
     \addindex flex
     \addindex bison
     \addindex make
     \addindex strip
-<li>In order to generate a Makefile for your platform, you need 
+<li>In order to generate a \c Makefile for your platform, you need 
     <a href="http://www.perl.com/">perl</a>
     \addindex perl
 <li>The configure script assume the availability of standard UNIX tools such 
-    as sed, date, find, uname, mv, cp, cat, echo, tr, cd, and rm.
+    as <code>sed, date, find, uname, mv, cp, cat, echo, tr, cd</code> and \c rm.
 </ul>
 
 To take full advantage of doxygen's features the following additional
@@ -168,9 +168,9 @@ standard installation procedure that is required for these packages.
 <b>Qt problems</b>
 
 The Qt include files and libraries are not a subdirectory of the
-directory pointed to by QTDIR on some systems
-(for instance on Red Hat 6.0 includes are in /usr/include/qt and
-libs are in /usr/lib).
+directory pointed to by <code>QTDIR</code> on some systems
+(for instance on Red Hat 6.0 includes are in <code>/usr/include/qt</code> and
+libs are in <code>/usr/lib</code>).
   
 The solution: go to the root of the doxygen distribution and do:
 
@@ -181,96 +181,26 @@ The solution: go to the root of the doxygen distribution and do:
     ln -s your-qt-bin-dir-here bin
     export QTDIR=$PWD
 
-If you have a csh-like shell you should use <code>setenv QTDIR \$PWD</code>
+If you have a <code>csh</code>-like shell you should use <code>setenv QTDIR \$PWD</code>
 instead of the <code>export</code> command above.
   
 Now install doxygen as described above.  
 
 <b>Bison problems</b>
 
-Versions 1.31 to 1.34 of bison contain a "bug" that results in a 
+Versions 1.31 to 1.34 of \c bison contain a "bug" that results in a 
 compiler errors like this:
 
-ce_parse.cpp:348: member `class CPPValue yyalloc::yyvs' with 
+<code>ce_parse.cpp:348: member `class CPPValue yyalloc::yyvs' with </code>
 constructor not allowed in union
 
 This problem has been solved in version 1.35 (versions before 1.31 
 will also work).
 
-<b>Latex problems</b>
-
-The file <code>a4wide.sty</code> is not available for all distributions. If
-your distribution does not have it please select another paper type
-in the config file (see the \ref cfg_paper_type "PAPER_TYPE" tag in the 
-config file).
-
-<b>HP-UX \& Digital UNIX problems</b>
-
-If you are compiling for HP-UX with aCC and you get this error:
-
-    /opt/aCC/lbin/ld: Unsatisfied symbols:
-    alloca (code)
-
-then you should (according to Anke Selig) edit <code>ce_parse.cpp</code> 
-and replace
-
-    extern "C" {
-      void *alloca (unsigned int);
-    };
-
-with
-
-    #include <alloca.h>  
-
-If that does not help, try removing <code>ce_parse.cpp</code> and let 
-bison rebuild it (this worked for me).
-
-If you are compiling for Digital UNIX, the same problem can be solved
-(according to Barnard Schmallhof) by replacing the following in 
-ce_parse.cpp:
-   
-\verbatim
-    #else /* not GNU C.  */
-    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
-        || defined (__sparc) || defined (__sgi)
-    #include <alloca.h>
-\endverbatim
-
-  with
-
-\verbatim
-    #else /* not GNU C.  */
-    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
-        || defined (__sparc) || defined (__sgi) || defined (__osf__)
-    #include <alloca.h>
-\endverbatim
-
-  Alternatively, one could fix the problem at the bison side.
-  Here is patch for bison.simple (provided by Andre Johansen):
- 
-\verbatim
---- bison.simple~       Tue Nov 18 11:45:53 1997
-+++ bison.simple        Mon Jan 26 15:10:26 1998
-@@ -27,7 +27,7 @@
- #ifdef __GNUC__
- #define alloca __builtin_alloca
- #else /* not GNU C.  */
--#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
-     || defined (__sparc) || defined (__sgi)
-+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
-     || defined (__sparc) || defined (__sgi) || defined (__alpha)
- #include <alloca.h>
- #else /* not sparc */
- #if defined (MSDOS) && !defined (__TURBOC__)
-\endverbatim
-
-  The generated scanner.cpp that comes with doxygen is build with this
-  patch applied.  
-
 <b>Sun compiler problems</b>
 
 It appears that doxygen doesn't work properly if it is compiled 
-with Sun's C++ WorkShop 6 Compiler. I cannot verify this myself as I do 
+with Sun's C++ WorkShop Compiler. I cannot verify this myself as I do 
 not have access to a Solaris machine with this compiler. With GNU compiler
 it does work and installing Sun patch 111679-13 has also been reported 
 as a way to fix the problem.
@@ -338,7 +268,7 @@ compile doxygen. Alternatively, you can compile doxygen
 <a href="http://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="http://www.mingw.org/">MinGW</a>.
 
-The next step is to install bison, flex, and tar
+The next step is to install \c bison, \c flex, and \c tar
 (see http://gnuwin32.sourceforge.net/packages.html).
 This packages are needed during the
 compilation process if you use a CVS snapshot of doxygen (the official source releases 
@@ -399,7 +329,7 @@ Here is what is required:
 
     The good, tested, and free alternative is the <code>tar</code> utility
     supplied with <a href="http://sourceware.cygnus.com/cygwin/">cygwin
-    tools</a>. Anyway, the cygwin's flex, bison, and sed are also
+    tools</a>. Anyway, the Cygwin's \c flex, \c bison, and \c sed are also
     recommended below.
 
 <li>Microsoft Visual C++ (I only tested with version 6.0).
@@ -412,7 +342,7 @@ Here is what is required:
 <li>Perl 5.0 or higher for Windows. This can be downloaded from:
     http://www.ActiveState.com/Products/ActivePerl/
 
-<li>The GNU tools flex, bison, and sed.
+<li>The GNU tools \c flex, \c bison, and \c sed.
     To get these working on Windows you should install the 
     <a href="http://sources.redhat.com/cygwin/">cygwin tools</a>
     

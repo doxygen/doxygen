@@ -144,6 +144,9 @@ extsearch_js.h: extsearch.js
 doxygen_css.h: doxygen.css
 	cat doxygen.css | $(TO_C_CMD) >doxygen_css.h 
 
+doxygen_sty.h: doxygen.sty
+	cat doxygen.sty | $(TO_C_CMD) >doxygen_sty.h 
+
 navtree_js.h: navtree.js
 	cat navtree.js | $(TO_C_CMD) >navtree_js.h
 
