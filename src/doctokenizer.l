@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id: $
  *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
@@ -57,11 +57,13 @@ static QCString     g_secLabel;
 static QCString     g_secTitle;
 static SectionInfo::SectionType g_secType;
 static QCString     g_endMarker;
+static int          g_autoListLevel;
 
 struct DocLexerContext
 {
   TokenInfo *token;
   int rule;
+  int autoListLevel;
   int inputPos;
   const char *inputString;
   YY_BUFFER_STATE state;
@@ -75,6 +77,7 @@ void doctokenizerYYpushContext()
 {
   DocLexerContext *ctx = new DocLexerContext;
   ctx->rule = YY_START;
+  ctx->autoListLevel = g_autoListLevel;
   ctx->token = g_token;
   ctx->inputPos = g_inputPos;
   ctx->inputString = g_inputString;
@@ -87,6 +90,7 @@ bool doctokenizerYYpopContext()
 {
   if (g_lexerStack.isEmpty()) return FALSE;
   DocLexerContext *ctx = g_lexerStack.pop();
+  g_autoListLevel = ctx->autoListLevel;
   g_inputPos = ctx->inputPos;
   g_inputString = ctx->inputString;
   yy_delete_buffer(YY_CURRENT_BUFFER);
@@ -691,19 +695,19 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                          return TK_COMMAND;
   		       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (g_insidePre)
+                         if (g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!Doxygen::markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!Doxygen::markdownSupport || g_insidePre)
+                         if (!Doxygen::markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
@@ -1182,6 +1186,7 @@ void doctokenizerYYFindSections(const char *input,Definition *d,
 
 void doctokenizerYYinit(const char *input,const char *fileName)
 {
+  g_autoListLevel = 0;
   g_inputString = input;
   g_inputPos    = 0;
   g_fileName    = fileName;
@@ -1352,6 +1357,16 @@ void doctokenizerYYpushBackHtmlTag(const char *tag)
     unput(tag[i]);
   }
   unput('<');
+}
+
+void doctokenizerYYstartAutoList()
+{
+  g_autoListLevel++;
+}
+
+void doctokenizerYYendAutoList()
+{
+  g_autoListLevel--;
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 

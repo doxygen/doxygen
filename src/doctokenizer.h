@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id: $
  *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
@@ -156,5 +156,7 @@ void doctokenizerYYsetStateAnchor();
 void doctokenizerYYsetInsidePre(bool b);
 void doctokenizerYYpushBackHtmlTag(const char *tag);
 void doctokenizerYYsetStateSnippet();
+void doctokenizerYYstartAutoList();
+void doctokenizerYYendAutoList();
 
 #endif
