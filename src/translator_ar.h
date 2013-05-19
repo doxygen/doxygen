@@ -71,7 +71,7 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "cp1256";
+      return "utf-8";
     }
 
     // --- Language translation methods -------------------

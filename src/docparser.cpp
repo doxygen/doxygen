@@ -4403,10 +4403,6 @@ int DocAutoListItem::parse()
   int retval = RetVal_OK;
   g_nodeStack.push(this);
   
-  //retval=m_paragraph->parse();
-  //m_paragraph->markFirst();
-  //m_paragraph->markLast();
-
   // first parse any number of paragraphs
   bool isFirst=TRUE;
   DocPara *lastPar=0;

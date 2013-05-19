@@ -47,6 +47,7 @@ HEADERS      =	arguments.h \
 		doxygen.h \
 		doxygen_bst.h \
 		doxygen_css.h \
+		doxygen_sty.h \
 		eclipsehelp.h \
 		entry.h \
 		example.h \

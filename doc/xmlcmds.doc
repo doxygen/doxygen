@@ -28,7 +28,7 @@ Here is the list of tags supported by doxygen:
 <li><tt>\<c\></tt>     Identifies inline text that should be rendered as a 
                        piece of code. Similar to using <tt>\<tt\></tt>text<tt>\</tt\></tt>.
 <li><tt>\<code\></tt>  Set one or more lines of source code or program output.
-                       Note that this command behaves like <tt>\\code ... \\endcode</tt>
+                       Note that this command behaves like \ref cmdcode "\\code" ... \ref cmdendcode "\\endcode"
                        for C# code, but it behaves like the HTML equivalent
                        <tt>\<code\>...\</code\></tt> for other languages.
 <li><tt>\<description\></tt> Part of a <tt>\<list\></tt> command, describes an item.

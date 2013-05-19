@@ -1119,6 +1119,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    current->type = "id";
 					  }
 					  current->name = yytext;
+                                          if (insideCpp || insideObjC) 
+                                          {
+                                            current->id = ClangParser::instance()->lookup(yyLineNr,yytext);
+                                          }
   					}
 <ObjCMethod>":"{B}*			{ // start of parameter list
   					  current->name += ':';
@@ -6074,6 +6078,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
           		                   docBlock.resize(docBlock.length() - 3);
                                            lineCount();
                                         }
+<DocLine>{B}*"///"[/]+{B}*/"\n"		{ // ignore marker line (see bug700345)
+					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
+					  BEGIN( docBlockContext );
+  					}
 <DocLine>[^\n]*/"\n"			{ // whole line
   					  docBlock+=yytext;
 					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
@@ -6833,7 +6841,8 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
 bool CLanguageScanner::needsPreprocessing(const QCString &extension)
 {
   QCString fe=extension.lower();
-  return 
+  SrcLangExt lang = getLanguageFromFileName(extension);
+  return (SrcLangExt_Cpp == lang) ||
    !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" || 
       fe==".php4" || fe==".inc" || fe==".phtml" 
     );

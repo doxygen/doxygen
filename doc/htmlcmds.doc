@@ -20,7 +20,7 @@ Here is a list of all HTML commands that may be used inside the
 documentation. Note that although these HTML tags are translated to the
 proper commands for output formats other than HTML, all attributes 
 of a HTML tag are passed on to the HTML output only 
-(the HREF and NAME attributes for the A tag are the only exception).
+(the \c HREF and \c NAME attributes for the \c A tag are the only exception).
 
 <ul>
 <li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
@@ -89,7 +89,7 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\<SUB\></tt>   Starts a piece of text displayed in subscript.
 <li><tt>\</SUB\></tt>  Ends a <tt>\<SUB\></tt> section.
 <li><tt>\<SUP\></tt>   Starts a piece of text displayed in superscript.
-<li><tt>\</SUP\></tt>  Ends a <tt>\</SUP\></tt> section.
+<li><tt>\</SUP\></tt>  Ends a <tt>\<SUP\></tt> section.
 <li><tt>\<TABLE\></tt> starts a table.
 <li><tt>\</TABLE\></tt> ends a table.
 <li><tt>\<TD\></tt>    Starts a new table data element.

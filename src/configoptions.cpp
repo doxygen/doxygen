@@ -484,7 +484,7 @@ void addConfigOptions(Config *cfg)
                  "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in\n"
                  "documentation are documented, even if no documentation was available.\n"
                  "Private class members and static file members will be hidden unless\n"
-                 "the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES",
+                 "the EXTRACT_PRIVATE respectively EXTRACT_STATIC tags are set to YES",
                  FALSE
                 );
   //----
@@ -1138,8 +1138,8 @@ void addConfigOptions(Config *cfg)
   cb = cfg->addBool(
                  "CLANG_ASSISTED_PARSING",
                  "If CLANG_ASSISTED_PARSING is set to YES, then doxygen will use the clang parser\n"
-                 "for better parsing at the cost of reduced performance. This can be particularly\n"
-                 "helpful with template rich C++ code for which doxygen's built-in\n"
+                 "for more acurate parsing at the cost of reduced performance. This can be\n"
+                 "particularly helpful with template rich C++ code for which doxygen's built-in\n"
                  "parser lacks the necessairy type information.",
                  FALSE
                 );
@@ -1148,14 +1148,14 @@ void addConfigOptions(Config *cfg)
 #endif
 #if USE_LIBCLANG
   //----
-  cs = cfg->addString(
+  cl = cfg->addList(
                  "CLANG_OPTIONS",
                  "If clang assisted parsing is enabled you can provide the compiler with command\n"
                  "line options that you would normally use when invoking the compiler. Note that\n"
-                 "the include paths will be set by doxygen based on the files and directory\n"
+                 "the include paths will already be set by doxygen for the files and directories\n"
                  "specified at INPUT and INCLUDE_PATH."
                 );
-  cs->addDependency("CLANG_ASSISTED_PARSING");
+  cl->addDependency("CLANG_ASSISTED_PARSING");
 #else
   cfg->addDisabled("CLANG_OPTIONS");
 #endif
@@ -1179,6 +1179,7 @@ void addConfigOptions(Config *cfg)
                  "in which this list will be split (can be a number in the range [1..20])",
                  1,20,5
                 );
+  ci->addDependency("ALPHABETICAL_INDEX");
   //----
   cl = cfg->addList(
                  "IGNORE_PREFIX",
@@ -1187,6 +1188,7 @@ void addConfigOptions(Config *cfg)
                  "The IGNORE_PREFIX tag can be used to specify one or more prefixes that\n"
                  "should be ignored while generating the index headers."
                 );
+  cl->addDependency("ALPHABETICAL_INDEX");
   //---------------------------------------------------------------------------
   cfg->addInfo("HTML","configuration options related to the HTML output");
   //---------------------------------------------------------------------------
@@ -1644,6 +1646,7 @@ void addConfigOptions(Config *cfg)
                  "configure the path to it using the MATHJAX_RELPATH option.",
                  FALSE
                 );
+  cb->addDependency("GENERATE_HTML");
   //----
   ce = cfg->addEnum(
                  "MATHJAX_FORMAT",
@@ -1656,6 +1659,7 @@ void addConfigOptions(Config *cfg)
   ce->addValue("HTML-CSS");
   ce->addValue("NativeMML");
   ce->addValue("SVG");
+  ce->addDependency("USE_MATHJAX");
   //----
   cs = cfg->addString(
                  "MATHJAX_RELPATH",
@@ -1670,6 +1674,7 @@ void addConfigOptions(Config *cfg)
                  "copy of MathJax from http://www.mathjax.org before deployment."
                 );
   cs->setDefaultValue("http://cdn.mathjax.org/mathjax/latest");
+  cs->addDependency("USE_MATHJAX");
   //----
   cl = cfg->addList(
                  "MATHJAX_EXTENSIONS",
@@ -1751,6 +1756,7 @@ void addConfigOptions(Config *cfg)
                  "useful in combination with EXTRA_SEARCH_MAPPINGS to search through multiple\n"
                  "projects and redirect the results back to the right project."
                 );
+  cs->addDependency("SEARCHENGINE");
   //----
   cl = cfg->addList(
                  "EXTRA_SEARCH_MAPPINGS",
@@ -1819,11 +1825,10 @@ void addConfigOptions(Config *cfg)
                  "PAPER_TYPE",
                  "The PAPER_TYPE tag can be used to set the paper type that is used\n"
                  "by the printer. Possible values are: a4, letter, legal and\n"
-                 "executive. If left blank a4wide will be used.",
+                 "executive. If left blank a4 will be used.",
                  "a4"
                 );
   ce->addValue("a4");
-  ce->addValue("a4wide");
   ce->addValue("letter");
   ce->addValue("legal");
   ce->addValue("executive");
@@ -2196,7 +2201,7 @@ void addConfigOptions(Config *cfg)
                  "contain include files that are not input files but should be processed by\n"
                  "the preprocessor."
                 );
-  cl->addDependency("ENABLE_PREPROCESSING");
+  cl->addDependency("SEARCH_INCLUDES");
   cl->setWidgetType(ConfigList::Dir);
   //----
   cl = cfg->addList(
@@ -2350,6 +2355,7 @@ void addConfigOptions(Config *cfg)
                  "between CPU load and processing speed.",
                  0,32,0
                 );
+  ci->addDependency("HAVE_DOT");
   //----
   cs = cfg->addString(
                  "DOT_FONTNAME",

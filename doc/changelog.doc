@@ -1,6 +1,161 @@
 /** \page changelog Changelog
 \tableofcontents
 \section log_1_8 Release 1.8
+
+\subsection log_1_8_4 Release 1.8.4
+\htmlonly
+<b>(release date 19-05-2013)</b>
+<a name="1.8.3.1"></a>
+<h3>Changes</h3>
+<ul>
+<li>   id 686384: When INLINE_SIMPLE_STRUCTS is enabled, also structs with
+       simple typedefs will be inlined.
+<li>   Doxywizard: scrolling with mouse wheel no longer affects the values in
+       the expert view.
+<li>   id 681733: More consistent warnings and errors.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>   Added support for "clang assisted parsing", which allows
+       the code to also be parsed via libclang (C/C++ frontend of LLVM) 
+       and can improve the quality of the syntax highting, cross-references, 
+       and call graphs, especially for template heavy C++ code. To enable 
+       this feature you have to configure doxygen with the --with-libclang 
+       option. Then you get two new configuration options: CLANG_ASSISTED_PARSING 
+       to enable or disable parsing via clang and CLANG_OPTIONS to pass additional 
+       compiler options needed to compile the files. Note that enabling this feature 
+       has a significant performance penality.
+<li>   Included patch donated by Intel which adds Docbook support.
+       This can be enabled via GENERATE_DOCBOOK and the output location can
+       be controlled using DOCBOOK_OUTPUT. Docbook specific sections can be
+       added using \docbookonly ... \enddocbookonly
+<li>   Added support for UNO IDL (interace language used in Open/Libre Office), thanks to
+       Michael Stahl for the patch.
+<li>   Included patch by Adrian Negreanu which stores data gathered by 
+       doxygen in a sqlite3 database. Currently still work in progress and
+       can only be enabled using --with-sqlite3 during ./configure.
+<li>   For interactive SVG graphs, edges are now highlighted when hovered by
+       the mouse.
+<li>   Include patch by Adrian Negreanu to show duration statistics after a run.
+       You can enable this by running doxygen with the "-d Time" option.
+<li>   Included patch by Markus Geimer which adds a new option 
+       LATEX_EXTRA_FILES which works similarily to HTML_EXTRA_FILES in that
+       it copied specified files to the LaTeX output directory.
+<li>   id 698223: Added support for C++11 keyword alignas
+<li>   id 693178: Added support for processing DocSets with Dash (thanks to
+       Bogdan Popescu for the patch 
+<li>   id 684782: Added option EXTERNAL_PAGES which can be used to determine
+       whether or not pages importated via tags will appear under related 
+       pages (similar to EXTERNAL_GROUPS).
+<li>   id 692227: Added new MathJax command MATHJAX_CODEFILE which supports
+       including a file with MathJax related scripting to be inserted before
+       the MathJax script is loaded. Thanks to Albert for the patch.
+<li>   id 693537: Comments in the config file starting with ## will now be 
+       kept when upgrading the file with doxygen -u (and doxygen -s -u).
+       Thanks to Albert for the patch.
+<li>   id 693422: Adds support for Latvian (thanks to a patch by Lauris).
+<li>   Included language updates for Ukrainian, Romanian, and Korean
+</ul>
+<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database)</h3>
+<ul>
+<li>   id 145294: Fixed parse issue when using less than inside a template
+       argument.
+<li>   id 325266 man page output was missing a linebreak before .SH when
+       definition a group with a section.
+<li>   id 338205: @anchor were wrong when CREATE_SUBDIRS was enabled.
+<li>   id 427012: Putting a @todo in front of an anonoymous namespace caused
+       bogus entry in the todo list.
+<li>   id 564462: Fixed alignment issue with tabs and multibyte characters.
+<li>   id 567542: Character entities in titles were not rendered correctly 
+       in the HTML navigation tree.
+<li>   id 571561: No space between * and tag (e.g. \endcode) made parser
+       misbehave
+<li>   id 583233: Included patch to limit generated Doxyfile comments to 80
+       columns
+<li>   id 592626: Fixed off-by-one with MAX_DOT_GRAPH_DEPTH.
+<li>   id 619790: Improved linking to template specializations.
+       Thanks to David Haney for the patch.
+<li>   id 627712: Doxygen Header in C Files makes empty Lines in HTML Source
+       Code when starts in Line 1
+<li>   id 639954: Fortran: array constructors with brackets were not correctly
+       recognized.
+<li>   id 646428: The generated man pages had a .PP just before the subject 
+       description
+<li>   id 646431: On generated manpages the return section is incorrectly 
+       indented
+<li>   id 650004: use \page now generates a man page were the . is not 
+       replaced by _8.
+<li>   id 657704: Fixed issue with PROJECT_LOGO when using backslashes in
+       the path.
+<li>   id 666008: Fortran: Using @var at module levele didn't work.
+       expect a file/path name.
+<li>   id 673218: Replaced "echo -n" with "printf" in the configure script.
+<li>   id 674856: Removed warning when using \endinternal
+<li>   id 675607: Added &, @, and # as allowed characters for commands that
+<li>   id 679626: Included patch by Abert to correctly link pages in the manual
+<li>   id 681874: Added support for single column Markdown tables.
+<li>   id 682369: Incomplete documentation on doxygen -w latex
+<li>   id 683516: Doxygen crashed when structural commands (like \var) appeared 
+       in .md files.
+<li>   id 686259: Fixed character encoding problem when multibytes characters
+       were used in anchors.
+<li>   id 691071: Documentation before an anonymous member did not appear.
+<li>   id 692162: Fixed Markdown related indentation problem.
+<li>   id 692320: Regression: Text after @copydoc was not visible anymore.
+<li>   id 692537: Linked to external pages was done using the page label 
+       rather than the file name.
+<li>   id 693331: build using ./configure ; make did not work if the path
+       contained a space.
+<li>   id 693406: Tag files are now identfied by the full path instead of
+       only the name of the tag file.
+<li>   id 694376: In some cases members were missing from the tag file.
+<li>   id 694027: Fortran: derive intent from documentation in case no 
+       intent is specified
+<li>   id 694610: Warning was not reported at the correct line in two cases.
+<li>   id 694631, 694632: @cond..@endcond did not work properly for removing
+       macro definitions.
+<li>   id 694685: Fixed crash when adding two different functions with the
+       same name to the same group.
+<li>   id 694726: VHDL: fixed issue generating LaTeX output.
+<li>   id 695277: Fortran: improved handling of protected statement
+<li>   id 695974: Fortran: Fixed issue resulting in 
+       "Stack buffers nested too deeply" error.
+<li>   id 696708: @cond was not handled properly by the preprocessor.
+<li>   id 697233: @copyright command did not end a brief description.
+<li>   id 697249: Markdown tables caused errors reported at wrong line number.
+<li>   id 697494: Removed double entry from the messages produced by doxygen.
+<li>   id 698818: Fixed problem handling @cond for #define's
+<li>   id 698007: Fixed potential crash when searching files.
+<li>   id 696925: #include's inside namespace could result in duplicate entries.
+<li>   id 696954: Doxywizard: Labels of items are now also grayed out 
+       when an item is disabled (thanks to Albert for the patch).
+<li>   id 699195: Changed Markdown page label to support multiple .md files
+       with the same name.
+<li>   id 699218: Fixed issue with margin computation in resize.js.
+<li>   id 699381: Lonely h4,h5,h6 end tag caused assert.
+<li>   id 699437: Trailing comments were not always rendered properly if
+       MARKDOWN_SUPPORT was enabled.
+<li>   id 699460: Updated doxygen man page (thanks to Manuel for the patch).
+<li>   id 699464: Added reference to \xmlonly and \docbookonly in \htmlonly
+<li>   id 699731: LaTeX: switch to using the xtabular package instead of
+       longtable to prevent overfull vbox errors.
+<li>   id 699732: Template parameters and Exceptions were rendered differently
+       than Parameters and Return Values in the LaTeX output.
+<li>   id 700153: Tcl: Fixed crash when parsing certain Tcl code.
+<li>   id 700345: Comment blocking ending with ///// made slashes appear in 
+       the output.
+<li>   id 700456: Added support for separating auto list items with an
+       empty paragraph.
+<li>   Included a couple of VHDL fixes (thanks to Martin Kreis for the patch)
+<li>   \include and \includelineno both showed line numbers.
+<li>   Putting '// @endverbatim' inside a C comment block was not handled
+       properly by the preprocessor.
+<li>   Fixed various typo's in the manual and improved cross referencing
+       (thanks to Albert and Guillem Jover for their help)
+<li>   Added a couple of missing configuration dependencies.
+</ul>
+\endhtmlonly
+
 \subsection log_1_8_3_1 Release 1.8.3.1
 \htmlonly
 <b>(release date 20-01-2013)</b>
@@ -27,7 +182,7 @@
 <li>   To make navindex section without any link inside a layout file you 
        can use usergroup with special title [none].
 </ul>
-<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database)</h3>
+<h3>Bug fixes</h3>
 <ul>
 <li>   id 644350: Fortran: Included patch to improve parsing line continuation 
        characters.

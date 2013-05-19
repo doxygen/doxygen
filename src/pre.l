@@ -2522,6 +2522,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             g_ccomment=FALSE;
                                           }
                                           g_condCtx=YY_START;
+                                          startCondSection(" ");
                                           BEGIN(SkipCond);
   					}
 <SkipCond>\n                            { g_yyLineNr++; outputChar('\n'); }
@@ -2940,6 +2941,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 
   g_macroExpansion = Config_getBool("MACRO_EXPANSION");
   g_expandOnlyPredef = Config_getBool("EXPAND_ONLY_PREDEF");
+  g_skip=FALSE;
   g_curlyCount=0;
   g_nospaces=FALSE;
   g_inputBuf=&input;

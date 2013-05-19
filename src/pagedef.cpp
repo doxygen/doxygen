@@ -90,8 +90,9 @@ void PageDef::writeDocumentation(OutputList &ol)
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
 
   //outputList->disable(OutputGenerator::Man);
-  QCString pageName;
-  pageName=escapeCharsInString(name(),FALSE,TRUE);
+  QCString pageName,manPageName;
+  pageName    = escapeCharsInString(name(),FALSE,TRUE);
+  manPageName = escapeCharsInString(name(),TRUE,TRUE);
 
   //printf("PageDef::writeDocumentation: %s\n",getOutputFileBase().data());
 
@@ -110,7 +111,15 @@ void PageDef::writeDocumentation(OutputList &ol)
     ol.enable(OutputGenerator::Html);
   }
 
+  ol.pushGeneratorState();
+  //2.{ 
+  ol.disableAllBut(OutputGenerator::Man);
+  startFile(ol,getOutputFileBase(),manPageName,title(),HLI_Pages,!generateTreeView);
+  ol.enableAll();
+  ol.disable(OutputGenerator::Man);
   startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,!generateTreeView);
+  ol.popGeneratorState();
+  //2.} 
 
   if (!generateTreeView)
   {
@@ -126,8 +135,8 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   //2.{
   ol.disableAllBut(OutputGenerator::Man);
-  ol.startTitleHead(pageName);
-  ol.endTitleHead(pageName, pageName);
+  ol.startTitleHead(manPageName);
+  ol.endTitleHead(manPageName, manPageName);
   if (si)
   {
     ol.generateDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
