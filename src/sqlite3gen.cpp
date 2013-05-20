@@ -888,7 +888,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   }
   if (isFunc)
   {
-    LockingPtr<ArgumentList> al = md->argumentList();
+    ArgumentList *al = md->argumentList();
     if (al!=0 && al->constSpecifier) 
     {
       bindIntParameter(i_s_memberdef,":const",al->constSpecifier);
@@ -984,7 +984,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
       << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
       << convertToXML(rmd->name()) << "</reimplements>" << endl;
   }
-  LockingPtr<MemberList> rbml = md->reimplementedBy();
+  MemberList *rbml = md->reimplementedBy();
   if (rbml!=0)
   {
     MemberListIterator mli(*rbml);
@@ -998,8 +998,8 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 #endif
   if (isFunc) //function
   {
-    LockingPtr<ArgumentList> declAl = md->declArgumentList();
-    LockingPtr<ArgumentList> defAl = md->argumentList();
+    ArgumentList *declAl = md->declArgumentList();
+    ArgumentList *defAl = md->argumentList();
     if (declAl!=0 && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
@@ -1128,7 +1128,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // + cross-references
   // The cross-references in initializers only work when both the src and dst
   // are defined.
-  LockingPtr<MemberSDict> mdict = md->getReferencesMembers();
+  MemberSDict *mdict = md->getReferencesMembers();
   // references
   if (mdict!=0)
   {
