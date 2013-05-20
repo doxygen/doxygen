@@ -1,4 +1,20 @@
 language: cpp
 compiler:
   - gcc
- 
+before_install:
+    - pwd
+script:
+    - ./configure --with-doxywizard
+    - make
+    - make docs
+notifications:
+    channels:
+      - "irc.freenode.org#doxygen"
+    template:
+      - "%{repository} (%{commit}) by %{author} : %{message} %{foo} "
+      - "Build details: %{build_url}"
+      - "Latest commit: %{compare_url}"
+    on_success: change
+    on_failure: change
+    
+    
