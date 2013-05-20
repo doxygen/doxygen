@@ -6105,11 +6105,13 @@ static void findMember(EntryNav *rootNav,
               // for template member we also need to check the return type
               if (md->templateArguments()!=0 && root->tArgLists!=0)
               {
+                QCString memType = md->typeString();
+                memType.stripPrefix("static "); // see bug700696
                 //printf("Comparing return types '%s'<->'%s' args %d<->%d\n",
                 //    md->typeString(),funcType.data(),
                 //    md->templateArguments()->count(),root->tArgLists->last()->count());
                 if (md->templateArguments()->count()!=root->tArgLists->last()->count() ||
-                    qstrcmp(md->typeString(),funcType))
+                    qstrcmp(memType,funcType))
                 {
                   //printf(" ---> no matching\n");
                   matching = FALSE;
