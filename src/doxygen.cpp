@@ -6107,9 +6107,11 @@ static void findMember(EntryNav *rootNav,
               {
                 QCString memType = md->typeString();
                 memType.stripPrefix("static "); // see bug700696
-                //printf("Comparing return types '%s'<->'%s' args %d<->%d\n",
-                //    md->typeString(),funcType.data(),
-                //    md->templateArguments()->count(),root->tArgLists->last()->count());
+                funcType=substitute(funcType,className+"::",""); // see bug700693
+                Debug::print(Debug::FindMembers,0,
+                   "5b. Comparing return types '%s'<->'%s' #args %d<->%d\n",
+                    md->typeString(),funcType.data(),
+                    md->templateArguments()->count(),root->tArgLists->last()->count());
                 if (md->templateArguments()->count()!=root->tArgLists->last()->count() ||
                     qstrcmp(memType,funcType))
                 {
