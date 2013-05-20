@@ -42,7 +42,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorEsperanto : public TranslatorAdapter_1_8_2
+class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 {
   public:
 

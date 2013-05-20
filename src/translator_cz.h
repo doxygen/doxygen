@@ -20,6 +20,7 @@
 
 // Updates:
 // --------
+// 2013/04/11 - Updates for "new since 1.8.4".
 // 2012/07/31 - Updates for "new since 1.8.2".
 // 2012/04/10 - Updates for "new since 1.8.0".
 // 2011/07/28 - Updates for "new since 1.7.5".
@@ -84,7 +85,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public TranslatorAdapter_1_8_2
+class TranslatorCzech : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -2029,6 +2030,62 @@ class TranslatorCzech : public TranslatorAdapter_1_8_2
     virtual QCString trDesignOverview()
     {
       return "Návrhové schéma";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Exportovaná rozhraní"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Začleněné služby"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Konstantní skupiny"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result="Konstantní skupiny z ";
+      result += namespaceName;
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result="Popis služby ";
+      result += sName;
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result="Popis singletonu ";
+      result += sName;
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result="Dokumentace k této službě byla generována ";
+      if (single) result+="z následujícího souboru:";
+      else        result+="z následujících souborů:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result="Dokumentace k tomuto singletonu byla generována ";
+      if (single) result+="z následujícího souboru:";
+      else        result+="z následujících souborů:";
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////

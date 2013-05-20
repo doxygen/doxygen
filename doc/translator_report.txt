@@ -1,4 +1,4 @@
-(1.8.3.1)
+(1.8.4)
 
 Doxygen supports the following 40 languages (sorted alphabetically):
 
@@ -10,7 +10,7 @@ Macedonian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian,
 Serbian, SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish,
 Ukrainian, and Vietnamese.
 
-Of them, 5 translators are up-to-date, 35 translators are based on
+Of them, 7 translators are up-to-date, 33 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -19,6 +19,8 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 250 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorCzech
+  TranslatorDutch
   TranslatorEnglish
   TranslatorKorean -- Change the base class to Translator.
   TranslatorLatvian -- Reimplementation using UTF-8 suggested.
@@ -31,27 +33,11 @@ obsolete at the end). The other info shows the estimation of Doxygen
 version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
-  TranslatorUkrainian             1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
-  TranslatorSpanish               1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
-  TranslatorGreek                 1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
-  TranslatorGerman                1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
-  TranslatorEsperanto             1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
-  TranslatorDutch                 1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
-  TranslatorCzech                 1.8.04	 8 methods to implement (3 %)
-	Note: Change the base class to TranslatorAdapter_1_8_4.
-
+  TranslatorUkrainian             1.8.4 	 8 methods to implement (3 %)
+  TranslatorSpanish               1.8.4 	 8 methods to implement (3 %)
+  TranslatorGreek                 1.8.4 	 8 methods to implement (3 %)
+  TranslatorGerman                1.8.4 	 8 methods to implement (3 %)
+  TranslatorEsperanto             1.8.4 	 8 methods to implement (3 %)
   TranslatorPolish                1.8.2 	14 methods to implement (5 %)
   TranslatorItalian               1.8.2 	15 methods to implement (6 %)
   TranslatorCroatian              1.8.2 	15 methods to implement (6 %)
@@ -429,23 +415,6 @@ TranslatorCroatian   (TranslatorAdapter_1_8_2)  15 methods to implement (6 %)
     virtual QCString trInstanceMethods()
 
 
-TranslatorCzech   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
----------------
-
-  Implements 242 of the required methods (96 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trServices()
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
-    virtual QCString trServiceReference(const char * sName)
-    virtual QCString trConstantGroups()
-    virtual QCString trInterfaces()
-    virtual QCString trServiceGeneratedFromFiles(bool single)
-    virtual QCString trConstantGroupReference(const char * namespaceName)
-    virtual QCString trSingletonReference(const char * sName)
-
-
 TranslatorDanish   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
 ----------------
 
@@ -477,24 +446,7 @@ TranslatorDanish   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
     virtual QCString trInstanceMethods()
 
 
-TranslatorDutch   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
----------------
-
-  Implements 242 of the required methods (96 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trServices()
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
-    virtual QCString trServiceReference(const char * sName)
-    virtual QCString trConstantGroups()
-    virtual QCString trInterfaces()
-    virtual QCString trServiceGeneratedFromFiles(bool single)
-    virtual QCString trConstantGroupReference(const char * namespaceName)
-    virtual QCString trSingletonReference(const char * sName)
-
-
-TranslatorEsperanto   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+TranslatorEsperanto   (TranslatorAdapter_1_8_4)  8 methods to implement (3 %)
 -------------------
 
   Implements 242 of the required methods (96 %).
@@ -585,7 +537,7 @@ TranslatorFrench   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
     virtual QCString trInstanceMethods()
 
 
-TranslatorGerman   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+TranslatorGerman   (TranslatorAdapter_1_8_4)  8 methods to implement (3 %)
 ----------------
 
   Implements 242 of the required methods (96 %).
@@ -602,7 +554,7 @@ TranslatorGerman   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
     virtual QCString trSingletonReference(const char * sName)
 
 
-TranslatorGreek   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+TranslatorGreek   (TranslatorAdapter_1_8_4)  8 methods to implement (3 %)
 ---------------
 
   Implements 242 of the required methods (96 %).
@@ -1323,7 +1275,7 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  58 methods to implement (23 %)
     virtual QCString trInstanceMethods()
 
 
-TranslatorSpanish   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+TranslatorSpanish   (TranslatorAdapter_1_8_4)  8 methods to implement (3 %)
 -----------------
 
   Implements 242 of the required methods (96 %).
@@ -1417,7 +1369,7 @@ TranslatorTurkish   (TranslatorAdapter_1_7_5)  25 methods to implement (10 %)
     virtual QCString trInstanceMethods()
 
 
-TranslatorUkrainian   (TranslatorAdapter_1_8_2)  8 methods to implement (3 %)
+TranslatorUkrainian   (TranslatorAdapter_1_8_4)  8 methods to implement (3 %)
 -------------------
 
   Implements 242 of the required methods (96 %).

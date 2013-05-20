@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public TranslatorAdapter_1_8_2
+class TranslatorDutch : public Translator
 {
   public:
     QCString idLanguage()
@@ -681,7 +681,7 @@ class TranslatorDutch : public TranslatorAdapter_1_8_2
         "De rechthoeken in the bovenstaande graaf hebben de volgende betekenis:\n"
         "<ul>\n"
         "<li>Een gevulde grijze rechthoek representeert de structure of klasse waarvoor "
-        "de graaf is gegeneerd.\n"
+        "de graaf is gegenereerd.\n"
         "<li>Een rechthoek met een zwarte rand representeert een gedocumenteerde structure of klasse.\n"
         "<li>Een rechthoek met een grijze rand representeert een ongedocumenteerde structure of klasse.\n"
         "<li>Een rechthoek met een rode rand representeert een gedocumenteerde structure or klasse waarvoor\n"
@@ -1573,6 +1573,62 @@ class TranslatorDutch : public TranslatorAdapter_1_8_2
     {
       return "Ontwerp Overzicht";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Ge&euml;porteerde Interfaces"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Ge&iuml;ncludeerde Services"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Konstanten Groepen"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Konstanten Groepen Referentie";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Service Referentie";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Singleton Referentie";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    { QCString result = "De documentatie voor deze service is gegenereerd op grond van ";
+      if (single) result+="het"; else result+="de";
+      result+=" volgende bestand";
+      if (single) result+=":"; else result+="en:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    { QCString result = "De documentatie voor deze singleton is gegenereerd op grond van ";
+      if (single) result+="het"; else result+="de";
+      result+=" volgende bestand";
+      if (single) result+=":"; else result+="en:";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
 };
 
 #endif

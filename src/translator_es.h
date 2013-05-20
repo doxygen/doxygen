@@ -33,7 +33,7 @@
  * Updated to 1.8.2 by Bartomeu Creus Navarro (01-julio-2012)
  */
 
-class TranslatorSpanish : public TranslatorAdapter_1_8_2
+class TranslatorSpanish : public TranslatorAdapter_1_8_4
 {
   public:
 

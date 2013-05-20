@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_8_2
+class TranslatorGreek : public TranslatorAdapter_1_8_4
 {
   public:
 

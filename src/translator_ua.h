@@ -19,7 +19,7 @@
 #ifndef TRANSLATOR_UA_H
 #define TRANSLATOR_UA_H
 
-class TranslatorUkrainian : public TranslatorAdapter_1_8_2
+class TranslatorUkrainian : public TranslatorAdapter_1_8_4
 {
   public:
     /*! Used for identification of the language. */
