@@ -1,0 +1,11 @@
+
+VERSION
+
+Makefile
+
+.tmakeconfig
+.makeconfig
+
+*.pro
+*.t
+packages/rpm/doxygen.spec
