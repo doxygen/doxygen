@@ -2,6 +2,7 @@
 VERSION
 
 Makefile
+Makefile.*
 
 .tmakeconfig
 .makeconfig
@@ -9,3 +10,31 @@ Makefile
 *.pro
 *.t
 packages/rpm/doxygen.spec
+
+bin/
+lib/
+objects/
+
+
+src/ce_lex.cpp
+src/ce_parse.cpp
+src/ce_parse.h
+src/code.cpp
+src/commentcnv.cpp
+src/commentscan.cpp
+src/config.cpp
+src/declinfo.cpp
+src/defargs.cpp
+src/doctokenizer.cpp
+src/fortrancode.cpp
+src/fortranscanner.cpp
+src/pre.cpp
+src/pycode.cpp
+src/pyscanner.cpp
+src/scanner.cpp
+src/tclscanner.cpp
+src/version.cpp
+src/vhdlcode.cpp
+src/vhdlparser.cpp
+src/vhdlparser.h
+src/vhdlscanner.cpp
