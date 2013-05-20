@@ -624,6 +624,11 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+ARITHOP   "+"|"-"|"/"|"*"|"%"|"--"|"++"
+ASSIGNOP  "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
+LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
+BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
+OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
 %option noyywrap
 
@@ -1938,7 +1943,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           BEGIN(Using); 
                                         }
 <Using>"namespace"{BN}+			{ lineCount(); BEGIN(UsingDirective); }
-<Using>{ID}{BN}*({BN}*("::"|"."){BN}*{ID})*	{
+<Using>({ID}{BN}*("::"|"."){BN}*)*({ID}|{OPERATOR}) {
                                           lineCount();
   					  current->name=yytext;
                                           current->fileName = yyFileName; 
