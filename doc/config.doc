@@ -600,7 +600,7 @@ followed by the descriptions of the tags grouped by category.
  "sideeffect=\par Side Effects:\n" 
 \endverbatim
  will allow you to
- put the command \\sideeffect (or \@sideeffect) in the documentation, which 
+ put the command \c \\sideeffect (or \c \@sideeffect) in the documentation, which 
  will result in a user-defined paragraph with heading "Side Effects:".
  You can put \ref cmdn "\\n"'s in the value part of an alias to insert newlines.
 
@@ -608,9 +608,9 @@ followed by the descriptions of the tags grouped by category.
 <dt>\c TCL_SUBST <dd>
  \addindex TCL_SUBST
  This tag can be used to specify a number of word-keyword mappings (TCL only). 
- A mapping has the form "name=value". For example adding 
- "class=itcl::class" will allow you to use the command class in the 
- itcl::class meaning.
+ A mapping has the form <code>"name=value"</code>. For example adding 
+ <code>"class=itcl::class"</code> will allow you to use the command class in the 
+ <code>itcl::class</code> meaning.
 
 \anchor cfg_optimize_output_for_c
 <dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
@@ -623,7 +623,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_optimize_output_java
 <dt>\c OPTIMIZE_OUTPUT_JAVA <dd>
  \addindex OPTIMIZE_OUTPUT_JAVA
- Set the OPTIMIZE_OUTPUT_JAVA tag to \c YES if your project consists of Java or
+ Set the \c OPTIMIZE_OUTPUT_JAVA tag to \c YES if your project consists of Java or
  Python sources only. Doxygen will then generate output that is more tailored 
  for that language. For instance, namespaces will be presented as packages, 
  qualified scopes will look different, etc. 
@@ -651,7 +651,7 @@ followed by the descriptions of the tags grouped by category.
  Objective-C, Python, Fortran, VHDL. 
 
  For instance to make doxygen treat
- .inc files as Fortran files (default is PHP), and .f files as C (default is Fortran),
+ <code>.inc</code> files as Fortran files (default is PHP), and <code>.f</code> files as C (default is Fortran),
  use: `inc=Fortran f=C`.
 
  For files without extension you can use `no_extension` as a placeholder.
@@ -890,7 +890,7 @@ function's detailed documentation block.
  will sort the (brief and detailed) documentation of class members so that
  constructors and destructors are listed first. If set to \c NO (the default)
  the constructors will appear in the respective orders defined by
- \c SORT_MEMBER_DOCS and \c SORT_BRIEF_DOCS.
+ \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS" and \ref cfg_sort_member_docs "SORT_MEMBER_DOCS".
  @note If \ref cfg_sort_brief_docs "SORT_BRIEF_DOCS" is set to \c NO this option is ignored for
        sorting brief member documentation.
  @note If \ref cfg_sort_member_docs "SORT_MEMBER_DOCS" is set to \c NO this option is ignored for
@@ -899,7 +899,7 @@ function's detailed documentation block.
 \anchor cfg_generate_deprecatedlist
 <dt>\c GENERATE_DEPRECATEDLIST <dd>
  \addindex GENERATE_DEPRECATEDLIST
- The GENERATE_DEPRECATEDLIST tag can be used to enable (\c YES) or
+ The \c GENERATE_DEPRECATEDLIST tag can be used to enable (\c YES) or
  disable (\c NO) the deprecated list. This list is created by 
  putting \ref cmddeprecated "\\deprecated"
  commands in the documentation.
@@ -917,7 +917,7 @@ function's detailed documentation block.
 \anchor cfg_generate_todolist
 <dt>\c GENERATE_TODOLIST <dd>
  \addindex GENERATE_TODOLIST
- The GENERATE_TODOLIST tag can be used to enable (YES) or
+ The \c GENERATE_TODOLIST tag can be used to enable (\c YES) or
  disable (\c NO) the todo list. This list is created by 
  putting \ref cmdtodo "\\todo"
  commands in the documentation.
@@ -925,14 +925,14 @@ function's detailed documentation block.
 \anchor cfg_generate_testlist
 <dt>\c GENERATE_TESTLIST <dd>
  \addindex GENERATE_TESTLIST
- The GENERATE_TESTLIST tag can be used to enable (YES) or
+ The \c GENERATE_TESTLIST tag can be used to enable (\c YES) or
  disable (\c NO) the test list. This list is created by 
  putting \ref cmdtest "\\test" commands in the documentation.
 
 \anchor cfg_generate_buglist
 <dt>\c GENERATE_BUGLIST <dd>
  \addindex GENERATE_BUGLIST
- The GENERATE_BUGLIST tag can be used to enable (YES) or
+ The \c GENERATE_BUGLIST tag can be used to enable (\c YES) or
  disable (\c NO) the bug list. This list is created by 
  putting \ref cmdbug "\\bug" commands in the documentation.
 
@@ -1316,7 +1316,7 @@ the introduction page also for the doxygen output.
   <a href="http://clang.llvm.org/">clang parser</a> for more acurate parsing 
   at the cost of reduced performance. This can be particularly helpful with 
   template rich C++ code for which doxygen's built-in parser lacks the 
-  necessairy type information.
+  necessary type information.
 
   @note The availability of this option depends on whether or not doxygen
   was compiled with the `--with-libclang` option.
@@ -1327,7 +1327,7 @@ the introduction page also for the doxygen output.
  If clang assisted parsing is enabled you can provide the compiler with command 
  line options that you would normally use when invoking the compiler. Note that 
  the include paths will already be set by doxygen for the files and directories 
- specified at \c INPUT and \c INCLUDE_PATH.
+ specified at \ref cfg_input "INPUT" and \ref cfg_include_path "INCLUDE_PATH".
 
 \anchor cfg_use_htags
 <dt>\c USE_HTAGS <dd>
@@ -1510,7 +1510,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
 <dt>\c HTML_STYLESHEET <dd>
  \addindex HTML_STYLESHEET
 
- The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
+ The \c HTML_STYLESHEET tag can be used to specify a user-defined cascading 
  style sheet that is used by each HTML page. It can be used to 
  fine-tune the look of the HTML output. If left blank doxygen 
  will generate a default style sheet. 
@@ -1526,7 +1526,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
 \anchor cfg_html_extra_stylesheet
 <dt>\c HTML_EXTRA_STYLESHEET <dd>
  \addindex HTML_EXTRA_STYLESHEET
- The HTML_EXTRA_STYLESHEET tag can be used to specify an additional 
+ The \c HTML_EXTRA_STYLESHEET tag can be used to specify an additional 
  user-defined cascading style sheet that is included after the standard 
  style sheets created by doxygen. Using this option one can overrule 
  certain style aspects. This is preferred over using \ref cfg_html_stylesheet "HTML_STYLESHEET" 
@@ -1632,7 +1632,7 @@ hr.footer {
 \anchor cfg_html_index_num_entries
 <dt>\c HTML_NUM_INDEX_ENTRIES <dd>
  \addindex HTML_NUM_INDEX_ENTRIES
- With HTML_INDEX_NUM_ENTRIES one can control the preferred number of 
+ With \c HTML_INDEX_NUM_ENTRIES one can control the preferred number of 
  entries shown in the various tree structured indices initially; the user 
  can expand and collapse entries dynamically later on. Doxygen will expand 
  the tree to such a level that at most the specified number of entries are 
@@ -1915,7 +1915,7 @@ for more details.
 \anchor cfg_mathjax_codefile
 <dt>\c MATHJAX_CODEFILE <dd>
  \addindex MATHJAX_CODEFILE
- The MATHJAX_CODE_FILE tag can be used to specify a file with javascript 
+ The \c MATHJAX_CODEFILE tag can be used to specify a file with javascript 
  pieces of code that will be used on startup of the MathJax code. 
  See 
 <a href="http://docs.mathjax.org/en/latest/output.html">the MathJax site</a>
@@ -1924,7 +1924,9 @@ for more details.
  Settings" menu of MathJax:
 \verbatim
 MATHJAX_CODEFILE = disableRenderer
+\endverbatim
   with in the file \c disableRenderer:
+\verbatim
   MathJax.Hub.Config({
    menuSettings: {
     showRenderer: false,
@@ -2138,7 +2140,7 @@ EXTRA_PACKAGES = times
 \anchor cfg_latex_footer
 <dt>\c LATEX_FOOTER <dd>
  \addindex LATEX_FOOTER
- The LATEX_FOOTER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ footer for 
+ The \c LATEX_FOOTER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ footer for 
  the generated \f$\mbox{\LaTeX}\f$ document. The footer should contain everything after 
  the last chapter. If it is left blank doxygen will generate a 
  standard footer.
@@ -2240,7 +2242,7 @@ EXTRA_PACKAGES = times
  This makes the output suitable for online browsing using Word or some other
  Word compatible reader that support those fields.
 
- \par note:
+ \par Note:
    WordPad (write) and others do not support links.
 
 \anchor cfg_rtf_stylesheet_file 
@@ -2463,9 +2465,9 @@ front of it. If left blank '`docbook`' will be used as the default path.
  are defined before the preprocessor is started (similar to the `-D` option of
  \c gcc). The argument of the tag is a list of macros of the form:
  <code>name</code> or <code>name=definition</code> (no spaces). 
- If the definition and the "=" are omitted,  "=1" is assumed. To prevent
+ If the definition and the \c "=" are omitted,  \c "=1" is assumed. To prevent
  a macro definition from being undefined via \c \#undef or recursively expanded
- use the \c := operator instead of the \c = operator.
+ use the <code>:=</code> operator instead of the \c = operator.
 
 \anchor cfg_expand_as_defined
 <dt>\c EXPAND_AS_DEFINED <dd>
@@ -2572,7 +2574,7 @@ install and use \c dot, since it yields more powerful graphs.
 <dt>\c DOT_NUM_THREADS <dd>
  \addindex DOT_NUM_THREADS
  The \c DOT_NUM_THREADS specifies the number of \c dot invocations doxygen is 
- allowed to run in parallel. When set to 0 (the default) doxygen will 
+ allowed to run in parallel. When set to \c 0 (the default) doxygen will 
  base this on the number of processors available in the system. You can set it 
  explicitly to a value larger than 0 to get control over the balance 
  between CPU load and processing speed.  

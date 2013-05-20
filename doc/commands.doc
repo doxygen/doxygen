@@ -2971,7 +2971,7 @@ class Receiver
 \section cmddcolon \\::
 
   \addindex \\\::
-  This command write a double colon (\c \::) to the output. This
+  This command writes a double colon (\c \::) to the output. This
   character sequence has to be escaped in some cases, because it is used
   to reference to documented entities.
 
@@ -2979,7 +2979,7 @@ class Receiver
 \section cmdpipe \\|
 
   \addindex \\|
-  This command write a pip symbol (\|) to the output. This
+  This command writes a pipe symbol (\|) to the output. This
   character has to be escaped in some cases, because it is used
   for Markdown tables.
 
