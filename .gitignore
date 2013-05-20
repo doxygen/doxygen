@@ -16,6 +16,7 @@ lib/
 objects/
 
 
+## doxygen
 src/ce_lex.cpp
 src/ce_parse.cpp
 src/ce_parse.h
@@ -38,3 +39,9 @@ src/vhdlcode.cpp
 src/vhdlparser.cpp
 src/vhdlparser.h
 src/vhdlscanner.cpp
+
+## Doxywizard
+addon/doxywizard/config_lex.cpp
+addon/doxywizard/moc/
+addon/doxywizard/obj/
+addon/doxywizard/rcc/
