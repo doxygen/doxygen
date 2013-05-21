@@ -1,30 +1,27 @@
- _____                                   
-|  __ \                                  
-| |  | | _____  ___   _  __ _  ___ _ __  
-| |  | |/ _ \ \/ / | | |/ _` |/ _ \ '_ \ 
-| |__| | (_) >  <| |_| | (_| |  __/ | | |
-|_____/ \___/_/\_\\__, |\__, |\___|_| |_|
-                   __/ | __/ |           
-                  |___/ |___/   
-
-
+Doxygen
 ===========================
 
-#######################################
-## Important 
-#
-# The doxygen project has recently 
-# moved to git as version control.
-# 
-# The HEAD is now at 
-# https://github.com/doxygen/doxygen
-#######################################
+Update May 2013:
+    The doxygen project has recently 
+    moved to git as version control
+    
+    The HEAD is now at 
+    https://github.com/doxygen/doxygen
+    
+    This notice will be removed later
+    
 
-
-Please read [here]./INSTALL for compilation instructions.
-
+End Users Download
+===========================
 The latest version of doxygen can be obtained from:
   http://www.doxygen.org/
+
+
+Developers
+===========================
+Please read [here]./INSTALL for compilation instructions.
+
+
 
 ![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
 
