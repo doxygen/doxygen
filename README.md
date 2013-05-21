@@ -16,10 +16,17 @@ The latest version of doxygen can be obtained from:
 
 Developers
 ---------
-Please read [here](./INSTALL) for compilation instructions.
+* Build Status
+    ![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
 
-![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
+### Install ###
+* Quick see [here](./INSTALL) 
+* or http://www.doxygen.org/install.html
 
+
+Chat
+----------------------
+* IRC Chat: irc://irc.freenode.org#doxygen
 
 Mailing Lists
 ----------------------
@@ -31,14 +38,15 @@ To subscribe follow the link to
 * http://sourceforge.net/projects/doxygen
 
 
-Bugs
+Issues, bugs, requests, ideas
 ----------------------------------
 Use the bug tracker to report bugs:
--  https://bugzilla.gnome.org/enter_bug.cgi?product=doxygen
+* current list:
+    https://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED
+* Add a bug 
+    https://bugzilla.gnome.org/enter_bug.cgi?product=doxygen
+* TODO - Dimitri to enable bugs in github.. a lot of bugzilla is dead bugs maybe..
 
-Before reporting a bug, please check that it has not already been reported.
-Also, please use the bug tracker for reporting bugs rather than the help
-forum.
 
 Source Code
 ----------------------------------
