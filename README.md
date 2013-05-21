@@ -1,27 +1,24 @@
 Doxygen
 ===========================
 
-Update May 2013:
+Attention May 2013:
+    
     The doxygen project has recently 
-    moved to git as version control
+    moved to github as version control
     
     The HEAD is now at 
     https://github.com/doxygen/doxygen
-    
-    This notice will be removed later
     
 
 End Users Download
 ===========================
 The latest version of doxygen can be obtained from:
-  http://www.doxygen.org/
+* http://www.doxygen.org/
 
 
 Developers
 ===========================
 Please read [here]./INSTALL for compilation instructions.
-
-
 
 ![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
 
