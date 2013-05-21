@@ -1,16 +1,16 @@
 Doxygen
-
+===============
 
     == Attention May 2013 ==
     
-    The doxygen project has recently moved to github as version control
-    The HEAD is now at 
+    The doxygen project has recently moved to github for version control
+    HEAD is now at
     https://github.com/doxygen/doxygen
     
 
 Download
 ---------
-The latest version of doxygen can be obtained from:
+The latest binaries and source of Doxygen can be downloaded from:
 * http://www.doxygen.org/
 
 
