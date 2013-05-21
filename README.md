@@ -17,7 +17,9 @@ The latest version of doxygen can be obtained from:
 Developers
 ---------
 * Build Status
-    ![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
+  * ![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
+  * https://travis-ci.org/daffodil/doxygen
+  * The above link to be modified and this line to be when upstream.. 
 
 ### Install ###
 * Quick see [here](./INSTALL) 
