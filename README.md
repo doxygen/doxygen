@@ -9,13 +9,13 @@ Doxygen
     
 
 Download
-===========================
+---------
 The latest version of doxygen can be obtained from:
 * http://www.doxygen.org/
 
 
 Developers
-===========================
+---------
 Please read [here](./INSTALL) for compilation instructions.
 
 ![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
