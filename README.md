@@ -26,20 +26,6 @@ Developers
 * else http://www.doxygen.org/install.html
 
 
-Chat
-----------------------
-* IRC Chat: [irc://irc.freenode.org#doxygen]
-
-Mailing Lists
-----------------------
-There are three mailing lists:
-* doxygen-users@lists.sourceforge.net        For doxygen users
-* doxygen-develop@lists.sourceforge.net      For doxygen developers
-* doxygen-announce@lists.sourceforge.net     Announcement of new releases only
-* To subscribe follow the link to
-    * http://sourceforge.net/projects/doxygen
-
-
 Issues, bugs, requests, ideas
 ----------------------------------
 Use the bug tracker to report bugs:
@@ -48,6 +34,21 @@ Use the bug tracker to report bugs:
 * Add a bug 
     * https://bugzilla.gnome.org/enter_bug.cgi?product=doxygen
 
+
+Comms
+----------------------------------
+### Chat ###
+* IRC Chat: [irc://irc.freenode.org#doxygen]
+
+### Mailing Lists ###
+
+There are three mailing lists:
+
+* doxygen-users@lists.sourceforge.net        For doxygen users
+* doxygen-develop@lists.sourceforge.net      For doxygen developers
+* doxygen-announce@lists.sourceforge.net     Announcement of new releases only
+* To subscribe follow the link to
+    * http://sourceforge.net/projects/doxygen
 
 Source Code
 ----------------------------------
