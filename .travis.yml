@@ -1,0 +1,22 @@
+language: cpp
+compiler:
+  - gcc
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq  texlive texlive-extra-utils
+    - sudo apt-get install -qq doxygen
+script:
+    - ./configure --with-doxywizard
+    - make
+    - make docs
+notifications:
+    channels:
+      - "irc.freenode.org#doxygen"
+    template:
+      - "%{repository} (%{commit}) by %{author} : %{message} %{foo} "
+      - "Build details: %{build_url}"
+      - "Latest commit: %{compare_url}"
+    on_success: change
+    on_failure: change
+    
+    

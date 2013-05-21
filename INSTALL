@@ -1,7 +1,23 @@
 DOXYGEN Version 1.8.4
 
-Please read the installation section of the manual 
-(http://www.doxygen.org/install.html) for instructions.
+
+====== Quick Install ======
+Required: GNU tools, tex, graphiz
+
+
+Run:
+> ./configure
+> make
+> sudo make install
+
+For more options, including gui option run:
+> ./configure --help
+
+
+====== Detailed Install ======
+Please read the installation section of the manual
+for detailed instructions
+http://www.doxygen.org/install.html
 
 --------
 Dimitri van Heesch (19 May 2013)
