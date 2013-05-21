@@ -2,11 +2,11 @@ language: cpp
 compiler:
   - gcc
 before_install:
-    - pwd
+    - apt-get install texlive-extra-utils
 script:
     - ./configure --with-doxywizard
-    - make
     - make docs
+    - make
 notifications:
     channels:
       - "irc.freenode.org#doxygen"
