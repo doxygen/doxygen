@@ -1,5 +1,3 @@
-% $Id$
-%
 % The text is in UTF-8. Comments start with % sign at the beginning.
 % There is one record for each language. The records are separated
 % by the empty line and they do not contain empty lines.
@@ -20,7 +18,7 @@ Johan Prinsloo: johan at zippysnoek dot com
 
 TranslatorArabic
 Moaz Reyad: [resigned] moazreyad at yahoo dot com
--- searching for the maintainer --: [Please, try to help to find someone.]
+Muhammad Bashir Al-Noimi: mbnoimi at gmail dot com
 
 TranslatorArmenian
 Armen Tangamyan: armen dot tangamyan at anu dot edu dot au
