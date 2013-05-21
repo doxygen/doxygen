@@ -1,4 +1,13 @@
-DOXYGEN Version 1.8.4
+ _____                                   
+|  __ \                                  
+| |  | | _____  ___   _  __ _  ___ _ __  
+| |  | |/ _ \ \/ / | | |/ _` |/ _ \ '_ \ 
+| |__| | (_) >  <| |_| | (_| |  __/ | | |
+|_____/ \___/_/\_\\__, |\__, |\___|_| |_|
+                   __/ | __/ |           
+                  |___/ |___/   
+
+
 ===========================
 
 #######################################
@@ -17,8 +26,7 @@ Please read [here]./INSTALL for compilation instructions.
 The latest version of doxygen can be obtained from:
   http://www.doxygen.org/
 
-https://secure.travis-ci.org/daffodil/doxygen.png?branch=master
-    :target: http://travis-ci.org/z4r/python-rtkit
+![Alt text](https://secure.travis-ci.org/daffodil/doxygen.png?branch=master)
 
 
 Mailing Lists
@@ -53,4 +61,4 @@ http://
 
 Enjoy,
 
-Dimitri van Heesch (dimitri@stack.nl) (19 May 2013) bdfl
+Dimitri van Heesch (<dimitri@stack.nl>) (21 May 2013) bdfl
