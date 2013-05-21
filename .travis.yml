@@ -2,7 +2,7 @@ language: cpp
 compiler:
   - gcc
 before_install:
-    - sudo apt-get install -qq texlive-extra-utils
+    - sudo apt-get install -qq  texlive texlive-extra-utils
 script:
     - ./configure --with-doxywizard
     - make docs
