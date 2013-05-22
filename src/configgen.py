@@ -16,91 +16,91 @@ import sys
 from xml.dom import minidom, Node
 
 def addValues(var,node):
-        for n in node.childNodes:
+	for n in node.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			name = n.getAttribute('name');
-			print "  %s->addValue(\"%s\");" % (var,name)
+			print "	 %s->addValue(\"%s\");" % (var,name)
 	
 def parseOption(node):
-	name    = node.getAttribute('id')
-	type    = node.getAttribute('type')
-	format  = node.getAttribute('format')
-	doc     = node.getAttribute('docs')
-	defval  = node.getAttribute('defval')
+	name	= node.getAttribute('id')
+	type	= node.getAttribute('type')
+	format	= node.getAttribute('format')
+	doc	= node.getAttribute('docs')
+	defval	= node.getAttribute('defval')
 	adefval = node.getAttribute('altdefval')
 	depends = node.getAttribute('depends')
 	setting = node.getAttribute('setting')
 	# replace \ by \\, replace " by \", and '  ' by a newline with end string and start string at next line
-        docC    = doc.strip().replace('\\','\\\\').replace('"','\\"').replace('  ','\\n"\n                 "')
+	docC	= doc.strip().replace('\\','\\\\').replace('"','\\"').replace('	 ','\\n"\n		   "')
 	if len(setting)>0:
-	    	print "#if %s" % (setting)
-	print "  //----"
-        if type=='bool':
-	     	if len(adefval)>0:
+		print "#if %s" % (setting)
+	print "	 //----"
+	if type=='bool':
+		if len(adefval)>0:
 			enabled = adefval
 		elif defval=='1':
 			enabled = "TRUE"
 		else:
 			enabled = "FALSE"
-		print "  cb = cfg->addBool("
-		print "                 \"%s\"," % (name)
-		print "                 \"%s\"," % (docC)
-		print "                 %s"  % (enabled)
-                print "                );"
+		print "	 cb = cfg->addBool("
+		print "			\"%s\"," % (name)
+		print "			\"%s\"," % (docC)
+		print "			%s"  % (enabled)
+		print "		       );"
 		if depends!='':
-			print "  cb->addDependency(\"%s\");" % (depends)
+			print "	 cb->addDependency(\"%s\");" % (depends)
 	elif type=='string':
-		print "  cs = cfg->addString("
-		print "                 \"%s\"," % (name)
-		print "                 \"%s\""  % (docC)
-                print "                );"
+		print "	 cs = cfg->addString("
+		print "			\"%s\"," % (name)
+		print "			\"%s\""	 % (docC)
+		print "		       );"
 		if defval!='':
-			print "  cs->setDefaultValue(\"%s\");" % (defval)
+			print "	 cs->setDefaultValue(\"%s\");" % (defval)
 		if format=='file':
-			print "  cs->setWidgetType(ConfigString::File);"
+			print "	 cs->setWidgetType(ConfigString::File);"
 		elif format=='dir':
-			print "  cs->setWidgetType(ConfigString::Dir);"
+			print "	 cs->setWidgetType(ConfigString::Dir);"
 		if depends!='':
-			print "  cs->addDependency(\"%s\");" % (depends)
+			print "	 cs->addDependency(\"%s\");" % (depends)
 	elif type=='enum':
-		print "  ce = cfg->addEnum("
-		print "                 \"%s\"," % (name)
-		print "                 \"%s\"," % (docC)
-		print "                 \"%s\""  % (defval)
-                print "                );"
-                addValues("ce",node)
+		print "	 ce = cfg->addEnum("
+		print "			\"%s\"," % (name)
+		print "			\"%s\"," % (docC)
+		print "			\"%s\""	 % (defval)
+		print "		       );"
+		addValues("ce",node)
 		if depends!='':
-			print "  ce->addDependency(\"%s\");" % (depends)
+			print "	 ce->addDependency(\"%s\");" % (depends)
 	elif type=='int':
 		minval = node.getAttribute('minval')
 		maxval = node.getAttribute('maxval')
-		print "  ci = cfg->addInt("
-		print "                 \"%s\"," % (name)
-		print "                 \"%s\"," % (docC)
-		print "                 %s,%s,%s" % (minval,maxval,defval)
-                print "                );"
+		print "	 ci = cfg->addInt("
+		print "			\"%s\"," % (name)
+		print "			\"%s\"," % (docC)
+		print "			%s,%s,%s" % (minval,maxval,defval)
+		print "		       );"
 		if depends!='':
-			print "  ci->addDependency(\"%s\");" % (depends)
+			print "	 ci->addDependency(\"%s\");" % (depends)
 	elif type=='list':
-		print "  cl = cfg->addList("
-		print "                 \"%s\"," % (name)
-		print "                 \"%s\""  % (docC)
-                print "                );"
+		print "	 cl = cfg->addList("
+		print "			\"%s\"," % (name)
+		print "			\"%s\""	 % (docC)
+		print "		       );"
 		addValues("cl",node)
 		if depends!='':
-			print "  cl->addDependency(\"%s\");" % (depends)
+			print "	 cl->addDependency(\"%s\");" % (depends)
 		if format=='file':
-			print "  cl->setWidgetType(ConfigList::File);"
+			print "	 cl->setWidgetType(ConfigList::File);"
 		elif format=='dir':
-			print "  cl->setWidgetType(ConfigList::Dir);"
+			print "	 cl->setWidgetType(ConfigList::Dir);"
 		elif format=='filedir':
-			print "  cl->setWidgetType(ConfigList::FileAndDir);"
+			print "	 cl->setWidgetType(ConfigList::FileAndDir);"
 	elif type=='obsolete':
-		print "  cfg->addObsolete(\"%s\");" % (name)
+		print "	 cfg->addObsolete(\"%s\");" % (name)
 	if len(setting)>0:
-	    	print "#else"
-		print "  cfg->addDisabled(\"%s\");" % (name)
-	    	print "#endif"
+		print "#else"
+		print "	 cfg->addDisabled(\"%s\");" % (name)
+		print "#endif"
 		
 
 
@@ -108,11 +108,11 @@ def parseOption(node):
 def parseGroups(node):
 	name = node.getAttribute('name')
 	doc  = node.getAttribute('docs')
-        print "  //---------------------------------------------------------------------------";
-	print "  cfg->addInfo(\"%s\",\"%s\");" % (name,doc)
-        print "  //---------------------------------------------------------------------------";
-        print
-        for n in node.childNodes:
+	print "	 //---------------------------------------------------------------------------";
+	print "	 cfg->addInfo(\"%s\",\"%s\");" % (name,doc)
+	print "	 //---------------------------------------------------------------------------";
+	print
+	for n in node.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			parseOption(n)
 	
@@ -120,28 +120,28 @@ def parseGroups(node):
 def main():
 	doc = xml.dom.minidom.parse(sys.argv[1])
 	elem = doc.documentElement
-        print "/* WARNING: This file is generated!"
-        print " * Do not edit this file, but edit config.xml instead and run"
-        print " * python configgen.py to regenerate this file!"
-        print " */"
-        print ""
-        print "#include \"configoptions.h\""
-        print "#include \"config.h\""
-        print "#include \"portable.h\""
-        print "#include \"settings.h\""
-        print ""
-        print "void addConfigOptions(Config *cfg)"
-        print "{"
-        print "  ConfigString *cs;"
-        print "  ConfigEnum   *ce;"
-        print "  ConfigList   *cl;"
-        print "  ConfigInt    *ci;"
-        print "  ConfigBool   *cb;"
-        print ""
+	print "/* WARNING: This file is generated!"
+	print " * Do not edit this file, but edit config.xml instead and run"
+	print " * python configgen.py to regenerate this file!"
+	print " */"
+	print ""
+	print "#include \"configoptions.h\""
+	print "#include \"config.h\""
+	print "#include \"portable.h\""
+	print "#include \"settings.h\""
+	print ""
+	print "void addConfigOptions(Config *cfg)"
+	print "{"
+	print "	 ConfigString *cs;"
+	print "	 ConfigEnum   *ce;"
+	print "	 ConfigList   *cl;"
+	print "	 ConfigInt    *ci;"
+	print "	 ConfigBool   *cb;"
+	print ""
 	for n in elem.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			parseGroups(n)
-        print "}"
+	print "}"
 
 if __name__ == '__main__':
 	main()
