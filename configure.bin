@@ -1,0 +1,118 @@
+#! /bin/sh
+#
+# $Id: configure,v 1.1 1999/07/19 17:00:15 root Exp $
+#
+# Copyright (C) 1997-2011 by Dimitri van Heesch.
+# 
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+# 
+# Documents produced by Doxygen are derivative works derived from the
+# input used in their production; they are not affected by this license.
+# 
+# shell script to configure doxygen (use for binary releases)
+
+f_prefix=/usr/local
+f_insttool=NO
+
+while test -n "$1"; do
+  case $1 in
+    --prefix)
+       shift; f_prefix=$1
+       ;;
+    --install)
+       shift; f_insttool=$1
+       ;;
+    -h | -help | --help)
+       f_help=y
+       ;;
+    *)
+       echo $1: unknown argument
+       f_help=y
+       f_error=y
+       ;;
+  esac
+  shift
+done
+
+if test "$f_help" = y; then
+  cat <<EOF
+Usage: $0 [--help] [--prefix dir] [--install name]
+
+Options: 
+
+  --help                Print this help
+
+  --prefix dir          Installation prefix directory
+                        [default: /usr/local]
+  
+  --install name        Use \`name' as the name of the GNU install tool
+                        [default: install]
+
+EOF
+  test "$f_error" = y && exit 1
+  exit 0;
+fi
+
+# - check for install ------------------------------------------------------------
+
+echo -n "  Checking for GNU install tool... "
+if test "$f_insttool" = NO; then
+  install_names="ginstall install"
+  install_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  install_prog=NO
+  install_found=NO
+  for i in $install_names; do
+    for j in $install_dirs; do
+      if test -x "$j/$i"; then
+        if test -n "`$j/$i --version 2>/dev/null | grep utils`"; then
+          install_found=YES
+          install_prog="$j/$i"
+          break 2
+        fi
+      fi
+    done
+  done
+  f_insttool="$install_prog" 
+fi
+
+if test "$f_insttool" = NO; then
+  if test "$install_found" = YES; then
+    echo "GNU version of install is required!"
+  else
+    echo "not found!";
+  fi
+  echo
+  exit 2
+fi
+echo "using $f_insttool";
+
+# ----------------------------------------------------------
+
+
+cat > .makeconfig <<EOF
+RM        = rm -f
+VERSION   = `cat VERSION`
+INSTALL   = $f_prefix
+INSTTOOL  = $f_insttool
+DOXYDOCS  = ..
+
+export TMAKEPATH
+EOF
+
+for i in Makefile.in ; do
+     SRC=$i
+     DST=`echo $i|sed 's%\(.*\).in$%\1%'`
+     TIME=`date`
+     cat > $DST <<EOF
+#
+# This file was generated from `basename $i` on $TIME
+#
+
+EOF
+     cat .makeconfig $SRC >> $DST
+     echo "  Created $DST from $SRC..."
+done
