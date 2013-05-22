@@ -266,6 +266,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
 CONTAINS  CONTAINS
 PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTAL)?
+SCOPENAME ({ID}{BS}"::"{BS})*
 
 %option noyywrap
 %option stack
@@ -1110,15 +1111,16 @@ private                                 {
 <Prototype>{BS}{SUBPROG}{BS_}		{
 					  BEGIN(PrototypeSubprog);
 					}
-<PrototypeSubprog>{ID}{BS}		{ current->name = yytext;
+<Prototype,PrototypeSubprog>{BS}{SCOPENAME}?{BS}{ID} { 
+					  current->name = QCString(yytext).lower();
 					  current->name.stripWhiteSpace();
 					  BEGIN(PrototypeArgs);
-					 }
+					}
 <PrototypeArgs>{
 "("|")"|","|{BS_}			{ current->args += yytext; }
 {ID}					{ current->args += yytext; 
 					  Argument *a = new Argument;
-					  a->name = yytext;
+					  a->name = QCString(yytext).lower();
 					  current->argList->append(a);
 					}
 }
@@ -2331,7 +2333,7 @@ void FortranLanguageScanner::resetCodeParserState()
 
 void FortranLanguageScanner::parsePrototype(const char *text)
 {
-  QCString buffer = QCString(text).lower();
+  QCString buffer = QCString(text);
   pushBuffer(buffer);
   parsingPrototype = TRUE;
   BEGIN(Prototype);
