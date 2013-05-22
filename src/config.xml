@@ -424,6 +424,10 @@ If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen
 will put a list of the files that are included by a file in the documentation 
 of that file. 
 ' defval='1'/>
+    <option type='bool' id='SHOW_GROUPED_MEMBER_INCLUDES' docs='
+If the SHOW_GROUPED_MEMBER_INCLUDES tag is set to YES (the default is NO) then Doxygen 
+will show the include file for each file member that is grouped.'
+defval='0'/>
     <option type='bool' id='FORCE_LOCAL_INCLUDES' docs='
 If the FORCE_LOCAL_INCLUDES tag is set to YES then Doxygen 
 will list include files with double quotes in the documentation 

@@ -1814,7 +1814,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
 bool MemberDef::isDetailedSectionLinkable() const          
 { 
-  static bool extractAll        = Config_getBool("EXTRACT_ALL");
+  // static bool extractAll        = Config_getBool("EXTRACT_ALL");
   static bool alwaysDetailedSec = Config_getBool("ALWAYS_DETAILED_SEC");
   static bool repeatBrief       = Config_getBool("REPEAT_BRIEF");
   static bool briefMemberDesc   = Config_getBool("BRIEF_MEMBER_DESC");
@@ -1824,7 +1824,9 @@ bool MemberDef::isDetailedSectionLinkable() const
   // the member has details documentation for any of the following reasons
   bool docFilter = 
          // treat everything as documented
-         extractAll ||          
+         // pmr: just because everything is documented, is doesn't
+         // mean everything has a detailed section
+         // extractAll ||          
          // has detailed docs
          !documentation().isEmpty() ||             
          // has inbody docs
@@ -2789,6 +2791,47 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         FALSE         // isExample
         );
 
+  }
+
+  // only write out the include file if this is not part of a class or file
+  // definition
+  QCString nm = getFileDef() ? getFileDef()->docName() : "";
+  if(inGroup && Config_getBool("SHOW_GROUPED_MEMBER_INCLUDES") && !nm.isEmpty()) {
+    ol.startParagraph();
+    ol.startTypewriter();
+    SrcLangExt lang = getLanguage();
+    bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+    if (isIDLorJava)
+    {
+      ol.docify("import ");
+    }
+    else
+    {
+      ol.docify("#include ");
+    }
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Html);
+    ol.docify(nm);
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.enable(OutputGenerator::Html);
+
+    if (isIDLorJava)
+      ol.docify("\"");
+    else
+      ol.docify("<");
+
+    ol.docify(nm);
+
+    if (isIDLorJava)
+      ol.docify("\"");
+    else
+      ol.docify(">");
+
+    ol.popGeneratorState();
+    if (isIDLorJava) 
+      ol.docify(";");
+    ol.endTypewriter();
+    ol.endParagraph();
   }
 
   _writeEnumValues(ol,container,cfname,ciname,cname);
