@@ -16,7 +16,6 @@ change the language.doc, make the changes here and inside maintainers.txt.
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * $Id$
  */
 /*! \page langhowto Internationalization
 
