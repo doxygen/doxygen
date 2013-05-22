@@ -2791,6 +2791,47 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   }
 
+  // only write out the include file if this is not part of a class or file
+  // definition
+  QCString nm = getFileDef() ? getFileDef()->docName() : "";
+  if(inGroup && Config_getBool("SHOW_GROUPED_MEMBER_INCLUDES") && !nm.isEmpty()) {
+    ol.startParagraph();
+    ol.startTypewriter();
+    SrcLangExt lang = getLanguage();
+    bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+    if (isIDLorJava)
+    {
+      ol.docify("import ");
+    }
+    else
+    {
+      ol.docify("#include ");
+    }
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Html);
+    ol.docify(nm);
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.enable(OutputGenerator::Html);
+
+    if (isIDLorJava)
+      ol.docify("\"");
+    else
+      ol.docify("<");
+
+    ol.docify(nm);
+
+    if (isIDLorJava)
+      ol.docify("\"");
+    else
+      ol.docify(">");
+
+    ol.popGeneratorState();
+    if (isIDLorJava) 
+      ol.docify(";");
+    ol.endTypewriter();
+    ol.endParagraph();
+  }
+
   _writeEnumValues(ol,container,cfname,ciname,cname);
   _writeReimplements(ol);
   _writeReimplementedBy(ol);
