@@ -1171,7 +1171,27 @@ static void generateDocbookForClass(ClassDef *cd,FTextStream &ti)
       {
         t << "<link linkend=\"" << ii->fileDef->getOutputFileBase() << "\">";
       }
-      t << "&lt;" << nm << "&gt;" << "</link>";
+      if (ii->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&lt;";
+      }
+      t << convertToXML(nm);
+      if (ii->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&gt;";
+      }
+      if (ii->fileDef && !ii->fileDef->isReference())
+      {
+        t << "</link>";
+      }
       t << "</programlisting>" << endl;
       t << "</para>" << endl;
     }
@@ -1389,7 +1409,23 @@ static void generateDocbookForFile(FileDef *fd,FTextStream &ti)
     for (ili1.toFirst();(inc=ili1.current());++ili1)
     {
       t << "    <programlisting>#include ";
-      t << inc->includeName;
+      if (inc->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&lt;";
+      }
+      t << convertToXML(inc->includeName);
+      if (inc->local)
+      {
+        t << "&quot;";
+      }
+      else
+      {
+        t << "&gt;";
+      }
       t << "</programlisting>" << endl;
     }
   }
