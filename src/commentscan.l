@@ -116,6 +116,8 @@ static bool handleToc(const QCString &s);
 static bool handleInherit(const QCString &);
 static bool handleExtends(const QCString &);
 static bool handleCopyDoc(const QCString &);
+static bool handleCopyBrief(const QCString &);
+static bool handleCopyDetails(const QCString &);
 
 typedef bool (*DocCmdFunc)(const QCString &name);
 
@@ -218,8 +220,8 @@ static DocCmdMap docCmdMap[] =
   { "author",          0,                       TRUE  },
   { "authors",         0,                       TRUE  },
   { "copydoc",         &handleCopyDoc,          TRUE  },
-  { "copybrief",       0,                       FALSE },
-  { "copydetails",     0,                       TRUE  },
+  { "copybrief",       &handleCopyBrief,        FALSE },
+  { "copydetails",     &handleCopyDetails,      TRUE  },
   { "copyright",       0,                       TRUE  },
   { "date",            0,                       TRUE  },
   { "dotfile",         0,                       TRUE  },
@@ -2674,9 +2676,43 @@ static bool handleExtends(const QCString &)
   return FALSE;
 }
 
+static bool handleCopyBrief(const QCString &)
+{
+  if (current->brief.isEmpty() && current->doc.isEmpty())
+  { // if we don't have a brief or detailed description yet,
+    // then the @copybrief should end up in the brief description.
+    // otherwise it will be copied inline (see bug691315 & bug700788)
+    setOutput(OutputBrief);
+  }
+  if (g_spaceBeforeCmd)
+  {
+    addOutput(' ');
+    g_spaceBeforeCmd=FALSE;
+  }
+  addOutput("\\copybrief ");
+  return FALSE;
+}
+
+static bool handleCopyDetails(const QCString &)
+{
+  setOutput(OutputDoc);
+  if (g_spaceBeforeCmd)
+  {
+    addOutput(' ');
+    g_spaceBeforeCmd=FALSE;
+  }
+  addOutput("\\copydetails ");
+  return FALSE;
+}
+
 static bool handleCopyDoc(const QCString &)
 {
   setOutput(OutputBrief);
+  if (g_spaceBeforeCmd)
+  {
+    addOutput(' ');
+    g_spaceBeforeCmd=FALSE;
+  }
   addOutput("\\copybrief ");
   g_copyDocArg.resize(0);
   BEGIN(CopyDoc);
