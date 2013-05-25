@@ -53,7 +53,6 @@ There are three mailing lists:
 * doxygen-announce@lists.sourceforge.net     - Announcement of new releases only
 * doxygen-users@lists.sourceforge.net        - for doxygen users
 * doxygen-develop@lists.sourceforge.net      - for doxygen developers
-
 * To subscribe follow the link to
     * http://sourceforge.net/projects/doxygen
 
@@ -65,4 +64,4 @@ subversion to git hosted at github
 
 Enjoy,
 
-Dimitri van Heesch (<dimitri@stack.nl>) 
+Dimitri van Heesch (dimitri at stack.nl)
