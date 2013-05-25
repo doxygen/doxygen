@@ -1,0 +1,10 @@
+language: cpp
+compiler:
+  - gcc
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq  texlive texlive-extra-utils
+script:
+    - ./configure --with-doxywizard
+    - make
+    - make docs
