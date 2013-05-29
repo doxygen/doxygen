@@ -582,7 +582,7 @@ class LayoutParser : public QXmlDefaultHandler
                                            SrcLangExt_Fortran,theTranslator->trModules()
                                          )));
       m_sHandler.insert("file/memberdecl/constantgroups",
-          new StartElementHandlerSection(this,LayoutDocEntry::FileNamespaces,&LayoutParser::startSectionEntry,
+          new StartElementHandlerSection(this,LayoutDocEntry::FileConstantGroups,&LayoutParser::startSectionEntry,
                                          theTranslator->trConstantGroups()));
       m_sHandler.insert("file/memberdecl/defines", 
           new StartElementHandlerMember(this,&LayoutParser::startMemberDeclEntry,
