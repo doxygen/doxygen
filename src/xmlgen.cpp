@@ -1838,20 +1838,22 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     QCString title;
     if (!pd->title().isEmpty() && pd->title().lower()!="notitle")
     {
-      title = filterTitle(Doxygen::mainPage->title());
+      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
     else 
     {
       title = Config_getString("PROJECT_NAME");
     }
-    t << "    <title>" << convertToXML(title) << "</title>" << endl;
+    t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(title)) 
+      << "</title>" << endl;
   }
   else
   {
     SectionInfo *si = Doxygen::sectionDict->find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
+      t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(si->title)) 
+        << "</title>" << endl;
     }
   }
   writeInnerPages(pd->getSubPages(),t);

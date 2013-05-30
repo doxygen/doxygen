@@ -587,7 +587,7 @@ void XmlDocVisitor::visitPre(DocSection *s)
   if (!s->anchor().isEmpty()) m_t << "_1" << s->anchor();
   m_t << "\">" << endl;
   m_t << "<title>";
-  filter(s->title());
+  filter(convertCharEntitiesToUTF8(s->title()));
   m_t << "</title>" << endl;
 }
 

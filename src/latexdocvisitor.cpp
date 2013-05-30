@@ -142,9 +142,9 @@ void LatexDocVisitor::visit(DocSymbol *s)
     case DocSymbol::DoubleColon:  m_t << "::"; break;
     case DocSymbol::Percent: m_t << "\\%"; break;
     case DocSymbol::Pipe:    m_t << "$|$"; break;
-    case DocSymbol::Copy:    m_t << "\\copyright"; break;
-    case DocSymbol::Tm:      m_t << "\\texttrademark"; break;
-    case DocSymbol::Reg:     m_t << "\\textregistered"; break;
+    case DocSymbol::Copy:    m_t << "\\copyright{}"; break;
+    case DocSymbol::Tm:      m_t << "\\texttrademark{}"; break;
+    case DocSymbol::Reg:     m_t << "\\textregistered{}"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "\""; break;
     case DocSymbol::Lsquo:   m_t << "`"; break;
