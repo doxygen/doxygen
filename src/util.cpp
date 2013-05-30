@@ -1843,10 +1843,14 @@ int findParameterList(const QString &name)
         ++templateDepth;
         pos=nextOpenPos-1;
       }
-      else
+      else if (nextClosePos!=-1)
       {
         --templateDepth;
         pos=nextClosePos-1;
+      }
+      else // more >'s than <'s, see bug701295
+      {
+        return -1;
       }
     }
     else
