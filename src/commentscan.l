@@ -171,7 +171,7 @@ static DocCmdMap docCmdMap[] =
   { "relatedalso",     &handleRelatedAlso,      TRUE  },
   { "relatesalso",     &handleRelatedAlso,      TRUE  },
   { "refitem",         &handleRefItem,          TRUE  },
-  { "cite",            &handleCite,             TRUE  },
+  { "cite",            &handleCite,             FALSE },
   { "subpage",         &handleSubpage,          TRUE  },
   { "section",         &handleSection,          TRUE  },
   { "subsection",      &handleSection,          TRUE  },
@@ -2449,6 +2449,11 @@ static bool handleAnchor(const QCString &s)
 
 static bool handleCite(const QCString &s)
 {
+  if (g_spaceBeforeCmd) 
+  {
+    addOutput(' ');
+    g_spaceBeforeCmd=FALSE;
+  }
   addOutput("@"+s+" ");
   BEGIN(CiteLabel);
   return FALSE;
