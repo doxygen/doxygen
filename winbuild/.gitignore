@@ -1,0 +1,7 @@
+Debug/
+Debug64/
+Release/
+Release64/
+Doxygen.ncb
+Doxygen.suo
+*.user
