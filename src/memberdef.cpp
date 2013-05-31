@@ -2701,7 +2701,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
     pIntf->resetCodeParserState();
     ol.startCodeFragment();
-    pIntf->parseCode(ol,scopeName,m_impl->initializer,FALSE,0,getFileDef(),
+    pIntf->parseCode(ol,scopeName,m_impl->initializer,lang,FALSE,0,getFileDef(),
                      -1,-1,TRUE,this,FALSE,this);
     ol.endCodeFragment();
   }

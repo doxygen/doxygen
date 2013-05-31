@@ -861,6 +861,7 @@ bool DBusXMLScanner::needsPreprocessing(const QCString & /* extension */)
 void DBusXMLScanner::parseCode(CodeOutputInterface & /* codeOutIntf */,
                                const char * /* scopeName */,
                                const QCString & /* input */,
+                               SrcLangExt /* lang */,
                                bool /* isExampleBlock */,
                                const char * /* exampleName */,
                                FileDef * /* fileDef */,

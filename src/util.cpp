@@ -1593,6 +1593,12 @@ ClassDef *getResolvedClass(Definition *scope,
   {
     result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec,pResolvedType);
   }
+  if (result==0) // for nested classes imported via tag files, the scope may not
+                 // present, so we check the class name directly as well.
+                 // See also bug701314
+  {
+    result = getClass(n);
+  }
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
     if (!mayBeHidden || !result->isHidden())
@@ -3901,7 +3907,7 @@ static void findMembersWithSpecificName(MemberName *mn,
  *     file fd.
  */
 bool getDefs(const QCString &scName,
-             const QCString &memberName, 
+             const QCString &mbName, 
              const char *args,
              MemberDef *&md, 
              ClassDef *&cd, 
@@ -3915,10 +3921,12 @@ bool getDefs(const QCString &scName,
             )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
-  if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
+  if (mbName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   QCString scopeName=scName;
+  QCString memberName=mbName;
   scopeName = substitute(scopeName,"\\","::"); // for PHP
+  memberName = substitute(memberName,"\\","::"); // for PHP
   //printf("Search for name=%s args=%s in scope=%s forceEmpty=%d\n",
   //          memberName.data(),args,scopeName.data(),forceEmptyScope);
 
@@ -4506,6 +4514,14 @@ bool resolveRef(/* in */  const char *scName,
   if (tryUnspecializedVersion)
   {
     return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,0,checkScope);
+  }
+  if (bracePos!=-1) // Try without parameters as well, could be a contructor invocation
+  {
+    *resContext=getClass(fullName.left(bracePos));
+    if (*resContext)
+    {
+      return TRUE;
+    }
   }
   //printf("resolveRef: %s not found!\n",name);
 

@@ -21,6 +21,8 @@
 #include <qdict.h>
 #include <qstrlist.h>
 
+#include "types.h"
+
 class Entry;
 class FileDef;
 class CodeOutputInterface;
@@ -79,6 +81,7 @@ class ParserInterface
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
      *  @param[in] codeOutIntf Abstract interface for writing the result.
+     *  @param[in] lang The programming language of the code fragment.
      *  @param[in] scopeName Name of scope to which the code belongs.
      *  @param[in] input Actual code in the form of a string
      *  @param[in] isExampleBlock TRUE iff the code is part of an example.
@@ -99,6 +102,7 @@ class ParserInterface
     virtual void parseCode(CodeOutputInterface &codeOutIntf,
                            const char *scopeName,
                            const QCString &input,
+                           SrcLangExt lang,
                            bool isExampleBlock,
                            const char *exampleName=0,
                            FileDef *fileDef=0,

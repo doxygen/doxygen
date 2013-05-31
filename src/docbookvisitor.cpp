@@ -249,12 +249,13 @@ void DocbookDocVisitor::visit(DocStyleChange *s)
 void DocbookDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>";
       Doxygen::parserManager->getParser(m_langExt)
-        ->parseCode(m_ci,s->context(),s->text(),
+        ->parseCode(m_ci,s->context(),s->text(),langExt,
             s->isExample(),s->exampleFile());
       m_t << "</programlisting>";
       break;
@@ -346,6 +347,7 @@ void DocbookDocVisitor::visit(DocAnchor *anc)
 void DocbookDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
@@ -356,6 +358,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
         Doxygen::parserManager->getParser(inc->extension())
           ->parseCode(m_ci,inc->context(),
               inc->text(),
+              langExt,
               inc->isExample(),
               inc->exampleFile(), &fd);
         m_t << "</programlisting>";
@@ -366,6 +369,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
       Doxygen::parserManager->getParser(inc->extension())
         ->parseCode(m_ci,inc->context(),
             inc->text(),
+            langExt,
             inc->isExample(),
             inc->exampleFile());
       m_t << "</programlisting>";
@@ -385,6 +389,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
         ->parseCode(m_ci,
             inc->context(),
             extractBlock(inc->text(),inc->blockId()),
+            langExt,
             inc->isExample(),
             inc->exampleFile()
             );
@@ -404,6 +409,7 @@ void DocbookDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide = TRUE;
   }
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->type()!=DocIncOperator::Skip)
   {
     popEnabled();
@@ -411,7 +417,7 @@ void DocbookDocVisitor::visit(DocIncOperator *op)
     {
       Doxygen::parserManager->getParser(m_langExt)
         ->parseCode(m_ci,op->context(),
-            op->text(),op->isExample(),
+            op->text(),langExt,op->isExample(),
             op->exampleFile());
     }
     pushEnabled();
