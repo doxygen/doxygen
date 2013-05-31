@@ -2583,6 +2583,7 @@ void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
   pIntf->parseCode(ol,                   // codeOutIntf
                        0,                // scope
                        codeFragment,     // input
+                       SrcLangExt_VHDL,  // lang
                        FALSE,            // isExample
                        0,                // exampleName
                        mdef->getFileDef(),            // fileDef

@@ -2560,6 +2560,7 @@ tcl_inf("%s\n",fileName);
 void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char * exampleName,
                    FileDef * fileDef,
@@ -2572,6 +2573,7 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                   )
 {
   (void)scopeName;
+  (void)lang;
   (void)exampleName;
   (void)fileDef;
   (void)endLine;

@@ -6821,6 +6821,7 @@ void CLanguageScanner::parseInput(const char *fileName,
 void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char * exampleName,
                    FileDef * fileDef,
@@ -6832,7 +6833,7 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    Definition *searchCtx
                   )
 {
-  ::parseCCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+  ::parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
                fileDef,startLine,endLine,inlineFragment,memberDef,
 	       showLineNumbers,searchCtx);
 }

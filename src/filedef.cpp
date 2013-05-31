@@ -879,6 +879,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
     ol.startCodeFragment();
     pIntf->parseCode(ol,0,
         fileToString(absFilePath(),filterSourceFiles,TRUE),
+        getLanguage(),
         FALSE,0,this
         );
     ol.endCodeFragment();
@@ -917,6 +918,7 @@ void FileDef::parseSource(bool sameTu,QStrList &filesInSameTu)
     pIntf->parseCode(
             devNullIntf,0,
             fileToString(absFilePath(),filterSourceFiles,TRUE),
+            getLanguage(),
             FALSE,0,this
            );
   }

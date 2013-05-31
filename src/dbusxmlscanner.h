@@ -42,6 +42,7 @@ public:
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char *exampleName=0,
                    FileDef *fileDef=0,
