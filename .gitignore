@@ -30,6 +30,7 @@ Makefile
 /src/commentcnv.cpp
 /src/commentscan.cpp
 /src/config.cpp
+/src/configoptions.cpp
 /src/declinfo.cpp
 /src/defargs.cpp
 /src/doctokenizer.cpp
