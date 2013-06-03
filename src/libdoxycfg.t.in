@@ -48,5 +48,5 @@ sub GenerateDep {
 	$(LEX) -PconfigYY -t config.l >config.cpp 
 
 configoptions.cpp: config.xml
-	python configgen.py config.xml >configoptions.cpp
+	python2 configgen.py config.xml >configoptions.cpp
 
