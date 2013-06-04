@@ -7,6 +7,7 @@ languages such as C, Objective-C, C#, PHP, Java, Python, IDL
 and to some extent D.
 
 Doxygen can help you in three ways:
+
 1. It can generate an on-line documentation browser (in HTML) and/or an 
    off-line reference manual (in LaTeX) from a set of documented source files. 
    There is also support for generating output in RTF (MS-Word), PostScript, 
