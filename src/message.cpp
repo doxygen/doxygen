@@ -26,8 +26,8 @@
 #include "filedef.h"
 
 static QCString outputFormat;
-static const char *warning_str = "Warning: ";
-static const char *error_str = "Error: ";
+static const char *warning_str = "warning: ";
+static const char *error_str = "error: ";
 //static int warnFormatOrder; // 1 = $file,$line,$text
 //                            // 2 = $text,$line,$file
 //                            // 3 = $line,$text,$file
