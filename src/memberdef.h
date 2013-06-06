@@ -169,6 +169,7 @@ class MemberDef : public Definition
     bool hasMultiLineInitializer() const;
     bool protectionVisible() const;
     bool showInCallGraph() const;
+    bool isStrongEnumValue() const;
 
     // output info
     bool isLinkableInProject() const;

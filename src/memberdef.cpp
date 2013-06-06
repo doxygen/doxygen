@@ -3795,6 +3795,12 @@ QCString MemberDef::qualifiedName() const
     qm+="]";
     return qm;
   }
+  else if (m_impl->enumScope && m_impl->enumScope->isStrong())
+  {
+    return m_impl->enumScope->qualifiedName()+
+           getLanguageSpecificSeparator(getLanguage())+
+           localName();
+  }
   else
   {
     return Definition::qualifiedName();
@@ -4137,6 +4143,13 @@ bool MemberDef::isWeak() const
 bool MemberDef::isStrong() const
 {
   return (m_impl->memSpec&Entry::Strong)!=0; 
+}
+
+bool MemberDef::isStrongEnumValue() const
+{
+  return m_impl->mtype==MemberType_EnumValue &&
+         m_impl->enumScope && 
+         m_impl->enumScope->isStrong();
 }
 
 bool MemberDef::isUnretained() const
@@ -4844,5 +4857,4 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
     }
   }
 }
-
 
