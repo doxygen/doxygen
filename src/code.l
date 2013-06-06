@@ -863,7 +863,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     }
 
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	            md->getBodyDef() : md->getOuterScope();
+	            md->getFileDef() : md->getOuterScope();
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
@@ -1000,7 +1000,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     if (md)
     {
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-                      md->getBodyDef() : md->getOuterScope();
+                      md->getFileDef() : md->getOuterScope();
       if (md->getGroupDef()) d = md->getGroupDef();
       if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
       {
@@ -1098,7 +1098,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   g_theCallContext.setClass(typeClass);
 
   Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
-    xmd->getBodyDef() : xmd->getOuterScope();
+                   xmd->getFileDef() : xmd->getOuterScope();
   if (xmd->getGroupDef()) xd = xmd->getGroupDef();
   if (xd && xd->isLinkable())
   {
