@@ -266,7 +266,7 @@ void QFileInfo::doStat() const
     }
 #else
     QString file = fn;
-    reslashify(QDir::cleanupDirPath(file));
+    reslashify(QDir::cleanDirPath(file));
 #ifdef QT_LARGEFILE_SUPPORT
     if ( _wstati64( (wchar_t*) file.ucs2(), b ) == -1 ) {
 #else
