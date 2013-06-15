@@ -414,8 +414,8 @@ static bool             parseMore;
 static int              g_condCount;
 
 static int              g_commentCount;
-static bool             g_spaceBeforeCmd;
-static bool             g_spaceBeforeIf;
+static QCString         g_spaceBeforeCmd;
+static QCString         g_spaceBeforeIf;
 static QCString         g_copyDocArg;
 
 static QCString         g_guardExpr;
@@ -1033,17 +1033,17 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           // the {B}* in the front was added for bug620924
   					  QCString cmdName = QCString(yytext).stripWhiteSpace().data()+1;
 					  DocCmdMapper::Cmd *cmdPtr = DocCmdMapper::map(cmdName);
-					  g_spaceBeforeCmd = yytext[0]==' ' || yytext[0]=='\t';
 					  if (cmdPtr) // special action is required
 					  {
+                                            int i=0;
+                                            while (yytext[i]==' ' || yytext[i]=='\t') i++;
+					    g_spaceBeforeCmd = QCString(yytext).left(i);
 					    if (cmdPtr->endsBrief)
 					    { 
 					      briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
 					      setOutput(OutputDoc);
 					    }
-                                            int i=0;
-                                            while (yytext[i]==' ' || yytext[i]=='\t') i++;
                                             //if (i>0) addOutput(QCString(yytext).left(i)); // removed for bug 689341
 					    if (cmdPtr->func && cmdPtr->func(cmdName))
 					    {
@@ -1067,7 +1067,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    {
 					      // command without handler, to be processed
 					      // later by parsedoc.cpp
-					      addOutput(yytext+i);
+					      addOutput(yytext);
 					    }
 					  }
 					  else // command not relevant
@@ -1795,15 +1795,15 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <GuardParamEnd>{B}*{DOCNL}		{
-  					  g_spaceBeforeIf=FALSE;
+  					  g_spaceBeforeIf.resize(0);
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>{B}*			{
-  					  if (g_spaceBeforeIf) // needed for 665313 in combation with bug620924
+  					  if (!g_spaceBeforeIf.isEmpty()) // needed for 665313 in combation with bug620924
 					  {
-					    addOutput(" ");
+					    addOutput(g_spaceBeforeIf);
 					  }
-  					  g_spaceBeforeIf=FALSE;
+  					  g_spaceBeforeIf.resize(0);
   					  BEGIN(Comment);
   					}
 <GuardParamEnd>.			{
@@ -2430,10 +2430,10 @@ static bool handleSubpage(const QCString &s)
     warn(yyFileName,yyLineNr,
 	"found \\subpage command in a comment block that is not marked as a page!");
   }
-  if (g_spaceBeforeCmd) 
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   addOutput("@"+s+" ");
   BEGIN(SubpageLabel);
@@ -2449,10 +2449,10 @@ static bool handleAnchor(const QCString &s)
 
 static bool handleCite(const QCString &s)
 {
-  if (g_spaceBeforeCmd) 
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   addOutput("@"+s+" ");
   BEGIN(CiteLabel);
@@ -2535,10 +2535,10 @@ static bool handleEndIf(const QCString &)
     delete guards.pop();
   }
   enabledSectionFound=FALSE;
-  if (g_spaceBeforeCmd) 
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   BEGIN( GuardParamEnd );
   return FALSE;
@@ -2689,10 +2689,10 @@ static bool handleCopyBrief(const QCString &)
     // otherwise it will be copied inline (see bug691315 & bug700788)
     setOutput(OutputBrief);
   }
-  if (g_spaceBeforeCmd)
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   addOutput("\\copybrief ");
   return FALSE;
@@ -2701,10 +2701,10 @@ static bool handleCopyBrief(const QCString &)
 static bool handleCopyDetails(const QCString &)
 {
   setOutput(OutputDoc);
-  if (g_spaceBeforeCmd)
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   addOutput("\\copydetails ");
   return FALSE;
@@ -2713,10 +2713,10 @@ static bool handleCopyDetails(const QCString &)
 static bool handleCopyDoc(const QCString &)
 {
   setOutput(OutputBrief);
-  if (g_spaceBeforeCmd)
+  if (!g_spaceBeforeCmd.isEmpty()) 
   {
-    addOutput(' ');
-    g_spaceBeforeCmd=FALSE;
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
   }
   addOutput("\\copybrief ");
   g_copyDocArg.resize(0);
@@ -2775,8 +2775,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   briefEndsAtDot = isAutoBriefOn;
   g_condCount    = 0;
   g_sectionLevel = 0;
-  g_spaceBeforeCmd = FALSE;
-  g_spaceBeforeIf  = FALSE;
+  g_spaceBeforeCmd.resize(0);
+  g_spaceBeforeIf.resize(0);
 
   if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
