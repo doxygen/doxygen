@@ -63,7 +63,7 @@ static bool isFuncProto=FALSE;
 static bool isComponent=FALSE;
 static bool isPackageBody=FALSE;
 static bool isProto = FALSE;
-
+static bool       g_startCode = FALSE;
 static QCString   g_PrevString;
 static QCString   g_CurrClass;
 static QDict<QCString>g_vhdlKeyDict;   
@@ -185,6 +185,7 @@ static void startCodeLine()
   //if (g_currentFontClass) { g_code->endFontClass(); }
   if (g_sourceFileDef)
   {
+    g_startCode=TRUE;
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",g_yyLineNr);
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
@@ -247,12 +248,15 @@ static void endCodeLine()
 
 static void nextCodeLine()
 {
+  if (g_startCode)
+  {
+    endCodeLine();    // </div>
+  }
   const char *fc = g_currentFontClass;
-  endCodeLine();
   if (g_yyLineNr<g_inputLines) 
   {
     g_currentFontClass = fc;
-    startCodeLine();
+    startCodeLine();  //<div>
   }
 }
 
@@ -347,7 +351,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
 /*! write a code fragment `text' that may span multiple lines, inserting
  * line numbers for each line.
  */
-static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
+static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE,bool comment=FALSE)
 {
   if (text==0) return;
   //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
@@ -365,12 +369,21 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
       line = line.left((int)(p-sp)-1);
       //*(p-1)='\0';
       //g_code->codify(sp);
-      writeWord(line,cl,classlink);
+      if (comment)
+      {
+        writeFont("keyword",line.data());
+      }
+      else
+      {
+        writeWord(line,cl,classlink);
+      }
       nextCodeLine();
     }
     else
     {
-      //g_code->codify(sp);
+      if (comment)
+        writeFont("keyword",sp);
+      else
       writeWord(sp,cl,classlink);
       done=TRUE;
     }
@@ -1465,9 +1478,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			   }  
 			   else // normal comment
 			   {
-			     startFontClass("keyword");
-			     codifyLines(text);
-			     endFontClass();
+			     //    startFontClass("keyword");
+			     codifyLines(text,0,FALSE,TRUE);
+			     //    endFontClass();
 			   }
                          }
 <*>{TEXTT}               { // found normal or special comment after something
@@ -1480,9 +1493,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 			   }  
 			   else // normal comment
 			   {
-			     startFontClass("keyword");
-			     codifyLines(text);
-			     endFontClass();
+			     //   startFontClass("keyword");
+			     codifyLines(text,0,FALSE,TRUE);
+			     //   endFontClass();
 			   }
                          }
 
@@ -1581,8 +1594,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
     delete g_sourceFileDef;
     g_sourceFileDef=0;
   }
- 
-  return;
+  g_startCode=FALSE;
 }
 
 void codeFreeVhdlScanner()
