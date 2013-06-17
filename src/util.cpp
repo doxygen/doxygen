@@ -4090,14 +4090,14 @@ bool getDefs(const QCString &scName,
               {
                 cd=tmd->getClassDef();
                 md=emd;
+                return TRUE;
               }
               else
               {
                 cd=0;
                 md=0;
+                return FALSE;
               }
-              //printf("result cd=%p md=%p\n",cd,md);
-              return TRUE;
             }
           }
         }
