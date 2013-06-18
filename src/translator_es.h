@@ -31,9 +31,10 @@
  * Updated to 1.6.4 by Bartomeu Creus Navarro (26-mayo-2010) [(16-jun-2010) grabado en UTF-8]
  * Updated to 1.8.0 by Bartomeu Creus Navarro (11-abril-2012)
  * Updated to 1.8.2 by Bartomeu Creus Navarro (01-julio-2012)
+ * Updated to 1.8.4 by Bartomeu Creus Navarro (17-julio-2013)
  */
 
-class TranslatorSpanish : public TranslatorAdapter_1_8_4
+class TranslatorSpanish : public Translator
 {
   public:
 
@@ -2053,6 +2054,62 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_4
     virtual QCString trDesignOverview()
     {
       return "Diseño información general";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Interface exportada"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Servicios incluidos"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Grupos constantes"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" referencia de grupos constantes";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Referencia servicio";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" referencia Singleton";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"La documentacion para este servicio "
+                                "se ha generado desde ";
+      if (single) result+="el siguiente fichero:"; else result+="los siguientes ficheros:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"La documentación para este singleton "
+                                "se ha generado desde ";
+      if (single) result+="el siguiente fichero:"; else result+="los siguientes ficheros:";
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////

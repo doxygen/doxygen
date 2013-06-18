@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -198,19 +198,19 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorCzech;
   }
 #endif
-#ifdef LANG_FR  
+#ifdef LANG_FR
   else if (L_EQUAL("french"))
   {
     theTranslator=new TranslatorFrench;
   }
 #endif
-#ifdef LANG_ID  
+#ifdef LANG_ID
   else if (L_EQUAL("indonesian"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorIndonesian);
   }
 #endif
-#ifdef LANG_IT  
+#ifdef LANG_IT
   else if (L_EQUAL("italian"))
   {
     theTranslator=new TranslatorItalian;
@@ -249,7 +249,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_RU
   else if (L_EQUAL("russian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorRussian);
+    theTranslator=new TranslatorRussian;
   }
 #endif
 #ifdef LANG_HR
@@ -273,13 +273,13 @@ bool setTranslator(const char *langName)
 #ifdef LANG_HU
   else if (L_EQUAL("hungarian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorHungarian);
+    theTranslator=new TranslatorHungarian;
   }
 #endif
 #ifdef LANG_KR
   else if (L_EQUAL("korean"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorKorean);
+    theTranslator=new TranslatorKorean;
   }
 #endif
 #ifdef LANG_KE
@@ -291,7 +291,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_RO
   else if (L_EQUAL("romanian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorRomanian);
+    theTranslator=new TranslatorRomanian;
   }
 #endif
 #ifdef LANG_SI
@@ -315,7 +315,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_NO
   else if (L_EQUAL("norwegian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorNorwegian);
+    theTranslator=new TranslatorNorwegian;
   }
 #endif
 #ifdef LANG_BR
@@ -327,7 +327,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_DK
   else if (L_EQUAL("danish"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorDanish);
+    theTranslator=new TranslatorDanish;
   }
 #endif
 #ifdef LANG_SK
@@ -369,13 +369,13 @@ bool setTranslator(const char *langName)
 #ifdef LANG_LT
   else if (L_EQUAL("lithuanian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorLithuanian);
+    theTranslator=new TranslatorLithuanian;
   }
 #endif
 #ifdef LANG_LV
   else if (L_EQUAL("latvian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorLatvian);
+    theTranslator=new TranslatorLatvian;
   }
 #endif
 #ifdef LANG_ZA
@@ -426,7 +426,7 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorEnglish;
     return FALSE;
   }
-  
+
   QCString msg = theTranslator->updateNeededMessage();
   if (!msg.isEmpty()) warn_uncond(msg);
   return TRUE;
