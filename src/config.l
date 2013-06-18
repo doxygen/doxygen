@@ -183,7 +183,10 @@ void ConfigInt::convertStrToVal()
       config_warn("Warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
                 "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
     }
-    m_value=val;
+    else
+    {
+      m_value=val;
+    }
   }
 }
 
