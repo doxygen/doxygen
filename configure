@@ -445,6 +445,7 @@ if test "$f_sqlite3" = YES; then
   done
   if test "$sqlite3_hdr" = NO -o "$sqlite3_lib" = NO; then
     echo "not found!";
+    exit 1
   else
     echo "using header $sqlite3_hdr and library $sqlite3_lib...";
   fi
