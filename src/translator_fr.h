@@ -1958,37 +1958,41 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
 
     /*! Detail level selector shown for hierarchical indices */
     virtual QCString trDetailLevel()
-    { return "detail level"; }
+    { return "niveau de détail"; }
 
     /*! Section header for list of template parameters */
     virtual QCString trTemplateParameters()
-    { return "Template Parameters"; }
+    { return "Paramètres de Modèle"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
     virtual QCString trAndMore(const QCString &number)
-    { return "and "+number+" more..."; }
+    { return "et "+number+" plus..."; }
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
-    { QCString result = "The documentation for this enum was generated from the following file";
-      if (!single) result += "s";
+    { QCString result = "La documentation pour cet enum a été géneré à partir ";
+      if (single) {
+       result += "du fichier suivant";
+	  } else {
+ 	   result += "des fichiers suivants";
+	  }
       result+=":";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     virtual QCString trEnumReference(const char *name)
-    { return QCString(name)+" Enum Reference"; }
+    { return QCString(name)+" Réference Enum"; }
 
     /*! Used for a section containing inherited members */
     virtual QCString trInheritedFrom(const char *members,const char *what)
-    { return QCString(members)+" inherited from "+what; }
+    { return QCString(members)+" herité de "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
-    { return "Additional Inherited Members"; }
+    { return "Membres herités additionels"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.2
@@ -2000,8 +2004,8 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "enable" : "disable";
-      return "click to "+opt+" panel synchronisation";
+      QCString opt = enable ? "activer" : "désactiver";
+      return "cliquer sur "+opt+" le paneau de synchronisation";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -2010,7 +2014,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Provided by category @1.";
+      return "Procuré par la categorie @1.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -2019,7 +2023,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExtendsClass()
     {
-      return "Extends class @1.";
+      return "Etends la classe @1.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.
@@ -2027,7 +2031,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassMethods()
     {
-      return "Class Methods";
+      return "Méthode de classe";
     }
 
     /*! Used as the header of a list of instance methods in Objective-C.
@@ -2035,14 +2039,14 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
      */
     virtual QCString trInstanceMethods()
     {
-      return "Instance Methods";
+      return "Méthode d'instance";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
     virtual QCString trMethodDocumentation()
     {
-      return "Method Documentation";
+      return "Documentation de méthode";
     }
 
     /*! Used as the title of the design overview picture created for the
@@ -2050,7 +2054,7 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDesignOverview()
     {
-      return "Design Overview";
+      return "Vue d'ensemble de la conception";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2059,53 +2063,63 @@ class TranslatorFrench : public TranslatorAdapter_1_8_0
 
     /** old style UNO IDL services: implemented interfaces */
     virtual QCString trInterfaces()
-    { return "Exported Interfaces"; }
+    { return "Interfaces exportées"; }
 
     /** old style UNO IDL services: inherited services */
     virtual QCString trServices()
-    { return "Included Services"; }
+    { return "Services inclus"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroups()
-    { return "Constant Groups"; }
+    { return "Groupes de constantes"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroupReference(const char *namespaceName)
     {
-      QCString result=namespaceName;
-      result+=" Constant Group Reference";
+      QCString result="Réference de groupes de constantes de ";
+      result+=namespaceName;
       return result;
     }
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const char *sName)
     {
-      QCString result=(QCString)sName;
-      result+=" Service Reference";
+      QCString result="Réference de service de ";
+      result+=(QCString)sName;
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const char *sName)
     {
-      QCString result=(QCString)sName;
-      result+=" Singleton Reference";
+      QCString result="Réference de singleton de ";
+      result+=(QCString)sName;
       return result;
     }
     /** UNO IDL service page */
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this service "
-                                "was generated from the following file";
-      if (single) result+=":"; else result+="s:";
+      QCString result=(QCString)"La documentation pour ce service "
+                                "a été géneré à partir";
+      if (single) {
+ 	      result += "du fichier suivant";
+	  } else {
+ 	      result += "des fichiers suivants";
+	  }
+	  result+=":";
       return result;
     }
     /** UNO IDL singleton page */
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this singleton "
-                                "was generated from the following file";
-      if (single) result+=":"; else result+="s:";
+      QCString result=(QCString)"La documentation pour ce singleton "
+                                "a été géneré à partir";
+      if (single) {
+ 	      result += "du fichier suivant";
+	  } else {
+ 	      result += "des fichiers suivants";
+	  }
+	  result+=":";
       return result;
     }
 
