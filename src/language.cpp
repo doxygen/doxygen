@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -198,19 +198,19 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorCzech;
   }
 #endif
-#ifdef LANG_FR  
+#ifdef LANG_FR
   else if (L_EQUAL("french"))
   {
     theTranslator=new TranslatorFrench;
   }
 #endif
-#ifdef LANG_ID  
+#ifdef LANG_ID
   else if (L_EQUAL("indonesian"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorIndonesian);
   }
 #endif
-#ifdef LANG_IT  
+#ifdef LANG_IT
   else if (L_EQUAL("italian"))
   {
     theTranslator=new TranslatorItalian;
@@ -279,7 +279,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_KR
   else if (L_EQUAL("korean"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorKorean);
+    theTranslator=new TranslatorKorean;
   }
 #endif
 #ifdef LANG_KE
@@ -426,7 +426,7 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorEnglish;
     return FALSE;
   }
-  
+
   QCString msg = theTranslator->updateNeededMessage();
   if (!msg.isEmpty()) warn_uncond(msg);
   return TRUE;
