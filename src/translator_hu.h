@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -12,16 +12,16 @@
  * input used in their production; they are not affected by this license.
  *
  */
- 
+
  /*
   * Original Hungarian translation by
-  * Gyˆrgy Fˆldv·ri  <foldvari@diatronltd.com>
+  * Gy√∂rgy F√∂ldv√°ri  <foldvari@diatronltd.com>
   *
   * Extended, revised and updated by
-  * ¡kos Kiss  <akiss@users.sourceforge.net>
+  * √Åkos Kiss  <akiss@users.sourceforge.net>
   *
   * Further extended, revised and updated by
-  * Tam·si Ferenc <tf551@hszk.bme.hu>
+  * Tam√°si Ferenc <tf551@hszk.bme.hu>
   */
 
 #ifndef TRANSLATOR_HU_H
@@ -68,48 +68,48 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return "KapcsolÛdÛ f¸ggvÈnyek"; }
+    { return "Kapcsol√≥d√≥ f√ºggv√©nyek"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return "(Figyelem! Ezek a f¸ggvÈnyek nem tagjai az oszt·lynak!)"; }
+    { return "(Figyelem! Ezek a f√ºggv√©nyek nem tagjai az oszt√°lynak!)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return "RÈszletes leÌr·s"; }
+    { return "R√©szletes le√≠r√°s"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return "TÌpusdefinÌciÛ-tagok dokument·ciÛja"; }
-    
+    { return "T√≠pusdefin√≠ci√≥-tagok dokument√°ci√≥ja"; }
+
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return "Enumer·ciÛ-tagok dokument·ciÛja"; }
-    
+    { return "Enumer√°ci√≥-tagok dokument√°ci√≥ja"; }
+
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Tagf¸ggvÈnyek dokument·ciÛja"; }
-    
+    { return "Tagf√ºggv√©nyek dokument√°ci√≥ja"; }
+
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Adatmezık dokument·ciÛja"; 
+        return "Adatmez≈ëk dokument√°ci√≥ja";
       }
       else
       {
-        return "Adattagok dokument·ciÛja"; 
+        return "Adattagok dokument√°ci√≥ja";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
-    { return "RÈszletek..."; }
+    { return "R√©szletek..."; }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "A tagok teljes list·ja"; }
+    { return "A tagok teljes list√°ja"; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
@@ -121,161 +121,161 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return " oszt·ly tagjainak teljes list·ja, az ˆrˆkˆlt tagokkal egy¸tt."; }
-    
+    { return " oszt√°ly tagjainak teljes list√°ja, az √∂r√∂k√∂lt tagokkal egy√ºtt."; }
+
     virtual QCString trGeneratedAutomatically(const char *s)
-    { QCString result="Ezt a dokument·ciÛt a Doxygen kÈszÌtette ";
+    { QCString result="Ezt a dokument√°ci√≥t a Doxygen k√©sz√≠tette ";
       if (s) result+=(QCString)" a" + zed(s[0])+s+(QCString)" projekthez";
-      result+=" a forr·skÛdbÛl."; 
+      result+=" a forr√°sk√≥db√≥l.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
     { return "enum"; }
-    
+
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return "enum-ÈrtÈk"; }
-    
+    { return "enum-√©rt√©k"; }
+
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return "defini·lja:"; }
+    { return "defini√°lja:"; }
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Modulok"; }
-    
+
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return "Oszt·lyhierarchia"; }
-    
+    { return "Oszt√°lyhierarchia"; }
+
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Adatszerkezetek";
       }
       else
       {
-        return "Oszt·lylista"; 
+        return "Oszt√°lylista";
       }
     }
-    
+
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return "F·jllista"; }
+    { return "F√°jllista"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Adatmezık"; 
+        return "Adatmez≈ëk";
       }
       else
       {
-        return "Oszt·lytagok"; 
+        return "Oszt√°lytagok";
       }
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Glob·lis elemek"; 
+        return "Glob√°lis elemek";
       }
       else
       {
-        return "F·jlelemek"; 
+        return "F√°jlelemek";
       }
     }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return "KapcsolÛdÛ lapok"; }
+    { return "Kapcsol√≥d√≥ lapok"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
-    { return "PÈld·k"; }
+    { return "P√©ld√°k"; }
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return "KeresÈs"; }
+    { return "Keres√©s"; }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Majdnem (de nem teljesen) bet˚rendbe szedett "
-             "lesz·rmaz·si lista:";
+    { return "Majdnem (de nem teljesen) bet≈±rendbe szedett "
+             "lesz√°rmaz√°si lista:";
     }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
-      QCString result="Az ˆsszes ";
-      if (!extractAll) result+="dokument·lt ";
-      result+="f·jl list·ja rˆvid leÌr·sokkal:";
+      QCString result="Az √∂sszes ";
+      if (!extractAll) result+="dokument√°lt ";
+      result+="f√°jl list√°ja r√∂vid le√≠r√°sokkal:";
       return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { 
-      
+    {
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Az ˆsszes adatszerkezet list·ja rˆvid leÌr·sokkal:"; 
+        return "Az √∂sszes adatszerkezet list√°ja r√∂vid le√≠r√°sokkal:";
       }
       else
       {
-        return "Az ˆsszes oszt·ly, strukt˙ra, uniÛ Ès interfÈsz "
-               "list·ja rˆvid leÌr·sokkal:"; 
+        return "Az √∂sszes oszt√°ly, strukt√∫ra, uni√≥ √©s interf√©sz "
+               "list√°ja r√∂vid le√≠r√°sokkal:";
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="Az ˆsszes ";
+      QCString result="Az √∂sszes ";
       if (!extractAll)
       {
-        result+="dokument·lt ";
+        result+="dokument√°lt ";
       }
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="strukt˙ra- Ès ˙niÛmezı";
+        result+="strukt√∫ra- √©s √∫ni√≥mez≈ë";
       }
       else
       {
-        result+="oszt·lytag";
+        result+="oszt√°lytag";
       }
-      result+=" list·ja, valamint hivatkoz·s ";
-      if (!extractAll) 
+      result+=" list√°ja, valamint hivatkoz√°s ";
+      if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="a megfelelı strukt˙ra-/˙niÛdokument·ciÛra minden mezınÈl:";
+          result+="a megfelel≈ë strukt√∫ra-/√∫ni√≥dokument√°ci√≥ra minden mez≈ën√©l:";
         }
         else
         {
-          result+="a megfelelı oszt·lydokument·ciÛra minden tagn·l:";
+          result+="a megfelel≈ë oszt√°lydokument√°ci√≥ra minden tagn√°l:";
         }
       }
-      else 
+      else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="a strukt˙r·kra/˙niÛkra, amikhez tartoznak:";
+          result+="a strukt√∫r√°kra/√∫ni√≥kra, amikhez tartoznak:";
         }
         else
         {
-          result+="az oszt·lyokra, amikhez tartoznak:";
+          result+="az oszt√°lyokra, amikhez tartoznak:";
         }
       }
       return result;
@@ -284,68 +284,68 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Az ˆsszes ";
-      if (!extractAll) result+="dokument·lt ";
-      
+      QCString result="Az √∂sszes ";
+      if (!extractAll) result+="dokument√°lt ";
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="f¸ggvÈny, v·ltozÛ, makrÛdefinÌciÛ, enumer·ciÛ Ès tÌpusdefinÌciÛ";
+        result+="f√ºggv√©ny, v√°ltoz√≥, makr√≥defin√≠ci√≥, enumer√°ci√≥ √©s t√≠pusdefin√≠ci√≥";
       }
       else
       {
-        result+="f·jlelem";
+        result+="f√°jlelem";
       }
-      result+=" list·ja, valamint hivatkoz·s ";
-      if (extractAll) 
-        result+="a f·jlokra, amikhez tartoznak:";
-      else 
-        result+="a dokument·ciÛra:";
+      result+=" list√°ja, valamint hivatkoz√°s ";
+      if (extractAll)
+        result+="a f√°jlokra, amikhez tartoznak:";
+      else
+        result+="a dokument√°ci√≥ra:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return "A pÈld·k list·ja:"; }
+    { return "A p√©ld√°k list√°ja:"; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return "A kapcsolÛdÛ dokument·ciÛk list·ja:"; }
+    { return "A kapcsol√≥d√≥ dokument√°ci√≥k list√°ja:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return "A modulok list·ja:"; }
+    { return "A modulok list√°ja:"; }
 
-    // index titles (the project name is prepended for these) 
+    // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
-    { return "Dokument·ciÛ"; }
+    { return "Dokument√°ci√≥"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return "ModulmutatÛ"; }
+    { return "Modulmutat√≥"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return "Hierarchikus mutatÛ"; }
+    { return "Hierarchikus mutat√≥"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
-        return "Adatszerkezet-mutatÛ";
+      {
+        return "Adatszerkezet-mutat√≥";
       }
       else
       {
-        return "Oszt·lymutatÛ"; 
+        return "Oszt√°lymutat√≥";
       }
     }
 
@@ -353,13 +353,13 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      * list of all files.
      */
     virtual QCString trFileIndex()
-    { return "F·jlmutatÛ"; }
+    { return "F√°jlmutat√≥"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return "Modulok dokument·ciÛja"; }
+    { return "Modulok dokument√°ci√≥ja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -368,11 +368,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Adatszerkezetek dokument·ciÛja";
+        return "Adatszerkezetek dokument√°ci√≥ja";
       }
       else
       {
-        return "Oszt·lyok dokument·ciÛja";
+        return "Oszt√°lyok dokument√°ci√≥ja";
       }
     }
 
@@ -380,190 +380,190 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return "F·jlok dokument·ciÛja"; }
+    { return "F√°jlok dokument√°ci√≥ja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return "PÈld·k dokument·ciÛja"; }
+    { return "P√©ld√°k dokument√°ci√≥ja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
-    { return "KapcsolÛdÛ dokument·ciÛk"; }
+    { return "Kapcsol√≥d√≥ dokument√°ci√≥k"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "Referencia kÈzikˆnyv"; }
-    
-    /*! This is used in the documentation of a file as a header before the 
+    { return "Referencia k√©zik√∂nyv"; }
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
-    { return "MakrÛdefinÌciÛk"; }
+    { return "Makr√≥defin√≠ci√≥k"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
-    { return "F¸ggvÈny-prototÌpusok"; }
+    { return "F√ºggv√©ny-protot√≠pusok"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "TÌpusdefinÌciÛk"; }
+    { return "T√≠pusdefin√≠ci√≥k"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return "Enumer·ciÛk"; }
+    { return "Enumer√°ci√≥k"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
-    { return "F¸ggvÈnyek"; }
+    { return "F√ºggv√©nyek"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
-    { return "V·ltozÛk"; }
+    { return "V√°ltoz√≥k"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return "Enumer·ciÛ-ÈrtÈkek"; }
-    
+    { return "Enumer√°ci√≥-√©rt√©kek"; }
+
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "MakrÛdefinÌciÛk dokument·ciÛja"; }
+    { return "Makr√≥defin√≠ci√≥k dokument√°ci√≥ja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
-    { return "F¸ggvÈny-prototÌpusok dokument·ciÛja"; }
+    { return "F√ºggv√©ny-protot√≠pusok dokument√°ci√≥ja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "TÌpusdefinÌciÛk dokument·ciÛja"; }
+    { return "T√≠pusdefin√≠ci√≥k dokument√°ci√≥ja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return "Enumer·ciÛk dokument·ciÛja"; }
+    { return "Enumer√°ci√≥k dokument√°ci√≥ja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return "F¸ggvÈnyek dokument·ciÛja"; }
+    { return "F√ºggv√©nyek dokument√°ci√≥ja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return "V·ltozÛk dokument·ciÛja"; }
+    { return "V√°ltoz√≥k dokument√°ci√≥ja"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Adatszerkezetek"; 
+        return "Adatszerkezetek";
       }
       else
       {
-        return "Oszt·lyok"; 
+        return "Oszt√°lyok";
       }
     }
 
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result=(QCString)"";
       if (projName) result+=(QCString)"Projekt: "+projName;
-      result+=(QCString)" KÈsz¸lt: "+date+" KÈszÌtette: ";
+      result+=(QCString)" K√©sz√ºlt: "+date+" K√©sz√≠tette: ";
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
     virtual QCString trWrittenBy()
     {
-      return " melyet Ìrt ";
+      return " melyet √≠rt ";
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"A"+zed(clName[0])+clName+" oszt·ly sz·rmaz·si diagramja:";
+      return (QCString)"A"+zed(clName[0])+clName+" oszt√°ly sz√°rmaz√°si diagramja:";
     }
-    
+
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
-    { return "CSAK BELS’ HASZN¡LATRA!"; }
+    { return "CSAK BELS≈ê HASZN√ÅLATRA!"; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
-    { return "FigyelmeztetÈs"; }
+    { return "Figyelmeztet√©s"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
-    { return "VerziÛ"; }
+    { return "Verzi√≥"; }
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
-    { return "D·tum"; }
+    { return "D√°tum"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return "VisszatÈrÈsi ÈrtÈk"; }
+    { return "Visszat√©r√©si √©rt√©k"; }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "L·sd mÈg"; }
+    { return "L√°sd m√©g"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
-    { return "ParamÈterek"; }
+    { return "Param√©terek"; }
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return "KivÈtelek"; }
-    
+    { return "Kiv√©telek"; }
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
-    { return "KÈszÌtette"; }
+    { return "K√©sz√≠tette"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "NÈvtÈrlista"; }
+    { return "N√©vt√©rlista"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="Az ˆsszes ";
-      if (!extractAll) result+="dokument·lt ";
-      result+="nÈvtÈr list·ja rˆvid leÌr·sokkal:";
+      QCString result="Az √∂sszes ";
+      if (!extractAll) result+="dokument√°lt ";
+      result+="n√©vt√©r list√°ja r√∂vid le√≠r√°sokkal:";
       return result;
     }
 
@@ -571,18 +571,18 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return "Bar·tok"; }
-    
+    { return "Bar√°tok"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "Bar·t Ès kapcsolÛdÛ f¸ggvÈnyek dokument·ciÛja"; }
-    
+    { return "Bar√°t √©s kapcsol√≥d√≥ f√ºggv√©nyek dokument√°ci√≥ja"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -595,13 +595,13 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
       QCString result=(QCString)clName;
       switch(compType)
       {
-        case ClassDef::Class:      result+=" oszt·ly"; break;
-        case ClassDef::Struct:     result+=" strukt˙ra"; break;
-        case ClassDef::Union:      result+=" uniÛ"; break;
-        case ClassDef::Interface:  result+=" interfÈsz"; break;
+        case ClassDef::Class:      result+=" oszt√°ly"; break;
+        case ClassDef::Struct:     result+=" strukt√∫ra"; break;
+        case ClassDef::Union:      result+=" uni√≥"; break;
+        case ClassDef::Interface:  result+=" interf√©sz"; break;
         case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
         case ClassDef::Category:   result+=" category"; break; // translate me!
-        case ClassDef::Exception:  result+=" kivÈtel"; break;
+        case ClassDef::Exception:  result+=" kiv√©tel"; break;
         default: break;
       }
       if (isTemplate) result+="sablon-";
@@ -613,7 +613,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=" f·jlreferencia"; 
+      result+=" f√°jlreferencia";
       return result;
     }
 
@@ -621,31 +621,31 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" nÈvtÈr-referencia";
+      result+=" n√©vt√©r-referencia";
       return result;
     }
-    
+
     virtual QCString trPublicMembers()
-    { return "Publikus tagf¸ggvÈnyek"; }
+    { return "Publikus tagf√ºggv√©nyek"; }
     virtual QCString trPublicSlots()
-    { return "Publikus rÈsek"; }
+    { return "Publikus r√©sek"; }
     virtual QCString trSignals()
-    { return "Szign·lok"; }
+    { return "Szign√°lok"; }
     virtual QCString trStaticPublicMembers()
-    { return "Statikus publikus tagf¸ggvÈnyek"; }
+    { return "Statikus publikus tagf√ºggv√©nyek"; }
     virtual QCString trProtectedMembers()
-    { return "VÈdett tagf¸ggvÈnyek"; }
+    { return "V√©dett tagf√ºggv√©nyek"; }
     virtual QCString trProtectedSlots()
-    { return "VÈdett rÈsek"; }
+    { return "V√©dett r√©sek"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Statikus vÈdett tagf¸ggvÈnyek"; }
+    { return "Statikus v√©dett tagf√ºggv√©nyek"; }
     virtual QCString trPrivateMembers()
-    { return "Priv·t tagf¸ggvÈnyek"; }
+    { return "Priv√°t tagf√ºggv√©nyek"; }
     virtual QCString trPrivateSlots()
-    { return "Priv·t rÈsek"; }
+    { return "Priv√°t r√©sek"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Statikus priv·t tagf¸ggvÈnyek"; }
-    
+    { return "Statikus priv√°t tagf√ºggv√©nyek"; }
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -654,29 +654,29 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
-            result+=" Ès ";
+            result+=" √©s ";
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return "’sˆk: "+trWriteList(numEntries)+".";
+      return "≈ês√∂k: "+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -684,15 +684,15 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return "Lesz·rmazottak: "+trWriteList(numEntries)+".";
+      return "Lesz√°rmazottak: "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return "⁄jraimplement·lt ısˆk: "+trWriteList(numEntries)+".";
+      return "√öjraimplement√°lt ≈ës√∂k: "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -700,36 +700,36 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return "⁄jraimplement·lÛ lesz·rmazottak: "+trWriteList(numEntries)+".";
+      return "√öjraimplement√°l√≥ lesz√°rmazottak: "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "NÈvtÈrtagok"; }
+    { return "N√©vt√©rtagok"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
-      QCString result="Az ˆsszes ";
-      if (!extractAll) result+="dokument·lt ";
-      result+="nÈvtÈr tagjainak list·ja, valamint hivatkoz·s ";
-      if (extractAll) 
-        result+=" a megfelelı nÈvtÈr dokument·ciÛra minden tagn·l:";
-      else 
-        result+=" a nÈvterekre, amelynek tagjai:";
+    {
+      QCString result="Az √∂sszes ";
+      if (!extractAll) result+="dokument√°lt ";
+      result+="n√©vt√©r tagjainak list√°ja, valamint hivatkoz√°s ";
+      if (extractAll)
+        result+=" a megfelel≈ë n√©vt√©r dokument√°ci√≥ra minden tagn√°l:";
+      else
+        result+=" a n√©vterekre, amelynek tagjai:";
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "NÈvtÈrmutatÛ"; }
+    { return "N√©vt√©rmutat√≥"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "NÈvterek dokument·ciÛja"; }
+    { return "N√©vterek dokument√°ci√≥ja"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -739,7 +739,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return "NÈvterek"; }
+    { return "N√©vterek"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -752,21 +752,21 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Ez a dokument·ciÛ ";
+      QCString result=(QCString)"Ez a dokument√°ci√≥ ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="az oszt·lyrÛl"; break;
-        case ClassDef::Struct:     result+="a strukt˙r·rÛl"; break;
-        case ClassDef::Union:      result+="az uniÛrÛl"; break;
-        case ClassDef::Interface:  result+="az interfÈszrıl"; break;
+        case ClassDef::Class:      result+="az oszt√°lyr√≥l"; break;
+        case ClassDef::Struct:     result+="a strukt√∫r√°r√≥l"; break;
+        case ClassDef::Union:      result+="az uni√≥r√≥l"; break;
+        case ClassDef::Interface:  result+="az interf√©szr≈ël"; break;
         case ClassDef::Protocol:   result+="protocol"; break; // translate me!
         case ClassDef::Category:   result+="category"; break; // translate me!
-        case ClassDef::Exception:  result+="a kivÈtelrıl"; break;
+        case ClassDef::Exception:  result+="a kiv√©telr≈ël"; break;
         default: break;
       }
-      result+=" a kˆvetkezı f·jl";
+      result+=" a k√∂vetkez≈ë f√°jl";
       if (!single) result+="ok";
-      result+=" alapj·n kÈsz¸lt:";
+      result+=" alapj√°n k√©sz√ºlt:";
       return result;
     }
 
@@ -774,7 +774,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return "Bet˚rendes lista"; }
+    { return "Bet≈±rendes lista"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -782,14 +782,14 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return "VisszatÈrÈsi ÈrtÈkek"; }
+    { return "Visszat√©r√©si √©rt√©kek"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "Fıoldal"; }
+    { return "F≈ëoldal"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -801,11 +801,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "DefinÌciÛ a(z) @1 f·jl @0. sor·ban.";
+      return "Defin√≠ci√≥ a(z) @1 f√°jl @0. sor√°ban.";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return "DefinÌciÛ a(z) @0 f·jlban.";
+      return "Defin√≠ci√≥ a(z) @0 f√°jlban.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -824,120 +824,120 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"A"+zed(clName[0])+clName+" oszt·ly egy¸ttm˚kˆdÈsi diagramja:";
+      return (QCString)"A"+zed(clName[0])+clName+" oszt√°ly egy√ºttm≈±k√∂d√©si diagramja:";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"A"+zed(fName[0])+fName+" definÌciÛs f·jl f¸ggÈsi gr·fja:";
+      return (QCString)"A"+zed(fName[0])+fName+" defin√≠ci√≥s f√°jl f√ºgg√©si gr√°fja:";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Konstruktorok Ès destruktorok dokument·ciÛja"; 
+      return "Konstruktorok √©s destruktorok dokument√°ci√≥ja";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return "Ugr·s a f·jl forr·skÛdj·hoz.";
+      return "Ugr√°s a f√°jl forr√°sk√≥dj√°hoz.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return "Ugr·s a f·jl dokument·ciÛj·hoz.";
+      return "Ugr√°s a f√°jl dokument√°ci√≥j√°hoz.";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return "ElıfeltÈtel";
+      return "El≈ëfelt√©tel";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
-      return "UtÛfeltÈtel";
+      return "Ut√≥felt√©tel";
     }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
-      return "Invari·ns";
+      return "Invari√°ns";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return "Kezdı ÈrtÈk:";
+      return "Kezd≈ë √©rt√©k:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return "forr·skÛd";
+      return "forr√°sk√≥d";
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return "Oszt·lyhierarchia-·bra";
+      return "Oszt√°lyhierarchia-√°bra";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "Ugr·s az oszt·lyhierarchia-·br·hoz";
+      return "Ugr√°s az oszt√°lyhierarchia-√°br√°hoz";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "Ugr·s az szˆveges oszt·lyhierarchi·hoz";
+      return "Ugr√°s az sz√∂veges oszt√°lyhierarchi√°hoz";
     }
     virtual QCString trPageIndex()
     {
-      return "OldalmutatÛ";
+      return "Oldalmutat√≥";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
-      return "MegjegyzÈs";
+      return "Megjegyz√©s";
     }
     virtual QCString trPublicTypes()
     {
-      return "Publikus tÌpusok";
+      return "Publikus t√≠pusok";
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Adatmezık";
+        return "Adatmez≈ëk";
       }
       else
       {
-        return "Publikus attrib˙tumok";
+        return "Publikus attrib√∫tumok";
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return "Statikus publikus attrib˙tumok";
+      return "Statikus publikus attrib√∫tumok";
     }
     virtual QCString trProtectedTypes()
     {
-      return "VÈdett tÌpusok";
+      return "V√©dett t√≠pusok";
     }
     virtual QCString trProtectedAttribs()
     {
-      return "VÈdett attrib˙tumok";
+      return "V√©dett attrib√∫tumok";
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return "Statikus vÈdett attrib˙tumok";
+      return "Statikus v√©dett attrib√∫tumok";
     }
     virtual QCString trPrivateTypes()
     {
-      return "Priv·t tÌpusok";
+      return "Priv√°t t√≠pusok";
     }
     virtual QCString trPrivateAttribs()
     {
-      return "Priv·t attrib˙tumok";
+      return "Priv√°t attrib√∫tumok";
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return "Statikus priv·t attrib˙tumok";
+      return "Statikus priv√°t attrib√∫tumok";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -947,12 +947,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! Used as a marker that is put before a todo item */
     virtual QCString trTodo()
     {
-      return "TennivalÛ";
+      return "Tennival√≥";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return "TennivalÛk list·ja";
+      return "Tennival√≥k list√°ja";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -961,11 +961,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 
     virtual QCString trReferencedBy()
     {
-      return "Hivatkoz·sok:";
+      return "Hivatkoz√°sok:";
     }
     virtual QCString trRemarks()
     {
-      return "MegjegyzÈsek";
+      return "Megjegyz√©sek";
     }
     virtual QCString trAttention()
     {
@@ -973,14 +973,14 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     }
     virtual QCString trInclByDepGraph()
     {
-      return "Ez az ·bra azt mutatja, hogy mely f·jlok ·gyazz·k be "
-             "kˆzvetve vagy kˆzvetlen¸l ezt a f·jlt:";
+      return "Ez az √°bra azt mutatja, hogy mely f√°jlok √°gyazz√°k be "
+             "k√∂zvetve vagy k√∂zvetlen√ºl ezt a f√°jlt:";
     }
     virtual QCString trSince()
     {
-      return "Elıszˆr bevezetve";
+      return "El≈ësz√∂r bevezetve";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -988,33 +988,33 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return "Jelmagyar·zat";
+      return "Jelmagyar√°zat";
     }
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      return 
-        "Ez az oldal elmagyar·zza hogyan kell Èrtelmezni a "
-        "doxygen ·ltal kÈszÌtett ·br·kat.<p>\n"
-        "Vegy¸k a kˆvetkezı pÈld·t:\n"
+      return
+        "Ez az oldal elmagyar√°zza hogyan kell √©rtelmezni a "
+        "doxygen √°ltal k√©sz√≠tett √°br√°kat.<p>\n"
+        "Vegy√ºk a k√∂vetkez≈ë p√©ld√°t:\n"
         "\\code\n"
-        "/*! V·g·s miatt nem l·thatÛ oszt·ly */\n"
+        "/*! V√°g√°s miatt nem l√°that√≥ oszt√°ly */\n"
         "class Invisible { };\n\n"
-        "/*! Lev·gott oszt·ly, sz·rmaz·sa rejtett */\n"
+        "/*! Lev√°gott oszt√°ly, sz√°rmaz√°sa rejtett */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* Doxygen kommentekkel nem dokument·lt oszt·ly */\n"
+        "/* Doxygen kommentekkel nem dokument√°lt oszt√°ly */\n"
         "class Undocumented { };\n\n"
-        "/*! Publikus sz·rmaztat·sal levezetett oszt·ly */\n"
+        "/*! Publikus sz√°rmaztat√°sal levezetett oszt√°ly */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! Egy sablonoszt·ly */\n"
+        "/*! Egy sablonoszt√°ly */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! VÈdett sz·rmaztat·sal levezetett oszt·ly */\n"
+        "/*! V√©dett sz√°rmaztat√°sal levezetett oszt√°ly */\n"
         "class ProtectedBase { };\n\n"
-        "/*! Priv·t sz·rmaztat·sal levezetett oszt·ly */\n"
+        "/*! Priv√°t sz√°rmaztat√°sal levezetett oszt√°ly */\n"
         "class PrivateBase { };\n\n"
-        "/*! Oszt·ly, melyet a sz·rmaztatott oszt·ly haszn·l */\n"
+        "/*! Oszt√°ly, melyet a sz√°rmaztatott oszt√°ly haszn√°l */\n"
         "class Used { };\n\n"
-        "/*! Oszt·ly, mely tˆbb m·siknak lesz·rmazottja */\n"
+        "/*! Oszt√°ly, mely t√∂bb m√°siknak lesz√°rmazottja */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -1025,42 +1025,42 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Ha a konfigur·ciÛs f·jl \\c MAX_DOT_GRAPH_HEIGHT elemÈnek ÈrtÈkÈt "
-        "240-re ·llÌtjuk, az eredmÈny a kˆvetkezı ·bra lesz:"
+        "Ha a konfigur√°ci√≥s f√°jl \\c MAX_DOT_GRAPH_HEIGHT elem√©nek √©rt√©k√©t "
+        "240-re √°ll√≠tjuk, az eredm√©ny a k√∂vetkez≈ë √°bra lesz:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "Az ·br·n levı dobozok jelentÈse:\n"
+        "Az √°br√°n lev≈ë dobozok jelent√©se:\n"
         "<ul>\n"
-        "<li>Kitˆltˆtt fekete doboz jelzi azt az oszt·lyt vagy strukt˙r·t,"
-        "amelyrıl az ·bra szÛl.\n"
-        "<li>Fekete keret jelzi a dokument·lt oszt·lyokat Ès strukt˙r·kat.\n"
-        "<li>Sz¸rke keret jelzi a nem dokument·lt oszt·lyokat Ès strukt˙r·kat.\n"
-        "<li>Piros keret jelzi azokat az oszt·lyokat Ès strukt˙r·kat, amelyeknÈl v·g·s miatt nem l·thatÛ "
-        "az ˆsszes lesz·rmaztat·si kapcsolat. Egy ·bra v·g·sra ker¸l, ha nem fÈr bele "
-        "a megadott tartom·nyba."
+        "<li>Kit√∂lt√∂tt fekete doboz jelzi azt az oszt√°lyt vagy strukt√∫r√°t,"
+        "amelyr≈ël az √°bra sz√≥l.\n"
+        "<li>Fekete keret jelzi a dokument√°lt oszt√°lyokat √©s strukt√∫r√°kat.\n"
+        "<li>Sz√ºrke keret jelzi a nem dokument√°lt oszt√°lyokat √©s strukt√∫r√°kat.\n"
+        "<li>Piros keret jelzi azokat az oszt√°lyokat √©s strukt√∫r√°kat, amelyekn√©l v√°g√°s miatt nem l√°that√≥ "
+        "az √∂sszes lesz√°rmaztat√°si kapcsolat. Egy √°bra v√°g√°sra ker√ºl, ha nem f√©r bele "
+        "a megadott tartom√°nyba."
         "</ul>\n"
-        "A nyilak jelentÈse:\n"
+        "A nyilak jelent√©se:\n"
         "<ul>\n"
-        "<li>SˆtÈtkÈk nyÌl jelzi a publikus sz·rmaztat·st.\n"
-        "<li>SˆtÈtzˆld nyÌl jelzi a vÈdett sz·rmaztat·st.\n"
-        "<li>SˆtÈtvˆrˆs nyÌl jelzi a priv·t sz·rmaztat·st.\n"
-        "<li>Lila szaggatott nyÌl jelzi, ha az oszt·ly egy m·sikat haszn·l vagy tartalmaz. "
-        "A nyÌl felirata jelzi a v·ltozÛ(k) nevÈt, amelyeken kereszt¸l a m·sik oszt·ly kapcsolÛdik.\n"
-        "<li>S·rga szaggatott nyÌl jelzi a kapcsolatot a sablonpÈld·ny Ès a pÈld·nyosÌtott "
-        "oszt·lysablon kˆzˆtt. A nyÌl felirata jelzi a pÈl·ny sablonparamÈtereit.\n"
+        "<li>S√∂t√©tk√©k ny√≠l jelzi a publikus sz√°rmaztat√°st.\n"
+        "<li>S√∂t√©tz√∂ld ny√≠l jelzi a v√©dett sz√°rmaztat√°st.\n"
+        "<li>S√∂t√©tv√∂r√∂s ny√≠l jelzi a priv√°t sz√°rmaztat√°st.\n"
+        "<li>Lila szaggatott ny√≠l jelzi, ha az oszt√°ly egy m√°sikat haszn√°l vagy tartalmaz. "
+        "A ny√≠l felirata jelzi a v√°ltoz√≥(k) nev√©t, amelyeken kereszt√ºl a m√°sik oszt√°ly kapcsol√≥dik.\n"
+        "<li>S√°rga szaggatott ny√≠l jelzi a kapcsolatot a sablonp√©ld√°ny √©s a p√©ld√°nyos√≠tott "
+        "oszt√°lysablon k√∂z√∂tt. A ny√≠l felirata jelzi a p√©l√°ny sablonparam√©tereit.\n"
         "</ul>\n";
 
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return "Jelmagyar·zat";
+      return "Jelmagyar√°zat";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1079,7 +1079,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return "DCOP tagf¸ggvÈnyek";
+      return "DCOP tagf√ºggv√©nyek";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1089,12 +1089,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return "Tulajdons·gok";
+      return "Tulajdons√°gok";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "Tulajdons·gok dokument·ciÛjka";
+      return "Tulajdons√°gok dokument√°ci√≥jka";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1110,7 +1110,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
       }
       else
       {
-        return "Oszt·lyok";
+        return "Oszt√°lyok";
       }
     }
     /*! Used as the title of a Java package */
@@ -1126,7 +1126,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "A csomagok rˆvid leÌr·sai (amennyiben lÈteznek):";
+      return "A csomagok r√∂vid le√≠r√°sai (amennyiben l√©teznek):";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
@@ -1136,13 +1136,13 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return "…rtÈk:";
+      return "√ârt√©k:";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1158,9 +1158,9 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1181,15 +1181,15 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "1250";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1200,84 +1200,84 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return "T·rgymutatÛ";
+      return "T√°rgymutat√≥";
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "Oszt·ly" : "oszt·ly"));
+    {
+      QCString result((first_capital ? "Oszt√°ly" : "oszt√°ly"));
       //if (!singular)  result+="es";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "F·jl" : "f·jl"));
+    {
+      QCString result((first_capital ? "F√°jl" : "f√°jl"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "NÈvtÈr" : "nÈvtÈr"));
+    {
+      QCString result((first_capital ? "N√©vt√©r" : "n√©vt√©r"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool /*singular*/)
-    { 
+    {
       QCString result((first_capital ? "Csoport" : "csoport"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool /*singular*/)
-    { 
+    {
       QCString result((first_capital ? "Oldal" : "oldal"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool /*singular*/)
-    { 
+    {
       QCString result((first_capital ? "Tag" : "tag"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "Glob·lis elem" : "glob·lis elem"));
+    {
+      QCString result((first_capital ? "Glob√°lis elem" : "glob√°lis elem"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1287,10 +1287,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
-      QCString result((first_capital ? "Szerzı" : "szerzı"));
+    {
+      QCString result((first_capital ? "Szerz≈ë" : "szerz≈ë"));
       if (!singular)  result+="k";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1301,19 +1301,19 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trReferences()
     {
-      return "Hivatkoz·sok";
+      return "Hivatkoz√°sok";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return "MegvalÛsÌtja a kˆvetkezıket: "+trWriteList(numEntries)+".";
+      return "Megval√≥s√≠tja a k√∂vetkez≈ëket: "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1321,7 +1321,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "MegvalÛsÌtj·k a kˆvetkezık: "+trWriteList(numEntries)+".";
+      return "Megval√≥s√≠tj√°k a k√∂vetkez≈ëk: "+trWriteList(numEntries)+".";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1333,36 +1333,36 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "TartalomjegyzÈk";
+      return "Tartalomjegyz√©k";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
-      return "Ellenjavallt elemek list·ja";
+      return "Ellenjavallt elemek list√°ja";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
     {
-      return "EsemÈnyek";
+      return "Esem√©nyek";
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "EsemÈnyek dokument·ciÛja";
+      return "Esem√©nyek dokument√°ci√≥ja";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1372,79 +1372,79 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
-      return "Csomag tÌpusok";
+    {
+      return "Csomag t√≠pusok";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
-      return "Csomag f¸ggvÈnyek";
+    {
+      return "Csomag f√ºggv√©nyek";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
-      return "Statikus csomag f¸ggvÈnyek";
+    {
+      return "Statikus csomag f√ºggv√©nyek";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
-      return "Csomag attrib˙tumok";
+    {
+      return "Csomag attrib√∫tumok";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
-      return "Statikus csomag attrib˙tumok";
+    {
+      return "Statikus csomag attrib√∫tumok";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
     {
-      return "÷sszes";
+      return "√ñsszes";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "A f¸ggvÈny hÌv·si gr·fja:";
+      return "A f√ºggv√©ny h√≠v√°si gr√°fja:";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
      */
     virtual QCString trSearchForIndex()
     {
-      return "KeresÈsi kulcs";
+      return "Keres√©si kulcs";
     }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
     virtual QCString trSearchResultsTitle()
     {
-      return "A keresÈs eredmÈnye";
+      return "A keres√©s eredm√©nye";
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1452,24 +1452,24 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     {
       if (numDocuments==0)
       {
-        return "Sajnos egy dokumentum sem felelt meg a keresÈsi feltÈteleknek.";
+        return "Sajnos egy dokumentum sem felelt meg a keres√©si felt√©teleknek.";
       }
       else if (numDocuments==1)
       {
-        return "<b>1</b> dokumentum felelt meg a keresÈsi feltÈteleknek.";
+        return "<b>1</b> dokumentum felelt meg a keres√©si felt√©teleknek.";
       }
-      else 
+      else
       {
-        return "<b>$num</b> dokumentum felelt meg a keresÈsi feltÈteleknek."
-               "Elsınek a legjobb tal·latok vannak felt¸ntetve.";
+        return "<b>$num</b> dokumentum felelt meg a keres√©si felt√©teleknek."
+               "Els≈ënek a legjobb tal√°latok vannak felt√ºntetve.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
     {
-      return "Tal·latok:";
+      return "Tal√°latok:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1480,7 +1480,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trSourceFile(QCString& filename)
     {
-      return filename + " Forr·sf·jl";
+      return filename + " Forr√°sf√°jl";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1491,42 +1491,42 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      *  hierarchy.
      */
     virtual QCString trDirIndex()
-    { return "Kˆnyvt·rhierarchia"; }
+    { return "K√∂nyvt√°rhierarchia"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     virtual QCString trDirDocumentation()
-    { return "Kˆnyvt·rak dokument·ciÛja"; }
+    { return "K√∂nyvt√°rak dokument√°ci√≥ja"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
-    { return "Kˆnyvt·rak"; }
+    { return "K√∂nyvt√°rak"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-    { return "Majdnem (de nem teljesen) bet˚rendbe szedett "
-             "kˆnyvt·rhierarchia:";
+    { return "Majdnem (de nem teljesen) bet≈±rendbe szedett "
+             "k√∂nyvt√°rhierarchia:";
     }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const char *dirName)
-    { QCString result=dirName; result+=" kˆnyvt·rreferencia"; return result; }
+    { QCString result=dirName; result+=" k√∂nyvt√°rreferencia"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "Kˆnyvt·r" : "kˆnyvt·r"));
+    {
+      QCString result((first_capital ? "K√∂nyvt√°r" : "k√∂nyvt√°r"));
       //if (singular) result+="y"; else result+="ies";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1538,8 +1538,8 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trOverloadText()
     {
-       return "Ez egy t˙lterhelt tagf¸ggvÈny."
-              "A fenti f¸ggvÈnytıl csak argumentumaiban k¸lˆnbˆzik.";
+       return "Ez egy t√∫lterhelt tagf√ºggv√©ny."
+              "A fenti f√ºggv√©nyt≈ël csak argumentumaiban k√ºl√∂nb√∂zik.";
     }
 };
 

@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,27 +15,27 @@
 
 /******************************************************************************
  * Norwegian translation by Lars Erik Jordet <lejordet@gmail.com>, parts by Frode Nilsen
- * 
+ *
  * This is a new translation made from scratch, not based on my older Norwegian translation (for 1.2.2)
  *
  * Translation notes (in Norwegian)
  *
- * Jeg har stort sett brukt ord som ligger ganske nær de engelske ekvivalentene,
+ * Jeg har stort sett brukt ord som ligger ganske nÃ¦r de engelske ekvivalentene,
  * for eksempel "enumeration" -> "enumerasjon", og i enkelte tilfeller det engelske
- * ordet direkte, der jeg finner det mer naturlig enn å prøve å stable en setning
- * på beina på norsk, eller jeg selv foretrekker det engelske ordet (eks: "Header-fil").
- * Om noen ikke skulle like disse valgene, kontakt meg på mailadressen over.
+ * ordet direkte, der jeg finner det mer naturlig enn Ã¥ prÃ¸ve Ã¥ stable en setning
+ * pÃ¥ beina pÃ¥ norsk, eller jeg selv foretrekker det engelske ordet (eks: "Header-fil").
+ * Om noen ikke skulle like disse valgene, kontakt meg pÃ¥ mailadressen over.
  *
- * Doxygen har mange strings som består av sammensatte ord ("Member function description", for eksempel),
- * som ikke alltid ser like ryddig ut på norsk. Jeg har brukt bindestrek for å få
- * det til å se presentabelt ut, men om noen har en bedre idé, send til mailadressen over.
+ * Doxygen har mange strings som bestÃ¥r av sammensatte ord ("Member function description", for eksempel),
+ * som ikke alltid ser like ryddig ut pÃ¥ norsk. Jeg har brukt bindestrek for Ã¥ fÃ¥
+ * det til Ã¥ se presentabelt ut, men om noen har en bedre idÃ©, send til mailadressen over.
  *
  * 2006-03-06:
- * Jeg bruker ikke doxygen selv lenger, så det går nok litt i lengste laget mellom oppdateringer...
+ * Jeg bruker ikke doxygen selv lenger, sÃ¥ det gÃ¥r nok litt i lengste laget mellom oppdateringer...
  *
  * Changelog
  *
- * 2003-12-18: Initial translation 
+ * 2003-12-18: Initial translation
  * 2004-07-19: Fixup to prepare for 1.3.8 (I had forgotten some functions)
  * 2006-03-06: Added a .diff from Frode Nilsen, now compatible with 1.4.6.
  */
@@ -48,19 +48,19 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
   public:
 
     // --- Language control methods -------------------
-    
-    /*! Used for identification of the language. The identification 
-     * should not be translated. It should be replaced by the name 
+
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
      * of the language in English using lower-case characters only
-     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to 
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
     { return "norwegian"; }
-    
-    /*! Used to get the LaTeX command(s) for the language support. 
+
+    /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
-     *  LaTeX to the desired language.  For example 
+     *  LaTeX to the desired language.  For example
      *  <pre>"\\usepackage[german]{babel}\n"
      *  </pre>
      *  or
@@ -79,7 +79,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "iso-8859-1";
+      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -99,7 +99,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Medlemstypedef-dokumentasjon"; }
-    
+
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
     { return "Medlemsenumerasjon-dokumentasjon"; }
@@ -107,22 +107,22 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
     { return "Medlemsfunksjon-dokumentasjon"; }
-    
+
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Feltdokumentasjon"; 
+        return "Feltdokumentasjon";
       }
       else
       {
-        return "Medlemsdata-dokumentasjon"; 
+        return "Medlemsdata-dokumentasjon";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore() 
+    virtual QCString trMore()
     { return "Mer..."; }
 
     /*! put in the class documentation */
@@ -140,14 +140,14 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return ", alle arvede medlemmer inkludert."; }
-    
+
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Generert automatisk av Doxygen";
       if (s) result+=(QCString)" for "+s;
-      result+=" fra kildekoden."; 
+      result+=" fra kildekoden.";
       return result;
     }
 
@@ -158,36 +158,36 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
     { return "enum-verdi"; }
-    
+
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
     { return "definert i"; }
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Moduler"; }
-    
+
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
     { return "Klassehierarki"; }
-    
+
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Datastrukturer";
       }
       else
       {
-        return "Klasseliste"; 
+        return "Klasseliste";
       }
     }
-    
+
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "Fil-liste"; }
@@ -198,27 +198,27 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Datafelt"; 
+        return "Datafelt";
       }
       else
       {
-        return "Klassemedlemmer"; 
+        return "Klassemedlemmer";
       }
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Globale"; 
+        return "Globale";
       }
       else
       {
-        return "Filmedlemmer"; 
+        return "Filmedlemmer";
       }
     }
 
@@ -232,12 +232,12 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return "Søk"; }
+    { return "SÃ¸k"; }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
     { return "Denne arvelisten er grovsortert alfabetisk "
-             "(ikke nødvendigvis korrekt):";
+             "(ikke nÃ¸dvendigvis korrekt):";
     }
 
     /*! This is an introduction to the list with all files. */
@@ -251,8 +251,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { 
-      
+    {
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
 	return "Her er datastrukturene med korte beskrivelser:";
@@ -281,7 +281,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         result+="klassemedlemmer";
       }
       result+=" med koblinger til ";
-      if (!extractAll) 
+      if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -292,15 +292,15 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 	  result+="klassedokumentasjonen for hvert medlem:";
         }
       }
-      else 
+      else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-	  result+="struct'ene/unionene de hører til:";
+	  result+="struct'ene/unionene de hÃ¸rer til:";
         }
         else
         {
-	  result+="klassene de hører til:";
+	  result+="klassene de hÃ¸rer til:";
         }
       }
       return result;
@@ -310,7 +310,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       QCString result="Her er en liste over alle ";
       if (!extractAll) result+="dokumenterte ";
-      
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="funksjoner, variabler, definisjoner, enum'er, og typedef'er";
@@ -320,16 +320,16 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         result+="filmedlemmer";
       }
       result+=" med koblinger til ";
-      if (extractAll) 
-        result+="filene de hører til:";
-      else 
+      if (extractAll)
+        result+="filene de hÃ¸rer til:";
+      else
         result+="dokumentasjonen:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all header files. */
     virtual QCString trHeaderFilesDescription()
-    { return "Her er alle header-filene som utgjør API'et:"; }
+    { return "Her er alle header-filene som utgjÃ¸r API'et:"; }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
@@ -344,37 +344,37 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     { return "Her er en liste over alle moduler:"; }
 
     /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
+     * description is given.
      */
     virtual QCString trNoDescriptionAvailable()
     { return "Ingen beskrivelse tilgjengelig"; }
-    
-    // index titles (the project name is prepended for these) 
+
+    // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Dokumentasjon"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return "Modulindeks"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return "Hierarkisk indeks"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
+      {
         return "Datastrukturindeks";
       }
       else
@@ -386,7 +386,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "Filindeks"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
@@ -399,14 +399,14 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Datastrukturdokumentasjon";
       }
       else
       {
-        return "Klassedokumentasjon"; 
+        return "Klassedokumentasjon";
       }
     }
 
@@ -431,111 +431,111 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Referansemanual"; }
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return "Definisjoner"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
     { return "Funksjonprototyper"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
     { return "Typedef'er"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
     { return "Enumerasjoner"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return "Funksjoner"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return "Variabler"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
     { return "Enumerasjonsverdier"; }
-    
+
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
     { return "Define-dokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
     { return "Funksjonsprototypedokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
     { return "Typedef-dokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Enumerasjontype dokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
     { return "Enumerasjonsverdi dokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return "Funksjonsdokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return "Variabeldokumentasjon"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Datastrukturer"; 
+        return "Datastrukturer";
       }
       else
       {
-        return "Klasser"; 
+        return "Klasser";
       }
     }
 
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result=(QCString)"Generert "+date;
       if (projName) result+=(QCString)" for "+projName;
       result+=(QCString)" av";
@@ -553,14 +553,14 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return (QCString)"Arvediagram for "+clName+":";
     }
-    
+
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return "Kun for intern bruk."; }
 
     /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplementert av interne grunner; API er ikke påvirket."; }
+    { return "Reimplementert av interne grunner; API er ikke pÃ¥virket."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -584,7 +584,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "Se også"; }
+    { return "Se ogsÃ¥"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
@@ -593,7 +593,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return "Unntak"; }
-    
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return "Generert av"; }
@@ -601,7 +601,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
     { return "Navneromsliste"; }
@@ -620,17 +620,17 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trFriends()
     { return "Venner"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return "Venner og relatert funksjonsdokumentasjon"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -672,7 +672,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       result+=" navneromsreferanse";
       return result;
     }
-    
+
     virtual QCString trPublicMembers()
     { return "Public medlemsfunksjoner"; }
     virtual QCString trPublicSlots()
@@ -693,7 +693,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     { return "Private slots"; }
     virtual QCString trStaticPrivateMembers()
     { return "Statiske private medlemsfunksjoner"; }
-    
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -702,23 +702,23 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=", og ";
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -735,7 +735,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       return "Arvet av "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
@@ -757,17 +757,17 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Her er en liste over alle ";
       if (!extractAll) result+="dokumenterte ";
       result+="navneromsmedlemmer med koblinger til ";
-      if (extractAll) 
+      if (extractAll)
         result+="navneromsdokumentasjonen for hvert medlem:";
-      else 
-        result+="navnerommet de hører til:";
+      else
+        result+="navnerommet de hÃ¸rer til:";
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -812,7 +812,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         case ClassDef::Category:   result+="denne category"; break;
         default: break;
       }
-      result+=" ble generert fra følgende fil";
+      result+=" ble generert fra fÃ¸lgende fil";
       if (single) result+=":"; else result+="er:";
       return result;
     }
@@ -836,7 +836,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trMainPage()
     { return "Hovedside"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -852,7 +852,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "Definisjon på linje @0 i filen @1.";
+      return "Definisjon pÃ¥ linje @0 i filen @1.";
     }
     virtual QCString trDefinedInSourceFile()
     {
@@ -886,22 +886,22 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Konstruktør- & destruktør-dokumentasjon";
+      return "KonstruktÃ¸r- & destruktÃ¸r-dokumentasjon";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return "Gå til kildekoden til denne filen.";
+      return "GÃ¥ til kildekoden til denne filen.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return "Gå til dokumentasjonen til denne filen.";
+      return "GÃ¥ til dokumentasjonen til denne filen.";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return "Forhåndsbetingelse";
+      return "ForhÃ¥ndsbetingelse";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
@@ -929,11 +929,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "Gå til det grafiske klasse hierarkiet";
+      return "GÃ¥ til det grafiske klasse hierarkiet";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "Gå til tekst-klassehierarki";
+      return "GÃ¥ til tekst-klassehierarki";
     }
     virtual QCString trPageIndex()
     {
@@ -943,7 +943,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
       return "Notat";
@@ -1032,7 +1032,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "Siden";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -1045,17 +1045,17 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      return 
+      return
 	"Denne siden forklarer hvordan man tolker grafene doxygen genererer.<p>\n"
-	"Vi baserer oss på følgende eksempel:\n"
-        "\\code\n" 
-        "/*! Usynlig klasse pga. trunkasjon */\n" 
-        "class Invisible { };\n\n" 
+	"Vi baserer oss pÃ¥ fÃ¸lgende eksempel:\n"
+        "\\code\n"
+        "/*! Usynlig klasse pga. trunkasjon */\n"
+        "class Invisible { };\n\n"
         "/*! Trunkert klasse, arve-relasjon er skjult */\n"
-        "class Truncated : public Invisible { };\n\n" 
+        "class Truncated : public Invisible { };\n\n"
         "/* Klasse som ikke er dokumentert med doxygen-kommentarer */"
-        "class Undocumented { };\n\n" 
-        "/*! Klasse med public-arv */\n" 
+        "class Undocumented { };\n\n"
+        "/*! Klasse med public-arv */\n"
         "class PublicBase : public Truncated { };\n\n"
         "/*! A template class */\n"
         "template<class T> class Templ { };\n\n"
@@ -1063,7 +1063,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         "class ProtectedBase { };\n\n"
         "/*! Klasse med private-arv */\n"
         "class PrivateBase { };\n\n"
-        "/*! Klasse som blir brukt av klassen Inherited */\n" 
+        "/*! Klasse som blir brukt av klassen Inherited */\n"
         "class Used { };\n\n"
         "/*! Super-klasse som arver flere andre klasser */\n"
         "class Inherited : public PublicBase,\n"
@@ -1075,26 +1075,26 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         "  private:\n"
         "    Used *m_usedClass;\n"
         "};\n"
-        "\\endcode\n" 
+        "\\endcode\n"
         "Hvis \\c MAX_DOT_GRAPH_HEIGHT er satt til 200 i "
-        "konfigurasjonsfila vil dette resultere i følgende graf:"
+        "konfigurasjonsfila vil dette resultere i fÃ¸lgende graf:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "Boksene i grafen over betyr følgende:\n"
+        "Boksene i grafen over betyr fÃ¸lgende:\n"
         "<ul>\n"
         "<li>En fylt svart boks representerer klassen grafen "
         "er generert for.\n"
 	"<li>En boks med svart ramme angir en dokumentert struct eller klasse.\n"
-	"<li>En boks med grå ramme angir en udokumentert struct eller klasse.\n"
-	"<li>En boks med rød ramme angir en dokumentert struct eller klasse "
+	"<li>En boks med grÃ¥ ramme angir en udokumentert struct eller klasse.\n"
+	"<li>En boks med rÃ¸d ramme angir en dokumentert struct eller klasse "
 	"der ikke alle relasjoner er vist. En graf blir trunkert om den ikke "
 	"passer innenfor de spesifiserte rammene.\n"
 	"</ul>\n"
-	"Pilene i grafen har følgende betydning:\n"
+	"Pilene i grafen har fÃ¸lgende betydning:\n"
 	"</ul>\n"
-	"<li>En mørk blå pil brukes til å visualisere public-arv mellom to klasser.\n"
-	"<li>En mørk grønn pil brukes for protected-arv.\n"
-	"<li>En mørk rød pil angir private-arv.\n"
+	"<li>En mÃ¸rk blÃ¥ pil brukes til Ã¥ visualisere public-arv mellom to klasser.\n"
+	"<li>En mÃ¸rk grÃ¸nn pil brukes for protected-arv.\n"
+	"<li>En mÃ¸rk rÃ¸d pil angir private-arv.\n"
 	"<li>En stiplet lilla pil angir at en klasse er inkludert eller brukt "
 	"i en annen klasse. Pilen er merket med variablen(e) klassen "
 	"er tilgjengelig gjennom.\n"
@@ -1105,11 +1105,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "symbolforklaring";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1197,11 +1197,11 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "Verdi:";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1217,9 +1217,9 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1240,15 +1240,15 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "1252";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1261,93 +1261,93 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     {
       return "Indeks";
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Klasse" : "klasse"));
       if (!singular)  result+="r";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Fil" : "fil"));
       if (!singular)  result+="er";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Navnerom" : "navnerom"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Gruppe" : "gruppe"));
       if (!singular)  result+="r";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Side" : "side"));
       if (!singular)  result+="r";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Medlem" : "medlem"));
       if (!singular)  result+="mer";
-      return result; 
-    }
-   
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Felt" : "felt"));
-      if (!singular)  result+="";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Felt" : "felt"));
+      if (!singular)  result+="";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Global" : "global"));
       if (!singular)  result+="e";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1357,10 +1357,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       QCString result((first_capital ? "Forfatter" : "forfatter"));
       if (!singular)  result+="e";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1378,7 +1378,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1410,8 +1410,8 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1422,7 +1422,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
@@ -1442,43 +1442,43 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Pakketyper";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Pakkefunksjoner";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Statiske Pakkefunksjoner";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Pakkeattributter";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Statiske Pakkeattributter";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1495,26 +1495,26 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
      */
     virtual QCString trSearchForIndex()
     {
-      return "Søk etter";
+      return "SÃ¸k etter";
     }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
     virtual QCString trSearchResultsTitle()
     {
-      return "Søkeresultater";
+      return "SÃ¸keresultater";
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1526,15 +1526,15 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       }
       else if (numDocuments==1)
       {
-        return "Fant <b>ett</b> dokument som passet ditt søk.";
+        return "Fant <b>ett</b> dokument som passet ditt sÃ¸k.";
       }
-      else 
+      else
       {
-        return "Fant <b>$num</b> dokumenter som passet ditt søk. "
-               "Viser beste treff først.";
+        return "Fant <b>$num</b> dokumenter som passet ditt sÃ¸k. "
+               "Viser beste treff fÃ¸rst.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1575,12 +1575,12 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trDirectories()
     { return "Kataloger"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
     { return "Denne katalogen er grovsortert alfabetisk "
-             "(ikke nødvendigvis korrekt).";
+             "(ikke nÃ¸dvendigvis korrekt).";
     }
 
     /*! This returns the title of a directory page. The name of the
@@ -1593,10 +1593,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Katalog" : "katalog"));
       if (!singular) result+="er";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
