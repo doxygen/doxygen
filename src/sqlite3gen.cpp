@@ -97,7 +97,7 @@ const char *i_q_derivedcompoundref="INSERT OR REPLACE INTO  derivedcompoundref "
 static sqlite3_stmt *i_s_derivedcompoundref=0;
 //////////////////////////////////////////////////////
 
-const char * schema_queries[][2] = 
+const char * schema_queries[][2] =
 {
   {
     "compounddef",
@@ -240,7 +240,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def);
 static void bindTextParameter(sqlite3_stmt *stmt,const char *name,const char *value)
 {
   int idx = sqlite3_bind_parameter_index(stmt, name);
-  sqlite3_bind_text(id_s_files, idx, value, -1, SQLITE_STATIC);
+  sqlite3_bind_text(stmt, idx, value, -1, SQLITE_STATIC);
 }
 
 static void bindIntParameter(sqlite3_stmt *stmt,const char *name,int value)
@@ -253,9 +253,9 @@ static int step(sqlite3 *db, sqlite3_stmt *stmt,bool getRowId=FALSE)
 {
   int id=-1;
   int rc = sqlite3_step(stmt);
-  if (rc!=SQLITE_DONE && rc!=SQLITE_ROW) 
+  if (rc!=SQLITE_DONE && rc!=SQLITE_ROW)
   {
-    msg("failed count files: %s\n", sqlite3_errmsg(db));
+    msg("sqlite3_step failed: %s\n", sqlite3_errmsg(db));
   }
   if (getRowId) id = sqlite3_column_int(stmt, 0);
   sqlite3_reset(stmt);
@@ -278,10 +278,10 @@ static int insertFile(sqlite3 *db, const char* name)
 {
   int id=-1;
   if (name==0) return -1;
-  // see if it's already in DB
 
+  // see if it's already in DB
   bindTextParameter(id_s_files,":name",name);
-  id=step(db,i_s_files,TRUE);
+  id=step(db,id_s_files,TRUE);
   if (id==0)
   {
     // insert it
@@ -479,67 +479,67 @@ static int prepareStatements(sqlite3 *db)
 {
   int rc;
   rc = sqlite3_prepare_v2(db,id_q_memberdef,-1,&id_s_memberdef,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n", id_q_memberdef, sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,id_q_files,-1,&id_s_files,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n", id_q_files, sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,i_q_files,-1,&i_s_files,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n",i_q_files,sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,i_q_xrefs,-1,&i_s_xrefs,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n", i_q_xrefs, sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db, i_q_innerclass, -1, &i_s_innerclass, 0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n", i_q_innerclass, sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,i_q_memberdef,-1,&i_s_memberdef,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n",i_q_memberdef,sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,i_q_compounddef,-1,&i_s_compounddef,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n",i_q_compounddef,sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,i_q_basecompoundref,-1,&i_s_basecompoundref,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n",i_q_basecompoundref,sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db,i_q_derivedcompoundref,-1,&i_s_derivedcompoundref,0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n",i_q_derivedcompoundref,sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db, i_q_includes, -1, &i_s_includes, 0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n", i_q_includes, sqlite3_errmsg(db));
     return -1;
   }
   rc = sqlite3_prepare_v2(db, c_q_includes, -1, &c_s_includes, 0);
-  if (rc!=SQLITE_OK) 
+  if (rc!=SQLITE_OK)
   {
     msg("prepare failed for %s\n%s\n", c_q_includes, sqlite3_errmsg(db));
     return -1;
@@ -566,25 +566,25 @@ static void pragmaTuning(sqlite3 *db)
   sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &sErrMsg);
 }
 
-static void initializeSchema(sqlite3* db) 
+static void initializeSchema(sqlite3* db)
 {
   int rc;
   sqlite3_stmt *stmt = 0;
 
   msg("Initializing DB schema...\n");
-  for (unsigned int k = 0; k < sizeof(schema_queries) / sizeof(schema_queries[0]); k++) 
+  for (unsigned int k = 0; k < sizeof(schema_queries) / sizeof(schema_queries[0]); k++)
   {
     //const char *tname = schema_queries[k][0];
     const char *q = schema_queries[k][1];
     // create table
     rc = sqlite3_prepare_v2(db, q, -1, &stmt, 0);
-    if (rc != SQLITE_OK) 
+    if (rc != SQLITE_OK)
     {
       msg("failed to prepare query: %s\n\t%s\n", q, sqlite3_errmsg(db));
       exit(-1);
     }
     rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE) 
+    if (rc != SQLITE_DONE)
     {
       msg("failed to execute query: %s\n\t%s\n", q, sqlite3_errmsg(db));
       exit(-1);
@@ -880,16 +880,16 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     case MemberType_Signal:   // fall through
     case MemberType_Friend:   // fall through
     case MemberType_DCOP:     // fall through
-    case MemberType_Slot:        
-      isFunc=TRUE; 
+    case MemberType_Slot:
+      isFunc=TRUE;
       break;
-    default: 
+    default:
       break;
   }
   if (isFunc)
   {
     ArgumentList *al = md->argumentList();
-    if (al!=0 && al->constSpecifier) 
+    if (al!=0 && al->constSpecifier)
     {
       bindIntParameter(i_s_memberdef,":const",al->constSpecifier);
     }
@@ -940,17 +940,17 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     stripQualifiers(typeStr);
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,typeStr);
-    if (typeStr.data()) 
+    if (typeStr.data())
     {
       bindTextParameter(i_s_memberdef,":type",typeStr);
     }
 
-    if (md->definition()) 
+    if (md->definition())
     {
       bindTextParameter(i_s_memberdef,":definition",md->definition());
     }
 
-    if (md->argsString()) 
+    if (md->argsString())
     {
       bindTextParameter(i_s_memberdef,":argsstring",md->argsString());
     }
@@ -1019,7 +1019,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
           linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->type);
 
           QCString *s=l.first();
-          while (s) 
+          while (s)
           {
             insertMemberReference(db,md->anchor().data(),s->data(),def->getDefFileName().data(),md->getDefLine(),1);
             s=l.next();
@@ -1075,12 +1075,12 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
     QCString *s=l.first();
-    while (s) 
+    while (s)
     {
       DBG_CTX(("initializer:%s %s %s %d\n",
               md->anchor().data(),
-              s->data(), 
-              md->getBodyDef()->getDefFileName().data(), 
+              s->data(),
+              md->getBodyDef()->getDefFileName().data(),
               md->getStartBodyLine()));
       insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
       s=l.next();
@@ -1093,7 +1093,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->excpString());
   }
 #endif
-  if ( md->getScopeString() ) 
+  if ( md->getScopeString() )
   {
     bindTextParameter(i_s_memberdef,":scope",md->getScopeString());
   }
@@ -1102,13 +1102,13 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   if (md->getDefLine() != -1)
   {
     int id_file = insertFile(db,md->getDefFileName());
-    if (id_file!=-1) 
+    if (id_file!=-1)
     {
       bindIntParameter(i_s_memberdef,":id_file",id_file);
       bindIntParameter(i_s_memberdef,":line",md->getDefLine());
       bindIntParameter(i_s_memberdef,":column",md->getDefColumn());
 
-      if (md->getStartBodyLine()!=-1) 
+      if (md->getStartBodyLine()!=-1)
       {
         int id_bfile = insertFile(db,md->getBodyDef()->absFilePath());
         if (id_bfile == -1) exit(-1);
@@ -1251,7 +1251,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       bindIntParameter(c_s_includes,":local",ii->local);
       bindTextParameter(c_s_includes,":name",nm);
       int count=step(db,c_s_includes,TRUE);
-      if ( count==0 ) 
+      if ( count==0 )
       {
         bindTextParameter(i_s_includes,":refid",ii->fileDef->getOutputFileBase());
         bindIntParameter(i_s_includes,":local",ii->local);
@@ -1302,7 +1302,7 @@ void generateSqlite3()
   sqlite3 *db;
   sqlite3_initialize();
   int rc = sqlite3_open_v2(outputDirectory+"/doxygen_sqlite3.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, 0);
-  if (rc != SQLITE_OK) 
+  if (rc != SQLITE_OK)
   {
     sqlite3_close(db);
     msg("database open failed: %s\n", "doxygen_sqlite3.db");
