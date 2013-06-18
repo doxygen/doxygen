@@ -255,7 +255,7 @@ static int step(sqlite3 *db, sqlite3_stmt *stmt,bool getRowId=FALSE)
   int rc = sqlite3_step(stmt);
   if (rc!=SQLITE_DONE && rc!=SQLITE_ROW) 
   {
-    msg("failed count files: %s\n", sqlite3_errmsg(db));
+    msg("sqlite3_step failed: %s\n", sqlite3_errmsg(db));
   }
   if (getRowId) id = sqlite3_column_int(stmt, 0);
   sqlite3_reset(stmt);
