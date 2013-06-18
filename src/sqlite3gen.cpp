@@ -240,7 +240,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def);
 static void bindTextParameter(sqlite3_stmt *stmt,const char *name,const char *value)
 {
   int idx = sqlite3_bind_parameter_index(stmt, name);
-  sqlite3_bind_text(id_s_files, idx, value, -1, SQLITE_STATIC);
+  sqlite3_bind_text(stmt, idx, value, -1, SQLITE_STATIC);
 }
 
 static void bindIntParameter(sqlite3_stmt *stmt,const char *name,int value)
@@ -278,10 +278,10 @@ static int insertFile(sqlite3 *db, const char* name)
 {
   int id=-1;
   if (name==0) return -1;
-  // see if it's already in DB
 
+  // see if it's already in DB
   bindTextParameter(id_s_files,":name",name);
-  id=step(db,i_s_files,TRUE);
+  id=step(db,id_s_files,TRUE);
   if (id==0)
   {
     // insert it
