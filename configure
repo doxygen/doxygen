@@ -421,7 +421,7 @@ fi
 if test "$f_sqlite3" = YES; then
   printf "  Checking for sqlite3 ... "
   sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
-  sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
+  sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu"
   sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
   sqlite3_hdr=NO
   sqlite3_lib=NO
@@ -435,7 +435,7 @@ if test "$f_sqlite3" = YES; then
   for i in $sqlite3_lib_dir; do
     if test "$sqlite3_lib" = NO; then
       for j in $sqlite3_lib_name; do
-        if test -f "$i/$j"; then
+        if test -e "$i/$j"; then
           sqlite3_lib="$i/$j"
           sqlite3_link="-L $i -lsqlite3"
           break
