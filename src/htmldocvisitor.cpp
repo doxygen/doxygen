@@ -417,6 +417,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
     case DocVerbatim::Code: 
@@ -426,6 +427,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
                             ->parseCode(m_ci,
                                         s->context(),
                                         s->text(),
+                                        langExt,
                                         s->isExample(),
                                         s->exampleFile(),
                                         0,     // fileDef
@@ -526,6 +528,7 @@ void HtmlDocVisitor::visit(DocAnchor *anc)
 void HtmlDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::Include: 
@@ -535,6 +538,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                             ->parseCode(m_ci,                 
                                         inc->context(),
                                         inc->text(),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile(),
                                         0,     // fileDef
@@ -558,6 +562,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                ->parseCode(m_ci,
                                            inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
                                            &fd,   // fileDef,
@@ -592,6 +597,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                ->parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), 
                                            0,
@@ -619,6 +625,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide=TRUE;
   }
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
@@ -629,6 +636,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
                                 m_ci,
                                 op->context(),
                                 op->text(),
+                                langExt,
                                 op->isExample(),
                                 op->exampleFile(),
                                 0,     // fileDef

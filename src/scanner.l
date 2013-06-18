@@ -45,10 +45,6 @@
 
 #include "clangparser.h"
 
-// Toggle for some debugging info
-#define DBG_CTX(x) fprintf x
-//#define DBG_CTX(x) do { } while(0)
-
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 
@@ -526,7 +522,6 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
       oldStyleArgName=current->args.copy().stripWhiteSpace();
     }
   }
-  DBG_CTX((stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data()));
 }
 
 //-----------------------------------------------------------------------------
@@ -4656,7 +4651,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else if (checkForKnRstyleC())
 					  {
-					    DBG_CTX((stderr,"===> got a K&R style function\n"));
                                             current->args = yytext; 
 					    oldStyleArgType.resize(0);
 					    BEGIN(OldStyleArgs);
@@ -6827,6 +6821,7 @@ void CLanguageScanner::parseInput(const char *fileName,
 void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    const char * scopeName,
                    const QCString & input,
+                   SrcLangExt lang,
                    bool isExampleBlock,
                    const char * exampleName,
                    FileDef * fileDef,
@@ -6838,7 +6833,7 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    Definition *searchCtx
                   )
 {
-  ::parseCCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+  ::parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
                fileDef,startLine,endLine,inlineFragment,memberDef,
 	       showLineNumbers,searchCtx);
 }

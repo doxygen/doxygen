@@ -112,6 +112,9 @@ static int           g_memCallContext;
 static int	     g_lastCContext;
 
 static bool          g_insideObjC;
+static bool          g_insideJava;
+static bool          g_insideCS;
+static bool          g_insidePHP;
 static bool          g_insideProtocolList;
 
 static bool          g_lexInit = FALSE;
@@ -863,7 +866,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     }
 
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	            md->getBodyDef() : md->getOuterScope();
+	            md->getFileDef() : md->getOuterScope();
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
@@ -927,7 +930,14 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
   {
     className+="-p";
   }
-  className = substitute(className,"\\","::"); // for PHP namespaces
+  if (g_insidePHP)
+  {
+    className = substitute(className,"\\","::"); // for PHP namespaces
+  }
+  else if (g_insideCS || g_insideJava)
+  {
+    className = substitute(className,".","::"); // for PHP namespaces
+  }
   ClassDef *cd=0,*lcd=0;
   MemberDef *md=0;
   bool isLocal=FALSE;
@@ -1000,7 +1010,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     if (md)
     {
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-                      md->getBodyDef() : md->getOuterScope();
+                      md->getFileDef() : md->getOuterScope();
       if (md->getGroupDef()) d = md->getGroupDef();
       if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
       {
@@ -1098,7 +1108,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   g_theCallContext.setClass(typeClass);
 
   Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
-    xmd->getBodyDef() : xmd->getOuterScope();
+                   xmd->getFileDef() : xmd->getOuterScope();
   if (xmd->getGroupDef()) xd = xmd->getGroupDef();
   if (xd && xd->isLinkable())
   {
@@ -1747,8 +1757,10 @@ static int yyread(char *buf,int max_size)
 B       [ \t]
 BN      [ \t\n\r]
 ID	"$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
-SEP      ("::"|"\\")
+SEP     ("::"|"\\")
+SEPCS   (".")
 SCOPENAME ({SEP}{BN}*)?({ID}{BN}*{SEP}{BN}*)*("~"{BN}*)?{ID}
+SCOPENAMECS ({SEPCS}{BN}*)?({ID}{BN}*{SEPCS}{BN}*)*("~"{BN}*)?{ID}
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
@@ -2492,12 +2504,38 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
+<Body>{SCOPENAMECS}/{BN}*[;,)\]]	{ // "int var;" or "var, var2" or "debug(f) macro" 
+                                          if (!g_insideCS && !g_insideJava)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+					    addType();
+					    // changed this to generateFunctionLink, see bug 624514
+					    //generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
+					    generateFunctionLink(*g_code,yytext);
+  					    g_name+=yytext; 
+                                          }
+                                        }
 <Body>{SCOPENAME}/{BN}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
 					  addType();
 					  // changed this to generateFunctionLink, see bug 624514
 					  //generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
 					  generateFunctionLink(*g_code,yytext);
   					  g_name+=yytext; 
+					}
+<Body>{SCOPENAMECS}/{B}* 		{ // p->func()
+                                          if (!g_insideCS && !g_insideJava)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+					    addType();
+					    generateClassOrGlobalLink(*g_code,yytext);
+  					    g_name+=yytext; 
+                                          }
 					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()
 					  addType();
@@ -3514,7 +3552,7 @@ void resetCCodeParserState()
 }
 
 void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s, 
-                  bool exBlock, const char *exName,FileDef *fd,
+                  SrcLangExt lang,bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
 		  MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx)
 {
@@ -3562,11 +3600,13 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
+  g_insideObjC = lang==SrcLangExt_ObjC;
+  g_insideJava = lang==SrcLangExt_Java;
+  g_insideCS   = lang==SrcLangExt_CSharp;
+  g_insidePHP  = lang==SrcLangExt_PHP;
   if (g_sourceFileDef) 
   {
     setCurrentDoc("l00001");
-    g_insideObjC = g_sourceFileDef->name().lower().right(2)==".m" || 
-                   g_sourceFileDef->name().lower().right(3)==".mm"; 
   }
   g_currentDefinition = 0;
   g_currentMemberDef = 0;

@@ -232,6 +232,7 @@ class DefineManager
     Define *isDefined(const char *name) const
     {
       Define *d = m_contextDefines.find(name);
+      if (d && d->undef) d=0;
       //printf("isDefined(%s)=%p\n",name,d);
       return d;
     }

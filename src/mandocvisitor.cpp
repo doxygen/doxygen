@@ -193,14 +193,21 @@ void ManDocVisitor::visit(DocStyleChange *s)
 void ManDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch (s->type())
   {
     case DocVerbatim::Code: // fall though
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      Doxygen::parserManager->getParser(0/*TODO*/)
+      Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),
+                                        langExt,
                                         s->isExample(),s->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
@@ -240,6 +247,7 @@ void ManDocVisitor::visit(DocAnchor *)
 void ManDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
@@ -252,6 +260,7 @@ void ManDocVisitor::visit(DocInclude *inc)
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          if (!m_firstCol) m_t << endl;
@@ -266,7 +275,9 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << ".nf" << endl;
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text(),inc->isExample(),
+                                        inc->text(),
+                                        langExt,
+                                        inc->isExample(),
                                         inc->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
@@ -295,6 +306,7 @@ void ManDocVisitor::visit(DocInclude *inc)
                             ->parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile()
                                        );
@@ -308,6 +320,7 @@ void ManDocVisitor::visit(DocInclude *inc)
 
 void ManDocVisitor::visit(DocIncOperator *op)
 {
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
@@ -326,8 +339,8 @@ void ManDocVisitor::visit(DocIncOperator *op)
     popEnabled();
     if (!m_hide) 
     {
-      Doxygen::parserManager->getParser(0/*TODO*/)
-                            ->parseCode(m_ci,op->context(),op->text(),
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();

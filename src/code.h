@@ -18,6 +18,8 @@
 #ifndef CODE_H
 #define CODE_H
 
+#include "types.h"
+
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;
@@ -25,7 +27,7 @@ class QCString;
 class Definition;
 
 void parseCCode(CodeOutputInterface &,const char *,const QCString &, 
-            bool ,const char *,FileDef *fd,
+            SrcLangExt lang, bool isExample, const char *exName,FileDef *fd,
             int startLine,int endLine,bool inlineFragment,
             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx);
 void resetCCodeParserState();

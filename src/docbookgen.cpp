@@ -370,11 +370,13 @@ static void writeDocbookDocBlock(FTextStream &t,
 void writeDocbookCodeBlock(FTextStream &t,FileDef *fd)
 {
   ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
+  SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
   pIntf->resetCodeParserState();
   DocbookCodeGenerator *docbookGen = new DocbookCodeGenerator(t);
   pIntf->parseCode(*docbookGen,  // codeOutIntf
       0,           // scopeName
       fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+      langExt,     // lang
       FALSE,       // isExampleBlock
       0,           // exampleName
       fd,          // fileDef

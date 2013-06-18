@@ -339,13 +339,14 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
     case DocVerbatim::Code: 
       {
         m_t << "\n\\begin{DoxyCode}\n";
         Doxygen::parserManager->getParser(lang)
-                              ->parseCode(m_ci,s->context(),s->text(),
+                              ->parseCode(m_ci,s->context(),s->text(),langExt,
                                           s->isExample(),s->exampleFile());
         m_t << "\\end{DoxyCode}\n";
       }
@@ -435,6 +436,7 @@ void LatexDocVisitor::visit(DocAnchor *anc)
 void LatexDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
     case DocInclude::IncWithLines:
@@ -445,6 +447,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << "\\end{DoxyCodeInclude}" << endl;
@@ -454,7 +457,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
       m_t << "\n\\begin{DoxyCodeInclude}\n";
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text(),inc->isExample(),
+                                        inc->text(),langExt,inc->isExample(),
                                         inc->exampleFile());
       m_t << "\\end{DoxyCodeInclude}\n";
       break;
@@ -474,6 +477,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                ->parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile()
                                           );
@@ -493,13 +497,14 @@ void LatexDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide = TRUE;
   }
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
     if (!m_hide) 
     {
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,op->context(),op->text(),
+                            ->parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();

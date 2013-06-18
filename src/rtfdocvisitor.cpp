@@ -420,6 +420,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
@@ -427,7 +428,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       Doxygen::parserManager->getParser(lang)
-                            ->parseCode(m_ci,s->context(),s->text(),
+                            ->parseCode(m_ci,s->context(),s->text(),langExt,
                                         s->isExample(),s->exampleFile());
       //m_t << "\\par" << endl; 
       m_t << "}" << endl;
@@ -527,6 +528,7 @@ void RTFDocVisitor::visit(DocAnchor *anc)
 void RTFDocVisitor::visit(DocInclude *inc)
 {
   if (m_hide) return;
+  SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocInclude)}\n");
   switch(inc->type())
   {
@@ -540,6 +542,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text(),
+                                           langExt,
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << "\\par";
@@ -552,7 +555,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text(),inc->isExample(),
+                                        inc->text(),langExt,inc->isExample(),
                                         inc->exampleFile());
       m_t << "\\par";
       m_t << "}" << endl;
@@ -577,6 +580,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
                             ->parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
+                                        langExt,
                                         inc->isExample(),
                                         inc->exampleFile()
                                        );
@@ -591,6 +595,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   //printf("DocIncOperator: type=%d first=%d, last=%d text=`%s'\n",
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocIncOperator)}\n");
+  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
   if (op->isFirst()) 
   {
     if (!m_hide)
@@ -608,7 +613,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
     if (!m_hide) 
     {
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,op->context(),op->text(),
+                            ->parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();

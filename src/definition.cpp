@@ -1044,6 +1044,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       pIntf->parseCode(ol,               // codeOutIntf
                        scopeName,        // scope
                        codeFragment,     // input
+                       m_impl->lang,     // lang
                        FALSE,            // isExample
                        0,                // exampleName
                        m_impl->body->fileDef,  // fileDef

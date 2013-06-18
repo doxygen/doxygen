@@ -1593,6 +1593,12 @@ ClassDef *getResolvedClass(Definition *scope,
   {
     result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec,pResolvedType);
   }
+  if (result==0) // for nested classes imported via tag files, the scope may not
+                 // present, so we check the class name directly as well.
+                 // See also bug701314
+  {
+    result = getClass(n);
+  }
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
     if (!mayBeHidden || !result->isHidden())
@@ -1873,20 +1879,24 @@ int findParameterList(const QString &name)
 
 bool rightScopeMatch(const QCString &scope, const QCString &name)
 {
+  int sl=scope.length();
+  int nl=name.length();
   return (name==scope || // equal 
-      (scope.right(name.length())==name && // substring 
-       scope.at(scope.length()-name.length()-1)==':' // scope
-      ) 
-      );
+          (scope.right(nl)==name && // substring 
+           sl-nl>1 && scope.at(sl-nl-1)==':' && scope.at(sl-nl-2)==':' // scope
+          ) 
+         );
 }
 
 bool leftScopeMatch(const QCString &scope, const QCString &name)
 {
+  int sl=scope.length();
+  int nl=name.length();
   return (name==scope || // equal 
-      (scope.left(name.length())==name && // substring 
-       scope.at(name.length())==':' // scope
-      ) 
-      );
+          (scope.left(nl)==name && // substring 
+           sl>nl+1 && scope.at(nl)==':' && scope.at(nl+1)==':' // scope
+          ) 
+         );
 }
 
 
@@ -3901,7 +3911,7 @@ static void findMembersWithSpecificName(MemberName *mn,
  *     file fd.
  */
 bool getDefs(const QCString &scName,
-             const QCString &memberName, 
+             const QCString &mbName, 
              const char *args,
              MemberDef *&md, 
              ClassDef *&cd, 
@@ -3915,10 +3925,12 @@ bool getDefs(const QCString &scName,
             )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
-  if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
+  if (mbName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   QCString scopeName=scName;
+  QCString memberName=mbName;
   scopeName = substitute(scopeName,"\\","::"); // for PHP
+  memberName = substitute(memberName,"\\","::"); // for PHP
   //printf("Search for name=%s args=%s in scope=%s forceEmpty=%d\n",
   //          memberName.data(),args,scopeName.data(),forceEmptyScope);
 
@@ -3972,8 +3984,9 @@ bool getDefs(const QCString &scName,
         className=mScope;
       }
 
-      ClassDef *fcd=getResolvedClass(Doxygen::globalScope,0,className);
-      //printf("Trying class scope %s: %p\n",className.data(),fcd);
+      MemberDef *tmd=0;
+      ClassDef *fcd=getResolvedClass(Doxygen::globalScope,0,className,&tmd);
+      //printf("Trying class scope %s: fcd=%p tmd=%p\n",className.data(),fcd,tmd);
       // todo: fill in correct fileScope!
       if (fcd &&  // is it a documented class
           fcd->isLinkable() 
@@ -3991,30 +4004,30 @@ bool getDefs(const QCString &scName,
         }
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
-          //if (mmd->isLinkable())
-          //{
-          ArgumentList *mmdAl = mmd->argumentList();
-          bool match=args==0 || 
-            matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
-                fcd,fcd->getFileDef(),argList,
-                checkCV
-                );  
-          //printf("match=%d\n",match);
-          if (match)
+          if (!mmd->isStrongEnumValue())
           {
-            ClassDef *mcd=mmd->getClassDef();
-            if (mcd)
+            ArgumentList *mmdAl = mmd->argumentList();
+            bool match=args==0 || 
+              matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
+                  fcd,fcd->getFileDef(),argList,
+                  checkCV
+                  );  
+            //printf("match=%d\n",match);
+            if (match)
             {
-              int m=minClassDistance(fcd,mcd);
-              if (m<mdist && mcd->isLinkable())
+              ClassDef *mcd=mmd->getClassDef();
+              if (mcd)
               {
-                mdist=m;
-                cd=mcd;
-                md=mmd;
+                int m=minClassDistance(fcd,mcd);
+                if (m<mdist && mcd->isLinkable())
+                {
+                  mdist=m;
+                  cd=mcd;
+                  md=mmd;
+                }
               }
             }
           }
-          //}
         }
         if (argList)
         {
@@ -4047,7 +4060,7 @@ bool getDefs(const QCString &scName,
         //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
         if (mdist<maxInheritanceDepth) 
         {
-          if (!md->isLinkable()) 
+          if (!md->isLinkable() || md->isStrongEnumValue()) 
           {
             md=0; // avoid returning things we cannot link to
             cd=0;
@@ -4061,6 +4074,34 @@ bool getDefs(const QCString &scName,
           }
         }
       } 
+      if (tmd && tmd->isEnumerate() && tmd->isStrong()) // scoped enum
+      {
+        //printf("Found scoped enum!\n");
+        MemberList *tml = tmd->enumFieldList();
+        if (tml)
+        {
+          MemberListIterator tmi(*tml);
+          MemberDef *emd;
+          for (;(emd=tmi.current());++tmi)
+          {
+            if (emd->localName()==mName)
+            {
+              if (emd->isLinkable())
+              {
+                cd=tmd->getClassDef();
+                md=emd;
+              }
+              else
+              {
+                cd=0;
+                md=0;
+              }
+              //printf("result cd=%p md=%p\n",cd,md);
+              return TRUE;
+            }
+          }
+        }
+      }
       /* go to the parent scope */
       if (scopeOffset==0)
       {
@@ -4075,6 +4116,7 @@ bool getDefs(const QCString &scName,
   }
   if (mn && scopeName.isEmpty() && mScope.isEmpty()) // Maybe a related function?
   {
+    //printf("Global symbol\n");
     MemberListIterator mmli(*mn);
     MemberDef *mmd, *fuzzy_mmd = 0;
     ArgumentList *argList = 0;
@@ -4108,7 +4150,7 @@ bool getDefs(const QCString &scName,
 
     mmd = mmd ? mmd : fuzzy_mmd;
 
-    if (mmd)
+    if (mmd && !mmd->isStrongEnumValue())
     {
       md = mmd;
       cd = mmd->getClassDef();
@@ -4142,7 +4184,8 @@ bool getDefs(const QCString &scName,
           fnd->isLinkable()
          )
       {
-        //printf("Function inside existing namespace `%s'\n",namespaceName.data());
+        //printf("Symbol inside existing namespace `%s' count=%d\n",
+        //    namespaceName.data(),mn->count());
         bool found=FALSE;
         MemberListIterator mmli(*mn);
         MemberDef *mmd;
@@ -4150,7 +4193,26 @@ bool getDefs(const QCString &scName,
         {
           //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
           //    mmd->getNamespaceDef(),fnd);
-          if (mmd->getNamespaceDef()==fnd /* && mmd->isLinkable() */ )
+          MemberDef *emd = mmd->getEnumScope();
+          if (emd && emd->isStrong())
+          {
+            //printf("yes match %s<->%s!\n",mScope.data(),emd->localName().data());
+            if (emd->getNamespaceDef()==fnd && 
+                rightScopeMatch(mScope,emd->localName()))
+            {
+              //printf("found it!\n");
+              nd=fnd;
+              md=mmd;
+              found=TRUE;
+            }
+            else
+            {
+              md=0;
+              cd=0;
+              return FALSE;
+            }
+          }
+          else if (mmd->getNamespaceDef()==fnd /* && mmd->isLinkable() */ )
           { // namespace is found
             bool match=TRUE;
             ArgumentList *argList=0;
@@ -4206,6 +4268,35 @@ bool getDefs(const QCString &scName,
           }
         }
       }
+      else
+      {
+        //printf("not a namespace\n");
+        bool found=FALSE;
+        MemberListIterator mmli(*mn);
+        MemberDef *mmd;
+        for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
+        {
+          MemberDef *tmd = mmd->getEnumScope();
+          //printf("try member %s tmd=%s\n",mmd->name().data(),tmd?tmd->name().data():"<none>");
+          int ni=namespaceName.findRev("::");
+          bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==0;
+          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name();
+          //printf("notInNS=%d sameNS=%d\n",notInNS,sameNS);
+          if (tmd && tmd->isStrong() && // C++11 enum class
+              (notInNS || sameNS) &&
+              namespaceName.length()>0  // enum is part of namespace so this should not be empty
+             )
+          {
+            md=mmd;
+            fd=mmd->getFileDef();
+            gd=mmd->getGroupDef();
+            if (gd && gd->isLinkable()) fd=0; else gd=0;
+            //printf("Found scoped enum %s fd=%p gd=%p\n",
+            //    mmd->name().data(),fd,gd);
+            return TRUE;
+          }
+        }
+      }
       if (scopeOffset==0)
       {
         scopeOffset=-1;
@@ -4238,8 +4329,10 @@ bool getDefs(const QCString &scName,
           //printf("member is linkable md->name()=`%s'\n",md->name().data());
           fd=md->getFileDef();
           gd=md->getGroupDef();
+          MemberDef *tmd = md->getEnumScope();
           if (
-              (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
+              (gd && gd->isLinkable()) || (fd && fd->isLinkable()) ||
+              (tmd && tmd->isStrong())
              )
           {
             members.append(md);
@@ -4252,7 +4345,8 @@ bool getDefs(const QCString &scName,
       {
         md=members.last();
       }
-      if (md) // found a matching global member
+      if (md && (md->getEnumScope()==0 || !md->getEnumScope()->isStrong())) 
+           // found a matching global member, that is not a scoped enum value (or uniquely matches)
       {
         fd=md->getFileDef();
         gd=md->getGroupDef();
@@ -4466,6 +4560,7 @@ bool resolveRef(/* in */  const char *scName,
   {
     //printf("after getDefs checkScope=%d nameStr=%s cd=%p nd=%p\n",checkScope,nameStr.data(),cd,nd);
     if (checkScope && md && md->getOuterScope()==Doxygen::globalScope && 
+        !md->isStrongEnumValue() &&
         (!scopeStr.isEmpty() || nameStr.find("::")>0))
     {
       // we did find a member, but it is a global one while we were explicitly 
@@ -4506,6 +4601,14 @@ bool resolveRef(/* in */  const char *scName,
   if (tryUnspecializedVersion)
   {
     return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,0,checkScope);
+  }
+  if (bracePos!=-1) // Try without parameters as well, could be a contructor invocation
+  {
+    *resContext=getClass(fullName.left(bracePos));
+    if (*resContext)
+    {
+      return TRUE;
+    }
   }
   //printf("resolveRef: %s not found!\n",name);
 

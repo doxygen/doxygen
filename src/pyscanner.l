@@ -1700,6 +1700,7 @@ bool PythonLanguageScanner::needsPreprocessing(const QCString &)
 void PythonLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     const char *scopeName,
     const QCString &input,
+    SrcLangExt /*lang*/,
     bool isExampleBlock,
     const char *exampleName,
     FileDef *fileDef,

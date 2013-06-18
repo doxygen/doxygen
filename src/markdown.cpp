@@ -2341,6 +2341,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
 void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
                const char *scopeName,
                const QCString &input,
+               SrcLangExt lang,
                bool isExampleBlock,
                const char *exampleName,
                FileDef *fileDef,
@@ -2356,7 +2357,7 @@ void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
   if (pIntf!=this)
   {
     pIntf->parseCode(
-       codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+       codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
        fileDef,startLine,endLine,inlineFragment,memberDef,showLineNumbers,searchCtx);
   }
 }
