@@ -934,8 +934,6 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   bindIntParameter(i_s_compounddef,":column",cd->getDefColumn());
 
   step(db,i_s_compounddef);
-  sqlite3_int64 id_compound=0 ;
-  id_compound = sqlite3_last_insert_rowid(db);
 
   // + basecompoundref
   if (cd->baseClasses())
