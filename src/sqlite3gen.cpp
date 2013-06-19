@@ -60,7 +60,7 @@ const char *i_q_files="INSERT OR REPLACE INTO files "
                             "( name )"
                             "VALUES "
                             "(:name )";
-const char *id_q_files="SELECT id from files where name=:name";
+const char *id_q_files="SELECT id FROM files WHERE name=:name";
 static sqlite3_stmt *id_s_files=0;
 static sqlite3_stmt *i_s_files=0;
 //////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ const char *i_q_memberdef="INSERT OR REPLACE INTO memberdef "
                             "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, kind, id_bfile, bline, bcolumn, id_file, line, column)"
                             "VALUES "
                             "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:kind,:id_bfile,:bline,:bcolumn,:id_file,:line,:column)";
-const char *id_q_memberdef="SELECT id from memberdef where refid=:refid and id is not null";
+const char *id_q_memberdef="SELECT id FROM memberdef WHERE refid=:refid and id is not null";
 static sqlite3_stmt *id_s_memberdef=0;
 static sqlite3_stmt *i_s_memberdef=0;
 //////////////////////////////////////////////////////
