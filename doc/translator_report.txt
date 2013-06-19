@@ -47,8 +47,6 @@ must be implemented to become up-to-date:
   TranslatorIndonesian            1.8.0 	22 methods to implement (8 %)
   TranslatorDanish                1.8.0 	22 methods to implement (8 %)
   TranslatorChinesetraditional    1.8.0 	22 methods to implement (8 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorCatalan               1.8.0 	22 methods to implement (8 %)
   TranslatorBrazilian             1.8.0 	22 methods to implement (8 %)
   TranslatorArmenian              1.8.0 	22 methods to implement (8 %)
