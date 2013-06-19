@@ -262,18 +262,6 @@ static int step(sqlite3 *db, sqlite3_stmt *stmt,bool getRowId=FALSE)
   return id;
 }
 
-#if 0
-static QCString memberOutputFileBase(MemberDef *md)
-{
-  //static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
-  //if (inlineGroupedClasses && md->getClassDef() && md->getClassDef()->partOfGroups()!=0)
-  //  return md->getClassDef()->getXmlOutputFileBase();
-  //else
-  //  return md->getOutputFileBase();
-  return md->getOutputFileBase();
-}
-#endif
-
 static int insertFile(sqlite3 *db, const char* name)
 {
   int id=-1;
@@ -295,20 +283,6 @@ static int insertFile(sqlite3 *db, const char* name)
 
 static void insertMemberReference(sqlite3 *db, const char*src, const char*dst, const char *file, int line, int column)
 {
-#if 0
-  QCString scope = dst->getScopeString();
-  QCString src_name = src->name();
-  QCString dst_name = dst->name();
-  if (!dst->getScopeString().isEmpty() && dst->getScopeString()!=def->name())
-  {
-    dst_name.prepend(scope+getLanguageSpecificSeparator(dst->getLanguage()));
-  }
-  if (!src->getScopeString().isEmpty() && src->getScopeString()!=def->name())
-  {
-    src_name.prepend(scope+getLanguageSpecificSeparator(src->getLanguage()));
-  }
-#endif
-    //
   bindTextParameter(i_s_xrefs,":src",src);
   bindTextParameter(i_s_xrefs,":dst",dst);
 
@@ -390,39 +364,6 @@ static void writeTemplateArgumentList(sqlite3* /*db*/,
                                       FileDef * /*fileScope*/,
                                       int /*indent*/)
 {
-#if 0
-  QCString indentStr;
-  indentStr.fill(' ',indent);
-  if (al)
-  {
-    t << indentStr << "<templateparamlist>" << endl;
-    ArgumentListIterator ali(*al);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
-    {
-      t << indentStr << "  <param>" << endl;
-      if (!a->type.isEmpty())
-      {
-        t << indentStr <<  "    <type>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->type);
-        t << "</type>" << endl;
-      }
-      if (!a->name.isEmpty())
-      {
-        t << indentStr <<  "    <declname>" << a->name << "</declname>" << endl;
-        t << indentStr <<  "    <defname>" << a->name << "</defname>" << endl;
-      }
-      if (!a->defval.isEmpty())
-      {
-        t << indentStr << "    <defval>";
-        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->defval);
-        t << "</defval>" << endl;
-      }
-      t << indentStr << "  </param>" << endl;
-    }
-    t << indentStr << "</templateparamlist>" << endl;
-  }
-#endif
 }
 
 static void writeTemplateList(sqlite3*db,ClassDef *cd)
@@ -449,20 +390,6 @@ static void generateSqlite3Section(sqlite3*db,
     }
   }
   if (count==0) return; // empty list
-#if 0
-
-  t << "      <sectiondef kind=\"" << kind << "\">" << endl;
-  if (header)
-  {
-    t << "      <header>" << convertToXML(header) << "</header>" << endl;
-  }
-  if (documentation)
-  {
-    t << "      <description>";
-    writeXMLDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
-    t << "</description>" << endl;
-  }
-#endif
   for (mli.toFirst();(md=mli.current());++mli)
   {
     // namespace members are also inserted in the file scope, but
@@ -472,7 +399,6 @@ static void generateSqlite3Section(sqlite3*db,
       generateSqlite3ForMember(db,md,d);
     }
   }
-  //t << "      </sectiondef>" << endl;
 }
 
 static int prepareStatements(sqlite3 *db)
@@ -609,29 +535,6 @@ static void generateSqlite3ForNamespace(sqlite3 *db, NamespaceDef *nd)
   // - files containing (parts of) the namespace definition
 
   if (nd->isReference() || nd->isHidden()) return; // skip external references
-#if 0
-  ti << "  <compound refid=\"" << nd->getOutputFileBase()
-     << "\" kind=\"namespace\"" << "><name>"
-     << convertToXML(nd->name()) << "</name>" << endl;
-
-  QCString outputDirectory = Config_getString("XML_OUTPUT");
-  QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
-  {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
-
-  writeXMLHeader(t);
-  t << "  <compounddef id=\""
-    << nd->getOutputFileBase() << "\" kind=\"namespace\">" << endl;
-  t << "    <compoundname>";
-  writeXMLString(t,nd->name());
-  t << "</compoundname>" << endl;
-#endif
   writeInnerClasses(db,nd->getClassSDict());
   writeInnerNamespaces(db,nd->getNamespaceSDict());
 
@@ -655,29 +558,6 @@ static void generateSqlite3ForNamespace(sqlite3 *db, NamespaceDef *nd)
       generateSqlite3Section(db,nd,ml,"user-defined");//g_xmlSectionMapper.find(ml->listType()));
     }
   }
-#if 0
-  generateXMLSection(nd,ti,t,&nd->decDefineMembers,"define");
-  generateXMLSection(nd,ti,t,&nd->decProtoMembers,"prototype");
-  generateXMLSection(nd,ti,t,&nd->decTypedefMembers,"typedef");
-  generateXMLSection(nd,ti,t,&nd->decEnumMembers,"enum");
-  generateXMLSection(nd,ti,t,&nd->decFuncMembers,"func");
-  generateXMLSection(nd,ti,t,&nd->decVarMembers,"var");
-
-  t << "    <briefdescription>" << endl;
-  writeXMLDocBlock(t,nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
-  t << "    </detaileddescription>" << endl;
-  t << "    <location file=\""
-    << nd->getDefFileName() << "\" line=\""
-    << nd->getDefLine() << "\"" << " column=\""
-    << nd->getDefColumn() << "\"/>" << endl ;
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
-
-  ti << "  </compound>" << endl;
-#endif
 }
 
 
@@ -698,79 +578,6 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
   // - number of lines
 
   if (fd->isReference()) return; // skip external references
-#if 0
-  ti << "  <compound refid=\"" << fd->getOutputFileBase()
-     << "\" kind=\"file\"><name>" << convertToXML(fd->name())
-     << "</name>" << endl;
-
-  QCString outputDirectory = Config_getString("XML_OUTPUT");
-  QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
-  {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
-
-  writeXMLHeader(t);
-  t << "  <compounddef id=\""
-    << fd->getOutputFileBase() << "\" kind=\"file\">" << endl;
-  t << "    <compoundname>";
-  writeXMLString(t,fd->name());
-  t << "</compoundname>" << endl;
-
-  IncludeInfo *inc;
-
-  if (fd->includeFileList())
-  {
-    QListIterator<IncludeInfo> ili1(*fd->includeFileList());
-    for (ili1.toFirst();(inc=ili1.current());++ili1)
-    {
-      t << "    <includes";
-      if (inc->fileDef && !inc->fileDef->isReference()) // TODO: support external references
-      {
-        t << " refid=\"" << inc->fileDef->getOutputFileBase() << "\"";
-      }
-      t << " local=\"" << (inc->local ? "yes" : "no") << "\">";
-      t << inc->includeName;
-      t << "</includes>" << endl;
-    }
-  }
-
-  if (fd->includedByFileList())
-  {
-    QListIterator<IncludeInfo> ili2(*fd->includedByFileList());
-    for (ili2.toFirst();(inc=ili2.current());++ili2)
-    {
-      t << "    <includedby";
-      if (inc->fileDef && !inc->fileDef->isReference()) // TODO: support external references
-      {
-        t << " refid=\"" << inc->fileDef->getOutputFileBase() << "\"";
-      }
-      t << " local=\"" << (inc->local ? "yes" : "no") << "\">";
-      t << inc->includeName;
-      t << "</includedby>" << endl;
-    }
-  }
-
-  DotInclDepGraph incDepGraph(fd,FALSE);
-  if (!incDepGraph.isTrivial())
-  {
-    t << "    <incdepgraph>" << endl;
-    incDepGraph.writeXML(t);
-    t << "    </incdepgraph>" << endl;
-  }
-
-  DotInclDepGraph invIncDepGraph(fd,TRUE);
-  if (!invIncDepGraph.isTrivial())
-  {
-    t << "    <invincdepgraph>" << endl;
-    invIncDepGraph.writeXML(t);
-    t << "    </invincdepgraph>" << endl;
-  }
-#endif
   if (fd->getClassSDict())
   {
     writeInnerClasses(db,fd->getClassSDict());
@@ -800,33 +607,6 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
       generateSqlite3Section(db,fd,ml,"user-defined");//g_xmlSectionMapper.find(ml->listType()));
     }
   }
-#if 0
-  generateXMLSection(fd,ti,t,fd->decDefineMembers,"define");
-  generateXMLSection(fd,ti,t,fd->decProtoMembers,"prototype");
-  generateXMLSection(fd,ti,t,fd->decTypedefMembers,"typedef");
-  generateXMLSection(fd,ti,t,fd->decEnumMembers,"enum");
-  generateXMLSection(fd,ti,t,fd->decFuncMembers,"func");
-  generateXMLSection(fd,ti,t,fd->decVarMembers,"var");
-#endif
-#if 0
-  t << "    <briefdescription>" << endl;
-  writeXMLDocBlock(t,fd->briefFile(),fd->briefLine(),fd,0,fd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
-  writeXMLDocBlock(t,fd->docFile(),fd->docLine(),fd,0,fd->documentation());
-  t << "    </detaileddescription>" << endl;
-  if (Config_getBool("XML_PROGRAMLISTING"))
-  {
-    t << "    <programlisting>" << endl;
-    writeXMLCodeBlock(t,fd);
-    t << "    </programlisting>" << endl;
-  }
-  t << "    <location file=\"" << fd->getDefFileName() << "\"/>" << endl;
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
-
-  ti << "  </compound>" << endl;
-#endif
 }
 
 
@@ -856,17 +636,6 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
   QCString memType;
-#if 0
-  // member
-  idx = sqlite3_bind_parameter_index(stmt, ":refid");
-  sqlite3_bind_text(stmt, idx, memberOutputFileBase(md).data(),-1,SQLITE_TRANSIENT);
-
-  idx = sqlite3_bind_parameter_index(stmt,":kind");
-  sqlite3_bind_int(stmt, idx, md->memberType());
-
-  idx = sqlite3_bind_parameter_index(stmt, ":name");
-  sqlite3_bind_text(stmt, idx, md->name().data(),-1,SQLITE_TRANSIENT);
-#endif
   // memberdef
   bindTextParameter(i_s_memberdef,":refid",md->anchor());
   bindIntParameter(i_s_memberdef,":kind",md->memberType());
@@ -969,33 +738,6 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
       DBG_CTX(("<write>\n"));
     }
   }
-#if 0
-  if (md->memberType()==MemberType_Variable && md->bitfieldString())
-  {
-    QCString bitfield = md->bitfieldString();
-    if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
-    t << "        <bitfield>" << bitfield << "</bitfield>" << endl;
-  }
-
-  MemberDef *rmd = md->reimplements();
-  if (rmd)
-  {
-    t << "        <reimplements refid=\""
-      << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
-      << convertToXML(rmd->name()) << "</reimplements>" << endl;
-  }
-  MemberList *rbml = md->reimplementedBy();
-  if (rbml!=0)
-  {
-    MemberListIterator mli(*rbml);
-    for (mli.toFirst();(rmd=mli.current());++mli)
-    {
-      t << "        <reimplementedby refid=\""
-        << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
-        << convertToXML(rmd->name()) << "</reimplementedby>" << endl;
-    }
-  }
-#endif
   if (isFunc) //function
   {
     ArgumentList *declAl = md->declArgumentList();
@@ -1090,12 +832,6 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     }
   }
 
-#if 0
-  if (md->excpString())
-  {
-    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->excpString());
-  }
-#endif
   if ( md->getScopeString() )
   {
     bindTextParameter(i_s_memberdef,":scope",md->getScopeString());
