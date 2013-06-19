@@ -45,8 +45,6 @@ must be implemented to become up-to-date:
   TranslatorChinese               1.8.2 	15 methods to implement (6 %)
   TranslatorPortuguese            1.8.0 	22 methods to implement (8 %)
   TranslatorIndonesian            1.8.0 	22 methods to implement (8 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorDanish                1.8.0 	22 methods to implement (8 %)
   TranslatorChinesetraditional    1.8.0 	22 methods to implement (8 %)
 	Note: Reimplementation using UTF-8 suggested.
@@ -59,20 +57,12 @@ must be implemented to become up-to-date:
   TranslatorPersian               1.7.5 	25 methods to implement (10 %)
   TranslatorVietnamese            1.6.0 	34 methods to implement (13 %)
   TranslatorSwedish               1.6.0 	34 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorSerbian               1.6.0 	34 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorSerbianCyrilic        1.6.0 	34 methods to implement (13 %)
   TranslatorMacedonian            1.6.0 	34 methods to implement (13 %)
   TranslatorJapanese              1.6.0 	33 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorFinnish               1.6.0 	34 methods to implement (13 %)
   TranslatorAfrikaans             1.6.0 	34 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorSlovene               1.4.6 	58 methods to implement (23 %)
 	Note: Reimplementation using UTF-8 suggested.
 
