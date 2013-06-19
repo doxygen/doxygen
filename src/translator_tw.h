@@ -78,7 +78,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "big5";
+      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -624,7 +624,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
         case ClassDef::Struct:     result+=" 結構"; break;
         case ClassDef::Union:      result+=" 聯合"; break;
         case ClassDef::Interface:  result+=" 介面"; break;
-        case ClassDef::Protocol:   result+=" 協定"; break; 
+        case ClassDef::Protocol:   result+=" 協定"; break;
         case ClassDef::Category:   result+=" 分類"; break;
         case ClassDef::Exception:  result+=" 例外"; break;
         default: break;
@@ -1495,7 +1495,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     {
       return filename + " 原始程式檔";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
 //////////////////////////////////////////////////////////////////////////
@@ -1518,7 +1518,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     virtual QCString trDirectories()
     { return "目錄"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1538,7 +1538,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     {
       return QCString("目錄");
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.4.1
 //////////////////////////////////////////////////////////////////////////
@@ -1565,12 +1565,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "成員函數/子程序 文件"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "資料型態列表"; }
 
@@ -1592,18 +1592,18 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       }
       result+="資料型別成員函數";
       result+=" 附帶連結到 ";
-      if (!extractAll) 
+      if (!extractAll)
       {
          result+="每個成員函數的資料結構文件";
       }
-      else 
+      else
       {
          result+="他們屬於的資料型別";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1615,24 +1615,24 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     virtual QCString trTypeDocumentation()
     { return "資料型別文件"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "函數/子程序"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "函數/子程序 文件"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "資料型別"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "模組列表"; }
@@ -1674,42 +1674,42 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       result+="模組參考文件";
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "模組成員"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="此處列出所有";
       if (!extractAll) result+="有文件的";
       result+="模組成員附帶連結到";
-      if (extractAll) 
+      if (extractAll)
       {
         result+="每個函數的模組文件:";
       }
-      else 
+      else
       {
         result+="他們所屬的模組:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "模組索引"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool /* first_capital */, bool /* singular */)
-    {       
+    {
       QCString result("模組");
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1734,22 +1734,22 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool /* first_capital */, bool /* singular */)
-    { 
+    {
       QCString result("型別");
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool /* first_capital */, bool /* singular */)
-    { 
+    {
       QCString result("子程式");
-      return result; 
+      return result;
     }
 
     /*! C# Type Constraint list */
@@ -1757,7 +1757,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     {
       return "型別限制條件";
     }
-	
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.0 (mainly for the new search engine)
 //////////////////////////////////////////////////////////////////////////
@@ -1820,7 +1820,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       return (QCString)"含入檔案在"+name;
     }
 
-    /** Compiles a date string. 
+    /** Compiles a date string.
      *  @param year Year in 4 digits
      *  @param month Month of the year: 1=January
      *  @param day Day of the Month: 1..31
