@@ -297,7 +297,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SI
   else if (L_EQUAL("slovene"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorSlovene);
+    theTranslator=new TranslatorSlovene;
   }
 #endif
 #ifdef LANG_CN
