@@ -401,73 +401,34 @@ static void generateSqlite3Section(sqlite3*db,
   }
 }
 
-static int prepareStatements(sqlite3 *db)
+static int prepareStatement(sqlite3 *db, const char* query, sqlite3_stmt **statement)
 {
   int rc;
-  rc = sqlite3_prepare_v2(db,id_q_memberdef,-1,&id_s_memberdef,0);
+  rc = sqlite3_prepare_v2(db,query,-1,statement,0);
   if (rc!=SQLITE_OK)
   {
-    msg("prepare failed for %s\n%s\n", id_q_memberdef, sqlite3_errmsg(db));
+    msg("prepare failed for %s\n%s\n", query, sqlite3_errmsg(db));
     return -1;
   }
-  rc = sqlite3_prepare_v2(db,id_q_files,-1,&id_s_files,0);
-  if (rc!=SQLITE_OK)
+  return rc;
+}
+
+static int prepareStatements(sqlite3 *db)
+{
+  if (
+  -1==prepareStatement(db, id_q_memberdef, &id_s_memberdef) ||
+  -1==prepareStatement(db, id_q_files, &id_s_files) ||
+  -1==prepareStatement(db, i_q_files, &i_s_files) ||
+  -1==prepareStatement(db, i_q_xrefs, &i_s_xrefs) ||
+  -1==prepareStatement(db, i_q_innerclass, &i_s_innerclass) ||
+  -1==prepareStatement(db, i_q_memberdef, &i_s_memberdef) ||
+  -1==prepareStatement(db, i_q_compounddef, &i_s_compounddef) ||
+  -1==prepareStatement(db, i_q_basecompoundref, &i_s_basecompoundref) ||
+  -1==prepareStatement(db, i_q_derivedcompoundref, &i_s_derivedcompoundref) ||
+  -1==prepareStatement(db, i_q_includes, &i_s_includes)||
+  -1==prepareStatement(db, c_q_includes, &c_s_includes)
+  )
   {
-    msg("prepare failed for %s\n%s\n", id_q_files, sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db,i_q_files,-1,&i_s_files,0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n",i_q_files,sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db,i_q_xrefs,-1,&i_s_xrefs,0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n", i_q_xrefs, sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db, i_q_innerclass, -1, &i_s_innerclass, 0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n", i_q_innerclass, sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db,i_q_memberdef,-1,&i_s_memberdef,0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n",i_q_memberdef,sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db,i_q_compounddef,-1,&i_s_compounddef,0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n",i_q_compounddef,sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db,i_q_basecompoundref,-1,&i_s_basecompoundref,0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n",i_q_basecompoundref,sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db,i_q_derivedcompoundref,-1,&i_s_derivedcompoundref,0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n",i_q_derivedcompoundref,sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db, i_q_includes, -1, &i_s_includes, 0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n", i_q_includes, sqlite3_errmsg(db));
-    return -1;
-  }
-  rc = sqlite3_prepare_v2(db, c_q_includes, -1, &c_s_includes, 0);
-  if (rc!=SQLITE_OK)
-  {
-    msg("prepare failed for %s\n%s\n", c_q_includes, sqlite3_errmsg(db));
     return -1;
   }
   return 0;
