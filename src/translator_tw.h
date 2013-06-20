@@ -41,7 +41,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
+class TranslatorChinesetraditional : public Translator
 {
   public:
 
@@ -1869,37 +1869,37 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
 
     /*! Detail level selector shown for hierarchical indices */
     virtual QCString trDetailLevel()
-    { return "detail level"; }
+    { return "詳細程度"; }
 
     /*! Section header for list of template parameters */
     virtual QCString trTemplateParameters()
-    { return "Template Parameters"; }
+    { return "樣版參數"; }
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
     virtual QCString trAndMore(const QCString &number)
-    { return "and "+number+" more..."; }
+    { return "及 "+number+" 個更多..."; }
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
-    { QCString result = "The documentation for this enum was generated from the following file";
-      if (!single) result += "s";
+    { QCString result = "此列舉型態的文件是由下列檔案所產生";
+      if (!single) result += "";
       result+=":";
       return result;
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
     virtual QCString trEnumReference(const char *name)
-    { return QCString(name)+" Enum Reference"; }
+    { return QCString(name)+" 列舉型態參考"; }
 
     /*! Used for a section containing inherited members */
     virtual QCString trInheritedFrom(const char *members,const char *what)
-    { return QCString(members)+" inherited from "+what; }
+    { return QCString(members)+" 繼承自 "+what; }
 
     /*! Header of the sections with inherited members specific for the
      *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
-    { return "Additional Inherited Members"; }
+    { return "額外的繼承成員"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.2
@@ -1911,8 +1911,8 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "enable" : "disable";
-      return "click to "+opt+" panel synchronisation";
+      QCString opt = enable ? "啟用" : "停用";
+      return "點擊 "+opt+" 面板進行同步";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
@@ -1921,7 +1921,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Provided by category @1.";
+      return "由 @1 分類所提供.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1930,7 +1930,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
      */
     virtual QCString trExtendsClass()
     {
-      return "Extends class @1.";
+      return "延伸 @1 類別 .";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.
@@ -1938,7 +1938,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
      */
     virtual QCString trClassMethods()
     {
-      return "Class Methods";
+      return "類別方法";
     }
 
     /*! Used as the header of a list of instance methods in Objective-C.
@@ -1946,14 +1946,14 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
      */
     virtual QCString trInstanceMethods()
     {
-      return "Instance Methods";
+      return "實體方法";
     }
 
     /*! Used as the header of the member functions of an Objective-C class.
      */
     virtual QCString trMethodDocumentation()
     {
-      return "Method Documentation";
+      return "方法文件";
     }
 
     /*! Used as the title of the design overview picture created for the
@@ -1961,7 +1961,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDesignOverview()
     {
-      return "Design Overview";
+      return "設計概述";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1970,53 +1970,53 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
 
     /** old style UNO IDL services: implemented interfaces */
     virtual QCString trInterfaces()
-    { return "Exported Interfaces"; }
+    { return "導出介面"; }
 
     /** old style UNO IDL services: inherited services */
     virtual QCString trServices()
-    { return "Included Services"; }
+    { return "引入的服務"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroups()
-    { return "Constant Groups"; }
+    { return "常數群組"; }
 
     /** UNO IDL constant groups */
     virtual QCString trConstantGroupReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Constant Group Reference";
+      result+="常數群組參考";
       return result;
     }
     /** UNO IDL service page title */
     virtual QCString trServiceReference(const char *sName)
     {
       QCString result=(QCString)sName;
-      result+=" Service Reference";
+      result+="服務參考";
       return result;
     }
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const char *sName)
     {
       QCString result=(QCString)sName;
-      result+=" Singleton Reference";
+      result+="Singleton參考";
       return result;
     }
     /** UNO IDL service page */
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this service "
-                                "was generated from the following file";
-      if (single) result+=":"; else result+="s:";
+      QCString result=(QCString)"本服務的文件由以下的檔案"
+                                "所產生";
+      if (single) result+=":"; else result+=":";
       return result;
     }
     /** UNO IDL singleton page */
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"The documentation for this singleton "
-                                "was generated from the following file";
-      if (single) result+=":"; else result+="s:";
+      QCString result=(QCString)"本singleton的文件由下面的檔案"
+                                "所產生";
+      if (single) result+=":"; else result+=":";
       return result;
     }
 
