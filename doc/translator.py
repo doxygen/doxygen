@@ -16,9 +16,7 @@
   Originally, the script was written in Perl and was known as translator.pl.
   The last Perl version was dated 2002/05/21 (plus some later corrections)
 
-  $Id$
-
-                                         Petr Prikryl (prikrylp@skil.cz)
+                                         Petr Přikryl (prikryl at atlas dot cz)
 
   History:
   --------
