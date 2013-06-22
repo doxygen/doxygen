@@ -677,7 +677,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritsList(int numEntries)
+    virtual QCString trInheritsList(int /*numEntries*/)
     {
       return "Spisak osnovnih klasa: ";
     }
@@ -685,7 +685,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! used in class documentation to produce a list of derived classes,
      *  if class diagrams are disabled.
      */
-    virtual QCString trInheritedByList(int numEntries)
+    virtual QCString trInheritedByList(int /*numEntries*/)
     {
       return "Spisak izvedenih klasa: ";
     }
@@ -1317,7 +1317,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of 
      *  members that are implemented by this one.
      */
-    virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trImplementedFromList(int /*numEntries*/)
     { //! "Definiše" je previše kratko, ispada sa de definišu same apstraktne klase
       return "Definiše apstraktnu funkciju deklarisanu u ";
     }
@@ -1325,7 +1325,7 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! used in member documentation blocks to produce a list of
      *  all members that implement this abstract member.
      */
-    virtual QCString trImplementedInList(int numEntries)
+    virtual QCString trImplementedInList(int /*numEntries*/)
     { //! Izbegavanje roda
       return "Definicija u ";
     }
