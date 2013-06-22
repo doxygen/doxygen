@@ -41,7 +41,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
+class TranslatorChinesetraditional : public Translator
 {
   public:
 
@@ -78,7 +78,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "big5";
+      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -624,7 +624,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
         case ClassDef::Struct:     result+=" 結構"; break;
         case ClassDef::Union:      result+=" 聯合"; break;
         case ClassDef::Interface:  result+=" 介面"; break;
-        case ClassDef::Protocol:   result+=" 協定"; break; 
+        case ClassDef::Protocol:   result+=" 協定"; break;
         case ClassDef::Category:   result+=" 分類"; break;
         case ClassDef::Exception:  result+=" 例外"; break;
         default: break;
@@ -1495,7 +1495,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     {
       return filename + " 原始程式檔";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.9
 //////////////////////////////////////////////////////////////////////////
@@ -1518,7 +1518,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     virtual QCString trDirectories()
     { return "目錄"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1538,7 +1538,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     {
       return QCString("目錄");
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.4.1
 //////////////////////////////////////////////////////////////////////////
@@ -1565,12 +1565,12 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "成員函數/子程序 文件"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "資料型態列表"; }
 
@@ -1592,18 +1592,18 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       }
       result+="資料型別成員函數";
       result+=" 附帶連結到 ";
-      if (!extractAll) 
+      if (!extractAll)
       {
          result+="每個成員函數的資料結構文件";
       }
-      else 
+      else
       {
          result+="他們屬於的資料型別";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1615,24 +1615,24 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     virtual QCString trTypeDocumentation()
     { return "資料型別文件"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "函數/子程序"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "函數/子程序 文件"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "資料型別"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "模組列表"; }
@@ -1674,42 +1674,42 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       result+="模組參考文件";
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "模組成員"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="此處列出所有";
       if (!extractAll) result+="有文件的";
       result+="模組成員附帶連結到";
-      if (extractAll) 
+      if (extractAll)
       {
         result+="每個函數的模組文件:";
       }
-      else 
+      else
       {
         result+="他們所屬的模組:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "模組索引"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool /* first_capital */, bool /* singular */)
-    {       
+    {
       QCString result("模組");
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1734,22 +1734,22 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool /* first_capital */, bool /* singular */)
-    { 
+    {
       QCString result("型別");
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool /* first_capital */, bool /* singular */)
-    { 
+    {
       QCString result("子程式");
-      return result; 
+      return result;
     }
 
     /*! C# Type Constraint list */
@@ -1757,7 +1757,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     {
       return "型別限制條件";
     }
-	
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.0 (mainly for the new search engine)
 //////////////////////////////////////////////////////////////////////////
@@ -1820,7 +1820,7 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
       return (QCString)"含入檔案在"+name;
     }
 
-    /** Compiles a date string. 
+    /** Compiles a date string.
      *  @param year Year in 4 digits
      *  @param month Month of the year: 1=January
      *  @param day Day of the Month: 1..31
@@ -1862,6 +1862,165 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_8_0
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString(name)+"的目錄關連圖"+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "詳細程度"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "樣版參數"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "及 "+number+" 個更多..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "此列舉型態的文件是由下列檔案所產生";
+      if (!single) result += "";
+      result+=":";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString(name)+" 列舉型態參考"; }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" 繼承自 "+what; }
+
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "額外的繼承成員"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "啟用" : "停用";
+      return "點擊 "+opt+" 面板進行同步";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "由 @1 分類所提供.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "延伸 @1 類別 .";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "類別方法";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "實體方法";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "方法文件";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "設計概述";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "導出介面"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "引入的服務"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "常數群組"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+="常數群組參考";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+="服務參考";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+="Singleton參考";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"本服務的文件由以下的檔案"
+                                "所產生";
+      if (single) result+=":"; else result+=":";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"本singleton的文件由下面的檔案"
+                                "所產生";
+      if (single) result+=":"; else result+=":";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_ID_H
 #define TRANSLATOR_ID_H
 
-/* 
+/*
  * Translasi berikut didasarkan pada versi translator_en.h dalam
  * Doxygen 1.7.5.1.
  *
@@ -30,18 +30,18 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     // --- Language control methods -------------------
 
-    /*! Used for identification of the language. The identification 
-     * should not be translated. It should be replaced by the name 
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
      * of the language in English using lower-case characters only
-     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to 
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
     { return "indonesian"; }
 
-    /*! Used to get the LaTeX command(s) for the language support. 
+    /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
-     *  LaTeX to the desired language.  For example 
+     *  LaTeX to the desired language.  For example
      *  <pre>"\\usepackage[german]{babel}\n"
      *  </pre>
      *  or
@@ -49,7 +49,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  "\\usepackage[latin2]{inputenc}\n"
      *  "\\usepackage[T1]{fontenc}\n"
      *  </pre>
-     * 
+     *
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
@@ -61,7 +61,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "iso-8859-1";
+      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -92,19 +92,19 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Dokumentasi Variabel"; 
+        return "Dokumentasi Variabel";
       }
       else
       {
-        return "Dokumentasi Anggota: Data"; 
+        return "Dokumentasi Anggota: Data";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore() 
+    virtual QCString trMore()
     { return "Selengkapnya..."; }
 
     /*! put in the class documentation */
@@ -129,7 +129,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Dibangkitkan secara otomatis oleh Doxygen";
       if (s) result+=(QCString)" untuk "+s;
-      result+=" dari kode sumber."; 
+      result+=" dari kode sumber.";
       return result;
     }
 
@@ -147,7 +147,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
@@ -159,14 +159,14 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Struktur Data";
       }
       else
       {
-        return "Daftar Kelas"; 
+        return "Daftar Kelas";
       }
     }
 
@@ -176,23 +176,23 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Variabel Data"; 
+        return "Variabel Data";
       }
       else
       {
-        return "Daftar Anggota Kelas"; 
+        return "Daftar Anggota Kelas";
       }
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Daftar Definisi Global"; 
+        return "Daftar Definisi Global";
       }
       else
       {
@@ -229,11 +229,11 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { 
+    {
 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Berikut ini daftar struktur data, dengan penjelasan singkat:"; 
+        return "Berikut ini daftar struktur data, dengan penjelasan singkat:";
       }
       else
       {
@@ -258,7 +258,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
         result+=" yang didokumentasikan";
       }
       result+=", dengan tautan ke ";
-      if (!extractAll) 
+      if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -269,7 +269,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
           result+="dokumentasi kelas untuk setiap anggota:";
         }
       }
-      else 
+      else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -298,9 +298,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       }
       if (!extractAll) result+=" yang didokumentasikan";
       result+=", dengan tautan ke ";
-      if (extractAll) 
+      if (extractAll)
         result+="file yang memuatnya:";
-      else 
+      else
         result+="dokumentasinya:";
       return result;
     }
@@ -317,43 +317,43 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trModulesDescription()
     { return "Berikut ini daftar semua modul:"; }
 
-    // index titles (the project name is prepended for these) 
+    // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Dokumentasi"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return "Indeks Modul"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return "Indeks Hierarki Kelas"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
+      {
         return "Indeks Struktur Data";
       }
       else
       {
-        return "Indeks Kelas"; 
+        return "Indeks Kelas";
       }
     }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "Indeks File"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
@@ -366,14 +366,14 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Dokumentasi Struktur Data"; 
+        return "Dokumentasi Struktur Data";
       }
       else
       {
-        return "Dokumentasi Kelas"; 
+        return "Dokumentasi Kelas";
       }
     }
 
@@ -399,43 +399,43 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trReferenceManual()
     { return "Dokumen Referensi"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return "Makro Definisi"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
     { return "Prototipe Fungsi"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
     { return "Definisi Tipe"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
     { return "Enumerasi"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return "Fungsi"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return "Variabel"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
@@ -447,56 +447,56 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trDefineDocumentation()
     { return "Dokumentasi Makro Definisi"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
     { return "Dokumentasi Prototipe Fungsi"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
     { return "Dokumentasi Definisi Tipe"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Dokumentasi Tipe Enumerasi"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return "Dokumentasi Fungsi"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return "Dokumentasi Variabel"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Struktur Data"; 
+        return "Struktur Data";
       }
       else
       {
-        return "Kelas"; 
+        return "Kelas";
       }
     }
 
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result=(QCString)"Dibangkitkan pada tanggal "+date;
       if (projName) result+=(QCString)" untuk "+projName;
       result+=(QCString)" oleh";
@@ -579,7 +579,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return "Dokumentasi Friend Dan Fungsi Terkait"; }
@@ -614,7 +614,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result="Referensi File ";
-      result+=fileName; 
+      result+=fileName;
       return result;
     }
 
@@ -655,21 +655,21 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
         // (order is left to right)
 
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=", dan ";
         }
       }
-      return result; 
+      return result;
     }
 
     /*! used in class documentation to produce a list of base classes,
@@ -688,7 +688,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Diwariskan ke "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
@@ -710,17 +710,17 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Berikut ini daftar anggota namespace";
       if (!extractAll) result+=" yang didokumentasikan";
       result+=", dengan tautan ke ";
-      if (extractAll) 
+      if (extractAll)
         result+="dokumentasi namespace untuk setiap anggota:";
-      else 
+      else
         result+="namespace yang memuatnya:";
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -790,7 +790,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trMainPage()
     { return "Halaman Utama"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -835,7 +835,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Dokumentasi Konstruktor & Destruktor"; 
+      return "Dokumentasi Konstruktor & Destruktor";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -992,12 +992,12 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     {
       return "Keterangan Bagan";
     }
-    /*! page explaining how the dot graph's should be interpreted 
+    /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
     virtual QCString trLegendDocs()
     {
-      return 
+      return
         "Halaman ini berisi keterangan cara membaca bagan yang dibangkitkan "
         "oleh doxygen.<p>\n"
         "Contoh:\n"
@@ -1161,9 +1161,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1184,7 +1184,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
@@ -1192,7 +1192,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     }
 
 
-    /*! Used as ansicpg for RTF fcharset 
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1207,80 +1207,80 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Kelas" : "kelas"));
       if (!singular) result+="-kelas";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "File" : "file"));
       if (!singular) result+="-file";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool)
-    { 
+    {
       QCString result((first_capital ? "Namespace" : "namespace"));
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Kelompok" : "kelompok"));
       if (!singular) result+="-kelompok";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Halaman" : "halaman"));
       if (!singular) result+="-halaman";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Anggota" : "anggota"));
       if (!singular) result+="-anggota";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Definisi" : "definisi"));
       if (!singular)  result+="-definisi";
       result += " global";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1290,10 +1290,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool)
-    {                                                                         
+    {
       QCString result((first_capital ? "Penulis" : "penulis"));
       //if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1311,7 +1311,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1343,8 +1343,8 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1355,7 +1355,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
@@ -1375,35 +1375,35 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Jenis Paket";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Daftar Fungsi Paket";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Daftar Fungsi Statis Paket";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Daftar Atribut Paket";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Daftar Atribut Statis Paket";
     }
 
@@ -1411,7 +1411,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1428,9 +1428,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
      */
     virtual QCString trSearchForIndex()
     {
@@ -1447,7 +1447,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1461,13 +1461,13 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       {
         return "Ditemukan <b>1</b> dokumen yang cocok.";
       }
-      else 
+      else
       {
         return "Ditemukan <b>$num</b> documents yang cocok. "
                "Menampilkan hasil terbaik lebih awal.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1508,7 +1508,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trDirectories()
     { return "Daftar Direktori"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1525,10 +1525,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool)
-    { 
+    {
       QCString result((first_capital ? "Direktori" : "direktori"));
       //if (singular) result+="y"; else result+="ies";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1555,7 +1555,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "Berikut ini bagan fungsi-pemanggil untuk fungsi ini:";
     }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
@@ -1564,12 +1564,12 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "Dokumentasi Fungsi/Subrutin Anggota"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "Daftar Tipe Data"; }
 
@@ -1590,18 +1590,18 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
         result+="terdokumentasi ";
       }
       result+=" dengan tautan ke ";
-      if (!extractAll) 
+      if (!extractAll)
       {
          result+="dokumentasi struktur data untuk setiap anggota:";
       }
-      else 
+      else
       {
          result+="tipe data yang memuatnya:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1613,24 +1613,24 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trTypeDocumentation()
     { return "Dokumentasi Tipe Data"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "Fungsi/Subrutin"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "Dokumentasi Fungsi/Subrutin"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "Tipe Data"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "Modules List"; }
@@ -1672,43 +1672,43 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       result+=namespaceName;
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "Anggota Modul"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Berikut daftar semua anggota modul ";
       if (!extractAll) result+="terdokumentasi ";
       result+="dengan tautan ke ";
-      if (extractAll) 
+      if (extractAll)
       {
         result+="dokumentasi modul untuk setiap anggota:";
       }
-      else 
+      else
       {
         result+="modul yang memuatnya:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "Indeks Modul"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool first_capital, bool singular)
-    {       
+    {
       QCString result((first_capital ? "Modul" : "modul"));
       if (!singular)  result+="-modul";
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1735,24 +1735,24 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Tipe" : "tipe"));
       if (!singular)  result+="-tipe";
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Subprogram" : "subprogram"));
       if (!singular)  result+="-subprogram";
-      return result; 
+      return result;
     }
 
     /*! C# Type Constraint list */
@@ -1823,7 +1823,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return (QCString)"Memuat file dalam "+name;
     }
 
-    /** Compiles a date string. 
+    /** Compiles a date string.
      *  @param year Year in 4 digits
      *  @param month Month of the year: 1=January
      *  @param day Day of the Month: 1..31
