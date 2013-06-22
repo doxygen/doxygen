@@ -10,7 +10,7 @@ Macedonian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian,
 Serbian, SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish,
 Ukrainian, and Vietnamese.
 
-Of them, 9 translators are up-to-date, 31 translators are based on
+Of them, 10 translators are up-to-date, 30 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -19,6 +19,7 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 250 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorChinesetraditional -- The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()
   TranslatorCzech
   TranslatorDutch
   TranslatorEnglish
@@ -45,12 +46,7 @@ must be implemented to become up-to-date:
   TranslatorChinese               1.8.2 	15 methods to implement (6 %)
   TranslatorPortuguese            1.8.0 	22 methods to implement (8 %)
   TranslatorIndonesian            1.8.0 	22 methods to implement (8 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorDanish                1.8.0 	22 methods to implement (8 %)
-  TranslatorChinesetraditional    1.8.0 	22 methods to implement (8 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorCatalan               1.8.0 	22 methods to implement (8 %)
   TranslatorBrazilian             1.8.0 	22 methods to implement (8 %)
   TranslatorArmenian              1.8.0 	22 methods to implement (8 %)
@@ -59,23 +55,13 @@ must be implemented to become up-to-date:
   TranslatorPersian               1.7.5 	25 methods to implement (10 %)
   TranslatorVietnamese            1.6.0 	34 methods to implement (13 %)
   TranslatorSwedish               1.6.0 	34 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorSerbian               1.6.0 	34 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorSerbianCyrilic        1.6.0 	34 methods to implement (13 %)
   TranslatorMacedonian            1.6.0 	34 methods to implement (13 %)
   TranslatorJapanese              1.6.0 	33 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorFinnish               1.6.0 	34 methods to implement (13 %)
   TranslatorAfrikaans             1.6.0 	34 methods to implement (13 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorSlovene               1.4.6 	58 methods to implement (23 %)
-	Note: Reimplementation using UTF-8 suggested.
-
   TranslatorNorwegian             1.4.6 	56 methods to implement (22 %)
   TranslatorLithuanian            1.4.6 	58 methods to implement (23 %)
   TranslatorHungarian             1.4.6 	58 methods to implement (23 %)
@@ -348,35 +334,10 @@ TranslatorChinese   (TranslatorAdapter_1_8_2)  15 methods to implement (6 %)
     virtual QCString trInstanceMethods()
 
 
-TranslatorChinesetraditional   (TranslatorAdapter_1_8_0)  22 methods to implement (8 %)
+TranslatorChinesetraditional   (Translator)
 ----------------------------
 
-  Implements 228 of the required methods (91 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDetailLevel()
-    virtual QCString trTemplateParameters()
-    virtual QCString trServices()
-    virtual QCString trClassMethods()
-    virtual QCString trProvidedByCategory()
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
-    virtual QCString trServiceReference(const char * sName)
-    virtual QCString trDesignOverview()
-    virtual QCString trAndMore(const QCString & number)
-    virtual QCString trConstantGroups()
-    virtual QCString trMethodDocumentation()
-    virtual QCString trEnumReference(const char * name)
-    virtual QCString trInheritedFrom(const char * members, const char * what)
-    virtual QCString trAdditionalInheritedMembers()
-    virtual QCString trInterfaces()
-    virtual QCString trServiceGeneratedFromFiles(bool single)
-    virtual QCString trEnumGeneratedFromFiles(bool single)
-    virtual QCString trConstantGroupReference(const char * namespaceName)
-    virtual QCString trPanelSynchronisationTooltip(bool enable)
-    virtual QCString trExtendsClass()
-    virtual QCString trSingletonReference(const char * sName)
-    virtual QCString trInstanceMethods()
+  Implements 250 of the required methods (100 %).
 
 
 TranslatorCroatian   (TranslatorAdapter_1_8_2)  15 methods to implement (6 %)

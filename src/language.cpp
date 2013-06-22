@@ -189,7 +189,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SV
   else if (L_EQUAL("swedish"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorSwedish);
+    theTranslator=new TranslatorSwedish;
   }
 #endif
 #ifdef LANG_CZ
@@ -207,7 +207,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_ID
   else if (L_EQUAL("indonesian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorIndonesian);
+    theTranslator=new TranslatorIndonesian;
   }
 #endif
 #ifdef LANG_IT
@@ -225,7 +225,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_JP
   else if (L_EQUAL("japanese"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorJapanese);
+    theTranslator=new TranslatorJapanese;
   }
 #endif
 #ifdef LANG_JE
@@ -297,7 +297,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SI
   else if (L_EQUAL("slovene"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorSlovene);
+    theTranslator=new TranslatorSlovene;
   }
 #endif
 #ifdef LANG_CN
@@ -309,7 +309,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_TW
   else if (L_EQUAL("chinese-traditional"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorChinesetraditional);
+    theTranslator=new TranslatorChinesetraditional;
   }
 #endif
 #ifdef LANG_NO
@@ -351,7 +351,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SR
   else if (L_EQUAL("serbian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorSerbian);
+    theTranslator=new TranslatorSerbian;
   }
 #endif
 #ifdef LANG_SC
@@ -381,7 +381,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_ZA
   else if (L_EQUAL("afrikaans"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorAfrikaans);
+    theTranslator=new TranslatorAfrikaans;
   }
 #endif
 #ifdef LANG_AR
