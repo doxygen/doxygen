@@ -61,11 +61,22 @@ class TagAnchorInfoList : public QList<TagAnchorInfo>
     virtual ~TagAnchorInfoList() {}
 };
 
+/** Container for enum values that are scoped within an enum */
+class TagEnumValueInfo
+{
+  public:
+    QCString name;
+    QCString file;
+    QCString anchor;
+    QCString clangid;
+};
+
 /** Container for member specific info that can be read from a tagfile */
 class TagMemberInfo
 {
   public:
-    TagMemberInfo() : prot(Public), virt(Normal), isStatic(FALSE) {}
+    TagMemberInfo() : prot(Public), virt(Normal), isStatic(FALSE) 
+    { enumValues.setAutoDelete(TRUE); }
     QCString type;
     QCString name;
     QCString anchorFile;
@@ -77,6 +88,7 @@ class TagMemberInfo
     Protection prot;
     Specifier virt;
     bool isStatic; 
+    QList<TagEnumValueInfo> enumValues;
 };
 
 /** Container for class specific info that can be read from a tagfile */
@@ -205,6 +217,7 @@ class TagFileParser : public QXmlDefaultHandler
                  InGroup,
                  InPage,
                  InMember,
+                 InEnumValue,
                  InPackage,
                  InDir,
                  InTempArgList
@@ -413,6 +426,36 @@ class TagFileParser : public QXmlDefaultHandler
         case InGroup:     m_curGroup->members.append(m_curMember); break;
         case InPackage:   m_curPackage->members.append(m_curMember); break;
         default:   warn("Unexpected tag `member' found\n"); break; 
+      }
+    }
+
+    void startEnumValue( const QXmlAttributes& attrib)
+    {
+      if (m_state==InMember)
+      {
+        m_curString = "";
+        m_curEnumValue = new TagEnumValueInfo;
+        m_curEnumValue->file = attrib.value("file").utf8();
+        m_curEnumValue->anchor = attrib.value("anchor").utf8();
+        m_curEnumValue->clangid = attrib.value("clangid").utf8();
+        m_stateStack.push(new State(m_state));
+        m_state = InEnumValue;
+      }
+      else
+      {
+        warn("Found enumvalue tag outside of member tag\n");
+      }
+    }
+
+    void endEnumValue()
+    {
+      m_curEnumValue->name = m_curString.stripWhiteSpace(); 
+      m_state = *m_stateStack.top();
+      m_stateStack.remove();
+      if (m_state==InMember)
+      {
+        m_curMember->enumValues.append(m_curEnumValue);
+        m_curEnumValue=0;
       }
     }
 
@@ -745,6 +788,7 @@ class TagFileParser : public QXmlDefaultHandler
 
       m_startElementHandlers.insert("compound",    new StartElementHandler(this,&TagFileParser::startCompound));
       m_startElementHandlers.insert("member",      new StartElementHandler(this,&TagFileParser::startMember));
+      m_startElementHandlers.insert("enumvalue",   new StartElementHandler(this,&TagFileParser::startEnumValue));
       m_startElementHandlers.insert("name",        new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("base",        new StartElementHandler(this,&TagFileParser::startBase));
       m_startElementHandlers.insert("filename",    new StartElementHandler(this,&TagFileParser::startStringValue));
@@ -768,6 +812,7 @@ class TagFileParser : public QXmlDefaultHandler
 
       m_endElementHandlers.insert("compound",    new EndElementHandler(this,&TagFileParser::endCompound));
       m_endElementHandlers.insert("member",      new EndElementHandler(this,&TagFileParser::endMember));
+      m_endElementHandlers.insert("enumvalue",   new EndElementHandler(this,&TagFileParser::endEnumValue));
       m_endElementHandlers.insert("name",        new EndElementHandler(this,&TagFileParser::endName));
       m_endElementHandlers.insert("base",        new EndElementHandler(this,&TagFileParser::endBase));
       m_endElementHandlers.insert("filename",    new EndElementHandler(this,&TagFileParser::endFilename));
@@ -853,6 +898,7 @@ class TagFileParser : public QXmlDefaultHandler
     TagPageInfo               *m_curPage;
     TagDirInfo                *m_curDir;
     TagMemberInfo             *m_curMember;
+    TagEnumValueInfo          *m_curEnumValue;
     TagIncludeInfo            *m_curIncludes;
     QCString                   m_curString;
     QCString                   m_tagName;
@@ -1101,6 +1147,26 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
       delete me->argList;
       me->argList = new ArgumentList;
       stringToArgumentList(me->args,me->argList);
+    }
+    if (tmi->enumValues.count()>0)
+    {
+      me->spec |= Entry::Strong;
+      QListIterator<TagEnumValueInfo> evii(tmi->enumValues);
+      TagEnumValueInfo *evi;
+      for (evii.toFirst();(evi=evii.current());++evii)
+      {
+        Entry *ev      = new Entry;
+        ev->type       = "@";
+        ev->name       = evi->name;
+        ev->id         = evi->clangid;
+        ev->section    = Entry::VARIABLE_SEC;
+        TagInfo *ti    = new TagInfo;
+        ti->tagName    = m_tagName;
+        ti->anchor     = evi->anchor;
+        ti->fileName   = evi->file;
+        ev->tagInfo    = ti;
+        me->addSubEntry(ev);
+      }
     }
     me->protection = tmi->prot;
     me->virt       = tmi->virt;

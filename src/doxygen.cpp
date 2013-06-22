@@ -7187,10 +7187,12 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                 // them here and only add them to the enum
                 e->loadEntry(g_storage);
                 Entry *root = e->entry();
-                //printf("md->qualifiedName()=%s rootNav->name()=%s\n",
-                //    md->qualifiedName().data(),rootNav->name().data());
+                //printf("md->qualifiedName()=%s rootNav->name()=%s tagInfo=%p\n",
+                //    md->qualifiedName().data(),rootNav->name().data(),rootNav->tagInfo());
                 if (substitute(md->qualifiedName(),"::",".")== // TODO: add function to get canonical representation
-                    substitute(rootNav->name(),"::",".")) // enum value scope matches that of the enum
+                    substitute(rootNav->name(),"::",".") ||    // enum value scope matches that of the enum
+                    rootNav->tagInfo()                         // be less strict for tag files as members can have incomplete scope
+                   ) 
                 {
                   MemberDef *fmd=new MemberDef(
                       root->fileName,root->startLine,root->startColumn,
