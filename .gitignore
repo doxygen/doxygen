@@ -19,6 +19,8 @@ Makefile
 /src/Makefile.doxygen
 /src/Makefile.libdoxycfg
 /src/Makefile.libdoxygen
+/addon/doxysearch/Makefile.doxyindexer
+/addon/doxysearch/Makefile.doxysearch
 
 /bin
 /lib
