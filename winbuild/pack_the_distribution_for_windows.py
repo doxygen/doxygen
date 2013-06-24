@@ -1,4 +1,4 @@
-﻿#! python2
+#! python2
 
 from __future__ import print_function
 
@@ -8,37 +8,6 @@ import shutil
 import subprocess
 import sys
 import textwrap
-
-
-def getCurrentSubdirName():
-    subdir, fname = os.path.split(os.path.realpath(__file__))
-    return os.path.basename(subdir)
-
-
-def getCurrentBranchName():
-    result = None
-    cmd = 'git branch --list --no-color'
-    pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
-    for line in pipe:
-        line = line.decode('utf-8')
-        if line.startswith('*'):
-            result = line[2:].rstrip()
-    pipe.close()
-    return result
-
-
-def getUserName():
-    user = None             # init
-    p = subprocess.Popen('git config user.name', stdout=subprocess.PIPE)
-    user = p.communicate()[0]
-    user = user.decode('utf-8')
-    p.wait()
-    return user
-
-
-def getUserInitials():
-    user = getUserName()
-    return ''.join(s[0] for s in user.split())
 
 
 def gitSHA_date_time():
@@ -60,16 +29,6 @@ def gitSHA_date_time():
     tstamp = lst[1].replace(':', '') # '092347' for the time
 
     return sha, dstamp, tstamp
-
-
-def gitDescribe():
-    result = None
-    cmd = 'git describe'
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    descr = p.communicate()[0]
-    descr = descr.decode('utf-8')
-    p.wait()
-    return descr.strip()
 
 
 def getDoxygenVersion():
@@ -206,10 +165,15 @@ def buildAndZipTranslatorReport(distr_dir):
     os.chdir(wd)  # back to the original working directory
 
 
-def xxx():
+def mailto():
 
-    # Vytvoříme dopis.
-    subject = 'Windows binaries available for %s in SVN' % doxdir
+    # Information for the letter.
+    ver = getDoxygenVersion()
+    sha, dstamp, tstamp = gitSHA_date_time()
+    doxzipname = getBinariesZipBareName()
+    trzipname = getTranslatorReportZipBareName()
+
+    subject = 'Windows binaries available for {}-{} at SourceForge'.format(ver, dstamp)
     subject = subject.replace(' ', '%20')
 
     body = textwrap.dedent('''\
@@ -223,7 +187,7 @@ def xxx():
         This is the place where you should find also the next
         releases.  Name of the archive file is
 
-          %s
+          {}
 
         The related translator report can be found inside the directory
 
@@ -231,20 +195,20 @@ def xxx():
 
         Name of the archive file is
 
-          %s
+          {}
 
         The binaries are NOT created automatically, so it may
-        happen that some newer SVN sources were not compiled
+        happen that some newer sources were not compiled
         because I am not present to do that or I forgot... ;)
 
         Regards,
             Petr
 
         --
-        Petr Prikryl (prikryl at atlas dot cz)''') % (doxzipname, trzipname)
+        Petr Prikryl (prikryl at atlas dot cz)''').format(doxzipname, trzipname)
     body = body.replace('\n', '%0d')
 
-    # Zkonstruujeme URI a spustíme mailer pro odeslání dopisu.
+    # Make the mailto URI and launch the mailer.
     to_addr = 'doxygen-users@lists.sourceforge.net'
     mailtoURI = 'mailto:%s?subject=%s&body=%s' % (to_addr, subject, body)
     os.startfile(mailtoURI)
@@ -263,3 +227,6 @@ if __name__ == '__main__':
 
     # The translator report...
     buildAndZipTranslatorReport(dist_dir)
+
+    # Launch the mailer with the generated message body.
+    mailto()
