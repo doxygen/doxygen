@@ -208,6 +208,12 @@ class DocbookCodeGenerator : public CodeOutputInterface
       writeDocbookLink(m_t,ref,file,anchor,name,tooltip);
       col+=strlen(name);
     }
+    void writeTooltip(const char *, const DocLinkInfo &, const char *,
+                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                     )
+    {
+      Docbook_DB(("(writeToolTip)\n"));
+    }
     void startCodeLine(bool)
     {
       Docbook_DB(("(startCodeLine)\n"));
@@ -234,16 +240,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
       m_refId.resize(0);
       m_external.resize(0);
       m_insideCodeLine=FALSE;
-    }
-    void startCodeAnchor(const char *id)
-    {
-      Docbook_DB(("(startCodeAnchor)\n"));
-      m_t << "<anchor id=\"" << id << "\">";
-    }
-    void endCodeAnchor()
-    {
-      Docbook_DB(("(endCodeAnchor)\n"));
-      m_t << "</anchor>";
     }
     void startFontClass(const char * /*colorClass*/)
     {

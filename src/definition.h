@@ -130,8 +130,11 @@ class Definition : public DefinitionIntf
     /*! Returns the anchor within a page where this item can be found */
     virtual QCString anchor() const = 0;
 
-    /*! Returns the name of the source listing of this file. */
-    virtual QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
+    /*! Returns the name of the source listing of this definition. */
+    virtual QCString getSourceFileBase() const;
+
+    /*! Returns the anchor of the source listing of this definition. */
+    virtual QCString getSourceAnchor() const;
 
     /*! Returns the detailed description of this definition */
     QCString documentation() const;

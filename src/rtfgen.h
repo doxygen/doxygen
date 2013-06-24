@@ -84,6 +84,9 @@ class RTFGenerator : public OutputGenerator
     void writeCodeLink(const char *ref, const char *file,
                        const char *anchor,const char *name,
                        const char *tooltip);
+    void writeTooltip(const char *, const DocLinkInfo &, const char *,
+                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                     ) {}
     void startTextLink(const char *f,const char *anchor);
     void endTextLink();
     void startHtmlLink(const char *url);
@@ -139,8 +142,6 @@ class RTFGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);
-    void startCodeAnchor(const char *) {};
-    void endCodeAnchor() {};
     void writeChar(char c);
     void writeLatexSpacing() {};//{ t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const char *type,const char *file, 

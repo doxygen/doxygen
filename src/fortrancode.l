@@ -49,6 +49,7 @@
 #include "classlist.h"
 #include "filedef.h"
 #include "namespacedef.h"
+#include "tooltip.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -337,9 +338,18 @@ static void codifyLines(QCString str)
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                  const char *ref,const char *file,
-                  const char *anchor,const char *text)
+                  Definition *d,const char *text)
 {
+  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  TooltipManager::instance()->addTooltip(d);
+  QCString ref  = d->getReference();
+  QCString file = d->getOutputFileBase();
+  QCString anchor = d->anchor();
+  QCString tooltip; 
+  if (!sourceTooltips) // fall back to simple "title" tooltips
+  {
+    tooltip = d->briefDescriptionAsTooltip();
+  }
   bool done=FALSE;
   char *p=(char *)text;
   while (!done)
@@ -352,7 +362,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       g_yyLineNr++;
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,0);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       endCodeLine();
       if (g_yyLineNr<g_inputLines) 
       {
@@ -362,7 +372,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,0);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
@@ -559,10 +569,7 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
       { 
 	addDocCrossReference(g_currentMemberDef,md); 
       }     
-      writeMultiLineCodeLink(ol,md->getReference(),
-	                        md->getOutputFileBase(),
-	                        md->anchor(),
-				text ? text : memberText);
+      writeMultiLineCodeLink(ol,md,text ? text : memberText);
       addToSearchIndex(text ? text : memberText);
       return TRUE;
     } 
@@ -587,7 +594,7 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
     } 
     else 
     { // write type or interface link
-      writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),tmp);
+      writeMultiLineCodeLink(ol,cd,tmp);
       addToSearchIndex(tmp.data());
     }
   }

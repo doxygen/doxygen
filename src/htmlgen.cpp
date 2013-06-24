@@ -90,6 +90,10 @@ static const char search_jquery_script5[]=
 #include "jquery_fx_js.h"
 ;
 
+static const char search_jquery_script6[]=
+#include "jquery_pt_js.h"
+;
+
 static const char svgpan_script[]=
 #include "svgpan_js.h"
 ;
@@ -1247,7 +1251,7 @@ void HtmlCodeGenerator::setRelativePath(const QCString &path)
 void HtmlCodeGenerator::codify(const char *str)
 {
   static int tabSize = Config_getInt("TAB_SIZE");
-  if (str)
+  if (str && m_streamSet)
   { 
     const char *p=str;
     char c;
@@ -1294,7 +1298,7 @@ void HtmlCodeGenerator::codify(const char *str)
 
 void HtmlCodeGenerator::docify(const char *str)
 {
-  if (str)
+  if (str && m_streamSet)
   {
     const char *p=str;
     char c;
@@ -1324,25 +1328,24 @@ void HtmlCodeGenerator::docify(const char *str)
 void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
                                     const char *anchor,int l)
 {
+  if (!m_streamSet) return;
   QCString lineNumber,lineAnchor;
   lineNumber.sprintf("%5d",l);
   lineAnchor.sprintf("l%05d",l);
 
+  m_t << "<div class=\"line\">";
+  m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">"; 
   if (filename)
   {
-    startCodeAnchor(lineAnchor);
-    writeCodeLink(ref,filename,anchor,lineNumber,0);
-    endCodeAnchor();
+    _writeCodeLink("line",ref,filename,anchor,lineNumber,0);
   }
   else
   {
-    startCodeAnchor(lineAnchor);
     codify(lineNumber);
-    endCodeAnchor();
   }
+  m_t << "</span>"; 
   m_t << "&#160;";
 }
-
 
 void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
                                       const char *anchor, const char *name,
@@ -1350,14 +1353,22 @@ void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
 {
   if (!m_streamSet) return;
   //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
+  _writeCodeLink("code",ref,f,anchor,name,tooltip);
+}
+
+void HtmlCodeGenerator::_writeCodeLink(const char *className,
+                                      const char *ref,const char *f,
+                                      const char *anchor, const char *name,
+                                      const char *tooltip)
+{
   if (ref) 
   {
-    m_t << "<a class=\"codeRef\" ";
+    m_t << "<a class=\"" << className << "Ref\" ";
     m_t << externalLinkTarget() << externalRef(m_relPath,ref,FALSE);
   }
   else
   {
-    m_t << "<a class=\"code\" ";
+    m_t << "<a class=\"" << className << "\" ";
   }
   m_t << "href=\"";
   m_t << externalRef(m_relPath,ref,TRUE);
@@ -1371,28 +1382,101 @@ void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
   m_col+=qstrlen(name);
 }
 
+void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
+                                     const char *decl, const char *desc, 
+                                     const SourceLinkInfo &defInfo, 
+                                     const SourceLinkInfo &declInfo)
+{
+  m_t << "<div class=\"ttc\" id=\"" << id << "\">";
+  m_t << "<div class=\"ttname\">";
+  if (!docInfo.url.isEmpty())
+  {
+    m_t << "<a href=\"";
+    m_t << externalRef(m_relPath,docInfo.ref,TRUE);
+    m_t << docInfo.url << Doxygen::htmlFileExtension;
+    if (!docInfo.anchor.isEmpty())
+    {
+      m_t << "#" << docInfo.anchor;
+    }
+    m_t << "\">";
+  }
+  docify(docInfo.name);
+  if (!docInfo.url.isEmpty())
+  {
+    m_t << "</a>";
+  }
+  m_t << "</div>";
+  if (decl)
+  {
+    m_t << "<div class=\"ttdeci\">";
+    docify(decl);
+    m_t << "</div>";
+  }
+  if (desc)
+  {
+    m_t << "<div class=\"ttdoc\">";
+    docify(desc);
+    m_t << "</div>";
+  }
+  if (!defInfo.file.isEmpty())
+  {
+    m_t << "<div class=\"ttdef\"><b>Definition:</b> ";
+    if (!defInfo.url.isEmpty())
+    {
+      m_t << "<a href=\"";
+      m_t << externalRef(m_relPath,defInfo.ref,TRUE);
+      m_t << defInfo.url << Doxygen::htmlFileExtension;
+      if (!defInfo.anchor.isEmpty())
+      {
+        m_t << "#" << defInfo.anchor;
+      }
+      m_t << "\">";
+    }
+    m_t << defInfo.file << ":" << defInfo.line;
+    if (!defInfo.url.isEmpty())
+    {
+      m_t << "</a>";
+    }
+    m_t << "</div>";
+  }
+  if (!declInfo.file.isEmpty())
+  {
+    m_t << "<div class=\"ttdecl\"><b>Declaration:</b> ";
+    if (!declInfo.url.isEmpty())
+    {
+      m_t << "<a href=\"";
+      m_t << externalRef(m_relPath,declInfo.ref,TRUE);
+      m_t << declInfo.url << Doxygen::htmlFileExtension;
+      if (!declInfo.anchor.isEmpty())
+      {
+        m_t << "#" << declInfo.anchor;
+      }
+      m_t << "\">";
+    }
+    m_t << declInfo.file << ":" << declInfo.line;
+    if (!declInfo.url.isEmpty())
+    {
+      m_t << "</a>";
+    }
+    m_t << "</div>";
+  }
+  m_t << "</div>" << endl;
+}
+
+
 void HtmlCodeGenerator::startCodeLine(bool hasLineNumbers) 
 { 
-  if (!hasLineNumbers) m_t << "<div class=\"line\">";
-  m_col=0; 
+  if (m_streamSet)
+  {
+    if (!hasLineNumbers) m_t << "<div class=\"line\">";
+    m_col=0; 
+  }
 }
 
 void HtmlCodeGenerator::endCodeLine() 
 { 
-  m_t << "</div>\n";
+  if (m_streamSet) m_t << "</div>\n";
 }
-
-void HtmlCodeGenerator::startCodeAnchor(const char *label) 
-{ 
-  m_t << "<div class=\"line\">";
-  m_t << "<a name=\"" << label << "\"></a><span class=\"lineno\">"; 
-}
-
-void HtmlCodeGenerator::endCodeAnchor() 
-{ 
-  m_t << "</span>"; 
-}
-
 
 void HtmlCodeGenerator::startFontClass(const char *s) 
 { 
@@ -1484,6 +1568,10 @@ void HtmlGenerator::init()
       {
         t << search_jquery_script4 << search_jquery_script5;
       }
+      if (Config_getBool("SOURCE_BROWSER"))
+      {
+        t << search_jquery_script6;
+      }
     }
   }
 
@@ -1503,6 +1591,16 @@ void HtmlGenerator::init()
     {
       FTextStream t(&f);
       t << dynsections_script;
+      if (Config_getBool("SOURCE_BROWSER") && Config_getBool("SOURCE_TOOLTIPS"))
+      {
+        t << endl << 
+          "$(document).ready(function() {\n"
+          "  $('.code,.codeRef').each(function() {\n"
+          "    $(this).data('powertip',$('#'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
+          "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
+          "  });\n"
+          "});\n";
+      }
     }
   }
 }

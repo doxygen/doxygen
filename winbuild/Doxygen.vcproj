@@ -3259,6 +3259,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\tooltip.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\translator.cpp"
 				>
 				<FileConfiguration
@@ -4011,6 +4015,10 @@
 			</File>
 			<File
 				RelativePath="..\src\textdocvisitor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\tooltip.h"
 				>
 			</File>
 			<File

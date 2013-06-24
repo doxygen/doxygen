@@ -1,4 +1,4 @@
-# Doxyfile 1.8.3.1
+# Doxyfile 1.8.4
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -124,6 +124,7 @@ STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
 REFERENCES_LINK_SOURCE = YES
+SOURCE_TOOLTIPS        = YES
 USE_HTAGS              = NO
 VERBATIM_HEADERS       = YES
 CLANG_ASSISTED_PARSING = YES

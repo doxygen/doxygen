@@ -54,12 +54,13 @@ class DevNullCodeDocInterface : public CodeOutputInterface
     virtual void writeCodeLink(const char *,const char *,
                                const char *,const char *,
                                const char *) {}
+    virtual void writeTooltip(const char *, const DocLinkInfo &, const char *,
+                              const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                             ) {}
     virtual void writeLineNumber(const char *,const char *,
                                  const char *,int) {}
     virtual void startCodeLine(bool) {}
     virtual void endCodeLine() {}
-    virtual void startCodeAnchor(const char *) {}
-    virtual void endCodeAnchor() {}
     virtual void startFontClass(const char *) {}
     virtual void endFontClass() {}
     virtual void writeCodeAnchor(const char *) {}
@@ -1645,14 +1646,7 @@ QCString FileDef::getSourceFileBase() const
 /*! Returns the name of the verbatim copy of this file (if any). */
 QCString FileDef::includeName() const 
 { 
-  if (Htags::useHtags)
-  {
-    return Htags::path2URL(m_filePath);
-  }
-  else
-  {
-    return convertNameToFile(m_diskName)+"_source"; 
-  }
+  return getSourceFileBase();
 }
 
 MemberList *FileDef::createMemberList(MemberListType lt)

@@ -34,6 +34,10 @@
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5),arg1,arg2,arg3,arg4,arg5)
 #define FORALLPROTO6(arg1,arg2,arg3,arg4,arg5,arg6) \
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6),arg1,arg2,arg3,arg4,arg5,arg6)
+#define FORALLPROTO7(arg1,arg2,arg3,arg4,arg5,arg6,arg7) \
+  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6,arg7),arg1,arg2,arg3,arg4,arg5,arg6,arg7)
+#define FORALLPROTO8(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8) \
+  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8),arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8)
   
 class ClassDiagram;
 class DotClassGraph;
@@ -149,6 +153,9 @@ class OutputList : public OutputDocInterface
                        const char *anchor,const char *name,
                        const char *tooltip)
     { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name,tooltip); }
+    void writeTooltip(const char *id, const DocLinkInfo &docInfo, const char *decl,
+                      const char *desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
+    { forall(&OutputGenerator::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
     void startTextLink(const char *file,const char *anchor)
     { forall(&OutputGenerator::startTextLink,file,anchor); }
     void endTextLink()
@@ -262,10 +269,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name,args); }
     void endDoxyAnchor(const char *fn,const char *anchor)
     { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
-    void startCodeAnchor(const char *label)
-    { forall(&OutputGenerator::startCodeAnchor,label); }
-    void endCodeAnchor()
-    { forall(&OutputGenerator::endCodeAnchor); }
     void writeLatexSpacing() 
     { forall(&OutputGenerator::writeLatexSpacing); }
     void startDescription() 
@@ -542,6 +545,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
     FORALLPROTO5(const char *,const char *,const char *,const char *,bool);
     FORALLPROTO6(const char *,const char *,const char *,const char *,const char *,const char *);
+    FORALLPROTO6(const char *,const DocLinkInfo &,const char *,const char *,const SourceLinkInfo &,const SourceLinkInfo &);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

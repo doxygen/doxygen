@@ -3457,7 +3457,7 @@ QCString ClassDef::getSourceFileBase() const
   }
   else
   {
-    return convertNameToFile(m_impl->fileName)+"_source"; 
+    return Definition::getSourceFileBase();
   }
 }
 

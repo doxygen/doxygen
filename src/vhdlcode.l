@@ -42,6 +42,7 @@
 #include "config.h"
 #include "classdef.h"
 #include "filedef.h"
+#include "tooltip.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -395,10 +396,19 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE,b
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                  const char *ref,const char *file,
-                  const char *anchor,const char *text,
-		  const char *tooltip)
+                  Definition *d,
+                  const char *text)
 {
+  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  TooltipManager::instance()->addTooltip(d);
+  QCString ref  = d->getReference();
+  QCString file = d->getOutputFileBase();
+  QCString anchor = d->anchor();
+  QCString tooltip; 
+  if (!sourceTooltips) // fall back to simple "title" tooltips
+  {
+    tooltip = d->briefDescriptionAsTooltip();
+  }
   bool done=FALSE;
   char *p=(char *)text;
   while (!done)
@@ -455,11 +465,7 @@ static void generateFuncLink(CodeOutputInterface &ol,MemberDef* mdef)
 
   if (mdef && mdef->isLinkable()) // is it a linkable class
   {
-    writeMultiLineCodeLink(ol,mdef->getReference(),
-	                      mdef->getOutputFileBase(),
-			      mdef->anchor(),
-			      mdef->name(),
-			      mdef->briefDescriptionAsTooltip());
+    writeMultiLineCodeLink(ol,mdef,mdef->name());
     addToSearchIndex(memberName);
     return;
   }
@@ -496,11 +502,7 @@ static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& m
 
   if (md && md->isLinkable()) // is it a linkable class
   {
-    writeMultiLineCodeLink(ol,md->getReference(),
-	                      md->getOutputFileBase(),
-			      md->anchor(),
-			      memberName,
-			      md->briefDescriptionAsTooltip());
+    writeMultiLineCodeLink(ol,md,memberName);
     addToSearchIndex(memberName);
     return;
   }
@@ -532,11 +534,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
       //{
       //  temp=VhdlDocGen::getClassName(cd);
       //}
-      writeMultiLineCodeLink(ol,cd->getReference(),
-	                        cd->getOutputFileBase(),
-				cd->anchor(),
-				temp,
-				cd->briefDescriptionAsTooltip());
+      writeMultiLineCodeLink(ol,cd,temp);
       addToSearchIndex(className);
       return;
     }
@@ -1518,6 +1516,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
+  TooltipManager::instance()->clearTooltips();
   if (memberDef)
   {
     ClassDef *dd=memberDef->getClassDef();
@@ -1587,6 +1586,10 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   if (g_needsTermination)
   {
     endCodeLine();
+  }
+  if (fd)
+  {
+    TooltipManager::instance()->writeTooltips(*g_code);
   }
   if (cleanupSourceDef)
   {

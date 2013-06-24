@@ -17,6 +17,7 @@
 #include "growbuf.h"
 #include "membername.h"
 #include "filename.h"
+#include "tooltip.h"
 
 static Definition *g_currentDefinition=0;
 static MemberDef  *g_currentMemberDef=0;
@@ -611,10 +612,19 @@ static void codifyLines(CodeOutputInterface &ol,FileDef *fd,const char *text,
 
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   FileDef *fd,uint &line,uint &column,
-                  const char *ref,const char *file,
-                  const char *anchor,const char *text,
-		  const char *tooltip)
+                  Definition *d,
+                  const char *text)
 {
+  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  TooltipManager::instance()->addTooltip(d);
+  QCString ref  = d->getReference();
+  QCString file = d->getOutputFileBase();
+  QCString anchor = d->anchor();
+  QCString tooltip;
+  if (!sourceTooltips) // fall back to simple "title" tooltips
+  {
+   tooltip = d->briefDescriptionAsTooltip();
+  }
   bool done=FALSE;
   char *p=(char *)text;
   while (!done)
@@ -685,14 +695,7 @@ void ClangParser::linkMacro(CodeOutputInterface &ol,FileDef *fd,
     {
       if (md->isDefine())
       {
-        writeMultiLineCodeLink(ol,
-            fd,line,column,
-            md->getReference(),
-            md->getOutputFileBase(),
-            md->anchor(),
-            text,
-            md->briefDescriptionAsTooltip()
-            );
+        writeMultiLineCodeLink(ol,fd,line,column,md,text);
         return;
       }
     }
@@ -738,14 +741,7 @@ void ClangParser::linkIdentifier(CodeOutputInterface &ol,FileDef *fd,
     {
       addDocCrossReference(g_currentMemberDef,(MemberDef*)d);
     }
-    writeMultiLineCodeLink(ol,
-        fd,line,column,
-        d->getReference(),
-        d->getOutputFileBase(),
-        d->anchor(),
-        text,
-        d->briefDescriptionAsTooltip()
-        );
+    writeMultiLineCodeLink(ol,fd,line,column,d,text);
   }
   else
   {
@@ -786,6 +782,7 @@ static void detectFunctionBody(const char *s)
 
 void ClangParser::writeSources(CodeOutputInterface &ol,FileDef *fd)
 {
+  TooltipManager::instance()->clearTooltips();
   // (re)set global parser state
   g_currentDefinition=0;
   g_currentMemberDef=0;
@@ -894,6 +891,7 @@ void ClangParser::writeSources(CodeOutputInterface &ol,FileDef *fd)
     clang_disposeString(tokenString);
   }
   ol.endCodeLine();
+  TooltipManager::instance()->writeTooltips(ol);
 }
 
 ClangParser::ClangParser()

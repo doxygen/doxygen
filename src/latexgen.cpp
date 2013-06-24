@@ -2053,6 +2053,8 @@ void LatexGenerator::endCodeFragment()
 
 void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
 {
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   if (m_prettyCode)
   {
     QCString lineNumber;
@@ -2063,9 +2065,12 @@ void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const 
       QCString lineAnchor;
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(sourceFileName);
-      startCodeAnchor(lineAnchor);
+      //if (!m_prettyCode) return;
+      if (usePDFLatex && pdfHyperlinks)
+      {
+        t << "\\hypertarget{" << stripPath(lineAnchor) << "}{}";
+      }
       writeCodeLink(ref,fileName,anchor,lineNumber,0);
-      endCodeAnchor();
     }
     else
     { 
@@ -2099,21 +2104,6 @@ void LatexGenerator::endFontClass()
 {
   //if (!m_prettyCode) return;
   t << "}";
-}
-
-void LatexGenerator::startCodeAnchor(const char *name) 
-{
-  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
-  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  //if (!m_prettyCode) return;
-  if (usePDFLatex && pdfHyperlinks)
-  {
-    t << "\\hypertarget{" << stripPath(name) << "}{}";
-  }
-}
-
-void LatexGenerator::endCodeAnchor() 
-{
 }
 
 void LatexGenerator::startInlineHeader()

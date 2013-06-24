@@ -84,6 +84,9 @@ class ManGenerator : public OutputGenerator
     void writeCodeLink(const char *ref,const char *file,
                        const char *anchor,const char *name,
                        const char *tooltip);
+    void writeTooltip(const char *, const DocLinkInfo &, const char *,
+                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                     ) {}
     void startTextLink(const char *,const char *) {}
     void endTextLink() {}
     void startHtmlLink(const char *url);
@@ -145,8 +148,6 @@ class ManGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *) {}
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);

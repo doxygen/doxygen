@@ -257,6 +257,12 @@ class XMLCodeGenerator : public CodeOutputInterface
       writeXMLLink(m_t,ref,file,anchor,name,tooltip);
       col+=qstrlen(name);
     }
+    void writeTooltip(const char *, const DocLinkInfo &, const char *,
+                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
+                     )
+    {
+      XML_DB(("(writeToolTip)\n"));
+    }
     void startCodeLine(bool) 
     {
       XML_DB(("(startCodeLine)\n"));
@@ -298,21 +304,6 @@ class XMLCodeGenerator : public CodeOutputInterface
       m_refId.resize(0);
       m_external.resize(0);
       m_insideCodeLine=FALSE;
-    }
-    void startCodeAnchor(const char *id) 
-    {
-      XML_DB(("(startCodeAnchor)\n"));
-      if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
-      {
-        m_t << "<highlight class=\"normal\">";
-        m_normalHLNeedStartTag=FALSE;
-      }
-      m_t << "<anchor id=\"" << id << "\">";
-    }
-    void endCodeAnchor() 
-    {
-      XML_DB(("(endCodeAnchor)\n"));
-      m_t << "</anchor>";
     }
     void startFontClass(const char *colorClass) 
     {

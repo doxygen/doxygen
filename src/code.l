@@ -40,6 +40,7 @@
 #include "filedef.h"
 #include "filename.h"
 #include "namespacedef.h"
+#include "tooltip.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -597,10 +598,19 @@ static void codifyLines(const char *text)
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                  const char *ref,const char *file,
-                  const char *anchor,const char *text,
-		  const char *tooltip)
+                                   Definition *d,
+                                   const char *text)
 {
+  static bool sourceTooltips = Config_getBool("SOURCE_TOOLTIPS");
+  TooltipManager::instance()->addTooltip(d);
+  QCString ref  = d->getReference();
+  QCString file = d->getOutputFileBase();
+  QCString anchor = d->anchor();
+  QCString tooltip; 
+  if (!sourceTooltips) // fall back to simple "title" tooltips
+  {
+    tooltip = d->briefDescriptionAsTooltip();
+  }
   bool done=FALSE;
   char *p=(char *)text;
   while (!done)
@@ -881,11 +891,7 @@ static bool getLinkInScope(const QCString &c,  // scope
       }
       //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
-      writeMultiLineCodeLink(ol,md->getReference(),
-	                        md->getOutputFileBase(),
-	                        md->anchor(),
-				text ? text : memberText,
-				md->briefDescriptionAsTooltip());
+      writeMultiLineCodeLink(ol,md, text ? text : memberText);
       addToSearchIndex(text ? text : memberText);
       return TRUE;
     } 
@@ -1004,7 +1010,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	g_anchorCount++;
       }
     }
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),clName,cd->briefDescriptionAsTooltip());
+    writeMultiLineCodeLink(ol,cd,clName);
     addToSearchIndex(className);
     g_theCallContext.setClass(cd);
     if (md)
@@ -1063,7 +1069,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	  {
 	    text=clName;
 	  }
-	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),text,md->briefDescriptionAsTooltip());
+	  writeMultiLineCodeLink(ol,md,text);
           addToSearchIndex(clName);
 	  if (g_currentMemberDef)
 	  {
@@ -1127,8 +1133,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
       }
 
       // write the actual link
-      writeMultiLineCodeLink(ol,xmd->getReference(),
-	  xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
+      writeMultiLineCodeLink(ol,xmd,memName);
       addToSearchIndex(memName);
       return TRUE;
     }
@@ -1498,12 +1503,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  {
 	    if (ctx->method && ctx->method->isLinkable())
 	    {
-              writeMultiLineCodeLink(*g_code,
-		                     ctx->method->getReference(),
-	                             ctx->method->getOutputFileBase(),
-	                             ctx->method->anchor(),
-				     pName->data(),
-				     ctx->method->briefDescriptionAsTooltip());
+              writeMultiLineCodeLink(*g_code,ctx->method,pName->data());
 	      if (g_currentMemberDef)
 	      {
 	        addDocCrossReference(g_currentMemberDef,ctx->method);
@@ -1582,12 +1582,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	    }
 	    else if (ctx->objectVar && ctx->objectVar->isLinkable()) // object is class variable
 	    {
-	      writeMultiLineCodeLink(*g_code,
-		    ctx->objectVar->getReference(),
-		    ctx->objectVar->getOutputFileBase(),
-		    ctx->objectVar->anchor(),
-		    pObject->data(),
-		    ctx->objectVar->briefDescriptionAsTooltip());
+	      writeMultiLineCodeLink(*g_code,ctx->objectVar,pObject->data());
 	      if (g_currentMemberDef)
 	      {
 	        addDocCrossReference(g_currentMemberDef,ctx->objectVar);
@@ -1599,12 +1594,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    ) // object is class name
 	    {
 	      ClassDef *cd = ctx->objectType;
-	      writeMultiLineCodeLink(*g_code,
-		    cd->getReference(),
-		    cd->getOutputFileBase(),
-		    cd->anchor(),
-		    pObject->data(),
-		    cd->briefDescriptionAsTooltip());
+	      writeMultiLineCodeLink(*g_code,cd,pObject->data());
 	    }
 	    else // object still needs to be resolved
 	    {
@@ -1613,12 +1603,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      if (cd && cd->isLinkable())
 	      {
 		if (ctx->objectType==0) ctx->objectType=cd;
-	   	writeMultiLineCodeLink(*g_code,
-		    cd->getReference(),
-		    cd->getOutputFileBase(),
-		    cd->anchor(),
-		    pObject->data(),
-		    cd->briefDescriptionAsTooltip());
+	   	writeMultiLineCodeLink(*g_code,cd,pObject->data());
 	      }
 	      else
 	      {
@@ -1978,7 +1963,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  //printf("      include file %s found=%d\n",fd ? fd->absFilePath().data() : "<none>",found);
 					  if (found)
 					  {
-					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext,fd->briefDescriptionAsTooltip());
+	   	                            writeMultiLineCodeLink(*g_code,fd,yytext);
 					  }
 					  else
 					  {
@@ -3559,6 +3544,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   //printf("***parseCode() exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",
   //      exBlock,exName,fd,className,searchCtx?searchCtx->name().data():"<none>");
   if (s.isEmpty()) return;
+  TooltipManager::instance()->clearTooltips();
   if (g_codeClassSDict==0)
   {
     resetCCodeParserState();
@@ -3636,6 +3622,10 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     endFontClass();
     DBG_CTX((stderr,"endCodeLine(%d)\n",g_yyLineNr));
     g_code->endCodeLine();
+  }
+  if (fd)
+  {
+    TooltipManager::instance()->writeTooltips(*g_code);
   }
   if (cleanupSourceDef)
   {
