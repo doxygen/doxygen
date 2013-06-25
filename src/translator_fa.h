@@ -414,12 +414,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     { return "تعاريف"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "پیش تعریف های توابع"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -454,12 +448,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
      */
     virtual QCString trDefineDocumentation()
     { return "Define Documentation"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "مستندات تعاریف اولیه توابع"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -515,12 +503,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       if (projName) result+=(QCString)" برای "+projName;
       result+=(QCString)" توسط";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "نوشته شده توسط";
     }
 
     /*! this text is put before a class diagram */
@@ -781,12 +763,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
       result+="زير توليد شده است :";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "ليست الفبايي"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1084,16 +1060,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
     virtual QCString trTestList()
     {
       return "Test List";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP توابع عضو";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1439,14 +1405,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "جستجو برای";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1775,12 +1733,6 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"نمودار وابستگی دایرکتوری ها برای "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

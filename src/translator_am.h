@@ -375,12 +375,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     { return "Մակրոսներ"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Ֆունկցիաների նախատիպեր"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -415,12 +409,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDefineDocumentation()
     { return "Մակրոսներ"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Ֆունկցիաների նախատիպեր"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -459,7 +447,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       {
         return "Դասեր";
       }
-
     }
 
     /*! This is used in the documentation of a group before the list of
@@ -474,12 +461,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       if (projName) result+=projName+QCString(" -ի համար,");
       result+=(QCString)" հետևյալ համակարգով.";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "Հեղինակ - ";
     }
 
     /*! this text is put before a class diagram */
@@ -757,12 +738,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
       if (single) result+="ից."; else result+="երից.";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Այբբենական ցուցակ"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1063,16 +1038,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
     virtual QCString trTestList()
     {
       return "Թեստերի ցուցակ";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP անդամ ֆունկցիաներ";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1396,14 +1361,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Որոնում";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1778,12 +1735,6 @@ class TranslatorArmenian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)name + " -ի կախվածությունների գծագիր";
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

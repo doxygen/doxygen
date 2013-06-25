@@ -430,12 +430,6 @@ class TranslatorRomanian : public Translator
     { return "Definiţii"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Prototipuri de funcţii"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -470,12 +464,6 @@ class TranslatorRomanian : public Translator
      */
     virtual QCString trDefineDocumentation()
     { return "Documentaţia definiţiilor"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Documentaţia prototipurilor de funcţii"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -526,12 +514,6 @@ class TranslatorRomanian : public Translator
       if (projName) result+=(QCString)" pentru "+projName;
       result+=(QCString)" de către";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "scris de";
     }
 
     /*! this text is put before a class diagram */
@@ -796,12 +778,6 @@ class TranslatorRomanian : public Translator
       if (single) result+="ul:"; else result+="ele:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Listă Alfabetică"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1097,16 +1073,6 @@ class TranslatorRomanian : public Translator
     virtual QCString trTestList()
     {
       return "Listă de teste";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "Metode DCOP";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1452,14 +1418,6 @@ class TranslatorRomanian : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Caută";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1828,12 +1786,6 @@ class TranslatorRomanian : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Grafic de dependență a directoarelor pentru "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

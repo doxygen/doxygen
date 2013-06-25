@@ -164,8 +164,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
     QCString trDefines()
     { return "Makro deklaracije"; }
-    QCString trFuncProtos()
-    { return "Prototipi funkcij"; }
     QCString trTypedefs()
     { return "Uporabniško definirani tipi"; }
     QCString trEnumerations()
@@ -178,8 +176,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Vrednosti naštevnih tipov"; }
     QCString trDefineDocumentation()
     { return "Opis makro definicije"; }
-    QCString trFunctionPrototypeDocumentation()
-    { return "Opis prototipa funkcije"; }
     QCString trTypedefDocumentation()
     { return "Opis uporabniško definiranega tipa"; }
     QCString trEnumerationTypeDocumentation()
@@ -196,10 +192,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (projName) result+=(QCString)" projekt: "+projName;
       result+=(QCString)" generator: ";
       return result;
-    }
-    QCString trWrittenBy()
-    {
-      return "napisal ";
     }
     QCString trClassDiagram(const char *clName)
     {
@@ -429,12 +421,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       if (single) result+="e :"; else result+=" :";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    QCString trAlphabeticalList()
-    { return "abecedni seznam"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -740,16 +726,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     virtual QCString trTestList()
     {
       return "Test List";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP metode";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1116,14 +1092,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Išči";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */

@@ -417,12 +417,6 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
     { return "Дефиниције"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Декларације функција"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -457,12 +451,6 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
      */
     virtual QCString trDefineDocumentation()
     { return "Документација дефиниције"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Документација декларације функције"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -512,12 +500,6 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
       if (projName) result+=(QCString)" за "+projName;
       result+=(QCString)" помоћу";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "написао";
     }
 
     /*! this text is put before a class diagram */
@@ -797,12 +779,6 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
       if (single) result+="следеће датотеке:"; else result+="следећих датотека:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Абецедни списак"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1102,16 +1078,6 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
     virtual QCString trTestList()
     {
       return "Списак тестова";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP функције чланице";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1457,14 +1423,6 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Тражим";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */

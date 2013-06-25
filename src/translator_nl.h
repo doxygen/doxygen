@@ -157,8 +157,6 @@ class TranslatorDutch : public Translator
 
     QCString trDefines()
     { return "Macros"; }
-    QCString trFuncProtos()
-    { return "Functie Prototypes"; }
     QCString trTypedefs()
     { return "Typedefs"; }
     QCString trEnumerations()
@@ -171,8 +169,6 @@ class TranslatorDutch : public Translator
     { return "Enumeratie waarden"; }
     QCString trDefineDocumentation()
     { return "Documentatie van macro's"; }
-    QCString trFunctionPrototypeDocumentation()
-    { return "Documentatie van functie Prototypes"; }
     QCString trTypedefDocumentation()
     { return "Documentatie van typedefs"; }
     QCString trEnumerationTypeDocumentation()
@@ -191,10 +187,6 @@ class TranslatorDutch : public Translator
       if (projName) result+=(QCString)" voor "+projName;
       result+=(QCString)" door";
       return result;
-    }
-    QCString trWrittenBy()
-    {
-      return "geschreven door";
     }
     QCString trClassDiagram(const char *clName)
     {
@@ -419,12 +411,6 @@ class TranslatorDutch : public Translator
       if (single) result+=":"; else result+="en:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    QCString trAlphabeticalList()
-    { return "Alphabetical List"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -715,16 +701,6 @@ class TranslatorDutch : public Translator
     QCString trTestList()
     {
       return "Test Lijst";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    QCString trDCOPMethods()
-    {
-      return "DCOP Methoden";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1057,13 +1033,6 @@ class TranslatorDutch : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the index
-     *  of each page before the search field.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Zoek naar";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1409,12 +1378,6 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Folder afhankelijkheidsgraaf voor "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

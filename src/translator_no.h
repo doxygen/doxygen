@@ -433,12 +433,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     { return "Definisjoner"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Funksjonprototyper"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -473,12 +467,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trDefineDocumentation()
     { return "Define-dokumentasjon"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Funksjonsprototypedokumentasjon"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -534,12 +522,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       if (projName) result+=(QCString)" for "+projName;
       result+=(QCString)" av";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "skrevet av";
     }
 
     /*! this text is put before a class diagram */
@@ -810,12 +792,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       if (single) result+=":"; else result+="er:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Alfabetisk Liste"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1113,16 +1089,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString trTestList()
     {
       return "Test-liste";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP-metoder";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1489,14 +1455,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Søk etter";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */

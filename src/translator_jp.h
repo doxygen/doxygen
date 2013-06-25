@@ -374,12 +374,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
     { return "マクロ定義"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "関数プロトタイプ"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -413,12 +407,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trDefineDocumentation()
     { return "マクロ定義"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "関数プロトタイプ"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -467,12 +455,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
       if (projName) result+=(QCString)projName+"に対して";
       result+=(QCString)date+"に生成されました。";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "作者";
     }
 
     /*! this text is put before a class diagram */
@@ -739,12 +721,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
       result+="の説明は次のファイルから生成されました:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "アルファベット順一覧"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1042,16 +1018,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
     virtual QCString trTestList()
     {
       return "テスト一覧";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOPメソッド";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1401,14 +1367,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "検索";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */

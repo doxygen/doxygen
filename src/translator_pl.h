@@ -405,12 +405,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     { return "Definicje"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    QCString trFuncProtos()
-    { return "Prototypy funkcji"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     QCString trTypedefs()
@@ -445,12 +439,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      */
     QCString trDefineDocumentation()
     { return "Dokumentacja definicji"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    QCString trFunctionPrototypeDocumentation()
-    { return "Dokumentacja prototypów funkcji"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -500,12 +488,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       if (projName) result+=(QCString)" dla "+projName;
       result+=(QCString)" programem";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    QCString trWrittenBy()
-    {
-      return "napisanym przez";
     }
 
     /*! this text is put before a class diagram */
@@ -775,12 +757,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       if (single) result+="u:"; else result+="ów:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    QCString trAlphabeticalList()
-    { return "Lista alfabetyczna"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1081,15 +1057,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     QCString trTestList()
     {
       return "Lista testu";
-    }
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "Metody DCOP";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1425,14 +1392,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Szukaj";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1802,12 +1761,6 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Wykres zależności katalogu dla "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

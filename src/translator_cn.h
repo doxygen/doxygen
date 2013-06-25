@@ -333,9 +333,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trDefines()
     { return "宏定义"; }
 
-    virtual QCString trFuncProtos()
-    { return "函数原型"; }
-
     virtual QCString trTypedefs()
     { return "类型定义"; }
 
@@ -386,11 +383,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       if (projName) result+=(QCString)CN_SPC", 为"CN_SPC+projName;
       result+=(QCString)"使用"CN_SPC;
       return result;
-    }
-
-    virtual QCString trWrittenBy()
-    {
-      return "作者";
     }
 
     virtual QCString trClassDiagram(const char *clName)
@@ -644,12 +636,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       result+="的文档由以下文件生成:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "按字典顺序排序的列表"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -970,15 +956,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trTestList()
     {
       return "测试列表";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-//// new since 1.2.1
-////////////////////////////////////////////////////////////////////////////
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP"CN_SPC"成员函数";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1363,14 +1340,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "搜索"CN_SPC;
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1744,11 +1713,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
-
-  virtual QCString trDirDependency(const char *name)
-  {
-    return QCString(name)+CN_SPC"的目录依赖关系图";
-  }
 
   virtual QCString trFileIn(const char *name)
   {

@@ -261,8 +261,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
 
     QCString trDefines()
     { return "Definicije"; }
-    QCString trFuncProtos()
-    { return "Prototipi funkcija"; }
     QCString trTypedefs()
     { return "Typedef-ovi"; }
     QCString trEnumerations()
@@ -275,8 +273,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
     { return "Vrijednosti enumeracija"; }
     QCString trDefineDocumentation()
     { return "Dokumentacija definicija"; }
-    QCString trFunctionPrototypeDocumentation()
-    { return "Dokumentacija prototipa funkcije"; }
     QCString trTypedefDocumentation()
     { return "Dokumentacija typedef-a"; }
     QCString trEnumerationTypeDocumentation()
@@ -293,10 +289,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       if (projName) result+=(QCString)" projekt: "+projName;
       result+=" generator: ";
       return result;
-    }
-    QCString trWrittenBy()
-    {
-      return "napisao ";
     }
     QCString trClassDiagram(const char *clName)
     {
@@ -518,12 +510,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       result+=" je napravljena iz " + trFile(FALSE, single) + ": ";
 	  return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    QCString trAlphabeticalList()
-    { return "Abecedni popis"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -811,15 +797,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
       return "Test lista";
     }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP metode";
-    }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.2
 //////////////////////////////////////////////////////////////////////////
@@ -1127,14 +1104,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
 	// new since 1.3.3
 	//////////////////////////////////////////////////////////////////////////
 
-	/*! When the search engine is enabled this text is put in the header
-	*  of each page before the field where one can enter the text to search
-	*  for.
-	*/
-	virtual QCString trSearchForIndex()
-	{
-		return "Traži";
-	}
 	/*! This string is used as the title for the page listing the search
 	*  results.
 	*/
@@ -1499,12 +1468,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Graf povezanih direktorija za "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

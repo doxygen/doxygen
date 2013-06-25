@@ -427,12 +427,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     { return "التعريفات"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Function Prototypes"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -467,12 +461,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
      */
     virtual QCString trDefineDocumentation()
     { return "Define Documentation"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Function Prototype Documentation"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -528,12 +516,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
       if (projName) result+=(QCString)" for "+projName;
       result+=(QCString)" by";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "كتب بواسطة";
     }
 
     /*! this text is put before a class diagram */
@@ -804,12 +786,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 	  if (single) result+="هذا الملف:"; else result+="هذه الملفات:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "قائمة أبجدية"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1113,16 +1089,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
     virtual QCString trTestList()
     {
       return "قائمة الإختبارات";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP Member Functions";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1489,14 +1455,6 @@ class TranslatorArabic : public TranslatorAdapter_1_4_6
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "بحث عن";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
