@@ -40,7 +40,7 @@ class TranslatorKoreanEn : public TranslatorEnglish
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-		return "euc-kr";
+      return "utf-8";
     }
     virtual QCString trRTFansicp()
     {

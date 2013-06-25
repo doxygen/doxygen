@@ -41,14 +41,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-      //if (Config_getBool("USE_WINDOWS_ENCODING"))
-      //{
-      //  return "Shift_JIS";
-      //}
-      //else
-      //{
-        return "euc-jp";
-      //}
+        return "utf-8";
     }
     virtual QCString trRTFansicp()
     {
