@@ -98,21 +98,21 @@ class Translator
     virtual QCString trPageDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
-    virtual QCString trFuncProtos() = 0;
+    //virtual QCString trFuncProtos() = 0;
     virtual QCString trTypedefs() = 0;
     virtual QCString trEnumerations() = 0;
     virtual QCString trFunctions() = 0;
     virtual QCString trVariables() = 0;
     virtual QCString trEnumerationValues() = 0;
     virtual QCString trDefineDocumentation() = 0;
-    virtual QCString trFunctionPrototypeDocumentation() = 0;
+    //virtual QCString trFunctionPrototypeDocumentation() = 0;
     virtual QCString trTypedefDocumentation() = 0;
     virtual QCString trEnumerationTypeDocumentation() = 0;
     virtual QCString trFunctionDocumentation() = 0;
     virtual QCString trVariableDocumentation() = 0;
     virtual QCString trCompounds() = 0;
     virtual QCString trGeneratedAt(const char *date,const char *projName) = 0;
-    virtual QCString trWrittenBy() = 0;
+    //virtual QCString trWrittenBy() = 0;
     virtual QCString trClassDiagram(const char *clName) = 0;
     virtual QCString trForInternalUseOnly() = 0;
     //virtual QCString trReimplementedForInternalReasons() = 0;
@@ -183,7 +183,7 @@ class Translator
 
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
                                           bool single) = 0;
-    virtual QCString trAlphabeticalList() = 0;
+    //virtual QCString trAlphabeticalList() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -278,7 +278,7 @@ class Translator
 // new since 1.2.1
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDCOPMethods() = 0;
+    //virtual QCString trDCOPMethods() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.2
@@ -440,7 +440,7 @@ class Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSearchForIndex() = 0;
+    //virtual QCString trSearchForIndex() = 0;
     virtual QCString trSearchResultsTitle() = 0;
     virtual QCString trSearchResults(int numDocuments) = 0;
     virtual QCString trSearchMatches() = 0;
@@ -519,7 +519,7 @@ class Translator
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDirDependency(const char *name) = 0;
+    //virtual QCString trDirDependency(const char *name) = 0;
     virtual QCString trFileIn(const char *name) = 0;
     virtual QCString trIncludesFileIn(const char *name) = 0;
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
