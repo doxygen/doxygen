@@ -352,9 +352,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trDefineDocumentation()
     { return "宏定义说明"; }
 
-     virtual QCString trFunctionPrototypeDocumentation()
-    { return "函数原型说明"; }
-
     virtual QCString trTypedefDocumentation()
     { return "类型定义说明"; }
 

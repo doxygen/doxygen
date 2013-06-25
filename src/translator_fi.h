@@ -515,12 +515,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     { return "Määritysten dokumentointi"; } // "Define Documentation"
 
     /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Funktioprototyyppien dokumentaatio"; } // "Function Prototype Documentation"
-
-    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
