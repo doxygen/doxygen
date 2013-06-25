@@ -37,14 +37,10 @@ class TranslatorJapanese : public TranslatorAdapter_1_6_0
   public:
     virtual QCString idLanguage()
     { return "japanese"; }
+
     virtual QCString latexLanguageSupportCommand()
     {
       return "";
-    }
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString idLanguageCharset()
-    {
-        return "utf-8";
     }
 
     /*! used in the compound documentation before a list of related functions. */

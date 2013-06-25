@@ -32,12 +32,6 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       return "\\usepackage[T2A]{fontenc}\n\\usepackage[ukrainian]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-        return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -757,7 +751,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
         case ClassDef::Exception:
           if (single) result+="цього винятку"; else result+="цих винятків";
           break;
-        default: 
+        default:
           break;
       }
       result+=" була створена з файл";

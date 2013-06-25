@@ -35,13 +35,8 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     virtual QCString idLanguage()
     { return "japanese-en"; }
     virtual QCString latexLanguageSupportCommand()
-      {
-	return "platex";
-      }
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString idLanguageCharset()
     {
-        return "utf-8";
+      return "platex";
     }
     virtual QCString trRTFansicp()
     {

@@ -41,7 +41,6 @@ class Translator
 
     virtual QCString idLanguage() = 0;
     virtual QCString latexLanguageSupportCommand() = 0;
-    virtual QCString idLanguageCharset() = 0;
 
     // --- Language translation methods -------------------
 

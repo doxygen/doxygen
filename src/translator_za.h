@@ -62,12 +62,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       return "";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

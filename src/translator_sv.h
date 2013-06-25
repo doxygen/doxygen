@@ -95,12 +95,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
       return "\\usepackage[swedish]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     virtual QCString trRelatedFunctions()
     { return "Besläktade funktioner"; }
 

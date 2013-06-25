@@ -38,10 +38,6 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     {
       return "\\usepackage[slovene]{babel}\n\\usepackage[T1]{fontenc}\n";
     }
-    QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()

@@ -34,13 +34,8 @@ class TranslatorKoreanEn : public TranslatorEnglish
     virtual QCString idLanguage()
     { return "korean-en"; }
     virtual QCString latexLanguageSupportCommand()
-      {
-	return "\\usepackage{hfont}\n";
-      }
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString idLanguageCharset()
     {
-      return "utf-8";
+      return "\\usepackage{hfont}\n";
     }
     virtual QCString trRTFansicp()
     {

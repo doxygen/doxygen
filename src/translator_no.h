@@ -76,12 +76,6 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         "\\usepackage[T1]{fontenc}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

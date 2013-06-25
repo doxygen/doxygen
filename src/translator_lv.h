@@ -80,13 +80,6 @@ class TranslatorLatvian : public Translator
              "\\usepackage[latvian]{babel}\n";
     }
 
-    /*! return the language charset. This will be used
-        when transcoding the translatable strings in this file to UTF-8 */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

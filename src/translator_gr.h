@@ -47,12 +47,6 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
       return "\\usepackage[greek,english]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-        return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

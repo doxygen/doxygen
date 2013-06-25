@@ -76,12 +76,6 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       return "\\usepackage[esperanto]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1877,7 +1871,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       }
       return sdate;
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
 //////////////////////////////////////////////////////////////////////////
@@ -1926,8 +1920,8 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
     virtual QCString trInheritedFrom(const char *members,const char *what)
     { return QCString(members)+" heredita el "+what; }
 
-    /*! Header of the sections with inherited members specific for the 
-     *  base class(es) 
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Kromaj Hereditaj Membroj"; }
@@ -1937,7 +1931,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a tooltip for the toggle button that appears in the
-     *  navigation tree in the HTML output when GENERATE_TREEVIEW is 
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
