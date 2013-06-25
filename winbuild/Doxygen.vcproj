@@ -4182,10 +4182,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\translatordecoder.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\unistd.h"
 				>
 				<FileConfiguration
