@@ -40,6 +40,7 @@ Makefile
 /src/pyscanner.cpp
 /src/scanner.cpp
 /src/tclscanner.cpp
+/src/unistd.h
 /src/version.cpp
 /src/vhdlcode.cpp
 /src/vhdlparser.cpp
