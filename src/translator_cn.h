@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -33,13 +33,13 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
      * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in the language.cpp.
      */
-    
+
     virtual QCString idLanguage()
     { return "chinese"; }
 
-    /*! Used to get the LaTeX command(s) for the language support. 
+    /*! Used to get the LaTeX command(s) for the language support.
      * This method should return string with commands that switch
-     * LaTeX to the desired language.  For example 
+     * LaTeX to the desired language.  For example
      * <pre>"\\usepackage[german]{babel}\n"
      * </pre>
      * or
@@ -47,7 +47,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
      * "\\usepackage[latin2]{inputenc}\n"
      * "\\usepackage[T1]{fontenc}\n"
      * </pre>
-     * 
+     *
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
@@ -56,12 +56,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       return "";
     }
 
-
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    { return "UTF-8"; }
-
-    /*! used in the compound documentation before a list of related functions. 
+    /*! used in the compound documentation before a list of related functions.
      */
     virtual QCString trRelatedFunctions()
     { return "相关函数"; }
@@ -70,8 +65,8 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trRelatedSubscript()
     { return "(请注意: 这些不是成员函数.)"; }
 
-    /*! header that is put before the detailed description of files, 
-     * classes and namespaces. 
+    /*! header that is put before the detailed description of files,
+     * classes and namespaces.
      */
     virtual QCString trDetailedDescription()
     { return "详细描述"; }
@@ -90,14 +85,14 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "结构体成员变量说明"; 
+        return "结构体成员变量说明";
       }
       else
       {
-        return "类成员变量说明"; 
+        return "类成员变量说明";
       }
     }
 
@@ -128,7 +123,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     { QCString result;
       result = "由"CN_SPC"Doyxgen"CN_SPC"通过分析"CN_SPC;
       if (s) result += ((QCString)s+CN_SPC"的"CN_SPC);
-      result+= "源代码自动生成."; 
+      result+= "源代码自动生成.";
       return result;
     }
 
@@ -146,7 +141,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
@@ -158,12 +153,12 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
     /*! This is put above each page as a link to the list of annotated class */
      virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
-        return "结构体"; 
+        return "结构体";
       }
       else {
-        return "类列表"; 
+        return "类列表";
       }
     }
 
@@ -173,22 +168,22 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) { 
-        return "成员变量"; 
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
+        return "成员变量";
       }
       else {
-        return "类成员"; 
+        return "类成员";
       }
     }
 
     /*! This is put above each page as a link to all member of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
-        return "全局定义"; 
+        return "全局定义";
       } else {
-        return "文件成员"; 
+        return "文件成员";
       }
     }
 
@@ -215,14 +210,14 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     }
 
     virtual QCString trCompoundListDescription()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "这里列出了所有结构体，并附带简要说明:"; 
+        return "这里列出了所有结构体，并附带简要说明:";
       }
       else
       {
-        return "这里列出了所有类、结构、联合以及接口定义等，并附带简要说明:"; 
+        return "这里列出了所有类、结构、联合以及接口定义等，并附带简要说明:";
       }
     }
 
@@ -261,18 +256,18 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="这里列出了所有";
-      if (!extractAll) 
+      if (!extractAll)
         result +="文档化的";
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
         result +="函数,变量,宏,枚举和类型定义等,并附带";
-      } 
+      }
       else {
         result +="文件成员,并附带";
       }
 
-      if (extractAll) 
+      if (extractAll)
         result+="其所属的文件:";
-      else 
+      else
         result+="其详细说明:";
       return result;
     }
@@ -296,30 +291,30 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     { return "继承关系索引"; }
 
     virtual QCString trCompoundIndex()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "结构体索引"; 
-      } 
+        return "结构体索引";
+      }
       else {
-        return "类索引"; 
+        return "类索引";
       }
     }
 
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "文件索引"; }
 
     virtual QCString trModuleDocumentation()
     { return "模块说明"; }
 
     virtual QCString trClassDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "结构体说明";
       }
       else {
-        return "类说明"; 
+        return "类说明";
       }
     }
 
@@ -337,9 +332,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
     virtual QCString trDefines()
     { return "宏定义"; }
-
-    virtual QCString trFuncProtos()
-    { return "函数原型"; }
 
     virtual QCString trTypedefs()
     { return "类型定义"; }
@@ -360,9 +352,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trDefineDocumentation()
     { return "宏定义说明"; }
 
-     virtual QCString trFunctionPrototypeDocumentation()
-    { return "函数原型说明"; }
-
     virtual QCString trTypedefDocumentation()
     { return "类型定义说明"; }
 
@@ -376,13 +365,13 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     { return "变量说明"; }
 
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
+      {
         return "结构体";
       }
       else {
-        return "类"; 
+        return "类";
       }
     }
 
@@ -391,11 +380,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       if (projName) result+=(QCString)CN_SPC", 为"CN_SPC+projName;
       result+=(QCString)"使用"CN_SPC;
       return result;
-    }
-
-    virtual QCString trWrittenBy()
-    {
-      return "作者";
     }
 
     virtual QCString trClassDiagram(const char *clName)
@@ -429,11 +413,11 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
      virtual QCString trGeneratedBy()
     { return "制作者"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307 
+// new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
      virtual QCString trNamespaceList()
     { return "命名空间列表"; }
 
@@ -451,10 +435,10 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
      virtual QCString trRelatedFunctionDocumentation()
     { return "友元及相关函数文档"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -485,7 +469,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=CN_SPC"文件参考"; 
+      result+=CN_SPC"文件参考";
       return result;
     }
 
@@ -495,8 +479,8 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       result+=CN_SPC"命名空间参考";
       return result;
     }
-    
-    // these are for the member sections of a class, struct or union 
+
+    // these are for the member sections of a class, struct or union
     virtual QCString trPublicMembers()
     { return "Public 成员函数"; }
 
@@ -517,17 +501,17 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 
     virtual QCString trStaticProtectedMembers()
     { return "静态 Protected 成员函数"; }
-    
+
     virtual QCString trPrivateMembers()
     { return "Private 成员函数"; }
-    
+
     virtual QCString trPrivateSlots()
     { return "Private 槽"; }
-    
+
     virtual QCString trStaticPrivateMembers()
     { return "静态 Private 成员函数"; }
-    
-    // end of member sections 
+
+    // end of member sections
     virtual QCString trWriteList(int numEntries)
     {
       // this function is used to produce a comma-separated list of items.
@@ -535,23 +519,23 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=","CN_SPC;
           else                // the fore last entry
             result+=CN_SPC", 以及"CN_SPC;
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -565,15 +549,15 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     {
       return "被"CN_SPC+trWriteList(numEntries)+CN_SPC"继承.";
     }
-    
-    /*! used in member documentation blocks to produce a list of 
+
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
       return "重载"CN_SPC+trWriteList(numEntries)+CN_SPC".";
     }
-    
+
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
@@ -585,21 +569,21 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
     { return "命名空间成员"; }
-    
+
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
+    {
        QCString result="这里列出了所有";
       if (!extractAll) result+="文档化的";
       result+="命名空间成员，并附带";
-      if (extractAll) 
+      if (extractAll)
         result+="其说明文档:";
-      else 
+      else
         result+="其所属的文件:";
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -650,12 +634,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       return result;
     }
 
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "按字典顺序排序的列表"; }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
 //////////////////////////////////////////////////////////////////////////
@@ -669,7 +647,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trMainPage()
     { return "首页"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -717,7 +695,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "构造及析构函数说明"; 
+      return "构造及析构函数说明";
     }
 
     /*! Used in the file documentation to point to the corresponding sources. */
@@ -785,7 +763,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
       return "注解";
@@ -799,7 +777,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trPublicAttribs()
     {
        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-       { 
+       {
          return "成员变量";
        }
        else {
@@ -887,7 +865,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     {
       return "自从";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -954,7 +932,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         "<li>%黄色虚线箭头表示模板类实例和模板类之间的关系. 箭头旁边标明了模板类实例化的参数.</li>\n"
         "</ul>\n";
     }
-    
+
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
@@ -964,7 +942,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -975,15 +953,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trTestList()
     {
       return "测试列表";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-//// new since 1.2.1
-////////////////////////////////////////////////////////////////////////////
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP"CN_SPC"成员函数";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1024,7 +993,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     {
       return (QCString)"包"CN_SPC+name;
     }
-    
+
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
@@ -1034,7 +1003,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-       return "这里列出所有的包，附带简要说明(如果有的话):"; 
+       return "这里列出所有的包，附带简要说明(如果有的话):";
     }
 
     /*! The link name in the Quick links header for each page */
@@ -1066,9 +1035,9 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1089,14 +1058,14 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "936";
     }
 
-    /*! Used as ansicpg for RTF fcharset 
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1111,102 +1080,102 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       return "索引";
     }
 
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "Class" : "class"));
       if (!singular)  result+="es";
-      return result; 
+      return result;
       */
       return "类";
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "File" : "file"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "文件";
 
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "Namespace" : "namespace"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "命名空间";
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "Group" : "group"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "组";
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "Page" : "page"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "页";
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "Member" : "member"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "成员";
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       /*
        QCString result((first_capital ? "Global" : "global"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "全局";
     }
@@ -1218,11 +1187,11 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool /*first_capital*/, bool /*singular*/)
-    {                                                                         
+    {
       /*
        QCString result((first_capital ? "Author" : "author"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
       */
       return "作者";
     }
@@ -1242,7 +1211,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1277,8 +1246,8 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1289,14 +1258,14 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
     {
       return "事件";
     }
-    
+
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
@@ -1310,54 +1279,54 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "包类型";
     }
-    
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "包函数";
     }
-    
-    /*! Used as a heading for a list of static Java class functions with 
+
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "静态包函数";
     }
-    
-    /*! Used as a heading for a list of Java class variables with package 
+
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "包属性";
     }
-    
-    /*! Used as a heading for a list of static Java class variables with 
+
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     {
       return "静态包属性";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
     {
       return "全部";
     }
-    
+
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
@@ -1368,14 +1337,6 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "搜索"CN_SPC;
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1383,12 +1344,12 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     {
       return "搜索结果";
     }
-    
+
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1402,13 +1363,13 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       {
         return "找到<b>1</b>篇与您查询相符的文档.";
       }
-      else 
+      else
       {
         return "找到<b>$num</b>篇与您查询相符的文档."
                "优先显示最符合的文档.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1453,7 +1414,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trDirectories()
     { return "目录"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1467,7 +1428,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trDirReference(const char *dirName)
     {
       QCString result=dirName;
-      result+=CN_SPC"目录参考"; 
+      result+=CN_SPC"目录参考";
       return result;
     }
 
@@ -1475,10 +1436,10 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool /*first_capital*/, bool /*singular*/)
-    { 
+    {
       return "目录";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.4.1
 //////////////////////////////////////////////////////////////////////////
@@ -1502,23 +1463,23 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       return "这是这个函数的调用关系图:";
     }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { 
+    {
       return "枚举变量说明";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "成员函数/子程序说明"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "数据类型列表"; }
 
@@ -1540,18 +1501,18 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       }
       result+="数据类型成员,并附带";
       //result+=" with links to ";
-      if (!extractAll) 
+      if (!extractAll)
       {
         result+="其说明文档:";
       }
-      else 
+      else
       {
         result+="其所属的文件:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1564,25 +1525,25 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trTypeDocumentation()
     { return "数据类型文档"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "函数/子程序"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "函数/子程序说明"; }
 
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "数据类型"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "模块列表"; }
@@ -1617,30 +1578,30 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       result+="参考手册";
       return result;
     }
-    
+
     /*! used as the title of the HTML page of a module (Fortran) */
     virtual QCString trModuleReference(const char *namespaceName)
     {
-      QCString result=namespaceName;  
+      QCString result=namespaceName;
       result += CN_SPC"模块参考手册";
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "模块成员"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       // QCString result="Here is a list of all ";
       // if (!extractAll) result+="documented ";
       // result+="module members with links to ";
-      // if (extractAll) 
+      // if (extractAll)
       // {
       //   result+="the module documentation for each member:";
       // }
-      // else 
+      // else
       // {
       //   result+="the modules they belong to:";
       // }
@@ -1652,22 +1613,22 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       }
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     // { return "Modules Index"; }
     { return "模块索引"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool, bool)
-    {       
+    {
       // QCString result((first_capital ? "Module" : "module"));
       // if (!singular)  result+="s";
-      // return result; 
+      // return result;
       return "模块";
     }
     /*! This is put at the bottom of a module documentation page and is
@@ -1675,7 +1636,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
      */
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
         bool)
-    { 
+    {
       QCString result="该";
       switch(compType)
       {
@@ -1691,22 +1652,22 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
       result+=CN_SPC"的文档由以下文件生成:";
       return result;
     }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool, bool)
-    { 
+    {
       return "类型";
     }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool, bool)
-    { 
+    {
       return "子程序";
     }
 
@@ -1715,7 +1676,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     {
       return "类型限制";
     }
-  
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.0
 //////////////////////////////////////////////////////////////////////////
@@ -1725,22 +1686,22 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     // unsure
     return QCString(name)+CN_SPC"关系";
   }
-  
+
     virtual QCString trLoading()
   {
     return "载入中...";
   }
-    
+
   virtual QCString trGlobalNamespace()
   {
     return "全局命名空间";
   }
-  
+
     virtual QCString trSearching()
   {
     return "搜索中...";
   }
-    
+
   virtual QCString trNoMatches()
   {
     return "未找到";
@@ -1750,16 +1711,11 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
 
-  virtual QCString trDirDependency(const char *name)
-  {
-    return QCString(name)+CN_SPC"的目录依赖关系图";
-  }
-    
   virtual QCString trFileIn(const char *name)
   {
     return (QCString)"文件在"+CN_SPC+name;
   }
-  
+
   virtual QCString trIncludesFileIn(const char *name)
   {
     return (QCString)"在"CN_SPC+name+CN_SPC"中引用";
@@ -1771,11 +1727,11 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
   {
     static const char *days[]   = { "一","二","三","四","五","六","日" };
       static const char *months[] = { "一","二","三","四","五","六","七","八","九","十","十一","十二" };
-      
+
     QCString sdate;
-      
+
     sdate.sprintf("%d年"CN_SPC"%s月"CN_SPC"%d日"CN_SPC"星期%s",year, months[month-1], day, days[dayOfWeek-1]);
-      
+
     if (includeTime)
     {
       QCString stime;
@@ -1784,7 +1740,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     }
     return sdate;
   }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
 //////////////////////////////////////////////////////////////////////////
@@ -1801,11 +1757,11 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trDirDepGraph(const char *name)
     {
       return QCString(name)+CN_SPC"的目录依赖关系图";
-    } 
-    
+    }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.0
-//////////////////////////////////////////////////////////////////////////  
+//////////////////////////////////////////////////////////////////////////
 
     /*! Detail level selector shown for hierarchical indices */
     virtual QCString trDetailLevel()
@@ -1831,8 +1787,8 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
     virtual QCString trInheritedFrom(const char *members,const char *what)
     { return QCString(members)+CN_SPC"继承自"CN_SPC+what; }
 
-    /*! Header of the sections with inherited members specific for the 
-     *  base class(es) 
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "额外继承的成员函数"; }

@@ -58,12 +58,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
              "\\usepackage[magyar]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "iso-8859-2";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -405,12 +399,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     { return "Makródefiníciók"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Függvény-prototípusok"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -445,12 +433,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trDefineDocumentation()
     { return "Makródefiníciók dokumentációja"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Függvény-prototípusok dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -500,12 +482,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
       if (projName) result+=(QCString)"Projekt: "+projName;
       result+=(QCString)" Készült: "+date+" Készítette: ";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return " melyet írt ";
     }
 
     /*! this text is put before a class diagram */
@@ -769,12 +745,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
       result+=" alapján készült:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Betűrendes lista"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1070,16 +1040,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
     virtual QCString trTestList()
     {
       return "Tesztlista";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP tagfüggvények";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1425,14 +1385,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Keresési kulcs";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */

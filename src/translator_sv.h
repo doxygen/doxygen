@@ -95,12 +95,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
       return "\\usepackage[swedish]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     virtual QCString trRelatedFunctions()
     { return "Besläktade funktioner"; }
 
@@ -376,8 +370,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
 
     virtual QCString trDefines()
     { return "Definitioner"; }
-    virtual QCString trFuncProtos()
-    { return "Funktionsprototyper"; }
     virtual QCString trTypedefs()
     { return "Typdefinitioner"; }
     virtual QCString trEnumerations()
@@ -392,9 +384,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
 
     virtual QCString trDefineDocumentation()
     { return "Dokumentation över definitioner"; }
-
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Dokumentation över funktionsprototyper"; }
 
     virtual QCString trTypedefDocumentation()
     { return "Dokumentation över typdefinitioner"; }
@@ -429,11 +418,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
       if (projName) result+=(QCString)" för "+projName;
       result+=(QCString)" av";
       return result;
-    }
-
-    virtual QCString trWrittenBy()
-    {
-      return "skriven av";
     }
 
     virtual QCString trClassDiagram(const char *clName)
@@ -658,13 +642,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
       return result;
     }
 
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    {
-      return "Alfabetisk lista";
-    }
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
 //////////////////////////////////////////////////////////////////////////
@@ -976,16 +953,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
     virtual QCString trTestList()
     {
       return "Testlista";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP metoder";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1314,14 +1281,6 @@ class TranslatorSwedish : public TranslatorAdapter_1_6_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Sök efter";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */

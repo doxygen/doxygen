@@ -75,12 +75,6 @@ class TranslatorChinesetraditional : public Translator
       return "";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -424,12 +418,6 @@ class TranslatorChinesetraditional : public Translator
     { return "定義"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "函式原型"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -464,12 +452,6 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString trDefineDocumentation()
     { return "定義巨集說明文件"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "函式原型說明文件"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -525,12 +507,6 @@ class TranslatorChinesetraditional : public Translator
       if (projName) result+=(QCString)", 專案:"+projName;
       result+=(QCString)", 產生器:";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "撰寫人:";
     }
 
     /*! this text is put before a class diagram */
@@ -793,12 +769,6 @@ class TranslatorChinesetraditional : public Translator
       if (single) result+=":"; else result+=":";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "字母順序列表"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1098,16 +1068,6 @@ class TranslatorChinesetraditional : public Translator
     virtual QCString trTestList()
     {
       return "測試項目列表";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP方法";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1438,14 +1398,6 @@ class TranslatorChinesetraditional : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "搜尋索引";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1795,12 +1747,6 @@ class TranslatorChinesetraditional : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)name+"的目錄關連圖";
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

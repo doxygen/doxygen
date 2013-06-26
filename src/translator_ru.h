@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -36,13 +36,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-        return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n"; 
-    }
-
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-        return "utf-8"; 
+        return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n";
     }
 
     // --- Language translation methods -------------------
@@ -118,7 +112,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Автоматически создано Doxygen";
       if (s) result+=QCString(" для ")+s;
-      result+=" из исходного текста."; 
+      result+=" из исходного текста.";
       return result;
     }
 
@@ -136,7 +130,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
@@ -285,26 +279,26 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trModulesDescription()
     { return "Полный список групп."; }
 
-    // index titles (the project name is prepended for these) 
+    // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Документация"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return "Алфавитный указатель групп"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return "Иерархический список классов"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
@@ -368,43 +362,37 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trReferenceManual()
     { return "Оглавление"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return "Макросы"; }
 
-    /*! This is used in the documentation of a file as a header before the 
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Прототипы функций"; }
-
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
     { return "Определения типов"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
     { return "Перечисления"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return "Функции"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return "Переменные"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
@@ -416,37 +404,31 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trDefineDocumentation()
     { return "Макросы"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Прототипы функций"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
     { return "Типы"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Перечисления"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return "Функции"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return "Переменные"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
@@ -456,31 +438,25 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
         return "Структуры данных";
       }
       else
-      { 
+      {
         return "Классы";
       }
 
     }
 
-    /*! This is used in the documentation of a group before the list of 
+    /*! This is used in the documentation of a group before the list of
      *  links to documented files
      */
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result="Документация ";
       if (projName) result+=QCString("по ")+projName;
       result+=QCString(". Последние изменения: ")+date;
       result+=". Создано системой";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "Автор:";
     }
 
     /*! this text is put before a class diagram */
@@ -524,11 +500,11 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return "Создано системой"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307 
+// new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
     { return "Пространства имен"; }
@@ -551,14 +527,14 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return "Документация по друзьям класса и функциям, отноносящимся"
         " к классу"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -569,7 +545,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
                                  bool isTemplate)
     {
       QCString result;
-      if (isTemplate) 
+      if (isTemplate)
       {
         result="Шаблон ";
         switch(compType)
@@ -613,7 +589,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     {
       return QCString("Пространство имен ")+namespaceName;
     }
-    
+
     virtual QCString trPublicMembers()
     { return "Открытые члены"; }
     virtual QCString trPublicSlots()
@@ -634,7 +610,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     { return "Закрытые слоты"; }
     virtual QCString trStaticPrivateMembers()
     { return "Закрытые статические члены"; }
-    
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -643,23 +619,23 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=" и ";
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -676,7 +652,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       return "Производные классы:"+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
@@ -710,7 +686,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -746,10 +722,10 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       QCString result=QCString("Объявления и описания членов ");
       switch(compType)
       {
-        case ClassDef::Class:      result+="класс"; 
+        case ClassDef::Class:      result+="класс";
           if (single) result+="а"; else result+="ов";
           break;
-        case ClassDef::Struct:     result+="структур"; 
+        case ClassDef::Struct:     result+="структур";
           if (single) result+="ы";
           break;
         case ClassDef::Union:      result+="объединени";
@@ -767,19 +743,13 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
         case ClassDef::Exception:  result+="исключени";
           if (single) result+="я"; else result+="й";
           break;
-        default: 
+        default:
           break;
       }
       result+=" находятся в файл";
       if (single) result+="е:"; else result+="ах:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Алфавитный указатель"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -794,7 +764,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trMainPage()
     { return "Титульная страница"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -839,7 +809,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Конструктор(ы)"; 
+      return "Конструктор(ы)";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -896,7 +866,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
       return "Заметки";
@@ -988,7 +958,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     {
       return "Начиная с";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -1001,7 +971,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      return 
+      return
         "Обозначения, используемые в графах.<p>\n"
         "Рассмотрим следующий пример:\n"
         "\\code\n"
@@ -1070,7 +1040,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1080,16 +1050,6 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trTestList()
     {
       return "Список тестов";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP Методы";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1152,7 +1112,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1184,15 +1144,15 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         QCString result((first_capital ? "Структуры данных" : "структуры данных"));
-        return result; 
+        return result;
       }
       else
       {
@@ -1203,69 +1163,69 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Файл" : "файл"));
       if (!singular)  result+="ы";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Пространств" : "пространств"));
       result+=(singular?"о имен":"а имен");
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Групп" : "групп"));
       result+=(singular ? "а" : "ы");
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Страниц" : "страниц"));
       result+=(singular ? "а" : "ы");
       return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Член" : "член"));
       if (!singular)  result+="ы";
-      return result; 
+      return result;
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Глобальны" : "глобальны"));
       result+=(singular ? "й" : "е");
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1275,7 +1235,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       QCString result((first_capital ? "Автор" : "автор"));
       if (!singular) result+="ы";
       return result;
@@ -1296,7 +1256,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1328,8 +1288,8 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1340,7 +1300,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
@@ -1360,43 +1320,43 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Типы с областью видимости пакета";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Функции с областью видимости пакета";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Статические функции с областью видимости пакета";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Переменные с областью видимости пакета";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Статические переменные с областью видимости пакета";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1413,14 +1373,6 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Поиск";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1432,7 +1384,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1446,13 +1398,13 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       {
         return "Найден 1 документ.";
       }
-      else 
+      else
       {
         return "Найден(о) <b>$num</b> документ(ов). "
           "Документы отсортированы по релевантности.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1493,7 +1445,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trDirectories()
     { return "Алфавитный указатель директорий"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1509,10 +1461,10 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Директори" : "директори"));
       if (singular) result+="я"; else result+="и";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1539,7 +1491,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       return "Граф вызова функции:";
     }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
@@ -1551,12 +1503,12 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 //////////////////////////////////////////////////////////////////////////
     // Простите переводчика, уже лет 20 не писал на фортране...
     // Любые замечания приму с благодарностью.
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "Функции/подпрограммы"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "Типы данных"; }
 
@@ -1577,18 +1529,18 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
         result+="документированных ";
       }
       result+="членов типа со ссылками ";
-      if (!extractAll) 
+      if (!extractAll)
       {
 	result+="на документацию для каждого члена:";
       }
-      else 
+      else
       {
          result+="на содержащую структуру:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1600,24 +1552,24 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     virtual QCString trTypeDocumentation()
     { return "Оглавление типов данных"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "Функции/подпрограммы"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "Функции/подпрограммы"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "Типы данных"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "Указатель модулей"; }
@@ -1637,7 +1589,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
                                     bool isTemplate)
     {
       QCString result=(QCString)clName;
-      if (isTemplate) 
+      if (isTemplate)
       {
 	switch(compType)
 	{
@@ -1673,43 +1625,43 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
     {
       return QCString("Модуль ") + namespaceName;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "Члены модуля"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Список всех ";
       if (!extractAll) result+="документированных ";
       result+="модулей со ссылками ";
-      if (extractAll) 
+      if (extractAll)
       {
         result+="на документацию для каждого члена:";
       }
-      else 
+      else
       {
         result+="на модули, их содержащие:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "Указатель модулей"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool first_capital, bool singular)
-    {       
+    {
       QCString result((first_capital ? "Модул" : "модул"));
-      if (singular)  result+="ь"; else result+="и"; 
-      return result; 
+      if (singular)  result+="ь"; else result+="и";
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1735,24 +1687,24 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Тип" : "тип"));
       if (!singular)  result+="ы";
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Подпрограмм" : "подпрограмм"));
-      if (singular)  result+="а"; else result+="ы"; 
-      return result; 
+      if (singular)  result+="а"; else result+="ы";
+      return result;
     }
 
     /*! C# Type Constraint list */
@@ -1798,12 +1750,6 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
 
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Диаграмма каталогов для "+name;
-    }
-
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
@@ -1822,7 +1768,7 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       return (QCString)"Включает файл в "+name;
     }
 
-    /** Compiles a date string. 
+    /** Compiles a date string.
      *  @param year Year in 4 digits
      *  @param month Month of the year: 1=January
      *  @param day Day of the Month: 1..31

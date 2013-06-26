@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -25,7 +25,7 @@
  */
 
 
-/*! 
+/*!
  When defining a translator class for the new language, follow
  the description in the documentation.  One of the steps says
  that you should copy the translator_en.h (this) file to your
@@ -52,19 +52,19 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
   public:
 
     // --- Language control methods -------------------
-    
-    /*! Used for identification of the language. The identification 
-     * should not be translated. It should be replaced by the name 
+
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
      * of the language in English using lower-case characters only
-     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to 
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
     { return "vietnamese"; }
-    
-    /*! Used to get the LaTeX command(s) for the language support. 
+
+    /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
-     *  LaTeX to the desired language.  For example 
+     *  LaTeX to the desired language.  For example
      *  <pre>"\\usepackage[german]{babel}\n"
      *  </pre>
      *  or
@@ -72,19 +72,13 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  "\\usepackage[latin2]{inputenc}\n"
      *  "\\usepackage[T1]{fontenc}\n"
      *  </pre>
-     * 
+     *
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
     virtual QCString latexLanguageSupportCommand()
     {
       return "";
-    }
-
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -104,30 +98,30 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Thông tin về Member Typedef"; }
-    
+
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
     { return "Thông tin về Member Enumeration"; }
-    
+
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
     { return "Thông tin về hàm thành viên"; }
-    
+
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Thông tin về trường"; 
+        return "Thông tin về trường";
       }
       else
       {
-        return "Thông tin về Member Data"; 
+        return "Thông tin về Member Data";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore() 
+    virtual QCString trMore()
     { return "Tiếp..."; }
 
     /*! put in the class documentation */
@@ -145,81 +139,81 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return ", cùng với tất cả các thành viên kế thừa."; }
-    
+
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Được tạo ra bởi Doxygen";
       if (s) result+=(QCString)" cho "+s;
-      result+=" từ mã nguồn."; 
+      result+=" từ mã nguồn.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
     { return "tên enum"; }
-    
+
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
     { return "giá trị enum"; }
-    
+
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
     { return "được định nghĩa trong"; }
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Các Modules"; }
-    
+
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
     { return "Kiến trúc Class"; }
-    
+
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Cấu trúc cơ sở dữ liệu (Data Structures)";
       }
       else
       {
-        return "Danh mục các Class"; 
+        return "Danh mục các Class";
       }
     }
-    
+
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "Danh mục File"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Các trường dữ liệu"; 
+        return "Các trường dữ liệu";
       }
       else
       {
-        return "Các thành viên của Class"; 
+        return "Các thành viên của Class";
       }
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Toàn cục"; 
+        return "Toàn cục";
       }
       else
       {
-        return "File thành viên"; 
+        return "File thành viên";
       }
     }
 
@@ -252,16 +246,16 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { 
-      
+    {
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Đây là cấu trúc cơ sở dữ liệu với mô tả tóm tắt:"; 
+        return "Đây là cấu trúc cơ sở dữ liệu với mô tả tóm tắt:";
       }
       else
       {
         return "Đây là các classes, structs, "
-               "unions và interfaces với các mô tả tóm tắt:"; 
+               "unions và interfaces với các mô tả tóm tắt:";
       }
     }
 
@@ -282,7 +276,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         result+="class members";
       }
       result+=" cùng với các các liên kết đến ";
-      if (!extractAll) 
+      if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -293,7 +287,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
           result+="Thông tin về class cho từng thành viên:";
         }
       }
-      else 
+      else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -312,7 +306,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       QCString result="Danh sách tất cả các ";
       if (!extractAll) result+="(đã được mô tat) ";
-      
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="functions, variables, defines, enums, và typedefs";
@@ -322,9 +316,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         result+="các file thành viên";
       }
       result+=" cùng với links tới ";
-      if (extractAll) 
+      if (extractAll)
         result+="các files thuộc:";
-      else 
+      else
         result+="tài liệu:";
       return result;
     }
@@ -341,43 +335,43 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trModulesDescription()
     { return "Danh sách tất cả các thành viên:"; }
 
-    // index titles (the project name is prepended for these) 
+    // index titles (the project name is prepended for these)
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Thông tin"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return "Chỉ mục (Index) Module"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return "Hierarchical Index"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
+      {
         return "Index cấu trúc cơ sở dữ liệu";
       }
       else
       {
-        return "Class Index"; 
+        return "Class Index";
       }
     }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "File Index"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
@@ -390,14 +384,14 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Thông tin về cấu trúc cơ sở dữ liệu"; 
+        return "Thông tin về cấu trúc cơ sở dữ liệu";
       }
       else
       {
-        return "Thông tin về Class"; 
+        return "Thông tin về Class";
       }
     }
 
@@ -422,115 +416,97 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Thông tin tham chiếu"; }
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return "Định nghĩa"; }
 
-    /*! This is used in the documentation of a file as a header before the 
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Function Prototypes"; }
-
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
     { return "Typedefs"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
     { return "Enumerations"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return "Các hàm"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return "Các biến"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
     { return "Enumerator"; }
-    
+
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
     { return "Thông tin về định nghĩa"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Thông tin về Function Prototype"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
     { return "Thông tin về Typedef"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Thông tin về Enumeration Type"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return "Thông tin về hàm"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return "Thông tin về các biến"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Cấu trúc cơ sở dữ liệu"; 
+        return "Cấu trúc cơ sở dữ liệu";
       }
       else
       {
-        return "Classes"; 
+        return "Classes";
       }
     }
 
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result=(QCString)"Được biên soạn vào "+date;
       if (projName) result+=(QCString)" cho mã nguồn dự án "+projName;
       result+=(QCString)" bởi";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "được viết bởi";
     }
 
     /*! this text is put before a class diagram */
@@ -538,7 +514,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return (QCString)"Sơ đồ kế thừa cho "+clName+":";
     }
-    
+
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return "Chỉ cho sử dụng nội bộ."; }
@@ -570,7 +546,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return "Exceptions"; }
-    
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return "Được biên soạn bởi"; }
@@ -578,7 +554,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
     { return "Danh sách Namespace"; }
@@ -597,17 +573,17 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFriends()
     { return "Friends"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return "Thông tin về Friends và các hàm liên quan"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -638,7 +614,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=" File Tham chiếu"; 
+      result+=" File Tham chiếu";
       return result;
     }
 
@@ -649,7 +625,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       result+=" Namespace Tham chiếu";
       return result;
     }
-    
+
     virtual QCString trPublicMembers()
     { return "Các hàm thành viên Public"; }
     virtual QCString trPublicSlots()
@@ -670,7 +646,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     { return "Private Slots"; }
     virtual QCString trStaticPrivateMembers()
     { return "Các hàm thành viên Static Private"; }
-    
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -679,23 +655,23 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=", và ";
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -712,7 +688,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Được kế thừa bởi "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
@@ -734,17 +710,17 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Danh sách tất cả các ";
       if (!extractAll) result+="(đã được biên soạn) ";
       result+="các thành viên namespace cùng với link tới ";
-      if (extractAll) 
+      if (extractAll)
         result+="Thông tin namespace cho từng thành viên:";
-      else 
+      else
         result+=" namespaces mà phụ thuộc bởi:";
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -794,12 +770,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return result;
     }
 
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Danh sách theo ABC"; }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
 //////////////////////////////////////////////////////////////////////////
@@ -813,7 +783,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trMainPage()
     { return "Tranh chính"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -858,7 +828,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Thông tin về Constructor và Destructor"; 
+      return "Thông tin về Constructor và Destructor";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -915,7 +885,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
       return "Ghi chú";
@@ -1004,7 +974,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Từ";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -1014,12 +984,12 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Chú giải Graph";
     }
-    /*! page explaining how the dot graph's should be interpreted 
+    /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
     virtual QCString trLegendDocs()
     {
-      return 
+      return
         "Trang này giải nghĩa các biểu đồ được biên soạn bởi "
         " doxygen.<p>\n"
         "Hãy xem xét các ví dụ sau:\n"
@@ -1083,11 +1053,11 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Chú giải";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1097,16 +1067,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trTestList()
     {
       return "Danh sách Test";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "Các hàm thành viên DCOP";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1165,11 +1125,11 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Giá trị:";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1185,9 +1145,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1208,15 +1168,15 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "1258";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1229,82 +1189,82 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     {
       return "Chỉ số";
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Class" : "class"));
       if (!singular)  result+="es";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "File" : "file"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Namespace" : "namespace"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Group" : "group"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Trang" : "trang"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Member" : "member"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Global" : "global"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1314,10 +1274,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       QCString result((first_capital ? "Tác giả" : "tác giả"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1335,7 +1295,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1367,8 +1327,8 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1379,7 +1339,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
@@ -1399,43 +1359,43 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Kiểu gói";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Các hàm Package";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Các hàm Static Package";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Các thuộc tính Package";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Các thuộc tính Static Package";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1452,14 +1412,6 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Tìm kiếm cho";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1471,7 +1423,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1485,13 +1437,13 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         return "Tìm thấy <b>1</b> tài liệu thỏa mã truy vấn của bạn.";
       }
-      else 
+      else
       {
         return "Tìm thấy tất cả <b>$num</b> tài liệu thỏa mã truy vấn của bạn. "
                "Hiển thị những thỏa mãn tốt nhất trước.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1532,7 +1484,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trDirectories()
     { return "Các thư mục"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1550,10 +1502,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Thư mục" : "thư mục"));
       if (singular) result+=""; else result+="";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1580,7 +1532,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return "Biểu đồ các lời gọi cho hàm này:";
     }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
@@ -1589,12 +1541,12 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "Thông tin về các hàm và các thủ tục thành viên"; }
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "Danh sách kiêu dữ liệu"; }
 
@@ -1616,18 +1568,18 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       }
       result+="các kiểu dữ liệu thành viên";
       result+=" cùng với liên kết với ";
-      if (!extractAll) 
+      if (!extractAll)
       {
          result+="Thông tin cấu trúc dữ liệu cho từng thành viên";
       }
-      else 
+      else
       {
          result+=" các kiểu dữ liệu thuộc:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1639,24 +1591,24 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trTypeDocumentation()
     { return "Thông tin về kiểu dữ liệu"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "Functions/Subroutines"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "Thông tin về Function/Subroutine"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "Kiểu dữ liệu"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "Danh sách Modules"; }
@@ -1695,46 +1647,46 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     virtual QCString trModuleReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Tham chiếu Module";        
+      result+=" Tham chiếu Module";
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "Thành viên Module"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Danh sách tất cả ";
       if (!extractAll) result+="(đã được mô tả) ";
       result+="các module thành viên cùng với liên kết tới ";
-      if (extractAll) 
+      if (extractAll)
       {
         result+="Thông tin module cho từng thành viên:";
       }
-      else 
+      else
       {
         result+="các module thuộc:";
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "Chỉ mục các Module"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool first_capital, bool singular)
-    {       
+    {
       QCString result((first_capital ? "Module" : "module"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1760,24 +1712,24 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Kiểu" : "kiểu"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Chương trình con" : "chương trình con"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
 
     /*! C# Type Constraint list */

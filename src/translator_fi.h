@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,8 +23,8 @@ Antti Laine   (0.49-990425 -> )     <antti.a.laine@tut.fi>
 1999/10/19
 *  Alustava käännös valmis.
 
-*  Huom: Kaikille termeille on keksitty käännösvastine, mikä ei ehkä ole 
-         kaikissa tapauksissa hyvä ratkaisu, ja parempikin termi voi 
+*  Huom: Kaikille termeille on keksitty käännösvastine, mikä ei ehkä ole
+         kaikissa tapauksissa hyvä ratkaisu, ja parempikin termi voi
          olla vakiintuneessa käytössä.
 
 2008-04-08
@@ -38,7 +38,7 @@ Antti Laine   (0.49-990425 -> )     <antti.a.laine@tut.fi>
 * Enumeraatio -> luettelotyyppi
 * Paranneltu kieltä ja poistettu kirjoitusvirheitä
 
-* Tehtävää: 
+* Tehtävää:
         - Termien kokoaminen listaksi ja suomennosten järkevyyden tarkastelu. (lista on jo melko kattava)
                 Author          = Tekijä
                 Class           = Luokka
@@ -99,21 +99,21 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
              "It was not updated since version 1.0.0.  As a result,\n"
              "some sentences may appear in English.\n\n";
     }*/
-    
+
     // --- Language control methods -------------------
-    
-    /*! Used for identification of the language. The identification 
-     * should not be translated. It should be replaced by the name 
+
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
      * of the language in English using lower-case characters only
-     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to 
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
     { return "finnish"; }
 
-    /*! Used to get the LaTeX command(s) for the language support. 
+    /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
-     *  LaTeX to the desired language.  For example 
+     *  LaTeX to the desired language.  For example
      *  <pre>"\\usepackage[german]{babel}\n"
      *  </pre>
      *  or
@@ -121,19 +121,13 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      *  "\\usepackage[latin2]{inputenc}\n"
      *  "\\usepackage[T1]{fontenc}\n"
      *  </pre>
-     * 
+     *
      * The English LaTeX does not use such commands.  Because of this
      * the empty string is returned in this implementation.
      */
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[finnish]{babel}\n";
-    }
-
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -165,10 +159,10 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Kenttien dokumentaatio"; // "Field Documentation"; 
+        return "Kenttien dokumentaatio"; // "Field Documentation";
       }
       else
       {
@@ -225,19 +219,19 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Moduulit"; } // "Modules"
-    
+
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
     { return "Luokkahierarkia"; } // "Class Hierarchy"
-   
-    /*! This is put above each page as a link to the list of annotated classes */ 
+
+    /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Tietueet"; // "Data Structures"
@@ -251,26 +245,26 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "Tiedostolista"; } // "File List"
-   
-    /*! This is put above each page as a link to all members of compounds. */ 
+
+    /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Tietueen kentät"; // "Data Fields" 
+        return "Tietueen kentät"; // "Data Fields"
       }
       else
       {
         return "Luokan jäsenet"; // "Class Members"
       }
     }
-    
+
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Globaalit"; // "Globals" 
+        return "Globaalit"; // "Globals"
       }
       else
       {
@@ -281,16 +275,16 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
     { return "Liittyvät sivut"; } // "Related Pages"
-   
-    /*! This is put above each page as a link to all examples. */ 
+
+    /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
     { return "Esimerkit"; } // "Examples"
-   
-    /*! This is put above each page as a link to the search engine. */ 
+
+    /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
     { return "Etsi"; } // "Search"
-   
-    /*! This is an introduction to the class hierarchy. */ 
+
+    /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
     { return "Tämä periytymislista on päätasoltaan aakkostettu " // "This inheritance list is sorted roughly, "
              "mutta alijäsenet on aakkostettu itsenäisesti:"; // "but not completely, alphabetically:";
@@ -304,11 +298,11 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       result+="tiedostoista lyhyen selitteen kanssa:"; // "files with brief descriptions:"
       return result;
     }
-    
+
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-    
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Tässä ovat tietueet lyhyen selitteen kanssa:"; // "Here are the data structures with brief descriptions:"
@@ -319,7 +313,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
              "yhdisteet lyhyen selitteen kanssa:"; // "unions with brief descriptions:"
       }
     }
-    
+
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
@@ -337,7 +331,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         result+="luokkien jäsenistä"; // "class members"
       }
       result+=" linkitettyinä "; // " with links to "
-      if (!extractAll) 
+      if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -348,7 +342,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
           result+="jokaisen jäsenen luokkadokumentaatioon:"; // "the class documentation for each member:"
         }
       }
-      else 
+      else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -367,7 +361,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       QCString result="Tässä on lista kaikista "; // "Here is a list of all "
       if (!extractAll) result+="dokumentoiduista "; // "documented "
-      
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="funktioista, muuttujista, määrittelyistä, luettelotyypeistä ja tyyppimäärittelyistä"; // "functions, variables, defines, enums, and typedefs"
@@ -377,50 +371,50 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         result+="tiedoston jäsenistä"; // "file members"
       }
       result+=" linkitettyinä "; // " with links to "
-      if (extractAll) 
+      if (extractAll)
         result+="tiedostoihin, joihin ne kuuluvat:"; // "the files they belong to:"
-      else 
+      else
         result+="dokumentaatioon:"; // "the documentation:"
       return result;
     }
-    
+
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Tässä on lista kaikista esimerkeistä:"; } //  "Here is a list of all examples:"
-   
-    /*! This is an introduction to the page with the list of related pages */ 
+
+    /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
     { return "Tässä on lista kaikista liittyvistä dokumentaatiosivuista:"; } // "Here is a list of all related documentation pages:"
-   
-    /*! This is an introduction to the page with the list of class/file groups */ 
+
+    /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Tässä on lista kaikista moduleista:"; } // "Here is a list of all modules:"
-    
-    // index titles (the project name is prepended for these) 
-    
+
+    // index titles (the project name is prepended for these)
+
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Dokumentaatio"; } // "Documentation"
-    
-    /*! This is used in LaTeX as the title of the chapter with the 
+
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return "Moduuliluettelo"; } // "Module Index"
-    
-    /*! This is used in LaTeX as the title of the chapter with the 
+
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return "Hierarkinen luettelo"; } // "Hierarchical Index"
-    
-    /*! This is used in LaTeX as the title of the chapter with the 
+
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
+      {
         return "Tietueluettelo"; // "Data Structure Index"
       }
       else
@@ -428,19 +422,19 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         return "Luokkaluettelo"; // "Class Index"
       }
     }
-    
+
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "Tiedostoluettelo"; } // "File Index"
-    
+
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
     { return "Moduulien dokumentaatio"; } // "Module Documentation"
-    
+
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
@@ -461,60 +455,54 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trFileDocumentation()
     { return "Tiedostojen dokumentaatio"; } // "File Documentation"
-    
+
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
     { return "Esimerkkien dokumentaatio"; } // "Example Documentation"
-    
+
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
     { return "Sivujen dokumentaatio"; } // "Page Documentation"
-    
+
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Käsikirja"; } // "Reference Manual"
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return "Määrittelyt"; } // "Defines"
-    
-    /*! This is used in the documentation of a file as a header before the 
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Funktioiden prototyypit"; } // "Function Prototypes"
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
     { return "Tyyppimäärittelyt"; } // "Typedefs"
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
     { return "Luettelotyypit"; } // "Enumerations"
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return "Funktiot"; } // "Functions"
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return "Muuttujat"; } // "Variables"
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
@@ -525,38 +513,32 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      */
     virtual QCString trDefineDocumentation()
     { return "Määritysten dokumentointi"; } // "Define Documentation"
-    
-    /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Funktioprototyyppien dokumentaatio"; } // "Function Prototype Documentation"
-    
-    /*! This is used in the documentation of a file/namespace before the list 
+
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
     { return "Tyyppimääritysten dokumentaatio"; } // "Typedef Documentation"
-    
-    /*! This is used in the documentation of a file/namespace before the list 
+
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Luettelotyyppien dokumentaatio"; } // "Enumeration Type Documentation"
-    
-    /*! This is used in the documentation of a file/namespace before the list 
+
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return "Funktioiden dokumentaatio"; } // "Function Documentation"
-    
-    /*! This is used in the documentation of a file/namespace before the list 
+
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return "Muuttujien dokumentaatio"; } // "Variable Documentation"
-    
-    /*! This is used in the documentation of a file/namespace/group before 
+
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
@@ -570,12 +552,12 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         return "Luokat"; // "Classes"
       }
     }
-    
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
         // funktio on hiukan vaikea kääntää prepositioihin sidotun rakenteen vuoksi.
         // Muutetaan siis lauserakennetta suomalaisemmaksi
         // Generated on $date for $project by:
@@ -584,12 +566,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       if (projName) result+=(QCString)"projektille "+projName+" ";
       result+=(QCString)date+" ";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "kirjoittanut"; // "written by"
     }
 
     /*! this text is put before a class diagram */
@@ -601,47 +577,47 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return "Vain sisäiseen käyttöön."; } // "For internal use only."
-    
+
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Varoitus"; } // "Warning"
-    
+
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
     { return "Versio"; } // "Version"
-    
+
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return "Päiväys"; } // "Date"
-    
+
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
     { return "Palauttaa"; } // "Returns"
-    
+
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
     { return "Katso myös"; } // "See also"
-    
+
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
     { return "Parametrit"; } // "Parameters"
-    
+
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return "Poikkeukset"; } // "Exceptions"
-    
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return "Generoinut"; } // "Generated by"
-    
+
 //////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307 
+// new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
     { return "Nimiavaruus Lista"; } // "Namespace List"
-    
+
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
@@ -650,7 +626,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       result+="nimiavaruuksista lyhyen selitteen kanssa:"; // "namespaces with brief descriptions:"
       return result;
     }
-    
+
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
@@ -660,13 +636,13 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
     { return "Ystävät ja niihin liittyvien funktioiden dokumentaatio"; } // "Friends And Related Function Documentation"
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -700,7 +676,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       result+=" tiedostoreferenssi"; // " File Reference"
       return result;
     }
-    
+
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
@@ -708,7 +684,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       result+=" nimiavaruusreferenssi"; // " Namespace Reference"
       return result;
     }
-    
+
     virtual QCString trPublicMembers()
     { return "Julkiset jäsenfunktiot"; } // "Public Member Functions"
     virtual QCString trPublicSlots()
@@ -738,23 +714,23 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=" ja "; // ", and "
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -762,7 +738,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return (QCString)"Periytyy "+(numEntries > 1 ? "luokista " : "luokasta ")+trWriteList(numEntries)+"."; // "Inherits "
     }
-    
+
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
@@ -770,15 +746,15 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return (QCString)"Periytetään "+(numEntries > 1 ? "luokissa " : "luokassa ")+trWriteList(numEntries)+"."; // "Inherited by "
     }
-    
-    /*! used in member documentation blocks to produce a list of 
+
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
       return (QCString)"Uudelleentoteuttaa "+(numEntries > 1 ? "luokat " : "luokan  ")+trWriteList(numEntries)+"."; // "Reimplemented from "
     }
-    
+
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
@@ -790,25 +766,25 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
     { return "Nimiavaruuden jäsenet"; } // "Namespace Members"
-    
+
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Tässä on lista kaikista "; // "Here is a list of all "
       if (!extractAll) result+="dokumentoiduista "; // "documented "
       result+="nimiavaruuden jäsenistä linkitettynä "; // "namespace members with links to "
-      if (extractAll) 
+      if (extractAll)
         result+="nimiavaruuden dokumentaatioon johon ne kuuluvat:"; // "the namespace documentation for each member:";
-      else 
+      else
         result+="nimiavaruuksiin joihin ne kuuluvat:"; // "the namespaces they belong to:"
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
-     */ 
+     */
     virtual QCString trNamespaceIndex()
     { return "Nimiavaruuksien luettelo"; } // "Namespace Index"
-    
+
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
@@ -853,12 +829,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       return result;
     }
 
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Aakkosellinen lista"; } // "Alphabetical List"
-
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
 //////////////////////////////////////////////////////////////////////////
@@ -872,7 +842,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     virtual QCString trMainPage()
     { return "Pääsivu"; } // "Main Page"
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -974,7 +944,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
         // FIXME: Missähän merkityksessä tätä käytetään?
@@ -1067,7 +1037,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         // FIXME: Missä merkityksessä tätä käytetään?
       return "Lähtien"; // "Since"
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -1077,12 +1047,12 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return "Kaavion selite"; // "Graph Legend"
     }
-    /*! page explaining how the dot graph's should be interpreted 
+    /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
     virtual QCString trLegendDocs()
     {
-      return 
+      return
         "Tämä sivu selittää, kuinka doxygenin luomia kaavioita tulkitaan.<p>\n"
         // "This page explains how to interpret the graphs that are generated "
         // "by doxygen.<p>\n"
@@ -1194,11 +1164,11 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return "selite"; // "legend"
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1208,16 +1178,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     virtual QCString trTestList()
     {
       return "Testilista"; // "Test List"
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP-jäsenfunktiot"; // "DCOP Member Functions"
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1276,11 +1236,11 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return "Arvo:"; // "Value:"
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1296,9 +1256,9 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1319,15 +1279,15 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "1252";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1340,82 +1300,82 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     {
       return "Hakemisto"; // "Index"
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Luokka" : "luokka")); // "Class" / "class"
       if (!singular)  result=(first_capital ? "Luokat" : "luokat"); // "+es" -> "Classes" / "classes"
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Tiedosto" : "tiedosto")); // "File" / "file"
       if (!singular)  result+="t"; // "+s" -> "Files" / "files"
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Nimiavaruus" : "nimiavaruus")); // "Namespace" / "namespace"
       if (!singular)  result=(first_capital ? "Nimiavaruudet" : "nimiavaruudet"); // "+s"
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Ryhmä" : "ryhmä")); // "Group" / "group"
       if (!singular)  result+="t"; // "+s"
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Sivu" : "sivu")); // "Page" / "page"
       if (!singular)  result+="t"; // "+s"
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Jäsen" : "jäsen")); // "Member" / "member"
       if (!singular)  result+="et"; // "+s"
-      return result; 
+      return result;
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Globaali" : "globaali")); // "Global" / "global"
       if (!singular)  result+="t"; // "+s"
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1425,10 +1385,10 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       QCString result((first_capital ? "Tekijä" : "tekijä")); // "Author" / "author"
       if (!singular)  result+="t"; // "+s"
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1446,7 +1406,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -1478,8 +1438,8 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1490,7 +1450,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a header for declaration section of the events found in 
+    /*! Used as a header for declaration section of the events found in
      * a C# program
      */
     virtual QCString trEvents()
@@ -1510,43 +1470,43 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Paketin tyypit"; // "Package Types"
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Paketin funktiot"; // "Package Functions"
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Paketin staattiset funktiot"; // "Static Package Functions"
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Paketin attribuutit"; // "Package Attributes"
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Paketin staattiset attribuutit"; // "Static Package Attributes"
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1563,14 +1523,6 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header 
-     *  of each page before the field where one can enter the text to search 
-     *  for. 
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Etsi"; // "Search for"
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1582,7 +1534,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1596,13 +1548,13 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       {
         return "Löytyi <b>1</b> dokumentti, joka vastasi hakuasi."; // "Found <b>1</b> document matching your query.";
       }
-      else 
+      else
       {
         return "Löytyi <b>$num</b> dokumenttia, jotka vastasivat hakuasi. " // "Found <b>$num</b> documents matching your query. "
                 "Parhaat tulokset näytetään ensin."; // "Showing best matches first."
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1643,7 +1595,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     virtual QCString trDirectories()
     { return "Hakemistot"; } // "Directories"
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1663,10 +1615,10 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Hakemisto" : "hakemisto")); // "Director" / "director"
       if (singular) result+=""; else result+="t"; // "+y" / "+ies"
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1696,7 +1648,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       return "Tässä on kutsukaavio tälle funktiolle:"; // "Here is the caller graph for this function:"
     }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
@@ -1705,12 +1657,12 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "Jäsenfunktioiden/aliohjelmien dokumentaatio"; } // "Member Function/Subroutine Documentation"
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "Tietotyyppien lista"; } // "Data Types List"
 
@@ -1732,18 +1684,18 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       }
       result+="tietotyyppien jäsenistä"; // "data types members"
       result+=", sekä linkit "; // " with links to "
-      if (!extractAll) 
+      if (!extractAll)
       {
          result+="tietueen dokumentaatioon jokaiselle jäsenelle"; // "the data structure documentation for each member"
       }
-      else 
+      else
       {
          result+="tietotyyppeihin, joihin ne kuuluvat:"; // "the data types they belong to:"
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1755,24 +1707,24 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
     virtual QCString trTypeDocumentation()
     { return "Tietotyyppien dokumentaatio"; } // "Data Type Documentation"
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "Funktiot/aliohjelmat"; } // "Functions/Subroutines"
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "Funktioiden/aliohjelmien dokumentaatio"; } // "Function/Subroutine Documentation"
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "Tietotyypit"; } // "Data Types"
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "Moduulilista"; } // "Modules List"
@@ -1814,43 +1766,43 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       result+=" moduulin referenssi"; // " Module Reference"
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "Moduulin jäsenet"; } // "Module Members"
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Tässä on lista moduulin kaikista "; // "Here is a list of all "
       if (!extractAll) result+="dokumentoiduista"; // "documented "
       result+="jäsenistä, sekä linkit "; // "module members with links to "
-      if (extractAll) 
+      if (extractAll)
       {
         result+="moduulin dokumentaatioon jokaiselle jäsenelle:"; // "the module documentation for each member:"
       }
-      else 
+      else
       {
         result+="moduuleihin, joihin ne kuuluvat:"; // "the modules they belong to:"
       }
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "Moduulien hakemisto"; } // "Modules Index"
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool first_capital, bool singular)
-    {       
+    {
       QCString result((first_capital ? "Moduuli" : "moduuli")); // "Module" / "module"
       if (!singular)  result+="t"; // "+s"
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1876,24 +1828,24 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Tyyppi" : "tyyppi")); // "Type" / "type"
       if (!singular)  result=(first_capital ? "Tyypit" : "tyypit"); // "+s"
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Aliohjelma" : "aliohjelma")); // "Subprogram" / "subprogram"
       if (!singular)  result+="t"; // "+s"
-      return result; 
+      return result;
     }
 
     /*! C# Type Constraint list */

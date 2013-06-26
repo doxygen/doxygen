@@ -65,12 +65,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
              "\\usepackage[lithuanian]{babel}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -414,12 +408,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     { return "Apibrėžimai"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Funkcijų Prototipai"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -454,12 +442,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trDefineDocumentation()
     { return "Apibrėžimų Dokumentacija"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Funkcijų Prototipų Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -509,12 +491,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       if (projName) result+=(QCString)" "+projName;/*FIXME*/
       result+=(QCString)" ";/*FIXME*/
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "parašyta";
     }
 
     /*! this text is put before a class diagram */
@@ -776,12 +752,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       if (single) result+="šio failo:"; else result+="šių failų:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Abėcėlinis Sąrašas"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1081,16 +1051,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
     virtual QCString trTestList()
     {
       return "Testo Sąrašas";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP Metodai";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1442,14 +1402,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Ieškoti";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
