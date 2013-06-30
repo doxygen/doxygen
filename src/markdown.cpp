@@ -2283,18 +2283,24 @@ void MarkdownFileParser::parseInput(const char *fileName,
   static QCString mdfileAsMainPage = Config_getString("USE_MDFILE_AS_MAINPAGE");
   if (id.isEmpty()) id = "md_"+baseName;
   if (title.isEmpty()) title = titleFn;
-  if (fn==mdfileAsMainPage)
+  
+  // Don't create a page if the file starts with a Doxygen command like "@class" or "@defgroup" as it probably won't be what the user wants.
+  if (docs[0] != '@' && docs[0] != '\\')
   {
-    docs.prepend("@mainpage\n");
+    if (fn==mdfileAsMainPage)
+    {
+      docs.prepend("@mainpage\n");
+    }
+    else if (id=="mainpage" || id=="index")
+    {
+      docs.prepend("@mainpage "+title+"\n");
+    }
+    else
+    {
+      docs.prepend("@page "+id+" "+title+"\n");
+    }
   }
-  else if (id=="mainpage" || id=="index")
-  {
-    docs.prepend("@mainpage "+title+"\n");
-  }
-  else
-  {
-    docs.prepend("@page "+id+" "+title+"\n");
-  }
+  
   int lineNr=1;
   int position=0;
 
