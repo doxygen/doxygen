@@ -1264,7 +1264,7 @@ void Config::check()
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     config_err("Warning: doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTPATH.\n"
+               "You may want to clear or change DOT_FONTNAME.\n"
                "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
   
