@@ -1031,7 +1031,7 @@ private                                 {
 
  /*---- documentation comments --------------------------------------------------------------------*/
 
-<Variable,SubprogBody,ModuleBody,TypedefBody>"!<"  { /* backward docu comment */
+<Variable,SubprogBody,ModuleBody,TypedefBody,TypedefBodyContains>"!<"  { /* backward docu comment */
                                           if (v_type != V_IGNORE) {
 					   current->docLine  = yyLineNr;
  					   docBlockJavaStyle = FALSE;
