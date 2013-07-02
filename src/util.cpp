@@ -1727,7 +1727,7 @@ nextChar:
       growBuf.addChar('>');
     }
     else if (i>0 && c==',' && !isspace((uchar)s.at(i-1))
-        && ((i<l-1 && isId(s.at(i+1)))
+        && ((i<l-1 && (isId(s.at(i+1)) || s.at(i+1)=='[')) // the [ is for attributes (see bug702170)
           || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
           || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
     {
