@@ -2,7 +2,7 @@
 #define SETTINGS_H
 
 #define USE_SQLITE3  0
-#define USE_LIBCLANG 1
+#define USE_LIBCLANG 0
 
 #define IS_SUPPORTED(x) \
   ((USE_SQLITE3  && strcmp("USE_SQLITE3",(x))==0)  || \
