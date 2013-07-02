@@ -134,13 +134,6 @@ class TranslatorFrench : public Translator
          return "\\usepackage[french]{babel}\n";
       }
 
-    /*! return the language charset. This will be used
-        when transcoding the translatable strings in this file to UTF-8 */
-       virtual QCString idLanguageCharset()
-      {
-         return "utf-8";
-      }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -482,12 +475,6 @@ class TranslatorFrench : public Translator
       { return "Macros"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-       virtual QCString trFuncProtos()
-      { return "Prototypes de fonction"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
        virtual QCString trTypedefs()
@@ -522,12 +509,6 @@ class TranslatorFrench : public Translator
      */
        virtual QCString trDefineDocumentation()
       { return "Documentation des macros"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-       virtual QCString trFunctionPrototypeDocumentation()
-      { return "Documentation des prototypes de fonction"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -577,12 +558,6 @@ class TranslatorFrench : public Translator
          if (projName) result+=(QCString)" pour "+projName;
          result+=(QCString)" par";
          return result;
-      }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-       virtual QCString trWrittenBy()
-      {
-         return "écrit par";
       }
 
     /*! this text is put before a class diagram */
@@ -849,12 +824,6 @@ class TranslatorFrench : public Translator
          else result+="des fichiers suivants :";
          return result;
       }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-       virtual QCString trAlphabeticalList()
-      { return "Liste alphabétique"; }
 
    //////////////////////////////////////////////////////////////////////////
    // new since 0.49-990901
@@ -1154,16 +1123,6 @@ class TranslatorFrench : public Translator
        virtual QCString trTestList()
       {
          return "Liste des tests";
-      }
-
-   //////////////////////////////////////////////////////////////////////////
-   // new since 1.2.1
-   //////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-       virtual QCString trDCOPMethods()
-      {
-         return "Fonctions membres DCOP";
       }
 
    //////////////////////////////////////////////////////////////////////////
@@ -1510,14 +1469,6 @@ class TranslatorFrench : public Translator
    // new since 1.3.3
    //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-       virtual QCString trSearchForIndex()
-      {
-         return "Rechercher";
-      }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1883,12 +1834,6 @@ class TranslatorFrench : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Graphe des dépendances de répertoire pour "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

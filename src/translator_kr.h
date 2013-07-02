@@ -89,12 +89,6 @@ class TranslatorKorean : public Translator
       return "\\usepackage{hfont}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -444,12 +438,6 @@ class TranslatorKorean : public Translator
     { return "매크로"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "함수 원형"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -484,12 +472,6 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trDefineDocumentation()
     { return "매크로 문서화"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "함수 원형 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -539,12 +521,6 @@ class TranslatorKorean : public Translator
       if (projName) result+=(QCString)", 프로젝트명 : "+projName;
       result+=(QCString)", 생성자 : ";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "작성자 : ";
     }
 
     /*! this text is put before a class diagram */
@@ -808,12 +784,6 @@ class TranslatorKorean : public Translator
       result+="로부터 생성되었습니다.:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "알파벳순 목록"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1106,16 +1076,6 @@ class TranslatorKorean : public Translator
     virtual QCString trTestList()
     {
       return "테스트 목록";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP 멤버 함수";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1461,14 +1421,6 @@ class TranslatorKorean : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "검색";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1833,12 +1785,6 @@ class TranslatorKorean : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return QCString(name) + "에 대한 디렉토리 의존 그래프";
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

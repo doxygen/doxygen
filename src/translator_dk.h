@@ -120,12 +120,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 	"\\usepackage[T1]{fontenc}\n";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -434,12 +428,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     { return "#Defines"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Funktionsprototyper"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -474,12 +462,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDefineDocumentation()
     { return "#Define-dokumentation"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Dokumentation af funktionsprototyper"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -533,10 +515,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       result+=(QCString)" af";
       return result;
     }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    { return "skrevet af"; }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
@@ -796,12 +774,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
       if (single) result+="en:"; else result+="erne:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Alfabetisk oversigt"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1071,16 +1043,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString trTestList()
     {
       return "Testliste";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP-metoder";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1366,15 +1328,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
-
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Søg efter";
-    }
 
     /*! This string is used as the title for the page listing the search
      *  results.
@@ -1748,12 +1701,6 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Afhængighedsgraf for "+name;  // "Directory dependency graph for "
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

@@ -80,13 +80,6 @@ class TranslatorLatvian : public Translator
              "\\usepackage[latvian]{babel}\n";
     }
 
-    /*! return the language charset. This will be used
-        when transcoding the translatable strings in this file to UTF-8 */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -430,12 +423,6 @@ class TranslatorLatvian : public Translator
     { return "Makro"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Funkciju prototipi"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -470,12 +457,6 @@ class TranslatorLatvian : public Translator
      */
     virtual QCString trDefineDocumentation()
     { return "Makro definīcijas dokumentācija"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Funkcijas prototipu dokumentācija"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -525,12 +506,6 @@ class TranslatorLatvian : public Translator
       if (projName) result+=(QCString)" projektam "+projName;
       result+=(QCString)" ar";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "uzrakstījis";
     }
 
     /*! this text is put before a class diagram */
@@ -790,12 +765,6 @@ class TranslatorLatvian : public Translator
       if (single) result+="a:"; else result+="iem:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Alfabētiskais saraksts"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1097,16 +1066,6 @@ class TranslatorLatvian : public Translator
     virtual QCString trTestList()
     {
       return "Testu saraksts";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "DCOP elementu funkcijas";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1452,14 +1411,6 @@ class TranslatorLatvian : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Meklēt";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1824,12 +1775,6 @@ class TranslatorLatvian : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Direktoriju atkarību grafs priekš "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

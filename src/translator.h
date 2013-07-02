@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,48 +23,24 @@
 /** Abstract base class for all translatable text fragments. */
 class Translator
 {
-  private:
-    /* Tables for encoding conversions. */
-    static const char Win1250ToISO88592Tab[];
-    static const char ISO88592ToWin1250Tab[];
-    static const unsigned char Koi8RToWindows1251Tab[128];
-    static const unsigned char Windows1251ToKoi8RTab[128];
-
-  protected:
-    /*! Returns the string converted from windows-1250 to iso-8859-2. */
-    QCString Win1250ToISO88592(const QCString & sInput);
-    
-    /*! Returns the string converted from iso-8859-2 to windows-1250. */
-    QCString ISO88592ToWin1250(const QCString & sInput);
-    
-    /*! Returns the string converted from koi8-r to windows-1251. */
-    QCString Koi8RToWindows1251( const QCString & sInput );
-
-    /*! Returns the string converted from windows-1251 to koi8-r. */
-    QCString Windows1251ToKoi8R( const QCString & sInput );
-    
-    /*! Returns the string converted from Japanese-EUC to SJIS. */
-    QCString JapaneseEucToSjis( const QCString & sInput );
-
   public:
 
     /*! This method is used to provide warning message that is displayed
-     *  if the user chooses a language whose translation is not up to date. 
+     *  if the user chooses a language whose translation is not up to date.
      *  It is implemented by the adapter classes.
      */
     virtual QCString updateNeededMessage() { return ""; }
     virtual ~Translator() {}
-   
+
     // Please, have a look at comments inside the translator_en.h file
     // to learn the meaning of the following methods.  The translator_en.h
-    // file contains the TranslatorEnglish implementation, which is 
+    // file contains the TranslatorEnglish implementation, which is
     // always up-to-date (by definition).
-   
+
     // --- Language control methods -------------------
-    
+
     virtual QCString idLanguage() = 0;
     virtual QCString latexLanguageSupportCommand() = 0;
-    virtual QCString idLanguageCharset() = 0;
 
     // --- Language translation methods -------------------
 
@@ -107,14 +83,14 @@ class Translator
     virtual QCString trRelatedPagesDescription() = 0;
     virtual QCString trModulesDescription() = 0;
     //virtual QCString trNoDescriptionAvailable() = 0;
-    
-    // index titles (the project name is prepended for these) 
+
+    // index titles (the project name is prepended for these)
 
     virtual QCString trDocumentation() = 0;
     virtual QCString trModuleIndex() = 0;
     virtual QCString trHierarchicalIndex() = 0;
     virtual QCString trCompoundIndex() = 0;
-    virtual QCString trFileIndex() = 0; 
+    virtual QCString trFileIndex() = 0;
     virtual QCString trModuleDocumentation() = 0;
     virtual QCString trClassDocumentation() = 0;
     virtual QCString trFileDocumentation() = 0;
@@ -122,21 +98,21 @@ class Translator
     virtual QCString trPageDocumentation() = 0;
     virtual QCString trReferenceManual() = 0;
     virtual QCString trDefines() = 0;
-    virtual QCString trFuncProtos() = 0;
+    //virtual QCString trFuncProtos() = 0;
     virtual QCString trTypedefs() = 0;
     virtual QCString trEnumerations() = 0;
     virtual QCString trFunctions() = 0;
     virtual QCString trVariables() = 0;
     virtual QCString trEnumerationValues() = 0;
     virtual QCString trDefineDocumentation() = 0;
-    virtual QCString trFunctionPrototypeDocumentation() = 0;
+    //virtual QCString trFunctionPrototypeDocumentation() = 0;
     virtual QCString trTypedefDocumentation() = 0;
     virtual QCString trEnumerationTypeDocumentation() = 0;
     virtual QCString trFunctionDocumentation() = 0;
     virtual QCString trVariableDocumentation() = 0;
     virtual QCString trCompounds() = 0;
     virtual QCString trGeneratedAt(const char *date,const char *projName) = 0;
-    virtual QCString trWrittenBy() = 0;
+    //virtual QCString trWrittenBy() = 0;
     virtual QCString trClassDiagram(const char *clName) = 0;
     virtual QCString trForInternalUseOnly() = 0;
     //virtual QCString trReimplementedForInternalReasons() = 0;
@@ -153,17 +129,17 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNamespaceList() = 0;
     virtual QCString trNamespaceListDescription(bool extractAll) = 0;
     virtual QCString trFriends() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trRelatedFunctionDocumentation() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -174,7 +150,7 @@ class Translator
 
     virtual QCString trFileReference(const char *fileName) = 0;
     virtual QCString trNamespaceReference(const char *namespaceName) = 0;
-    
+
     virtual QCString trPublicMembers() = 0;
     virtual QCString trPublicSlots() = 0;
     virtual QCString trSignals() = 0;
@@ -207,7 +183,7 @@ class Translator
 
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
                                           bool single) = 0;
-    virtual QCString trAlphabeticalList() = 0;
+    //virtual QCString trAlphabeticalList() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -254,7 +230,7 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote() = 0;
     virtual QCString trPublicTypes() = 0;
     virtual QCString trPublicAttribs() = 0;
@@ -282,7 +258,7 @@ class Translator
     virtual QCString trAttention() = 0;
     virtual QCString trInclByDepGraph() = 0;
     virtual QCString trSince() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -290,11 +266,11 @@ class Translator
     virtual QCString trLegendTitle() = 0;
     virtual QCString trLegendDocs() = 0;
     virtual QCString trLegend() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trTest() = 0;
     virtual QCString trTestList() = 0;
 
@@ -302,7 +278,7 @@ class Translator
 // new since 1.2.1
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDCOPMethods() = 0;
+    //virtual QCString trDCOPMethods() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.2
@@ -323,11 +299,11 @@ class Translator
     virtual QCString trPackages() = 0;
     //virtual QCString trPackageDocumentation() = 0;
     virtual QCString trDefineValue() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trBug() = 0;
     virtual QCString trBugList() = 0;
 
@@ -388,12 +364,12 @@ class Translator
      * 222 — Thai
      * 238 — Eastern European
      * 254 — PC 437
-     * 255 — OEM 
+     * 255 — OEM
      * </pre>
      */
     virtual QCString trRTFCharSet() = 0;
     virtual QCString trRTFGeneralIndex() = 0;
-   
+
     // Translation of the word
 
     virtual QCString trClass(bool first_capital, bool singular) = 0;
@@ -408,7 +384,7 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.7
 //////////////////////////////////////////////////////////////////////////
-        
+
     virtual QCString trAuthor(bool first_capital, bool singular) = 0;
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,7 +399,7 @@ class Translator
 
     virtual QCString trImplementedFromList(int numEntries) = 0;
     virtual QCString trImplementedInList(int numEntries) = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.16
 //////////////////////////////////////////////////////////////////////////
@@ -435,7 +411,7 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trDeprecatedList() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.18
 //////////////////////////////////////////////////////////////////////////
@@ -452,7 +428,7 @@ class Translator
     virtual QCString trStaticPackageMembers() = 0;
     virtual QCString trPackageAttribs() = 0;
     virtual QCString trStaticPackageAttribs() = 0;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
@@ -464,7 +440,7 @@ class Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSearchForIndex() = 0;
+    //virtual QCString trSearchForIndex() = 0;
     virtual QCString trSearchResultsTitle() = 0;
     virtual QCString trSearchResults(int numDocuments) = 0;
     virtual QCString trSearchMatches() = 0;
@@ -495,14 +471,14 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.4.6
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trCallerGraph() = 0;
     virtual QCString trEnumerationValueDocumentation() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.5.4
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trMemberFunctionDocumentationFortran() = 0;
     virtual QCString trCompoundListFortran() = 0;
     virtual QCString trCompoundMembersFortran() = 0;
@@ -543,13 +519,13 @@ class Translator
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trDirDependency(const char *name) = 0;
+    //virtual QCString trDirDependency(const char *name) = 0;
     virtual QCString trFileIn(const char *name) = 0;
     virtual QCString trIncludesFileIn(const char *name) = 0;
     virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
                                 int hour,int minutes,int seconds,
                                 bool includeTime) = 0;
-                       
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.7.5
 //////////////////////////////////////////////////////////////////////////

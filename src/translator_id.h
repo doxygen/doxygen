@@ -58,12 +58,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return "\\usepackage[bahasa]{babel}";
     }
 
-    /*! return the language charset. This will be used for the HTML output */
-    virtual QCString idLanguageCharset()
-    {
-      return "utf-8";
-    }
-
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -406,12 +400,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     { return "Makro Definisi"; }
 
     /*! This is used in the documentation of a file as a header before the
-     *  list of function prototypes
-     */
-    virtual QCString trFuncProtos()
-    { return "Prototipe Fungsi"; }
-
-    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
@@ -446,12 +434,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      */
     virtual QCString trDefineDocumentation()
     { return "Dokumentasi Makro Definisi"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for function prototypes
-     */
-    virtual QCString trFunctionPrototypeDocumentation()
-    { return "Dokumentasi Prototipe Fungsi"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
@@ -501,12 +483,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       if (projName) result+=(QCString)" untuk "+projName;
       result+=(QCString)" oleh";
       return result;
-    }
-    /*! This is part of the sentence used in the standard footer of each page.
-     */
-    virtual QCString trWrittenBy()
-    {
-      return "ditulis oleh";
     }
 
     /*! this text is put before a class diagram */
@@ -770,12 +746,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       result+=" berikut:";
       return result;
     }
-
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    virtual QCString trAlphabeticalList()
-    { return "Daftar Berdasarkan Abjad"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -1073,16 +1043,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     virtual QCString trTestList()
     {
       return "Daftar Tes";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    virtual QCString trDCOPMethods()
-    {
-      return "Fungsi Anggota: DCOP";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1428,14 +1388,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the header
-     *  of each page before the field where one can enter the text to search
-     *  for.
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Cari";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1798,12 +1750,6 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Bagan dependensi direktori untuk "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the

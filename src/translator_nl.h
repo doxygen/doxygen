@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,9 +23,9 @@ class TranslatorDutch : public Translator
   public:
     QCString idLanguage()
     { return "dutch"; }
-    /*! Used to get the LaTeX command(s) for the language support. 
+    /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
-     *  LaTeX to the desired language.  For example 
+     *  LaTeX to the desired language.  For example
      *  <pre>"\\usepackage[german]{babel}\n"
      *  </pre>
      *  or
@@ -38,12 +38,6 @@ class TranslatorDutch : public Translator
     {
       return "\\usepackage[dutch]{babel}\n";
     }
-    /*! return the language charset. This will be used for the HTML output */
-    QCString idLanguageCharset()
-    {
-      return "iso-8859-1";
-    }
-
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()
@@ -69,9 +63,9 @@ class TranslatorDutch : public Translator
     QCString trIncludingInheritedMembers()
     { return ", inclusief alle overge&euml;rfde members."; }
     QCString trGeneratedAutomatically(const char *s)
-    { QCString result="Automatisch gegenereerd door Doxygen"; 
+    { QCString result="Automatisch gegenereerd door Doxygen";
       if (s) result+=(QCString)" voor "+s;
-      result+=" uit de programmatekst."; 
+      result+=" uit de programmatekst.";
       return result;
     }
     QCString trEnumName()
@@ -111,7 +105,7 @@ class TranslatorDutch : public Translator
     }
     QCString trCompoundListDescription()
     { return "Hieronder volgen de klassen, structs en "
-             "unions met voor elk een korte beschrijving:"; 
+             "unions met voor elk een korte beschrijving:";
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {
@@ -146,7 +140,7 @@ class TranslatorDutch : public Translator
     { return "Hi&euml;rarchische Index"; }
     QCString trCompoundIndex()
     { return "Klasse Index"; }
-    QCString trFileIndex() 
+    QCString trFileIndex()
     { return "Bestand Index"; }
     QCString trModuleDocumentation()
     { return "Module Documentatie"; }
@@ -163,8 +157,6 @@ class TranslatorDutch : public Translator
 
     QCString trDefines()
     { return "Macros"; }
-    QCString trFuncProtos()
-    { return "Functie Prototypes"; }
     QCString trTypedefs()
     { return "Typedefs"; }
     QCString trEnumerations()
@@ -177,8 +169,6 @@ class TranslatorDutch : public Translator
     { return "Enumeratie waarden"; }
     QCString trDefineDocumentation()
     { return "Documentatie van macro's"; }
-    QCString trFunctionPrototypeDocumentation()
-    { return "Documentatie van functie Prototypes"; }
     QCString trTypedefDocumentation()
     { return "Documentatie van typedefs"; }
     QCString trEnumerationTypeDocumentation()
@@ -192,15 +182,11 @@ class TranslatorDutch : public Translator
     QCString trCompounds()
     { return "Klassen"; }
     QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result=(QCString)"Gegenereerd op "+date;
       if (projName) result+=(QCString)" voor "+projName;
       result+=(QCString)" door";
       return result;
-    }
-    QCString trWrittenBy()
-    {
-      return "geschreven door";
     }
     QCString trClassDiagram(const char *clName)
     {
@@ -224,11 +210,11 @@ class TranslatorDutch : public Translator
     { return "Excepties"; }
     QCString trGeneratedBy()
     { return "Gegenereerd door"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307 
+// new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     QCString trNamespaceList()
     { return "Namespace Lijst"; }
     QCString trNamespaceListDescription(bool extractAll)
@@ -244,10 +230,10 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     QCString trRelatedFunctionDocumentation()
     { return "Documentatie van friends en gerelateerde functies"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -277,7 +263,7 @@ class TranslatorDutch : public Translator
       // used as the title of the HTML page of a file
     {
       QCString result=fileName;
-      result+=" Bestand Referentie"; 
+      result+=" Bestand Referentie";
       return result;
     }
     QCString trNamespaceReference(const char *namespaceName)
@@ -287,8 +273,8 @@ class TranslatorDutch : public Translator
       result+=" Namespace Referentie";
       return result;
     }
-    
-    // these are for the member sections of a class, struct or union 
+
+    // these are for the member sections of a class, struct or union
     QCString trPublicMembers()
     { return "Public Members"; }
     QCString trPublicSlots()
@@ -309,8 +295,8 @@ class TranslatorDutch : public Translator
     { return "Private Slots"; }
     QCString trStaticPrivateMembers()
     { return "Static Private Members"; }
-    // end of member sections 
-    
+    // end of member sections
+
     QCString trWriteList(int numEntries)
     {
       // this function is used to produce a comma-separated list of items.
@@ -318,23 +304,23 @@ class TranslatorDutch : public Translator
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=" en ";
         }
       }
-      return result; 
+      return result;
     }
-    
+
     QCString trInheritsList(int numEntries)
       // used in class documentation to produce a list of base classes,
       // if class diagrams are disabled.
@@ -348,7 +334,7 @@ class TranslatorDutch : public Translator
       return "Wordt overge&euml;rfd door "+trWriteList(numEntries)+".";
     }
     QCString trReimplementedFromList(int numEntries)
-      // used in member documentation blocks to produce a list of 
+      // used in member documentation blocks to produce a list of
       // members that are hidden by this one.
     {
       return "Nieuwe implementatie van "+trWriteList(numEntries)+".";
@@ -365,18 +351,18 @@ class TranslatorDutch : public Translator
     { return "Namespace Members"; }
     QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
-    { 
+    {
       QCString result="Hier is een lijst van alle ";
       if (!extractAll) result+="gedocumenteerde ";
       result+="namespace members met links naar ";
-      if (extractAll) 
+      if (extractAll)
         result+="de namespace documentatie voor iedere member:";
-      else 
+      else
         result+="de namespaces waartoe ze behoren:";
       return result;
     }
     QCString trNamespaceIndex()
-      // This is used in LaTeX as the title of the chapter with the 
+      // This is used in LaTeX as the title of the chapter with the
       // index of all namespaces.
     { return "Namespace Index"; }
     QCString trNamespaceDocumentation()
@@ -426,12 +412,6 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    /*! This is in the (quick) index as a link to the alphabetical compound
-     * list.
-     */
-    QCString trAlphabeticalList()
-    { return "Alphabetical List"; }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
 //////////////////////////////////////////////////////////////////////////
@@ -445,7 +425,7 @@ class TranslatorDutch : public Translator
     QCString trMainPage()
     { return "Hoofd Pagina"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation()
@@ -490,7 +470,7 @@ class TranslatorDutch : public Translator
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
     {
-      return "Constructor & Destructor Documentatie"; 
+      return "Constructor & Destructor Documentatie";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     QCString trGotoSourceCode()
@@ -547,7 +527,7 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     QCString trNote()
     {
       return "Noot";
@@ -630,7 +610,7 @@ class TranslatorDutch : public Translator
     {
       return "Sinds";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -643,7 +623,7 @@ class TranslatorDutch : public Translator
     /*! page explaining how the dot graph's should be interpreted */
     QCString trLegendDocs()
     {
-      return 
+      return
         "Deze pagina legt uit hoe de grafen die gegenereerd worden door doxygen "
         "ge&iuml;nterpreteerd dienen te worden.<p>\n"
         "Beschouw het volgende voorbeeld:\n"
@@ -711,7 +691,7 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     QCString trTest()
     {
@@ -721,16 +701,6 @@ class TranslatorDutch : public Translator
     QCString trTestList()
     {
       return "Test Lijst";
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// new since 1.2.1
-//////////////////////////////////////////////////////////////////////////
-
-    /*! Used as a section header for KDE-2 IDL methods */
-    QCString trDCOPMethods()
-    {
-      return "DCOP Methoden";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -747,7 +717,7 @@ class TranslatorDutch : public Translator
     {
       return "Property Documentatie";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
@@ -782,11 +752,11 @@ class TranslatorDutch : public Translator
     {
       return "Waarde:";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     QCString trBug()
     {
@@ -802,9 +772,9 @@ class TranslatorDutch : public Translator
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -825,15 +795,15 @@ class TranslatorDutch : public Translator
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "1252";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -846,82 +816,82 @@ class TranslatorDutch : public Translator
     {
       return "Index";
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Klasse" : "klass"));
       if (!singular)  result+="n";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Bestand" : "bestand"));
       if (!singular)  result+="en";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Namespace" : "namespace"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Groep" : "groep"));
       if (!singular)  result+="en";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Pagina" : "pagina"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Member" : "member"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Globale member" : "globale member"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -931,10 +901,10 @@ class TranslatorDutch : public Translator
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       QCString result((first_capital ? "Auteur" : "auteur"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -952,7 +922,7 @@ class TranslatorDutch : public Translator
 // new since 1.2.13
 //////////////////////////////////////////////////////////////////////////
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are implemented by this one.
      */
     virtual QCString trImplementedFromList(int numEntries)
@@ -979,8 +949,8 @@ class TranslatorDutch : public Translator
 // new since 1.2.17
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as the header of the list of item that have been 
-     *  flagged deprecated 
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
      */
     virtual QCString trDeprecatedList()
     {
@@ -1010,35 +980,35 @@ class TranslatorDutch : public Translator
     /*! Used as a heading for a list of Java class types with package scope.
      */
     virtual QCString trPackageTypes()
-    { 
+    {
       return "Package Types";
     }
-    /*! Used as a heading for a list of Java class functions with package 
-     * scope. 
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
      */
     virtual QCString trPackageMembers()
-    { 
+    {
       return "Package Functies";
     }
-    /*! Used as a heading for a list of static Java class functions with 
+    /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
-    { 
+    {
       return "Statische Package Functies";
     }
-    /*! Used as a heading for a list of Java class variables with package 
+    /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
-    { 
+    {
       return "Package Attributen";
     }
-    /*! Used as a heading for a list of static Java class variables with 
+    /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
-    { 
+    {
       return "Statische Package Attributen";
     }
 
@@ -1046,7 +1016,7 @@ class TranslatorDutch : public Translator
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used in the quick index of a class/file/namespace member list page 
+    /*! Used in the quick index of a class/file/namespace member list page
      *  to link to the unfiltered list of all members.
      */
     virtual QCString trAll()
@@ -1063,13 +1033,6 @@ class TranslatorDutch : public Translator
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the index 
-     *  of each page before the search field. 
-     */
-    virtual QCString trSearchForIndex()
-    {
-      return "Zoek naar";
-    }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
@@ -1081,7 +1044,7 @@ class TranslatorDutch : public Translator
      *  text can be different depending on the number of documents found.
      *  Inside the text you can put the special marker $num to insert
      *  the number representing the actual number of search results.
-     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
      *  value 2 represents 2 or more matches. HTML markup is allowed inside
      *  the returned string.
      */
@@ -1095,13 +1058,13 @@ class TranslatorDutch : public Translator
       {
         return "Er is <b>1</b> document gevonden dat aan de zoekopdracht voldoet.";
       }
-      else 
+      else
       {
         return "Er zijn <b>$num</b> documenten gevonden die aan de zoekopdracht voldoen. "
                "De beste resultaten worden eerst getoond.";
       }
     }
-    /*! This string is put before the list of matched words, for each search 
+    /*! This string is put before the list of matched words, for each search
      *  result. What follows is the list of words that matched the query.
      */
     virtual QCString trSearchMatches()
@@ -1142,7 +1105,7 @@ class TranslatorDutch : public Translator
     virtual QCString trDirectories()
     { return "Folders"; }
 
-    /*! This returns a sentences that introduces the directory hierarchy. 
+    /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
@@ -1160,10 +1123,10 @@ class TranslatorDutch : public Translator
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Folder" : "folder"));
       if (!singular) result+="s";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1189,7 +1152,7 @@ class TranslatorDutch : public Translator
     {
       return "Hier is de caller graaf voor deze functie:";
     }
-    
+
     /*! header that is put before the list of member subprograms (Fortran). */
     virtual QCString trMemberFunctionDocumentationFortran()
     { return "Member Functie/Subroutine Documentatie"; }
@@ -1198,7 +1161,7 @@ class TranslatorDutch : public Translator
 // new since 1.5.4 (mainly for Fortran)
 //////////////////////////////////////////////////////////////////////////
 
-    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
     virtual QCString trCompoundListFortran()
     { return "Lijst met data types"; }
 
@@ -1221,7 +1184,7 @@ class TranslatorDutch : public Translator
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index (Fortran).
      */
     virtual QCString trCompoundIndexFortran()
@@ -1233,24 +1196,24 @@ class TranslatorDutch : public Translator
     virtual QCString trTypeDocumentation()
     { return "Data Type Documentatie"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) subprograms (Fortran).
      */
     virtual QCString trSubprograms()
     { return "Functies/Subroutines"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for subprograms (Fortran)
      */
     virtual QCString trSubprogramDocumentation()
     { return "Functie/Subroutine Documentatie"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds (Fortran)
      */
      virtual QCString trDataTypes()
     { return "Data Types"; }
-    
+
     /*! used as the title of page containing all the index of all modules (Fortran). */
     virtual QCString trModulesList()
     { return "Module Lijst"; }
@@ -1289,42 +1252,42 @@ class TranslatorDutch : public Translator
     virtual QCString trModuleReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Module Referentie";        
+      result+=" Module Referentie";
       return result;
     }
-    
+
     /*! This is put above each page as a link to all members of modules. (Fortran) */
     virtual QCString trModulesMembers()
     { return "Module Members"; }
 
     /*! This is an introduction to the page with all modules members (Fortran) */
     virtual QCString trModulesMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Hier is een lijst van alle ";
       if (!extractAll) result+="gedocumenteerde ";
       result+="module members met links naar ";
-      if (extractAll) 
+      if (extractAll)
         result+="de module documentatie voor iedere member:";
-      else 
+      else
         result+="de module waartoe ze behoren:";
       return result;
     }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all modules (Fortran).
      */
     virtual QCString trModulesIndex()
     { return "Module Index"; }
-    
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trModule(bool first_capital, bool singular)
-    {       
+    {
       QCString result((first_capital ? "Module" : "module"));
       if (!singular)  result+="n";
-      return result; 
+      return result;
     }
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
@@ -1352,24 +1315,24 @@ class TranslatorDutch : public Translator
       return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trType(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Type" : "type"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trSubprogram(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Subprogramma" : "subprogramma"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! C# Type Contraint list */
@@ -1415,12 +1378,6 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.3 (missing items for the directory pages)
 //////////////////////////////////////////////////////////////////////////
-
-    /*! introduction text for the directory dependency graph */
-    virtual QCString trDirDependency(const char *name)
-    {
-      return (QCString)"Folder afhankelijkheidsgraaf voor "+name;
-    }
 
     /*! when clicking a directory dependency label, a page with a
      *  table is shown. The heading for the first column mentions the
@@ -1505,8 +1462,8 @@ class TranslatorDutch : public Translator
     virtual QCString trInheritedFrom(const char *members,const char *what)
     { return QCString(members)+" overge&euml;rfd van "+what; }
 
-    /*! Header of the sections with inherited members specific for the 
-     *  base class(es) 
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Additionele Overge&euml;rfde Members"; }
@@ -1516,7 +1473,7 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a tooltip for the toggle button that appears in the
-     *  navigation tree in the HTML output when GENERATE_TREEVIEW is 
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
      *  enabled. This tooltip explains the meaning of the button.
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)

@@ -161,8 +161,6 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
     virtual QCString updateNeededMessage()
     { return createUpdateNeededMessage(idLanguage(),"release 1.6.3"); }
 
-    virtual QCString trDirDependency(const char *name)
-    { return english.trDirDependency(name); }
     virtual QCString trFileIn(const char *name)
     { return english.trFileIn(name); }
     virtual QCString trIncludesFileIn(const char *name)

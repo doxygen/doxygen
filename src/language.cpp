@@ -21,7 +21,6 @@
 #include "language.h"
 #include "lang_cfg.h"
 #include "translator.h"
-#include "translatordecoder.h"
 #include "translator_en.h"
 #if !defined(ENGLISH_ONLY)
 #include "translator_adapter.h"
@@ -231,7 +230,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_JE
   else if (L_EQUAL("japanese-en"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorJapaneseEn);
+    theTranslator=new TranslatorJapaneseEn;
   }
 #endif
 #ifdef LANG_ES
@@ -285,7 +284,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_KE
   else if (L_EQUAL("korean-en"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorKoreanEn);
+    theTranslator=new TranslatorKoreanEn;
   }
 #endif
 #ifdef LANG_RO

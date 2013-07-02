@@ -259,8 +259,7 @@ SOURCES      =	arguments.cpp \
 		tagreader.cpp \
                 tclscanner.cpp \
                 textdocvisitor.cpp \
-		tooltip.cpp \
-		translator.cpp \
+                tooltip.cpp \
 		util.cpp \
 		version.cpp \
 		vhdlcode.cpp \
