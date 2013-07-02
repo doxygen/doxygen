@@ -567,7 +567,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
-<Start,ModuleBody>^{BS}type             {
+<Start,ModuleBody>^{BS}type/[^a-z0-9]    {
                                           if(YY_START == Start)
                                           {
                                             addModule(NULL); 
