@@ -31,7 +31,7 @@ def parseOption(node):
 	depends = node.getAttribute('depends')
 	setting = node.getAttribute('setting')
 	# replace \ by \\, replace " by \", and '  ' by a newline with end string and start string at next line
-	docC	= doc.strip().replace('\\','\\\\').replace('"','\\"').replace('	 ','\\n"\n		   "')
+	docC = doc.strip().replace('\\','\\\\').replace('"','\\"').replace('  ','\\n"\n\t\t\t"')
 	if len(setting)>0:
 		print "#if %s" % (setting)
 	print "	 //----"

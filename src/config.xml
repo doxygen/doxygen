@@ -10,7 +10,8 @@ http://www.gnu.org/software/libiconv for the list of possible encodings.
     <option type='string' id='PROJECT_NAME' format='string' docs='
 The PROJECT_NAME tag is a single word (or sequence of words) that should 
 identify the project. Note that if you do not use Doxywizard you need 
-to put quotes around the project name if it contains spaces.' defval='My Project'/>
+to put quotes around the project name if it contains spaces.' 
+defval='My Project'/>
     <option type='string' id='PROJECT_NUMBER' format='string' docs='
 The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 This could be handy for archiving the generated documentation or 
