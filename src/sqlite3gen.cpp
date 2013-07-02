@@ -343,6 +343,7 @@ static void writeInnerClasses(sqlite3*db,const ClassSDict *cl)
 
 static void writeInnerNamespaces(sqlite3 * /*db*/,const NamespaceSDict *nl)
 {
+#warning WorkInProgress
   if (nl)
   {
     NamespaceSDict::Iterator nli(*nl);
@@ -364,6 +365,7 @@ static void writeTemplateArgumentList(sqlite3* /*db*/,
                                       FileDef * /*fileScope*/,
                                       int /*indent*/)
 {
+#warning WorkInProgress
 }
 
 static void writeTemplateList(sqlite3*db,ClassDef *cd)
@@ -490,15 +492,20 @@ static void generateSqlite3ForNamespace(sqlite3 *db, NamespaceDef *nd)
   // + contained namespace definitions
   // + member groups
   // + normal members
-  // + brief desc
-  // + detailed desc
-  // + location
+  // - brief desc
+  // - detailed desc
+  // - location
   // - files containing (parts of) the namespace definition
 
   if (nd->isReference() || nd->isHidden()) return; // skip external references
+
+  // + contained class definitions
   writeInnerClasses(db,nd->getClassSDict());
+
+  // + contained namespace definitions
   writeInnerNamespaces(db,nd->getNamespaceSDict());
 
+  // + member groups
   if (nd->getMemberGroupSDict())
   {
     MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
@@ -510,6 +517,7 @@ static void generateSqlite3ForNamespace(sqlite3 *db, NamespaceDef *nd)
     }
   }
 
+  // + normal members
   QListIterator<MemberList> mli(nd->getMemberLists());
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
@@ -526,16 +534,16 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
 {
   // + includes files
   // + includedby files
-  // + include graph
-  // + included by graph
+  // - include graph
+  // - included by graph
   // + contained class definitions
   // + contained namespace definitions
   // + member groups
   // + normal members
-  // + brief desc
-  // + detailed desc
-  // + source code
-  // + location
+  // - brief desc
+  // - detailed desc
+  // - source code
+  // - location
   // - number of lines
 
   if (fd->isReference()) return; // skip external references
@@ -543,11 +551,13 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
   {
     writeInnerClasses(db,fd->getClassSDict());
   }
+  // + contained namespace definitions
   if (fd->getNamespaceSDict())
   {
     writeInnerNamespaces(db,fd->getNamespaceSDict());
   }
 
+  // + member groups
   if (fd->getMemberGroupSDict())
   {
     MemberGroupSDict::Iterator mgli(*fd->getMemberGroupSDict());
@@ -559,6 +569,7 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
     }
   }
 
+  // + normal members
   QListIterator<MemberList> mli(fd->getMemberLists());
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
@@ -662,6 +673,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     bindIntParameter(i_s_memberdef,":raisable",md->isRaisable());
   }
 
+  // + declaration/definition arg lists
   if (md->memberType()!=MemberType_Define &&
       md->memberType()!=MemberType_Enumeration
      )
@@ -821,15 +833,13 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     }
   }
 
-
   step(db,i_s_memberdef);
   /*int id_src =*/ sqlite3_last_insert_rowid(db);
 
-  // + cross-references
+  // + source references
   // The cross-references in initializers only work when both the src and dst
   // are defined.
   MemberSDict *mdict = md->getReferencesMembers();
-  // references
   if (mdict!=0)
   {
     MemberSDict::IteratorDict mdi(*mdict);
@@ -840,8 +850,8 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     }
   }
 
+  // + source referenced by
   mdict = md->getReferencedByMembers();
-  // referencedby
   if (mdict!=0)
   {
     MemberSDict::IteratorDict mdi(*mdict);
@@ -855,20 +865,20 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
 static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
 {
-  // + brief description
-  // + detailed description
-  // + template argument list(s)
-  // - include file
-  // + member groups
-  // + inheritance diagram
   // + list of direct super classes
   // + list of direct sub classes
+  // + include file
   // + list of inner classes
-  // + collaboration diagram
+  // - template argument list(s)
+  // + member groups
   // + list of all members
-  // + user defined member sections
-  // + standard member sections
-  // + detailed member documentation
+  // - brief description
+  // - detailed description
+  // - inheritance DOT diagram
+  // - collaboration DOT diagram
+  // - user defined member sections
+  // - standard member sections
+  // - detailed member documentation
   // - examples using the class
 
   if (cd->isReference())        return; // skip external references.
@@ -896,7 +906,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
 
   step(db,i_s_compounddef);
 
-  // + basecompoundref
+  // + list of direct super classes
   if (cd->baseClasses())
   {
     BaseClassListIterator bcli(*cd->baseClasses());
@@ -920,7 +930,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     }
   }
 
-  // + derivedcompoundref
+  // + list of direct sub classes
   if (cd->subClasses())
   {
     BaseClassListIterator bcli(*cd->subClasses());
@@ -936,8 +946,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     }
   }
 
-  ///////////////////////////////////////////////////////////////////
-  // INCLUDEINFO
+  // + include file
   IncludeInfo *ii=cd->includeInfo();
   if (ii)
   {
@@ -958,10 +967,14 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       }
     }
   }
-  ///////////////////////////////////////////////////////////////////
+
+  // + list of inner classes
   writeInnerClasses(db,cd->getClassSDict());
+
+  // - template argument list(s)
   writeTemplateList(db,cd);
 
+  // + member groups
   if (cd->getMemberGroupSDict())
   {
     MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
@@ -973,6 +986,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     }
   }
 
+  // + list of all members
   QListIterator<MemberList> mli(cd->getMemberLists());
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
@@ -991,10 +1005,11 @@ void generateSqlite3()
   // + classes
   // + namespaces
   // + files
-  // - groups
-  // - related pages
-  // - examples
-  //QCString outputDirectory = Config_getString("SQLITE3_OUTPUT");
+  // + groups
+  // + related pages
+  // + examples
+  // + main page
+
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QDir sqlite3Dir(outputDirectory);
   sqlite3 *db;
