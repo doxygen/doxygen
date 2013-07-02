@@ -1082,7 +1082,10 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
               s->data(),
               md->getBodyDef()->getDefFileName().data(),
               md->getStartBodyLine()));
-      insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
+      if (md->getBodyDef())
+      {
+        insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
+      }
       s=l.next();
     }
   }
