@@ -2420,6 +2420,19 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       err("file `%s' not found\n",name);
       return "";
     }
+    BufStr buf(fi.size());
+    fileOpened=readInputFile(name,buf,filter,isSourceCode);
+    if (fileOpened)
+    {
+      int s = buf.size();
+      if (s>1 && buf.at(s-2)!='\n')
+      {
+        buf.at(s-1)='\n';
+        buf.addChar(0);
+      }
+      return buf.data();
+    }
+#if 0
     QCString filterName = getFileFilter(name,isSourceCode);
     if (filterName.isEmpty() || !filter)
     {
@@ -2472,6 +2485,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",contents.data());
       return transcodeCharacterStringToUTF8(contents);
     }
+#endif
   }
   if (!fileOpened)  
   {
@@ -7345,7 +7359,7 @@ static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size
 }
 
 //! read a file name \a fileName and optionally filter and transcode it
-bool readInputFile(const char *fileName,BufStr &inBuf)
+bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceCode)
 {
   // try to open file
   int size=0;
@@ -7354,8 +7368,8 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
 
   QFileInfo fi(fileName);
   if (!fi.exists()) return FALSE;
-  QCString filterName = getFileFilter(fileName,FALSE);
-  if (filterName.isEmpty())
+  QCString filterName = getFileFilter(fileName,isSourceCode);
+  if (filterName.isEmpty() || !filter)
   {
     QFile f(fileName);
     if (!f.open(IO_ReadOnly))
@@ -7432,7 +7446,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     inBuf.shrink(newSize); // resize the array
     //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,dest.data());
   }
-  inBuf.at(inBuf.curPos())='\0';
+  inBuf.addChar(0);
   return TRUE;
 }
 
