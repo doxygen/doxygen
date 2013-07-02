@@ -442,7 +442,7 @@ static int processEmphasis3(GrowBuf &out, const char *data, int size, char c)
 }
 
 /** Process ndash and mdashes */
-static int processNmdash(GrowBuf &out,const char *data,int,int size)
+static int processNmdash(GrowBuf &out,const char *data,int off,int size)
 {
   // precondition: data[0]=='-'
   int i=1;
@@ -459,7 +459,7 @@ static int processNmdash(GrowBuf &out,const char *data,int,int size)
   {
     count++;
   }
-  if (count==2) // -- => ndash
+  if (count==2 && (off<8 || qstrncmp(data-8,"operator",8)!=0)) // -- => ndash
   {
     out.addStr("&ndash;");
     return 2;
