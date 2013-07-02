@@ -55,7 +55,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
       // obtain the url and the coordinates in the order used by graphviz-1.5
       sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
 
-      if ( strcmp(url,"\\ref") == 0 )
+      if (qstrcmp(url,"\\ref")==0 || qstrcmp(url,"@ref")==0)
       {
         isRef = TRUE;
         sscanf(buf,"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
