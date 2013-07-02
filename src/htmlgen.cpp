@@ -2496,7 +2496,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
   {
     if (emptyList)
     {
-      if (closeBracket) t << ")</td><td>";
+      if (closeBracket) t << "</td><td>)";
       t << "</td>" << endl;
       t << "          <td>";
     }
