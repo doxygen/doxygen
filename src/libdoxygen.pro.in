@@ -278,6 +278,7 @@ linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions -fno-rtti
 INCLUDEPATH                += ../qtools
 #INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5
+INCLUDEPATH                += %%SQLITE3_INC%%
 win32:INCLUDEPATH          += .
 #win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12 ../libmd5
 win32-g++:INCLUDEPATH      = ../qtools ../libmd5

@@ -41,6 +41,8 @@ f_bison=NO
 f_search=NO
 f_langs=nl,sv,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,mk,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,sc,vi,tr,eo,am
 f_sqlite3=NO
+f_sqlite3static=NO
+f_sqlite3_path=NO
 f_libclang=NO
 f_libclangstatic=NO
 
@@ -103,6 +105,13 @@ while test -n "$1";  do
     --with-sqlite3 | -with-sqlite3)
        f_sqlite3=YES
        ;;
+    --with-sqlite3-static | -with-sqlite3-static)
+       f_sqlite3=YES
+       f_sqlite3static=YES
+       ;;
+    --sqlite3-path | -sqlite3-path)
+       shift; f_sqlite3_path=$1
+       ;;
     --with-libclang | -with-libclang)
        f_libclang=YES
        ;;
@@ -128,7 +137,8 @@ Usage: $0 [--help] [--shared] [--static] [--release] [--debug]
           [--perl name] [--flex name] [--bison name] [--make name] 
           [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
           [--install name] [--english-only] [--enable-langs list] 
-          [--with-sqlite3] [--with-libclang]
+          [--with-sqlite3] [--with-sqlite3-static] [--sqlite3-path]
+          [--with-libclang] [--with-libclang-static]
           [--with-doxywizard] [--with-doxysearch] [--with-doxyapp]
 
 Options: 
@@ -420,9 +430,18 @@ fi
 
 if test "$f_sqlite3" = YES; then
   printf "  Checking for sqlite3 ... "
-  sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
-  sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu"
-  sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
+  if test "$f_sqlite_path" = NO; then
+    sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
+    sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu"
+  else
+    sqlite3_hdr_dir="$f_sqlite3_path/include"
+    sqlite3_lib_dir="$f_sqlite3_path/lib"
+  fi
+  if test "$f_sqlite3static" = NO; then
+    sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
+  else
+    sqlite3_lib_name="libsqlite3.a"
+  fi
   sqlite3_hdr=NO
   sqlite3_lib=NO
   sqlite3_link=
@@ -436,8 +455,13 @@ if test "$f_sqlite3" = YES; then
     if test "$sqlite3_lib" = NO; then
       for j in $sqlite3_lib_name; do
         if test -e "$i/$j"; then
-          sqlite3_lib="$i/$j"
-          sqlite3_link="-L $i -lsqlite3"
+          if test "$f_sqlite3static" = NO; then
+            sqlite3_lib="$i/$j"
+            sqlite3_link="-L$i -lsqlite3"
+          else
+            sqlite3_lib="$i/$j"
+            sqlite3_link="$i/$j -ldl"
+          fi
           break
         fi
       done
@@ -792,7 +816,7 @@ EOF
      #if test "$f_thread" = YES; then
      #  realopts="$realopts thread"
      #fi
-     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
+     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_INC%%;$sqlite3_hdr_dir;g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
      echo "  Created $DST from $SRC..."
 done
 
