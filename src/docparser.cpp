@@ -1352,7 +1352,7 @@ reparsetoken:
             doctokenizerYYsetStateDbOnly();
             tok = doctokenizerYYlex();
             children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
-            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"xmlonly section ended without end marker",doctokenizerYYlineno);
+            if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"docbookonly section ended without end marker",doctokenizerYYlineno);
             doctokenizerYYsetStatePara();
           }
           break;
@@ -5469,6 +5469,15 @@ int DocPara::handleCommand(const QCString &cmdName)
         retval = doctokenizerYYlex();
         m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"xmlonly section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
+    case CMD_DBONLY:
+      {
+        doctokenizerYYsetStateDbOnly();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"docbookonly section ended without end marker",doctokenizerYYlineno);
         doctokenizerYYsetStatePara();
       }
       break;

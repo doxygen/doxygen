@@ -1099,6 +1099,10 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
                                       g_endMarker="endxmlonly";
 				      BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"docbookonly"/[^a-z_A-Z0-9] {
+                                      g_endMarker="enddocbookonly";
+				      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
                                       g_endMarker="endcode";
 				      BEGIN(St_SecSkip);
