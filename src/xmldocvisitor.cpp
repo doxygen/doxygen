@@ -246,12 +246,17 @@ void XmlDocVisitor::visit(DocStyleChange *s)
 void XmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
-  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
+  SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>"; 
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(lang)
                             ->parseCode(m_ci,s->context(),s->text(),langExt,
                                         s->isExample(),s->exampleFile());
       m_t << "</programlisting>"; 
