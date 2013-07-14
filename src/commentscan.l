@@ -1860,6 +1860,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  {
 					    if (!enabledSectionFound && guards.top()->parentVisible())
 					    {
+                                              guardType=Guard_If;
 					      delete guards.pop();
 					      BEGIN( GuardParam );
 					    }
