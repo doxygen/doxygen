@@ -1295,21 +1295,15 @@ static void addClassToContext(EntryNav *rootNav)
       tagName     = rootNav->tagInfo()->tagName;
       refFileName = rootNav->tagInfo()->fileName;
     }
-    Definition *d = 0;
     int i;
     if ((i=fullName.find("::"))!=-1)
     {
-      d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang);
+      buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang);
     }
     cd=new ClassDef(root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
         fullName.data(),sec,root->tArgLists ? (int)root->tArgLists->count() : -1);
-    if (d)
-    {
-      cd->setOuterScope(d);
-      d->addInnerCompound(cd);
-    }
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setLanguage(root->lang);    
