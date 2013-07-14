@@ -2432,60 +2432,6 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       }
       return buf.data();
     }
-#if 0
-    QCString filterName = getFileFilter(name,isSourceCode);
-    if (filterName.isEmpty() || !filter)
-    {
-      f.setName(name);
-      fileOpened=f.open(IO_ReadOnly);
-      if (fileOpened)
-      {
-        int fsize=f.size();
-        QCString contents(fsize+2);
-        f.readBlock(contents.data(),fsize);
-        if (fsize==0 || contents[fsize-1]=='\n') 
-          contents[fsize]='\0';
-        else
-          contents[fsize]='\n'; // to help the scanner
-        contents[fsize+1]='\0';
-        f.close();
-        int newSize = filterCRLF(contents.data(),fsize+2);
-        if (newSize!=fsize+2) 
-        {
-          contents.resize(newSize);
-        }
-        return transcodeCharacterStringToUTF8(contents);
-      }
-    }
-    else // filter the input
-    {
-      QCString cmd=filterName+" \""+name+"\"";
-      Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
-      FILE *f=portable_popen(cmd,"r");
-      if (!f)
-      {
-        err("could not execute filter %s\n",filterName.data());
-        return "";
-      }
-      const int bSize=4096;
-      QCString contents(bSize);
-      int totalSize=0;
-      int size;
-      while ((size=(int)fread(contents.data()+totalSize,1,bSize,f))==bSize)
-      {
-        totalSize+=bSize;
-        contents.resize(totalSize+bSize); 
-      }
-      totalSize = filterCRLF(contents.data(),totalSize+size)+2;
-      contents.resize(totalSize);
-      contents.at(totalSize-2)='\n'; // to help the scanner
-      contents.at(totalSize-1)='\0';
-      portable_pclose(f);
-      Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",contents.data());
-      return transcodeCharacterStringToUTF8(contents);
-    }
-#endif
   }
   if (!fileOpened)  
   {
@@ -7435,7 +7381,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
         Config_getString("INPUT_ENCODING"),"UTF-8");
   }
 
-  inBuf.addChar('\n'); /* to prevent problems under Windows ? */
+  //inBuf.addChar('\n'); /* to prevent problems under Windows ? */
 
   // and translate CR's
   size=inBuf.curPos()-start;
