@@ -889,9 +889,8 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       }
     }
   }
-  // avoid that extremely large tables are written to the output. 
-  // todo: it's better to adhere to MAX_INITIALIZER_LINES.
-  if (!md->initializer().isEmpty() && md->initializer().length()<2000)
+
+  if (md->hasOneLineInitializer() || md->hasMultiLineInitializer())
   {
     t << "        <initializer>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->initializer());
