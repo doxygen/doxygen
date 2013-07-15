@@ -1023,6 +1023,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  BEGIN(HtmlComment);
 					}
 <Comment>{B}*{CMD}"endinternal"{B}*	{
+                                          addOutput("\\endinternal "); 
                                           if (!inInternalDocs)
   					    warn(yyFileName,yyLineNr,
                                                "found \\endinternal without matching \\internal"
@@ -1925,6 +1926,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
   					}
 <SkipInternal>[@\\]"endinternal"[ \t]*  {
+                                          addOutput("\\endinternal "); 
 					  BEGIN(Comment);
 					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters

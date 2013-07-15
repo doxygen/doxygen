@@ -3207,7 +3207,8 @@ int DocInternal::parse(int level)
            retval!=RetVal_Section &&
            retval!=RetVal_Subsection &&
            retval!=RetVal_Subsubsection &&
-           retval!=RetVal_Paragraph
+           retval!=RetVal_Paragraph &&
+           retval!=RetVal_EndInternal
           );
   if (lastPar) lastPar->markLast();
 
@@ -3229,7 +3230,7 @@ int DocInternal::parse(int level)
     warn_doc_error(g_fileName,doctokenizerYYlineno,"\\internal command found inside internal section");
   }
 
-  DBG(("DocInternal::parse() end\n"));
+  DBG(("DocInternal::parse() end: retval=%x\n",retval));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval;
@@ -5563,6 +5564,9 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_INTERNAL:
       retval = RetVal_Internal;
       break;
+    case CMD_ENDINTERNAL:
+      retval = RetVal_EndInternal;
+      break;
     case CMD_COPYDOC:   // fall through
     case CMD_COPYBRIEF: // fall through
     case CMD_COPYDETAILS:
@@ -5669,7 +5673,8 @@ int DocPara::handleCommand(const QCString &cmdName)
   INTERNAL_ASSERT(retval==0 || retval==RetVal_OK || retval==RetVal_SimpleSec || 
          retval==TK_LISTITEM || retval==TK_ENDLIST || retval==TK_NEWPARA ||
          retval==RetVal_Section || retval==RetVal_EndList || 
-         retval==RetVal_Internal || retval==RetVal_SwitchLang
+         retval==RetVal_Internal || retval==RetVal_SwitchLang || 
+         retval==RetVal_EndInternal
         );
   DBG(("handleCommand(%s) end retval=%x\n",qPrint(cmdName),retval));
   return retval;
@@ -6618,12 +6623,22 @@ int DocSection::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid list item found");
     }
+    if (retval==RetVal_Internal)
+    {
+      DocInternal *in = new DocInternal(this);
+      m_children.append(in);
+      retval = in->parse(m_level+1);
+      if (retval==RetVal_EndInternal)
+      {
+        retval=RetVal_OK;
+      }
+    }
   } while (retval!=0 && 
-           retval!=RetVal_Internal      &&
            retval!=RetVal_Section       &&
            retval!=RetVal_Subsection    &&
            retval!=RetVal_Subsubsection &&
-           retval!=RetVal_Paragraph 
+           retval!=RetVal_Paragraph     &&
+           retval!=RetVal_EndInternal
           );
 
   if (lastPar) lastPar->markLast();
@@ -6680,12 +6695,6 @@ int DocSection::parse()
     retval=0; // stop parsing
             
   }
-  else if (retval==RetVal_Internal)
-  {
-    DocInternal *in = new DocInternal(this);
-    m_children.append(in);
-    retval = in->parse(m_level+1);
-  }
   else
   {
   }
@@ -6695,10 +6704,11 @@ int DocSection::parse()
                   retval==RetVal_Subsection || 
                   retval==RetVal_Subsubsection || 
                   retval==RetVal_Paragraph || 
-                  retval==RetVal_Internal
+                  retval==RetVal_Internal ||
+                  retval==RetVal_EndInternal
                  );
 
-  DBG(("DocSection::parse() end\n"));
+  DBG(("DocSection::parse() end: retval=%x\n",retval));
   DocNode *n = g_nodeStack.pop();
   ASSERT(n==this);
   return retval;
@@ -6834,7 +6844,13 @@ void DocRoot::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"found paragraph command outside of subsubsection context!");
     }
-  } while (retval!=0 && retval!=RetVal_Section && retval!=RetVal_Internal);
+    if (retval==RetVal_Internal)
+    {
+      DocInternal *in = new DocInternal(this);
+      m_children.append(in);
+      retval = in->parse(1);
+    }
+  } while (retval!=0 && retval!=RetVal_Section);
   if (lastPar) lastPar->markLast();
 
   //printf("DocRoot::parse() retval=%d %d\n",retval,RetVal_Section);
@@ -6855,14 +6871,6 @@ void DocRoot::parse()
       retval = 0;
     }
   }
-
-  if (retval==RetVal_Internal)
-  {
-    DocInternal *in = new DocInternal(this);
-    m_children.append(in);
-    retval = in->parse(1);
-  }
-
 
   handleUnclosedStyleCommands();
 

@@ -131,6 +131,7 @@ CommandMap cmdMap[] =
   { "vhdlflow",      CMD_VHDLFLOW },
   { "docbookonly",   CMD_DBONLY },
   { "enddocbookonly",CMD_ENDDBONLY },
+  { "endinternal",   CMD_ENDINTERNAL },
   { 0,               0 },
 };
 
