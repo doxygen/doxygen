@@ -48,3 +48,4 @@ Makefile
 /src/vhdlparser.cpp
 /src/vhdlparser.h
 /src/vhdlscanner.cpp
+/doc/translator_report.txt

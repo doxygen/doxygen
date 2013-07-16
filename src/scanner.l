@@ -6209,12 +6209,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             docBlock+=indent;
                                           }
   					}
-<DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line
+<DocCopyBlock>^{B}*+"*"/{BN}*		{ // start of a comment line
   					  if (docBlockName=="code")
                                           {
                                             QCString indent;
-                                            indent.fill(' ',computeIndent(yytext,0));
-                                            docBlock+=indent;
+                                            indent.fill(' ',computeIndent(yytext,0)-1);
+                                            docBlock+=indent+"*";
                                           }
                                           else
 					  {
