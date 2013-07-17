@@ -550,6 +550,13 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
 			 ASSERT(ok);
 			 return TK_COMMAND;
   		       }
+<St_Para>{CMD}"n"\n    { /* \n followed by real newline */
+                         yylineno++;
+                         g_token->name = yytext+1;
+			 g_token->name = g_token->name.stripWhiteSpace();
+			 g_token->paramDir=TokenInfo::Unspecified;
+                         return TK_COMMAND;
+                       }
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      |
 <St_Para>{SPCMD4}      { /* special command */
