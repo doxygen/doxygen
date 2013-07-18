@@ -2015,10 +2015,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
 <OverloadParam>{DOCNL}			{ // end of argument
   					  if (*yytext=='\n') yyLineNr++;
-					  addOutput('\n');
 					  if (functionProto.stripWhiteSpace().isEmpty())
 					  { // plain overload command
 					    addOutput(getOverloadDocs());
+					    addOutput('\n');
 					  }
 					  else // overload declaration
 					  {
