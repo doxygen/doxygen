@@ -140,5 +140,8 @@ rpmbinary: dist
 ctags:
 	ctags -R -f tags src addon/doxywizard qtools
 
+test: FORCE
+	make -C testing
+
 FORCE:
 

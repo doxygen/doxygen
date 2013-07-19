@@ -3,8 +3,9 @@ compiler:
   - gcc
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install -qq  texlive texlive-extra-utils
+    - sudo apt-get install -qq  texlive texlive-extra-utils xmllint perl
 script:
     - ./configure --with-doxywizard
     - make
     - make docs
+    - make test
