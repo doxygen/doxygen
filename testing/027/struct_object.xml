@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="struct_object" kind="struct" prot="public">
+    <compoundname>Object</compoundname>
+    <derivedcompoundref refid="struct_vehicle" prot="public" virt="non-virtual">Vehicle</derivedcompoundref>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="struct_object_1a1b6037fba835e83243ababce426ff9af" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Object::ref</definition>
+        <argsstring/>
+        <name>ref</name>
+        <briefdescription>
+          <para>Reference count. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="027_extends.c" bodystart="21" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_object_1a71225073d06a793b9a6ea9263ed37b12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
+        <definition>static Object * objRef</definition>
+        <argsstring>(Object *obj)</argsstring>
+        <name>objRef</name>
+        <param>
+          <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
+          <declname>obj</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Increments object reference count by one. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="027_extends.c" line="29" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_object_1a924ee0cecc906d148022b3f0d6325cfb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
+        <definition>static Object * objUnref</definition>
+        <argsstring>(Object *obj)</argsstring>
+        <name>objUnref</name>
+        <param>
+          <type><ref refid="struct_object" kindref="compound">Object</ref> *</type>
+          <declname>obj</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Decrements object reference count by one. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="027_extends.c" line="36" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Base object class. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="9">
+        <label>Truck</label>
+        <link refid="struct_truck"/>
+        <childnode refid="7" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>Vehicle</label>
+        <link refid="struct_vehicle"/>
+        <childnode refid="6" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
+      <node id="8">
+        <label>Car</label>
+        <link refid="struct_car"/>
+        <childnode refid="7" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="027_extends.c" bodystart="19" bodyend="22"/>
+    <listofallmembers>
+      <member refid="struct_object_1a71225073d06a793b9a6ea9263ed37b12" prot="public" virt="non-virtual">
+        <scope>Object</scope>
+        <name>objRef</name>
+      </member>
+      <member refid="struct_object_1a924ee0cecc906d148022b3f0d6325cfb" prot="public" virt="non-virtual">
+        <scope>Object</scope>
+        <name>objUnref</name>
+      </member>
+      <member refid="struct_object_1a1b6037fba835e83243ababce426ff9af" prot="private" virt="non-virtual">
+        <scope>Object</scope>
+        <name>ref</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

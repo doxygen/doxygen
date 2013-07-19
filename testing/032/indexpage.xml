@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>Some text. <programlisting><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline><codeline><highlight class="normal"><sp/><sp/>Test<sp/>t;</highlight></codeline><codeline><highlight class="normal"><sp/><sp/>t.example();</highlight></codeline><codeline><highlight class="normal">}</highlight></codeline><codeline><highlight class="normal"/></codeline></programlisting> More text. <programlisting><codeline lineno="1"><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>main()</highlight></codeline><codeline lineno="2"><highlight class="normal">{</highlight></codeline><codeline lineno="3"><highlight class="normal"><sp/><sp/>Test<sp/>t;</highlight></codeline><codeline lineno="4"><highlight class="normal"><sp/><sp/>t.example();</highlight></codeline><codeline lineno="5"><highlight class="normal">}</highlight></codeline><codeline lineno="6"><highlight class="normal"/></codeline></programlisting> End. </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

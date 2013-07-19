@@ -1,0 +1,12 @@
+// objective: test the \internal and \endinternal commands (1)
+// check: indexpage.xml
+
+/** \mainpage 
+ *  Some text.
+ *  \internal
+ *  Internal text.
+ *  \endinternal
+ *  More visible text.
+ *  \internal
+ *  More internal text.
+ */

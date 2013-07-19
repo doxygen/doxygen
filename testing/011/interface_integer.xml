@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="interface_integer" kind="class" prot="public">
+    <compoundname>Integer</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Object</basecompoundref>
+    <sectiondef kind="protected-attrib">
+      <memberdef kind="variable" id="interface_integer_1a35e89216966d8179a1b77f14b8211fda" prot="protected" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Integer::integer</definition>
+        <argsstring/>
+        <name>integer</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>data member </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="011_category.m" bodystart="8" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="interface_integer_1a7b55035e1b0e8e7d4c8587f54a760819" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int Integer::integer</definition>
+        <argsstring>()</argsstring>
+        <name>integer</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>getter </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="011_category.m" line="8" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="interface_integer_1ad2f47761103b2442ff7b3fbfe33ec6c9" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>id</type>
+        <definition>id Integer::integer:</definition>
+        <argsstring>(int _integer)</argsstring>
+        <name>integer:</name>
+        <param>
+          <type>int</type>
+          <declname>_integer</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>setter </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="011_category.m" line="8" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>An interface </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>Object</label>
+      </node>
+      <node id="0">
+        <label>Integer</label>
+        <link refid="interface_integer"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>Object</label>
+      </node>
+      <node id="2">
+        <label>Integer</label>
+        <link refid="interface_integer"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="011_category.m" bodystart="6" bodyend="-1"/>
+    <listofallmembers>
+      <member refid="interface_integer_1a35e89216966d8179a1b77f14b8211fda" prot="protected" virt="non-virtual">
+        <scope>Integer</scope>
+        <name>integer</name>
+      </member>
+      <member refid="interface_integer_1a7b55035e1b0e8e7d4c8587f54a760819" prot="public" virt="virtual">
+        <scope>Integer</scope>
+        <name>integer</name>
+      </member>
+      <member refid="interface_integer_1ad2f47761103b2442ff7b3fbfe33ec6c9" prot="public" virt="virtual">
+        <scope>Integer</scope>
+        <name>integer:</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

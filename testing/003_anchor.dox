@@ -1,0 +1,8 @@
+// objective: test \anchor command
+// check: indexpage.xml
+/** \mainpage
+ *  \ref myanchor "See Anchor"
+ *  Some text.
+ *  \anchor myanchor
+ *  More text.
+ */

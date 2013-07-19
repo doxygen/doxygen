@@ -1,0 +1,9 @@
+// objective: test the \author, \since, and \version command
+// check: indexpage.xml
+/** \mainpage
+ *  \author John Doe
+ *  \author Jane Doe
+ *  \authors David, Steven
+ *  \since version 1.2
+ *  \version 1.8-beta2
+ */

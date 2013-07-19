@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="036__link_8c" kind="file">
+    <compoundname>036_link.c</compoundname>
+    <innerclass refid="class_test" prot="public">Test</innerclass>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="036__link_8c_1affb6da6cff1b57cdf8efc0123dceac9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="036_link.c" line="11" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>See <ref refid="036__link_8c_1affb6da6cff1b57cdf8efc0123dceac9b" kindref="member">the function</ref> for more info. See the <ref refid="class_test" kindref="compound">test</ref> class. </para>
+    </detaileddescription>
+    <location file="036_link.c"/>
+  </compounddef>
+</doxygen>

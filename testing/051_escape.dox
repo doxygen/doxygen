@@ -1,0 +1,18 @@
+// objective: test various characters that should be escaped
+// check: indexpage.xml
+/** 
+\mainpage 
+Dollar \$ 
+At \@
+Backslash \\
+Amphasand \&
+Less \<
+Greater \>
+Hash \#
+Percent \%
+Quote \"
+Dot \.
+Double colon \::
+Pipe \|
+
+*/

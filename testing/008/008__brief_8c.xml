@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="008__brief_8c" kind="file">
+    <compoundname>008_brief.c</compoundname>
+    <briefdescription>
+      <para>A brief description. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>More details. </para>
+    </detaileddescription>
+    <location file="008_brief.c"/>
+  </compounddef>
+</doxygen>

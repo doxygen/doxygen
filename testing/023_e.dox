@@ -1,0 +1,5 @@
+// objective: test the \e, \em commands
+// check: indexpage.xml
+/** \mainpage
+ *  Normal \e emphasis and more \em emphasis back to normal.
+ */

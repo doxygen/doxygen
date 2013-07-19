@@ -1,0 +1,6 @@
+// objective: test \copyright and \date commands
+// check: indexpage.xml
+/** \mainpage
+ *  \copyright Dimitri van Heesch
+ *  \date July 13 2013
+ */

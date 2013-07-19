@@ -1,0 +1,22 @@
+// objective: test \page, \subpage, \*section, \paragraph, and \ref commands
+// check: mypage.xml
+// check: another.xml
+/** \page mypage Page Title
+ *  Text at page level. See \ref mysect for more.
+ *  \section mysect Section Title.
+ *  Text at section level. See \ref mysubsect for more.
+ *  \subsection mysubsect Subsection Title.
+ *  Text at subsection level. see \ref mysubsubsect for more.
+ *  \subsubsection mysubsubsect Subsubsection Title.
+ *  Text at subsubsection level. \ref mypara for more.
+ *  \paragraph mypara Paragraph Title.
+ *  Text at paragraph level. \ref mysect2 for more.
+ *  \section mysect2 Another Section Title.
+ *  Text at section level.
+ *
+ *  \subpage another
+ */
+
+/** \page another Another Page
+ *  Another page's text.
+ */

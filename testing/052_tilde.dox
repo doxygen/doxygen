@@ -1,0 +1,9 @@
+// objective: test \~ command
+// check: indexpage.xml
+/** 
+\mainpage 
+\~english This is English.
+\~dutch Dit is Nederlands.
+\~german Dies ist Deutsch.
+\~ Output for all languages.
+*/

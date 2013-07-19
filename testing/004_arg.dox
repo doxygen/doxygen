@@ -1,0 +1,15 @@
+// objective: test \arg and \li commands
+// check: indexpage.xml
+/** \mainpage
+  \arg \c AlignLeft left alignment.
+  \arg \c AlignCenter center alignment.
+  \arg \c AlignRight right alignment
+
+  No other types of alignment are supported.
+
+  \li \c AlignLeft left alignment.
+  \li \c AlignCenter center alignment.
+  \li \c AlignRight right alignment
+
+  No other types of alignment are supported.
+*/

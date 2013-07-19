@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_sender" kind="class" prot="public">
+    <compoundname>Sender</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Sender::Ack</definition>
+        <argsstring>(bool ok)</argsstring>
+        <name>Ack</name>
+        <param>
+          <type>bool</type>
+          <declname>ok</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Acknowledgement from server </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="037_msc.cpp" line="17" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="class_sender" kindref="compound">Sender</ref> class. Can be used to send a command to the server. The receiver will acknowledge the command by calling <ref refid="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" kindref="member">Ack()</ref>. <msc> 
+  Sender,Receiver;
+  Sender-&gt;Receiver [label="Command()", URL="\ref Receiver::Command()"];
+  Sender&lt;-Receiver [label="Ack()", URL="\ref Ack()", ID="1"];
+</msc> </para>
+    </detaileddescription>
+    <location file="037_msc.cpp" bodystart="13" bodyend="18"/>
+    <listofallmembers>
+      <member refid="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" prot="public" virt="non-virtual">
+        <scope>Sender</scope>
+        <name>Ack</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

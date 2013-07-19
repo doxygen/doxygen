@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_test" kind="class" prot="public">
+    <compoundname>Test</compoundname>
+    <sectiondef kind="user-defined">
+      <header>A group of functions.</header>
+      <memberdef kind="function" id="class_test_1a09d1d148c3624a636b7590f8cf816a55" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::foo</definition>
+        <argsstring>()</argsstring>
+        <name>foo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>foo function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="039_name.cpp" line="16" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="class_test_1a78e37a450a276b60a5a2fa4a46c86f2e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::bar</definition>
+        <argsstring>()</argsstring>
+        <name>bar</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>bar function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="039_name.cpp" line="18" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_1a1a26b34cfe612dacf462b81f74235269" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::ungrouped</definition>
+        <argsstring>()</argsstring>
+        <name>ungrouped</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>ungrouped function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="039_name.cpp" line="23" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A <ref refid="class_test" kindref="compound">Test</ref> class. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>More details about this class. </para>
+    </detaileddescription>
+    <location file="039_name.cpp" bodystart="8" bodyend="24"/>
+    <listofallmembers>
+      <member refid="class_test_1a78e37a450a276b60a5a2fa4a46c86f2e" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>bar</name>
+      </member>
+      <member refid="class_test_1a09d1d148c3624a636b7590f8cf816a55" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>foo</name>
+      </member>
+      <member refid="class_test_1a1a26b34cfe612dacf462b81f74235269" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>ungrouped</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

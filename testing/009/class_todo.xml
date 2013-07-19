@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_todo" kind="class" prot="public">
+    <compoundname>Todo</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_todo_1a9e70ec9176ac4c1b20e011b4daddc9d8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Todo::todo</definition>
+        <argsstring>()</argsstring>
+        <name>todo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <xrefsect id="todo_1_todo000002">
+              <xreftitle>Todo</xreftitle>
+              <xrefdescription>
+                <para>more things to do here </para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="009_bug.cpp" line="43" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <xrefsect id="todo_1_todo000001">
+          <xreftitle>Todo</xreftitle>
+          <xrefdescription>
+            <para>This still needs to be done. </para>
+          </xrefdescription>
+        </xrefsect>
+      </para>
+    </detaileddescription>
+    <location file="009_bug.cpp" bodystart="39" bodyend="44"/>
+    <listofallmembers>
+      <member refid="class_todo_1a9e70ec9176ac4c1b20e011b4daddc9d8" prot="public" virt="non-virtual">
+        <scope>Todo</scope>
+        <name>todo</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

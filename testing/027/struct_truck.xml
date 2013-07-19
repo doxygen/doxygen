@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="struct_truck" kind="struct" prot="public">
+    <compoundname>Truck</compoundname>
+    <basecompoundref refid="struct_vehicle" prot="public" virt="non-virtual">Vehicle</basecompoundref>
+    <sectiondef kind="protected-attrib">
+      <memberdef kind="variable" id="struct_truck_1ad0ac321609dda1a6c552488b05ec7ac8" prot="protected" static="no" mutable="no">
+        <type>
+          <ref refid="struct_vehicle" kindref="compound">Vehicle</ref>
+        </type>
+        <definition>Vehicle Truck::base</definition>
+        <argsstring/>
+        <name>base</name>
+        <briefdescription>
+          <para>Base class. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="027_extends.c" bodystart="79" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="struct_truck" kindref="compound">Truck</ref> class. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="11">
+        <label>Truck</label>
+        <link refid="struct_truck"/>
+        <childnode refid="12" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>Vehicle</label>
+        <link refid="struct_vehicle"/>
+        <childnode refid="13" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="14">
+        <label>Truck</label>
+        <link refid="struct_truck"/>
+        <childnode refid="15" relation="public-inheritance">
+        </childnode>
+        <childnode refid="15" relation="usage">
+          <edgelabel>base</edgelabel>
+        </childnode>
+      </node>
+      <node id="15">
+        <label>Vehicle</label>
+        <link refid="struct_vehicle"/>
+        <childnode refid="16" relation="public-inheritance">
+        </childnode>
+        <childnode refid="16" relation="usage">
+          <edgelabel>base</edgelabel>
+        </childnode>
+      </node>
+      <node id="16">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
+    </collaborationgraph>
+    <location file="027_extends.c" bodystart="77" bodyend="80"/>
+    <listofallmembers>
+      <member refid="struct_truck_1ad0ac321609dda1a6c552488b05ec7ac8" prot="protected" virt="non-virtual">
+        <scope>Truck</scope>
+        <name>base</name>
+      </member>
+      <member refid="struct_object_1a71225073d06a793b9a6ea9263ed37b12" prot="public" virt="non-virtual">
+        <scope>Truck</scope>
+        <name>objRef</name>
+      </member>
+      <member refid="struct_object_1a924ee0cecc906d148022b3f0d6325cfb" prot="public" virt="non-virtual">
+        <scope>Truck</scope>
+        <name>objUnref</name>
+      </member>
+      <member refid="struct_vehicle_1a6891d3d28853bc3fdd075596dc6de9f8" prot="public" virt="non-virtual">
+        <scope>Truck</scope>
+        <name>vehicleStart</name>
+      </member>
+      <member refid="struct_vehicle_1a4dcbcba43792dcd673a552b14479ab77" prot="public" virt="non-virtual">
+        <scope>Truck</scope>
+        <name>vehicleStop</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

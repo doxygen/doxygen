@@ -1,0 +1,14 @@
+// objective: test \verbatim and \verbinclude commands
+// check: indexpage.xml
+// config: EXAMPLE_PATH = .
+/** 
+\mainpage 
+Some normal text.
+\verbatim
+A verbatim section with a /* C comment */ in it
+\endverbatim
+Showing a file as verbatim
+\verbinclude sample.bib
+More text after the verbatim section.
+
+*/

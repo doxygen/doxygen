@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>Some text. </para>
+      <internal>
+        <para>Internal text. </para>
+      </internal>
+      <sect1 id="index_1s1">
+        <title>A Section</title>
+        <para>Some text in the section 1. </para>
+        <internal>
+          <para>Internal text. </para>
+          <sect2 id="index_1ss1">
+            <title>A Subsection</title>
+            <para>Some text in the subsection. </para>
+          </sect2>
+        </internal>
+        <para>Visible text in section 1. </para>
+      </sect1>
+      <sect1 id="index_1s2">
+        <title>Another Section</title>
+        <para>Visible text. </para>
+      </sect1>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_receiver" kind="class" prot="public">
+    <compoundname>Receiver</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_receiver_1a162099741e0324e6254c9bc570566e40" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Receiver::Command</definition>
+        <argsstring>(int commandId)</argsstring>
+        <name>Command</name>
+        <param>
+          <type>int</type>
+          <declname>commandId</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Executable a command on the server </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="037_msc.cpp" line="32" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para><ref refid="class_receiver" kindref="compound">Receiver</ref> class. Can be used to receive and execute commands. After execution of a command, the receiver will send an acknowledgement <msc> 
+  Receiver,Sender;
+  Receiver&lt;-Sender [label="Command()", URL="\ref Command()"];
+  Receiver-&gt;Sender [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
+</msc> </para>
+    </detaileddescription>
+    <location file="037_msc.cpp" bodystart="28" bodyend="33"/>
+    <listofallmembers>
+      <member refid="class_receiver_1a162099741e0324e6254c9bc570566e40" prot="public" virt="non-virtual">
+        <scope>Receiver</scope>
+        <name>Command</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,9 @@
+// objective: test the \image command
+// check: indexpage.xml
+// config: IMAGE_PATH = .
+/** \mainpage
+ * Some text.
+ * \image html sample.png
+ * \image latex sample.png "Doxygen logo" width=5cm
+ * More text.
+ */

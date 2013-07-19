@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_test" kind="class" prot="public">
+    <compoundname>Test</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_1a1683da699dc049d74101488d143c8e98" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::method</definition>
+        <argsstring>()</argsstring>
+        <name>method</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A method </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="046_related.cpp" line="14" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="related">
+      <memberdef kind="function" id="class_test_1a51a683fa4fcec142ab1574e00a7b6860" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void function</definition>
+        <argsstring>()</argsstring>
+        <name>function</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function.</para>
+          <para>
+            <simplesect kind="see">
+              <para>
+                <ref refid="class_test_1a1283d836e0611ff772c1b06a31ecbbfe" kindref="member">another()</ref>
+              </para>
+            </simplesect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="046_related.cpp" line="22" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="class_test_1a1283d836e0611ff772c1b06a31ecbbfe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void another</definition>
+        <argsstring>()</argsstring>
+        <name>another</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Another function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="046_related.cpp" line="28" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A test class <simplesect kind="see"><para><ref refid="class_test_1a1683da699dc049d74101488d143c8e98" kindref="member">Test::method()</ref></para></simplesect>
+</para>
+    </detaileddescription>
+    <location file="046_related.cpp" bodystart="10" bodyend="15"/>
+    <listofallmembers>
+      <member refid="class_test_1a1283d836e0611ff772c1b06a31ecbbfe" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>another</name>
+      </member>
+      <member refid="class_test_1a51a683fa4fcec142ab1574e00a7b6860" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>function</name>
+      </member>
+      <member refid="class_test_1a1683da699dc049d74101488d143c8e98" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>method</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

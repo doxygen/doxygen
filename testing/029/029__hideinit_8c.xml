@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="029__hideinit_8c" kind="file">
+    <compoundname>029_hideinit.c</compoundname>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="029__hideinit_8c_1a799f44203647e4c53bdb0386aa95680f" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int var1</definition>
+        <argsstring/>
+        <name>var1</name>
+        <initializer>= 10</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>a variable with initializer visible </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="029_hideinit.c" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="029__hideinit_8c_1ac0da06d47d79ad4b9fb1c0eaf1118c3f" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int var2</definition>
+        <argsstring/>
+        <name>var2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>a variable without initializer visible </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="029_hideinit.c" bodystart="12" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="029_hideinit.c"/>
+  </compounddef>
+</doxygen>

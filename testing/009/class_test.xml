@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_test" kind="class" prot="public">
+    <compoundname>Test</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_1a9fc54b716f326514a4c5f434137f4fc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::test</definition>
+        <argsstring>()</argsstring>
+        <name>test</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <xrefsect id="test_1_test000002">
+              <xreftitle>Test</xreftitle>
+              <xrefdescription>
+                <para>more things to test. </para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="009_bug.cpp" line="51" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <xrefsect id="test_1_test000001">
+          <xreftitle>Test</xreftitle>
+          <xrefdescription>
+            <para>This is part of testing </para>
+          </xrefdescription>
+        </xrefsect>
+      </para>
+    </detaileddescription>
+    <location file="009_bug.cpp" bodystart="47" bodyend="52"/>
+    <listofallmembers>
+      <member refid="class_test_1a9fc54b716f326514a4c5f434137f4fc0" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>test</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

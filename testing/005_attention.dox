@@ -1,0 +1,14 @@
+// objective: test \attention, \not, \remark, \warning, and \par commands
+// check: indexpage.xml
+/** \mainpage
+ *  \attention Attention message.
+ *  \note Something to note.
+ *  \remark A remark.
+ *  \warning A warning message.
+ *  \par 
+ *  Second paragraph
+ *  \par User defined paragraph.
+ *  Contents of paragraph.
+ *  \par
+ *  More text in a new paragraph.
+ */

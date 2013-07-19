@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>
+        <programlisting>
+          <codeline lineno="1">
+            <highlight class="normal">*<sp/></highlight>
+            <highlight class="comment">#<sp/>comment<sp/>in<sp/>Python</highlight>
+            <highlight class="normal"/>
+          </codeline>
+          <codeline lineno="2">
+            <highlight class="normal">*<sp/></highlight>
+            <highlight class="keyword">class<sp/></highlight>
+            <highlight class="normal">Python:</highlight>
+          </codeline>
+          <codeline lineno="3">
+            <highlight class="normal">*<sp/><sp/><sp/></highlight>
+            <highlight class="keywordflow">pass</highlight>
+            <highlight class="normal"/>
+          </codeline>
+          <codeline lineno="4">
+            <highlight class="normal">*<sp/></highlight>
+          </codeline>
+        </programlisting>
+      </para>
+      <para>
+        <programlisting>
+          <codeline>
+            <highlight class="normal">*<sp/></highlight>
+            <highlight class="comment">//<sp/>comment<sp/>in<sp/>a<sp/>code<sp/>block</highlight>
+            <highlight class="normal"/>
+          </codeline>
+          <codeline>
+            <highlight class="normal">*<sp/></highlight>
+            <highlight class="keyword">class<sp/></highlight>
+            <highlight class="normal">Cpp<sp/>{};</highlight>
+          </codeline>
+          <codeline>
+            <highlight class="normal">*<sp/></highlight>
+          </codeline>
+        </programlisting>
+      </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

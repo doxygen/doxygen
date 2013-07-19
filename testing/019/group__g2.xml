@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="group__g2" kind="group">
+    <compoundname>g2</compoundname>
+    <title>Second Group</title>
+    <innergroup refid="group__g3">Third Group</innergroup>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="group__g2_1gafd310bbec27993e80a5dbaf6c54d5e0b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func_g2</definition>
+        <argsstring>()</argsstring>
+        <name>func_g2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function in the second group </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="019_defgroup.c" line="23" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Text for second group. </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

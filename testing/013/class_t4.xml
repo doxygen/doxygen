@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_t4" kind="class" prot="public">
+    <compoundname>T4</compoundname>
+    <includes refid="013__class_8h" local="yes">inc/013_class.h</includes>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>class <ref refid="class_t4" kindref="compound">T4</ref> </para>
+    </detaileddescription>
+    <location file="013_class.h" bodystart="22" bodyend="24"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,14 @@
+// objective: test the \code command
+// check: indexpage.xml
+/** \mainpage
+ * \code{.py}
+ * # comment in Python
+ * class Python:
+ *   pass
+ * \endcode
+ *
+ * \code{.cpp}
+ * // comment in a code block
+ * class Cpp {};
+ * \endcode
+ */

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_test" kind="class" prot="public">
+    <compoundname>Test</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_1a47b775f65718978f1ffcd96376f8ecfa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Test::example</definition>
+        <argsstring>()</argsstring>
+        <name>example</name>
+        <briefdescription>
+          <para>An example member function. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>More details about this function. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="025_example.cpp" bodystart="20" bodyend="20"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para>A <ref refid="class_test" kindref="compound">Test</ref> class. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>More details about this class. </para>
+    </detaileddescription>
+    <location file="025_example.cpp" bodystart="10" bodyend="18"/>
+    <listofallmembers>
+      <member refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>example</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

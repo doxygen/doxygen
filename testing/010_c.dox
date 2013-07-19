@@ -1,0 +1,7 @@
+// objective: test the \c and \p commands
+// check: indexpage.xml
+/** \mainpage
+ *  Text \c code normal text.
+ *
+ *  Text \p code normal text.
+ */

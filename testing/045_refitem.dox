@@ -1,0 +1,20 @@
+// objective: test \refitem, \secreflist, \endsecreflist
+// check: indexpage.xml
+/** \mainpage
+ *  \secreflist
+ *  \refitem item1 First Item
+ *  \refitem item2 Second Item
+ *  \refitem item3 Third Item
+ *  \endsecreflist
+ *
+ *  Some filler text.
+ *
+ *  \section item1 First Section
+ *  Section 1 text.
+ */
+
+/** \page item2 A page
+ *  Some text.
+ *  \section item3 Another Section.
+ *  Section 2 text.
+ */

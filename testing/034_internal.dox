@@ -1,0 +1,21 @@
+// objective: test the \internal and \endinternal commands (2)
+// check: indexpage.xml
+// config: INTERNAL_DOCS = YES
+
+/** \mainpage
+ *  Some text.
+ *  \internal
+ *  Internal text.
+ *  \endinternal
+ *  \section s1 A Section
+ *  Some text in the section 1.
+ *  \internal
+ *  Internal text.
+ *  \subsection ss1 A Subsection
+ *  Some text in the subsection.
+ *  \endinternal
+ *  Visible text in section 1.
+ *  \section s2 Another Section
+ *  Visible text.
+ */
+

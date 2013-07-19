@@ -1,0 +1,10 @@
+// objective: test \~ command with non default OUTPUT_LANGUAGE
+// check: indexpage.xml
+// config: OUTPUT_LANGUAGE = Dutch
+/** 
+\mainpage 
+\~english This is English.
+\~dutch Dit is Nederlands.
+\~german Dies ist Deutsch.
+\~ Output for all languages.
+*/

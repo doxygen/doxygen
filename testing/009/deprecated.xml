@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="deprecated" kind="page">
+    <compoundname>deprecated</compoundname>
+    <title>Deprecated List</title>
+    <detaileddescription>
+      <para>
+        <variablelist>
+          <varlistentry>
+            <term><anchor id="deprecated_1_deprecated000001"/>Class <ref refid="class_deprecated" kindref="compound">Deprecated</ref></term>
+          </varlistentry>
+          <listitem>
+            <para>This class is deprecated  </para>
+          </listitem>
+          <varlistentry>
+            <term><anchor id="deprecated_1_deprecated000002"/>Member <ref refid="class_deprecated_1a1d5f6803e72c625727e7083d1722dbf9" kindref="member">Deprecated::deprecated</ref>  ()</term>
+          </varlistentry>
+          <listitem>
+            <para>No not use this function anymore. </para>
+          </listitem>
+        </variablelist>
+      </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

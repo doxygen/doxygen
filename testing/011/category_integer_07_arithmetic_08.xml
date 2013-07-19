@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="category_integer_07_arithmetic_08" kind="category" prot="public">
+    <compoundname>Integer(Arithmetic)</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="category_integer_07_arithmetic_08_1a12f411c5872ba3bafb8ea7dd1826cf2a" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>id</type>
+        <definition>id Integer(Arithmetic)::add:</definition>
+        <argsstring>(Integer *addend)</argsstring>
+        <name>add:</name>
+        <param>
+          <type><ref refid="interface_integer" kindref="compound">Integer</ref> *</type>
+          <declname>addend</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>add operation </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="011_category.m" line="8" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="category_integer_07_arithmetic_08_1ae4ff0b0c62b6809e8f5bcee9baa6e521" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>id</type>
+        <definition>id Integer(Arithmetic)::sub:</definition>
+        <argsstring>(Integer *subtrahend)</argsstring>
+        <name>sub:</name>
+        <param>
+          <type><ref refid="interface_integer" kindref="compound">Integer</ref> *</type>
+          <declname>subtrahend</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>substract operation </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="011_category.m" line="8" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A category </para>
+    </detaileddescription>
+    <location file="011_category.m" bodystart="17" bodyend="-1"/>
+    <listofallmembers>
+      <member refid="category_integer_07_arithmetic_08_1a12f411c5872ba3bafb8ea7dd1826cf2a" prot="public" virt="virtual">
+        <scope>Integer(Arithmetic)</scope>
+        <name>add:</name>
+      </member>
+      <member refid="category_integer_07_arithmetic_08_1ae4ff0b0c62b6809e8f5bcee9baa6e521" prot="public" virt="virtual">
+        <scope>Integer(Arithmetic)</scope>
+        <name>sub:</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

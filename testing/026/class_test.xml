@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_test" kind="class" prot="public">
+    <compoundname>Test</compoundname>
+    <templateparamlist>
+      <param>
+        <type>class T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_test_1abf9d5fbdaa4c23d0a513ee9746060779" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Test&lt; T &gt;::example</definition>
+        <argsstring>(int p1, int p2)</argsstring>
+        <name>example</name>
+        <param>
+          <type>int</type>
+          <declname>p1</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>p2</declname>
+        </param>
+        <exceptions> throw (std::out_of_range)</exceptions>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>An example member function. <parameterlist kind="param"><parameteritem><parameternamelist><parametername>p1</parametername></parameternamelist><parameterdescription><para>First parameter. </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>p2</parametername></parameternamelist><parameterdescription><para>Second parameter. </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="exception"><parameteritem><parameternamelist><parametername>std::out_of_range</parametername></parameternamelist><parameterdescription><para>parameter is out of range. </para></parameterdescription></parameteritem></parameterlist>
+<parameterlist kind="retval"><parameteritem><parameternamelist><parametername>0</parametername></parameternamelist><parameterdescription><para>if p1 and p2 are equal </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>-1</parametername></parameternamelist><parameterdescription><para>if p1 is smaller than p2 </para></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>1</parametername></parameternamelist><parameterdescription><para>if p1 is bigger than p2 </para></parameterdescription></parameteritem></parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="026_exception.cpp" line="19" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A <ref refid="class_test" kindref="compound">Test</ref> class. More details about this class. <parameterlist kind="templateparam"><parameteritem><parameternamelist><parametername>T</parametername></parameternamelist><parameterdescription><para>A template parameter. </para></parameterdescription></parameteritem></parameterlist>
+</para>
+    </detaileddescription>
+    <location file="026_exception.cpp" bodystart="8" bodyend="20"/>
+    <listofallmembers>
+      <member refid="class_test_1abf9d5fbdaa4c23d0a513ee9746060779" prot="public" virt="non-virtual">
+        <scope>Test</scope>
+        <name>example</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

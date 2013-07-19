@@ -1,0 +1,21 @@
+// objective: test the \if, \ifnot, \elsif, \else, and \endif commands
+// check: indexpage.xml
+// config: ENABLED_SECTIONS = GUARD_ENABLED
+/** \mainpage
+ *  Unconditional (start)
+ *  \if GUARD_ENABLED
+ *  Enabled (if).
+ *    \if (!GUARD_ENABLED)  Disabled (if).\else Enabled (else). \endif
+ *  \else
+ *  Disabled.
+ *  \endif
+ *  Unconditional (middle)
+ *  \ifnot GUARD_ENABLED
+ *  Disabled (ifnot).
+ *  \elseif GUARD_DISABLED
+ *  Disabled (elseif).
+ *  \else
+ *  Enabled (else).
+ *  \endif
+ *  Unconditional (end)
+ */

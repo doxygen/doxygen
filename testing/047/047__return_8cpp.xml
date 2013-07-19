@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="047__return_8cpp" kind="file">
+    <compoundname>047_return.cpp</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="047__return_8cpp_1aab0ee031d46db05d47213d2625ab6aac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int func1</definition>
+        <argsstring>()</argsstring>
+        <name>func1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Test function 1. <simplesect kind="return"><para>A integer. </para></simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="047_return.cpp" line="9" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="047__return_8cpp_1aa1d4878589351db8276c79f98ed9fb7d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int func2</definition>
+        <argsstring>()</argsstring>
+        <name>func2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Test function 2. <simplesect kind="return"><para>A integer. </para></simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="047_return.cpp" line="14" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="047__return_8cpp_1abee09dd9ed9ce93df5a931d16faac09a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int func3</definition>
+        <argsstring>()</argsstring>
+        <name>func3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Test function 3. <simplesect kind="return"><para>A integer. </para></simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="047_return.cpp" line="19" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="047_return.cpp"/>
+  </compounddef>
+</doxygen>

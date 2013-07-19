@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="018__def_8c" kind="file">
+    <compoundname>018_def.c</compoundname>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="018__def_8c_1a824c99cb152a3c2e9111a2cb9c34891e" prot="public" static="no">
+        <name>MACRO</name>
+        <initializer>42</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A macro definition </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="018_def.c" line="8" column="9"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no">
+        <name>E</name>
+        <enumvalue id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130aab1710e6a49014ba389d57c8753c530f4" prot="public">
+          <name>E1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130aace9a5783f96994d28bc6ec5c9ece8c80" prot="public">
+          <name>E2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>An enum </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="018_def.c" bodystart="13" bodyend="13"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="018__def_8c_1a1d1cfd8ffb84e947f82999c682b666a7" prot="public" static="no">
+        <type>int</type>
+        <definition>Type</definition>
+        <argsstring/>
+        <name>Type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A type definition. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="018_def.c" bodystart="12" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="018__def_8c_1a335628f2e9085305224b4f9cc6e95ed5" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>var</definition>
+        <argsstring/>
+        <name>var</name>
+        <initializer>= 10</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variable </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="018_def.c" bodystart="9" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="018__def_8c_1aee50dbe7d43d2202b490a6977a325584" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>func</definition>
+        <argsstring>(int)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function with one parameter. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="018_def.c" bodystart="10" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="018__def_8c_1a2652ccbfb85efa2df3c70ba6c4628f8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>func</definition>
+        <argsstring>(int, const char *)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+        </param>
+        <param>
+          <type>const char *</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function with two parameters </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="018_def.c" bodystart="11" bodyend="11"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Text <emphasis>argument</emphasis> more text. </para>
+    </detaileddescription>
+    <location file="018_def.c"/>
+  </compounddef>
+</doxygen>

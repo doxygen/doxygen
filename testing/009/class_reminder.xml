@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_reminder" kind="class" prot="public">
+    <compoundname>Reminder</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_reminder_1a173b5218bb11287b0e86a550d9f0728d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Reminder::reminder</definition>
+        <argsstring>()</argsstring>
+        <name>reminder</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <xrefsect id="reminders_1_reminders000002">
+              <xreftitle>Reminder</xreftitle>
+              <xrefdescription>
+                <para>Need to rework this before the next release. </para>
+              </xrefdescription>
+            </xrefsect>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="009_bug.cpp" line="59" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <xrefsect id="reminders_1_reminders000001">
+          <xreftitle>Reminder</xreftitle>
+          <xrefdescription>
+            <para>A reminder </para>
+          </xrefdescription>
+        </xrefsect>
+      </para>
+    </detaileddescription>
+    <location file="009_bug.cpp" bodystart="55" bodyend="60"/>
+    <listofallmembers>
+      <member refid="class_reminder_1a173b5218bb11287b0e86a550d9f0728d" prot="public" virt="non-virtual">
+        <scope>Reminder</scope>
+        <name>reminder</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="016__copydoc_8c" kind="file">
+    <compoundname>016_copydoc.c</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="016__copydoc_8c_1af721a79655a3857b98d70fa6ada8a916" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int i)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+          <para>Brief description. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed description. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="016_copydoc.c" line="11" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="016__copydoc_8c_1a119dbcf2f0bc3ec1fbf77fcd35dec6df" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func_brief</definition>
+        <argsstring>()</argsstring>
+        <name>func_brief</name>
+        <briefdescription>
+          <para>Brief description. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="016_copydoc.c" line="14" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="016__copydoc_8c_1a3c1e44de2b412b5218b55e216cebb4ac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func_details</definition>
+        <argsstring>()</argsstring>
+        <name>func_details</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed description. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="016_copydoc.c" line="17" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="016__copydoc_8c_1a2535f29ea009c3d7449264671e15afe9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func_doc</definition>
+        <argsstring>()</argsstring>
+        <name>func_doc</name>
+        <briefdescription>
+          <para>Brief description. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed description. More text. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="016_copydoc.c" line="22" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Text <emphasis>argument</emphasis> more text. </para>
+    </detaileddescription>
+    <location file="016_copydoc.c"/>
+  </compounddef>
+</doxygen>

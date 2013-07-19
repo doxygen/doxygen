@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="group__g3" kind="group">
+    <compoundname>g3</compoundname>
+    <title>Third Group</title>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="group__g3_1ga59de48fb40aec5ee2623cc453fe71643" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func_g3</definition>
+        <argsstring>()</argsstring>
+        <name>func_g3</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function in the third group </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="019_defgroup.c" line="36" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="group__g3_1gaf32d23522a5d9c3e7fed3dd5710001f7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func_g3_add</definition>
+        <argsstring>()</argsstring>
+        <name>func_g3_add</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Another function added to the third group </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="019_defgroup.c" line="45" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Text for third group. </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

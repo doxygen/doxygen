@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_deprecated" kind="class" prot="public">
+    <compoundname>Deprecated</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_deprecated_1a1d5f6803e72c625727e7083d1722dbf9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Deprecated::deprecated</definition>
+        <argsstring>()</argsstring>
+        <name>deprecated</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Do deprecated things. <xrefsect id="deprecated_1_deprecated000002"><xreftitle>Deprecated</xreftitle><xrefdescription><para>No not use this function anymore. </para></xrefdescription></xrefsect></para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="009_bug.cpp" line="35" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <xrefsect id="deprecated_1_deprecated000001">
+          <xreftitle>Deprecated</xreftitle>
+          <xrefdescription>
+            <para>This class is deprecated </para>
+          </xrefdescription>
+        </xrefsect>
+      </para>
+    </detaileddescription>
+    <location file="009_bug.cpp" bodystart="29" bodyend="36"/>
+    <listofallmembers>
+      <member refid="class_deprecated_1a1d5f6803e72c625727e7083d1722dbf9" prot="public" virt="non-virtual">
+        <scope>Deprecated</scope>
+        <name>deprecated</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

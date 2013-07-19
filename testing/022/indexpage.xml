@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>Class relations expressed via an inline dot graph: <dot> 
+digraph example {
+  node [shape=record, fontname=Helvetica, fontsize=10];
+  b [ label="class B" URL="\ref B"];
+  c [ label="class C" URL="\ref C"];
+  b -&gt; c [ arrowhead="open", style="dashed" ];
+}
+</dot> </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

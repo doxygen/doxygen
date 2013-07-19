@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>
+        <simplesect kind="attention">
+          <para>Attention message. </para>
+        </simplesect>
+        <simplesect kind="note">
+          <para>Something to note. </para>
+        </simplesect>
+        <simplesect kind="remark">
+          <para>A remark. </para>
+        </simplesect>
+        <simplesect kind="warning">
+          <para>A warning message. </para>
+        </simplesect>
+        <simplesect kind="par">
+          <title/>
+          <para>Second paragraph </para>
+        </simplesect>
+        <simplesect kind="par">
+          <title>User defined paragraph.</title>
+          <para>Contents of paragraph. </para>
+        </simplesect>
+        <simplesect kind="par">
+          <title/>
+          <para>More text in a new paragraph. </para>
+        </simplesect>
+      </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

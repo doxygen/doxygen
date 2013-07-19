@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>
+        <simplesect kind="author">
+          <para>John Doe </para>
+          <simplesectsep/>
+          <para>Jane Doe </para>
+        </simplesect>
+        <simplesect kind="authors">
+          <para>David, Steven </para>
+        </simplesect>
+        <simplesect kind="since">
+          <para>version 1.2 </para>
+        </simplesect>
+        <simplesect kind="version">
+          <para>1.8-beta2 </para>
+        </simplesect>
+      </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

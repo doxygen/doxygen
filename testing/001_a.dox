@@ -1,0 +1,5 @@
+// objective: test the \a and \mainpage commands
+// check: indexpage.xml
+/** \mainpage
+ *  Text \a argument more text.
+ */

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="class_bug" kind="class" prot="public">
+    <compoundname>Bug</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="class_bug_1a1f720954dd97cd1203e80501a6eae74c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Bug::foo</definition>
+        <argsstring>()</argsstring>
+        <name>foo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>Description <xrefsect id="bug_1_bug000002"><xreftitle>Bug</xreftitle><xrefdescription><para>Function bug<itemizedlist><listitem><para>list item 1 in bug</para></listitem><listitem><para>list item 2 in bug</para></listitem></itemizedlist>
+</para></xrefdescription></xrefsect></para>
+          <para>More text. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="009_bug.cpp" line="25" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <xrefsect id="bug_1_bug000001">
+          <xreftitle>Bug</xreftitle>
+          <xrefdescription>
+            <para>Class bug. </para>
+          </xrefdescription>
+        </xrefsect>
+      </para>
+    </detaileddescription>
+    <location file="009_bug.cpp" bodystart="15" bodyend="26"/>
+    <listofallmembers>
+      <member refid="class_bug_1a1f720954dd97cd1203e80501a6eae74c" prot="public" virt="non-virtual">
+        <scope>Bug</scope>
+        <name>foo</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

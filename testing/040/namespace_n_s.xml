@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="namespace_n_s" kind="namespace">
+    <compoundname>NS</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>A namespace </para>
+    </detaileddescription>
+    <location file="040_namespace.cpp" line="5" column="1"/>
+  </compounddef>
+</doxygen>

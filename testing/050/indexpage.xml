@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>My Project</title>
+    <detaileddescription>
+      <para>Some normal text. <verbatim>A verbatim section with a /* C comment */ in it
+</verbatim> Showing a file as verbatim <verbatim>@book{knuth79,
+        author = "Donald E. Knuth",
+        title = "Tex and Metafont, New Directions in Typesetting",
+        year = "1979",
+        publisher = "American Mathematical Society and Digital Press",
+        address = "Stanford"
+}
+</verbatim> More text after the verbatim section. </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

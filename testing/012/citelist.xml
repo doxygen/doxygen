@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="citelist" kind="page">
+    <compoundname>citelist</compoundname>
+    <title>Bibliographic References</title>
+    <detaileddescription>
+      <para>
+        <variablelist>
+          <varlistentry>
+            <term><anchor id="_1CITEREF_knuth79"/>[1]</term>
+          </varlistentry>
+          <listitem>
+            <para>Donald<nonbreakablespace/>E. Knuth. <emphasis>Tex and Metafont, New Directions in Typesetting</emphasis>. American Mathematical Society and Digital Press, Stanford, 1979.</para>
+            <para/>
+          </listitem>
+        </variablelist>
+      </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>
