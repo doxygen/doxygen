@@ -6,7 +6,6 @@
 *.rej
 *.orig
 
-Makefile
 *.pro
 /.makeconfig
 /.tmakeconfig
@@ -14,13 +13,22 @@ Makefile
 /src/libdoxycfg.t
 /src/libdoxygen.t
 /packages/rpm/doxygen.spec
+/libmd5/Makefile
 /libmd5/Makefile.libmd5
+/qtools/Makefile
 /qtools/Makefile.qtools
 /src/Makefile.doxygen
 /src/Makefile.libdoxycfg
 /src/Makefile.libdoxygen
+/addon/doxysearch/Makefile
 /addon/doxysearch/Makefile.doxyindexer
 /addon/doxysearch/Makefile.doxysearch
+/addon/doxmlparser/examples/metrics/Makefile
+/addon/doxmlparser/src/Makefile
+/addon/doxyapp/Makefile
+/addon/doxywizard/Makefile
+/examples/Makefile
+/Makefile
 
 /bin
 /lib
@@ -48,4 +56,8 @@ Makefile
 /src/vhdlparser.cpp
 /src/vhdlparser.h
 /src/vhdlscanner.cpp
+/src/Makefile
+
+/doc/Makefile
 /doc/translator_report.txt
+
