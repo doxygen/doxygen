@@ -1,16 +1,16 @@
+#include <QtGui>
+#include <QtXml>
 #include "expert.h"
 #include "inputbool.h"
 #include "inputstring.h"
 #include "inputint.h"
 #include "inputstring.h"
 #include "inputstrlist.h"
-#include <QtGui>
-#include <QtXml>
 #include "config.h"
 #include "version.h"
+#include "configdoc.h"
 #include "../../src/settings.h"
 
-#undef  SA
 #define SA(x) QString::fromAscii(x)
 
 static QString convertToComment(const QString &s)
@@ -24,6 +24,20 @@ static QString convertToComment(const QString &s)
     return SA("# ")+
            s.trimmed().replace(SA("\n"),SA("\n# "))+
            SA("\n");
+  }
+}
+
+void Expert::setHeader(const char *header)
+{
+  m_header = SA(header);
+}
+
+void Expert::add(const char *name,const char *docs)
+{
+  Input *opt = m_options[SA(name)];
+  if (opt)
+  {
+    opt->setTemplateDocs(SA(docs));
   }
 }
 
@@ -53,8 +67,9 @@ Expert::Expert()
   m_rootElement = configXml.documentElement();
 
   createTopics(m_rootElement);
-  m_helper = new QTextEdit;
+  m_helper = new QTextBrowser;
   m_helper->setReadOnly(true);
+  m_helper->setOpenExternalLinks(TRUE);
   m_splitter = new QSplitter(Qt::Vertical);
   m_splitter->addWidget(m_treeWidget);
   m_splitter->addWidget(m_helper);
@@ -75,6 +90,8 @@ Expert::Expert()
   connect(m_next,SIGNAL(clicked()),SLOT(nextTopic()));
 
   connect(m_prev,SIGNAL(clicked()),SLOT(prevTopic()));
+
+  addConfigDocs(this);
 }
 
 Expert::~Expert()
@@ -111,6 +128,273 @@ void Expert::createTopics(const QDomElement &rootElem)
           SLOT(activateTopic(QTreeWidgetItem *,QTreeWidgetItem *)));
 }
 
+static QString getDocsForNode(const QDomElement &child)
+{
+  QString type = child.attribute(SA("type"));
+  QString docs = SA("");
+  // read documentation text
+  QDomElement docsVal = child.firstChildElement();
+  while (!docsVal.isNull())
+  {
+    if (docsVal.tagName()==SA("docs") &&
+        docsVal.attribute(SA("doxywizard")) != SA("0"))
+    {
+      for (QDomNode n = docsVal.firstChild(); !n.isNull(); n = n.nextSibling())
+      {
+        QDomText t = n.toText();
+        if (!t.isNull()) docs+=t.data();
+      }
+      docs+=SA("<br/>");
+    }
+    docsVal = docsVal.nextSiblingElement();
+  }
+
+  // for an enum we list the values
+  if (type==SA("enum"))
+  {
+    docs += SA("Possible values are: ");
+    int numValues=0;
+    docsVal = child.firstChildElement();
+    while (!docsVal.isNull())
+    {
+      if (docsVal.tagName()==SA("value"))
+      {
+        numValues++;
+      }
+      docsVal = docsVal.nextSiblingElement();
+    }
+    int i=0;
+    docsVal = child.firstChildElement();
+    while (!docsVal.isNull())
+    {
+      if (docsVal.tagName()==SA("value"))
+      {
+        i++;
+        docs += SA("<code>") + docsVal.attribute(SA("name")) + SA("</code>");
+        QString desc = docsVal.attribute(SA("desc"));
+        if (!desc.isEmpty())
+        {
+          docs+= SA(" ")+desc;
+        }
+        if (i==numValues-1)
+        {
+          docs+=SA(" and ");
+        }
+        else if (i==numValues)
+        {
+          docs+=SA(".");
+        }
+        else
+        {
+          docs+=SA(", ");
+        }
+      }
+      docsVal = docsVal.nextSiblingElement();
+    }
+    docs+=SA("<br/>");
+    docs+=SA("The default value is: <code>")+
+          child.attribute(SA("defval"))+
+          SA("</code>.");
+  }
+  else if (type==SA("int"))
+  {
+    docs+=SA("Minimum value: ")+child.attribute(SA("minval"))+SA(", ");
+    docs+=SA("maximum value: ")+child.attribute(SA("maxval"))+SA(", ");
+    docs+=SA("default value: ")+child.attribute(SA("defval"))+SA(".");
+  }
+  else if (type==SA("bool"))
+  {
+    if (child.hasAttribute(SA("altdefval")))
+    {
+      docs+=SA("The default value is: system dependent.");
+    }
+    else
+    {
+      QString defval = child.attribute(SA("defval"));
+      docs+=SA("The default value is: <code>")+
+            (defval==SA("1")?SA("YES"):SA("NO"))+
+            SA("</code>.");
+    }
+  }
+  else if (type==SA("list"))
+  {
+    if (child.attribute(SA("format"))==SA("string"))
+    {
+      int numValues = 0;
+      docsVal = child.firstChildElement();
+      while (!docsVal.isNull())
+      {
+        if (docsVal.tagName()==SA("value"))
+        {
+          if (docsVal.attribute(SA("name"))!=SA("")) numValues++;
+        }
+        docsVal = docsVal.nextSiblingElement();
+      }
+      if (numValues>0)
+      {
+        int i = 0;
+        docsVal = child.firstChildElement();
+        while (!docsVal.isNull())
+        {
+          if (docsVal.tagName()==SA("value"))
+          {
+            i++;
+            docs += SA("<code>") + docsVal.attribute(SA("name")) + SA("</code>");
+            QString desc = docsVal.attribute(SA("desc"));
+            if (desc != SA(""))
+            {
+              docs += SA(" ") + desc;
+            }
+            if (i==numValues-1)
+            {
+              docs += SA(" and ");
+            }
+            else if (i==numValues)
+            {
+              docs += SA(".");
+            }
+            else
+            {
+              docs += SA(", ");
+            }
+          }
+          docsVal = docsVal.nextSiblingElement();
+        }
+      }
+    }
+  }
+  else if (type==SA("string"))
+  {
+    QString defval = child.attribute(SA("defval"));
+    if (child.attribute(SA("format")) == SA("dir"))
+    {
+      if (defval != SA(""))
+      {
+        docs += SA("The default directory is: <code>") + defval + SA("</code>.");
+      }
+    }
+    else if (child.attribute(SA("format")) == SA("file"))
+    {
+      QString abspath = child.attribute(SA("abspath"));
+      if (defval != SA(""))
+      {
+        if (abspath != SA("1"))
+        {
+          docs += SA("The default file is: <code>") + defval + SA("</code>.");
+        }
+        else
+        {
+          docs += SA("The default file (with absolute path) is: <code>") + defval + SA("</code>.");
+        }
+      }
+      else
+      {
+        if (abspath == SA("1"))
+        {
+          docs += SA("The file has to be specified with full path.");
+        }
+      }
+    }
+    else // if (child.attribute(SA("format")) == SA("string"))
+    {
+      if (defval != SA(""))
+      {
+        docs += SA("The default value is: <code>") + defval + SA("</code>.");
+      }
+    }
+  }
+  
+  if (child.hasAttribute(SA("depends")))
+  {
+    QString dependsOn = child.attribute(SA("depends"));
+    docs += SA("<br/>");
+    docs+=  SA("This tag requires that the tag \\ref cfg_");
+    docs+=  dependsOn.toLower();
+    docs+=  SA(" \"");
+    docs+=  dependsOn.toUpper();
+    docs+=  SA("\" is set to <code>YES</code>.");
+  }
+
+  // Remove / replace doxygen markup strings
+  // the regular expressions are hard to read so the intention will be given
+  QRegExp regexp;
+  // remove \n at end and replace by a space
+  regexp.setPattern(SA("\\n$"));
+  docs.replace(regexp,SA(" "));
+  // remove <br> at end
+  regexp.setPattern(SA("<br> *$"));
+  docs.replace(regexp,SA(" "));
+  // \c word -> <code>word</code>
+  regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
+  docs.replace(regexp,SA("<code>\\1</code> "));
+  // `word` -> <code>word</code>
+  docs.replace(SA("``"),SA(""));
+  regexp.setPattern(SA("`([^`]+)`"));
+  docs.replace(regexp,SA("<code>\\1</code> "));
+  // \ref key "desc" -> <code>desc</code>
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^ ]+)\""));
+  docs.replace(regexp,SA("<code>\\1</code> "));
+  //\ref specials
+  // \ref <key> -> description
+  regexp.setPattern(SA("\\\\ref[ ]+doxygen_usage"));
+  docs.replace(regexp,SA("\"Doxygen usage\""));
+  regexp.setPattern(SA("\\\\ref[ ]+extsearch"));
+  docs.replace(regexp,SA("\"External Indexing and Searching\""));
+  regexp.setPattern(SA("\\\\ref[ ]+external"));
+  docs.replace(regexp,SA("\"Linking to external documentation\""));
+  // fallback for not handled
+  docs.replace(SA("\\\\ref"),SA(""));
+  // \b word -> <b>word<\b>
+  regexp.setPattern(SA("\\\\b[ ]+([^ ]+) "));
+  docs.replace(regexp,SA("<b>\\1</b> "));
+  // \e word -> <em>word<\em>
+  regexp.setPattern(SA("\\\\e[ ]+([^ ]+) "));
+  docs.replace(regexp,SA("<em>\\1</em> "));
+  // \note -> <br>Note:
+  // @note -> <br>Note:
+  docs.replace(SA("\\note"),SA("<br>Note:"));
+  docs.replace(SA("@note"),SA("<br>Note:"));
+  // \#include -> #include
+  // \#undef -> #undef
+  docs.replace(SA("\\#include"),SA("#include"));
+  docs.replace(SA("\\#undef"),SA("#undef"));
+  // -# -> <br>-
+  // " - " -> <br>-
+  docs.replace(SA("-#"),SA("<br>-"));
+  docs.replace(SA(" - "),SA("<br>-"));
+  // \verbatim -> <pre>
+  // \endverbatim -> </pre>
+  docs.replace(SA("\\verbatim"),SA("<pre>"));
+  docs.replace(SA("\\endverbatim"),SA("</pre>"));
+  // \sa -> <br>See also:
+  // \par -> <br>
+  docs.replace(SA("\\sa"),SA("<br>See also:"));
+  docs.replace(SA("\\par"),SA("<br>"));
+  // 2xbackslash -> backslash
+  // \@ -> @
+  docs.replace(SA("\\\\"),SA("\\"));
+  docs.replace(SA("\\@"),SA("@"));
+  // \& -> &
+  // \$ -> $
+  docs.replace(SA("\\&"),SA("&"));
+  docs.replace(SA("\\$"),SA("$"));
+  // \< -> &lt;
+  // \> -> &gt;
+  docs.replace(SA("\\<"),SA("&lt;"));
+  docs.replace(SA("\\>"),SA("&gt;"));
+  regexp.setPattern(SA(" (http:[^ \\)]*)([ \\)])"));
+  docs.replace(regexp,SA(" <a href=\"\\1\">\\1</a>\\2"));
+  // LaTeX name as formula -> LaTeX
+  regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
+  docs.replace(regexp,SA("LaTeX"));
+  // Other forula's (now just 2) so explicitely mentioned.
+  regexp.setPattern(SA("\\\\f\\$2\\^\\{\\(16\\+\\\\mbox\\{LOOKUP\\\\_CACHE\\\\_SIZE\\}\\)\\}\\\\f\\$"));
+  docs.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
+  regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));
+  docs.replace(regexp,SA("2^16=65536"));
+
+  return docs.trimmed();
+}
 
 QWidget *Expert::createTopicWidget(QDomElement &elem)
 {
@@ -125,6 +409,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
     if (setting.isEmpty() || IS_SUPPORTED(setting.toAscii()))
     {
       QString type = child.attribute(SA("type"));
+      QString docs = getDocsForNode(child);
       if (type==SA("bool"))
       {
         InputBool *boolOption = 
@@ -132,7 +417,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               layout,row,
               child.attribute(SA("id")),
               child.attribute(SA("defval"))==SA("1"),
-              child.attribute(SA("docs"))
+              docs
               );
         m_options.insert(
             child.attribute(SA("id")),
@@ -163,7 +448,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               child.attribute(SA("id")),
               child.attribute(SA("defval")),
               mode,
-              child.attribute(SA("docs")),
+              docs,
               child.attribute(SA("abspath"))
               );
         m_options.insert(
@@ -180,12 +465,15 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
             child.attribute(SA("id")),
             child.attribute(SA("defval")),
             InputString::StringFixed,
-            child.attribute(SA("docs"))
+            docs
             );
         QDomElement enumVal = child.firstChildElement();
         while (!enumVal.isNull())
         {
-          enumList->addValue(enumVal.attribute(SA("name")));
+          if (enumVal.tagName()==SA("value"))
+          {
+            enumList->addValue(enumVal.attribute(SA("name")));
+          }
           enumVal = enumVal.nextSiblingElement();
         }
         enumList->setDefault();
@@ -203,7 +491,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               child.attribute(SA("defval")).toInt(),
               child.attribute(SA("minval")).toInt(),
               child.attribute(SA("maxval")).toInt(),
-              child.attribute(SA("docs"))
+              docs
               );
         m_options.insert(
             child.attribute(SA("id")),
@@ -236,7 +524,10 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         QDomElement listVal = child.firstChildElement();
         while (!listVal.isNull())
         {
-          sl.append(listVal.attribute(SA("name")));
+          if (listVal.tagName()==SA("value"))
+          {
+            sl.append(listVal.attribute(SA("name")));
+          }
           listVal = listVal.nextSiblingElement();
         }
         InputStrList *listOption = 
@@ -245,7 +536,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
               child.attribute(SA("id")),
               sl,
               mode,
-              child.attribute(SA("docs"))
+              docs
               );
         m_options.insert(
             child.attribute(SA("id")),
@@ -366,55 +657,51 @@ void Expert::loadConfig(const QString &fileName)
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
                        bool brief)
 {
-  // write group header
-  t << endl;
+  if (!brief)
+  {
+    t << endl;
+  }
   t << "#---------------------------------------------------------------------------" << endl;
   t << "# " << elem.attribute(SA("docs")) << endl;
   t << "#---------------------------------------------------------------------------" << endl;
-
   // write options...
   QDomElement childElem = elem.firstChildElement();
   while (!childElem.isNull())
   {
+    QString setting = childElem.attribute(SA("setting"));
     QString type = childElem.attribute(SA("type"));
     QString name = childElem.attribute(SA("id"));
-    QHash<QString,Input*>::const_iterator i = m_options.find(name);
-    if (i!=m_options.end())
+    if (setting.isEmpty() || IS_SUPPORTED(setting.toAscii()))
     {
-      Input *option = i.value();
-      if (!brief)
+      QHash<QString,Input*>::const_iterator i = m_options.find(name);
+      if (i!=m_options.end())
       {
-        t << endl;
-        t << convertToComment(childElem.attribute(SA("docs")));
+        Input *option = i.value();
+        if (option && !brief)
+        {
+          t << endl;
+          t << convertToComment(option->templateDocs());
+          t << endl;
+        }
+        t << name.leftJustified(23) << "= ";
+        if (option)
+        {
+          option->writeValue(t,codec);
+        }
         t << endl;
       }
-      t << name.leftJustified(23) << "= ";
-      if (option)
-      {
-        option->writeValue(t,codec);
-      }
-      t << endl;
     }
     childElem = childElem.nextSiblingElement();
   }
-
 }
 
 bool Expert::writeConfig(QTextStream &t,bool brief)
 {
+  // write global header
+  t << "# Doxyfile " << versionString << endl << endl; 
   if (!brief)
   {
-    // write global header
-    t << "# Doxyfile " << versionString << endl << endl; // TODO: add version
-    t << "# This file describes the settings to be used by the documentation system\n";
-    t << "# doxygen (www.doxygen.org) for a project\n";
-    t << "#\n";
-    t << "# All text after a hash (#) is considered a comment and will be ignored\n";
-    t << "# The format is:\n";
-    t << "#       TAG = value [value, ...]\n";
-    t << "# For lists items can also be appended using:\n";
-    t << "#       TAG += value [value, ...]\n";
-    t << "# Values that contain spaces should be placed between quotes (\" \")\n";
+    t << convertToComment(m_header);
   }
 
   QTextCodec *codec = 0;
@@ -430,7 +717,10 @@ bool Expert::writeConfig(QTextStream &t,bool brief)
   QDomElement childElem = m_rootElement.firstChildElement();
   while (!childElem.isNull())
   {
-    saveTopic(t,childElem,codec,brief);
+    if (childElem.tagName()==SA("group"))
+    {
+      saveTopic(t,childElem,codec,brief);
+    }
     childElem = childElem.nextSiblingElement();
   }
   return true;

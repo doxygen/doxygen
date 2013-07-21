@@ -23,11 +23,13 @@ class Input
     virtual Kind kind() const = 0;
     virtual QString docs() const = 0;
     virtual QString id() const = 0;
+    virtual QString templateDocs() const = 0;
     virtual void addDependency(Input *option) = 0;
     virtual void setEnabled(bool) = 0;
     virtual void updateDependencies() = 0;
     virtual void reset() = 0;
     virtual void writeValue(QTextStream &t,QTextCodec *codec) = 0;
+    virtual void setTemplateDocs(const QString &docs) = 0;
 };
 
 

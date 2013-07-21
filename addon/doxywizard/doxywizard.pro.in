@@ -20,9 +20,15 @@ macx-g++ {
 
 # Input
 HEADERS     += doxywizard.h version.h expert.h config.h helplabel.h \
-               inputbool.h inputstring.h inputint.h inputstrlist.h wizard.h
+               inputbool.h inputstring.h inputint.h inputstrlist.h wizard.h docintf.h
 SOURCES     += doxywizard.cpp ../../src/version.cpp expert.cpp wizard.cpp \
-               inputbool.cpp inputstring.cpp inputint.cpp inputstrlist.cpp
+               inputbool.cpp inputstring.cpp inputint.cpp inputstrlist.cpp 
 LEXSOURCES  += config.l
 RESOURCES   += doxywizard.qrc
 win32:RC_FILE += doxywizard.rc
+
+configdoc.target = configdoc.cpp
+configdoc.commands = python ../../src/configgen.py -wiz ../../src/config.xml > configdoc.cpp
+configdoc.depends = ../../src/config.xml ../../src/configgen.py
+QMAKE_EXTRA_TARGETS += configdoc
+GENERATED_SOURCES += $$configdoc.target

@@ -49,10 +49,12 @@ class InputStrList : public QObject, public Input
     Kind kind() const { return StrList; }
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
+    QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
     void writeValue(QTextStream &t,QTextCodec *codec);
+    void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
   public slots:
     void reset();
@@ -85,7 +87,7 @@ class InputStrList : public QObject, public Input
     QVariant      m_value;
     QString       m_docs;
     QString       m_id;
-
+    QString       m_tdocs;
 };
 
 #endif

@@ -12,7 +12,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-all: language FORCE
+all: language config.doc FORCE
 	DOXYGEN_DOCDIR=$(DOXYDOCS); \
 	export DOXYGEN_DOCDIR; \
         VERSION=$(VERSION) ; \
@@ -32,5 +32,8 @@ language: language.doc
 
 language.doc: $(wildcard ../src/translator*.h) maintainers.txt language.tpl translator.py
 	python translator.py
+
+config.doc:  ../src/config.xml ../src/configgen.py
+	python ../src/configgen.py -doc ../src/config.xml > config.doc
 
 FORCE:

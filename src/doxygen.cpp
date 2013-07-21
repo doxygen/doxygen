@@ -176,7 +176,6 @@ static QDict<FileDef>   g_usingDeclarations(1009); // used classes
 static FileStorage     *g_storage = 0;
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
-static bool             g_dumpConfigAsXML = FALSE;
 
 void clearAll()
 {
@@ -9757,18 +9756,6 @@ static void dumpSymbolMap()
 }
 
 //----------------------------------------------------------------------------
-
-void dumpConfigAsXML()
-{
-  QFile f("config.xml");
-  if (f.open(IO_WriteOnly))
-  {
-    FTextStream t(&f);
-    Config::instance()->writeXML(t);
-  }
-}
-
-//----------------------------------------------------------------------------
 // print the usage of doxygen
 
 static void usage(const char *name)
@@ -10184,9 +10171,6 @@ void readConfiguration(int argc, char **argv)
       case 'm':
         g_dumpSymbolMap = TRUE;
         break;
-      case 'x':
-        g_dumpConfigAsXML = TRUE;
-        break;
       case '-':
         if (qstrcmp(&argv[optind][2],"help")==0)
         {
@@ -10222,17 +10206,7 @@ void readConfiguration(int argc, char **argv)
 
   if (genConfig)
   {
-    if (g_dumpConfigAsXML)
-    {
-      checkConfiguration();
-      generateConfigFile(configName,shortList);
-      dumpConfigAsXML();
-      exit(0); 
-    }
-    else
-    {
-      generateConfigFile(configName,shortList);
-    }
+    generateConfigFile(configName,shortList);
     cleanUpDoxygen();
     exit(0);
   }

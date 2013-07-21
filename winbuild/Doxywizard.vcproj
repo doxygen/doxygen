@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="doxywizard"
 	ProjectGUID="{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}"
 	Keyword="Qt4VSv1.0"
@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="4"
-				AdditionalIncludeDirectories="&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include&quot;,&quot;..\addon\doxywizard&quot;,&quot;c:\Qt\4.4.3\include\ActiveQt&quot;,&quot;..\addon\doxywizard\moc&quot;,&quot;..\addon\doxywizard&quot;,&quot;.&quot;,..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005"
+				AdditionalIncludeDirectories="&quot;$(QT_DIR)\include\QtCore&quot;,&quot;$(QT_DIR)\include\QtCore&quot;,&quot;$(QT_DIR)\include\QtGui&quot;,&quot;$(QT_DIR)\include\QtGui&quot;,&quot;$(QT_DIR)\include\QtXml&quot;,&quot;$(QT_DIR)\include\QtXml&quot;,&quot;$(QT_DIR)\include&quot;,&quot;..\addon\doxywizard&quot;,&quot;c:\Qt\4.4.3\include\ActiveQt&quot;,&quot;..\addon\doxywizard\moc&quot;,&quot;..\addon\doxywizard&quot;,&quot;.&quot;,$(QT_DIR)\mkspecs\win32-msvc2005"
 				PreprocessorDefinitions="_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,QT_NO_CAST_FROM_ASCII,QT_NO_CAST_TO_ASCII,QT_XML_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="1"
@@ -138,7 +138,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="2"
-				AdditionalIncludeDirectories="&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include&quot;,&quot;..\addon\doxywizard&quot;,&quot;c:\Qt\4.4.3\include\ActiveQt&quot;,&quot;..\addon\doxywizard\moc&quot;,&quot;..\addon\doxywizard&quot;,&quot;.&quot;,..\..\..\Qt\4.4.3\mkspecs\win32-msvc2008"
+				AdditionalIncludeDirectories="&quot;$(QT_DIR)\include\QtCore&quot;,&quot;$(QT_DIR)\include\QtCore&quot;,&quot;$(QT_DIR)\include\QtGui&quot;,&quot;$(QT_DIR)\include\QtGui&quot;,&quot;$(QT_DIR)\include\QtXml&quot;,&quot;$(QT_DIR)\include\QtXml&quot;,&quot;$(QT_DIR)\include&quot;,&quot;..\addon\doxywizard&quot;,&quot;c:\Qt\4.4.3\include\ActiveQt&quot;,&quot;..\addon\doxywizard\moc&quot;,&quot;..\addon\doxywizard&quot;,&quot;.&quot;,$(QT_DIR)\mkspecs\win32-msvc2008"
 				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,QT_NO_CAST_FROM_ASCII,QT_NO_CAST_TO_ASCII,QT_NO_DEBUG,QT_XML_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,NDEBUG"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="1"
@@ -264,8 +264,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\doxywizard.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\doxywizard.h -o moc\moc_doxywizard.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\doxywizard.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\doxywizard.h -o moc\moc_doxywizard.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\doxywizard.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_doxywizard.cpp"
 					/>
 				</FileConfiguration>
@@ -275,8 +275,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\doxywizard.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\doxywizard.h -o moc\moc_doxywizard.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\doxywizard.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\doxywizard.h -o moc\moc_doxywizard.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\doxywizard.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_doxywizard.cpp"
 					/>
 				</FileConfiguration>
@@ -290,8 +290,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\expert.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\expert.h -o moc\moc_expert.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\expert.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\expert.h -o moc\moc_expert.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\expert.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_expert.cpp"
 					/>
 				</FileConfiguration>
@@ -301,8 +301,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\expert.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\expert.h -o moc\moc_expert.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\expert.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\expert.h -o moc\moc_expert.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\expert.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_expert.cpp"
 					/>
 				</FileConfiguration>
@@ -316,8 +316,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\helplabel.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\helplabel.h -o moc\moc_helplabel.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\helplabel.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\helplabel.h -o moc\moc_helplabel.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\helplabel.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_helplabel.cpp"
 					/>
 				</FileConfiguration>
@@ -327,8 +327,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\helplabel.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\helplabel.h -o moc\moc_helplabel.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\helplabel.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\helplabel.h -o moc\moc_helplabel.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\helplabel.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_helplabel.cpp"
 					/>
 				</FileConfiguration>
@@ -342,8 +342,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputbool.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputbool.h -o moc\moc_inputbool.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputbool.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputbool.h -o moc\moc_inputbool.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputbool.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputbool.cpp"
 					/>
 				</FileConfiguration>
@@ -353,8 +353,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputbool.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputbool.h -o moc\moc_inputbool.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputbool.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputbool.h -o moc\moc_inputbool.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputbool.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputbool.cpp"
 					/>
 				</FileConfiguration>
@@ -368,8 +368,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputint.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputint.h -o moc\moc_inputint.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputint.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputint.h -o moc\moc_inputint.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputint.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputint.cpp"
 					/>
 				</FileConfiguration>
@@ -379,8 +379,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputint.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputint.h -o moc\moc_inputint.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputint.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputint.h -o moc\moc_inputint.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputint.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputint.cpp"
 					/>
 				</FileConfiguration>
@@ -394,8 +394,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputstring.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstring.h -o moc\moc_inputstring.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputstring.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstring.h -o moc\moc_inputstring.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputstring.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputstring.cpp"
 					/>
 				</FileConfiguration>
@@ -405,8 +405,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputstring.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstring.h -o moc\moc_inputstring.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputstring.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstring.h -o moc\moc_inputstring.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputstring.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputstring.cpp"
 					/>
 				</FileConfiguration>
@@ -420,8 +420,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputstrlist.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstrlist.h -o moc\moc_inputstrlist.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputstrlist.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstrlist.h -o moc\moc_inputstrlist.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputstrlist.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputstrlist.cpp"
 					/>
 				</FileConfiguration>
@@ -431,8 +431,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\inputstrlist.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstrlist.h -o moc\moc_inputstrlist.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\inputstrlist.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\inputstrlist.h -o moc\moc_inputstrlist.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\inputstrlist.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_inputstrlist.cpp"
 					/>
 				</FileConfiguration>
@@ -450,8 +450,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\wizard.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\wizard.h -o moc\moc_wizard.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\wizard.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\wizard.h -o moc\moc_wizard.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\wizard.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_wizard.cpp"
 					/>
 				</FileConfiguration>
@@ -461,8 +461,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC ..\addon\doxywizard\wizard.h"
-						CommandLine="C:\Qt\4.4.3\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtCore&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtGui&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include\QtXml&quot; -I&quot;..\..\..\Qt\4.4.3\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\wizard.h -o moc\moc_wizard.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\wizard.h;C:\Qt\4.4.3\bin\moc.exe"
+						CommandLine="$(QT_DIR)\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_DEBUG -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtCore&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtGui&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include\QtXml&quot; -I&quot;$(QT_DIR)\include&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;c:\Qt\4.4.3\include\ActiveQt&quot; -I&quot;..\addon\doxywizard\moc&quot; -I&quot;..\addon\doxywizard&quot; -I&quot;.&quot; -I$(QT_DIR)\mkspecs\win32-msvc2005 -D_MSC_VER=1400 -DWIN32 ..\addon\doxywizard\wizard.h -o moc\moc_wizard.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\wizard.h;$(QT_DIR)\bin\moc.exe"
 						Outputs="moc\moc_wizard.cpp"
 					/>
 				</FileConfiguration>
@@ -475,6 +475,10 @@
 			>
 			<File
 				RelativePath="config_lex.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\addon\doxywizard\configdoc.cpp"
 				>
 			</File>
 			<File
@@ -562,8 +566,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="RCC ..\addon\doxywizard\doxywizard.qrc"
-						CommandLine="C:\Qt\4.4.3\bin\rcc.exe -name doxywizard ..\addon\doxywizard\doxywizard.qrc -o rcc\qrc_doxywizard.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\doxywizard.qrc;C:\Qt\4.4.3\bin\rcc.exe"
+						CommandLine="$(QT_DIR)\bin\rcc.exe -name doxywizard ..\addon\doxywizard\doxywizard.qrc -o rcc\qrc_doxywizard.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\doxywizard.qrc;$(QT_DIR)\bin\rcc.exe"
 						Outputs="rcc\qrc_doxywizard.cpp"
 					/>
 				</FileConfiguration>
@@ -573,8 +577,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="RCC ..\addon\doxywizard\doxywizard.qrc"
-						CommandLine="C:\Qt\4.4.3\bin\rcc.exe -name doxywizard ..\addon\doxywizard\doxywizard.qrc -o rcc\qrc_doxywizard.cpp&#x0D;&#x0A;"
-						AdditionalDependencies="..\addon\doxywizard\doxywizard.qrc;C:\Qt\4.4.3\bin\rcc.exe"
+						CommandLine="$(QT_DIR)\bin\rcc.exe -name doxywizard ..\addon\doxywizard\doxywizard.qrc -o rcc\qrc_doxywizard.cpp&#x0D;&#x0A;"
+						AdditionalDependencies="..\addon\doxywizard\doxywizard.qrc;$(QT_DIR)\bin\rcc.exe"
 						Outputs="rcc\qrc_doxywizard.cpp"
 					/>
 				</FileConfiguration>

@@ -5,16 +5,18 @@
 #include <QDomElement>
 #include <QHash>
 
+#include "docintf.h"
+
 class QTreeWidget;
 class QTreeWidgetItem;
 class QStackedWidget;
 class QSettings;
-class QTextEdit;
+class QTextBrowser;
 class QTextCodec;
 class QPushButton;
 class Input;
 
-class Expert : public QSplitter
+class Expert : public QSplitter, public DocIntf
 {
     Q_OBJECT
 
@@ -32,6 +34,10 @@ class Expert : public QSplitter
     bool htmlOutputPresent(const QString &workingDir) const;
     bool pdfOutputPresent(const QString &workingDir) const;
     QString getHtmlOutputIndex(const QString &workingDir) const;
+
+    // DocIntf methods
+    void setHeader(const char *name);
+    void add(const char *name,const char *doc);
   
   public slots:
     void activateTopic(QTreeWidgetItem *,QTreeWidgetItem *);
@@ -50,7 +56,7 @@ class Expert : public QSplitter
     void saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,bool brief);
 
     QSplitter               *m_splitter;
-    QTextEdit               *m_helper;
+    QTextBrowser            *m_helper;
     QTreeWidget             *m_treeWidget;
     QStackedWidget          *m_topicStack;
     QHash<QString,QWidget *> m_topics;
@@ -60,6 +66,7 @@ class Expert : public QSplitter
     QPushButton             *m_prev;
     QDomElement              m_rootElement;
     bool                     m_inShowHelp;
+    QString                  m_header;
 };
 
 #endif

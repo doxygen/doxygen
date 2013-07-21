@@ -36,10 +36,12 @@ class InputBool : public QObject, public Input
     Kind kind() const { return Bool; }
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
+    QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *option) { m_dependencies+=option; }
     void setEnabled(bool);
     void updateDependencies();
     void writeValue(QTextStream &t,QTextCodec *codec);
+    void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
   public slots:
     void reset();
@@ -64,7 +66,7 @@ class InputBool : public QObject, public Input
     QList<Input*> m_dependencies;
     QString m_id;
     QLabel *m_lab;
-
+    QString m_tdocs;
 };
 
 #endif

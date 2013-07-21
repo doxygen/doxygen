@@ -74,10 +74,8 @@ class ConfigOption
     virtual void writeTemplate(FTextStream &t,bool sl,bool upd) = 0;
     virtual void convertStrToVal() {}
     virtual void substEnvVars() = 0;
-    virtual void writeXML(FTextStream&) {}
     virtual void init() {}
 
-    QCString convertToComment(const QCString &s, const QCString &u);
     void writeBoolValue(FTextStream &t,bool v);
     void writeIntValue(FTextStream &t,int i);
     void writeStringValue(FTextStream &t,QCString &s);
@@ -103,16 +101,7 @@ class ConfigInfo : public ConfigOption
       m_name = name;
       m_doc = doc;
     }
-    void writeTemplate(FTextStream &t, bool sl,bool)
-    {
-      if (!sl)
-      {
-        t << "\n";
-      }
-      t << "#---------------------------------------------------------------------------\n";
-      t << "# " << m_doc << endl;
-      t << "#---------------------------------------------------------------------------\n";
-    }
+    void writeTemplate(FTextStream &t, bool sl,bool);
     void substEnvVars() {}
 };
 
@@ -133,24 +122,8 @@ class ConfigList : public ConfigOption
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     QStrList *valueRef() { return &m_value; }
-    void writeTemplate(FTextStream &t,bool sl,bool)
-    {
-      if (!sl)
-      {
-        t << endl;
-        t << convertToComment(m_doc, m_userComment);
-        t << endl;
-      }
-      else if (!m_userComment.isEmpty())
-      {
-        t << convertToComment("", m_userComment);
-      }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
-      writeStringList(t,m_value);
-      t << "\n";
-    }
+    void writeTemplate(FTextStream &t,bool sl,bool);
     void substEnvVars();
-    void writeXML(FTextStream&);
     void init() { m_value.clear(); }
   private:
     QStrList m_value;
@@ -177,23 +150,7 @@ class ConfigEnum : public ConfigOption
     }
     QCString *valueRef() { return &m_value; }
     void substEnvVars();
-    void writeTemplate(FTextStream &t,bool sl,bool)
-    {
-      if (!sl)
-      {
-        t << endl;
-        t << convertToComment(m_doc, m_userComment);
-        t << endl;
-      }
-      else if (!m_userComment.isEmpty())
-      {
-        t << convertToComment("", m_userComment);
-      }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
-      writeStringValue(t,m_value);
-      t << "\n";
-    }
-    void writeXML(FTextStream&);
+    void writeTemplate(FTextStream &t,bool sl,bool);
     void init() { m_value = m_defValue.copy(); }
 
   private:
@@ -222,24 +179,8 @@ class ConfigString : public ConfigOption
     WidgetType widgetType() const { return m_widgetType; }
     void setDefaultValue(const char *v) { m_defValue = v; }
     QCString *valueRef() { return &m_value; }
-    void writeTemplate(FTextStream &t,bool sl,bool)
-    {
-      if (!sl)
-      {
-        t << endl;
-        t << convertToComment(m_doc, m_userComment);
-        t << endl;
-      }
-      else if (!m_userComment.isEmpty())
-      {
-        t << convertToComment("", m_userComment);
-      }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
-      writeStringValue(t,m_value);
-      t << "\n";
-    }
+    void writeTemplate(FTextStream &t,bool sl,bool);
     void substEnvVars();
-    void writeXML(FTextStream&);
     void init() { m_value = m_defValue.copy(); }
   
   private:
@@ -269,30 +210,7 @@ class ConfigInt : public ConfigOption
     int maxVal() const { return m_maxVal; }
     void convertStrToVal();
     void substEnvVars();
-    void writeTemplate(FTextStream &t,bool sl,bool upd)
-    {
-      if (!sl)
-      {
-        t << endl;
-        t << convertToComment(m_doc, m_userComment);
-        t << endl;
-      }
-      else if (!m_userComment.isEmpty())
-      {
-        t << convertToComment("", m_userComment);
-      }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
-      if (upd && !m_valueString.isEmpty())
-      {
-        writeStringValue(t,m_valueString);
-      }
-      else
-      {
-        writeIntValue(t,m_value);
-      }
-      t << "\n";
-    }
-    void writeXML(FTextStream&);
+    void writeTemplate(FTextStream &t,bool sl,bool upd);
     void init() { m_value = m_defValue; }
   private:
     int m_value;
@@ -320,30 +238,7 @@ class ConfigBool : public ConfigOption
     void convertStrToVal();
     void substEnvVars();
     void setValueString(const QCString &v) { m_valueString = v; }
-    void writeTemplate(FTextStream &t,bool sl,bool upd)
-    {
-      if (!sl)
-      {
-        t << endl;
-        t << convertToComment(m_doc, m_userComment);
-        t << endl;
-      }
-      else if (!m_userComment.isEmpty())
-      {
-        t << convertToComment("", m_userComment);
-      }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
-      if (upd && !m_valueString.isEmpty())
-      {
-        writeStringValue(t,m_valueString);
-      }
-      else
-      {
-        writeBoolValue(t,m_value);
-      }
-      t << "\n";
-    }
-    void writeXML(FTextStream&);
+    void writeTemplate(FTextStream &t,bool sl,bool upd);
     void init() { m_value = m_defValue; }
   private:
     bool m_value;
@@ -358,9 +253,8 @@ class ConfigObsolete : public ConfigOption
   public:
     ConfigObsolete(const char *name) : ConfigOption(O_Obsolete)  
     { m_name = name; }
-    void writeTemplate(FTextStream &,bool,bool) {}
+    void writeTemplate(FTextStream &,bool,bool);
     void substEnvVars() {}
-    void writeXML(FTextStream&);
 };
 
 /** Section marker for compile time optional options
@@ -370,13 +264,12 @@ class ConfigDisabled : public ConfigOption
   public:
     ConfigDisabled(const char *name) : ConfigOption(O_Disabled)  
     { m_name = name; }
-    void writeTemplate(FTextStream &,bool,bool) {}
+    void writeTemplate(FTextStream &,bool,bool);
     void substEnvVars() {}
-    void writeXML(FTextStream&);
 };
 
 
-// some convenience macros
+// some convenience macros for access the config options
 #define Config_getString(val)  Config::instance()->getString(__FILE__,__LINE__,val)
 #define Config_getInt(val)     Config::instance()->getInt(__FILE__,__LINE__,val)
 #define Config_getList(val)    Config::instance()->getList(__FILE__,__LINE__,val)
@@ -571,8 +464,7 @@ class Config
      */
     void writeTemplate(FTextStream &t,bool shortIndex,bool updateOnly);
 
-    /** Write XML representation of the config file */
-    void writeXML(FTextStream &t);
+    void setHeader(const char *header) { m_header = header; }
 
     /////////////////////////////
     // internal API
@@ -658,6 +550,7 @@ class Config
     static Config *m_instance;
     QCString m_userComment;
     bool m_initialized;
+    QCString m_header;
 };
 
 #endif

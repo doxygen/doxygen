@@ -27,6 +27,11 @@
 /addon/doxmlparser/src/Makefile
 /addon/doxyapp/Makefile
 /addon/doxywizard/Makefile
+/addon/doxywizard/Makefile.doxywizard
+/addon/doxywizard/config_lex.cpp
+/addon/doxywizard/moc
+/addon/doxywizard/obj
+/addon/doxywizard/rcc
 /examples/Makefile
 /Makefile
 
