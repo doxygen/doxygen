@@ -438,7 +438,7 @@ if test "$f_sqlite3" = YES; then
     sqlite3_lib_dir="$f_sqlite3_path/lib"
   fi
   if test "$f_sqlite3static" = NO; then
-    sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a"
+    sqlite3_lib_name="libsqlite3.so libsqlite3.dylib libsqlite3.a libsqlite3.dll.a"
   else
     sqlite3_lib_name="libsqlite3.a"
   fi
@@ -482,7 +482,7 @@ if test "$f_libclang" = YES; then
   libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
   libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib"
   if test "$f_libclangstatic" = NO; then
-    libclang_lib_name="libclang.so libclang.dylib libclang.a"
+    libclang_lib_name="libclang.so libclang.dylib libclang.a libclang.dll.a"
   else
     libclang_lib_name="libclang.a"
   fi
@@ -777,11 +777,11 @@ EOF
        echo "" >> $DST
        echo "doxywizard_install:" >> $DST
        if test $f_wizard = YES; then
-         echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxywizard install" >> $DST
+         echo "	\$(MAKE) INSTALL=\$(DESTDIR)\$(INSTALL) MAN1DIR=\$(MAN1DIR) -C addon/doxywizard install" >> $DST
        fi
        echo "doxysearch_install:" >> $DST
        if test $f_search = YES; then
-         echo "	\$(MAKE) MAN1DIR=\$(MAN1DIR) -C addon/doxysearch install" >> $DST
+         echo "	\$(MAKE) INSTALL=\$(DESTDIR)\$(INSTALL) MAN1DIR=\$(MAN1DIR) -C addon/doxysearch install" >> $DST
        fi
        echo "" >> $DST
      fi
