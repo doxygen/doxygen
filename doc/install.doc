@@ -29,9 +29,10 @@ If you downloaded the source distribution, you need at least the
 following to build the executable:
 <ul>
 <li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools 
-    \c flex, \c bison and <code>GNU make</code>, and \c strip
+    \c flex, \c bison, \c libiconv and <code>GNU make</code>, and \c strip
     \addindex flex
     \addindex bison
+    \addindex libiconv
     \addindex make
     \addindex strip
 <li>In order to generate a \c Makefile for your platform, you need 
@@ -48,7 +49,7 @@ tools should be installed.
 <li>Qt Software's GUI toolkit 
     <a href="http://qt-project.org/">Qt</A>
     \addindex Qt
-    version 4.3 or higher.
+    version 4.3 or higher (but currently, Qt 5.x is not supported).
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org/interest.html#free">TeX Live</a>

@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <qglobal.h>
 #include "objcache.h"
-#if !defined(_OS_WIN32_)
+#if !defined(_OS_WIN32_) || defined(__MINGW32__)
 #include <stdint.h>
 #endif
 

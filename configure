@@ -266,6 +266,9 @@ if test -z "$f_platform"; then
     Cygwin:*|CYGWIN*)
       f_platform=win32-g++
       ;;
+    MINGW32_NT*)
+      f_platform=win32-mingw
+      ;;
     *MiNT:*)
       f_platform=m68k-atari-mint-g++
       ;;

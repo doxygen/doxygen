@@ -525,7 +525,7 @@ void MainWindow::showHtmlOutput()
   // TODO: the following doesn't seem to work with IE
 #ifdef WIN32
   //QString indexUrl(QString::fromAscii("file:///"));
-  ShellExecute(NULL, L"open", fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
+  ShellExecute(NULL, L"open", (LPCWSTR)fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
 #else
   QString indexUrl(QString::fromAscii("file://"));
   indexUrl+=fi.absoluteFilePath();

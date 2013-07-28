@@ -29,3 +29,4 @@ sunos-g++
 ultrix-g++
 unixware-g++
 win32-g++
+win32-mingw
