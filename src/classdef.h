@@ -383,9 +383,9 @@ class ClassDef : public Definition
     QCString getMemberListFileName() const;
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
     MemberList *createMemberList(MemberListType lt);
-    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,ClassDef *inheritedFrom,bool invert,QPtrDict<void> *visitedClasses);
+    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,ClassDef *inheritedFrom,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
-                                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,bool invert=FALSE,QPtrDict<void> *visitedClasses=0);
+                                 const char *subTitle=0,bool showInline=FALSE,ClassDef *inheritedFrom=0,int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,QPtrDict<void> *visitedClasses=0);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE);
     void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt);
     void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,ClassDef *inheritedFrom,const char *inheritId);
@@ -407,11 +407,16 @@ class ClassDef : public Definition
     void writeMoreLink(OutputList &ol,const QCString &anchor);
     void writeDetailedDocumentationBody(OutputList &ol);
     
-    int countInheritedDecMembersRec(MemberListType lt,ClassDef *inheritedFrom);
-    int countInheritedDecMembers(MemberListType lt);
     int countAdditionalInheritedMembers();
     void writeAdditionalInheritedMembers(OutputList &ol);
     void addClassAttributes(OutputList &ol);
+    int countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
+                                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
+    int countInheritedDecMembers(MemberListType lt,
+                                 ClassDef *inheritedFrom,bool invert,bool showAlways,
+                                 QPtrDict<void> *visitedClasses);
+    void getTitleForMemberListType(MemberListType type,
+               QCString &title,QCString &subtitle);
     
     ClassDefImpl *m_impl;
 

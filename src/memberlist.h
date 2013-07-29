@@ -36,7 +36,7 @@ class MemberList : public QList<MemberDef>
     MemberList(MemberListType lt);
    ~MemberList();
     MemberListType listType() const { return m_listType; }
-    QCString listTypeAsString() const;
+    QCString listTypeAsString(MemberListType type) const;
     bool insert(uint index,const MemberDef *md);
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);
@@ -63,7 +63,7 @@ class MemberList : public QList<MemberDef>
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                const char *title,const char *subtitle,const DefinitionIntf::DefType compoundType,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               ClassDef *inheritedFrom=0);
+               ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods);
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
     void writeSimpleDocumentation(OutputList &ol,Definition *container);

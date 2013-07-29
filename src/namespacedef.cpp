@@ -429,7 +429,7 @@ void NamespaceDef::writeSummaryLinks(OutputList &ol)
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
-        ol.writeSummaryLink(0,ml->listTypeAsString(),lmd->title(lang),first);
+        ol.writeSummaryLink(0,ml->listTypeAsString(ml->listType()),lmd->title(lang),first);
         first=FALSE;
       }
     }

@@ -315,7 +315,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     return; // no members in this list
   }
   //printf("  --> writePlainDeclaration() numDecMembers()=%d\n",
-  //     numDecMembers());
+  //    numDecMembers());
   
   ol.pushGeneratorState();
 
@@ -329,6 +329,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     if ((inheritedFrom==0 || !md->isReimplementedBy(inheritedFrom)) &&
         md->isBriefSectionVisible())
     {
+      //printf(">>> rendering\n");
       switch(md->memberType())
       {
         case MemberType_Define:    // fall through
@@ -493,7 +494,7 @@ void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
              const char *title,const char *subtitle,
              const DefinitionIntf::DefType compoundType,bool showEnumValues,
-             bool showInline,ClassDef *inheritedFrom)
+             bool showInline,ClassDef *inheritedFrom,MemberListType lt)
 {
   (void)showEnumValues; // unused
 
@@ -507,8 +508,8 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (ctx==0 && gd) ctx = gd;
   if (ctx==0 && fd) ctx = fd;
 
-  //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
-  //       this,title,subtitle,numDecMembers());
+  //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d inheritedFrom=%p\n",
+  //       this,title,subtitle,numDecMembers(),inheritedFrom);
 
   int num = numDecMembers();
   if (inheritedFrom)
@@ -519,7 +520,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
-      inheritId = substitute(listTypeAsString(),"-","_")+"_"+
+      inheritId = substitute(listTypeAsString(lt),"-","_")+"_"+
                   stripPath(cd->getOutputFileBase());
       if (title)
       {
@@ -540,7 +541,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       }
       else
       {
-        ol.startMemberHeader(listTypeAsString());
+        ol.startMemberHeader(listTypeAsString(m_listType));
       }
       ol.parseText(title);
       if (showInline)
@@ -872,9 +873,14 @@ void MemberList::unmarshal(StorageIntf *s)
   }
 }
 
-QCString MemberList::listTypeAsString() const
+void MemberList::setNeedsSorting(bool b)
 {
-  switch(m_listType)
+  m_needsSorting = b;
+}
+
+QCString MemberList::listTypeAsString(MemberListType type) const
+{
+  switch(type)
   {
     case MemberListType_pubMethods: return "pub-methods";
     case MemberListType_proMethods: return "pro-methods";
@@ -928,10 +934,6 @@ QCString MemberList::listTypeAsString() const
   return "";
 }
 
-void MemberList::setNeedsSorting(bool b)
-{
-  m_needsSorting = b;
-}
 
 //--------------------------------------------------------------------------
 
