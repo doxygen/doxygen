@@ -1705,7 +1705,7 @@ static int yyread(char *buf,int max_size)
 
 %}
 
-ID	[a-z_A-Z][a-z_A-Z0-9]*
+ID	[a-zA-Z_\x80-\xFF][a-zA-Z0-9_\x80-\xFF]+
 B       [ \t]
 BN	[ \t\r\n]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
@@ -1761,7 +1761,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
  					  outputArray(yytext,(int)yyleng);
   					  BEGIN(CopyLine); 
 					}
-<Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
+<Start>^{B}*[a-zA-Z_\x80-\xFF][a-zA-Z0-9_\x80-\xFF]+{B}*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
 					  int i;
 					  for (i=(int)yyleng-1;i>=0;i--)
 					  {
@@ -1769,8 +1769,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  BEGIN(CopyLine);
                                         }
-<Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"{B}*\n | // function list macro with one (...) argument, e.g. for K_GLOBAL_STATIC_WITH_ARGS
-<Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\)\n]*")"{B}*\n { // function like macro
+<Start>^{B}*[a-zA-Z_\x80-\xFF][a-zA-Z0-9_\x80-\xFF]+{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"{B}*\n | // function list macro with one (...) argument, e.g. for K_GLOBAL_STATIC_WITH_ARGS
+<Start>^{B}*[a-zA-Z_\x80-\xFF][a-zA-Z0-9_\x80-\xFF]+{B}*"("[^\)\n]*")"{B}*\n { // function like macro
   					  static bool skipFuncMacros = Config_getBool("SKIP_FUNCTION_MACROS");
 					  QCString name(yytext);
 					  name=name.left(name.find('(')).stripWhiteSpace();
@@ -2042,7 +2042,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(SkipCPPBlock);
 					  }
   					}
-<Command>"else"/[^a-z_A-Z0-9]		{
+<Command>"else"/[^a-zA-Z0-9_\x80-\xFF]		{
 					  //printf("else g_levelGuard[%d]=%d\n",g_level-1,g_levelGuard[g_level-1]);
   					  if (otherCaseDone())
 					  {
@@ -2065,7 +2065,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    BEGIN(Guard);
 					  }
   					}
-<Command>"endif"/[^a-z_A-Z0-9]		{
+<Command>"endif"/[^a-zA-Z0-9_\x80-\xFF]		{
   					  //printf("Pre.l: #endif\n");
   					  decrLevel();
   					}
@@ -2481,7 +2481,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           g_condCtx=YY_START;
   					  BEGIN(CondLineC);
   					}
-<CondLineC,CondLineCpp>[!()&| \ta-z_A-Z0-9.\-]+      {
+<CondLineC,CondLineCpp>[!()&| \ta-zA-Z0-9_\x80-\xFF.\-]+      {
   				          startCondSection(yytext);
                                           if (g_skip)
                                           {
@@ -2544,13 +2544,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCond>[^\/\!*\\@\n]+                { }
 <SkipCond>"//"[/!]                      { g_ccomment=FALSE; }
 <SkipCond>"/*"[*!]                      { g_ccomment=TRUE; }
-<SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-z_A-Z0-9] {
+<SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-zA-Z0-9_\x80-\xFF] {
                                           if (!g_skip)
                                           {
   					    outputArray(yytext,(int)yyleng);
                                           }
                                         }
-<SkipCond>[\\@]"endcond"/[^a-z_A-Z0-9]  { 
+<SkipCond>[\\@]"endcond"/[^a-zA-Z0-9_\x80-\xFF]  { 
                                           bool oldSkip = g_skip;
                                           endCondSection(); 
                                           if (oldSkip && !g_skip)
@@ -2562,7 +2562,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             BEGIN(g_condCtx);
                                           }
                                         }
-<SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9] {
+<SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-zA-Z0-9_\x80-\xFF] {
                                           bool oldSkip = g_skip;
   					  endCondSection();
                                           if (oldSkip && !g_skip) 
@@ -2601,7 +2601,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment,SkipVerbatim>.		{
   					  outputChar(*yytext);
   					}
-<CopyCComment>[^*a-z_A-Z\n]+		{
+<CopyCComment>[^*a-zA-Z_\x80-\xFF\n]+		{
 					  g_defLitText+=yytext;
 					  g_defText+=escapeAt(yytext);
   					}
@@ -3002,7 +3002,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	 ) // predefined function macro definition
       {
 	//printf("predefined function macro '%s'\n",defStr);
-	QRegExp reId("[a-z_A-Z][a-z_A-Z0-9]*"); // regexp matching an id
+	QRegExp reId("[a-zA-Z_\x80-\xFF][a-zA-Z0-9_\x80-\xFF]+"); // regexp matching an id
 	QDict<int> argDict(17);
 	argDict.setAutoDelete(TRUE);
 	int i=i_obrace+1,p,l,count=0;
