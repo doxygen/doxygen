@@ -372,7 +372,7 @@ static bool matchcharclass( uint *rxd, char c )
     if ( clcode != CCL && clcode != CCN)
 	qWarning("QRegExp: Internal error, please report to qt-bugs@trolltech.com");
     uint numFields = *d & MVL;
-    uint cval = (uint)c; //(((uint)(c.row())) << 8) | ((uint)c.cell());
+    uint cval = (unsigned char)c; //(((uint)(c.row())) << 8) | ((uint)c.cell());
     bool found = FALSE;
     for ( int i = 0; i < (int)numFields; i++ ) {
 	d++;
