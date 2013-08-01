@@ -2171,7 +2171,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  unput(';');
 					  BEGIN(FindMembers);
   					}
-<QtPropType>"const"|"volatile"|"unsigned"|"signed" {
+<QtPropType>"const"|"volatile"|"unsigned"|"signed"|"long"|"short" {
   				          current->type+=yytext;
   					}
 <QtPropType>{B}+			{
