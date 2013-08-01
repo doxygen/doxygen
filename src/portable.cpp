@@ -30,7 +30,7 @@ extern char **environ;
 static double  g_sysElapsedTime;
 static QTime   g_time;
 
-int  portable_system(const char *command,const char *args,bool commandHasConsole)
+int portable_system(const char *command,const char *args,bool commandHasConsole)
 {
 
   if (command==0) return 1;
@@ -130,20 +130,23 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
     // For that case COM is initialized as follows
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
+    QString commandw = QString::fromUtf8( command );
+    QString argsw = QString::fromUtf8( args );
+
     // gswin32 is a GUI api which will pop up a window and run
     // asynchronously. To prevent both, we use ShellExecuteEx and
     // WaitForSingleObject (thanks to Robert Golias for the code)
 
-    SHELLEXECUTEINFO sInfo = {
-      sizeof(SHELLEXECUTEINFO),   /* structure size */
+    SHELLEXECUTEINFOW sInfo = {
+      sizeof(SHELLEXECUTEINFOW),   /* structure size */
       SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,  /* tell us the process
                                                        *  handle so we can wait till it's done | 
                                                        *  do not display msg box if error 
                                                        */
       NULL,                       /* window handle */
       NULL,                       /* action to perform: open */
-      command,                    /* file to execute */
-      args,                       /* argument list */ 
+      (LPCWSTR)commandw.ucs2(),   /* file to execute */
+      (LPCWSTR)argsw.ucs2(),      /* argument list */ 
       NULL,                       /* use current working dir */
       SW_HIDE,                    /* minimize on start-up */
       0,                          /* application instance handle */
@@ -154,7 +157,8 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
       NULL,                       /* ignored: icon */
       NULL                        /* resulting application handle */
     };
-    if (!ShellExecuteEx(&sInfo))
+
+    if (!ShellExecuteExW(&sInfo))
     {
       return -1;
     }
