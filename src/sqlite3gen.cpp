@@ -241,10 +241,10 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def);
 
 
-static void bindTextParameter(sqlite3_stmt *stmt,const char *name,const char *value)
+static void bindTextParameter(sqlite3_stmt *stmt,const char *name,const char *value, bool _static=TRUE)
 {
   int idx = sqlite3_bind_parameter_index(stmt, name);
-  sqlite3_bind_text(stmt, idx, value, -1, SQLITE_STATIC);
+  sqlite3_bind_text(stmt, idx, value, -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
 }
 
 static void bindIntParameter(sqlite3_stmt *stmt,const char *name,int value)
@@ -621,7 +621,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
   QCString memType;
   // memberdef
-  bindTextParameter(i_s_memberdef,":refid",md->anchor());
+  bindTextParameter(i_s_memberdef,":refid",md->anchor().data(),FALSE);
   bindIntParameter(i_s_memberdef,":kind",md->memberType());
   bindIntParameter(i_s_memberdef,":prot",md->protection());
   bindIntParameter(i_s_memberdef,":static",md->isStatic());
@@ -696,7 +696,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,typeStr);
     if (typeStr.data())
     {
-      bindTextParameter(i_s_memberdef,":type",typeStr);
+      bindTextParameter(i_s_memberdef,":type",typeStr.data(),FALSE);
     }
 
     if (md->definition())
@@ -819,7 +819,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
   if ( md->getScopeString() )
   {
-    bindTextParameter(i_s_memberdef,":scope",md->getScopeString());
+    bindTextParameter(i_s_memberdef,":scope",md->getScopeString().data(),FALSE);
   }
 
   // File location
