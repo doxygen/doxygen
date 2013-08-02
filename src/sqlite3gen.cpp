@@ -28,11 +28,15 @@
 #include "docparser.h"
 #include "language.h"
 
+#include "dot.h"
 #include "arguments.h"
 #include "classlist.h"
 #include "filedef.h"
 #include "namespacedef.h"
 #include "filename.h"
+#include "groupdef.h"
+#include "pagedef.h"
+#include "dirdef.h"
 
 #include <qdir.h>
 #include <string.h>
@@ -580,9 +584,17 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
     }
   }
 }
-
-
-
+static void generateSqlite3ForGroup(sqlite3*db,GroupDef *gd)
+{
+    db=db;
+    gd=gd;
+}
+static void generateSqlite3ForDir(sqlite3 *db,DirDef *dd)
+{
+}
+static void generateSqlite3ForPage(sqlite3 *db,PageDef *pd,bool isExample)
+{
+}
 
 static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 {
@@ -1062,6 +1074,56 @@ void generateSqlite3()
       generateSqlite3ForFile(db,fd);
     }
   }
+
+  // + groups
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (;(gd=gli.current());++gli)
+  {
+    msg("Generating Sqlite3 output for group %s\n",gd->name().data());
+    generateSqlite3ForGroup(db,gd);
+  }
+
+  // + page
+  {
+    PageSDict::Iterator pdi(*Doxygen::pageSDict);
+    PageDef *pd=0;
+    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      msg("Generating Sqlite3 output for page %s\n",pd->name().data());
+      generateSqlite3ForPage(db,pd,FALSE);
+    }
+  }
+
+  // + dirs
+  {
+    DirDef *dir;
+    DirSDict::Iterator sdi(*Doxygen::directories);
+    for (sdi.toFirst();(dir=sdi.current());++sdi)
+    {
+      msg("Generating Sqlite3 output for dir %s\n",dir->name().data());
+      generateSqlite3ForDir(db,dir);
+    }
+  }
+
+  // + examples
+  {
+    PageSDict::Iterator pdi(*Doxygen::exampleSDict);
+    PageDef *pd=0;
+    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      msg("Generating Sqlite3 output for example %s\n",pd->name().data());
+      generateSqlite3ForPage(db,pd,TRUE);
+    }
+  }
+
+  // + main page
+  if (Doxygen::mainPage)
+  {
+    msg("Generating Sqlite3 output for the main page\n");
+    generateSqlite3ForPage(db,Doxygen::mainPage,FALSE);
+  }
+
   endTransaction(db);
 }
 
