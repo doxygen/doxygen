@@ -665,7 +665,7 @@ static void checkDotResult(const QCString &imgName)
 {
   if (Config_getEnum("DOT_IMAGE_FORMAT")=="png")
   {
-    FILE *f = fopen(imgName,"rb");
+    FILE *f = portable_fopen(imgName,"rb");
     if (f)
     {
       char data[4];
@@ -961,24 +961,25 @@ bool DotFilePatcher::run()
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    m_patchFile.data(),map->zoomable);
   }
-  QCString tmpName = m_patchFile+".tmp";
-  if (!QDir::current().rename(m_patchFile,tmpName))
+  QString tmpName = QString::fromUtf8(m_patchFile+".tmp");
+  QString patchFile = QString::fromUtf8(m_patchFile);
+  if (!QDir::current().rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.data());
     return FALSE;
   }
   QFile fi(tmpName);
-  QFile fo(m_patchFile);
+  QFile fo(patchFile);
   if (!fi.open(IO_ReadOnly)) 
   {
     err("problem opening file %s for patching!\n",tmpName.data());
-    QDir::current().rename(tmpName,m_patchFile);
+    QDir::current().rename(tmpName,patchFile);
     return FALSE;
   }
   if (!fo.open(IO_WriteOnly))
   {
     err("problem opening file %s for patching!\n",m_patchFile.data());
-    QDir::current().rename(tmpName,m_patchFile);
+    QDir::current().rename(tmpName,patchFile);
     return FALSE;
   }
   FTextStream t(&fo);
