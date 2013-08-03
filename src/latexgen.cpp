@@ -366,8 +366,12 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\n";
 
   // Headers & footers
-  QCString genString =
-        theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"));
+  QGString genString;
+  FTextStream tg(&genString);
+  filterLatexString(tg,
+                    theTranslator->trGeneratedAt(dateToString(TRUE),
+                       Config_getString("PROJECT_NAME")),
+                    FALSE,FALSE,FALSE);
   t << "% Headers & footers\n"
        "\\usepackage{fancyhdr}\n"
        "\\pagestyle{fancyplain}\n"

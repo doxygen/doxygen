@@ -1106,10 +1106,12 @@ static QCString substituteHtmlKeywords(const QCString &s,
     extraCssText = "<link href=\"$relpath^"+stripPath(extraCssFile)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   }
 
-  if (timeStamp) {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString("PROJECT_NAME"));
+  if (timeStamp) 
+  {
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), convertToHtml(Config_getString("PROJECT_NAME")));
   }
-  else {
+  else 
+  {
     generatedBy = theTranslator->trGeneratedBy();
   }
 
@@ -3084,7 +3086,7 @@ void HtmlGenerator::writeSearchPage()
     FTextStream t(&cf);
     t << "<script language=\"php\">\n\n";
     t << "$config = array(\n";
-    t << "  'PROJECT_NAME' => \"" << projectName << "\",\n";
+    t << "  'PROJECT_NAME' => \"" << convertToHtml(projectName) << "\",\n";
     t << "  'GENERATE_TREEVIEW' => " << (generateTreeView?"true":"false") << ",\n";
     t << "  'DISABLE_INDEX' => " << (disableIndex?"true":"false") << ",\n";
     t << ");\n\n";
