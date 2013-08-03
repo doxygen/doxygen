@@ -47,12 +47,12 @@
 
 //////////////////////////////////////////////////////
 const char *i_q_includes="INSERT OR REPLACE INTO includes "
-                            "( refid, local, name ) "
+                            "( local, id_src, dst ) "
                             "VALUES "
-                            "(:refid,:local,:name )" ;
-const char *c_q_includes="SELECT count(*) from includes where refid=:refid and local=:local and name=:name";
-static sqlite3_stmt *i_s_includes=0;
+                            "(:local,:id_src,:dst )" ;
+const char *c_q_includes="SELECT count(*) FROM includes WHERE local=:local and id_src=:id_src and dst=:dst";
 static sqlite3_stmt *c_s_includes=0;
+static sqlite3_stmt *i_s_includes=0;
 //////////////////////////////////////////////////////
 const char *i_q_innerclass="INSERT OR REPLACE INTO innerclass "
                             "( refid, prot, name )"
@@ -139,9 +139,9 @@ const char * schema_queries[][2] =
     "includes",
     "CREATE TABLE IF NOT EXISTS includes ("
       "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-      "refid TEXT NOT NULL,"
       "local INTEGER NOT NULL,"
-      "name TEXT NOT NULL)"
+      "id_src INTEGER NOT NULL,"
+      "dst TEXT NOT NULL)"
   },
   {
     "innerclass",
@@ -287,10 +287,9 @@ static int insertFile(sqlite3 *db, const char* name)
 
 static void insertMemberReference(sqlite3 *db, const char*src, const char*dst, const char *file, int line, int column)
 {
+  int id_file = insertFile(db,file);
   bindTextParameter(i_s_xrefs,":src",src);
   bindTextParameter(i_s_xrefs,":dst",dst);
-
-  int id_file = insertFile(db,file);
 
   bindIntParameter(i_s_xrefs,":id_file",id_file);
   bindIntParameter(i_s_xrefs,":line",line);
@@ -551,6 +550,37 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
   // - number of lines
 
   if (fd->isReference()) return; // skip external references
+
+  // + includes files
+  IncludeInfo *ii;
+  if (fd->includeFileList())
+  {
+    QListIterator<IncludeInfo> ili(*fd->includeFileList());
+    for (ili.toFirst();(ii=ili.current());++ili)
+    {
+      int id_file=insertFile(db,fd->absFilePath().data());
+      bindIntParameter(i_s_includes,":local",ii->local);
+      bindIntParameter(i_s_includes,":id_src",id_file);
+      bindTextParameter(i_s_includes,":dst",ii->includeName.data(),FALSE);
+      step(db,i_s_includes);
+    }
+  }
+
+  // + includedby files
+  if (fd->includedByFileList())
+  {
+    QListIterator<IncludeInfo> ili(*fd->includedByFileList());
+    for (ili.toFirst();(ii=ili.current());++ili)
+    {
+      int id_file=insertFile(db,ii->includeName);
+      bindIntParameter(i_s_includes,":local",ii->local);
+      bindIntParameter(i_s_includes,":id_src",id_file);
+      bindTextParameter(i_s_includes,":dst",fd->absFilePath().data(),FALSE);
+      step(db,i_s_includes);
+    }
+  }
+
+  // + contained class definitions
   if (fd->getClassSDict())
   {
     writeInnerClasses(db,fd->getClassSDict());
@@ -804,13 +834,13 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     QCString *s=l.first();
     while (s)
     {
-      DBG_CTX(("initializer:%s %s %s %d\n",
+      if (md->getBodyDef())
+      {
+        DBG_CTX(("initializer:%s %s %s %d\n",
               md->anchor().data(),
               s->data(),
               md->getBodyDef()->getDefFileName().data(),
               md->getStartBodyLine()));
-      if (md->getBodyDef())
-      {
         insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
       }
       s=l.next();
@@ -966,15 +996,15 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
     if (!nm.isEmpty())
     {
-      bindTextParameter(c_s_includes,":refid",ii->fileDef->getOutputFileBase());
       bindIntParameter(c_s_includes,":local",ii->local);
-      bindTextParameter(c_s_includes,":name",nm);
+      bindIntParameter(c_s_includes,":id_src",id_file);
+      bindTextParameter(c_s_includes,":dst",nm);
       int count=step(db,c_s_includes,TRUE);
-      if ( count==0 )
+      if (count==0)
       {
-        bindTextParameter(i_s_includes,":refid",ii->fileDef->getOutputFileBase());
         bindIntParameter(i_s_includes,":local",ii->local);
-        bindTextParameter(i_s_includes,":name",nm);
+        bindIntParameter(i_s_includes,":id_src",id_file);
+        bindTextParameter(i_s_includes,":dst",nm);
         step(db,i_s_includes);
       }
     }
