@@ -260,6 +260,7 @@ static int step(sqlite3 *db, sqlite3_stmt *stmt,bool getRowId=FALSE)
   if (rc!=SQLITE_DONE && rc!=SQLITE_ROW)
   {
     msg("sqlite3_step failed: %s\n", sqlite3_errmsg(db));
+    return -1;
   }
   if (getRowId) id = sqlite3_column_int(stmt, 0);
   sqlite3_reset(stmt);
@@ -285,7 +286,7 @@ static int insertFile(sqlite3 *db, const char* name)
   return id;
 }
 
-static void insertMemberReference(sqlite3 *db, const char*src, const char*dst, const char *file, int line, int column)
+static int insertMemberReference(sqlite3 *db, const char*src, const char*dst, const char *file, int line, int column)
 {
   int id_file = insertFile(db,file);
   bindTextParameter(i_s_xrefs,":src",src);
@@ -295,7 +296,7 @@ static void insertMemberReference(sqlite3 *db, const char*src, const char*dst, c
   bindIntParameter(i_s_xrefs,":line",line);
   bindIntParameter(i_s_xrefs,":column",column);
 
-  step(db,i_s_xrefs);
+return step(db,i_s_xrefs);
 }
 
 static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst, const char*floc)
@@ -339,7 +340,8 @@ static void writeInnerClasses(sqlite3*db,const ClassSDict *cl)
       bindTextParameter(i_s_innerclass,":refid",cd->getOutputFileBase());
       bindIntParameter(i_s_innerclass,":prot",cd->protection());
       bindTextParameter(i_s_innerclass,":name",cd->name());
-      step(db,i_s_innerclass);
+      if (-1==step(db,i_s_innerclass))
+          return;
     }
   }
 }
@@ -458,7 +460,7 @@ static void pragmaTuning(sqlite3 *db)
   sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &sErrMsg);
 }
 
-static void initializeSchema(sqlite3* db)
+static int initializeSchema(sqlite3* db)
 {
   int rc;
   sqlite3_stmt *stmt = 0;
@@ -473,17 +475,17 @@ static void initializeSchema(sqlite3* db)
     if (rc != SQLITE_OK)
     {
       msg("failed to prepare query: %s\n\t%s\n", q, sqlite3_errmsg(db));
-      exit(-1);
+      return -1;
     }
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE)
     {
       msg("failed to execute query: %s\n\t%s\n", q, sqlite3_errmsg(db));
-      exit(-1);
+      return -1;
     }
     sqlite3_finalize(stmt);
-
   }
+  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -562,7 +564,8 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
       bindIntParameter(i_s_includes,":local",ii->local);
       bindIntParameter(i_s_includes,":id_src",id_file);
       bindTextParameter(i_s_includes,":dst",ii->includeName.data(),FALSE);
-      step(db,i_s_includes);
+      if (-1==step(db,i_s_includes))
+        return;
     }
   }
 
@@ -576,7 +579,8 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
       bindIntParameter(i_s_includes,":local",ii->local);
       bindIntParameter(i_s_includes,":id_src",id_file);
       bindTextParameter(i_s_includes,":dst",fd->absFilePath().data(),FALSE);
-      step(db,i_s_includes);
+      if (-1==step(db,i_s_includes))
+        return;
     }
   }
 
@@ -865,7 +869,8 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
       if (md->getStartBodyLine()!=-1)
       {
         int id_bfile = insertFile(db,md->getBodyDef()->absFilePath());
-        if (id_bfile == -1) exit(-1);
+        if (id_bfile == -1) return;
+
         bindIntParameter(i_s_memberdef,":id_ibfile",id_bfile);
         bindIntParameter(i_s_memberdef,":bline",md->getStartBodyLine());
 
@@ -875,7 +880,8 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     }
   }
 
-  step(db,i_s_memberdef);
+  if (-1==step(db,i_s_memberdef))
+    return;
   /*int id_src =*/ sqlite3_last_insert_rowid(db);
 
   // + source references
@@ -946,7 +952,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   bindIntParameter(i_s_compounddef,":line",cd->getDefLine());
   bindIntParameter(i_s_compounddef,":column",cd->getDefColumn());
 
-  step(db,i_s_compounddef);
+  if (-1==step(db,i_s_compounddef))
+    return;
 
   // + list of direct super classes
   if (cd->baseClasses())
@@ -968,7 +975,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
         bindTextParameter(i_s_basecompoundref,":base",bcd->classDef->displayName());
       }
       bindTextParameter(i_s_basecompoundref,":derived",cd->displayName());
-      step(db,i_s_basecompoundref);
+      if (-1==step(db,i_s_basecompoundref))
+        return;
     }
   }
 
@@ -984,7 +992,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       bindTextParameter(i_s_derivedcompoundref,":refid",bcd->classDef->getOutputFileBase());
       bindIntParameter(i_s_derivedcompoundref,":prot",bcd->prot);
       bindIntParameter(i_s_derivedcompoundref,":virt",bcd->virt);
-      step(db,i_s_derivedcompoundref);
+      if (-1==step(db,i_s_derivedcompoundref))
+        return;
     }
   }
 
@@ -1005,7 +1014,8 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
         bindIntParameter(i_s_includes,":local",ii->local);
         bindIntParameter(i_s_includes,":id_src",id_file);
         bindTextParameter(i_s_includes,":dst",nm);
-        step(db,i_s_includes);
+        if (-1==step(db,i_s_includes))
+          return;
       }
     }
   }
@@ -1061,12 +1071,14 @@ void generateSqlite3()
   {
     sqlite3_close(db);
     msg("database open failed: %s\n", "doxygen_sqlite3.db");
-    exit(-1);
+    return;
   }
   beginTransaction(db);
   pragmaTuning(db);
 
-  initializeSchema(db);
+  if (-1==initializeSchema(db))
+    return;
+
   if ( -1 == prepareStatements(db) )
   {
     err("sqlite generator: prepareStatements failed!");
