@@ -6973,6 +6973,34 @@ struct Marker
   int size; // size of the marker
 };
 
+/** For a string \a s that starts with a command name, returns the character 
+ *  offset within that string representing the first character after the 
+ *  command. For an alias with argument, this is the offset to the
+ *  character just after the argument list.
+ *
+ *  Examples:
+ *  - s=="a b"      returns 1
+ *  - s=="a{2,3} b" returns 6
+ *  = s=="#"        returns 0
+ */
+static int findEndOfCommand(const char *s)
+{
+  const char *p = s;
+  char c;
+  int i=0;
+  if (p)
+  {
+    while ((c=*p) && isId(c)) p++;
+    if (c=='{')
+    {
+      QCString args = extractAliasArgs(p,0);
+      i+=args.length();
+    }
+    i+=p-s;
+  }
+  return i;
+}
+
 /** Replaces the markers in an alias definition \a aliasValue 
  *  with the corresponding values found in the comma separated argument 
  *  list \a argList and the returns the result after recursive alias expansion.
@@ -6988,10 +7016,16 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   int s=0;
   for (i=0;i<l;i++)
   {
-    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\')) 
+    char c = argList.at(i);
+    if (c==',' && (i==0 || argList.at(i-1)!='\\')) 
     {
       args.append(new QCString(argList.mid(s,i-s)));
       s=i+1; // start of next argument
+    }
+    else if (c=='@' || c=='\\')
+    {
+      // check if this is the start of another aliased command (see bug704172)
+      i+=findEndOfCommand(argList.data()+i+1);
     }
   }
   if (l>s) args.append(new QCString(argList.right(l-s)));
@@ -7152,6 +7186,7 @@ static QCString expandAliasRec(const QCString s)
   return result;
 }
 
+
 int countAliasArguments(const QCString argList)
 {
   int count=1;
@@ -7159,8 +7194,15 @@ int countAliasArguments(const QCString argList)
   int i;
   for (i=0;i<l;i++) 
   {
-    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\')) count++;
+    char c = argList.at(i);
+    if (c==',' && (i==0 || argList.at(i-1)!='\\')) count++;
+    else if (c=='@' || c=='\\')
+    {
+      // check if this is the start of another aliased command (see bug704172)
+      i+=findEndOfCommand(argList.data()+i+1);
+    }
   }
+  //printf("countAliasArguments=%d\n",count);
   return count;
 }
 
