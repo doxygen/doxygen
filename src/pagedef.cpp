@@ -61,6 +61,20 @@ QCString PageDef::getOutputFileBase() const
     return m_fileName; 
 }
 
+void PageDef::setFileName(const char *name) 
+{ 
+  static bool shortNames = Config_getBool("SHORT_NAMES");
+  if (shortNames)
+  {
+    m_fileName = convertNameToFile(name);
+  }
+  else
+  {
+    m_fileName = name; 
+  }
+}
+
+
 void PageDef::addInnerCompound(Definition *def)
 {
   if (def->definitionType()==Definition::TypePage)
