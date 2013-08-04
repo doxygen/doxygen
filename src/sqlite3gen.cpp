@@ -943,9 +943,9 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   //stmt = i_s_compounddef;
 
   bindTextParameter(i_s_compounddef,":name",cd->name());
-  bindTextParameter(i_s_compounddef,":kind",cd->compoundTypeString());
+  bindTextParameter(i_s_compounddef,":kind",cd->compoundTypeString(),FALSE);
   bindIntParameter(i_s_compounddef,":prot",cd->protection());
-  bindTextParameter(i_s_compounddef,":refid",cd->getOutputFileBase());
+  bindTextParameter(i_s_compounddef,":refid",cd->getOutputFileBase(),FALSE);
 
   int id_file = insertFile(db,cd->getDefFileName().data());
   bindIntParameter(i_s_compounddef,":id_file",id_file);
