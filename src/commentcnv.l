@@ -320,7 +320,10 @@ void replaceComment(int offset);
 <Scan>'				   {
                                      copyToOutput(yytext,(int)yyleng); 
 				     g_charContext = YY_START;
-				     BEGIN(SkipChar);
+                                     if (g_lang!=SrcLangExt_VHDL)
+                                     {
+				       BEGIN(SkipChar);
+                                     }
   				   }
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,(int)yyleng); 
