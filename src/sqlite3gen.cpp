@@ -700,7 +700,11 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
       if (md->getStartBodyLine()!=-1)
       {
         int id_bfile = insertFile(db,md->getBodyDef()->absFilePath());
-        if (id_bfile == -1) return;
+        if (id_bfile == -1)
+        {
+            sqlite3_clear_bindings(i_s_memberdef);
+            return;
+        }
 
         bindIntParameter(i_s_memberdef,":id_ibfile",id_bfile);
         bindIntParameter(i_s_memberdef,":bline",md->getStartBodyLine());
@@ -712,7 +716,9 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   }
 
   if (-1==step(db,i_s_memberdef))
-    return;
+  {
+      sqlite3_clear_bindings(i_s_memberdef);
+  }
   /*int id_src =*/ sqlite3_last_insert_rowid(db);
 
   // + source references
@@ -839,7 +845,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       }
       bindTextParameter(i_s_basecompoundref,":derived",cd->displayName());
       if (-1==step(db,i_s_basecompoundref))
-        return;
+        continue;
     }
   }
 
@@ -856,7 +862,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       bindIntParameter(i_s_derivedcompoundref,":prot",bcd->prot);
       bindIntParameter(i_s_derivedcompoundref,":virt",bcd->virt);
       if (-1==step(db,i_s_derivedcompoundref))
-        return;
+        continue;
     }
   }
 
@@ -986,7 +992,7 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
       bindIntParameter(i_s_includes,":id_src",id_file);
       bindTextParameter(i_s_includes,":dst",ii->includeName.data(),FALSE);
       if (-1==step(db,i_s_includes))
-        return;
+        continue;
     }
   }
 
@@ -1001,7 +1007,8 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
       bindIntParameter(i_s_includes,":id_src",id_file);
       bindTextParameter(i_s_includes,":dst",fd->absFilePath().data(),FALSE);
       if (-1==step(db,i_s_includes))
-        return;
+        continue;
+
     }
   }
 
@@ -1010,6 +1017,7 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
   {
     writeInnerClasses(db,fd->getClassSDict());
   }
+
   // + contained namespace definitions
   if (fd->getNamespaceSDict())
   {
