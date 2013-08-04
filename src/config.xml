@@ -2122,9 +2122,9 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  might be necessary to disable the index and replace it with your own.
  The \c DISABLE_INDEX tag can be used to turn on/off the condensed index (tabs) at
  top of each HTML page. A value of \c NO enables the index and the
- value \c YES disables it. Since the tabs have the same information as the 
- navigation tree you can set this option to \c NO if you already set 
- \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
+ value \c YES disables it. Since the tabs in the index contain the same 
+ information as the navigation tree, you can set this option to \c YES if 
+ you also set \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
 ]]>
       </docs>
     </option>
@@ -2145,8 +2145,9 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  example that shows how to put an image at the root of the tree instead of
  the \ref cfg_project_name "PROJECT_NAME".
 
- Since the tree basically has the same information as the tab index you 
- could consider to set \ref cfg_disable_index "DISABLE_INDEX" to \c NO when enabling this option.
+ Since the tree basically has the same information as the tab index, you could
+ consider setting \ref cfg_disable_index "DISABLE_INDEX" to \c YES when 
+ enabling this option.
 ]]>
       </docs>
     </option>

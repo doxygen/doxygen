@@ -598,7 +598,7 @@ The default value is: <code>NO</code>.
  The \c TAB_SIZE tag can be used to set the number of spaces in a tab.
  Doxygen uses this value to replace tabs by spaces in code fragments.
 
-Minumum value: <code>1</code>, maximum value: <code>16</code>, default value: <code>4</code>.
+ Minimum value: <code>1</code>, maximum value: <code>16</code>, default value: <code>4</code>.
 
  \anchor cfg_aliases
 <dt>\c ALIASES <dd>
@@ -815,7 +815,7 @@ The default value is: <code>NO</code>.
  At the end of a run doxygen will report the cache usage and suggest the
  optimal cache size from a speed point of view.
 
-Minumum value: <code>0</code>, maximum value: <code>9</code>, default value: <code>0</code>.
+ Minimum value: <code>0</code>, maximum value: <code>9</code>, default value: <code>0</code>.
 
 </dl>
 \section config_build Build related configuration options
@@ -1114,7 +1114,7 @@ The default value is: <code>YES</code>.
  individual variables and macros / defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
  or \ref cmdhideinitializer "\\hideinitializer" command in the documentation regardless of this setting.
 
-Minumum value: <code>0</code>, maximum value: <code>10000</code>, default value: <code>30</code>.
+ Minimum value: <code>0</code>, maximum value: <code>10000</code>, default value: <code>30</code>.
 
  \anchor cfg_show_used_files
 <dt>\c SHOW_USED_FILES <dd>
@@ -1634,7 +1634,7 @@ The default value is: <code>YES</code>.
  The \c COLS_IN_ALPHA_INDEX tag can be 
  used to specify the number of columns in which the alphabetical index list will be split.
 
-Minumum value: <code>1</code>, maximum value: <code>20</code>, default value: <code>5</code>.
+ Minimum value: <code>1</code>, maximum value: <code>20</code>, default value: <code>5</code>.
 
 This tag requires that the tag \ref cfg_alphabetical_index "ALPHABETICAL_INDEX" is set to \c YES.
  \anchor cfg_ignore_prefix
@@ -1863,7 +1863,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  180 is cyan, 240 is blue, 300 purple, and 360 is red again. 
  The allowed range is 0 to 359.
 
-Minumum value: <code>0</code>, maximum value: <code>359</code>, default value: <code>220</code>.
+ Minimum value: <code>0</code>, maximum value: <code>359</code>, default value: <code>220</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_colorstyle_sat
@@ -1873,7 +1873,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  the colors in the HTML output. For a value of 0 the output will use 
  grayscales only. A value of 255 will produce the most vivid colors.
 
-Minumum value: <code>0</code>, maximum value: <code>255</code>, default value: <code>100</code>.
+ Minimum value: <code>0</code>, maximum value: <code>255</code>, default value: <code>100</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_colorstyle_gamma
@@ -1886,7 +1886,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2, 
  and 100 does not change the gamma.
 
-Minumum value: <code>40</code>, maximum value: <code>240</code>, default value: <code>80</code>.
+ Minimum value: <code>40</code>, maximum value: <code>240</code>, default value: <code>80</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_timestamp
@@ -1922,7 +1922,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  default. 0 is a special value representing an infinite number of entries 
  and will result in a full expanded tree by default.
 
-Minumum value: <code>0</code>, maximum value: <code>9999</code>, default value: <code>100</code>.
+ Minimum value: <code>0</code>, maximum value: <code>9999</code>, default value: <code>100</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_generate_docset
@@ -2160,9 +2160,9 @@ This tag requires that the tag \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHE
  might be necessary to disable the index and replace it with your own.
  The \c DISABLE_INDEX tag can be used to turn on/off the condensed index (tabs) at
  top of each HTML page. A value of \c NO enables the index and the
- value \c YES disables it. Since the tabs have the same information as the 
- navigation tree you can set this option to \c NO if you already set 
- \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
+ value \c YES disables it. Since the tabs in the index contain the same 
+ information as the navigation tree, you can set this option to \c YES if 
+ you also set \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
 
 The default value is: <code>NO</code>.
 
@@ -2184,8 +2184,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  example that shows how to put an image at the root of the tree instead of
  the \ref cfg_project_name "PROJECT_NAME".
 
- Since the tree basically has the same information as the tab index you 
- could consider to set \ref cfg_disable_index "DISABLE_INDEX" to \c NO when enabling this option.
+ Since the tree basically has the same information as the tab index, you could
+ consider setting \ref cfg_disable_index "DISABLE_INDEX" to \c YES when 
+ enabling this option.
 
 The default value is: <code>NO</code>.
 
@@ -2198,7 +2199,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  <br>Note that a value of 0 will completely suppress the enum values from
  appearing in the overview section.
 
-Minumum value: <code>0</code>, maximum value: <code>20</code>, default value: <code>4</code>.
+ Minimum value: <code>0</code>, maximum value: <code>20</code>, default value: <code>4</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_treeview_width
@@ -2208,7 +2209,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  used to set the initial width (in pixels) of the frame in which the tree
  is shown.
 
-Minumum value: <code>0</code>, maximum value: <code>1500</code>, default value: <code>250</code>.
+ Minimum value: <code>0</code>, maximum value: <code>1500</code>, default value: <code>250</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_ext_links_in_window
@@ -2229,7 +2230,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  to manually remove any `form_*.png` images from the HTML 
  output directory to force them to be regenerated.
 
-Minumum value: <code>8</code>, maximum value: <code>50</code>, default value: <code>10</code>.
+ Minimum value: <code>8</code>, maximum value: <code>50</code>, default value: <code>10</code>.
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_formula_transparent
@@ -3074,7 +3075,7 @@ The default value is: <code>NO</code>.
  explicitly to a value larger than 0 to get control over the balance 
  between CPU load and processing speed.
 
-Minumum value: <code>0</code>, maximum value: <code>32</code>, default value: <code>0</code>.
+ Minimum value: <code>0</code>, maximum value: <code>32</code>, default value: <code>0</code>.
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_fontname
@@ -3094,7 +3095,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \addindex DOT_FONTSIZE
  The \c DOT_FONTSIZE tag can be used to set the size (in points) of the font of dot graphs.
 
-Minumum value: <code>4</code>, maximum value: <code>24</code>, default value: <code>10</code>.
+ Minimum value: <code>4</code>, maximum value: <code>24</code>, default value: <code>10</code>.
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_fontpath
@@ -3159,7 +3160,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  to 10, up to 15 fields may appear, but if the number exceeds 15, the
  total amount of fields shown is limited to 10.
 
-Minumum value: <code>0</code>, maximum value: <code>100</code>, default value: <code>10</code>.
+ Minimum value: <code>0</code>, maximum value: <code>100</code>, default value: <code>10</code>.
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_template_relations
@@ -3303,7 +3304,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \c DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note
  that the size of a graph can be further restricted by \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH".
 
-Minumum value: <code>0</code>, maximum value: <code>10000</code>, default value: <code>50</code>.
+ Minimum value: <code>0</code>, maximum value: <code>10000</code>, default value: <code>50</code>.
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_max_dot_graph_depth
@@ -3317,7 +3318,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  code bases. Also note that the size of a graph can be further restricted by
  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Using a depth of 0 means no depth restriction.
 
-Minumum value: <code>0</code>, maximum value: <code>1000</code>, default value: <code>0</code>.
+ Minimum value: <code>0</code>, maximum value: <code>1000</code>, default value: <code>0</code>.
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_transparent
