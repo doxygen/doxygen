@@ -3,7 +3,7 @@ JQUERY_UI_VERSION = 1.8.18
 HASHCHANGE_VERSION = 1.3
 SCROLL_VERSION = 1.4.2
 POWERTIP_VERSION = 1.2.0
-MINIFIER = /usr/local/bin/yuicompressor-2.4.7
+MINIFIER ?= /usr/local/bin/yuicompressor-2.4.7
 SCRIPTS = jquery-$(JQUERY_VERSION).js \
           jquery.ui-$(JQUERY_UI_VERSION).core.js \
           jquery.ui-$(JQUERY_UI_VERSION).widget.js \
