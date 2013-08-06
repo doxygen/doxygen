@@ -883,6 +883,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
 static void generateBriefDoc(FTextStream &t,Definition *def)
 {
   QCString brief = def->briefDescription(TRUE);
+  //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,def->name().data(),brief.data());
   if (!brief.isEmpty())
   {
     DocNode *root = validatingParseDoc(def->briefFile(),def->briefLine(),

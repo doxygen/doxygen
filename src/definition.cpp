@@ -67,6 +67,7 @@ class DefinitionImpl
     DocInfo   *inbodyDocs; // not exported
     BriefInfo *brief;      // not exported
     BodyInfo  *body;       // not exported
+    QCString   briefSignatures;
     QCString   docSignatures;
 
     QCString localName;      // local (unqualified) name of the definition
@@ -536,7 +537,7 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
-bool Definition::_docsAlreadyAdded(const QCString &doc)
+bool Definition::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
 {
   uchar md5_sig[16];
   QCString sigStr(33);
@@ -545,9 +546,11 @@ bool Definition::_docsAlreadyAdded(const QCString &doc)
   QCString docStr = doc.simplifyWhiteSpace();
   MD5Buffer((const unsigned char *)docStr.data(),docStr.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.data(),33);
-  if (m_impl->docSignatures.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
+  //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
+  //    name().data(),doc.data(),sigStr.data(),sigList.data());
+  if (sigList.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
   {
-    m_impl->docSignatures+=":"+sigStr;
+    sigList+=":"+sigStr;
     return FALSE;
   }
   else
@@ -570,7 +573,7 @@ void Definition::_setDocumentation(const char *d,const char *docFile,int docLine
   {
     doc=d;
   }
-  if (!_docsAlreadyAdded(doc))
+  if (!_docsAlreadyAdded(doc,m_impl->docSignatures))
   {
     //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
     if (m_impl->details==0)
@@ -649,7 +652,7 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
       //printf("adding to details\n");
       _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
   }
-  else if (!_docsAlreadyAdded(brief))
+  else if (!_docsAlreadyAdded(brief,m_impl->briefSignatures))
   {
     //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
     if (m_impl->brief==0)
@@ -667,6 +670,10 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
       m_impl->brief->file = briefFile;
       m_impl->brief->line = 1;
     }
+  }
+  else
+  {
+    //printf("do nothing!\n");
   }
 }
 
@@ -1694,6 +1701,7 @@ QCString abbreviate(const char *s,const char *name)
 
 QCString Definition::briefDescription(bool abbr) const 
 { 
+  //printf("%s::briefDescription(%d)='%s'\n",name().data(),abbr,m_impl->brief?m_impl->brief->doc.data():"<none>");
   return m_impl->brief ? 
          (abbr ? abbreviate(m_impl->brief->doc,displayName()) : m_impl->brief->doc) :
          QCString(""); 

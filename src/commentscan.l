@@ -2848,7 +2848,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   if (parseMore) position=inputPosition; else position=0;
 
   lineNr = yyLineNr;
-  //printf("position=%d parseMore=%d\n",position,parseMore);
+  //printf("position=%d parseMore=%d newEntryNeeded=%d\n",
+  //  position,parseMore,newEntryNeeded);
 
   return parseMore;
 }
