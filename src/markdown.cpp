@@ -1831,10 +1831,11 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
        )
     {
       QCString endBlockName = isBlockCommand(data+end-1,end-1,size-(end-1));
+      end++;
       if (!endBlockName.isEmpty())
       {
         int l = endBlockName.length();
-        for (;end<size-l;end++) // search for end of block marker
+        for (;end<size-l-1;end++) // search for end of block marker
         {
           if ((data[end]=='\\' || data[end]=='@') &&
               data[end-1]!='\\' && data[end-1]!='@'
@@ -1857,10 +1858,6 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
             }
           }
         }
-      }
-      else
-      {
-        end++;
       }
     }
     else if (nb==0 && data[end-1]=='<' && end<size-6 &&
