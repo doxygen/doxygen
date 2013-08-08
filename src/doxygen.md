@@ -24,7 +24,9 @@ The format of the configuration file (options and types) is defined
 by the file `config.xml`. As part of the build process, 
 the python script `configgen.py` will create a file configoptions.cpp 
 from this, which serves as the input for the configuration file parser
-that is invoked using Config::parse()
+that is invoked using Config::parse(). The script `configgen.py` will also
+create the documentation for the configuration items, creating the file
+`config.doc`.
 
 Gathering Input files
 ---------------------

@@ -73,6 +73,10 @@ def transformDocs(doc):
 	# <br> will be removed later on again, we need it here otherwise splitlines
 	# will filter the extra line.
 	doc = doc.replace("<br>", "\n<br>\n")
+	# a dirty trick to go to the next line in Doxyfile documentation.
+	# <br/> will be removed later on again, we need it here otherwise splitlines
+	# will filter the line break.
+	doc = doc.replace("<br/>", "\n<br/>\n")
 	#
 	doc = doc.splitlines()
 	split_doc = []
@@ -82,7 +86,8 @@ def transformDocs(doc):
 	# and start string at next line
 	docC = []
 	for line in split_doc:
-		docC.append(line.strip().replace('\\', '\\\\').
+		if (line.strip() != "<br/>"):
+			docC.append(line.strip().replace('\\', '\\\\').
 					replace('"', '\\"').replace("<br>", ""))
 	return docC
 
@@ -93,11 +98,12 @@ def collectValues(node):
 		if (n.nodeName == "value"):
 			if n.nodeType == Node.ELEMENT_NODE:
 				if n.getAttribute('name') != "":
-					name = "<code>" + n.getAttribute('name') + "</code>"
-					desc = n.getAttribute('desc')
-					if (desc != ""):
-						name += " " + desc
-					values.append(name)
+					if n.getAttribute('show_docu') != "NO":
+						name = "<code>" + n.getAttribute('name') + "</code>"
+						desc = n.getAttribute('desc')
+						if (desc != ""):
+							name += " " + desc
+						values.append(name)
 	return values
 
 
@@ -142,7 +148,7 @@ def prepCDocs(node):
 						doc += parseDocs(n)
 		if (type == 'enum'):
 			values = collectValues(node)
-			doc += "Possible values are: "
+			doc += "<br/>Possible values are: "
 			rng = len(values)
 			for i in range(rng):
 				val = values[i]
@@ -153,19 +159,18 @@ def prepCDocs(node):
 				else:
 					doc += "%s, " % (val)
 			if (defval != ""):
-				doc += "<br>"
-				doc += "The default value is: <code>%s</code>." % (defval)
+				doc += "<br/>The default value is: <code>%s</code>." % (defval)
 		elif (type == 'int'):
 			minval = node.getAttribute('minval')
 			maxval = node.getAttribute('maxval')
-			doc += "%s: %s, %s: %s, %s: %s." % (" Minimum value", minval, 
+			doc += "<br/>%s: %s, %s: %s, %s: %s." % (" Minimum value", minval, 
 					 "maximum value", maxval,
 					 "default value", defval)
 		elif (type == 'bool'):
 			if (node.hasAttribute('altdefval')):
-			  doc += "%s: %s." % ("Default value", "system dependent")
+			  doc += "<br/>%s: %s." % ("The default value is", "system dependent")
 			else:
-			  doc += "%s: %s." % ("Default value", "YES" if (defval == "1") else "NO")
+			  doc += "<br/>%s: %s." % ("The default value is", "YES" if (defval == "1") else "NO")
 		elif (type == 'list'):
 			if format == 'string':
 				values = collectValues(node)
@@ -181,30 +186,29 @@ def prepCDocs(node):
 		elif (type == 'string'):
 			if format == 'dir':
 				if defval != '':
-					doc += "The default directory is: <code>%s</code>." % (
+					doc += "<br/>The default directory is: <code>%s</code>." % (
 						defval)
 			elif format == 'file':
 				abspath = node.getAttribute('abspath')
 				if defval != '':
 					if abspath != '1':
-						doc += "The default file is: <code>%s</code>." % (
+						doc += "<br/>The default file is: <code>%s</code>." % (
 							defval)
 					else:
-						doc += "%s: %s%s%s." % (
+						doc += "<br/>%s: %s%s%s." % (
 							"The default file (with absolute path) is",
 							"<code>",defval,"</code>")
 				else:
 					if abspath == '1':
-						doc += "The file has to be specified with full path."
+						doc += "<br/>The file has to be specified with full path."
 			else: # format == 'string':
 				if defval != '':
-					doc += "The default value is: <code>%s</code>." % (
+					doc += "<br/>The default value is: <code>%s</code>." % (
 						defval)
 		# depends handling
 		if (node.hasAttribute('depends')):
 			depends = node.getAttribute('depends')
-			doc += "<br>"
-			doc += "%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
+			doc += "<br/>%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
 				"This tag requires that the tag", depends.lower(), depends.upper())
 
 	docC = transformDocs(doc)
@@ -393,11 +397,13 @@ def parseOptionDoc(node, first):
 					print "%s, " % (val)
 			if (defval != ""):
 				print ""
+				print ""
 				print "The default value is: <code>%s</code>." % (defval)
 			print ""
 		elif (type == 'int'):
 			minval = node.getAttribute('minval')
 			maxval = node.getAttribute('maxval')
+			print ""
 			print ""
 			print "%s: %s%s%s, %s: %s%s%s, %s: %s%s%s." % (
 					 " Minimum value", "<code>", minval, "</code>", 
@@ -406,8 +412,9 @@ def parseOptionDoc(node, first):
 			print ""
 		elif (type == 'bool'):
 			print ""
+			print ""
 			if (node.hasAttribute('altdefval')):
-				print "Default value is system dependent."
+				print "The default value is: system dependent."
 			else:
 				print "The default value is: <code>%s</code>." % (
 					"YES" if (defval == "1") else "NO")
@@ -428,11 +435,13 @@ def parseOptionDoc(node, first):
 		elif (type == 'string'):
 			if format == 'dir':
 				if defval != '':
+					print ""
 					print "The default directory is: <code>%s</code>." % (
 						defval)
 			elif format == 'file':
 				abspath = node.getAttribute('abspath')
 				if defval != '':
+					print ""
 					if abspath != '1':
 						print "The default file is: <code>%s</code>." % (
 							defval)
@@ -442,15 +451,18 @@ def parseOptionDoc(node, first):
 							"<code>",defval,"</code>")
 				else:
 					if abspath == '1':
+						print ""
 						print "The file has to be specified with full path."
 			else: # format == 'string':
 				if defval != '':
+					print ""
 					print "The default value is: <code>%s</code>." % (
 						defval)
 			print ""
 		# depends handling
 		if (node.hasAttribute('depends')):
 			depends = node.getAttribute('depends')
+			print ""
 			print "%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
 				"This tag requires that the tag", depends.lower(), depends.upper())
 		return False

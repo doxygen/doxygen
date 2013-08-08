@@ -329,6 +329,7 @@ followed by the descriptions of the tags grouped by category.
  the first occurrence of this tag. Doxygen uses \c libiconv (or the iconv built into
  \c libc) for the transcoding. See http://www.gnu.org/software/libiconv for the list of
  possible encodings.
+
 The default value is: <code>UTF-8</code>.
 
  \anchor cfg_project_name
@@ -338,6 +339,7 @@ The default value is: <code>UTF-8</code>.
  surrounded by double-quotes, unless you are using Doxywizard) that should identify the project for which the 
  documentation is generated. This name is used in the title of most 
  generated pages and in a few other places.
+
 The default value is: <code>My Project</code>.
 
  \anchor cfg_project_number
@@ -379,6 +381,7 @@ The default value is: <code>My Project</code>.
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
  causes performance problems for the file system.
+
 
 The default value is: <code>NO</code>.
 
@@ -430,6 +433,7 @@ Possible values are:
 <code>Ukrainian</code> and 
 <code>Vietnamese</code>.
 
+
 The default value is: <code>English</code>.
 
  \anchor cfg_brief_member_desc
@@ -439,6 +443,7 @@ The default value is: <code>English</code>.
  include brief member descriptions after the members that are listed in
  the file and class documentation (similar to \c Javadoc).
  Set to \c NO to disable this.
+
 
 The default value is: <code>YES</code>.
 
@@ -452,6 +457,7 @@ The default value is: <code>YES</code>.
  If both \ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS" and
  \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" are set to \c NO, the 
  brief descriptions will be completely suppressed.
+
 
 The default value is: <code>YES</code>.
 
@@ -485,6 +491,7 @@ The default value is: <code>YES</code>.
  doxygen will generate a detailed section even if there is only a brief
  description.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_inline_inherited_memb
@@ -495,6 +502,7 @@ The default value is: <code>NO</code>.
  ordinary class members. Constructors, destructors and assignment operators of
  the base classes will not be shown.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_full_path_names
@@ -503,6 +511,7 @@ The default value is: <code>NO</code>.
  If the \c FULL_PATH_NAMES tag is set to \c YES doxygen will prepend the full
  path before files name in the file list and in the header files. If set
  to \c NO the shortest path that makes the file name unique will be used
+
 
 The default value is: <code>YES</code>.
 
@@ -518,6 +527,7 @@ The default value is: <code>YES</code>.
  <br>Note that you can specify absolute paths here, but also 
  relative paths, which will be relative from the directory where doxygen is 
  started.
+
 
 This tag requires that the tag \ref cfg_full_path_names "FULL_PATH_NAMES" is set to \c YES.
  \anchor cfg_strip_from_inc_path
@@ -537,6 +547,7 @@ This tag requires that the tag \ref cfg_full_path_names "FULL_PATH_NAMES" is set
  (but less readable) file names. This can be useful is your file systems
  doesn't support long names like on DOS, Mac, or CD-ROM.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_javadoc_autobrief
@@ -548,6 +559,7 @@ The default value is: <code>NO</code>.
   Javadoc-style will behave just like regular Qt-style comments
   (thus requiring an explicit \ref cmdbrief "\@brief" command for a brief description.)
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_qt_autobrief
@@ -558,6 +570,7 @@ The default value is: <code>NO</code>.
   comment as the brief description. If set to \c NO, the
   Qt-style will behave just like regular Qt-style comments (thus
   requiring an explicit \ref cmdbrief "\\brief" command for a brief description.)
+
 
 The default value is: <code>NO</code>.
 
@@ -572,6 +585,7 @@ The default value is: <code>NO</code>.
   <br>Note that setting this tag to \c YES also means that rational rose comments
   are not recognized any more.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_inherit_docs
@@ -580,6 +594,7 @@ The default value is: <code>NO</code>.
  If the \c INHERIT_DOCS tag is set to \c YES then an undocumented
  member inherits the documentation from any documented member that it
  re-implements.
+
 
 The default value is: <code>YES</code>.
 
@@ -590,6 +605,7 @@ The default value is: <code>YES</code>.
  a new page for each member. If set to \c NO, the documentation of a member will
  be part of the file/class/namespace that contains it.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_tab_size
@@ -597,6 +613,7 @@ The default value is: <code>NO</code>.
  \addindex TAB_SIZE
  The \c TAB_SIZE tag can be used to set the number of spaces in a tab.
  Doxygen uses this value to replace tabs by spaces in code fragments.
+
 
  Minimum value: <code>1</code>, maximum value: <code>16</code>, default value: <code>4</code>.
 
@@ -633,6 +650,7 @@ The default value is: <code>NO</code>.
  for C. For instance, some of the names that are used will be different. 
  The list of all members will be omitted, etc.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_optimize_output_java
@@ -643,6 +661,7 @@ The default value is: <code>NO</code>.
  for that language. For instance, namespaces will be presented as packages, 
  qualified scopes will look different, etc.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_optimize_for_fortran
@@ -651,6 +670,7 @@ The default value is: <code>NO</code>.
  Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran 
  sources. Doxygen will then generate output that is tailored for Fortran.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_optimize_output_vhdl
@@ -658,6 +678,7 @@ The default value is: <code>NO</code>.
  \addindex OPTIMIZE_OUTPUT_VHDL
  Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL 
  sources. Doxygen will then generate output that is tailored for VHDL.
+
 
 The default value is: <code>NO</code>.
 
@@ -689,6 +710,7 @@ The default value is: <code>NO</code>.
  can mix doxygen, HTML, and XML commands with Markdown formatting. 
  Disable only in case of backward compatibilities issues.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_autolink_support
@@ -698,6 +720,7 @@ The default value is: <code>YES</code>.
  or namespaces to their corresponding documentation. Such a link can be 
  prevented in individual cases by by putting a \c % sign in front of the word or 
  globally by setting \c AUTOLINK_SUPPORT to \c NO.
+
 
 The default value is: <code>YES</code>.
 
@@ -711,6 +734,7 @@ The default value is: <code>YES</code>.
  `func(std::string) {}`). This also make the inheritance and collaboration
  diagrams that involve STL classes more complete and accurate.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_cpp_cli_support
@@ -718,6 +742,7 @@ The default value is: <code>NO</code>.
  \addindex CPP_CLI_SUPPORT
  If you use Microsoft's C++/CLI language, you should set this option to \c YES to
  enable parsing support.
+
 
 The default value is: <code>NO</code>.
 
@@ -728,6 +753,7 @@ The default value is: <code>NO</code>.
  of <a href="http://www.riverbankcomputing.co.uk/software/sip/intro">sip</a> sources only. 
  Doxygen will parse them like normal C++ but will assume all classes use public 
  instead of private inheritance when no explicit protection keyword is present.
+
 
 The default value is: <code>NO</code>.
 
@@ -741,6 +767,7 @@ The default value is: <code>NO</code>.
  setting a simple type. If this is not the case, or you want to show the 
  methods anyway, you should set this option to \c NO.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_distribute_group_doc
@@ -750,6 +777,7 @@ The default value is: <code>YES</code>.
  tag is set to \c YES, then doxygen will reuse the documentation of the first
  member in the group (if any) for the other members of the group. By default
  all members of a group must be documented explicitly.
+
 
 The default value is: <code>NO</code>.
 
@@ -761,6 +789,7 @@ The default value is: <code>NO</code>.
  subgroup of that type (e.g. under the Public Functions section). Set it to
  \c NO to prevent subgrouping. Alternatively, this can be done per class using
  the \ref cmdnosubgrouping "\\nosubgrouping" command.
+
 
 The default value is: <code>YES</code>.
 
@@ -774,6 +803,7 @@ The default value is: <code>YES</code>.
  <br>Note that this feature does not work in
  combination with \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_inline_simple_structs
@@ -785,6 +815,7 @@ The default value is: <code>NO</code>.
  namespace, or group documentation), provided this scope is documented. If set 
  to \c NO, structs, classes, and unions are shown on a separate 
  page (for HTML and Man pages) or section (for \f$\mbox{\LaTeX}\f$ and RTF).
+
 
 The default value is: <code>NO</code>.
 
@@ -798,6 +829,7 @@ The default value is: <code>NO</code>.
  namespace, or class. And the struct will be named \c TypeS. This can typically 
  be useful for C code in case the coding convention dictates that all compound 
  types are typedef'ed and only the typedef is referenced, never the tag name.
+
 
 The default value is: <code>NO</code>.
 
@@ -815,6 +847,7 @@ The default value is: <code>NO</code>.
  At the end of a run doxygen will report the cache usage and suggest the
  optimal cache size from a speed point of view.
 
+
  Minimum value: <code>0</code>, maximum value: <code>9</code>, default value: <code>0</code>.
 
 </dl>
@@ -828,11 +861,12 @@ The default value is: <code>NO</code>.
  entities in documentation are documented, even if no documentation was 
  available. Private class members and static file members will be hidden 
  unless the \ref cfg_extract_private "EXTRACT_PRIVATE" respectively 
- \ref cfg_extract_static "EXTRACT_STATIC" tags are set to \c YES
+ \ref cfg_extract_static "EXTRACT_STATIC" tags are set to \c YES.
 
  \note This will also disable the warnings about undocumented members 
  that are normally produced when \ref cfg_warnings "WARNINGS" is 
- set to \c YES
+ set to \c YES.
+
 
 The default value is: <code>NO</code>.
 
@@ -842,6 +876,7 @@ The default value is: <code>NO</code>.
  If the \c EXTRACT_PRIVATE tag is set to \c YES all private members of a 
  class will be included in the documentation.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_extract_package
@@ -850,6 +885,7 @@ The default value is: <code>NO</code>.
  If the \c EXTRACT_PACKAGE tag is set to \c YES all members with package 
  or internal scope will be included in the documentation.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_extract_static
@@ -857,6 +893,7 @@ The default value is: <code>NO</code>.
  \addindex EXTRACT_STATIC
  If the \c EXTRACT_STATIC tag is set to \c YES all static members of a file
  will be included in the documentation.
+
 
 The default value is: <code>NO</code>.
 
@@ -868,6 +905,7 @@ The default value is: <code>NO</code>.
  If set to \c NO only classes defined in header files are included. Does not
  have any effect for Java sources.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_extract_local_methods
@@ -878,6 +916,7 @@ The default value is: <code>YES</code>.
  the interface are included in the documentation.
  If set to \c NO only methods in the interface are included.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_extract_anon_nspaces
@@ -887,6 +926,7 @@ The default value is: <code>NO</code>.
  and appear in the documentation as a namespace called 'anonymous_namespace{file}',
  where file will be replaced with the base name of the file that contains the anonymous
  namespace. By default anonymous namespace are hidden.
+
 
 The default value is: <code>NO</code>.
 
@@ -899,6 +939,7 @@ The default value is: <code>NO</code>.
  various overviews, but no documentation section is generated.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_hide_undoc_classes
@@ -910,6 +951,7 @@ The default value is: <code>NO</code>.
  various overviews.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_hide_friend_compounds
@@ -919,6 +961,7 @@ The default value is: <code>NO</code>.
  friend (class|struct|union) declarations.
  If set to \c NO these declarations will be included in the
  documentation.
+
 
 The default value is: <code>NO</code>.
 
@@ -930,6 +973,7 @@ The default value is: <code>NO</code>.
  If set to \c NO these blocks will be appended to the 
  function's detailed documentation block.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_internal_docs
@@ -939,6 +983,7 @@ The default value is: <code>NO</code>.
  that is typed after a \ref cmdinternal "\\internal" command is included. If the tag is set
  to \c NO then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
+
 
 The default value is: <code>NO</code>.
 
@@ -952,7 +997,8 @@ The default value is: <code>NO</code>.
  supports case sensitive file names. Windows and Mac users are advised to set this
  option to \c NO.
 
-Default value is system dependent.
+
+The default value is system dependent.
 
  \anchor cfg_hide_scope_names
 <dt>\c HIDE_SCOPE_NAMES <dd>
@@ -960,6 +1006,7 @@ Default value is system dependent.
  If the \c HIDE_SCOPE_NAMES tag is set to \c NO then doxygen 
  will show members with their full class and namespace scopes in the
  documentation. If set to \c YES the scope will be hidden.
+
 
 The default value is: <code>NO</code>.
 
@@ -970,6 +1017,7 @@ The default value is: <code>NO</code>.
  will put a list of the files that are included by a file in the documentation 
  of that file.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_force_local_includes
@@ -979,6 +1027,7 @@ The default value is: <code>YES</code>.
  will list include files with double quotes in the documentation 
  rather than with sharp brackets.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_inline_info
@@ -986,6 +1035,7 @@ The default value is: <code>NO</code>.
  \addindex INLINE_INFO
  If the \c INLINE_INFO tag is set to \c YES then a tag [inline]
  is inserted in the documentation for inline members.
+
 
 The default value is: <code>YES</code>.
 
@@ -997,6 +1047,7 @@ The default value is: <code>YES</code>.
  alphabetically by member name. If set to \c NO the members will appear in
  declaration order.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_sort_brief_docs
@@ -1006,6 +1057,7 @@ The default value is: <code>YES</code>.
  brief descriptions of file, namespace and class members alphabetically
  by member name. If set to \c NO the members will appear in
  declaration order.
+
 
 The default value is: <code>NO</code>.
 
@@ -1022,6 +1074,7 @@ The default value is: <code>NO</code>.
  \note If \ref cfg_sort_member_docs "SORT_MEMBER_DOCS" is set to \c NO this option is ignored for
        sorting detailed member documentation.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_sort_group_names
@@ -1030,6 +1083,7 @@ The default value is: <code>NO</code>.
  If the \c SORT_GROUP_NAMES tag is set to \c YES then doxygen will sort the 
  hierarchy of group names into alphabetical order. If set to \c NO
  the group names will appear in their defined order.
+
 
 The default value is: <code>NO</code>.
 
@@ -1044,6 +1098,7 @@ The default value is: <code>NO</code>.
  \note This option applies only to the class list, not to the 
        alphabetical list.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_strict_proto_matching
@@ -1056,6 +1111,7 @@ The default value is: <code>NO</code>.
  by doing a simple string match. By disabling \c STRICT_PROTO_MATCHING doxygen 
  will still accept a match between prototype and implementation in such cases.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_generate_todolist
@@ -1064,6 +1120,7 @@ The default value is: <code>NO</code>.
  The \c GENERATE_TODOLIST tag can be used to enable (\c YES) or
  disable (\c NO) the todo list. This list is created by 
  putting \ref cmdtodo "\\todo" commands in the documentation.
+
 
 The default value is: <code>YES</code>.
 
@@ -1074,6 +1131,7 @@ The default value is: <code>YES</code>.
  disable (\c NO) the test list. This list is created by 
  putting \ref cmdtest "\\test" commands in the documentation.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_generate_buglist
@@ -1082,6 +1140,7 @@ The default value is: <code>YES</code>.
  The \c GENERATE_BUGLIST tag can be used to enable (\c YES) or
  disable (\c NO) the bug list. This list is created by 
  putting \ref cmdbug "\\bug" commands in the documentation.
+
 
 The default value is: <code>YES</code>.
 
@@ -1092,6 +1151,7 @@ The default value is: <code>YES</code>.
  disable (\c NO) the deprecated list. This list is created by 
  putting \ref cmddeprecated "\\deprecated"
  commands in the documentation.
+
 
 The default value is: <code>YES</code>.
 
@@ -1114,6 +1174,7 @@ The default value is: <code>YES</code>.
  individual variables and macros / defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
  or \ref cmdhideinitializer "\\hideinitializer" command in the documentation regardless of this setting.
 
+
  Minimum value: <code>0</code>, maximum value: <code>10000</code>, default value: <code>30</code>.
 
  \anchor cfg_show_used_files
@@ -1123,6 +1184,7 @@ The default value is: <code>YES</code>.
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_show_files
@@ -1130,7 +1192,8 @@ The default value is: <code>YES</code>.
  \addindex SHOW_FILES
  Set the \c SHOW_FILES tag to \c NO to disable the generation of the Files page.
  This will remove the Files entry from the Quick Index and from the
- Folder Tree View (if specified). The default is \c YES.
+ Folder Tree View (if specified).
+
 
 The default value is: <code>YES</code>.
 
@@ -1139,7 +1202,8 @@ The default value is: <code>YES</code>.
  \addindex SHOW_NAMESPACES
  Set the \c SHOW_NAMESPACES tag to \c NO to disable the generation of the
  Namespaces page. This will remove the Namespaces entry from the Quick Index
- and from the Folder Tree View (if specified). The default is \c YES.
+ and from the Folder Tree View (if specified).
+
 
 The default value is: <code>YES</code>.
 
@@ -1209,8 +1273,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <dt>\c QUIET <dd>
  \addindex QUIET
  The \c QUIET tag can be used to turn on/off the messages that are generated
- to standard output by doxygen. Possible values are \c YES and \c NO, 
- where \c YES implies that the messages are off.
+ to standard output by doxygen. If \c QUIET is set to \c YES this implies that the messages are off.
+
 
 The default value is: <code>NO</code>.
 
@@ -1218,10 +1282,11 @@ The default value is: <code>NO</code>.
 <dt>\c WARNINGS <dd>
  \addindex WARNINGS
  The \c WARNINGS tag can be used to turn on/off the warning messages that are
- generated to standard error (\c stderr) by doxygen. Possible values are \c YES and \c NO, 
- where \c YES implies that the warnings are on.
+ generated to standard error (\c stderr) by doxygen. If \c WARNINGS is set to 
+ \c YES this implies that the warnings are on.
 <br>
  \b Tip: Turn warnings on while writing the documentation.
+
 
 The default value is: <code>YES</code>.
 
@@ -1231,6 +1296,7 @@ The default value is: <code>YES</code>.
  If the \c WARN_IF_UNDOCUMENTED tag is set to \c YES, then doxygen will generate warnings
  for undocumented members. If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
  automatically be disabled.
+
 
 The default value is: <code>YES</code>.
 
@@ -1242,6 +1308,7 @@ The default value is: <code>YES</code>.
  parameters in a documented function, or documenting parameters that
  don't exist or using markup commands wrongly.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_warn_no_paramdoc
@@ -1252,6 +1319,7 @@ The default value is: <code>YES</code>.
  or return value. If set to \c NO doxygen will only warn about
  wrong or incomplete parameter documentation, but not about the absence of
  documentation.
+
 
 The default value is: <code>NO</code>.
 
@@ -1266,6 +1334,7 @@ The default value is: <code>NO</code>.
  Optionally the format may contain 
  <code>$version</code>, which will be replaced by the version of the file (if it could 
  be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER")
+
 The default value is: <code>$file:$line: $text</code>.
 
  \anchor cfg_warn_logfile
@@ -1273,7 +1342,7 @@ The default value is: <code>$file:$line: $text</code>.
  \addindex WARN_LOGFILE
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written 
- to standard error (\c stderr).
+ to standard error (`stderr`).
 
 </dl>
 \section config_input Configuration options related to the input files
@@ -1297,6 +1366,7 @@ The default value is: <code>$file:$line: $text</code>.
  Doxygen uses `libiconv` (or the `iconv` built into `libc`) for the transcoding. 
  See <a href="http://www.gnu.org/software/libiconv">the libiconv documentation</a> for 
  the list of possible encodings.
+
 The default value is: <code>UTF-8</code>.
 
  \anchor cfg_file_patterns
@@ -1353,8 +1423,8 @@ The default value is: <code>UTF-8</code>.
 <dt>\c RECURSIVE <dd>
  \addindex RECURSIVE
  The \c RECURSIVE tag can be used to specify whether or not subdirectories
- should be searched for input files as well. Possible values are \c YES 
- and \c NO.
+ should be searched for input files as well.
+
 
 The default value is: <code>NO</code>.
 
@@ -1371,6 +1441,7 @@ The default value is: <code>NO</code>.
  \addindex EXCLUDE_SYMLINKS
  The \c EXCLUDE_SYMLINKS tag can be used to select whether or not files or directories 
  that are symbolic links (a Unix file system feature) are excluded from the input.
+
 
 The default value is: <code>NO</code>.
 
@@ -1411,7 +1482,6 @@ The default value is: <code>NO</code>.
  \c EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like `*.cpp`
  and `*.h`) to filter out the source-files in the directories. If left
  blank all files are included.
-<code>*</code>.
 
  \anchor cfg_example_recursive
 <dt>\c EXAMPLE_RECURSIVE <dd>
@@ -1420,6 +1490,7 @@ The default value is: <code>NO</code>.
  searched for input files to be used with the \ref cmdinclude "\\include" or
  \ref cmddontinclude "\\dontinclude" 
  commands irrespective of the value of the \ref cfg_recursive "RECURSIVE" tag.
+
 
 The default value is: <code>NO</code>.
 
@@ -1466,6 +1537,7 @@ The default value is: <code>NO</code>.
  files that are used for producing the source files to browse 
  (i.e. when \ref cfg_source_browser "SOURCE_BROWSER" is set to \c YES).
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_filter_source_patterns
@@ -1476,6 +1548,7 @@ The default value is: <code>NO</code>.
  for \ref cfg_filter_patterns "FILTER_PATTERN" (if any) 
  and it is also possible to disable source filtering for a specific pattern 
  using `*.ext=` (so without naming a filter).
+
 
 This tag requires that the tag \ref cfg_filter_source_files "FILTER_SOURCE_FILES" is set to \c YES.
  \anchor cfg_use_mdfile_as_mainpage
@@ -1498,6 +1571,7 @@ This tag requires that the tag \ref cfg_filter_source_files "FILTER_SOURCE_FILES
  <br>Note: To get rid of all source code in the generated output, make sure that also
  \ref cfg_verbatim_headers "VERBATIM_HEADERS" is set to \c NO.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_inline_sources
@@ -1505,6 +1579,7 @@ The default value is: <code>NO</code>.
  \addindex INLINE_SOURCES
  Setting the \c INLINE_SOURCES tag to \c YES will include the body
  of functions, classes and enums directly into the documentation.
+
 
 The default value is: <code>NO</code>.
 
@@ -1515,6 +1590,7 @@ The default value is: <code>NO</code>.
  doxygen to hide any special comment blocks from generated source code
  fragments. Normal C, C++ and Fortran comments will always remain visible.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_referenced_by_relation
@@ -1524,6 +1600,7 @@ The default value is: <code>YES</code>.
  then for each documented function all documented
  functions referencing it will be listed.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_references_relation
@@ -1532,6 +1609,7 @@ The default value is: <code>NO</code>.
  If the \c REFERENCES_RELATION tag is set to \c YES
  then for each documented function all documented entities
  called/used by that function will be listed.
+
 
 The default value is: <code>NO</code>.
 
@@ -1544,6 +1622,7 @@ The default value is: <code>NO</code>.
  \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" lists will 
  link to the source code.  Otherwise they will link to the documentation.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_source_tooltips
@@ -1555,7 +1634,9 @@ brief description and links to the definition and documentation. Since this will
 make the HTML file larger and loading of large files a bit slower, you can opt 
 to disable this feature.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_source_browser "SOURCE_BROWSER" is set to \c YES.
  \anchor cfg_use_htags
@@ -1579,7 +1660,9 @@ This tag requires that the tag \ref cfg_source_browser "SOURCE_BROWSER" is set t
  The result: instead of the source browser generated by doxygen, the links to
  source code will now point to the output of \c htags.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_source_browser "SOURCE_BROWSER" is set to \c YES.
  \anchor cfg_verbatim_headers
@@ -1589,6 +1672,7 @@ This tag requires that the tag \ref cfg_source_browser "SOURCE_BROWSER" is set t
   will generate a verbatim copy of the header file for each class for
   which an include is specified. Set to \c NO to disable this.
   \sa Section \ref cmdclass "\\class".
+
 
 The default value is: <code>YES</code>.
 
@@ -1604,6 +1688,7 @@ The default value is: <code>YES</code>.
   @note The availability of this option depends on whether or not doxygen
   was compiled with the `--with-libclang` option.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_clang_options
@@ -1613,6 +1698,7 @@ The default value is: <code>NO</code>.
  line options that you would normally use when invoking the compiler. Note that 
  the include paths will already be set by doxygen for the files and directories 
  specified with \ref cfg_input "INPUT" and \ref cfg_include_path "INCLUDE_PATH".
+
 
 This tag requires that the tag \ref cfg_clang_assisted_parsing "CLANG_ASSISTED_PARSING" is set to \c YES.
 </dl>
@@ -1626,6 +1712,7 @@ This tag requires that the tag \ref cfg_clang_assisted_parsing "CLANG_ASSISTED_P
  of all compounds will be generated. Enable this if the project contains 
  a lot of classes, structs, unions or interfaces.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_cols_in_alpha_index
@@ -1634,7 +1721,9 @@ The default value is: <code>YES</code>.
  The \c COLS_IN_ALPHA_INDEX tag can be 
  used to specify the number of columns in which the alphabetical index list will be split.
 
+
  Minimum value: <code>1</code>, maximum value: <code>20</code>, default value: <code>5</code>.
+
 
 This tag requires that the tag \ref cfg_alphabetical_index "ALPHABETICAL_INDEX" is set to \c YES.
  \anchor cfg_ignore_prefix
@@ -1644,6 +1733,7 @@ This tag requires that the tag \ref cfg_alphabetical_index "ALPHABETICAL_INDEX" 
  be put under the same header in the alphabetical index.
  The \c IGNORE_PREFIX tag can be used to specify a prefix 
  (or a list of prefixes) that should be ignored while generating the index headers.
+
 
 This tag requires that the tag \ref cfg_alphabetical_index "ALPHABETICAL_INDEX" is set to \c YES.
 </dl>
@@ -1656,6 +1746,7 @@ This tag requires that the tag \ref cfg_alphabetical_index "ALPHABETICAL_INDEX" 
  If the \c GENERATE_HTML tag is set to \c YES doxygen will
  generate HTML output
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_html_output
@@ -1664,7 +1755,9 @@ The default value is: <code>YES</code>.
  The \c HTML_OUTPUT tag is used to specify where the HTML docs will be put.
  If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
  put in front of it.
+
 The default directory is: <code>html</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_file_extension
@@ -1672,7 +1765,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  \addindex HTML_FILE_EXTENSION
  The \c HTML_FILE_EXTENSION tag can be used to specify the file extension for 
  each generated HTML page (for example: <code>.htm, .php, .asp</code>).
+
 The default value is: <code>.html</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_header
@@ -1766,6 +1861,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
      \ref cfg_searchengine "SEARCHENGINE" are enabled.
  </dl>
 
+
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_footer
 <dt>\c HTML_FOOTER <dd>
@@ -1780,6 +1876,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
 
  See also section \ref doxygen_usage for information on how to generate
  the default footer that doxygen normally uses.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_stylesheet
@@ -1797,6 +1894,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead of this tag,
  as it is more robust and 
  this tag (<code>HTML_STYLESHEET</code>) will in the future become obsolete.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_extra_stylesheet
@@ -1839,6 +1937,7 @@ hr.footer {
 }
 \endverbatim
 
+
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_extra_files
 <dt>\c HTML_EXTRA_FILES <dd>
@@ -1851,6 +1950,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  files. In the \ref cfg_html_stylesheet "HTML_STYLESHEET" file, use the file name only. Also note that 
  the files will be copied as-is; there are no commands or markers available.
 
+
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_colorstyle_hue
 <dt>\c HTML_COLORSTYLE_HUE <dd>
@@ -1860,10 +1960,11 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  according to this color. Hue is specified as an angle on a colorwheel, 
  see http://en.wikipedia.org/wiki/Hue for more information. 
  For instance the value 0 represents red, 60 is yellow, 120 is green, 
- 180 is cyan, 240 is blue, 300 purple, and 360 is red again. 
- The allowed range is 0 to 359.
+ 180 is cyan, 240 is blue, 300 purple, and 360 is red again.
+
 
  Minimum value: <code>0</code>, maximum value: <code>359</code>, default value: <code>220</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_colorstyle_sat
@@ -1873,7 +1974,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  the colors in the HTML output. For a value of 0 the output will use 
  grayscales only. A value of 255 will produce the most vivid colors.
 
+
  Minimum value: <code>0</code>, maximum value: <code>255</code>, default value: <code>100</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_colorstyle_gamma
@@ -1886,7 +1989,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2, 
  and 100 does not change the gamma.
 
+
  Minimum value: <code>40</code>, maximum value: <code>240</code>, default value: <code>80</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_timestamp
@@ -1897,7 +2002,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  was generated. Setting this to \c NO can help when comparing the output of 
  multiple runs.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_dynamic_sections
@@ -1907,7 +2014,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  documentation will contain sections that can be hidden and shown after the
  page has loaded.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_html_index_num_entries
@@ -1922,7 +2031,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  default. 0 is a special value representing an infinite number of entries 
  and will result in a full expanded tree by default.
 
+
  Minimum value: <code>0</code>, maximum value: <code>9999</code>, default value: <code>100</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_generate_docset
@@ -1940,7 +2051,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  http://developer.apple.com/tools/creatingdocsetswithdoxygen.html for
  more information.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_docset_feedname
@@ -1950,7 +2063,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  feed. A documentation feed provides an umbrella under which multiple
  documentation sets from a single provider (such as a company or product suite) 
  can be grouped.
+
 The default value is: <code>Doxygen generated docs</code>.
+
 
 This tag requires that the tag \ref cfg_generate_docset "GENERATE_DOCSET" is set to \c YES.
  \anchor cfg_docset_bundle_id
@@ -1960,7 +2075,9 @@ This tag requires that the tag \ref cfg_generate_docset "GENERATE_DOCSET" is set
  should uniquely identify the documentation set bundle. This should be a
  reverse domain-name style string, e.g. <code>com.mycompany.MyDocSet</code>. 
  Doxygen will append <code>.docset</code> to the name.
+
 The default value is: <code>org.doxygen.Project</code>.
+
 
 This tag requires that the tag \ref cfg_generate_docset "GENERATE_DOCSET" is set to \c YES.
  \anchor cfg_docset_publisher_id
@@ -1970,14 +2087,18 @@ The \c DOCSET_PUBLISHER_ID
 tag specifies a string that should uniquely identify 
 the documentation publisher. This should be a reverse domain-name style 
 string, e.g. <code>com.mycompany.MyDocSet.documentation</code>.
+
 The default value is: <code>org.doxygen.Publisher</code>.
+
 
 This tag requires that the tag \ref cfg_generate_docset "GENERATE_DOCSET" is set to \c YES.
  \anchor cfg_docset_publisher_name
 <dt>\c DOCSET_PUBLISHER_NAME <dd>
  \addindex DOCSET_PUBLISHER_NAME
 The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
+
 The default value is: <code>Publisher</code>.
+
 
 This tag requires that the tag \ref cfg_generate_docset "GENERATE_DOCSET" is set to \c YES.
  \anchor cfg_generate_htmlhelp
@@ -1999,7 +2120,9 @@ This tag requires that the tag \ref cfg_generate_docset "GENERATE_DOCSET" is set
  and you can search for words in the documentation.
  The HTML workshop also contains a viewer for compressed HTML files.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_chm_file
@@ -2010,6 +2133,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
   can add a path in front of the file if the result should not be
   written to the html output directory.
 
+
 This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is set to \c YES.
  \anchor cfg_hhc_location
 <dt>\c HHC_LOCATION <dd>
@@ -2018,7 +2142,9 @@ This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is
   be used to specify the location (absolute path including file name) of 
   the HTML help compiler (\c hhc.exe). If non-empty doxygen will try to run
   the HTML help compiler on the generated \c index.hhp.
+
 The file has to be specified with full path.
+
 
 This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is set to \c YES.
  \anchor cfg_generate_chi
@@ -2028,7 +2154,9 @@ This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is
  controls if a separate `.chi` index file is generated (\c YES) or that
  it should be included in the master `.chm` file (\c NO).
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is set to \c YES.
  \anchor cfg_chm_index_encoding
@@ -2038,6 +2166,7 @@ This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is
  is used to encode HtmlHelp index (\c hhk), content (\c hhc) and project file 
  content.
 
+
 This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is set to \c YES.
  \anchor cfg_binary_toc
 <dt>\c BINARY_TOC <dd>
@@ -2046,7 +2175,9 @@ This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is
  controls whether a binary table of contents is generated (\c YES) or a
  normal table of contents (\c NO) in the `.chm` file.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is set to \c YES.
  \anchor cfg_toc_expand
@@ -2056,7 +2187,9 @@ This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is
  group members to the table of contents of the HTML help documentation 
  and to the tree view.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is set to \c YES.
  \anchor cfg_generate_qhp
@@ -2068,7 +2201,9 @@ This tag requires that the tag \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" is
  to generate a Qt Compressed Help (`.qch`) of the generated HTML
  documentation.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_qch_file
@@ -2078,6 +2213,7 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  be used to specify the file name of the resulting `.qch` file.
  The path specified is relative to the HTML output folder.
 
+
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_qhp_namespace
 <dt>\c QHP_NAMESPACE <dd>
@@ -2085,7 +2221,9 @@ This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c
  The \c QHP_NAMESPACE tag specifies the namespace to use when generating
  Qt Help Project output. For more information please see
  <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.
+
 The default value is: <code>org.doxygen.Project</code>.
+
 
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_qhp_virtual_folder
@@ -2094,7 +2232,9 @@ This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c
  The \c QHP_VIRTUAL_FOLDER tag specifies the namespace to use when
  generating Qt Help Project output. For more information please see
  <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
+
 The default value is: <code>doc</code>.
+
 
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_qhp_cust_filter_name
@@ -2102,6 +2242,7 @@ This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c
  \addindex QHP_CUST_FILTER_NAME
   If the \c QHP_CUST_FILTER_NAME tag is set, it specifies the name of a custom filter to add. For more information please see
   <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+
 
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_qhp_cust_filter_attrs
@@ -2111,6 +2252,7 @@ This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c
   For more information please see
   <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
 
+
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_qhp_sect_filter_attrs
 <dt>\c QHP_SECT_FILTER_ATTRS <dd>
@@ -2118,12 +2260,14 @@ This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c
   The \c QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's filter section matches.
   <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
 
+
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_qhg_location
 <dt>\c QHG_LOCATION <dd>
  \addindex QHG_LOCATION
  The \c QHG_LOCATION tag can be used to specify the location of Qt's qhelpgenerator.
  If non-empty doxygen will try to run qhelpgenerator on the generated `.qhp` file.
+
 
 This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c YES.
  \anchor cfg_generate_eclipsehelp
@@ -2141,7 +2285,9 @@ This tag requires that the tag \ref cfg_generate_qhp "GENERATE_QHP" is set to \c
 
  After copying `Eclipse` needs to be restarted before the help appears.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_eclipse_doc_id
@@ -2150,7 +2296,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  A unique identifier for the `Eclipse` help plugin. When installing the plugin 
  the directory name containing the HTML and XML files should also have 
  this name. Each documentation set should have its own identifier.
+
 The default value is: <code>org.doxygen.Project</code>.
+
 
 This tag requires that the tag \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHELP" is set to \c YES.
  \anchor cfg_disable_index
@@ -2164,7 +2312,9 @@ This tag requires that the tag \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHE
  information as the navigation tree, you can set this option to \c YES if 
  you also set \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_generate_treeview
@@ -2188,7 +2338,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  consider setting \ref cfg_disable_index "DISABLE_INDEX" to \c YES when 
  enabling this option.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_enum_values_per_line
@@ -2199,7 +2351,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  <br>Note that a value of 0 will completely suppress the enum values from
  appearing in the overview section.
 
+
  Minimum value: <code>0</code>, maximum value: <code>20</code>, default value: <code>4</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_treeview_width
@@ -2209,7 +2363,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  used to set the initial width (in pixels) of the frame in which the tree
  is shown.
 
+
  Minimum value: <code>0</code>, maximum value: <code>1500</code>, default value: <code>250</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_ext_links_in_window
@@ -2218,7 +2374,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  When the \c EXT_LINKS_IN_WINDOW option is set to \c YES doxygen will open 
  links to external symbols imported via tag files in a separate window.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_formula_fontsize
@@ -2230,7 +2388,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  to manually remove any `form_*.png` images from the HTML 
  output directory to force them to be regenerated.
 
+
  Minimum value: <code>8</code>, maximum value: <code>50</code>, default value: <code>10</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_formula_transparent
@@ -2242,7 +2402,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  <br>Note that when changing this option you need to delete any `form_*.png` files 
  in the HTML output directory before the changes have effect.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_use_mathjax
@@ -2256,7 +2418,9 @@ This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to 
  configure the path to it using the \ref cfg_mathjax_relpath "MATHJAX_RELPATH" 
  option.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_mathjax_format
@@ -2272,7 +2436,9 @@ Possible values are:
 <code>NativeMML</code> (i.e. MathML) and 
 <code>SVG</code>.
 
+
 The default value is: <code>HTML-CSS</code>.
+
 
 This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c YES.
  \anchor cfg_mathjax_relpath
@@ -2286,7 +2452,9 @@ This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c Y
  the MathJax Content Delivery Network so you can quickly see the result without 
  installing MathJax.  However, it is strongly recommended to install a local 
  copy of MathJax from http://www.mathjax.org before deployment.
+
 The default value is: <code>http://cdn.mathjax.org/mathjax/latest</code>.
+
 
 This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c YES.
  \anchor cfg_mathjax_extensions
@@ -2297,6 +2465,7 @@ This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c Y
 \verbatim
 MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
 \endverbatim
+
 
 This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c YES.
  \anchor cfg_mathjax_codefile
@@ -2319,6 +2488,7 @@ MATHJAX_CODEFILE = disableRenderer.js
    } 
   });
 \endverbatim
+
 
 This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c YES.
  \anchor cfg_searchengine
@@ -2345,7 +2515,9 @@ This tag requires that the tag \ref cfg_use_mathjax "USE_MATHJAX" is set to \c Y
  by pressing <code>\<Shift\>+\<cursor down\></code>. Also here use the <code>\<cursor keys\></code> to 
  select a filter and <code>\<Enter\></code> or <code>\<escape\></code> to activate or cancel the filter option.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_html "GENERATE_HTML" is set to \c YES.
  \anchor cfg_server_based_search
@@ -2361,7 +2533,9 @@ by the script. When \ref cfg_external_search "EXTERNAL_SEARCH" is
 enabled the indexing and searching needs to be provided by external tools. 
 See the section \ref extsearch for details.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c YES.
  \anchor cfg_external_search
@@ -2378,7 +2552,9 @@ This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c
  engine library <a href="http://xapian.org/">Xapian</a>.
  <br>See the section \ref extsearch for details.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c YES.
  \anchor cfg_searchengine_url
@@ -2392,6 +2568,7 @@ This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c
  engine library <a href="http://xapian.org/">Xapian</a>.
  See the section \ref extsearch for details.
 
+
 This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c YES.
  \anchor cfg_searchdata_file
 <dt>\c SEARCHDATA_FILE <dd>
@@ -2400,7 +2577,9 @@ When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and
 \ref cfg_external_search "EXTERNAL_SEARCH" are both enabled the unindexed 
 search data is written to a file for indexing by an external tool. With the 
 \c SEARCHDATA_FILE tag the name of this file can be specified.
+
 The default file is: <code>searchdata.xml</code>.
+
 
 This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c YES.
  \anchor cfg_external_search_id
@@ -2411,6 +2590,7 @@ When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and
 \c EXTERNAL_SEARCH_ID tag can be used as an identifier for the project. This is 
 useful in combination with \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" 
 to search through multiple projects and redirect the results back to the right project.
+
 
 This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c YES.
  \anchor cfg_extra_search_mappings
@@ -2428,6 +2608,7 @@ This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c
 EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... 
 \endverbatim
 
+
 This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c YES.
 </dl>
 \section config_latex Configuration options related to the LaTeX output
@@ -2439,6 +2620,7 @@ This tag requires that the tag \ref cfg_searchengine "SEARCHENGINE" is set to \c
  If the \c GENERATE_LATEX tag is set to \c YES doxygen will
  generate \f$\mbox{\LaTeX}\f$ output.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_latex_output
@@ -2448,7 +2630,9 @@ The default value is: <code>YES</code>.
  docs will be put.
  If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
  put in front of it.
+
 The default directory is: <code>latex</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_cmd_name
@@ -2458,7 +2642,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  <br>Note that when enabling \ref cfg_use_pdflatex "USE_PDFLATEX" this option is only used for
  generating bitmaps for formulas in the HTML output, but not in the
  \c Makefile that is written to the output directory.
+
 The default file is: <code>latex</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_makeindex_cmd_name
@@ -2466,7 +2652,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  \addindex MAKEINDEX_CMD_NAME
  The \c MAKEINDEX_CMD_NAME tag can be used to specify the command name to 
  generate index for \f$\mbox{\LaTeX}\f$.
+
 The default file is: <code>makeindex</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_compact_latex
@@ -2476,7 +2664,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  \f$\mbox{\LaTeX}\f$ documents. This may be useful for small projects and may help to
  save some trees in general.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_paper_type
@@ -2491,7 +2681,9 @@ Possible values are:
 <code>legal</code> (8.5 x 14 inches) and 
 <code>executive</code> (7.25 x 10.5 inches).
 
+
 The default value is: <code>a4</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_extra_packages
@@ -2504,6 +2696,7 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
 EXTRA_PACKAGES=times
 \endverbatim
  If left blank no extra packages will be included.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_header
@@ -2528,6 +2721,7 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  the version number of doxygen, the project name (see \ref cfg_project_name "PROJECT_NAME"), or the
  project number (see \ref cfg_project_number "PROJECT_NUMBER").
 
+
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_footer
 <dt>\c LATEX_FOOTER <dd>
@@ -2539,6 +2733,7 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  
  <br>Note: Only use a user-defined footer if you know what you are doing!
 
+
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_extra_files
 <dt>\c LATEX_EXTRA_FILES <dd>
@@ -2548,6 +2743,7 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  output directory.
  Note that the files will be copied as-is; there are no commands or markers
  available.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_pdf_hyperlinks
@@ -2559,7 +2755,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  contain links (just like the HTML output) instead of page references.
  This makes the output suitable for online browsing using a PDF viewer.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_use_pdflatex
@@ -2569,7 +2767,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  \c pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
  files.  Set this option to \c YES to get a higher quality PDF documentation.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_batchmode
@@ -2581,7 +2781,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  asking the user for help. This option is also used when generating formulas 
  in HTML.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_hide_indices
@@ -2591,7 +2793,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  include the index chapters (such as File Index, Compound Index, etc.) 
  in the output.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_source_code
@@ -2602,7 +2806,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  <br>Note that which sources are shown also depends on other settings 
  such as \ref cfg_source_browser "SOURCE_BROWSER".
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
  \anchor cfg_latex_bib_style
@@ -2612,7 +2818,9 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  bibliography, e.g. \c plainnat, or \c ieeetr. 
  See http://en.wikipedia.org/wiki/BibTeX and \ref cmdcite "\\cite"
  for more info.
+
 The default value is: <code>plain</code>.
+
 
 This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set to \c YES.
 </dl>
@@ -2626,6 +2834,7 @@ This tag requires that the tag \ref cfg_generate_latex "GENERATE_LATEX" is set t
  The RTF output is optimized for Word 97 and may not look too pretty with
  other RTF readers/editors.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_rtf_output
@@ -2634,7 +2843,9 @@ The default value is: <code>NO</code>.
  The \c RTF_OUTPUT tag is used to specify where the RTF docs will be put.
  If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
  put in front of it.
+
 The default directory is: <code>rtf</code>.
+
 
 This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c YES.
  \anchor cfg_compact_rtf
@@ -2644,7 +2855,9 @@ This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c
  RTF documents. This may be useful for small projects and may help to
  save some trees in general.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c YES.
  \anchor cfg_rtf_hyperlinks
@@ -2658,7 +2871,9 @@ This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c
 
  <br>Note: WordPad (write) and others do not support links.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c YES.
  \anchor cfg_rtf_stylesheet_file
@@ -2671,6 +2886,7 @@ This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c
  See also section \ref doxygen_usage for information on how to generate
  the default style sheet that doxygen normally uses.
 
+
 This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c YES.
  \anchor cfg_rtf_extensions_file
 <dt>\c RTF_EXTENSIONS_FILE <dd>
@@ -2679,6 +2895,7 @@ This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c
  Syntax is similar to doxygen's config file. 
  A template extensions file can be generated using 
  <code>doxygen -e rtf extensionFile</code>.
+
 
 This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c YES.
 </dl>
@@ -2691,6 +2908,7 @@ This tag requires that the tag \ref cfg_generate_rtf "GENERATE_RTF" is set to \c
  If the \c GENERATE_MAN tag is set to \c YES doxygen will
  generate man pages for classes and files.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_man_output
@@ -2701,7 +2919,9 @@ The default value is: <code>NO</code>.
  put in front of it. 
  A directory \c man3 will be created inside the directory specified by 
  \c MAN_OUTPUT.
+
 The default directory is: <code>man</code>.
+
 
 This tag requires that the tag \ref cfg_generate_man "GENERATE_MAN" is set to \c YES.
  \anchor cfg_man_extension
@@ -2711,7 +2931,9 @@ This tag requires that the tag \ref cfg_generate_man "GENERATE_MAN" is set to \c
  the generated man pages. In case
  the manual section does not start with a number, the number 3 is prepended.
  The dot (.) at the beginning of the \c MAN_EXTENSION tag is optional.
+
 The default value is: <code>.3</code>.
+
 
 This tag requires that the tag \ref cfg_generate_man "GENERATE_MAN" is set to \c YES.
  \anchor cfg_man_links
@@ -2722,7 +2944,9 @@ This tag requires that the tag \ref cfg_generate_man "GENERATE_MAN" is set to \c
  the real man page(s). These additional files only source the real man page, 
  but without them the \c man command would be unable to find the correct page.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_man "GENERATE_MAN" is set to \c YES.
 </dl>
@@ -2736,6 +2960,7 @@ This tag requires that the tag \ref cfg_generate_man "GENERATE_MAN" is set to \c
  generate an XML file that captures the structure of
  the code including all documentation.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_xml_output
@@ -2744,7 +2969,9 @@ The default value is: <code>NO</code>.
  The \c XML_OUTPUT tag is used to specify where the XML pages will be put. 
  If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be 
  put in front of it.
+
 The default directory is: <code>xml</code>.
+
 
 This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c YES.
  \anchor cfg_xml_schema
@@ -2754,6 +2981,7 @@ This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c
  which can be used by a validating XML parser to check the
  syntax of the XML files.
 
+
 This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c YES.
  \anchor cfg_xml_dtd
 <dt>\c XML_DTD <dd>
@@ -2761,6 +2989,7 @@ This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c
  The \c XML_DTD tag can be used to specify a XML DTD,
  which can be used by a validating XML parser to check the
  syntax of the XML files.
+
 
 This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c YES.
  \anchor cfg_xml_programlisting
@@ -2771,7 +3000,9 @@ This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c
  and cross-referencing information) to the XML output. Note that
  enabling this will significantly increase the size of the XML output.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c YES.
 </dl>
@@ -2784,6 +3015,7 @@ This tag requires that the tag \ref cfg_generate_xml "GENERATE_XML" is set to \c
 If the \c GENERATE_DOCBOOK tag is set to \c YES doxygen will generate Docbook files 
 that can be used to generate PDF.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_docbook_output
@@ -2792,11 +3024,13 @@ The default value is: <code>NO</code>.
 The \c DOCBOOK_OUTPUT tag is used to specify where the Docbook pages will be put. 
 If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be put in 
 front of it.
+
 The default directory is: <code>docbook</code>.
+
 
 This tag requires that the tag \ref cfg_generate_docbook "GENERATE_DOCBOOK" is set to \c YES.
 </dl>
-\section config_def Configuration options for the AutoGen Definitions output
+\section config_autogen Configuration options for the AutoGen Definitions output
  \anchor cfg_generate_autogen_def
 <dl>
 
@@ -2807,6 +3041,7 @@ This tag requires that the tag \ref cfg_generate_docbook "GENERATE_DOCBOOK" is s
  that captures the structure of the code including all
  documentation. Note that this feature is still experimental 
  and incomplete at the moment.
+
 
 The default value is: <code>NO</code>.
 
@@ -2824,6 +3059,7 @@ The default value is: <code>NO</code>.
  feature is still experimental and incomplete at the
  moment.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_perlmod_latex
@@ -2833,7 +3069,9 @@ The default value is: <code>NO</code>.
  the necessary \c Makefile rules, \c Perl scripts and \f$\mbox{\LaTeX}\f$ code to be able 
  to generate PDF and DVI output from the Perl module output.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_generate_perlmod "GENERATE_PERLMOD" is set to \c YES.
  \anchor cfg_perlmod_pretty
@@ -2845,7 +3083,9 @@ This tag requires that the tag \ref cfg_generate_perlmod "GENERATE_PERLMOD" is s
  tag is set to \c NO the size of the Perl module output will be much smaller
  and Perl will parse it just the same.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_generate_perlmod "GENERATE_PERLMOD" is set to \c YES.
  \anchor cfg_perlmod_makevar_prefix
@@ -2855,6 +3095,7 @@ This tag requires that the tag \ref cfg_generate_perlmod "GENERATE_PERLMOD" is s
  are prefixed with the string contained in \c PERLMOD_MAKEVAR_PREFIX. 
  This is useful so different `doxyrules.make` files included by the same
  `Makefile` don't overwrite each other's variables.
+
 
 This tag requires that the tag \ref cfg_generate_perlmod "GENERATE_PERLMOD" is set to \c YES.
 </dl>
@@ -2868,6 +3109,7 @@ This tag requires that the tag \ref cfg_generate_perlmod "GENERATE_PERLMOD" is s
  evaluate all C-preprocessor directives found in the sources and include
  files.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_macro_expansion
@@ -2878,7 +3120,9 @@ The default value is: <code>YES</code>.
  compilation will be performed. Macro expansion can be done in a controlled
  way by setting \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" to \c YES.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
  \anchor cfg_expand_only_predef
@@ -2888,7 +3132,9 @@ This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSI
  then the macro expansion is limited to the macros specified with the
  \ref cfg_predefined "PREDEFINED" and \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tags.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
  \anchor cfg_search_includes
@@ -2897,7 +3143,9 @@ This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSI
  If the \c SEARCH_INCLUDES tag is set to \c YES the includes files
  in the \ref cfg_include_path "INCLUDE_PATH" will be searched if a \c \#include is found.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
  \anchor cfg_include_path
@@ -2907,6 +3155,7 @@ This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSI
  contain include files that are not input files but should be processed by
  the preprocessor.
 
+
 This tag requires that the tag \ref cfg_search_includes "SEARCH_INCLUDES" is set to \c YES.
  \anchor cfg_include_file_patterns
 <dt>\c INCLUDE_FILE_PATTERNS <dd>
@@ -2915,6 +3164,7 @@ This tag requires that the tag \ref cfg_search_includes "SEARCH_INCLUDES" is set
  patterns (like `*.h` and `*.hpp`) to filter out the header-files in the 
  directories. If left blank, the patterns specified with \ref cfg_file_patterns "FILE_PATTERNS" will 
  be used.
+
 
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
  \anchor cfg_predefined
@@ -2928,6 +3178,7 @@ This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSI
  a macro definition from being undefined via \c \#undef or recursively expanded
  use the <code>:=</code> operator instead of the \c = operator.
 
+
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
  \anchor cfg_expand_as_defined
 <dt>\c EXPAND_AS_DEFINED <dd>
@@ -2939,6 +3190,7 @@ This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSI
  Use the \ref cfg_predefined "PREDEFINED" tag if you want to use a different macro definition that
  overrules the definition found in the source code.
 
+
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
  \anchor cfg_skip_function_macros
 <dt>\c SKIP_FUNCTION_MACROS <dd>
@@ -2949,7 +3201,9 @@ This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSI
  Such function macros are typically 
  used for boiler-plate code, and will confuse the parser if not removed.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to \c YES.
 </dl>
@@ -2995,6 +3249,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  in the class index. If set to \c NO only the inherited external classes
  will be listed.
 
+
 The default value is: <code>NO</code>.
 
  \anchor cfg_external_groups
@@ -3003,6 +3258,7 @@ The default value is: <code>NO</code>.
  If the \c EXTERNAL_GROUPS tag is set to \c YES all external groups will be listed
  in the modules index. If set to \c NO, only the current project's groups will
  be listed.
+
 
 The default value is: <code>YES</code>.
 
@@ -3013,6 +3269,7 @@ The default value is: <code>YES</code>.
  in the related pages index. If set to \c NO, only the current project's 
  pages will be listed.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_perl_path
@@ -3020,6 +3277,7 @@ The default value is: <code>YES</code>.
  \addindex PERL_PATH
  The \c PERL_PATH should be the absolute path and name of the perl script
  interpreter (i.e. the result of `'which perl'`).
+
 The default file (with absolute path) is: <code>/usr/bin/perl</code>.
 
 </dl>
@@ -3034,6 +3292,7 @@ The default file (with absolute path) is: <code>/usr/bin/perl</code>.
  super classes. Setting the tag to \c NO turns the diagrams off. Note that 
  this option also works with \ref cfg_have_dot "HAVE_DOT" disabled, but it is recommended to 
  install and use \c dot, since it yields more powerful graphs.
+
 
 The default value is: <code>YES</code>.
 
@@ -3053,6 +3312,7 @@ The default value is: <code>YES</code>.
  inheritance and usage relations if the target is undocumented
  or is not a class.
 
+
 The default value is: <code>YES</code>.
 
  \anchor cfg_have_dot
@@ -3063,6 +3323,7 @@ The default value is: <code>YES</code>.
  <a href="http://www.graphviz.org/">Graphviz</a>, a graph 
  visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO
+
 
 The default value is: <code>NO</code>.
 
@@ -3075,7 +3336,9 @@ The default value is: <code>NO</code>.
  explicitly to a value larger than 0 to get control over the balance 
  between CPU load and processing speed.
 
+
  Minimum value: <code>0</code>, maximum value: <code>32</code>, default value: <code>0</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_fontname
@@ -3087,7 +3350,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  which can be done by putting it in a standard location or by setting the 
  \c DOTFONTPATH environment variable or by setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the 
  directory containing the font.
+
 The default value is: <code>Helvetica</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_fontsize
@@ -3095,7 +3360,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \addindex DOT_FONTSIZE
  The \c DOT_FONTSIZE tag can be used to set the size (in points) of the font of dot graphs.
 
+
  Minimum value: <code>4</code>, maximum value: <code>24</code>, default value: <code>10</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_fontpath
@@ -3106,6 +3373,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  different font using \ref cfg_dot_fontname "DOT_FONTNAME" you can set the path where \c dot 
  can find it using this tag.
 
+
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_class_graph
 <dt>\c CLASS_GRAPH <dd>
@@ -3115,7 +3383,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  indirect inheritance relations. Setting this tag to \c YES will force 
  the \ref cfg_class_diagrams "CLASS_DIAGRAMS" tag to \c NO.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_collaboration_graph
@@ -3126,7 +3396,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  indirect implementation dependencies (inheritance, containment, and
  class references variables) of the class with other documented classes.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_group_graphs
@@ -3135,7 +3407,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  If the \c GROUP_GRAPHS tag is set to \c YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_uml_look
@@ -3145,7 +3419,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  collaboration diagrams in a style similar to the OMG's Unified Modeling
  Language.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_uml_limit_num_fields
@@ -3160,7 +3436,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  to 10, up to 15 fields may appear, but if the number exceeds 15, the
  total amount of fields shown is limited to 10.
 
+
  Minimum value: <code>0</code>, maximum value: <code>100</code>, default value: <code>10</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_template_relations
@@ -3169,7 +3447,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  If the \c TEMPLATE_RELATIONS tag is set to \c YES then 
  the inheritance and collaboration graphs will show the relations between templates and their instances.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_include_graph
@@ -3181,7 +3461,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  showing the direct and indirect include dependencies of the file with other
  documented files.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_included_by_graph
@@ -3193,7 +3475,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  showing the direct and indirect include dependencies of the file with other
  documented files.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_call_graph
@@ -3205,7 +3489,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  So in most cases it will be better to enable call graphs for selected 
  functions only using the \ref cmdcallgraph "\\callgraph" command.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_caller_graph
@@ -3217,7 +3503,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  So in most cases it will be better to enable caller graphs for selected 
  functions only using the \ref cmdcallergraph "\\callergraph" command.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_graphical_hierarchy
@@ -3226,7 +3514,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  If the \c GRAPHICAL_HIERARCHY tag is set to \c YES then 
  doxygen will graphical hierarchy of all classes instead of a textual one.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_directory_graph
@@ -3237,7 +3527,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  in a graphical way. The dependency relations are determined by the \c \#include
  relations between the files in the directories.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_image_format
@@ -3255,7 +3547,9 @@ Possible values are:
 <code>gif</code> and 
 <code>svg</code>.
 
+
 The default value is: <code>png</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_interactive_svg
@@ -3268,7 +3562,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \note For IE 9+ you need to set \ref cfg_html_file_extension "HTML_FILE_EXTENSION" to \c xhtml in order 
  to make the SVG files visible. Older versions of IE do not have SVG support.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_path
@@ -3277,6 +3573,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  The \c DOT_PATH tag can be used to specify the path where the \c dot tool can be found. 
  If left blank, it is assumed the \c dot tool can be found in the \c path.
 
+
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dotfile_dirs
 <dt>\c DOTFILE_DIRS <dd>
@@ -3284,6 +3581,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  The \c DOTFILE_DIRS tag can be used to specify one or more directories that 
  contain dot files that are included in the documentation (see the
  \ref cmddotfile "\\dotfile" command).
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_mscfile_dirs
@@ -3304,7 +3602,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \c DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note
  that the size of a graph can be further restricted by \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH".
 
+
  Minimum value: <code>0</code>, maximum value: <code>10000</code>, default value: <code>50</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_max_dot_graph_depth
@@ -3318,7 +3618,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  code bases. Also note that the size of a graph can be further restricted by
  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Using a depth of 0 means no depth restriction.
 
+
  Minimum value: <code>0</code>, maximum value: <code>1000</code>, default value: <code>0</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_transparent
@@ -3332,7 +3634,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  enabling this option may lead to badly anti-aliased labels on the edges of 
  a graph (i.e. they become hard to read).
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_multi_targets
@@ -3343,7 +3647,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  makes \c dot run faster, but since only newer versions of \c dot (>1.8.10)
  support this, this feature is disabled by default.
 
+
 The default value is: <code>NO</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_generate_legend
@@ -3353,7 +3659,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  generate a legend page explaining the meaning of the various boxes and
  arrows in the dot generated graphs.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \anchor cfg_dot_cleanup
@@ -3362,7 +3670,9 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
 If the \c DOT_CLEANUP tag is set to \c YES doxygen will
 remove the intermediate dot files that are used to generate the various graphs.
 
+
 The default value is: <code>YES</code>.
+
 
 This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
 </dl>

@@ -734,11 +734,11 @@ Go to the <a href="commands.html">next</a> section or return to the
  entities in documentation are documented, even if no documentation was 
  available. Private class members and static file members will be hidden 
  unless the \ref cfg_extract_private "EXTRACT_PRIVATE" respectively 
- \ref cfg_extract_static "EXTRACT_STATIC" tags are set to \c YES
+ \ref cfg_extract_static "EXTRACT_STATIC" tags are set to \c YES.
 
  \note This will also disable the warnings about undocumented members 
  that are normally produced when \ref cfg_warnings "WARNINGS" is 
- set to \c YES
+ set to \c YES.
 ]]>
       </docs>
     </option>
@@ -1038,7 +1038,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  Set the \c SHOW_FILES tag to \c NO to disable the generation of the Files page.
  This will remove the Files entry from the Quick Index and from the
- Folder Tree View (if specified). The default is \c YES.
+ Folder Tree View (if specified).
 ]]>
       </docs>
     </option>
@@ -1047,7 +1047,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  Set the \c SHOW_NAMESPACES tag to \c NO to disable the generation of the
  Namespaces page. This will remove the Namespaces entry from the Quick Index
- and from the Folder Tree View (if specified). The default is \c YES.
+ and from the Folder Tree View (if specified).
 ]]>
       </docs>
     </option>
@@ -1131,8 +1131,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c QUIET tag can be used to turn on/off the messages that are generated
- to standard output by doxygen. Possible values are \c YES and \c NO, 
- where \c YES implies that the messages are off.
+ to standard output by doxygen. If \c QUIET is set to \c YES this implies that the messages are off.
 ]]>
       </docs>
     </option>
@@ -1140,8 +1139,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c WARNINGS tag can be used to turn on/off the warning messages that are
- generated to standard error (\c stderr) by doxygen. Possible values are \c YES and \c NO, 
- where \c YES implies that the warnings are on.
+ generated to standard error (\c stderr) by doxygen. If \c WARNINGS is set to 
+ \c YES this implies that the warnings are on.
 <br>
  \b Tip: Turn warnings on while writing the documentation.
 ]]>
@@ -1196,7 +1195,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <![CDATA[
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written 
- to standard error (\c stderr).
+ to standard error (`stderr`).
 ]]>
       </docs>
     </option>
@@ -1282,8 +1281,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c RECURSIVE tag can be used to specify whether or not subdirectories
- should be searched for input files as well. Possible values are \c YES 
- and \c NO.
+ should be searched for input files as well.
 ]]>
       </docs>
     </option>
@@ -1350,7 +1348,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  blank all files are included.
 ]]>
       </docs>
-      <value name='*'/>
+      <value name='*' show_docu='NO'/>
     </option>
     <option type='bool' id='EXAMPLE_RECURSIVE' defval='0'>
       <docs>
@@ -1829,7 +1827,6 @@ hr.footer {
  see http://en.wikipedia.org/wiki/Hue for more information. 
  For instance the value 0 represents red, 60 is yellow, 120 is green, 
  180 is cyan, 240 is blue, 300 purple, and 360 is red again. 
- The allowed range is 0 to 359. 
 ]]>
       </docs>
     </option>
@@ -2746,7 +2743,7 @@ front of it.
       </docs>
     </option>
   </group>
-  <group name='DEF' docs='Configuration options for the AutoGen Definitions output'>
+  <group name='AutoGen' docs='Configuration options for the AutoGen Definitions output'>
     <option type='bool' id='GENERATE_AUTOGEN_DEF' defval='0'>
       <docs>
 <![CDATA[

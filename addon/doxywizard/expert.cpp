@@ -112,7 +112,8 @@ void Expert::createTopics(const QDomElement &rootElem)
   {
     if (childElem.tagName()==SA("group"))
     {
-      QString name = childElem.attribute(SA("name"));
+      // Remove _ from a group name like: Source_Browser
+      QString name = childElem.attribute(SA("name")).replace(SA("_"),SA(" "));
       items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
       QWidget *widget = createTopicWidget(childElem);
       m_topics[name] = widget;
@@ -144,7 +145,7 @@ static QString getDocsForNode(const QDomElement &child)
         QDomText t = n.toText();
         if (!t.isNull()) docs+=t.data();
       }
-      docs+=SA("<br/>");
+      docs += SA("<br/>");
     }
     docsVal = docsVal.nextSiblingElement();
   }
@@ -152,6 +153,7 @@ static QString getDocsForNode(const QDomElement &child)
   // for an enum we list the values
   if (type==SA("enum"))
   {
+    docs += SA("<br/>");
     docs += SA("Possible values are: ");
     int numValues=0;
     docsVal = child.firstChildElement();
@@ -192,29 +194,35 @@ static QString getDocsForNode(const QDomElement &child)
       docsVal = docsVal.nextSiblingElement();
     }
     docs+=SA("<br/>");
-    docs+=SA("The default value is: <code>")+
+    docs+=SA("<br/>");
+    docs+=SA(" The default value is: <code>")+
           child.attribute(SA("defval"))+
           SA("</code>.");
+    docs+= SA("<br/>");
   }
   else if (type==SA("int"))
   {
+    docs+=SA("<br/>");
     docs+=SA("Minimum value: ")+child.attribute(SA("minval"))+SA(", ");
     docs+=SA("maximum value: ")+child.attribute(SA("maxval"))+SA(", ");
     docs+=SA("default value: ")+child.attribute(SA("defval"))+SA(".");
+    docs+= SA("<br/>");
   }
   else if (type==SA("bool"))
   {
+    docs+=SA("<br/>");
     if (child.hasAttribute(SA("altdefval")))
     {
-      docs+=SA("The default value is: system dependent.");
+      docs+=SA(" The default value is: system dependent.");
     }
     else
     {
       QString defval = child.attribute(SA("defval"));
-      docs+=SA("The default value is: <code>")+
+      docs+=SA(" The default value is: <code>")+
             (defval==SA("1")?SA("YES"):SA("NO"))+
             SA("</code>.");
     }
+    docs+= SA("<br/>");
   }
   else if (type==SA("list"))
   {
@@ -226,7 +234,12 @@ static QString getDocsForNode(const QDomElement &child)
       {
         if (docsVal.tagName()==SA("value"))
         {
-          if (docsVal.attribute(SA("name"))!=SA("")) numValues++;
+          QString showDocu = SA("");
+          if (docsVal.hasAttribute(SA("show_docu")))
+          {
+            showDocu = docsVal.attribute(SA("show_docu")).toLower();
+          }
+          if ((showDocu != SA("no")) && (docsVal.attribute(SA("name"))!=SA(""))) numValues++;
         }
         docsVal = docsVal.nextSiblingElement();
       }
@@ -238,29 +251,38 @@ static QString getDocsForNode(const QDomElement &child)
         {
           if (docsVal.tagName()==SA("value"))
           {
-            i++;
-            docs += SA("<code>") + docsVal.attribute(SA("name")) + SA("</code>");
-            QString desc = docsVal.attribute(SA("desc"));
-            if (desc != SA(""))
+            QString showDocu = SA("");
+            if (docsVal.hasAttribute(SA("show_docu")))
             {
-              docs += SA(" ") + desc;
+              showDocu = docsVal.attribute(SA("show_docu")).toLower();
             }
-            if (i==numValues-1)
+            if ((showDocu != SA("no")) && (docsVal.attribute(SA("name"))!=SA("")))
             {
-              docs += SA(" and ");
-            }
-            else if (i==numValues)
-            {
-              docs += SA(".");
-            }
-            else
-            {
-              docs += SA(", ");
+              i++;
+              docs += SA("<code>") + docsVal.attribute(SA("name")) + SA("</code>");
+              QString desc = docsVal.attribute(SA("desc"));
+              if (desc != SA(""))
+              {
+                docs += SA(" ") + desc;
+              }
+              if (i==numValues-1)
+              {
+                docs += SA(" and ");
+              }
+              else if (i==numValues)
+              {
+                docs += SA(".");
+              }
+              else
+              {
+                docs += SA(", ");
+              }
             }
           }
           docsVal = docsVal.nextSiblingElement();
         }
       }
+      // docs+= SA("<br/>");
     }
   }
   else if (type==SA("string"))
@@ -270,7 +292,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
-        docs += SA("The default directory is: <code>") + defval + SA("</code>.");
+        docs+=SA("<br/>");
+        docs += SA(" The default directory is: <code>") + defval + SA("</code>.");
+        docs += SA("<br/>");
       }
     }
     else if (child.attribute(SA("format")) == SA("file"))
@@ -278,20 +302,24 @@ static QString getDocsForNode(const QDomElement &child)
       QString abspath = child.attribute(SA("abspath"));
       if (defval != SA(""))
       {
+        docs+=SA("<br/>");
         if (abspath != SA("1"))
         {
-          docs += SA("The default file is: <code>") + defval + SA("</code>.");
+          docs += SA(" The default file is: <code>") + defval + SA("</code>.");
         }
         else
         {
-          docs += SA("The default file (with absolute path) is: <code>") + defval + SA("</code>.");
+          docs += SA(" The default file (with absolute path) is: <code>") + defval + SA("</code>.");
         }
+        docs += SA("<br/>");
       }
       else
       {
         if (abspath == SA("1"))
         {
-          docs += SA("The file has to be specified with full path.");
+          docs+=SA("<br/>");
+          docs += SA(" The file has to be specified with full path.");
+          docs += SA("<br/>");
         }
       }
     }
@@ -299,7 +327,9 @@ static QString getDocsForNode(const QDomElement &child)
     {
       if (defval != SA(""))
       {
-        docs += SA("The default value is: <code>") + defval + SA("</code>.");
+        docs+=SA("<br/>");
+        docs += SA(" The default value is: <code>") + defval + SA("</code>.");
+        docs += SA("<br/>");
       }
     }
   }
@@ -307,8 +337,8 @@ static QString getDocsForNode(const QDomElement &child)
   if (child.hasAttribute(SA("depends")))
   {
     QString dependsOn = child.attribute(SA("depends"));
-    docs += SA("<br/>");
-    docs+=  SA("This tag requires that the tag \\ref cfg_");
+    docs+=SA("<br/>");
+    docs+=  SA(" This tag requires that the tag \\ref cfg_");
     docs+=  dependsOn.toLower();
     docs+=  SA(" \"");
     docs+=  dependsOn.toUpper();
@@ -324,13 +354,22 @@ static QString getDocsForNode(const QDomElement &child)
   // remove <br> at end
   regexp.setPattern(SA("<br> *$"));
   docs.replace(regexp,SA(" "));
-  // \c word -> <code>word</code>
+  // \c word -> <code>word</code>; word ends with ')', ',', '.' or ' '
+  regexp.setPattern(SA("\\\\c[ ]+([^ \\)]+)\\)"));
+  docs.replace(regexp,SA("<code>\\1</code>)"));
+
+  regexp.setPattern(SA("\\\\c[ ]+([^ ,]+),"));
+  docs.replace(regexp,SA("<code>\\1</code>,"));
+
+  regexp.setPattern(SA("\\\\c[ ]+([^ \\.]+)\\."));
+  docs.replace(regexp,SA("<code>\\1</code>."));
+
   regexp.setPattern(SA("\\\\c[ ]+([^ ]+) "));
   docs.replace(regexp,SA("<code>\\1</code> "));
   // `word` -> <code>word</code>
   docs.replace(SA("``"),SA(""));
   regexp.setPattern(SA("`([^`]+)`"));
-  docs.replace(regexp,SA("<code>\\1</code> "));
+  docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
   regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^ ]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
@@ -683,7 +722,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
           t << convertToComment(option->templateDocs());
           t << endl;
         }
-        t << name.leftJustified(23) << "= ";
+        t << name.leftJustified(MAX_OPTION_LENGTH) << "= ";
         if (option)
         {
           option->writeValue(t,codec);
@@ -744,9 +783,10 @@ void Expert::showHelp(Input *option)
     m_helper->setText(
         QString::fromAscii("<qt><b>")+option->id()+
         QString::fromAscii("</b><br>")+
+        QString::fromAscii("<br/>")+
         option->docs().
         replace(QChar::fromAscii('\n'),QChar::fromAscii(' '))+
-        QString::fromAscii("<qt>")
+        QString::fromAscii("</qt>")
         );
     m_inShowHelp = FALSE;
   }
