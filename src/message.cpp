@@ -240,6 +240,14 @@ void warn_undoc(const char *file,int line,const char *fmt, ...)
   va_end(args);
 }
 
+void warn_incomplete_doc(const char *file,int line,const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_warn(Config_getBool(WARN_IF_INCOMPLETE_DOC), file, line, warning_str, fmt, args);
+  va_end(args);
+}
+
 void warn_doc_error(const char *file,int line,const char *fmt, ...)
 {
   va_list args;

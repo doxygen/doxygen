@@ -512,7 +512,7 @@ static void checkRetvalName(const QCString &name)
  */
 static void checkUnOrMultipleDocumentedParams()
 {
-  if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
+  if (g_memberDef && g_hasParamCommand)
   {
     const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
       g_memberDef->argumentList() :
@@ -544,7 +544,7 @@ static void checkUnOrMultipleDocumentedParams()
             if (argName == par) count++;
           }
         }
-        if (count > 1)
+        if ((count > 1) &&  Config_getBool(WARN_IF_DOC_ERROR))
         {
           warn_doc_error(g_memberDef->getDefFileName(),
                          g_memberDef->getDefLine(),
@@ -555,7 +555,7 @@ static void checkUnOrMultipleDocumentedParams()
                          " has multiple @param documentation sections").data());
         }
       }
-      if (notArgCnt>0)
+      if ((notArgCnt>0) && Config_getBool(WARN_IF_INCOMPLETE_DOC))
       {
         bool first=TRUE;
         QCString errMsg=
@@ -587,10 +587,10 @@ static void checkUnOrMultipleDocumentedParams()
             errMsg+="  parameter '"+argName+"'";
           }
         }
-        warn_doc_error(g_memberDef->getDefFileName(),
-                       g_memberDef->getDefLine(),
-                       "%s",
-                       substitute(errMsg,"%","%%").data());
+        warn_incomplete_doc(g_memberDef->getDefFileName(),
+                            g_memberDef->getDefLine(),
+                            "%s",
+                            substitute(errMsg,"%","%%").data());
       }
     }
   }

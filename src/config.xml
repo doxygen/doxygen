@@ -1316,9 +1316,19 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  If the \c WARN_IF_DOC_ERROR tag is set to \c YES, doxygen will generate warnings for
- potential errors in the documentation, such as not documenting some
- parameters in a documented function, or documenting parameters that
+ potential errors in the documentation, such as documenting some
+ parameters in a documented function twice, or documenting parameters that
  don't exist or using markup commands wrongly.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='WARN_IF_INCOMPLETE_DOC' defval='1'>
+      <docs>
+<![CDATA[
+ If \c WARN_IF_INCOMPLETE_DOC is set to \c YES, doxygen will warn about
+ incomplete function parameter documentation.
+ If set to \c NO, doxygen will accept that some parameters have no
+ documentation without warning.
 ]]>
       </docs>
     </option>
@@ -1328,10 +1338,11 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  This \c WARN_NO_PARAMDOC option can be enabled to get warnings for
  functions that are documented, but have no documentation for their parameters
  or return value. If set to \c NO, doxygen will only warn about
- wrong or incomplete parameter documentation, but not about the absence of
+ wrong parameter documentation, but not about the absence of
  documentation.
  If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
  automatically be disabled.
+ See also \ref cfg_warn_if_incomplete_paramdoc "WARN_IF_INCOMPLETE_PARAMDOC"
 ]]>
       </docs>
     </option>
