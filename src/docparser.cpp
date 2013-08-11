@@ -412,7 +412,8 @@ static void checkArgumentName(const QCString &name,bool isParam)
  */
 static void checkUndocumentedParams()
 {
-  if (g_memberDef && g_hasParamCommand && Config_getBool("WARN_IF_DOC_ERROR"))
+  if (g_memberDef && g_hasParamCommand && Config_getBool("WARN_IF_DOC_ERROR") &&
+      !Config_getBool("NO_WARN_MISSING_PARAMDOC"))
   {
     ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
       g_memberDef->argumentList() :

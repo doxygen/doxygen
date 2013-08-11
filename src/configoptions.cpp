@@ -923,6 +923,15 @@ void addConfigOptions(Config *cfg)
              );
   //----
   cb = cfg->addBool(
+             "NO_WARN_MISSING_PARAMDOC",
+              "If NO_WARN_MISSING_PARAMS is set to YES, doxygen will not print warnings if\n"
+              "only some parameters are documented. If set to the default value NO, those\n"
+              "warnings will be printed\n"
+              "The default value is: NO.",
+              FALSE
+             );
+  //----
+  cb = cfg->addBool(
              "WARN_NO_PARAMDOC",
               "This WARN_NO_PARAMDOC option can be enabled to get warnings for functions that\n"
               "are documented, but have no documentation for their parameters or return\n"

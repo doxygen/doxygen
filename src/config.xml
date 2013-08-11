@@ -1165,6 +1165,15 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='NO_WARN_MISSING_PARAMDOC' defval='0'>
+      <docs>
+<![CDATA[
+ If \c NO_WARN_MISSING_PARAMS is set to \c YES, doxygen will not
+ print warnings if only some parameters are documented. If set to the default
+ value \c NO, those warnings will be printed
+]]>
+      </docs>
+    </option>
     <option type='bool' id='WARN_NO_PARAMDOC' defval='0'>
       <docs>
 <![CDATA[
