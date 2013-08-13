@@ -46,6 +46,7 @@ of a HTML tag are passed on to the HTML output only
                        Note that only for C# code, this command is equivalent to
                        \ref cmdendcode "\\endcode".
 <li><tt>\<DD\></tt>    Starts an item description.
+<li><tt>\</DD\></tt>   Ends an item description.
 <li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
 <li><tt>\<DIV></tt>    Starts a section with a specific style (HTML only)
