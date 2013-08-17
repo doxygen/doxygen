@@ -10171,6 +10171,11 @@ void readConfiguration(int argc, char **argv)
       case 'm':
         g_dumpSymbolMap = TRUE;
         break;
+      case 'v':
+        msg("%s\n",versionString); 
+        cleanUpDoxygen();
+        exit(0);
+        break;
       case '-':
         if (qstrcmp(&argv[optind][2],"help")==0)
         {
@@ -10181,6 +10186,11 @@ void readConfiguration(int argc, char **argv)
           msg("%s\n",versionString); 
           cleanUpDoxygen();
           exit(0);
+        }
+        else
+        {
+          err("Unknown option -%s\n",&argv[optind][1]);
+          usage(argv[0]);
         }
         break;
       case 'b':
