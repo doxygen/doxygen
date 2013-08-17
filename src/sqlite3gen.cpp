@@ -417,7 +417,7 @@ static void writeInnerClasses(sqlite3*db,const ClassSDict *cl)
   {
     if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
     {
-      bindTextParameter(i_s_innerclass,":refid",cd->getOutputFileBase());
+      bindTextParameter(i_s_innerclass,":refid",cd->getOutputFileBase(),FALSE);
       bindIntParameter(i_s_innerclass,":prot",cd->protection());
       bindTextParameter(i_s_innerclass,":name",cd->name());
       if (-1==step(db,i_s_innerclass))
