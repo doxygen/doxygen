@@ -77,9 +77,9 @@ const char *i_q_xrefs="INSERT OR REPLACE INTO xrefs "
 static sqlite3_stmt *i_s_xrefs=0;
 //////////////////////////////////////////////////////
 const char *i_q_memberdef="INSERT OR REPLACE INTO memberdef "
-                            "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, kind, id_bfile, bline, bcolumn, id_file, line, column)"
+                            "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, initializer, kind, id_bfile, bline, bcolumn, id_file, line, column)"
                             "VALUES "
-                            "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:kind,:id_bfile,:bline,:bcolumn,:id_file,:line,:column)";
+                            "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:initializer,:kind,:id_bfile,:bline,:bcolumn,:id_file,:line,:column)";
 const char *id_q_memberdef="SELECT id FROM memberdef WHERE refid=:refid and id is not null";
 static sqlite3_stmt *id_s_memberdef=0;
 static sqlite3_stmt *i_s_memberdef=0;
@@ -178,6 +178,7 @@ const char * schema_queries[][2] =
       "type TEXT,"
       "argsstring TEXT,"
       "scope TEXT,"
+      "initializer TEXT,"
       "prot INTEGER NOT NULL,"
       "static INTEGER NOT NULL,"
       "const INTEGER,"
@@ -664,6 +665,8 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // drm_mod_register_buffer,
   if (!md->initializer().isEmpty() && md->initializer().length()<2000)
   {
+    bindTextParameter(i_s_memberdef,":initializer",md->initializer().data());
+
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
     QCString *s=l.first();
