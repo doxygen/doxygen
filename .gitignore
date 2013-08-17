@@ -25,6 +25,7 @@
 /addon/doxysearch/Makefile.doxysearch
 /addon/doxmlparser/examples/metrics/Makefile
 /addon/doxmlparser/src/Makefile
+/addon/doxmlparser/test/Makefile
 /addon/doxyapp/Makefile
 /addon/doxywizard/Makefile
 /addon/doxywizard/Makefile.doxywizard
@@ -32,6 +33,12 @@
 /addon/doxywizard/moc
 /addon/doxywizard/obj
 /addon/doxywizard/rcc
+/winbuild/config_lex.cpp
+/winbuild/moc
+/winbuild/obj
+/winbuild/rcc
+*.idb
+*.pdb
 /examples/Makefile
 /Makefile
 
