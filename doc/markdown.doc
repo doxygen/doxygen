@@ -283,6 +283,9 @@ To create a link to an URL or e-mail address Markdown supports the following
 syntax:
 
     <http://www.example.com>
+    <https://www.example.com>
+    <ftp://www.example.com>
+    <mailto:address@example.com>
     <address@example.com>
 
 Note that doxygen will also produce the links without the angle brackets.
