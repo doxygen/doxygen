@@ -18,10 +18,13 @@
 
 Doxywizard is a GUI front-end for configuring and running doxygen. 
 
+Note is is possible to start the doxywizard with as argument the configuration file to be used.
+
 When you start doxywizard it will display the main window 
 (the actual look depends on the OS used).
 
 \image html doxywizard_main.png "Main window"
+\image latex doxywizard_main.png "Main window" width=15cm
 
 The windows shows the steps to take to configure and run doxygen.
 The first step is to choose one of the ways to configure doxygen.
@@ -58,12 +61,14 @@ If you select the Wizard button in step 1, then a dialog with
 a number of tabs will appear.
 
 \image html doxywizard_page1.png "Wizard dialog: Project settings"
+\image latex doxywizard_page1.png "Wizard dialog: Project settings" width=13cm
 
 The fields in the project tab speak for themselves. Once doxygen has finished
 the Destination directory is where to look for the results. Doxygen will
 put each output format in a separate sub-directory.
 
 \image html doxywizard_page2.png "Wizard dialog: Mode of operating"
+\image latex doxywizard_page2.png "Wizard dialog: Mode of operating" width=13cm
 
 The mode tab allows you to select how doxygen will look at your sources.
 The default is to only look for things that have been documented. 
@@ -72,11 +77,13 @@ You can also select how doxygen should present the results.
 The latter does not affect the way doxygen parses your source code.
 
 \image html doxywizard_page3.png "Wizard dialog: Output to produce"
+\image latex doxywizard_page3.png "Wizard dialog: Output to produce" width=13cm
 
 You can select one or more of the output formats that doxygen should
 produce. For HTML and LaTeX there are additional options. 
 
 \image html doxywizard_page4.png "Wizard dialog: Diagrams to generate"
+\image latex doxywizard_page4.png "Wizard dialog: Diagrams to generate" width=13cm
 
 Doxygen can produce a number of diagrams. Using the diagrams tab you
 can select which ones to generate. For most diagrams the 
@@ -110,6 +117,7 @@ The kind of input widget depends on the type of the configuration option.
 </ul>
 
 \image html doxywizard_expert.png "Some options from the Expert dialog"
+\image latex doxywizard_expert.png "Some options from the Expert dialog" width=15cm
 
 The get additional information about the meaning of an option, click
 on the "Help" button at the bottom right of the dialog and then on the
@@ -120,6 +128,7 @@ item. A tooltip with additional information will appear.
 The GUI front-end has a menu with a couple of useful items
 
 \image html doxywizard_menu.png "File menu"
+\image latex doxywizard_menu.png "File menu" width=15cm
 
 <dl>
 <dt>Open...<dd>This is the same as the "Load" button in the main window
