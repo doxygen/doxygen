@@ -667,7 +667,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
       ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
       {
         Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
       }
@@ -725,7 +725,7 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
         //ol.docify(" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
-        if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+        if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
         {
           Doxygen::tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
         }
@@ -762,7 +762,7 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
       ol.endMemberItem();
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
       {
         Doxygen::tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
       }
@@ -801,7 +801,7 @@ void GroupDef::writePageDocumentation(OutputList &ol)
     {
       QCString pageName = pd->getOutputFileBase();
 
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
       {
         Doxygen::tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
       }
@@ -957,7 +957,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   Doxygen::indexList->addIndexItem(this,0,0,title);
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     Doxygen::tagFile << "  <compound kind=\"group\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
@@ -1090,7 +1090,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
   ol.popGeneratorState();
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;

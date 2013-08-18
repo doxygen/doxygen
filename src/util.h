@@ -411,5 +411,7 @@ bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile);
 
 void addDocCrossReference(MemberDef *src,MemberDef *dst);
 
+int checkFileName(QCString glval);
+
 #endif
 

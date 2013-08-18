@@ -233,7 +233,7 @@ void DirDef::writeSubDirList(OutputList &ol)
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
       ol.endMemberItem();
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
       {
         Doxygen::tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
       }
@@ -295,7 +295,7 @@ void DirDef::writeFileList(OutputList &ol)
         ol.endTextLink();
         ol.popGeneratorState();
       }
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
       {
         Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
       }
@@ -356,7 +356,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   endTitle(ol,getOutputFileBase(),title);
   ol.startContents();
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     Doxygen::tagFile << "  <compound kind=\"dir\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
@@ -439,7 +439,7 @@ void DirDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- end flexible part -------------------------------
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;

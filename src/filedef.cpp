@@ -311,7 +311,7 @@ void FileDef::writeIncludeFiles(OutputList &ol)
           ol.writeObjectLink(fd->getReference(),
               fd->generateSourceFile() ? fd->includeName() : fd->getOutputFileBase(),
               0,ii->includeName);
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fd->isReference()) 
+          if (!(checkFileName(Config_getString("GENERATE_TAGFILE")) == 1) && !fd->isReference())
           {
             const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
             const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
@@ -600,7 +600,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
   
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     Doxygen::tagFile << "  <compound kind=\"file\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
@@ -722,7 +722,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- end flexible part -------------------------------
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;

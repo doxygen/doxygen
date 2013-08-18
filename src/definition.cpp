@@ -513,7 +513,7 @@ void Definition::addSectionsToIndex()
 
 void Definition::writeDocAnchorsToTagFile()
 {
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_impl->sectionDict)
+  if ((checkFileName(Config_getString("GENERATE_TAGFILE")) == 1) && m_impl->sectionDict)
   {
     //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_sectionDict->count());
     SDict<SectionInfo>::Iterator sdi(*m_impl->sectionDict);

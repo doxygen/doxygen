@@ -200,7 +200,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //1.}
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     bool found = name()=="citelist";
     QDictIterator<RefList> rli(*Doxygen::xrefLists);

@@ -285,7 +285,7 @@ bool &Config::getBool(const char *fileName,int num,const char *name) const
   }
   else if (opt->kind()!=ConfigOption::O_Bool)
   {
-    config_err("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
+    config_err("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigBool *)opt)->valueRef();
@@ -1394,6 +1394,11 @@ void Config::check()
     examplePatternList.append("*");
   }
 
+  if (!checkFileName(Config_getString("GENERATE_TAGFILE")))
+  {
+    config_err("Warning: GENERATE_TAGFILE contains confusing value, no TAGFILE will be generated.\n");
+  }
+  
   // if no output format is enabled, warn the user
   if (!Config_getBool("GENERATE_HTML")    && 
       !Config_getBool("GENERATE_LATEX")   &&

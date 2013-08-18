@@ -505,7 +505,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
 
-  bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
+  bool generateTagFile = (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1);
   if (generateTagFile)
   {
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
@@ -967,7 +967,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
         name = nd->displayName();
       }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,name);
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && nd->isLinkableInProject()) 
+      if ((checkFileName(Config_getString("GENERATE_TAGFILE")) == 1) && nd->isLinkableInProject())
       {
         Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
       }

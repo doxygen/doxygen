@@ -7890,3 +7890,20 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
   }
 }
 
+/*
+ * Return value:
+ * 2: in case of an "empty" value
+ * 0: in case a "boolean" value
+ * 1: otherwise a file name is given
+ */
+int checkFileName(QCString glval)
+{
+    if (glval.isEmpty()) return(2);
+    QCString val = glval.stripWhiteSpace().lower();
+    if ((val=="yes" || val=="true" || val=="1" || val=="all") ||
+        (val=="no" || val=="false" || val=="0" || val=="none"))
+    {
+      return(0);
+    }
+    return(1);
+}
