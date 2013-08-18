@@ -1929,7 +1929,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   else d=(Definition*)mdef;
 
   // write tag file information of this member
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     Doxygen::tagFile << "    <member kind=\"";
     if (VhdlDocGen::isGeneric(mdef))      Doxygen::tagFile << "generic";
