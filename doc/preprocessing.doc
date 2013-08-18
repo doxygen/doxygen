@@ -20,7 +20,7 @@ Source files that are used as input to doxygen can be parsed by doxygen's
 built-in C-preprocessor.
 
 By default doxygen does only partial preprocessing. That is, it 
-evaluates conditional compilation statements (like \#if) and 
+evaluates conditional compilation statements (like \c \#if) and 
 evaluates macro definitions, but it does not perform macro expansion.
 
 So if you have the following code fragment
@@ -75,14 +75,14 @@ the \ref cfg_predefined "PREDEFINED" or
 \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.  
 
 A typically example where some help from the preprocessor is needed is
-when dealing with Microsoft's __declspec language extension. The same goes
-for GNU's __attribute__ extension. Here is an example function.
+when dealing with the language extension from Microsoft: \c __declspec. The same goes
+for GNU's \c \__attribute__ extension. Here is an example function.
 
 \verbatim
 extern "C" void __declspec(dllexport) ErrorMsg( String aMessage,...);
 \endverbatim
 
-When nothing is done, doxygen will be confused and see __declspec as
+When nothing is done, doxygen will be confused and see \c __declspec as
 some sort of function. To help doxygen one typically uses the following
 preprocessor settings:
 
@@ -93,10 +93,10 @@ EXPAND_ONLY_PREDEF     = YES
 PREDEFINED             = __declspec(x)=
 \endverbatim
 
-This will make sure the __declspec(dllexport) is removed before doxygen
+This will make sure the \c __declspec(dllexport) is removed before doxygen
 parses the source code.
 
-Similar settings can be used for removing __attribute__ expressions from the input:
+Similar settings can be used for removing \c \__attribute__ expressions from the input:
 
 \verbatim  
 ENABLE_PREPROCESSING   = YES
@@ -127,7 +127,7 @@ DECLARE_INTERFACE(IUnknown)
 \endverbatim
 
 without macro expansion doxygen will get confused, but we may not want to 
-expand the REFIID macro, because it is documented and the user that reads 
+expand the \c REFIID macro, because it is documented and the user that reads 
 the documentation should use it when implementing the interface.
 
 By setting the following in the config file:
@@ -183,7 +183,7 @@ class QListT
 \endverbatim
 
 Then the only way to get doxygen interpret this as a class definition
-for class QList is to define:
+for class \c QList is to define:
 \verbatim
 PREDEFINED = QListT:=QList
 \endverbatim
