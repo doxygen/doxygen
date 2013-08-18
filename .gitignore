@@ -73,3 +73,6 @@
 /doc/Makefile
 /doc/translator_report.txt
 
+/examples/*/html
+/html
+/latex
