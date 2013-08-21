@@ -1293,11 +1293,13 @@ static void addClassToContext(EntryNav *rootNav)
     {
       tagName     = rootNav->tagInfo()->tagName;
       refFileName = rootNav->tagInfo()->fileName;
-    }
-    int i;
-    if ((i=fullName.find("::"))!=-1)
-    {
-      buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang);
+      int i;
+      if ((i=fullName.find("::"))!=-1) 
+        // symbols imported via tag files may come without the parent scope, 
+        // so we artificially create it here
+      {
+        buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang);
+      }
     }
     cd=new ClassDef(root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
