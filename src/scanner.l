@@ -666,6 +666,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x	ReadBodyIntf
 %x	Using
 %x	UsingAlias
+%x	UsingAliasEnd
 %x	UsingDirective
 %x	SkipCurly
 %x	SkipCurlyCpp
@@ -1976,12 +1977,42 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           previous->spec |= Entry::Alias;
                                           BEGIN(FindMembers); 
                                         }
+<UsingAlias>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+					  docBlockContext   = UsingAliasEnd;
+					  docBlockInBody    = FALSE;
+					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
+                                          QCString indent;
+                                          indent.fill(' ',computeIndent(yytext,g_column));
+                                          docBlock=indent;
+  					  lineCount();
+
+					  docBlockTerm = ';';
+					  if (yytext[yyleng-3]=='/')
+					  {
+					    startCommentBlock(TRUE);
+					    BEGIN( DocLine );
+					  }
+					  else
+					  {
+					    startCommentBlock(FALSE);
+					    BEGIN( DocBlock );
+					  }
+  					}
 <UsingAlias>.                           {
                                           previous->args+=yytext;
                                         }
 <UsingAlias>\n                          {
                                           previous->args+=yytext;
                                           lineCount();
+                                        }
+<UsingAliasEnd>";"                      {
+                                          previous->doc   = current->doc;
+                                          previous->brief = current->brief;
+                                          current->doc.resize(0);
+                                          current->brief.resize(0);
+                                          unput(';');
+                                          BEGIN(UsingAlias);
                                         }
 <UsingDirective>{SCOPENAME}		{ current->name=removeRedundantWhiteSpace(yytext);
                                           current->fileName = yyFileName; 
