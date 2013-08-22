@@ -998,7 +998,7 @@ The default value is: <code>NO</code>.
  option to \c NO.
 
 
-The default value is system dependent.
+The default value is: system dependent.
 
  \anchor cfg_hide_scope_names
 <dt>\c HIDE_SCOPE_NAMES <dd>

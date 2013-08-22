@@ -18,7 +18,7 @@
 
 Doxywizard is a GUI front-end for configuring and running doxygen. 
 
-Note is is possible to start the doxywizard with as argument the configuration file to be used.
+Note it is possible to start the doxywizard with as argument the configuration file to be used.
 
 When you start doxywizard it will display the main window 
 (the actual look depends on the OS used).
