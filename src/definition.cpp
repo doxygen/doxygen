@@ -647,28 +647,31 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
     }
   }
 
-  if (m_impl->brief && !m_impl->brief->doc.isEmpty())
+  if (!_docsAlreadyAdded(brief,m_impl->briefSignatures))
   {
-      //printf("adding to details\n");
-      _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
-  }
-  else if (!_docsAlreadyAdded(brief,m_impl->briefSignatures))
-  {
-    //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-    if (m_impl->brief==0)
+    if (m_impl->brief && !m_impl->brief->doc.isEmpty())
     {
-      m_impl->brief = new BriefInfo;
-    }
-    m_impl->brief->doc=brief;
-    if (briefLine!=-1)
-    {
-      m_impl->brief->file = briefFile;
-      m_impl->brief->line = briefLine;
+       //printf("adding to details\n");
+       _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
     }
     else
     {
-      m_impl->brief->file = briefFile;
-      m_impl->brief->line = 1;
+      //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
+      if (m_impl->brief==0)
+      {
+        m_impl->brief = new BriefInfo;
+      }
+      m_impl->brief->doc=brief;
+      if (briefLine!=-1)
+      {
+        m_impl->brief->file = briefFile;
+        m_impl->brief->line = briefLine;
+      }
+      else
+      {
+        m_impl->brief->file = briefFile;
+        m_impl->brief->line = 1;
+      }
     }
   }
   else
