@@ -164,7 +164,7 @@ static QList<Entry>     moduleProcedures; // list of all interfaces which contai
                                           // module procedures
 static QCString         docBlock;
 static QCString         docBlockName;
-static bool             docBlockInBody;
+static bool             docBlockInBody = FALSE;
 static bool             docBlockJavaStyle;
 
 static MethodTypes 	mtype;
@@ -1085,6 +1085,7 @@ private                                 {
                                           yy_push_state(YY_START);
 					  current->docLine  = yyLineNr;
  					  docBlockJavaStyle = FALSE;
+					  if (YY_START==SubprogBody) docBlockInBody = TRUE;
 					  docBlock.resize(0);
 					  docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
 					  startCommentBlock(TRUE);
@@ -2096,11 +2097,14 @@ static void startCommentBlock(bool brief)
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
-  docBlockInBody = FALSE;
   bool needsEntry = FALSE;
   static bool hideInBodyDocs = Config_getBool("HIDE_IN_BODY_DOCS");
   int position=0;
-  if (docBlockInBody && hideInBodyDocs) return;
+  if (docBlockInBody && hideInBodyDocs)
+  {
+    docBlockInBody = FALSE;
+    return;
+  }
   DBG_CTX((stderr,"call parseCommentBlock [%s]\n",doc.data()));
   int lineNr = brief ? current->briefLine : current->docLine;
   while (parseCommentBlock(
@@ -2123,6 +2127,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   DBG_CTX((stderr,"parseCommentBlock position=%d [%s]  needsEntry=%d\n",position,doc.data()+position,needsEntry));
 
   if (needsEntry) addCurrentEntry(0);
+  docBlockInBody = FALSE;
 }
 
 //----------------------------------------------------------------------------
@@ -2132,6 +2137,10 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   QCString loc_doc;
   Entry *tmp_entry = current; 
   current = subrCurrent.first(); // temporarily switch to the entry of the subroutine / function
+
+  // Still in the specification section so no inbodyDocs yet, but parameter documentation
+  current->inbodyDocs = "";
+
   if (docBlock.stripWhiteSpace().find("\\param") == 0)
   {
     handleCommentBlock("\n\n"+doc,brief);
