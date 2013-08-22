@@ -285,7 +285,7 @@ bool &Config::getBool(const char *fileName,int num,const char *name) const
   }
   else if (opt->kind()!=ConfigOption::O_Bool)
   {
-    config_err("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
+    config_err("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigBool *)opt)->valueRef();
@@ -1045,6 +1045,18 @@ static void cleanUpPaths(QStrList &str)
   }
 }
 
+void Config::checkFileName(const char *optionName)
+{
+  QCString &s = Config_getString(optionName);
+  QCString val = s.stripWhiteSpace().lower();
+  if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
+      (val=="no"  || val=="false" || val=="0" || val=="none")) 
+  {
+    config_err("Error: file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
+    s=""; // note tihe use of &s above: this will change the option value!
+  }
+}
+
 void Config::check()
 {
   //if (!projectName.isEmpty())
@@ -1536,6 +1548,7 @@ void Config::check()
     Config_getBool("EXTRACT_PACKAGE")       = TRUE;
   }                               
 
+  checkFileName("GENERATE_TAGFILE");
 }
 
 void Config::init()

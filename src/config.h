@@ -543,6 +543,7 @@ class Config
     }
 
   private:
+    void checkFileName(const char *);
     QList<ConfigOption> *m_options;
     QList<ConfigOption> *m_obsolete;
     QList<ConfigOption> *m_disabled;
