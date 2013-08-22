@@ -29,13 +29,11 @@ The latest binaries and source of Doxygen can be downloaded from:
 
 Developers
 ---------
-* Build Status
-  * ![Alt text](https://secure.travis-ci.org/doxygen/doxygen.png?branch=master)
-  * https://travis-ci.org/doxygen/doxygen
+* Build Status: <a href="https://travis-ci.org/doxygen/doxygen"><img src="https://secure.travis-ci.org/doxygen/doxygen.png?branch=master"/></a>
 
-### Install ###
-* Quick install see (./INSTALL) 
-* else http://www.doxygen.org/manual/install.html
+* Install
+  * Quick install see (./INSTALL) 
+  * else http://www.doxygen.org/manual/install.html
 
 Issues, bugs, requests, ideas
 ----------------------------------
