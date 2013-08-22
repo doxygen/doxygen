@@ -3399,7 +3399,7 @@ void MemberDef::_writeTagData(const DefType compoundType)
   if ((m_impl->tagDataWritten) & typeMask) return; // member already written for this type
   if (m_impl->mtype==MemberType_EnumValue && m_impl->enumScope &&
       m_impl->enumScope->isStrong()) return; // enum value is part of enum
-  static bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
+  static bool generateTagFile = (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1);
   // write tag file information of this member
   if (generateTagFile && isLinkableInProject())
   {

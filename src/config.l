@@ -1406,6 +1406,11 @@ void Config::check()
     examplePatternList.append("*");
   }
 
+  if (!checkFileName(Config_getString("GENERATE_TAGFILE")))
+  {
+    config_err("Warning: GENERATE_TAGFILE contains confusing value, no TAGFILE will be generated.\n");
+  }
+  
   // if no output format is enabled, warn the user
   if (!Config_getBool("GENERATE_HTML")    && 
       !Config_getBool("GENERATE_LATEX")   &&

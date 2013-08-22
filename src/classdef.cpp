@@ -1219,7 +1219,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
 
         if (cd->isLinkable())
         {
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+          if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
           {
             Doxygen::tagFile << "    <base";
             if (bcd->prot==Protected)
@@ -1546,7 +1546,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
 void ClassDef::writeTagFileMarker()
 {
   // write section to the tag file
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
     Doxygen::tagFile << "\"";
@@ -1775,7 +1775,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       ol.startMemberList();
       found=TRUE;
     }
-    if (!Config_getString("GENERATE_TAGFILE").isEmpty() &&
+    if ((checkFileName(Config_getString("GENERATE_TAGFILE")) == 1) &&
         !isReference())  // skip classes found in tag files
     {
       Doxygen::tagFile << "    <class kind=\"" << compoundTypeString() 
@@ -1982,7 +1982,7 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
     }
   }
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;

@@ -1641,7 +1641,7 @@ static void processTagLessClasses(ClassDef *rootCd,
 
 static void writeMainPageTagFileData()
 {
-  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (Doxygen::mainPage && (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1))
   {
     Doxygen::tagFile << "  <compound kind=\"page\">" << endl
                      << "    <name>"
@@ -11162,9 +11162,10 @@ void generateOutput()
    **************************************************************************/
 
   QFile *tag=0;
-  QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
-  if (!generateTagFile.isEmpty())
+  //QCString &generateTagFile;
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
+    QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
     tag=new QFile(generateTagFile);
     if (!tag->open(IO_WriteOnly))
     {
@@ -11274,7 +11275,7 @@ void generateOutput()
   Doxygen::indexList->finalize();
   g_s.end();
 
-  if (!generateTagFile.isEmpty())
+  if (checkFileName(Config_getString("GENERATE_TAGFILE")) == 1)
   {
     Doxygen::tagFile << "</tagfile>" << endl;
     delete tag;
