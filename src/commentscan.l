@@ -880,6 +880,7 @@ LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 CITEID    [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-:/]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
+TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
@@ -1343,6 +1344,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ------ handle argument of class/struct/union command --------------- */
 
+<ClassDocArg1>{SCOPENAME}{TMPLSPEC}     { 
+  					  current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
+					  BEGIN( ClassDocArg2 );
+                                        }
 <ClassDocArg1>{SCOPENAME}		{ // first argument
   					  current->name = substitute(yytext,".","::");
 					  if (current->section==Entry::PROTOCOLDOC_SEC)
