@@ -1,11 +1,116 @@
 /** \page changelog Changelog
 \tableofcontents
-\section log_1_8 Release 1.8
+\section log_1_8 1.8 Series
+
+\subsection log_1_8_5 Release 1.8.5
+\htmlonly
+<b>(release date 23-08-2013)</b>
+<a name="1.8.5"></a>
+<h3>Changes</h3>
+<ul>
+<li>Doxygen's source code is now managed using git and GitHub. Automatic builds
+    and regression tests are scheduled via Travis CI.
+<li>Configuration data for the config file, the documentation, and the wizard
+    are now produced from a single source (thanks to Albert)
+<li>All translation files have been migrated to UTF-8 (thanks to Petr Prikryl)
+<li>Added black box testing framework and a set of tests.
+</ul>
+<h3>New features</h3>
+<ul>
+<li>Added SOURCE_TOOLTIPS option for advanced tooltip support while source browsing.
+</ul>
+<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database)</h3>
+<ul>
+<li> Bug 668007 - HTML commands - documentation of &lt;/dd&gt; tag missing
+<li> Bug 676879 - parameter on doxywizard manual Added sentenc in respect to possible argument for doxywizard Added images to the LaTex / pdf version of the manual
+<li> Bug 684324 - Strange behavior when placing cite within brief. 
+<li> Bug 688858 - SHORT_NAMES break references to \page in PDF output
+<li> Bug 691315 - Line breaks are not copied/displayed properly when using @copydoc. 
+<li> Bug 691830 - Logical confusion with DISABLE_INDEX and GENERATE_TREEVIEW
+<li> Bug 694147 - #undef is ignored by doxygen
+<li> Bug 698998 - vhdldocgen fails to generate proper latex for VHDL record type
+<li> Bug 700385 - Incorrectly parsed Q_PROPERTY with 'unsigned int' type
+<li> Bug 700646 - XML output does not handle HTML entities in titles
+<li> Bug 700693 - Duplicate entry for class template member function with no parameter
+<li> Bug 700696 - Template static member functions duplicated as non-static public
+<li> Bug 700709 - typedef warning when "using" some operator functions
+<li> Bug 700710 - Docbook output produces invalid XML for &lt;programlisting&gt; elements
+<li> Bug 700740 - Doxygen does not create links on C++ 11 style enum classes
+<li> Bug 700788 - support @cite within brief description.
+<li> Bug 700908 - code after \@cond is removed
+<li> Bug 701295 - Doxygen 1.8.4 goes into an endless loop
+<li> Bug 701314 - URLs are not created on C# classes in some cases
+<li> Bug 701550 - Error List window in Visual Studio no longer recognizes doxygen warnings
+<li> Bug 701771 - EXPAND_AS_DEFINED not working with some project structures
+<li> Bug 701919 - VHDL cross-references fail when unpaired apostrophe present
+<li> Bug 702066 - VHDL: Bad HTML formatting when using inline sources
+<li> Bug 702170 - Missing space before optional option in method argument list
+<li> Bug 702189 - Markdown and @image
+<li> Bug 702491 - UTF-16LE BOM not handled by source browser and \snippet
+<li> Bug 702590 - Crash with TAB_SIZE=-1
+<li> Bug 702676 - Closing ) of function in function documentation is in wrong color
+<li> Bug 703574 - Add configure options to enable static SQLite and non-standard SQLite
+<li> Bug 703112 - Backward documentation comments are not allowed in Fortran type-bound procedures
+<li> Bug 703133 - "operator--()" transformed to "operator&amp;ndash;()" in @copydoc
+<li> Bug 703170 - Segmentation fault parsing a fortran file
+<li> Bug 703213 - Can't use @ref instead of \ref with msc
+<li> Bug 703301 - Misleading warning about DOT font
+<li> Bug 703791 - Out-of-line docs for class template specialisations failing
+<li> Bug 704079 - Generated XML is malformed
+<li> Bug 704172 - Nested Aliases fail when the nested alias has two or more arguments.
+<li> Bug 704412 - doxygen don't hide private Inherited Members
+<li> Bug 704971 - Can't build with MinGW
+<li> Bug 704973 - Doxywizard can't show file names using non-ASCII(Unicode)
+<li> Bug 705190 - Incorrectly parsed Q_PROPERTY with 'long long' or 'long int' type
+<li> Bug 705217 - Can't use unicode characters to execute external commands
+<li> Bug 705218 - QRegExp doesn't work with 80-FF
+<li> Bug 705219 - Accept IDs using unicode for C/C++ preprocessor
+<li> Bug 705586 - @code tag as the last line of a comment block causes the parser to hang
+<li> Bug 705702 - Post-comment blocks on C++11 using definitions attach to following entity
+<li> Bug 706236 - Confusing use of GENERATE_TAGFILE
+<li> Bug 706520 - Fortran: in body documentation lands on wrong place
+<li> Small typo correceted in doxywizard_usage.doc Generated config.doc file in git is not identical to the generated one
+<li> Various improvements to the (still experimental) sqlite3 support (thanks to Adrian Negreanu)
+<li> jquery: use the env MINIFIER if specified
+<li> Some words now in code style __attribute__ was seen (markdown) as the bold word attribute Reformulation of a sentence due to a not nice split of word (__declspec was split directly after __ in pdf)
+<li> Extended list with supported options for automatic link generation
+<li> Added -v option (analogous to --version). In case option started with -- and is not a known valuue (help or version) and error is given instead of starting Doxygen
+<li> Fixed regression when nested class were processed before their parent
+<li> Minor changes to the way the code for config options is generated (thanks to Albert for the patch)
+<li> Brief description did not appear in the page index, when a page did not have any details.
+<li> Using &amp; in the project name caused invalid HTML and LaTeX output
+<li> Fixed regression caused by the patch for bug 705219
+<li> Fixed issue running dot on files with non-ascii characters
+<li> Delayed expanding the HTML navigation tree until after the page has loaded
+<li> Made some fixed to the configure script for Cygwin (thanks to David Stacey)
+<li> config.xml is now used to generate configoptions.cpp and config.doc
+<li> Fixed whitespace issue when using \overload without arguments
+<li> Avoid space in the output after \n command following by a newline.
+<li> Fixed problem handling C comments inside a \code block.
+<li> Improved handling of \internal and \endinternal
+<li> Removed extra newline when reading in an input file
+<li> Make XML output adhere to MAX_INITIALIZER_LINES
+<li> Fixed issue handling \elseif after \ifnot
+<li> Fixed regression that could cause double nested classes
+<li> Fixed issue handling \docbookonly..\enddocbookonly section
+<li> The language specifier in e.g. \code{.py} was ignored for the XML output
+<li> Fix reference to scoped enum imported via a tag file.
+<li> Replaced utf8 character that broke latex compilation of the manual
+<li> Fixed unused parameter warnings
+<li> Add support for writing and importing C++11 style enums to and from tag files
+<li> Fixed regression introduced by fixed bug Bug 700740
+<li> Fixed type in function name
+<li> Remove some unneeded and still enabled debug info
+<li> Included fix for "Constant Groups" regression on file pages (thanks to Michael Stahl) 
+<li> Add scopes to Fortran prototype name parsing (thanks to Oleg Batrashev).
+<li> Prototype scan for function, does not yet catch parameter types (thanks to Oleg Batrashev).
+</ul>
+\endhtmlonly
 
 \subsection log_1_8_4 Release 1.8.4
 \htmlonly
 <b>(release date 19-05-2013)</b>
-<a name="1.8.3.1"></a>
+<a name="1.8.4"></a>
 <h3>Changes</h3>
 <ul>
 <li>   id 686384: When INLINE_SIMPLE_STRUCTS is enabled, also structs with
@@ -56,7 +161,7 @@
 <li>   id 693422: Adds support for Latvian (thanks to a patch by Lauris).
 <li>   Included language updates for Ukrainian, Romanian, and Korean
 </ul>
-<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database)</h3>
+<h3>Bug fixes</h3>
 <ul>
 <li>   id 145294: Fixed parse issue when using less than inside a template
        argument.
@@ -877,7 +982,7 @@ make sure you add the following:
 <li>   Fixed some typos in the manual (thanks Albert).
 </ul>
 \endhtmlonly
-\section log_1_7 Release 1.7
+\section log_1_7 1.7 Series
 \htmlonly
 <a name="1.7.6.1"></a>
 <h1>Doxygen Release 1.7.6.1</h1>
@@ -1620,7 +1725,7 @@ make sure you add the following:
 
 </ul>
 \endhtmlonly
-\section log_1_6 Release 1.6
+\section log_1_6 1.6 Series
 \htmlonly
 <a name="1.6.3"></a>
 <h1>Doxygen Release 1.6.3</h1>
