@@ -856,7 +856,7 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
   if (m_userComment)
   {
     t << "\n";
-    t << m_userComment;
+    t << takeUserComment();
   }
 }
 

@@ -22,6 +22,7 @@
 #include <qstrlist.h>
 #include <qdict.h>
 #include <qlist.h>
+#include <qregexp.h>
 #include "ftextstream.h"
 
 
@@ -518,7 +519,7 @@ class Config
     {
       QCString result=m_userComment;
       m_userComment.resize(0);
-      return result;
+      return result.replace(QRegExp("\r"),"");
     }
 
   protected:
