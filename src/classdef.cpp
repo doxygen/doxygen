@@ -4102,11 +4102,13 @@ int ClassDef::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
   {
     if (ml) 
     {
+      ml->countDecMembers();
       count+=ml->numDecMembers();
       //printf("-> ml=%d\n",ml->numDecMembers());
     }
     if (ml2)
     {
+      ml2->countDecMembers();
       count+=ml2->numDecMembers();
       //printf("-> ml2=%d\n",ml2->numDecMembers());
     }
