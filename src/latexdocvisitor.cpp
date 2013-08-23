@@ -1296,15 +1296,25 @@ void LatexDocVisitor::visitPost(DocRef *ref)
   }
 }
 
-void LatexDocVisitor::visitPre(DocSecRefItem *)
+void LatexDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
   m_t << "\\item \\contentsline{section}{";
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (pdfHyperlinks)
+  {
+    m_t << "\\hyperlink{" << ref->file() << "_" << ref->anchor() << "}{" ;
+  }
 }
 
 void LatexDocVisitor::visitPost(DocSecRefItem *ref) 
 {
   if (m_hide) return;
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (pdfHyperlinks)
+  {
+    m_t << "}";
+  }
   m_t << "}{\\ref{" << ref->file() << "_" << ref->anchor() << "}}{}" << endl;
 }
 
