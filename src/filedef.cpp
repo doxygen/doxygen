@@ -1794,3 +1794,9 @@ void FileDef::getAllIncludeFilesRecursively(QStrList &incFiles) const
   QDict<void> includes(257);
   ::getAllIncludeFilesRecursively(&includes,this,incFiles);
 }
+
+QCString FileDef::title() const
+{
+  return theTranslator->trFileReference(name());
+}
+

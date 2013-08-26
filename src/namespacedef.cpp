@@ -460,27 +460,8 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   //static bool outputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  SrcLangExt lang = getLanguage();
 
-  QCString pageTitle;
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
-  {
-    pageTitle = theTranslator->trPackage(displayName());
-  }
-  else if (lang==SrcLangExt_Fortran)
-  {
-    pageTitle = theTranslator->trModuleReference(displayName());
-  }
-  else if (lang==SrcLangExt_IDL)
-  {
-    pageTitle = isConstantGroup()
-        ? theTranslator->trConstantGroupReference(displayName())
-        : theTranslator->trModuleReference(displayName());
-  }
-  else
-  {
-    pageTitle = theTranslator->trNamespaceReference(displayName());
-  }
+  QCString pageTitle = title();
   startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible,!generateTreeView);
 
   if (!generateTreeView)
@@ -522,6 +503,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- start flexible part -------------------------------
 
+  SrcLangExt lang = getLanguage();
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
   LayoutDocEntry *lde;
@@ -1096,3 +1078,27 @@ MemberDef * NamespaceDef::getMemberByName(const QCString &n) const
   return md;
 }
 
+QCString NamespaceDef::title() const
+{
+  SrcLangExt lang = getLanguage();
+  QCString pageTitle;
+  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+  {
+    pageTitle = theTranslator->trPackage(displayName());
+  }
+  else if (lang==SrcLangExt_Fortran)
+  {
+    pageTitle = theTranslator->trModuleReference(displayName());
+  }
+  else if (lang==SrcLangExt_IDL)
+  {
+    pageTitle = isConstantGroup()
+        ? theTranslator->trConstantGroupReference(displayName())
+        : theTranslator->trModuleReference(displayName());
+  }
+  else
+  {
+    pageTitle = theTranslator->trNamespaceReference(displayName());
+  }
+  return pageTitle;
+}

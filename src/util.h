@@ -257,6 +257,9 @@ QCString replaceAnonymousScopes(const QCString &s,const char *replacement=0);
 void initClassHierarchy(ClassSDict *cl);
 
 bool hasVisibleRoot(BaseClassList *bcl);
+bool classHasVisibleChildren(ClassDef *cd);
+bool namespaceHasVisibleChild(NamespaceDef *nd,bool includeClasses);
+bool classVisibleInIndex(ClassDef *cd);
 
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
 Protection classInheritedProtectionLevel(ClassDef *cd,ClassDef *bcd,Protection prot=Public,int level=0);
@@ -442,6 +445,8 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst);
 uint getUtf8Code( const QCString& s, int idx );
 uint getUtf8CodeToLower( const QCString& s, int idx );
 uint getUtf8CodeToUpper( const QCString& s, int idx );
+
+
 
 #endif
 

@@ -131,6 +131,8 @@ class FileDef : public Definition
     MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
     NamespaceSDict *getNamespaceSDict() const     { return m_namespaceSDict; }
     ClassSDict *getClassSDict() const             { return m_classSDict; }
+
+    QCString title() const;
     
     //---------------------------------
 

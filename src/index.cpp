@@ -414,38 +414,11 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
   }
 }
 
-//----------------------------------------------------------------------------
-
-static bool classHasVisibleChildren(ClassDef *cd)
-{
-  BaseClassList *bcl;
-
-  if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
-  {
-    if (cd->baseClasses()==0) return FALSE;
-    bcl=cd->baseClasses();
-  }
-  else 
-  {
-    if (cd->subClasses()==0) return FALSE;
-    bcl=cd->subClasses();
-  }
-
-  BaseClassListIterator bcli(*bcl);
-  for ( ; bcli.current() ; ++bcli)
-  {
-    if (bcli.current()->classDef->isVisibleInHierarchy())
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
 
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-static void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
+static void writeClassTree(OutputList &ol,const BaseClassList *bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
 {
   if (bcl==0) return;
   BaseClassListIterator bcli(*bcl);
@@ -558,14 +531,6 @@ static void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int 
       ftv->decContentsDepth();
     }
   }
-}
-
-//----------------------------------------------------------------------------
-
-static bool classVisibleInIndex(ClassDef *cd)
-{
-  static bool allExternals = Config_getBool("ALLEXTERNALS");
-  return (allExternals && cd->isLinkable()) || cd->isLinkableInProject();
 }
 
 //----------------------------------------------------------------------------
@@ -1409,39 +1374,6 @@ void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalO
   }
 }
 
-static bool containsVisibleChild(NamespaceDef *nd,bool includeClasses)
-{
-  if (nd->getNamespaceSDict())
-  {
-    NamespaceSDict::Iterator cnli(*nd->getNamespaceSDict());
-    NamespaceDef *cnd;
-    for (cnli.toFirst();(cnd=cnli.current());++cnli)
-    {
-      if (cnd->isLinkable() && cnd->localName().find('@')==-1)
-      {
-        return TRUE;
-      }
-      else if (containsVisibleChild(cnd,includeClasses))
-      {
-        return TRUE;
-      }
-    }
-  }
-  if (includeClasses && nd->getClassSDict())
-  {
-    ClassSDict::Iterator cli(*nd->getClassSDict());
-    ClassDef *cd;
-    for (;(cd=cli.current());++cli)
-    {
-      if (cd->isLinkableInProject() && cd->templateMaster()==0) 
-      { 
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-}
-
 static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
                                bool rootOnly,bool showClasses,bool addToIndex)
 {
@@ -1455,7 +1387,7 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
           (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
 
-        bool hasChildren = containsVisibleChild(nd,showClasses);
+        bool hasChildren = namespaceHasVisibleChild(nd,showClasses);
         bool isLinkable  = nd->isLinkableInProject();
 
         QCString ref; 
@@ -3562,7 +3494,6 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         if (gd->getSubGroups()->count()>0)
         {
           startIndexHierarchy(ol,level+1);
-          if (Config_getBool("SORT_GROUP_NAMES")) gd->sortSubGroups();
           QListIterator<GroupDef> gli(*gd->getSubGroups());
           GroupDef *subgd = 0;
           for (gli.toFirst();(subgd=gli.current());++gli)
@@ -3596,10 +3527,6 @@ static void writeGroupHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     ol.disable(OutputGenerator::Html);
   }
   startIndexHierarchy(ol,0);
-  if (Config_getBool("SORT_GROUP_NAMES"))
-  {
-    Doxygen::groupSDict->sort();
-  }
   GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)

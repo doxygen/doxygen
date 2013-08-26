@@ -916,9 +916,15 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
   }
 }
 
+bool ClassDef::hasBriefDescription() const
+{
+  static bool briefMemberDesc = Config_getBool("BRIEF_MEMBER_DESC");
+  return !briefDescription().isEmpty() && briefMemberDesc;
+}
+
 void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
 {
-  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+  if (hasBriefDescription())
   {
     ol.startParagraph();
     ol.generateDoc(briefFile(),briefLine(),this,0,
@@ -929,10 +935,7 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
     ol.enable(OutputGenerator::RTF);
     ol.popGeneratorState();
 
-    if (Config_getBool("REPEAT_BRIEF") || 
-        !documentation().isEmpty() || 
-        exampleFlag
-       )
+    if (hasDetailedDescription() || exampleFlag)
     {
       writeMoreLink(ol,anchor());
     }
@@ -990,14 +993,20 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
   ol.endTextBlock();
 }
 
+bool ClassDef::hasDetailedDescription() const
+{
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  return ((!briefDescription().isEmpty() && repeatBrief) || 
+          !documentation().isEmpty() || 
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef()));
+}
+
 // write the detailed description for this class
 void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &/*pageType*/, bool exampleFlag, 
                                         const QCString &title,const QCString &anchor)
 {
-  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty() || 
-      (Config_getBool("SOURCE_BROWSER") && getStartBodyLine()!=-1 && getBodyDef()) ||
-      exampleFlag)
+  if (hasDetailedDescription() || exampleFlag)
   {
     ol.pushGeneratorState();
       ol.disable(OutputGenerator::Html);
@@ -1990,12 +1999,8 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
   ol.endContents();
 }
 
-// write all documentation for this class
-void ClassDef::writeDocumentation(OutputList &ol)
+QCString ClassDef::title() const
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString pageTitle;
   SrcLangExt lang = getLanguage();
     
@@ -2027,7 +2032,17 @@ void ClassDef::writeDocumentation(OutputList &ol)
               m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
               m_impl->tempArgs != 0);
   }
-  
+  return pageTitle;
+}
+
+// write all documentation for this class
+void ClassDef::writeDocumentation(OutputList &ol)
+{
+  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+  //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  QCString pageTitle = title();
+    
   startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,!generateTreeView);  
   if (!generateTreeView)
   {
@@ -4723,4 +4738,8 @@ bool ClassDef::isExtension() const
   return b;
 }
 
+const ClassSDict *ClassDef::innerClasses() const
+{
+  return m_impl->innerClasses;
+}
 

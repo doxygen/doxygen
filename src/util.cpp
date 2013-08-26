@@ -5076,6 +5076,34 @@ static void initBaseClassHierarchy(BaseClassList *bcl)
     cd->visited=FALSE;
   }
 }
+//----------------------------------------------------------------------------
+
+bool classHasVisibleChildren(ClassDef *cd)
+{
+  BaseClassList *bcl;
+
+  if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
+  {
+    if (cd->baseClasses()==0) return FALSE;
+    bcl=cd->baseClasses();
+  }
+  else 
+  {
+    if (cd->subClasses()==0) return FALSE;
+    bcl=cd->subClasses();
+  }
+
+  BaseClassListIterator bcli(*bcl);
+  for ( ; bcli.current() ; ++bcli)
+  {
+    if (bcli.current()->classDef->isVisibleInHierarchy())
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 
 //----------------------------------------------------------------------------
 
@@ -7987,4 +8015,45 @@ uint getUtf8CodeToUpper( const QCString& s, int idx )
 }
 
 //--------------------------------------------------------------------------------------
+
+bool namespaceHasVisibleChild(NamespaceDef *nd,bool includeClasses)
+{
+  if (nd->getNamespaceSDict())
+  {
+    NamespaceSDict::Iterator cnli(*nd->getNamespaceSDict());
+    NamespaceDef *cnd;
+    for (cnli.toFirst();(cnd=cnli.current());++cnli)
+    {
+      if (cnd->isLinkable() && cnd->localName().find('@')==-1)
+      {
+        return TRUE;
+      }
+      else if (namespaceHasVisibleChild(cnd,includeClasses))
+      {
+        return TRUE;
+      }
+    }
+  }
+  if (includeClasses && nd->getClassSDict())
+  {
+    ClassSDict::Iterator cli(*nd->getClassSDict());
+    ClassDef *cd;
+    for (;(cd=cli.current());++cli)
+    {
+      if (cd->isLinkableInProject() && cd->templateMaster()==0) 
+      { 
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+//----------------------------------------------------------------------------
+
+bool classVisibleInIndex(ClassDef *cd)
+{
+  static bool allExternals = Config_getBool("ALLEXTERNALS");
+  return (allExternals && cd->isLinkable()) || cd->isLinkableInProject();
+}
 

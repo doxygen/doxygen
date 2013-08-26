@@ -30,6 +30,7 @@ HEADERS      =	arguments.h \
                 compound.xsd.h \
 		condparser.h \
                 config.h \
+		context.h \
 		constexp.h \
 		cppvalue.h \
 		debug.h \
@@ -129,6 +130,7 @@ HEADERS      =	arguments.h \
                 store.h \
 		tagreader.h \
 		tclscanner.h \
+		template.h \
                 textdocvisitor.h \
 		tooltip.h \
 		translator.h \
@@ -155,6 +157,7 @@ SOURCES      =	arguments.cpp \
 		commentcnv.cpp \
 		commentscan.cpp \
 		condparser.cpp \
+		context.cpp \
 		cppvalue.cpp \
                 dbusxmlscanner.cpp \
 		debug.cpp \
@@ -224,6 +227,7 @@ SOURCES      =	arguments.cpp \
                 store.cpp \
 		tagreader.cpp \
                 tclscanner.cpp \
+		template.cpp \
                 textdocvisitor.cpp \
                 tooltip.cpp \
 		util.cpp \
@@ -239,8 +243,8 @@ SOURCES      =	arguments.cpp \
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
-win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
-linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions -fno-rtti
+win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions
+linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions
 INCLUDEPATH                += ../qtools
 #INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5

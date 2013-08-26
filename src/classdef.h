@@ -125,6 +125,12 @@ class ClassDef : public Definition
     /** returns TRUE if this class has documentation */
     bool hasDocumentation() const;
 
+    /** returns TRUE if this class has a brief description */
+    bool hasBriefDescription() const;
+
+    /** returns TRUE if this class has a non-empty detailed description */
+    bool hasDetailedDescription() const;
+
     /** Returns the name as it is appears in the documentation */
     QCString displayName(bool includeScope=TRUE) const;
 
@@ -301,6 +307,8 @@ class ClassDef : public Definition
     bool isJavaEnum() const;
 
     bool isGeneric() const;
+    const ClassSDict *innerClasses() const;
+    QCString title() const;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----

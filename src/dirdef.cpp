@@ -329,12 +329,16 @@ void DirDef::endMemberDeclarations(OutputList &ol)
   ol.endMemberSections();
 }
 
+QCString DirDef::shortTitle() const
+{
+  return theTranslator->trDirReference(m_shortName);
+}
+
 void DirDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
   
-  QCString shortTitle=theTranslator->trDirReference(m_shortName);
   QCString title=theTranslator->trDirReference(m_dispName);
   startFile(ol,getOutputFileBase(),name(),title,HLI_None,!generateTreeView);
 
@@ -348,7 +352,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.parseText(shortTitle);
+    ol.parseText(shortTitle());
     ol.enableAll();
     ol.disable(OutputGenerator::Html);
     ol.parseText(title);

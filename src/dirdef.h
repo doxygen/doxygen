@@ -66,6 +66,7 @@ class DirDef : public Definition
     const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
     bool isParentOf(DirDef *dir) const;
     bool depGraphIsTrivial() const;
+    QCString shortTitle() const;
 
     // generate output
     void writeDocumentation(OutputList &ol);

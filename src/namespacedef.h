@@ -92,6 +92,8 @@ class NamespaceDef : public Definition
     /*! Returns the namespaces contained in this namespace */
     NamespaceSDict *getNamespaceSDict() const { return namespaceSDict; }
 
+    QCString title() const;
+
     bool visited;
 
   private:

@@ -97,6 +97,7 @@
 #include "docsets.h"
 #include "formula.h"
 #include "settings.h"
+#include "context.h"
 
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
@@ -177,6 +178,7 @@ static QDict<FileDef>   g_usingDeclarations(1009); // used classes
 static FileStorage     *g_storage = 0;
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
+static bool             g_useOutputTemplate = FALSE; 
 
 void clearAll()
 {
@@ -10230,6 +10232,12 @@ void readConfiguration(int argc, char **argv)
         setvbuf(stdout,NULL,_IONBF,0);
         Doxygen::outputToWizard=TRUE;
         break;
+      case 'T':
+        msg("Warning: this option activates output generation via Django like template files. "
+            "This option is scheduled for doxygen 2.0, is currently incomplete and highly experimental! "
+            "Only use if you are a doxygen developer\n");
+        g_useOutputTemplate=TRUE;
+        break;
       case 'h':
       case '?':
         usage(argv[0]);
@@ -11309,6 +11317,17 @@ void generateOutput()
     Doxygen::formulaList->generateBitmaps(Config_getString("HTML_OUTPUT"));
     g_s.end();
   }
+
+  if (Config_getBool("SORT_GROUP_NAMES"))
+  {
+    Doxygen::groupSDict->sort();
+    GroupSDict::Iterator gli(*Doxygen::groupSDict);
+    GroupDef *gd;
+    for (gli.toFirst();(gd=gli.current());++gli)
+    {
+      gd->sortSubGroups();
+    }
+  }
   
   writeMainPageTagFileData();
 
@@ -11474,6 +11493,8 @@ void generateOutput()
   {
     msg("finished...\n");
   }
+
+  if (g_useOutputTemplate) generateOutputViaTemplate();
 
   /**************************************************************************
    *                        Start cleaning up                               *

@@ -243,7 +243,7 @@ class Definition : public DefinitionIntf
     /*! Returns the file in which the body of this item is located or 0 if no
      *  body is available.
      */
-    FileDef *getBodyDef();
+    FileDef *getBodyDef() const;
 
     /** Returns the programming language this definition was written in. */
     SrcLangExt getLanguage() const;

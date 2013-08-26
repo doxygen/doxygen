@@ -1815,7 +1815,7 @@ int Definition::getEndBodyLine() const
   return m_impl->body ? m_impl->body->endLine : -1; 
 }
 
-FileDef *Definition::getBodyDef()                
+FileDef *Definition::getBodyDef() const
 { 
   return m_impl->body ? m_impl->body->fileDef : 0; 
 }
