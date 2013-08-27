@@ -80,7 +80,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 
-%doc README LICENSE LANGUAGE.HOWTO examples ./latex/*.pdf
+%doc README.md LICENSE LANGUAGE.HOWTO examples ./latex/*.pdf
 %doc /usr/man/man1/doxygen.1.gz
 
 %{_bindir}/doxygen
