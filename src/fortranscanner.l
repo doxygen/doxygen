@@ -1998,7 +1998,7 @@ static void addSubprogram(const char *text)
   subrCurrent.prepend(current);
   current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
-  functionLine = subtype=="function";
+  functionLine = (subtype.find("function") != -1);
   current->type += " " + subtype;
   current->type = current->type.stripWhiteSpace();
   current->fileName  = yyFileName;
