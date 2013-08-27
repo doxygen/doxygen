@@ -7682,6 +7682,7 @@ QCString extractBlock(const QCString text,const QCString marker)
     p=i+1;
   }
   l1=p;
+  int lp=i;
   if (found)
   {
     while ((i=text.find('\n',p))!=-1)
@@ -7692,10 +7693,15 @@ QCString extractBlock(const QCString text,const QCString marker)
         break;
       }
       p=i+1;
+      lp=i;
     }
   }
+  if (l2==-1) // marker at last line without newline (see bug706874)
+  {
+    l2=lp;
+  }
   //printf("text=[%s]\n",text.mid(l1,l2-l1).data());
-  return text.mid(l1,l2-l1);
+  return l2>l1 ? text.mid(l1,l2-l1) : QCString();
 }
 
 /** Returns a string representation of \a lang. */
