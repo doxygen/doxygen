@@ -73,6 +73,9 @@
 /doc/Makefile
 /doc/translator_report.txt
 
+/doxygen_docs
+/doxygen.tag
+
 /examples/*/html
 /html
 /latex
