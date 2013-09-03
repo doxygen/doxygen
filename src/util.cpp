@@ -1652,7 +1652,9 @@ static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
   static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
-  if (s.isEmpty()) return s;
+  static bool vhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+   
+  if (s.isEmpty() || vhdl) return s;
   static GrowBuf growBuf;
   //int resultLen = 1024;
   //int resultPos = 0;

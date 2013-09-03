@@ -2019,9 +2019,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   /*VHDL CHANGE */
   bool bRec,bUnit;
   QCString ltype(mdef->typeString());
-  ltype=ltype.replace(reg," ");
+ // ltype=ltype.replace(reg," ");
   QCString largs(mdef->argsString());
-  largs=largs.replace(reg," ");
+ // largs=largs.replace(reg," ");
   mdef->setType(ltype.data());
   mdef->setArgsString(largs.data());
   //ClassDef * plo=mdef->getClassDef();

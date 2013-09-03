@@ -382,14 +382,14 @@ t_ToolDir
 %type<qstr>  sel_wavefrms_1 sel_wavefrms_2 gen_stat1 block_declarative_part end_stats inout_stat
 %type<qstr> selected_signal_assignment comp_inst_stat                                             
  %type<qstr> conditional_signal_assignment selected_variable_assignment conditional_variable_assignment 
- %type<qstr> subprog_decltve_item subprog_body_3 subprog_body_1 procs_stat1_2
+ %type<qstr> subprog_decltve_item subprog_body_3 subprog_body_1 procs_stat1_2 gen_assoc
 
 %debug
 
 // for debugging set yydebug=1
 %initial-action { yydebug=0; }
 
-%expect 2
+%expect 3
 
 // minimum bison version
 //%required "2.2"
@@ -875,13 +875,18 @@ association_list:   t_LeftParen association_element association_list_1 t_RightPa
 association_list_1:  /* empty */                           { $$=""; }
 association_list_1: association_list_1 association_list_2  { $$=$1+" "+$2; }
 association_list_2: t_Comma association_element            { $$=", "+$2; }
+// VHDL '93 range_constraint ::= range range
+gen_association_list : gen_assoc gen_assoc { $$=$1+$2;}
+                                
+gen_association_list : gen_assoc { $$=$1; }
 
-gen_association_list : t_LeftParen gen_association_element gen_association_list_1 t_RightParen
+gen_assoc: t_LeftParen gen_association_element gen_association_list_1 t_RightParen 
     {
-      QCString str="( "+$2+$3;
-      str.append(" )");
+      QCString str="("+$2+$3;
+      str.append(")");
       $$=str;
     }
+
 gen_association_list: t_LeftParen  error t_RightParen { $$=""; }
 gen_association_list: t_LeftParen t_OPEN t_RightParen { $$=" ( open ) "; }
 
@@ -1073,7 +1078,7 @@ type_decl: t_TYPE t_Identifier type_decl_1 t_Semicolon
 type_decl: t_TYPE error t_Semicolon { $$=""; }
 
 type_decl_1:  /* empty */           { $$=""; }
-type_decl_1: t_IS type_definition   { $$=" is "+$2; }
+type_decl_1: t_IS type_definition   { $$="  "+$2; }
 
 type_definition: enumeration_type_definition    { $$=$1; }
 type_definition: range_constraint               { $$=$1; }
@@ -2541,10 +2546,10 @@ static void addVhdlType(const QCString &name,int startLine,int section,
     if (current->args.isEmpty())
     {
       current->args=args;
-      current->args.replace(reg,"%"); // insert dummy chars because wihte spaces are removed
+//    current->args.replace(reg,"%"); // insert dummy chars because wihte spaces are removed
     }
     current->type=type;
-    current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
+//  current->type.replace(reg,"%"); // insert dummy chars because white spaces are removed
     current->protection=prot;
  
        if (!lastCompound && (section==Entry::VARIABLE_SEC) &&  (spec == VhdlDocGen::USE || spec == VhdlDocGen::LIBRARY) )
