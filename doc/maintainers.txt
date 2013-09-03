@@ -127,6 +127,7 @@ Ionut Dumitrascu: reddumy at yahoo dot com
 Alexandru Iosup: aiosup at yahoo dot com
 
 TranslatorRussian
+Brilliantov Kirill Vladimirovich: brilliantov at byterg dot ru
 Alexandr Chelpanov: cav at cryptopro dot ru
 
 TranslatorSerbian

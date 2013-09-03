@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_7_5
+class TranslatorRussian : public Translator
 {
   public:
     /*! Used for identification of the language. */
@@ -1794,6 +1794,181 @@ class TranslatorRussian : public TranslatorAdapter_1_7_5
       }
       return sdate;
     }
+
+///////////////////////////////////////////////////////////////////////
+// new since 1.7.5
+///////////////////////////////////////////////////////////////////////
+
+    /*! Header for the page with bibliographic citations */
+    virtual QCString trCiteReferences()
+    { return "Библиографические ссылки"; }
+
+    /*! Text for copyright paragraph */
+    virtual QCString trCopyright()
+    { return "Авторство"; }
+
+    /*! Header for the graph showing the directory dependencies */
+    virtual QCString trDirDepGraph(const char *name)
+    { return QCString("Директория графа зависимостей ")+name+":"; }
+
+///////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+///////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "уровень детализации"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Параметры шаблона"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "и "+number+" больше..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "Документация для этого перечисления сгенерерирована из файл";
+      if (!single) result += "ов";
+      result+="а:";
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    { return QCString(name)+" Ссылки на перечисление"; }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" унаследованные от "+what; }
+
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "Дополнительные унаследованные члены"; }
+
+///////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+///////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "включить" : "выключить";
+      return "нажмите на "+opt+" для синхронизации панелей";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "По группам @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "Расширяет класс @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Методы класса";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Методы экземпляра";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Документация метода";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "Обзор дизайна";
+    }
+
+///////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+///////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Экспортируемые интерфейсы"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Включённые сервисы"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Постоянные группы"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Ссылка на постоянную группу";
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Ссылка на сервис";
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)sName;
+      result+=" Ссылка на одиночку";
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"Документация для этого сервиса "
+                                "сгенерированна из следующего файл";
+      if (single) result+="а:"; else result+="ов:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"Документация по этому одиночке "
+                                "сгенерированна из следующего файл";
+      if (single) result+="а:"; else result+="ов:";
+      return result;
+    }
+
+///////////////////////////////////////////////////////////////////////
 };
 
 #endif
