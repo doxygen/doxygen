@@ -2109,7 +2109,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int lineNr = brief ? current->briefLine : current->docLine;
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody ? last_entry : current,
+	docBlockInBody ? subrCurrent.first() : current,
 	doc,        // text
 	yyFileName, // file
 	lineNr,
