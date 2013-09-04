@@ -85,9 +85,10 @@ Alessandro Falappa: alessandro at falappa dot net
 Ahmed Aldo Faisal: aaf23 at cam dot ac dot uk
 
 TranslatorJapanese
+Suzumizaki-Kimikata: (search 鈴見咲君高)
 Hiroki Iseri: goyoki at gmail dot com
 Ryunosuke Satoh: sun594 at hotmail dot com
-Kenji Nagamatsu: naga at joyful dot club dot ne dot jp
+Kenji Nagamatsu: [unreachable] naga at joyful dot club dot ne dot jp
 Iwasa Kazmi: [unreachable] iwasa at cosmo-system dot jp
 
 TranslatorKorean
