@@ -386,7 +386,7 @@ HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG}?
 REFWORD3  ({ID}":")*{ID}":"?
-REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
+REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 
 %option noyywrap
 %option yylineno
