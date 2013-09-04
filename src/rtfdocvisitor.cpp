@@ -1686,6 +1686,16 @@ void RTFDocVisitor::visitPost(DocVhdlFlow *)
   if (m_hide) return;
 }
 
+void RTFDocVisitor::visitPre(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
+void RTFDocVisitor::visitPost(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
 
 //static char* getMultiByte(int c)
 //{

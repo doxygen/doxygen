@@ -390,6 +390,8 @@ public:
   void visitPost(DocHtmlBlockQuote *);
   void visitPre(DocVhdlFlow *);
   void visitPost(DocVhdlFlow *);
+  void visitPre(DocParBlock *);
+  void visitPost(DocParBlock *);
 
 private:
 
@@ -1404,6 +1406,15 @@ void PerlModDocVisitor::visitPre(DocVhdlFlow *)
 void PerlModDocVisitor::visitPost(DocVhdlFlow *)
 {
 }
+
+void PerlModDocVisitor::visitPre(DocParBlock *)
+{
+}
+
+void PerlModDocVisitor::visitPost(DocParBlock *)
+{
+}
+
 
 static void addTemplateArgumentList(ArgumentList *al,PerlModOutput &output,const char *)
 {

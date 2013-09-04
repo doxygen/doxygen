@@ -1223,6 +1223,15 @@ void DocbookDocVisitor::visitPost(DocVhdlFlow *)
   // TODO: to be implemented
 }
 
+void DocbookDocVisitor::visitPre(DocParBlock *)
+{
+}
+
+void DocbookDocVisitor::visitPost(DocParBlock *)
+{
+}
+
+
 void DocbookDocVisitor::filter(const char *str)
 {
   m_t << convertToXML(str);

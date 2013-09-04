@@ -85,6 +85,7 @@ documentation:
 \refitem cmdendlink \\endlink
 \refitem cmdendmanonly \\endmanonly
 \refitem cmdendmsc \\endmsc
+\refitem cmdendparblock \\endparblock
 \refitem cmdendrtfonly \\endrtfonly
 \refitem cmdendsecreflist \\endsecreflist
 \refitem cmdendverbatim \\endverbatim
@@ -136,6 +137,7 @@ documentation:
 \refitem cmdpar \\par
 \refitem cmdparagraph \\paragraph
 \refitem cmdparam \\param
+\refitem cmdparblock \\parblock
 \refitem cmdpost \\post
 \refitem cmdpre \\pre
 \refitem cmdprivate \\private
@@ -1471,6 +1473,35 @@ void setPosition(double x,double y,double z,double t)
 \verbatim
 @param  datatype1|datatype2 $paramname description
 \endverbatim
+
+<hr>
+\section cmdparblock \\parblock
+  \addindex \\parblock
+  For commands that expect a single paragraph as argument
+  (such as \ref cmdpar "\\par", \ref cmdparam "\\param" and \ref cmdwarning "\\warning"),
+  the \ref cmdparblock "\\parblock" command allows to start a
+  description that covers multiple paragraphs, which then ends with
+  \ref cmdendparblock "\\endparblock".
+
+  Example:
+\verbatim
+/** Example of a param command with a description consisting of two paragraphs
+ *  \param p 
+ *  \parblock
+ *  First paragraph of the param description.
+ *
+ *  Second paragraph of the param description.
+ *  \endparblock
+ *  Rest of the comment block continues.
+ */
+\endverbatim
+  Note that the \\parblock command may also appear directly after
+  \\param's first argument.
+
+<hr>
+\section cmdendparblock \\endparblock
+  \addindex \\endparblock
+  This ends a block of paragraphs started with \\ref cmdparblock "\\parblock".
 
 <hr>
 \section cmdtparam \\tparam <template-parameter-name> { description }

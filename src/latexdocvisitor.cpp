@@ -1577,6 +1577,16 @@ void LatexDocVisitor::visitPost(DocVhdlFlow *)
   if (m_hide) return;
 }
 
+void LatexDocVisitor::visitPre(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
+void LatexDocVisitor::visitPost(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
 void LatexDocVisitor::filter(const char *str)
 { 
   filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);

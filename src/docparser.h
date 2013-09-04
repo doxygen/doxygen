@@ -130,7 +130,8 @@ class DocNode
                 Kind_Text           = 47,
                 Kind_MscFile        = 48,
                 Kind_HtmlBlockQuote = 49,
-                Kind_VhdlFlow       = 50
+                Kind_VhdlFlow       = 50,
+                Kind_ParBlock       = 51
               };
     /*! Creates a new node */
     DocNode() : m_parent(0), m_insidePre(FALSE) {}
@@ -899,6 +900,19 @@ class DocInternal : public CompAccept<DocInternal>, public DocNode
 
   private:
 };
+
+/** Node representing an block of paragraphs */
+class DocParBlock : public CompAccept<DocParBlock>, public DocNode
+{
+  public:
+    DocParBlock(DocNode *parent) { m_parent = parent; }
+    int parse();
+    Kind kind() const          { return Kind_ParBlock; }
+    void accept(DocVisitor *v) { CompAccept<DocParBlock>::accept(this,v); }
+
+  private:
+};
+
 
 /** Node representing a simple list */
 class DocSimpleList : public CompAccept<DocSimpleList>, public DocNode

@@ -129,7 +129,10 @@ class DocbookDocVisitor : public DocVisitor
     void visitPost(DocHtmlBlockQuote *);
     void visitPre(DocVhdlFlow *);
     void visitPost(DocVhdlFlow *);
-    private:
+    void visitPre(DocParBlock *);
+    void visitPost(DocParBlock *);
+
+  private:
     //--------------------------------------
     // helper functions
     //--------------------------------------

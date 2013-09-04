@@ -132,6 +132,8 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocHtmlBlockQuote *);
     void visitPre(DocVhdlFlow *);
     void visitPost(DocVhdlFlow *);
+    void visitPre(DocParBlock *);
+    void visitPost(DocParBlock *);
 
   private:
 

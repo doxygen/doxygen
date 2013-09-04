@@ -1002,6 +1002,14 @@ void ManDocVisitor::visitPost(DocVhdlFlow *)
 {
 }
 
+void ManDocVisitor::visitPre(DocParBlock *)
+{
+}
+
+void ManDocVisitor::visitPost(DocParBlock *)
+{
+}
+
 
 void ManDocVisitor::filter(const char *str)
 { 

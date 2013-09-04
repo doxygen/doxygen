@@ -121,7 +121,9 @@ enum CommandType
   CMD_VHDLFLOW     = 91,
   CMD_DBONLY       = 92,
   CMD_ENDDBONLY    = 93,
-  CMD_ENDINTERNAL  = 94
+  CMD_ENDINTERNAL  = 94,
+  CMD_PARBLOCK     = 95,
+  CMD_ENDPARBLOCK  = 96
 };
 
 enum HtmlTagType

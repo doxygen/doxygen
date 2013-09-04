@@ -102,6 +102,8 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_Copy:
           /* <blockquote> */
         case DocNode::Kind_HtmlBlockQuote:
+          /* \parblock */
+        case DocNode::Kind_ParBlock:
           return TRUE;
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
@@ -829,21 +831,21 @@ bool isSeparatedParagraph(DocSimpleSect *parent,DocPara *par)
   int i = nodes.findRef(par);
   if (i==-1) return FALSE;
   int count = parent->children().count();
-  if (count>1 && i==0)
+  if (count>1 && i==0) // first node
   {
     if (nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
     {
       return TRUE;
     }
   }
-  else if (count>1 && i==count-1)
+  else if (count>1 && i==count-1) // last node
   {
     if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep)
     {
       return TRUE;
     }
   }
-  else if (count>2 && i>0 && i<count-1)
+  else if (count>2 && i>0 && i<count-1) // intermediate node
   {
     if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep &&
         nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
@@ -863,9 +865,58 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
   {
     switch (p->parent()->kind()) 
     {
+      case DocNode::Kind_ParBlock:
+        { // hierarchy: node N -> para -> parblock -> para
+          // adapt return value to kind of N
+          DocNode::Kind kind = DocNode::Kind_Para;
+          if ( p->parent()->parent() && p->parent()->parent()->parent() )
+          {
+            kind = p->parent()->parent()->parent()->kind();
+          }
+          isFirst=isFirstChildNode((DocParBlock*)p->parent(),p);
+          isLast =isLastChildNode ((DocParBlock*)p->parent(),p);
+          t=0;
+          if (isFirst)
+          {
+            if (kind==DocNode::Kind_HtmlListItem ||
+                kind==DocNode::Kind_SecRefItem)
+            {
+              t=1;
+            }
+            else if (kind==DocNode::Kind_HtmlDescData ||
+                     kind==DocNode::Kind_XRefItem ||
+                     kind==DocNode::Kind_SimpleSect)
+            {
+              t=2;
+            }
+            else if (kind==DocNode::Kind_HtmlCell ||
+                     kind==DocNode::Kind_ParamList)
+            {
+              t=5;
+            }
+          }
+          if (isLast)
+          {
+            if (kind==DocNode::Kind_HtmlListItem ||
+                kind==DocNode::Kind_SecRefItem)
+            {
+              t=3;
+            }
+            else if (kind==DocNode::Kind_HtmlDescData ||
+                     kind==DocNode::Kind_XRefItem ||
+                     kind==DocNode::Kind_SimpleSect)
+            {
+              t=4;
+            }
+            else if (kind==DocNode::Kind_HtmlCell ||
+                     kind==DocNode::Kind_ParamList)
+            {
+              t=6;
+            }
+          }
+          break;
+        }
       case DocNode::Kind_AutoListItem:
-        //isFirst=TRUE;
-        //isLast =TRUE;
         isFirst=isFirstChildNode((DocAutoListItem*)p->parent(),p);
         isLast =isLastChildNode ((DocAutoListItem*)p->parent(),p);
         t=1; // not used
@@ -904,12 +955,6 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         if (isFirst) t=2;
         if (isLast)  t=4;
         break;
-      case DocNode::Kind_HtmlCell:
-        isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
-        isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
-        if (isFirst) t=5;
-        if (isLast)  t=6;
-        break;
       case DocNode::Kind_SimpleSect:
         isFirst=isFirstChildNode((DocSimpleSect*)p->parent(),p);
         isLast =isLastChildNode ((DocSimpleSect*)p->parent(),p);
@@ -922,6 +967,12 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         {
           isFirst=isLast=TRUE;
         }
+        break;
+      case DocNode::Kind_HtmlCell:
+        isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
+        isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
+        if (isFirst) t=5;
+        if (isLast)  t=6;
         break;
       default:
         break;
@@ -955,6 +1006,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       case DocNode::Kind_XRefItem:
       case DocNode::Kind_Copy:
       case DocNode::Kind_HtmlBlockQuote:
+      case DocNode::Kind_ParBlock:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -1028,6 +1080,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
       case DocNode::Kind_XRefItem:
       case DocNode::Kind_Copy:
       case DocNode::Kind_HtmlBlockQuote:
+      case DocNode::Kind_ParBlock:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -1810,6 +1863,18 @@ void HtmlDocVisitor::visitPost(DocVhdlFlow *vf)
     forceStartParagraph(vf);
   }
 }
+
+void HtmlDocVisitor::visitPre(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
+void HtmlDocVisitor::visitPost(DocParBlock *)
+{
+  if (m_hide) return;
+}
+
+
 
 void HtmlDocVisitor::filter(const char *str)
 { 
