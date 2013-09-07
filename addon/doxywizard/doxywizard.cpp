@@ -224,9 +224,13 @@ void MainWindow::updateConfigFileName(const QString &fileName)
 
 void MainWindow::loadConfigFromFile(const QString & fileName)
 {
-  m_expert->loadConfig(fileName);
-  m_wizard->refresh();
+  // save full path info of original file
+  QString absFileName = QFileInfo(fileName).absoluteFilePath();
+  // updates the current directory
   updateConfigFileName(fileName);
+  // open the specified configuration file
+  m_expert->loadConfig(absFileName);
+  m_wizard->refresh();
   updateLaunchButtonState();
   m_modified = false;
   updateTitle();
