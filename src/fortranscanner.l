@@ -1366,7 +1366,7 @@ static const char* prepassFixedForm(const char* contents)
   int prevLineLength=0;
   int prevLineAmpOrExclIndex=-1;
   bool emptyLabel=TRUE;
-  int newContentsSize = strlen(contents)+2; // \000 and one spare character (to avoid reallocation)
+  int newContentsSize = strlen(contents)+3; // \000, \n (when necessary) and one spare character (to avoid reallocation)
   char* newContents = (char*)malloc(newContentsSize);
 
   for(int i=0, j=0;;i++,j++) {
@@ -1390,6 +1390,14 @@ static const char* prepassFixedForm(const char* contents)
         break;
       case '\000':
         newContents[j]='\000';
+        newContentsSize = strlen(newContents);
+        if (newContents[newContentsSize - 1] != '\n')
+        {
+          // to be on the safe side
+          newContents = (char*)realloc(newContents, newContentsSize+2);
+          newContents[newContentsSize] = '\n';
+          newContents[newContentsSize + 1] = '\000';
+        }
         return newContents;
       case 'C':
       case 'c':
@@ -1424,6 +1432,15 @@ static const char* prepassFixedForm(const char* contents)
 	}
         break;
     }
+  }
+
+  newContentsSize = strlen(newContents);
+  if (newContents[newContentsSize - 1] != '\n')
+  {
+    // to be on the safe side
+    newContents = (char*)realloc(newContents, newContentsSize+2);
+    newContents[newContentsSize] = '\n';
+    newContents[newContentsSize + 1] = '\000';
   }
   return newContents;
 }
@@ -2228,6 +2245,7 @@ level--;
 
 static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 {
+  char *tmpBuf = NULL;
   initParser();
 
   defaultProtection = Public;
@@ -2257,6 +2275,14 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
       //clock_t end=clock();
       //printf("CPU time used=%f\n", ((double) (end-start))/CLOCKS_PER_SEC);
+    }
+    else if (inputString[strlen(fileBuf)-1] != '\n')
+    {
+      tmpBuf = (char *)malloc(strlen(fileBuf)+2);
+      strcpy(tmpBuf,fileBuf);
+      tmpBuf[strlen(fileBuf)]= '\n';
+      tmpBuf[strlen(fileBuf)+1]= '\000';
+      inputString = tmpBuf;
     }
 
     yyLineNr= 1 ; 
@@ -2291,6 +2317,10 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     rt->program.resize(0);
     delete current; current=0;
     moduleProcedures.clear();
+    if (tmpBuf) {
+      free((char*)tmpBuf);
+      inputString=NULL;
+    }
     if (isFixedForm) {
       free((char*)inputString);
       inputString=NULL;

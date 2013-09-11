@@ -355,6 +355,7 @@ INOUT	  "inout"|"in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLAN
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 TEMPCHAR  [a-z_A-Z0-9.,: \t\*\&\(\)\[\]]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\^\*\&\[\]]
+FUNCPART  {FUNCCHAR}*("("{FUNCCHAR}*")"{FUNCCHAR}*)?
 SCOPESEP  "::"|"#"|"."
 TEMPLPART "<"{TEMPCHAR}*">"
 ANONNS    "anonymous_namespace{"[^}]*"}"
@@ -363,7 +364,7 @@ SCOPEKEYS ":"({ID}":")*
 SCOPECPP  {SCOPEPRE}*(~)?{ID}{TEMPLPART}?
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
 SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
-FUNCARG   "("{FUNCCHAR}*")"({BLANK}*("volatile"|"const"){BLANK})?
+FUNCARG   "("{FUNCPART}")"({BLANK}*("volatile"|"const"){BLANK})?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
@@ -386,7 +387,7 @@ HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG}?
 REFWORD3  ({ID}":")*{ID}":"?
-REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}
+REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 
 %option noyywrap
 %option yylineno

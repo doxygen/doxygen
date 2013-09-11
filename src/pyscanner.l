@@ -461,8 +461,8 @@ OCTNUMBER         "0"[0-7]+[lL]?
 NUMBER            {DIGIT}+[lLjJ]?
 INTNUMBER         {HEXNUMBER}|{OCTNUMBER}|{NUMBER}
 FLOATNUMBER       {DIGIT}+"."{DIGIT}+([eE][+\-]?{DIGIT}+)?[jJ]?
-LETTER            [A-Za-z]
-NONEMPTY          [A-Za-z0-9_]
+LETTER            [A-Za-z\x80-\xFF]
+NONEMPTY          [A-Za-z0-9_\x80-\xFF]
 EXPCHAR           [#(){}\[\],:.%/\\=`*~|&<>!;+-]
 NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]

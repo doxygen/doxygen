@@ -79,7 +79,7 @@ docs: FORCE
 pdf: docs
 	cd latex ; $(MAKE)
 
-DISTFILES =  Doxyfile libmd5 addon tmake doc examples bin lib objects \
+DISTFILES =  Doxyfile libmd5 addon tmake doc examples bin lib objects testing \
              qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
              Makefile.win_make.in INSTALL LANGUAGE.HOWTO LICENSE PLATFORMS \
              VERSION README.md packages winbuild jquery

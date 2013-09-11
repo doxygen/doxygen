@@ -1872,7 +1872,8 @@ int findParameterList(const QString &name)
       }
       else
       {
-        return bracePos;
+        int bp = bracePos>0 ? name.findRev('(',bracePos-1) : -1;
+        return bp==-1 ? bracePos : bp;
       }
     }
   } while (pos!=-1);

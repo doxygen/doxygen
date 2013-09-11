@@ -191,6 +191,7 @@ static QCString         g_delimiter;
 static int              g_column;
 
 static int              g_fencedSize=0;
+static bool             g_nestedComment=0;
 
 //-----------------------------------------------------------------------------
 
@@ -6155,23 +6156,27 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 				            docBlockName.at(1)='}';
 					  }
                                           g_fencedSize=0;
+                                          g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
                                         }
 <DocBlock>"<"{PRE}">"			{
                                           docBlock+=yytext;
 				          docBlockName="<pre>";
                                           g_fencedSize=0;
+                                          g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
                                           docBlock+=yytext;
 				          docBlockName=&yytext[1];
                                           g_fencedSize=0;
+                                          g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>"~~~"[~]*                     {
                                           docBlock+=yytext;
                                           g_fencedSize=yyleng;
+                                          g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
 <DocBlock>{B}*"<code>"                  {
@@ -6179,6 +6184,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  {
 					    docBlock+=yytext;
 					    docBlockName="<code>";
+                                            g_nestedComment=FALSE;
 					    BEGIN(DocCopyBlock);
 					  }
 					  else
@@ -6240,12 +6246,32 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             docBlock+=indent;
                                           }
   					}
-<DocCopyBlock>^{B}*+"*"/{BN}*		{ // start of a comment line
+<DocCopyBlock>^{B}*"*"+/{BN}+"*"{BN}*	{ // start of a comment line with two *'s
   					  if (docBlockName=="code")
                                           {
                                             QCString indent;
-                                            indent.fill(' ',computeIndent(yytext,0)-1);
-                                            docBlock+=indent+"*";
+                                            indent.fill(' ',computeIndent(yytext,0));
+                                            docBlock+=indent;
+                                          }
+                                          else
+					  {
+					    REJECT;
+					  }
+  					}
+<DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line with one *
+  					  if (docBlockName=="code")
+                                          {
+                                            QCString indent;
+                                            if (g_nestedComment) // keep * it is part of the code
+                                            {
+                                              indent.fill(' ',computeIndent(yytext,-1));
+                                              docBlock+=indent+"*";
+                                            }
+                                            else // remove * it is part of the comment block
+                                            {
+                                              indent.fill(' ',computeIndent(yytext,0));
+                                              docBlock+=indent;
+                                            }
                                           }
                                           else
 					  {
@@ -6263,6 +6289,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  docBlock+=yytext;
   					}
 <DocCopyBlock>"/*"|"*/"|"//"		{
+                                          if (yytext[1]=='*')
+                                          {
+                                            g_nestedComment=TRUE;
+                                          }
+                                          else if (yytext[0]=='*')
+                                          {
+                                            g_nestedComment=FALSE;
+                                          }
   					  docBlock+=yytext;
 					}
 <DocCopyBlock>\n			{ // newline

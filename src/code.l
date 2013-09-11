@@ -398,7 +398,7 @@ static CallContext g_theCallContext;
 static void pushScope(const char *s)
 {
   g_classScopeLengthStack.push(new int(g_classScope.length()));
-  if (g_classScope.isEmpty())
+  if (g_classScope.isEmpty() || leftScopeMatch(s,g_classScope))
   {
     g_classScope = s;
   }
