@@ -49,6 +49,9 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     void codify(const char *) {}
     void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
     void writeLineNumber(const char *,const char *,const char *,int) {}
+    virtual void writeTooltip(const char *,const DocLinkInfo &,
+                              const char *,const char *,const SourceLinkInfo &, 
+                              const SourceLinkInfo &) {}
     void startCodeLine(bool) {}
     void endCodeLine() {}
     void startCodeAnchor(const char *) {}
@@ -107,6 +110,9 @@ static void findXRefSymbols(FileDef *fd)
   // get the interface to a parser that matches the file extension
   ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
 
+  // get the programming language from the file name
+  SrcLangExt lang = getLanguageFromFileName(fd->name());
+
   // reset the parsers state
   pIntf->resetCodeParserState();
 
@@ -117,6 +123,7 @@ static void findXRefSymbols(FileDef *fd)
   pIntf->parseCode(*xrefGen,
                 0,
                 fileToString(fd->absFilePath()),
+                lang,
                 FALSE,
                 0,
                 fd);

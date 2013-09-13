@@ -27,6 +27,7 @@
 /addon/doxmlparser/src/Makefile
 /addon/doxmlparser/test/Makefile
 /addon/doxyapp/Makefile
+/addon/doxyapp/Makefile.doxyapp
 /addon/doxywizard/Makefile
 /addon/doxywizard/Makefile.doxywizard
 /addon/doxywizard/config_lex.cpp
