@@ -93,6 +93,7 @@ This file should now contain a \#define for your language code.
     the \c HEADERS line.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
+   <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode.
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code>
        twice (i.e. in the \c \#ifndef and \c \#define preprocessor commands at
        the beginning of the file).
@@ -100,18 +101,17 @@ This file should now contain a \#define for your language code.
    <li>In the member <code>idLanguage()</code> change "english" into the
      name of your language (use lower case characters only). Depending
      on the language you may also wish to change the member functions
-     latexLanguageSupportCommand(), idLanguageCharset() and others
-     (you will recognize them when you start the work).
+     latexLanguageSupportCommand() and other (you will recognize them when
+     you start the work).
    <li>Edit all the strings that are returned by the member functions that
-     start with tr.
+     start with \c tr.
      Try to match punctuation and capitals!
      To enter special characters (with accents) you can:
      <ul>
-     <li>  Enter them directly if your keyboard supports that and you are
-           using a Latin-1 font. Doxygen will translate the
-           characters to proper \f$\mbox{\LaTeX}\f$ and leave the
-           HTML and man output for what it is (which is fine, if
-           idLanguageCharset() is set correctly).
+     <li>  Enter them directly if your keyboard supports that. Recall that
+           the text is expected to be saved using the UTF-8 encoding. Doxygen
+           will translate the characters to proper \f$\mbox{\LaTeX}\f$ and
+           leaves the HTML and man output in UTF-8.
      <li>  Use html codes like \&auml; for an a with an umlaut (i.e. &auml;).
            See the HTML specification for the codes.
      </ul>
@@ -122,7 +122,8 @@ This file should now contain a \#define for your language code.
     in the config file to generate output in your language.
 <li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.
     Send also your name and e-mail address to be included in the
-    \c maintainers.txt list.
+    \c maintainers.txt list. You can also clone the Doxygen repository
+    at GitHub and make a PullRequest later.
 </ol>
 
 
@@ -299,9 +300,11 @@ end with <code>=0;</code>).
 
 If everything compiles fine, try to run \c translator.py, and have a
 look at the translator report (ASCII file) at the \c doxygen/doc
-directory. Even if your translator is marked as up-to-date, there
-still may be some remarks related to your source code. Namely, the
-obsolete methods--that are not used at all--may be listed in the
+directory. Your translator is marked as up-to-date only if the script
+does not detect anything special. If the translator uses the \c Translator
+base class, there still may be some remarks related to your source code.
+In the case, the translator is marked as <em>almost up-to-date</em>.
+Namely, the obsolete methods--that are not used at all--may be listed in the
 section for your language. Simply, remove their code (and run the \c
 translator.py again). Also, you will be informed when you forgot to
 change the base class of your translator class to some newer adapter
