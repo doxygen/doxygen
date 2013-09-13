@@ -4307,7 +4307,20 @@ bool getDefs(const QCString &scName,
       //printf("found %d candidate members\n",members.count());
       if (members.count()>0) // at least one match
       {
-        md=members.last();
+        if (currentFile)
+        {
+          //printf("multiple results; pick one from file:%s\n", currentFile->name().data());
+          md = members.first();
+          while (md) {
+            if (md->getFileDef()->name() == currentFile->name())
+              break;
+            md=members.next();
+          }
+          if (!md)
+            md=members.last();
+        } else {
+          md=members.last();
+        }
       }
       if (md && (md->getEnumScope()==0 || !md->getEnumScope()->isStrong())) 
            // found a matching global member, that is not a scoped enum value (or uniquely matches)
