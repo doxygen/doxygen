@@ -4311,14 +4311,21 @@ bool getDefs(const QCString &scName,
         {
           //printf("multiple results; pick one from file:%s\n", currentFile->name().data());
           md = members.first();
-          while (md) {
-            if (md->getFileDef()->name() == currentFile->name())
-              break;
+          while (md) 
+          {
+            if (md->getFileDef() && md->getFileDef()->name() == currentFile->name()) 
+            {
+              break; // found match in the current file
+            }
             md=members.next();
           }
-          if (!md)
+          if (!md) // member not in the current file
+          {
             md=members.last();
-        } else {
+          }
+        } 
+        else 
+        {
           md=members.last();
         }
       }
