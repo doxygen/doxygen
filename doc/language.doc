@@ -52,256 +52,256 @@ when the translator was updated.
   <!-- table content begin -->
 
   <tr bgcolor="#ffffff">
-    <td>Afrikaans</td>
+    <td bgcolor="#ffffff">Afrikaans</td>
     <td>Johan Prinsloo</td>
     <td>johan at zippysnoek dot com</td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Arabic</td>
+    <td bgcolor="#ffcccc">Arabic</td>
     <td>Moaz Reyad<br/>Muhammad Bashir Al-Noimi</td>
     <td><span style="color: brown">[resigned]</span><br/>mbnoimi at gmail dot com</td>
-    <td>1.4.6</td>
+    <td bgcolor="#ff5555">1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Armenian</td>
+    <td bgcolor="#ffffff">Armenian</td>
     <td>Armen Tangamyan</td>
     <td>armen dot tangamyan at anu dot edu dot au</td>
-    <td>1.8.0</td>
+    <td bgcolor="#ffffcc">1.8.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Brazilian Portuguese</td>
+    <td bgcolor="#ffffff">Brazilian Portuguese</td>
     <td>Fabio "FJTC" Jun Takada Chino</td>
     <td>jun-chino at uol dot com dot br</td>
-    <td>1.8.0</td>
+    <td bgcolor="#ffffcc">1.8.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Catalan</td>
+    <td bgcolor="#ffffff">Catalan</td>
     <td>Maximiliano Pin<br/>Albert Mora</td>
     <td>max dot pin at bitroit dot com<br/><span style="color: brown">[unreachable]</span></td>
-    <td>1.8.0</td>
+    <td bgcolor="#ffffcc">1.8.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Chinese</td>
+    <td bgcolor="#ffffff">Chinese</td>
     <td>Lian Yang<br/>Li Daobing<br/>Wei Liu</td>
     <td>lian dot yang dot cn at gmail dot com<br/>lidaobing at gmail dot com<br/>liuwei at asiainfo dot com</td>
-    <td>1.8.2</td>
+    <td bgcolor="#ffffcc">1.8.2</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Chinese Traditional</td>
+    <td bgcolor="#ffffff">Chinese Traditional</td>
     <td>Daniel YC Lin<br/>Gary Lee</td>
     <td>dlin dot tw at gmail dot com<br/>garywlee at gmail dot com</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ffffff">almost up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Croatian</td>
+    <td bgcolor="#ffffff">Croatian</td>
     <td>Boris Bralo</td>
     <td>boris dot bralo at gmail dot com</td>
-    <td>1.8.2</td>
+    <td bgcolor="#ffffcc">1.8.2</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Czech</td>
+    <td bgcolor="#ffffff">Czech</td>
     <td>Petr Přikryl</td>
     <td>prikryl at atlas dot cz</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Danish</td>
+    <td bgcolor="#ffffff">Danish</td>
     <td>Poul-Erik Hansen<br/>Erik Søe Sørensen</td>
     <td>pouhan at gnotometrics dot dk<br/>eriksoe+doxygen at daimi dot au dot dk</td>
-    <td>1.8.0</td>
+    <td bgcolor="#ffffcc">1.8.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Dutch</td>
+    <td bgcolor="#ffffff">Dutch</td>
     <td>Dimitri van Heesch</td>
     <td>dimitri at stack dot nl</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>English</td>
+    <td bgcolor="#ffffff">English</td>
     <td>Dimitri van Heesch</td>
     <td>dimitri at stack dot nl</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Esperanto</td>
+    <td bgcolor="#ffffff">Esperanto</td>
     <td>Ander Martínez</td>
     <td>ander dot basaundi at gmail dot com</td>
-    <td>1.8.4</td>
+    <td bgcolor="#ffffcc">1.8.4</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Finnish</td>
+    <td bgcolor="#ffffff">Finnish</td>
     <td>Antti Laine</td>
     <td>antti dot a dot laine at tut dot fi</td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>French</td>
+    <td bgcolor="#ffffff">French</td>
     <td>David Martinet<br/>Xavier Outhier<br/>Benoît BROSSE</td>
     <td>contact at e-concept-applications dot fr<br/>xouthier at yahoo dot fr<br/>Benoit dot BROSSE at ingenico dot com</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>German</td>
+    <td bgcolor="#ffffff">German</td>
     <td>Peter Grotrian<br/>Jens Seidel</td>
     <td>Peter dot Grotrian at pdv-FS dot de<br/>jensseidel at users dot sf dot net</td>
-    <td>1.8.4</td>
+    <td bgcolor="#ffffcc">1.8.4</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Greek</td>
+    <td bgcolor="#ffffff">Greek</td>
     <td>Paul Gessos</td>
     <td>gessos dot paul at yahoo dot gr</td>
-    <td>1.8.4</td>
+    <td bgcolor="#ffffcc">1.8.4</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Hungarian</td>
+    <td bgcolor="#ffcccc">Hungarian</td>
     <td>Ákos Kiss<br/>Földvári György</td>
     <td>akiss at users dot sourceforge dot net<br/><span style="color: brown">[unreachable]</span></td>
-    <td>1.4.6</td>
+    <td bgcolor="#ff5555">1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Indonesian</td>
+    <td bgcolor="#ffffff">Indonesian</td>
     <td>Hendy Irawan</td>
     <td>ceefour at gauldong dot net</td>
-    <td>1.8.0</td>
+    <td bgcolor="#ffffcc">1.8.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Italian</td>
+    <td bgcolor="#ffffff">Italian</td>
     <td>Alessandro Falappa<br/>Ahmed Aldo Faisal</td>
     <td>alessandro at falappa dot net<br/>aaf23 at cam dot ac dot uk</td>
-    <td>1.8.2</td>
+    <td bgcolor="#ffffcc">1.8.2</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Japanese</td>
+    <td bgcolor="#ffffff">Japanese</td>
     <td>Suzumizaki-Kimikata<br/>Hiroki Iseri<br/>Ryunosuke Satoh<br/>Kenji Nagamatsu<br/>Iwasa Kazmi</td>
     <td>szmml at h12u.com<br/>goyoki at gmail dot com<br/>sun594 at hotmail dot com<br/><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span></td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>JapaneseEn</td>
+    <td bgcolor="#ffffff">JapaneseEn</td>
     <td>see the Japanese language</td>
     <td>&nbsp;</td>
-    <td>English based</td>
+    <td bgcolor="#ccffcc">English based</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Korean</td>
+    <td bgcolor="#ffffff">Korean</td>
     <td>Kim Taedong<br/>SooYoung Jung<br/>Richard Kim</td>
     <td>fly1004 at gmail dot com<br/>jung5000 at gmail dot com<br/><span style="color: brown">[unreachable]</span></td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>KoreanEn</td>
+    <td bgcolor="#ffffff">KoreanEn</td>
     <td>see the Korean language</td>
     <td>&nbsp;</td>
-    <td>English based</td>
+    <td bgcolor="#ccffcc">English based</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Latvian</td>
+    <td bgcolor="#ffffff">Latvian</td>
     <td>Lauris</td>
     <td>lauris at nix.lv</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Lithuanian</td>
+    <td bgcolor="#ffcccc">Lithuanian</td>
     <td>Tomas Simonaitis<br/>Mindaugas Radzius<br/>Aidas Berukstis<br/><span style="color: red; background-color: yellow">-- searching for the maintainer --</span></td>
     <td><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[Please, try to help to find someone.]</span></td>
-    <td>1.4.6</td>
+    <td bgcolor="#ff5555">1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Macedonian</td>
+    <td bgcolor="#ffffff">Macedonian</td>
     <td>Slave Jovanovski</td>
     <td>slavejovanovski at yahoo dot com</td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Norwegian</td>
+    <td bgcolor="#ffcccc">Norwegian</td>
     <td>Lars Erik Jordet</td>
     <td>lejordet at gmail dot com</td>
-    <td>1.4.6</td>
+    <td bgcolor="#ff5555">1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Persian</td>
+    <td bgcolor="#ffffff">Persian</td>
     <td>Ali Nadalizadeh</td>
     <td>nadalizadeh at gmail dot com</td>
-    <td>1.7.5</td>
+    <td bgcolor="#ffcccc">1.7.5</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Polish</td>
+    <td bgcolor="#ffffff">Polish</td>
     <td>Piotr Kaminski<br/>Grzegorz Kowal<br/>Krzysztof Kral</td>
     <td><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span><br/>krzysztof dot kral at gmail dot com</td>
-    <td>1.8.2</td>
+    <td bgcolor="#ffffcc">1.8.2</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Portuguese</td>
+    <td bgcolor="#ffffff">Portuguese</td>
     <td>Rui Godinho Lopes<br/>Fabio "FJTC" Jun Takada Chino</td>
     <td><span style="color: brown">[resigned]</span><br/>jun-chino at uol dot com dot br</td>
-    <td>1.8.0</td>
+    <td bgcolor="#ffffcc">1.8.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Romanian</td>
+    <td bgcolor="#ffffff">Romanian</td>
     <td>Ionut Dumitrascu<br/>Alexandru Iosup</td>
     <td>reddumy at yahoo dot com<br/>aiosup at yahoo dot com</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ffffff">almost up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Russian</td>
+    <td bgcolor="#ffffff">Russian</td>
     <td>Brilliantov Kirill Vladimirovich<br/>Alexandr Chelpanov</td>
     <td>brilliantov at byterg dot ru<br/>cav at cryptopro dot ru</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ffffff">almost up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Serbian</td>
+    <td bgcolor="#ffffff">Serbian</td>
     <td>Dejan Milosavljevic</td>
     <td><span style="color: brown">[unreachable]</span></td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>SerbianCyrilic</td>
+    <td bgcolor="#ffffff">SerbianCyrilic</td>
     <td>Nedeljko Stefanovic</td>
     <td>stenedjo at yahoo dot com</td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Slovak</td>
+    <td bgcolor="#ffffff">Slovak</td>
     <td>Kali+Laco Švec<br/>Petr Přikryl</td>
     <td><span style="color: brown">[the Slovak language advisors]</span><br/>prikryl at atlas dot cz</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Slovene</td>
+    <td bgcolor="#ffcccc">Slovene</td>
     <td>Matjaž Ostroveršnik</td>
     <td>matjaz dot ostroversnik at ostri dot org</td>
-    <td>1.4.6</td>
+    <td bgcolor="#ff5555">1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Spanish</td>
+    <td bgcolor="#ffffff">Spanish</td>
     <td>Bartomeu<br/>Francisco Oltra Thennet<br/>David Vaquero</td>
     <td>bartomeu at loteria3cornella dot com<br/><span style="color: brown">[unreachable]</span><br/>david at grupoikusnet dot com</td>
-    <td>up-to-date</td>
+    <td bgcolor="#ccffcc">up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Swedish</td>
+    <td bgcolor="#ffffff">Swedish</td>
     <td>Mikael Hallin</td>
     <td>mikaelhallin at yahoo dot se</td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Turkish</td>
+    <td bgcolor="#ffffff">Turkish</td>
     <td>Emin Ilker Cetinbas</td>
     <td>niw3 at yahoo dot com</td>
-    <td>1.7.5</td>
+    <td bgcolor="#ffcccc">1.7.5</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Ukrainian</td>
+    <td bgcolor="#ffffff">Ukrainian</td>
     <td>Olexij Tkatchenko<br/>Petro  Yermolenko</td>
     <td><span style="color: brown">[resigned]</span><br/>python at i dot ua</td>
-    <td>1.8.4</td>
+    <td bgcolor="#ffffcc">1.8.4</td>
   </tr>
   <tr bgcolor="#ffffff">
-    <td>Vietnamese</td>
+    <td bgcolor="#ffffff">Vietnamese</td>
     <td>Dang Minh Tuan</td>
     <td>tuanvietkey at gmail dot com</td>
-    <td>1.6.0</td>
+    <td bgcolor="#ffcccc">1.6.0</td>
   </tr>
   <!-- table content end -->
   </table>
@@ -335,7 +335,7 @@ when the translator was updated.
   ~ & Li Daobing & {\tt\tiny lidaobing at gmail dot com} & ~ \\
   ~ & Wei Liu & {\tt\tiny liuwei at asiainfo dot com} & ~ \\
   \hline
-  Chinese Traditional & Daniel YC Lin & {\tt\tiny dlin dot tw at gmail dot com} & up-to-date \\
+  Chinese Traditional & Daniel YC Lin & {\tt\tiny dlin dot tw at gmail dot com} & almost up-to-date \\
   ~ & Gary Lee & {\tt\tiny garywlee at gmail dot com} & ~ \\
   \hline
   Croatian & Boris Bralo & {\tt\tiny boris dot bralo at gmail dot com} & 1.8.2 \\
@@ -404,10 +404,10 @@ when the translator was updated.
   Portuguese & Rui Godinho Lopes & {\tt\tiny [resigned] rgl at ruilopes dot com} & 1.8.0 \\
   ~ & Fabio "FJTC" Jun Takada Chino & {\tt\tiny jun-chino at uol dot com dot br} & ~ \\
   \hline
-  Romanian & Ionut Dumitrascu & {\tt\tiny reddumy at yahoo dot com} & up-to-date \\
+  Romanian & Ionut Dumitrascu & {\tt\tiny reddumy at yahoo dot com} & almost up-to-date \\
   ~ & Alexandru Iosup & {\tt\tiny aiosup at yahoo dot com} & ~ \\
   \hline
-  Russian & Brilliantov Kirill Vladimirovich & {\tt\tiny brilliantov at byterg dot ru} & up-to-date \\
+  Russian & Brilliantov Kirill Vladimirovich & {\tt\tiny brilliantov at byterg dot ru} & almost up-to-date \\
   ~ & Alexandr Chelpanov & {\tt\tiny cav at cryptopro dot ru} & ~ \\
   \hline
   Serbian & Dejan Milosavljevic & {\tt\tiny [unreachable] dmilos at email dot com} & 1.6.0 \\
@@ -493,6 +493,7 @@ This file should now contain a \#define for your language code.
     the \c HEADERS line.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
+   <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode.
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code>
        twice (i.e. in the \c \#ifndef and \c \#define preprocessor commands at
        the beginning of the file).
@@ -500,18 +501,17 @@ This file should now contain a \#define for your language code.
    <li>In the member <code>idLanguage()</code> change "english" into the
      name of your language (use lower case characters only). Depending
      on the language you may also wish to change the member functions
-     latexLanguageSupportCommand(), idLanguageCharset() and others
-     (you will recognize them when you start the work).
+     latexLanguageSupportCommand() and other (you will recognize them when
+     you start the work).
    <li>Edit all the strings that are returned by the member functions that
-     start with tr.
+     start with \c tr.
      Try to match punctuation and capitals!
      To enter special characters (with accents) you can:
      <ul>
-     <li>  Enter them directly if your keyboard supports that and you are
-           using a Latin-1 font. Doxygen will translate the
-           characters to proper \f$\mbox{\LaTeX}\f$ and leave the
-           HTML and man output for what it is (which is fine, if
-           idLanguageCharset() is set correctly).
+     <li>  Enter them directly if your keyboard supports that. Recall that
+           the text is expected to be saved using the UTF-8 encoding. Doxygen
+           will translate the characters to proper \f$\mbox{\LaTeX}\f$ and
+           leaves the HTML and man output in UTF-8.
      <li>  Use html codes like \&auml; for an a with an umlaut (i.e. &auml;).
            See the HTML specification for the codes.
      </ul>
@@ -522,7 +522,8 @@ This file should now contain a \#define for your language code.
     in the config file to generate output in your language.
 <li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.
     Send also your name and e-mail address to be included in the
-    \c maintainers.txt list.
+    \c maintainers.txt list. You can also clone the Doxygen repository
+    at GitHub and make a PullRequest later.
 </ol>
 
 
@@ -700,9 +701,11 @@ end with <code>=0;</code>).
 
 If everything compiles fine, try to run \c translator.py, and have a
 look at the translator report (ASCII file) at the \c doxygen/doc
-directory. Even if your translator is marked as up-to-date, there
-still may be some remarks related to your source code. Namely, the
-obsolete methods--that are not used at all--may be listed in the
+directory. Your translator is marked as up-to-date only if the script
+does not detect anything special. If the translator uses the \c Translator
+base class, there still may be some remarks related to your source code.
+In the case, the translator is marked as <em>almost up-to-date</em>.
+Namely, the obsolete methods--that are not used at all--may be listed in the
 section for your language. Simply, remove their code (and run the \c
 translator.py again). Also, you will be informed when you forgot to
 change the base class of your translator class to some newer adapter

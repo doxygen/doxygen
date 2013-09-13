@@ -62,6 +62,8 @@
                was prefixed by backslash (was LaTeX related error).
   2013/02/19 - Better diagnostics when translator_xx.h is too crippled.
   2013/06/25 - TranslatorDecoder checks removed after removing the class.
+  2013/09/04 - Coloured status in langhowto. *ALMOST up-to-date* category
+               of translators introduced.
   """
 
 from __future__ import generators
@@ -1123,7 +1125,7 @@ class Transl:
             if not self.missingMethods:
                 self.note = 'Change the base class to Translator.'
                 self.status = ''
-                self.readableStatus = 'up-to-date'
+                self.readableStatus = 'almost up-to-date'
             elif self.baseClassId != 'TranslatorEnglish':
                 # The translator uses some of the adapters.
                 # Look at the missing methods and check what adapter
@@ -1161,13 +1163,18 @@ class Transl:
            if self.note != '':
                self.note += '\n\t\t'
            if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
-                self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
+               self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
 
         # If everything seems OK, but there are obsolete methods, set
         # the note to clean-up source. This note will be used only when
         # the previous code did not set another note (priority).
         if not self.note and self.status == '' and self.obsoleteMethods:
             self.note = 'Remove the obsolete methods (never used).'
+
+        # If there is at least some note but the status suggests it is
+        # otherwise up-to-date, mark is as ALMOST up-to-date.
+        if self.note and self.status == '':
+            self.readableStatus = 'almost up-to-date'
 
 
     def report(self, fout):
@@ -1522,6 +1529,24 @@ class TrManager:
         return lst
 
 
+    def getBgcolorByReadableStatus(self, readableStatus):
+        if readableStatus == 'up-to-date':
+            color = '#ccffcc'    # green
+        elif readableStatus.startswith('almost'):
+            color = '#ffffff'    # white
+        elif readableStatus.startswith('English'):
+            color = '#ccffcc'    # green
+        elif readableStatus.startswith('1.8'):
+            color = '#ffffcc'    # yellow
+        elif readableStatus.startswith('1.7'):
+            color = '#ffcccc'    # pink
+        elif readableStatus.startswith('1.6'):
+            color = '#ffcccc'    # pink
+        else:
+            color = '#ff5555'    # red
+        return color
+
+
     def generateTranslatorReport(self):
         """Generates the translator report."""
 
@@ -1558,13 +1583,12 @@ class TrManager:
         # in the translator report.
         fmail = open('mailto.txt', 'w')
 
-        # Write the list of up-to-date translator classes.
+        # Write the list of "up-to-date" translator classes.
         if self.upToDateIdLst:
             s = '''The following translator classes are up-to-date (sorted
                 alphabetically). This means that they derive from the
-                Translator class and they implement all %d of the required
-                methods. Anyway, there still may be some details listed even
-                for them:'''
+                Translator class, they implement all %d of the required
+                methods, and even minor problems were not spotted by the script:'''
             s = s % len(self.requiredMethodsDic)
             f.write('-' * 70 + '\n')
             f.write(fill(s) + '\n\n')
@@ -1572,19 +1596,35 @@ class TrManager:
             mailtoLst = []
             for x in self.upToDateIdLst:
                 obj = self.__translDic[x]
-                f.write('  ' + obj.classId)
-                if obj.note:
-                    f.write(' -- ' + obj.note)
-                f.write('\n')
-                mailtoLst.extend(self.__emails(obj.classId))
+                if obj.note is None:
+                    f.write('  ' + obj.classId + '\n')
+                    mailtoLst.extend(self.__emails(obj.classId))
 
             fmail.write('up-to-date\n')
+            fmail.write('; '.join(mailtoLst))
+
+
+            # Write separately the list of "ALMOST up-to-date" translator classes.
+            s = '''The following translator classes are ALMOST up-to-date (sorted
+                alphabetically). This means that they derive from the
+                Translator class, but there still may be some minor problems
+                listed for them:'''
+            f.write('\n' + ('-' * 70) + '\n')
+            f.write(fill(s) + '\n\n')
+            mailtoLst = []
+            for x in self.upToDateIdLst:
+                obj = self.__translDic[x]
+                if obj.note is not None:
+                    f.write('  ' + obj.classId + '\t-- ' + obj.note + '\n')
+                    mailtoLst.extend(self.__emails(obj.classId))
+
+            fmail.write('\n\nalmost up-to-date\n')
             fmail.write('; '.join(mailtoLst))
 
         # Write the list of the adapter based classes. The very obsolete
         # translators that derive from TranslatorEnglish are included.
         if self.adaptIdLst:
-            s = '''The following translator classes need some maintenance
+            s = '''The following translator classes need maintenance
                 (the most obsolete at the end). The other info shows the
                 estimation of Doxygen version when the class was last
                 updated and number of methods that must be implemented to
@@ -1828,14 +1868,22 @@ class TrManager:
         htmlTableTpl = dedent(htmlTableTpl)
         htmlTrTpl = u'\n  <tr bgcolor="#ffffff">%s\n  </tr>'
         htmlTdTpl = u'\n    <td>%s</td>'
+        htmlTdStatusColorTpl = u'\n    <td bgcolor="%s">%s</td>'
 
         # Loop through transl objects in the order of sorted readable names
         # and add generate the content of the HTML table.
         trlst = []
         for name, obj in self.langLst:
             # Fill the table data elements for one row. The first element
-            # contains the readable name of the language.
-            lst = [ htmlTdTpl % obj.langReadable ]
+            # contains the readable name of the language. Only the oldest
+            # translator are colour marked in the language columnt. Less
+            # "heavy" color is used (when compared with the Status column).
+            if obj.readableStatus.startswith('1.4'):
+                bkcolor = self.getBgcolorByReadableStatus('1.6')
+            else:
+                bkcolor = '#ffffff'
+
+            lst = [ htmlTdStatusColorTpl % (bkcolor, obj.langReadable) ]
 
             # The next two elements contain the list of maintainers
             # and the list of their mangled e-mails. For English-based
@@ -1882,7 +1930,8 @@ class TrManager:
             lst.append(htmlTdTpl % ee)
 
             # The last element contains the readable form of the status.
-            lst.append(htmlTdTpl % obj.readableStatus)
+            bgcolor = self.getBgcolorByReadableStatus(obj.readableStatus)
+            lst.append(htmlTdStatusColorTpl % (bgcolor, obj.readableStatus))
 
             # Join the table data to one table row.
             trlst.append(htmlTrTpl % (''.join(lst)))
