@@ -2354,12 +2354,13 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    bool inlineFragment,
 		   MemberDef *memberDef,
                    bool showLineNumbers,
-                   Definition *searchCtx
+                   Definition *searchCtx,
+                   bool collectXRefs
                   )
 {
   ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                      fileDef,startLine,endLine,inlineFragment,memberDef,
-                     showLineNumbers,searchCtx);
+                     showLineNumbers,searchCtx,collectXRefs);
 }
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)

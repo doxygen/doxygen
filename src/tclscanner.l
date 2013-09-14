@@ -2569,7 +2569,8 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    bool inlineFragment,
                    MemberDef *memberDef,
                    bool showLineNumbers,
-                   Definition *searchCtx
+                   Definition *searchCtx,
+                   bool collectXRefs
                   )
 {
   (void)scopeName;
@@ -2579,6 +2580,7 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
   (void)endLine;
   (void)inlineFragment;
   (void)searchCtx;
+  (void)collectXRefs;
 
   if (input.length()<1) return;
   tcl.input_string = input;

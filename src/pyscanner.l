@@ -1709,12 +1709,13 @@ void PythonLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     bool inlineFragment,
     MemberDef *memberDef,
     bool showLineNumbers,
-    Definition *searchCtx
+    Definition *searchCtx,
+    bool collectXRefs
     )
 {
   ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                     fileDef,startLine,endLine,inlineFragment,memberDef,
-                    showLineNumbers,searchCtx);
+                    showLineNumbers,searchCtx,collectXRefs);
 }
 
 void PythonLanguageScanner::parsePrototype(const char *text)

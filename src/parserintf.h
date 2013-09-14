@@ -98,6 +98,7 @@ class ParserInterface
      *  @param[in] showLineNumbers if set to TRUE and also fileDef is not 0,
      *             line numbers will be added to the source fragement
      *  @param[in] searchCtx context under which search data has to be stored.
+     *  @param[in] collectXRefs collect cross-reference relations.
      */
     virtual void parseCode(CodeOutputInterface &codeOutIntf,
                            const char *scopeName,
@@ -111,7 +112,8 @@ class ParserInterface
                            bool inlineFragment=FALSE,
                            MemberDef *memberDef=0,
                            bool showLineNumbers=TRUE,
-                           Definition *searchCtx=0
+                           Definition *searchCtx=0,
+                           bool collectXRefs=TRUE
                           ) = 0;
 
     /** Resets the state of the code parser.

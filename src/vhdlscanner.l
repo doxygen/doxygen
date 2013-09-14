@@ -805,12 +805,13 @@ void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     bool inlineFragment,
     MemberDef *memberDef,
     bool showLineNumbers,
-    Definition *searchCtx
+    Definition *searchCtx,
+    bool collectXRefs
     )
 {
   ::parseVhdlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                   fileDef,startLine,endLine,inlineFragment,memberDef,
-                  showLineNumbers,searchCtx);
+                  showLineNumbers,searchCtx,collectXRefs);
 }
 
 /*

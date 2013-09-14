@@ -6928,12 +6928,13 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    bool inlineFragment,
 		   MemberDef *memberDef,
 		   bool showLineNumbers,
-                   Definition *searchCtx
+                   Definition *searchCtx,
+                   bool collectXRefs
                   )
 {
   ::parseCCode(codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
                fileDef,startLine,endLine,inlineFragment,memberDef,
-	       showLineNumbers,searchCtx);
+	       showLineNumbers,searchCtx,collectXRefs);
 }
 
 bool CLanguageScanner::needsPreprocessing(const QCString &extension)
