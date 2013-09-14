@@ -411,5 +411,9 @@ bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile);
 
 void addDocCrossReference(MemberDef *src,MemberDef *dst);
 
+uint getUtf8Code( const QCString& s, int idx );
+uint getUtf8CodeToLower( const QCString& s, int idx );
+uint getUtf8CodeToUpper( const QCString& s, int idx );
+
 #endif
 

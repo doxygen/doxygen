@@ -119,23 +119,53 @@ static void endIndexHierarchy(OutputList &ol,int level)
 class MemberIndexList : public QList<MemberDef>
 {
   public:
-    MemberIndexList() : QList<MemberDef>() {}
+    typedef MemberDef ElementType;
+    MemberIndexList(uint letter) : QList<MemberDef>(), m_letter(letter) {}
     ~MemberIndexList() {}
     int compareItems(QCollection::Item item1, QCollection::Item item2)
     {
       MemberDef *md1=(MemberDef *)item1;
       MemberDef *md2=(MemberDef *)item2;
-      return qstricmp(md1->name(),md2->name());
+      int result = qstricmp(md1->name(),md2->name());
+      if (result==0)
+      {
+        result = qstricmp(md1->qualifiedName(),md2->qualifiedName());
+      }
+      return result;
+    }
+    uint letter() const { return m_letter; }
+  private:
+    uint m_letter;
+};
+
+/** @brief maps a unicode character code to a list of T::ElementType's
+ */
+template<class T>
+class LetterToIndexMap : public SIntDict<T>
+{
+  public:
+    LetterToIndexMap() { SIntDict<T>::setAutoDelete(TRUE); }
+    int compareItems(QCollection::Item item1, QCollection::Item item2)
+    {
+      T *l1=(T *)item1;
+      T *l2=(T *)item2;
+      return (int)l1->letter()-(int)l2->letter();
+    }
+    void append(uint letter,typename T::ElementType *elem)
+    {
+      T *l = SIntDict<T>::find((int)letter);
+      if (l==0)
+      {
+        l = new T(letter);
+        SIntDict<T>::inSort((int)letter,l);
+      }
+      l->append(elem);
     }
 };
 
-#define MEMBER_INDEX_ENTRIES 256
-
-static MemberIndexList g_memberIndexLetterUsed[CMHL_Total][MEMBER_INDEX_ENTRIES];
-static MemberIndexList g_fileIndexLetterUsed[FMHL_Total][MEMBER_INDEX_ENTRIES];
-static MemberIndexList g_namespaceIndexLetterUsed[NMHL_Total][MEMBER_INDEX_ENTRIES];
-
-//static bool g_classIndexLetterUsed[CHL_Total][256];
+static LetterToIndexMap<MemberIndexList> g_memberIndexLetterUsed[CMHL_Total];
+static LetterToIndexMap<MemberIndexList> g_fileIndexLetterUsed[FMHL_Total];
+static LetterToIndexMap<MemberIndexList> g_namespaceIndexLetterUsed[NMHL_Total];
 
 const int maxItemsBeforeQuickIndex = MAX_ITEMS_BEFORE_QUICK_INDEX;
 
@@ -1690,21 +1720,39 @@ static void writeAnnotatedClassList(OutputList &ol)
   ol.endIndexList();
 }
 
-static QCString letterToLabel(char startLetter)
+static QCString letterToLabel(uint startLetter)
 {
-  QCString s(5); 
-  if (isId(startLetter))
+  char s[10];
+  if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
   {
-    s[0]=startLetter; s[1]=0;
+    s[0]=(char)startLetter;
+    s[1]=0;
   }
   else
   {
     const char hex[]="0123456789abcdef";
-    s[0]='0';
-    s[1]='x';
-    s[2]=hex[startLetter>>4];
-    s[3]=hex[startLetter&0xF];
-    s[4]=0;
+    int i=0;
+    s[i++]='0';
+    s[i++]='x';
+    if (startLetter>(1<<24)) // 4 byte character
+    {
+      s[i++]=hex[(startLetter>>28)&0xf];
+      s[i++]=hex[(startLetter>>24)&0xf];
+    }
+    if (startLetter>(1<<16)) // 3 byte character
+    {
+      s[i++]=hex[(startLetter>>20)&0xf];
+      s[i++]=hex[(startLetter>>16)&0xf];
+    }
+    if (startLetter>(1<<8)) // 2 byte character
+    {
+      s[i++]=hex[(startLetter>>12)&0xf];
+      s[i++]=hex[(startLetter>>8)&0xf];
+    }
+    // one byte character
+    s[i++]=hex[(startLetter>>4)&0xf];
+    s[i++]=hex[(startLetter>>0)&0xf];
+    s[i++]=0;
   }
   return s;
 }
@@ -1714,16 +1762,21 @@ static QCString letterToLabel(char startLetter)
 /** Special class list where sorting takes IGNORE_PREFIX into account. */
 class PrefixIgnoreClassList : public ClassList
 {
-public:
-  virtual int compareItems(QCollection::Item item1, QCollection::Item item2)
-  {
-    ClassDef *c1=(ClassDef *)item1;
-    ClassDef *c2=(ClassDef *)item2;
+  public:
+    typedef ClassDef ElementType;
+    PrefixIgnoreClassList(uint letter) : m_letter(letter) {}
+    virtual int compareItems(QCollection::Item item1, QCollection::Item item2)
+    {
+      ClassDef *c1=(ClassDef *)item1;
+      ClassDef *c2=(ClassDef *)item2;
 
-    QCString n1 = c1->className();
-    QCString n2 = c2->className();
-    return qstricmp (n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
-  }
+      QCString n1 = c1->className();
+      QCString n2 = c2->className();
+      return qstricmp (n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
+    }
+    uint letter() const { return m_letter; }
+  private:
+    uint m_letter;
 };
 
 /** Class representing a cell in the alphabetical class index. */
@@ -1737,12 +1790,12 @@ class AlphaIndexTableCell
     }
 
     ClassDef *classDef() const { return m_class; }
-    uchar letter()       const { return m_letter; }
+    uint letter()        const { return m_letter; }
     int row()            const { return m_row; }
     int column()         const { return m_col; }
 
   private:
-    uchar m_letter;
+    uint m_letter;
     ClassDef *m_class;
     int m_row;
     int m_col;
@@ -1770,12 +1823,31 @@ class AlphaIndexTableColumns : public QList<AlphaIndexTableRows>
     AlphaIndexTableColumns() { setAutoDelete(TRUE); }
 };
 
+class UsedIndexLetters : public SIntDict<uint>
+{
+  public:
+    UsedIndexLetters() : SIntDict<uint>(257) { setAutoDelete(TRUE); }
+    int compareItems( QCollection::Item item1, QCollection::Item item2)
+    {
+      int *p1=(int *)item1;
+      int *p2=(int *)item2;
+      return *p1 - *p2; // subtracting is done by int not uint.
+    }
+    void add(uint letter)
+    {
+      uint *v = find(letter);
+      if (v==0)
+      {
+        append(letter,new uint(letter));
+      }
+    }
+};
+
 // write an alphabetical index of all class with a header for each letter
 static void writeAlphabeticalClassList(OutputList &ol)
 {
   // What starting letters are used
-  bool indexLetterUsed[256];
-  memset (indexLetterUsed, 0, sizeof (indexLetterUsed));
+  UsedIndexLetters indexLettersUsed;
 
   // first count the number of headers
   ClassSDict::Iterator cli(*Doxygen::classSDict);
@@ -1791,24 +1863,25 @@ static void writeAlphabeticalClassList(OutputList &ol)
 	     
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d %d\n",cd->className().data(),index,cd->protection());
-      startLetter=toupper(cd->className().at(index))&0xFF;
-      indexLetterUsed[startLetter] = true;
+      startLetter=getUtf8CodeToUpper(cd->className(),index);
+      indexLettersUsed.add(startLetter);
     }
   }
+  indexLettersUsed.sort();
 
   // write quick link index (row of letters)
   QCString alphaLinks = "<div class=\"qindex\">";
-  int l;
-  for (l=0; l<256; l++)
+  SIntDict<uint>::Iterator it(indexLettersUsed);
+  uint *pLetter;
+  for (it.toFirst();(pLetter=it.current());++it)
   {
-    if (indexLetterUsed[l])
-    {
-      if (headerItems) alphaLinks += "&#160;|&#160;";
-      headerItems++;
-      alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" + 
-                    (char)l + "\">" + 
-                    (char)l + "</a>";
-    }
+    if (headerItems) alphaLinks += "&#160;|&#160;";
+    headerItems++;
+    QCString li = letterToLabel(*pLetter);
+    QCString ls = QString(QChar(*pLetter)).utf8();
+    alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" + 
+                  li + "\">" + 
+                  ls + "</a>";
   }
   alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
@@ -1825,7 +1898,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
   //    headerItems,totalItems,columns,rows,itemsInLastRow);
 
   // Keep a list of classes for each starting letter
-  PrefixIgnoreClassList classesByLetter[256];
+  LetterToIndexMap<PrefixIgnoreClassList> classesByLetter;
   AlphaIndexTableColumns tableColumns;
 
   // fill the columns with the class list (row elements in each column,
@@ -1847,10 +1920,14 @@ static void writeAlphabeticalClassList(OutputList &ol)
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {
         if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS )// no architecture
-          classesByLetter[startLetter].inSort(cd);
+        {
+          classesByLetter.append(startLetter,cd);
+        }
       }
       else
-      classesByLetter[startLetter].inSort(cd);
+      {
+        classesByLetter.append(startLetter,cd);
+      }
     }
   }
 
@@ -1871,25 +1948,29 @@ static void writeAlphabeticalClassList(OutputList &ol)
   AlphaIndexTableRows *tableRows = new AlphaIndexTableRows;
   tableColumns.append(tableRows);
   int col=0,row=0,maxRows=0;
-  for (l=0; l<256; l++)
+  PrefixIgnoreClassList *cl;
+  SIntDict<PrefixIgnoreClassList>::Iterator lit(classesByLetter);
+  for (lit.toFirst();(cl=lit.current());++lit)
   {
-    if (classesByLetter[l].count()>0)
+    uint l = cl->letter();
+    // add special header cell
+    tableRows->append(new AlphaIndexTableCell(row,col,(uchar)l,(ClassDef*)0x8));
+    row++;
+    tableRows->append(new AlphaIndexTableCell(row,col,0,(ClassDef*)0x8));
+    row++;
+    ClassListIterator cit(*cl);
+    cit.toFirst();
+    ClassDef *cd = cit.current();
+    ++cit;
+    tableRows->append(new AlphaIndexTableCell(row,col,0,cd));
+    row++; 
+    NEXT_ROW();
+    for (;(cd=cit.current()); ++cit)
     {
-      // add special header cell
-      tableRows->append(new AlphaIndexTableCell(row,col,(uchar)l,(ClassDef*)0x8));
+      // add normal cell
+      tableRows->append(new AlphaIndexTableCell(row,col,0,cd));
       row++;
-      tableRows->append(new AlphaIndexTableCell(row,col,0,(ClassDef*)0x8));
-      row++;
-      tableRows->append(new AlphaIndexTableCell(row,col,0,classesByLetter[l].at(0)));
-      row++; 
       NEXT_ROW();
-      for (i=1; i<(int)classesByLetter[l].count(); i++)
-      {
-        // add normal cell
-        tableRows->append(new AlphaIndexTableCell(row,col,0,classesByLetter[l].at(i)));
-        row++;
-        NEXT_ROW();
-      }
     }
   }
 
@@ -2164,14 +2245,9 @@ static void writeNamespaceLinkForMember(OutputList &ol,MemberDef *md,const char 
 }
 
 static void writeMemberList(OutputList &ol,bool useSections,int page,
-                            MemberIndexList memberLists[MEMBER_INDEX_ENTRIES],
+                            const LetterToIndexMap<MemberIndexList> &memberLists,
                             DefinitionIntf::DefType type)
 {
-  int pi;
-  // page==-1 => write all member indices to one page (used when total members is small)
-  // page!=-1 => write all member for this page only (used when total member is large)
-  int startIndex = page==-1 ? 0                      : page;
-  int endIndex   = page==-1 ? MEMBER_INDEX_ENTRIES-1 : page;
   ASSERT((int)type<3);
 
   typedef void (*writeLinkForMember_t)(OutputList &ol,MemberDef *md,const char *separator,
@@ -2189,10 +2265,16 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
   bool first=TRUE;
   bool firstSection=TRUE;
   bool firstItem=TRUE;
-  for (pi=startIndex; pi<=endIndex; pi++) // page==-1 => pi=[0..127], page!=-1 => pi=page 
+  MemberIndexList *ml;
+  SIntDict<MemberIndexList>::Iterator it(memberLists);
+  for (it.toFirst();(ml=it.current());++it)
   {
-    MemberIndexList *ml = &memberLists[pi];
-    if (ml->count()==0) continue;
+    if (page!=-1)
+    {
+      ml = memberLists[page];
+      it.toLast();
+    }
+    if (ml==0 || ml->count()==0) continue;
     ml->sort();
     QListIterator<MemberDef> mli(*ml);
     MemberDef *md;
@@ -2211,10 +2293,8 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
         {
           if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
-          char cl[2];
-          cl[0] = tolower(name.at(startIndex));
-          cl[1] = 0;
-          QCString cs = letterToLabel(cl[0]);
+          QCString cs = letterToLabel(ml->letter());
+          QCString cl = QString(QChar(ml->letter())).utf8();
           QCString anchor=(QCString)"index_"+cs;
           QCString title=(QCString)"- "+cl+" -";
           ol.startSection(anchor,title,SectionInfo::Subsection);
@@ -2260,15 +2340,11 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
 
 void initClassMemberIndices()
 {
-  int i=0;
   int j=0;
   for (j=0;j<CMHL_Total;j++)
   {
     documentedClassMembers[j]=0;
-    for (i=0;i<MEMBER_INDEX_ENTRIES;i++) 
-    {
-      g_memberIndexLetterUsed[j][i].clear();
-    }
+    g_memberIndexLetterUsed[j].clear();
   }
 }
 
@@ -2286,8 +2362,7 @@ void addClassMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    uchar charCode = (uchar)n.at(index);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    uint letter = getUtf8CodeToLower(n,index);
     if (!n.isEmpty()) 
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -2296,48 +2371,48 @@ void addClassMemberNameToIndex(MemberDef *md)
          QCString(md->typeString())=="friend union");
       if (!(md->isFriend() && isFriendToHide))
       {
-        g_memberIndexLetterUsed[CMHL_All][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_All].append(letter,md);
         documentedClassMembers[CMHL_All]++;
       }
       if (md->isFunction()  || md->isSlot() || md->isSignal())
       {
-        g_memberIndexLetterUsed[CMHL_Functions][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Functions].append(letter,md);
         documentedClassMembers[CMHL_Functions]++;
       } 
       else if (md->isVariable())
       {
-        g_memberIndexLetterUsed[CMHL_Variables][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Variables].append(letter,md);
         documentedClassMembers[CMHL_Variables]++;
       }
       else if (md->isTypedef())
       {
-        g_memberIndexLetterUsed[CMHL_Typedefs][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Typedefs].append(letter,md);
         documentedClassMembers[CMHL_Typedefs]++;
       }
       else if (md->isEnumerate())
       {
-        g_memberIndexLetterUsed[CMHL_Enums][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Enums].append(letter,md);
         documentedClassMembers[CMHL_Enums]++;
       }
       else if (md->isEnumValue())
       {
-        g_memberIndexLetterUsed[CMHL_EnumValues][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_EnumValues].append(letter,md);
         documentedClassMembers[CMHL_EnumValues]++;
       }
       else if (md->isProperty())
       {
-        g_memberIndexLetterUsed[CMHL_Properties][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Properties].append(letter,md);
         documentedClassMembers[CMHL_Properties]++;
       }
       else if (md->isEvent())
       {
-        g_memberIndexLetterUsed[CMHL_Events][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Events].append(letter,md);
         documentedClassMembers[CMHL_Events]++;
       }
       else if (md->isRelated() || md->isForeign() ||
                (md->isFriend() && !isFriendToHide))
       {
-        g_memberIndexLetterUsed[CMHL_Related][letter].append(md);
+        g_memberIndexLetterUsed[CMHL_Related].append(letter,md);
         documentedClassMembers[CMHL_Related]++;
       }
     }
@@ -2348,15 +2423,11 @@ void addClassMemberNameToIndex(MemberDef *md)
 
 void initNamespaceMemberIndices()
 {
-  int i=0;
   int j=0;
   for (j=0;j<NMHL_Total;j++)
   {
     documentedNamespaceMembers[j]=0;
-    for (i=0;i<MEMBER_INDEX_ENTRIES;i++) 
-    {
-      g_namespaceIndexLetterUsed[j][i].clear();
-    }
+    g_namespaceIndexLetterUsed[j].clear();
   }
 }
 
@@ -2367,36 +2438,35 @@ void addNamespaceMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    uchar charCode = (uchar)n.at(index);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    uint letter = getUtf8CodeToLower(n,index);
     if (!n.isEmpty()) 
     {
-      g_namespaceIndexLetterUsed[NMHL_All][letter].append(md);
+      g_namespaceIndexLetterUsed[NMHL_All].append(letter,md);
       documentedNamespaceMembers[NMHL_All]++;
 
       if (md->isFunction()) 
       {
-        g_namespaceIndexLetterUsed[NMHL_Functions][letter].append(md);
+        g_namespaceIndexLetterUsed[NMHL_Functions].append(letter,md);
         documentedNamespaceMembers[NMHL_Functions]++;
       }
       else if (md->isVariable()) 
       {
-        g_namespaceIndexLetterUsed[NMHL_Variables][letter].append(md);
+        g_namespaceIndexLetterUsed[NMHL_Variables].append(letter,md);
         documentedNamespaceMembers[NMHL_Variables]++;
       }
       else if (md->isTypedef())
       {
-        g_namespaceIndexLetterUsed[NMHL_Typedefs][letter].append(md);
+        g_namespaceIndexLetterUsed[NMHL_Typedefs].append(letter,md);
         documentedNamespaceMembers[NMHL_Typedefs]++;
       }
       else if (md->isEnumerate())
       {
-        g_namespaceIndexLetterUsed[NMHL_Enums][letter].append(md);
+        g_namespaceIndexLetterUsed[NMHL_Enums].append(letter,md);
         documentedNamespaceMembers[NMHL_Enums]++;
       }
       else if (md->isEnumValue())
       {
-        g_namespaceIndexLetterUsed[NMHL_EnumValues][letter].append(md);
+        g_namespaceIndexLetterUsed[NMHL_EnumValues].append(letter,md);
         documentedNamespaceMembers[NMHL_EnumValues]++;
       }
     }
@@ -2407,15 +2477,11 @@ void addNamespaceMemberNameToIndex(MemberDef *md)
 
 void initFileMemberIndices()
 {
-  int i=0;
   int j=0;
   for (j=0;j<NMHL_Total;j++)
   {
     documentedFileMembers[j]=0;
-    for (i=0;i<MEMBER_INDEX_ENTRIES;i++) 
-    {
-      g_fileIndexLetterUsed[j][i].clear();
-    }
+    g_fileIndexLetterUsed[j].clear();
   }
 }
 
@@ -2426,41 +2492,40 @@ void addFileMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    uchar charCode = (uchar)n.at(index);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    uint letter = getUtf8CodeToLower(n,index);
     if (!n.isEmpty()) 
     {
-      g_fileIndexLetterUsed[FMHL_All][letter].append(md);
+      g_fileIndexLetterUsed[FMHL_All].append(letter,md);
       documentedFileMembers[FMHL_All]++;
 
       if (md->isFunction()) 
       {
-        g_fileIndexLetterUsed[FMHL_Functions][letter].append(md);
+        g_fileIndexLetterUsed[FMHL_Functions].append(letter,md);
         documentedFileMembers[FMHL_Functions]++;
       }
       else if (md->isVariable()) 
       {
-        g_fileIndexLetterUsed[FMHL_Variables][letter].append(md);
+        g_fileIndexLetterUsed[FMHL_Variables].append(letter,md);
         documentedFileMembers[FMHL_Variables]++;
       }
       else if (md->isTypedef())
       {
-        g_fileIndexLetterUsed[FMHL_Typedefs][letter].append(md);
+        g_fileIndexLetterUsed[FMHL_Typedefs].append(letter,md);
         documentedFileMembers[FMHL_Typedefs]++;
       }
       else if (md->isEnumerate())
       {
-        g_fileIndexLetterUsed[FMHL_Enums][letter].append(md);
+        g_fileIndexLetterUsed[FMHL_Enums].append(letter,md);
         documentedFileMembers[FMHL_Enums]++;
       }
       else if (md->isEnumValue())
       {
-        g_fileIndexLetterUsed[FMHL_EnumValues][letter].append(md);
+        g_fileIndexLetterUsed[FMHL_EnumValues].append(letter,md);
         documentedFileMembers[FMHL_EnumValues]++;
       }
       else if (md->isDefine())
       {
-        g_fileIndexLetterUsed[FMHL_Defines][letter].append(md);
+        g_fileIndexLetterUsed[FMHL_Defines].append(letter,md);
         documentedFileMembers[FMHL_Defines]++;
       }
     }
@@ -2470,31 +2535,30 @@ void addFileMemberNameToIndex(MemberDef *md)
 //----------------------------------------------------------------------------
 
 static void writeQuickMemberIndex(OutputList &ol,
-    MemberIndexList charUsed[MEMBER_INDEX_ENTRIES],int page,
+    const LetterToIndexMap<MemberIndexList> &charUsed,uint page,
     QCString fullName,bool multiPage)
 {
   bool first=TRUE;
-  int i;
   startQuickIndexList(ol,TRUE);
-  for (i=33;i<127;i++)
+  SIntDict<MemberIndexList>::Iterator it(charUsed);
+  MemberIndexList *ml;
+  for (it.toFirst();(ml=it.current());++it)
   {
-    char is[2];is[0]=(char)i;is[1]='\0';
-    QCString ci = letterToLabel((char)i);
-    if (charUsed[i].count()>0)
-    {
-      QCString anchor;
-      QCString extension=Doxygen::htmlFileExtension;
-      if (!multiPage)
-        anchor="#index_";
-      else if (first) 
-        anchor=fullName+extension+"#index_";
-      else 
-        anchor=fullName+QCString().sprintf("_0x%02x",i)+extension+"#index_";
-      startQuickIndexItem(ol,anchor+ci,i==page,TRUE,first);
-      ol.writeString(is);
-      endQuickIndexItem(ol);
-      first=FALSE;
-    }
+    uint i = ml->letter();
+    QCString is = letterToLabel(i);
+    QCString ci = QString(QChar(i)).utf8();
+    QCString anchor;
+    QCString extension=Doxygen::htmlFileExtension;
+    if (!multiPage)
+      anchor="#index_";
+    else if (first) 
+      anchor=fullName+extension+"#index_";
+    else 
+      anchor=fullName+"_"+letterToLabel(i)+extension+"#index_";
+    startQuickIndexItem(ol,anchor+ci,i==page,TRUE,first);
+    ol.writeString(is);
+    endQuickIndexItem(ol);
+    first=FALSE;
   }
   endQuickIndexList(ol);
 }
@@ -2534,15 +2598,13 @@ static const CmhlInfo *getCmhlInfo(int hl)
 static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight hl)
 {
   if (documentedClassMembers[hl]==0) return;
-  
+
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
   bool multiPageIndex=FALSE;
-  int numPages=1;
   if (documentedClassMembers[hl]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
   {
     multiPageIndex=TRUE;
-    numPages=127;
   }
 
   ol.pushGeneratorState();
@@ -2557,99 +2619,96 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
   if (addToIndex)
   {
     Doxygen::indexList->addContentsItem(multiPageIndex,getCmhlInfo(hl)->title,0,
-                                       getCmhlInfo(hl)->fname,0,multiPageIndex,TRUE);
+        getCmhlInfo(hl)->fname,0,multiPageIndex,TRUE);
     if (multiPageIndex) Doxygen::indexList->incContentsDepth();
   }
 
-  int page;
   bool first=TRUE;
-  for (page=0;page<numPages;page++)
+  SIntDict<MemberIndexList>::Iterator it(g_memberIndexLetterUsed[hl]);
+  MemberIndexList *ml;
+  for (it.toFirst();(ml=it.current());++it)
   {
-    if (!multiPageIndex || g_memberIndexLetterUsed[hl][page].count()>0)
-    {
-      QCString fileName = getCmhlInfo(hl)->fname;
-      if (multiPageIndex)
-      { 
-        if (!first)
-        {
-          fileName+=QCString().sprintf("_0x%02x",page);
-        }
-        char cs[2];
-        cs[0]=page;
-        cs[1]=0;
-        if (addToIndex)
-        {
-          Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
-        }
-      }
-      bool quickIndex = documentedClassMembers[hl]>maxItemsBeforeQuickIndex;
-      
-      ol.startFile(fileName+extension,0,title);
-      ol.startQuickIndices();
-      if (!disableIndex)
+    uint page = ml->letter();
+    QCString fileName = getCmhlInfo(hl)->fname;
+    if (multiPageIndex)
+    { 
+      if (!first)
       {
-        ol.writeQuickLinks(TRUE,HLI_Functions,0);
-        startQuickIndexList(ol);
-
-        // index item for global member list
-        startQuickIndexItem(ol,
-            getCmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==CMHL_All,TRUE,first);
-        ol.writeString(fixSpaces(getCmhlInfo(0)->title));
-        endQuickIndexItem(ol);
-
-        int i;
-        // index items per category member lists
-        for (i=1;i<CMHL_Total;i++)
-        {
-          if (documentedClassMembers[i]>0)
-          {
-            startQuickIndexItem(ol,getCmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
-            ol.writeString(fixSpaces(getCmhlInfo(i)->title));
-            //printf("multiPageIndex=%d first=%d fileName=%s file=%s title=%s\n",
-            //    multiPageIndex,first,fileName.data(),getCmhlInfo(i)->fname,getCmhlInfo(i)->title.data());
-            endQuickIndexItem(ol);
-          }
-        }
-
-        endQuickIndexList(ol);
-
-        // quick alphabetical index
-        if (quickIndex)
-        {
-          writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl],page,
-              getCmhlInfo(hl)->fname,multiPageIndex);
-        }
+        fileName+="_"+letterToLabel(page);
       }
-      ol.endQuickIndices();
-      ol.writeSplitBar(fileName);
-      ol.writeSearchInfo();
-
-      ol.startContents();
-
-      if (hl==CMHL_All)
+      QCString cs = QString(QChar(page)).utf8();
+      if (addToIndex)
       {
-        ol.startTextBlock();
-        ol.parseText(lne ? lne->intro() : theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
-        ol.endTextBlock();
+        Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
       }
-      else
-      {
-        // hack to work around a mozilla bug, which refuses to switch to
-        // normal lists otherwise
-        ol.writeString("&#160;");
-      }
-      //ol.newParagraph();  // FIXME:PARA
-      writeMemberList(ol,quickIndex,
-                      multiPageIndex?page:-1,
-                      g_memberIndexLetterUsed[hl],
-                      Definition::TypeClass);
-      endFile(ol);
-      first=FALSE;
     }
+    bool quickIndex = documentedClassMembers[hl]>maxItemsBeforeQuickIndex;
+
+    ol.startFile(fileName+extension,0,title);
+    ol.startQuickIndices();
+    if (!disableIndex)
+    {
+      ol.writeQuickLinks(TRUE,HLI_Functions,0);
+      startQuickIndexList(ol);
+
+      // index item for global member list
+      startQuickIndexItem(ol,
+          getCmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==CMHL_All,TRUE,first);
+      ol.writeString(fixSpaces(getCmhlInfo(0)->title));
+      endQuickIndexItem(ol);
+
+      int i;
+      // index items per category member lists
+      for (i=1;i<CMHL_Total;i++)
+      {
+        if (documentedClassMembers[i]>0)
+        {
+          startQuickIndexItem(ol,getCmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
+          ol.writeString(fixSpaces(getCmhlInfo(i)->title));
+          //printf("multiPageIndex=%d first=%d fileName=%s file=%s title=%s\n",
+          //    multiPageIndex,first,fileName.data(),getCmhlInfo(i)->fname,getCmhlInfo(i)->title.data());
+          endQuickIndexItem(ol);
+        }
+      }
+
+      endQuickIndexList(ol);
+
+      // quick alphabetical index
+      if (quickIndex)
+      {
+        writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl],page,
+            getCmhlInfo(hl)->fname,multiPageIndex);
+      }
+    }
+    ol.endQuickIndices();
+    ol.writeSplitBar(fileName);
+    ol.writeSearchInfo();
+
+    ol.startContents();
+
+    if (hl==CMHL_All)
+    {
+      ol.startTextBlock();
+      ol.parseText(lne ? lne->intro() : theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
+      ol.endTextBlock();
+    }
+    else
+    {
+      // hack to work around a mozilla bug, which refuses to switch to
+      // normal lists otherwise
+      ol.writeString("&#160;");
+    }
+
+    writeMemberList(ol,quickIndex,
+        multiPageIndex?page:-1,
+        g_memberIndexLetterUsed[hl],
+        Definition::TypeClass);
+    endFile(ol);
+    first=FALSE;
   }
 
   if (multiPageIndex && addToIndex) Doxygen::indexList->decContentsDepth();
-  
+
   ol.popGeneratorState();
 }
 
@@ -2716,11 +2775,9 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
   static bool disableIndex     = Config_getBool("DISABLE_INDEX");
 
   bool multiPageIndex=FALSE;
-  int numPages=1;
   if (documentedFileMembers[hl]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
   {
     multiPageIndex=TRUE;
-    numPages=127;
   }
 
   ol.pushGeneratorState();
@@ -2734,94 +2791,90 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
   if (addToIndex)
   {
     Doxygen::indexList->addContentsItem(multiPageIndex,getFmhlInfo(hl)->title,0,
-                                       getFmhlInfo(hl)->fname,0,multiPageIndex,TRUE);
+        getFmhlInfo(hl)->fname,0,multiPageIndex,TRUE);
     if (multiPageIndex) Doxygen::indexList->incContentsDepth();
   }
 
-  int page;
   bool first=TRUE;
-  for (page=0;page<numPages;page++)
+  SIntDict<MemberIndexList>::Iterator it(g_fileIndexLetterUsed[hl]);
+  MemberIndexList *ml;
+  for (it.toFirst();(ml=it.current());++it)
   {
-    if (!multiPageIndex || g_fileIndexLetterUsed[hl][page].count()>0)
+    uint page = ml->letter();
+    QCString fileName = getFmhlInfo(hl)->fname;
+    if (multiPageIndex)
     {
-      QCString fileName = getFmhlInfo(hl)->fname;
-      if (multiPageIndex)
+      if (!first)
       {
-        if (!first)
-        {
-          fileName+=QCString().sprintf("_0x%02x",page);
-        }
-        char cs[2];
-        cs[0]=page;
-        cs[1]=0;
-        if (addToIndex)
-        {
-          Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
-        }
+        fileName+="_"+letterToLabel(page);
       }
-      bool quickIndex = documentedFileMembers[hl]>maxItemsBeforeQuickIndex;
-      
-      ol.startFile(fileName+extension,0,title);
-      ol.startQuickIndices();
-      if (!disableIndex)
+      QCString cs = QString(QChar(page)).utf8();
+      if (addToIndex)
       {
-        ol.writeQuickLinks(TRUE,HLI_Globals,0);
-        startQuickIndexList(ol);
-
-        // index item for all file member lists
-        startQuickIndexItem(ol,
-            getFmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==FMHL_All,TRUE,first);
-        ol.writeString(fixSpaces(getFmhlInfo(0)->title));
-        endQuickIndexItem(ol);
-
-        int i;
-        // index items for per category member lists
-        for (i=1;i<FMHL_Total;i++)
-        {
-          if (documentedFileMembers[i]>0)
-          {
-            startQuickIndexItem(ol,
-                getFmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
-            ol.writeString(fixSpaces(getFmhlInfo(i)->title));
-            endQuickIndexItem(ol);
-          }
-        }
-
-        endQuickIndexList(ol);
-
-        if (quickIndex)
-        {
-          writeQuickMemberIndex(ol,g_fileIndexLetterUsed[hl],page,
-              getFmhlInfo(hl)->fname,multiPageIndex);
-        }
+        Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
       }
-      ol.endQuickIndices();
-      ol.writeSplitBar(fileName);
-      ol.writeSearchInfo();
-
-      ol.startContents();
-
-      if (hl==FMHL_All)
-      {
-        ol.startTextBlock();
-        ol.parseText(lne ? lne->intro() : theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
-        ol.endTextBlock();
-      }
-      else
-      {
-        // hack to work around a mozilla bug, which refuses to switch to
-        // normal lists otherwise
-        ol.writeString("&#160;");
-      }
-      //ol.newParagraph();  // FIXME:PARA
-      //writeFileMemberList(ol,quickIndex,hl,page);
-      writeMemberList(ol,quickIndex,
-          multiPageIndex?page:-1,
-          g_fileIndexLetterUsed[hl],
-          Definition::TypeFile);
-      endFile(ol);
-      first=FALSE;
     }
+    bool quickIndex = documentedFileMembers[hl]>maxItemsBeforeQuickIndex;
+
+    ol.startFile(fileName+extension,0,title);
+    ol.startQuickIndices();
+    if (!disableIndex)
+    {
+      ol.writeQuickLinks(TRUE,HLI_Globals,0);
+      startQuickIndexList(ol);
+
+      // index item for all file member lists
+      startQuickIndexItem(ol,
+          getFmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==FMHL_All,TRUE,first);
+      ol.writeString(fixSpaces(getFmhlInfo(0)->title));
+      endQuickIndexItem(ol);
+
+      int i;
+      // index items for per category member lists
+      for (i=1;i<FMHL_Total;i++)
+      {
+        if (documentedFileMembers[i]>0)
+        {
+          startQuickIndexItem(ol,
+              getFmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
+          ol.writeString(fixSpaces(getFmhlInfo(i)->title));
+          endQuickIndexItem(ol);
+        }
+      }
+
+      endQuickIndexList(ol);
+
+      if (quickIndex)
+      {
+        writeQuickMemberIndex(ol,g_fileIndexLetterUsed[hl],page,
+            getFmhlInfo(hl)->fname,multiPageIndex);
+      }
+    }
+    ol.endQuickIndices();
+    ol.writeSplitBar(fileName);
+    ol.writeSearchInfo();
+
+    ol.startContents();
+
+    if (hl==FMHL_All)
+    {
+      ol.startTextBlock();
+      ol.parseText(lne ? lne->intro() : theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
+      ol.endTextBlock();
+    }
+    else
+    {
+      // hack to work around a mozilla bug, which refuses to switch to
+      // normal lists otherwise
+      ol.writeString("&#160;");
+    }
+
+    writeMemberList(ol,quickIndex,
+        multiPageIndex?page:-1,
+        g_fileIndexLetterUsed[hl],
+        Definition::TypeFile);
+    endFile(ol);
+    first=FALSE;
   }
   if (multiPageIndex && addToIndex) Doxygen::indexList->decContentsDepth();
   ol.popGeneratorState();
@@ -2890,11 +2943,9 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 
 
   bool multiPageIndex=FALSE;
-  int numPages=1;
   if (documentedNamespaceMembers[hl]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX)
   {
     multiPageIndex=TRUE;
-    numPages=127;
   }
 
   ol.pushGeneratorState();
@@ -2908,95 +2959,90 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   if (addToIndex)
   {
     Doxygen::indexList->addContentsItem(multiPageIndex,getNmhlInfo(hl)->title,0,
-                                       getNmhlInfo(hl)->fname,0,multiPageIndex,TRUE);
+        getNmhlInfo(hl)->fname,0,multiPageIndex,TRUE);
     if (multiPageIndex) Doxygen::indexList->incContentsDepth();
   }
 
-  int page;
   bool first=TRUE;
-  for (page=0;page<numPages;page++)
+  SIntDict<MemberIndexList>::Iterator it(g_namespaceIndexLetterUsed[hl]);
+  MemberIndexList *ml;
+  for (it.toFirst();(ml=it.current());++it)
   {
-    if (!multiPageIndex || g_namespaceIndexLetterUsed[hl][page].count()>0)
+    uint page = ml->letter();
+    QCString fileName = getNmhlInfo(hl)->fname;
+    if (multiPageIndex)
     {
-      QCString fileName = getNmhlInfo(hl)->fname;
-      if (multiPageIndex)
+      if (!first)
       {
-        if (!first)
-        {
-          fileName+=QCString().sprintf("_0x%02x",page);
-        }
-        char cs[2];
-        cs[0]=page;
-        cs[1]=0;
-        if (addToIndex)
-        {
-          Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
-        }
+        fileName+="_"+letterToLabel(page);
       }
-      bool quickIndex = documentedNamespaceMembers[hl]>maxItemsBeforeQuickIndex;
-      
-      ol.startFile(fileName+extension,0,title);
-      ol.startQuickIndices();
-      if (!disableIndex)
+      QCString cs = QString(QChar(page)).utf8();
+      if (addToIndex)
       {
-        ol.writeQuickLinks(TRUE,HLI_NamespaceMembers,0);
-        startQuickIndexList(ol);
-
-        // index item for all namespace member lists
-        startQuickIndexItem(ol,
-            getNmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==NMHL_All,TRUE,first);
-        ol.writeString(fixSpaces(getNmhlInfo(0)->title));
-        endQuickIndexItem(ol);
-
-        int i;
-        // index items per category member lists
-        for (i=1;i<NMHL_Total;i++)
-        {
-          if (documentedNamespaceMembers[i]>0)
-          {
-            startQuickIndexItem(ol,
-                getNmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
-            ol.writeString(fixSpaces(getNmhlInfo(i)->title));
-            endQuickIndexItem(ol);
-          }
-        }
-
-        endQuickIndexList(ol);
-
-        if (quickIndex)
-        {
-          writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed[hl],page,
-              getNmhlInfo(hl)->fname,multiPageIndex);
-        }
-
+        Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
       }
-      ol.endQuickIndices();
-      ol.writeSplitBar(fileName);
-      ol.writeSearchInfo();
-
-      ol.startContents();
-
-      if (hl==NMHL_All)
-      {
-        ol.startTextBlock();
-        ol.parseText(lne ? lne->intro() : theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
-        ol.endTextBlock();
-      }
-      else
-      {
-        // hack to work around a mozilla bug, which refuses to switch to
-        // normal lists otherwise
-        ol.writeString("&#160;");
-      }
-      //ol.newParagraph(); // FIXME:PARA
-
-      //writeNamespaceMemberList(ol,quickIndex,hl,page);
-      writeMemberList(ol,quickIndex,
-                      multiPageIndex?page:-1,
-                      g_namespaceIndexLetterUsed[hl],
-                      Definition::TypeNamespace);
-      endFile(ol);
     }
+    bool quickIndex = documentedNamespaceMembers[hl]>maxItemsBeforeQuickIndex;
+
+    ol.startFile(fileName+extension,0,title);
+    ol.startQuickIndices();
+    if (!disableIndex)
+    {
+      ol.writeQuickLinks(TRUE,HLI_NamespaceMembers,0);
+      startQuickIndexList(ol);
+
+      // index item for all namespace member lists
+      startQuickIndexItem(ol,
+          getNmhlInfo(0)->fname+Doxygen::htmlFileExtension,hl==NMHL_All,TRUE,first);
+      ol.writeString(fixSpaces(getNmhlInfo(0)->title));
+      endQuickIndexItem(ol);
+
+      int i;
+      // index items per category member lists
+      for (i=1;i<NMHL_Total;i++)
+      {
+        if (documentedNamespaceMembers[i]>0)
+        {
+          startQuickIndexItem(ol,
+              getNmhlInfo(i)->fname+Doxygen::htmlFileExtension,hl==i,TRUE,first);
+          ol.writeString(fixSpaces(getNmhlInfo(i)->title));
+          endQuickIndexItem(ol);
+        }
+      }
+
+      endQuickIndexList(ol);
+
+      if (quickIndex)
+      {
+        writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed[hl],page,
+            getNmhlInfo(hl)->fname,multiPageIndex);
+      }
+
+    }
+    ol.endQuickIndices();
+    ol.writeSplitBar(fileName);
+    ol.writeSearchInfo();
+
+    ol.startContents();
+
+    if (hl==NMHL_All)
+    {
+      ol.startTextBlock();
+      ol.parseText(lne ? lne->intro() : theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
+      ol.endTextBlock();
+    }
+    else
+    {
+      // hack to work around a mozilla bug, which refuses to switch to
+      // normal lists otherwise
+      ol.writeString("&#160;");
+    }
+
+    writeMemberList(ol,quickIndex,
+        multiPageIndex?page:-1,
+        g_namespaceIndexLetterUsed[hl],
+        Definition::TypeNamespace);
+    endFile(ol);
   }
   if (multiPageIndex && addToIndex) Doxygen::indexList->decContentsDepth();
   ol.popGeneratorState();
@@ -3092,167 +3138,6 @@ static void writeExampleIndex(OutputList &ol)
   ol.popGeneratorState();
 }
 
-
-//----------------------------------------------------------------------------
-
-template<typename T>
-bool writeMemberNavIndex(FTextStream &t,
-                         int indent,
-                         int n,
-                         int documentedMembers[],
-                         MemberIndexList indexLetterUsed[][MEMBER_INDEX_ENTRIES],
-                         const T *(*getInfo)(int),
-                         bool &first
-                        )
-
-{
-  bool found=FALSE;
-  QCString indentStr;
-  indentStr.fill(' ',indent*2);
-  // index items per category member lists
-  int i;
-  for (i=0;i<n;i++)
-  {
-    bool hasIndex       = documentedMembers[i]>0;
-    bool quickIndex     = documentedMembers[i]>maxItemsBeforeQuickIndex;
-    bool multiIndexPage = documentedMembers[i]>MAX_ITEMS_BEFORE_MULTIPAGE_INDEX;
-    if (hasIndex)
-    {
-      // terminate previous entry
-      if (!first) t << "," << endl;
-      first = FALSE;
-
-      // start entry
-      if (!found)
-      {
-        t << "[" << endl;
-      }
-      found = TRUE;
-
-      t << indentStr << "  [ ";
-      t << "\"" << fixSpaces(getInfo(i)->title) << "\", ";
-      t << "\"" << getInfo(i)->fname << Doxygen::htmlFileExtension << "\", ";
-      bool firstPage=TRUE;
-      if (quickIndex)
-      {
-        t << "[ " << endl;
-        int j;
-        for (j=33;j<127;j++)
-        {
-          if (indexLetterUsed[i][j].count()>0)
-          {
-            if (!firstPage) t << "," << endl;
-            QCString fullName = getInfo(i)->fname;
-            QCString extension = Doxygen::htmlFileExtension;
-            QCString anchor;
-            if (firstPage || !multiIndexPage) 
-              anchor=fullName+extension+"#index_";
-            else 
-              anchor=fullName+QCString().sprintf("_0x%02x",j)+extension+"#index_";
-            char is[2];is[0]=(char)j;is[1]='\0';
-            QCString ci = letterToLabel((char)j);
-            t << indentStr << "    [ ";
-            t << "\"" << is << "\", ";
-            t << "\"" << anchor << ci << "\", null ]";
-            firstPage=FALSE;
-          }
-        }
-        t << endl << indentStr << "  ] ]";
-      }
-      else
-      {
-        t << "null" << " ]";
-      }
-    }
-  }
-  return found;
-}
-
-//----------------------------------------------------------------------------
-
-#if 0
-static bool writeFullNavIndex(FTextStream &t, LayoutNavEntry *root,int indent,bool &first)
-{
-  static struct NavEntryCountMap 
-  {
-    LayoutNavEntry::Kind kind;
-    bool hasItems;
-  } navEntryCountMap[] =
-  {
-    { LayoutNavEntry::MainPage,         TRUE                                   },
-    { LayoutNavEntry::Pages,            indexedPages>0                         },
-    { LayoutNavEntry::Modules,          documentedGroups>0                     },
-    { LayoutNavEntry::Namespaces,       documentedNamespaces>0                 },
-    { LayoutNavEntry::NamespaceList,    documentedNamespaces>0                 },
-    { LayoutNavEntry::NamespaceMembers, documentedNamespaceMembers[NMHL_All]>0 },
-    { LayoutNavEntry::Classes,          annotatedClasses>0                     },
-    { LayoutNavEntry::ClassList,        annotatedClasses>0                     },
-    { LayoutNavEntry::ClassIndex,       annotatedClasses>0                     },
-    { LayoutNavEntry::ClassHierarchy,   hierarchyClasses>0                     },
-    { LayoutNavEntry::ClassMembers,     documentedClassMembers[CMHL_All]>0     },
-    { LayoutNavEntry::Files,            documentedFiles>0                      },
-    { LayoutNavEntry::FileList,         documentedFiles>0                      },
-    { LayoutNavEntry::FileGlobals,      documentedFileMembers[FMHL_All]>0      },
-    //{ LayoutNavEntry::Dirs,             documentedDirs>0                       },
-    { LayoutNavEntry::Examples,         Doxygen::exampleSDict->count()>0       }
-  };
-
-  QCString indentStr;
-  indentStr.fill(' ',indent*2);
-  bool found=FALSE;
-  if (root->children().count()>0)
-  {
-    QListIterator<LayoutNavEntry> li(root->children());
-    LayoutNavEntry *entry;
-    for (li.toFirst();(entry=li.current());++li)
-    {
-      if (navEntryCountMap[entry->kind()].hasItems && entry->visible())
-      {
-        // terminate previous entry
-        if (!first) t << "," << endl;
-        first = FALSE;
-
-        // start entry
-        if (!found)
-        {
-          t << "[" << endl;
-        }
-        found = TRUE;
-
-        bool emptySection=TRUE;
-        t << indentStr << "  [ ";
-        t << "\"" << fixSpaces(entry->title()) << "\", ";
-        t << "\"" << entry->baseFile() << Doxygen::htmlFileExtension << "\", ";
-
-        // write children (if any)
-        bool firstChild=TRUE;
-        if (entry->kind()==LayoutNavEntry::ClassMembers)
-        {
-          emptySection = !writeMemberNavIndex(t,indent+1,CMHL_Total,documentedClassMembers,g_memberIndexLetterUsed,&getCmhlInfo,firstChild);
-        }
-        else if (entry->kind()==LayoutNavEntry::NamespaceMembers)
-        {
-          emptySection = !writeMemberNavIndex(t,indent+1,NMHL_Total,documentedNamespaceMembers,g_namespaceIndexLetterUsed,&getNmhlInfo,firstChild);
-        }
-        else if (entry->kind()==LayoutNavEntry::FileGlobals)
-        {
-          emptySection = !writeMemberNavIndex(t,indent+1,FMHL_Total,documentedFileMembers,g_fileIndexLetterUsed,&getFmhlInfo,firstChild);
-        }
-        else
-        {
-          emptySection = !writeFullNavIndex(t,entry,indent+1,firstChild);
-        }
-        // end entry
-        if (emptySection) // entry without children
-          t << "null ]";
-        else // entry with children
-          t << endl << indentStr << "  ] ]";
-      }
-    }
-  }
-  return found;
-}
-#endif
 
 //----------------------------------------------------------------------------
 

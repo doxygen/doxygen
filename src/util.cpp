@@ -7919,3 +7919,72 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
   }
 }
 
+//--------------------------------------------------------------------------------------
+
+/*! @brief Get one unicode character as an unsigned integer from utf-8 string
+ *
+ * @param s utf-8 encoded string
+ * @param idx byte position of given string \a s.
+ * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT
+ * @see getNextUtf8OrToLower()
+ * @see getNextUtf8OrToUpper()
+ */
+uint getUtf8Code( const QCString& s, int idx )
+{
+  const int length = s.length();
+  if (idx >= length) { return 0; }
+  const uint c0 = (uchar)s.at(idx);
+  if ( c0 < 0xC2 || c0 >= 0xF8 ) // 1 byte character
+  {
+    return c0;
+  }
+  if (idx+1 >= length) { return 0; }
+  const uint c1 = ((uchar)s.at(idx+1)) & 0x3f;
+  if ( c0 < 0xE0 ) // 2 byte character
+  {
+    return ((c0 & 0x1f) << 6) | c1;
+  }
+  if (idx+2 >= length) { return 0; }
+  const uint c2 = ((uchar)s.at(idx+2)) & 0x3f;
+  if ( c0 < 0xF0 ) // 3 byte character
+  {
+    return ((c0 & 0x0f) << 12) | (c1 << 6) | c2;
+  }
+  if (idx+3 >= length) { return 0; }
+  // 4 byte character
+  const uint c3 = ((uchar)s.at(idx+3)) & 0x3f;
+  return ((c0 & 0x07) << 18) | (c1 << 12) | (c2 << 6) | c3;
+}
+
+
+/*! @brief Returns one unicode character as an unsigned integer 
+ *  from utf-8 string, making the character lower case if it was upper case.
+ *
+ * @param s utf-8 encoded string
+ * @param idx byte position of given string \a s.
+ * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
+ * @see getNextUtf8Code()
+*/
+uint getUtf8CodeToLower( const QCString& s, int idx )
+{
+  const uint v = getUtf8Code( s, idx );
+  return v < 0x7f ? tolower( v ) : v;
+}
+
+
+/*! @brief Returns one unicode character as ian unsigned interger 
+ *  from utf-8 string, making the character upper case if it was lower case.
+ *
+ * @param s utf-8 encoded string
+ * @param idx byte position of given string \a s.
+ * @return the unicode codepoint, 0 - MAX_UNICODE_CODEPOINT, excludes 'A'-'Z'
+ * @see getNextUtf8Code()
+ */
+uint getUtf8CodeToUpper( const QCString& s, int idx )
+{
+  const uint v = getUtf8Code( s, idx );
+  return v < 0x7f ? toupper( v ) : v;
+}
+
+//--------------------------------------------------------------------------------------
+
