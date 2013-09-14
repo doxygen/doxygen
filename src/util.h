@@ -25,6 +25,7 @@
 #include <qlist.h>
 #include <ctype.h>
 #include "types.h"
+#include "sortdict.h"
 
 //--------------------------------------------------------------------
 
@@ -83,6 +84,33 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
                   ) const;
   private:
     OutputDocInterface &m_od;
+};
+
+//--------------------------------------------------------------------
+
+/** @brief maps a unicode character code to a list of T::ElementType's
+ */
+template<class T>
+class LetterToIndexMap : public SIntDict<T>
+{
+  public:
+    LetterToIndexMap() { SIntDict<T>::setAutoDelete(TRUE); }
+    int compareItems(QCollection::Item item1, QCollection::Item item2)
+    {
+      T *l1=(T *)item1;
+      T *l2=(T *)item2;
+      return (int)l1->letter()-(int)l2->letter();
+    }
+    void append(uint letter,typename T::ElementType *elem)
+    {
+      T *l = SIntDict<T>::find((int)letter);
+      if (l==0)
+      {
+        l = new T(letter);
+        SIntDict<T>::inSort((int)letter,l);
+      }
+      l->append(elem);
+    }
 };
 
 //--------------------------------------------------------------------
@@ -410,6 +438,10 @@ QCString stripIndentation(const QCString &s);
 bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile);
 
 void addDocCrossReference(MemberDef *src,MemberDef *dst);
+
+uint getUtf8Code( const QCString& s, int idx );
+uint getUtf8CodeToLower( const QCString& s, int idx );
+uint getUtf8CodeToUpper( const QCString& s, int idx );
 
 #endif
 

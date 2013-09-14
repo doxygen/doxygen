@@ -358,7 +358,7 @@ function main()
   $sorted = run_query($query);
   // Now output the HTML stuff...
   // End the HTML form
-  end_form(preg_replace("/[^a-zA-Z0-9\-\_\.]/i", " ", $query ));
+  end_form(preg_replace("/[^a-zA-Z0-9\-\_\.\x80-\xFF]/i", " ", $query ));
   // report results to the user
   report_results($sorted);
   end_page();

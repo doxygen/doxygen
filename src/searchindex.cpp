@@ -587,8 +587,6 @@ static const char search_script[]=
 #include "search_js.h"
 ;
 
-#define MEMBER_INDEX_ENTRIES   256
-
 #define SEARCH_INDEX_ALL         0
 #define SEARCH_INDEX_CLASSES     1
 #define SEARCH_INDEX_NAMESPACES  2
@@ -606,21 +604,31 @@ static const char search_script[]=
 #define SEARCH_INDEX_PAGES      14
 #define NUM_SEARCH_INDICES      15
 
-class SearchIndexList : public SDict< QList<Definition> >
+class SearchDefinitionList : public QList<Definition>
 {
   public:
-    SearchIndexList(int size=17) : SDict< QList<Definition> >(size,FALSE) 
+    SearchDefinitionList(uint letter) : m_letter(letter) {}
+    uint letter() const { return m_letter; }
+  private:
+    uint m_letter;
+};
+
+class SearchIndexList : public SDict< SearchDefinitionList >
+{
+  public:
+    typedef Definition ElementType;
+    SearchIndexList(uint letter) : SDict<SearchDefinitionList>(17,FALSE), m_letter(letter)
     {
       setAutoDelete(TRUE);
     }
    ~SearchIndexList() {}
     void append(Definition *d)
     {
-      QList<Definition> *l = find(d->name());
+      SearchDefinitionList *l = find(d->name());
       if (l==0)
       {
-        l=new QList<Definition>;
-        SDict< QList<Definition> >::append(d->name(),l);
+        l=new SearchDefinitionList(m_letter);
+        SDict<SearchDefinitionList>::append(d->name(),l);
       }
       l->append(d);
     }
@@ -632,10 +640,13 @@ class SearchIndexList : public SDict< QList<Definition> >
       QCString n2 = md2->first()->localName();
       return qstricmp(n1.data(),n2.data());
     }
+    uint letter() const { return m_letter; }
+  private:
+    uint m_letter;
 };
 
 static void addMemberToSearchIndex(
-         SearchIndexList symbols[NUM_SEARCH_INDICES][MEMBER_INDEX_ENTRIES],
+         LetterToIndexMap<SearchIndexList> symbols[NUM_SEARCH_INDICES],
          int symbolCount[NUM_SEARCH_INDICES],
          MemberDef *md)
 {
@@ -653,58 +664,57 @@ static void addMemberToSearchIndex(
      )
   {
     QCString n = md->name();
-    uchar charCode = (uchar)n.at(0);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
+      uint letter = getUtf8CodeToLower(n,0);
       bool isFriendToHide = hideFriendCompounds &&
         (QCString(md->typeString())=="friend class" || 
          QCString(md->typeString())=="friend struct" ||
          QCString(md->typeString())=="friend union");
       if (!(md->isFriend() && isFriendToHide))
       {
-        symbols[SEARCH_INDEX_ALL][letter].append(md);
+        symbols[SEARCH_INDEX_ALL].append(letter,md);
         symbolCount[SEARCH_INDEX_ALL]++;
       }
       if (md->isFunction() || md->isSlot() || md->isSignal())
       {
-        symbols[SEARCH_INDEX_FUNCTIONS][letter].append(md);
+        symbols[SEARCH_INDEX_FUNCTIONS].append(letter,md);
         symbolCount[SEARCH_INDEX_FUNCTIONS]++;
       } 
       else if (md->isVariable())
       {
-        symbols[SEARCH_INDEX_VARIABLES][letter].append(md);
+        symbols[SEARCH_INDEX_VARIABLES].append(letter,md);
         symbolCount[SEARCH_INDEX_VARIABLES]++;
       }
       else if (md->isTypedef())
       {
-        symbols[SEARCH_INDEX_TYPEDEFS][letter].append(md);
+        symbols[SEARCH_INDEX_TYPEDEFS].append(letter,md);
         symbolCount[SEARCH_INDEX_TYPEDEFS]++;
       }
       else if (md->isEnumerate())
       {
-        symbols[SEARCH_INDEX_ENUMS][letter].append(md);
+        symbols[SEARCH_INDEX_ENUMS].append(letter,md);
         symbolCount[SEARCH_INDEX_ENUMS]++;
       }
       else if (md->isEnumValue())
       {
-        symbols[SEARCH_INDEX_ENUMVALUES][letter].append(md);
+        symbols[SEARCH_INDEX_ENUMVALUES].append(letter,md);
         symbolCount[SEARCH_INDEX_ENUMVALUES]++;
       }
       else if (md->isProperty())
       {
-        symbols[SEARCH_INDEX_PROPERTIES][letter].append(md);
+        symbols[SEARCH_INDEX_PROPERTIES].append(letter,md);
         symbolCount[SEARCH_INDEX_PROPERTIES]++;
       }
       else if (md->isEvent())
       {
-        symbols[SEARCH_INDEX_EVENTS][letter].append(md);
+        symbols[SEARCH_INDEX_EVENTS].append(letter,md);
         symbolCount[SEARCH_INDEX_EVENTS]++;
       }
       else if (md->isRelated() || md->isForeign() ||
                (md->isFriend() && !isFriendToHide))
       {
-        symbols[SEARCH_INDEX_RELATED][letter].append(md);
+        symbols[SEARCH_INDEX_RELATED].append(letter,md);
         symbolCount[SEARCH_INDEX_RELATED]++;
       }
     }
@@ -716,47 +726,48 @@ static void addMemberToSearchIndex(
      )
   {
     QCString n = md->name();
-    uchar charCode = (uchar)n.at(0);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
-      symbols[SEARCH_INDEX_ALL][letter].append(md);
+      uint letter = getUtf8CodeToLower(n,0);
+      symbols[SEARCH_INDEX_ALL].append(letter,md);
       symbolCount[SEARCH_INDEX_ALL]++;
 
       if (md->isFunction()) 
       {
-        symbols[SEARCH_INDEX_FUNCTIONS][letter].append(md);
+        symbols[SEARCH_INDEX_FUNCTIONS].append(letter,md);
         symbolCount[SEARCH_INDEX_FUNCTIONS]++;
       }
       else if (md->isVariable()) 
       {
-        symbols[SEARCH_INDEX_VARIABLES][letter].append(md);
+        symbols[SEARCH_INDEX_VARIABLES].append(letter,md);
         symbolCount[SEARCH_INDEX_VARIABLES]++;
       }
       else if (md->isTypedef())
       {
-        symbols[SEARCH_INDEX_TYPEDEFS][letter].append(md);
+        symbols[SEARCH_INDEX_TYPEDEFS].append(letter,md);
         symbolCount[SEARCH_INDEX_TYPEDEFS]++;
       }
       else if (md->isEnumerate())
       {
-        symbols[SEARCH_INDEX_ENUMS][letter].append(md);
+        symbols[SEARCH_INDEX_ENUMS].append(letter,md);
         symbolCount[SEARCH_INDEX_ENUMS]++;
       }
       else if (md->isEnumValue())
       {
-        symbols[SEARCH_INDEX_ENUMVALUES][letter].append(md);
+        symbols[SEARCH_INDEX_ENUMVALUES].append(letter,md);
         symbolCount[SEARCH_INDEX_ENUMVALUES]++;
       }
       else if (md->isDefine())
       {
-        symbols[SEARCH_INDEX_DEFINES][letter].append(md);
+        symbols[SEARCH_INDEX_DEFINES].append(letter,md);
         symbolCount[SEARCH_INDEX_DEFINES]++;
       }
     }
   }
 }
 
+// see also function convertToId() in search.js, which should match in
+// behaviour
 static QCString searchId(const QCString &s)
 {
   int c;
@@ -765,11 +776,15 @@ static QCString searchId(const QCString &s)
   for (i=0;i<s.length();i++)
   {
     c=s.at(i);
-    if ((c>='0' && c<='9') || (c>='A' && c<='Z') || (c>='a' && c<='z'))
+    if (c>0x7f || c<0) // part of multibyte character
+    {
+      result+=(char)c;
+    }
+    else if (isalnum(c)) // simply alpha numerical character
     {
       result+=(char)tolower(c);
     }
-    else
+    else // other 'unprintable' characters
     {
       char val[4];
       sprintf(val,"_%02x",(uchar)c);
@@ -780,7 +795,7 @@ static QCString searchId(const QCString &s)
 }
 
 static int g_searchIndexCount[NUM_SEARCH_INDICES];
-static SearchIndexList g_searchIndexSymbols[NUM_SEARCH_INDICES][MEMBER_INDEX_ENTRIES];
+static LetterToIndexMap<SearchIndexList> g_searchIndexSymbols[NUM_SEARCH_INDICES];
 static const char *g_searchIndexName[NUM_SEARCH_INDICES] = 
 { 
     "all",
@@ -834,12 +849,11 @@ void writeJavascriptSearchIndex()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    uchar charCode = (uchar)cd->localName().at(0);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    uint letter = getUtf8CodeToLower(cd->localName(),0);
     if (cd->isLinkable() && isId(letter))
     {
-      g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(cd);
-      g_searchIndexSymbols[SEARCH_INDEX_CLASSES][letter].append(cd);
+      g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,cd);
+      g_searchIndexSymbols[SEARCH_INDEX_CLASSES].append(letter,cd);
       g_searchIndexCount[SEARCH_INDEX_ALL]++;
       g_searchIndexCount[SEARCH_INDEX_CLASSES]++;
     }
@@ -850,12 +864,11 @@ void writeJavascriptSearchIndex()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    uchar charCode = (uchar)nd->name().at(0);
-    uint letter = charCode<128 ? tolower(charCode) : charCode;
+    uint letter = getUtf8CodeToLower(nd->name(),0);
     if (nd->isLinkable() && isId(letter))
     {
-      g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(nd);
-      g_searchIndexSymbols[SEARCH_INDEX_NAMESPACES][letter].append(nd);
+      g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,nd);
+      g_searchIndexSymbols[SEARCH_INDEX_NAMESPACES].append(letter,nd);
       g_searchIndexCount[SEARCH_INDEX_ALL]++;
       g_searchIndexCount[SEARCH_INDEX_NAMESPACES]++;
     }
@@ -870,12 +883,11 @@ void writeJavascriptSearchIndex()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
-      uchar charCode = (uchar)fd->name().at(0);
-      uint letter = charCode<128 ? tolower(charCode) : charCode;
+      uint letter = getUtf8CodeToLower(fd->name(),0);
       if (fd->isLinkable() && isId(letter))
       {
-        g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(fd);
-        g_searchIndexSymbols[SEARCH_INDEX_FILES][letter].append(fd);
+        g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,fd);
+        g_searchIndexSymbols[SEARCH_INDEX_FILES].append(letter,fd);
         g_searchIndexCount[SEARCH_INDEX_ALL]++;
         g_searchIndexCount[SEARCH_INDEX_FILES]++;
       }
@@ -930,8 +942,8 @@ void writeJavascriptSearchIndex()
         uint letter = charCode<128 ? tolower(charCode) : charCode;
         if (isId(letter))
         {
-          g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(gd);
-          g_searchIndexSymbols[SEARCH_INDEX_GROUPS][letter].append(gd);
+          g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,gd);
+          g_searchIndexSymbols[SEARCH_INDEX_GROUPS].append(letter,gd);
           g_searchIndexCount[SEARCH_INDEX_ALL]++;
           g_searchIndexCount[SEARCH_INDEX_GROUPS]++;
         }
@@ -953,8 +965,8 @@ void writeJavascriptSearchIndex()
         uint letter = charCode<128 ? tolower(charCode) : charCode;
         if (isId(letter))
         {
-          g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(pd);
-          g_searchIndexSymbols[SEARCH_INDEX_PAGES][letter].append(pd);
+          g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,pd);
+          g_searchIndexSymbols[SEARCH_INDEX_PAGES].append(letter,pd);
           g_searchIndexCount[SEARCH_INDEX_ALL]++;
           g_searchIndexCount[SEARCH_INDEX_PAGES]++;
         }
@@ -970,8 +982,8 @@ void writeJavascriptSearchIndex()
       uint letter = charCode<128 ? tolower(charCode) : charCode;
       if (isId(letter))
       {
-        g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(Doxygen::mainPage);
-        g_searchIndexSymbols[SEARCH_INDEX_PAGES][letter].append(Doxygen::mainPage);
+        g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,Doxygen::mainPage);
+        g_searchIndexSymbols[SEARCH_INDEX_PAGES].append(letter,Doxygen::mainPage);
         g_searchIndexCount[SEARCH_INDEX_ALL]++;
         g_searchIndexCount[SEARCH_INDEX_PAGES]++;
       }
@@ -979,122 +991,181 @@ void writeJavascriptSearchIndex()
   }
   
   // sort all lists
-  int i,p;
+  int i;
   for (i=0;i<NUM_SEARCH_INDICES;i++)
   {
-    for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
+    SIntDict<SearchIndexList>::Iterator it(g_searchIndexSymbols[i]);
+    SearchIndexList *sl;
+    for (it.toFirst();(sl=it.current());++it)
     {
-      if (g_searchIndexSymbols[i][p].count()>0)
-      {
-        g_searchIndexSymbols[i][p].sort();
-      }
+      sl->sort();
     }
   }
 
   // write index files
   QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
 
-  for (i=0;i<NUM_SEARCH_INDICES;i++)
+  for (i=0;i<NUM_SEARCH_INDICES;i++) // for each index
   {
-    for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
+    SIntDict<SearchIndexList>::Iterator it(g_searchIndexSymbols[i]);
+    SearchIndexList *sl;
+    int p=0;
+    for (it.toFirst();(sl=it.current());++it,++p) // for each letter
     {
-      if (g_searchIndexSymbols[i][p].count()>0)
+      QCString baseName;
+      baseName.sprintf("%s_%x",g_searchIndexName[i],p);
+
+      QCString fileName = searchDirName + "/"+baseName+".html";
+      QCString dataFileName = searchDirName + "/"+baseName+".js";
+
+      QFile outFile(fileName);
+      QFile dataOutFile(dataFileName);
+      if (outFile.open(IO_WriteOnly) && dataOutFile.open(IO_WriteOnly))
       {
-        QCString baseName;
-        baseName.sprintf("%s_%02x",g_searchIndexName[i],p);
-
-        QCString fileName = searchDirName + "/"+baseName+".html";
-        QCString dataFileName = searchDirName + "/"+baseName+".js";
-
-        QFile outFile(fileName);
-        QFile dataOutFile(dataFileName);
-        if (outFile.open(IO_WriteOnly) && dataOutFile.open(IO_WriteOnly))
         {
+          FTextStream t(&outFile);
+
+          t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
+            " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
+          t << "<html><head><title></title>" << endl;
+          t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
+          t << "<meta name=\"generator\" content=\"Doxygen " << versionString << "\">" << endl;
+          t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
+          t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
+          t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
+          t << "</head>" << endl;
+          t << "<body class=\"SRPage\">" << endl;
+          t << "<div id=\"SRIndex\">" << endl;
+          t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
+          t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
+          t << "<script type=\"text/javascript\"><!--" << endl;
+          t << "createResults();" << endl; // this function will insert the results
+          t << "--></script>" << endl;
+          t << "<div class=\"SRStatus\" id=\"Searching\">" 
+            << theTranslator->trSearching() << "</div>" << endl;
+          t << "<div class=\"SRStatus\" id=\"NoMatches\">"
+            << theTranslator->trNoMatches() << "</div>" << endl;
+
+          t << "<script type=\"text/javascript\"><!--" << endl;
+          t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
+          t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
+          t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
+          t << "searchResults.Search();" << endl;
+          t << "--></script>" << endl;
+          t << "</div>" << endl; // SRIndex
+          t << "</body>" << endl;
+          t << "</html>" << endl;
+        }
+        FTextStream ti(&dataOutFile);
+
+        ti << "var searchData=" << endl;
+        // format
+        // searchData[] = array of items
+        // searchData[x][0] = id
+        // searchData[x][1] = [ name + child1 + child2 + .. ]
+        // searchData[x][1][0] = name as shown
+        // searchData[x][1][y+1] = info for child y
+        // searchData[x][1][y+1][0] = url
+        // searchData[x][1][y+1][1] = 1 => target="_parent"
+        // searchData[x][1][y+1][2] = scope
+
+        ti << "[" << endl;
+        bool firstEntry=TRUE;
+
+        SDict<SearchDefinitionList>::Iterator li(*sl);
+        SearchDefinitionList *dl;
+        int itemCount=0;
+        for (li.toFirst();(dl=li.current());++li)
+        {
+          Definition *d = dl->first();
+          QCString id = d->localName();
+
+          if (!firstEntry)
           {
-            FTextStream t(&outFile);
-
-            t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-              " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
-            t << "<html><head><title></title>" << endl;
-            t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
-            t << "<meta name=\"generator\" content=\"Doxygen " << versionString << "\">" << endl;
-            t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
-            t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
-            t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
-            t << "</head>" << endl;
-            t << "<body class=\"SRPage\">" << endl;
-            t << "<div id=\"SRIndex\">" << endl;
-            t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
-            t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
-            t << "<script type=\"text/javascript\"><!--" << endl;
-            t << "createResults();" << endl; // this function will insert the results
-            t << "--></script>" << endl;
-            t << "<div class=\"SRStatus\" id=\"Searching\">" 
-              << theTranslator->trSearching() << "</div>" << endl;
-            t << "<div class=\"SRStatus\" id=\"NoMatches\">"
-              << theTranslator->trNoMatches() << "</div>" << endl;
-
-            t << "<script type=\"text/javascript\"><!--" << endl;
-            t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
-            t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
-            t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
-            t << "searchResults.Search();" << endl;
-            t << "--></script>" << endl;
-            t << "</div>" << endl; // SRIndex
-            t << "</body>" << endl;
-            t << "</html>" << endl;
+            ti << "," << endl;
           }
-          FTextStream ti(&dataOutFile);
+          firstEntry=FALSE;
 
-          ti << "var searchData=" << endl;
-          // format
-          // searchData[] = array of items
-          // searchData[x][0] = id
-          // searchData[x][1] = [ name + child1 + child2 + .. ]
-          // searchData[x][1][0] = name as shown
-          // searchData[x][1][y+1] = info for child y
-          // searchData[x][1][y+1][0] = url
-          // searchData[x][1][y+1][1] = 1 => target="_parent"
-          // searchData[x][1][y+1][2] = scope
-
-          ti << "[" << endl;
-          bool firstEntry=TRUE;
-
-          SDict<QList<Definition> >::Iterator li(g_searchIndexSymbols[i][p]);
-          QList<Definition> *dl;
-          int itemCount=0;
-          for (li.toFirst();(dl=li.current());++li)
+          QCString dispName = d->localName();
+          if (d->definitionType()==Definition::TypeGroup)
           {
-            Definition *d = dl->first();
-            QCString id = d->localName();
+            dispName = ((GroupDef*)d)->groupTitle();
+          }
+          else if (d->definitionType()==Definition::TypePage)
+          {
+            dispName = ((PageDef*)d)->title();
+          }
+          ti << "  ['" << searchId(dispName) << "',['" 
+            << convertToXML(dispName) << "',[";
 
-            if (!firstEntry)
-            {
-              ti << "," << endl;
-            }
-            firstEntry=FALSE;
+          if (dl->count()==1) // item with a unique name
+          {
+            MemberDef  *md   = 0;
+            bool isMemberDef = d->definitionType()==Definition::TypeMember;
+            if (isMemberDef) md = (MemberDef*)d;
+            QCString anchor = d->anchor();
 
-            QCString dispName = d->localName();
-            if (d->definitionType()==Definition::TypeGroup)
+            ti << "'" << externalRef("../",d->getReference(),TRUE)
+              << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+            if (!anchor.isEmpty())
             {
-              dispName = ((GroupDef*)d)->groupTitle();
+              ti << "#" << anchor;
             }
-            else if (d->definitionType()==Definition::TypePage)
-            {
-              dispName = ((PageDef*)d)->title();
-            }
-            ti << "  ['" << searchId(dispName) << "',['" 
-               << convertToXML(dispName) << "',[";
+            ti << "',";
 
-            if (dl->count()==1) // item with a unique name
+            static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+            if (!extLinksInWindow || d->getReference().isEmpty())
             {
-              MemberDef  *md   = 0;
+              ti << "1,";
+            }
+            else
+            {
+              ti << "0,";
+            }
+
+            if (d->getOuterScope()!=Doxygen::globalScope)
+            {
+              ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
+            }
+            else if (md)
+            {
+              FileDef *fd = md->getBodyDef();
+              if (fd==0) fd = md->getFileDef();
+              if (fd)
+              {
+                ti << "'" << convertToXML(fd->localName()) << "'";
+              }
+            }
+            else
+            {
+              ti << "''";
+            }
+            ti << "]]";
+          }
+          else // multiple items with the same name
+          {
+            QListIterator<Definition> di(*dl);
+            bool overloadedFunction = FALSE;
+            Definition *prevScope = 0;
+            int childCount=0;
+            for (di.toFirst();(d=di.current());)
+            {
+              ++di;
+              Definition *scope     = d->getOuterScope();
+              Definition *next      = di.current();
+              Definition *nextScope = 0;
+              MemberDef  *md        = 0;
               bool isMemberDef = d->definitionType()==Definition::TypeMember;
               if (isMemberDef) md = (MemberDef*)d;
+              if (next) nextScope = next->getOuterScope();
               QCString anchor = d->anchor();
 
+              if (childCount>0)
+              {
+                ti << "],[";
+              }
               ti << "'" << externalRef("../",d->getReference(),TRUE)
-                 << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                << d->getOutputFileBase() << Doxygen::htmlFileExtension;
               if (!anchor.isEmpty())
               {
                 ti << "#" << anchor;
@@ -1110,147 +1181,87 @@ void writeJavascriptSearchIndex()
               {
                 ti << "0,";
               }
-
-              if (d->getOuterScope()!=Doxygen::globalScope)
+              bool found=FALSE;
+              overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
+                  (scope && scope==nextScope)
+                  ) && md && 
+                (md->isFunction() || md->isSlot());
+              QCString prefix;
+              if (md) prefix=convertToXML(md->localName());
+              if (overloadedFunction) // overloaded member function
               {
-                ti << "'" << convertToXML(d->getOuterScope()->name()) << "'";
+                prefix+=convertToXML(md->argsString()); 
+                // show argument list to disambiguate overloaded functions
               }
-              else if (md)
+              else if (md) // unique member function
               {
-                FileDef *fd = md->getBodyDef();
-                if (fd==0) fd = md->getFileDef();
-                if (fd)
-                {
-                  ti << "'" << convertToXML(fd->localName()) << "'";
-                }
+                prefix+="()"; // only to show it is a function
               }
-              else
+              QCString name;
+              if (d->definitionType()==Definition::TypeClass)
               {
-                ti << "''";
+                name = convertToXML(((ClassDef*)d)->displayName());
+                found = TRUE;
               }
-              ti << "]]";
-            }
-            else // multiple items with the same name
-            {
-              QListIterator<Definition> di(*dl);
-              bool overloadedFunction = FALSE;
-              Definition *prevScope = 0;
-              int childCount=0;
-              for (di.toFirst();(d=di.current());)
+              else if (d->definitionType()==Definition::TypeNamespace)
               {
-                ++di;
-                Definition *scope     = d->getOuterScope();
-                Definition *next      = di.current();
-                Definition *nextScope = 0;
-                MemberDef  *md        = 0;
-                bool isMemberDef = d->definitionType()==Definition::TypeMember;
-                if (isMemberDef) md = (MemberDef*)d;
-                if (next) nextScope = next->getOuterScope();
-                QCString anchor = d->anchor();
-
-                if (childCount>0)
+                name = convertToXML(((NamespaceDef*)d)->displayName());
+                found = TRUE;
+              }
+              else if (scope==0 || scope==Doxygen::globalScope) // in global scope
+              {
+                if (md)
                 {
-                  ti << "],[";
-                }
-                ti << "'" << externalRef("../",d->getReference(),TRUE)
-                   << d->getOutputFileBase() << Doxygen::htmlFileExtension;
-                if (!anchor.isEmpty())
-                {
-                  ti << "#" << anchor;
-                }
-                ti << "',";
-
-                static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
-                if (!extLinksInWindow || d->getReference().isEmpty())
-                {
-                  ti << "1,";
-                }
-                else
-                {
-                  ti << "0,";
-                }
-                bool found=FALSE;
-                overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
-                                      (scope && scope==nextScope)
-                                     ) && md && 
-                                     (md->isFunction() || md->isSlot());
-                QCString prefix;
-                if (md) prefix=convertToXML(md->localName());
-                if (overloadedFunction) // overloaded member function
-                {
-                  prefix+=convertToXML(md->argsString()); 
-                  // show argument list to disambiguate overloaded functions
-                }
-                else if (md) // unique member function
-                {
-                  prefix+="()"; // only to show it is a function
-                }
-                QCString name;
-                if (d->definitionType()==Definition::TypeClass)
-                {
-                  name = convertToXML(((ClassDef*)d)->displayName());
-                  found = TRUE;
-                }
-                else if (d->definitionType()==Definition::TypeNamespace)
-                {
-                  name = convertToXML(((NamespaceDef*)d)->displayName());
-                  found = TRUE;
-                }
-                else if (scope==0 || scope==Doxygen::globalScope) // in global scope
-                {
-                  if (md)
+                  FileDef *fd = md->getBodyDef();
+                  if (fd==0) fd = md->getFileDef();
+                  if (fd)
                   {
-                    FileDef *fd = md->getBodyDef();
-                    if (fd==0) fd = md->getFileDef();
-                    if (fd)
-                    {
-                      if (!prefix.isEmpty()) prefix+=":&#160;";
-                      name = prefix + convertToXML(fd->localName());
-                      found = TRUE;
-                    }
+                    if (!prefix.isEmpty()) prefix+=":&#160;";
+                    name = prefix + convertToXML(fd->localName());
+                    found = TRUE;
                   }
                 }
-                else if (md && (md->getClassDef() || md->getNamespaceDef())) 
-                  // member in class or namespace scope
-                {
-                  SrcLangExt lang = md->getLanguage();
-                  name = convertToXML(d->getOuterScope()->qualifiedName()) 
-                       + getLanguageSpecificSeparator(lang) + prefix;
-                  found = TRUE;
-                }
-                else if (scope) // some thing else? -> show scope
-                {
-                  name = prefix + convertToXML(scope->name());
-                  found = TRUE;
-                }
-                if (!found) // fallback
-                {
-                  name = prefix + "("+theTranslator->trGlobalNamespace()+")";
-                }
-
-                ti << "'" << name << "'";
-
-                prevScope = scope;
-                childCount++;
+              }
+              else if (md && (md->getClassDef() || md->getNamespaceDef())) 
+                // member in class or namespace scope
+              {
+                SrcLangExt lang = md->getLanguage();
+                name = convertToXML(d->getOuterScope()->qualifiedName()) 
+                  + getLanguageSpecificSeparator(lang) + prefix;
+                found = TRUE;
+              }
+              else if (scope) // some thing else? -> show scope
+              {
+                name = prefix + convertToXML(scope->name());
+                found = TRUE;
+              }
+              if (!found) // fallback
+              {
+                name = prefix + "("+theTranslator->trGlobalNamespace()+")";
               }
 
-              ti << "]]";
+              ti << "'" << name << "'";
+
+              prevScope = scope;
+              childCount++;
             }
-            ti << "]";
-            itemCount++;
-          }
-          if (!firstEntry)
-          {
-            ti << endl;
-          }
 
-          ti << "];" << endl;
-
+            ti << "]]";
+          }
+          ti << "]";
+          itemCount++;
         }
-        else
+        if (!firstEntry)
         {
-          err("Failed to open file '%s' for writing...\n",fileName.data());
+          ti << endl;
         }
+
+        ti << "];" << endl;
+
+      }
+      else
+      {
+        err("Failed to open file '%s' for writing...\n",fileName.data());
       }
     }
   }
@@ -1275,9 +1286,12 @@ void writeJavascriptSearchIndex()
         {
           if (!first) t << "," << endl;
           t << "  " << j << ": \"";
-          for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
+
+          SIntDict<SearchIndexList>::Iterator it(g_searchIndexSymbols[i]);
+          SearchIndexList *sl;
+          for (it.toFirst();(sl=it.current());++it) // for each letter
           {
-            t << (g_searchIndexSymbols[i][p].count()>0 ? "1" : "0");
+            t << QString( QChar( sl->letter() ) ).utf8();
           }
           t << "\"";
           first=FALSE;
