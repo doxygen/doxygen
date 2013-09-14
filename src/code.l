@@ -884,8 +884,9 @@ static bool getLinkInScope(const QCString &c,  // scope
       //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
       //        g_currentDefinition,g_currentMemberDef,g_insideBody);
 
-      if (g_currentDefinition && g_currentMemberDef &&
-	  md!=g_currentMemberDef && g_insideBody)
+      if (g_currentDefinition && g_currentMemberDef && md!=g_currentMemberDef &&
+          (g_insideBody ||
+           (fd!=0 && ! getFileFilter(fd->fileName(), true).isEmpty() )) )
       {
 	addDocCrossReference(g_currentMemberDef,md);
       }
