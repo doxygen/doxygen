@@ -39,7 +39,7 @@ class Debug
                      FilterOutput = 0x00001000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
-    static void setFlag(const char *label);
+    static int  setFlag(const char *label);
     static void clearFlag(const char *label);
     static bool isFlagSet(DebugMask mask);
     static void setPriority(int p);
