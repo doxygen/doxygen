@@ -14,6 +14,12 @@
 			ShowOnlyRuleProperties="false"
 			>
 			<Properties>
+				<BooleanProperty
+					Name="Rules"
+					DisplayName="Write used lex rules"
+					Description="write used lex rules"
+					Switch="-d"
+				/>
 				<StringProperty
 					Name="Prefix"
 					DisplayName="Prefix"
