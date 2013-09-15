@@ -97,6 +97,78 @@ For doxygen specific concepts the following subclasses are available
 Finally the data for members of classes, namespaces, and files is stored in
 the subclass MemberDef.
 
+Producing debug output
+----------------------
+
+Within doxygen there are a number of ways to obtain debug output. Besides the
+invasive method of  putting print statements in the code there are a number of
+easy ways to get debug information.
+
+- Compilation of `.l` files<br>
+  This is also an invasive method but it will be automatically done by the
+  `flex / lex` command. The result is that of each input line the (lex) rule(s)
+  that are applied on it are shown.
+  - windows
+    - in the Visual C++ GUI
+      - find the required `.l` file
+      - select the `Properties` of this file
+      - set the item `Write used lex rules` to `Yes`
+      - see to it that the `.l` file is newer than the corresponding `.cpp` file
+        or remove the corresponding `.cpp` file
+  - unices
+    - global change<br>
+      In the chapter "Doxygen's internals" a `perl` script is given to toggle the
+      possibility of having the rules debug information.
+    - command line change<br>
+      It is possible to the option `LEX="flex -d"` with the `make` command on the
+      command line. In this case the `.l` that are converted to the corresponding
+      `.cpp` files during this `make` get the rules debug information.<br>
+      To undo the rules debug information output just recompile the file with
+      just `make`.<br>
+      Note this method applies for all the `.l` files that are rebuild to `.cpp`
+      files so be sure that only the `.l` files(s) of which you want to have the
+      rules debug information is (are) newer than the corresponding `.cpp`
+      file(s).
+- Running doxygen<br>
+  During a run of doxygen it is possible to specify the `-d` option with the
+  following possibilities (each option has to be preceded by `-d`):
+  - findmembers<br>
+    Gives of global, class, module members its scope, arguments and other relevant information.
+  - functions<br>
+    Gives of functions its scope, arguments and other relevant information.
+  - variables<br>
+    Gives of variables its scope and other relevant information.
+  - classes<br>
+    Gives of classes en modules its scope and other relevant information.
+  - preprocessor<br>
+    Shows the results of the preprocessing phase, i.e. results from include files, 
+    <tt>\#define</tt> statements etc., definitions in the doxygen configuration file like:
+    `EXPAND_ONLY_PREDEF`, `PREDEFINED` and `MACRO_EXPANSION`. 
+  - commentcnv<br>
+    Shows the results of the comment conversion, the comment conversion does the
+    following:
+     - It converts multi-line C++ style comment blocks (that are aligned)
+       to C style comment blocks (if `MULTILINE_CPP_IS_BRIEF` is set to `NO`).
+     - It replaces aliases with their definition (see `ALIASES`)
+     - It handles conditional sections (<tt>\\cond ... \\endcond</tt> blocks)
+  - commentscan<br>
+    Will print each comment block before and after the comment is interpreted by
+    the comment scanner.
+  - printtree<br>
+    Give the results in in pretty print way, i.e. in an XML like way with each
+    level indented by a `"."` (dot).
+  - time<br>
+    Provides information of the different stages of the doxygen process.
+  - extcmd<br>
+    Shows which external commands are executed and which pipes are opened.
+  - markdown<br>
+    Will print each comment block before and after Markdown processing.
+  - filteroutput<br>
+    Gives the output of the output as result of the filter command (when a filter
+    command is specified)
+  - validate<br>
+    Currently not used
+
 Producing output
 ----------------
 
@@ -121,7 +193,7 @@ Topics TODO
   - comment conversion
   - comment scanner
   - markdown processor
-  - doc tokeninzer
+  - doc tokenizer
   - doc parser
   - doc visitors
 - Diagrams and Images
