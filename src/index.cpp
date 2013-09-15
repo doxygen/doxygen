@@ -138,31 +138,6 @@ class MemberIndexList : public QList<MemberDef>
     uint m_letter;
 };
 
-/** @brief maps a unicode character code to a list of T::ElementType's
- */
-template<class T>
-class LetterToIndexMap : public SIntDict<T>
-{
-  public:
-    LetterToIndexMap() { SIntDict<T>::setAutoDelete(TRUE); }
-    int compareItems(QCollection::Item item1, QCollection::Item item2)
-    {
-      T *l1=(T *)item1;
-      T *l2=(T *)item2;
-      return (int)l1->letter()-(int)l2->letter();
-    }
-    void append(uint letter,typename T::ElementType *elem)
-    {
-      T *l = SIntDict<T>::find((int)letter);
-      if (l==0)
-      {
-        l = new T(letter);
-        SIntDict<T>::inSort((int)letter,l);
-      }
-      l->append(elem);
-    }
-};
-
 static LetterToIndexMap<MemberIndexList> g_memberIndexLetterUsed[CMHL_Total];
 static LetterToIndexMap<MemberIndexList> g_fileIndexLetterUsed[FMHL_Total];
 static LetterToIndexMap<MemberIndexList> g_namespaceIndexLetterUsed[NMHL_Total];
@@ -1783,7 +1758,7 @@ class PrefixIgnoreClassList : public ClassList
 class AlphaIndexTableCell
 {
   public:
-    AlphaIndexTableCell(int row,int col,uchar letter,ClassDef *cd) : 
+    AlphaIndexTableCell(int row,int col,uint letter,ClassDef *cd) : 
       m_letter(letter), m_class(cd), m_row(row), m_col(col) 
     { //printf("AlphaIndexTableCell(%d,%d,%c,%s)\n",row,col,letter!=0 ? letter: '-',
       //       cd!=(ClassDef*)0x8 ? cd->name().data() : "<null>"); 
@@ -1914,7 +1889,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
-      startLetter=toupper(cd->className().at(index))&0xFF;
+      startLetter=getUtf8Code(cd->className(),index);
       // Do some sorting again, since the classes are sorted by name with 
       // prefix, which should be ignored really.
       if (cd->getLanguage()==SrcLangExt_VHDL)
@@ -1954,7 +1929,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
   {
     uint l = cl->letter();
     // add special header cell
-    tableRows->append(new AlphaIndexTableCell(row,col,(uchar)l,(ClassDef*)0x8));
+    tableRows->append(new AlphaIndexTableCell(row,col,l,(ClassDef*)0x8));
     row++;
     tableRows->append(new AlphaIndexTableCell(row,col,0,(ClassDef*)0x8));
     row++;
@@ -2017,7 +1992,7 @@ static void writeAlphabeticalClassList(OutputList &ol)
               ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
                   "<tr>"
                   "<td><div class=\"ah\">&#160;&#160;"); 
-              ol.writeString(s);
+              ol.writeString(QString(QChar(cell->letter())).utf8());
               ol.writeString(         "&#160;&#160;</div>"
                   "</td>"
                   "</tr>"
