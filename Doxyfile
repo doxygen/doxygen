@@ -151,7 +151,7 @@ EXCLUDE                = src/code.cpp \
 		         src/svgpan_js.h \
 		         src/dynsections_js.h \
 			 src/extsearch_js.h \
-			 src/footer_html.h \
+			 src/footer_html.h
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =
