@@ -9784,7 +9784,6 @@ static void usage(const char *name)
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
-  exit(1);
 }
 
 //----------------------------------------------------------------------------
@@ -9977,6 +9976,7 @@ void readConfiguration(int argc, char **argv)
   bool shortList=FALSE;
   bool updateConfig=FALSE;
   bool genLayout=FALSE;
+  int retVal;
   while (optind<argc && argv[optind][0]=='-' && 
                (isalpha(argv[optind][1]) || argv[optind][1]=='?' || 
                 argv[optind][1]=='-')
@@ -10000,7 +10000,19 @@ void readConfiguration(int argc, char **argv)
         break;
       case 'd':
         debugLabel=getArg(argc,argv,optind);
-        Debug::setFlag(debugLabel);
+        if (!debugLabel)
+        {
+          err("option \"-d\" is missing debug specifier.\n");
+          cleanUpDoxygen();
+          exit(1);
+        }
+        retVal = Debug::setFlag(debugLabel);
+        if (!retVal)
+        {
+          err("option \"-d\" has unknown debug specifier: \"%s\".\n",debugLabel);
+          cleanUpDoxygen();
+          exit(1);
+        }
         break;
       case 's':
         shortList=TRUE;
@@ -10012,7 +10024,7 @@ void readConfiguration(int argc, char **argv)
         formatName=getArg(argc,argv,optind);
         if (!formatName)
         {
-          err("option -e is missing format specifier rtf.\n");
+          err("option \"-e\" is missing format specifier rtf.\n");
           cleanUpDoxygen();
           exit(1);
         }
@@ -10030,7 +10042,7 @@ void readConfiguration(int argc, char **argv)
             RTFGenerator::writeExtensionsFile(f);
           }
           cleanUpDoxygen();
-          exit(1);
+          exit(0);
         }
         err("option \"-e\" has invalid format specifier.\n");
         cleanUpDoxygen();
@@ -10040,7 +10052,7 @@ void readConfiguration(int argc, char **argv)
         formatName=getArg(argc,argv,optind);
         if (!formatName)
         {
-          err("option -w is missing format specifier rtf, html or latex\n");
+          err("option \"-w\" is missing format specifier rtf, html or latex\n");
           cleanUpDoxygen();
           exit(1);
         } 
@@ -10165,7 +10177,7 @@ void readConfiguration(int argc, char **argv)
         }
         else
         {
-          err("Illegal format specifier %s: should be one of rtf, html, latex, or bst\n",formatName);
+          err("Illegal format specifier \"%s\": should be one of rtf, html or latex\n",formatName);
           cleanUpDoxygen();
           exit(1);
         }
@@ -10182,6 +10194,7 @@ void readConfiguration(int argc, char **argv)
         if (qstrcmp(&argv[optind][2],"help")==0)
         {
           usage(argv[0]);
+          exit(0);
         }
         else if (qstrcmp(&argv[optind][2],"version")==0)
         {
@@ -10191,8 +10204,9 @@ void readConfiguration(int argc, char **argv)
         }
         else
         {
-          err("Unknown option -%s\n",&argv[optind][1]);
+          err("Unknown option \"-%s\"\n",&argv[optind][1]);
           usage(argv[0]);
+          exit(1);
         }
         break;
       case 'b':
@@ -10202,10 +10216,12 @@ void readConfiguration(int argc, char **argv)
       case 'h':
       case '?':
         usage(argv[0]);
+        exit(0);
         break;
       default:
-        err("Unknown option -%c\n",argv[optind][1]);
+        err("Unknown option \"-%c\"\n",argv[optind][1]);
         usage(argv[0]);
+        exit(1);
     }
     optind++;
   }
@@ -10244,6 +10260,7 @@ void readConfiguration(int argc, char **argv)
     {
       err("Doxyfile not found and no input file specified!\n");
       usage(argv[0]);
+      exit(1);
     }
   }
   else
@@ -10257,6 +10274,7 @@ void readConfiguration(int argc, char **argv)
     {
       err("configuration file %s not found!\n",argv[optind]);
       usage(argv[0]);
+      exit(1);
     }
   }
 
