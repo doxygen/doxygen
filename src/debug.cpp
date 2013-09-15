@@ -97,9 +97,11 @@ static int labelToEnumValue(const char *l)
   if (event) return *event; else return 0;
 }
 
-void Debug::setFlag(const char *lab)
+int Debug::setFlag(const char *lab)
 {
+  int retVal = labelToEnumValue(lab);
   curMask = (DebugMask)(curMask | labelToEnumValue(lab));   
+  return retVal;
 }
 
 void Debug::clearFlag(const char *lab)
