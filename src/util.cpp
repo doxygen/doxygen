@@ -4433,7 +4433,7 @@ bool resolveRef(/* in */  const char *scName,
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
-  if (fullName.find("anonymous_namespace{")==-1 && fullName.find('<')==-1)
+  if (fullName.find("anonymous_namespace{")==-1)
   {
     fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
   }
