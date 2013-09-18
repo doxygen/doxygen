@@ -169,8 +169,8 @@ pre.fragment {
 }
 
 div.fragment {
-        padding: 0px;
-        margin: 0px;
+        padding: 4px 6px;
+        margin: 4px 8px 4px 2px;
 	background-color: ##FC;
 	border: 1px solid ##CC;
 }
