@@ -191,8 +191,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
     DocbookCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1),
-    m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE),
-    m_insideSpecialHL(FALSE) {}
+    m_insideCodeLine(FALSE), m_insideSpecialHL(FALSE) {}
     virtual ~DocbookCodeGenerator() {}
 
     void codify(const char *text)
@@ -291,7 +290,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
     bool m_isMemberRef;
     int col;
     bool m_insideCodeLine;
-    bool m_normalHLNeedStartTag;
     bool m_insideSpecialHL;
 };
 

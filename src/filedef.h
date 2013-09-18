@@ -294,7 +294,6 @@ class DirEntry
   private:
     EntryKind m_kind;
     FileDef   *m_fd;
-    int num;
     bool m_isLast;
 };
 

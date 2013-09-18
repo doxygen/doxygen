@@ -1448,7 +1448,7 @@ mark_comp: dot_name              { $$=$1; }
 
 comp_1: t_LeftParen t_Identifier  t_RightParen  { $$="("+$2+")"; }
 
-vcomp_stat: t_CONFIGURATION      { $$="configurátion";yyLineNr=s_str.iLine; }
+vcomp_stat: t_CONFIGURATION      { $$="configuration";yyLineNr=s_str.iLine; }
 vcomp_stat: t_ENTITY             { $$="entity";yyLineNr=s_str.iLine; }
 vcomp_stat: t_COMPONENT          { $$="component";yyLineNr=s_str.iLine; }
 

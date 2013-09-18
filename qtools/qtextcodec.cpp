@@ -1967,7 +1967,7 @@ public:
     int heuristicNameMatch(const char* hint) const;
 
 private:
-    int forwardIndex;
+    //int forwardIndex;
 };
 
 

@@ -983,8 +983,7 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
        In=1, Out=2, InOut=3, Unspecified=0
     };
     DocParamSect(DocNode *parent,Type t) 
-      : m_type(t), m_dir(Unspecified), 
-        m_hasInOutSpecifier(FALSE), m_hasTypeSpecifier(FALSE) 
+      : m_type(t), m_hasInOutSpecifier(FALSE), m_hasTypeSpecifier(FALSE) 
     { m_parent = parent; }
     int parse(const QCString &cmdName,bool xmlContext,Direction d);
     Kind kind() const          { return Kind_ParamSect; }
@@ -995,7 +994,6 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
 
   private:
     Type            m_type;
-    Direction       m_dir;
     bool            m_hasInOutSpecifier;
     bool            m_hasTypeSpecifier;
 };
@@ -1189,7 +1187,6 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
 
   private:
     HtmlAttribList m_attribs;
-    bool           m_atTop;
 };
 
 /** Node representing a HTML table row */

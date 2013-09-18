@@ -136,9 +136,9 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
-                               Definition *ctx,MemberDef *md) 
+                               Definition *ctx) 
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
-                                 m_hide(FALSE), m_ctx(ctx), m_md(md)
+                                 m_hide(FALSE), m_ctx(ctx)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
 }

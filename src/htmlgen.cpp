@@ -2748,9 +2748,9 @@ void HtmlGenerator::endParamList()
   t << "</dl>"; 
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *md)
+void HtmlGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx,md);
+  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx);
   n->accept(visitor);
   delete visitor; 
 }

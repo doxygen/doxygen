@@ -1180,8 +1180,8 @@ uint DotRunnerQueue::count() const
 
 //--------------------------------------------------------------------
 
-DotWorkerThread::DotWorkerThread(int id,DotRunnerQueue *queue)
-      : m_id(id), m_queue(queue)
+DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
+      : m_queue(queue)
 {
   m_cleanupItems.setAutoDelete(TRUE);
 }
@@ -1235,7 +1235,7 @@ DotManager::DotManager() : m_dotMaps(1007)
     if (numThreads==0) numThreads = QMAX(2,QThread::idealThreadCount()+1);
     for (i=0;i<numThreads;i++)
     {
-      DotWorkerThread *thread = new DotWorkerThread(i,m_queue);
+      DotWorkerThread *thread = new DotWorkerThread(m_queue);
       thread->start();
       if (thread->isRunning())
       {

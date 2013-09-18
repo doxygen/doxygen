@@ -117,7 +117,7 @@ private:
     QValueStack<QMap<QString, QString> > nsStack;
     QMap<QString, QString> ns;
 
-    QXmlNamespaceSupportPrivate *d;
+    //QXmlNamespaceSupportPrivate *d;
 };
 
 
@@ -150,7 +150,7 @@ private:
     QStringList localnameList;
     QStringList valueList;
 
-    QXmlAttributesPrivate *d;
+    //QXmlAttributesPrivate *d;
 
     friend class QXmlSimpleReader;
 };
@@ -175,7 +175,7 @@ private:
 
     QString input;
 
-    QXmlInputSourcePrivate *d;
+    //QXmlInputSourcePrivate *d;
 };
 
 //
@@ -202,7 +202,7 @@ private:
     QString pub;
     QString sys;
 
-    QXmlParseExceptionPrivate *d;
+    //QXmlParseExceptionPrivate *d;
 };
 
 
@@ -392,7 +392,7 @@ public:
 private:
     QXmlSimpleReader* reader;
 
-    QXmlLocatorPrivate *d;
+    //QXmlLocatorPrivate *d;
 };
 
 //
@@ -511,7 +511,7 @@ public:
     QString errorString();
 
 private:
-    QXmlDefaultHandlerPrivate *d;
+    //QXmlDefaultHandlerPrivate *d;
 };
 
 #ifdef _WS_QWS_

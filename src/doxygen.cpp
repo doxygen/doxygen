@@ -2787,10 +2787,13 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
 
       root->type=root->name;
       static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
-      int l;
+      int l=0;
       int i=root->args.isEmpty() ? -1 : reName.match(root->args,0,&l);
-      root->name=root->args.mid(i,l);
-      root->args=root->args.mid(i+l,root->args.find(')',i+l)-i-l);
+      if (i!=-1)
+      {
+        root->name=root->args.mid(i,l);
+        root->args=root->args.mid(i+l,root->args.find(')',i+l)-i-l);
+      }
       //printf("new: type=`%s' name=`%s' args=`%s'\n",
       //    root->type.data(),root->name.data(),root->args.data());
     }

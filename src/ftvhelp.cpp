@@ -890,7 +890,7 @@ static void generateBriefDoc(FTextStream &t,Definition *def)
         def,0,brief,FALSE,FALSE,0,TRUE,TRUE);
     QCString relPath = relativePathToRoot(def->getOutputFileBase());
     HtmlCodeGenerator htmlGen(t,relPath);
-    HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,def,0);
+    HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,def);
     root->accept(visitor);
     delete visitor;
     delete root;
