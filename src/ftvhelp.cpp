@@ -1129,7 +1129,14 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
       if (n->children.count()>0) // write children to separate file for dynamic loading
       {
         QCString fileId = n->file;
-        if (dupOfParent(n)) fileId+="_dup";
+        if (n->anchor)
+        {
+          fileId+="_"+n->anchor;
+        }
+        if (dupOfParent(n)) 
+        {
+          fileId+="_dup";
+        }
         QFile f(htmlOutput+"/"+fileId+".js");
         if (f.open(IO_WriteOnly))
         {
