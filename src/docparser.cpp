@@ -6920,11 +6920,19 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
     }
     if (!found) j++;
   }
+  if (qstrncmp(data+j," const",6)==0)
+  {
+    j+=6;
+  }
+  else if (qstrncmp(data+j," volatile",9)==0)
+  {
+    j+=9;
+  }
   e=j;
   QCString id(e-s+1);
   if (e>s) memcpy(id.data(),data+s,e-s);
   id.at(e-s)='\0';
-  //printf("extractCopyDocId=%s input='%s'\n",id.data(),&data[s]);
+  //printf("extractCopyDocId='%s' input='%s'\n",id.data(),&data[s]);
   return id;
 }
 
