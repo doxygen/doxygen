@@ -370,12 +370,13 @@ static void writeExceptionListImpl(
         OutputList &ol, ClassDef *cd, MemberDef *md, QCString const& exception)
 {
   // this is ordinary exception spec - there must be a '('
+  //printf("exception='%s'\n",exception.data());
   int index = exception.find('(');
-  if (-1!=index)
+  if (index!=-1)
   {
     ol.exceptionEntry(exception.left(index),false);
     ++index; // paren in second column so skip it here
-    for (int comma = exception.find(',', index); -1!=comma; )
+    for (int comma = exception.find(',', index); comma!=-1; )
     {
       ++comma; // include comma
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,
@@ -385,21 +386,20 @@ static void writeExceptionListImpl(
       comma = exception.find(',', index);
     }
     int close = exception.find(')', index);
-    if (-1!=close)
+    if (close!=-1)
     {
       QCString type=removeRedundantWhiteSpace(exception.mid(index,close-index));
       linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,type);
       ol.exceptionEntry(0,true);
     }
     else
-        warn(md->getDefFileName(),md->getDefLine(),
-            "missing ) in exception list on member %s",qPrint(md->name()));
+    {
+      warn(md->getDefFileName(),md->getDefLine(),
+          "missing ) in exception list on member %s",qPrint(md->name()));
+    }
   }
-  else
+  else // Java Exception
   {
-    // fallback - is it possible to get here?
-    warn(md->getDefFileName(),md->getDefLine(),
-            "missing ( in exception list on member %s",qPrint(md->name()));
     ol.docify(" ");
     linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,exception);
   }
