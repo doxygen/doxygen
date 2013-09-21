@@ -106,7 +106,7 @@
 "    span.style.display = 'inline-block';\n"
 "    span.style.width   = 16*(level+1)+'px';\n"
 "    span.style.height  = '22px';\n"
-"    span.innerHTML = '&nbsp;';\n"
+"    span.innerHTML = '&#160;';\n"
 "    domNode.appendChild(span);\n"
 "  } \n"
 "}\n"
