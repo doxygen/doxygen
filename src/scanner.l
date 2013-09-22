@@ -1598,9 +1598,20 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers>"@class" | // for Objective C class declarations
 <FindMembers>{B}*{TYPEDEFPREFIX}"class{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"class"{BN}+ { 
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString decl = yytext;
+					  isTypedef=decl.find("typedef")!=-1;
+                                          bool isConst=decl.find("const")!=-1;
+                                          bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC;
 					  addType( current ) ;
+                                          if (isConst)
+                                          {
+                                            current->type += " const";
+                                          }
+                                          else if (isVolatile)
+                                          {
+                                            current->type += " volatile";
+                                          }
 					  current->type += " class" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1689,13 +1700,24 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct{" | 
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ { 
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString decl = yytext;
+					  isTypedef=decl.find("typedef")!=-1;
+                                          bool isConst=decl.find("const")!=-1;
+                                          bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC ;
 					  current->spec    = Entry::Struct |
 					    (current->spec & Entry::Published); // preserve UNO IDL
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
+                                          if (isConst)
+                                          {
+                                            current->type += " const";
+                                          }
+                                          else if (isVolatile)
+                                          {
+                                            current->type += " volatile";
+                                          }
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
@@ -1752,12 +1774,23 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <FindMembers>{B}*{TYPEDEFPREFIX}"union{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"union"{BN}+ { 
-					  isTypedef=((QCString)yytext).find("typedef")!=-1;
+                                          QCString decl=yytext;
+					  isTypedef=decl.find("typedef")!=-1;
+                                          bool isConst=decl.find("const")!=-1;
+                                          bool isVolatile=decl.find("volatile")!=-1;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Union;
 					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
 					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
+                                          if (isConst)
+                                          {
+                                            current->type += " const";
+                                          }
+                                          else if (isVolatile)
+                                          {
+                                            current->type += " volatile";
+                                          }
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
