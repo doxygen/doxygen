@@ -879,6 +879,8 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
     ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
     pIntf->resetCodeParserState();
     ol.startCodeFragment();
+    /* Closes #707641. We call parseCode with filtered sources
+     * in order to generate call/caller information */
     if (!filterSourceFiles) {
         pIntf->parseCode(devNullIntf,0,
 	    fileToString(absFilePath(),true,TRUE),
@@ -886,6 +888,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
 	    FALSE,0,this
 	    );
     }
+    /* End of Closes #707641 */
     pIntf->parseCode(ol,0,
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),
