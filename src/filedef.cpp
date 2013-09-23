@@ -807,6 +807,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
+  DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
@@ -878,6 +879,13 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
     ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
     pIntf->resetCodeParserState();
     ol.startCodeFragment();
+    if (!filterSourceFiles) {
+        pIntf->parseCode(devNullIntf,0,
+	    fileToString(absFilePath(),true,TRUE),
+	    getLanguage(),
+	    FALSE,0,this
+	    );
+    }
     pIntf->parseCode(ol,0,
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),
