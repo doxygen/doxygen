@@ -24,7 +24,9 @@
 /addon/doxysearch/Makefile.doxyindexer
 /addon/doxysearch/Makefile.doxysearch
 /addon/doxmlparser/examples/metrics/Makefile
+/addon/doxmlparser/examples/metrics/Makefile.metrics
 /addon/doxmlparser/src/Makefile
+/addon/doxmlparser/src/Makefile.doxmlparser
 /addon/doxmlparser/test/Makefile
 /addon/doxyapp/Makefile
 /addon/doxyapp/Makefile.doxyapp
