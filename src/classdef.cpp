@@ -4338,14 +4338,11 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QC
     static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
     if (!inlineInheritedMembers) // show inherited members as separate lists
     {
-      if (lt!=-1)
-      {
-        QPtrDict<void> visited(17);
-        writeInheritedMemberDeclarations(ol,lt,lt2,title,
-            inheritedFrom ? inheritedFrom : this,
-            invert,showAlways,
-            visitedClasses==0 ? &visited: visitedClasses);
-      }
+      QPtrDict<void> visited(17);
+      writeInheritedMemberDeclarations(ol,lt,lt2,title,
+          inheritedFrom ? inheritedFrom : this,
+          invert,showAlways,
+          visitedClasses==0 ? &visited: visitedClasses);
     }
   }
 }
