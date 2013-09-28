@@ -94,10 +94,15 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
   QCString style = Config_getString("LATEX_BIB_STYLE");
   if (style.isEmpty())
     style="plain";
+  QCString unit;
+  if (Config_getBool("COMPACT_LATEX"))
+    unit = "section";
+  else
+    unit = "chapter";
   t << "% Bibliography\n"
        "\\newpage\n"
        "\\phantomsection\n"
-       "\\addcontentsline{toc}{part}{" << theTranslator->trCiteReferences() << "}\n"
+       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n"
        "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{" << getListOfBibFiles(",",TRUE) << "}\n"
        "\n";

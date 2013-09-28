@@ -1825,7 +1825,7 @@ class TranslatorEnglish : public Translator
 
     /*! Header for the page with bibliographic citations */
     virtual QCString trCiteReferences()
-    { return "Bibliographic References"; }
+    { return "Bibliography"; }
 
     /*! Text for copyright paragraph */
     virtual QCString trCopyright()
