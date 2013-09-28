@@ -3300,15 +3300,21 @@ void writeGraphInfo(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   generateGraphLegend(Config_getString("HTML_OUTPUT"));
+
+  bool &stripCommentsStateRef = Config_getBool("STRIP_CODE_COMMENTS");
+  bool oldStripCommentsState = stripCommentsStateRef;
+  bool &createSubdirs = Config_getBool("CREATE_SUBDIRS");
+  bool oldCreateSubdirs = createSubdirs;
+  // temporarily disable the stripping of comments for our own code example!
+  stripCommentsStateRef = FALSE;
+  // temporarily disable create subdirs for linking to our example
+  createSubdirs = FALSE;
+
   startFile(ol,"graph_legend",0,theTranslator->trLegendTitle().data());
   startTitle(ol,0);
   ol.parseText(theTranslator->trLegendTitle());
   endTitle(ol,0,0);
   ol.startContents();
-  bool &stripCommentsStateRef = Config_getBool("STRIP_CODE_COMMENTS");
-  bool oldStripCommentsState = stripCommentsStateRef;
-  // temporarily disable the stripping of comments for our own code example!
-  stripCommentsStateRef = FALSE;
   QCString legendDocs = theTranslator->trLegendDocs();
   int s = legendDocs.find("<center>");
   int e = legendDocs.find("</center>");
@@ -3319,7 +3325,11 @@ void writeGraphInfo(OutputList &ol)
   }
   FileDef fd("","graph_legend");
   ol.generateDoc("graph_legend",1,&fd,0,legendDocs,FALSE,FALSE);
+
+  // restore config settings
   stripCommentsStateRef = oldStripCommentsState;
+  createSubdirs = oldCreateSubdirs;
+
   endFile(ol);
   ol.popGeneratorState();
 }
