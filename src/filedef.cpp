@@ -807,6 +807,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
+  DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
@@ -878,6 +879,19 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
     ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
     pIntf->resetCodeParserState();
     ol.startCodeFragment();
+    /* Closes #707641. If we want call/caller information and
+     * we want unfiltered source files and current filedef needs
+     * to be filtered, then we call parseCode with filtered sources
+     * in order to generate call/caller information */
+    if (Doxygen::parseSourcesNeeded && !filterSourceFiles &&
+        ! getFileFilter(this->fileName(), true).isEmpty() ) {
+          pIntf->parseCode(devNullIntf,0,
+	          fileToString(absFilePath(),true,TRUE),
+	          getLanguage(),
+	          FALSE,0,this
+	          );
+    }
+    /* End of Closes #707641 */
     pIntf->parseCode(ol,0,
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),

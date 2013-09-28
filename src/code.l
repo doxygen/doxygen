@@ -885,7 +885,7 @@ static bool getLinkInScope(const QCString &c,  // scope
       //        g_currentDefinition,g_currentMemberDef,g_insideBody);
 
       if (g_currentDefinition && g_currentMemberDef &&
-	  md!=g_currentMemberDef && g_insideBody)
+          md!=g_currentMemberDef && g_insideBody)
       {
 	addDocCrossReference(g_currentMemberDef,md);
       }
