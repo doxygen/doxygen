@@ -1068,6 +1068,19 @@ void XmlDocVisitor::visitPost(DocVhdlFlow *)
 {
 }
 
+void XmlDocVisitor::visitPre(DocParBlock *)
+{
+  if (m_hide) return;
+  m_t << "<parblock>";
+}
+
+void XmlDocVisitor::visitPost(DocParBlock *)
+{
+  if (m_hide) return;
+  m_t << "</parblock>";
+}
+
+
 void XmlDocVisitor::filter(const char *str)
 { 
   m_t << convertToXML(str);

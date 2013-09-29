@@ -1562,6 +1562,7 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
 {
   int l=symName.length();
   DBG(("decodeSymbol(%s) l=%d\n",qPrint(symName),l));
+  // TODO: replace this with a hash
   if      (symName=="&copy;")  return DocSymbol::Copy;
   else if (symName=="&trade;") return DocSymbol::Tm;
   else if (symName=="&tm;")    return DocSymbol::Tm; // alias for &trade;
@@ -4323,6 +4324,33 @@ int DocHtmlBlockQuote::parse()
 
 //---------------------------------------------------------------------------
 
+int DocParBlock::parse()
+{
+  DBG(("DocParBlock::parse() start\n"));
+  int retval=0;
+  g_nodeStack.push(this);
+
+  // parse one or more paragraphs 
+  bool isFirst=TRUE;
+  DocPara *par=0;
+  do
+  {
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    m_children.append(par);
+    retval=par->parse();
+  }
+  while (retval==TK_NEWPARA);
+  if (par) par->markLast();
+
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  DBG(("DocParBlock::parse() end retval=%x\n",retval));
+  return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
+}
+
+//---------------------------------------------------------------------------
+
 int DocSimpleListItem::parse()
 {
   g_nodeStack.push(this);
@@ -5509,6 +5537,9 @@ int DocPara::handleCommand(const QCString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_ENDPARBLOCK:
+      retval=RetVal_EndParBlock;
+      break;
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDMANONLY:
@@ -5566,6 +5597,13 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_ENDINTERNAL:
       retval = RetVal_EndInternal;
+      break;
+    case CMD_PARBLOCK:
+      {
+        DocParBlock *block = new DocParBlock(this);
+        m_children.append(block);
+        retval = block->parse();
+      }
       break;
     case CMD_COPYDOC:   // fall through
     case CMD_COPYBRIEF: // fall through

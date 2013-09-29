@@ -82,6 +82,7 @@ class DocText;
 class DocSimpleSectSep;
 class DocHtmlBlockQuote;
 class DocVhdlFlow;
+class DocParBlock;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
  */
@@ -189,6 +190,8 @@ class DocVisitor
     virtual void visitPost(DocHtmlBlockQuote *) = 0;
     virtual void visitPre(DocVhdlFlow *) = 0;
     virtual void visitPost(DocVhdlFlow *) = 0;
+    virtual void visitPre(DocParBlock *) = 0;
+    virtual void visitPost(DocParBlock *) = 0;
     /*! @} */
 };
 

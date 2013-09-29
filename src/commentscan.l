@@ -118,6 +118,8 @@ static bool handleExtends(const QCString &);
 static bool handleCopyDoc(const QCString &);
 static bool handleCopyBrief(const QCString &);
 static bool handleCopyDetails(const QCString &);
+static bool handleParBlock(const QCString &);
+static bool handleEndParBlock(const QCString &);
 
 typedef bool (*DocCmdFunc)(const QCString &name);
 
@@ -170,6 +172,8 @@ static DocCmdMap docCmdMap[] =
   { "relates",         &handleRelated,          TRUE  },
   { "relatedalso",     &handleRelatedAlso,      TRUE  },
   { "relatesalso",     &handleRelatedAlso,      TRUE  },
+  { "parblock",        &handleParBlock,         TRUE  },
+  { "endparblock",     &handleEndParBlock,      TRUE  },
   { "refitem",         &handleRefItem,          TRUE  },
   { "cite",            &handleCite,             FALSE },
   { "subpage",         &handleSubpage,          TRUE  },
@@ -178,7 +182,7 @@ static DocCmdMap docCmdMap[] =
   { "subsubsection",   &handleSection,          TRUE  },
   { "paragraph",       &handleSection,          TRUE  },
   { "anchor",          &handleAnchor,           TRUE  },
-  { "verbatim",        &handleFormatBlock,      TRUE },
+  { "verbatim",        &handleFormatBlock,      TRUE  },
   { "latexonly",       &handleFormatBlock,      FALSE },
   { "htmlonly",        &handleFormatBlock,      FALSE },
   { "xmlonly",         &handleFormatBlock,      FALSE },
@@ -421,6 +425,8 @@ static QCString         g_copyDocArg;
 static QCString         g_guardExpr;
 static int              g_roundCount;
 
+static bool             g_insideParBlock;
+
 //-----------------------------------------------------------------------------
 
 static QStack<Grouping> g_autoGroupStack;
@@ -437,6 +443,7 @@ static void initParser()
   g_sectionLabel.resize(0);
   g_sectionTitle.resize(0);
   g_memberGroupHeader.resize(0);
+  g_insideParBlock = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -1040,7 +1047,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
 					    g_spaceBeforeCmd = QCString(yytext).left(i);
-					    if (cmdPtr->endsBrief)
+					    if (cmdPtr->endsBrief && inContext!=OutputXRef) 
 					    { 
 					      briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
@@ -1192,7 +1199,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  if (inContext==OutputXRef)
 					  {
 					    // see bug 613024, we need to put the newlines after ending the XRef section.
-					    setOutput(OutputDoc);
+					    if (!g_insideParBlock) setOutput(OutputDoc);
                                             int i;
                                             for (i=0;i<yyleng;)
                                             {
@@ -2389,6 +2396,31 @@ static bool handleXRefItem(const QCString &)
   return FALSE;
 }
 
+static bool handleParBlock(const QCString &)
+{
+  if (g_insideParBlock)
+  {
+    warn(yyFileName,yyLineNr,
+	"found \\parblock command while already in a parblock!");
+  }
+  addOutput("@parblock");
+  g_insideParBlock = TRUE;
+  return FALSE;
+}
+
+static bool handleEndParBlock(const QCString &)
+{
+  if (!g_insideParBlock)
+  {
+    warn(yyFileName,yyLineNr,
+	"found \\endparblock command without matching \\parblock!");
+  }
+  addOutput("@endparblock");
+  setOutput(OutputDoc); // to end a parblock inside a xrefitem like context
+  g_insideParBlock = FALSE;
+  return FALSE;
+}
+
 static bool handleRelated(const QCString &)
 {
   BEGIN(RelatesParam1);
@@ -2808,6 +2840,12 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   if (!guards.isEmpty())
   {
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+  }
+
+  if (g_insideParBlock)
+  {
+    warn(yyFileName,yyLineNr,
+	"Documentation block ended while inside a \\parblock. Missing \\endparblock");
   }
 
   current->doc=stripLeadingAndTrailingEmptyLines(current->doc,current->docLine);
