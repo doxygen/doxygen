@@ -19,6 +19,8 @@ distclean: clean
 	-del src\libdoxygen.pro src\doxygen.pro src\libdoxycfg.pro
 	-del src\version.cpp
 
+realclean: distclean
+
 docs:
 	set TMAKEPATH=$(TMAKEPATH) & cd examples & $(MAKE)
 	set TMAKEPATH=$(TMAKEPATH) & cd doc & $(MAKE)

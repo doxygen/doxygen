@@ -36,6 +36,12 @@
 /addon/doxywizard/moc
 /addon/doxywizard/obj
 /addon/doxywizard/rcc
+/addon/doxmlparser/objects
+/addon/doxmlparser/lib
+/addon/doxmlparser/test/Makefile.xmlparse
+/addon/doxmlparser/test/xmlparse.exe
+/addon/doxmlparser/examples/metrics/obj
+/addon/doxmlparser/examples/metrics/metrics.exe
 /winbuild/config_lex.cpp
 /winbuild/moc
 /winbuild/obj

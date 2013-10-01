@@ -4,6 +4,8 @@ all clean depend: Makefile.xmlparse
 distclean: clean
 	$(RM) -rf Makefile.xmlparse xmlparse.pro Makefile obj
 
+realclean: distclean
+
 tmake:
 	$(ENV) $(PERL) $(TMAKE) xmlparse.pro >Makefile.xmlparse
 

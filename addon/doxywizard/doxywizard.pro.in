@@ -21,14 +21,21 @@ macx-g++ {
 # Input
 HEADERS     += doxywizard.h version.h expert.h config.h helplabel.h \
                inputbool.h inputstring.h inputint.h inputstrlist.h wizard.h docintf.h
-SOURCES     += doxywizard.cpp ../../src/version.cpp expert.cpp wizard.cpp \
+SOURCES     += doxywizard.cpp expert.cpp wizard.cpp \
                inputbool.cpp inputstring.cpp inputint.cpp inputstrlist.cpp 
-LEXSOURCES  += config.l
 RESOURCES   += doxywizard.qrc
+INCBUFSIZE=$(PYTHON)  ../../src/increasebuffer.py
 win32:RC_FILE += doxywizard.rc
 
+config.target = config_doxyw.cpp
+config.commands = $(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+config.depends = config_doxyw.l  ../../src/increasebuffer.py
 configdoc.target = configdoc.cpp
-configdoc.commands = python ../../src/configgen.py -wiz ../../src/config.xml > configdoc.cpp
+configdoc.commands = $(PYTHON) ../../src/configgen.py -wiz ../../src/config.xml > configdoc.cpp
 configdoc.depends = ../../src/config.xml ../../src/configgen.py
-QMAKE_EXTRA_TARGETS += configdoc
-GENERATED_SOURCES += $$configdoc.target
+version.target = ../../src/version.cpp
+version.commands = cd ../../src;$(PYTHON) version.py
+version.depends = ../../configure
+QMAKE_EXTRA_TARGETS += configdoc config version
+GENERATED_SOURCES += $$configdoc.target $$config.target $$version.target
+

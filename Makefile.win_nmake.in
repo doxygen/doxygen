@@ -31,6 +31,8 @@ distclean: clean
 	-del src\libdoxygen.pro src\doxygen.pro src\libdoxycfg.pro
 	-del src\version.cpp
 
+realclean: distclean
+
 docs: FORCE
 	cd examples 
 	$(MAKE)

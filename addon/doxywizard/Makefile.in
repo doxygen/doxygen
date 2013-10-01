@@ -10,10 +10,11 @@
 # See the GNU General Public License for more details.
 # 
 
-QMAKE=qmake $(MKSPECS)
+QMAKE=$(QTDIR)/bin/qmake $(MKSPECS)
+INCBUFSIZE=$(PYTHON) ../../src/increasebuffer.py
 
 all: Makefile.doxywizard  
-	$(MAKE) -f Makefile.doxywizard 
+	$(MAKE) -f Makefile.doxywizard LEX=$(LEX) PYTHON=$(PYTHON) INCBUFSIZE="$(INCBUFSIZE)"
 
 Makefile.doxywizard: doxywizard.pro
 	$(QMAKE) doxywizard.pro -o Makefile.doxywizard
@@ -28,6 +29,11 @@ distclean: Makefile.doxywizard
 	$(MAKE) -f Makefile.doxywizard distclean 
 	$(RM) Makefile.doxywizard
 
+realclean: Makefile.doxywizard
+	$(RM) configdoc.cpp
+	$(RM) config_doxyw.cpp
+	$(MAKE) distclean
+	
 install:
 	$(INSTTOOL) -d $(INSTALL)/bin	
 	$(INSTTOOL) -m 755 ../../bin/doxywizard $(INSTALL)/bin	

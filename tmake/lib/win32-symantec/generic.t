@@ -169,7 +169,7 @@ TARGET	=	#$ ExpandGlue("TARGET",$project{"DESTDIR"},"",$project{"TARGET_EXT"});
 
 all: #$ ExpandGlue("ALL_DEPS",""," "," "); $text .= '$(TARGET)';
 
-$(TARGET): $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
+$(TARGET): $(HEADERS) $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
 #$ Project("TMAKE_APP_OR_DLL") || DisableOutput();
 	$(LINK) $(LFLAGS) $(OBJECTS) $(OBJMOC), $(TARGET),, $(LIBS)
 #$ Project("TMAKE_APP_OR_DLL") || EnableOutput();

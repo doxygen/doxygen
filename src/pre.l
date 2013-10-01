@@ -1337,7 +1337,7 @@ bool computeExpression(const QCString &expr)
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
   //printf("parsing `%s'\n",e.data());
-  return parseCppExpression(g_yyFileName,g_yyLineNr,e);
+  return parseconstexp(g_yyFileName,g_yyLineNr,e);
 }
 
 /*! expands the macro definition in \a name

@@ -47,63 +47,63 @@
 #define DBG_HTML(x) 
 
 static const char defaultHtmlHeader[] =
-#include "header_html.h"
+#include "header.html.h"
 ;
 
 static const char defaultHtmlFooter[] =
-#include "footer_html.h"
+#include "footer.html.h"
 ;
 
 static const char defaultStyleSheet[] = 
-#include "doxygen_css.h"
+#include "doxygen.css.h"
 ;
 
 static const char search_functions_script[]=
-#include "search_functions_php.h"
+#include "search_functions.php.h"
 ;
 
 static const char search_opensearch_script[]=
-#include "search_opensearch_php.h"
+#include "search_opensearch.php.h"
 ;
 
 static const char search_styleSheet[] =
-#include "search_css.h"
+#include "search.css.h"
 ;
 
 static const char search_jquery_script1[]=
-#include "jquery_p1_js.h"
+#include "jquery_p1.js.h"
 ;
 
 static const char search_jquery_script2[]=
-#include "jquery_p2_js.h"
+#include "jquery_p2.js.h"
 ;
 
 static const char search_jquery_script3[]=
-#include "jquery_p3_js.h"
+#include "jquery_p3.js.h"
 ;
 
 static const char search_jquery_script4[]=
-#include "jquery_ui_js.h"
+#include "jquery_ui.js.h"
 ;
 
 static const char search_jquery_script5[]=
-#include "jquery_fx_js.h"
+#include "jquery_fx.js.h"
 ;
 
 static const char search_jquery_script6[]=
-#include "jquery_pt_js.h"
+#include "jquery_pt.js.h"
 ;
 
 static const char svgpan_script[]=
-#include "svgpan_js.h"
+#include "svgpan.js.h"
 ;
 
 static const char dynsections_script[]=
-#include "dynsections_js.h"
+#include "dynsections.js.h"
 ;
 
 static const char extsearch_script[]=
-#include "extsearch_js.h"
+#include "extsearch.js.h"
 ;
 
 static QCString g_header;

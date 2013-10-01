@@ -18,6 +18,7 @@
 
 LEX     =   %%FLEX%%
 YACC    =   %%BISON%%
+PYTHON  =   %%PYTHON%%
 
 #${
 sub GenerateDep {
@@ -48,5 +49,5 @@ sub GenerateDep {
 	$(LEX) -PconfigYY -t config.l >config.cpp 
 
 configoptions.cpp: config.xml configgen.py
-	python configgen.py -cpp config.xml >configoptions.cpp
+	$(PYTHON) configgen.py -cpp config.xml >configoptions.cpp
 
