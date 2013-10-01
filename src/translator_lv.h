@@ -48,7 +48,7 @@
  *  Last Doxygen version covered   : 1.8.2
  */
 
-class TranslatorLatvian : public Translator
+class TranslatorLatvian : public TranslatorAdapter_1_8_4
 {
   public:
 
@@ -602,6 +602,7 @@ class TranslatorLatvian : public Translator
         case ClassDef::Protocol:   result+=" protokola"; break;
         case ClassDef::Category:   result+=" kategorijas"; break;
         case ClassDef::Exception:  result+=" izņēmuma"; break;
+        default: break;
       }
       if (isTemplate) result+=" veidnes";
       result+=" apraksts";
@@ -760,6 +761,7 @@ class TranslatorLatvian : public Translator
         case ClassDef::Protocol:   result+=" protokola"; break;
         case ClassDef::Category:   result+="s kategorijas"; break;
         case ClassDef::Exception:  result+=" izņēmuma"; break;
+        default: break;
       }
       result+=" dokumentācijas tika ģenerēta no šāda fail";
       if (single) result+="a:"; else result+="iem:";
@@ -1636,6 +1638,7 @@ class TranslatorLatvian : public Translator
         case ClassDef::Protocol:   result+=" protokola"; break;
         case ClassDef::Category:   result+=" kategorijas"; break;
         case ClassDef::Exception:  result+=" izņēmuma"; break;
+        default: break;
       }
       if (isTemplate) result+=" sagataves";
       result+=" atsauce";
@@ -1704,6 +1707,7 @@ class TranslatorLatvian : public Translator
         case ClassDef::Protocol:   result+="im protokolam"; break;
         case ClassDef::Category:   result+="ai kategorijai"; break;
         case ClassDef::Exception:  result+="im izņēmumam"; break;
+        default: break;
       }
       result+=" tika ģenerēta no fail";
       if (single) result+="a:"; else result+="iem:";

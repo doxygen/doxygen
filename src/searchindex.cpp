@@ -584,7 +584,7 @@ void SearchIndexExternal::write(const char *fileName)
 #include "message.h"
 
 static const char search_script[]=
-#include "search_js.h"
+#include "search.js.h"
 ;
 
 #define SEARCH_INDEX_ALL         0

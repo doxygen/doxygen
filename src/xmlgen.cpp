@@ -56,13 +56,13 @@
 //------------------
 
 static const char index_xsd[] =
-#include "index_xsd.h"
+#include "index.xsd.h"
 ;
 
 //------------------
 //
 static const char compound_xsd[] =
-#include "compound_xsd.h"
+#include "compound.xsd.h"
 ;
 
 //------------------

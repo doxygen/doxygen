@@ -705,8 +705,8 @@ void addConfigOptions(Config *cfg)
              "SORT_BRIEF_DOCS",
               "If the SORT_BRIEF_DOCS tag is set to YES then doxygen will sort the brief\n"
               "descriptions of file, namespace and class members alphabetically by member\n"
-              "name. If set to NO the members will appear in declaration order. Note the this\n"
-              "will also influence the order of the classes in the class list.\n"
+              "name. If set to NO the members will appear in declaration order. Note that\n"
+              "this will also influence the order of the classes in the class list.\n"
               "The default value is: NO.",
               FALSE
              );

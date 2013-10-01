@@ -55,31 +55,22 @@ Just follow the following steps:
 <li>Tell me for which language you want to add support. If no one else
     is already working on support for that language, you will be
     assigned as the maintainer for the language.
-<li>Create a copy of `translator_en.h` and name it
-    `translator_\<your_2_letter_country_code\>.h`
-    I'll use `xx` in the rest of this document.
-<li>Add definition of the symbol for your language in the `configure`
-script at two places in the script:
-  <ol>
-  <li>After the <code>f_langs=</code> is statement, in lower case.
-  <li>In the string that following <code>\@allowed=</code> in upper case.
-  </ol>
-The rerun the `configure` script such that is generates `doxygen/src/lang_cfg.h`.
+<li>Create a copy of `doxygen/src/translator_en.h` and name it
+    `doxygen/src/translator_\<your_2_letter_country_code\>.h`
+    I'll use `xx` in the rest of this document (add `XX` for the uppercase version).
+<li> Rerun the `configure` script such that it generates `doxygen/src/lang_cfg.h`.
 This file should now contain a  \c \#define for your language code.
 <li>Edit `doxygen/src/language.cpp`:
     Add the following code:
 \verbatim
-#ifdef LANG_xx
+#ifdef LANG_XX
 #include<translator_xx.h>
 #endif
 \endverbatim
-    Remember to use the same symbol `LANG_xx` that you added to \c lang_cfg.h.
-    I.e., the \c xx should be capital letters that identify your language.
-    On the other hand, the \c xx inside your \c translator_xx.h should use
-    lower case.
+    Remember to use the same symbol `LANG_XX` that was added to `doxygen/src/lang_cfg.h`.
     <p>Now, in <code>setTranslator()</code> add
 \verbatim
-#ifdef LANG_xx
+#ifdef LANG_XX
     else if (L_EQUAL("your_language_name"))
     {
       theTranslator = new TranslatorYourLanguage;
@@ -90,9 +81,7 @@ This file should now contain a  \c \#define for your language code.
     for creating the English translator at the beginning, and before the
     <code>else { ... }</code> part that creates the translator for the
     default language (English again).
-<li>Edit `doxygen/src/libdoxygen.pro.in` and add \c translator_xx.h to
-    the \c HEADERS line.
-<li>Edit <code>translator_xx.h</code>:
+<li>Edit <code>doxygen/src/translator_xx.h</code>:
    <ul>
    <li>Use the UTF-8 capable editor and open the file using the UTF-8 mode.
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code>
@@ -113,12 +102,12 @@ This file should now contain a  \c \#define for your language code.
            the text is expected to be saved using the UTF-8 encoding. Doxygen
            will translate the characters to proper \f$\mbox{\LaTeX}\f$ and
            leaves the HTML and man output in UTF-8.
-     <li>  Use HTML codes like \&auml; for an \c a with an \c umlaut (i.e. &auml;).
+     <li>  Use HTML codes like `\&auml;` for an \c a with an \c umlaut (i.e. &auml;).
            See the HTML specification for the codes.
      </ul>
    </ul>
 <li>Run \c configure and \c make again from the root (i.e. in the \c doxygen
-    directory) of the distribution, in order to regenerate the \c Makefiles.
+    directory) of the distribution, in order to regenerate the `Makefile`s.
 <li>Now you can use <code>OUTPUT_LANGUAGE = your_language_name</code>
     in the config file to generate output in your language.
 <li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.

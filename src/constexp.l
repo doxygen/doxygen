@@ -103,19 +103,19 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 %%
 
-bool parseCppExpression(const char *fileName,int lineNr,const QCString &s)
+bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
 {
   //printf("Expression: `%s'\n",s.data());
   g_constExpFileName = fileName;
   g_constExpLineNr = lineNr;
   g_inputString = s;
   g_inputPosition = 0;
-  cppExpYYrestart( cppExpYYin );
-  cppExpYYparse();
+  constexpYYrestart( constexpYYin );
+  constexpYYparse();
   //printf("Result: %ld\n",(long)g_resultValue);
   return (long)g_resultValue!=0;
 }
 
 extern "C" {
-  int cppExpYYwrap() { return 1; }
+  int constexpYYwrap() { return 1; }
 }

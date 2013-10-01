@@ -26,11 +26,11 @@
 //--------------------------------------------------------------------------
 
 static const char *doxygen_bst =
-#include "doxygen_bst.h"
+#include "doxygen.bst.h"
 ;
 
 static const char *bib2xhtml_pl =
-#include "bib2xhtml.h"
+#include "bib2xhtml.pl.h"
 ;
 
 //--------------------------------------------------------------------------

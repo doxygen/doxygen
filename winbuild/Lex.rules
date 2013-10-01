@@ -7,38 +7,26 @@
 		<CustomBuildRule
 			Name="Lex"
 			DisplayName="Lex"
-			CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
+			CommandLine="flex [AllOptions] -t -P$(InputName)YY [AdditionalOptions] [inputs] | python $(ProjectDir)..\src\increasebuffer.py &gt; $(InputDir)$(InputName).cpp"
 			Outputs="$(InputDir)/$(InputName).cpp"
 			FileExtensions="*.l"
-			ExecutionDescription="Executing Lex for $(InputDir)/$(InputName).cpp ..."
+			AdditionalDependencies="$(ProjectDir)..\src\increasebuffer.py"
+			ExecutionDescription="Executing Lex for $(InputPath) ..."
 			ShowOnlyRuleProperties="false"
 			>
 			<Properties>
 				<BooleanProperty
-					Name="Rules"
-					DisplayName="Write used lex rules"
-					Description="write used lex rules"
-					Switch="-d"
-				/>
-				<StringProperty
-					Name="Prefix"
-					DisplayName="Prefix"
-					Description="specify scanner prefix other than &quot;yy&quot;"
-					Switch="-P[value]"
-					Delimited="true"
+					Name="Case"
+					DisplayName="Case insensitive"
+					Description="case insensitive"
+					Switch="-i"
+                                        IsReadOnly="true"
 				/>
 				<BooleanProperty
-					Name="Stdout"
-					DisplayName="Redirect to stdout"
-					Description="write generated scanner on stdout instead of lex.yy.c"
-					Switch="-t"
-				/>
-				<StringProperty
-					Name="Output"
-					DisplayName="Output file name"
-					Description="Specify output filename"
-					Switch="-o[value]"
-					DefaultValue="$(InputDir)$(InputName).cpp"
+					Name="Rules"
+					DisplayName="Write used lex rules"
+					Description="Write used lex rules"
+					Switch="-d"
 				/>
 			</Properties>
 		</CustomBuildRule>

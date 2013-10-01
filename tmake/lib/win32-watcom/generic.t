@@ -157,7 +157,7 @@ TMPLIST =	#$ ExpandGlue("TARGET","","",".lst");
 
 all: #$ ExpandGlue("ALL_DEPS",""," "," "); $text .= '$(TARGET)';
 
-$(TARGET): $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
+$(TARGET): $(HEADERS) $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
 	@%create $(TMPLIST)
 #$ Project("TMAKE_APP_OR_DLL") || DisableOutput();
 	@%append $(TMPLIST) NAME #$ Expand("TARGET");

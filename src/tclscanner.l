@@ -2503,7 +2503,7 @@ static void tcl_parse(const QCString ns, const QCString cls)
   tcl.ns.insert("::",myEntry);
   tcl.entry_current = tcl_entry_new();
 
-  tclscanYYrestart( tclscanYYin );
+  tclscannerYYrestart( tclscannerYYin );
   BEGIN( TOP );
   yylineno=1;
   myScan = new tcl_scan;
@@ -2518,7 +2518,7 @@ static void tcl_parse(const QCString ns, const QCString cls)
   tcl.entry_inside = tcl.entry_file;
   myScan->entry_scan = tcl.entry_inside;
   tcl.scan.insert(0,myScan);
-  tclscanYYlex();
+  tclscannerYYlex();
   tcl.scan.clear();
   tcl.ns.clear();
   tcl.cl.clear();

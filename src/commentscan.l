@@ -2827,9 +2827,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
                "input=[\n%s]\n",fileName.data(),lineNr,comment.data()
               );
   
-  commentScanYYrestart( commentScanYYin );
+  commentscanYYrestart( commentscanYYin );
   BEGIN( Comment );
-  commentScanYYlex();
+  commentscanYYlex();
   setOutput( OutputDoc );
 
   if (YY_START==OverloadParam) // comment ended with \overload
@@ -3112,7 +3112,7 @@ static void handleGuard(const QCString &expr)
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
-  void commentScanYYdummy() { yy_flex_realloc(0,0); } 
+  void commentscanYYdummy() { yy_flex_realloc(0,0); } 
 }
 #endif
 

@@ -738,7 +738,7 @@ private                                 {
   				       }
 {ID}	                               {
                                        }  
-^{BS}"type"{BS_}"is"                    { }
+^{BS}"type"{BS_}"is"                   { }
 }
 <AttributeList>{
 {COMMA}					{}
@@ -2302,12 +2302,12 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     current          = new Entry;
     current->lang    = SrcLangExt_Fortran; 
 
-    fscanYYrestart( fscanYYin );
+    fortranscannerYYrestart( fortranscannerYYin );
     {
       BEGIN( Start );
     }
 
-    fscanYYlex();
+    fortranscannerYYlex();
     groupLeaveFile(yyFileName,yyLineNr);
 
     endScope(current_root, TRUE); // TRUE - global root
@@ -2378,7 +2378,7 @@ void FortranLanguageScanner::parsePrototype(const char *text)
   pushBuffer(buffer);
   parsingPrototype = TRUE;
   BEGIN(Prototype);
-  fscanYYlex();
+  fortranscannerYYlex();
   parsingPrototype = FALSE;
   popBuffer();
 }
@@ -2411,7 +2411,7 @@ static void scanner_abort()
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
-  void fscannerYYdummy() { yy_flex_realloc(0,0); } 
+  void fortranscannernerYYdummy() { yy_flex_realloc(0,0); } 
 }
 #endif
 

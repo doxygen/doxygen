@@ -6630,7 +6630,7 @@ static void parseCompounds(Entry *rt)
       g_column=0;
       inputString = ce->program;
       inputPosition = 0;
-      scanYYrestart( scanYYin ) ;
+      scannerYYrestart( scannerYYin ) ;
       if (ce->section==Entry::ENUM_SEC || (ce->spec&Entry::Enum))
 	BEGIN( FindFields ) ;
       else
@@ -6700,7 +6700,7 @@ static void parseCompounds(Entry *rt)
       //memberGroupInside.resize(0);
       groupEnterCompound(yyFileName,yyLineNr,ce->name);
       
-      scanYYlex() ;
+      scannerYYlex() ;
       g_lexInit=TRUE;
       //forceEndGroup();
 
@@ -6777,7 +6777,7 @@ static void parseMain(const char *fileName,
     }
     current->reset();
     initEntry();
-    scanYYrestart( scanYYin );
+    scannerYYrestart( scannerYYin );
     if ( insidePHP )
     {
       BEGIN( FindMembersPHP );
@@ -6787,7 +6787,7 @@ static void parseMain(const char *fileName,
       BEGIN( FindMembers );
     }
 
-    scanYYlex();
+    scannerYYlex();
     g_lexInit=TRUE;
 
     if (YY_START==Comment)
@@ -6841,7 +6841,7 @@ static void parsePrototype(const QCString &text)
   
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(scanYYin, YY_BUF_SIZE));
+  yy_switch_to_buffer(yy_create_buffer(scannerYYin, YY_BUF_SIZE));
   orgInputString = inputString; 
   orgInputPosition = inputPosition;
 
@@ -6849,9 +6849,9 @@ static void parsePrototype(const QCString &text)
   inputString = text;
   inputPosition = 0;
   g_column = 0;
-  scanYYrestart( scanYYin );
+  scannerYYrestart( scannerYYin );
   BEGIN(Prototype);
-  scanYYlex();
+  scannerYYlex();
   g_lexInit=TRUE;
 
   current->name = current->name.stripWhiteSpace();
@@ -6873,7 +6873,7 @@ void scanFreeScanner()
 #if defined(YY_FLEX_SUBMINOR_VERSION)
   if (g_lexInit)
   {
-    scanYYlex_destroy();
+    scannerYYlex_destroy();
   }
 #endif
 }
