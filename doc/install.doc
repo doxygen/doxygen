@@ -269,10 +269,10 @@ compile doxygen. Alternatively, you can compile doxygen
 <a href="http://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="http://www.mingw.org/">MinGW</a>.
 
-The next step is to install \c bison, \c flex, and \c tar
-(see http://gnuwin32.sourceforge.net/packages.html).
+The next step is to install \c bison, \c flex, \c tar
+(see http://gnuwin32.sourceforge.net/packages.html) and \c python (version 2, see http://www.python.org).
 This packages are needed during the
-compilation process if you use a CVS snapshot of doxygen (the official source releases 
+compilation process if you use a GitHub snapshot of doxygen (the official source releases 
 come with pre-generated sources).
 
 Download doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)

@@ -112,7 +112,7 @@ static struct
 } str_doc;
 
 #define YY_NEVER_INTERACTIVE 1
-#define YY_USER_ACTION num_chars += (int)vhdlScanYYleng;
+#define YY_USER_ACTION num_chars += (int)vhdlscannerYYleng;
 
 #define MAX_KEYWORD_LEN 20
 
@@ -280,7 +280,7 @@ static int find_keyword(char *s)
 // update current line
 static void lineCount()
 {
-  for (const char* c=vhdlScanYYtext ; *c ; ++c )
+  for (const char* c=vhdlscannerYYtext ; *c ; ++c )
   {
     yyLineNr += (*c == '\n') ;
   }
@@ -344,10 +344,10 @@ static bool isConstraintFile(const QCString &fileName,const QCString &ext)
 //static void resetScanner(const char* s,MyParserVhdl* parse);
 
 #undef  YY_INPUT
-#define	YY_INPUT(buf,result,max_size) result=vhdlScanYYread(buf,max_size);
+#define	YY_INPUT(buf,result,max_size) result=vhdlscannerYYread(buf,max_size);
 
 
-static int vhdlScanYYread(char *buf,int max_size)
+static int vhdlscannerYYread(char *buf,int max_size)
 {
   int c=0;
   while ( c < max_size && inputVhdlString.at(inputPosition) )
@@ -437,14 +437,14 @@ BR                         [ \t\n\r]
 
 
 {letter}(_?{letter_or_digit})*|{extended_character} 	{
-          int itoken=find_keyword(vhdlScanYYtext);
+          int itoken=find_keyword(vhdlscannerYYtext);
         
-          //	fprintf(stderr,"\n <<<< search tok:  %s %d %d>>>\n",vhdlScanYYtext,itoken,yyLineNr);
+          //	fprintf(stderr,"\n <<<< search tok:  %s %d %d>>>\n",vhdlscannerYYtext,itoken,yyLineNr);
         
           // tokens in vhdlparser.hpp 258..412
 	  if (itoken>200  && itoken<500 && prevToken!=t_END)
 	  {
-	    //  	printf("\n <<<< insert tok:  %s %d %d>>>\n",vhdlScanYYtext,itoken,yyLineNr);
+	    //  	printf("\n <<<< insert tok:  %s %d %d>>>\n",vhdlscannerYYtext,itoken,yyLineNr);
 	    lineIndex[itoken]=yyLineNr;
 	  }
 	 
@@ -462,7 +462,7 @@ BR                         [ \t\n\r]
 	 
 	  prevToken=itoken;
         
-          yycont->qstr=vhdlScanYYtext;
+          yycont->qstr=vhdlscannerYYtext;
           yycont->yyLineNr=yyLineNr;
           if (itoken== -1)  
           {
@@ -476,13 +476,13 @@ BR                         [ \t\n\r]
         }
 
 ({decimal_literal})|({base}#{based_integer}(\.{based_integer})?#({exponent})?)|({base}:{based_integer}(\.{based_integer})?:({exponent})?) {
-          yycont->qstr=vhdlScanYYtext;
+          yycont->qstr=vhdlscannerYYtext;
           return ( t_ABSTRLIST );
         }
 
 '({graphic_character}|\"|\%)' 	{
-          QCString q(vhdlScanYYtext);	       
-          yycont->qstr=vhdlScanYYtext; 
+          QCString q(vhdlscannerYYtext);	       
+          yycont->qstr=vhdlscannerYYtext; 
         
           if (q=="'('") // std_logic'('1') ?
           {
@@ -502,19 +502,19 @@ BR                         [ \t\n\r]
         }
 
 (\"({graphic_character}|(\"\")|\%)*\")|(\%({graphic_character}|(\%\%)|\")*\%) {
-          yycont->qstr=vhdlScanYYtext;
+          yycont->qstr=vhdlscannerYYtext;
           yycont->iLine=yyLineNr;
 	  return ( t_STRING );
         } 
 
 {base_specifier}(\"{extended_digit}(_?{extended_digit})*\"|\%{extended_digit}(_?{extended_digit})*\%) 							{
-	  yycont->qstr=vhdlScanYYtext;
+	  yycont->qstr=vhdlscannerYYtext;
 	  yycont->iLine=yyLineNr;
 	  return ( t_DIGIT );
         }
 
 {vhdl2008tooldir} {
-	  yycont->qstr=vhdlScanYYtext;
+	  yycont->qstr=vhdlscannerYYtext;
 	  yycont->iLine=yyLineNr;
 	  return(t_ToolDir);
         }	
@@ -526,7 +526,7 @@ BR                         [ \t\n\r]
 
 <*>"--"[^\n]* {
           /* comment */
-	  QCString qcs(vhdlScanYYtext);
+	  QCString qcs(vhdlscannerYYtext);
 	  //  vhdl comment ?
 	  if (qcs.stripPrefix("--!"))
 	  {
@@ -545,7 +545,7 @@ BR                         [ \t\n\r]
 
 <*>{BR}*"--!"[^{}\n]*[^\n]*\n/{B}*"--!" { // multi line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
-  QCString qc(vhdlScanYYtext);
+  QCString qc(vhdlscannerYYtext);
   int len=qc.contains('\n')+yyLineNr-1;
   if (YY_START!=Comment) // Start of the comment block
   {
@@ -555,7 +555,7 @@ BR                         [ \t\n\r]
   
    if(!checkMultiComment(qc,len))
   {
-    strComment+=vhdlScanYYtext;
+    strComment+=vhdlscannerYYtext;
   }
   lineCount();
   BEGIN(Comment);
@@ -563,7 +563,7 @@ BR                         [ \t\n\r]
 
 <Comment>^{B}*"--!"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
-  strComment+=vhdlScanYYtext;
+  strComment+=vhdlscannerYYtext;
   int index=strComment.find("\\code");
   if (index>0)
   {
@@ -591,14 +591,14 @@ BR                         [ \t\n\r]
             handleCommentBlock(strComment,FALSE);
           }
           strComment.resize(0);;
-          unput(*vhdlScanYYtext);
+          unput(*vhdlscannerYYtext);
           doxComment=FALSE;
           BEGIN(g_lastCommentContext);
         }
         
 <*>"--!"[^\n]* { // one line comment
           if (iDocLine==-1) iDocLine=yyLineNr;
-          QCString qcs(vhdlScanYYtext);
+          QCString qcs(vhdlscannerYYtext);
 
 	  bool isEndCode=qcs.contains("\\endcode");
 
@@ -630,7 +630,7 @@ BR                         [ \t\n\r]
        }
 
 <*>"/*" {
-	  strComment+=vhdlScanYYtext;
+	  strComment+=vhdlscannerYYtext;
 	  if (yy_hold_char=='!') // found  comment starting with "/*!"
   	  {
 	    doxComment=TRUE;
@@ -639,7 +639,7 @@ BR                         [ \t\n\r]
         }
 
 <Vhdl2008Comment>[^*]*[*]+    {
-    	  QCString tt(vhdlScanYYtext);
+    	  QCString tt(vhdlscannerYYtext);
 	  int len=tt.length();
 	  yyLineNr+=tt.contains('\n');
 
@@ -712,7 +712,7 @@ void vhdlscanFreeScanner()
 #if defined(YY_FLEX_SUBMINOR_VERSION)
   if (g_lexInit)
   {
-    vhdlScanYYlex_destroy();
+    vhdlscannerYYlex_destroy();
   }
 #endif
 }
@@ -735,7 +735,7 @@ void VHDLLanguageScanner::parsePrototype(const char *text)
 // do parsing
 //int VhdlParser::doLex()
 //{
-//  int token=vhdlScanYYlex();
+//  int token=vhdlscannerYYlex();
 //  //fprintf(stderr,"\ntoken: %d at line: %d",token,yyLineNr);
 //  return token;
 //}
@@ -775,7 +775,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,
   inputFile.setName(fileName);
   if (g_lexInit)
   {
-    vhdlScanYYrestart( vhdlScanYYin );
+    vhdlscannerYYrestart( vhdlscannerYYin );
   }
   g_lexInit=TRUE;
   g_thisParser=this;

@@ -41,15 +41,15 @@
 
 
 static const char navtree_script[]=
-#include "navtree_js.h"
+#include "navtree.js.h"
 ;
 
 static const char resize_script[]=
-#include "resize_js.h"
+#include "resize.js.h"
 ;
 
 static const char navtree_css[]=
-#include "navtree_css.h"
+#include "navtree.css.h"
 ;
 
 static unsigned char blank_png[352] =

@@ -10,12 +10,20 @@ doxywizard:
 doxysearch:
 	cd addon/doxysearch ; $(MAKE) 
 
+doxmlparser:
+	cd addon/doxmlparser/src ; $(MAKE)
+	cd addon/doxmlparser/test ; $(MAKE)
+	cd addon/doxmlparser/examples/metrics ; $(MAKE)
+
+doxyapp:
+	cd addon/doxyapp ; $(MAKE) clean
+
 clean: FORCE
-	cd examples ; $(MAKE) clean
-	cd doc ; $(MAKE) clean
-	cd qtools ; $(MAKE) clean
-	cd src ; $(MAKE) clean
-	cd libmd5 ; $(MAKE) clean
+	- cd examples ; $(MAKE) clean
+	- cd doc ; $(MAKE) clean
+	- cd qtools ; $(MAKE) clean
+	- cd src ; $(MAKE) clean
+	- cd libmd5 ; $(MAKE) clean
 	-cd addon/doxywizard ; $(MAKE) clean
 	-cd addon/doxysearch ; $(MAKE) clean
 	-cd addon/doxyapp ; $(MAKE) clean
@@ -26,8 +34,8 @@ clean: FORCE
 	-rm -f objects/*.o
 
 distclean: clean
-	cd src ; $(MAKE) distclean
-	cd libmd5 ; $(MAKE) distclean
+	-cd src ; $(MAKE) distclean
+	-cd libmd5 ; $(MAKE) distclean
 	-cd addon/doxywizard ; $(MAKE) distclean
 	-cd addon/doxysearch ; $(MAKE) distclean
 	-cd addon/doxyapp ; $(MAKE) distclean
@@ -42,14 +50,31 @@ distclean: clean
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.libdoxycfg src/libdoxycfg.t src/libdoxygen.t
 	-rm -f libmd5/Makefile.libmd5
-	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
 	-rm -f src/version.cpp 
-	-rm -r addon/doxywizard/Makefile
 	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f VERSION
 	-rm -f packages/rpm/doxygen.spec
+	-rm -r addon/doxywizard/Makefile
+	-rm -f addon/doxysearch/Makefile
+	-rm -f addon/doxyapp/Makefile
+	-rm -f addon/doxmlparser/src/Makefile
+	-rm -f addon/doxmlparser/test/Makefile
+	-rm -f addon/doxmlparser/examples/metrics/Makefile
+	-rm -f qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
+	-rm -f Makefile
+
+realclean: clean
+	-cd src ; $(MAKE) realclean
+	-cd libmd5 ; $(MAKE) realclean
+	-cd addon/doxywizard ; $(MAKE) realclean
+	-cd addon/doxysearch ; $(MAKE) realclean
+	-cd addon/doxyapp ; $(MAKE) realclean
+	-cd addon/doxmlparser/src ; $(MAKE) realclean
+	-cd addon/doxmlparser/test ; $(MAKE) realclean
+	-cd addon/doxmlparser/examples/metrics ; $(MAKE) realclean
+	-$(MAKE) distclean
 
 DATE=$(shell date "+%B %Y")
 

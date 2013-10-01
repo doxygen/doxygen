@@ -7,6 +7,8 @@ clean: Makefile.libmd5
 distclean: clean
 	$(RM) -f Makefile.libmd5 libmd5.pro Makefile 
 
+realclean: distclean
+
 tmake:
 	$(ENV) $(PERL) "$(TMAKE)" libmd5.pro >Makefile.libmd5
 

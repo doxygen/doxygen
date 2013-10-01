@@ -285,7 +285,7 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug/qtools.pch"
+				PrecompiledHeaderFile=".\Debug64/qtools.pch"
 				AssemblerListingLocation=".\Debug64/"
 				ObjectFile=".\Debug64/"
 				ProgramDataBaseFileName=".\Debug64/"

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="config"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="Config"
+			DisplayName="Config"
+			CommandLine="python $(ProjectDir)..\src\configgen.py -cpp [AllOptions] [AdditionalOptions] [inputs] &gt; $(InputDir)../src/$(InputName)options.cpp"
+			Outputs="$(InputDir)../src/$(InputName)options.cpp"
+			FileExtensions="*.xml"
+			AdditionalDependencies="$(ProjectDir)..\src\configgen.py"
+			ExecutionDescription="Executing configgen for doxygen..."
+			ShowOnlyRuleProperties="false"
+			>
+		</CustomBuildRule>
+		<CustomBuildRule
+			Name="Config_dw"
+			DisplayName="Config"
+			CommandLine="python $(ProjectDir)..\src\configgen.py -wiz [AllOptions] [AdditionalOptions] [inputs]  &gt; $(InputDir)../addon/doxywizard/$(InputName)doc.cpp"
+			Outputs="$(InputDir)../addon/doxywizard/$(InputName)doc.cpp"
+			FileExtensions="*.xml"
+			AdditionalDependencies="$(ProjectDir)..\src\configgen.py"
+			ExecutionDescription="Executing configgen for doxywizard ..."
+			ShowOnlyRuleProperties="false"
+			>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

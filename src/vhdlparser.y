@@ -121,8 +121,8 @@ static int parse_sec=0;
 
 //---------------------------- functions --------------------------------------------------------------------------------
 
-int vhdlScanYYlex ();
-void vhdlScanYYerror (char const *);
+int vhdlscannerYYlex ();
+void vhdlscannerYYerror (char const *);
 
 static void addVhdlType(const QCString &name,int startLine,
                         int section,uint64 spec,
@@ -2266,9 +2266,9 @@ tool_directive: t_ToolDir
 
 %%
 extern FILE* yyout;
-extern YYSTYPE vhdlScanYYlval;
+extern YYSTYPE vhdlscannerYYlval;
 
-void vhdlScanYYerror(const char* /*str*/)
+void vhdlscannerYYerror(const char* /*str*/)
 {
   // fprintf(stderr,"\n<---error at line %d  : [ %s]   in file : %s ---->",s_str.yyLineNr,s_str.qstr.data(),s_str.fileName);
   //  exit(0);
@@ -2276,7 +2276,7 @@ void vhdlScanYYerror(const char* /*str*/)
 
 void vhdlParse()
 {
-  vhdlScanYYparse();
+  vhdlscannerYYparse();
 }
 
 struct VhdlContainer*  getVhdlCont()

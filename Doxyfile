@@ -127,31 +127,30 @@ EXCLUDE                = src/code.cpp \
                          src/vhdlcode.cpp \
                          src/tclscanner.cpp \
                          src/lodepng.cpp \
-                         src/doxygen_css.h \
-                         src/doxygen_js.h \
-                         src/doxygen_php.h \
-                         src/compound_xsd.h \
-                         src/layout_default.h \
-                         src/bib2xhtml.h \
-                         src/doxygen_bst.h \
-                         src/header_html.h \
-                         src/index_xsd.h \
-                         src/jquery_js.h \
-                         src/jquery_fx_js.h \
-                         src/jquery_ui_js.h \
-                         src/navtree_css.h \
-                         src/navtree_hs.h \
-                         src/search_css.h \
-                         src/search_functions_php.h \
-                         src/search_opensearch_php.h \
-                         src/search_js.h \
-                         src/sizzle_js.h \
-			 src/navtree_js.h \
-			 src/resize_js.h \
-		         src/svgpan_js.h \
-		         src/dynsections_js.h \
-			 src/extsearch_js.h \
-			 src/footer_html.h
+                         src/doxygen.css.h \
+                         src/doxygen.js.h \
+                         src/doxygen.php.h \
+                         src/compound.xsd.h \
+                         src/layout_default.xml.h \
+                         src/bib2xhtml.pl.h \
+                         src/doxygen.bst.h \
+                         src/header.html.h \
+                         src/index.xsd.h \
+                         src/jquery.js.h \
+                         src/jquery_fx.js.h \
+                         src/jquery_ui.js.h \
+                         src/navtree.css.h \
+                         src/navtree.hs.h \
+                         src/search.css.h \
+                         src/search_functions.php.h \
+                         src/search_opensearch.php.h \
+                         src/search.js.h \
+                         src/navtree.js.h \
+                         src/resize.js.h \
+                         src/svgpan.js.h \
+                         src/dynsections.js.h \
+                         src/extsearch.js.h \
+                         src/footer.html.h
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =
