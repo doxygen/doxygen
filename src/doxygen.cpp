@@ -132,7 +132,8 @@ FileNameDict    *Doxygen::includeNameDict = 0;     // include names
 FileNameDict    *Doxygen::exampleNameDict = 0;     // examples
 FileNameDict    *Doxygen::imageNameDict = 0;       // images
 FileNameDict    *Doxygen::dotFileNameDict = 0;     // dot files
-FileNameDict    *Doxygen::mscFileNameDict = 0;     // dot files
+FileNameDict    *Doxygen::mscFileNameDict = 0;     // msc files
+FileNameDict    *Doxygen::diaFileNameDict = 0;     // dia files
 StringDict       Doxygen::namespaceAliasDict(257); // all namespace aliases
 StringDict       Doxygen::tagDestinationDict(257); // all tag locations
 QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
@@ -196,6 +197,7 @@ void clearAll()
   Doxygen::imageNameDict->clear();
   Doxygen::dotFileNameDict->clear();
   Doxygen::mscFileNameDict->clear();
+  Doxygen::diaFileNameDict->clear();
   Doxygen::formulaDict->clear();
   Doxygen::formulaNameDict->clear();
   Doxygen::tagDestinationDict.clear();
@@ -262,6 +264,8 @@ void statistics()
   Doxygen::dotFileNameDict->statistics();
   fprintf(stderr,"--- mscFileNameDict stats ----\n");
   Doxygen::mscFileNameDict->statistics();
+  fprintf(stderr,"--- diaFileNameDict stats ----\n");
+  Doxygen::diaFileNameDict->statistics();
   //fprintf(stderr,"--- g_excludeNameDict stats ----\n");
   //g_excludeNameDict.statistics();
   fprintf(stderr,"--- aliasDict stats ----\n");
@@ -9865,6 +9869,7 @@ void initDoxygen()
   Doxygen::imageNameDict->setAutoDelete(TRUE);
   Doxygen::dotFileNameDict = new FileNameDict(257);
   Doxygen::mscFileNameDict = new FileNameDict(257);
+  Doxygen::diaFileNameDict = new FileNameDict(257);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
@@ -9905,6 +9910,7 @@ void cleanUpDoxygen()
   delete Doxygen::imageNameDict;
   delete Doxygen::dotFileNameDict;
   delete Doxygen::mscFileNameDict;
+  delete Doxygen::diaFileNameDict;
   delete Doxygen::mainPage;
   delete Doxygen::pageSDict;  
   delete Doxygen::exampleSDict;
@@ -10543,6 +10549,18 @@ void searchInputFiles()
                         0,0,0,
                         alwaysRecursive);
     s=mscFileList.next(); 
+  }
+  g_s.end();
+
+  g_s.begin("Searching for dia files...\n");
+  QStrList &diaFileList=Config_getList("DIAFILE_DIRS");
+  s=diaFileList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,Doxygen::diaFileNameDict,0,0,
+                        0,0,0,
+                        alwaysRecursive);
+    s=diaFileList.next();
   }
   g_s.end();
 

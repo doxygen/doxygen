@@ -88,6 +88,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_compact_rtf COMPACT_RTF
 \refitem cfg_cpp_cli_support CPP_CLI_SUPPORT
 \refitem cfg_create_subdirs CREATE_SUBDIRS
+\refitem cfg_dia_path DIA_PATH
+\refitem cfg_diafile_dirs DIAFILE_DIRS
 \refitem cfg_directory_graph DIRECTORY_GRAPH
 \refitem cfg_disable_index DISABLE_INDEX
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
@@ -3306,6 +3308,14 @@ The default value is: <code>YES</code>.
  specify the directory where the \c mscgen tool resides. If left empty the tool is assumed to 
  be found in the default search path.
 
+ \anchor cfg_dia_path
+<dt>\c DIA_PATH <dd>
+ \addindex DIA_PATH
+ You can include diagrams drawn in dia using the \ref cmddiafile "\\diafile" command. 
+ Doxygen will run dia to produce the appropriate image and insert it in the documentation. 
+ The <code>DIA_PATH</code> tag allows you to specify the directory where the \c dia 
+ binary resides. If left empty the tool is assumed to be found in the default search path.
+
  \anchor cfg_hide_undoc_relations
 <dt>\c HIDE_UNDOC_RELATIONS <dd>
  \addindex HIDE_UNDOC_RELATIONS
@@ -3591,6 +3601,13 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  The \c MSCFILE_DIRS tag can be used to specify one or more directories that 
  contain msc files that are included in the documentation (see the
  \ref cmdmscfile "\\mscfile" command).
+
+ \anchor cfg_diafile_dirs
+<dt>\c DIAFILE_DIRS <dd>
+ \addindex DIAFILE_DIRS
+ The \c DIAFILE_DIRS tag can be used to specify one or more directories that 
+ contain dia files that are included in the documentation (see the
+ \ref cmddiafile "\\diafile" command).
 
  \anchor cfg_dot_graph_max_nodes
 <dt>\c DOT_GRAPH_MAX_NODES <dd>

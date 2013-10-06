@@ -65,6 +65,7 @@ documentation:
 \refitem cmddefgroup \\defgroup
 \refitem cmddeprecated \\deprecated
 \refitem cmddetails \\details
+\refitem cmddiafile \\diafile
 \refitem cmddir \\dir
 \refitem cmddocbookonly \\docbookonly
 \refitem cmddontinclude \\dontinclude
@@ -2516,6 +2517,24 @@ class Receiver
   stripped before the caption is displayed.
 
   \sa section \ref cmdmsc "\\msc".
+
+<hr>
+\section cmddiafile \\diafile <file> ["caption"]
+
+  \addindex \\diafile
+  Inserts an image made in dia from \<file\> into the documentation.
+
+  The first argument specifies the file name of the image.
+  doxygen will look for files in the paths (or files) that you specified
+  after the \ref cfg_diafile_dirs "DIAFILE_DIRS" tag.
+  If the dia file is found it will be used as an input file dia.
+  The resulting image will be put into the correct output directory.
+  If the dia file name contains spaces you'll have to put quotes ("...") around it.
+
+  The second argument is optional and can be used to specify the caption
+  that is displayed below the image. This argument has to be specified
+  between quotes even if it does not contain any spaces. The quotes are
+  stripped before the caption is displayed.
 
 <hr>
 \section cmde \\e <word>

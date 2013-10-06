@@ -32,6 +32,7 @@
 #include "config.h"
 #include "filedef.h"
 #include "msc.h"
+#include "dia.h"
 
 DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci)
   : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
@@ -1007,6 +1008,18 @@ void DocbookDocVisitor::visitPost(DocMscFile *df)
   if (m_hide) return;
   endMscFile(df->hasCaption());
 }
+void DocbookDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
+}
+
+void DocbookDocVisitor::visitPost(DocDiaFile *df)
+{
+  if (m_hide) return;
+  endDiaFile(df->hasCaption());
+}
+
 void DocbookDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -1324,6 +1337,80 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
 }
 
 void DocbookDocVisitor::endMscFile(bool hasCaption)
+{
+  if (m_hide) return;
+  m_t << "endl";
+  if (hasCaption)
+  {
+    m_t << "        </caption>" << endl;
+  }
+  m_t << "        </mediaobject>" << endl;
+  m_t << "    </figure>" << endl;
+  m_t << "</para>" << endl;
+}
+
+void DocbookDocVisitor::writeDiaFile(const QCString &baseName)
+{
+  QCString shortName = baseName;
+  int i;
+  if ((i=shortName.findRev('/'))!=-1)
+  {
+    shortName=shortName.right(shortName.length()-i-1);
+  }
+  QCString outDir = Config_getString("DOCBOOK_OUTPUT");
+  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP);
+  m_t << "                <imagedata";
+  m_t << " align=\"center\" fileref=\"" << shortName << ".png" << "\">";
+  m_t << "</imagedata>" << endl;
+}
+
+void DocbookDocVisitor::startDiaFile(const QCString &fileName,
+    const QCString &width,
+    const QCString &height,
+    bool hasCaption
+    )
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.find('.'))!=-1)
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("msc_");
+  QCString outDir = Config_getString("DOCBOOK_OUTPUT");
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+  m_t << "<para>" << endl;
+  m_t << "    <figure>" << endl;
+  m_t << "        <title></title>" << endl;
+  m_t << "        <mediaobject>" << endl;
+  m_t << "            <imageobject>" << endl;
+  m_t << "                <imagedata";
+  if (!width.isEmpty())
+  {
+    m_t << " width=\"";
+    m_t << width;
+    m_t << "\"";
+  }
+  else if (!height.isEmpty())
+  {
+    m_t << " depth=\"";
+    m_t << height;
+    m_t << "\"";
+  }
+  m_t << " align=\"center\" fileref=\"" << baseName << ".png" << "\">";
+  m_t << "</imagedata>" << endl;
+  m_t << "            </imageobject>" << endl;
+  if (hasCaption)
+  {
+    m_t << "        <caption>" << endl;
+  }
+}
+
+void DocbookDocVisitor::endDiaFile(bool hasCaption)
 {
   if (m_hide) return;
   m_t << "endl";

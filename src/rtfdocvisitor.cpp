@@ -29,6 +29,7 @@
 #include <qfileinfo.h> 
 #include "parserintf.h"
 #include "msc.h"
+#include "dia.h"
 #include "filedef.h"
 #include "config.h"
 
@@ -1245,6 +1246,22 @@ void RTFDocVisitor::visitPost(DocMscFile *)
   popEnabled();
 }
 
+void RTFDocVisitor::visitPre(DocDiaFile *df)
+{
+  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDiaFile)}\n");
+  writeDiaFile(df->file());
+
+  // hide caption since it is not supported at the moment
+  pushEnabled();
+  m_hide=TRUE;
+}
+
+void RTFDocVisitor::visitPost(DocDiaFile *)
+{
+  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocDiaFile)}\n");
+  popEnabled();
+}
+
 void RTFDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -1836,6 +1853,26 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName)
   } 
   QCString outDir = Config_getString("RTF_OUTPUT");
   writeMscGraphFromFile(fileName+".msc",outDir,baseName,MSC_BITMAP);
+  if (!m_lastIsPara) m_t << "\\par" << endl;
+  m_t << "{" << endl;
+  m_t << rtf_Style_Reset;
+  m_t << "\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
+  m_t << baseName << ".png";
+  m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  m_t << "}" << endl;
+  m_lastIsPara=TRUE;
+}
+
+void RTFDocVisitor::writeDiaFile(const QCString &fileName)
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  QCString outDir = Config_getString("RTF_OUTPUT");
+  writeDiaGraphFromFile(fileName+".dia",outDir,baseName,DIA_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;

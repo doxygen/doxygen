@@ -108,6 +108,8 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocDotFile *);
     void visitPre(DocMscFile *);
     void visitPost(DocMscFile *);
+    void visitPre(DocDiaFile *);
+    void visitPost(DocDiaFile *);
     void visitPre(DocLink *);
     void visitPost(DocLink *);
     void visitPre(DocRef *);
@@ -150,6 +152,7 @@ class HtmlDocVisitor : public DocVisitor
     void endLink();
     void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context);
     void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context);
+    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context);
 
     void pushEnabled();
     void popEnabled();

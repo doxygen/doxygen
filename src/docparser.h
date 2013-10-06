@@ -131,7 +131,8 @@ class DocNode
                 Kind_MscFile        = 48,
                 Kind_HtmlBlockQuote = 49,
                 Kind_VhdlFlow       = 50,
-                Kind_ParBlock       = 51
+                Kind_ParBlock       = 51,
+                Kind_DiaFile        = 52
               };
     /*! Creates a new node */
     DocNode() : m_parent(0), m_insidePre(FALSE) {}
@@ -688,6 +689,30 @@ class DocMscFile : public CompAccept<DocMscFile>, public DocNode
     QCString  m_context;
 };
 
+/** Node representing a dia file */
+class DocDiaFile : public CompAccept<DocDiaFile>, public DocNode
+{
+  public:
+    DocDiaFile(DocNode *parent,const QCString &name,const QCString &context);
+    void parse();
+    Kind kind() const          { return Kind_DiaFile; }
+    QCString name() const      { return m_name; }
+    QCString file() const      { return m_file; }
+    QCString relPath() const   { return m_relPath; }
+    bool hasCaption() const    { return !m_children.isEmpty(); }
+    QCString width() const     { return m_width; }
+    QCString height() const    { return m_height; }
+    QCString context() const   { return m_context; }
+    void accept(DocVisitor *v) { CompAccept<DocDiaFile>::accept(this,v); }
+  private:
+    QCString  m_name;
+    QCString  m_file;
+    QCString  m_relPath;
+    QCString  m_width;
+    QCString  m_height;
+    QCString  m_context;
+};
+
 /** Node representing a VHDL flow chart */
 class DocVhdlFlow : public CompAccept<DocVhdlFlow>, public DocNode
 {
@@ -1039,6 +1064,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleImage(const QCString &cmdName);
     void handleDotFile(const QCString &cmdName);
     void handleMscFile(const QCString &cmdName);
+    void handleDiaFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
     void handleCite();

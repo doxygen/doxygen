@@ -107,6 +107,8 @@ class RTFDocVisitor : public DocVisitor
     void visitPost(DocDotFile *);
     void visitPre(DocMscFile *);
     void visitPost(DocMscFile *);
+    void visitPre(DocDiaFile *);
+    void visitPost(DocDiaFile *);
     void visitPre(DocLink *);
     void visitPost(DocLink *);
     void visitPre(DocRef *ref);
@@ -152,6 +154,7 @@ class RTFDocVisitor : public DocVisitor
     void popEnabled();
     void writeDotFile(const QCString &fileName);
     void writeMscFile(const QCString &fileName);
+    void writeDiaFile(const QCString &fileName);
 
     //--------------------------------------
     // state variables

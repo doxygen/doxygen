@@ -27,6 +27,7 @@
 #include "message.h"
 #include "parserintf.h"
 #include "msc.h"
+#include "dia.h"
 #include "cite.h"
 #include "filedef.h"
 #include "config.h"
@@ -1255,6 +1256,18 @@ void LatexDocVisitor::visitPost(DocMscFile *df)
   if (m_hide) return;
   endMscFile(df->hasCaption());
 }
+
+void LatexDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
+}
+
+void LatexDocVisitor::visitPost(DocDiaFile *df)
+{
+  if (m_hide) return;
+  endDiaFile(df->hasCaption());
+}
 void LatexDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -1806,6 +1819,97 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName)
   } 
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS);
+  m_t << "\n\\begin{DoxyImageNoCaption}"
+         "  \\mbox{\\includegraphics";
+  m_t << "{" << shortName << "}";
+  m_t << "}\n"; // end mbox
+  m_t << "\\end{DoxyImageNoCaption}\n";
+}
+
+void LatexDocVisitor::startDiaFile(const QCString &fileName,
+                                   const QCString &width,
+                                   const QCString &height,
+                                   bool hasCaption
+                                  )
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.find('.'))!=-1)
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("dia_");
+
+  QCString outDir = Config_getString("LATEX_OUTPUT");
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_EPS);
+  if (hasCaption)
+  {
+    m_t << "\n\\begin{DoxyImage}\n";
+  }
+  else
+  {
+    m_t << "\n\\begin{DoxyImageNoCaption}\n"
+           "  \\mbox{";
+  }
+  m_t << "\\includegraphics";
+  if (!width.isEmpty())
+  {
+    m_t << "[width=" << width << "]";
+  }
+  else if (!height.isEmpty())
+  {
+    m_t << "[height=" << height << "]";
+  }
+  else
+  {
+    m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+  }
+  m_t << "{" << baseName;
+  //if (Config_getBool("USE_PDFLATEX"))
+  //{
+  //  m_t << ".pdf";
+  //}
+  //else
+  //{
+  //  m_t << ".eps";
+  //}
+  m_t << "}";
+
+  if (hasCaption)
+  {
+    m_t << "\n\\caption{";
+  }
+}
+
+void LatexDocVisitor::endDiaFile(bool hasCaption)
+{
+  if (m_hide) return;
+  m_t << "}\n"; // end caption or mbox
+  if (hasCaption)
+  {
+    m_t << "\\end{DoxyImage}\n";
+  }
+  else
+  {
+    m_t << "\\end{DoxyImageNoCaption}\n";
+  }
+}
+
+
+void LatexDocVisitor::writeDiaFile(const QCString &baseName)
+{
+  QCString shortName = baseName;
+  int i;
+  if ((i=shortName.findRev('/'))!=-1)
+  {
+    shortName=shortName.right(shortName.length()-i-1);
+  }
+  QCString outDir = Config_getString("LATEX_OUTPUT");
+  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS);
   m_t << "\n\\begin{DoxyImageNoCaption}"
          "  \\mbox{\\includegraphics";
   m_t << "{" << shortName << "}";
