@@ -2,7 +2,7 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
   <compounddef id="citelist" kind="page">
     <compoundname>citelist</compoundname>
-    <title>Bibliographic References</title>
+    <title>Bibliography</title>
     <detaileddescription>
       <para>
         <variablelist>
