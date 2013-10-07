@@ -2875,6 +2875,92 @@ void DocMscFile::parse()
 
 //---------------------------------------------------------------------------
 
+DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &context) :
+      m_name(name), m_relPath(g_relPath), m_context(context)
+{
+  m_parent = parent;
+}
+
+void DocDiaFile::parse()
+{
+  g_nodeStack.push(this);
+  DBG(("DocDiaFile::parse() start\n"));
+
+  doctokenizerYYsetStateTitle();
+  int tok;
+  while ((tok=doctokenizerYYlex()))
+  {
+    if (!defaultHandleToken(this,tok,m_children))
+    {
+      switch (tok)
+      {
+        case TK_COMMAND:
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\diafile",
+	       qPrint(g_token->name));
+          break;
+        case TK_SYMBOL:
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported symbol %s found",
+               qPrint(g_token->name));
+          break;
+        default:
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected token %s",
+		tokToString(tok));
+          break;
+      }
+    }
+  }
+  tok=doctokenizerYYlex();
+  while (tok==TK_WORD) // there are values following the title
+  {
+    if (g_token->name=="width")
+    {
+      m_width=g_token->chars;
+    }
+    else if (g_token->name=="height")
+    {
+      m_height=g_token->chars;
+    }
+    else
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unknown option %s after image title",
+            qPrint(g_token->name));
+    }
+    tok=doctokenizerYYlex();
+  }
+  ASSERT(tok==0);
+  doctokenizerYYsetStatePara();
+  handlePendingStyleCommands(this,m_children);
+
+  bool ambig;
+  FileDef *fd = findFileDef(Doxygen::diaFileNameDict,m_name,ambig);
+  if (fd==0 && m_name.right(4)!=".dia") // try with .dia extension as well
+  {
+    fd = findFileDef(Doxygen::diaFileNameDict,m_name+".dia",ambig);
+  }
+  if (fd)
+  {
+    m_file = fd->absFilePath();
+  }
+  else if (ambig)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file name %s is ambiguous.\n"
+           "Possible candidates:\n%s",qPrint(m_name),
+           qPrint(showFileDefMatches(Doxygen::exampleNameDict,m_name))
+          );
+  }
+  else
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"included dia file %s is not found "
+           "in any of the paths specified via DIAFILE_DIRS!",qPrint(m_name));
+  }
+
+  DBG(("DocDiaFile::parse() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+}
+
+//---------------------------------------------------------------------------
+
 DocVhdlFlow::DocVhdlFlow(DocNode *parent)
 {
   m_parent = parent;
@@ -5105,6 +5191,30 @@ void DocPara::handleMscFile(const QCString &cmdName)
   df->parse();
 }
 
+void DocPara::handleDiaFile(const QCString &cmdName)
+{
+  int tok=doctokenizerYYlex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
+        qPrint(cmdName));
+    return;
+  }
+  doctokenizerYYsetStateFile();
+  tok=doctokenizerYYlex();
+  doctokenizerYYsetStatePara();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
+        tokToString(tok),qPrint(cmdName));
+    return;
+  }
+  QCString name = g_token->name;
+  DocDiaFile *df = new DocDiaFile(this,name,g_context);
+  m_children.append(df);
+  df->parse();
+}
+
 void DocPara::handleVhdlFlow()
 {
   DocVhdlFlow *vf = new DocVhdlFlow(this);
@@ -5652,6 +5762,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_MSCFILE:
       handleMscFile(cmdName);
+      break;
+    case CMD_DIAFILE:
+      handleDiaFile(cmdName);
       break;
     case CMD_LINK:
       handleLink(cmdName,FALSE);

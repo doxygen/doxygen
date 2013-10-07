@@ -3012,6 +3012,16 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 ]]>
       </docs>
     </option>
+    <option type='string' id='DIA_PATH' format='dir' defval=''>
+      <docs>
+<![CDATA[
+You can include diagrams made with dia in doxygen documentation. Doxygen will then run 
+dia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows 
+you to specify the directory where the dia binary resides. If left empty dia is assumed 
+to be found in the default search path.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='HIDE_UNDOC_RELATIONS' defval='1'>
       <docs>
 <![CDATA[
@@ -3243,6 +3253,15 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  The \c MSCFILE_DIRS tag can be used to specify one or more directories that 
  contain msc files that are included in the documentation (see the
  \ref cmdmscfile "\\mscfile" command).
+]]>
+      </docs>
+    </option>
+    <option type='list' id='DIAFILE_DIRS' format='dir'>
+      <docs>
+<![CDATA[
+ The \c DIAFILE_DIRS tag can be used to specify one or more directories that 
+ contain dia files that are included in the documentation (see the
+ \ref cmdmscfile "\\diafile" command).
 ]]>
       </docs>
     </option>

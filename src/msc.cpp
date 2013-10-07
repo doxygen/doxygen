@@ -22,13 +22,13 @@
 #include "docparser.h"
 #include "doxygen.h"
 #include "util.h"
+#include "ftextstream.h"
 
-#include <qtextstream.h>
 #include <qdir.h>
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(QTextStream &t,const char *mapName,const QCString relPath,
+static bool convertMapFile(FTextStream &t,const char *mapName,const QCString relPath,
                            const QCString &context)
 {
   QFile f(mapName);
@@ -175,8 +175,8 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   }
   portable_sysTimerStop();
   
-  QString result;
-  QTextOStream tmpout(&result);
+  QGString result;
+  FTextStream tmpout(&result);
   convertMapFile(tmpout, outFile, relPath, context);
   QDir().remove(outFile);
 

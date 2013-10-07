@@ -28,6 +28,7 @@
 #include "htmlgen.h"
 #include "parserintf.h"
 #include "msc.h"
+#include "dia.h"
 #include "util.h"
 #include "vhdldocgen.h"
 #include "filedef.h"
@@ -1546,6 +1547,26 @@ void HtmlDocVisitor::visitPost(DocMscFile *df)
   m_t << "</div>" << endl;
 }
 
+void HtmlDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  m_t << "<div class=\"diagraph\">" << endl;
+  writeDiaFile(df->file(),df->relPath(),df->context());
+  if (df->hasCaption())
+  {
+    m_t << "<div class=\"caption\">" << endl;
+  }
+}
+void HtmlDocVisitor::visitPost(DocDiaFile *df)
+{
+  if (m_hide) return;
+  if (df->hasCaption())
+  {
+    m_t << "</div>" << endl;
+  }
+  m_t << "</div>" << endl;
+}
+
 void HtmlDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -2009,6 +2030,27 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
   QCString outDir = Config_getString("HTML_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context);
+}
+
+void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
+                                  const QCString &,
+                                  const QCString &)
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1) // strip path
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.find('.'))!=-1) // strip extension
+  {
+    baseName=baseName.left(i);
+  }
+  baseName.prepend("dia_");
+  QCString outDir = Config_getString("HTML_OUTPUT");
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+
+  m_t << "<img src=\"" << outDir << '/' << baseName << ".png" << "\" />" << endl;
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions
