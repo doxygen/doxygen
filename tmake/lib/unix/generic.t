@@ -213,7 +213,7 @@ TARGET1	=	#$ Expand("TARGET_x");
 #$ Project("TMAKE_APP_FLAG") || DisableOutput();
 all: #$ ExpandGlue("ALL_DEPS",""," "," "); $text .= '$(TARGET)';
 
-$(TARGET): $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
+$(TARGET): $(HEADERS) $(OBJECTS) $(OBJMOC) #$ Expand("TARGETDEPS");
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJMOC) $(LIBS)
 #$ Project("TMAKE_APP_FLAG") || EnableOutput();
 #$ (Config("staticlib") || Project("TMAKE_APP_FLAG")) && DisableOutput();

@@ -27,4 +27,6 @@ clean: Makefile.qtools
 
 distclean: clean
 
+realclean: distclean
+
 FORCE:

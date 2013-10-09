@@ -33,7 +33,7 @@
 #include <qtextstream.h>
 
 static const char layout_default[] =
-#include "layout_default.h"
+#include "layout_default.xml.h"
 ;
 
 #define ADD_OPTION(langId,text) "|"+QCString().setNum(langId)+"="+text

@@ -4,6 +4,8 @@ all clean depend: Makefile.metrics
 distclean: clean
 	$(RM) -rf Makefile.metrics metrics.pro Makefile obj
 
+realclean: distclean
+
 tmake:
 	$(ENV) $(PERL) $(TMAKE) metrics.pro >Makefile.metrics
 

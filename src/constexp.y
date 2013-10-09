@@ -31,14 +31,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int cppExpYYerror(const char *s)
+int constexpYYerror(const char *s)
 {
   warn(g_constExpFileName,g_constExpLineNr,
        "preprocessing issue while doing constant expression evaluation: %s",s);
   return 0;
 }
 
-int cppExpYYlex();
+int constexpYYlex();
 
 %}
 

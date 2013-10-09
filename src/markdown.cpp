@@ -2347,7 +2347,8 @@ void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
                bool inlineFragment,
                MemberDef *memberDef,
                bool showLineNumbers,
-               Definition *searchCtx
+               Definition *searchCtx,
+               bool collectXRefs
               )
 {
   ParserInterface *pIntf = Doxygen::parserManager->getParser("*.cpp");
@@ -2355,7 +2356,8 @@ void MarkdownFileParser::parseCode(CodeOutputInterface &codeOutIntf,
   {
     pIntf->parseCode(
        codeOutIntf,scopeName,input,lang,isExampleBlock,exampleName,
-       fileDef,startLine,endLine,inlineFragment,memberDef,showLineNumbers,searchCtx);
+       fileDef,startLine,endLine,inlineFragment,memberDef,showLineNumbers,
+       searchCtx,collectXRefs);
   }
 }
 

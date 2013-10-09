@@ -1510,7 +1510,7 @@ static void parseCompounds(Entry *rt)
       // init scanner state
       inputString = ce->program;
       inputPosition = 0;
-      pyscanYYrestart( pyscanYYin ) ;
+      pyscannerYYrestart( pyscannerYYin ) ;
       if (ce->section&Entry::COMPOUND_MASK)
       {
         current_root = ce ;
@@ -1531,7 +1531,7 @@ static void parseCompounds(Entry *rt)
 
       groupEnterCompound(yyFileName,yyLineNr,ce->name);
       
-      pyscanYYlex() ;
+      pyscannerYYlex() ;
       g_lexInit=TRUE;
       delete current; current=0;
       ce->program.resize(0);
@@ -1600,9 +1600,9 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     
     current->reset();
     initEntry();
-    pyscanYYrestart( pyscanYYin );
+    pyscannerYYrestart( pyscannerYYin );
     BEGIN( Search );
-    pyscanYYlex();
+    pyscannerYYlex();
     g_lexInit=TRUE;
 
     groupLeaveFile(yyFileName,yyLineNr);
@@ -1637,18 +1637,18 @@ static void parsePrototype(const QCString &text)
   
   // save scanner state
   orgState = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_create_buffer(pyscanYYin, YY_BUF_SIZE));
+  yy_switch_to_buffer(yy_create_buffer(pyscannerYYin, YY_BUF_SIZE));
   orgInputString = inputString; 
   orgInputPosition = inputPosition;
 
   // set new string
   inputString = text;
   inputPosition = 0;
-  pyscanYYrestart( pyscanYYin );
+  pyscannerYYrestart( pyscannerYYin );
 
   BEGIN( FunctionDec );
 
-  pyscanYYlex();
+  pyscannerYYlex();
   g_lexInit=TRUE;
 
   current->name = current->name.stripWhiteSpace();
@@ -1672,7 +1672,7 @@ void pyscanFreeScanner()
 #if defined(YY_FLEX_SUBMINOR_VERSION) 
   if (g_lexInit)
   {
-    pyscanYYlex_destroy();
+    pyscannerYYlex_destroy();
   }
 #endif
 }
@@ -1709,12 +1709,13 @@ void PythonLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     bool inlineFragment,
     MemberDef *memberDef,
     bool showLineNumbers,
-    Definition *searchCtx
+    Definition *searchCtx,
+    bool collectXRefs
     )
 {
   ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                     fileDef,startLine,endLine,inlineFragment,memberDef,
-                    showLineNumbers,searchCtx);
+                    showLineNumbers,searchCtx,collectXRefs);
 }
 
 void PythonLanguageScanner::parsePrototype(const char *text)

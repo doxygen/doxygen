@@ -62,6 +62,7 @@ static int	     g_inputPosition;   //!< read offset during parsing
 static const char *  g_currentFontClass;
 static bool          g_needsTermination;
 static Definition   *g_searchCtx;
+static bool          g_collectXRefs;
 static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
 static FileDef *     g_sourceFileDef;
@@ -493,35 +494,6 @@ static void codifyLines(char *text)
   }
 }
 
-#if 0
-static QCString fileLocation() 
-{
-  QCString result = g_sourceFileDef?g_sourceFileDef->absFilePath():QCString("[unknown]");
-  result+=":"+QCString().setNum(g_yyLineNr);
-  result+=":"+QCString().setNum(1);
-  return result;
-}
-
-static void addDocCrossReference(MemberDef *src,MemberDef *dst)
-{
-  static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
-  static bool callerGraph =  Config_getBool("CALLER_GRAPH");
-  static bool referencesRelation = Config_getBool("REFERENCES_RELATION");
-  static bool callGraph = Config_getBool("CALL_GRAPH");
-  if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
-  //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if ((referencedByRelation || callerGraph) && (src->isFunction() || src->isSlot()))
-  {
-    dst->addSourceReferencedBy(src,fileLocation());
-  }
-  if ((referencesRelation || callGraph) && (src->isFunction() || src->isSlot()))
-  {
-    src->addSourceReferences(dst,fileLocation());
-  }
-}
-#endif
-
-
 
 static bool getLinkInScope(const QCString &c,  // scope
                            const QCString &m,  // member
@@ -553,7 +525,7 @@ static bool getLinkInScope(const QCString &c,  // scope
       //        g_currentDefinition,g_currentMemberDef);
 
       if (g_currentDefinition && g_currentMemberDef &&
-	  md!=g_currentMemberDef)
+	  md!=g_currentMemberDef && g_collectXRefs)
       {
 	addDocCrossReference(g_currentMemberDef,md);
       }
@@ -652,7 +624,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
                       md->getBodyDef() : md->getOuterScope();
       if (md->getGroupDef()) d = md->getGroupDef();
-      if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
+      if (d && d->isLinkable() && md->isLinkable() && 
+          g_currentMemberDef && g_collectXRefs)
       {
         addDocCrossReference(g_currentMemberDef,md);
       }
@@ -678,7 +651,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	  Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                  md->getBodyDef() : md->getOuterScope();
 	  if (md->getGroupDef()) d = md->getGroupDef();
-	  if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
+	  if (d && d->isLinkable() && md->isLinkable() && 
+              g_currentMemberDef && g_collectXRefs)
 	  {
 	    addDocCrossReference(g_currentMemberDef,md);
 	  }
@@ -700,7 +674,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	    Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	                    md->getBodyDef() : md->getOuterScope();
 	    if (md->getGroupDef()) d = md->getGroupDef();
-	    if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
+	    if (d && d->isLinkable() && md->isLinkable() && 
+                g_currentMemberDef && g_collectXRefs)
 	    {
 	      addDocCrossReference(g_currentMemberDef,md);
 	    }
@@ -773,7 +748,7 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
     ClassDef *thisCd = (ClassDef *)g_currentDefinition;
     if (sym->definitionType()==Definition::TypeMember)
     {
-      if (g_currentMemberDef)
+      if (g_currentMemberDef && g_collectXRefs)
       {
 	addDocCrossReference(g_currentMemberDef,(MemberDef*)sym);
       }
@@ -1452,7 +1427,7 @@ static void adjustScopesAndSuites(unsigned indentLength)
 void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
                  const QCString &s,bool exBlock, const char *exName,
 		 FileDef *fd,int startLine,int endLine,bool /*inlineFragment*/,
-		 MemberDef *,bool,Definition *searchCtx) 
+		 MemberDef *,bool,Definition *searchCtx,bool collectXRefs) 
 {
 
   //printf("***parseCode()\n");
@@ -1466,6 +1441,7 @@ void parsePythonCode(CodeOutputInterface &od,const char * /*className*/,
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
   g_searchCtx=searchCtx;
+  g_collectXRefs=collectXRefs;
   if (endLine!=-1)
     g_inputLines  = endLine+1;
   else

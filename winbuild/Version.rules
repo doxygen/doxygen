@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="version"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="Version"
+			DisplayName="Version"
+			CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] [inputs]"
+			Outputs="$(InputDir)../src/$(InputName).cpp"
+			FileExtensions="*.py"
+			AdditionalDependencies="$(ProjectDir)..\src\configure"
+			ExecutionDescription="Executing Version ..."
+			ShowOnlyRuleProperties="false"
+			>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>
