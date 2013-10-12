@@ -212,6 +212,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  else // yytext=='<'
 					  {
 					    g_argSharpCount=0; 
+					    g_argRoundCount=0; 
 					    BEGIN( CopyArgSharp ); 
 					  }
 					}
@@ -239,6 +240,26 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  if (g_argRoundCount>0) g_argRoundCount--;
 					  else BEGIN( g_readArgContext );
                                         }
+<CopyArgSharp>"<<"                      {
+                                          if (g_argRoundCount>0)
+                                          {
+					    *g_copyArgValue += yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<CopyArgSharp>">>"                      {
+                                          if (g_argRoundCount>0)
+                                          {
+					    *g_copyArgValue += yytext;
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <CopyArgSharp>"<"			{
   					  g_argSharpCount++;
 					  *g_copyArgValue += *yytext;
@@ -248,6 +269,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  if (g_argSharpCount>0) g_argSharpCount--;
 					  else BEGIN( g_readArgContext );
   					}
+<CopyArgSharp>"("                       {
+                                          g_argRoundCount++;
+					  *g_copyArgValue += *yytext;
+                                        }
+<CopyArgSharp>")"                       {
+                                          g_argRoundCount--;
+					  *g_copyArgValue += *yytext;
+                                        }
 <CopyArgCurly>"{"			{
   					  g_argCurlyCount++;
 					  *g_copyArgValue += *yytext;

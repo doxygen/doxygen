@@ -4437,6 +4437,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else 
 					    BEGIN( lastCopyArgContext );
   					}
+<CopyArgSharp>"("                       {
+  					  *copyArgString+=*yytext;
+  					  fullArgString+=*yytext;
+  					  argRoundCount=0; 
+					  lastCopyArgContext = YY_START;
+					  BEGIN( CopyArgRound ); 
+                                        }
 <CopyArgSharp>"<"			{
   					  argSharpCount++;
 					  //printf("argSharpCount++=%d  copy\n",argSharpCount);
