@@ -269,6 +269,14 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
+      QFileInfo outfi(outputFile);
+      if (outfi.isSymLink())
+      {
+        QFile::remove(outputFile);
+        warn_doc_error(g_fileName,doctokenizerYYlineno,
+            "destination of image %s is a symlink, replacing with image",
+            qPrint(outputFile));
+      }
       if (outputFile!=inputFile) // prevent copying to ourself
       {
         QFile outImage(outputFile.data());
@@ -286,6 +294,10 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
           warn_doc_error(g_fileName,doctokenizerYYlineno,
               "could not write output image %s",qPrint(outputFile));
         }
+      }
+      else
+      {
+        printf("Source & Destination are the same!\n");
       }
     }
     else
