@@ -78,6 +78,7 @@ static int      g_blockCount;
 static bool     g_lastEscaped;
 static int      g_lastBlockContext;
 static bool     g_pythonDocString;
+static int      g_nestingCount;
 
 static SrcLangExt g_lang;
 static bool       isFixedForm; // For Fortran
@@ -251,6 +252,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        g_pythonDocString = TRUE;
+                                       g_nestingCount=0;
                                        copyToOutput(yytext,(int)yyleng); 
 				       BEGIN(CComment);
 				     }
@@ -263,6 +265,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
 				       BEGIN(CComment);
 				     }
   				   }
@@ -277,6 +280,7 @@ void replaceComment(int offset);
                                        if (isFixedForm && (g_col == 0))
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
+                                         g_nestingCount=0;
 				         BEGIN(CComment);
 				       }
 				       else
@@ -367,6 +371,7 @@ void replaceComment(int offset);
 				   }
 <Scan>"/*"[*!]?			   { /* start of a C comment */
   			             g_specialComment=(int)yyleng==3;
+                                     g_nestingCount=0;
                                      copyToOutput(yytext,(int)yyleng); 
 				     BEGIN(CComment); 
                                    }
@@ -378,6 +383,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
 				       BEGIN(CComment);
 				     }
   				   }
@@ -389,6 +395,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
 				       BEGIN(CComment);
 				     }
   				   }
@@ -400,6 +407,7 @@ void replaceComment(int offset);
 				     else
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
+                                       g_nestingCount=0;
 				       BEGIN(CComment);
 				     }
   				   }
@@ -564,7 +572,7 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 
-<CComment>[^\\!@*\n{\"]*           { /* anything that is not a '*' or command */ 
+<CComment>[^\\!@*\n{\"\/]*           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
@@ -590,6 +598,10 @@ void replaceComment(int offset);
 				       BEGIN(Scan);
 				     }
                                    }
+<CComment>"/"+"*"                  { /* nested C comment */
+                                     g_nestingCount++;
+                                     copyToOutput(yytext,(int)yyleng); 
+                                   }
 <CComment>"*"+"/"                  { /* end of C comment */
                                      if (g_lang==SrcLangExt_Python)
 				     {
@@ -597,8 +609,15 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-				       copyToOutput(yytext,(int)yyleng);
-				       BEGIN(Scan);
+                                       if (g_nestingCount<=0)
+                                       {
+				         copyToOutput(yytext,(int)yyleng);
+				         BEGIN(Scan);
+                                       }
+                                       else
+                                       {
+                                         g_nestingCount--;
+                                       }
 				     }
                                    }
 <CComment>"\n"/[ \t]*[^#]	   { /* end of Python comment */
@@ -935,6 +954,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
 
   if (g_lang==SrcLangExt_Markdown)
   {
+    g_nestingCount=0;
     BEGIN(CComment);
   }
   else
