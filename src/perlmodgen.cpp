@@ -364,6 +364,8 @@ public:
   void visitPost(DocDotFile *);
   void visitPre(DocMscFile *);
   void visitPost(DocMscFile *);
+  void visitPre(DocDiaFile *);
+  void visitPost(DocDiaFile *);
   void visitPre(DocLink *);
   void visitPost(DocLink *);
   void visitPre(DocRef *);
@@ -1206,6 +1208,20 @@ void PerlModDocVisitor::visitPost(DocMscFile *)
 {
 #if 0
   m_output.add("<mscfile>");
+#endif
+}
+
+void PerlModDocVisitor::visitPre(DocDiaFile *)
+{
+#if 0
+  m_output.add("<diafile name=\""); m_output.add(df->file()); m_output.add("\">");
+#endif
+}
+
+void PerlModDocVisitor::visitPost(DocDiaFile *)
+{
+#if 0
+  m_output.add("</diafile>");
 #endif
 }
 

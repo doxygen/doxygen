@@ -386,6 +386,7 @@
       <xsd:element name="rtfonly" type="xsd:string" />
       <xsd:element name="latexonly" type="xsd:string" />
       <xsd:element name="dot" type="xsd:string" />
+      <xsd:element name="msc" type="xsd:string" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
@@ -501,7 +502,9 @@
       <xsd:element name="table" type="docTableType" />
       <xsd:element name="heading" type="docHeadingType" />
       <xsd:element name="image" type="docImageType" />
-      <xsd:element name="dotfile" type="docDotFileType" />
+      <xsd:element name="dotfile" type="docFileType" />
+      <xsd:element name="mscfile" type="docFileType" />
+      <xsd:element name="diafile" type="docFileType" />
       <xsd:element name="toclist" type="docTocListType" />
       <xsd:element name="language" type="docLanguageType" />
       <xsd:element name="parameterlist" type="docParamListType" />
@@ -628,7 +631,7 @@
     <xsd:attribute name="height" type="xsd:string" /> 
   </xsd:complexType>
 
-  <xsd:complexType name="docDotFileType" mixed="true">
+  <xsd:complexType name="docFileType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
     <xsd:attribute name="name" type="xsd:string" /> 
   </xsd:complexType>

@@ -93,6 +93,7 @@ HEADERS      =	arguments.h \
 		membername.h \
 		message.h \
                 msc.h \
+                dia.h \
 		namespacedef.h \
 		navtree.css.h \
 		navtree.js.h \
@@ -204,6 +205,7 @@ SOURCES      =	arguments.cpp \
 		membername.cpp \
 		message.cpp \
                 msc.cpp \
+                dia.cpp \
 		namespacedef.cpp \
                 objcache.cpp \
 		outputgen.cpp \

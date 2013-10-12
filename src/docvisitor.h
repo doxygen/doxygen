@@ -67,6 +67,7 @@ class DocHtmlHeader;
 class DocImage;
 class DocDotFile;
 class DocMscFile;
+class DocDiaFile;
 class DocLink;
 class DocCite;
 class DocRef;
@@ -166,6 +167,8 @@ class DocVisitor
     virtual void visitPost(DocDotFile *) = 0;
     virtual void visitPre(DocMscFile *) = 0;
     virtual void visitPost(DocMscFile *) = 0;   
+    virtual void visitPre(DocDiaFile *) = 0;
+    virtual void visitPost(DocDiaFile *) = 0;
     virtual void visitPre(DocLink *) = 0;
     virtual void visitPost(DocLink *) = 0;
     virtual void visitPre(DocRef *) = 0;

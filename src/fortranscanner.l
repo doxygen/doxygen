@@ -738,7 +738,7 @@ private                                 {
   				       }
 {ID}	                               {
                                        }  
-^{BS}"type"{BS_}"is"                   { }
+^{BS}"type"{BS_}"is"/{BS_}             { }
 }
 <AttributeList>{
 {COMMA}					{}

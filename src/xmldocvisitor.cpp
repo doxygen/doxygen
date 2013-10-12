@@ -836,6 +836,19 @@ void XmlDocVisitor::visitPost(DocMscFile *)
   if (m_hide) return;
   m_t << "</mscfile>" << endl;
 }
+
+void XmlDocVisitor::visitPre(DocDiaFile *df)
+{
+  if (m_hide) return;
+  m_t << "<diafile name=\"" << df->file() << "\">";
+}
+
+void XmlDocVisitor::visitPost(DocDiaFile *)
+{
+  if (m_hide) return;
+  m_t << "</diafile>" << endl;
+}
+
 void XmlDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;

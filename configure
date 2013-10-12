@@ -569,7 +569,7 @@ if test "$f_python" = NO; then
     for j in $python_dirs; do
       if test -x "$j/$i"; then
         python_found=YES
-        if test `$j/$i -c "import sys; print sys.version_info.major"` = 2; then
+        if test `$j/$i -c "import sys; print sys.version_info[0]"` = 2; then
           python_prog="$j/$i"
           break 2
         fi
