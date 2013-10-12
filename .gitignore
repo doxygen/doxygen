@@ -84,6 +84,7 @@
 /src/constexp.cpp
 /src/doxygen.bst.h
 /src/doxygen.css.h
+/src/doxygen.sty.h
 /src/dynsections.js.h
 /src/extsearch.js.h
 /src/footer.html.h
