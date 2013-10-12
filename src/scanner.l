@@ -5776,21 +5776,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  *specName += *yytext;
   					  if (roundCount==0 && --sharpCount<=0)
 					  {
-					    if (1 /*!insideCS*/) 
-					    {
-					      baseName+=*specName;
-					    }
-					    else
-					    {
-					      if (current->tArgLists==0)
-					      {
-						current->tArgLists = new QList<ArgumentList>;
-						current->tArgLists->setAutoDelete(TRUE);
-					      }
-					      ArgumentList *al = new ArgumentList;
-					      current->tArgLists->append(al);
-					      stringToArgumentList(*specName,al);
-					    }
+					    baseName+=removeRedundantWhiteSpace(*specName);
 					    BEGIN(lastSkipSharpContext);
 					  }
   					}
