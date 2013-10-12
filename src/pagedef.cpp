@@ -61,10 +61,10 @@ QCString PageDef::getOutputFileBase() const
     return m_fileName; 
 }
 
-void PageDef::setFileName(const char *name) 
+void PageDef::setFileName(const char *name,bool dontEscape) 
 { 
   static bool shortNames = Config_getBool("SHORT_NAMES");
-  if (shortNames)
+  if (shortNames && !dontEscape)
   {
     m_fileName = convertNameToFile(name);
   }

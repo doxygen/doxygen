@@ -32,7 +32,7 @@ class PageDef : public Definition
    ~PageDef();
 
     // setters
-    void setFileName(const char *name);
+    void setFileName(const char *name,bool dontEscape);
     void setShowToc(bool b);
 
     // getters

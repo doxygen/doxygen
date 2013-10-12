@@ -6316,11 +6316,11 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     if (tagInfo)
     {
       pd->setReference(tagInfo->tagName);
-      pd->setFileName(tagInfo->fileName);
+      pd->setFileName(tagInfo->fileName,TRUE);
     }
     else
     {
-      pd->setFileName(convertNameToFile(pd->name(),FALSE,TRUE));
+      pd->setFileName(convertNameToFile(pd->name(),FALSE,TRUE),FALSE);
     }
 
     //printf("Appending page `%s'\n",baseName.data());
