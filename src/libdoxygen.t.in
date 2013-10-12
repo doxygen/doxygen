@@ -43,54 +43,62 @@ sub GenerateDep {
     }
     chop $text;
 }
+sub GenerateLex {
+    my($name,$caseOpt) = @_;
+    $text = "\t\$(LEX) ";
+    if ($caseOpt) {
+        $text .= "-i ";
+    }
+    $text .= "-P".$name."YY -t ".$name.".l | \$(INCBUFSIZE) >".$name.".cpp";
+}
 #$} 
 
 ####################
 
 #$ GenerateDep("scanner.cpp","scanner.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("scanner",0);
 
 #$ GenerateDep("code.cpp","code.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("code",0);
 
 #$ GenerateDep("pyscanner.cpp","pyscanner.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("pyscanner",0);
 
 #$ GenerateDep("pycode.cpp","pycode.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("pycode",0);
 
 #$ GenerateDep("fortranscanner.cpp","fortranscanner.l");
-	$(LEX) -i -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("fortranscanner",1);
 
 #$ GenerateDep("fortrancode.cpp","fortrancode.l");
-	$(LEX) -i -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("fortrancode",1);
 
 #$ GenerateDep("vhdlcode.cpp","vhdlcode.l");
-	$(LEX) -i -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("vhdlcode",1);
 
 #$ GenerateDep("tclscanner.cpp","tclscanner.l");
-	$(LEX) -i -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("tclscanner",1);
 
 #$ GenerateDep("pre.cpp","pre.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("pre",0);
 
 #$ GenerateDep("declinfo.cpp","declinfo.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("declinfo",0);
 
 #$ GenerateDep("defargs.cpp","defargs.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("defargs",0);
 
 #$ GenerateDep("doctokenizer.cpp","doctokenizer.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("doctokenizer",0);
 
 #$ GenerateDep("commentcnv.cpp","commentcnv.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("commentcnv",0);
 
 #$ GenerateDep("commentscan.cpp","commentscan.l");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("commentscan",0);
 
 #$ GenerateDep("constexp.cpp","constexp.l","ce_parse.h");
-	$(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("constexp",0);
 
 #$ GenerateDep("ce_parse.cpp","constexp.y");
 	$(YACC) -l -p constexpYY constexp.y -o ce_parse.cpp 
@@ -100,7 +108,7 @@ sub GenerateDep {
 	-rm ce_parse.c
 
 #$ GenerateDep("vhdlscanner.cpp","vhdlscanner.l","vhdlparser.h");
-	$(LEX) -i -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
+#$ GenerateLex("vhdlscanner",1);
 
 #$ GenerateDep("vhdlparser.cpp","vhdlparser.y");
 	$(YACC) -l -p vhdlscannerYY vhdlparser.y -o vhdlparser.cpp 	
