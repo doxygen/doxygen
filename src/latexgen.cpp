@@ -38,7 +38,7 @@
 #include "filename.h"
 
 static const char doxygenLatexStyle[] =
-#include "doxygen_sty.h"
+#include "doxygen.sty.h"
 ;
 
 //static QCString filterTitle(const char *s)

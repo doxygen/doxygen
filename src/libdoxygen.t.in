@@ -134,6 +134,8 @@ layout.cpp: layout_default.xml.h
 
 xmlgen.cpp: index.xsd.h compound.xsd.h
 
+latexgen.cpp: doxygen.sty.h
+
 searchindex.cpp: search.js.h
 
 index.xsd.h: index.xsd
