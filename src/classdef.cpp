@@ -2255,7 +2255,8 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("</td>");
           memberWritten=TRUE;
         }
-        else if (!Config_getBool("HIDE_UNDOC_MEMBERS") && 
+        else if (!cd->isArtificial() &&
+                 !Config_getBool("HIDE_UNDOC_MEMBERS") && 
                   (protectionLevelVisible(md->protection()) || md->isFriend()) 
                 ) // no documentation, 
                   // generate link to the class instead.
@@ -4143,15 +4144,18 @@ int ClassDef::countInheritedDecMembers(MemberListType lt,
       {
         ClassDef *icd=ibcd->classDef;
         int lt1,lt2;
-        convertProtectionLevel(lt,ibcd->prot,&lt1,&lt2);
-        //printf("%s: convert %d->(%d,%d) prot=%d\n",
-        //    icd->name().data(),lt,lt1,lt2,ibcd->prot);
-        if (visitedClasses->find(icd)==0) 
+        if (icd->isLinkable())
         {
-          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
-          if (lt1!=-1)
+          convertProtectionLevel(lt,ibcd->prot,&lt1,&lt2);
+          //printf("%s: convert %d->(%d,%d) prot=%d\n",
+          //    icd->name().data(),lt,lt1,lt2,ibcd->prot);
+          if (visitedClasses->find(icd)==0) 
           {
-            inhCount+=icd->countMemberDeclarations((MemberListType)lt1,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
+            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+            if (lt1!=-1)
+            {
+              inhCount+=icd->countMemberDeclarations((MemberListType)lt1,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
+            }
           }
         }
       }
@@ -4279,25 +4283,28 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
       for (it.toFirst();(ibcd=it.current());++it)
       {
         ClassDef *icd=ibcd->classDef;
-        int lt1,lt3;
-        convertProtectionLevel(lt,ibcd->prot,&lt1,&lt3);
-        if (lt2==-1 && lt3!=-1)
+        if (icd->isLinkable())
         {
-          lt2=lt3;
-        }
-        //printf("%s:convert %d->(%d,%d) prot=%d\n",icd->name().data(),lt,lt1,lt2,ibcd->prot);
-        if (visitedClasses->find(icd)==0) 
-        {
-          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
-          if (lt1!=-1)
+          int lt1,lt3;
+          convertProtectionLevel(lt,ibcd->prot,&lt1,&lt3);
+          if (lt2==-1 && lt3!=-1)
           {
-            icd->writeMemberDeclarations(ol,(MemberListType)lt1,
-                title,QCString(),FALSE,inheritedFrom,lt2,FALSE /*invert*/,TRUE,visitedClasses);
+            lt2=lt3;
           }
-        }
-        else
-        {
-          //printf("%s: class already visited!\n",icd->name().data());
+          //printf("%s:convert %d->(%d,%d) prot=%d\n",icd->name().data(),lt,lt1,lt2,ibcd->prot);
+          if (visitedClasses->find(icd)==0) 
+          {
+            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+            if (lt1!=-1)
+            {
+              icd->writeMemberDeclarations(ol,(MemberListType)lt1,
+                  title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
+            }
+          }
+          else
+          {
+            //printf("%s: class already visited!\n",icd->name().data());
+          }
         }
       }
     }
