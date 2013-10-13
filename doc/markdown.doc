@@ -449,7 +449,7 @@ If a page has a label you can link to it using \ref cmdref "\@ref" as
 is shown above. To refer to a markdown page without
 such label you can simple use the file name of the page, e.g.
 
-    See [the other page](@ref other.md) for more info.
+    See [the other page](other.md) for more info.
 
 \subsection md_html_blocks Treatment of HTML blocks
 

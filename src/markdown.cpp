@@ -850,9 +850,15 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   }
   else
   {
-    if (link.find("@ref ")!=-1 || link.find("\\ref ")!=-1) 
+    SrcLangExt lang = getLanguageFromFileName(link);
+    int lp=-1;
+    if ((lp=link.find("@ref "))!=-1 || (lp=link.find("\\ref "))!=-1 || lang==SrcLangExt_Markdown) 
         // assume doxygen symbol link
     {
+      if (lp==-1) // link to markdown page
+      {
+        out.addStr("@ref ");
+      }
       out.addStr(link);
       out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
