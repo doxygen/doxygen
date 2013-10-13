@@ -1023,6 +1023,10 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
   		       }
 <St_Param>[^ \t\n,]+   {
   			 g_token->name = yytext;
+                         if (g_token->name.at(yyleng-1)==':')
+                         {
+                           g_token->name=g_token->name.left(yyleng-1);
+                         }
 			 return TK_WORD;
                        }
 <St_Param>{WS}*","{WS}*  /* param separator */
