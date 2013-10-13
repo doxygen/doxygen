@@ -2988,11 +2988,7 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
   QCString detailed        = documentation();
 
   /* write brief description */
-  if (!brief.isEmpty() && 
-      (Config_getBool("REPEAT_BRIEF") || 
-       !Config_getBool("BRIEF_MEMBER_DESC")
-      ) 
-     )  
+  if (!brief.isEmpty())  
   { 
     ol.generateDoc(briefFile(),briefLine(),
                 getOuterScope()?getOuterScope():container,this,
