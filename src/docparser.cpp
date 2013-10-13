@@ -52,6 +52,7 @@
 #include "formula.h"
 #include "config.h"
 #include "growbuf.h"
+#include "markdown.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -2417,8 +2418,13 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   QCString     anchor;
   //printf("DocRef::DocRef(target=%s,context=%s)\n",target.data(),context.data());
   ASSERT(!target.isEmpty());
+  SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = g_relPath;
   SectionInfo *sec = Doxygen::sectionDict->find(target);
+  if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
+  {
+    sec = Doxygen::sectionDict->find(markdownFileNameToId(target));
+  }
   if (sec) // ref to section or anchor
   {
     PageDef *pd = 0;
