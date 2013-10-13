@@ -6132,6 +6132,14 @@ static void findMember(EntryNav *rootNav,
                   matching = FALSE;
                 }
               }
+              else if (md->templateArguments()!=0 || root->tArgLists!=0)
+              {
+                // Method with template return type does not match method without return type
+                // even if the parameters are the same. See also bug709052
+                Debug::print(Debug::FindMembers,0,
+                    "5b. Comparing return types: template v.s. non-template\n");
+                matching = FALSE;
+              }
 
 
               Debug::print(Debug::FindMembers,0,
