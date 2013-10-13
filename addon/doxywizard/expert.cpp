@@ -22,7 +22,7 @@ static QString convertToComment(const QString &s)
   else
   {
     return SA("# ")+
-           s.trimmed().replace(SA("\n"),SA("\n# "))+
+           s.trimmed().replace(SA("\n"),SA("\n# ")).replace(SA("# \n"), SA("#\n"))+
            SA("\n");
   }
 }
