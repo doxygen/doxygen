@@ -80,13 +80,17 @@
 	    $project{"TARGET_EXT"} = ".dll";
 	}
     } else {
-	Project('TMAKE_LFLAGS_CONSOLE_ANY = $$TMAKE_LFLAGS_CONSOLE');
-	Project('TMAKE_LFLAGS_WINDOWS_ANY = $$TMAKE_LFLAGS_WINDOWS');
-	if ( Project("TMAKE_APP_FLAG") ) {
-	    $project{"TARGET_EXT"} = ".exe";
-	} else {
-	    $project{"TARGET_EXT"} = ".a";
-	}
+        if ( Config("cgi") ) {
+	    Project('TMAKE_LFLAGS_CONSOLE_ANY = $$TMAKE_LFLAGS_CONSOLE');
+	    Project('TMAKE_LFLAGS_WINDOWS_ANY = $$TMAKE_LFLAGS_WINDOWS');
+	    $project{"TARGET_EXT"} = "";
+        } else {
+	    if ( Project("TMAKE_APP_FLAG") ) {
+	        $project{"TARGET_EXT"} = ".exe";
+	    } else {
+	        $project{"TARGET_EXT"} = ".a";
+	    }
+        }
     }
     if ( Config("windows") ) {
 	if ( Config("console") ) {
