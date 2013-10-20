@@ -1899,7 +1899,7 @@ class TranslatorRomanian : public Translator
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
       QCString opt = enable ? "activa" : "dezactiva";
-      return "apasă 'click' pentru a "+opt+" sincronizarea panourilor";
+      return "apasă click pentru a "+opt+" sincronizarea panourilor";
     }
 
     /*! Used in a method of an Objective-C class that is declared in a
