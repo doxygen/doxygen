@@ -49,7 +49,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_0
      */
     virtual QCString idLanguage()
     {
-      return "brazil";
+      return "brazilian";
     }
 
     /*! Used to get the command(s) for the language support. This method

@@ -26,6 +26,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -56,7 +57,7 @@
 				PrecompiledHeaderFile=".\Release/qtools.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				ProgramDatabaseFileName=".\Release\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -104,6 +105,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -135,7 +137,7 @@
 				PrecompiledHeaderFile=".\Release64/qtools.pch"
 				AssemblerListingLocation=".\Release64/"
 				ObjectFile=".\Release64/"
-				ProgramDataBaseFileName=".\Release64/"
+				ProgramDatabaseFileName=".\Release64\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -183,6 +185,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -211,7 +214,7 @@
 				PrecompiledHeaderFile=".\Debug/qtools.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				ProgramDatabaseFileName=".\Debug\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -259,6 +262,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -288,7 +292,7 @@
 				PrecompiledHeaderFile=".\Debug64/qtools.pch"
 				AssemblerListingLocation=".\Debug64/"
 				ObjectFile=".\Debug64/"
-				ProgramDataBaseFileName=".\Debug64/"
+				ProgramDatabaseFileName=".\Debug64\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
