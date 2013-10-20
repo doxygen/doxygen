@@ -134,7 +134,7 @@ Alexandr Chelpanov: cav at cryptopro dot ru
 TranslatorSerbian
 Dejan Milosavljevic: [unreachable] dmilos at email dot com
 
-TranslatorSerbianCyrilic
+TranslatorSerbianCyrillic
 Nedeljko Stefanovic: stenedjo at yahoo dot com
 
 TranslatorSlovak

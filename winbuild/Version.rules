@@ -8,9 +8,9 @@
 			Name="Version"
 			DisplayName="Version"
 			CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] [inputs]"
-			Outputs="$(InputDir)../src/$(InputName).cpp"
+			Outputs="$(InputDir)..\src\$(InputName).cpp"
 			FileExtensions="*.py"
-			AdditionalDependencies="$(ProjectDir)..\src\configure"
+			AdditionalDependencies="$(ProjectDir)..\configure"
 			ExecutionDescription="Executing Version ..."
 			ShowOnlyRuleProperties="false"
 			>

@@ -406,7 +406,7 @@ void HtmlHelp::initialize()
   s_languageDict.insert("norwegian",   new QCString("0x814 Norwegian"));
   s_languageDict.insert("polish",      new QCString("0x415 Polish"));
   s_languageDict.insert("portuguese",  new QCString("0x816 Portuguese(Portugal)"));
-  s_languageDict.insert("brazil",      new QCString("0x416 Portuguese(Brazil)"));
+  s_languageDict.insert("brazilian",   new QCString("0x416 Portuguese(Brazil)"));
   s_languageDict.insert("russian",     new QCString("0x419 Russian"));
   s_languageDict.insert("spanish",     new QCString("0x40A Spanish(Traditional Sort)"));
   s_languageDict.insert("swedish",     new QCString("0x41D Swedish"));
@@ -433,6 +433,10 @@ void HtmlHelp::initialize()
   s_languageDict.insert("persian",     new QCString("0x429 Persian (Iran)"));
   s_languageDict.insert("arabic",      new QCString("0xC01 Arabic (Egypt)"));
   s_languageDict.insert("latvian",     new QCString("0x426 Latvian"));
+  s_languageDict.insert("macedonian",  new QCString("0x042f Macedonian (Former Yugoslav Republic of Macedonia)"));
+  s_languageDict.insert("armenian",    new QCString("0x42b Armenian"));
+  s_languageDict.insert("esperanto",   new QCString("0x48f Esperanto"));
+  s_languageDict.insert("serbian-cyrillic", new QCString("0xC1A Serbian (Serbia, Cyrillic)"));
 }
 
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Doxygen"
 	ProjectGUID="{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}"
 	RootNamespace="Doxygen"
@@ -31,6 +31,9 @@
 		<ToolFile
 			RelativePath=".\Gen_head.rules"
 		/>
+		<ToolFile
+			RelativePath=".\Languages.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -42,27 +45,34 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="Config_dw"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="Lex"
-			/>
-			<Tool
-				Name="Settings"
-			/>
-			<Tool
-				Name="Version"
 			/>
 			<Tool
 				Name="Config"
 			/>
 			<Tool
-				Name="Genhead"
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
+			/>
+			<Tool
+				Name="Lex"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -91,6 +101,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Debug\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -111,9 +122,9 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Debug"
 				GenerateManifest="false"
-				IgnoreDefaultLibraryNames="libcmt.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/Doxygen.pdb"
+				ProgramDatabaseFile=".\Debug\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -145,117 +156,6 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|x64"
-			OutputDirectory="..\bin\Debug64"
-			IntermediateDirectory=".\Debug64"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="Lex"
-			/>
-			<Tool
-				Name="Settings"
-			/>
-			<Tool
-				Name="Version"
-			/>
-			<Tool
-				Name="Config"
-			/>
-			<Tool
-				Name="Genhead"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-				TypeLibraryName=".\Debug64\Doxygen.tlb"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200 /bigobj"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
-				AssemblerListingLocation=".\Debug64/"
-				ObjectFile=".\Debug64/"
-				ProgramDataBaseFileName=".\Debug64/"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="qtools.lib ws2_32.lib iconv64.lib shell32.lib"
-				OutputFile="..\bin\Debug64\doxygen.exe"
-				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="Debug64"
-				GenerateManifest="false"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug64/Doxygen.pdb"
-				SubSystem="1"
-				LargeAddressAware="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="17"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Debug64/Doxygen.bsc"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\bin\Release"
 			IntermediateDirectory=".\Release"
@@ -264,27 +164,34 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="Config_dw"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="Lex"
-			/>
-			<Tool
-				Name="Settings"
-			/>
-			<Tool
-				Name="Version"
 			/>
 			<Tool
 				Name="Config"
 			/>
 			<Tool
-				Name="Genhead"
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
+			/>
+			<Tool
+				Name="Lex"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -316,6 +223,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Release\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -336,7 +244,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Release"
-				ProgramDatabaseFile=".\Release/Doxygen.pdb"
+				ProgramDatabaseFile=".\Release\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -368,14 +276,15 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|x64"
-			OutputDirectory="..\bin\Release64"
-			IntermediateDirectory=".\Release64"
+			Name="Debug|x64"
+			OutputDirectory="..\bin\Debug64"
+			IntermediateDirectory=".\Debug64"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -396,7 +305,126 @@
 				Name="Config"
 			/>
 			<Tool
-				Name="Genhead"
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug64\Doxygen.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 /bigobj"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
+				AssemblerListingLocation=".\Debug64/"
+				ObjectFile=".\Debug64/"
+				ProgramDataBaseFileName=".\Debug64/"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Debug64\$(TargetName).pdb"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="qtools.lib ws2_32.lib iconv64.lib shell32.lib"
+				OutputFile="..\bin\Debug64\doxygen.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="Debug64"
+				GenerateManifest="false"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\Debug64\$(TargetName).pdb"
+				SubSystem="1"
+				LargeAddressAware="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Debug64/Doxygen.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="..\bin\Release64"
+			IntermediateDirectory=".\Release64"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Lex"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Version"
+			/>
+			<Tool
+				Name="Config"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -429,6 +457,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Release64\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -449,7 +478,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Release64"
-				ProgramDatabaseFile=".\Release64/Doxygen.pdb"
+				ProgramDatabaseFile=".\Release64\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -490,10 +519,6 @@
 			>
 			<File
 				RelativePath="..\src\arguments.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\constexp.cpp"
 				>
 			</File>
 			<File
@@ -545,6 +570,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\constexp.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\cppvalue.cpp"
 				>
 			</File>
@@ -574,6 +603,10 @@
 			</File>
 			<File
 				RelativePath="..\src\definition.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\dia.cpp"
 				>
 			</File>
 			<File
@@ -841,17 +874,17 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\textdocvisitor.h"
+				RelativePath="..\src\textdocvisitor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\textdocvisitor.cpp"
+				RelativePath="..\src\textdocvisitor.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\tooltip.cpp"
 				>
-			</File>			
+			</File>
 			<File
 				RelativePath="..\src\util.cpp"
 				>
@@ -894,22 +927,22 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(InputDir)\..\src\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -938,22 +971,22 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c"
-						Outputs="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
 						Outputs="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on vhdlparser.y"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
+						Outputs="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -1022,7 +1055,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1030,7 +1063,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1058,7 +1091,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1066,7 +1099,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1110,7 +1143,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1118,7 +1151,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1146,7 +1179,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1154,7 +1187,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1182,7 +1215,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1190,7 +1223,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1209,13 +1242,51 @@
 		</Filter>
 		<Filter
 			Name="Python Files"
-			Filter="py"
 			>
+			<File
+				RelativePath="..\src\lang_cfg.py"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+			</File>
 			<File
 				RelativePath="..\src\settings.py"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
 					>
 					<Tool
 						Name="Settings"
@@ -1223,13 +1294,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					>
 					<Tool
 						Name="Settings"
@@ -1247,7 +1311,14 @@
 				RelativePath="..\src\version.py"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
 					>
 					<Tool
 						Name="Version"
@@ -1255,13 +1326,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					>
 					<Tool
 						Name="Version"
@@ -1284,7 +1348,14 @@
 				RelativePath="..\src\config.xml"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
 					>
 					<Tool
 						Name="Config"
@@ -1292,13 +1363,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
-					>
-					<Tool
-						Name="Config"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					>
 					<Tool
 						Name="Config"
@@ -1317,7 +1381,7 @@
 			Name="Generating header Files"
 			>
 			<File
-				RelativePath="..\src\index.xsd"
+				RelativePath="..\src\bib2xhtml.pl"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1327,14 +1391,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1359,13 +1423,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -1373,672 +1430,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\layout_default.xml"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\header.html"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\footer.html"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\search_functions.php"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\search_opensearch.php"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\search.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\search.css"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\extsearch.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\doxygen.css"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\doxygen.sty"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\navtree.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\resize.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\jquery_p1.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\jquery_p2.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\jquery_p3.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\jquery_ui.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\jquery_fx.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\jquery_pt.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\navtree.css"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\svgpan.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\dynsections.js"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Gen_head"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2063,14 +1455,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2085,10 +1477,17 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\bib2xhtml.pl"
+				RelativePath="..\src\doxygen.css"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2102,7 +1501,672 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\doxygen.sty"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\dynsections.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\extsearch.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\footer.html"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\header.html"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\index.xsd"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_fx.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_p1.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_p2.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_p3.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_pt.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\jquery_ui.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\layout_default.xml"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\navtree.css"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\navtree.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\resize.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search.css"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search_functions.php"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\search_opensearch.php"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\svgpan.js"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Gen_head"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2215,6 +2279,10 @@
 			</File>
 			<File
 				RelativePath="..\src\definition.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\dia.h"
 				>
 			</File>
 			<File
@@ -2743,7 +2811,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -2753,7 +2821,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCustomBuildTool"

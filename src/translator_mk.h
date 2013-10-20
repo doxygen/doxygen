@@ -16,7 +16,7 @@
  */
 // Тranslated by Slave Jovanovski <slavejovanovski@yahoo.com>
 //
-// The cyrilic strings were entered using Macedonian language support in
+// The cyrillic strings were entered using Macedonian language support in
 // Windows. The editor used was Eclipse 3.2. The file was saved in UTF-8.
 //
 // Updates:

@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
+class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 {
   public:
 
@@ -53,7 +53,7 @@ class TranslatorSerbianCyrilic : public TranslatorAdapter_1_6_0
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
-    { return "serbiancyr"; }
+    { return "serbian-cyrillic"; }
 
     /*! Used to get the LaTeX command(s) for the language support.
      *  This method should return string with commands that switch
