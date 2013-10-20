@@ -10,7 +10,7 @@
 			CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] [inputs]"
 			Outputs="$(InputDir)../src/$(InputName).h"
 			FileExtensions="*.py"
-			AdditionalDependencies="$(ProjectDir)..\src\configure"
+			AdditionalDependencies="$(ProjectDir)..\configure"
 			ExecutionDescription="Executing Settings ..."
 			ShowOnlyRuleProperties="false"
 			>

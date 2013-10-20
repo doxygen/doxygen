@@ -25,6 +25,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -52,6 +53,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				ProgramDatabaseFileName=".\Debug\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -65,8 +67,8 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="xapian.lib uuid.lib rpcrt4.lib ws2_32.lib"
-				OutputFile="..\bin\doxysearch.cgi"
-				LinkIncremental="2"
+				OutputFile="..\bin\Debug\doxysearch.cgi"
+				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(XAPIAN_DIR)\Debug&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug\$(TargetName).pdb"
@@ -101,6 +103,7 @@
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -129,6 +132,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Debug64\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -142,7 +146,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="xapian.lib uuid.lib rpcrt4.lib ws2_32.lib"
-				OutputFile="..\bin\doxysearch.cgi"
+				OutputFile="..\bin\Debug64\doxysearch.cgi"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(XAPIAN_DIR)\Debug64&quot;"
 				GenerateDebugInformation="true"
@@ -178,6 +182,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -206,6 +211,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Release\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -257,6 +263,7 @@
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -286,6 +293,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ProgramDatabaseFileName=".\Release64\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

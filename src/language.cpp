@@ -354,9 +354,9 @@ bool setTranslator(const char *langName)
   }
 #endif
 #ifdef LANG_SC
-  else if (L_EQUAL("serbian-cyrilic"))
+  else if (L_EQUAL("serbian-cyrillic") || L_EQUAL("serbiancyr")) /* serbiancyr for consistency with older versions */
   {
-    theTranslator=new TranslatorSerbian;
+    theTranslator=new TranslatorSerbianCyrillic;
   }
 #endif
 #ifdef LANG_CA

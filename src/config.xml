@@ -289,6 +289,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       </docs>
       <value name='Afrikaans'/>
       <value name='Arabic'/>
+      <value name='Armenian'/>
       <value name='Brazilian'/>
       <value name='Catalan'/>
       <value name='Chinese'/>
@@ -297,28 +298,31 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name='Czech'/>
       <value name='Danish'/>
       <value name='Dutch'/>
-      <value name='English'/>
+      <value name='English' desc='(United States)'/>
       <value name='Esperanto'/>
-      <value name='Farsi'/>
+      <value name='Farsi' desc='(Persian)'/>
       <value name='Finnish'/>
       <value name='French'/>
       <value name='German'/>
       <value name='Greek'/>
       <value name='Hungarian'/>
+      <value name='Indonesian'/>
       <value name='Italian'/>
       <value name='Japanese'/>
-      <value name='Japanese-en'/>
+      <value name='Japanese-en' desc='(Japanese with English messages)'/>
       <value name='Korean'/>
-      <value name='Korean-en'/>
+      <value name='Korean-en' desc='(Korean with English messages)'/>
       <value name='Latvian'/>
-      <value name='Norwegian'/>
+      <value name='Lithuanian'/>
       <value name='Macedonian'/>
-      <value name='Persian'/>
+      <value name='Norwegian'/>
+      <value name='Persian' desc='(Farsi)'/>
       <value name='Polish'/>
       <value name='Portuguese'/>
       <value name='Romanian'/>
       <value name='Russian'/>
       <value name='Serbian'/>
+      <value name='Serbian-Cyrillic'/>
       <value name='Slovak'/>
       <value name='Slovene'/>
       <value name='Spanish'/>
