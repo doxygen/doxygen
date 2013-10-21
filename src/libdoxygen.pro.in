@@ -133,8 +133,6 @@ HEADERS      =	arguments.h \
 		tooltip.h \
 		translator.h \
 		translator_adapter.h \
-		types.h \
-		unistd.h \
 		util.h \
 		version.h \
 		vhdlcode.h \
