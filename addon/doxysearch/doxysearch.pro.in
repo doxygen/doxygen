@@ -1,5 +1,5 @@
 TEMPLATE     =	app.t
-CONFIG       =	console warn_on debug
+CONFIG       =	console warn_on debug cgi
 HEADERS      =	
 SOURCES      =	doxysearch.cpp
 LIBS        += -lxapian
