@@ -435,7 +435,10 @@ void HtmlHelp::initialize()
   s_languageDict.insert("latvian",     new QCString("0x426 Latvian"));
   s_languageDict.insert("macedonian",  new QCString("0x042f Macedonian (Former Yugoslav Republic of Macedonia)"));
   s_languageDict.insert("armenian",    new QCString("0x42b Armenian"));
-  s_languageDict.insert("esperanto",   new QCString("0x48f Esperanto"));
+  //Code for Esperanto should be as shown below but the htmlhelp compiler 1.3 does not support this
+  // (and no newer version is available).
+  //So do a fallback to the default language (see getLanguageString())
+  //s_languageDict.insert("esperanto",   new QCString("0x48f Esperanto"));
   s_languageDict.insert("serbian-cyrillic", new QCString("0xC1A Serbian (Serbia, Cyrillic)"));
 }
 
