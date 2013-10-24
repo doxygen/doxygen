@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Doxygen"
 	ProjectGUID="{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}"
 	RootNamespace="Doxygen"
@@ -89,7 +89,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -97,11 +97,10 @@
 				PrecompiledHeaderFile=".\Debug/Doxygen.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				ProgramDataBaseFileName=".\Debug\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Debug\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -144,6 +143,124 @@
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
 				OutputFile=".\Debug/Doxygen.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="..\bin\Debug64"
+			IntermediateDirectory=".\Debug64"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="Config_dw"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Config"
+			/>
+			<Tool
+				Name="Version"
+			/>
+			<Tool
+				Name="Settings"
+			/>
+			<Tool
+				Name="Gen_head"
+			/>
+			<Tool
+				Name="Languages"
+			/>
+			<Tool
+				Name="Lex"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+				TypeLibraryName=".\Debug64\Doxygen.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 /bigobj"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
+				AssemblerListingLocation=".\Debug64/"
+				ObjectFile=".\Debug64/"
+				ProgramDataBaseFileName=".\Debug64\$(TargetName).pdb"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="qtools.lib ws2_32.lib iconv64.lib shell32.lib"
+				OutputFile="..\bin\Debug64\doxygen.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="Debug64"
+				GenerateManifest="false"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\Debug64\$(TargetName).pdb"
+				SubSystem="1"
+				LargeAddressAware="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Debug64/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -211,19 +328,18 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release/Doxygen.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				ProgramDataBaseFileName=".\Release\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Release\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -239,7 +355,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib iconv.lib shell32.lib"
+				AdditionalDependencies="qtools.lib iconv.lib shell32.lib S:\llvm32_build32\lib\Release\LLVMBitReader.lib S:\llvm32_build32\lib\Release\LLVMMC.lib S:\llvm32_build32\lib\Release\LLVMMCParser.lib S:\llvm32_build32\lib\Release\LLVMSupport.lib S:\llvm32_build32\lib\Release\clang.lib S:\llvm32_build32\lib\Release\clangAST.lib S:\llvm32_build32\lib\Release\clangAnalysis.lib S:\llvm32_build32\lib\Release\clangBasic.lib S:\llvm32_build32\lib\Release\clangDriver.lib S:\llvm32_build32\lib\Release\clangEdit.lib S:\llvm32_build32\lib\Release\clangFrontend.lib S:\llvm32_build32\lib\Release\clangLex.lib S:\llvm32_build32\lib\Release\clangParse.lib S:\llvm32_build32\lib\Release\clangRewriteCore.lib S:\llvm32_build32\lib\Release\clangSema.lib S:\llvm32_build32\lib\Release\clangSerialization.lib S:\llvm32_build32\lib\Release\clangStaticAnalyzerCore.lib"
 				OutputFile="..\bin\Release\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -276,122 +392,6 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|x64"
-			OutputDirectory="..\bin\Debug64"
-			IntermediateDirectory=".\Debug64"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="Lex"
-			/>
-			<Tool
-				Name="Settings"
-			/>
-			<Tool
-				Name="Version"
-			/>
-			<Tool
-				Name="Config"
-			/>
-			<Tool
-				Name="Gen_head"
-			/>
-			<Tool
-				Name="Languages"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-				TypeLibraryName=".\Debug64\Doxygen.tlb"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200 /bigobj"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
-				AssemblerListingLocation=".\Debug64/"
-				ObjectFile=".\Debug64/"
-				ProgramDataBaseFileName=".\Debug64/"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Debug64\$(TargetName).pdb"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="qtools.lib ws2_32.lib iconv64.lib shell32.lib"
-				OutputFile="..\bin\Debug64\doxygen.exe"
-				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="Debug64"
-				GenerateManifest="false"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug64\$(TargetName).pdb"
-				SubSystem="1"
-				LargeAddressAware="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="17"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Debug64/Doxygen.bsc"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
 			Name="Release|x64"
 			OutputDirectory="..\bin\Release64"
 			IntermediateDirectory=".\Release64"
@@ -406,25 +406,28 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="Config_dw"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-				Name="Lex"
-			/>
-			<Tool
-				Name="Settings"
+				Name="Config"
 			/>
 			<Tool
 				Name="Version"
 			/>
 			<Tool
-				Name="Config"
+				Name="Settings"
 			/>
 			<Tool
 				Name="Gen_head"
 			/>
 			<Tool
 				Name="Languages"
+			/>
+			<Tool
+				Name="Lex"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -445,19 +448,18 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release64/Doxygen.pch"
 				AssemblerListingLocation=".\Release64/"
 				ObjectFile=".\Release64/"
-				ProgramDataBaseFileName=".\Release64/"
+				ProgramDataBaseFileName=".\Release64\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Release64\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -473,7 +475,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib iconv64.lib shell32.lib"
+				AdditionalDependencies="qtools.lib iconv64.lib shell32.lib S:\llvm32_build64\lib\Release\LLVMBitReader.lib S:\llvm32_build64\lib\Release\LLVMMC.lib S:\llvm32_build64\lib\Release\LLVMMCParser.lib S:\llvm32_build64\lib\Release\LLVMSupport.lib S:\llvm32_build64\lib\Release\clang.lib S:\llvm32_build64\lib\Release\clangAST.lib S:\llvm32_build64\lib\Release\clangAnalysis.lib S:\llvm32_build64\lib\Release\clangBasic.lib S:\llvm32_build64\lib\Release\clangDriver.lib S:\llvm32_build64\lib\Release\clangEdit.lib S:\llvm32_build64\lib\Release\clangFrontend.lib S:\llvm32_build64\lib\Release\clangLex.lib S:\llvm32_build64\lib\Release\clangParse.lib S:\llvm32_build64\lib\Release\clangRewriteCore.lib S:\llvm32_build64\lib\Release\clangSema.lib S:\llvm32_build64\lib\Release\clangSerialization.lib S:\llvm32_build64\lib\Release\clangStaticAnalyzerCore.lib"
 				OutputFile="..\bin\Release64\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -571,6 +573,10 @@
 			</File>
 			<File
 				RelativePath="..\src\constexp.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\context.cpp"
 				>
 			</File>
 			<File
@@ -874,6 +880,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\template.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\textdocvisitor.cpp"
 				>
 			</File>
@@ -932,6 +942,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -942,22 +962,12 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|x64"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(InputDir)\..\src\ce_parse.cpp"
 					/>
 				</FileConfiguration>
@@ -976,6 +986,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on vhdlparser.y"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
+						Outputs="$(InputDir)$(InputName).cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
@@ -986,22 +1006,12 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c"
-						Outputs="$(InputDir)$(InputName).cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|x64"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
 						Outputs="$(InputDir)$(InputName).cpp"
 					/>
 				</FileConfiguration>
@@ -1055,7 +1065,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1063,7 +1073,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1091,7 +1101,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1099,7 +1109,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1143,7 +1153,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1151,7 +1161,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1179,7 +1189,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1187,7 +1197,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1215,7 +1225,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Lex"
@@ -1223,7 +1233,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Lex"
@@ -1246,98 +1256,14 @@
 			<File
 				RelativePath="..\src\lang_cfg.py"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Languages"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Languages"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Languages"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Languages"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\settings.py"
 				>
-				<FileConfiguration
-					Name="Debug|win32"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|win32"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\version.py"
 				>
-				<FileConfiguration
-					Name="Debug|win32"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|win32"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -1347,34 +1273,6 @@
 			<File
 				RelativePath="..\src\config.xml"
 				>
-				<FileConfiguration
-					Name="Debug|win32"
-					>
-					<Tool
-						Name="Config"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|win32"
-					>
-					<Tool
-						Name="Config"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Config"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Config"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -1391,14 +1289,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1423,14 +1321,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1455,14 +1353,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1487,14 +1385,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1519,14 +1417,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1551,14 +1449,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1583,14 +1481,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1615,14 +1513,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1647,14 +1545,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1679,14 +1577,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1711,14 +1609,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1743,14 +1641,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1775,14 +1673,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1807,14 +1705,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1839,14 +1737,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1871,14 +1769,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1903,14 +1801,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1935,14 +1833,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1967,14 +1865,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -1999,14 +1897,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2031,14 +1929,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2063,14 +1961,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2095,14 +1993,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2127,14 +2025,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2159,14 +2057,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="Gen_head"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="Gen_head"
@@ -2247,6 +2145,10 @@
 			</File>
 			<File
 				RelativePath="..\src\constexp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\context.h"
 				>
 			</File>
 			<File
@@ -2602,6 +2504,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\settings.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\sortdict.h"
 				>
 			</File>
@@ -2615,6 +2521,10 @@
 			</File>
 			<File
 				RelativePath="..\src\tclscanner.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\template.h"
 				>
 			</File>
 			<File
@@ -2811,7 +2721,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -2821,7 +2731,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"

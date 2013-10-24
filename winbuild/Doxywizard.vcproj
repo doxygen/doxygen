@@ -29,12 +29,12 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="."
+			OutputDirectory="..\bin"
 			IntermediateDirectory="Debug\"
-			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -83,10 +83,10 @@
 				RuntimeTypeInfo="true"
 				AssemblerListingLocation="Debug\"
 				ObjectFile="Debug\"
+				ProgramDataBaseFileName=".\Debug\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Debug\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -106,7 +106,7 @@
 				OutputFile="..\bin\Debug\doxywizard.exe"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(QT_DIR)\lib"
-				IgnoreDefaultLibraryNames="libcmtd.lib"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug\$(TargetName).pdb"
 				SubSystem="2"
@@ -139,12 +139,12 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="Release"
-			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
+			OutputDirectory="..\bin"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -193,10 +193,10 @@
 				RuntimeTypeInfo="true"
 				AssemblerListingLocation="Release\"
 				ObjectFile="Release\"
+				ProgramDataBaseFileName=".\Release\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
-				ProgramDatabaseFileName=".\Release\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -213,12 +213,12 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="&quot;/MANIFESTDEPENDENCY:type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos; processorArchitecture=&apos;*&apos;&quot; &quot;/MANIFESTDEPENDENCY:type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos; processorArchitecture=&apos;*&apos;&quot;"
 				AdditionalDependencies="$(QT_DIR)\lib\qtmain.lib $(QT_DIR)\lib\QtXml.lib $(QT_DIR)\lib\QtGui.lib $(QT_DIR)\lib\QtCore.lib kernel32.lib user32.lib shell32.lib uuid.lib ole32.lib advapi32.lib ws2_32.lib gdi32.lib comdlg32.lib oleaut32.lib imm32.lib winmm.lib winspool.lib msimg32.lib"
-				OutputFile="..\bin\Release\doxywizard.exe"
+				OutputFile="..\bin\doxywizard.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(QT_DIR)\lib"
-				IgnoreDefaultLibraryNames="libcmt.lib"
 				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile=".\Release\$(TargetName).pdb"
 				SubSystem="2"
@@ -578,20 +578,6 @@
 				RelativePath="..\src\settings.py"
 				>
 				<FileConfiguration
-					Name="Debug|win32"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|win32"
-					>
-					<Tool
-						Name="Settings"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug|x64"
 					>
 					<Tool
@@ -609,20 +595,6 @@
 			<File
 				RelativePath="..\src\version.py"
 				>
-				<FileConfiguration
-					Name="Debug|win32"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|win32"
-					>
-					<Tool
-						Name="Version"
-					/>
-				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|x64"
 					>
