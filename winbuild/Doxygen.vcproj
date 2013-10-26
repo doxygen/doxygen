@@ -89,7 +89,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -208,7 +208,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 /bigobj"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -328,7 +328,7 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -355,7 +355,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib iconv.lib shell32.lib S:\llvm32_build32\lib\Release\LLVMBitReader.lib S:\llvm32_build32\lib\Release\LLVMMC.lib S:\llvm32_build32\lib\Release\LLVMMCParser.lib S:\llvm32_build32\lib\Release\LLVMSupport.lib S:\llvm32_build32\lib\Release\clang.lib S:\llvm32_build32\lib\Release\clangAST.lib S:\llvm32_build32\lib\Release\clangAnalysis.lib S:\llvm32_build32\lib\Release\clangBasic.lib S:\llvm32_build32\lib\Release\clangDriver.lib S:\llvm32_build32\lib\Release\clangEdit.lib S:\llvm32_build32\lib\Release\clangFrontend.lib S:\llvm32_build32\lib\Release\clangLex.lib S:\llvm32_build32\lib\Release\clangParse.lib S:\llvm32_build32\lib\Release\clangRewriteCore.lib S:\llvm32_build32\lib\Release\clangSema.lib S:\llvm32_build32\lib\Release\clangSerialization.lib S:\llvm32_build32\lib\Release\clangStaticAnalyzerCore.lib"
+				AdditionalDependencies="qtools.lib iconv.lib shell32.lib"
 				OutputFile="..\bin\Release\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -448,7 +448,7 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,.,S:\llvm32\tools\clang\include"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -475,7 +475,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib iconv64.lib shell32.lib S:\llvm32_build64\lib\Release\LLVMBitReader.lib S:\llvm32_build64\lib\Release\LLVMMC.lib S:\llvm32_build64\lib\Release\LLVMMCParser.lib S:\llvm32_build64\lib\Release\LLVMSupport.lib S:\llvm32_build64\lib\Release\clang.lib S:\llvm32_build64\lib\Release\clangAST.lib S:\llvm32_build64\lib\Release\clangAnalysis.lib S:\llvm32_build64\lib\Release\clangBasic.lib S:\llvm32_build64\lib\Release\clangDriver.lib S:\llvm32_build64\lib\Release\clangEdit.lib S:\llvm32_build64\lib\Release\clangFrontend.lib S:\llvm32_build64\lib\Release\clangLex.lib S:\llvm32_build64\lib\Release\clangParse.lib S:\llvm32_build64\lib\Release\clangRewriteCore.lib S:\llvm32_build64\lib\Release\clangSema.lib S:\llvm32_build64\lib\Release\clangSerialization.lib S:\llvm32_build64\lib\Release\clangStaticAnalyzerCore.lib"
+				AdditionalDependencies="qtools.lib iconv64.lib shell32.lib"
 				OutputFile="..\bin\Release64\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -1256,14 +1256,98 @@
 			<File
 				RelativePath="..\src\lang_cfg.py"
 				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Languages"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\settings.py"
 				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Settings"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\version.py"
 				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Version"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
