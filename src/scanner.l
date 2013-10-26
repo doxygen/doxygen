@@ -4962,6 +4962,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody(yytext);
   					  ++curlyCount ; 
 					}
+<SkipCurly>"}"/{BN}*("/*!"|"/**"|"//!"|"///")"<!--" | /* see bug710917 */
 <SkipCurly>"}"				{ 
   				          //addToBody(yytext);
   					  if( curlyCount )
@@ -4970,22 +4971,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
-#if 0
-					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
-						!current->doc.isEmpty())
-					    {
-					      // copy documentation found inside the body
-					      // to the previous item
-					      if (previous->inbodyLine==-1)
-					      {
-					        previous->inbodyLine = current->docLine;
-					        previous->inbodyFile = current->docFile;
-					      }
-					      //printf("*** inbodyDocs+=%s\n",current->doc.data());
-					      previous->inbodyDocs += current->doc;
-					      current->doc.resize(0);
-					    }
-#endif
 					    if (current->sli && previous) // copy special list items
 					    {
 					      QListIterator<ListItemInfo> li(*current->sli);
