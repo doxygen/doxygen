@@ -241,6 +241,7 @@ class MemberDef : public Definition
     MemberDef *categoryRelation() const;
 
     QCString displayName(bool=TRUE) const;
+    QCString getDeclType() const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----

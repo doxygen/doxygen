@@ -1336,8 +1336,7 @@ static void addClassToContext(EntryNav *rootNav)
     // see if the class is found inside a namespace     
     //bool found=addNamespace(root,cd);         
 
-    // the empty string test is needed for extract all case     
-    cd->insertUsedFile(root->fileName);
+    cd->insertUsedFile(fd);
 
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
@@ -1537,7 +1536,6 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
       gd->addClass(cd);
     }
   }
-  //cd->insertUsedFile(root->fileName);
   //printf("** adding class %s based on %s\n",fullName.data(),templ->name().data());
   Doxygen::classSDict->append(fullName,cd);
 
@@ -1776,7 +1774,7 @@ static void buildNamespaceList(EntryNav *rootNav)
 
         // the empty string test is needed for extract all case
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        nd->insertUsedFile(root->fileName);
+        nd->insertUsedFile(fd);
         nd->setBodySegment(root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
         // add class to the list
@@ -1954,7 +1952,7 @@ static void findUsingDirectives(EntryNav *rootNav)
 
         // the empty string test is needed for extract all case
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        nd->insertUsedFile(root->fileName);
+        nd->insertUsedFile(fd);
         // add class to the list
         Doxygen::namespaceSDict->inSort(name,nd);
         nd->setRefItems(root->sli);
@@ -2373,7 +2371,7 @@ static MemberDef *addVariableToClass(
   md->setRefItems(root->sli);
 
   //TODO: insert FileDef instead of filename strings.
-  cd->insertUsedFile(root->fileName);
+  cd->insertUsedFile(rootNav->fileDef());
   rootNav->changeSection(Entry::EMPTY_SEC);
   return md;
 }
@@ -3114,7 +3112,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   findClassRelation(rootNav,cd,cd,&base,0,DocumentedOnly,true)
   || findClassRelation(rootNav,cd,cd,&base,0,Undocumented,true);
   // add file to list of used files
-  cd->insertUsedFile(root->fileName);
+  cd->insertUsedFile(fd);
 
   addMemberToGroups(root,md);
   rootNav->changeSection(Entry::EMPTY_SEC);
@@ -3357,7 +3355,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   // add member to the class cd
   cd->insertMember(md);
   // add file to list of used files
-  cd->insertUsedFile(root->fileName);
+  cd->insertUsedFile(fd);
 
   addMemberToGroups(root,md);
   rootNav->changeSection(Entry::EMPTY_SEC);
@@ -4831,7 +4829,7 @@ static bool findClassRelation(
           // add this class as super class to the base class
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
-          baseClass->insertUsedFile(root->fileName);
+          baseClass->insertUsedFile(rootNav->fileDef());
           baseClass->setOuterScope(Doxygen::globalScope);
           if (baseClassName.right(2)=="-p")
           {
@@ -5344,7 +5342,7 @@ static void addMemberDocs(EntryNav *rootNav,
   md->mergeMemberSpecifiers(root->spec);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
-  if (cd) cd->insertUsedFile(root->fileName);
+  if (cd) cd->insertUsedFile(rfd);
   //printf("root->mGrpId=%d\n",root->mGrpId);
   if (root->mGrpId!=-1)
   {
@@ -6424,7 +6422,7 @@ static void findMember(EntryNav *rootNav,
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
-          cd->insertUsedFile(root->fileName);
+          cd->insertUsedFile(fd);
           md->setRefItems(root->sli);
         }
       }
@@ -6621,7 +6619,7 @@ static void findMember(EntryNav *rootNav,
           //md->setMemberDefTemplateArguments(root->mtArgList);
           mn->append(md);
           cd->insertMember(md);
-          cd->insertUsedFile(root->fileName);
+          cd->insertUsedFile(fd);
           md->setRefItems(root->sli);
           if (root->relatesType == Duplicate) md->setRelatedAlso(cd);
           if (!isDefine)
@@ -6693,7 +6691,7 @@ localObjCMethod:
         md->setMemberSpecifiers(root->spec);
         md->setMemberGroupId(root->mGrpId);
         cd->insertMember(md);
-        cd->insertUsedFile(root->fileName);
+        cd->insertUsedFile(fd);
         md->setRefItems(root->sli);
         if ((mn=Doxygen::memberNameSDict->find(root->name)))
         {
@@ -7077,7 +7075,7 @@ static void findEnums(EntryNav *rootNav)
           md->setDefinition(cd->name()+"::"+name+baseType);  
         }
         cd->insertMember(md);
-        cd->insertUsedFile(root->fileName);
+        cd->insertUsedFile(fd);
       }
       md->setDocumentation(root->doc,root->docFile,root->docLine);
       md->setDocsForDefinition(!root->proto);

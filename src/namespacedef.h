@@ -22,6 +22,7 @@
 #include <qdict.h>
 #include "sortdict.h"
 #include "definition.h"
+#include "filedef.h"
 
 class MemberList;
 class ClassDef;
@@ -45,7 +46,7 @@ class NamespaceDef : public Definition
     DefType definitionType() const { return TypeNamespace; }
     QCString getOutputFileBase() const;
     QCString anchor() const { return QCString(); }
-    void insertUsedFile(const char *fname);
+    void insertUsedFile(FileDef *fd);
     
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
@@ -117,7 +118,7 @@ class NamespaceDef : public Definition
     void addNamespaceAttributes(OutputList &ol);
 
     QCString              fileName;
-    QStrList              files;
+    FileList              files;
 
     NamespaceSDict       *usingDirList;
     SDict<Definition>    *usingDeclList;

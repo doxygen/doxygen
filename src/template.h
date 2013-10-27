@@ -42,8 +42,10 @@ class TemplateEngine;
  *  - `for ... empty ... endfor`
  *  - `if ... else ... endif` 
  *  - `block ... endblock` 
- *  - `extends`
+ *  - `extend`
  *  - `include`
+ *  - `with ... endwith`
+ *  - `spaceless ... endspaceless`
  *
  *  Supported Django filters:
  *  - `default`
@@ -53,6 +55,13 @@ class TemplateEngine;
  *  Extension tags:
  *  - `create` which instantiates a template and writes the result to a file.
  *  The syntax is `{% create 'filename' from 'template' %}`.
+ *  - `recursetree` 
+ *  - `markers`
+ *
+ *  Extension filters:
+ *  - `stripPath`
+ *  - `nowrap`
+ *  - `prepend`
  *
  *  @{
  */
@@ -62,7 +71,7 @@ class TemplateVariant
 {
   public:
     /** Signature of the callback function, used for function type variants */
-    typedef QCString (*FuncType)(const void *obj, const QValueList<TemplateVariant> &args);
+    typedef TemplateVariant (*FuncType)(const void *obj, const QValueList<TemplateVariant> &args);
 
     /** Types of data that can be stored in a TemplateVariant */
     enum Type { None, Bool, Integer, String, Struct, List, Function };
@@ -83,10 +92,10 @@ class TemplateVariant
     TemplateVariant(int v);
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const char *s);
+    TemplateVariant(const char *s,bool raw=FALSE);
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const QCString &s);
+    TemplateVariant(const QCString &s,bool raw=FALSE);
 
     /** Constructs a new variant with a struct value \a s. 
      *  @note. Only a pointer to the struct is stored. The caller
@@ -146,7 +155,7 @@ class TemplateVariant
     /** Return the result of apply this function with \a args.
      *  Returns an empty string if the variant type is not a function.
      */
-    QCString call(const QValueList<TemplateVariant> &args);
+    TemplateVariant call(const QValueList<TemplateVariant> &args);
 
     /** Sets whether or not the value of the Variant should be 
      *  escaped or written as-is (raw).
@@ -283,6 +292,16 @@ class TemplateEscapeIntf
 
 //------------------------------------------------------------------------
 
+/** @brief Interface used to remove redundant spaces inside a spaceless block */
+class TemplateSpacelessIntf
+{
+  public:
+    /** Returns the \a input after removing redundant whitespace */
+    virtual QCString remove(const QCString &input) = 0;
+};
+
+//------------------------------------------------------------------------
+
 /** @brief Abstract interface for a template context. 
  *  
  *  A Context consists of a stack of dictionaries.
@@ -333,6 +352,11 @@ class TemplateContext
      *  of variable expansion before writing it to the output.
      */
     virtual void setEscapeIntf(TemplateEscapeIntf *intf) = 0;
+
+    /** Sets the interface that will be used inside a spaceless block
+     *  to remove any redundant whitespace.
+     */
+    virtual void setSpacelessIntf(TemplateSpacelessIntf *intf) = 0;
 };
 
 //------------------------------------------------------------------------

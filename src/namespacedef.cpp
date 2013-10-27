@@ -115,14 +115,15 @@ void NamespaceDef::findSectionsInDocumentation()
   }
 }
 
-void NamespaceDef::insertUsedFile(const char *f)
+void NamespaceDef::insertUsedFile(FileDef *fd)
 {
-  if (files.find(f)==-1) 
+  if (fd==0) return;
+  if (files.find(fd)==-1) 
   {
     if (Config_getBool("SORT_MEMBER_DOCS"))
-      files.inSort(f);
+      files.inSort(fd);
     else
-      files.append(f);
+      files.append(fd);
   }
 }
 

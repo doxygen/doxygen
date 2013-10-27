@@ -31,6 +31,7 @@ class ClassList;
 class ClassSDict;
 class OutputList;
 class FileDef;
+class FileList;
 class BaseClassList;
 class NamespaceDef;
 class MemberDef;
@@ -124,9 +125,6 @@ class ClassDef : public Definition
 
     /** returns TRUE if this class has documentation */
     bool hasDocumentation() const;
-
-    /** returns TRUE if this class has a brief description */
-    bool hasBriefDescription() const;
 
     /** returns TRUE if this class has a non-empty detailed description */
     bool hasDetailedDescription() const;
@@ -310,6 +308,11 @@ class ClassDef : public Definition
     const ClassSDict *innerClasses() const;
     QCString title() const;
 
+    QCString generatedFromFiles() const;
+    const FileList &usedFiles() const;
+
+    QCString includeStatement() const;
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
@@ -318,7 +321,7 @@ class ClassDef : public Definition
     void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force); 
     void insertMember(MemberDef *);
-    void insertUsedFile(const char *);
+    void insertUsedFile(FileDef *);
     bool addExample(const char *anchor,const char *name, const char *file);
     void mergeCategory(ClassDef *category);
     void setNamespace(NamespaceDef *nd);
@@ -375,6 +378,7 @@ class ClassDef : public Definition
     void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               ClassDef *inheritedFrom,const QCString &inheritId);
     int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
+    int countInheritanceNodes();
     
     bool visited;
 

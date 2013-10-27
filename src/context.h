@@ -1,11 +1,13 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include "types.h"
 #include "template.h"
 
 class Definition;
 class ClassDef;
 class ClassSDict;
+class BaseClassList;
 class PageDef;
 class GroupDef;
 class NamespaceDef;
@@ -21,6 +23,11 @@ class PageSDict;
 class GroupSDict;
 class GroupDef;
 class GroupList;
+struct IncludeInfo;
+class MemberList;
+class MemberDef;
+struct Argument;
+class ArgumentList;
 
 //----------------------------------------------------
 
@@ -61,6 +68,42 @@ class TranslateContext : public TemplateStructIntf
   public:
     TranslateContext();
    ~TranslateContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class UsedFilesContext : public TemplateListIntf
+{
+  public:
+    UsedFilesContext(ClassDef *cd);
+   ~UsedFilesContext();
+
+    // TemplateListIntf
+    virtual int count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+    void addFile(FileDef *fd);
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class IncludeInfoContext : public TemplateStructIntf
+{
+  public:
+    IncludeInfoContext(IncludeInfo *,SrcLangExt lang);
+   ~IncludeInfoContext();
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -152,6 +195,23 @@ class PageContext : public TemplateStructIntf
 
 //----------------------------------------------------
 
+class MemberContext : public TemplateStructIntf
+{
+  public:
+    MemberContext(MemberDef *);
+   ~MemberContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+
+//----------------------------------------------------
+
 class ModuleContext : public TemplateStructIntf
 {
   public:
@@ -160,6 +220,26 @@ class ModuleContext : public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class NestedClassListContext : public TemplateListIntf
+{
+  public:
+    NestedClassListContext();
+   ~NestedClassListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+    void append(ClassDef *cd);
 
   private:
     class Private;
@@ -522,6 +602,109 @@ class ExampleListContext : public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class InheritanceNodeContext : public TemplateStructIntf
+{
+  public:
+    InheritanceNodeContext(ClassDef *cd,const QCString &name);
+   ~InheritanceNodeContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class InheritanceListContext : public TemplateListIntf
+{
+  public:
+    InheritanceListContext(const BaseClassList *list,bool baseClasses);
+   ~InheritanceListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class MemberListContext : public TemplateListIntf
+{
+  public:
+    MemberListContext(const MemberList *ml);
+   ~MemberListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class MemberListInfoContext : public TemplateStructIntf
+{
+  public:
+    MemberListInfoContext(const MemberList *ml,const QCString &title,
+                          const QCString &subtitle=QCString());
+   ~MemberListInfoContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class ArgumentContext : public TemplateStructIntf
+{
+  public:
+    ArgumentContext(const Argument *arg);
+   ~ArgumentContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class ArgumentListContext : public TemplateListIntf
+{
+  public:
+    ArgumentListContext(const ArgumentList *al);
+   ~ArgumentListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
 
   private:
     class Private;

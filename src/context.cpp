@@ -17,16 +17,56 @@
 #include "docparser.h"
 #include "htmlgen.h"
 #include "htmldocvisitor.h"
+#include "dot.h"
+#include "diagram.h"
+
+struct ContextGlobals
+{
+  enum OutputFormat
+  {
+    Html,
+    LateX,
+    Rtf,
+    ManPage,
+    DocBook,
+    Xml,
+    TagFile
+  };
+  int          dynSectionId;
+  QCString     outputDir;
+  OutputFormat outputFormat;
+} g_globals;
+
+/** @brief Scoped smart pointer */
+template<class T> class ScopedPtr
+{
+  private:
+    T *m_ptr;
+    ScopedPtr(const ScopedPtr &);
+    ScopedPtr &operator=(const ScopedPtr &);
+    void operator==(const ScopedPtr &) const;
+    void operator!=(const ScopedPtr &) const;
+
+  public:
+    typedef T Type;
+    explicit ScopedPtr(T *p=0) : m_ptr(p) {}
+    ~ScopedPtr() { delete m_ptr; };
+    T &operator*() const { return *m_ptr; }
+    T *operator->() const { return m_ptr; }
+    T *get() const { return m_ptr; }
+    operator bool() const { return m_ptr!=0; }
+    void reset(T *p=0) { if (p!=m_ptr) { delete m_ptr; m_ptr = p; } }
+};
 
 // iterator support
 template<class T>
 class GenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
-    GenericConstIterator(const QList<T> &list) 
+    GenericConstIterator(const QList<T> &list)
       : m_it(list) { }
     virtual ~GenericConstIterator() {}
-    void toFirst() 
+    void toFirst()
     {
       m_it.toFirst();
     }
@@ -105,11 +145,16 @@ class GenericNodeListContext : public TemplateListIntf
 //------------------------------------------------------------------------
 
 /** @brief Helper class to map a property name to a handler member function */
-template<typename T> 
 class PropertyMapper
 {
-  public:
-    struct PropertyFunc
+  private:
+    struct PropertyFuncIntf
+    {
+      virtual ~PropertyFuncIntf() {}
+      virtual TemplateVariant operator()() const = 0;
+    };
+    template<typename T>
+    struct PropertyFunc : public PropertyFuncIntf
     {
       typedef TemplateVariant (T::*Handler)() const;
       PropertyFunc(const T *o,Handler h) : obj(o), handler(h) {}
@@ -120,24 +165,41 @@ class PropertyMapper
       const T *obj;
       Handler handler;
     };
+
+  public:
     PropertyMapper() { m_map.setAutoDelete(TRUE); }
-    TemplateVariant get(const char *n)
+
+    /** Add a property to the map
+     *  @param[in] name   The name of the property to add.
+     *  @param[in] obj    The object handling access to the property.
+     *  @param[in] handle The method to call when the property is accessed.
+     */
+    template<typename T>
+    void addProperty(const char *name,const T* obj,
+                     typename PropertyFunc<T>::Handler handle)
     {
-      //printf("PropertyMapper::get(%s)\n",n);
+      m_map.insert(name,new PropertyFunc<T>(obj,handle));
+    }
+
+    /** Gets the value of a property.
+     *  @param[in] name The name of the property.
+     *  @returns A variant representing the properties value or an
+     *  invalid variant if it was not found.
+     */
+    TemplateVariant get(const char *name) const
+    {
+      //printf("PropertyMapper::get(%s)\n",name);
       TemplateVariant result;
-      PropertyFunc *func = m_map.find(n);
+      PropertyFuncIntf *func = m_map.find(name);
       if (func)
       {
         result = (*func)();
       }
       return result;
     }
-    void insert(const char *name,const PropertyFunc *func)
-    {
-      m_map.insert(name,func);
-    }
+
   private:
-    QDict<PropertyFunc> m_map;
+    QDict<PropertyFuncIntf> m_map;
 };
 
 
@@ -213,7 +275,7 @@ TemplateVariant ConfigContext::get(const char *name) const
 
 //%% struct Doxygen: global information
 //%% {
-class DoxygenContext::Private : public PropertyMapper<DoxygenContext::Private>
+class DoxygenContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant version() const
@@ -227,9 +289,9 @@ class DoxygenContext::Private : public PropertyMapper<DoxygenContext::Private>
     Private()
     {
       //%% string version
-      insert("version",new PropertyFunc(this,&Private::version));
+      addProperty("version",this,&Private::version); //makeProperty(this,&Private::version));
       //%% string date
-      insert("date",   new PropertyFunc(this,&Private::date));
+      addProperty("date",   this,&Private::date);
     }
 };
 //%% }
@@ -253,14 +315,31 @@ TemplateVariant DoxygenContext::get(const char *n) const
 
 //%% struct Translator: translation methods
 //%% {
-class TranslateContext::Private : public PropertyMapper<TranslateContext::Private>
+class TranslateContext::Private : public PropertyMapper
 {
   public:
-    static QCString generatedAtFunc(const void *obj,const QValueList<TemplateVariant> &args)
+
+    static TemplateVariant generatedAtFunc(const void *obj,const QValueList<TemplateVariant> &args)
     {
       return ((TranslateContext::Private*)obj)->generatedAt(args);
     }
-    QCString generatedAt(const QValueList<TemplateVariant> &args) const
+    static TemplateVariant inheritanceDiagramForFunc(const void *obj,const QValueList<TemplateVariant> &args)
+    {
+      return ((TranslateContext::Private*)obj)->inheritanceDiagramFor(args);
+    }
+    static TemplateVariant inheritsListFunc(const void *obj,const QValueList<TemplateVariant> &args)
+    {
+      return ((TranslateContext::Private*)obj)->inheritsList(args);
+    }
+    static TemplateVariant inheritedByListFunc(const void *obj,const QValueList<TemplateVariant> &args)
+    {
+      return ((TranslateContext::Private*)obj)->inheritedByList(args);
+    }
+    static TemplateVariant collaborationDiagramForFunc(const void *obj,const QValueList<TemplateVariant> &args)
+    {
+      return ((TranslateContext::Private*)obj)->collaborationDiagramFor(args);
+    }
+    TemplateVariant generatedAt(const QValueList<TemplateVariant> &args) const
     {
       if (args.count()==2)
       {
@@ -268,10 +347,60 @@ class TranslateContext::Private : public PropertyMapper<TranslateContext::Privat
       }
       else
       {
-        err("tr.generateAt should take two parameters!\n");
+        err("tr.generateAt should take two parameters, got %d!\n",args.count());
+      }
+      return TemplateVariant();
+    }
+    TemplateVariant inheritanceDiagramFor(const QValueList<TemplateVariant> &args) const
+    {
+      if (args.count()==1)
+      {
+        return theTranslator->trClassDiagram(args[0].toString());
+      }
+      else
+      {
+        err("tr.inheritanceDiagramFor should take one parameter, got %d!\n",args.count());
+      }
+      return TemplateVariant();
+    }
+    TemplateVariant collaborationDiagramFor(const QValueList<TemplateVariant> &args) const
+    {
+      if (args.count()==1)
+      {
+        return theTranslator->trCollaborationDiagram(args[0].toString());
+      }
+      else
+      {
+        err("tr.collaborationDiagramFor should take one parameter, got %d!\n",args.count());
+      }
+      return TemplateVariant();
+    }
+    TemplateVariant inheritsList(const QValueList<TemplateVariant> &args) const
+    {
+      if (args.count()==1)
+      {
+        return theTranslator->trInheritsList(args[0].toInt());
+      }
+      else
+      {
+        err("tr.inheritsList should take one integer parameter, got %d!\n",args.count());
+      }
+      return TemplateVariant();
+    }
+    QCString inheritedByList(const QValueList<TemplateVariant> &args) const
+    {
+      if (args.count()==1)
+      {
+        return theTranslator->trInheritedByList(args[0].toInt());
+      }
+      else
+      {
+        err("tr.inheritedByList should take one integer parameter, got %d!\n",args.count());
       }
       return QCString();
     }
+
+
 
     TemplateVariant generatedBy() const
     {
@@ -280,6 +409,14 @@ class TranslateContext::Private : public PropertyMapper<TranslateContext::Privat
     TemplateVariant generatedAt() const
     {
       return TemplateVariant(this,&Private::generatedAtFunc);
+    }
+    TemplateVariant inheritanceDiagramFor() const
+    {
+      return TemplateVariant(this,&Private::inheritanceDiagramForFunc);
+    }
+    TemplateVariant collaborationDiagramFor() const
+    {
+      return TemplateVariant(this,&Private::collaborationDiagramForFunc);
     }
     TemplateVariant search() const
     {
@@ -366,7 +503,7 @@ class TranslateContext::Private : public PropertyMapper<TranslateContext::Privat
         return theTranslator->trModulesMembers();
       }
       else
-      { 
+      {
         return theTranslator->trNamespaceMembers();
       }
     }
@@ -390,54 +527,70 @@ class TranslateContext::Private : public PropertyMapper<TranslateContext::Privat
     {
       return theTranslator->trDetailedDescription();
     }
+    TemplateVariant inheritsList() const
+    {
+      return TemplateVariant(this,&Private::inheritsListFunc);
+    }
+    TemplateVariant inheritedByList() const
+    {
+      return TemplateVariant(this,&Private::inheritedByListFunc);
+    }
     Private()
     {
       //%% string generatedBy
-      insert("generatedby",     new PropertyFunc(this,&Private::generatedBy));
+      addProperty("generatedby",       this,&Private::generatedBy);
       //%% string generatedAt
-      insert("generatedAt",     new PropertyFunc(this,&Private::generatedAt));
+      addProperty("generatedAt",       this,&Private::generatedAt);
       //%% string search
-      insert("search",          new PropertyFunc(this,&Private::search));
+      addProperty("search",            this,&Private::search);
       //%% string mainPage
-      insert("mainPage",        new PropertyFunc(this,&Private::mainPage));
+      addProperty("mainPage",          this,&Private::mainPage);
       //%% string classes
-      insert("classes",         new PropertyFunc(this,&Private::classes));
+      addProperty("classes",           this,&Private::classes);
       //%% string classList
-      insert("classList",       new PropertyFunc(this,&Private::classList));
+      addProperty("classList",         this,&Private::classList);
       //%% string classIndex
-      insert("classIndex",      new PropertyFunc(this,&Private::classIndex));
+      addProperty("classIndex",        this,&Private::classIndex);
       //%% string classHierarchy
-      insert("classHierarchy",  new PropertyFunc(this,&Private::classHierarchy));
+      addProperty("classHierarchy",    this,&Private::classHierarchy);
       //%% string classMembers
-      insert("classMembers",    new PropertyFunc(this,&Private::classMembers));
+      addProperty("classMembers",      this,&Private::classMembers);
       //%% string modules
-      insert("modules",         new PropertyFunc(this,&Private::modules));
+      addProperty("modules",           this,&Private::modules);
       //%% string namespaces
-      insert("namespaces",      new PropertyFunc(this,&Private::namespaces));
+      addProperty("namespaces",        this,&Private::namespaces);
       //%% string files
-      insert("files",           new PropertyFunc(this,&Private::files));
+      addProperty("files",             this,&Private::files);
       //%% string pages
-      insert("pages",           new PropertyFunc(this,&Private::pages));
+      addProperty("pages",             this,&Private::pages);
       //%% string examples
-      insert("examples",        new PropertyFunc(this,&Private::examples));
+      addProperty("examples",          this,&Private::examples);
       //%% string namespaceList
-      insert("namespaceList",   new PropertyFunc(this,&Private::namespaceList));
+      addProperty("namespaceList",     this,&Private::namespaceList);
       //%% string namespaceMembers
-      insert("namespaceMembers",new PropertyFunc(this,&Private::namespaceMembers));
+      addProperty("namespaceMembers",  this,&Private::namespaceMembers);
       //%% srting fileList
-      insert("fileList",        new PropertyFunc(this,&Private::fileList));
+      addProperty("fileList",          this,&Private::fileList);
       //%% string fileMembers
-      insert("fileMembers",     new PropertyFunc(this,&Private::fileMembers));
+      addProperty("fileMembers",       this,&Private::fileMembers);
       //%% string relatedPagesDescripiton
-      insert("relatedPagesDesc",new PropertyFunc(this,&Private::relatedPagesDesc));
+      addProperty("relatedPagesDesc",  this,&Private::relatedPagesDesc);
       //%% string more
-      insert("more",            new PropertyFunc(this,&Private::more));
+      addProperty("more",              this,&Private::more);
       //%% string detailedDescription
-      insert("detailedDesc",    new PropertyFunc(this,&Private::detailedDesc));
+      addProperty("detailedDesc",      this,&Private::detailedDesc);
+      //%% string inheritanceDiagramFor
+      addProperty("inheritanceDiagramFor",  this,&Private::inheritanceDiagramFor);
+      //%% string collaborationDiagramFor
+      addProperty("collaborationDiagramFor",   this,&Private::collaborationDiagramFor);
+      //%% string inheritsList
+      addProperty("inheritsList",      this,&Private::inheritsList);
+      //%% string inheritedByList
+      addProperty("inheritedByList",   this,&Private::inheritedByList);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-      m_vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+      m_vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
     }
   private:
     bool m_javaOpt;
@@ -475,11 +628,10 @@ static TemplateVariant parseDoc(Definition *def,const QCString &file,int line,
     root->accept(&visitor);
   }
   bool isEmpty = root->isEmpty();
-  if (isEmpty) 
+  if (isEmpty)
     result = "";
-  else 
-    result = TemplateVariant(docs);
-  result.setRaw(TRUE);
+  else
+    result = TemplateVariant(docs,TRUE);
   delete root;
   return result;
 }
@@ -488,64 +640,199 @@ static TemplateVariant parseDoc(Definition *def,const QCString &file,int line,
 
 //%% struct Symbol: shared info for all symbols
 //%% {
-template<typename T> 
-class DefinitionContext : public PropertyMapper<T>
+template<typename T>
+class DefinitionContext : public PropertyMapper
 {
   public:
-    DefinitionContext(const T *super,Definition *d) : m_def(d), m_detailsCached(FALSE)
+    DefinitionContext(Definition *d) : m_def(d)
     {
       //%% string name: the name of the symbol
-      PropertyMapper<T>::insert("name",      new typename PropertyMapper<T>::PropertyFunc(super,&DefinitionContext::name));
+      addProperty("name",this,&DefinitionContext::name);
+      //%% string bareName: the bare name of the symbol with scope info
+      addProperty("bareName",this,&DefinitionContext::bareName);
       //%% string relPath: the relative path to the root of the output (CREATE_SUBDIRS)
-      PropertyMapper<T>::insert("relPath",   new typename PropertyMapper<T>::PropertyFunc(super,&DefinitionContext::relPath));
+      addProperty("relPath",this,&DefinitionContext::relPath);
       //%% string fileName: the file name of the output file associated with the symbol (without extension)
-      PropertyMapper<T>::insert("fileName",  new typename PropertyMapper<T>::PropertyFunc(super,&DefinitionContext::fileName));
+      addProperty("fileName",this,&DefinitionContext::fileName);
+      //%% string anchor: anchor within the page
+      addProperty("anchor",this,&DefinitionContext::anchor);
       //%% string details: the detailed documentation for this symbol
-      PropertyMapper<T>::insert("details",   new typename PropertyMapper<T>::PropertyFunc(super,&DefinitionContext::details));
+      addProperty("details",this,&DefinitionContext::details);
       //%% string brief: the brief description for this symbol
-      PropertyMapper<T>::insert("brief",     new typename PropertyMapper<T>::PropertyFunc(super,&DefinitionContext::brief));
+      addProperty("brief",this,&DefinitionContext::brief);
+      //%% string sourceFileName: the file name of the source file (without extension)
+      addProperty("sourceFileName",this,&DefinitionContext::sourceFileName);
+      //%% bool isLinkable: can the symbol be linked to?
+      addProperty("isLinkable",this,&DefinitionContext::isLinkable);
+      //%% bool isLinkableInProject: can the symbol be linked within this project?
+      addProperty("isLinkableInProject",this,&DefinitionContext::isLinkableInProject);
+      //%% int dynSectionId: identifier that can be used for collapsable sections
+      addProperty("dynSectionId",this,&DefinitionContext::dynSectionId);
+      //%% string language: the programming language in which the symbol is written
+      addProperty("language",this,&DefinitionContext::language);
     }
     TemplateVariant fileName() const
     {
-      return TemplateVariant(m_def->getOutputFileBase());
+      return m_def->getOutputFileBase();
+    }
+    TemplateVariant anchor() const
+    {
+      return m_def->anchor();
+    }
+    TemplateVariant sourceFileName() const
+    {
+      return m_def->getSourceFileBase();
+    }
+    TemplateVariant isLinkable() const
+    {
+      return m_def->isLinkable();
+    }
+    TemplateVariant isLinkableInProject() const
+    {
+      return m_def->isLinkableInProject();
     }
     TemplateVariant name() const
     {
-      return m_def->displayName();
+      return m_def->displayName(TRUE);
     }
-    TemplateVariant relPath() const 
+    TemplateVariant bareName() const
+    {
+      return m_def->displayName(FALSE);
+    }
+    QCString relPathAsString() const
     {
       static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
-      return createSubdirs ? TemplateVariant("../../") : TemplateVariant("");
+      return createSubdirs ? QCString("../../") : QCString("");
+    }
+    TemplateVariant relPath() const
+    {
+      return relPathAsString();
     }
     TemplateVariant details() const
     {
-      if (!m_detailsCached)
+      if (!m_details)
       {
-        m_details = parseDoc(m_def,m_def->docFile(),m_def->docLine(),
-                             relPath().toString(),m_def->documentation(),FALSE);
-        m_detailsCached = TRUE;
+        m_details.reset(new TemplateVariant(parseDoc(m_def,m_def->docFile(),m_def->docLine(),
+                                            relPathAsString(),m_def->documentation(),FALSE)));
       }
-      return m_details;
+      return *m_details;
     }
     TemplateVariant brief() const
     {
-      if (!m_briefCached)
+      if (!m_brief)
       {
-        m_brief = parseDoc(m_def,m_def->briefFile(),m_def->briefLine(),
-                             relPath().toString(),m_def->briefDescription(),TRUE);
-        m_briefCached = TRUE;
+        if (m_def->hasBriefDescription())
+        {
+          m_brief.reset(new TemplateVariant(parseDoc(m_def,m_def->briefFile(),m_def->briefLine(),
+                             relPathAsString(),m_def->briefDescription(),TRUE)));
+        }
+        else
+        {
+          m_brief.reset(new TemplateVariant(""));
+        }
       }
-      return m_brief;
+      return *m_brief;
+    }
+    TemplateVariant dynSectionId() const
+    {
+      return g_globals.dynSectionId;
+    }
+    TemplateVariant language() const
+    {
+      SrcLangExt lang = m_def->getLanguage();
+      QCString result = "unknown";
+      switch (lang)
+      {
+        case SrcLangExt_Unknown:  break;
+        case SrcLangExt_IDL:      result="idl";      break;
+        case SrcLangExt_Java:     result="java";     break;
+        case SrcLangExt_CSharp:   result="csharp";   break;
+        case SrcLangExt_D:        result="d";        break;
+        case SrcLangExt_PHP:      result="php";      break;
+        case SrcLangExt_ObjC:     result="objc";     break;
+        case SrcLangExt_Cpp:      result="cpp";      break;
+        case SrcLangExt_JS:       result="js";       break;
+        case SrcLangExt_Python:   result="python";   break;
+        case SrcLangExt_Fortran:  result="fortran";  break;
+        case SrcLangExt_VHDL:     result="vhdl";     break;
+        case SrcLangExt_XML:      result="xml";      break;
+        case SrcLangExt_Tcl:      result="tcl";      break;
+        case SrcLangExt_Markdown: result="markdown"; break;
+      }
+      return result;
     }
 
   private:
     Definition      *m_def;
-    mutable bool     m_detailsCached;
-    mutable TemplateVariant m_details;
-    mutable bool     m_briefCached;
-    mutable TemplateVariant m_brief;
+    mutable ScopedPtr<TemplateVariant> m_details;
+    mutable ScopedPtr<TemplateVariant> m_brief;
 };
+//%% }
+
+//------------------------------------------------------------------------
+
+//%% struct IncludeInfo: include file information
+//%% {
+class IncludeInfoContext::Private : public PropertyMapper
+{
+  public:
+    Private(IncludeInfo *info,SrcLangExt lang) :
+      m_info(info),
+      m_fileContext(info && info->fileDef ? info->fileDef : 0),
+      m_lang(lang)
+    {
+      if (m_info)
+      {
+        addProperty("file",this,&Private::file);
+        addProperty("name",this,&Private::name);
+        addProperty("isImport",this,&Private::isImport);
+        addProperty("isLocal",this,&Private::isLocal);
+      }
+    }
+    TemplateVariant isLocal() const
+    {
+      bool isIDLorJava = m_lang==SrcLangExt_IDL || m_lang==SrcLangExt_Java;
+      return m_info->local || isIDLorJava;
+    }
+    TemplateVariant isImport() const
+    {
+      return m_info->imported;
+    }
+    TemplateVariant file() const
+    {
+      if (m_info->fileDef)
+      {
+        return &m_fileContext;
+      }
+      else
+      {
+        return FALSE;
+      }
+    }
+    TemplateVariant name() const
+    {
+      return m_info->includeName;
+    }
+  private:
+    IncludeInfo *m_info;
+    FileContext m_fileContext;
+    SrcLangExt m_lang;
+};
+
+IncludeInfoContext::IncludeInfoContext(IncludeInfo *info,SrcLangExt lang)
+{
+  p = new Private(info,lang);
+}
+
+IncludeInfoContext::~IncludeInfoContext()
+{
+  delete p;
+}
+
+TemplateVariant IncludeInfoContext::get(const char *n) const
+{
+  return p->get(n);
+}
 //%% }
 
 //------------------------------------------------------------------------
@@ -555,13 +842,57 @@ class DefinitionContext : public PropertyMapper<T>
 class ClassContext::Private : public DefinitionContext<ClassContext::Private>
 {
   public:
-    Private(ClassDef *cd) : DefinitionContext(this,cd) , m_classDef(cd)
+    Private(ClassDef *cd) : DefinitionContext(cd) ,
+       m_classDef(cd), m_usedFiles(cd),
+       m_includeInfo(cd ? cd->includeInfo() : 0, cd ? cd->getLanguage() : SrcLangExt_Unknown)
     {
-      insert("title",     new PropertyFunc(this,&Private::title));
-      insert("highlight", new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight", new PropertyFunc(this,&Private::subHighlight));
-      insert("hasBrief", new PropertyFunc(this,&Private::hasBrief));
-      insert("hasDetails", new PropertyFunc(this,&Private::hasDetails));
+      addProperty("title",                     this,&Private::title);
+      addProperty("highlight",                 this,&Private::highlight);
+      addProperty("subhighlight",              this,&Private::subHighlight);
+      addProperty("hasDetails",                this,&Private::hasDetails);
+      addProperty("generatedFromFiles",        this,&Private::generatedFromFiles);
+      addProperty("usedFiles",                 this,&Private::usedFiles);
+      addProperty("hasInheritanceDiagram",     this,&Private::hasInheritanceDiagram);
+      addProperty("inheritanceDiagram",        this,&Private::inheritanceDiagram);
+      addProperty("hasCollaborationDiagram",   this,&Private::hasCollaborationDiagram);
+      addProperty("collaborationDiagram",      this,&Private::collaborationDiagram);
+      addProperty("includeInfo",               this,&Private::includeInfo);
+      addProperty("includeStatement",          this,&Private::includeStatement);
+      addProperty("inherits",                  this,&Private::inherits);
+      addProperty("inheritedBy",               this,&Private::inheritedBy);
+      addProperty("unoIDLServices",            this,&Private::unoIDLServices);
+      addProperty("unoIDLInterfaces",          this,&Private::unoIDLInterfaces);
+      addProperty("signals",                   this,&Private::signals);
+      addProperty("publicTypes",               this,&Private::publicTypes);
+      addProperty("publicMethods",             this,&Private::publicMethods);
+      addProperty("publicStaticMethods",       this,&Private::publicStaticMethods);
+      addProperty("publicAttributes",          this,&Private::publicAttributes);
+      addProperty("publicStaticAttributes",    this,&Private::publicStaticAttributes);
+      addProperty("publicSlots",               this,&Private::publicSlots);
+      addProperty("protectedTypes",            this,&Private::protectedTypes);
+      addProperty("protectedMethods",          this,&Private::protectedMethods);
+      addProperty("protectedStaticMethods",    this,&Private::protectedStaticMethods);
+      addProperty("protectedAttributes",       this,&Private::protectedAttributes);
+      addProperty("protectedStaticAttributes", this,&Private::protectedStaticAttributes);
+      addProperty("protectedSlots",            this,&Private::protectedSlots);
+      addProperty("privateTypes",              this,&Private::privateTypes);
+      addProperty("privateMethods",            this,&Private::privateMethods);
+      addProperty("privateStaticMethods",      this,&Private::privateStaticMethods);
+      addProperty("privateAttributes",         this,&Private::privateAttributes);
+      addProperty("privateStaticAttributes",   this,&Private::privateStaticAttributes);
+      addProperty("privateSlots",              this,&Private::privateSlots);
+      addProperty("packageTypes",              this,&Private::packageTypes);
+      addProperty("packageMethods",            this,&Private::packageMethods);
+      addProperty("packageStaticMethods",      this,&Private::packageStaticMethods);
+      addProperty("packageAttributes",         this,&Private::packageAttributes);
+      addProperty("packageStaticAttributes",   this,&Private::packageStaticAttributes);
+      addProperty("properties",                this,&Private::properties);
+      addProperty("events",                    this,&Private::events);
+      addProperty("friends",                   this,&Private::friends);
+      addProperty("related",                   this,&Private::related);
+      addProperty("nestedClasses",             this,&Private::nestedClasses);
+      addProperty("compoundType",              this,&Private::compoundType);
+      addProperty("templateDecls",             this,&Private::templateDecls);
     }
     TemplateVariant title() const
     {
@@ -575,21 +906,422 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     {
       return TemplateVariant("");
     }
-    TemplateVariant hasBrief() const
-    {
-      return m_classDef->hasBriefDescription();
-    }
     TemplateVariant hasDetails() const
     {
       return m_classDef->hasDetailedDescription();
     }
+    TemplateVariant generatedFromFiles() const
+    {
+      return m_classDef->generatedFromFiles();
+    }
+    TemplateVariant usedFiles() const
+    {
+      return TemplateVariant(&m_usedFiles);
+    }
+    DotClassGraph *getClassGraph() const
+    {
+      if (!m_cache.classGraph)
+      {
+        m_cache.classGraph.reset(new DotClassGraph(m_classDef,DotNode::Inheritance));
+      }
+      return m_cache.classGraph.get();
+    }
+    int numInheritanceNodes() const
+    {
+      if (m_cache.inheritanceNodes==-1)
+      {
+        m_cache.inheritanceNodes=m_classDef->countInheritanceNodes();
+      }
+      return m_cache.inheritanceNodes>0;
+    }
+    TemplateVariant hasInheritanceDiagram() const
+    {
+      bool result=FALSE;
+      static bool haveDot       = Config_getBool("HAVE_DOT");
+      static bool classDiagrams = Config_getBool("CLASS_DIAGRAMS");
+      static bool classGraph    = Config_getBool("CLASS_GRAPH");
+      if (haveDot && (classDiagrams || classGraph))
+      {
+        DotClassGraph *cg = getClassGraph();
+        result = !cg->isTrivial() && !cg->isTooBig();
+      }
+      else if (classDiagrams)
+      {
+        result = numInheritanceNodes()>0;
+      }
+      return result;
+    }
+    TemplateVariant inheritanceDiagram() const
+    {
+      QGString result;
+      static bool haveDot       = Config_getBool("HAVE_DOT");
+      static bool classDiagrams = Config_getBool("CLASS_DIAGRAMS");
+      static bool classGraph    = Config_getBool("CLASS_GRAPH");
+      if (haveDot && (classDiagrams || classGraph))
+      {
+        DotClassGraph *cg = getClassGraph();
+        FTextStream t(&result);
+        cg->writeGraph(t,BITMAP,
+                       g_globals.outputDir,
+                       m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                       relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                      );
+      }
+      else if (classDiagrams)
+      {
+        ClassDiagram d(m_classDef);
+        FTextStream t(&result);
+        QCString name = convertToHtml(m_classDef->displayName());
+        t << "<div class=\"center\">" << endl;
+        t << "<img src=\"";
+        t << relPathAsString() << m_classDef->getOutputFileBase();
+        t << ".png\" usemap=\"#" << name << "_map\" alt=\"\"/>" << endl;
+        t << "<map id=\"" << name << "_map\" name=\"" << name << "_map\">" << endl;
+        d.writeImage(t,g_globals.outputDir,
+                     relPathAsString(),
+                     m_classDef->getOutputFileBase());
+        t << "</div>";
+      }
+      g_globals.dynSectionId++;
+      return TemplateVariant(result.data(),TRUE);
+    }
+    DotClassGraph *getCollaborationGraph() const
+    {
+      if (!m_cache.collaborationGraph)
+      {
+        m_cache.collaborationGraph.reset(new DotClassGraph(m_classDef,DotNode::Collaboration));
+      }
+      return m_cache.collaborationGraph.get();
+    }
+    TemplateVariant hasCollaborationDiagram() const
+    {
+      static bool haveDot = Config_getBool("HAVE_DOT");
+      return haveDot && !getCollaborationGraph()->isTrivial();
+    }
+    TemplateVariant collaborationDiagram() const
+    {
+      static bool haveDot = Config_getBool("HAVE_DOT");
+      QGString result;
+      if (haveDot)
+      {
+        DotClassGraph *cg = getCollaborationGraph();
+        FTextStream t(&result);
+        cg->writeGraph(t,BITMAP,
+            g_globals.outputDir,
+            m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+            relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+            );
+      }
+      g_globals.dynSectionId++;
+      return TemplateVariant(result.data(),TRUE);
+    }
+
+    TemplateVariant includeInfo() const
+    {
+      if (m_classDef->includeInfo())
+      {
+        return TemplateVariant(&m_includeInfo);
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant includeStatement() const
+    {
+      return m_classDef->includeStatement();
+    }
+    TemplateVariant inherits() const
+    {
+      if (!m_cache.inheritsList)
+      {
+        m_cache.inheritsList.reset(new InheritanceListContext(m_classDef->baseClasses(),TRUE));
+      }
+      return m_cache.inheritsList.get();
+    }
+    TemplateVariant inheritedBy() const
+    {
+      if (!m_cache.inheritedByList)
+      {
+        m_cache.inheritedByList.reset(new InheritanceListContext(m_classDef->subClasses(),FALSE));
+      }
+      return m_cache.inheritedByList.get();
+    }
+    TemplateVariant getMemberList(ScopedPtr<MemberListInfoContext> &list,
+                                  MemberListType type,const char *title) const
+    {
+      if (!list)
+      {
+        MemberList *ml = m_classDef->getMemberList(type);
+        if (ml)
+        {
+          list.reset(new MemberListInfoContext(ml,title));
+        }
+      }
+      if (list)
+      {
+        return list.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant unoIDLServices() const
+    {
+      return getMemberList(m_cache.unoIDLServices,MemberListType_services,theTranslator->trServices());
+    }
+    TemplateVariant unoIDLInterfaces() const
+    {
+      return getMemberList(m_cache.unoIDLInterfaces,MemberListType_interfaces,theTranslator->trInterfaces());
+    }
+    TemplateVariant signals() const
+    {
+      return getMemberList(m_cache.signals,MemberListType_signals,theTranslator->trSignals());
+    }
+    TemplateVariant publicTypes() const
+    {
+      return getMemberList(m_cache.publicTypes,MemberListType_pubTypes,theTranslator->trPublicTypes());
+    }
+    TemplateVariant publicMethods() const
+    {
+      return getMemberList(m_cache.publicMethods,MemberListType_pubMethods,
+          m_classDef->getLanguage()==SrcLangExt_ObjC ? theTranslator->trInstanceMethods()
+                                                     : theTranslator->trPublicMembers());
+    }
+    TemplateVariant publicStaticMethods() const
+    {
+      return getMemberList(m_cache.publicStaticMethods,MemberListType_pubStaticMethods,
+          m_classDef->getLanguage()==SrcLangExt_ObjC ? theTranslator->trClassMethods()
+                                                     : theTranslator->trStaticPublicMembers());
+    }
+    TemplateVariant publicAttributes() const
+    {
+      return getMemberList(m_cache.publicAttributes,MemberListType_pubAttribs,theTranslator->trPublicAttribs());
+    }
+    TemplateVariant publicStaticAttributes() const
+    {
+      return getMemberList(m_cache.publicStaticAttributes,MemberListType_pubStaticAttribs,theTranslator->trStaticPublicAttribs());
+    }
+    TemplateVariant publicSlots() const
+    {
+      return getMemberList(m_cache.publicSlots,MemberListType_pubSlots,theTranslator->trPublicSlots());
+    }
+    TemplateVariant protectedTypes() const
+    {
+      return getMemberList(m_cache.protectedTypes,MemberListType_proTypes,theTranslator->trProtectedTypes());
+    }
+    TemplateVariant protectedMethods() const
+    {
+      return getMemberList(m_cache.protectedMethods,MemberListType_proMethods,theTranslator->trProtectedMembers());
+    }
+    TemplateVariant protectedStaticMethods() const
+    {
+      return getMemberList(m_cache.protectedStaticMethods,MemberListType_proStaticMethods,theTranslator->trStaticProtectedMembers());
+    }
+    TemplateVariant protectedAttributes() const
+    {
+      return getMemberList(m_cache.protectedAttributes,MemberListType_proAttribs,theTranslator->trProtectedAttribs());
+    }
+    TemplateVariant protectedStaticAttributes() const
+    {
+      return getMemberList(m_cache.protectedStaticAttributes,MemberListType_proStaticAttribs,theTranslator->trStaticProtectedAttribs());
+    }
+    TemplateVariant protectedSlots() const
+    {
+      return getMemberList(m_cache.protectedSlots,MemberListType_proSlots,theTranslator->trProtectedSlots());
+    }
+    TemplateVariant privateTypes() const
+    {
+      return getMemberList(m_cache.privateTypes,MemberListType_priTypes,theTranslator->trPrivateTypes());
+    }
+    TemplateVariant privateSlots() const
+    {
+      return getMemberList(m_cache.privateSlots,MemberListType_priSlots,theTranslator->trPrivateSlots());
+    }
+    TemplateVariant privateMethods() const
+    {
+      return getMemberList(m_cache.privateMethods,MemberListType_priMethods,theTranslator->trPrivateMembers());
+    }
+    TemplateVariant privateStaticMethods() const
+    {
+      return getMemberList(m_cache.privateStaticMethods,MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers());
+    }
+    TemplateVariant privateAttributes() const
+    {
+      return getMemberList(m_cache.privateAttributes,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
+    }
+    TemplateVariant privateStaticAttributes() const
+    {
+      return getMemberList(m_cache.privateStaticAttributes,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
+    }
+    TemplateVariant packageTypes() const
+    {
+      return getMemberList(m_cache.packageTypes,MemberListType_pacTypes,theTranslator->trPackageTypes());
+    }
+    TemplateVariant packageMethods() const
+    {
+      return getMemberList(m_cache.packageMethods,MemberListType_pacMethods,theTranslator->trPackageMembers());
+    }
+    TemplateVariant packageStaticMethods() const
+    {
+      return getMemberList(m_cache.packageStaticMethods,MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers());
+    }
+    TemplateVariant packageAttributes() const
+    {
+      return getMemberList(m_cache.packageAttributes,MemberListType_pacAttribs,theTranslator->trPackageAttribs());
+    }
+    TemplateVariant packageStaticAttributes() const
+    {
+      return getMemberList(m_cache.packageStaticAttributes,MemberListType_pacStaticAttribs,theTranslator->trStaticPackageAttribs());
+    }
+    TemplateVariant properties() const
+    {
+      return getMemberList(m_cache.properties,MemberListType_properties,theTranslator->trProperties());
+    }
+    TemplateVariant events() const
+    {
+      return getMemberList(m_cache.events,MemberListType_events,theTranslator->trEvents());
+    }
+    TemplateVariant friends() const
+    {
+      return getMemberList(m_cache.events,MemberListType_friends,theTranslator->trFriends());
+    }
+    TemplateVariant related() const
+    {
+      return getMemberList(m_cache.events,MemberListType_related,theTranslator->trRelatedFunctions());
+    }
+    TemplateVariant nestedClasses() const
+    {
+      static bool extractPrivate      = Config_getBool("EXTRACT_PRIVATE");
+      static bool hideUndocClasses    = Config_getBool("HIDE_UNDOC_CLASSES");
+      static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
+      if (!m_cache.nestedClasses)
+      {
+        if (m_classDef->getClassSDict())
+        {
+          NestedClassListContext *classList = new NestedClassListContext;
+          ClassSDict::Iterator sdi(*m_classDef->getClassSDict());
+          ClassDef *cd;
+          for (sdi.toFirst();(cd=sdi.current());++sdi)
+          {
+            bool linkable = cd->isLinkable();
+            if (cd->name().find('@')==-1 && !cd->isExtension() &&
+                (cd->protection()!=::Private || extractPrivate) &&
+                (linkable ||
+                 (!hideUndocClasses && (!cd->isLocal() || extractLocalClasses)))
+               )
+            {
+              classList->append(cd);
+            }
+          }
+          m_cache.nestedClasses.reset(classList);
+        }
+      }
+      if (m_cache.nestedClasses)
+      {
+        return m_cache.nestedClasses.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant compoundType() const
+    {
+      return m_classDef->compoundTypeString();
+    }
+    void addTemplateDecls(Definition *d,TemplateList *tl) const
+    {
+      if (d->definitionType()==Definition::TypeClass)
+      {
+        Definition *parent = d->getOuterScope();
+        if (parent)
+        {
+          addTemplateDecls(parent,tl);
+        }
+        ClassDef *cd=(ClassDef *)d;
+        if (cd->templateArguments())
+        {
+          ArgumentListContext *al = new ArgumentListContext(cd->templateArguments());
+          // since a TemplateVariant does take ownership of the object, we add it
+          // a separate list just to be able to delete it and avoid a memory leak
+          m_cache.templateArgList.append(al);
+          tl->append(al);
+        }
+      }
+    }
+    TemplateVariant templateDecls() const
+    {
+      if (!m_cache.templateDecls)
+      {
+        TemplateList *tl = new TemplateList;
+        addTemplateDecls(m_classDef,tl);
+        m_cache.templateDecls.reset(tl);
+      }
+      if (m_cache.templateDecls)
+      {
+        return m_cache.templateDecls.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+
   private:
     ClassDef *m_classDef;
+    UsedFilesContext m_usedFiles;
+    IncludeInfoContext m_includeInfo;
+    struct Cachable
+    {
+      Cachable() : inheritanceNodes(-1) { templateArgList.setAutoDelete(TRUE); }
+      ScopedPtr<InheritanceListContext> inheritsList;
+      ScopedPtr<InheritanceListContext> inheritedByList;
+      ScopedPtr<DotClassGraph> classGraph;
+      ScopedPtr<DotClassGraph> collaborationGraph;
+      ScopedPtr<NestedClassListContext> nestedClasses;
+      ScopedPtr<MemberListInfoContext> publicTypes;
+      ScopedPtr<MemberListInfoContext> publicMethods;
+      ScopedPtr<MemberListInfoContext> publicStaticMethods;
+      ScopedPtr<MemberListInfoContext> publicAttributes;
+      ScopedPtr<MemberListInfoContext> publicStaticAttributes;
+      ScopedPtr<MemberListInfoContext> publicSlots;
+      ScopedPtr<MemberListInfoContext> protectedTypes;
+      ScopedPtr<MemberListInfoContext> protectedMethods;
+      ScopedPtr<MemberListInfoContext> protectedStaticMethods;
+      ScopedPtr<MemberListInfoContext> protectedAttributes;
+      ScopedPtr<MemberListInfoContext> protectedStaticAttributes;
+      ScopedPtr<MemberListInfoContext> protectedSlots;
+      ScopedPtr<MemberListInfoContext> privateTypes;
+      ScopedPtr<MemberListInfoContext> privateMethods;
+      ScopedPtr<MemberListInfoContext> privateStaticMethods;
+      ScopedPtr<MemberListInfoContext> privateAttributes;
+      ScopedPtr<MemberListInfoContext> privateStaticAttributes;
+      ScopedPtr<MemberListInfoContext> privateSlots;
+      ScopedPtr<MemberListInfoContext> packageTypes;
+      ScopedPtr<MemberListInfoContext> packageMethods;
+      ScopedPtr<MemberListInfoContext> packageStaticMethods;
+      ScopedPtr<MemberListInfoContext> packageAttributes;
+      ScopedPtr<MemberListInfoContext> packageStaticAttributes;
+      ScopedPtr<MemberListInfoContext> unoIDLServices;
+      ScopedPtr<MemberListInfoContext> unoIDLInterfaces;
+      ScopedPtr<MemberListInfoContext> signals;
+      ScopedPtr<MemberListInfoContext> properties;
+      ScopedPtr<MemberListInfoContext> events;
+      ScopedPtr<MemberListInfoContext> friends;
+      ScopedPtr<MemberListInfoContext> related;
+      ScopedPtr<TemplateList> templateDecls;
+      int inheritanceNodes;
+      QList<ArgumentListContext> templateArgList;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
 ClassContext::ClassContext(ClassDef *cd)
 {
+  //printf("ClassContext::ClassContext(%s)\n",cd?cd->name().data():"<none>");
   p = new Private(cd);
 }
 
@@ -610,11 +1342,11 @@ TemplateVariant ClassContext::get(const char *n) const
 class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Private>
 {
   public:
-    Private(NamespaceDef *nd) : DefinitionContext(this,nd) , m_namespaceDef(nd)
+    Private(NamespaceDef *nd) : DefinitionContext(nd) , m_namespaceDef(nd)
     {
-      insert("title",     new PropertyFunc(this,&Private::title));
-      insert("highlight", new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight", new PropertyFunc(this,&Private::subHighlight));
+      addProperty("title",this,&Private::title);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subHighlight);
     }
     TemplateVariant title() const
     {
@@ -655,15 +1387,16 @@ TemplateVariant NamespaceContext::get(const char *n) const
 class FileContext::Private : public DefinitionContext<FileContext::Private>
 {
   public:
-    Private(FileDef *fd) : DefinitionContext(this,fd) , m_fileDef(fd)
+    Private(FileDef *fd) : DefinitionContext(fd) , m_fileDef(fd)
     {
-      insert("title",     new PropertyFunc(this,&Private::title));
-      insert("highlight", new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight", new PropertyFunc(this,&Private::subHighlight));
+      addProperty("title",this,&Private::title);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subHighlight);
+      addProperty("versionInfo",this,&Private::versionInfo);
     }
     TemplateVariant title() const
     {
-      return TemplateVariant(m_fileDef->title());
+      return m_fileDef->title();
     }
     TemplateVariant highlight() const
     {
@@ -672,6 +1405,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant subHighlight() const
     {
       return TemplateVariant("");
+    }
+    TemplateVariant versionInfo() const
+    {
+      return m_fileDef->getVersion();
     }
   private:
     FileDef *m_fileDef;
@@ -700,12 +1437,12 @@ TemplateVariant FileContext::get(const char *n) const
 class DirContext::Private : public DefinitionContext<DirContext::Private>
 {
   public:
-    Private(DirDef *dd) : DefinitionContext(this,dd) , m_dirDef(dd)
+    Private(DirDef *dd) : DefinitionContext(dd) , m_dirDef(dd)
     {
-      insert("title",        new PropertyFunc(this,&Private::title));
-      insert("highlight",    new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight", new PropertyFunc(this,&Private::subHighlight));
-      insert("dirName",      new PropertyFunc(this,&Private::dirName));
+      addProperty("title",this,&Private::title);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subHighlight);
+      addProperty("dirName",this,&Private::dirName);
     }
     TemplateVariant title() const
     {
@@ -751,11 +1488,11 @@ TemplateVariant DirContext::get(const char *n) const
 class PageContext::Private : public DefinitionContext<PageContext::Private>
 {
   public:
-    Private(PageDef *pd) : DefinitionContext(this,pd) , m_pageDef(pd)
+    Private(PageDef *pd) : DefinitionContext(pd) , m_pageDef(pd)
     {
-      insert("title",     new PropertyFunc(this,&Private::title));
-      insert("highlight", new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight", new PropertyFunc(this,&Private::subHighlight));
+      addProperty("title",this,&Private::title);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subHighlight);
     }
     TemplateVariant title() const
     {
@@ -791,16 +1528,266 @@ TemplateVariant PageContext::get(const char *n) const
 
 //------------------------------------------------------------------------
 
+class TextGeneratorHtml : public TextGeneratorIntf
+{
+  public:
+    TextGeneratorHtml(FTextStream &ts,const QCString &relPath)
+       : m_ts(ts), m_relPath(relPath) {}
+    void writeString(const char *s,bool keepSpaces) const
+    {
+      if (s==0) return;
+      //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
+      if (keepSpaces)
+      {
+        const char *p=s;
+        char c;
+        while ((c=*p++))
+        {
+          switch(c)
+          {
+            case '<':  m_ts << "&lt;"; break;
+            case '>':  m_ts << "&gt;"; break;
+            case '\'': m_ts << "&#39;"; break;
+            case '"':  m_ts << "&quot;"; break;
+            case '&':  m_ts << "&amp;"; break;
+            case ' ':  m_ts << "&#160;"; break;
+          }
+        }
+      }
+      else
+      {
+        m_ts << convertToHtml(s);
+      }
+    }
+
+    void writeBreak(int indent) const
+    {
+      m_ts << "<br/>";
+      for (int i=0;i<indent;i++)
+      {
+        m_ts << "&#160;";
+      }
+    }
+
+    void writeLink(const char *ref,const char *f,
+                   const char *anchor,const char *name
+                  ) const
+    {
+      if (ref)
+      {
+        m_ts << "<a class=\"elRef\" ";
+        m_ts << externalLinkTarget() << externalRef(m_relPath,ref,FALSE);
+      }
+      else
+      {
+        m_ts << "<a class=\"el\" ";
+      }
+      m_ts << "href=\"";
+      m_ts << externalRef(m_relPath,ref,TRUE);
+      if (f) m_ts << f << Doxygen::htmlFileExtension;
+      if (anchor) m_ts << "#" << anchor;
+      m_ts << "\">";
+      m_ts << convertToHtml(name);
+      m_ts << "</a>";
+    }
+
+  private:
+    FTextStream &m_ts;
+    QCString m_relPath;
+};
+
+class TextGeneratorFactory
+{
+  public:
+    static TextGeneratorFactory *instance()
+    {
+      static TextGeneratorFactory *instance = 0;
+      if (instance==0) instance = new TextGeneratorFactory;
+      return instance;
+    }
+    TextGeneratorIntf *create(FTextStream &ts,const QCString &relPath)
+    {
+      switch (g_globals.outputFormat)
+      {
+        case ContextGlobals::Html:
+          return new TextGeneratorHtml(ts,relPath);
+          break;
+        default:
+          break;
+      }
+      return 0;
+    }
+  private:
+    TextGeneratorFactory() {}
+    virtual ~TextGeneratorFactory() {}
+};
+
+TemplateVariant createLinkedText(Definition *def,const QCString &relPath,const QCString &text)
+{
+  QGString s;
+  FTextStream ts(&s);
+  TextGeneratorIntf *tg = TextGeneratorFactory::instance()->create(ts,relPath);
+  if (tg)
+  {
+    linkifyText(*tg,def->getOuterScope(),def->getBodyDef(),def,text);
+    return TemplateVariant(s.data(),TRUE);
+  }
+  else
+  {
+    return text;
+  }
+}
+
+//%% struct Member(Symbol): member information
+//%% {
+class MemberContext::Private : public DefinitionContext<MemberContext::Private>
+{
+  public:
+    Private(MemberDef *md) : DefinitionContext(md) , m_memberDef(md)
+    {
+      addProperty("declType",          this,&Private::declType);
+      addProperty("declArgs",          this,&Private::declArgs);
+      addProperty("isStatic",          this,&Private::isStatic);
+      addProperty("isObjCMethod",      this,&Private::isObjCMethod);
+      addProperty("isObjCProperty",    this,&Private::isObjCProperty);
+      addProperty("isImplementation",  this,&Private::isImplementation);
+      addProperty("isEvent",           this,&Private::isEvent);
+      addProperty("isProperty",        this,&Private::isProperty);
+      addProperty("hasDetails",        this,&Private::hasDetails);
+      addProperty("exception",         this,&Private::exception);
+      addProperty("bitfields",         this,&Private::bitfields);
+      addProperty("initializer",       this,&Private::initializer);
+      addProperty("oneLineInitializer",this,&Private::oneLineInitializer);
+      addProperty("templateArgs",      this,&Private::templateArgs);
+      addProperty("templateAlias",     this,&Private::templateAlias);
+      addProperty("propertyAttrs",     this,&Private::propertyAttrs);
+      addProperty("eventAttrs",        this,&Private::eventAttrs);
+
+      if (md && md->isProperty())
+      {
+        if (md->isGettable()) m_propertyAttrs.append("get");
+        if (md->isSettable()) m_propertyAttrs.append("set");
+      }
+      if (md && md->isEvent())
+      {
+        if (md->isAddable())   m_eventAttrs.append("add");
+        if (md->isRemovable()) m_eventAttrs.append("remove");
+        if (md->isRaisable())  m_eventAttrs.append("raise");
+      }
+    }
+    TemplateVariant declType() const
+    {
+      return createLinkedText(m_memberDef,relPathAsString(),m_memberDef->getDeclType());
+    }
+    TemplateVariant declArgs() const
+    {
+      return createLinkedText(m_memberDef,relPathAsString(),m_memberDef->argsString());
+    }
+    TemplateVariant exception() const
+    {
+      return createLinkedText(m_memberDef,relPathAsString(),m_memberDef->excpString());
+    }
+    TemplateVariant bitfields() const
+    {
+      return createLinkedText(m_memberDef,relPathAsString(),m_memberDef->bitfieldString());
+    }
+    TemplateVariant isStatic() const
+    {
+      return m_memberDef->isStatic();
+    }
+    TemplateVariant isObjCMethod() const
+    {
+      return m_memberDef->isObjCMethod();
+    }
+    TemplateVariant isObjCProperty() const
+    {
+      return m_memberDef->isObjCProperty();
+    }
+    TemplateVariant isImplementation() const
+    {
+      return m_memberDef->isImplementation();
+    }
+    TemplateVariant isEvent() const
+    {
+      return m_memberDef->isEvent();
+    }
+    TemplateVariant isProperty() const
+    {
+      return m_memberDef->isProperty();
+    }
+    TemplateVariant hasDetails() const
+    {
+      return m_memberDef->isDetailedSectionLinkable();
+    }
+    TemplateVariant initializer() const
+    {
+      return m_memberDef->initializer();
+    }
+    TemplateVariant oneLineInitializer() const
+    {
+      return m_memberDef->hasOneLineInitializer();
+    }
+    TemplateVariant templateArgs() const
+    {
+      if (!m_templateArgs)
+      {
+        m_templateArgs.reset(new ArgumentListContext(m_memberDef->templateArguments()));
+      }
+      return m_templateArgs.get();
+    }
+    TemplateVariant templateAlias() const
+    {
+      if (m_memberDef->isAlias())
+      {
+        return createLinkedText(m_memberDef,relPathAsString(),
+                                QCString(" = ")+m_memberDef->typeString());
+      }
+      return "";
+    }
+    TemplateVariant propertyAttrs() const
+    {
+      return &m_propertyAttrs;
+    }
+    TemplateVariant eventAttrs() const
+    {
+      return &m_eventAttrs;
+    }
+  private:
+    MemberDef *m_memberDef;
+    mutable ScopedPtr<ArgumentListContext> m_templateArgs;
+    TemplateList m_propertyAttrs;
+    TemplateList m_eventAttrs;
+};
+//%% }
+
+MemberContext::MemberContext(MemberDef *md)
+{
+  p = new Private(md);
+}
+
+MemberContext::~MemberContext()
+{
+  delete p;
+}
+
+TemplateVariant MemberContext::get(const char *n) const
+{
+  return p->get(n);
+}
+
+
+//------------------------------------------------------------------------
+
 //%% struct Module(Symbol): group information
 //%% {
 class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
 {
   public:
-    Private(GroupDef *gd) : DefinitionContext(this,gd) , m_groupDef(gd)
+    Private(GroupDef *gd) : DefinitionContext(gd) , m_groupDef(gd)
     {
-      insert("title",     new PropertyFunc(this,&Private::title));
-      insert("highlight", new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight", new PropertyFunc(this,&Private::subHighlight));
+      addProperty("title",this,&Private::title);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subHighlight);
     }
     TemplateVariant title() const
     {
@@ -836,6 +1823,47 @@ TemplateVariant ModuleContext::get(const char *n) const
 
 //------------------------------------------------------------------------
 
+//%% list NestedClassList[Class] : list of nested classes
+class NestedClassListContext::Private : public GenericNodeListContext<ClassContext>
+{
+};
+
+NestedClassListContext::NestedClassListContext()
+{
+  p = new Private;
+}
+
+NestedClassListContext::~NestedClassListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int NestedClassListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant NestedClassListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *NestedClassListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+void NestedClassListContext::append(ClassDef *cd)
+{
+  if (cd)
+  {
+    p->append(new ClassContext(cd));
+  }
+}
+
+//------------------------------------------------------------------------
+
 //%% list ClassList[Class] : list of classes
 class ClassListContext::Private : public GenericNodeListContext<ClassContext>
 {
@@ -846,8 +1874,8 @@ class ClassListContext::Private : public GenericNodeListContext<ClassContext>
       ClassDef *cd;
       for (cli.toFirst() ; (cd=cli.current()) ; ++cli )
       {
-        if (cd->getLanguage()==SrcLangExt_VHDL && 
-            ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS || 
+        if (cd->getLanguage()==SrcLangExt_VHDL &&
+            ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
              (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
            ) // no architecture
         {
@@ -891,19 +1919,19 @@ TemplateListIntf::ConstIterator *ClassListContext::createIterator() const
 
 //------------------------------------------------------------------------
 
-//%% struct ClassInheritanceNode: node in inheritance tree 
+//%% struct ClassInheritanceNode: node in inheritance tree
 //%% {
-class ClassInheritanceNodeContext::Private : public PropertyMapper<ClassInheritanceNodeContext::Private>
+class ClassInheritanceNodeContext::Private : public PropertyMapper
 {
   public:
-    Private(ClassDef *cd) : m_classContext(cd) 
+    Private(ClassDef *cd) : m_classContext(cd)
     {
       //%% bool is_leaf_node: true if this node does not have any children
-      insert("is_leaf_node",  new PropertyFunc(this,&Private::isLeafNode));
+      addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% ClassInheritance children: list of nested classes/namespaces
-      insert("children",      new PropertyFunc(this,&Private::children));
+      addProperty("children",this,&Private::children);
       //%% Class class: class info
-      insert("class",         new PropertyFunc(this,&Private::getClass));
+      addProperty("class",this,&Private::getClass);
     }
     void addChildren(const BaseClassList *bcl,bool hideSuper)
     {
@@ -911,7 +1939,7 @@ class ClassInheritanceNodeContext::Private : public PropertyMapper<ClassInherita
       BaseClassListIterator bcli(*bcl);
       BaseClassDef *bcd;
       for (bcli.toFirst() ; (bcd=bcli.current()) ; ++bcli)
-      {    
+      {
         ClassDef *cd=bcd->classDef;
         if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
         {
@@ -938,11 +1966,11 @@ class ClassInheritanceNodeContext::Private : public PropertyMapper<ClassInherita
             //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
             bool wasVisited=cd->visited;
             cd->visited=TRUE;
-            if (cd->getLanguage()==SrcLangExt_VHDL)	
+            if (cd->getLanguage()==SrcLangExt_VHDL)
             {
               tnc->addChildren(cd->baseClasses(),wasVisited);
             }
-            else       
+            else
             {
               tnc->addChildren(cd->subClasses(),wasVisited);
             }
@@ -968,7 +1996,7 @@ class ClassInheritanceNodeContext::Private : public PropertyMapper<ClassInherita
 };
 //%% }
 
-ClassInheritanceNodeContext::ClassInheritanceNodeContext(ClassDef *cd) 
+ClassInheritanceNodeContext::ClassInheritanceNodeContext(ClassDef *cd)
 {
   p = new Private(cd);
 }
@@ -1004,7 +2032,7 @@ class ClassInheritanceContext::Private : public
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          if (!(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS)      
+          if (!(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS)
           {
             continue;
           }
@@ -1021,8 +2049,8 @@ class ClassInheritanceContext::Private : public
             // new root level class
             ClassInheritanceNodeContext *tnc = new ClassInheritanceNodeContext(cd);
             append(tnc);
-            bool hasChildren = !cd->visited && classHasVisibleChildren(cd); 
-            if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren) 
+            bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
+            if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
             {
               tnc->addChildren(cd->baseClasses(),cd->visited);
               cd->visited=TRUE;
@@ -1075,9 +2103,9 @@ TemplateListIntf::ConstIterator *ClassInheritanceContext::createIterator() const
 
 //------------------------------------------------------------------------
 
-//%% struct ClassHierarchy: inheritance tree 
+//%% struct ClassHierarchy: inheritance tree
 //%% {
-class ClassHierarchyContext::Private : public PropertyMapper<ClassHierarchyContext::Private>
+class ClassHierarchyContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant tree() const
@@ -1102,7 +2130,7 @@ class ClassHierarchyContext::Private : public PropertyMapper<ClassHierarchyConte
     }
     TemplateVariant title() const
     {
-      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
       if (vhdlOpt)
       {
         return VhdlDocGen::trDesignUnitHierarchy();
@@ -1115,12 +2143,12 @@ class ClassHierarchyContext::Private : public PropertyMapper<ClassHierarchyConte
     Private()
     {
       //%% ClassInheritance tree
-      insert("tree",new PropertyFunc(this,&Private::tree));
-      insert("fileName",new PropertyFunc(this,&Private::fileName));
-      insert("relPath",new PropertyFunc(this,&Private::relPath));
-      insert("highlight",new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",new PropertyFunc(this,&Private::title));
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     ClassInheritanceContext m_classTree;
@@ -1146,21 +2174,21 @@ TemplateVariant ClassHierarchyContext::get(const char *name) const
 
 //%% struct NestingNode: node is a nesting relation tree
 //%% {
-class NestingNodeContext::Private : public PropertyMapper<NestingNodeContext::Private>
+class NestingNodeContext::Private : public PropertyMapper
 {
   public:
-    Private(Definition *d,bool addCls) : m_def(d), 
+    Private(Definition *d,bool addCls) : m_def(d),
        m_classContext(m_def->definitionType()==Definition::TypeClass?(ClassDef*)d:0),
        m_namespaceContext(m_def->definitionType()==Definition::TypeNamespace?(NamespaceDef*)d:0)
     {
       //%% bool is_leaf_node: true if this node does not have any children
-      insert("is_leaf_node",  new PropertyFunc(this,&Private::isLeafNode));
+      addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% Nesting children: list of nested classes/namespaces
-      insert("children",      new PropertyFunc(this,&Private::children));
+      addProperty("children",this,&Private::children);
       //%% [optional] Class class: class info (if this node represents a class)
-      insert("class",         new PropertyFunc(this,&Private::getClass));
+      addProperty("class",this,&Private::getClass);
       //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
-      insert("namespace",     new PropertyFunc(this,&Private::getNamespace));
+      addProperty("namespace",this,&Private::getNamespace);
       addNamespaces(addCls);
       addClasses();
     }
@@ -1222,7 +2250,7 @@ class NestingNodeContext::Private : public PropertyMapper<NestingNodeContext::Pr
 };
 //%% }
 
-NestingNodeContext::NestingNodeContext(Definition *d,bool addClass) 
+NestingNodeContext::NestingNodeContext(Definition *d,bool addClass)
 {
   p = new Private(d,addClass);
 }
@@ -1268,21 +2296,21 @@ class NestingContext::Private : public GenericNodeListContext<NestingNodeContext
       ClassDef *cd;
       for (;(cd=cli.current());++cli)
       {
-        if (cd->getLanguage()==SrcLangExt_VHDL) 
+        if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS || 
+          if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
               (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
              )// no architecture
           {
             continue;
           }
         }
-        if (!rootOnly || 
-            cd->getOuterScope()==0 || 
-            cd->getOuterScope()==Doxygen::globalScope 
-           ) 
+        if (!rootOnly ||
+            cd->getOuterScope()==0 ||
+            cd->getOuterScope()==Doxygen::globalScope
+           )
         {
-          if (classVisibleInIndex(cd) && cd->templateMaster()==0) 
+          if (classVisibleInIndex(cd) && cd->templateMaster()==0)
           {
             NestingNodeContext *nnc = new NestingNodeContext(cd,TRUE);
             append(nnc);
@@ -1332,7 +2360,7 @@ void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bo
 
 //%% struct ClassTree: Class nesting relations
 //%% {
-class ClassTreeContext::Private : public PropertyMapper<ClassTreeContext::Private>
+class ClassTreeContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant tree() const
@@ -1358,8 +2386,8 @@ class ClassTreeContext::Private : public PropertyMapper<ClassTreeContext::Privat
     TemplateVariant title() const
     {
       static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-      if (fortranOpt) 
+      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+      if (fortranOpt)
       {
         return theTranslator->trCompoundListFortran();
       }
@@ -1383,12 +2411,12 @@ class ClassTreeContext::Private : public PropertyMapper<ClassTreeContext::Privat
         m_classTree.addClasses(*Doxygen::classSDict,TRUE);
       }
       //%% Nesting tree
-      insert("tree",        new PropertyFunc(this,&Private::tree));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     NestingContext m_classTree;
@@ -1461,7 +2489,7 @@ TemplateListIntf::ConstIterator *NamespaceListContext::createIterator() const
 
 //%% struct NamespaceTree: tree of nested namespace
 //%% {
-class NamespaceTreeContext::Private : public PropertyMapper<NamespaceTreeContext::Private>
+class NamespaceTreeContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant tree() const
@@ -1488,8 +2516,8 @@ class NamespaceTreeContext::Private : public PropertyMapper<NamespaceTreeContext
     {
       static bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-      if (javaOpt || vhdlOpt) 
+      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+      if (javaOpt || vhdlOpt)
       {
         return theTranslator->trPackages();
       }
@@ -1509,12 +2537,12 @@ class NamespaceTreeContext::Private : public PropertyMapper<NamespaceTreeContext
         m_namespaceTree.addNamespaces(*Doxygen::namespaceSDict,TRUE,FALSE);
       }
       //%% Nesting tree
-      insert("tree",        new PropertyFunc(this,&Private::tree));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     NestingContext m_namespaceTree;
@@ -1594,23 +2622,76 @@ TemplateListIntf::ConstIterator *FileListContext::createIterator() const
 
 //------------------------------------------------------------------------
 
-//%% struct DirFileNode: node is a directory hierarchy
-//%% {
-class DirFileNodeContext::Private : public PropertyMapper<DirFileNodeContext::Private>
+//%% list UsedFiles[File] : list of files
+class UsedFilesContext::Private : public GenericNodeListContext<FileContext>
 {
   public:
-    Private(Definition *d) : m_def(d), 
+    void addFile(FileDef *fd)
+    {
+      append(new FileContext(fd));
+    }
+};
+
+UsedFilesContext::UsedFilesContext(ClassDef *cd)
+{
+  p = new Private;
+  if (cd)
+  {
+    QListIterator<FileDef> li(cd->usedFiles());
+    FileDef *fd;
+    for (li.toFirst();(fd=li.current());++li)
+    {
+      p->addFile(fd);
+    }
+  }
+}
+
+UsedFilesContext::~UsedFilesContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int UsedFilesContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant UsedFilesContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *UsedFilesContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+void UsedFilesContext::addFile(FileDef *fd)
+{
+  p->addFile(fd);
+}
+
+//------------------------------------------------------------------------
+
+
+//%% struct DirFileNode: node is a directory hierarchy
+//%% {
+class DirFileNodeContext::Private : public PropertyMapper
+{
+  public:
+    Private(Definition *d) : m_def(d),
        m_dirContext (m_def->definitionType()==Definition::TypeDir  ? (DirDef*)d  : 0),
        m_fileContext(m_def->definitionType()==Definition::TypeFile ? (FileDef*)d : 0)
     {
       //%% bool is_leaf_node: true if this node does not have any children
-      insert("is_leaf_node",  new PropertyFunc(this,&Private::isLeafNode));
+      addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% DirFile children: list of nested classes/namespaces
-      insert("children",      new PropertyFunc(this,&Private::children));
+      addProperty("children",this,&Private::children);
       //%% [optional] Dir dir: directory info (if this node represents a directory)
-      insert("dir",           new PropertyFunc(this,&Private::getDir));
+      addProperty("dir",this,&Private::getDir);
       //%% [optional] File file: file info (if this node represents a file)
-      insert("file",          new PropertyFunc(this,&Private::getFile));
+      addProperty("file",this,&Private::getFile);
       addDirFiles();
     }
     TemplateVariant isLeafNode() const
@@ -1663,7 +2744,7 @@ class DirFileNodeContext::Private : public PropertyMapper<DirFileNodeContext::Pr
 };
 //%% }
 
-DirFileNodeContext::DirFileNodeContext(Definition *d) 
+DirFileNodeContext::DirFileNodeContext(Definition *d)
 {
   p = new Private(d);
 }
@@ -1691,7 +2772,7 @@ class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext
       DirDef *dd;
       for (dli.toFirst();(dd=dli.current());++dli)
       {
-        if (dd->getOuterScope()==Doxygen::globalScope) 
+        if (dd->getOuterScope()==Doxygen::globalScope)
         {
           append(new DirFileNodeContext(dd));
         }
@@ -1708,7 +2789,7 @@ class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext
     }
     void addFiles(const FileNameList &fnList)
     {
-      FileNameListIterator fnli(fnList); 
+      FileNameListIterator fnli(fnList);
       FileName *fn;
       for (fnli.toFirst();(fn=fnli.current());++fnli)
       {
@@ -1785,7 +2866,7 @@ void DirFileContext::addFiles(const FileList &files)
 
 //%% struct FileTree: tree of directories and files
 //%% {
-class FileTreeContext::Private : public PropertyMapper<FileTreeContext::Private>
+class FileTreeContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant tree() const
@@ -1824,12 +2905,12 @@ class FileTreeContext::Private : public PropertyMapper<FileTreeContext::Private>
         m_dirFileTree.addFiles(*Doxygen::inputNameList);
       }
       //%% DirFile tree:
-      insert("tree",        new PropertyFunc(this,&Private::tree));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     DirFileContext m_dirFileTree;
@@ -1855,17 +2936,17 @@ TemplateVariant FileTreeContext::get(const char *name) const
 
 //%% struct PageNode: node is a directory hierarchy
 //%% {
-class PageNodeContext::Private : public PropertyMapper<PageNodeContext::Private>
+class PageNodeContext::Private : public PropertyMapper
 {
   public:
     Private(PageDef *pd) : m_pageDef(pd), m_pageContext(pd)
     {
       //%% bool is_leaf_node: true if this node does not have any children
-      insert("is_leaf_node",  new PropertyFunc(this,&Private::isLeafNode));
+      addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% PageList children: list of nested classes/namespaces
-      insert("children",      new PropertyFunc(this,&Private::children));
+      addProperty("children",this,&Private::children);
       //%% Page page: page info
-      insert("page",          new PropertyFunc(this,&Private::getPage));
+      addProperty("page",this,&Private::getPage);
       addPages();
     }
     TemplateVariant isLeafNode() const
@@ -1894,7 +2975,7 @@ class PageNodeContext::Private : public PropertyMapper<PageNodeContext::Private>
 };
 //%% }
 
-PageNodeContext::PageNodeContext(PageDef *pd) 
+PageNodeContext::PageNodeContext(PageDef *pd)
 {
   p = new Private(pd);
 }
@@ -1922,7 +3003,7 @@ class PageNodeListContext::Private : public GenericNodeListContext<PageNodeConte
       for (pli.toFirst();(pd=pli.current());++pli)
       {
         if (!rootOnly ||
-            pd->getOuterScope()==0 || 
+            pd->getOuterScope()==0 ||
             pd->getOuterScope()->definitionType()!=Definition::TypePage)
         {
           append(new PageNodeContext(pd));
@@ -1966,7 +3047,7 @@ void PageNodeListContext::addPages(const PageSDict &pages,bool rootOnly)
 
 //%% struct PageTree: tree of related pages
 //%% {
-class PageTreeContext::Private : public PropertyMapper<PageTreeContext::Private>
+class PageTreeContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant tree() const
@@ -1995,19 +3076,19 @@ class PageTreeContext::Private : public PropertyMapper<PageTreeContext::Private>
     }
     Private()
     {
-      // Add pages 
+      // Add pages
       if (Doxygen::pageSDict)
       {
         m_pageList.addPages(*Doxygen::pageSDict,TRUE);
       }
 
       //%% PageNodeList tree:
-      insert("tree",        new PropertyFunc(this,&Private::tree));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     PageNodeListContext m_pageList;
@@ -2033,7 +3114,7 @@ TemplateVariant PageTreeContext::get(const char *name) const
 
 //%% struct PageList: list of related pages
 //%% {
-class PageListContext::Private : public PropertyMapper<PageListContext::Private>
+class PageListContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant items() const
@@ -2062,7 +3143,7 @@ class PageListContext::Private : public PropertyMapper<PageListContext::Private>
     }
     Private()
     {
-      // Add pages 
+      // Add pages
       PageSDict::Iterator pdi(*Doxygen::pageSDict);
       PageDef *pd=0;
       for (pdi.toFirst();(pd=pdi.current());++pdi)
@@ -2074,12 +3155,12 @@ class PageListContext::Private : public PropertyMapper<PageListContext::Private>
       }
 
       //%% list[Page] items:
-      insert("items",       new PropertyFunc(this,&Private::items));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("items",this,&Private::items);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     GenericNodeListContext<PageContext> m_pageList;
@@ -2106,17 +3187,17 @@ TemplateVariant PageListContext::get(const char *name) const
 
 //%% struct ModuleNode: node is a directory hierarchy
 //%% {
-class ModuleNodeContext::Private : public PropertyMapper<ModuleNodeContext::Private>
+class ModuleNodeContext::Private : public PropertyMapper
 {
   public:
     Private(GroupDef *gd) : m_groupDef(gd), m_moduleContext(gd)
     {
       //%% bool is_leaf_node: true if this node does not have any children
-      insert("is_leaf_node",  new PropertyFunc(this,&Private::isLeafNode));
+      addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% ModuleList children: list of submodules
-      insert("children",      new PropertyFunc(this,&Private::children));
+      addProperty("children",this,&Private::children);
       //%% Module module: module info
-      insert("module",        new PropertyFunc(this,&Private::getModule));
+      addProperty("module",this,&Private::getModule);
       addModules();
     }
     TemplateVariant isLeafNode() const
@@ -2145,7 +3226,7 @@ class ModuleNodeContext::Private : public PropertyMapper<ModuleNodeContext::Priv
 };
 //%% }
 
-ModuleNodeContext::ModuleNodeContext(GroupDef *gd) 
+ModuleNodeContext::ModuleNodeContext(GroupDef *gd)
 {
   p = new Private(gd);
 }
@@ -2231,7 +3312,7 @@ void ModuleListContext::addModules(const GroupList &modules)
 
 //%% struct ModuleTree: tree of modules
 //%% {
-class ModuleTreeContext::Private : public PropertyMapper<ModuleTreeContext::Private>
+class ModuleTreeContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant tree() const
@@ -2260,19 +3341,19 @@ class ModuleTreeContext::Private : public PropertyMapper<ModuleTreeContext::Priv
     }
     Private()
     {
-      // Add modules 
+      // Add modules
       if (Doxygen::groupSDict)
       {
         m_moduleList.addModules(*Doxygen::groupSDict);
       }
 
       //%% ModuleList tree:
-      insert("tree",        new PropertyFunc(this,&Private::tree));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     ModuleListContext m_moduleList;
@@ -2298,7 +3379,7 @@ TemplateVariant ModuleTreeContext::get(const char *name) const
 
 //%% struct ExampleList: list of examples page
 //%% {
-class ExampleListContext::Private : public PropertyMapper<ExampleListContext::Private>
+class ExampleListContext::Private : public PropertyMapper
 {
   public:
     TemplateVariant items() const
@@ -2327,19 +3408,19 @@ class ExampleListContext::Private : public PropertyMapper<ExampleListContext::Pr
     }
     Private()
     {
-      // Add pages 
+      // Add pages
       if (Doxygen::exampleSDict)
       {
         m_pageList.addPages(*Doxygen::exampleSDict,FALSE);
       }
 
       //%% PageNodeList items:
-      insert("items",       new PropertyFunc(this,&Private::items));
-      insert("fileName",    new PropertyFunc(this,&Private::fileName));
-      insert("relPath",     new PropertyFunc(this,&Private::relPath));
-      insert("highlight",   new PropertyFunc(this,&Private::highlight));
-      insert("subhighlight",new PropertyFunc(this,&Private::subhighlight));
-      insert("title",       new PropertyFunc(this,&Private::title));
+      addProperty("items",this,&Private::items);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
     }
   private:
     PageNodeListContext m_pageList;
@@ -2361,6 +3442,307 @@ TemplateVariant ExampleListContext::get(const char *name) const
   return p->get(name);
 }
 
+
+//------------------------------------------------------------------------
+
+//%% struct InheritanceNode: a class in the inheritance list
+//%% {
+class InheritanceNodeContext::Private : public PropertyMapper
+{
+  public:
+    Private(ClassDef *cd,const QCString &name) : m_classContext(cd), m_name(name)
+    {
+      addProperty("class",this,&Private::getClass);
+      addProperty("name",this,&Private::name);
+    }
+    TemplateVariant getClass() const
+    {
+      return &m_classContext;
+    }
+    TemplateVariant name() const
+    {
+      return m_name;
+    }
+  private:
+    ClassContext m_classContext;
+    QCString m_name;
+};
+//%% }
+
+InheritanceNodeContext::InheritanceNodeContext(ClassDef *cd,const QCString &name)
+{
+  p = new Private(cd,name);
+}
+
+InheritanceNodeContext::~InheritanceNodeContext()
+{
+  delete p;
+}
+
+TemplateVariant InheritanceNodeContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list InheritanceList[InheritanceNode] : list of inherited classes
+class InheritanceListContext::Private : public GenericNodeListContext<InheritanceNodeContext>
+{
+  public:
+    void addClass(ClassDef *cd,const QCString &name)
+    {
+      append(new InheritanceNodeContext(cd,name));
+    }
+};
+
+InheritanceListContext::InheritanceListContext(const BaseClassList *list, bool baseClasses)
+{
+  p = new Private;
+  if (list)
+  {
+    BaseClassListIterator li(*list);
+    BaseClassDef *bcd;
+    for (li.toFirst();(bcd=li.current());++li)
+    {
+      ClassDef *cd=bcd->classDef;
+      QCString name;
+      if (baseClasses)
+      {
+        name = insertTemplateSpecifierInScope(
+                     cd->displayName(),bcd->templSpecifiers);
+      }
+      else
+      {
+        name = cd->displayName();
+      }
+      //printf("InheritanceListContext: adding %s baseClass=%d\n",name.data(),baseClasses);
+      p->addClass(cd,name);
+    }
+  }
+}
+
+InheritanceListContext::~InheritanceListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int InheritanceListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant InheritanceListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *InheritanceListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+
+//------------------------------------------------------------------------
+
+//%% list MemberList[Member] : list of inherited classes
+class MemberListContext::Private : public GenericNodeListContext<MemberContext>
+{
+  public:
+    void addMember(MemberDef *md)
+    {
+      append(new MemberContext(md));
+    }
+};
+
+MemberListContext::MemberListContext(const MemberList *list)
+{
+  p = new Private;
+  if (list)
+  {
+    MemberListIterator mli(*list);
+    MemberDef *md;
+    for (mli.toFirst();(md=mli.current());++mli)
+    {
+      if (md->isBriefSectionVisible())
+      {
+        p->addMember(md);
+      }
+    }
+  }
+}
+
+MemberListContext::~MemberListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int MemberListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant MemberListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *MemberListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+//------------------------------------------------------------------------
+
+//%% struct MemberListInfo: member list information
+//%% {
+class MemberListInfoContext::Private : public PropertyMapper
+{
+  public:
+    Private(const MemberList *ml,const QCString &title,const QCString &subtitle) :
+      m_memberListContext(ml), m_memberList(ml), m_title(title), m_subtitle(subtitle)
+    {
+      addProperty("members", this,&Private::members);
+      addProperty("title",   this,&Private::title);
+      addProperty("subtitle",this,&Private::subtitle);
+      addProperty("anchor",  this,&Private::anchor);
+      // TODO: member groups
+    }
+    TemplateVariant members() const
+    {
+      return &m_memberListContext;
+    }
+    TemplateVariant title() const
+    {
+      return m_title;
+    }
+    TemplateVariant subtitle() const
+    {
+      return m_subtitle;
+    }
+    TemplateVariant anchor() const
+    {
+      return m_memberList->listTypeAsString(m_memberList->listType());
+    }
+  private:
+    MemberListContext m_memberListContext;
+    const MemberList *m_memberList;
+    QCString m_title;
+    QCString m_subtitle;
+};
+//%% }
+
+MemberListInfoContext::MemberListInfoContext(const MemberList *ml,
+           const QCString &title,const QCString &subtitle)
+{
+  p = new Private(ml,title,subtitle);
+}
+
+MemberListInfoContext::~MemberListInfoContext()
+{
+  delete p;
+}
+
+TemplateVariant MemberListInfoContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% struct Argument: member list information
+//%% {
+class ArgumentContext::Private : public PropertyMapper
+{
+  public:
+    Private(const Argument *arg) :
+      m_argument(arg)
+    {
+      addProperty("type",  this,&Private::type);
+      addProperty("name",  this,&Private::name);
+      addProperty("defVal",this,&Private::defVal);
+    }
+    TemplateVariant type() const
+    {
+      return m_argument->type;
+    }
+    TemplateVariant name() const
+    {
+      return m_argument->name;
+    }
+    TemplateVariant defVal() const
+    {
+      return m_argument->defval;
+    }
+  private:
+    const Argument *m_argument;
+};
+//%% }
+
+ArgumentContext::ArgumentContext(const Argument *al)
+{
+  p = new Private(al);
+}
+
+ArgumentContext::~ArgumentContext()
+{
+  delete p;
+}
+
+TemplateVariant ArgumentContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list ArgumentList[Argument] : list of inherited classes
+class ArgumentListContext::Private : public GenericNodeListContext<ArgumentContext>
+{
+  public:
+    void addArgument(const Argument *arg)
+    {
+      append(new ArgumentContext(arg));
+    }
+};
+
+ArgumentListContext::ArgumentListContext(const ArgumentList *list)
+{
+  p = new Private;
+  if (list)
+  {
+    ArgumentListIterator ali(*list);
+    const Argument *arg;
+    for (ali.toFirst();(arg=ali.current());++ali)
+    {
+      p->addArgument(arg);
+    }
+  }
+}
+
+ArgumentListContext::~ArgumentListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int ArgumentListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant ArgumentListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *ArgumentListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
 //------------------------------------------------------------------------
 
 class HtmlEscaper : public TemplateEscapeIntf
@@ -2374,12 +3756,78 @@ class HtmlEscaper : public TemplateEscapeIntf
 
 //------------------------------------------------------------------------
 
+class HtmlSpaceless : public TemplateSpacelessIntf
+{
+  public:
+    HtmlSpaceless() : m_insideTag(FALSE), m_insideString('\0'), m_removeSpaces(TRUE) {}
+    QCString remove(const QCString &s)
+    {
+      QGString result;
+      const char *p = s.data();
+      char c;
+      while ((c=*p++))
+      {
+        switch(c)
+        {
+          case '<': // start of a tag
+            if (!m_insideString) m_insideTag=TRUE,m_removeSpaces=FALSE;
+            result+=c;
+            break;
+          case '>': // end of a tag
+            if (!m_insideString) m_insideTag=FALSE,m_removeSpaces=TRUE;
+            result+=c;
+            break;
+          case '\\': // escaped character in a string
+            result+=c;
+            if (m_insideString && *p) result+=*p++;
+            break;
+          case '"': case '\'':
+            if (m_insideTag)
+            {
+              if (m_insideString==c) // end of string
+              {
+                m_insideString='\0';
+              }
+              else // start of string
+              {
+                m_insideString=c;
+              }
+            }
+            result+=c;
+            break;
+          case ' ': case '\t': case '\n': // whitespace
+            if (!m_removeSpaces)
+            {
+              result+=' ';
+            }
+            if (!m_insideTag) // outside tags strip consecutive whitespace
+            {
+              m_removeSpaces=TRUE;
+            }
+            break;
+          default:
+            result+=c;
+            m_removeSpaces=FALSE;
+            break;
+        }
+      }
+      result+='\0';
+      //printf("HtmlSpaceless::remove('%s')='%s' m_insideTag=%d m_insideString=%d removeSpaces=%d\n",s.data(),result.data(),
+      //    m_insideTag,m_insideString,m_removeSpaces);
+      return result.data();
+    }
+  private:
+    bool m_insideTag;
+    char m_insideString;
+    bool m_removeSpaces;
+};
+
+//------------------------------------------------------------------------
+
 void generateOutputViaTemplate()
 {
   TemplateEngine e;
   TemplateContext *ctx = e.createContext();
-  HtmlEscaper esc;
-  ctx->setEscapeIntf(&esc);
   if (ctx)
   {
     DoxygenContext        doxygen;
@@ -2431,7 +3879,14 @@ void generateOutputViaTemplate()
     Template *tpl = e.loadByName("htmllayout.tpl");
     if (tpl)
     {
-      ctx->setOutputDirectory(Config_getString("HTML_OUTPUT"));
+      g_globals.outputFormat = ContextGlobals::Html;
+      g_globals.dynSectionId    = 0;
+      g_globals.outputDir    = Config_getString("HTML_OUTPUT");
+      HtmlEscaper esc;
+      ctx->setEscapeIntf(&esc);
+      HtmlSpaceless spl;
+      ctx->setSpacelessIntf(&spl);
+      ctx->setOutputDirectory(g_globals.outputDir);
       FTextStream ts;
       tpl->render(ts,ctx);
     }

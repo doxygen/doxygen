@@ -1876,4 +1876,10 @@ void Definition::_setSymbolName(const QCString &name)
   m_symbolName=name; 
 }
 
+bool Definition::hasBriefDescription() const
+{
+  static bool briefMemberDesc = Config_getBool("BRIEF_MEMBER_DESC");
+  return !briefDescription().isEmpty() && briefMemberDesc;
+}
+
 

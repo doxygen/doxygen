@@ -260,6 +260,9 @@ class Definition : public DefinitionIntf
 
     bool hasSections() const;
 
+    /** returns TRUE if this class has a brief description */
+    bool hasBriefDescription() const;
+
     QCString id() const;
 
     //-----------------------------------------------------------------------------------
