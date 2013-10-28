@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\bin\Debug"
+			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -102,8 +102,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="..\bin\Debug64"
+			IntermediateDirectory=".\Debug64"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -181,8 +181,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="..\bin\Relase"
+			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -263,8 +263,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="..\bin\Relase64"
+			IntermediateDirectory=".\Release64"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
