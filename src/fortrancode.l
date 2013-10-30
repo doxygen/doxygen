@@ -381,6 +381,29 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   }
 }
 
+//-------------------------------------------------------------------------------
+/**
+  searches for definition of a module (Namespace)
+  @param mname the name of the module
+  @param cd the entry, if found or null
+  @returns true, if module is found 
+*/
+static bool getFortranNamespaceDefs(const QCString &mname, 
+                               NamespaceDef *&cd)
+{
+  if (mname.isEmpty()) return FALSE; /* empty name => nothing to link */
+
+  //cout << "=== search for type: " << tname << endl;
+
+  // search for module
+  if ((cd=Doxygen::namespaceSDict->find(mname))) 
+  {
+    // cout << "=== global module found " << mname  << endl;
+    return TRUE;
+  }
+
+  return FALSE;
+}
 
 //-------------------------------------------------------------------------------
 /**
@@ -557,6 +580,7 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
 static void generateLink(CodeOutputInterface &ol, char *lname)
 {
   ClassDef *cd=0;
+  NamespaceDef *nsd=0;
   QCString tmp = lname;
   tmp = removeRedundantWhiteSpace(tmp.lower());
  
@@ -573,6 +597,12 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
       writeMultiLineCodeLink(ol,cd,tmp);
       addToSearchIndex(tmp.data());
     }
+  }
+  // check for module
+  else if ( (getFortranNamespaceDefs(tmp, nsd)) && nsd->isLinkable() )
+  { // write module link
+    writeMultiLineCodeLink(ol,nsd,tmp);
+    addToSearchIndex(tmp.data());
   }
   // check for function/variable
   else if (getLink(useMembers, tmp, ol, tmp)) 
