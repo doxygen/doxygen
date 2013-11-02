@@ -1357,6 +1357,34 @@
 			<File
 				RelativePath="..\src\config.xml"
 				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Config"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
