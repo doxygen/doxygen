@@ -510,6 +510,20 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
 static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded)
 {
   //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
+  if (portable_isAbsolutePath(fileName))
+  {
+    FileState *fs = checkAndOpenFile(fileName,alreadyIncluded);
+    if (fs)
+    {
+      setFileName(fileName);
+      g_yyLineNr=1;
+      return fs;
+    }
+    else if (alreadyIncluded)
+    {
+      return 0;
+    }
+  }
   if (localInclude && !g_yyFileName.isEmpty())
   {
     QFileInfo fi(g_yyFileName);
