@@ -6488,7 +6488,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '}':  t << "\\}";           break;
         case '<':  t << "$<$";           break;
         case '>':  t << "$>$";           break;
-        case '|':  t << "$|$";           break;
+        case '|':  t << "$\\vert$";      break;
         case '~':  t << "$\\sim$";       break;
         case '[':  if (Config_getBool("PDF_HYPERLINKS") || insideItem) 
                      t << "\\mbox{[}"; 
