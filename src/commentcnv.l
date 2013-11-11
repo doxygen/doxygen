@@ -241,9 +241,12 @@ void replaceComment(int offset);
 
 %%
 
-<Scan>[^"'!\/\n\\#\\-]*           { /* eat anything that is not " / or \n */ 
-                                     copyToOutput(yytext,(int)yyleng); 
-				   }
+<Scan>[^"'!\/\n\\#\\-\\,]*           { /* eat anything that is not " / , or \n */ 
+                                       copyToOutput(yytext,(int)yyleng); 
+                                     }
+<Scan>[\\,]                          { /* eat , so we have a nice separator in long initialization lines */ 
+                                       copyToOutput(yytext,(int)yyleng); 
+                                     }
 <Scan>"\"\"\""!                     { /* start of python long comment */
                                      if (g_lang!=SrcLangExt_Python)
 				     {

@@ -3252,7 +3252,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    *pCopyCurlyGString+=yytext; 
 					  }
                                         }
-<GCopyCurly>[^"'{}\/\n]+		{
+<GCopyCurly>[^"'{}\/\n,]+		{
+  					  *pCopyCurlyGString+=yytext;
+  					}
+<GCopyCurly>[,]+		        {
   					  *pCopyCurlyGString+=yytext;
   					}
 <GCopyCurly>"/"				{ *pCopyCurlyGString+=yytext; }

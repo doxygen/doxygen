@@ -9143,7 +9143,7 @@ static void copyExtraFiles(const QCString& filesOption,const QCString &outputOpt
       QFileInfo fi(fileName);
       if (!fi.exists()) 
       {
-        err("Extra file '%s' specified in" + filesOption + " does not exist!\n", fileName.data());
+        err("Extra file '%s' specified in " + filesOption + " does not exist!\n", fileName.data());
       }
       else
       {
