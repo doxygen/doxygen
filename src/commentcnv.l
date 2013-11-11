@@ -241,12 +241,12 @@ void replaceComment(int offset);
 
 %%
 
-<Scan>[^"'!\/\n\\#\\-\\,]*           { /* eat anything that is not " / , or \n */ 
-                                       copyToOutput(yytext,(int)yyleng); 
-                                     }
-<Scan>[\\,]                          { /* eat , so we have a nice separator in long initialization lines */ 
-                                       copyToOutput(yytext,(int)yyleng); 
-                                     }
+<Scan>[^"'!\/\n\\#-,]*              { /* eat anything that is not " / , or \n */ 
+                                       copyToOutput(yytext,(int)yyleng);
+                                    }
+<Scan>[,]                           { /* eat , so we have a nice separator in long initialization lines */ 
+                                       copyToOutput(yytext,(int)yyleng);
+                                    }
 <Scan>"\"\"\""!                     { /* start of python long comment */
                                      if (g_lang!=SrcLangExt_Python)
 				     {
@@ -256,7 +256,7 @@ void replaceComment(int offset);
 				     {
                                        g_pythonDocString = TRUE;
                                        g_nestingCount=0;
-                                       copyToOutput(yytext,(int)yyleng); 
+                                       copyToOutput(yytext,(int)yyleng);
 				       BEGIN(CComment);
 				     }
                                    }
