@@ -369,6 +369,9 @@ void replaceComment(int offset);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
 				   }
+<Scan>"/**/"                       { /* avoid matching next rule for empty C comment, see bug 711723 */
+                                     copyToOutput(yytext,(int)yyleng);
+                                   }
 <Scan>"/*"[*!]?			   { /* start of a C comment */
   			             g_specialComment=(int)yyleng==3;
                                      g_nestingCount=0;
