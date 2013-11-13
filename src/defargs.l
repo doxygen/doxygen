@@ -55,6 +55,7 @@
 #include "entry.h"
 #include "util.h"
 #include "arguments.h"
+#include "message.h"
   
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -527,6 +528,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extr
 {
   if (al==0) return; 
   if (argsString==0) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, NULL);
 
   g_copyArgValue=0;
   g_curArgDocs.resize(0);
@@ -549,6 +551,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extr
   defargsYYlex();
   if (extraTypeChars) *extraTypeChars=g_extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
+  printlex(yy_flex_debug, FALSE, __FILE__, NULL);
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 

@@ -3546,7 +3546,11 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p className=%s searchCtx=%s\n",
   //      exBlock,exName,fd,className,searchCtx?searchCtx->name().data():"<none>");
+
   if (s.isEmpty()) return;
+
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
+
   TooltipManager::instance()->clearTooltips();
   if (g_codeClassSDict==0)
   {
@@ -3637,6 +3641,8 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     delete g_sourceFileDef;
     g_sourceFileDef=0;
   }
+
+  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }
 

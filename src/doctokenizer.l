@@ -1189,6 +1189,7 @@ void doctokenizerYYFindSections(const char *input,Definition *d,
                                 MemberGroup *mg,const char *fileName)
 {
   if (input==0) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   g_inputString = input;
   //printf("parsing --->`%s'<---\n",input);
   g_inputPos    = 0;
@@ -1198,6 +1199,7 @@ void doctokenizerYYFindSections(const char *input,Definition *d,
   BEGIN(St_Sections);
   doctokenizerYYlineno = 1;
   doctokenizerYYlex();
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 void doctokenizerYYinit(const char *input,const char *fileName)

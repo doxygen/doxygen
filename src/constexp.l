@@ -21,6 +21,7 @@
 #include "constexp.h"  
 #include "cppvalue.h"
 #include "ce_parse.h" // generated header file
+#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -105,6 +106,7 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
 bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
 {
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   //printf("Expression: `%s'\n",s.data());
   g_constExpFileName = fileName;
   g_constExpLineNr = lineNr;
@@ -113,6 +115,7 @@ bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
   constexpYYrestart( constexpYYin );
   constexpYYparse();
   //printf("Result: %ld\n",(long)g_resultValue);
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
   return (long)g_resultValue!=0;
 }
 

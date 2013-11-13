@@ -127,7 +127,7 @@ int TclFindElement(
     goto done;
   }
 
-  if (*p == '{') 
+  if (*p == '{')   /* } to keep vi happy */
   {
     openBraces = 1;
     p++;
@@ -2541,6 +2541,7 @@ tcl_inf("%s\n",fileName);
 
   tcl.input_string = input;
   if (tcl.input_string.length()<1) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
   msg("Parsing %s...\n",fileName);
   groupEnterFile(fileName,yylineno);
@@ -2554,6 +2555,7 @@ tcl_inf("%s\n",fileName);
   groupLeaveFile(tcl.file_name,yylineno);
   root->program.resize(0);
   myFile.close();
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 //! Parse file and codify.
@@ -2583,6 +2585,7 @@ void TclLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
   (void)collectXRefs;
 
   if (input.length()<1) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
   tcl.input_string = input;
 
   QCString myNs="";
@@ -2655,6 +2658,7 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.ascii(),startLine,endLine,isExampleBlock,inli
   tcl.cl.clear();
   tcl.fn.clear();
   tcl.entry.clear();
+  printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
 
 bool TclLanguageScanner::needsPreprocessing(const QCString &extension)
