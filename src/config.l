@@ -33,6 +33,7 @@
 #include "version.h"
 #include "portable.h"
 #include "util.h"
+#include "message.h"
 
 #include "lang_cfg.h"
 #include "configoptions.h"
@@ -1686,8 +1687,12 @@ bool Config::parseString(const char *fn,const char *str)
 
 bool Config::parse(const char *fn)
 {
+  int retval;
   encoding = "UTF-8";
-  return parseString(fn,configFileToString(fn)); 
+  printlex(yy_flex_debug, TRUE, __FILE__, fn);
+  retval =  parseString(fn,configFileToString(fn)); 
+  printlex(yy_flex_debug, FALSE, __FILE__, fn);
+  return retval;
 }
 
 extern "C" { // some bogus code to keep the compiler happy
