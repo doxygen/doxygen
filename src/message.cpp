@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -214,8 +212,8 @@ void err(const char *fmt, ...)
 
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
 {
-  char *enter_txt = "entering";
-  char *enter_txt_uc = "Entering";
+  const char *enter_txt = "entering";
+  const char *enter_txt_uc = "Entering";
 
   if (!enter)
   {
@@ -237,5 +235,4 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
     else
       Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, lexName);
   }
-
 }
