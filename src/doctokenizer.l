@@ -320,6 +320,9 @@ static int yyread(char *buf,int max_size)
 }
 
 //--------------------------------------------------------------------------
+#define REAL_YY_DECL int doctokenizerYYlex (void)
+#define YY_DECL static int local_doctokinizer(void)
+#define LOCAL_YY_DECL local_doctokinizer()
 
 %}
 
@@ -736,7 +739,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
                        }
 <St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
                          g_token->name = yytext;
-                         int i=g_token->name.find('{');
+                         int i=g_token->name.find('{'); /* } to keep vi happy */
                          g_token->name = g_token->name.mid(i+1,g_token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
@@ -1387,6 +1390,13 @@ void doctokenizerYYendAutoList()
   g_autoListLevel--;
 }
 
+REAL_YY_DECL
+{
+  printlex(yy_flex_debug, TRUE, __FILE__, g_fileName);
+  int retval = LOCAL_YY_DECL;
+  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
+  return retval;
+}
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
     void doctokenizerYYdummy() { yy_flex_realloc(0,0); }
