@@ -56,10 +56,8 @@ Just follow the following steps:
     is already working on support for that language, you will be
     assigned as the maintainer for the language.
 <li>Create a copy of `doxygen/src/translator_en.h` and name it
-    `doxygen/src/translator_\<your_2_letter_country_code\>.h`
-    I'll use `xx` in the rest of this document (add `XX` for the uppercase version).
-<li> Rerun the `configure` script such that it generates `doxygen/src/lang_cfg.h`.
-This file should now contain a  \c \#define for your language code.
+    `doxygen/src/translator_<your_2_letter_country_code>.h`
+    I'll use `xx` in the rest of this document (and `XX` for the uppercase version).
 <li>Edit `doxygen/src/language.cpp`:
     Add the following code:
 \verbatim
@@ -102,18 +100,38 @@ This file should now contain a  \c \#define for your language code.
            the text is expected to be saved using the UTF-8 encoding. Doxygen
            will translate the characters to proper \f$\mbox{\LaTeX}\f$ and
            leaves the HTML and man output in UTF-8.
-     <li>  Use HTML codes like `\&auml;` for an \c a with an \c umlaut (i.e. &auml;).
+     <li>  Use HTML codes like \c \&auml; for an \c a with an \c umlaut (i.e. \c &auml;).
            See the HTML specification for the codes.
      </ul>
    </ul>
-<li>Run \c configure and \c make again from the root (i.e. in the \c doxygen
-    directory) of the distribution, in order to regenerate the `Makefile`s.
+<li>
+    <ul>
+      <li>On *nix systems:<br>
+    <ul>
+        <li>Rerun the `configure` script from the root (i.e. in the \c doxygen  directory) so
+        that it generates `doxygen/src/lang_cfg.h`.
+        This file should now contain a  \c \#define for your language code.<br>
+        <li>Run \c make again from the root (i.e. in the \c doxygen
+        directory) of the distribution, in order to regenerate the `Makefile`s.
+    </ul>
+      <li> On Windows:<br>
+    <ul>
+       <li>stop Visual Stdio<br>
+       <li>open a command window<br>
+       <li>goto the directory `doxygen\src`<br>
+       <li>give the command `python languages.py > ..\winbuild\Languages.rules`<br>
+       <li>close the command window<br>
+       <li>start Visual Studio again<br>
+       <li>Your language should now be selectable in the `General` part of the `Settings` of the `Properties`
+       window of `lang_cfg.py`, by default Your language will be `on`. Rebuild `doxygen` (and `doxywizard`) now.
+    </ul>
+    </ul>
 <li>Now you can use <code>OUTPUT_LANGUAGE = your_language_name</code>
     in the config file to generate output in your language.
 <li>Send <code>translator_xx.h</code> to me so I can add it to doxygen.
     Send also your name and e-mail address to be included in the
     \c maintainers.txt list. You can also clone the doxygen repository
-    at GitHub and make a PullRequest later.
+    at GitHub and make a Pull Request later.
 </ol>
 
 
