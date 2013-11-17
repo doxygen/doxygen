@@ -952,6 +952,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
 
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   isFixedForm = FALSE;
   if (g_lang==SrcLangExt_Fortran)
   {
@@ -981,6 +982,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     g_outBuf->at(g_outBuf->curPos())='\0';
     msg("-------------\n%s\n-------------\n",g_outBuf->data());
   }
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 

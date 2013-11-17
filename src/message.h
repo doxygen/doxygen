@@ -29,4 +29,5 @@ extern void warn_uncond(const char *fmt, ...);
 extern void err(const char *fmt, ...);
 void initWarningFormat();
 
+extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);
 #endif

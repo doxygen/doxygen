@@ -46,6 +46,7 @@ static LabelMap s_labels[] =
   { "extcmd",       Debug::ExtCmd       },
   { "markdown",     Debug::Markdown     },
   { "filteroutput", Debug::FilterOutput },
+  { "lex",          Debug::Lex },
   { 0,             (Debug::DebugMask)0  }
 };
 

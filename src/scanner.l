@@ -6893,8 +6893,13 @@ void CLanguageScanner::parseInput(const char *fileName,
                                   QStrList & filesInSameTranslationUnit)
 {
   g_thisParser = this;
+
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+
   ::parseMain(fileName,fileBuf,root,
               sameTranslationUnit,filesInSameTranslationUnit);
+
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,

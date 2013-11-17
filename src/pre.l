@@ -2969,6 +2969,7 @@ void cleanUpPreprocessor()
 
 void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 {
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   uint orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
   //    input.data());
@@ -3177,6 +3178,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     }
   }
   DefineManager::instance().endContext();
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 void preFreeScanner()

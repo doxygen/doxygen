@@ -1115,6 +1115,7 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   (void)className;
 
   if (s.isEmpty()) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   TooltipManager::instance()->clearTooltips();
   g_code = &od;
   g_inputString   = s;
@@ -1174,6 +1175,7 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
     delete g_sourceFileDef;
     g_sourceFileDef=0;
   }
+  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }
 

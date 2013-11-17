@@ -1686,7 +1686,9 @@ void PythonLanguageScanner::parseInput(const char *fileName,
                                        QStrList & /*filesInSameTranslationUnit*/)
 {
   g_thisParser = this;
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   ::parseMain(fileName,fileBuf,root);
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 
   // May print the AST for debugging purposes
   // printAST(global_root);

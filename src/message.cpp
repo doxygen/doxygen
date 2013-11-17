@@ -211,3 +211,31 @@ void err(const char *fmt, ...)
   vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
   va_end(args); 
 }
+
+void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
+{
+  char *enter_txt = "entering";
+  char *enter_txt_uc = "Entering";
+
+  if (!enter)
+  {
+    enter_txt = "finished";
+    enter_txt_uc = "Finished";
+  }
+
+  if (dbg)
+  {
+    if (fileName)
+      fprintf(stderr,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, lexName, fileName);
+    else
+      fprintf(stderr,"--%s lexical analyzer: %s\n",enter_txt, lexName);
+  }
+  else
+  {
+    if (fileName)
+      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, lexName, fileName);
+    else
+      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, lexName);
+  }
+
+}

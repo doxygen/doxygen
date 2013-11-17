@@ -763,6 +763,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,
     VhdlDocGen::parseUCF(fileBuf,root,yyFileName,TRUE); 
     return; 
   }
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
   ::parserInit();
   yycont=getVhdlCont();
@@ -791,6 +792,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,
   free(lineIndex);
   inputFile.close();
   mapLibPackage(root);
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
 
 void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,

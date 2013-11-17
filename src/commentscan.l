@@ -2818,6 +2818,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   g_spaceBeforeCmd.resize(0);
   g_spaceBeforeIf.resize(0);
 
+  printlex(yy_flex_debug, TRUE, __FILE__, fileName ? fileName.data(): NULL);
   if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
     current->inbodyDocs+="\n\n";
@@ -2894,6 +2895,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   //printf("position=%d parseMore=%d newEntryNeeded=%d\n",
   //  position,parseMore,newEntryNeeded);
 
+  printlex(yy_flex_debug, FALSE, __FILE__, fileName ? fileName.data(): NULL);
   return parseMore;
 }
 
