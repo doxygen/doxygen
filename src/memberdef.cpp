@@ -128,7 +128,6 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   {
     return FALSE; // member has no function like argument list
   }
-  if (!md->isDefine()) ol.docify(" ");
 
   // simple argument list for tcl
   if (md->getLanguage()==SrcLangExt_Tcl)
@@ -155,6 +154,8 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     ol.endParameterName(TRUE,FALSE,FALSE);
     return TRUE;
   }
+
+  if (!md->isDefine()) ol.docify(" ");
 
   //printf("writeDefArgList(%d)\n",defArgList->count());
   ol.pushGeneratorState();
@@ -262,7 +263,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     {
       ol.docify(a->type.mid(wp,vp-wp));
     }
-    if (!a->name.isEmpty() || (a->name.isEmpty() && a->type=="...")) // argument has a name
+    if (!a->name.isEmpty() || a->type=="...") // argument has a name
     {
       //if (!hasFuncPtrType)
       //{
@@ -1925,7 +1926,7 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const
   return result;
 }
 
-void MemberDef::_getLabels(QStrList &sl,Definition *container) const
+void MemberDef::getLabels(QStrList &sl,Definition *container) const
 {
   static bool inlineInfo = Config_getBool("INLINE_INFO");
 
@@ -2382,6 +2383,69 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
   }
 }
 
+QCString MemberDef::displayDefinition() const
+{
+  QCString ldef = definition();
+  QCString title = name();
+  if (isEnumerate())
+  {
+    if (title.at(0)=='@')
+    {
+      ldef = title = "anonymous enum";
+      if (!m_impl->enumBaseType.isEmpty())
+      {
+        ldef+=" : "+m_impl->enumBaseType;
+      }
+    }
+    else
+    {
+      ldef.prepend("enum ");
+    }
+  }
+  else if (isEnumValue())
+  {
+    if (ldef.at(0)=='@')
+    {
+      ldef=ldef.mid(2);
+    }
+  }
+  ClassDef *cd=getClassDef();
+  if (cd && cd->isObjectiveC())
+  {
+    // strip scope name
+    int ep = ldef.find("::");
+    if (ep!=-1)
+    {
+      int sp=ldef.findRev(' ',ep);
+      if (sp!=-1)
+      {
+        ldef=ldef.left(sp+1)+ldef.mid(ep+2);
+      }
+    }
+    // strip keywords
+    int dp = ldef.find(':');
+    if (dp!=-1)
+    {
+      ldef=ldef.left(dp+1);
+    }
+    int l=ldef.length();
+    //printf("start >%s<\n",ldef.data());
+    int i=l-1;
+    while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
+    while (i>=0 && isspace((uchar)ldef.at(i))) i--;
+    if (i>0)
+    {
+      // insert braches around the type
+      QCString tmp("("+ldef.left(i+1)+")"+ldef.mid(i+1));
+      ldef=tmp;
+    }
+    //printf("end   >%s< i=%d\n",ldef.data(),i);
+    if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");
+  }
+  SrcLangExt lang = getLanguage();
+  QCString sep = getLanguageSpecificSeparator(lang,TRUE);
+  return substitute(ldef,"::",sep);
+}
 
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
@@ -2473,7 +2537,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   bool htmlEndLabelTable=FALSE;
   QStrList sl;
-  _getLabels(sl,container);
+  getLabels(sl,container);
 
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {

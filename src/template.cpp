@@ -250,7 +250,7 @@ bool TemplateVariant::toBool() const
       result = p->intVal!=0;
       break;
     case String:
-      result = !p->strVal.isEmpty() && p->strVal!="false" && p->strVal!="0";
+      result = !p->strVal.isEmpty(); // && p->strVal!="false" && p->strVal!="0";
       break;
     case Struct:
       result = TRUE;
@@ -758,6 +758,31 @@ class FilterNoWrap
     }
 };
 
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "divisibleby" filter */
+class FilterDivisibleBy
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &n)
+    {
+      printf("FilterDivisibleBy::apply()\n");
+      if (!v.isValid() || !n.isValid())
+      {
+        return TemplateVariant();
+      }
+      if (v.type()==TemplateVariant::Integer && n.type()==TemplateVariant::Integer)
+      {
+        printf("FilterDivisibleBy(%d,%d)=%d",v.toInt(),n.toInt(),(v.toInt()%n.toInt())==0);
+        return TemplateVariant((v.toInt()%n.toInt())==0);
+      }
+      else
+      {
+        return TemplateVariant();
+      }
+    }
+};
+
 
 //--------------------------------------------------------------------
 
@@ -809,12 +834,14 @@ class TemplateFilterFactory
 };
 
 // register a handlers for each filter we support
-static TemplateFilterFactory::AutoRegister<FilterAdd>       fAdd("add");
-static TemplateFilterFactory::AutoRegister<FilterPrepend>   fPrepend("prepend");
-static TemplateFilterFactory::AutoRegister<FilterLength>    fLength("length");
-static TemplateFilterFactory::AutoRegister<FilterDefault>   fDefault("default");
-static TemplateFilterFactory::AutoRegister<FilterStripPath> fStripPath("stripPath");
-static TemplateFilterFactory::AutoRegister<FilterNoWrap>    fNoWrap("nowrap");
+static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
+static TemplateFilterFactory::AutoRegister<FilterAdd>         fAppend("append");
+static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
+static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");
+static TemplateFilterFactory::AutoRegister<FilterDefault>     fDefault("default");
+static TemplateFilterFactory::AutoRegister<FilterPrepend>     fPrepend("prepend");
+static TemplateFilterFactory::AutoRegister<FilterStripPath>   fStripPath("stripPath");
+static TemplateFilterFactory::AutoRegister<FilterDivisibleBy> fDivisibleBy("divisibleby");
 
 //--------------------------------------------------------------------
 
@@ -1403,6 +1430,16 @@ class ExpressionParser
           s[0]=c;
           m_curToken.id+=s;
           p++;
+        }
+        if (m_curToken.id=="True") // treat true literal as numerical 1
+        {
+          m_curToken.type = ExprToken::Number;
+          m_curToken.num = 1;
+        }
+        else if (m_curToken.id=="False") // treat false literal as numerical 0
+        {
+          m_curToken.type = ExprToken::Number;
+          m_curToken.num = 0;
         }
       }
       else if (c=='"' || c=='\'')
@@ -2066,7 +2103,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
           }
           // add 'block.super' variable to allow access to parent block content
           TemplateStruct superBlock;
-          superBlock.set("super",super.data());
+          superBlock.set("super",TemplateVariant(super.data(),TRUE));
           ci->set("block",&superBlock);
           // render the overruled block contents
           nb->m_nodes.render(ts,c);
@@ -2495,6 +2532,121 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
 
 //----------------------------------------------------------
 
+/** @brief Class representing an 'set' tag in a template */
+class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
+{
+  public:
+    TemplateNodeCycle(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeCycle>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeCycle(%s)\n",data.data()));
+      m_args.setAutoDelete(TRUE);
+      m_index=0;
+      ExpressionParser expParser(parser->templateName(),line);
+      QValueList<QCString> args = split(data," ");
+      QValueListIterator<QCString> it = args.begin();
+      while (it!=args.end())
+      {
+        ExprAst *expr = expParser.parsePrimary(*it);
+        if (expr)
+        {
+          m_args.append(expr);
+        }
+        ++it;
+      }
+      if (m_args.count()<2)
+      {
+          warn(parser->templateName(),line,"expected at least two arguments for cycle command, got %d",m_args.count());
+      }
+      TRACE(("}TemplateNodeCycle(%s)\n",data.data()));
+    }
+    void render(FTextStream &ts, TemplateContext *c)
+    {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (m_index<m_args.count())
+      {
+        TemplateVariant v = m_args.at(m_index)->resolve(c);
+        if (v.type()==TemplateVariant::Function)
+        {
+          v = v.call(QValueList<TemplateVariant>());
+        }
+        if (ci->escapeIntf() && !v.raw())
+        {
+          ts << ci->escapeIntf()->escape(v.toString());
+        }
+        else
+        {
+          ts << v.toString();
+        }
+      }
+      if (++m_index==m_args.count()) // wrap around
+      {
+        m_index=0;
+      }
+    }
+  private:
+    uint m_index;
+    QList<ExprAst> m_args;
+};
+
+//----------------------------------------------------------
+
+/** @brief Class representing an 'set' tag in a template */
+class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
+{
+    struct Mapping
+    {
+      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
+     ~Mapping() { delete value; }
+      QCString name;
+      ExprAst *value;
+    };
+  public:
+    TemplateNodeSet(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeSet>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeSet(%s)\n",data.data()));
+      m_args.setAutoDelete(TRUE);
+      ExpressionParser expParser(parser->templateName(),line);
+      QValueList<QCString> args = split(data," ");
+      QValueListIterator<QCString> it = args.begin();
+      while (it!=args.end())
+      {
+        QCString arg = *it;
+        int j=arg.find('=');
+        if (j>0)
+        {
+          ExprAst *expr = expParser.parsePrimary(arg.mid(j+1));
+          if (expr)
+          {
+            m_args.append(new Mapping(arg.left(j),expr));
+          }
+        }
+        else
+        {
+          warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
+        }
+        ++it;
+      }
+      TRACE(("}TemplateNodeSet(%s)\n",data.data()));
+    }
+    void render(FTextStream &, TemplateContext *c)
+    {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      QListIterator<Mapping> it(m_args);
+      Mapping *mapping;
+      for (it.toFirst();(mapping=it.current());++it)
+      {
+        TemplateVariant value = mapping->value->resolve(c);
+        ci->set(mapping->name,value);
+      }
+    }
+  private:
+    QList<Mapping> m_args;
+};
+
+//----------------------------------------------------------
+
 /** @brief Class representing an 'spaceless' tag in a template */
 class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
 {
@@ -2667,9 +2819,11 @@ class TemplateNodeFactory
 static TemplateNodeFactory::AutoRegister<TemplateNodeIf>        autoRefIf("if");
 static TemplateNodeFactory::AutoRegister<TemplateNodeFor>       autoRefFor("for");
 static TemplateNodeFactory::AutoRegister<TemplateNodeMsg>       autoRefMsg("msg");
+static TemplateNodeFactory::AutoRegister<TemplateNodeSet>       autoRefSet("set");
 static TemplateNodeFactory::AutoRegister<TemplateNodeTree>      autoRefTree("recursetree");
 static TemplateNodeFactory::AutoRegister<TemplateNodeWith>      autoRefWith("with");
 static TemplateNodeFactory::AutoRegister<TemplateNodeBlock>     autoRefBlock("block");
+static TemplateNodeFactory::AutoRegister<TemplateNodeCycle>     autoRefCycle("cycle");
 static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>    autoRefExtend("extend");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>    autoRefCreate("create");
 static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>   autoRefInclude("include");

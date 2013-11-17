@@ -3279,7 +3279,7 @@ void HtmlGenerator::writeExternalSearchPage()
 void HtmlGenerator::startConstraintList(const char *header)
 {
   t << "<div class=\"typeconstraint\">" << endl;
-  t << "<dl><dt><b>" << header << "</b><dt><dd>" << endl;
+  t << "<dl><dt><b>" << header << "</b></dt><dd>" << endl;
   t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl;
 }
 

@@ -2446,12 +2446,12 @@ bool ClassDef::addExample(const char *anchor,const char *nameStr,
 }
 
 // returns TRUE if this class is used in an example
-bool ClassDef::hasExamples()
+bool ClassDef::hasExamples() const
 {
-  if (m_impl->exampleSDict==0)
-    return FALSE;
-  else
-    return m_impl->exampleSDict->count()>0;
+  bool result=FALSE;
+  if (m_impl->exampleSDict)
+    result = m_impl->exampleSDict->count()>0;
+  return result;
 }
 
 
@@ -4758,3 +4758,12 @@ const FileList &ClassDef::usedFiles() const
   return m_impl->files;
 }
 
+const ArgumentList *ClassDef::typeConstraints() const
+{
+  return m_impl->typeConstraints;
+}
+
+const ExampleSDict *ClassDef::exampleList() const
+{
+  return m_impl->exampleSDict;
+}

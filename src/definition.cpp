@@ -959,7 +959,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write line link (HTML, LaTeX optionally)
+        // write file link (HTML, LaTeX optionally)
         ol.writeObjectLink(0,fn,0,m_impl->body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);

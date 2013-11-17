@@ -28,6 +28,8 @@ class MemberList;
 class MemberDef;
 struct Argument;
 class ArgumentList;
+class MemberNameInfoSDict;
+struct MemberInfo;
 
 //----------------------------------------------------
 
@@ -679,10 +681,44 @@ class MemberListInfoContext : public TemplateStructIntf
 
 //----------------------------------------------------
 
+class MemberInfoContext : public TemplateStructIntf
+{
+  public:
+    MemberInfoContext(const MemberInfo *mi);
+   ~MemberInfoContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class AllMembersListContext : public TemplateListIntf
+{
+  public:
+    AllMembersListContext(const MemberNameInfoSDict *ml);
+   ~AllMembersListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
 class ArgumentContext : public TemplateStructIntf
 {
   public:
-    ArgumentContext(const Argument *arg);
+    ArgumentContext(const Argument *arg,Definition *def,const QCString &relPath);
    ~ArgumentContext();
 
     // TemplateStructIntf methods
@@ -698,7 +734,7 @@ class ArgumentContext : public TemplateStructIntf
 class ArgumentListContext : public TemplateListIntf
 {
   public:
-    ArgumentListContext(const ArgumentList *al);
+    ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
    ~ArgumentListContext();
 
     // TemplateListIntf

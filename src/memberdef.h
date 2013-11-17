@@ -75,6 +75,7 @@ class MemberDef : public Definition
     int initializerLines() const;
     uint64 getMemberSpecifiers() const;
     MemberList *getSectionList(Definition *d) const;
+    QCString    displayDefinition() const;
 
     // scope query members
     ClassDef *getClassDef() const;
@@ -242,6 +243,7 @@ class MemberDef : public Definition
 
     QCString displayName(bool=TRUE) const;
     QCString getDeclType() const;
+    void getLabels(QStrList &sl,Definition *container) const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
@@ -384,7 +386,6 @@ class MemberDef : public Definition
     void _computeLinkableInProject();
     void _computeIsConstructor();
     void _computeIsDestructor();
-    void _getLabels(QStrList &sl,Definition *container) const;
     void _writeCallGraph(OutputList &ol);
     void _writeCallerGraph(OutputList &ol);
     void _writeReimplements(OutputList &ol);

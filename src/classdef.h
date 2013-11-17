@@ -313,6 +313,11 @@ class ClassDef : public Definition
 
     QCString includeStatement() const;
 
+    const ArgumentList *typeConstraints() const;
+    const ExampleSDict *exampleList() const;
+    bool hasExamples() const;
+    QCString getMemberListFileName() const;
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
@@ -384,7 +389,6 @@ class ClassDef : public Definition
 
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
-    bool hasExamples();
     bool hasNonReferenceSuperClass();
     void showUsedFiles(OutputList &ol);
 
@@ -392,7 +396,6 @@ class ClassDef : public Definition
     void writeTagFileMarker();
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
-    QCString getMemberListFileName() const;
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
     MemberList *createMemberList(MemberListType lt);
     void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,ClassDef *inheritedFrom,bool invert,bool showAlways,QPtrDict<void> *visitedClasses);
