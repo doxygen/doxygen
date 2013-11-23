@@ -809,7 +809,7 @@ MemberDef *MemberDef::deepCopy() const
   }
   if (m_impl->enumFields)
   {
-    MemberListIterator mli(*m_impl->redefinedBy);
+    MemberListIterator mli(*m_impl->enumFields);
     MemberDef *md;
     for (mli.toFirst();(md=mli.current());++mli)
     {
