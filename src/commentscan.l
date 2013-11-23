@@ -2403,7 +2403,7 @@ static bool handleParBlock(const QCString &)
     warn(yyFileName,yyLineNr,
 	"found \\parblock command while already in a parblock!");
   }
-  addOutput("@parblock");
+  addOutput("@parblock ");
   g_insideParBlock = TRUE;
   return FALSE;
 }
