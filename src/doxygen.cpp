@@ -70,6 +70,7 @@
 #include "parserintf.h"
 #include "htags.h"
 #include "pyscanner.h"
+#include "smlscanner.h"
 #include "fortranscanner.h"
 #include "xmlscanner.h"
 #include "sqlscanner.h"
@@ -9998,6 +9999,7 @@ void initDoxygen()
   Doxygen::parserManager->registerDefaultParser(         new FileParser);
   Doxygen::parserManager->registerParser("c",            new CLanguageScanner);
   Doxygen::parserManager->registerParser("python",       new PythonLanguageScanner);
+  Doxygen::parserManager->registerParser("sml",          new SmlLanguageScanner);
   Doxygen::parserManager->registerParser("fortran",      new FortranLanguageScanner);
   Doxygen::parserManager->registerParser("fortranfree",  new FortranLanguageScannerFree);
   Doxygen::parserManager->registerParser("fortranfixed", new FortranLanguageScannerFixed);
@@ -11108,6 +11110,7 @@ void parseInput()
   preFreeScanner();
   scanFreeScanner();
   pyscanFreeScanner();
+  smlscanFreeScanner();
 
   if (!g_storage->open(IO_ReadOnly))
   {
@@ -11760,4 +11763,3 @@ void generateOutput()
   delete Doxygen::symbolStorage;
   g_successfulRun=TRUE;
 }
-

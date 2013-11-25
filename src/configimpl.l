@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -30,7 +30,7 @@
 #include <qregexp.h>
 #include <qstack.h>
 #include <qglobal.h>
-  
+
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
@@ -51,7 +51,7 @@ void config_err(const char *fmt, ...)
   va_list args;
   va_start(args, fmt);
   vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
-  va_end(args); 
+  va_end(args);
 }
 void config_warn(const char *fmt, ...)
 {
@@ -124,10 +124,10 @@ void ConfigOption::writeStringValue(FTextStream &t,QCString &s)
   if (p)
   {
     t << " ";
-    while ((c=*p++)!=0 && !needsEscaping) 
+    while ((c=*p++)!=0 && !needsEscaping)
       needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"' || c=='#');
     if (needsEscaping)
-    { 
+    {
       t << "\"";
       p=se.data();
       while (*p)
@@ -166,7 +166,7 @@ void ConfigOption::writeStringList(FTextStream &t,QStrList &l)
 
 ConfigImpl *ConfigImpl::m_instance = 0;
 
-void ConfigInt::convertStrToVal() 
+void ConfigInt::convertStrToVal()
 {
   if (!m_valueString.isEmpty())
   {
@@ -189,7 +189,7 @@ void ConfigBool::convertStrToVal()
   QCString val = m_valueString.stripWhiteSpace().lower();
   if (!val.isEmpty())
   {
-    if (val=="yes" || val=="true" || val=="1" || val=="all") 
+    if (val=="yes" || val=="true" || val=="1" || val=="all")
     {
       m_value=TRUE;
     }
@@ -208,7 +208,7 @@ void ConfigBool::convertStrToVal()
 QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
-  if (opt==0) 
+  if (opt==0)
   {
     config_err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
@@ -224,7 +224,7 @@ QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) c
 QStrList &ConfigImpl::getList(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
-  if (opt==0) 
+  if (opt==0)
   {
     config_err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
@@ -240,7 +240,7 @@ QStrList &ConfigImpl::getList(const char *fileName,int num,const char *name) con
 QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
-  if (opt==0) 
+  if (opt==0)
   {
     config_err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
@@ -256,7 +256,7 @@ QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) con
 int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
-  if (opt==0) 
+  if (opt==0)
   {
     config_err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
@@ -272,7 +272,7 @@ int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
 bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
-  if (opt==0) 
+  if (opt==0)
   {
     config_err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
@@ -412,7 +412,7 @@ struct ConfigFileState
   YY_BUFFER_STATE oldState;
   YY_BUFFER_STATE newState;
   QCString fileName;
-};  
+};
 
 static const char       *inputString;
 static int	         inputPosition;
@@ -425,7 +425,7 @@ static QStrList         *l=0;
 static int               lastState;
 static QCString          elemStr;
 static QStrList          includePathList;
-static QStack<ConfigFileState> includeStack;  
+static QStack<ConfigFileState> includeStack;
 static int               includeDepth;
 static bool              config_upd = FALSE;
 static QCString          encoding;
@@ -439,7 +439,7 @@ static ConfigImpl       *config;
 static int yyread(char *buf,int max_size)
 {
     // no file included
-    if (includeStack.isEmpty()) 
+    if (includeStack.isEmpty())
     {
         int c=0;
 	if (inputString==0) return c;
@@ -449,8 +449,8 @@ static int yyread(char *buf,int max_size)
 	      c++; buf++;
   	}
 	return c;
-    } 
-    else 
+    }
+    else
     {
         //assert(includeStack.current()->newState==YY_CURRENT_BUFFER);
 	return (int)fread(buf,1,max_size,includeStack.current()->filePtr);
@@ -470,7 +470,7 @@ static QCString configStringRecode(
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==(void *)(-1)) 
+  if (cd==(void *)(-1))
   {
     fprintf(stderr,"Error: unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding.data());
@@ -536,7 +536,7 @@ static FILE *findFile(const char *fileName)
     FILE *f = tryPath(s,fileName);
     if (f) return f;
     s=includePathList.next();
-  } 
+  }
   // try cwd if includePathList fails
   return tryPath(".",fileName);
 }
@@ -547,7 +547,7 @@ static void readIncludeFile(const char *incName)
     config_err("maximum include depth (%d) reached, %s is not included. Aborting...\n",
 	MAX_INCLUDE_DEPTH,incName);
     exit(1);
-  } 
+  }
 
   QCString inc = incName;
   substEnvVarsInString(inc);
@@ -568,7 +568,7 @@ static void readIncludeFile(const char *incName)
     msg("@INCLUDE = %s: parsing...\n",inc.data());
 #endif
 
-    // store the state of the old file 
+    // store the state of the old file
     ConfigFileState *fs=new ConfigFileState;
     fs->oldState=YY_CURRENT_BUFFER;
     fs->lineNr=yyLineNr;
@@ -581,7 +581,7 @@ static void readIncludeFile(const char *incName)
     fs->newState=YY_CURRENT_BUFFER;
     yyFileName=inc;
     includeDepth++;
-  } 
+  }
   else
   {
     config_err("@INCLUDE = %s: not found!\n",inc.data());
@@ -616,12 +616,12 @@ static void readIncludeFile(const char *incName)
 <Start,GetString,GetStrList,GetBool,SkipInvalid>"##".*"\n" { config->appendUserComment(yytext);}
 <Start,GetString,GetStrList,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
-                                           cmd=cmd.left(cmd.length()-1).stripWhiteSpace(); 
+                                           cmd=cmd.left(cmd.length()-1).stripWhiteSpace();
 					   ConfigOption *option = config->get(cmd);
 					   if (option==0) // oops not known
 					   {
 					     config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
-						 yytext,yyLineNr,yyFileName.data()); 
+						 yytext,yyLineNr,yyFileName.data());
 					     BEGIN(SkipInvalid);
 					   }
 					   else // known tag
@@ -670,7 +670,7 @@ static void readIncludeFile(const char *incName)
                                                  {
 					           config_warn("Tag `%s' at line %d of file `%s' has become obsolete.\n"
 						              "         To avoid this warning please remove this line from your configuration "
-							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data());
                                                  }
 					         BEGIN(SkipInvalid);
 						 break;
@@ -684,7 +684,7 @@ static void readIncludeFile(const char *incName)
                                                  {
 					           config_warn("Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
 						              "         To avoid this warning please remove this line from your configuration "
-							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data());
                                                  }
 					         BEGIN(SkipInvalid);
 						 break;
@@ -692,12 +692,12 @@ static void readIncludeFile(const char *incName)
 					   }
 					}
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ QCString cmd=yytext;
-                                          cmd=cmd.left(cmd.length()-2).stripWhiteSpace(); 
+                                          cmd=cmd.left(cmd.length()-2).stripWhiteSpace();
 					  ConfigOption *option = config->get(cmd);
 					  if (option==0) // oops not known
 					  {
 					    config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
-						yytext,yyLineNr,yyFileName.data()); 
+						yytext,yyLineNr,yyFileName.data());
 					    BEGIN(SkipInvalid);
 					  }
 					  else // known tag
@@ -719,19 +719,19 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_Int:
 					      case ConfigOption::O_Bool:
 					        config_warn("operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
-						    yytext,yyLineNr,yyFileName.data()); 
+						    yytext,yyLineNr,yyFileName.data());
 					        BEGIN(SkipInvalid);
 						break;
 					       case ConfigOption::O_Obsolete:
 					         config_warn("Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data());
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
 					         config_warn("Tag `%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
 						            "To avoid this warning please remove this line from your configuration "
-							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data());
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -740,8 +740,8 @@ static void readIncludeFile(const char *incName)
 <Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); l=&includePathList; l->clear(); elemStr=""; }
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
-<Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") { 
-  					  readIncludeFile(configStringRecode(yytext,encoding,"UTF-8")); 
+<Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
+  					  readIncludeFile(configStringRecode(yytext,encoding,"UTF-8"));
   					  BEGIN(Start);
 					}
 <<EOF>>					{
@@ -768,14 +768,14 @@ static void readIncludeFile(const char *incName)
 
 <Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag `%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
 <GetString,GetBool,SkipInvalid>\n	{ yyLineNr++; BEGIN(Start); }
-<GetStrList>\n				{ 
-  					  yyLineNr++; 
+<GetStrList>\n				{
+  					  yyLineNr++;
 					  if (!elemStr.isEmpty())
 					  {
 					    //printf("elemStr1=`%s'\n",elemStr.data());
 					    l->append(elemStr);
 					  }
-					  BEGIN(Start); 
+					  BEGIN(Start);
 					}
 <GetStrList>[ \t]+			{
   				          if (!elemStr.isEmpty())
@@ -785,14 +785,14 @@ static void readIncludeFile(const char *incName)
 					  }
 					  elemStr.resize(0);
   					}
-<GetString>[^ \"\t\r\n]+		{ (*s)+=configStringRecode(yytext,encoding,"UTF-8"); 
+<GetString>[^ \"\t\r\n]+		{ (*s)+=configStringRecode(yytext,encoding,"UTF-8");
                                           checkEncoding();
                                         }
 <GetString,GetStrList,SkipInvalid>"\""	{ lastState=YY_START;
-  					  BEGIN(GetQuotedString); 
-                                          tmpString.resize(0); 
+  					  BEGIN(GetQuotedString);
+                                          tmpString.resize(0);
 					}
-<GetQuotedString>"\""|"\n" 		{ 
+<GetQuotedString>"\""|"\n" 		{
                                           // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
                                           tmpString+=" ";
   					  //printf("Quoted String = `%s'\n",tmpString.data());
@@ -816,16 +816,16 @@ static void readIncludeFile(const char *incName)
   					  tmpString+='"';
   					}
 <GetQuotedString>.			{ tmpString+=*yytext; }
-<GetBool>[a-zA-Z]+			{ 
-  					  QCString bs=yytext; 
+<GetBool>[a-zA-Z]+			{
+  					  QCString bs=yytext;
   					  bs=bs.upper();
   					  if (bs=="YES" || bs=="1")
 					    *b=TRUE;
 					  else if (bs=="NO" || bs=="0")
 					    *b=FALSE;
-					  else 
+					  else
 					  {
-					    *b=FALSE; 
+					    *b=FALSE;
 					    config_warn("Invalid value `%s' for "
 						 "boolean tag in line %d, file %s; use YES or NO\n",
 						 bs.data(),yyLineNr,yyFileName.data());
@@ -837,7 +837,7 @@ static void readIncludeFile(const char *incName)
 <SkipComment>\n				{ yyLineNr++; BEGIN(Start); }
 <SkipComment>\\[ \r\t]*\n		{ yyLineNr++; BEGIN(Start); }
 <*>\\[ \r\t]*\n				{ yyLineNr++; }
-<*>.					
+<*>.
 <*>\n					{ yyLineNr++ ; }
 
 %%
@@ -850,7 +850,7 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
   if (m_startComment)
   {
-    t << takeStartComment() << endl; 
+    t << takeStartComment() << endl;
   }
   t << "# Doxyfile " << versionString << endl << endl;
   if (!sl)
@@ -917,8 +917,8 @@ static void substEnvVarsInStrList(QStrList &sl)
 
     if (!wasQuoted) /* as a result of the expansion, a single string
 		       may have expanded into a list, which we'll
-		       add to sl. If the original string already 
-		       contained multiple elements no further 
+		       add to sl. If the original string already
+		       contained multiple elements no further
 		       splitting is done to allow quoted items with spaces! */
     {
       int l=result.length();
@@ -929,7 +929,7 @@ static void substEnvVarsInStrList(QStrList &sl)
       {
 	char c=0;
 	// skip until start of new word
-	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++; 
+	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++;
 	p=i; // p marks the start index of the word
 	// skip until end of a word
 	while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"')) i++;
@@ -947,7 +947,7 @@ static void substEnvVarsInStrList(QStrList &sl)
 		sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
 		sl.next();                 // current item is now the old item
 		p=i+1;
-		break; 
+		break;
 	      }
 	      else if (c=='\\') // skip escaped stuff
 	      {
@@ -1051,7 +1051,7 @@ void ConfigImpl::init()
 
 void ConfigImpl::create()
 {
-  if (m_initialized) return; 
+  if (m_initialized) return;
   m_initialized = TRUE;
   addConfigOptions(this);
 }
@@ -1074,7 +1074,7 @@ static QCString configFileToString(const char *name)
       while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
       {
         totalSize+=bSize;
-        contents.resize(totalSize+bSize); 
+        contents.resize(totalSize+bSize);
       }
       totalSize+=size+2;
       contents.resize(totalSize);
@@ -1099,7 +1099,7 @@ static QCString configFileToString(const char *name)
       QCString contents(fsize+2);
       f.readBlock(contents.rawData(),fsize);
       f.close();
-      if (fsize==0 || contents[fsize-1]=='\n') 
+      if (fsize==0 || contents[fsize-1]=='\n')
 	contents[fsize]='\0';
       else
 	contents[fsize]='\n'; // to help the scanner
@@ -1107,7 +1107,7 @@ static QCString configFileToString(const char *name)
       return contents;
     }
   }
-  if (!fileOpened)  
+  if (!fileOpened)
   {
     config_err("cannot open file `%s' for reading\n",name);
     exit(1);
@@ -1139,7 +1139,7 @@ bool ConfigImpl::parse(const char *fn,bool update)
   int retval;
   encoding = "UTF-8";
   printlex(yy_flex_debug, TRUE, __FILE__, fn);
-  retval =  parseString(fn,configFileToString(fn), update); 
+  retval =  parseString(fn,configFileToString(fn), update);
   printlex(yy_flex_debug, FALSE, __FILE__, fn);
   return retval;
 }
@@ -1774,4 +1774,3 @@ void Config::deinit()
 {
   ConfigImpl::instance()->deleteInstance();
 }
-
