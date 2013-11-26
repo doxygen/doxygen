@@ -385,6 +385,7 @@ class MemberDef : public Definition
     void _computeIsConstructor();
     void _computeIsDestructor();
     void _getLabels(QStrList &sl,Definition *container) const;
+    void _writeGroupInclude(OutputList &ol,bool inGroup);
     void _writeCallGraph(OutputList &ol);
     void _writeCallerGraph(OutputList &ol);
     void _writeReimplements(OutputList &ol);
