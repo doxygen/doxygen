@@ -386,6 +386,7 @@ class MemberDef : public Definition
     void _computeLinkableInProject();
     void _computeIsConstructor();
     void _computeIsDestructor();
+    void _writeGroupInclude(OutputList &ol,bool inGroup);
     void _writeCallGraph(OutputList &ol);
     void _writeCallerGraph(OutputList &ol);
     void _writeReimplements(OutputList &ol);

@@ -2447,6 +2447,47 @@ QCString MemberDef::displayDefinition() const
   return substitute(ldef,"::",sep);
 }
 
+void MemberDef::_writeGroupInclude(OutputList &ol,bool inGroup)
+{
+  // only write out the include file if this is not part of a class or file
+  // definition
+  static bool showGroupedMembInc = Config_getBool("SHOW_GROUPED_MEMB_INC");
+  FileDef *fd = getFileDef();
+  QCString nm;
+  if (fd) nm = getFileDef()->docName();
+  if (inGroup && fd && showGroupedMembInc && !nm.isEmpty())
+  {
+    ol.startParagraph();
+    ol.startTypewriter();
+    SrcLangExt lang = getLanguage();
+    bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+    if (isIDLorJava)
+    {
+      ol.docify("import ");
+    }
+    else
+    {
+      ol.docify("#include ");
+    }
+
+    if (isIDLorJava) ol.docify("\""); else ol.docify("<");
+
+    if (fd && fd->isLinkable())
+    {
+      ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),fd->anchor(),nm);
+    }
+    else
+    {
+      ol.docify(nm);
+    }
+
+    if (isIDLorJava) ol.docify("\""); else ol.docify(">");
+
+    ol.endTypewriter();
+    ol.endParagraph();
+  }
+}
+
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
  */
@@ -2774,6 +2815,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   ol.endDoxyAnchor(cfname,memAnchor);
   ol.startIndent();
+
+  _writeGroupInclude(ol,inGroup);
 
   /* write multi-line initializer (if any) */
   if (hasMultiLineInitializer()
