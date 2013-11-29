@@ -88,8 +88,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_compact_rtf COMPACT_RTF
 \refitem cfg_cpp_cli_support CPP_CLI_SUPPORT
 \refitem cfg_create_subdirs CREATE_SUBDIRS
-\refitem cfg_dia_path DIA_PATH
 \refitem cfg_diafile_dirs DIAFILE_DIRS
+\refitem cfg_dia_path DIA_PATH
 \refitem cfg_directory_graph DIRECTORY_GRAPH
 \refitem cfg_disable_index DISABLE_INDEX
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
@@ -278,6 +278,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_server_based_search SERVER_BASED_SEARCH
 \refitem cfg_short_names SHORT_NAMES
 \refitem cfg_show_files SHOW_FILES
+\refitem cfg_show_grouped_memb_inc SHOW_GROUPED_MEMB_INC
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_namespaces SHOW_NAMESPACES
 \refitem cfg_show_used_files SHOW_USED_FILES
@@ -397,6 +398,7 @@ The default value is: <code>NO</code>.
 Possible values are: 
 <code>Afrikaans</code>, 
 <code>Arabic</code>, 
+<code>Armenian</code>, 
 <code>Brazilian</code>, 
 <code>Catalan</code>, 
 <code>Chinese</code>, 
@@ -405,28 +407,31 @@ Possible values are:
 <code>Czech</code>, 
 <code>Danish</code>, 
 <code>Dutch</code>, 
-<code>English</code>, 
+<code>English</code> (United States), 
 <code>Esperanto</code>, 
-<code>Farsi</code>, 
+<code>Farsi</code> (Persian), 
 <code>Finnish</code>, 
 <code>French</code>, 
 <code>German</code>, 
 <code>Greek</code>, 
 <code>Hungarian</code>, 
+<code>Indonesian</code>, 
 <code>Italian</code>, 
 <code>Japanese</code>, 
-<code>Japanese-en</code>, 
+<code>Japanese-en</code> (Japanese with English messages), 
 <code>Korean</code>, 
-<code>Korean-en</code>, 
+<code>Korean-en</code> (Korean with English messages), 
 <code>Latvian</code>, 
-<code>Norwegian</code>, 
+<code>Lithuanian</code>, 
 <code>Macedonian</code>, 
-<code>Persian</code>, 
+<code>Norwegian</code>, 
+<code>Persian</code> (Farsi), 
 <code>Polish</code>, 
 <code>Portuguese</code>, 
 <code>Romanian</code>, 
 <code>Russian</code>, 
 <code>Serbian</code>, 
+<code>Serbian-Cyrillic</code>, 
 <code>Slovak</code>, 
 <code>Slovene</code>, 
 <code>Spanish</code>, 
@@ -1021,6 +1026,16 @@ The default value is: <code>NO</code>.
 
 
 The default value is: <code>YES</code>.
+
+ \anchor cfg_show_grouped_memb_inc
+<dt>\c SHOW_GROUPED_MEMB_INC <dd>
+ \addindex SHOW_GROUPED_MEMB_INC
+ If the SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen 
+ will add for each grouped member an include statement to the documentation,
+ telling the reader which file to include in order to use the member.
+
+
+The default value is: <code>NO</code>.
 
  \anchor cfg_force_local_includes
 <dt>\c FORCE_LOCAL_INCLUDES <dd>
@@ -3311,10 +3326,10 @@ The default value is: <code>YES</code>.
  \anchor cfg_dia_path
 <dt>\c DIA_PATH <dd>
  \addindex DIA_PATH
- You can include diagrams drawn in dia using the \ref cmddiafile "\\diafile" command. 
- Doxygen will run dia to produce the appropriate image and insert it in the documentation. 
- The <code>DIA_PATH</code> tag allows you to specify the directory where the \c dia 
- binary resides. If left empty the tool is assumed to be found in the default search path.
+You can include diagrams made with dia in doxygen documentation. Doxygen will then run 
+dia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows 
+you to specify the directory where the dia binary resides. If left empty dia is assumed 
+to be found in the default search path.
 
  \anchor cfg_hide_undoc_relations
 <dt>\c HIDE_UNDOC_RELATIONS <dd>
@@ -3607,7 +3622,7 @@ This tag requires that the tag \ref cfg_have_dot "HAVE_DOT" is set to \c YES.
  \addindex DIAFILE_DIRS
  The \c DIAFILE_DIRS tag can be used to specify one or more directories that 
  contain dia files that are included in the documentation (see the
- \ref cmddiafile "\\diafile" command).
+ \ref cmdmscfile "\\diafile" command).
 
  \anchor cfg_dot_graph_max_nodes
 <dt>\c DOT_GRAPH_MAX_NODES <dd>
