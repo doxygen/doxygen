@@ -269,9 +269,11 @@ compile doxygen. Alternatively, you can compile doxygen
 <a href="http://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="http://www.mingw.org/">MinGW</a>.
 
-The next step is to install \c bison, \c flex, \c tar
-(see http://gnuwin32.sourceforge.net/packages.html) and \c python (version 2, see http://www.python.org).
-This packages are needed during the
+The next step is to install modern versions of \c bison and \c flex
+(see http://sourceforge.net/projects/winflexbison. After installation and adding them to
+your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.exe`)
+Furthermore you have to install \c python (version 2, see http://www.python.org).
+These packages are needed during the
 compilation process if you use a GitHub snapshot of doxygen (the official source releases 
 come with pre-generated sources).
 
@@ -282,7 +284,9 @@ Now start a new command shell and type
 cd c:\tools
 tar zxvf doxygen-x.y.z.src.tar.gz
 \endverbatim
-to unpack the sources.
+to unpack the sources (you can obtain \c tar from e.g. http://gnuwin32.sourceforge.net/packages.html).
+Alternatively you can use an unpack program, like 7-Zip (see http://www.7-zip.org)
+or use the build in unpack feature of modern Windows systems).
 
 Now your environment is setup to build \c doxygen.
 
