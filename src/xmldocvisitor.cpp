@@ -1012,6 +1012,7 @@ void XmlDocVisitor::visitPost(DocParamList *)
 void XmlDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (!(x->title().length())) return;
   m_t << "<xrefsect id=\"";
   m_t << x->file() << "_1" << x->anchor();
   m_t << "\">";
@@ -1021,9 +1022,10 @@ void XmlDocVisitor::visitPre(DocXRefItem *x)
   m_t << "<xrefdescription>";
 }
 
-void XmlDocVisitor::visitPost(DocXRefItem *)
+void XmlDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (!(x->title().length())) return;
   m_t << "</xrefdescription>";
   m_t << "</xrefsect>";
 }

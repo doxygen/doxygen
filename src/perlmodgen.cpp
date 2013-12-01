@@ -1349,7 +1349,7 @@ void PerlModDocVisitor::visitPost(DocParamList *)
     .closeHash();
 }
 
-void PerlModDocVisitor::visitPre(DocXRefItem *)
+void PerlModDocVisitor::visitPre(DocXRefItem *x)
 {
 #if 0
   m_output.add("<xrefsect id=\"");
@@ -1360,12 +1360,14 @@ void PerlModDocVisitor::visitPre(DocXRefItem *)
   m_output.add("</xreftitle>");
   m_output.add("<xrefdescription>");
 #endif
+  if (!(x->title().length())) return;
   openItem("xrefitem");
   openSubBlock("content");
 }
 
-void PerlModDocVisitor::visitPost(DocXRefItem *)
+void PerlModDocVisitor::visitPost(DocXRefItem *x)
 {
+  if (!(x->title().length())) return;
   closeSubBlock();
   closeItem();
 #if 0

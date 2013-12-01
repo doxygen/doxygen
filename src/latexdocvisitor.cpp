@@ -1515,6 +1515,7 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
 void LatexDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (!(x->title().length())) return;
   m_t << "\\begin{DoxyRefDesc}{";
   filter(x->title());
   m_t << "}" << endl;
@@ -1534,9 +1535,10 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   m_t << "}]";
 }
 
-void LatexDocVisitor::visitPost(DocXRefItem *)
+void LatexDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
+  if (!(x->title().length())) return;
   m_t << "\\end{DoxyRefDesc}" << endl;
 }
 
