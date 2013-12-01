@@ -265,7 +265,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
 CONTAINS  CONTAINS
-PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTAL)?
+PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|IMPURE|PURE|ELEMENTAL)?
 SCOPENAME ({ID}{BS}"::"{BS})*
 
 %option noyywrap
@@ -1170,11 +1170,11 @@ static void extractPrefix(QCString &text)
   int prefixIndex = 0;
   int curIndex = 0;
   bool cont = TRUE;
-  const char* pre[] = {"RECURSIVE","PURE","ELEMENTAL"};
+  const char* pre[] = {"RECURSIVE","IMPURE","PURE","ELEMENTAL"};
   while(cont)
   {
     cont = FALSE;
-    for(unsigned int i=0; i<3; i++)
+    for(unsigned int i=0; i<4; i++)
     {
       if((prefixIndex=text.find(pre[i], curIndex, FALSE))==0)
       {
