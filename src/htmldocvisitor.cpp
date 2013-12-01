@@ -1777,7 +1777,7 @@ void HtmlDocVisitor::visitPost(DocParamList *)
 void HtmlDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
 
   forceEndParagraph(x);
   bool anonymousEnum = x->file()=="@";
@@ -1800,7 +1800,7 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
 void HtmlDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   m_t << "</dd></dl>" << endl;
   forceStartParagraph(x);
 }

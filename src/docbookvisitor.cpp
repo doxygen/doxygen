@@ -1160,7 +1160,7 @@ void DocbookDocVisitor::visitPost(DocParamList *)
 void DocbookDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   m_t << "<para><link linkend=\"";
   m_t << x->file() << "_1" << x->anchor();
   m_t << "\">";
@@ -1172,7 +1172,7 @@ void DocbookDocVisitor::visitPre(DocXRefItem *x)
 void DocbookDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   m_t << "</para>";
 }
 

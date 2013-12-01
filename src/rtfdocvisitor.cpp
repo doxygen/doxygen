@@ -1579,7 +1579,7 @@ void RTFDocVisitor::visitPost(DocParamList *pl)
 void RTFDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   bool anonymousEnum = x->file()=="@";
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocXRefItem)}\n");
   m_t << "{"; // start param list
@@ -1628,7 +1628,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
 void RTFDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocXRefItem)}\n");
   m_t << "\\par" << endl;
   decIndentLevel();

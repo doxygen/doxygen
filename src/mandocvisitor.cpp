@@ -933,7 +933,7 @@ void ManDocVisitor::visitPost(DocParamList *pl)
 void ManDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   if (!m_firstCol)
   { 
     m_t << endl;
@@ -948,7 +948,7 @@ void ManDocVisitor::visitPre(DocXRefItem *x)
 void ManDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   if (!m_firstCol) m_t << endl;
   m_t << ".RE" << endl;
   m_t << ".PP" << endl;

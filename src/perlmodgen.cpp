@@ -1360,14 +1360,14 @@ void PerlModDocVisitor::visitPre(DocXRefItem *x)
   m_output.add("</xreftitle>");
   m_output.add("<xrefdescription>");
 #endif
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   openItem("xrefitem");
   openSubBlock("content");
 }
 
 void PerlModDocVisitor::visitPost(DocXRefItem *x)
 {
-  if (!(x->title().length())) return;
+  if (x->title().isEmpty()) return;
   closeSubBlock();
   closeItem();
 #if 0
