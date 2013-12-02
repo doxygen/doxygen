@@ -1355,7 +1355,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (!insidePHP) 
 					  {
 					    current->type += " abstract ";
-					    current->virt = Pure;
+					    if (!insideJava)
+					    {
+                                              current->virt = Pure;
+					    }
+					    else
+					    {
+                                              current->spec|=Entry::Abstract;
+					    }
 					  }
 					  else
 					  {
