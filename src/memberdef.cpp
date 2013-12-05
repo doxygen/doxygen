@@ -449,27 +449,6 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al)
   ol.docify("> ");
 }
 
-QCString extractDirection(QCString &docs)
-{
-  QRegExp re("\\[[^\\]]+\\]"); // [...]
-  int l=0;
-  if (re.match(docs,0,&l)==0)
-  {
-    int  inPos  = docs.find("in", 1,FALSE);
-    int outPos  = docs.find("out",1,FALSE);
-    bool input  =  inPos!=-1 &&  inPos<l;
-    bool output = outPos!=-1 && outPos<l;
-    if (input || output) // in,out attributes
-    {
-      docs = docs.mid(l); // strip attributes
-      if (input && output) return "[in,out]";
-      else if (input)      return "[in]";
-      else if (output)     return "[out]";
-    }
-  }
-  return QCString();
-}
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -4984,4 +4963,34 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
     }
   }
 }
+
+QCString MemberDef::briefDescription(bool abbr) const
+{
+  if (m_impl->templateMaster)
+  {
+    return m_impl->templateMaster->briefDescription(abbr);
+  }
+  else
+  {
+    return Definition::briefDescription(abbr);
+  }
+}
+
+QCString MemberDef::documentation() const
+{
+  if (m_impl->templateMaster)
+  {
+    return m_impl->templateMaster->documentation();
+  }
+  else
+  {
+    return Definition::documentation();
+  }
+}
+
+const ArgumentList *MemberDef::typeConstraints() const
+{
+  return m_impl->typeConstraints;
+}
+
 

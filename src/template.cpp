@@ -104,8 +104,7 @@ class TemplateVariant::Private
     bool                boolVal;
     const TemplateStructIntf *strukt;
     const TemplateListIntf   *list;
-    FuncType            func;
-    const void         *obj;
+    Delegate            delegate;
     bool                raw;
 };
 
@@ -158,12 +157,11 @@ TemplateVariant::TemplateVariant(const TemplateListIntf *l)
   p->list = l;
 }
 
-TemplateVariant::TemplateVariant(const void *obj,FuncType f)
+TemplateVariant::TemplateVariant(const TemplateVariant::Delegate &delegate)
 {
   p = new Private;
   p->type = Function;
-  p->func = f;
-  p->obj  = obj;
+  p->delegate = delegate;
 }
 
 TemplateVariant::~TemplateVariant()
@@ -184,8 +182,7 @@ TemplateVariant::TemplateVariant(const TemplateVariant &v)
     case String:   p->strVal  = v.p->strVal;  break;
     case Struct:   p->strukt  = v.p->strukt;  break;
     case List:     p->list    = v.p->list;    break;
-    case Function: p->func    = v.p->func;
-                   p->obj     = v.p->obj;     break;
+    case Function: p->delegate= v.p->delegate;break;
   }
 }
 
@@ -201,8 +198,7 @@ TemplateVariant &TemplateVariant::operator=(const TemplateVariant &v)
     case String:   p->strVal  = v.p->strVal;  break;
     case Struct:   p->strukt  = v.p->strukt;  break;
     case List:     p->list    = v.p->list;    break;
-    case Function: p->func    = v.p->func;
-                   p->obj     = v.p->obj;     break;
+    case Function: p->delegate= v.p->delegate;break;
   }
   return *this;
 }
@@ -305,7 +301,7 @@ const TemplateListIntf *TemplateVariant::toList() const
 
 TemplateVariant TemplateVariant::call(const QValueList<TemplateVariant> &args)
 {
-  if (p->type==Function) return p->func(p->obj,args);
+  if (p->type==Function) return p->delegate(args);
   return TemplateVariant();
 }
 
@@ -766,14 +762,12 @@ class FilterDivisibleBy
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &n)
     {
-      printf("FilterDivisibleBy::apply()\n");
       if (!v.isValid() || !n.isValid())
       {
         return TemplateVariant();
       }
       if (v.type()==TemplateVariant::Integer && n.type()==TemplateVariant::Integer)
       {
-        printf("FilterDivisibleBy(%d,%d)=%d",v.toInt(),n.toInt(),(v.toInt()%n.toInt())==0);
         return TemplateVariant((v.toInt()%n.toInt())==0);
       }
       else
@@ -2045,10 +2039,13 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       TemplateEscapeIntf *escIntf = ci->escapeIntf();
       ci->setEscapeIntf(0); // avoid escaping things we send to standard out
+      bool enable = ci->spacelessEnabled();
+      ci->enableSpaceless(FALSE);
       FTextStream ts(stdout);
       m_nodes.render(ts,c);
       ts << endl;
       ci->setEscapeIntf(escIntf);
+      ci->enableSpaceless(enable);
     }
   private:
     TemplateNodeList m_nodes;
@@ -2423,7 +2420,8 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
             if (list && list->count()>0) // non-empty list
             {
               TreeContext childCtx(this,list,ctx->templateCtx);
-              TemplateVariant children(&childCtx,renderChildrenStub);
+//              TemplateVariant children(&childCtx,renderChildrenStub);
+              TemplateVariant children(TemplateVariant::Delegate::fromFunction(&childCtx,renderChildrenStub));
               children.setRaw(TRUE);
               c->set("children",children);
               m_treeNodes.render(ss,c);

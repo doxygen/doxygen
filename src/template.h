@@ -26,7 +26,7 @@ class TemplateEngine;
  *  When the template engine encounters a variable, it evaluates that variable and 
  *  replaces it with the result. Variable names consist of any combination of 
  *  alphanumeric characters and the underscore ("_").
- *  Use a dot (.) to access attributes of a variable.
+ *  Use a dot (.) to access attributes of a structured variable.
  *  
  *  One can modify variables for display by using \b filters, for example:
  *  `{{ value|default:"nothing" }}`
@@ -40,28 +40,33 @@ class TemplateEngine;
  *
  *  Supported Django tags:
  *  - `for ... empty ... endfor`
- *  - `if ... else ... endif` 
- *  - `block ... endblock` 
+ *  - `if ... else ... endif`
+ *  - `block ... endblock`
  *  - `extend`
  *  - `include`
  *  - `with ... endwith`
  *  - `spaceless ... endspaceless`
+ *  - `cycle`
+ *
+ *  Extension tags:
+ *  - `create` which instantiates a template and writes the result to a file.
+ *     The syntax is `{% create 'filename' from 'template' %}`.
+ *  - `recursetree`
+ *  - `markers`
+ *  - `msg` ... `endmsg`
+ *  - `set`
  *
  *  Supported Django filters:
  *  - `default`
  *  - `length`
  *  - `add`
- *
- *  Extension tags:
- *  - `create` which instantiates a template and writes the result to a file.
- *  The syntax is `{% create 'filename' from 'template' %}`.
- *  - `recursetree` 
- *  - `markers`
+ *  - `divisibleby`
  *
  *  Extension filters:
  *  - `stripPath`
  *  - `nowrap`
  *  - `prepend`
+ *  - `append`
  *
  *  @{
  */
@@ -70,8 +75,50 @@ class TemplateEngine;
 class TemplateVariant
 {
   public:
-    /** Signature of the callback function, used for function type variants */
-    typedef TemplateVariant (*FuncType)(const void *obj, const QValueList<TemplateVariant> &args);
+    /** @brief Helper class to create a delegate that can store a function/method call. */
+    class Delegate
+    {
+      public:
+        /** Callback type to use when creating a delegate from a function. */
+        typedef TemplateVariant (*StubType)(const void *obj, const QValueList<TemplateVariant> &args);
+
+        Delegate() : m_objectPtr(0) , m_stubPtr(0) {}
+
+        /** Creates a delegate given an object. The method to call is passed as a template parameter */
+        template <class T, TemplateVariant (T::*TMethod)(const QValueList<TemplateVariant> &) const>
+        static Delegate fromMethod(const T* objectPtr)
+        {
+          Delegate d;
+          d.m_objectPtr = objectPtr;
+          d.m_stubPtr   = &methodStub<T, TMethod>;
+          return d;
+        }
+        /** Creates a delegate given an object, and a plain function. */
+        static Delegate fromFunction(const void *obj,StubType func)
+        {
+          Delegate d;
+          d.m_objectPtr = obj;
+          d.m_stubPtr = func;
+          return d;
+        }
+
+        /** Invokes the function/method stored in the delegate */
+        TemplateVariant operator()(const QValueList<TemplateVariant> &args) const
+        {
+          return (*m_stubPtr)(m_objectPtr, args);
+        }
+
+      private:
+        const void* m_objectPtr;
+        StubType    m_stubPtr;
+
+        template <class T, TemplateVariant (T::*TMethod)(const QValueList<TemplateVariant> &) const>
+        static TemplateVariant methodStub(const void* objectPtr, const QValueList<TemplateVariant> &args)
+        {
+          T* p = (T*)(objectPtr);
+          return (p->*TMethod)(args);
+        }
+    };
 
     /** Types of data that can be stored in a TemplateVariant */
     enum Type { None, Bool, Integer, String, Struct, List, Function };
@@ -109,13 +156,14 @@ class TemplateVariant
      */
     TemplateVariant(const TemplateListIntf *l);
 
-    /** Constructs a new variant which represents a function 
-     *  @param[in] obj Opaque user defined pointer, which
-     *             is passed back when call() is invoked.
-     *  @param[in] func Callback function to invoke when
+    /** Constructs a new variant which represents a method call
+     *  @param[in] delegate Delegate object to invoke when
      *             calling call() on this variant.
+     *  @note Use TemplateVariant::Delegate::fromMethod() and
+     *  TemplateVariant::Delegate::fromFunction() to create
+     *  Delegate objects.
      */
-    TemplateVariant(const void *obj,FuncType func);
+    TemplateVariant(const Delegate &delegate);
 
     /** Destroys the Variant object */
     ~TemplateVariant();
@@ -167,7 +215,7 @@ class TemplateVariant
      *  @see setRaw()
      */
     bool raw() const;
-    
+
   private:
     class Private;
     Private *p;

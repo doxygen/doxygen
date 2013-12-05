@@ -245,6 +245,14 @@ class MemberDef : public Definition
     QCString getDeclType() const;
     void getLabels(QStrList &sl,Definition *container) const;
 
+    const ArgumentList *typeConstraints() const;
+
+    // overrules
+    QCString documentation() const;
+    QCString briefDescription(bool abbr=FALSE) const;
+
+
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------

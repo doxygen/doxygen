@@ -137,18 +137,18 @@ class Definition : public DefinitionIntf
     virtual QCString getSourceAnchor() const;
 
     /*! Returns the detailed description of this definition */
-    QCString documentation() const;
-    
+    virtual QCString documentation() const;
+
     /*! Returns the line number at which the detailed documentation was found. */
     int docLine() const;
 
-    /*! Returns the file in which the detailed documentation block was found. 
+    /*! Returns the file in which the detailed documentation block was found.
      *  This can differ from getDefFileName().
      */
     QCString docFile() const;
 
     /*! Returns the brief description of this definition. This can include commands. */
-    QCString briefDescription(bool abbreviate=FALSE) const;
+    virtual QCString briefDescription(bool abbreviate=FALSE) const;
 
     /*! Returns a plain text version of the brief description suitable for use
      *  as a tool tip. 
@@ -259,6 +259,7 @@ class Definition : public DefinitionIntf
     MemberSDict *getReferencedByMembers() const;
 
     bool hasSections() const;
+    bool hasSources() const;
 
     /** returns TRUE if this class has a brief description */
     bool hasBriefDescription() const;

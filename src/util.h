@@ -446,7 +446,7 @@ uint getUtf8Code( const QCString& s, int idx );
 uint getUtf8CodeToLower( const QCString& s, int idx );
 uint getUtf8CodeToUpper( const QCString& s, int idx );
 
-
+QCString extractDirection(QCString &docs);
 
 #endif
 

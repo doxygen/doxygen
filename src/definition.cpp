@@ -1050,6 +1050,13 @@ void Definition::setBodyDef(FileDef *fd)
   m_impl->body->fileDef=fd; 
 }
 
+bool Definition::hasSources() const
+{
+  return m_impl->body && m_impl->body->startLine!=-1 &&
+         m_impl->body->endLine>=m_impl->body->startLine &&
+         m_impl->body->fileDef;
+}
+
 /*! Write code of this definition into the documentation */
 void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 {
@@ -1057,9 +1064,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        m_startBodyLine,m_endBodyLine,m_bodyDef);
-  if (inlineSources && 
-      m_impl->body && m_impl->body->startLine!=-1 && 
-      m_impl->body->endLine>=m_impl->body->startLine && m_impl->body->fileDef)
+  if (inlineSources && hasSources())
   {
     QCString codeFragment;
     int actualStart=m_impl->body->startLine,actualEnd=m_impl->body->endLine;

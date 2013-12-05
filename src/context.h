@@ -25,6 +25,7 @@ class GroupDef;
 class GroupList;
 struct IncludeInfo;
 class MemberList;
+class MemberSDict;
 class MemberDef;
 struct Argument;
 class ArgumentList;
@@ -650,6 +651,7 @@ class MemberListContext : public TemplateListIntf
 {
   public:
     MemberListContext(const MemberList *ml);
+    MemberListContext(MemberSDict *ml,bool doSort);
    ~MemberListContext();
 
     // TemplateListIntf
