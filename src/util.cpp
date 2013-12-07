@@ -7014,7 +7014,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 
 static QDict<void> aliasesProcessed;
 
-static QCString expandAliasRec(const QCString s);
+static QCString expandAliasRec(const QCString s,bool allowRecursion=FALSE);
 
 struct Marker
 {
@@ -7136,7 +7136,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
     //printf("part before marker %d: '%s'\n",i,aliasValue.mid(p,m->pos-p).data());
     if (m->number>0 && m->number<=(int)args.count()) // valid number
     {
-      result+=*args.at(m->number-1);
+      result+=expandAliasRec(*args.at(m->number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    args.at(m->number-1)->data());
     }
@@ -7144,7 +7144,7 @@ static QCString replaceAliasArguments(const QCString &aliasValue,const QCString 
   }
   result+=aliasValue.right(l-p); // append remainder
   //printf("string after replacement of markers: '%s'\n",result.data());
-  
+
   // expand the result again
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
@@ -7175,7 +7175,7 @@ static QCString escapeCommas(const QCString &s)
   return result.data();
 }
 
-static QCString expandAliasRec(const QCString s)
+static QCString expandAliasRec(const QCString s,bool allowRecursion)
 {
   QCString result;
   static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
@@ -7208,10 +7208,10 @@ static QCString expandAliasRec(const QCString s)
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
     //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
-    if (aliasesProcessed.find(cmd)==0 && aliasText) // expand the alias
+    if ((allowRecursion || aliasesProcessed.find(cmd)==0) && aliasText) // expand the alias
     {
       //printf("is an alias!\n");
-      aliasesProcessed.insert(cmd,(void *)0x8);
+      if (!allowRecursion) aliasesProcessed.insert(cmd,(void *)0x8);
       QCString val = *aliasText;
       if (hasArgs)
       {
@@ -7220,7 +7220,7 @@ static QCString expandAliasRec(const QCString s)
         //       aliasText->data(),val.data(),args.data());
       }
       result+=expandAliasRec(val);
-      aliasesProcessed.remove(cmd);
+      if (!allowRecursion) aliasesProcessed.remove(cmd);
       p=i+l;
       if (hasArgs) p+=argsLen+2;
     }
