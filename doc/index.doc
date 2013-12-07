@@ -137,22 +137,12 @@ input used in their production; they are not affected by this license.
 
 Doxygen supports a number of \ref output "output formats" where HTML is the
 most popular one. I've gathered 
-\htmlonly
 <a href="http://www.doxygen.org/results.html">some nice examples</a> 
-\endhtmlonly
-\latexonly
-some nice examples (see {\tt http://www.doxygen.org/results.html})
-\endlatexonly
 of real-life projects using doxygen.
 
 These are part of a larger
-\htmlonly
 <a href="http://www.doxygen.org/projects.html">list of projects</a> 
 that use doxygen.
-\endhtmlonly
-\latexonly
-list of projects that use doxygen (see {\tt http://www.doxygen.org/projects.html}).
-\endlatexonly
 If you know other projects, let <a href="mailto:dimitri@stack.nl?subject=New%20project%20using%20Doxygen">me</a> 
 know and I'll add them. 
 
