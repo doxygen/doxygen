@@ -1049,7 +1049,7 @@ void RTFGenerator::startHtmlLink(const char *url)
 
   if (Config_getBool("RTF_HYPERLINKS"))
   {
-    t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
+    t << "{\\field {\\*\\fldinst { HYPERLINK \"";
     t << url;
     t << "\" }{}";
     t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";

@@ -325,7 +325,7 @@ void RTFDocVisitor::visit(DocURL *u)
   {
     m_t << "{\\field "
              "{\\*\\fldinst "
-               "{ HYPERLINK  \\\\l \"";
+               "{ HYPERLINK \"";
     if (u->isEmail()) m_t << "mailto:";
     m_t << u->url();
     m_t <<  "\" }"
@@ -1130,7 +1130,7 @@ void RTFDocVisitor::visitPre(DocHRef *href)
   {
     m_t << "{\\field "
              "{\\*\\fldinst "
-               "{ HYPERLINK  \\\\l \"" << href->url() << "\" "
+               "{ HYPERLINK \"" << href->url() << "\" "
                "}{}"
              "}"
              "{\\fldrslt "
