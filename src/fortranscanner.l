@@ -944,7 +944,7 @@ private                                 {
                                          }
 
                                          // TYPE_SPEC is for old function style function result
-                                         result = QCString(yytext).stripWhiteSpace();
+                                         result = QCString(yytext).stripWhiteSpace().lower();
                                          current->type = result;
                                          yy_push_state(SubprogPrefix);
                                        }
