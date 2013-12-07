@@ -230,7 +230,7 @@ Structural indicators
   any of the commands.
 
   The title is optional, so this command can also be used to add a number of
-  entities to an existing group using \@{ and \@} like this:
+  entities to an existing group using \c \@{ and \c \@} like this:
 
 \verbatim
   /*! \addtogroup mygrp
@@ -1739,6 +1739,26 @@ void setPosition(double x,double y,double z,double t)
  \verbatim ALIASES += "reminder=\xrefitem reminders \"Reminder\" \"Reminders\"" \endverbatim
  Note the use of escaped quotes for the second and third argument of the
  \c \\xrefitem command.
+
+ In case parameter "(heading)" is the empty string no heading is generated. This can be useful
+ when used in combination with the \ref cmdpage "\\page" command e.g.
+\verbatim
+/** @page my_errors My Errors
+ *  @brief Errors page
+ *
+ *  Errors page contents.
+ */
+
+/** \error ERROR 101: in case a file can not be opened.
+    Check about file system read/write access. */
+#define MY_ERR_CANNOT_OPEN_FILE                   101
+
+/** \error ERROR 102: in case a file can not be closed.
+    Check about file system read/write access. */
+#define MY_ERR_CANNOT_CLOSE_FILE                  102
+\endverbatim
+ with \c \\error defined as
+ \verbatim ALIASES += "error=\xrefitem my_errors \"\" \"\"" \endverbatim
 
 <hr>
 
