@@ -4769,3 +4769,9 @@ const ExampleSDict *ClassDef::exampleList() const
 {
   return m_impl->exampleSDict;
 }
+
+bool ClassDef::subGrouping() const
+{
+  return m_impl->subGrouping;
+}
+

@@ -1124,11 +1124,17 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       addProperty("properties",                this,&Private::properties);
       addProperty("events",                    this,&Private::events);
       addProperty("friends",                   this,&Private::friends);
-      addProperty("relatedDecls",              this,&Private::relatedDecls);
-      addProperty("typedefs",                  this,&Private::typedefs);
-      addProperty("enums",                     this,&Private::enums);
-      addProperty("methods",                   this,&Private::methods);
-      addProperty("relatedDefs",               this,&Private::relatedDefs);
+      addProperty("related",                   this,&Private::related);
+      addProperty("detailedTypedefs",          this,&Private::detailedTypedefs);
+      addProperty("detailedEnums",             this,&Private::detailedEnums);
+      addProperty("detailedServices",          this,&Private::detailedServices);
+      addProperty("detailedInterfaces",        this,&Private::detailedInterfaces);
+      addProperty("detailedConstructors",      this,&Private::detailedConstructors);
+      addProperty("detailedMethods",           this,&Private::detailedMethods);
+      addProperty("detailedRelated",           this,&Private::detailedRelated);
+      addProperty("detailedVariables",         this,&Private::detailedVariables);
+      addProperty("detailedProperties",        this,&Private::detailedProperties);
+      addProperty("detailedEvents",            this,&Private::detailedEvents);
       addProperty("nestedClasses",             this,&Private::nestedClasses);
       addProperty("compoundType",              this,&Private::compoundType);
       addProperty("templateDecls",             this,&Private::templateDecls);
@@ -1136,6 +1142,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       addProperty("examples",                  this,&Private::examples);
       addProperty("allMembersList",            this,&Private::allMembersList);
       addProperty("allMembersFileName",        this,&Private::allMembersFileName);
+      addProperty("memberGroups",              this,&Private::memberGroups);
     }
     TemplateVariant title() const
     {
@@ -1298,7 +1305,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         MemberList *ml = m_classDef->getMemberList(type);
         if (ml)
         {
-          list.reset(new MemberListInfoContext(ml,title));
+          list.reset(new MemberListInfoContext(m_classDef,relPathAsString(),ml,title));
         }
       }
       if (list)
@@ -1430,25 +1437,49 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     {
       return getMemberList(m_cache.friends,MemberListType_friends,theTranslator->trFriends());
     }
-    TemplateVariant relatedDecls() const
+    TemplateVariant related() const
     {
-      return getMemberList(m_cache.relatedDecls,MemberListType_related,theTranslator->trRelatedFunctions());
+      return getMemberList(m_cache.related,MemberListType_related,theTranslator->trRelatedFunctions());
     }
-    TemplateVariant typedefs() const
+    TemplateVariant detailedTypedefs() const
     {
-      return getMemberList(m_cache.typedefs,MemberListType_typedefMembers,theTranslator->trMemberTypedefDocumentation());
+      return getMemberList(m_cache.detailedTypedefs,MemberListType_typedefMembers,theTranslator->trMemberTypedefDocumentation());
     }
-    TemplateVariant enums() const
+    TemplateVariant detailedEnums() const
     {
-      return getMemberList(m_cache.enums,MemberListType_enumMembers,theTranslator->trMemberEnumerationDocumentation());
+      return getMemberList(m_cache.detailedEnums,MemberListType_enumMembers,theTranslator->trMemberEnumerationDocumentation());
     }
-    TemplateVariant methods() const
+    TemplateVariant detailedServices() const
     {
-      return getMemberList(m_cache.methods,MemberListType_functionMembers,theTranslator->trMemberFunctionDocumentation());
+      return getMemberList(m_cache.detailedServices,MemberListType_serviceMembers,theTranslator->trServices());
     }
-    TemplateVariant relatedDefs() const
+    TemplateVariant detailedInterfaces() const
     {
-      return getMemberList(m_cache.relatedDefs,MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+      return getMemberList(m_cache.detailedInterfaces,MemberListType_interfaceMembers,theTranslator->trInterfaces());
+    }
+    TemplateVariant detailedConstructors() const
+    {
+      return getMemberList(m_cache.detailedConstructors,MemberListType_constructors,theTranslator->trConstructorDocumentation());
+    }
+    TemplateVariant detailedMethods() const
+    {
+      return getMemberList(m_cache.detailedMethods,MemberListType_functionMembers,theTranslator->trMemberFunctionDocumentation());
+    }
+    TemplateVariant detailedRelated() const
+    {
+      return getMemberList(m_cache.detailedRelated,MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+    }
+    TemplateVariant detailedVariables() const
+    {
+      return getMemberList(m_cache.detailedVariables,MemberListType_variableMembers,theTranslator->trMemberDataDocumentation());
+    }
+    TemplateVariant detailedProperties() const
+    {
+      return getMemberList(m_cache.detailedProperties,MemberListType_propertyMembers,theTranslator->trPropertyDocumentation());
+    }
+    TemplateVariant detailedEvents() const
+    {
+      return getMemberList(m_cache.detailedEvents,MemberListType_eventMembers,theTranslator->trEventDocumentation());
     }
     TemplateVariant nestedClasses() const
     {
@@ -1457,9 +1488,9 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
       if (!m_cache.nestedClasses)
       {
+        NestedClassListContext *classList = new NestedClassListContext;
         if (m_classDef->getClassSDict())
         {
-          NestedClassListContext *classList = new NestedClassListContext;
           ClassSDict::Iterator sdi(*m_classDef->getClassSDict());
           ClassDef *cd;
           for (sdi.toFirst();(cd=sdi.current());++sdi)
@@ -1474,17 +1505,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               classList->append(cd);
             }
           }
-          m_cache.nestedClasses.reset(classList);
         }
+        m_cache.nestedClasses.reset(classList);
       }
-      if (m_cache.nestedClasses)
-      {
-        return m_cache.nestedClasses.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.nestedClasses.get();
     }
     TemplateVariant compoundType() const
     {
@@ -1536,14 +1560,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         addTemplateDecls(m_classDef,tl);
         m_cache.templateDecls.reset(tl);
       }
-      if (m_cache.templateDecls)
-      {
-        return m_cache.templateDecls.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.templateDecls.get();
     }
     TemplateVariant typeConstraints() const
     {
@@ -1551,14 +1568,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       {
         m_cache.typeConstraints.reset(new ArgumentListContext(m_classDef->typeConstraints(),m_classDef,relPathAsString()));
       }
-      if (m_cache.typeConstraints)
-      {
-        return m_cache.typeConstraints.get();
-      }
       else
       {
-        return TemplateVariant(FALSE);
+        m_cache.typeConstraints.reset(new ArgumentListContext);
       }
+      return m_cache.typeConstraints.get();
     }
     TemplateVariant examples() const
     {
@@ -1568,14 +1582,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         addExamples(exampleList);
         m_cache.examples.reset(exampleList);
       }
-      if (m_cache.examples)
-      {
-        return m_cache.examples.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.examples.get();
     }
     TemplateVariant allMembersList() const
     {
@@ -1584,18 +1591,30 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         AllMembersListContext *ml = new AllMembersListContext(m_classDef->memberNameInfoSDict());
         m_cache.allMembersList.reset(ml);
       }
-      if (m_cache.allMembersList)
-      {
-        return m_cache.allMembersList.get();
-      }
       else
       {
-        return TemplateVariant(FALSE);
+        m_cache.allMembersList.reset(new AllMembersListContext);
       }
+      return m_cache.allMembersList.get();
     }
     TemplateVariant allMembersFileName() const
     {
       return m_classDef->getMemberListFileName();
+    }
+    TemplateVariant memberGroups() const
+    {
+      if (!m_cache.memberGroups)
+      {
+        if (m_classDef->getMemberGroupSDict())
+        {
+          m_cache.memberGroups.reset(new MemberGroupListContext(m_classDef,relPathAsString(),m_classDef->getMemberGroupSDict(),m_classDef->subGrouping()));
+        }
+        else
+        {
+          m_cache.memberGroups.reset(new MemberGroupListContext);
+        }
+      }
+      return m_cache.memberGroups.get();
     }
 
   private:
@@ -1643,11 +1662,18 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ScopedPtr<MemberListInfoContext> properties;
       ScopedPtr<MemberListInfoContext> events;
       ScopedPtr<MemberListInfoContext> friends;
-      ScopedPtr<MemberListInfoContext> relatedDecls;
-      ScopedPtr<MemberListInfoContext> typedefs;
-      ScopedPtr<MemberListInfoContext> enums;
-      ScopedPtr<MemberListInfoContext> methods;
-      ScopedPtr<MemberListInfoContext> relatedDefs;
+      ScopedPtr<MemberListInfoContext> related;
+      ScopedPtr<MemberListInfoContext> detailedTypedefs;
+      ScopedPtr<MemberListInfoContext> detailedEnums;
+      ScopedPtr<MemberListInfoContext> detailedServices;
+      ScopedPtr<MemberListInfoContext> detailedInterfaces;
+      ScopedPtr<MemberListInfoContext> detailedConstructors;
+      ScopedPtr<MemberListInfoContext> detailedMethods;
+      ScopedPtr<MemberListInfoContext> detailedRelated;
+      ScopedPtr<MemberListInfoContext> detailedVariables;
+      ScopedPtr<MemberListInfoContext> detailedProperties;
+      ScopedPtr<MemberListInfoContext> detailedEvents;
+      ScopedPtr<MemberGroupListContext> memberGroups;
       ScopedPtr<AllMembersListContext> allMembersList;
       ScopedPtr<ArgumentListContext>   typeConstraints;
       ScopedPtr<TemplateList>          examples;
@@ -2160,23 +2186,27 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         {
           m_cache.enumValues.reset(new MemberListContext(ml));
         }
+        else
+        {
+          m_cache.enumValues.reset(new MemberListContext);
+        }
       }
-      if (m_cache.enumValues)
-      {
-        return m_cache.enumValues.get();
-      }
-      else
-      {
-        return FALSE;
-      }
+      return m_cache.enumValues.get();
     }
     TemplateVariant templateArgs() const
     {
-      if (!m_cache.templateArgs)
+      if (!m_cache.templateArgs && m_memberDef->templateArguments())
       {
         m_cache.templateArgs.reset(new ArgumentListContext(m_memberDef->templateArguments(),m_memberDef,relPathAsString()));
       }
-      return m_cache.templateArgs.get();
+      if (m_cache.templateArgs)
+      {
+        return m_cache.templateArgs.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
     }
     TemplateVariant templateAlias() const
     {
@@ -2229,15 +2259,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         {
           m_cache.arguments.reset(new ArgumentListContext(defArgList,m_memberDef,relPathAsString()));
         }
+        else
+        {
+          m_cache.arguments.reset(new ArgumentListContext);
+        }
       }
-      if (m_cache.arguments)
-      {
-        return m_cache.arguments.get();
-      }
-      else
-      {
-        return FALSE;
-      }
+      return m_cache.arguments.get();
     }
     TemplateVariant hasParameterList() const
     {
@@ -2323,14 +2350,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         addTemplateDecls(tl);
         m_cache.templateDecls.reset(tl);
       }
-      if (m_cache.templateDecls)
-      {
-        return m_cache.templateDecls.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.templateDecls.get();
     }
     TemplateVariant labels() const
     {
@@ -2338,25 +2358,18 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         QStrList sl;
         m_memberDef->getLabels(sl,m_memberDef->getOuterScope());
+        TemplateList *tl = new TemplateList;
         if (sl.count()>0)
         {
-          TemplateList *tl = new TemplateList;
           QStrListIterator it(sl);
           for (;it.current();++it)
           {
             tl->append(*it);
           }
-          m_cache.labels.reset(tl);
         }
+        m_cache.labels.reset(tl);
       }
-      if (m_cache.labels)
-      {
-        return m_cache.labels.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.labels.get();
     }
     TemplateVariant paramDocs() const
     {
@@ -2392,63 +2405,49 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!m_cache.implements)
       {
         MemberDef *md = m_memberDef->reimplements();
+        m_cache.implements.reset(new TemplateList);
         if (md)
         {
           ClassDef *cd = md->getClassDef();
           if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
           {
-            m_cache.implements.reset(new TemplateList);
             MemberContext *mc = new MemberContext(md);
             m_cache.implementsMember.reset(mc);
             m_cache.implements->append(mc);
           }
         }
       }
-      if (m_cache.implements)
-      {
-        return m_cache.implements.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.implements.get();
     }
     TemplateVariant reimplements() const
     {
       if (!m_cache.reimplements)
       {
         MemberDef *md = m_memberDef->reimplements();
+        m_cache.reimplements.reset(new TemplateList);
         if (md)
         {
           ClassDef *cd = md->getClassDef();
           if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
-            m_cache.reimplements.reset(new TemplateList);
             MemberContext *mc = new MemberContext(md);
             m_cache.reimplementsMember.reset(mc);
             m_cache.reimplements->append(mc);
           }
         }
       }
-      if (m_cache.reimplements)
-      {
-        return m_cache.reimplements.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.reimplements.get();
     }
     TemplateVariant implementedBy() const
     {
       if (!m_cache.implementedBy)
       {
         MemberList *ml = m_memberDef->reimplementedBy();
+        m_cache.implementedBy.reset(new TemplateList);
         if (ml)
         {
           MemberListIterator mli(*ml);
           MemberDef *md=0;
-          m_cache.implementedBy.reset(new TemplateList);
           for (mli.toFirst();(md=mli.current());++mli)
           {
             ClassDef *cd = md->getClassDef();
@@ -2461,25 +2460,18 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           }
         }
       }
-      if (m_cache.implementedBy)
-      {
-        return m_cache.implementedBy.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.implementedBy.get();
     }
     TemplateVariant reimplementedBy() const
     {
       if (!m_cache.reimplementedBy)
       {
+        m_cache.reimplementedBy.reset(new TemplateList);
         MemberList *ml = m_memberDef->reimplementedBy();
         if (ml)
         {
           MemberListIterator mli(*ml);
           MemberDef *md=0;
-          m_cache.reimplementedBy.reset(new TemplateList);
           for (mli.toFirst();(md=mli.current());++mli)
           {
             ClassDef *cd = md->getClassDef();
@@ -2492,14 +2484,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           }
         }
       }
-      if (m_cache.reimplementedBy)
-      {
-        return m_cache.reimplementedBy.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.reimplementedBy.get();
     }
     void addExamples(TemplateList *list) const
     {
@@ -2527,14 +2512,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         addExamples(exampleList);
         m_cache.examples.reset(exampleList);
       }
-      if (m_cache.examples)
-      {
-        return m_cache.examples.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
+      return m_cache.examples.get();
     }
     TemplateVariant typeConstraints() const
     {
@@ -2542,14 +2520,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       {
         m_cache.typeConstraints.reset(new ArgumentListContext(m_memberDef->typeConstraints(),m_memberDef,relPathAsString()));
       }
-      if (m_cache.typeConstraints)
-      {
-        return m_cache.typeConstraints.get();
-      }
       else
       {
-        return TemplateVariant(FALSE);
+        m_cache.typeConstraints.reset(new ArgumentListContext);
       }
+      return m_cache.typeConstraints.get();
     }
     TemplateVariant functionQualifier() const
     {
@@ -4533,6 +4508,11 @@ class MemberListContext::Private : public GenericNodeListContext<MemberContext>
     }
 };
 
+MemberListContext::MemberListContext()
+{
+  p = new Private;
+}
+
 MemberListContext::MemberListContext(const MemberList *list)
 {
   p = new Private;
@@ -4705,6 +4685,11 @@ class AllMembersListContext::Private : public GenericNodeListContext<MemberInfoC
     }
 };
 
+AllMembersListContext::AllMembersListContext()
+{
+  p = new Private(0);
+}
+
 AllMembersListContext::AllMembersListContext(const MemberNameInfoSDict *ml)
 {
   p = new Private(ml);
@@ -4733,19 +4718,178 @@ TemplateListIntf::ConstIterator *AllMembersListContext::createIterator() const
 
 //------------------------------------------------------------------------
 
+//%% struct MemberGroupInfo: member group information
+//%% {
+class MemberGroupInfoContext::Private : public PropertyMapper
+{
+  public:
+    Private(Definition *def,const QCString &relPath,const MemberGroup *mg) :
+      m_def(def),
+      m_relPath(relPath),
+      m_memberListContext(mg->members()),
+      m_memberGroups(def,relPath,0), m_memberGroup(mg)
+    {
+      addProperty("members",      this,&Private::members);
+      addProperty("title",        this,&Private::groupTitle);
+      addProperty("subtitle",     this,&Private::groupSubtitle);
+      addProperty("anchor",       this,&Private::groupAnchor);
+      addProperty("memberGroups", this,&Private::memberGroups);
+      addProperty("docs",         this,&Private::docs);
+    }
+    TemplateVariant members() const
+    {
+      return &m_memberListContext;
+    }
+    TemplateVariant groupTitle() const
+    {
+      return m_memberGroup->header();
+    }
+    TemplateVariant groupSubtitle() const
+    {
+      return "";
+    }
+    TemplateVariant groupAnchor() const
+    {
+      return m_memberGroup->anchor();
+    }
+    TemplateVariant memberGroups() const
+    {
+      return &m_memberGroups;
+    }
+    TemplateVariant docs() const
+    {
+      if (!m_docs)
+      {
+        QCString docs = m_memberGroup->documentation();
+        if (!docs.isEmpty())
+        {
+          m_docs.reset(new TemplateVariant(
+                           parseDoc(m_def,"[@name docs]",-1, // TODO store file & line
+                                    m_relPath,
+                                    m_memberGroup->documentation()+"\n",FALSE)));
+        }
+        else
+        {
+          m_docs.reset(new TemplateVariant(""));
+        }
+      }
+      return *m_docs;
+    }
+  private:
+    Definition *m_def;
+    QCString m_relPath;
+    MemberListContext m_memberListContext;
+    MemberGroupListContext m_memberGroups;
+    const MemberGroup *m_memberGroup;
+    mutable ScopedPtr<TemplateVariant> m_docs;
+};
+//%% }
+
+MemberGroupInfoContext::MemberGroupInfoContext(Definition *def,
+       const QCString &relPath,const MemberGroup *mg)
+{
+  p = new Private(def,relPath,mg);
+}
+
+MemberGroupInfoContext::~MemberGroupInfoContext()
+{
+  delete p;
+}
+
+TemplateVariant MemberGroupInfoContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list MemberGroupList[MemberGroupInfo] : list of member groups
+class MemberGroupListContext::Private : public GenericNodeListContext<MemberGroupInfoContext>
+{
+  public:
+    void addMemberGroup(Definition *def,const QCString &relPath,const MemberGroup *mg)
+    {
+      append(new MemberGroupInfoContext(def,relPath,mg));
+    }
+};
+
+MemberGroupListContext::MemberGroupListContext()
+{
+  p = new Private;
+}
+
+MemberGroupListContext::MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupList *list)
+{
+  p = new Private;
+  if (list)
+  {
+    MemberGroupListIterator mgli(*list);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      p->addMemberGroup(def,relPath,mg);
+    }
+  }
+}
+
+MemberGroupListContext::MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
+{
+  p = new Private;
+  if (dict)
+  {
+    MemberGroupSDict::Iterator di(*dict);
+    const MemberGroup *mg;
+    for (di.toFirst();(mg=di.current());++di)
+    {
+      if (!mg->allMembersInSameSection() || !subGrouping)
+      {
+        p->addMemberGroup(def,relPath,mg);
+      }
+    }
+  }
+}
+
+MemberGroupListContext::~MemberGroupListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int MemberGroupListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant MemberGroupListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *MemberGroupListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+
+//------------------------------------------------------------------------
+
 //%% struct MemberListInfo: member list information
 //%% {
 class MemberListInfoContext::Private : public PropertyMapper
 {
   public:
-    Private(const MemberList *ml,const QCString &title,const QCString &subtitle) :
-      m_memberListContext(ml), m_memberList(ml), m_title(title), m_subtitle(subtitle)
+    Private(Definition *def,const QCString &relPath,const MemberList *ml,const QCString &title,const QCString &subtitle) :
+      m_memberListContext(ml),
+      m_memberGroups(def,relPath,ml ? ml->getMemberGroupList() : 0),
+      m_memberList(ml),
+      m_title(title),
+      m_subtitle(subtitle)
     {
-      addProperty("members", this,&Private::members);
-      addProperty("title",   this,&Private::title);
-      addProperty("subtitle",this,&Private::subtitle);
-      addProperty("anchor",  this,&Private::anchor);
-      // TODO: member groups
+      addProperty("members",      this,&Private::members);
+      addProperty("title",        this,&Private::title);
+      addProperty("subtitle",     this,&Private::subtitle);
+      addProperty("anchor",       this,&Private::anchor);
+      addProperty("memberGroups", this,&Private::memberGroups);
     }
     TemplateVariant members() const
     {
@@ -4763,18 +4907,24 @@ class MemberListInfoContext::Private : public PropertyMapper
     {
       return m_memberList->listTypeAsString(m_memberList->listType());
     }
+    TemplateVariant memberGroups() const
+    {
+      return &m_memberGroups;
+    }
   private:
     MemberListContext m_memberListContext;
+    MemberGroupListContext m_memberGroups;
     const MemberList *m_memberList;
     QCString m_title;
     QCString m_subtitle;
 };
 //%% }
 
-MemberListInfoContext::MemberListInfoContext(const MemberList *ml,
+MemberListInfoContext::MemberListInfoContext(
+           Definition *def,const QCString &relPath,const MemberList *ml,
            const QCString &title,const QCString &subtitle)
 {
-  p = new Private(ml,title,subtitle);
+  p = new Private(def,relPath,ml,title,subtitle);
 }
 
 MemberListInfoContext::~MemberListInfoContext()
@@ -4891,6 +5041,11 @@ class ArgumentListContext::Private : public GenericNodeListContext<ArgumentConte
       append(new ArgumentContext(arg,def,relPath));
     }
 };
+
+ArgumentListContext::ArgumentListContext()
+{
+  p = new Private;
+}
 
 ArgumentListContext::ArgumentListContext(const ArgumentList *list,
                         Definition *def,const QCString &relPath)

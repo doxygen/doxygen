@@ -31,6 +31,9 @@ struct Argument;
 class ArgumentList;
 class MemberNameInfoSDict;
 struct MemberInfo;
+class MemberGroup;
+class MemberGroupSDict;
+class MemberGroupList;
 
 //----------------------------------------------------
 
@@ -650,6 +653,7 @@ class InheritanceListContext : public TemplateListIntf
 class MemberListContext : public TemplateListIntf
 {
   public:
+    MemberListContext();
     MemberListContext(const MemberList *ml);
     MemberListContext(MemberSDict *ml,bool doSort);
    ~MemberListContext();
@@ -666,10 +670,48 @@ class MemberListContext : public TemplateListIntf
 
 //----------------------------------------------------
 
+class MemberGroupInfoContext : public TemplateStructIntf
+{
+  public:
+    MemberGroupInfoContext(Definition *def,const QCString &relPath,const MemberGroup *mg);
+   ~MemberGroupInfoContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class MemberGroupListContext : public TemplateListIntf
+{
+  public:
+    MemberGroupListContext();
+    MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupList *list);
+    MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
+   ~MemberGroupListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+
+//----------------------------------------------------
+
 class MemberListInfoContext : public TemplateStructIntf
 {
   public:
-    MemberListInfoContext(const MemberList *ml,const QCString &title,
+    MemberListInfoContext(Definition *def,const QCString &relPath,
+                          const MemberList *ml,const QCString &title,
                           const QCString &subtitle=QCString());
    ~MemberListInfoContext();
 
@@ -702,6 +744,7 @@ class MemberInfoContext : public TemplateStructIntf
 class AllMembersListContext : public TemplateListIntf
 {
   public:
+    AllMembersListContext();
     AllMembersListContext(const MemberNameInfoSDict *ml);
    ~AllMembersListContext();
 
@@ -736,6 +779,7 @@ class ArgumentContext : public TemplateStructIntf
 class ArgumentListContext : public TemplateListIntf
 {
   public:
+    ArgumentListContext();
     ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
    ~ArgumentListContext();
 

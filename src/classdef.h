@@ -317,6 +317,7 @@ class ClassDef : public Definition
     const ExampleSDict *exampleList() const;
     bool hasExamples() const;
     QCString getMemberListFileName() const;
+    bool subGrouping() const;
 
     //-----------------------------------------------------------------------------------
     // --- setters ----
