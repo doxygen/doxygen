@@ -5911,29 +5911,29 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
   static const QRegExp re_ftn("[a-z_A-Z\\x80-\\xFF][()=_a-z_A-Z0-9:\\x80-\\xFF]*");
   QRegExp re;
 
-  if (lang == SrcLangExt_Fortran)
-  {
-    if (type.at(pos)==',') return -1;
-    if (type.left(4).lower()=="type")
-    {
-      re = re_norm;
-    }
-    else
-    {
-      re = re_ftn;
-    }
-  }
-  else
-  {
-    re = re_norm;
-  }
-
   name.resize(0);
   templSpec.resize(0);
   int i,l;
   int typeLen=type.length();
   if (typeLen>0)
   {
+    if (lang == SrcLangExt_Fortran)
+    {
+      if (type.at(pos)==',') return -1;
+      if (type.left(4).lower()=="type")
+      {
+        re = re_norm;
+      }
+      else
+      {
+        re = re_ftn;
+      }
+    }
+    else
+    {
+      re = re_norm;
+    }
+
     if ((i=re.match(type,pos,&l))!=-1) // for each class name in the type
     {
       int ts=i+l;
