@@ -1176,13 +1176,27 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
    */
 <ObjCParams>"("				{
-  					  BEGIN( ObjCParamType );
-  					}
-<ObjCParamType>[^)]*			{
-  					  current->argList->getLast()->type=QCString(yytext).stripWhiteSpace();
-  					}
+				 	  roundCount=0;
+					  current->argList->getLast()->type.resize(0);
+					  BEGIN( ObjCParamType );
+					}
+<ObjCParamType>"("                      {
+                                          roundCount++;
+  					  current->argList->getLast()->type+=yytext;
+                                        }
 <ObjCParamType>")"/{B}*			{
-  					  BEGIN( ObjCParams );
+                                          if (roundCount<=0)
+                                          {
+                                            BEGIN( ObjCParams );
+                                          }
+                                          else
+                                          {
+                                            current->argList->getLast()->type+=yytext;
+                                            roundCount--;
+                                          }
+					}
+<ObjCParamType>[^()]*			{
+        				  current->argList->getLast()->type+=QCString(yytext).stripWhiteSpace();
   					}
 <ObjCMethod,ObjCParams>";"		{ // end of method declaration
 					  if (current->argList->getLast() && current->argList->getLast()->type.isEmpty())
@@ -1193,7 +1207,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  //printf("argList=%s\n",current->args.data());
   					  unput(';');
   					  BEGIN( Function );
-  					}
+                                        }
 <ObjCMethod,ObjCParams>(";"{BN}+)?"{"	{ // start of a method body
   					  lineCount();
                                           //printf("Type=%s Name=%s args=%s\n",
