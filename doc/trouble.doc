@@ -22,6 +22,11 @@
     read \ref unix_problems "this section" first.
 <li>Doxygen is <em>not</em> a real compiler, it is only a lexical scanner.
     This means that it can and will not detect errors in your source code.
+<li>Doxygen has a build in preprocessor, but this works slightly different than
+    the C preprocessor. Doxygen assumes a header file is properly guarded against
+    multiple inclusion, and that each include file is standalone (i.e. it could be placed
+    at the top of a source file without causing compiler errors). As long as this is
+    true (and this is a good design practice) you should not encounter problems.
 <li>Since it is impossible to test all possible code fragments, it is
     very well possible, that some valid piece of C/C++ code is not handled
     properly. If you find such a piece, please send it to me, so I can
