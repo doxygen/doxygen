@@ -360,6 +360,8 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
                                 Specifier s,const char *t)
 {
   //printf("*** insert sub class %s into %s\n",cd->name().data(),name().data());
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  if (!extractPrivate && cd->protection()==Private) return;
   if (m_impl->inheritedBy==0)
   {
     m_impl->inheritedBy   = new BaseClassList;
