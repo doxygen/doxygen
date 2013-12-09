@@ -821,10 +821,10 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 <UseOnly>{BS},{BS}                      { codifyLines(yytext); }
 <UseOnly>{BS}&{BS}"\n"                  { codifyLines(yytext); YY_FTN_RESET}
 <UseOnly>{ID}                           {
+                                          useEntry->onlyNames.append(yytext);
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
                                           g_insideBody=FALSE;
-                                          useEntry->onlyNames.append(yytext);
                                         }
 <Use,UseOnly>"\n"                       {
                                           unput(*yytext);
