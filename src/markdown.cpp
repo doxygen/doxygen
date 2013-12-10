@@ -1974,6 +1974,9 @@ static QCString processBlocks(const QCString &s,int indent)
     end++;
   }
 
+#if 0 // commented out, since starting with a comment block is probably a usage error
+      // see also http://stackoverflow.com/q/20478611/784672
+
   // special case when the documentation starts with a code block
   // since the first line is skipped when looking for a code block later on.
   if (end>codeBlockIndent && isCodeBlock(data,0,end,blockIndent))
@@ -1982,6 +1985,7 @@ static QCString processBlocks(const QCString &s,int indent)
     end=i+1;
     pi=-1;
   }
+#endif
 
   // process each line
   while (i<size)
