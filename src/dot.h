@@ -317,9 +317,8 @@ class DotGroupCollaboration
     QList<Edge>     m_edges;
 };
 
-/** Helper class to run dot from doxygen.
- */
-class DotRunner
+
+class DotTask
 {
   public:
     struct CleanupItem
@@ -328,6 +327,18 @@ class DotRunner
       QCString file;
     };
 
+    DotTask() { }
+    virtual ~DotTask() { }
+    virtual bool run()=0;
+    virtual CleanupItem cleanup() const = 0;
+  protected:
+};
+
+/** Helper class to run dot from doxygen.
+ */
+class DotRunner : public DotTask
+{
+  public:
     /** Creates a runner for a dot \a file. */
     DotRunner(const QCString &file,const QCString &fontPath,bool checkResult,
         const QCString &imageName = QCString());
@@ -358,7 +369,7 @@ class DotRunner
 };
 
 /** Helper class to insert a set of map file into an output file */
-class DotFilePatcher
+class DotFilePatcher : public DotTask
 {
   public:
     struct Map
@@ -381,23 +392,25 @@ class DotFilePatcher
     int addSVGObject(const QCString &baseName, const QCString &figureName,
                      const QCString &relPath);
     bool run();
+    CleanupItem cleanup() const { return m_cleanupItem; }
     QCString file() const;
 
   private:
     QList<Map> m_maps;
     QCString m_patchFile;
+    CleanupItem m_cleanupItem;
 };
 
 /** Queue of dot jobs to run. */
 class DotRunnerQueue
 {
   public:
-    void enqueue(DotRunner *runner);
-    DotRunner *dequeue();
+    void enqueue(DotTask *runner);
+    DotTask *dequeue();
     uint count() const;
   private:
     QWaitCondition  m_bufferNotEmpty;
-    QQueue<DotRunner> m_queue;
+    QQueue<DotTask> m_queue;
     mutable QMutex  m_mutex;
 };
 
@@ -409,7 +422,7 @@ class DotWorkerThread : public QThread
     void run();
     void cleanup();
   private:
-    DotRunnerQueue *m_queue;
+    DotRunnerQueue *m_dotRunnerQ;
     QList<DotRunner::CleanupItem> m_cleanupItems;
 };
 
@@ -431,12 +444,13 @@ class DotManager
     bool run();
 
   private:
+    DotFilePatcher* findPatcher(const QCString &file);
     DotManager();
     virtual ~DotManager();
-    QList<DotRunner>       m_dotRuns;
-    SDict<DotFilePatcher> m_dotMaps;
+    QList<DotTask>       m_dotTaskL;
+    SDict<DotTask>       m_dotMaps;
     static DotManager     *m_theInstance;
-    DotRunnerQueue        *m_queue;
+    DotRunnerQueue        *m_dotRunnerQ;
     QList<DotWorkerThread> m_workers;
 };
 
