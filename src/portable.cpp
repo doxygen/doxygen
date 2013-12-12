@@ -84,7 +84,11 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
 #else  // Other Unices just use fork
 
   pid = fork();
-  if (pid==-1) return -1;
+  if (pid==-1)
+  {
+    perror("fork error");
+	  return -1;
+  }
   if (pid==0)
   {
     const char * argv[4];
