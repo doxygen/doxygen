@@ -1077,7 +1077,7 @@ TemplateVariant IncludeInfoContext::get(const char *n) const
 class ClassContext::Private : public DefinitionContext<ClassContext::Private>
 {
   public:
-    Private(ClassDef *cd) : DefinitionContext(cd) ,
+    Private(ClassDef *cd) : DefinitionContext<ClassContext::Private>(cd) ,
        m_classDef(cd), m_usedFiles(cd),
        m_includeInfo(cd ? cd->includeInfo() : 0, cd ? cd->getLanguage() : SrcLangExt_Unknown)
     {
@@ -1709,7 +1709,7 @@ TemplateVariant ClassContext::get(const char *n) const
 class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Private>
 {
   public:
-    Private(NamespaceDef *nd) : DefinitionContext(nd) , m_namespaceDef(nd)
+    Private(NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>(nd) , m_namespaceDef(nd)
     {
       addProperty("title",this,&Private::title);
       addProperty("highlight",this,&Private::highlight);
@@ -1754,7 +1754,7 @@ TemplateVariant NamespaceContext::get(const char *n) const
 class FileContext::Private : public DefinitionContext<FileContext::Private>
 {
   public:
-    Private(FileDef *fd) : DefinitionContext(fd) , m_fileDef(fd)
+    Private(FileDef *fd) : DefinitionContext<FileContext::Private>(fd) , m_fileDef(fd)
     {
       addProperty("title",this,&Private::title);
       addProperty("highlight",this,&Private::highlight);
@@ -1804,7 +1804,7 @@ TemplateVariant FileContext::get(const char *n) const
 class DirContext::Private : public DefinitionContext<DirContext::Private>
 {
   public:
-    Private(DirDef *dd) : DefinitionContext(dd) , m_dirDef(dd)
+    Private(DirDef *dd) : DefinitionContext<DirContext::Private>(dd) , m_dirDef(dd)
     {
       addProperty("title",this,&Private::title);
       addProperty("highlight",this,&Private::highlight);
@@ -1855,7 +1855,7 @@ TemplateVariant DirContext::get(const char *n) const
 class PageContext::Private : public DefinitionContext<PageContext::Private>
 {
   public:
-    Private(PageDef *pd) : DefinitionContext(pd) , m_pageDef(pd)
+    Private(PageDef *pd) : DefinitionContext<PageContext::Private>(pd) , m_pageDef(pd)
     {
       addProperty("title",this,&Private::title);
       addProperty("highlight",this,&Private::highlight);
@@ -2010,7 +2010,7 @@ TemplateVariant createLinkedText(Definition *def,const QCString &relPath,const Q
 class MemberContext::Private : public DefinitionContext<MemberContext::Private>
 {
   public:
-    Private(MemberDef *md) : DefinitionContext(md) , m_memberDef(md)
+    Private(MemberDef *md) : DefinitionContext<MemberContext::Private>(md) , m_memberDef(md)
     {
       addProperty("declType",            this,&Private::declType);
       addProperty("declArgs",            this,&Private::declArgs);
@@ -2736,7 +2736,7 @@ TemplateVariant MemberContext::get(const char *n) const
 class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
 {
   public:
-    Private(GroupDef *gd) : DefinitionContext(gd) , m_groupDef(gd)
+    Private(GroupDef *gd) : DefinitionContext<ModuleContext::Private>(gd) , m_groupDef(gd)
     {
       addProperty("title",this,&Private::title);
       addProperty("highlight",this,&Private::highlight);
