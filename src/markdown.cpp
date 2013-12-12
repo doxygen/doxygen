@@ -2292,9 +2292,13 @@ void MarkdownFileParser::parseInput(const char *fileName,
   QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
   static QCString mdfileAsMainPage = Config_getString("USE_MDFILE_AS_MAINPAGE");
-  if (id.isEmpty()) id = markdownFileNameToId(fileName); 
+  if (id.isEmpty()) id = markdownFileNameToId(fileName);
   if (title.isEmpty()) title = titleFn;
-  if (fn==mdfileAsMainPage)
+  if (!mdfileAsMainPage.isEmpty() &&
+      (fn==mdfileAsMainPage || // name reference
+       QFileInfo(fileName).absFilePath()==
+       QFileInfo(mdfileAsMainPage).absFilePath()) // file reference with path
+     )
   {
     docs.prepend("@mainpage\n");
   }
