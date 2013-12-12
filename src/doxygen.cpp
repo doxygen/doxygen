@@ -9772,6 +9772,31 @@ static void dumpSymbolMap()
   }
 }
 
+// print developer options of doxygen
+static void devUsage()
+{
+  msg("developer parameters:\n");
+  msg("-m dump symbol map\n");
+  msg("-b output to wizard\n");
+  msg("-T activates output generation via Django like template\n");
+  msg("-d <level>  Enable a debug level, such as:\n");
+  msg("\tfindmembers\n");
+  msg("\tfunctions\n");
+  msg("\tvariables\n");
+  msg("\tpreprocessor\n");
+  msg("\tclasses\n");
+  msg("\tcommentcnv\n");
+  msg("\tcommentscan\n");
+  msg("\tvalidate\n");
+  msg("\tprinttree\n");
+  msg("\ttime\n");
+  msg("\textcmd\n");
+  msg("\tmarkdown\n");
+  msg("\tfilteroutput\n");
+  msg("\tlex\n");
+}
+
+
 //----------------------------------------------------------------------------
 // print the usage of doxygen
 
@@ -9799,6 +9824,7 @@ static void usage(const char *name)
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
+  msg("-v print version string\n");
 }
 
 //----------------------------------------------------------------------------
@@ -10020,6 +10046,7 @@ void readConfiguration(int argc, char **argv)
         if (!debugLabel)
         {
           err("option \"-d\" is missing debug specifier.\n");
+          devUsage();
           cleanUpDoxygen();
           exit(1);
         }
