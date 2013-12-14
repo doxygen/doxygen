@@ -21,6 +21,7 @@
 #include <qdict.h>
 
 #include "debug.h"
+#include "message.h"
 
 //------------------------------------------------------------------------
 
@@ -120,3 +121,14 @@ bool Debug::isFlagSet(DebugMask mask)
   return (curMask & mask)!=0;
 }
 
+void Debug::printFlags(void)
+{
+  int i;
+  for (i = 0; i < sizeof(s_labels)/sizeof(*s_labels); i++)
+  {
+     if (s_labels[i].name)
+     {
+        msg("\t%s\n",s_labels[i].name);
+     }
+  }
+}

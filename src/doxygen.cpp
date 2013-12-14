@@ -9775,25 +9775,12 @@ static void dumpSymbolMap()
 // print developer options of doxygen
 static void devUsage()
 {
-  msg("developer parameters:\n");
-  msg("-m dump symbol map\n");
-  msg("-b output to wizard\n");
-  msg("-T activates output generation via Django like template\n");
-  msg("-d <level>  Enable a debug level, such as:\n");
-  msg("\tfindmembers\n");
-  msg("\tfunctions\n");
-  msg("\tvariables\n");
-  msg("\tpreprocessor\n");
-  msg("\tclasses\n");
-  msg("\tcommentcnv\n");
-  msg("\tcommentscan\n");
-  msg("\tvalidate\n");
-  msg("\tprinttree\n");
-  msg("\ttime\n");
-  msg("\textcmd\n");
-  msg("\tmarkdown\n");
-  msg("\tfilteroutput\n");
-  msg("\tlex\n");
+  msg("Developer parameters:\n");
+  msg("  -m          dump symbol map\n");
+  msg("  -b          output to wizard\n");
+  msg("  -T          activates output generation via Django like template\n");
+  msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
+  Debug::printFlags();
 }
 
 

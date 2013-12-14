@@ -43,6 +43,7 @@ class Debug
     static int  setFlag(const char *label);
     static void clearFlag(const char *label);
     static bool isFlagSet(DebugMask mask);
+    static void printFlags(void);
     static void setPriority(int p);
     
   private:
