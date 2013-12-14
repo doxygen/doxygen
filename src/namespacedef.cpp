@@ -891,7 +891,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
       {
         if (nd->isConstantGroup())
         {
-          err("Internal inconsistency: constant group but not IDL?");
+          err("Internal inconsistency: constant group but not IDL?\n");
         }
         found=TRUE;
         break;
@@ -936,7 +936,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
         }
         else
         {
-          err("Internal inconsistency: namespace in IDL not module or cg");
+          err("Internal inconsistency: namespace in IDL not module or cg\n");
         }
       }
       ol.insertMemberAlign();
