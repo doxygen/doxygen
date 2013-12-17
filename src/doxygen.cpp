@@ -9772,6 +9772,18 @@ static void dumpSymbolMap()
   }
 }
 
+// print developer options of doxygen
+static void devUsage()
+{
+  msg("Developer parameters:\n");
+  msg("  -m          dump symbol map\n");
+  msg("  -b          output to wizard\n");
+  msg("  -T          activates output generation via Django like template\n");
+  msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
+  Debug::printFlags();
+}
+
+
 //----------------------------------------------------------------------------
 // print the usage of doxygen
 
@@ -9799,6 +9811,7 @@ static void usage(const char *name)
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
+  msg("-v print version string\n");
 }
 
 //----------------------------------------------------------------------------
@@ -10020,6 +10033,7 @@ void readConfiguration(int argc, char **argv)
         if (!debugLabel)
         {
           err("option \"-d\" is missing debug specifier.\n");
+          devUsage();
           cleanUpDoxygen();
           exit(1);
         }
