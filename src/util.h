@@ -448,5 +448,12 @@ uint getUtf8CodeToUpper( const QCString& s, int idx );
 
 QCString extractDirection(QCString &docs);
 
+void convertProtectionLevel(
+                   MemberListType inListType,
+                   Protection inProt,
+                   int *outListType1,
+                   int *outListType2
+                  );
+
 #endif
 

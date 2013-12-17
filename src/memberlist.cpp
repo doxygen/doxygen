@@ -878,7 +878,7 @@ void MemberList::setNeedsSorting(bool b)
   m_needsSorting = b;
 }
 
-QCString MemberList::listTypeAsString(MemberListType type) const
+QCString MemberList::listTypeAsString(MemberListType type) 
 {
   switch(type)
   {

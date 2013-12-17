@@ -36,7 +36,7 @@ class MemberList : public QList<MemberDef>
     MemberList(MemberListType lt);
    ~MemberList();
     MemberListType listType() const { return m_listType; }
-    QCString listTypeAsString(MemberListType type) const;
+    static QCString listTypeAsString(MemberListType type);
     bool insert(uint index,const MemberDef *md);
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);

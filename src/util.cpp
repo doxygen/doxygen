@@ -8080,3 +8080,193 @@ QCString extractDirection(QCString &docs)
   return QCString();
 }
 
+//-----------------------------------------------------------
+
+/** Computes for a given list type \a inListType, which are the
+ *  the corresponding list type(s) in the base class that are to be
+ *  added to this list.
+ *
+ *  So for public inheritance, the mapping is 1-1, so outListType1=inListType
+ *  Private members are to be hidden completely.
+ *
+ *  For protected inheritance, both protected and public members of the
+ *  base class should be joined in the protected member section.
+ *
+ *  For private inheritance, both protected and public members of the
+ *  base class should be joined in the private member section.
+ */
+void convertProtectionLevel(
+                   MemberListType inListType,
+                   Protection inProt,
+                   int *outListType1,
+                   int *outListType2
+                  )
+{
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  // default representing 1-1 mapping
+  *outListType1=inListType;
+  *outListType2=-1;
+  if (inProt==Public)
+  {
+    switch (inListType) // in the private section of the derived class,
+                        // the private section of the base class should not
+                        // be visible
+    {
+      case MemberListType_priMethods:
+      case MemberListType_priStaticMethods:
+      case MemberListType_priSlots:
+      case MemberListType_priAttribs:
+      case MemberListType_priStaticAttribs:
+      case MemberListType_priTypes:
+        *outListType1=-1;
+        *outListType2=-1;
+        break;
+      default:
+        break;
+    }
+  }
+  else if (inProt==Protected) // Protected inheritance
+  {
+    switch (inListType) // in the protected section of the derived class,
+                        // both the public and protected members are shown
+                        // as protected
+    {
+      case MemberListType_pubMethods:
+      case MemberListType_pubStaticMethods:
+      case MemberListType_pubSlots:
+      case MemberListType_pubAttribs:
+      case MemberListType_pubStaticAttribs:
+      case MemberListType_pubTypes:
+      case MemberListType_priMethods:
+      case MemberListType_priStaticMethods:
+      case MemberListType_priSlots:
+      case MemberListType_priAttribs:
+      case MemberListType_priStaticAttribs:
+      case MemberListType_priTypes:
+        *outListType1=-1;
+        *outListType2=-1;
+        break;
+
+      case MemberListType_proMethods:
+        *outListType2=MemberListType_pubMethods;
+        break;
+      case MemberListType_proStaticMethods:
+        *outListType2=MemberListType_pubStaticMethods;
+        break;
+      case MemberListType_proSlots:
+        *outListType2=MemberListType_pubSlots;
+        break;
+      case MemberListType_proAttribs:
+        *outListType2=MemberListType_pubAttribs;
+        break;
+      case MemberListType_proStaticAttribs:
+        *outListType2=MemberListType_pubStaticAttribs;
+        break;
+      case MemberListType_proTypes:
+        *outListType2=MemberListType_pubTypes;
+        break;
+      default:
+        break;
+    }
+  }
+  else if (inProt==Private)
+  {
+    switch (inListType) // in the private section of the derived class,
+                        // both the public and protected members are shown
+                        // as private
+    {
+      case MemberListType_pubMethods:
+      case MemberListType_pubStaticMethods:
+      case MemberListType_pubSlots:
+      case MemberListType_pubAttribs:
+      case MemberListType_pubStaticAttribs:
+      case MemberListType_pubTypes:
+      case MemberListType_proMethods:
+      case MemberListType_proStaticMethods:
+      case MemberListType_proSlots:
+      case MemberListType_proAttribs:
+      case MemberListType_proStaticAttribs:
+      case MemberListType_proTypes:
+        *outListType1=-1;
+        *outListType2=-1;
+        break;
+
+      case MemberListType_priMethods:
+        if (extractPrivate)
+        {
+          *outListType1=MemberListType_pubMethods;
+          *outListType2=MemberListType_proMethods;
+        }
+        else
+        {
+          *outListType1=-1;
+          *outListType2=-1;
+        }
+        break;
+      case MemberListType_priStaticMethods:
+        if (extractPrivate)
+        {
+          *outListType1=MemberListType_pubStaticMethods;
+          *outListType2=MemberListType_proStaticMethods;
+        }
+        else
+        {
+          *outListType1=-1;
+          *outListType2=-1;
+        }
+        break;
+      case MemberListType_priSlots:
+        if (extractPrivate)
+        {
+          *outListType1=MemberListType_pubSlots;
+          *outListType1=MemberListType_proSlots;
+        }
+        else
+        {
+          *outListType1=-1;
+          *outListType2=-1;
+        }
+        break;
+      case MemberListType_priAttribs:
+        if (extractPrivate)
+        {
+          *outListType1=MemberListType_pubAttribs;
+          *outListType2=MemberListType_proAttribs;
+        }
+        else
+        {
+          *outListType1=-1;
+          *outListType2=-1;
+        }
+        break;
+      case MemberListType_priStaticAttribs:
+        if (extractPrivate)
+        {
+          *outListType1=MemberListType_pubStaticAttribs;
+          *outListType2=MemberListType_proStaticAttribs;
+        }
+        else
+        {
+          *outListType1=-1;
+          *outListType2=-1;
+        }
+        break;
+      case MemberListType_priTypes:
+        if (extractPrivate)
+        {
+          *outListType1=MemberListType_pubTypes;
+          *outListType2=MemberListType_proTypes;
+        }
+        else
+        {
+          *outListType1=-1;
+          *outListType2=-1;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
+  //    inListType,inProt,*outListType1,*outListType2);
+}

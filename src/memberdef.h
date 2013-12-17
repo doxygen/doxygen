@@ -217,6 +217,7 @@ class MemberDef : public Definition
 
     bool fromAnonymousScope() const;
     bool anonymousDeclShown() const;
+    MemberDef *fromAnonymousMember() const;
 
     // callgraph related members
     bool hasCallGraph() const;

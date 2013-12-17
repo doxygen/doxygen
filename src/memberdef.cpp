@@ -1409,9 +1409,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // are explicitly grouped.
   if (!inGroup && m_impl->mtype==MemberType_EnumValue) return;
 
-  // hide members whose brief section should not be visible
-  //if (!isBriefSectionVisible()) return;
-
   Definition *d=0;
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
@@ -1421,14 +1418,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
   QCString cname  = d->name();
   QCString cdname = d->displayName();
   QCString cfname = getOutputFileBase();
-  //QCString osname = cname;
-  // in case of class members that are put in a group the name of the outerscope
-  // differs from the cname.
-  //if (getOuterScope()) osname=getOuterScope()->name();
-
-  //HtmlHelp *htmlHelp=0;
-  //bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
-  //if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
   // search for the last anonymous scope in the member type
   ClassDef *annoClassDef=getClassDefOfAnonymousType();
@@ -1445,15 +1434,27 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = isDetailedSectionLinkable();
-  if (!detailsVisible && !m_impl->annMemb)
+  if (!detailsVisible)
   {
-    QCString doxyName=name().copy();
-    if (!cname.isEmpty())
-    {
-      doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
-    }
     QCString doxyArgs=argsString();
-    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
+    if (m_impl->annMemb)
+    {
+      QCString doxyName=m_impl->annMemb->name();
+      if (!cname.isEmpty())
+      {
+        doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
+      }
+      ol.startDoxyAnchor(cfname,cname,m_impl->annMemb->anchor(),doxyName,doxyArgs);
+    }
+    else
+    {
+      QCString doxyName=name();
+      if (!cname.isEmpty())
+      {
+        doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
+      }
+      ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
+    }
 
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
@@ -2388,6 +2389,21 @@ QCString MemberDef::displayDefinition() const
       ldef=ldef.mid(2);
     }
   }
+  static QRegExp r("@[0-9]+");
+  int l,i=r.match(ldef,0,&l);
+  if (i!=-1) // replace anonymous parts with { ... }
+  {
+    int si=ldef.find(' '),pi,ei=i+l;
+    if (si==-1) si=0;
+    while ((pi=r.match(ldef,i+l,&l))!=-1)
+    {
+      i=pi;
+      ei=i+l;
+    }
+    int ni=ldef.find("::",si);
+    if (ni>=ei) ei=ni+2;
+    ldef = ldef.left(si) + " { ... } " + ldef.right(ldef.length()-ei);
+  }
   ClassDef *cd=getClassDef();
   if (cd && cd->isObjectiveC())
   {
@@ -2407,9 +2423,9 @@ QCString MemberDef::displayDefinition() const
     {
       ldef=ldef.left(dp+1);
     }
-    int l=ldef.length();
+    l=ldef.length();
     //printf("start >%s<\n",ldef.data());
-    int i=l-1;
+    i=l-1;
     while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
     while (i>=0 && isspace((uchar)ldef.at(i))) i--;
     if (i>0)
@@ -2483,8 +2499,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   bool inFile = container->definitionType()==Definition::TypeFile;
   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
 
-  //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
-  //    name().data(),hasDocs,container->definitionType(),inGroup);
+  //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d sectionLinkable=%d\n",
+  //    name().data(),hasDocs,container->definitionType(),inGroup,isDetailedSectionLinkable());
 
   if ( !hasDocs ) return;
   if (isEnumValue() && !showEnumValues) return;
@@ -4654,6 +4670,11 @@ void MemberDef::setFromAnonymousScope(bool b)
 void MemberDef::setFromAnonymousMember(MemberDef *m)
 {
   m_impl->annMemb=m;
+}
+
+MemberDef *MemberDef::fromAnonymousMember() const
+{
+  return m_impl->annMemb;
 }
 
 void MemberDef::setTemplateMaster(MemberDef *mt)

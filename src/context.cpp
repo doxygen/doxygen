@@ -22,6 +22,10 @@
 #include "example.h"
 #include "membername.h"
 #include "parserintf.h"
+#include "portable.h"
+
+// TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
+//       files as well
 
 struct ContextGlobals
 {
@@ -61,7 +65,7 @@ template<class T> class ScopedPtr
     void reset(T *p=0) { if (p!=m_ptr) { delete m_ptr; m_ptr = p; } }
 };
 
-// iterator support
+/** @brief Template List iterator support */
 template<class T>
 class GenericConstIterator : public TemplateListIntf::ConstIterator
 {
@@ -104,7 +108,7 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
 
 //------------------------------------------------------------------------
 
-// standard list implementation
+/** @brief standard template list implementation */
 template<class T>
 class GenericNodeListContext : public TemplateListIntf
 {
@@ -337,7 +341,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.generateAt should take two parameters, got %d!\n",args.count());
+        err("tr.generateAt should take two arguments, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -349,7 +353,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.inheritanceDiagramFor should take one parameter, got %d!\n",args.count());
+        err("tr.inheritanceDiagramFor should take one argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -361,7 +365,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.collaborationDiagramFor should take one parameter, got %d!\n",args.count());
+        err("tr.collaborationDiagramFor should take one argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -373,7 +377,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.inheritsList should take one integer parameter, got %d!\n",args.count());
+        err("tr.inheritsList should take one integer argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -385,7 +389,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.inheritedByList should take one integer parameter, got %d!\n",args.count());
+        err("tr.inheritedByList should take one integer argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -397,7 +401,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.*List should take one integer parameter, got %d!\n",args.count());
+        err("tr.*List should take one integer argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -409,7 +413,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.implementedBy should take one integer parameter, got %d!\n",args.count());
+        err("tr.implementedBy should take one integer argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -421,7 +425,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.reimplementedBy should take one integer parameter, got %d!\n",args.count());
+        err("tr.reimplementedBy should take one integer argument, got %d!\n",args.count());
       }
       return TemplateVariant();
     }
@@ -433,7 +437,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.sourceRefs should take one integer parameter, got %d\n",args.count());
+        err("tr.sourceRefs should take one integer argument, got %d\n",args.count());
       }
       return TemplateVariant();
     }
@@ -445,7 +449,7 @@ class TranslateContext::Private : public PropertyMapper
       }
       else
       {
-        err("tr.sourceRefBys should take one integer parameter, got %d\n",args.count());
+        err("tr.sourceRefBys should take one integer argument, got %d\n",args.count());
       }
       return TemplateVariant();
     }
@@ -657,6 +661,14 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trCallerGraph();
     }
+    TemplateVariant inheritedFrom() const
+    {
+      return theTranslator->trInheritedFrom("@0","@1");
+    }
+    TemplateVariant additionalInheritedMembers() const
+    {
+      return theTranslator->trAdditionalInheritedMembers();
+    }
     Private()
     {
       //%% string generatedBy
@@ -745,6 +757,10 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("callGraph",          this,&Private::callGraph);
       //%% string callerGraph
       addProperty("callerGraph",        this,&Private::callerGraph);
+      //%% markerstring inheritedFrom
+      addProperty("inheritedFrom",      this,&Private::inheritedFrom);
+      //%% string addtionalInheritedMembers
+      addProperty("additionalInheritedMembers",this,&Private::additionalInheritedMembers);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -845,6 +861,8 @@ class DefinitionContext : public PropertyMapper
       addProperty("language",this,&DefinitionContext::language);
       //%% string sourceDef: A link to the source definition
       addProperty("sourceDef",this,&DefinitionContext::sourceDef);
+      //%% list[Definition] navigationPath: Breadcrumb navigation path to this item
+      addProperty("navigationPath",this,&DefinitionContext::navigationPath);
 
       if (m_def && !m_def->getSourceFileBase().isEmpty())
       {
@@ -988,14 +1006,43 @@ class DefinitionContext : public PropertyMapper
         return FALSE;
       }
     }
+    void fillPath(Definition *def,TemplateList *list) const
+    {
+      Definition *outerScope = def->getOuterScope();
+      Definition::DefType type = def->definitionType();
+      if (outerScope && outerScope!=Doxygen::globalScope)
+      {
+        fillPath(outerScope,list);
+      }
+      else if (type==Definition::TypeFile && ((const FileDef*)def)->getDirDef())
+      {
+        fillPath(((const FileDef*)def)->getDirDef(),list);
+      }
+      NavPathElemContext *elem = new NavPathElemContext(def);
+      list->append(elem);
+      m_cache.navPathElems.append(elem);
+    }
+    TemplateVariant navigationPath() const
+    {
+      if (!m_cache.navPath)
+      {
+        TemplateList *list = new TemplateList;
+        fillPath(m_def,list);
+        m_cache.navPath.reset(list);
+      }
+      return m_cache.navPath.get();
+    }
 
   private:
     Definition      *m_def;
     struct Cachable
     {
+      Cachable() { navPathElems.setAutoDelete(TRUE); }
       ScopedPtr<TemplateVariant> details;
       ScopedPtr<TemplateVariant> brief;
       ScopedPtr<TemplateVariant> inbodyDocs;
+      ScopedPtr<TemplateList>    navPath;
+      QList<NavPathElemContext>  navPathElems;
     };
     mutable Cachable m_cache;
     TemplateList m_sourceDef;
@@ -1140,9 +1187,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       addProperty("templateDecls",             this,&Private::templateDecls);
       addProperty("typeConstraints",           this,&Private::typeConstraints);
       addProperty("examples",                  this,&Private::examples);
+      addProperty("members",                   this,&Private::members);
       addProperty("allMembersList",            this,&Private::allMembersList);
       addProperty("allMembersFileName",        this,&Private::allMembersFileName);
       addProperty("memberGroups",              this,&Private::memberGroups);
+      addProperty("additionalInheritedMembers",this,&Private::additionalInheritedMembers);
     }
     TemplateVariant title() const
     {
@@ -1213,7 +1262,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         FTextStream t(&result);
         cg->writeGraph(t,BITMAP,
                        g_globals.outputDir,
-                       m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                       g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                        relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                       );
       }
@@ -1258,7 +1307,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         FTextStream t(&result);
         cg->writeGraph(t,BITMAP,
             g_globals.outputDir,
-            m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+            g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
             );
       }
@@ -1298,14 +1347,14 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       return m_cache.inheritedByList.get();
     }
     TemplateVariant getMemberList(ScopedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title) const
+                                  MemberListType type,const char *title,bool detailed=FALSE) const
     {
       if (!list)
       {
         MemberList *ml = m_classDef->getMemberList(type);
         if (ml)
         {
-          list.reset(new MemberListInfoContext(m_classDef,relPathAsString(),ml,title));
+          list.reset(new MemberListInfoContext(m_classDef,relPathAsString(),ml,title,detailed));
         }
       }
       if (list)
@@ -1443,43 +1492,43 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant detailedTypedefs() const
     {
-      return getMemberList(m_cache.detailedTypedefs,MemberListType_typedefMembers,theTranslator->trMemberTypedefDocumentation());
+      return getMemberList(m_cache.detailedTypedefs,MemberListType_typedefMembers,theTranslator->trMemberTypedefDocumentation(),TRUE);
     }
     TemplateVariant detailedEnums() const
     {
-      return getMemberList(m_cache.detailedEnums,MemberListType_enumMembers,theTranslator->trMemberEnumerationDocumentation());
+      return getMemberList(m_cache.detailedEnums,MemberListType_enumMembers,theTranslator->trMemberEnumerationDocumentation(),TRUE);
     }
     TemplateVariant detailedServices() const
     {
-      return getMemberList(m_cache.detailedServices,MemberListType_serviceMembers,theTranslator->trServices());
+      return getMemberList(m_cache.detailedServices,MemberListType_serviceMembers,theTranslator->trServices(),TRUE);
     }
     TemplateVariant detailedInterfaces() const
     {
-      return getMemberList(m_cache.detailedInterfaces,MemberListType_interfaceMembers,theTranslator->trInterfaces());
+      return getMemberList(m_cache.detailedInterfaces,MemberListType_interfaceMembers,theTranslator->trInterfaces(),TRUE);
     }
     TemplateVariant detailedConstructors() const
     {
-      return getMemberList(m_cache.detailedConstructors,MemberListType_constructors,theTranslator->trConstructorDocumentation());
+      return getMemberList(m_cache.detailedConstructors,MemberListType_constructors,theTranslator->trConstructorDocumentation(),TRUE);
     }
     TemplateVariant detailedMethods() const
     {
-      return getMemberList(m_cache.detailedMethods,MemberListType_functionMembers,theTranslator->trMemberFunctionDocumentation());
+      return getMemberList(m_cache.detailedMethods,MemberListType_functionMembers,theTranslator->trMemberFunctionDocumentation(),TRUE);
     }
     TemplateVariant detailedRelated() const
     {
-      return getMemberList(m_cache.detailedRelated,MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+      return getMemberList(m_cache.detailedRelated,MemberListType_relatedMembers,theTranslator->trRelatedFunctionDocumentation(),TRUE);
     }
     TemplateVariant detailedVariables() const
     {
-      return getMemberList(m_cache.detailedVariables,MemberListType_variableMembers,theTranslator->trMemberDataDocumentation());
+      return getMemberList(m_cache.detailedVariables,MemberListType_variableMembers,theTranslator->trMemberDataDocumentation(),TRUE);
     }
     TemplateVariant detailedProperties() const
     {
-      return getMemberList(m_cache.detailedProperties,MemberListType_propertyMembers,theTranslator->trPropertyDocumentation());
+      return getMemberList(m_cache.detailedProperties,MemberListType_propertyMembers,theTranslator->trPropertyDocumentation(),TRUE);
     }
     TemplateVariant detailedEvents() const
     {
-      return getMemberList(m_cache.detailedEvents,MemberListType_eventMembers,theTranslator->trEventDocumentation());
+      return getMemberList(m_cache.detailedEvents,MemberListType_eventMembers,theTranslator->trEventDocumentation(),TRUE);
     }
     TemplateVariant nestedClasses() const
     {
@@ -1584,6 +1633,59 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       }
       return m_cache.examples.get();
     }
+    void addMembers(ClassDef *cd,MemberListType lt) const
+    {
+      MemberList *ml = cd->getMemberList(lt);
+      if (ml)
+      {
+        MemberListIterator li(*ml);
+        const MemberDef *md;
+        for (li.toFirst();(md=li.current());++li)
+        {
+          if (md->isBriefSectionVisible())
+          {
+            m_cache.allMembers.append(md);
+          }
+        }
+      }
+    }
+    TemplateVariant members() const
+    {
+      if (!m_cache.members)
+      {
+        addMembers(m_classDef,MemberListType_pubTypes);
+        addMembers(m_classDef,MemberListType_services);
+        addMembers(m_classDef,MemberListType_interfaces);
+        addMembers(m_classDef,MemberListType_pubSlots);
+        addMembers(m_classDef,MemberListType_signals);
+        addMembers(m_classDef,MemberListType_pubMethods);
+        addMembers(m_classDef,MemberListType_pubStaticMethods);
+        addMembers(m_classDef,MemberListType_pubAttribs);
+        addMembers(m_classDef,MemberListType_pubStaticAttribs);
+        addMembers(m_classDef,MemberListType_proTypes);
+        addMembers(m_classDef,MemberListType_proSlots);
+        addMembers(m_classDef,MemberListType_proMethods);
+        addMembers(m_classDef,MemberListType_proStaticMethods);
+        addMembers(m_classDef,MemberListType_proAttribs);
+        addMembers(m_classDef,MemberListType_proStaticAttribs);
+        addMembers(m_classDef,MemberListType_pacTypes);
+        addMembers(m_classDef,MemberListType_pacMethods);
+        addMembers(m_classDef,MemberListType_pacStaticMethods);
+        addMembers(m_classDef,MemberListType_pacAttribs);
+        addMembers(m_classDef,MemberListType_pacStaticAttribs);
+        addMembers(m_classDef,MemberListType_properties);
+        addMembers(m_classDef,MemberListType_events);
+        addMembers(m_classDef,MemberListType_priTypes);
+        addMembers(m_classDef,MemberListType_priSlots);
+        addMembers(m_classDef,MemberListType_priMethods);
+        addMembers(m_classDef,MemberListType_priStaticMethods);
+        addMembers(m_classDef,MemberListType_priAttribs);
+        addMembers(m_classDef,MemberListType_priStaticAttribs);
+        addMembers(m_classDef,MemberListType_related);
+        m_cache.members.reset(new MemberListContext(&m_cache.allMembers));
+      }
+      return m_cache.members.get();
+    }
     TemplateVariant allMembersList() const
     {
       if (!m_cache.allMembersList && m_classDef->memberNameInfoSDict())
@@ -1616,6 +1718,48 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       }
       return m_cache.memberGroups.get();
     }
+    TemplateVariant additionalInheritedMembers() const
+    {
+      if (!m_cache.additionalInheritedMembers)
+      {
+        InheritedMemberInfoListContext *ctx = new InheritedMemberInfoListContext;
+        ctx->addMemberList(m_classDef,MemberListType_pubTypes,theTranslator->trPublicTypes());
+        ctx->addMemberList(m_classDef,MemberListType_services,theTranslator->trServices());
+        ctx->addMemberList(m_classDef,MemberListType_interfaces,theTranslator->trInterfaces());
+        ctx->addMemberList(m_classDef,MemberListType_pubSlots,theTranslator->trPublicSlots());
+        ctx->addMemberList(m_classDef,MemberListType_signals,theTranslator->trSignals());
+        ctx->addMemberList(m_classDef,MemberListType_pubMethods,
+          m_classDef->getLanguage()==SrcLangExt_ObjC ? theTranslator->trInstanceMethods()
+                                                     : theTranslator->trPublicMembers());
+        ctx->addMemberList(m_classDef,MemberListType_pubStaticMethods,
+          m_classDef->getLanguage()==SrcLangExt_ObjC ? theTranslator->trClassMethods()
+                                                     : theTranslator->trStaticPublicMembers());
+        ctx->addMemberList(m_classDef,MemberListType_pubAttribs,theTranslator->trPublicAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_pubStaticAttribs,theTranslator->trStaticPublicAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_proTypes,theTranslator->trProtectedTypes());
+        ctx->addMemberList(m_classDef,MemberListType_proSlots,theTranslator->trProtectedSlots());
+        ctx->addMemberList(m_classDef,MemberListType_proMethods,theTranslator->trProtectedMembers());
+        ctx->addMemberList(m_classDef,MemberListType_proStaticMethods,theTranslator->trStaticProtectedMembers());
+        ctx->addMemberList(m_classDef,MemberListType_proAttribs,theTranslator->trProtectedAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_proStaticAttribs,theTranslator->trStaticProtectedAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_pacTypes,theTranslator->trPackageTypes());
+        ctx->addMemberList(m_classDef,MemberListType_pacMethods,theTranslator->trPackageMembers());
+        ctx->addMemberList(m_classDef,MemberListType_pacStaticMethods,theTranslator->trStaticPackageMembers());
+        ctx->addMemberList(m_classDef,MemberListType_pacAttribs,theTranslator->trPackageAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_pacStaticAttribs,theTranslator->trStaticPackageAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_properties,theTranslator->trProperties());
+        ctx->addMemberList(m_classDef,MemberListType_events,theTranslator->trEvents());
+        ctx->addMemberList(m_classDef,MemberListType_priTypes,theTranslator->trPrivateTypes());
+        ctx->addMemberList(m_classDef,MemberListType_priSlots,theTranslator->trPrivateSlots());
+        ctx->addMemberList(m_classDef,MemberListType_priMethods,theTranslator->trPrivateMembers());
+        ctx->addMemberList(m_classDef,MemberListType_priStaticMethods,theTranslator->trStaticPrivateMembers());
+        ctx->addMemberList(m_classDef,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
+        ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedFunctions());
+        m_cache.additionalInheritedMembers.reset(ctx);
+      }
+      return m_cache.additionalInheritedMembers.get();
+    }
 
   private:
     ClassDef *m_classDef;
@@ -1627,11 +1771,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       {
         templateArgList.setAutoDelete(TRUE);
         exampleList.setAutoDelete(TRUE);
+        allMembers.setAutoDelete(TRUE);
       }
       ScopedPtr<InheritanceListContext> inheritsList;
       ScopedPtr<InheritanceListContext> inheritedByList;
-      ScopedPtr<DotClassGraph> classGraph;
-      ScopedPtr<DotClassGraph> collaborationGraph;
+      ScopedPtr<DotClassGraph>          classGraph;
+      ScopedPtr<DotClassGraph>          collaborationGraph;
       ScopedPtr<NestedClassListContext> nestedClasses;
       ScopedPtr<MemberListInfoContext> publicTypes;
       ScopedPtr<MemberListInfoContext> publicMethods;
@@ -1678,9 +1823,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       ScopedPtr<ArgumentListContext>   typeConstraints;
       ScopedPtr<TemplateList>          examples;
       ScopedPtr<TemplateList>          templateDecls;
-      QList<ArgumentListContext> templateArgList;
-      int inheritanceNodes;
-      QList<TemplateStruct>      exampleList;
+      ScopedPtr<InheritedMemberInfoListContext> additionalInheritedMembers;
+      ScopedPtr<MemberListContext>     members;
+      QList<ArgumentListContext>       templateArgList;
+      int                              inheritanceNodes;
+      QList<TemplateStruct>            exampleList;
+      MemberList                       allMembers;
     };
     mutable Cachable m_cache;
 };
@@ -2024,6 +2172,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("isEnumeration",       this,&Private::isEnumeration);
       addProperty("isEnumValue",         this,&Private::isEnumValue);
       addProperty("isAnonymous",         this,&Private::isAnonymous);
+      addProperty("anonymousType",       this,&Private::anonymousType);
+      addProperty("anonymousMember",     this,&Private::anonymousMember);
       addProperty("isRelated",           this,&Private::isRelated);
       addProperty("hasDetails",          this,&Private::hasDetails);
       addProperty("exception",           this,&Private::exception);
@@ -2160,6 +2310,44 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       QCString name = m_memberDef->name();
       return !name.isEmpty() && name.at(0)=='@';
+    }
+    TemplateVariant anonymousType() const
+    {
+      if (!m_cache.anonymousType)
+      {
+        ClassDef *cd = m_memberDef->getClassDefOfAnonymousType();
+        if (cd)
+        {
+          m_cache.anonymousType.reset(new ClassContext(cd));
+        }
+      }
+      if (m_cache.anonymousType)
+      {
+        return m_cache.anonymousType.get();
+      }
+      else
+      {
+        return FALSE;
+      }
+    }
+    TemplateVariant anonymousMember() const
+    {
+      if (!m_cache.anonymousMember)
+      {
+        MemberDef *md = m_memberDef->fromAnonymousMember();
+        if (md)
+        {
+          m_cache.anonymousMember.reset(new MemberContext(md));
+        }
+      }
+      if (m_cache.anonymousMember)
+      {
+        return m_cache.anonymousMember.get();
+      }
+      else
+      {
+        return FALSE;
+      }
     }
     TemplateVariant isRelated() const
     {
@@ -2617,7 +2805,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         FTextStream t(&result);
         cg->writeGraph(t,BITMAP,
             g_globals.outputDir,
-            m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+            g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
             relPathAsString(),TRUE,g_globals.dynSectionId
             );
         g_globals.dynSectionId++;
@@ -2657,7 +2845,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         FTextStream t(&result);
         cg->writeGraph(t,BITMAP,
             g_globals.outputDir,
-            m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+            g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
             relPathAsString(),TRUE,g_globals.dynSectionId
             );
         g_globals.dynSectionId++;
@@ -2683,6 +2871,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       ScopedPtr<ArgumentListContext> arguments;
       ScopedPtr<MemberListContext>   enumValues;
       ScopedPtr<ClassContext>        classDef;
+      ScopedPtr<ClassContext>        anonymousType;
       ScopedPtr<TemplateList>        templateDecls;
       ScopedPtr<TemplateVariant>     paramDocs;
       ScopedPtr<TemplateList>        implements;
@@ -2694,6 +2883,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       ScopedPtr<MemberListContext>   sourceRefBys;
       ScopedPtr<DotCallGraph>        callGraph;
       ScopedPtr<DotCallGraph>        callerGraph;
+      ScopedPtr<MemberContext>       anonymousMember;
       QList<MemberContext>           implementedByMembers;
       ScopedPtr<TemplateList>        reimplementedBy;
       QList<MemberContext>           reimplementedByMembers;
@@ -4330,6 +4520,74 @@ TemplateVariant ModuleTreeContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
+//%% struct NavPathElem: list of examples page
+//%% {
+class NavPathElemContext::Private : public PropertyMapper
+{
+  public:
+    Private(Definition *def) : m_def(def)
+    {
+      addProperty("isLinkable",this,&Private::isLinkable);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("anchor",this,&Private::anchor);
+      addProperty("text",this,&Private::text);
+    }
+    TemplateVariant isLinkable() const
+    {
+      return m_def->isLinkable();
+    }
+    TemplateVariant anchor() const
+    {
+      return m_def->anchor();
+    }
+    TemplateVariant fileName() const
+    {
+      return m_def->getOutputFileBase();
+    }
+    TemplateVariant text() const
+    {
+      Definition::DefType type = m_def->definitionType();
+      QCString text = m_def->localName();
+      if (type==Definition::TypeGroup)
+      {
+        text = ((const GroupDef*)m_def)->groupTitle();
+      }
+      else if (type==Definition::TypePage && !(((const PageDef*)this)->title().isEmpty()))
+      {
+        text = ((const PageDef*)m_def)->title();
+      }
+      else if (type==Definition::TypeClass)
+      {
+        if (text.right(2)=="-p")
+        {
+          text = text.left(text.length()-2);
+        }
+      }
+      return text;
+    }
+  private:
+    Definition *m_def;
+};
+//%% }
+
+NavPathElemContext::NavPathElemContext(Definition *def)
+{
+  p = new Private(def);
+}
+
+NavPathElemContext::~NavPathElemContext()
+{
+  delete p;
+}
+
+TemplateVariant NavPathElemContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+
+//------------------------------------------------------------------------
+
 //%% struct ExampleList: list of examples page
 //%% {
 class ExampleListContext::Private : public PropertyMapper
@@ -4518,11 +4776,14 @@ MemberListContext::MemberListContext(const MemberList *list)
   p = new Private;
   if (list)
   {
+    bool details = list->listType()&MemberListType_detailedLists;
     MemberListIterator mli(*list);
     MemberDef *md;
     for (mli.toFirst();(md=mli.current());++mli)
     {
-      if (md->isBriefSectionVisible())
+      if ((md->isBriefSectionVisible() && !details) ||
+          (md->isDetailedSectionLinkable() && details)
+         )
       {
         p->addMember(md);
       }
@@ -4596,6 +4857,7 @@ class MemberInfoContext::Private : public PropertyMapper
         case ::Private:   return "private";
         case ::Package:   return "package";
       }
+      return "";
     }
     TemplateVariant virtualness() const
     {
@@ -4605,6 +4867,7 @@ class MemberInfoContext::Private : public PropertyMapper
         case ::Virtual:  return "virtual";
         case ::Pure:     return "pure";
       }
+      return "";
     }
     TemplateVariant ambiguityScope() const
     {
@@ -4735,6 +4998,7 @@ class MemberGroupInfoContext::Private : public PropertyMapper
       addProperty("anchor",       this,&Private::groupAnchor);
       addProperty("memberGroups", this,&Private::memberGroups);
       addProperty("docs",         this,&Private::docs);
+      addProperty("inherited",    this,&Private::inherited);
     }
     TemplateVariant members() const
     {
@@ -4774,6 +5038,10 @@ class MemberGroupInfoContext::Private : public PropertyMapper
         }
       }
       return *m_docs;
+    }
+    TemplateVariant inherited() const
+    {
+      return FALSE;
     }
   private:
     Definition *m_def;
@@ -4879,6 +5147,7 @@ class MemberListInfoContext::Private : public PropertyMapper
 {
   public:
     Private(Definition *def,const QCString &relPath,const MemberList *ml,const QCString &title,const QCString &subtitle) :
+      m_def(def),
       m_memberListContext(ml),
       m_memberGroups(def,relPath,ml ? ml->getMemberGroupList() : 0),
       m_memberList(ml),
@@ -4890,6 +5159,7 @@ class MemberListInfoContext::Private : public PropertyMapper
       addProperty("subtitle",     this,&Private::subtitle);
       addProperty("anchor",       this,&Private::anchor);
       addProperty("memberGroups", this,&Private::memberGroups);
+      addProperty("inherited",    this,&Private::inherited);
     }
     TemplateVariant members() const
     {
@@ -4905,18 +5175,38 @@ class MemberListInfoContext::Private : public PropertyMapper
     }
     TemplateVariant anchor() const
     {
-      return m_memberList->listTypeAsString(m_memberList->listType());
+      return MemberList::listTypeAsString(m_memberList->listType());
     }
     TemplateVariant memberGroups() const
     {
       return &m_memberGroups;
     }
+    TemplateVariant inherited() const
+    {
+      if (!m_inherited && (m_memberList->listType()&MemberListType_detailedLists)==0 &&
+          m_def->definitionType()==Definition::TypeClass)
+      {
+        InheritedMemberInfoListContext *ctx = new InheritedMemberInfoListContext;
+        ctx->addMemberList((ClassDef*)m_def,m_memberList->listType(),m_title,FALSE);
+        m_inherited.reset(ctx);
+      }
+      if (m_inherited)
+      {
+        return m_inherited.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
   private:
+    Definition *m_def;
     MemberListContext m_memberListContext;
     MemberGroupListContext m_memberGroups;
     const MemberList *m_memberList;
     QCString m_title;
     QCString m_subtitle;
+    mutable ScopedPtr<InheritedMemberInfoListContext> m_inherited;
 };
 //%% }
 
@@ -4935,6 +5225,243 @@ MemberListInfoContext::~MemberListInfoContext()
 TemplateVariant MemberListInfoContext::get(const char *name) const
 {
   return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% struct InheritedMemberInfo: inherited member information
+//%% {
+class InheritedMemberInfoContext::Private : public PropertyMapper
+{
+  public:
+    Private(ClassDef *cd,MemberList *ml,const QCString &title)
+      : m_class(cd), m_memberList(ml), m_title(title)
+    {
+      addProperty("class",         this,&Private::getClass);
+      addProperty("title",         this,&Private::title);
+      addProperty("members",       this,&Private::members);
+      addProperty("id",            this,&Private::id);
+      addProperty("inheritedFrom", this,&Private::inheritedFrom);
+    }
+    ~Private()
+    {
+      delete m_memberList;
+    }
+    TemplateVariant getClass() const
+    {
+      if (!m_classCtx)
+      {
+        m_classCtx.reset(new ClassContext(m_class));
+      }
+      return m_classCtx.get();
+    }
+    TemplateVariant title() const
+    {
+      return m_title;
+    }
+    TemplateVariant members() const
+    {
+      if (!m_memberListCtx)
+      {
+        m_memberListCtx.reset(new MemberListContext(m_memberList));
+      }
+      return m_memberListCtx.get();
+    }
+    TemplateVariant id() const
+    {
+      return substitute(MemberList::listTypeAsString(m_memberList->listType()),"-","_")+"_"+
+                        stripPath(m_class->getOutputFileBase());
+    }
+    TemplateVariant inheritedFrom() const
+    {
+      if (m_inheritedFrom.count()==0)
+      {
+        m_inheritedFrom.append(title());
+        m_inheritedFrom.append(getClass());
+      }
+      return &m_inheritedFrom;
+    }
+
+  private:
+    ClassDef *  m_class;
+    MemberList *m_memberList;
+    QCString    m_title;
+    mutable ScopedPtr<ClassContext> m_classCtx;
+    mutable ScopedPtr<MemberListContext> m_memberListCtx;
+    mutable TemplateList m_inheritedFrom;
+};
+//%% }
+
+InheritedMemberInfoContext::InheritedMemberInfoContext(ClassDef *cd,MemberList *ml,
+                                                       const QCString &title)
+{
+  p = new Private(cd,ml,title);
+}
+
+InheritedMemberInfoContext::~InheritedMemberInfoContext()
+{
+  delete p;
+}
+
+TemplateVariant InheritedMemberInfoContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list InheritedMemberList[InheritedMemberInfo] : list of inherited classes
+class InheritedMemberInfoListContext::Private : public GenericNodeListContext<InheritedMemberInfoContext>
+{
+  public:
+    void addMemberList(ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    {
+      if (ml)
+      {
+        MemberListIterator li(*ml);
+        MemberDef *md;
+        for (li.toFirst();(md=li.current());++li)
+        {
+          if (md->isBriefSectionVisible() && !md->isReimplementedBy(inheritedFrom))
+          {
+            combinedList->append(md);
+          }
+        }
+      }
+    }
+    void addMemberListIncludingGrouped(ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    {
+      if (ml)
+      {
+        addMemberList(inheritedFrom,ml,combinedList);
+        if (ml->getMemberGroupList())
+        {
+          MemberGroupListIterator mgli(*ml->getMemberGroupList());
+          MemberGroup *mg;
+          for (mgli.toFirst();(mg=mgli.current());++mgli)
+          {
+            addMemberList(inheritedFrom,mg->members(),combinedList);
+          }
+        }
+      }
+    }
+    void addMemberGroupsOfClass(ClassDef *inheritedFrom,
+                                ClassDef *cd,MemberListType lt,MemberList *combinedList)
+    {
+      if (cd->getMemberGroupSDict())
+      {
+        MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
+        MemberGroup *mg;
+        for (;(mg=mgli.current());++mgli)
+        {
+          if (mg->members() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
+          {
+            MemberListIterator li(*mg->members());
+            MemberDef *md;
+            for (li.toFirst();(md=li.current());++li)
+            {
+              if (lt==md->getSectionList(mg->parent())->listType() &&
+                  !md->isReimplementedBy(inheritedFrom) &&
+                  md->isBriefSectionVisible())
+              {
+                combinedList->append(md);
+              }
+            }
+          }
+        }
+      }
+    }
+    void addInheritedMembers(ClassDef *inheritedFrom,ClassDef *cd,MemberListType lt,
+                             MemberListType lt1,int lt2,const QCString &title,bool additionalList)
+    {
+      int count = cd->countMembersIncludingGrouped(lt1,inheritedFrom,additionalList);
+      if (lt2!=-1) count += cd->countMembersIncludingGrouped((MemberListType)lt2,inheritedFrom,additionalList);
+      if (count>0)
+      {
+        MemberList *ml  = cd->getMemberList(lt1);
+        MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
+        MemberList *combinedList = new MemberList(lt);
+        addMemberListIncludingGrouped(inheritedFrom,ml,combinedList);
+        addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList);
+        addMemberGroupsOfClass(inheritedFrom,cd,lt,combinedList);
+        if (lt2!=-1) addMemberGroupsOfClass(inheritedFrom,cd,(MemberListType)lt2,combinedList);
+        append(new InheritedMemberInfoContext(cd,combinedList,title));
+      }
+    }
+    void findInheritedMembers(ClassDef *inheritedFrom,ClassDef *cd,MemberListType lt,
+                              int lt2, const QCString &title,bool additionalList,
+                              QPtrDict<void> *visitedClasses)
+    {
+      if (cd->baseClasses())
+      {
+        BaseClassListIterator it(*cd->baseClasses());
+        BaseClassDef *ibcd;
+        for (it.toFirst();(ibcd=it.current());++it)
+        {
+          ClassDef *icd=ibcd->classDef;
+          if (icd->isLinkable())
+          {
+            int lt1,lt3;
+            convertProtectionLevel(lt,ibcd->prot,&lt1,&lt3);
+            if (lt2==-1 && lt3!=-1)
+            {
+              lt2=lt3;
+            }
+            if (visitedClasses->find(icd)==0)
+            {
+              visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+              if (lt1!=-1)
+              {
+                // add member info for members of cd with list type lt
+                addInheritedMembers(inheritedFrom,icd,lt,(MemberListType)lt1,lt2,title,additionalList);
+                // recurse down the inheritance tree
+                findInheritedMembers(inheritedFrom,icd,(MemberListType)lt1,lt2,title,additionalList,visitedClasses);
+              }
+            }
+          }
+        }
+      }
+    }
+};
+
+InheritedMemberInfoListContext::InheritedMemberInfoListContext()
+{
+  p = new Private;
+}
+
+void InheritedMemberInfoListContext::addMemberList(
+    ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList)
+{
+  QPtrDict<void> visited(17);
+  bool memberInSection = cd->countMembersIncludingGrouped(lt,cd,FALSE);
+  bool show = (additionalList && !memberInSection) || // inherited member to show in the additional inherited members list
+              (!additionalList && memberInSection);   // inherited member to show in a member list of the class
+  //printf("%s:%s show=%d\n",cd->name().data(),MemberList::listTypeAsString(lt).data(),show);
+  if (show)
+  {
+    p->findInheritedMembers(cd,cd,lt,-1,title,additionalList,&visited);
+  }
+}
+
+InheritedMemberInfoListContext::~InheritedMemberInfoListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int InheritedMemberInfoListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant InheritedMemberInfoListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *InheritedMemberInfoListContext::createIterator() const
+{
+  return p->createIterator();
 }
 
 //------------------------------------------------------------------------

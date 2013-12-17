@@ -616,6 +616,23 @@ class ExampleListContext : public TemplateStructIntf
 
 //----------------------------------------------------
 
+class NavPathElemContext : public TemplateStructIntf
+{
+  public:
+    NavPathElemContext(Definition *def);
+   ~NavPathElemContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+
+//----------------------------------------------------
+
 class InheritanceNodeContext : public TemplateStructIntf
 {
   public:
@@ -733,6 +750,41 @@ class MemberInfoContext : public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class InheritedMemberInfoContext : public TemplateStructIntf
+{
+  public:
+    InheritedMemberInfoContext(ClassDef *cd,MemberList *ml,const QCString &title);
+   ~InheritedMemberInfoContext();
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class InheritedMemberInfoListContext : public TemplateListIntf
+{
+  public:
+    InheritedMemberInfoListContext();
+    void addMemberList(ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
+   ~InheritedMemberInfoListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
 
   private:
     class Private;

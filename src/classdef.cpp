@@ -337,7 +337,14 @@ QCString ClassDef::displayName(bool includeScope) const
   //  n = n.left(n.length()-2);
   //}
   //printf("ClassDef::displayName()=%s\n",n.data());
-  return n;
+  if (n.find('@')!=-1)
+  {
+    return removeAnonymousScopes(n);
+  }
+  else
+  {
+    return n;
+  }
 }
 
 // inserts a base/super class in the inheritance list
@@ -1542,7 +1549,7 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
-          ol.writeSummaryLink(0,ml->listTypeAsString(ml->listType()),lmd->title(lang),first);
+          ol.writeSummaryLink(0,MemberList::listTypeAsString(ml->listType()),lmd->title(lang),first);
           first=FALSE;
         }
       }
@@ -2526,23 +2533,14 @@ bool ClassDef::hasNonReferenceSuperClass()
 void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup,
     ClassDef *inheritedFrom,const char *inheritId)
 {
-  //ol.insertMemberAlign();
   //printf("ClassName=`%s' inGroup=%d\n",name().data(),inGroup);
 
-  //if (inGroup && md && md->getClassDef()==this) return;
-
   ol.docify(compoundTypeString());
-  int ri=name().findRev("::");
-  if (ri==-1) ri=name().length();
-  QCString cn=name().right(name().length()-ri-2);
-  if (!cn.isEmpty() && cn.at(0)!='@' && md)
+  QCString cn = displayName(FALSE);
+  if (!cn.isEmpty())
   {
-    if (cn.right(2)=="-p" /*|| cn.right(2)=="-g"*/)
-    {
-      cn = cn.left(cn.length()-2);
-    }
     ol.docify(" ");
-    if (isLinkable())
+    if (md && isLinkable())
     {
       ol.writeObjectLink(0,0,md->anchor(),cn);
     }
@@ -3929,196 +3927,6 @@ void ClassDef::sortMemberLists()
   }
 }
 
-
-/** Computes for a given list type \a inListType, which are the
- *  the corresponding list type(s) in the base class that are to be
- *  added to this list.
- *
- *  So for public inheritance, the mapping is 1-1, so outListType1=inListType
- *  Private members are to be hidden completely.
- *
- *  For protected inheritance, both protected and public members of the
- *  base class should be joined in the protected member section.
- *
- *  For private inheritance, both protected and public members of the
- *  base class should be joined in the private member section.
- */
-static void convertProtectionLevel(
-                   MemberListType inListType,
-                   Protection inProt,
-                   int *outListType1,
-                   int *outListType2
-                  )
-{
-  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
-  // default representing 1-1 mapping
-  *outListType1=inListType;
-  *outListType2=-1;
-  if (inProt==Public)
-  {
-    switch (inListType) // in the private section of the derived class,
-                        // the private section of the base class should not
-                        // be visible
-    {
-      case MemberListType_priMethods:
-      case MemberListType_priStaticMethods:
-      case MemberListType_priSlots:
-      case MemberListType_priAttribs:
-      case MemberListType_priStaticAttribs:
-      case MemberListType_priTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-      default:
-        break;
-    }
-  }
-  else if (inProt==Protected) // Protected inheritance
-  {
-    switch (inListType) // in the protected section of the derived class,
-                        // both the public and protected members are shown
-                        // as protected
-    {
-      case MemberListType_pubMethods:
-      case MemberListType_pubStaticMethods:
-      case MemberListType_pubSlots:
-      case MemberListType_pubAttribs:
-      case MemberListType_pubStaticAttribs:
-      case MemberListType_pubTypes:
-      case MemberListType_priMethods:
-      case MemberListType_priStaticMethods:
-      case MemberListType_priSlots:
-      case MemberListType_priAttribs:
-      case MemberListType_priStaticAttribs:
-      case MemberListType_priTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-
-      case MemberListType_proMethods:
-        *outListType2=MemberListType_pubMethods;
-        break;
-      case MemberListType_proStaticMethods:
-        *outListType2=MemberListType_pubStaticMethods;
-        break;
-      case MemberListType_proSlots:
-        *outListType2=MemberListType_pubSlots;
-        break;
-      case MemberListType_proAttribs:
-        *outListType2=MemberListType_pubAttribs;
-        break;
-      case MemberListType_proStaticAttribs:
-        *outListType2=MemberListType_pubStaticAttribs;
-        break;
-      case MemberListType_proTypes:
-        *outListType2=MemberListType_pubTypes;
-        break;
-      default:
-        break;
-    }
-  }
-  else if (inProt==Private)
-  {
-    switch (inListType) // in the private section of the derived class,
-                        // both the public and protected members are shown
-                        // as private
-    {
-      case MemberListType_pubMethods:
-      case MemberListType_pubStaticMethods:
-      case MemberListType_pubSlots:
-      case MemberListType_pubAttribs:
-      case MemberListType_pubStaticAttribs:
-      case MemberListType_pubTypes:
-      case MemberListType_proMethods:
-      case MemberListType_proStaticMethods:
-      case MemberListType_proSlots:
-      case MemberListType_proAttribs:
-      case MemberListType_proStaticAttribs:
-      case MemberListType_proTypes:
-        *outListType1=-1;
-        *outListType2=-1;
-        break;
-
-      case MemberListType_priMethods:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubMethods;
-          *outListType2=MemberListType_proMethods;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priStaticMethods:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubStaticMethods;
-          *outListType2=MemberListType_proStaticMethods;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priSlots:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubSlots;
-          *outListType1=MemberListType_proSlots;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priAttribs:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubAttribs;
-          *outListType2=MemberListType_proAttribs;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priStaticAttribs:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubStaticAttribs;
-          *outListType2=MemberListType_proStaticAttribs;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      case MemberListType_priTypes:
-        if (extractPrivate)
-        {
-          *outListType1=MemberListType_pubTypes;
-          *outListType2=MemberListType_proTypes;
-        }
-        else
-        {
-          *outListType1=-1;
-          *outListType2=-1;
-        }
-        break;
-      default:
-        break;
-    }
-  }
-  //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
-  //    inListType,inProt,*outListType1,*outListType2);
-}
-
 int ClassDef::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
                                       int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses)
 {
@@ -4157,7 +3965,7 @@ int ClassDef::countInheritedDecMembers(MemberListType lt,
                                        QPtrDict<void> *visitedClasses)
 {
   int inhCount = 0;
-  int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE)>0;
+  int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
   //printf("%s: countInheritedDecMembers: lt=%d process=%d count=%d invert=%d\n",
   //    name().data(),lt,process,count,invert);
@@ -4297,7 +4105,7 @@ void ClassDef::writeInheritedMemberDeclarations(OutputList &ol,
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE)>0;
+  int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
   bool process = count>0;
   //printf("%s: writeInheritedMemberDec: lt=%d process=%d invert=%d always=%d\n",
   //    name().data(),lt,process,invert,showAlways);

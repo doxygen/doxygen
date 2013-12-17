@@ -443,13 +443,6 @@ class TemplateEngine
      */
     TemplateContext *createContext() const;
 
-    /** Creates a new template whose contents are given by a string.
-     *  @param[in] name The name of the template.
-     *  @param[in] data The contents of the template.
-     *  @return the new template, the caller will be the owner.
-     */
-    Template *newTemplate(const QCString &name,const QCString &data);
-
     /** Creates a new template whole contents are in a file.
      *  @param[in] fileName The name of the file containing the 
      *             template data

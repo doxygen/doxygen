@@ -1558,6 +1558,7 @@ class TemplateImpl : public TemplateNode, public Template
 {
   public:
     TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data);
+    ~TemplateImpl() {}
     void render(FTextStream &ts, TemplateContext *c);
 
     TemplateEngine *engine() const { return m_engine; }
@@ -1868,6 +1869,58 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
 };
 
 //----------------------------------------------------------
+/** @brief Class representing a 'for' tag in a template */
+class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
+{
+  public:
+    TemplateNodeRepeat(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeRepeat>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeRepeat(%s)\n",data.data()));
+      ExpressionParser expParser(parser->templateName(),line);
+      m_expr = expParser.parseVariable(data);
+      QStrList stopAt;
+      stopAt.append("endrepeat");
+      parser->parse(this,line,stopAt,m_repeatNodes);
+      parser->removeNextToken(); // skip over endrepeat
+      TRACE(("}TemplateNodeRepeat(%s)\n",data.data()));
+    }
+    ~TemplateNodeRepeat()
+    {
+      delete m_expr;
+    }
+    void render(FTextStream &ts, TemplateContext *c)
+    {
+      dynamic_cast<TemplateContextImpl*>(c)->setLocation(m_templateName,m_line);
+      TemplateVariant v;
+      if (m_expr && (v=m_expr->resolve(c)).type()==TemplateVariant::Integer)
+      {
+        int i, n = v.toInt();
+        for (i=0;i<n;i++)
+        {
+          TemplateStruct s;
+          s.set("counter0",    (int)i);
+          s.set("counter",     (int)(i+1));
+          s.set("revcounter",  (int)(n-i));
+          s.set("revcounter0", (int)(n-i-1));
+          s.set("first",i==0);
+          s.set("last", i==n-1);
+          c->set("repeatloop",&s);
+          // render all items for this iteration of the loop
+          m_repeatNodes.render(ts,c);
+        }
+      }
+      else // simple type...
+      {
+        warn(m_templateName,m_line,"for requires a variable of list type!");
+      }
+    }
+  private:
+    TemplateNodeList m_repeatNodes;
+    ExprAst *m_expr;
+};
+
+//----------------------------------------------------------
 
 /** @brief Class representing a 'for' tag in a template */
 class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
@@ -2165,7 +2218,8 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       TemplateImpl *t = getTemplate();
       if (t)
       {
-        TemplateImpl *baseTemplate = dynamic_cast<TemplateImpl*>(t->engine()->loadByName(extendFile));
+        Template *bt = t->engine()->loadByName(extendFile);
+        TemplateImpl *baseTemplate = bt ? dynamic_cast<TemplateImpl*>(bt) : 0;
         if (baseTemplate)
         {
           // fill block context
@@ -2194,7 +2248,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
 
           // clean up
           bc->clear();
-          delete baseTemplate;
+          //delete baseTemplate;
         }
         else
         {
@@ -2242,7 +2296,8 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
           TemplateImpl *t = getTemplate();
           if (t)
           {
-            TemplateImpl *incTemplate = dynamic_cast<TemplateImpl*>(t->engine()->loadByName(includeFile));
+            Template *it = t->engine()->loadByName(includeFile);
+            TemplateImpl *incTemplate = it ? dynamic_cast<TemplateImpl*>(it) : 0;
             if (incTemplate)
             {
               incTemplate->render(ts,c);
@@ -2324,7 +2379,8 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
           TemplateImpl *t = getTemplate();
           if (t)
           {
-            TemplateImpl *createTemplate = dynamic_cast<TemplateImpl*>(t->engine()->loadByName(templateFile));
+            Template *ct = t->engine()->loadByName(templateFile);
+            TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
               if (!ci->outputDirectory().isEmpty())
@@ -2336,7 +2392,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
               {
                 FTextStream ts(&f);
                 createTemplate->render(ts,c);
-                delete createTemplate;
+                //delete createTemplate;
               }
               else
               {
@@ -2729,6 +2785,9 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               for (it->toFirst(); (it->current(var)) && i<entryIndex; it->toNext(),i++) {}
               if (ok && i==entryIndex) // found element
               {
+                TemplateStruct s;
+                s.set("id",(int)i);
+                c->set("markers",&s);
                 c->set(m_var,var); // define local variable to hold element of list type
                 bool wasSpaceless = ci->spacelessEnabled();
                 ci->enableSpaceless(TRUE);
@@ -2824,6 +2883,7 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeBlock>     autoRefBlock("bl
 static TemplateNodeFactory::AutoRegister<TemplateNodeCycle>     autoRefCycle("cycle");
 static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>    autoRefExtend("extend");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>    autoRefCreate("create");
+static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>    autoRefRepeat("repeat");
 static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>   autoRefInclude("include");
 static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>   autoRefMarkers("markers");
 static TemplateNodeFactory::AutoRegister<TemplateNodeSpaceless> autoRefSpaceless("spaceless");
@@ -3186,7 +3246,8 @@ void TemplateParser::parse(
                    command=="endif"          || command=="endfor"       ||
                    command=="endblock"       || command=="endwith"      ||
                    command=="endrecursetree" || command=="endspaceless" ||
-                   command=="endmarkers"     || command=="endmsg")
+                   command=="endmarkers"     || command=="endmsg"       ||
+                   command=="endrepeat")
           {
             warn(m_templateName,tok->line,"Found tag '%s' without matching start tag",command.data());
           }
@@ -3288,13 +3349,45 @@ void TemplateImpl::render(FTextStream &ts, TemplateContext *c)
 class TemplateEngine::Private
 {
   public:
-    Private() { templates.setAutoDelete(TRUE); }
-    QList<Template> templates;
+    Private(TemplateEngine *engine) : m_templateCache(17), m_engine(engine)
+    { m_templateCache.setAutoDelete(TRUE); }
+    Template *loadByName(const QCString &fileName) const
+    {
+      Template *templ = m_templateCache.find(fileName);
+      if (templ==0)
+      {
+        QFile f(fileName);
+        if (f.open(IO_ReadOnly))
+        {
+          uint size=f.size();
+          char *data = new char[size+1];
+          if (data)
+          {
+            data[size]=0;
+            if (f.readBlock(data,f.size()))
+            {
+              templ = new TemplateImpl(m_engine,fileName,data);
+              m_templateCache.insert(fileName,templ);
+            }
+            delete[] data;
+          }
+        }
+        else
+        {
+          err("Cound not open template file %s\n",fileName.data());
+        }
+      }
+      return templ;
+    }
+
+  private:
+    mutable QDict<Template> m_templateCache;
+    TemplateEngine *m_engine;
 };
 
 TemplateEngine::TemplateEngine()
 {
-  p = new Private;
+  p = new Private(this);
 }
 
 TemplateEngine::~TemplateEngine()
@@ -3307,32 +3400,8 @@ TemplateContext *TemplateEngine::createContext() const
   return new TemplateContextImpl;
 }
 
-Template *TemplateEngine::newTemplate(const QCString &name,const QCString &data)
-{
-  Template *t = new TemplateImpl(this,name,data);
-  p->templates.append(t);
-  return t;
-}
-
-
 Template *TemplateEngine::loadByName(const QCString &fileName)
 {
-  Template *t=0;
-  QFile f(fileName);
-  if (f.open(IO_ReadOnly))
-  {
-    uint size=f.size();
-    char *data = new char[size+1];
-    if (data)
-    {
-      data[size]=0;
-      if (f.readBlock(data,f.size()))
-      {
-        t = new TemplateImpl(this,fileName,data);
-      }
-      delete[] data;
-    }
-  }
-  return t;
+  return p->loadByName(fileName);
 }
 

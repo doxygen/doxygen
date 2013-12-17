@@ -11427,6 +11427,8 @@ void generateOutput()
     g_s.end();
   }
 
+  if (g_useOutputTemplate) generateOutputViaTemplate();
+
   if (generateRtf)
   {
     g_s.begin("Combining RTF output...\n");
@@ -11506,7 +11508,6 @@ void generateOutput()
     msg("finished...\n");
   }
 
-  if (g_useOutputTemplate) generateOutputViaTemplate();
 
   /**************************************************************************
    *                        Start cleaning up                               *
