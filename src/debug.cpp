@@ -124,7 +124,7 @@ bool Debug::isFlagSet(DebugMask mask)
 void Debug::printFlags(void)
 {
   int i;
-  for (i = 0; i < sizeof(s_labels)/sizeof(*s_labels); i++)
+  for (i = 0; i < (int)(sizeof(s_labels)/sizeof(*s_labels)); i++)
   {
      if (s_labels[i].name)
      {
