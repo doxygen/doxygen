@@ -3576,7 +3576,7 @@ static void buildFunctionList(EntryNav *rootNav)
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
                 md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 md->setDocsForDefinition(!root->proto);
-                if (md->getStartBodyLine()!=-1 && md->getStartBodyLine()==-1)
+                if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
                 {
                   md->setBodySegment(root->bodyLine,root->endBodyLine);
                   md->setBodyDef(rfd);
