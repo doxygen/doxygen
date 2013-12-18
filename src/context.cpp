@@ -4595,6 +4595,7 @@ class MemberInfoContext::Private : public PropertyMapper
         case ::Protected: return "protected";
         case ::Private:   return "private";
         case ::Package:   return "package";
+        default:          return "";
       }
     }
     TemplateVariant virtualness() const
@@ -4604,6 +4605,7 @@ class MemberInfoContext::Private : public PropertyMapper
         case ::Normal:   return "normal";
         case ::Virtual:  return "virtual";
         case ::Pure:     return "pure";
+        default:         return "";
       }
     }
     TemplateVariant ambiguityScope() const
