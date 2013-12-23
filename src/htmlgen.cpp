@@ -1385,8 +1385,8 @@ void HtmlCodeGenerator::_writeCodeLink(const char *className,
 }
 
 void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
-                                     const char *decl, const char *desc, 
-                                     const SourceLinkInfo &defInfo, 
+                                     const char *decl, const char *desc,
+                                     const SourceLinkInfo &defInfo,
                                      const SourceLinkInfo &declInfo)
 {
   m_t << "<div class=\"ttc\" id=\"" << id << "\">";
@@ -1417,7 +1417,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
   if (desc)
   {
     m_t << "<div class=\"ttdoc\">";
-    docify(desc);
+    m_t << desc; // desc is already HTML escaped
     m_t << "</div>";
   }
   if (!defInfo.file.isEmpty())
