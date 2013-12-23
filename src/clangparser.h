@@ -16,7 +16,7 @@ class ClangParser
     
     /** Start parsing a file.
      *  @param[in] fileName The name of the file to parse.
-     *  @param[in,out] filesInTanslationUnit Other files that are
+     *  @param[in,out] filesInTranslationUnit Other files that are
      *                 part of the input and included by the file.
      *                 The function will return a subset of the files,
      *                 only including the onces that were actually found 
@@ -26,7 +26,7 @@ class ClangParser
 
     /** Switches to another file within the translation unit started
      *  with start().
-     *  @param[in] The name of the file to switch to.
+     *  @param[in] fileName The name of the file to switch to.
      */
     void switchToFile(const char *fileName);
 
