@@ -2,6 +2,139 @@
 \tableofcontents
 \section log_1_8 1.8 Series
 
+\subsection log_1_8_6 Release 1.8.6
+\htmlonly
+<b>(release date 24-12-2013)</b>
+<a name="1.8.6"></a>
+<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database, lines with bug refer to commit is <a href="https://github.com/doxygen/doxygen/commits/master">GitHub</a>)</h3>
+<ul>
+<li> Bug 154880 - if "using namespace" used, call of a static member function in C++ is not recognized or recognized wrong
+<li> Bug 647517  - make install prepends a slash to the installation path Removed superfluous /
+<li> Bug 668424 - HTML links in RTF output are broken
+<li> Bug 683897 - class list not sorted?
+<li> Bug 692004 - show includes for free functions
+<li> Bug 693537 - Create possibility to keep user comments in Doxyfile
+<li> Bug 701949 - Latex: Hyperlinks for \secreflist / \refitem
+<li> Bug 702265 - Generated Doxyfile differs from result of doxygen -u (partial fix)
+<li> Bug 705910 - Indexing and searching cannot treat non ASCII identifiers
+<li> Bug 706520 - Fortran: in body documentation lands on wrong place In some cases, in propriety code, with in body Fortran documentation doxygen crashed. I REOPENED Bug_706520 for this
+<li> Bug 706804 - Fortran: Doxygen mixes up function-attributes with the return type test string should not be equal to "function" but should contain "function"
+<li> Bug 706813 - RPM build via spec file fails
+<li> Bug 706874 - Doxygen crash if missing new-line in a snippet
+<li> Bug 706916 - C++ exception specifications are no longer parsed correctly
+<li> Bug 707102 - update the Japanese translation
+<li> Bug 707353 - Accept IDs using unicode(non ASCII) characters in python codes
+<li> Bug 707389 - GENERATE_TREEVIEW=YES disables touch scrolling with Android 3.x
+<li> Bug 707431 - Cannot @ref or @link C++ operator overloads
+<li> Bug 707483 - Wrong page number and header in pdf output
+<li> Bug 707554 - When I use @INCLUDE DoxyWizard is closed Current directory was not changed at the right time so the include files could not be found in the "current" directory (i.e. the directory where the Doxyfile resides too, as this directory is shown as the current directory in the doxywizard). This is also important when the doxywizard is started from a shortcut.
+<li> Bug 707567 - Asterisks in comment wrongly displayed for @code
+<li> Bug 707641 - `FILTER_SOURCE_FILES=YES` required to build CALL_GRAPHS https://bugzilla.gnome.org/show_bug.cgi?id=707641
+<li> Bug 707685 - Fortran: error message when missing last EOL In case the original buffer in either fixed or free format code does not contain an EOL as last character, add it.
+<li> Bug 707713 - Add support for dia diagrams
+<li> Bug 707825 - Const treatment
+<li> Bug 707925 - False warning for Java "warning: missing ( in exception list on member"
+<li> Bug 707985 - Strange output when : appended to an parameter description
+<li> Bug 707995 - @copydoc not working for const member overloads
+<li> Bug 708446 - Deprecated list breaks HTML tree with xhtml extension
+<li> Bug 708455 - Enabling INLINE_SIMPLE_STRUCTS messes up Data Structures in tree
+<li> Bug 708806 - Wrong path to graph_legend figure in graph_legend.html when CREATE_SUBDIRS = YES
+<li> Bug 709052 - Templated and non-templated method mixup documentation
+<li> Bug 709226 - Struct member fields not documented with INLINE_SIMPLE_STRUCTS
+<li> Bug 709526 - C++ parsing problem with operators &lt;&lt;, &lt;, &gt;, &gt;&gt; inside templates
+<li> Bug 709706 - Terminating C comments within markdown files breaks aliases
+<li> Bug 709780 - Copying of files via \image tag can get confused by symlinks at the destination
+<li> Bug 709803 - Generated hhc file contains an error for a section of a mainpage
+<li> Bug 709845 - Fortran: problem with types with name starting with is
+<li> Bug 709870 - Broken links on members HTML page when using BUILTIN_STL_SUPPORT
+<li> Bug 709921 - position of linebreak in template argument list affects inheritance relation
+<li> Bug 710917 - Segfault while parsing a C file
+<li> Bug 710998 - latex_count=5 is not enough
+<li> Bug 711004 - Vertical bars cannot be sent straight to makeindex
+<li> Bug 711097 - Compiler warnings because char is unsigned on ARM/PPC: "comparison is always false"
+<li> Bug 711378 - Nested Aliases fail when the nested alias has two or more arguments.
+<li> Bug 711639 - [PATCH] #include does not work with absolute paths
+<li> Bug 711723 - Comment /**/ confuses doxygen
+<li> Bug 711787 - Long initialization line in C stops doxygen An extra "breakpoint" in the input string has been created in the form of a , (comma), so for initialization lines the line will be shorter and the , (comma) will be copied later on.
+<li> Bug 712795 - segmentation fault in memberdef.cpp
+<li> Bug 712819 - Some external namespaces appear in list despite having ALLEXTERNALS = NO
+<li> Bug 715172 - Consistently document Fortran's equivalent function bodies
+<li> Bug 719389 - HTML escaping incorrectly applied in source tooltips
+<li> Bug 719422 - private java class is mentioned in inherited by list of super class
+<li> Bug 719463 - Invalid null key and segmentation fault
+<li> Bug 719489 - Label "abstract" instead of "pure virtual" for Java language
+<li> Bug 719525 - Can't build because the definitions of ***YY_flex_debug are missing.
+<li> Bug 719591 - expand_as_defined macro does not properly work
+<li> Bug 719639 - @xrefitem with empty heading string
+<li> Bug 720046 - Document inline objective-C blocks
+<li> Bug 720092 - USE_MDFILE_AS_MAINPAGE doesn't work if full path is specified.
+<li> Bug 720580 - inline source browser shows wrong code with muilti-line c++11's raw strings
+<li> Add support for honoring svg image format preference in msc
+<li> Added @parblock and @endparblock commands
+<li> Added compile support for Mavericks
+<li> Added fix to avoid errors with older compilers.
+<li> Added generated files to gitignore
+<li> Added missing docs tag
+<li> Added missing pthread lib to doxyapp
+<li> Added missing space after @parblock
+<li> Added rudimentary support for Django like template system for output creation.
+<li> Added the possibility to specify the -d option in the Visual studio GUI on windows for the lex rules
+<li> Adjust internationalization part to current situation
+<li> Alignment of @code and @verbatim section When having a code and a verbatim section the boxes are not alligned, this patch fixes this. Example code, aa.c; standard Doxyfile: /** \file
+<li> Allow @ref to unlabeled markdown page by name, i.e. @ref mypage.md
+<li> Allow links to other markdown pages of the form [link text](page.md)
+<li> Avoid accessing uninitialized memory in fileToString
+<li> Build problem with unistd.h and Cygwin The standard g++ compiler under windows (win32-g++) has unistd.gh file; Microsoft windows does not have it, therfore it is better to use the winbuild directory in case of windows adn no dependency otherwise
+<li> Consistency in language part of the documentation Made documentation more inline with other parts of the documentation (regarding the way e.g. filenames are presented) Corrected some spelling errors Corrected the warning in the language.doc by placing ta reference to the files from which language.doc is generated Corrected the color for the languages that are still v1.4.6 (language name now also red  in stead of a pink background, was confusing with languages that were 1.5 / 1.6 compatible)
+<li> Corrected some inconsistencies in the comments
+<li> Debug output for lexical analyzer
+<li> Deleted generated files from source repository
+<li> Doxygen didn't allow @ref to parameters of type reference to an array.
+<li> Doxysearch under Cygwin should not have extension cgi.exe but just .cgi
+<li> Esperanto not supported by htmlhelp compiler reverting for esperanto to default language (US English)
+<li> Fixed a number of compiler warnings reported by newer clang compiler
+<li> Fixed compilation issues in doxyapp
+<li> Fixed compile warning
+<li> Fixed compiler warning related to implicit size_t to int conversion
+<li> Fixed constness warning
+<li> Fixed invalid if statement found by cppcheck
+<li> Fixed issue with Romanian translator preventing treeview from working
+<li> Fixed regression autolinking C# template such as MyGenericClass&lt;T&gt;.g()
+<li> Fixed regression in argument matching for the template example
+<li> Fortran added keyword IMPURE
+<li> French translator up-to-date.
+<li> Internal documentation for debug possibilities Documentation regarding usage of -d option with [f]lex Initial documentation regarding the -d options with doxygen
+<li> LaTeX: Fix ToC entries of index/bibliography
+<li> Made lexer rule explicit
+<li> Make Python detection in configure work with version older than 2.7
+<li> Minor layout tweaks and extra guard
+<li> More fixes for the Windows build
+<li> Patch regarding generating the rules file for the windows build regarding languages, some inconsistencies in the (windows) build system, corrections to some spelling.
+<li> Regenerated language.doc
+<li> Removed japanese characters in maintainers.txt as they break the build
+<li> Removed redundant backslashes in regexp pattern
+<li> Report details about fork() failure in logs.
+<li> Russian translator updated, new Russian maintainer added.
+<li> Small spelling correction to generate an rtf extensions file -&gt; to generate a rtf extensions file
+<li> Some texts can be independent of \htmlonly / \latexonly
+<li> Space missing in error message. the word 'in' and the vale of filesOption were concatenated
+<li> This patch contains changes regarding the build system so that the *nix and Windows systems use the same information (consistency). Some use names routine names have been changed (from .l files with -P option) to reflect the file name that generated the routines, this makes it easier to create a general procedure. A number of include / header files are files are generated from different file types (html, xml, js), due some limitations of the windows build system the generated file names had to be changed (the extension in the windows build system is only available including the '.' so e.g. the file jquery_fx.js generates now jquery_fx.js.h instead of jquery_fx_js.h) In the windows version the creation of .cpp files from .l files has been adjusted to correct for the YY_BUF_SIZE problems. Furthermore on windows (and also used on *nix) some commends have been replaced with python scripts so that on windows only python is need (besides flex and and bison). On *nix also perl is required for the generation using tmake.
+<li> Updated Visual Studio project files to include new source files
+<li> Usage of the -d opion corrected Giving an error when a wrong -d option is given. Made some error mesages more consistent. Corrected usage of the exit call, in case of an error: exit(1) otherwise exit(0). A closer look should be made on exitDoxygen as it does not contain any exit statements and it is unclear (to me) when it is used.
+<li> VHDL-2008 and arrays on unconstrained elements
+<li> consider currentFile when searching for global symbols
+<li> doc/language.doc generated from the updated sources (bgcolored)
+<li> doc/language.tpl -- UTF-8 reflected in the langhowto template
+<li> doc/language.tpl -- trailing spaces removed
+<li> doc/translator.py -- coloured status in HTML
+<li> doxygen /** style creates spurious code blocks with markdown enabled
+<li> doxygen version 1.8.5 throws many "Internal Inconsistency" errors when parsing .idl files
+<li> doxygen.sty.h was not ignored and not included/generated properly
+<li> testing dir was missing from 'make archive'
+<li> usage: make -d print dev doxygen options
+</ul>
+\endhtmlonly
+
 \subsection log_1_8_5 Release 1.8.5
 \htmlonly
 <b>(release date 23-08-2013)</b>
@@ -19,7 +152,7 @@
 <ul>
 <li>Added SOURCE_TOOLTIPS option for advanced tooltip support while source browsing.
 </ul>
-<h3>Bug fixes (ids refer to the <a href="http://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=NEEDINFO&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&email1=&emailtype1=substring&emailassigned_to1=1&email2=&emailtype2=substring&emailreporter2=1&changedin=&chfieldfrom=&chfieldto=Now&chfieldvalue=&short_desc=&short_desc_type=substring&long_desc=&long_desc_type=substring&bug_file_loc=&bug_file_loc_type=substring&status_whiteboard=&status_whiteboard_type=substring&keywords=&keywords_type=anywords&op_sys_details=&op_sys_details_type=substring&version_details=&version_details_type=substring&newqueryname=&form_name=query&order=bugs.bug_id">bugzilla</a> database)</h3>
+<h3>Bug fixes</h3>
 <ul>
 <li> Bug 668007 - HTML commands - documentation of &lt;/dd&gt; tag missing
 <li> Bug 676879 - parameter on doxywizard manual Added sentenc in respect to possible argument for doxywizard Added images to the LaTex / pdf version of the manual
