@@ -6132,7 +6132,14 @@ static void findMember(EntryNav *rootNav,
                   matching = FALSE;
                 }
               }
-              else if (md->templateArguments()!=0 || root->tArgLists!=0)
+              bool classIsTemplate = md->getClassDef() && md->getClassDef()->templateArguments();
+              bool mdIsTemplate    = md->templateArguments()!=0;
+              bool classOrMdIsTemplate = mdIsTemplate || classIsTemplate;
+              bool rootIsTemplate  = root->tArgLists!=0;
+              //printf("classIsTemplate=%d mdIsTemplate=%d rootIsTemplate=%d\n",classIsTemplate,mdIsTemplate,rootIsTemplate);
+              if ((mdIsTemplate || rootIsTemplate) && // either md or root is a template
+                  ((classOrMdIsTemplate && !rootIsTemplate) || (!classOrMdIsTemplate && rootIsTemplate))
+                 )
               {
                 // Method with template return type does not match method without return type
                 // even if the parameters are the same. See also bug709052
