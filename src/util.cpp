@@ -218,6 +218,7 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
 {
   int i,p=0,l;
   QCString newScope;
+  int sl = s.length();
   while ((i=getScopeFragment(s,p,&l))!=-1)
   {
     //printf("Scope fragment %s\n",s.mid(i,l).data());
@@ -229,10 +230,10 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
         newScope+=s.mid(i,l);
       }
     }
-    else
+    else if (i<sl)
     {
       if (!newScope.isEmpty()) newScope+="::";
-      newScope+=s.right(s.length()-i);
+      newScope+=s.right(sl-i);
       goto done;
     }
     p=i+l;

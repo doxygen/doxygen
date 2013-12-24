@@ -1836,6 +1836,10 @@ static void findUsingDirectives(EntryNav *rootNav)
     //printf("Found using directive %s at line %d of %s\n",
     //    root->name.data(),root->startLine,root->fileName.data());
     QCString name=substitute(root->name,".","::");
+    if (name.right(2)=="::")
+    {
+      name=name.left(name.length()-2);
+    }
     if (!name.isEmpty())
     {
       NamespaceDef *usingNd = 0;
