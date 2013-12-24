@@ -2902,7 +2902,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN(lastRawStringContext);
                                           }
                                         }
-<RawGString>[^)]+                       {
+<RawGString>[^)\n]+                     {
                                           *pCopyRawGString+=yytext;
                                         }
 <RawGString>.                           {

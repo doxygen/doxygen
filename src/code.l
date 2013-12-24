@@ -2602,7 +2602,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    BEGIN( g_lastStringContext );
                                           }
                                         }
-<RawString>[^)]+                        { g_code->codify(yytext); }
+<RawString>[^)\n]+                      { g_code->codify(yytext); }
 <RawString>.                            { g_code->codify(yytext); }
 <RawString>\n                           { codifyLines(yytext); }
 <SkipVerbString>[^"\n]+			{
