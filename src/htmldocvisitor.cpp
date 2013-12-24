@@ -2031,8 +2031,12 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
   }
   baseName.prepend("msc_");
   QCString outDir = Config_getString("HTML_OUTPUT");
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
-  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context);
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  MscOutputFormat mscFormat = MSC_BITMAP;
+  if ("svg" == imgExt)
+    mscFormat = MSC_SVG;
+  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat);
+  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat);
 }
 
 void HtmlDocVisitor::writeDiaFile(const QCString &fileName,

@@ -103,15 +103,22 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   QCString mscExe = Config_getString("MSCGEN_PATH")+"mscgen"+portable_commandExtension();
   QCString mscArgs;
   QCString extension;
-  if (format==MSC_BITMAP)
+  switch (format)
   {
-    mscArgs+="-T png";
-    extension=".png";
-  }
-  else if (format==MSC_EPS)
-  {
-    mscArgs+="-T eps";
-    extension=".eps";
+    case MSC_BITMAP:
+      mscArgs+="-T png";
+      extension=".png";
+      break;
+    case MSC_EPS:
+      mscArgs+="-T eps";
+      extension=".eps";
+      break;
+    case MSC_SVG:
+      mscArgs+="-T svg";
+      extension=".svg";
+      break;
+    default:
+      goto error; // I am not very fond of goto statements, but when in Rome...
   }
   mscArgs+=" -i \"";
   mscArgs+=inFile;
@@ -188,11 +195,28 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
                               const QCString &outDir,
                               const QCString &relPath,
                               const QCString &baseName,
-                              const QCString &context)
+                              const QCString &context,
+			      MscOutputFormat format
+ 			    )
 {
   QCString mapName = baseName+".map";
   QCString mapFile = inFile+".map";
-  t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
+  t << "<img src=\"" << relPath << baseName << ".";
+  switch (format)
+  {
+    case MSC_BITMAP:
+      t << "png";
+      break;
+    case MSC_EPS:
+      t << "eps";
+      break;
+    case MSC_SVG:
+      t << "svg";
+      break;
+    default:
+      t << "unknown";
+  }
+  t << "\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
   QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context);
   t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
