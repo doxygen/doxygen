@@ -731,7 +731,7 @@ void replaceComment(int offset);
 <CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,(int)yyleng);
   				   }
-<CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
+<CComment,ReadLine>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
   				     g_condCtx = YY_START; 
   				     BEGIN(CondLine);
   				   }
