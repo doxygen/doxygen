@@ -564,12 +564,13 @@ if test "$f_python" = NO; then
   python_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   python_prog=NO
   python_found=NO
-  for i in $python_names; do
-    for j in $python_dirs; do
-      if test -x "$j/$i"; then
+  for binary in $python_names; do
+    for path in $python_dirs; do
+      if test -x "$path/$binary"; then
         python_found=YES
-        if test `$j/$i -c "import sys; print sys.version_info[0]"` = 2; then
-          python_prog="$j/$i"
+        python_version_major=`$path/$binary -c "import sys; print(sys.version_info[0])"`
+        if test -n "$python_version_major"; then
+          python_prog="$path/$binary"
           break 2
         fi
       fi
@@ -579,11 +580,7 @@ if test "$f_python" = NO; then
 fi
 
 if test "$f_python" = NO; then
-  if test "$python_found" = YES; then
-    echo "version should be python 2."
-  else
-    echo "not found!";
-  fi
+  echo "not found!";
   echo
   exit 2
 fi
