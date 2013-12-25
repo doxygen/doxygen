@@ -357,15 +357,17 @@ fi
 if test "$f_search" = YES; then
   if test -z "$XAPIAN"; then
     printf "  Checking for Xapian..."
-    for d in /usr /usr/local /opt/local; do
-      if test -e "$d/include/xapian.h"; then
-        XAPIAN=$d
-        break 2
-      fi
-    done
+    xapian_config=`which xapian-config`
+    if test -n "$xapian_config"; then
+      XAPIAN_CXXFLAGS=`$xapian_config --cxxflags`
+      XAPIAN_LFLAGS=`$xapian_config --libs`
+      XAPIAN=`$xapian_config --version`
+    fi
   else
     if test -e "$XAPIAN/include/xapian.h"; then
       printf "  Detected Xapian via the XAPIAN environment variable..."
+      XAPIAN_CXXFLAGS="-I$XAPIAN/include"
+      XAPIAN_LFLAGS="-L$XAPIAN/lib -lxapian"
     else
       printf "ERROR Detected Xapian via the XAPIAN environment variable..."
       echo ", but $XAPIAN/include/xapian.h does not exist."
@@ -374,7 +376,7 @@ if test "$f_search" = YES; then
     fi
   fi
   if test -z "$XAPIAN"; then
-    echo "XAPIAN not set and xapian.h not found at standard locations!"
+    echo "XAPIAN not set and xapian-config not available or xapian.h not found at standard locations!"
     exit 2;
   fi
   echo using $XAPIAN
@@ -798,8 +800,8 @@ fi
 
 if test "$f_search" = YES; then
   cat >> .tmakeconfig <<EOF
-LIBS += -L$XAPIAN/lib
-INCLUDEPATH += $XAPIAN/include
+TMAKE_CXXFLAGS += $XAPIAN_CXXFLAGS
+TMAKE_LFLAGS   += $XAPIAN_LFLAGS
 EOF
 fi
 
