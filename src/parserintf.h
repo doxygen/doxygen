@@ -191,11 +191,11 @@ class ParserManager
       }
       else if (strlen(extension) == 0)
       {
-        ext = QCString(extension).lower();
+        ext = QCString(".no_extension");
       }
       else
       {
-        ext = QCString(".no_extension");
+        ext = QCString(extension).lower();
       }
       ParserInterface *intf = m_extensions.find(ext);
       if (intf==0 && ext.length()>4)
