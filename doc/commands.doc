@@ -2410,7 +2410,6 @@ only copy the detailed documentation, not the brief description.
   \ref cmdenddocbookonly "\\enddocbookonly" command.
 
   \sa section \ref cmdmanonly "\\manonly", 
-              \ref cmdxmlonly "\\xmlonly", 
               \ref cmdlatexonly "\\latexonly", 
               \ref cmdrtfonly "\\rtfonly", 
               \ref cmdxmlonly "\\xmlonly", and 
@@ -2727,7 +2726,6 @@ class Receiver
     HTML-only block.
 
   \sa section \ref cmdmanonly "\\manonly", 
-              \ref cmdxmlonly "\\xmlonly", 
               \ref cmdlatexonly "\\latexonly", 
               \ref cmdrtfonly "\\rtfonly", 
               \ref cmdxmlonly "\\xmlonly", and 
