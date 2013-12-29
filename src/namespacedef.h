@@ -94,6 +94,7 @@ class NamespaceDef : public Definition
     NamespaceSDict *getNamespaceSDict() const { return namespaceSDict; }
 
     QCString title() const;
+    QCString compoundTypeString() const;
 
     bool visited;
 

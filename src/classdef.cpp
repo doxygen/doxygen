@@ -1767,20 +1767,24 @@ void ClassDef::writeMoreLink(OutputList &ol,const QCString &anchor)
   }
 }
 
+bool ClassDef::visibleInParentsDeclList() const
+{
+  static bool extractPrivate      = Config_getBool("EXTRACT_PRIVATE");
+  static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
+  static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
+  bool linkable = isLinkable();
+  return (name().find('@')==-1 && !isExtension() &&
+          (protection()!=::Private || extractPrivate) &&
+          (linkable || (!hideUndocClasses && (!isLocal() || extractLocalClasses)))
+         );
+}
 
 void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *header,bool localNames)
 {
   //static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   //static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-  static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
-  static bool extractLocalClasses = Config_getBool("EXTRACT_LOCAL_CLASSES");
-  bool isLink = isLinkable();
   SrcLangExt lang = getLanguage();
-  if (isLink ||
-      (!hideUndocClasses &&
-       (!isLocal() || extractLocalClasses)
-      )
-     )
+  if (visibleInParentsDeclList())
   {
     if (!found) // first class
     {
@@ -1820,7 +1824,7 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       ol.writeString(" ");
       ol.insertMemberAlign();
     }
-    if (isLink)
+    if (isLinkable())
     {
       ol.writeObjectLink(getReference(),
           getOutputFileBase(),

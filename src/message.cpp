@@ -13,7 +13,6 @@
  *
  */
 
-#include <stdarg.h>
 #include <stdio.h>
 #include <qdatetime.h>
 #include "config.h"
@@ -22,6 +21,7 @@
 #include "doxygen.h"
 #include "portable.h"
 #include "filedef.h"
+#include "message.h"
 
 static QCString outputFormat;
 static const char *warning_str = "warning: ";
@@ -110,7 +110,7 @@ void msg(const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
     vfprintf(stdout, fmt, args);
-    va_end(args); 
+    va_end(args);
   }
 }
 
@@ -170,6 +170,11 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_start(args, fmt);
   do_warn("WARNINGS", file, line, warning_str, fmt, args);
   va_end(args); 
+}
+
+void warn(const char *file,int line,const char *fmt,va_list args)
+{
+  do_warn("WARNINGS", file, line, warning_str, fmt, args);
 }
 
 void warn_simple(const char *file,int line,const char *text)

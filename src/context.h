@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "template.h"
+#include <qlist.h>
 
 class Definition;
 class ClassDef;
@@ -108,7 +109,7 @@ class UsedFilesContext : public TemplateListIntf
 class IncludeInfoContext : public TemplateStructIntf
 {
   public:
-    IncludeInfoContext(IncludeInfo *,SrcLangExt lang);
+    IncludeInfoContext(const IncludeInfo *,SrcLangExt lang);
    ~IncludeInfoContext();
 
     // TemplateStructIntf methods
@@ -118,6 +119,25 @@ class IncludeInfoContext : public TemplateStructIntf
     class Private;
     Private *p;
 };
+
+//----------------------------------------------------
+
+class IncludeInfoListContext : public TemplateListIntf
+{
+  public:
+    IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang);
+   ~IncludeInfoListContext();
+
+    // TemplateListIntf
+    virtual int count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
 
 //----------------------------------------------------
 
@@ -246,6 +266,26 @@ class NestedClassListContext : public TemplateListIntf
     virtual TemplateListIntf::ConstIterator *createIterator() const;
 
     void append(ClassDef *cd);
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class NestedNamespaceListContext : public TemplateListIntf
+{
+  public:
+    NestedNamespaceListContext();
+   ~NestedNamespaceListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+    void append(NamespaceDef *cd);
 
   private:
     class Private;

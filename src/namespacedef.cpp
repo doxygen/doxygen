@@ -916,29 +916,9 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
           continue; // will be output in another pass, see layout_default.xml
       ol.startMemberDeclaration();
       ol.startMemberItem(nd->getOutputFileBase(),0);
-      if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
-      {
-        ol.docify("package ");
-      }
-      else if (lang==SrcLangExt_Fortran)
-      {
-        ol.docify("module ");
-      }
-      else if (lang==SrcLangExt_IDL)
-      {
-        if (nd->isModule())
-        {
-          ol.docify("module ");
-        }
-        else if (nd->isConstantGroup())
-        {
-          ol.docify("constants");
-        }
-        else
-        {
-          err("Internal inconsistency: namespace in IDL not module or cg\n");
-        }
-      }
+      QCString ct = nd->compoundTypeString();
+      ol.docify(ct);
+      ol.docify(" ");
       ol.insertMemberAlign();
       QCString name;
       if (localName)
@@ -1103,3 +1083,33 @@ QCString NamespaceDef::title() const
   }
   return pageTitle;
 }
+
+QCString NamespaceDef::compoundTypeString() const
+{
+  SrcLangExt lang = getLanguage();
+  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+  {
+    return "package";
+  }
+  else if (lang==SrcLangExt_Fortran)
+  {
+    return "module";
+  }
+  else if (lang==SrcLangExt_IDL)
+  {
+    if (isModule())
+    {
+      return "module";
+    }
+    else if (isConstantGroup())
+    {
+      return "constants";
+    }
+    else
+    {
+      err("Internal inconsistency: namespace in IDL not module or constant group\n");
+    }
+  }
+  return "";
+}
+

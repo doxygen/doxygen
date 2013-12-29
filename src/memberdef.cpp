@@ -3036,6 +3036,18 @@ static Definition *getClassFromType(Definition *scope,const QCString &type,SrcLa
 }
 #endif
 
+QCString MemberDef::fieldType() const
+{
+  QCString type = m_impl->accessorType;
+  if (type.isEmpty())
+  {
+    type = m_impl->type;
+  }
+
+  if (isTypedef()) type.prepend("typedef ");
+  return simplifyTypeForTable(type);
+}
+
 void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
 {
   Definition *scope  = getOuterScope();
@@ -3056,15 +3068,7 @@ void MemberDef::writeMemberDocSimple(OutputList &ol, Definition *container)
   ol.startInlineMemberType();
   ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
 
-  QCString type = m_impl->accessorType;
-  if (type.isEmpty())
-  {
-    type = m_impl->type;
-  }
-
-  if (isTypedef()) type.prepend("typedef ");
-
-  QCString ts = simplifyTypeForTable(type);
+  QCString ts = fieldType();
 
   if (cd) // cd points to an anonymous struct pointed to by this member
           // so we add a link to it from the type column.
@@ -3853,6 +3857,11 @@ void MemberDef::setAccessorType(ClassDef *cd,const char *t)
 {
   m_impl->accessorClass = cd;
   m_impl->accessorType = t;
+}
+
+ClassDef *MemberDef::accessorClass() const
+{
+  return m_impl->accessorClass;
 }
 
 void MemberDef::findSectionsInDocumentation()

@@ -29,7 +29,8 @@ class TemplateToken;
 
 //-------------------------------------------------------------------
 
-static QValueList<QCString> split(const QCString &str,const QCString &sep,bool allowEmptyEntries=FALSE,bool cleanup=TRUE)
+static QValueList<QCString> split(const QCString &str,const QCString &sep,
+                                  bool allowEmptyEntries=FALSE,bool cleanup=TRUE)
 {
   QValueList<QCString> lst;
 
@@ -561,7 +562,7 @@ class TemplateBlockContext
 class TemplateContextImpl : public TemplateContext
 {
   public:
-    TemplateContextImpl();
+    TemplateContextImpl(const TemplateEngine *e);
     virtual ~TemplateContextImpl();
 
     // TemplateContext methods
@@ -589,8 +590,10 @@ class TemplateContextImpl : public TemplateContext
     TemplateSpacelessIntf *spacelessIntf() const { return m_spacelessIntf; }
     void enableSpaceless(bool b) { m_spacelessEnabled=b; }
     bool spacelessEnabled() const { return m_spacelessEnabled && m_spacelessIntf; }
+    void warn(const char *fileName,int line,const char *fmt,...) const;
 
   private:
+    const TemplateEngine *m_engine;
     QCString m_templateName;
     int m_line;
     QCString m_outputDir;
@@ -874,7 +877,7 @@ class ExprAstVariable : public ExprAst
       TemplateVariant v = c->get(m_name);
       if (!v.isValid())
       {
-        warn(ci->templateName(),ci->line(),"undefined variable '%s' in expression",m_name.data());
+        ci->warn(ci->templateName(),ci->line(),"undefined variable '%s' in expression",m_name.data());
       }
       return v;
     }
@@ -928,7 +931,7 @@ class ExprAstFilter : public ExprAst
       TemplateVariant result = TemplateFilterFactory::instance()->apply(m_name,v,arg,ok);
       if (!ok)
       {
-        warn(ci->templateName(),ci->line(),"unknown filter '%s'",m_name.data());
+        ci->warn(ci->templateName(),ci->line(),"unknown filter '%s'",m_name.data());
       }
       return result;
     }
@@ -1047,6 +1050,46 @@ class ExprAstBinary : public ExprAst
     ExprAst *m_rhs;
 };
 
+//----------------------------------------------------------
+
+/** @brief Base class of all nodes in a template's AST */
+class TemplateNode
+{
+  public:
+    TemplateNode(TemplateNode *parent) : m_parent(parent) {}
+    virtual ~TemplateNode() {}
+
+    virtual void render(FTextStream &ts, TemplateContext *c) = 0;
+
+    TemplateNode *parent() { return m_parent; }
+
+  private:
+    TemplateNode *m_parent;
+};
+
+//----------------------------------------------------------
+
+/** @brief Parser for templates */
+class TemplateParser
+{
+  public:
+    TemplateParser(const TemplateEngine *engine,
+                   const QCString &templateName,QList<TemplateToken> &tokens);
+    void parse(TemplateNode *parent,int line,const QStrList &stopAt,
+               QList<TemplateNode> &nodes);
+    bool hasNextToken() const;
+    TemplateToken *takeNextToken();
+    void removeNextToken();
+    void prependToken(const TemplateToken *token);
+    const TemplateToken *currentToken() const;
+    QCString templateName() const { return m_templateName; }
+    void warn(const char *fileName,int line,const char *fmt,...) const;
+  private:
+    const TemplateEngine *m_engine;
+    QCString m_templateName;
+    QList<TemplateToken> &m_tokens;
+};
+
 //--------------------------------------------------------------------
 
 /** @brief Recursive decent parser for Django style template expressions.
@@ -1054,8 +1097,8 @@ class ExprAstBinary : public ExprAst
 class ExpressionParser
 {
   public:
-    ExpressionParser(const QCString &templateName,int line)
-      : m_templateName(templateName), m_line(line), m_tokenStream(0)
+    ExpressionParser(const TemplateParser *parser,int line)
+      : m_parser(parser), m_line(line), m_tokenStream(0)
     {
     }
     virtual ~ExpressionParser()
@@ -1153,7 +1196,7 @@ class ExpressionParser
         ExprAst *expr = parseCompareExpression();
         if (expr==0)
         {
-          warn(m_templateName,m_line,"argument missing for not operator");
+          warn(m_parser->templateName(),m_line,"argument missing for not operator");
           return 0;
         }
         result = new ExprAstNegate(expr);
@@ -1210,12 +1253,12 @@ class ExpressionParser
         default:
           if (m_curToken.type==ExprToken::Operator)
           {
-            warn(m_templateName,m_line,"unexpected operator '%s' in expression",
+            warn(m_parser->templateName(),m_line,"unexpected operator '%s' in expression",
                 Operator::toString(m_curToken.op));
           }
           else
           {
-            warn(m_templateName,m_line,"unexpected token in expression");
+            warn(m_parser->templateName(),m_line,"unexpected token in expression");
           }
       }
       TRACE(("}parsePrimary(%s)\n",m_tokenStream));
@@ -1461,7 +1504,7 @@ class ExpressionParser
         char s[2];
         s[0]=c;
         s[1]=0;
-        warn(m_templateName,m_line,"Found unknown token %s while parsing %s",s,m_tokenStream);
+        warn(m_parser->templateName(),m_line,"Found unknown token %s while parsing %s",s,m_tokenStream);
         m_curToken.id = s;
         p++;
       }
@@ -1472,47 +1515,10 @@ class ExpressionParser
       return TRUE;
     }
 
+    const TemplateParser *m_parser;
     ExprToken m_curToken;
-    QCString m_templateName;
     int m_line;
     const char *m_tokenStream;
-};
-
-//----------------------------------------------------------
-
-/** @brief Base class of all nodes in a template's AST */
-class TemplateNode
-{
-  public:
-    TemplateNode(TemplateNode *parent) : m_parent(parent) {}
-    virtual ~TemplateNode() {}
-
-    virtual void render(FTextStream &ts, TemplateContext *c) = 0;
-
-    TemplateNode *parent() { return m_parent; }
-
-  private:
-    TemplateNode *m_parent;
-};
-
-//----------------------------------------------------------
-
-/** @brief Parser for templates */
-class TemplateParser
-{
-  public:
-    TemplateParser(const QCString &templateName,QList<TemplateToken> &tokens);
-    void parse(TemplateNode *parent,int line,const QStrList &stopAt,
-               QList<TemplateNode> &nodes);
-    bool hasNextToken() const;
-    TemplateToken *takeNextToken();
-    void removeNextToken();
-    void prependToken(const TemplateToken *token);
-    const TemplateToken *currentToken() const;
-    QCString templateName() const { return m_templateName; }
-  private:
-    QCString m_templateName;
-    QList<TemplateToken> &m_tokens;
 };
 
 //----------------------------------------------------------
@@ -1558,24 +1564,23 @@ class TemplateImpl : public TemplateNode, public Template
 {
   public:
     TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data);
-    ~TemplateImpl() {}
     void render(FTextStream &ts, TemplateContext *c);
 
     TemplateEngine *engine() const { return m_engine; }
     TemplateBlockContext *blockContext() { return &m_blockContext; }
 
   private:
+    TemplateEngine *m_engine;
     QCString m_name;
     TemplateNodeList m_nodes;
-    TemplateEngine *m_engine;
     TemplateBlockContext m_blockContext;
 };
 
 //----------------------------------------------------------
 
 
-TemplateContextImpl::TemplateContextImpl()
-  : m_templateName("<unknown>"), m_line(1), m_escapeIntf(0),
+TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
+  : m_engine(e), m_templateName("<unknown>"), m_line(1), m_escapeIntf(0),
     m_spacelessIntf(0), m_spacelessEnabled(FALSE)
 {
   m_contextStack.setAutoDelete(TRUE);
@@ -1704,6 +1709,15 @@ TemplateBlockContext *TemplateContextImpl::blockContext()
   return &m_blockContext;
 }
 
+void TemplateContextImpl::warn(const char *fileName,int line,const char *fmt,...) const
+{
+  va_list args;
+  va_start(args,fmt);
+  ::warn(fileName,line,fmt,args);
+  va_end(args);
+  m_engine->printIncludeContext(fileName,line);
+}
+
 //----------------------------------------------------------
 
 /** @brief Class representing a piece of plain text in a template */
@@ -1743,7 +1757,7 @@ class TemplateNodeVariable : public TemplateNode
       : TemplateNode(parent), m_templateName(parser->templateName()), m_line(line)
     {
       TRACE(("TemplateNodeVariable(%s)\n",var.data()));
-      ExpressionParser expParser(m_templateName,line);
+      ExpressionParser expParser(parser,line);
       m_var = expParser.parseVariable(var);
     }
     ~TemplateNodeVariable()
@@ -1821,14 +1835,14 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       TRACE(("{TemplateNodeIf(%s)\n",data.data()));
       if (data.isEmpty())
       {
-        warn(m_templateName,line,"missing argument for if tag");
+        parser->warn(m_templateName,line,"missing argument for if tag");
       }
       QStrList stopAt;
       stopAt.append("endif");
       stopAt.append("else");
       parser->parse(this,line,stopAt,m_trueNodes);
       TemplateToken *tok = parser->takeNextToken();
-      ExpressionParser ex(parser->templateName(),line);
+      ExpressionParser ex(parser,line);
       m_guardAst = ex.parse(data);
 
       if (tok && tok->data=="else")
@@ -1847,7 +1861,8 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
 
     void render(FTextStream &ts, TemplateContext *c)
     {
-      dynamic_cast<TemplateContextImpl*>(c)->setLocation(m_templateName,m_line);
+      TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeIf::render #trueNodes=%d #falseNodes=%d\n",m_trueNodes.count(),m_falseNodes.count());
       if (m_guardAst)
       {
@@ -1877,7 +1892,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
       : TemplateNodeCreator<TemplateNodeRepeat>(parser,parent,line)
     {
       TRACE(("{TemplateNodeRepeat(%s)\n",data.data()));
-      ExpressionParser expParser(parser->templateName(),line);
+      ExpressionParser expParser(parser,line);
       m_expr = expParser.parseVariable(data);
       QStrList stopAt;
       stopAt.append("endrepeat");
@@ -1891,7 +1906,8 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     }
     void render(FTextStream &ts, TemplateContext *c)
     {
-      dynamic_cast<TemplateContextImpl*>(c)->setLocation(m_templateName,m_line);
+      TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       TemplateVariant v;
       if (m_expr && (v=m_expr->resolve(c)).type()==TemplateVariant::Integer)
       {
@@ -1912,7 +1928,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
       }
       else // simple type...
       {
-        warn(m_templateName,m_line,"for requires a variable of list type!");
+        ci->warn(m_templateName,m_line,"for requires a variable of list type!");
       }
     }
   private:
@@ -1936,15 +1952,15 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       {
         if (data.right(3)==" in")
         {
-          warn(m_templateName,line,"for is missing container after 'in' keyword");
+          parser->warn(m_templateName,line,"for is missing container after 'in' keyword");
         }
         else if (data=="in")
         {
-          warn(m_templateName,line,"for needs at least one iterator variable");
+          parser->warn(m_templateName,line,"for needs at least one iterator variable");
         }
         else
         {
-          warn(m_templateName,line,"for is missing 'in' keyword");
+          parser->warn(m_templateName,line,"for is missing 'in' keyword");
         }
       }
       else
@@ -1952,7 +1968,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         m_vars = split(data.left(i),",");
         if (m_vars.count()==0)
         {
-          warn(m_templateName,line,"for needs at least one iterator variable");
+          parser->warn(m_templateName,line,"for needs at least one iterator variable");
         }
 
         int j = data.find(" reversed",i);
@@ -1965,10 +1981,10 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         }
         if (exprStr.isEmpty())
         {
-          warn(m_templateName,line,"for is missing container after 'in' keyword");
+          parser->warn(m_templateName,line,"for is missing container after 'in' keyword");
         }
       }
-      ExpressionParser expParser(parser->templateName(),line);
+      ExpressionParser expParser(parser,line);
       m_expr = expParser.parseVariable(exprStr);
 
       QStrList stopAt;
@@ -1993,7 +2009,8 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
 
     void render(FTextStream &ts, TemplateContext *c)
     {
-      dynamic_cast<TemplateContextImpl*>(c)->setLocation(m_templateName,m_line);
+      TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeFor::render #loopNodes=%d #emptyNodes=%d\n",
       //    m_loopNodes.count(),m_emptyNodes.count());
       if (m_expr)
@@ -2058,7 +2075,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         }
         else // simple type...
         {
-          warn(m_templateName,m_line,"for requires a variable of list type!");
+          ci->warn(m_templateName,m_line,"for requires a variable of list type!");
         }
       }
     }
@@ -2090,6 +2107,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       TemplateEscapeIntf *escIntf = ci->escapeIntf();
       ci->setEscapeIntf(0); // avoid escaping things we send to standard out
       bool enable = ci->spacelessEnabled();
@@ -2118,7 +2136,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
       m_blockName = data;
       if (m_blockName.isEmpty())
       {
-        warn(parser->templateName(),line,"block tag without name");
+        parser->warn(parser->templateName(),line,"block tag without name");
       }
       QStrList stopAt;
       stopAt.append("endblock");
@@ -2156,14 +2174,18 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
           superBlock.set("super",TemplateVariant(super.data(),TRUE));
           ci->set("block",&superBlock);
           // render the overruled block contents
+          t->engine()->enterBlock(nb->m_templateName,nb->m_blockName,nb->m_line);
           nb->m_nodes.render(ts,c);
+          t->engine()->leaveBlock();
           ci->pop();
           // re-add block to the context
           ci->blockContext()->push(nb);
         }
         else // block has no overrule
         {
+          t->engine()->enterBlock(m_templateName,m_blockName,m_line);
           m_nodes.render(ts,c);
+          t->engine()->leaveBlock();
         }
       }
     }
@@ -2188,10 +2210,10 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       : TemplateNodeCreator<TemplateNodeExtend>(parser,parent,line)
     {
       TRACE(("{TemplateNodeExtend(%s)\n",data.data()));
-      ExpressionParser ep(m_templateName,line);
+      ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
-        warn(m_templateName,line,"extend tag is missing template file argument");
+        parser->warn(m_templateName,line,"extend tag is missing template file argument");
       }
       m_extendExpr = ep.parsePrimary(data);
       QStrList stopAt;
@@ -2205,20 +2227,21 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
 
     void render(FTextStream &ts, TemplateContext *c)
     {
-      dynamic_cast<TemplateContextImpl*>(c)->setLocation(m_templateName,m_line);
+      TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       if (m_extendExpr==0) return;
 
       QCString extendFile = m_extendExpr->resolve(c).toString();
       if (extendFile.isEmpty())
       {
-        warn(m_templateName,m_line,"invalid parameter for extend command");
+        ci->warn(m_templateName,m_line,"invalid parameter for extend command");
       }
 
       // goto root of tree (template node)
       TemplateImpl *t = getTemplate();
       if (t)
       {
-        Template *bt = t->engine()->loadByName(extendFile);
+        Template *bt = t->engine()->loadByName(extendFile,m_line);
         TemplateImpl *baseTemplate = bt ? dynamic_cast<TemplateImpl*>(bt) : 0;
         if (baseTemplate)
         {
@@ -2248,11 +2271,11 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
 
           // clean up
           bc->clear();
-          //delete baseTemplate;
+          t->engine()->unload(t);
         }
         else
         {
-          warn(m_templateName,m_line,"failed to load template %s for extend",extendFile.data());
+          ci->warn(m_templateName,m_line,"failed to load template %s for extend",extendFile.data());
         }
       }
     }
@@ -2270,10 +2293,10 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
       : TemplateNodeCreator<TemplateNodeInclude>(parser,parent,line)
     {
       TRACE(("TemplateNodeInclude(%s)\n",data.data()));
-      ExpressionParser ep(m_templateName,line);
+      ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
-        warn(m_templateName,line,"include tag is missing template file argument");
+        parser->warn(m_templateName,line,"include tag is missing template file argument");
       }
       m_includeExpr = ep.parsePrimary(data);
     }
@@ -2283,28 +2306,30 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     }
     void render(FTextStream &ts, TemplateContext *c)
     {
-      dynamic_cast<TemplateContextImpl*>(c)->setLocation(m_templateName,m_line);
+      TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       if (m_includeExpr)
       {
         QCString includeFile = m_includeExpr->resolve(c).toString();
         if (includeFile.isEmpty())
         {
-          warn(m_templateName,m_line,"invalid parameter for include command\n");
+          ci->warn(m_templateName,m_line,"invalid parameter for include command\n");
         }
         else
         {
           TemplateImpl *t = getTemplate();
           if (t)
           {
-            Template *it = t->engine()->loadByName(includeFile);
+            Template *it = t->engine()->loadByName(includeFile,m_line);
             TemplateImpl *incTemplate = it ? dynamic_cast<TemplateImpl*>(it) : 0;
             if (incTemplate)
             {
               incTemplate->render(ts,c);
+              t->engine()->unload(t);
             }
             else
             {
-              warn(m_templateName,m_line,"failed to load template '%s' for include",includeFile.data()?includeFile.data():"");
+              ci->warn(m_templateName,m_line,"failed to load template '%s' for include",includeFile.data()?includeFile.data():"");
             }
           }
         }
@@ -2325,30 +2350,30 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line)
     {
       TRACE(("TemplateNodeCreate(%s)\n",data.data()));
-      ExpressionParser ep(m_templateName,line);
+      ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
-        warn(m_templateName,line,"create tag is missing arguments");
+        parser->warn(m_templateName,line,"create tag is missing arguments");
       }
       int i = data.find(" from ");
       if (i==-1)
       {
         if (data.right(3)==" from")
         {
-          warn(m_templateName,line,"create is missing template name after 'from' keyword");
+          parser->warn(m_templateName,line,"create is missing template name after 'from' keyword");
         }
         else if (data=="from")
         {
-          warn(m_templateName,line,"create needs a file name and a template name");
+          parser->warn(m_templateName,line,"create needs a file name and a template name");
         }
         else
         {
-          warn(m_templateName,line,"create is missing 'from' keyword");
+          parser->warn(m_templateName,line,"create is missing 'from' keyword");
         }
       }
       else
       {
-        ExpressionParser ep(m_templateName,line);
+        ExpressionParser ep(parser,line);
         m_fileExpr = ep.parsePrimary(data.left(i).stripWhiteSpace());
         m_templateExpr = ep.parsePrimary(data.mid(i+6).stripWhiteSpace());
       }
@@ -2368,18 +2393,18 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
         QCString outputFile = m_fileExpr->resolve(c).toString();
         if (templateFile.isEmpty())
         {
-          warn(m_templateName,m_line,"empty template name parameter for create command\n");
+          ci->warn(m_templateName,m_line,"empty template name parameter for create command\n");
         }
         else if (outputFile.isEmpty())
         {
-          warn(m_templateName,m_line,"empty file name parameter for create command\n");
+          ci->warn(m_templateName,m_line,"empty file name parameter for create command\n");
         }
         else
         {
           TemplateImpl *t = getTemplate();
           if (t)
           {
-            Template *ct = t->engine()->loadByName(templateFile);
+            Template *ct = t->engine()->loadByName(templateFile,m_line);
             TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
@@ -2392,16 +2417,16 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
               {
                 FTextStream ts(&f);
                 createTemplate->render(ts,c);
-                //delete createTemplate;
+                t->engine()->unload(t);
               }
               else
               {
-                warn(m_templateName,m_line,"failed to open output file '%s' for create command",outputFile.data());
+                ci->warn(m_templateName,m_line,"failed to open output file '%s' for create command",outputFile.data());
               }
             }
             else
             {
-              warn(m_templateName,m_line,"failed to load template '%s' for include",templateFile.data());
+              ci->warn(m_templateName,m_line,"failed to load template '%s' for include",templateFile.data());
             }
           }
         }
@@ -2431,10 +2456,10 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       : TemplateNodeCreator<TemplateNodeTree>(parser,parent,line)
     {
       TRACE(("{TemplateNodeTree(%s)\n",data.data()));
-      ExpressionParser ep(m_templateName,line);
+      ExpressionParser ep(parser,line);
       if (data.isEmpty())
       {
-        warn(m_templateName,line,"recursetree tag is missing data argument");
+        parser->warn(m_templateName,line,"recursetree tag is missing data argument");
       }
       m_treeExpr = ep.parsePrimary(data);
       QStrList stopAt;
@@ -2508,7 +2533,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       }
       else
       {
-        warn(m_templateName,m_line,"recursetree's argument should be a list type");
+        ci->warn(m_templateName,m_line,"recursetree's argument should be a list type");
       }
     }
 
@@ -2535,7 +2560,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     {
       TRACE(("{TemplateNodeWith(%s)\n",data.data()));
       m_args.setAutoDelete(TRUE);
-      ExpressionParser expParser(parser->templateName(),line);
+      ExpressionParser expParser(parser,line);
       QValueList<QCString> args = split(data," ");
       QValueListIterator<QCString> it = args.begin();
       while (it!=args.end())
@@ -2552,7 +2577,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
         }
         else
         {
-          warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
+          parser->warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
         }
         ++it;
       }
@@ -2568,6 +2593,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       c->push();
       QListIterator<Mapping> it(m_args);
       Mapping *mapping;
@@ -2596,7 +2622,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       TRACE(("{TemplateNodeCycle(%s)\n",data.data()));
       m_args.setAutoDelete(TRUE);
       m_index=0;
-      ExpressionParser expParser(parser->templateName(),line);
+      ExpressionParser expParser(parser,line);
       QValueList<QCString> args = split(data," ");
       QValueListIterator<QCString> it = args.begin();
       while (it!=args.end())
@@ -2610,13 +2636,14 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       }
       if (m_args.count()<2)
       {
-          warn(parser->templateName(),line,"expected at least two arguments for cycle command, got %d",m_args.count());
+          parser->warn(parser->templateName(),line,"expected at least two arguments for cycle command, got %d",m_args.count());
       }
       TRACE(("}TemplateNodeCycle(%s)\n",data.data()));
     }
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       if (m_index<m_args.count())
       {
         TemplateVariant v = m_args.at(m_index)->resolve(c);
@@ -2661,7 +2688,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     {
       TRACE(("{TemplateNodeSet(%s)\n",data.data()));
       m_args.setAutoDelete(TRUE);
-      ExpressionParser expParser(parser->templateName(),line);
+      ExpressionParser expParser(parser,line);
       QValueList<QCString> args = split(data," ");
       QValueListIterator<QCString> it = args.begin();
       while (it!=args.end())
@@ -2678,7 +2705,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
         }
         else
         {
-          warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
+          parser->warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
         }
         ++it;
       }
@@ -2687,6 +2714,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       QListIterator<Mapping> it(m_args);
       Mapping *mapping;
       for (it.toFirst();(mapping=it.current());++it)
@@ -2718,6 +2746,7 @@ class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
       bool wasSpaceless = ci->spacelessEnabled();
       ci->enableSpaceless(TRUE);
       m_nodes.render(ts,c);
@@ -2741,11 +2770,11 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       int w = data.find(" with ");
       if (i==-1 || w==-1 || w<i)
       {
-        warn(m_templateName,line,"markers tag as wrong format. Expected: markers <var> in <list> with <string_with_markers>");
+        parser->warn(m_templateName,line,"markers tag as wrong format. Expected: markers <var> in <list> with <string_with_markers>");
       }
       else
       {
-        ExpressionParser expParser(parser->templateName(),line);
+        ExpressionParser expParser(parser,line);
         m_var = data.left(i);
         m_listExpr = expParser.parseVariable(data.mid(i+4,w-i-4));
         m_patternExpr = expParser.parseVariable(data.right(data.length()-w-6));
@@ -2796,11 +2825,11 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               }
               else if (!ok)
               {
-                warn(m_templateName,m_line,"markers pattern string has invalid markers '%s'",str.data());
+                ci->warn(m_templateName,m_line,"markers pattern string has invalid markers '%s'",str.data());
               }
               else if (i<entryIndex)
               {
-                warn(m_templateName,m_line,"markers list does not an element for marker position %d",i);
+                ci->warn(m_templateName,m_line,"markers list does not an element for marker position %d",i);
               }
               index=newIndex+matchLen; // set index just after marker
             }
@@ -2809,12 +2838,12 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
           }
           else
           {
-            warn(m_templateName,m_line,"markers requires a parameter of string type after 'with'!");
+            ci->warn(m_templateName,m_line,"markers requires a parameter of string type after 'with'!");
           }
         }
         else
         {
-          warn(m_templateName,m_line,"markers requires a parameter of list type after 'in'!");
+          ci->warn(m_templateName,m_line,"markers requires a parameter of list type after 'in'!");
         }
       }
     }
@@ -2970,19 +2999,20 @@ void TemplateBlockContext::push(TemplateNodeBlock *block)
 class TemplateLexer
 {
   public:
-    TemplateLexer(const QCString &fileName,const QCString &data);
+    TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data);
     void tokenize(QList<TemplateToken> &tokens);
   private:
     void addToken(QList<TemplateToken> &tokens,
                   const char *data,int line,int startPos,int endPos,
                   TemplateToken::Type type);
     void reset();
+    const TemplateEngine *m_engine;
     QCString m_fileName;
     QCString m_data;
 };
 
-TemplateLexer::TemplateLexer(const QCString &fileName,const QCString &data) :
-  m_fileName(fileName), m_data(data)
+TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data) :
+  m_engine(engine), m_fileName(fileName), m_data(data)
 {
 }
 
@@ -3049,6 +3079,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
         if (c=='\n')
         {
           warn(m_fileName,line,"unexpected new line inside {%%...%%} block");
+          m_engine->printIncludeContext(m_fileName,line);
         }
         else if (c=='%') // %} or something else
         {
@@ -3072,6 +3103,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
           if (c=='\n')
           {
             warn(m_fileName,line,"unexpected new line inside {%%...%%} block");
+            m_engine->printIncludeContext(m_fileName,line);
           }
           state=StateTag;
         }
@@ -3080,6 +3112,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
         if (c=='\n')
         {
           warn(m_fileName,line,"unexpected new line inside {#...#} block");
+          m_engine->printIncludeContext(m_fileName,line);
         }
         else if (c=='#') // #} or something else
         {
@@ -3101,6 +3134,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
           if (c=='\n')
           {
             warn(m_fileName,line,"unexpected new line inside {#...#} block");
+            m_engine->printIncludeContext(m_fileName,line);
           }
           state=StateComment;
         }
@@ -3125,6 +3159,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
         if (c=='\n')
         {
           warn(m_fileName,line,"unexpected new line inside {{...}} block");
+          m_engine->printIncludeContext(m_fileName,line);
         }
         else if (c=='}') // }} or something else
         {
@@ -3148,6 +3183,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
           if (c=='\n')
           {
             warn(m_fileName,line,"unexpected new line inside {{...}} block");
+            m_engine->printIncludeContext(m_fileName,line);
           }
           state=StateVariable;
         }
@@ -3192,9 +3228,10 @@ void TemplateLexer::addToken(QList<TemplateToken> &tokens,
 
 //----------------------------------------------------------
 
-TemplateParser::TemplateParser(const QCString &templateName,
+TemplateParser::TemplateParser(const TemplateEngine *engine,
+                               const QCString &templateName,
                                QList<TemplateToken> &tokens) :
-   m_templateName(templateName), m_tokens(tokens)
+   m_engine(engine), m_templateName(templateName), m_tokens(tokens)
 {
 }
 
@@ -3214,10 +3251,10 @@ void TemplateParser::parse(
       case TemplateToken::Text:
         nodes.append(new TemplateNodeText(this,parent,tok->line,tok->data));
         break;
-      case TemplateToken::Variable:
+      case TemplateToken::Variable: // {{ var }}
         nodes.append(new TemplateNodeVariable(this,parent,tok->line,tok->data));
         break;
-      case TemplateToken::Block:
+      case TemplateToken::Block:    // {% tag %}
         {
           QCString command = tok->data;
           int sep = command.find(' ');
@@ -3301,6 +3338,15 @@ void TemplateParser::prependToken(const TemplateToken *token)
   m_tokens.prepend(token);
 }
 
+void TemplateParser::warn(const char *fileName,int line,const char *fmt,...) const
+{
+  va_list args;
+  va_start(args,fmt);
+  ::warn(fileName,line,fmt,args);
+  va_end(args);
+  m_engine->printIncludeContext(fileName,line);
+}
+
 
 
 //----------------------------------------------------------
@@ -3311,11 +3357,11 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCS
 {
   m_name = name;
   m_engine = engine;
-  TemplateLexer lexer(name,data);
+  TemplateLexer lexer(engine,name,data);
   QList<TemplateToken> tokens;
   tokens.setAutoDelete(TRUE);
   lexer.tokenize(tokens);
-  TemplateParser parser(name,tokens);
+  TemplateParser parser(engine,name,tokens);
   parser.parse(this,1,QStrList(),m_nodes);
 }
 
@@ -3348,11 +3394,35 @@ void TemplateImpl::render(FTextStream &ts, TemplateContext *c)
 /** @brief Private data of the template engine */
 class TemplateEngine::Private
 {
-  public:
-    Private(TemplateEngine *engine) : m_templateCache(17), m_engine(engine)
-    { m_templateCache.setAutoDelete(TRUE); }
-    Template *loadByName(const QCString &fileName) const
+    class IncludeEntry
     {
+      public:
+        enum Type { Template, Block };
+        IncludeEntry(Type type,const QCString &fileName,const QCString &blockName,int line)
+          : m_type(type), m_fileName(fileName), m_blockName(blockName), m_line(line) {}
+        Type type() const { return m_type; }
+        QCString fileName() const { return m_fileName; }
+        QCString blockName() const { return m_blockName; }
+        int line() const { return m_line; }
+
+      private:
+        Type m_type;
+        QCString m_fileName;
+        QCString m_blockName;
+        int m_line;
+    };
+  public:
+    Private(TemplateEngine *engine) : m_templateCache(17) /*, m_indent(0)*/, m_engine(engine)
+    {
+      m_templateCache.setAutoDelete(TRUE);
+      m_includeStack.setAutoDelete(TRUE);
+    }
+    Template *loadByName(const QCString &fileName,int line)
+    {
+      //for (int i=0;i<m_indent;i++) printf("  ");
+      //m_indent++;
+      //printf("loadByName(%s,%d) {\n",fileName.data(),line);
+      m_includeStack.append(new IncludeEntry(IncludeEntry::Template,fileName,QCString(),line));
       Template *templ = m_templateCache.find(fileName);
       if (templ==0)
       {
@@ -3379,10 +3449,60 @@ class TemplateEngine::Private
       }
       return templ;
     }
+    void unload(Template * /*t*/)
+    {
+      //(void)t;
+      //m_indent--;
+      //for (int i=0;i<m_indent;i++) printf("  ");
+      //printf("}\n");
+      m_includeStack.removeLast();
+    }
+
+    void enterBlock(const QCString &fileName,const QCString &blockName,int line)
+    {
+      //for (int i=0;i<m_indent;i++) printf("  ");
+      //m_indent++;
+      //printf("enterBlock(%s,%s,%d) {\n",fileName.data(),blockName.data(),line);
+      m_includeStack.append(new IncludeEntry(IncludeEntry::Block,fileName,blockName,line));
+    }
+
+    void leaveBlock()
+    {
+      //m_indent--;
+      //for (int i=0;i<m_indent;i++) printf("  ");
+      //printf("}\n");
+      m_includeStack.removeLast();
+    }
+
+    void printIncludeContext(const char *fileName,int line) const
+    {
+      QListIterator<IncludeEntry> li(m_includeStack);
+      li.toLast();
+      IncludeEntry *ie=li.current();
+      while ((ie=li.current()))
+      {
+        --li;
+        IncludeEntry *next=li.current();
+        if (ie->type()==IncludeEntry::Template)
+        {
+          if (next)
+          {
+            warn(fileName,line,"  inside template '%s' included from template '%s' at line %d",ie->fileName().data(),next->fileName().data(),ie->line());
+          }
+        }
+        else // ie->type()==IncludeEntry::Block
+        {
+          warn(fileName,line,"  included by block '%s' inside template '%s' at line %d",ie->blockName().data(),
+              ie->fileName().data(),ie->line());
+        }
+      }
+    }
 
   private:
-    mutable QDict<Template> m_templateCache;
+    QDict<Template> m_templateCache;
+    //mutable int m_indent;
     TemplateEngine *m_engine;
+    QList<IncludeEntry> m_includeStack;
 };
 
 TemplateEngine::TemplateEngine()
@@ -3397,11 +3517,31 @@ TemplateEngine::~TemplateEngine()
 
 TemplateContext *TemplateEngine::createContext() const
 {
-  return new TemplateContextImpl;
+  return new TemplateContextImpl(this);
 }
 
-Template *TemplateEngine::loadByName(const QCString &fileName)
+Template *TemplateEngine::loadByName(const QCString &fileName,int line)
 {
-  return p->loadByName(fileName);
+  return p->loadByName(fileName,line);
+}
+
+void TemplateEngine::unload(Template *t)
+{
+  p->unload(t);
+}
+
+void TemplateEngine::enterBlock(const QCString &fileName,const QCString &blockName,int line)
+{
+  p->enterBlock(fileName,blockName,line);
+}
+
+void TemplateEngine::leaveBlock()
+{
+  p->leaveBlock();
+}
+
+void TemplateEngine::printIncludeContext(const char *fileName,int line) const
+{
+  p->printIncludeContext(fileName,line);
 }
 

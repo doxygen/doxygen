@@ -10,32 +10,32 @@ class TemplateListIntf;
 class TemplateStructIntf;
 class TemplateEngine;
 
-/** @defgroup template_api Template API 
+/** @defgroup template_api Template API
  *
- *  This is the API for a 
- *  <a href="https://docs.djangoproject.com/en/1.6/topics/templates/">Django</a> 
+ *  This is the API for a
+ *  <a href="https://docs.djangoproject.com/en/1.6/topics/templates/">Django</a>
  *  compatible template system written in C++.
- *  It is somewhat inspired by Stephen Kelly's 
+ *  It is somewhat inspired by Stephen Kelly's
  *  <a href="http://www.gitorious.org/grantlee/pages/Home">Grantlee</a>.
  *
- *  A template is simply a text file. 
- *  A template contains \b variables, which get replaced with values when the 
+ *  A template is simply a text file.
+ *  A template contains \b variables, which get replaced with values when the
  *  template is evaluated, and \b tags, which control the logic of the template.
  *
  *  Variables look like this: `{{ variable }}`
- *  When the template engine encounters a variable, it evaluates that variable and 
- *  replaces it with the result. Variable names consist of any combination of 
+ *  When the template engine encounters a variable, it evaluates that variable and
+ *  replaces it with the result. Variable names consist of any combination of
  *  alphanumeric characters and the underscore ("_").
  *  Use a dot (.) to access attributes of a structured variable.
- *  
+ *
  *  One can modify variables for display by using \b filters, for example:
  *  `{{ value|default:"nothing" }}`
  *
- *  Tags look like this: `{% tag %}`. Tags are more complex than variables: 
- *  Some create text in the output, some control flow by performing loops or logic, 
+ *  Tags look like this: `{% tag %}`. Tags are more complex than variables:
+ *  Some create text in the output, some control flow by performing loops or logic,
  *  and some load external information into the template to be used by later variables.
  *
- *  To comment-out part of a line in a template, use the comment syntax: 
+ *  To comment-out part of a line in a template, use the comment syntax:
  *  `{# comment text #}`.
  *
  *  Supported Django tags:
@@ -144,13 +144,13 @@ class TemplateVariant
     /** Constructs a new variant with a string value \a s. */
     TemplateVariant(const QCString &s,bool raw=FALSE);
 
-    /** Constructs a new variant with a struct value \a s. 
+    /** Constructs a new variant with a struct value \a s.
      *  @note. Only a pointer to the struct is stored. The caller
      *  is responsible to manage the memory for the struct object.
      */
     TemplateVariant(const TemplateStructIntf *s);
 
-    /** Constructs a new variant with a list value \a l. 
+    /** Constructs a new variant with a list value \a l.
      *  @note. Only a pointer to the struct is stored. The caller
      *  is responsible to manage the memory for the list object.
      */
@@ -168,7 +168,7 @@ class TemplateVariant
     /** Destroys the Variant object */
     ~TemplateVariant();
 
-    /** Constructs a copy of the variant, \a v, 
+    /** Constructs a copy of the variant, \a v,
      *  passed as the argument to this constructor.
      */
     TemplateVariant(const TemplateVariant &v);
@@ -176,7 +176,7 @@ class TemplateVariant
     /** Assigns the value of the variant \a v to this variant. */
     TemplateVariant &operator=(const TemplateVariant &v);
 
-    /** Compares this QVariant with v and returns true if they are equal; 
+    /** Compares this QVariant with v and returns true if they are equal;
      *  otherwise returns false.
      */
     bool operator==(TemplateVariant &other);
@@ -190,13 +190,13 @@ class TemplateVariant
     /** Returns the variant as an integer. */
     int                 toInt() const;
 
-    /** Returns the pointer to list referenced by this variant 
-     *  or 0 if this variant does not have list type. 
+    /** Returns the pointer to list referenced by this variant
+     *  or 0 if this variant does not have list type.
      */
     const TemplateListIntf   *toList() const;
 
-    /** Returns the pointer to struct referenced by this variant 
-     *  or 0 if this variant does not have struct type. 
+    /** Returns the pointer to struct referenced by this variant
+     *  or 0 if this variant does not have struct type.
      */
     const TemplateStructIntf *toStruct() const;
 
@@ -205,7 +205,7 @@ class TemplateVariant
      */
     TemplateVariant call(const QValueList<TemplateVariant> &args);
 
-    /** Sets whether or not the value of the Variant should be 
+    /** Sets whether or not the value of the Variant should be
      *  escaped or written as-is (raw).
      *  @param[in] b TRUE means write as-is, FALSE means apply escaping.
      */
@@ -223,7 +223,7 @@ class TemplateVariant
 
 //------------------------------------------------------------------------
 
-/** @brief Abstract read-only interface for a context value of type list. 
+/** @brief Abstract read-only interface for a context value of type list.
  *  @note The values of the list are TemplateVariants.
  */
 class TemplateListIntf
@@ -245,7 +245,7 @@ class TemplateListIntf
         virtual void toPrev() = 0;
         /* Returns TRUE if the iterator points to a valid element
          * in the list, or FALSE otherwise.
-         * If TRUE is returned, the value pointed to be the 
+         * If TRUE is returned, the value pointed to be the
          * iterator is assigned to \a v.
          */
         virtual bool current(TemplateVariant &v) const = 0;
@@ -260,7 +260,7 @@ class TemplateListIntf
     /** Returns the element at index position \a index. */
     virtual TemplateVariant  at(int index) const = 0;
 
-    /** Creates a new iterator for this list. 
+    /** Creates a new iterator for this list.
      *  @note the user should call delete on the returned pointer.
      */
     virtual TemplateListIntf::ConstIterator *createIterator() const = 0;
@@ -279,7 +279,7 @@ class TemplateList : public TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
-    
+
     /** Appends element \a v to the end of the list */
     virtual void append(const TemplateVariant &v);
 
@@ -350,8 +350,8 @@ class TemplateSpacelessIntf
 
 //------------------------------------------------------------------------
 
-/** @brief Abstract interface for a template context. 
- *  
+/** @brief Abstract interface for a template context.
+ *
  *  A Context consists of a stack of dictionaries.
  *  A dictionary consists of a mapping of string keys onto TemplateVariant values.
  *  A key is searched starting with the dictionary at the top of the stack
@@ -370,10 +370,10 @@ class TemplateContext
     /** Pop the current scope from the stack. */
     virtual void pop() = 0;
 
-    /** Sets a value in the current scope. 
+    /** Sets a value in the current scope.
      *  @param[in] name The name of the value; the key in the dictionary.
      *  @param[in] v The value associated with the key.
-     *  @note When a given key is already present, 
+     *  @note When a given key is already present,
      *  its value will be replaced by \a v
      */
     virtual void set(const char *name,const TemplateVariant &v) = 0;
@@ -409,8 +409,8 @@ class TemplateContext
 
 //------------------------------------------------------------------------
 
-/** @brief Abstract interface for a template. 
- *  @note Must be created by TemplateEngine
+/** @brief Abstract interface for a template.
+ *  @note Must be created and is deleted by the TemplateEngine
  */
 class Template
 {
@@ -418,7 +418,7 @@ class Template
     /** Destructor */
     virtual ~Template() {}
 
-    /** Renders a template instance to a stream. 
+    /** Renders a template instance to a stream.
      *  @param[in] ts The text stream to write the results to.
      *  @param[in] c The context containing data that can be used
      *  when instantiating the template.
@@ -444,13 +444,25 @@ class TemplateEngine
     TemplateContext *createContext() const;
 
     /** Creates a new template whole contents are in a file.
-     *  @param[in] fileName The name of the file containing the 
+     *  @param[in] fileName The name of the file containing the
      *             template data
+     *  @param[in] fromLine The line number of the statement that triggered the load
      *  @return the new template, the caller will be the owner.
      */
-    Template *loadByName(const QCString &fileName);
+    Template *loadByName(const QCString &fileName,int fromLine);
+
+    /** Indicates that template \a t is no longer needed. The engine
+     *  may decide to delete it.
+     */
+    void unload(Template *t);
+
+    void printIncludeContext(const char *fileName,int line) const;
 
   private:
+    friend class TemplateNodeBlock;
+    void enterBlock(const QCString &fileName,const QCString &blockName,int line);
+    void leaveBlock();
+
     class Private;
     Private *p;
 };

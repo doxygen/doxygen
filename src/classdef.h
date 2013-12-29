@@ -168,6 +168,9 @@ class ClassDef : public Definition
     /** the class is visible in a class diagram, or class hierarchy */
     bool isVisibleInHierarchy();
     
+    /** show this class in the declaration section of its parent? */
+    bool visibleInParentsDeclList() const;
+
     /** Returns the template arguments of this class 
      *  Will return 0 if not applicable.
      */
@@ -310,13 +313,12 @@ class ClassDef : public Definition
     QCString generatedFromFiles() const;
     const FileList &usedFiles() const;
 
-    QCString includeStatement() const;
-
     const ArgumentList *typeConstraints() const;
     const ExampleSDict *exampleList() const;
     bool hasExamples() const;
     QCString getMemberListFileName() const;
     bool subGrouping() const;
+
 
     //-----------------------------------------------------------------------------------
     // --- setters ----
@@ -432,6 +434,8 @@ class ClassDef : public Definition
                                  QPtrDict<void> *visitedClasses);
     void getTitleForMemberListType(MemberListType type,
                QCString &title,QCString &subtitle);
+    QCString includeStatement() const;
+
     
     ClassDefImpl *m_impl;
 

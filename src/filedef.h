@@ -133,6 +133,10 @@ class FileDef : public Definition
     ClassSDict *getClassSDict() const             { return m_classSDict; }
 
     QCString title() const;
+    bool hasDetailedDescription() const;
+    QCString fileVersion() const;
+
+    bool subGrouping() const { return m_subGrouping; }
     
     //---------------------------------
 

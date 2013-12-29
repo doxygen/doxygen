@@ -170,12 +170,18 @@ void FileDef::findSectionsInDocumentation()
   }
 }
 
+bool FileDef::hasDetailedDescription() const
+{
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  return ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
+          !documentation().stripWhiteSpace().isEmpty() || // avail empty section
+          (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())
+         );
+}
+
 void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
-  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().stripWhiteSpace().isEmpty() || // avail empty section
-      (Config_getBool("SOURCE_BROWSER") && getStartBodyLine()!=-1 && getBodyDef())
-     )
+  if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
       ol.disable(OutputGenerator::Html);
@@ -379,7 +385,7 @@ void FileDef::writeIncludedByGraph(OutputList &ol)
     {
        warn_uncond("Included by graph for '%s' not generated, too many nodes. Consider increasing DOT_GRAPH_MAX_NODES.\n",name().data());
     }
-    if (!incDepGraph.isTrivial())
+    else if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
@@ -1800,3 +1806,7 @@ QCString FileDef::title() const
   return theTranslator->trFileReference(name());
 }
 
+QCString FileDef::fileVersion() const
+{
+  return m_fileVersion;
+}

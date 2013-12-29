@@ -19,9 +19,11 @@
 #define MESSAGE_H
 
 #include <stdio.h>
+#include <stdarg.h>
 
 extern void msg(const char *fmt, ...);
 extern void warn(const char *file,int line,const char *fmt, ...);
+extern void warn(const char *file,int line,const char *fmt, va_list args);
 extern void warn_simple(const char *file,int line,const char *text);
 extern void warn_undoc(const char *file,int line,const char *fmt, ...);
 extern void warn_doc_error(const char *file,int line,const char *fmt, ...);
