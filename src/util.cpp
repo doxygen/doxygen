@@ -5144,6 +5144,7 @@ bool hasVisibleRoot(BaseClassList *bcl)
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
   static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
+  static bool allowUnicodeNames = Config_getBool("ALLOW_UNICODE_NAMES");
   static GrowBuf growBuf;
   growBuf.clear();
   char c;
@@ -5179,15 +5180,57 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       default: 
                 if (c<0)
                 {
-                  static char map[] = "0123456789ABCDEF";
                   char ids[5];
-                  unsigned char id = (unsigned char)c;
-                  ids[0]='_';
-                  ids[1]='x';
-                  ids[2]=map[id>>4];
-                  ids[3]=map[id&0xF];
-                  ids[4]=0;
-                  growBuf.addStr(ids);
+                  const unsigned char uc = (unsigned char)c;
+                  bool doEscape = TRUE;
+                  if (allowUnicodeNames && uc <= 0xf7)
+                  {
+                    const char* pt = p;
+                    ids[ 0 ] = c;
+                    int l = 0;
+                    if ((uc&0xE0)==0xC0)
+                    {
+                      l=2; // 11xx.xxxx: >=2 byte character
+                    }
+                    if ((uc&0xF0)==0xE0)
+                    {
+                      l=3; // 111x.xxxx: >=3 byte character
+                    }
+                    if ((uc&0xF8)==0xF0)
+                    {
+                      l=4; // 1111.xxxx: >=4 byte character
+                    }
+                    doEscape = l==0;
+                    for (int m=1; m<l && !doEscape; ++m)
+                    {
+                      unsigned char ct = (unsigned char)*pt;
+                      if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+                      {
+                        doEscape=TRUE;
+                      }
+                      else
+                      {
+                        ids[ m ] = *pt++;
+                      }
+                    }
+                    if ( !doEscape ) // got a valid unicode character
+                    {
+                      ids[ l ] = 0;
+                      growBuf.addStr( ids );
+                      p += l - 1;
+                    }
+                  }
+                  if (doEscape) // not a valid unicode char or escaping needed
+                  {
+                    static char map[] = "0123456789ABCDEF";
+                    unsigned char id = (unsigned char)c;
+                    ids[0]='_';
+                    ids[1]='x';
+                    ids[2]=map[id>>4];
+                    ids[3]=map[id&0xF];
+                    ids[4]=0;
+                    growBuf.addStr(ids);
+                  }
                 }
                 else if (caseSenseNames || !isupper(c))
                 {
@@ -6922,14 +6965,25 @@ const char *writeUtf8Char(FTextStream &t,const char *s)
   t << c;
   if (c<0) // multibyte character
   {
-    t << *s++;
-    if (((uchar)c&0xE0)==0xE0)
+    if (((uchar)c&0xE0)==0xC0)
+    {
+      t << *s++; // 11xx.xxxx: >=2 byte character
+    }
+    if (((uchar)c&0xF0)==0xE0)
     {
       t << *s++; // 111x.xxxx: >=3 byte character
     }
-    if (((uchar)c&0xF0)==0xF0)
+    if (((uchar)c&0xF8)==0xF0)
     {
-      t << *s++; // 1111.xxxx: 4 byte character
+      t << *s++; // 1111.xxxx: >=4 byte character
+    }
+    if (((uchar)c&0xFC)==0xF8)
+    {
+      t << *s++; // 1111.1xxx: >=5 byte character
+    }
+    if (((uchar)c&0xFE)==0xFC)
+    {
+      t << *s++; // 1111.1xxx: 6 byte character
     }
   }
   return s;
@@ -6942,14 +6996,25 @@ int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos)
   char c = utf8Str[startPos];
   if (c<0) // multibyte utf-8 character
   {
-    bytes++;   // 1xxx.xxxx: >=2 byte character
-    if (((uchar)c&0xE0)==0xE0)
+    if (((uchar)c&0xE0)==0xC0)
+    {
+      bytes++; // 11xx.xxxx: >=2 byte character
+    }
+    if (((uchar)c&0xF0)==0xE0)
     {
       bytes++; // 111x.xxxx: >=3 byte character
     }
-    if (((uchar)c&0xF0)==0xF0)
+    if (((uchar)c&0xF8)==0xF0)
     {
-      bytes++; // 1111.xxxx: 4 byte character
+      bytes++; // 1111.xxxx: >=4 byte character
+    }
+    if (((uchar)c&0xFC)==0xF8)
+    {
+      bytes++; // 1111.1xxx: >=5 byte character
+    }
+    if (((uchar)c&0xFE)==0xFC)
+    {
+      bytes++; // 1111.1xxx: 6 byte character
     }
   }
   else if (c=='&') // skip over character entities

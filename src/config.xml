@@ -279,6 +279,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='ALLOW_UNICODE_NAMES' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c ALLOW_UNICODE_NAMES tag is set to \c YES,
+ doxygen will allow non-ascii characters to appear in the names of generated files. 
+ If set to \c NO, non-ASCII characters will be escaped, for example _xE3_x81_x84 
+ will be used for Unicode U+3044.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='OUTPUT_LANGUAGE' defval='English'>
       <docs>
 <![CDATA[
