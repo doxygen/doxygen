@@ -2098,7 +2098,7 @@ void PerlModGenerator::generatePerlModForGroup(GroupDef *gd)
   {
     m_output.openList("files");
     QListIterator<FileDef> fli(*fl);
-    FileDef *fd = fl->first();
+    FileDef *fd;
     for (fli.toFirst();(fd=fli.current());++fli)
       m_output.openHash()
 	.addFieldQuotedString("name", fd->name())

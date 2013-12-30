@@ -81,9 +81,10 @@ class PageSDict : public SDict<PageDef>
   public:
     PageSDict(int size) : SDict<PageDef>(size) {}
     virtual ~PageSDict() {}
-    int compareItems(QCollection::Item i1,QCollection::Item i2)
+  private:
+    int compareValues(const PageDef *i1,const PageDef *i2) const
     {
-      return qstricmp(((PageDef *)i1)->name(),((PageDef *)i2)->name());
+      return qstricmp(i1->name(),i2->name());
     }
 };
 

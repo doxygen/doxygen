@@ -52,7 +52,7 @@
 
 #else
 
-template<class type> class Q_EXPORT QDict : public QGDict
+template<class type> class Q_EXPORT QDict : private QGDict
 {
 public:
     QDict(int size=17, bool caseSensitive=TRUE)
@@ -61,26 +61,40 @@ public:
    ~QDict()				{ clear(); }
     QDict<type> &operator=(const QDict<type> &d)
 			{ return (QDict<type>&)QGDict::operator=(d); }
+
+    // capacity
     uint  count()   const		{ return QGDict::count(); }
     uint  size()    const		{ return QGDict::size(); }
     bool  isEmpty() const		{ return QGDict::count() == 0; }
 
+    // modifiers
     void  insert( const QString &k, const type *d )
 					{ QGDict::look_string(k,(Item)d,1); }
     void  replace( const QString &k, const type *d )
 					{ QGDict::look_string(k,(Item)d,2); }
     bool  remove( const QString &k )	{ return QGDict::remove_string(k); }
     type *take( const QString &k )	{ return (type *)QGDict::take_string(k); }
+    void  clear()			{ QGDict::clear(); }
+    void  resize( uint n )		{ QGDict::resize(n); }
+
+    // search
     type *find( const QString &k ) const
 		{ return (type *)((QGDict*)this)->QGDict::look_string(k,0,0); }
     type *operator[]( const QString &k ) const
 		{ return (type *)((QGDict*)this)->QGDict::look_string(k,0,0); }
 
-    void  clear()			{ QGDict::clear(); }
-    void  resize( uint n )		{ QGDict::resize(n); }
+    // operations
     void  statistics() const		{ QGDict::statistics(); }
 private:
     void  deleteItem( Item d );
+
+    // new to be reimplemented methods
+    virtual int compareValues(const type *t1,const type *t2) const
+    { return const_cast<QDict<type>*>(this)->QGDict::compareItems((QCollection::Item)t1,(QCollection::Item)t2); }
+
+    // reimplemented methods
+    virtual int compareItems(QCollection::Item i1,QCollection::Item i2)
+    { return compareValues((const type*)i1,(const type*)i2); }
 };
 
 #if defined(Q_DELETING_VOID_UNDEFINED)

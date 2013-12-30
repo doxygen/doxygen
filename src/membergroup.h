@@ -125,9 +125,10 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
   public:
     MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
    ~MemberGroupSDict() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+ private:
+    int compareValues(const MemberGroup *item1,const MemberGroup *item2) const
     {
-      return ((MemberGroup *)item1)->groupId() - ((MemberGroup*)item2)->groupId();
+      return item1->groupId() - item2->groupId();
     }
 };
 

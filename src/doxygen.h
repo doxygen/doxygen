@@ -65,6 +65,7 @@ class SectionDict;
 struct MemberGroupInfo;
 
 typedef QList<QCString>    StringList;
+typedef QListIterator<QCString>    StringListIterator;
 //typedef QDict<FileDef>     FileDict;
 //typedef QDict<GroupDef>    GroupDict;
 

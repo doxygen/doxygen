@@ -38,7 +38,7 @@
 #include "qtextcodec.h"
 #ifndef QT_NO_TEXTCODEC
 
-#include "qlist.h"
+#include "qinternallist.h"
 #ifndef QT_NO_CODECS
 #include "qutfcodec.h"
 //#include "qgbkcodec.h"
@@ -60,7 +60,7 @@
 #include <locale.h>
 
 
-static QList<QTextCodec> * all = 0;
+static QInternalList<QTextCodec> * all = 0;
 static bool destroying_is_ok; // starts out as 0
 
 /*!  Deletes all the created codecs.
@@ -84,7 +84,7 @@ void QTextCodec::deleteAllCodecs()
         return;
 
     destroying_is_ok = TRUE;
-    QList<QTextCodec> * ball = all;
+    QInternalList<QTextCodec> * ball = all;
     all = 0;
     ball->clear();
     delete ball;
@@ -101,7 +101,7 @@ static void realSetup()
     if ( destroying_is_ok )
         qWarning( "creating new codec during codec cleanup" );
 #endif
-    all = new QList<QTextCodec>;
+    all = new QInternalList<QTextCodec>;
     all->setAutoDelete( TRUE );
     setupBuiltinCodecs();
 }
@@ -354,7 +354,7 @@ QTextCodec* QTextCodec::codecForIndex(int i)
 QTextCodec* QTextCodec::codecForMib(int mib)
 {
     setup();
-    QListIterator<QTextCodec> i(*all);
+    QInternalListIterator<QTextCodec> i(*all);
     QTextCodec* result;
     for ( ; (result=i); ++i ) {
         if ( result->mibEnum()==mib )
@@ -626,7 +626,7 @@ QTextCodec* QTextCodec::codecForLocale()
 QTextCodec* QTextCodec::codecForName(const char* hint, int accuracy)
 {
     setup();
-    QListIterator<QTextCodec> i(*all);
+    QInternalListIterator<QTextCodec> i(*all);
     QTextCodec* result = 0;
     int best=accuracy;
     for ( QTextCodec* cursor; (cursor=i); ++i ) {
@@ -653,7 +653,7 @@ QTextCodec* QTextCodec::codecForName(const char* hint, int accuracy)
 QTextCodec* QTextCodec::codecForContent(const char* chars, int len)
 {
     setup();
-    QListIterator<QTextCodec> i(*all);
+    QInternalListIterator<QTextCodec> i(*all);
     QTextCodec* result = 0;
     int best=0;
     for ( QTextCodec* cursor; (cursor=i); ++i ) {

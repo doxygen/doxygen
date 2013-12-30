@@ -988,7 +988,7 @@ static bool  checkMultiComment(QCString& qcs,int line)
   qcs.stripPrefix("--!");
   while (!pTemp->isEmpty())
   {
-    Entry *e=(Entry*)pTemp->first();
+    Entry *e=(Entry*)pTemp->getFirst();
     e->briefLine=line;
     e->brief+=qcs;
     iDocLine=-1;

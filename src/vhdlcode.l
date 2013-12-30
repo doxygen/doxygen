@@ -436,9 +436,10 @@ static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
   ArgumentList *al = md->argumentList();
-  if (al==0) return; 
-  Argument *a = al->first();
-  while (a)
+  if (al==0) return;
+  ArgumentListIterator ali(*al);
+  Argument *a;
+  for (ali.toFirst();(a=ali.current());++ali)
   {
     g_parmName = a->name.copy();
     g_parmType = a->type.copy();
@@ -449,7 +450,6 @@ static void setParameterList(MemberDef *md)
     g_parmType.stripPrefix("const ");
     g_parmType=g_parmType.stripWhiteSpace();
    // g_theVarContext.addVariable(g_parmType,g_parmName);
-    a = al->next();
   }
 }
 

@@ -75,7 +75,7 @@ void MemberGroup::insertMember(MemberDef *md)
   //       md->getSectionList(m_parent),
   //       md,md->name().data());
 
-  MemberDef *firstMd = memberList->first();
+  MemberDef *firstMd = memberList->getFirst();
   if (inSameSection && memberList->count()>0 && 
       firstMd->getSectionList(m_parent)!=md->getSectionList(m_parent))
   {
@@ -215,8 +215,9 @@ int MemberGroup::countInheritableMembers(ClassDef *inheritedFrom) const
 void MemberGroup::distributeMemberGroupDocumentation()
 {
   //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",grpHeader.data());
-  MemberDef *md=memberList->first();
-  while (md)
+  MemberListIterator li(*memberList);
+  MemberDef *md;
+  for (li.toFirst();(md=li.current());++li)
   {
     //printf("checking md=%s\n",md->name().data());
     // find the first member of the group with documentation
@@ -228,16 +229,15 @@ void MemberGroup::distributeMemberGroupDocumentation()
       //printf("found it!\n");
       break;
     }
-    md=memberList->next();
   }
   if (md) // distribute docs of md to other members of the list
   {
     //printf("Member %s has documentation!\n",md->name().data());
-    MemberDef *omd=memberList->first();
-    while (omd)
+    MemberDef *omd;
+    for (li.toFirst();(omd=li.current());++li)
     {
-      if (md!=omd && omd->documentation().isEmpty() && 
-                     omd->briefDescription().isEmpty() && 
+      if (md!=omd && omd->documentation().isEmpty() &&
+                     omd->briefDescription().isEmpty() &&
                      omd->inbodyDocumentation().isEmpty()
          )
       {
@@ -246,7 +246,6 @@ void MemberGroup::distributeMemberGroupDocumentation()
         omd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
         omd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       }
-      omd=memberList->next();
     }
   }
 }

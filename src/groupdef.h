@@ -159,9 +159,10 @@ class GroupSDict : public SDict<GroupDef>
   public:
     GroupSDict(uint size) : SDict<GroupDef>(size) {}
     virtual ~GroupSDict() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+  private:
+    int compareValues(const GroupDef *item1,const GroupDef *item2) const
     {
-      return qstrcmp(((GroupDef*)item1)->groupTitle(),((GroupDef*)item2)->groupTitle());
+      return qstrcmp(item1->groupTitle(),item2->groupTitle());
     }
 };
 
@@ -169,9 +170,9 @@ class GroupSDict : public SDict<GroupDef>
 class GroupList : public QList<GroupDef>
 {
   public:
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const GroupDef *item1,const GroupDef *item2) const
     {
-      return qstrcmp(((GroupDef*)item1)->groupTitle(),((GroupDef*)item2)->groupTitle());
+      return qstrcmp(item1->groupTitle(),item2->groupTitle());
     }
 };
 

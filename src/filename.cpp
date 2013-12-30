@@ -34,18 +34,17 @@ FileName::~FileName()
 void FileName::generateDiskNames()
 {
   //QCString commonPrefix;
-  FileDef *fd=first();
+  QListIterator<FileDef> it(*this);
+  FileDef *fd;
   int count=0;
-  while (fd) 
-  { 
-    if (!fd->isReference()) count++; 
-    fd=next(); 
+  for (;(fd=it.current());++it)
+  {
+    if (!fd->isReference()) count++;
   }
   if (count==1)
   {
-    fd=first();
     // skip references
-    while (fd && fd->isReference()) fd=next();
+    for (it.toFirst();(fd=it.current()) && fd->isReference();++it) { }
     // name if unique, so diskname is simply the name
     //printf("!!!!!!!! Unique disk name=%s for fd=%s\n",name.data(),fd->diskname.data());
     fd->m_diskName=name;
@@ -57,12 +56,11 @@ void FileName::generateDiskNames()
     bool found=FALSE;
     while (!found) // search for the common prefix of all paths
     {
-      fd=first();
-      while (fd && fd->isReference()) fd=next();
+      for (it.toFirst();(fd=it.current()) && fd->isReference();++it) { }
       char c=fd->m_path.at(i);
       if (c=='/') j=i; // remember last position of dirname
-      fd=next();
-      while (fd && !found)
+      ++it;
+      while ((fd=it.current()) && !found)
       {
         if (!fd->isReference())
         {
@@ -75,15 +73,14 @@ void FileName::generateDiskNames()
           }
           else if (fd->m_path[i]!=c)
           {
-            found=TRUE;  
+            found=TRUE;
           }
-        } 
-        fd=next();
+        }
+        ++it;
       }
       i++;
     }
-    fd=first();
-    while (fd)
+    for (it.toFirst();(fd=it.current());++it)
     {
       //printf("fd->setName(%s)\n",(fd->path.right(fd->path.length()-j-1)+name).data());
       if (!fd->isReference())
@@ -93,15 +90,12 @@ void FileName::generateDiskNames()
         //printf("!!!!!!!! non unique disk name=%s for fd=%s\n",(prefix+name).data(),fd->diskname.data());
         fd->m_diskName=prefix+name;
       }
-      fd=next();
     }
   }
 }
 
-int FileName::compareItems(QCollection::Item item1, QCollection::Item item2)
+int FileName::compareValues(const FileDef *f1, const FileDef *f2) const
 {
-  FileName *f1=(FileName *)item1;
-  FileName *f2=(FileName *)item2;
   return qstricmp(f1->fileName(),f2->fileName());
 }
 
@@ -120,20 +114,16 @@ FileNameList::~FileNameList()
 
 void FileNameList::generateDiskNames()
 {
-  FileName *fn=first();
-  while (fn)
+  FileNameListIterator it(*this);
+  FileName *fn;
+  for (;(fn=it.current());++it)
   {
     fn->generateDiskNames();
-    fn=next();
   }
 }
 
-int FileNameList::compareItems(QCollection::Item item1, QCollection::Item item2)
+int FileNameList::compareValues(const FileName *f1, const FileName *f2) const
 {
-  FileName *f1=(FileName *)item1;
-  FileName *f2=(FileName *)item2;
-  //printf("FileNameList::compareItems `%s'<->`%s'\n",
-  //    f1->fileName(),f2->fileName());
   return Config_getBool("FULL_PATH_NAMES") ?
          qstricmp(f1->fullName(),f2->fullName()) :
          qstricmp(f1->fileName(),f2->fileName());

@@ -73,7 +73,7 @@ const uint SDict_primes[] =
 template<class T> class SDict;
 template<class T> class SIntDict;
 
-/** internal wrapper class that redirects compareItems() to the 
+/** internal wrapper class that redirects compareValues() to the 
  *  dictionary 
  */
 template<class T>
@@ -82,9 +82,9 @@ class SList : public QList<T>
   public:
     SList(SDict<T> *owner) : m_owner(owner) {}
     virtual ~SList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const T *item1,const T *item2) const
     {
-      return m_owner->compareItems(item1,item2);
+      return m_owner->compareValues(item1,item2);
     }
   private:
     SDict<T> *m_owner;  
@@ -264,7 +264,7 @@ class SDict
      *  Overload this to properly sort items.
      *  \sa inSort()
      */
-    virtual int compareItems(QCollection::Item item1,QCollection::Item item2)
+    virtual int compareValues(const T *item1,const T *item2) const
     {
       return item1!=item2;
     }
@@ -421,7 +421,7 @@ class SDict
     };
 };
 
-/** internal wrapper class that redirects compareItems() to the 
+/** internal wrapper class that redirects compareValues() to the 
  *  dictionary 
  */
 template<class T>
@@ -430,11 +430,11 @@ class SIntList : public QList<T>
   public:
     SIntList(SIntDict<T> *owner) : m_owner(owner) {}
     virtual ~SIntList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
-    {
-      return m_owner->compareItems(item1,item2);
-    }
   private:
+    int compareValues(const T *item1,const T *item2) const
+    {
+      return m_owner->compareValues(item1,item2);
+    }
     SIntDict<T> *m_owner;  
 };
 
@@ -573,7 +573,7 @@ class SIntDict
      *  Overload this to properly sort items.
      *  \sa inSort()
      */
-    virtual int compareItems(QCollection::Item item1,QCollection::Item item2)
+    virtual int compareValues(const T *item1,const T *item2) const
     {
       return item1!=item2;
     }

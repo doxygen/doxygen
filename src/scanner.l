@@ -5510,7 +5510,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN( CopyArgComment );
 					}
 <CSConstraintType,CSConstraintName>"#"	{ // artificially inserted token to signal end of comment block
-                                          current->typeConstr->last()->docs = fullArgString;
+                                          current->typeConstr->getLast()->docs = fullArgString;
   					}
 <CSConstraintType>"{"			{ // end of type constraint reached
                                           // parse documentation of the constraints
@@ -5528,24 +5528,24 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <CSConstraintName>{ID}                  {
                                           // parameter name
-                                          current->typeConstr->last()->name=yytext;
+                                          current->typeConstr->getLast()->name=yytext;
                                         }
 <CSConstraintType>"where"		{ // another constraint for a different param
 					  current->typeConstr->append(new Argument);
                                           BEGIN( CSConstraintName );
   					}
 <CSConstraintType>({ID}".")*{ID}("<"{ID}">")?("()")?  {
-                                          if (current->typeConstr->last()->type.isEmpty())
+                                          if (current->typeConstr->getLast()->type.isEmpty())
                                               // first type constraint for this parameter
                                           {
-                                            current->typeConstr->last()->type=yytext;
+                                            current->typeConstr->getLast()->type=yytext;
                                           }
                                           else // new type constraint for same parameter
                                           {
-                                            QCString name = current->typeConstr->last()->name;
+                                            QCString name = current->typeConstr->getLast()->name;
                                             current->typeConstr->append(new Argument);
-                                            current->typeConstr->last()->name=name;
-                                            current->typeConstr->last()->type=yytext;
+                                            current->typeConstr->getLast()->name=name;
+                                            current->typeConstr->getLast()->type=yytext;
                                           }
                                         }
 <CSConstraintName,CSConstraintType>\n	{

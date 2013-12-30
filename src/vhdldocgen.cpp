@@ -2772,7 +2772,6 @@ static void writeUCFLink(const MemberDef* mdef,OutputList &ol)
 
 bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
 {
-  FileName *fn=Doxygen::inputNameList->first();
   //LayoutNavEntry *cc = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files);
 
   LayoutNavEntry *kk = lne->parent();//   find(LayoutNavEntry::Files);
@@ -2788,17 +2787,22 @@ bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
     kk->addChild(oo); 
   }
 
-  while (fn)
+  FileNameListIterator fnli(*Doxygen::inputNameList); 
+  FileName *fn;
+  for (fnli.toFirst();(fn=fnli.current());++fnli)
   {
-    FileDef *fd=fn->first();
-    if (fd->name().contains(".ucf") || fd->name().contains(".qsf"))
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
     {
-      file = convertNameToFile(fd->name().data(),FALSE,FALSE);
-      LayoutNavEntry *ucf=new LayoutNavEntry(lne,LayoutNavEntry::MainPage,TRUE,file,co,"");
-      kk->addChild(ucf);
-      break;
+      if (fd->name().contains(".ucf") || fd->name().contains(".qsf"))
+      {
+        file = convertNameToFile(fd->name().data(),FALSE,FALSE);
+        LayoutNavEntry *ucf=new LayoutNavEntry(lne,LayoutNavEntry::MainPage,TRUE,file,co,"");
+        kk->addChild(ucf);
+        break;
+      }
     }
-    fn=Doxygen::inputNameList->next();
   }
   return  FALSE;
 }

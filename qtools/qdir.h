@@ -44,8 +44,8 @@
 #endif // QT_H
 
 #ifndef QT_NO_DIR
-typedef QList<QFileInfo> QFileInfoList;
-typedef QListIterator<QFileInfo> QFileInfoListIterator;
+typedef QInternalList<QFileInfo> QFileInfoList;
+typedef QInternalListIterator<QFileInfo> QFileInfoListIterator;
 class QStringList;
 
 

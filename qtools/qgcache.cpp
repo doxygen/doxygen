@@ -36,7 +36,7 @@
 **********************************************************************/
 
 #include "qgcache.h"
-#include "qlist.h"
+#include "qinternallist.h"
 #include "qdict.h"
 #include "qstring.h"
 
@@ -73,7 +73,7 @@ struct QCacheItem
   QCList class (internal list of cache items)
  *****************************************************************************/
 
-class QCList : private QList<QCacheItem>
+class QCList : private QInternalList<QCacheItem>
 {
 friend class QGCacheIterator;
 friend class QCListIt;
@@ -88,13 +88,13 @@ public:
 
     void	setAutoDelete( bool del ) { QCollection::setAutoDelete(del); }
 
-    bool	removeFirst()	{ return QList<QCacheItem>::removeFirst(); }
-    bool	removeLast()	{ return QList<QCacheItem>::removeLast(); }
+    bool	removeFirst()	{ return QInternalList<QCacheItem>::removeFirst(); }
+    bool	removeLast()	{ return QInternalList<QCacheItem>::removeLast(); }
 
-    QCacheItem *first()		{ return QList<QCacheItem>::first(); }
-    QCacheItem *last()		{ return QList<QCacheItem>::last(); }
-    QCacheItem *prev()		{ return QList<QCacheItem>::prev(); }
-    QCacheItem *next()		{ return QList<QCacheItem>::next(); }
+    QCacheItem *first()		{ return QInternalList<QCacheItem>::first(); }
+    QCacheItem *last()		{ return QInternalList<QCacheItem>::last(); }
+    QCacheItem *prev()		{ return QInternalList<QCacheItem>::prev(); }
+    QCacheItem *next()		{ return QInternalList<QCacheItem>::next(); }
 
 #if defined(DEBUG)
     int		inserts;			// variables for statistics
@@ -125,7 +125,7 @@ void QCList::insert( QCacheItem *ci )
 	item = next();
     }
     if ( item )
-	QList<QCacheItem>::insert( at(), ci );
+	QInternalList<QCacheItem>::insert( at(), ci );
     else
 	append( ci );
 #if defined(DEBUG)
@@ -136,7 +136,7 @@ void QCList::insert( QCacheItem *ci )
 
 inline void QCList::insert( int i, QCacheItem *ci )
 {
-    QList<QCacheItem>::insert( i, ci );
+    QInternalList<QCacheItem>::insert( i, ci );
 #if defined(DEBUG)
     ASSERT( ci->node == 0 );
 #endif
@@ -166,11 +166,11 @@ inline void QCList::reference( QCacheItem *ci )
 }
 
 
-class QCListIt: public QListIterator<QCacheItem>
+class QCListIt: public QInternalListIterator<QCacheItem>
 {
 public:
-    QCListIt( const QCList *p ): QListIterator<QCacheItem>( *p ) {}
-    QCListIt( const QCListIt *p ): QListIterator<QCacheItem>( *p ) {}
+    QCListIt( const QCList *p ): QInternalListIterator<QCacheItem>( *p ) {}
+    QCListIt( const QCListIt *p ): QInternalListIterator<QCacheItem>( *p ) {}
 };
 
 

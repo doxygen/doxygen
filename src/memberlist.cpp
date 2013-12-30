@@ -55,11 +55,9 @@ MemberList::~MemberList()
   delete memberGroupList;
 }
 
-int MemberList::compareItems(QCollection::Item item1, QCollection::Item item2)
+int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
 {
   static bool sortConstructorsFirst = Config_getBool("SORT_MEMBERS_CTORS_1ST");
-  MemberDef *c1=(MemberDef *)item1;
-  MemberDef *c2=(MemberDef *)item2;
   if (sortConstructorsFirst) {
     int ord1 = c1->isConstructor() ? 2 : (c1->isDestructor() ? 1 : 0);
     int ord2 = c2->isConstructor() ? 2 : (c2->isDestructor() ? 1 : 0);
@@ -938,15 +936,9 @@ QCString MemberList::listTypeAsString(MemberListType type)
 
 //--------------------------------------------------------------------------
 
-int MemberSDict::compareItems(QCollection::Item item1, QCollection::Item item2)
+int MemberSDict::compareValues(const MemberDef *c1, const MemberDef *c2) const
 {
-  // NOTE: this function can be triggered from unmarshalMemberSDict
-  // so it may not result in called to MemberDef::makeResident().
-  // As a result, the data returned by MemberDef::name() and 
-  // MemberDef::getDefLine() will always be kept in memory.
-  MemberDef *c1=(MemberDef *)item1;
-  MemberDef *c2=(MemberDef *)item2;
-  //printf("MemberSDict::compareItems(%s,%s)\n",c1->name().data(),c2->name().data());
+  //printf("MemberSDict::compareValues(%s,%s)\n",c1->name().data(),c2->name().data());
   int cmp = qstricmp(c1->name(),c2->name());
   if (cmp)
   {

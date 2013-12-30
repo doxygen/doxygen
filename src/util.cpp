@@ -2143,11 +2143,12 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals
 {
   QCString result;
   if (al==0) return result;
-  Argument *a=al->first();
+  ArgumentListIterator ali(*al);
+  Argument *a=ali.current();
   result+="(";
   while (a)
   {
-    QCString type1 = useCanonicalType && !a->canType.isEmpty() ? 
+    QCString type1 = useCanonicalType && !a->canType.isEmpty() ?
       a->canType : a->type;
     QCString type2;
     int i=type1.find(")("); // hack to deal with function pointers
@@ -2172,8 +2173,9 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals
     {
       result+="="+a->defval;
     }
-    a = al->next();
-    if (a) result+=", "; 
+    ++ali;
+    a = ali.current();
+    if (a) result+=", ";
   }
   result+=")";
   if (al->constSpecifier) result+=" const";
@@ -2188,7 +2190,8 @@ QCString tempArgListToString(ArgumentList *al)
   QCString result;
   if (al==0) return result;
   result="<";
-  Argument *a=al->first();
+  ArgumentListIterator ali(*al);
+  Argument *a=ali.current();
   while (a)
   {
     if (!a->name.isEmpty()) // add template argument name
@@ -2216,7 +2219,8 @@ QCString tempArgListToString(ArgumentList *al)
         result+=a->type;
       }
     }
-    a=al->next();
+    ++ali;
+    a=ali.current();
     if (a) result+=", ";
   }
   result+=">";
@@ -2486,13 +2490,13 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   int m=maxInheritanceDepth; 
   if (cd->baseClasses())
   {
-    BaseClassDef *bcdi = cd->baseClasses()->first();
-    while (bcdi)
+    BaseClassListIterator bcli(*cd->baseClasses());
+    BaseClassDef *bcdi;
+    for (;(bcdi=bcli.current());++bcli)
     {
       int mc=minClassDistance(bcdi->classDef,bcd,level+1);
       if (mc<m) m=mc;
       if (m<0) break;
-      bcdi = cd->baseClasses()->next();
     }
   }
   return m;
@@ -2516,13 +2520,13 @@ Protection classInheritedProtectionLevel(ClassDef *cd,ClassDef *bcd,Protection p
   }
   else if (cd->baseClasses())
   {
-    BaseClassDef *bcdi = cd->baseClasses()->first();
-    while (bcdi && prot!=Private)
+    BaseClassListIterator bcli(*cd->baseClasses());
+    BaseClassDef *bcdi;
+    for (;(bcdi=bcli.current()) && prot!=Private;++bcli)
     {
       Protection baseProt = classInheritedProtectionLevel(bcdi->classDef,bcd,bcdi->prot,level+1);
       if (baseProt==Private)   prot=Private;
       else if (baseProt==Protected) prot=Protected;
-      bcdi = cd->baseClasses()->next();
     }
   }
 exit:
@@ -4285,10 +4289,10 @@ bool getDefs(const QCString &scName,
       //printf("found %d members\n",members.count());
       if (members.count()!=1 && args && !qstrcmp(args,"()"))
       {
-        // no exact match found, but if args="()" an arbitrary 
+        // no exact match found, but if args="()" an arbitrary
         // member will do
-        md=mn->last();
-        while (md /* && md->isLinkable()*/)
+        MemberListIterator mni(*mn);
+        for (mni.toLast();(md=mni.current());--mni)
         {
           //printf("Found member `%s'\n",md->name().data());
           //printf("member is linkable md->name()=`%s'\n",md->name().data());
@@ -4302,7 +4306,6 @@ bool getDefs(const QCString &scName,
           {
             members.append(md);
           }
-          md=mn->prev();
         }
       }
       //printf("found %d candidate members\n",members.count());
@@ -4311,23 +4314,22 @@ bool getDefs(const QCString &scName,
         if (currentFile)
         {
           //printf("multiple results; pick one from file:%s\n", currentFile->name().data());
-          md = members.first();
-          while (md) 
+          QListIterator<MemberDef> mit(members);
+          for (mit.toFirst();(md=mit.current());++mit)
           {
             if (md->getFileDef() && md->getFileDef()->name() == currentFile->name()) 
             {
               break; // found match in the current file
             }
-            md=members.next();
           }
           if (!md) // member not in the current file
           {
-            md=members.last();
+            md=members.getLast();
           }
-        } 
-        else 
+        }
+        else
         {
-          md=members.last();
+          md=members.getLast();
         }
       }
       if (md && (md->getEnumScope()==0 || !md->getEnumScope()->isStrong())) 
@@ -5829,8 +5831,9 @@ void addMembersToMemberGroup(MemberList *ml,
       MemberList *fmdl=md->enumFieldList();
       if (fmdl!=0)
       {
-        MemberDef *fmd=fmdl->first();
-        while (fmd)
+        MemberListIterator fmli(*fmdl);
+        MemberDef *fmd;
+        for (fmli.toFirst();(fmd=fmli.current());++fmli)
         {
           int groupId=fmd->getMemberGroupId();
           if (groupId!=-1)
@@ -5861,7 +5864,6 @@ void addMembersToMemberGroup(MemberList *ml,
               fmd->setMemberGroup(mg);
             }
           }
-          fmd=fmdl->next();
         }
       }
     }
@@ -6059,15 +6061,16 @@ QCString substituteTemplateArgumentsInString(
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
     ArgumentListIterator formAli(*formalArgs);
+    ArgumentListIterator actAli(*actualArgs);
     Argument *formArg;
-    Argument *actArg=actualArgs->first();
+    Argument *actArg;
 
     // if n is a template argument, then we substitute it
     // for its template instance argument.
     bool found=FALSE;
     for (formAli.toFirst();
-        (formArg=formAli.current()) && !found;
-        ++formAli,actArg=actualArgs->next()
+        (formArg=formAli.current()) && !found && (actArg=actAli.current());
+        ++formAli,++actAli
         )
     {
       if (formArg->type.left(6)=="class " && formArg->name.isEmpty())

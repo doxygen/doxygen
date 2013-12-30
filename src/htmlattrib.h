@@ -40,33 +40,31 @@ class HtmlAttribList : public QList<HtmlAttrib>
     { clear(); QList<HtmlAttrib>::operator=(l); return *this; }
     QCString find(const QCString name) const
     {
-      HtmlAttribList *that = (HtmlAttribList *)this;
+      QListIterator<HtmlAttrib> it(*this);
       QCString result;
-      HtmlAttrib *attr=that->first();
-      while (attr)
+      HtmlAttrib *attr;
+      for (;(attr=it.current());++it)
       {
         if (attr->name==name) return attr->value;
-        attr=that->next();
       }
       return result;
     }
     QCString toString() const
     {
-      HtmlAttribList *that = (HtmlAttribList *)this;
+      QListIterator<HtmlAttrib> it(*this);
       QCString result;
-      HtmlAttrib *attr=that->first();
-      while (attr)
+      HtmlAttrib *attr;
+      for (;(attr=it.current());++it)
       {
         result+=" "+attr->name+"=\""+attr->value+"\"";
-        attr=that->next();
       }
       return result;
     }
   private:
-    QCollection::Item newItem( QCollection::Item d ) 
-    { return (QCollection::Item)new HtmlAttrib(*(HtmlAttrib *)d); }
-    void deleteItem(QCollection::Item d) 
-    { delete (HtmlAttrib *)d; }
+    HtmlAttrib *newValue( HtmlAttrib *v ) const
+    { return new HtmlAttrib(*v); }
+    void deleteValue(HtmlAttrib *v) const
+    { delete v;  }
 };
 
 /*! @brief Html attribute list iterator */

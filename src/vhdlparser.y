@@ -2364,7 +2364,7 @@ static void addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool i
 
   if(!configL.isEmpty())
   {
-    VhdlConfNode* vc=configL.last();
+    VhdlConfNode* vc=configL.getLast();
     level=vc->level;
     if (levelCounter==0)
       pushLabel(forL,ent);

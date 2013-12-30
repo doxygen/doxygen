@@ -42,7 +42,7 @@
 #include <windows.h>
 #include "qwaitcondition.h"
 #include "qmutex.h"
-#include "qlist.h"
+#include "qinternallist.h"
 
 //***********************************************************************
 // QWaitConditionPrivate
@@ -61,7 +61,7 @@ public:
     HANDLE event;
 };
 
-class EventQueue : public QList<QWaitConditionEvent>
+class EventQueue : public QInternalList<QWaitConditionEvent>
 {
   public:
     EventQueue() { setAutoDelete(TRUE); }

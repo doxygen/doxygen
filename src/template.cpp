@@ -1594,12 +1594,12 @@ TemplateContextImpl::~TemplateContextImpl()
 
 void TemplateContextImpl::set(const char *name,const TemplateVariant &v)
 {
-  TemplateVariant *pv = m_contextStack.first()->find(name);
+  TemplateVariant *pv = m_contextStack.getFirst()->find(name);
   if (pv)
   {
-    m_contextStack.first()->remove(name);
+    m_contextStack.getFirst()->remove(name);
   }
-  m_contextStack.first()->insert(name,new TemplateVariant(v));
+  m_contextStack.getFirst()->insert(name,new TemplateVariant(v));
 }
 
 TemplateVariant TemplateContextImpl::get(const QCString &name) const
@@ -3325,7 +3325,7 @@ TemplateToken *TemplateParser::takeNextToken()
 
 const TemplateToken *TemplateParser::currentToken() const
 {
-  return m_tokens.first();
+  return m_tokens.getFirst();
 };
 
 void TemplateParser::removeNextToken()

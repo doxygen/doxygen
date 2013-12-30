@@ -33,100 +33,98 @@
 OutputList::OutputList(bool)
 {
   //printf("OutputList::OutputList()\n");
-  outputs = new QList<OutputGenerator>;
-  outputs->setAutoDelete(TRUE);
+  m_outputs.setAutoDelete(TRUE);
 }
 
 OutputList::~OutputList()
 {
   //printf("OutputList::~OutputList()\n");
-  delete outputs;
 }
 
 void OutputList::add(const OutputGenerator *og)
 {
-  if (og) outputs->append(og);
+  if (og) m_outputs.append(og);
 }
 
 void OutputList::disableAllBut(OutputGenerator::OutputType o)
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->disableIfNot(o);
-    og=outputs->next();
   }
 }
 
 void OutputList::enableAll()
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->enable();
-    og=outputs->next();
   }
 }
 
 void OutputList::disableAll()
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->disable();
-    og=outputs->next();
   }
 }
 
 void OutputList::disable(OutputGenerator::OutputType o)
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->disableIf(o);
-    og=outputs->next();
   }
 }
 
 void OutputList::enable(OutputGenerator::OutputType o)
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->enableIf(o);
-    og=outputs->next();
   }
 }
 
 bool OutputList::isEnabled(OutputGenerator::OutputType o)
 {
   bool result=FALSE;
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     result=result || og->isEnabled(o);
-    og=outputs->next();
   }
   return result;
 }
 
 void OutputList::pushGeneratorState()
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->pushGeneratorState();
-    og=outputs->next();
   }
 }
 
 void OutputList::popGeneratorState()
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     og->popGeneratorState();
-    og=outputs->next();
   }
 }
 
@@ -138,12 +136,12 @@ bool OutputList::generateDoc(const char *fileName,int startLine,
 {
   int count=0;
   if (docStr.isEmpty()) return TRUE;
-  
-  OutputGenerator *og=outputs->first();
-  while (og)
+
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     if (og->isEnabled()) count++;
-    og=outputs->next();
   }
   if (count==0) return TRUE; // no output formats enabled.
 
@@ -163,13 +161,13 @@ bool OutputList::generateDoc(const char *fileName,int startLine,
 
 void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     //printf("og->printDoc(extension=%s)\n",
     //    ctx?ctx->getDefFileExtension().data():"<null>");
     if (og->isEnabled()) og->writeDoc(root,ctx,md);
-    og=outputs->next();
   }
 
   VhdlDocGen::setFlowMember(0);
@@ -178,21 +176,19 @@ void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
 bool OutputList::parseText(const QCString &textStr)
 {
   int count=0;
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     if (og->isEnabled()) count++;
-    og=outputs->next();
   }
   if (count==0) return TRUE; // no output formats enabled.
 
   DocText *root = validatingParseText(textStr);
 
-  og=outputs->first();
-  while (og)
+  for (it.toFirst();(og=it.current());++it)
   {
     if (og->isEnabled()) og->writeDoc(root,0,0);
-    og=outputs->next();
   }
 
   bool isEmpty = root->isEmpty();
@@ -211,11 +207,11 @@ bool OutputList::parseText(const QCString &textStr)
 // zero arguments
 void OutputList::forall(void (OutputGenerator::*func)())
 {
-  OutputGenerator *og=outputs->first();
-  while (og)
+  QListIterator<OutputGenerator> it(m_outputs);
+  OutputGenerator *og;
+  for (it.toFirst();(og=it.current());++it)
   {
     if (og->isEnabled()) (og->*func)();
-    og=outputs->next();
   }
 }
 
@@ -223,98 +219,98 @@ void OutputList::forall(void (OutputGenerator::*func)())
 #define FORALL1(a1,p1)                                        \
 void OutputList::forall(void (OutputGenerator::*func)(a1),a1) \
 {                                                             \
-  OutputGenerator *og=outputs->first();                       \
-  while (og)                                                  \
+  QListIterator<OutputGenerator> it(m_outputs);               \
+  OutputGenerator *og;                                        \
+  for (it.toFirst();(og=it.current());++it)                   \
   {                                                           \
     if (og->isEnabled()) (og->*func)(p1);                     \
-    og=outputs->next();                                       \
   }                                                           \
-}                     
+}
 
 // two arguments
 #define FORALL2(a1,a2,p1,p2)                                        \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2),a1,a2) \
 {                                                                   \
-  OutputGenerator *og=outputs->first();                             \
-  while (og)                                                        \
+  QListIterator<OutputGenerator> it(m_outputs);                     \
+  OutputGenerator *og;                                              \
+  for (it.toFirst();(og=it.current());++it)                         \
   {                                                                 \
     if (og->isEnabled()) (og->*func)(p1,p2);                        \
-    og=outputs->next();                                             \
   }                                                                 \
-}                     
+}
 
 // three arguments
 #define FORALL3(a1,a2,a3,p1,p2,p3)                                        \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3),a1,a2,a3) \
 {                                                                         \
-  OutputGenerator *og=outputs->first();                                   \
-  while (og)                                                              \
+  QListIterator<OutputGenerator> it(m_outputs);                           \
+  OutputGenerator *og;                                                    \
+  for (it.toFirst();(og=it.current());++it)                               \
   {                                                                       \
     if (og->isEnabled()) (og->*func)(p1,p2,p3);                           \
-    og=outputs->next();                                                   \
   }                                                                       \
-}                     
+}
 
 // four arguments
 #define FORALL4(a1,a2,a3,a4,p1,p2,p3,p4)                                        \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4),a1,a2,a3,a4) \
 {                                                                               \
-  OutputGenerator *og=outputs->first();                                         \
-  while (og)                                                                    \
+  QListIterator<OutputGenerator> it(m_outputs);                                 \
+  OutputGenerator *og;                                                          \
+  for (it.toFirst();(og=it.current());++it)                                     \
   {                                                                             \
     if (og->isEnabled()) (og->*func)(p1,p2,p3,p4);                              \
-    og=outputs->next();                                                         \
   }                                                                             \
-}                     
+}
 
 // five arguments
 #define FORALL5(a1,a2,a3,a4,a5,p1,p2,p3,p4,p5)                                        \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4,a5),a1,a2,a3,a4,a5) \
 {                                                                                     \
-  OutputGenerator *og=outputs->first();                                               \
-  while (og)                                                                          \
+  QListIterator<OutputGenerator> it(m_outputs);                                       \
+  OutputGenerator *og;                                                                \
+  for (it.toFirst();(og=it.current());++it)                                           \
   {                                                                                   \
     if (og->isEnabled()) (og->*func)(p1,p2,p3,p4,p5);                                 \
-    og=outputs->next();                                                               \
   }                                                                                   \
-}                     
+}
 
 // six arguments
 #define FORALL6(a1,a2,a3,a4,a5,a6,p1,p2,p3,p4,p5,p6)                                  \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4,a5,a6),a1,a2,a3,a4,a5,a6) \
 {                                                                                     \
-  OutputGenerator *og=outputs->first();                                               \
-  while (og)                                                                          \
+  QListIterator<OutputGenerator> it(m_outputs);                                       \
+  OutputGenerator *og;                                                                \
+  for (it.toFirst();(og=it.current());++it)                                           \
   {                                                                                   \
     if (og->isEnabled()) (og->*func)(p1,p2,p3,p4,p5,p6);                              \
-    og=outputs->next();                                                               \
   }                                                                                   \
-}                     
+}
 
 // seven arguments
 #define FORALL7(a1,a2,a3,a4,a5,a6,a7,p1,p2,p3,p4,p5,p6,p7)                      \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4,a5,a6,a7),a1,a2,a3,a4,a5,a6,a7) \
 {                                                                                     \
-  OutputGenerator *og=outputs->first();                                               \
-  while (og)                                                                          \
+  QListIterator<OutputGenerator> it(m_outputs);                                       \
+  OutputGenerator *og;                                                                \
+  for (it.toFirst();(og=it.current());++it)                                           \
   {                                                                                   \
     if (og->isEnabled()) (og->*func)(p1,p2,p3,p4,p5,p6,p7);                           \
-    og=outputs->next();                                                               \
   }                                                                                   \
-}                     
+}
 
 
 // eight arguments
 #define FORALL8(a1,a2,a3,a4,a5,a6,a7,a8,p1,p2,p3,p4,p5,p6,p7,p8)                      \
 void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4,a5,a6,a7,a8),a1,a2,a3,a4,a5,a6,a7,a8) \
 {                                                                                     \
-  OutputGenerator *og=outputs->first();                                               \
-  while (og)                                                                          \
+  QListIterator<OutputGenerator> it(m_outputs);                                       \
+  OutputGenerator *og;                                                                \
+  for (it.toFirst();(og=it.current());++it)                                           \
   {                                                                                   \
     if (og->isEnabled()) (og->*func)(p1,p2,p3,p4,p5,p6,p7,p8);                        \
-    og=outputs->next();                                                               \
   }                                                                                   \
-}                     
+}
 
 // now instantiate only the ones we need.
 

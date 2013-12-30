@@ -209,18 +209,17 @@ static uint virtToMask(Specifier p)
 // pre: dil is not empty
 static Protection getMinProtectionLevel(DiagramItemList *dil)
 {
-  DiagramItem *di=dil->first();
+  QListIterator<DiagramItem> it(*dil);
+  DiagramItem *di=it.current();
   Protection result=di->protection();
-  di=dil->next();
-  while (di)
+  for (++it;(di=it.current());++it)
   {
     Protection p=di->protection();
-    if (p!=result) 
+    if (p!=result)
     {
       if (result==Protected && p==Public) result=p;
       else if (result==Private) result=p;
-    } 
-    di=dil->next();
+    }
   }
   return result;
 }
@@ -371,12 +370,12 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   if (bcl)
   {
     /* there are base/sub classes */
-    BaseClassDef *bcd=bcl->first();
-    while (bcd)
+    BaseClassListIterator it(*bcl);
+    BaseClassDef *bcd;
+    for (;(bcd=it.current());++it)
     {
       ClassDef *ccd=bcd->classDef;
       if (ccd && ccd->isVisibleInHierarchy() /*&& !ccd->visited*/) count++;
-      bcd=bcl->next();
     }
   }
   if (count>0 && (prot!=Private || !doBases))
@@ -392,8 +391,9 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
       row=diagram->at(level+1);
     }
     /* insert base classes in the next row */
-    BaseClassDef *bcd=bcl->first();
-    while (bcd)
+    BaseClassListIterator it(*bcl);
+    BaseClassDef *bcd;
+    for (;(bcd=it.current());++it)
     {
       ClassDef *ccd=bcd->classDef;
       if (ccd && ccd->isVisibleInHierarchy() /*&& !ccd->visited*/)
@@ -402,7 +402,6 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
             doBases?bcd->virt:Normal,
             doBases?bcd->templSpecifiers.data():"");
       }
-      bcd=bcl->next();
     }
   }
 }
@@ -423,12 +422,12 @@ TreeDiagram::~TreeDiagram()
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
 {
   DiagramItemList *dil=root->getChildren();
-  DiagramItem *di=dil->first();
-  while (di)
+  QListIterator<DiagramItem> it(*dil);
+  DiagramItem *di;
+  for (;(di=it.current());++it)
   {
     di->move(dx,0);
     moveChildren(di,dx);
-    di=dil->next();
   }
 }
 
@@ -463,11 +462,11 @@ bool TreeDiagram::layoutTree(DiagramItem *root,int r)
     }
 
     // recurse to children
-    DiagramItem *di=dil->first();
-    while (di && !moved && !di->isInList())
+    QListIterator<DiagramItem> it(*dil);
+    DiagramItem *di;
+    for (;(di=it.current()) && !moved && !di->isInList();++it)
     {
       moved = layoutTree(di,r+1);
-      di=dil->next();
     }
   }
   return moved;
@@ -475,47 +474,49 @@ bool TreeDiagram::layoutTree(DiagramItem *root,int r)
 
 void TreeDiagram::computeLayout()
 {
-  DiagramRow *row=first();
-  while (row && row->count()<maxTreeWidth) row=next();
+  QListIterator<DiagramRow> it(*this);
+  DiagramRow *row;
+  for (;(row=it.current()) && row->count()<maxTreeWidth;++it) {}
   if (row)
   {
     //printf("computeLayout() list row at %d\n",row->number());
-    DiagramItem *di=row->first();
+    QListIterator<DiagramItem> rit(*row);
+    DiagramItem *di;
     DiagramItem *opi=0;
     int delta=0;
     bool first=TRUE;
-    while (di)
+    for (;(di=rit.current());++rit)
     {
       DiagramItem *pi=di->parentItem();
       if (pi==opi && !first) { delta-=gridWidth; }
       first = pi!=opi;
       opi=pi;
-      di->move(delta,0); // collapse all items in the same 
+      di->move(delta,0); // collapse all items in the same
                          // list (except the first)
       di->putInList();
-      di=row->next();
     }
   }
 
   // re-organize the diagram items
   DiagramItem *root=getFirst()->getFirst();
   while (layoutTree(root,0)) { }
-  
+
   // move first items of the lists
   if (row)
   {
-    DiagramItem *di=row->first();
-    while (di)
+    QListIterator<DiagramItem> rit(*row);
+    DiagramItem *di;
+    while ((di=rit.current()))
     {
       DiagramItem *pi=di->parentItem();
       if (pi->getChildren()->count()>1)
       {
         di->move(gridWidth,0);
-        while (di && di->parentItem()==pi) di=row->next();
+        while (di && di->parentItem()==pi) { ++rit; di=rit.current(); }
       }
       else
       {
-        di=row->next();
+        ++rit;
       }
     }
   }
@@ -525,24 +526,25 @@ uint TreeDiagram::computeRows()
 {
   //printf("TreeDiagram::computeRows()=%d\n",count());
   int count=0;
-  DiagramRow *row=first();
-  while (row && !row->getFirst()->isInList())
+  QListIterator<DiagramRow> it(*this);
+  DiagramRow *row;
+  for (;(row=it.current()) && !row->getFirst()->isInList();++it)
   {
     count++;
-    row=next();
   }
   //printf("count=%d row=%p\n",count,row);
   if (row)
   {
     int maxListLen=0;
     int curListLen=0;
-    DiagramItem *di=row->first(),*opi=0;
-    while (di)
+    DiagramItem *opi=0;
+    QListIterator<DiagramItem> rit(*row);
+    DiagramItem *di;
+    for (;(di=rit.current());++rit)
     {
       if (di->parentItem()!=opi) curListLen=1; else curListLen++; 
       if (curListLen>maxListLen) maxListLen=curListLen;
       opi=di->parentItem();
-      di=row->next();
     }
     //printf("maxListLen=%d\n",maxListLen);
     count+=maxListLen;
@@ -550,43 +552,22 @@ uint TreeDiagram::computeRows()
   return count;
 }
 
-#if 0
-uint TreeDiagram::computeCols()
-{
-  uint count=0;
-  DiagramRow *row=first();
-  while (row && !row->getFirst()->isInList())
-  {
-    if (row->count()>count) count=row->count();
-    row=next();
-  }
-  if (row)
-  {
-    row=prev();
-    uint cols=row->count();
-    if (row->getLast()->getChildren()->count()>1) cols++;
-    if (cols>count) count=cols;
-  }
-  return count;
-};
-#endif
-
 void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
 {
   uint ml=0,mx=0;
-  DiagramRow *dr=first();
+  QListIterator<DiagramRow> it(*this);
+  DiagramRow *dr;
   bool done=FALSE;
-  while (dr && !done)
+  for (;(dr=it.current()) && !done;++it)
   {
-    DiagramItem *di=dr->first();
-    while (di)
+    QListIterator<DiagramItem> rit(*dr);
+    DiagramItem *di;
+    for (;(di=rit.current());++rit)
     {
       if (di->isInList()) done=TRUE;
       if (maxXPos) mx=QMAX(mx,(uint)di->xPos());
       if (maxLabelLen) ml=QMAX(ml,Image::stringLength(di->label()));
-      di=dr->next();
     }
-    dr=next();
   }
   if (maxLabelLen) *maxLabelLen=ml;
   if (maxXPos)     *maxXPos=mx;
@@ -599,20 +580,22 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
                             QCString relPath,
                             bool generateMap)
 {
-  DiagramRow *dr=first();
-  if (!doBase) dr=next();
+  QListIterator<DiagramRow> it(*this);
+  DiagramRow *dr;
+  if (!doBase) ++it;
   bool done=FALSE;
   bool firstRow = doBase;
-  while (dr && !done)
+  for (;(dr=it.current()) && !done;++it)
   {
     int x=0,y=0;
     float xf=0.0f,yf=0.0f;
-    DiagramItem *di=dr->first();
+    QListIterator<DiagramItem> rit(*dr);
+    DiagramItem *di = rit.current();
     if (di->isInList()) // put boxes in a list
     {
       DiagramItem *opi=0;
-      if (doBase) di=dr->last();
-      while (di) 
+      if (doBase) rit.toLast(); else rit.toFirst();
+      while ((di=rit.current()))
       {
         if (di->parentItem()==opi)
         {
@@ -673,13 +656,13 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
           writeVectorBox(t,di,xf,yf,di->getChildren()->count()>0);
         }
         
-        if (doBase) di=dr->prev(); else di=dr->next();
+        if (doBase) --rit; else ++rit;
       }
       done=TRUE;
     }
     else // draw a tree of boxes
     {
-      while (di)
+      for (rit.toFirst();(di=rit.current());++rit)
       {
         if (bitmap)
         {
@@ -714,11 +697,8 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
           }
           writeVectorBox(t,di,xf,yf);
         }
-
-        di=dr->next();
       }
     }
-    dr=next();
     firstRow=FALSE;
   }
 }
@@ -728,16 +708,18 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
                                  uint baseRows,uint superRows,
                                  uint cellWidth,uint cellHeight)
 {
-  DiagramRow *dr=first();
+  QListIterator<DiagramRow> it(*this);
+  DiagramRow *dr;
   bool done=FALSE;
-  while (dr && !done) // for each row
+  for (;(dr=it.current()) && !done;++it) // for each row
   {
-    DiagramItem *di=dr->first();
+    QListIterator<DiagramItem> rit(*dr);
+    DiagramItem *di = rit.current();
     if (di->isInList()) // row consists of list connectors
     {
       int x=0,y=0,ys=0;
       float xf=0.0f,yf=0.0f,ysf=0.0f;
-      while (di)
+      for (;(di=rit.current());++rit)
       {
         DiagramItem *pi=di->parentItem();
         DiagramItemList *dil=pi->getChildren();
@@ -849,7 +831,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
                 yf -= 1.0f;
               }
             }
-            di=dr->next();
+            ++rit; di=rit.current();
           }
           // add last horizonal line and a vertical connection line
           if (bitmap)
@@ -895,13 +877,12 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             }
           }
         }
-        di=dr->next();
       }
       done=TRUE; // the tree is drawn now
     }
     else // normal tree connector
     {
-      while (di)
+      for (;(di=rit.current());++rit)
       {
         int x=0,y=0;
         DiagramItemList *dil = di->getChildren();
@@ -988,8 +969,8 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             }
           }
           /* write input line */
-          DiagramItem *first = dil->first();
-          DiagramItem *last  = dil->last();
+          DiagramItem *first = dil->getFirst();
+          DiagramItem *last  = dil->getLast();
           if (first!=last && !first->isInList()) /* connect with all base classes */
           {
             if (bitmap)
@@ -1027,9 +1008,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             }
           }
         }
-        di=dr->next();
       }
-      dr=next();
     }
   }
 }
@@ -1053,8 +1032,8 @@ ClassDiagram::ClassDiagram(ClassDef *root)
   clearVisitFlags();
   super = new TreeDiagram(root,FALSE);
   super->computeLayout();
-  DiagramItem *baseItem  = base->first()->first();
-  DiagramItem *superItem = super->first()->first();
+  DiagramItem *baseItem  = base->getFirst()->getFirst();
+  DiagramItem *superItem = super->getFirst()->getFirst();
   int xbase  = baseItem->xPos();
   int xsuper = superItem->xPos();
   if (xbase>xsuper)
@@ -1307,35 +1286,34 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   t << "boxfont setfont\n";
   t << "1 boundaspect scale\n";
 
-  
+
   bool done=FALSE;
-  DiagramRow *dr=base->first();
-  while (dr && !done)
+  QListIterator<DiagramRow> bit(*base);
+  DiagramRow *dr;
+  for (;(dr=bit.current()) && !done;++bit)
   {
-    DiagramItem *di=dr->first();
-    while (di)
+    QListIterator<DiagramItem> rit(*dr);
+    DiagramItem *di;
+    for (;(di=rit.current());++rit)
     {
       done=di->isInList();
       t << "(" << di->label() << ") cw\n";
-      di=dr->next();
     }
-    dr=base->next();
   }
-  dr=super->first();
-  dr=super->next();
+  QListIterator<DiagramRow> sit(*super);
+  ++sit;
   done=FALSE;
-  while (dr && !done)
+  for (;(dr=sit.current()) && !done;++sit)
   {
-    DiagramItem *di=dr->first();
-    while (di)
+    QListIterator<DiagramItem> rit(*dr);
+    DiagramItem *di;
+    for (;(di=rit.current());++rit)
     {
       done=di->isInList();
       t << "(" << di->label() << ") cw\n";
-      di=dr->next();
     }
-    dr=super->next();
   }
-  
+
   t << "/boxwidth boxwidth marginwidth 2 mul add def\n"
     << "/xspacing boxwidth distx add def\n"
     << "/yspacing boxheight disty add def\n"

@@ -133,13 +133,14 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   if (md->getLanguage()==SrcLangExt_Tcl)
   {
     if (defArgList->count()==0) return FALSE;
-    Argument *a=defArgList->first();
+    ArgumentListIterator ali(*defArgList);
+    Argument *a;
     ol.endMemberDocName();
     ol.startParameterList(FALSE);
     ol.startParameterType(TRUE,0);
     ol.endParameterType();
     ol.startParameterName(FALSE);
-    while (a)
+    for (;(a=ali.current());++ali)
     {
       if (a->defval.isEmpty())
       {
@@ -149,7 +150,6 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       {
         ol.docify("?"+a->name+"? ");
       }
-      a=defArgList->next();
     }
     ol.endParameterName(TRUE,FALSE,FALSE);
     return TRUE;
@@ -181,7 +181,6 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.popGeneratorState();
   //printf("===> name=%s isDefine=%d\n",md->name().data(),md->isDefine());
 
-  Argument *a=defArgList->first();
   QCString cName;
   if (cd)
   {
@@ -208,6 +207,8 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   bool first=TRUE;
   bool paramTypeStarted=FALSE;
   bool isDefine = md->isDefine();
+  ArgumentListIterator ali(*defArgList);
+  Argument *a=ali.current();
   while (a)
   {
     if (isDefine || first)
@@ -302,7 +303,8 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       ol.endTypewriter();
 
     }
-    a=defArgList->next();
+    ++ali;
+    a=ali.current();
     if (a)
     {
       if (!md->isObjCMethod()) ol.docify(", "); // there are more arguments
@@ -432,7 +434,8 @@ static void writeExceptionList(OutputList &ol, ClassDef *cd, MemberDef *md)
 static void writeTemplatePrefix(OutputList &ol,ArgumentList *al)
 {
   ol.docify("template<");
-  Argument *a=al->first();
+  ArgumentListIterator ali(*al);
+  Argument *a = ali.current();
   while (a)
   {
     ol.docify(a->type);
@@ -443,7 +446,8 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al)
       ol.docify(" = ");
       ol.docify(a->defval);
     }
-    a=al->next();
+    ++ali;
+    a=ali.current();
     if (a) ol.docify(", ");
   }
   ol.docify("> ");
@@ -1348,7 +1352,7 @@ bool MemberDef::isBriefSectionVisible() const
   bool visibleIfNotDefaultCDTor = !(cOrDTor &&
                                    m_impl->defArgList &&
                                    (m_impl->defArgList->isEmpty() ||
-                                    m_impl->defArgList->first()->type == "void"
+                                    m_impl->defArgList->getFirst()->type == "void"
                                    ) &&
                                    !hasDocs
                                   );
@@ -2286,8 +2290,9 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
     //printf("** %s: enum values=%d\n",name().data(),fmdl!=0 ? fmdl->count() : 0);
     if (fmdl)
     {
-      MemberDef *fmd=fmdl->first();
-      while (fmd)
+      MemberListIterator it(*fmdl);
+      MemberDef *fmd;
+      for (;(fmd=it.current());++it)
       {
         //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
         if (fmd->isLinkable())
@@ -2349,7 +2354,6 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           }
           ol.endDescTableData();
         }
-        fmd=fmdl->next();
       }
     }
     if (!first)
@@ -3713,11 +3717,11 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
   uint numVisibleEnumValues=0;
   if (fmdl)
   {
-    MemberDef *fmd=fmdl->first();
-    while (fmd)
+    MemberListIterator mli(*fmdl);
+    MemberDef *fmd;
+    for (mli.toFirst();(fmd=mli.current());++mli)
     {
       if (fmd->isBriefSectionVisible()) numVisibleEnumValues++;
-      fmd=fmdl->next();
     }
   }
   if (numVisibleEnumValues==0 && !isBriefSectionVisible())
@@ -3757,7 +3761,8 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
     typeDecl.docify("{ ");
     if (fmdl)
     {
-      MemberDef *fmd=fmdl->first();
+      MemberListIterator mli(*fmdl);
+      MemberDef *fmd=mli.current();
       bool fmdVisible = fmd->isBriefSectionVisible();
       while (fmd)
       {
@@ -3797,7 +3802,8 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
         }
 
         bool prevVisible = fmdVisible;
-        fmd=fmdl->next();
+        ++mli;
+        fmd=mli.current();
         if (fmd && (fmdVisible=fmd->isBriefSectionVisible()))
         {
           typeDecl.writeString(", ");

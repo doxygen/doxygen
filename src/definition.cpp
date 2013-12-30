@@ -417,8 +417,9 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
 {
   if (!anchorList) return;
   //printf("%s: addSectionsToDefinition(%d)\n",name().data(),anchorList->count());
-  SectionInfo *si=anchorList->first();
-  while (si)
+  QListIterator<SectionInfo> it(*anchorList);
+  SectionInfo *si;
+  for (;(si=it.current());++it)
   {
     //printf("Add section `%s' to definition `%s'\n",
     //    si->label.data(),name().data());
@@ -429,7 +430,7 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
       gsi = new SectionInfo(*si);
       Doxygen::sectionDict->append(si->label,gsi);
     }
-    if (m_impl->sectionDict==0) 
+    if (m_impl->sectionDict==0)
     {
       m_impl->sectionDict = new SectionDict(17);
     }
@@ -438,7 +439,6 @@ void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
       m_impl->sectionDict->append(gsi->label,gsi);
       gsi->definition = this;
     }
-    si=anchorList->next();
   }
 }
 
