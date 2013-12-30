@@ -30,10 +30,8 @@ MemberName::~MemberName()
 {
 }
 
-int MemberName::compareItems(QCollection::Item item1, QCollection::Item item2)
+int MemberName::compareValues(const MemberDef *m1, const MemberDef *m2) const
 {
-  MemberDef *m1=(MemberDef *)item1;
-  MemberDef *m2=(MemberDef *)item2;
   ClassDef *c1=m1->getClassDef();
   ClassDef *c2=m2->getClassDef();
   FileDef  *f1=m1->getFileDef();
@@ -52,10 +50,8 @@ MemberNameInfo::MemberNameInfo(const char *n) : QList<MemberInfo>()
   setAutoDelete(TRUE);
 }
 
-int MemberNameInfo::compareItems(QCollection::Item item1, QCollection::Item item2)
+int MemberNameInfo::compareValues(const MemberInfo *m1,const MemberInfo *m2) const
 {
-  MemberInfo *m1=(MemberInfo *)item1;
-  MemberInfo *m2=(MemberInfo *)item2;
   ClassDef *c1=m1->memberDef->getClassDef();
   ClassDef *c2=m2->memberDef->getClassDef();
   FileDef  *f1=m1->memberDef->getFileDef();
@@ -72,12 +68,10 @@ MemberNameIterator::MemberNameIterator(const MemberName &mnlist) :
 {
 }
 
-int MemberNameSDict::compareItems(QCollection::Item item1, QCollection::Item item2)
+int MemberNameSDict::compareValues(const MemberName *n1,const MemberName *n2) const
 {
-  MemberName *n1=(MemberName *)item1;
-  MemberName *n2=(MemberName *)item2;
   return qstricmp(n1->memberName()+getPrefixIndex(n1->memberName()),
-                 n2->memberName()+getPrefixIndex(n2->memberName())
-                );
+                  n2->memberName()+getPrefixIndex(n2->memberName())
+                 );
 }
 

@@ -897,8 +897,9 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
     for (spi.toFirst();(al=spi.current());++spi)
     {
       ol.docify("template<");
-      Argument *a=al->first();
-      while (a)
+      QListIterator<Argument> ali(*al);
+      Argument *a;
+      while ((a=ali.current()))
       {
         ol.docify(a->type);
         if (!a->name.isEmpty())
@@ -911,7 +912,8 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
           ol.docify(" = ");
           ol.docify(a->defval);
         }
-        a=al->next();
+        ++ali;
+        a=ali.current();
         if (a) ol.docify(", ");
       }
       ol.docify(">");
@@ -1084,8 +1086,9 @@ void ClassDef::showUsedFiles(OutputList &ol)
   ol.parseText(generatedFromFiles());
 
   bool first=TRUE;
-  FileDef *fd = m_impl->files.first();
-  while (fd)
+  QListIterator<FileDef> li(m_impl->files);
+  FileDef *fd;
+  for (;(fd=li.current());++li)
   {
     if (first)
     {
@@ -1139,8 +1142,6 @@ void ClassDef::showUsedFiles(OutputList &ol)
     ol.popGeneratorState();
 
     ol.endItemListItem();
-
-    fd=m_impl->files.next();
   }
   if (!first) ol.endItemList();
 
@@ -1153,22 +1154,20 @@ int ClassDef::countInheritanceNodes()
   BaseClassDef *ibcd;
   if (m_impl->inheritedBy)
   {
-    ibcd=m_impl->inheritedBy->first();
-    while (ibcd)
+    BaseClassListIterator it(*m_impl->inheritedBy);
+    for (;(ibcd=it.current());++it)
     {
       ClassDef *icd=ibcd->classDef;
       if ( icd->isVisibleInHierarchy()) count++;
-      ibcd=m_impl->inheritedBy->next();
     }
   }
   if (m_impl->inherits)
   {
-    ibcd=m_impl->inherits->first();
-    while (ibcd)
+    BaseClassListIterator it(*m_impl->inherits);
+    for (;(ibcd=it.current());++it)
     {
       ClassDef *icd=ibcd->classDef;
       if ( icd->isVisibleInHierarchy()) count++;
-      ibcd=m_impl->inherits->next();
     }
   }
   return count;
@@ -2228,8 +2227,9 @@ void ClassDef::writeMemberList(OutputList &ol)
   MemberNameInfo *mni;
   for (mnii.toFirst();(mni=mnii.current());++mnii)
   {
-    MemberInfo *mi=mni->first();
-    while (mi)
+    MemberNameInfoIterator it(*mni);
+    MemberInfo *mi;
+    for (;(mi=it.current());++it)
     {
       MemberDef *md=mi->memberDef;
       ClassDef  *cd=md->getClassDef();
@@ -2425,7 +2425,6 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("</tr>\n");
         }
       }
-      mi=mni->next();
     }
   }
   //ol.endItemList();
@@ -3732,7 +3731,7 @@ void ClassDef::getTemplateParameterLists(QList<ArgumentList> &lists) const
 }
 
 QCString ClassDef::qualifiedNameWithTemplateParameters(
-    QList<ArgumentList> *actualParams) const
+    QList<ArgumentList> *actualParams,int *actualParamIndex) const
 {
   //static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
@@ -3744,7 +3743,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
     if (d->definitionType()==Definition::TypeClass)
     {
       ClassDef *cd=(ClassDef *)d;
-      scName = cd->qualifiedNameWithTemplateParameters(actualParams);
+      scName = cd->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex);
     }
     else if (!hideScopeNames)
     {
@@ -3769,13 +3768,14 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   ArgumentList *al=0;
   if (templateArguments())
   {
-    if (actualParams && (al=actualParams->current()))
+    if (actualParams && *actualParamIndex<(int)actualParams->count())
     {
+      al = actualParams->at(*actualParamIndex);
       if (!isSpecialization)
       {
         scName+=tempArgListToString(al);
       }
-      actualParams->next();
+      (*actualParamIndex)++;
     }
     else
     {
@@ -3897,14 +3897,14 @@ MemberList *ClassDef::createMemberList(MemberListType lt)
 
 MemberList *ClassDef::getMemberList(MemberListType lt)
 {
-  MemberList *ml = m_impl->memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_impl->memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
   {
     if (ml->listType()==lt)
     {
       return ml;
     }
-    ml = m_impl->memberLists.next();
   }
   return 0;
 }
@@ -3923,11 +3923,11 @@ void ClassDef::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
 
 void ClassDef::sortMemberLists()
 {
-  MemberList *ml = m_impl->memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_impl->memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
-    ml = m_impl->memberLists.next();
   }
 }
 
@@ -4441,11 +4441,11 @@ MemberDef *ClassDef::isSmartPointer() const
 void ClassDef::reclassifyMember(MemberDef *md,MemberType t)
 {
   md->setMemberType(t);
-  MemberList *ml = m_impl->memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_impl->memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
   {
     ml->remove(md);
-    ml = m_impl->memberLists.next();
   }
   insertMember(md);
 }
@@ -4530,11 +4530,11 @@ void ClassDef::setTagLessReference(ClassDef *cd)
 
 void ClassDef::removeMemberFromLists(MemberDef *md)
 {
-  MemberList *ml = m_impl->memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_impl->memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
   {
     ml->remove(md);
-    ml = m_impl->memberLists.next();
   }
 }
 

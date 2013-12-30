@@ -783,10 +783,11 @@ class DotNodeList : public QList<DotNode>
   public:
     DotNodeList() : QList<DotNode>() {}
    ~DotNodeList() {}
-   int compareItems(QCollection::Item item1,QCollection::Item item2)
-   {
-     return qstricmp(((DotNode *)item1)->m_label,((DotNode *)item2)->m_label);
-   }
+  private:
+    int compareValues(const DotNode *n1,const DotNode *n2) const
+    {
+      return qstricmp(n1->m_label,n2->m_label);
+    }
 };
 
 //--------------------------------------------------------------------

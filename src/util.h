@@ -95,12 +95,6 @@ class LetterToIndexMap : public SIntDict<T>
 {
   public:
     LetterToIndexMap() { SIntDict<T>::setAutoDelete(TRUE); }
-    int compareItems(QCollection::Item item1, QCollection::Item item2)
-    {
-      T *l1=(T *)item1;
-      T *l2=(T *)item2;
-      return (int)l1->letter()-(int)l2->letter();
-    }
     void append(uint letter,typename T::ElementType *elem)
     {
       T *l = SIntDict<T>::find((int)letter);
@@ -110,6 +104,11 @@ class LetterToIndexMap : public SIntDict<T>
         SIntDict<T>::inSort((int)letter,l);
       }
       l->append(elem);
+    }
+  private:
+    int compareValues(const T *l1, const T *l2) const
+    {
+      return (int)l1->letter()-(int)l2->letter();
     }
 };
 

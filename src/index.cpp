@@ -122,10 +122,8 @@ class MemberIndexList : public QList<MemberDef>
     typedef MemberDef ElementType;
     MemberIndexList(uint letter) : QList<MemberDef>(), m_letter(letter) {}
     ~MemberIndexList() {}
-    int compareItems(QCollection::Item item1, QCollection::Item item2)
+    int compareValues(const MemberDef *md1, const MemberDef *md2) const
     {
-      MemberDef *md1=(MemberDef *)item1;
-      MemberDef *md2=(MemberDef *)item2;
       int result = qstricmp(md1->name(),md2->name());
       if (result==0)
       {
@@ -628,9 +626,10 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   FileList *fileList=dd->getFiles();
   int fileCount=0;
   if (fileList && fileList->count()>0)
-  { 
-    FileDef *fd=fileList->first();
-    while (fd)
+  {
+    QListIterator<FileDef> it(*fileList);
+    FileDef *fd;
+    for (;(fd=it.current());++it)
     {
       //static bool allExternals = Config_getBool("ALLEXTERNALS");
       //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
@@ -646,13 +645,11 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
       {
         fileCount++;
       }
-      fd=fileList->next();
     }
     if (fileCount>0)
     {
       startIndexHierarchy(ol,level+1);
-      fd=fileList->first();
-      while (fd)
+      for (it.toFirst();(fd=it.current());++it)
       {
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
@@ -678,7 +675,6 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
                 0,FALSE,FALSE,fd); 
           }
         }
-        fd=fileList->next();
       }
       endIndexHierarchy(ol,level+1); 
     }
@@ -689,8 +685,9 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
     // write files of this directory
     if (fileCount>0)
     {
-      FileDef *fd=fileList->first();
-      while (fd)
+      QListIterator<FileDef> it(*fileList);
+      FileDef *fd;
+      for (;(fd=it.current());++it)
       {
         //static bool allExternals = Config_getBool("ALLEXTERNALS");
         //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
@@ -706,7 +703,6 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
                FALSE, convertToHtml(fd->name(),TRUE), 0, 
                fd->getSourceFileBase(), 0, FALSE, TRUE, fd);
         }
-        fd=fileList->next();
       }
     }
   }
@@ -1085,6 +1081,82 @@ static void countFiles(int &htmlFiles,int &files)
   }
 }
 
+static void writeSingleFileIndex(OutputList &ol,FileDef *fd)
+{
+  //printf("Found filedef %s\n",fd->name().data());
+  bool doc = fd->isLinkableInProject();
+  bool src = fd->generateSourceFile();
+  bool nameOk = !fd->isDocumentationFile();
+  if (nameOk && (doc || src) && !fd->isReference())
+  {
+    QCString path;
+    if (Config_getBool("FULL_PATH_NAMES"))
+    {
+      path=stripFromPath(fd->getPath().copy());
+    }
+    QCString fullName=fd->name();
+    if (!path.isEmpty())
+    {
+      if (path.at(path.length()-1)!='/') fullName.prepend("/");
+      fullName.prepend(path);
+    }
+
+    ol.startIndexKey();
+    ol.docify(path);
+    if (doc)
+    {
+      ol.writeObjectLink(0,fd->getOutputFileBase(),0,fd->name());
+      //if (addToIndex)
+      //{
+      //  addMembersToIndex(fd,LayoutDocManager::File,fullName,QCString());
+      //}
+    }
+    else
+    {
+      ol.startBold();
+      ol.docify(fd->name());
+      ol.endBold();
+      //if (addToIndex)
+      //{
+      //  Doxygen::indexList->addContentsItem(FALSE,fullName,0,0,0);
+      //}
+    }
+    if (src)
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.docify(" ");
+      ol.startTextLink(fd->includeName(),0);
+      ol.docify("[");
+      ol.parseText(theTranslator->trCode());
+      ol.docify("]");
+      ol.endTextLink();
+      ol.popGeneratorState();
+    }
+    ol.endIndexKey();
+    bool hasBrief = !fd->briefDescription().isEmpty();
+    ol.startIndexValue(hasBrief);
+    if (hasBrief)
+    {
+      //ol.docify(" (");
+      ol.generateDoc(
+          fd->briefFile(),fd->briefLine(),
+          fd,0,
+          fd->briefDescription(TRUE),
+          FALSE, // index words
+          FALSE, // isExample
+          0,     // example name
+          TRUE,  // single line
+          TRUE   // link from index
+          );
+      //ol.docify(")");
+    }
+    ol.endIndexValue(fd->getOutputFileBase(),hasBrief);
+    //ol.popGeneratorState();
+    // --------------------------------------------------------
+  }
+}
+
 //----------------------------------------------------------------------------
 
 static void writeFileIndex(OutputList &ol)
@@ -1131,135 +1203,67 @@ static void writeFileIndex(OutputList &ol)
   OutputNameDict outputNameDict(1009);
   OutputNameList outputNameList;
   outputNameList.setAutoDelete(TRUE);
-  
+
   if (Config_getBool("FULL_PATH_NAMES"))
   {
     // re-sort input files in (dir,file) output order instead of (file,dir) input order 
-    FileName *fn=Doxygen::inputNameList->first();
-    while (fn)
+    FileNameListIterator fnli(*Doxygen::inputNameList);
+    FileName *fn;
+    for (fnli.toFirst();(fn=fnli.current());++fnli)
     {
-      FileDef *fd=fn->first();
-      while (fd)
+      FileNameIterator fni(*fn);
+      FileDef *fd;
+      for (;(fd=fni.current());++fni)
       {
         QCString path=fd->getPath();
         if (path.isEmpty()) path="[external]";
         FileList *fl = outputNameDict.find(path);
         if (fl)
         {
-          fl->inSort(fd);
+          fl->append(fd);
           //printf("+ inserting %s---%s\n",fd->getPath().data(),fd->name().data());
         }
         else
         {
           //printf("o inserting %s---%s\n",fd->getPath().data(),fd->name().data());
           fl = new FileList(path);
-          fl->inSort(fd);
-          outputNameList.inSort(fl);
+          fl->append(fd);
+          outputNameList.append(fl);
           outputNameDict.insert(path,fl);
         }
-        fd=fn->next();
       }
-      fn=Doxygen::inputNameList->next();
     }
   }
-  
+
   ol.startIndexList();
-  FileList *fl=0;
   if (Config_getBool("FULL_PATH_NAMES"))
   {
-    fl = outputNameList.first();
+    outputNameList.sort();
+    QListIterator<FileList> fnli(outputNameList);
+    FileList *fl;
+    for (fnli.toFirst();(fl=fnli.current());++fnli)
+    {
+      fl->sort();
+      QListIterator<FileDef> it(*fl);
+      FileDef *fd;
+      for (;(fd=it.current());++it)
+      {
+        writeSingleFileIndex(ol,fd);
+      }
+    }
   }
   else
   {
-    fl = Doxygen::inputNameList->first();
-  }
-  while (fl)
-  {
-    FileDef *fd=fl->first();
-    while (fd)
+    FileNameListIterator fnli(*Doxygen::inputNameList);
+    FileName *fn;
+    for (fnli.toFirst();(fn=fnli.current());++fnli)
     {
-      //printf("Found filedef %s\n",fd->name().data());
-      bool doc = fd->isLinkableInProject();
-      bool src = fd->generateSourceFile();
-      bool nameOk = !fd->isDocumentationFile();
-      if (nameOk && (doc || src) && 
-              !fd->isReference())
+      FileNameIterator fni(*fn);
+      FileDef *fd;
+      for (;(fd=fni.current());++fni)
       {
-        QCString path;
-        if (Config_getBool("FULL_PATH_NAMES")) 
-        {
-          path=stripFromPath(fd->getPath().copy());
-        }
-        QCString fullName=fd->name();
-        if (!path.isEmpty()) 
-        {
-          if (path.at(path.length()-1)!='/') fullName.prepend("/");
-          fullName.prepend(path);
-        }
-
-        ol.startIndexKey();
-        ol.docify(path);
-        if (doc)
-        {
-          ol.writeObjectLink(0,fd->getOutputFileBase(),0,fd->name());
-          //if (addToIndex)
-          //{
-          //  addMembersToIndex(fd,LayoutDocManager::File,fullName,QCString());
-          //}
-        }
-        else
-        {
-          ol.startBold();
-          ol.docify(fd->name());
-          ol.endBold();
-          //if (addToIndex)
-          //{
-          //  Doxygen::indexList->addContentsItem(FALSE,fullName,0,0,0);
-          //}
-        }
-        if (src)
-        {
-          ol.pushGeneratorState();
-          ol.disableAllBut(OutputGenerator::Html);
-          ol.docify(" ");
-          ol.startTextLink(fd->includeName(),0);
-          ol.docify("[");
-          ol.parseText(theTranslator->trCode());
-          ol.docify("]");
-          ol.endTextLink();
-          ol.popGeneratorState();
-        }
-        ol.endIndexKey();
-        bool hasBrief = !fd->briefDescription().isEmpty();
-        ol.startIndexValue(hasBrief);
-        if (hasBrief)
-        {
-          //ol.docify(" (");
-          ol.generateDoc(
-              fd->briefFile(),fd->briefLine(),
-              fd,0,
-              fd->briefDescription(TRUE),
-              FALSE, // index words
-              FALSE, // isExample
-              0,     // example name
-              TRUE,  // single line
-              TRUE   // link from index
-             );
-          //ol.docify(")");
-        }
-        ol.endIndexValue(fd->getOutputFileBase(),hasBrief);
-        //ol.popGeneratorState();
-        // --------------------------------------------------------
+        writeSingleFileIndex(ol,fd);
       }
-      fd=fl->next();
-    }
-    if (Config_getBool("FULL_PATH_NAMES"))
-    {
-      fl=outputNameList.next();
-    }
-    else
-    {
-      fl=Doxygen::inputNameList->next();
     }
   }
   ol.endIndexList();
@@ -1672,17 +1676,14 @@ class PrefixIgnoreClassList : public ClassList
   public:
     typedef ClassDef ElementType;
     PrefixIgnoreClassList(uint letter) : m_letter(letter) {}
-    virtual int compareItems(QCollection::Item item1, QCollection::Item item2)
+    uint letter() const { return m_letter; }
+  private:
+    virtual int compareValue(const ClassDef *c1, const ClassDef *c2) const
     {
-      ClassDef *c1=(ClassDef *)item1;
-      ClassDef *c2=(ClassDef *)item2;
-
       QCString n1 = c1->className();
       QCString n2 = c2->className();
       return qstricmp (n1.data()+getPrefixIndex(n1), n2.data()+getPrefixIndex(n2));
     }
-    uint letter() const { return m_letter; }
-  private:
     uint m_letter;
 };
 
@@ -1734,12 +1735,6 @@ class UsedIndexLetters : public SIntDict<uint>
 {
   public:
     UsedIndexLetters() : SIntDict<uint>(257) { setAutoDelete(TRUE); }
-    int compareItems( QCollection::Item item1, QCollection::Item item2)
-    {
-      int *p1=(int *)item1;
-      int *p2=(int *)item2;
-      return *p1 - *p2; // subtracting is done by int not uint.
-    }
     void add(uint letter)
     {
       uint *v = find(letter);
@@ -1747,6 +1742,11 @@ class UsedIndexLetters : public SIntDict<uint>
       {
         append(letter,new uint(letter));
       }
+    }
+  private:
+    int compareValues( const uint *p1, const uint *p2) const
+    {
+      return (int)*p1 - (int)*p2; // subtracting is done by int not uint.
     }
 };
 

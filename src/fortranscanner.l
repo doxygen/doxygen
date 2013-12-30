@@ -2126,7 +2126,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int lineNr = brief ? current->briefLine : current->docLine;
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody ? subrCurrent.first() : current,
+	docBlockInBody ? subrCurrent.getFirst() : current,
 	doc,        // text
 	yyFileName, // file
 	lineNr,
@@ -2153,7 +2153,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
 {
   QCString loc_doc;
   Entry *tmp_entry = current; 
-  current = subrCurrent.first(); // temporarily switch to the entry of the subroutine / function
+  current = subrCurrent.getFirst(); // temporarily switch to the entry of the subroutine / function
 
   // Still in the specification section so no inbodyDocs yet, but parameter documentation
   current->inbodyDocs = "";

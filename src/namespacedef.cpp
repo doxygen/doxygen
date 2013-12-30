@@ -987,11 +987,11 @@ void NamespaceDef::addMemberToList(MemberListType lt,MemberDef *md)
 
 void NamespaceDef::sortMemberLists()
 {
-  MemberList *ml = m_memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
-    ml = m_memberLists.next();
   }
 }
 
@@ -999,15 +999,14 @@ void NamespaceDef::sortMemberLists()
 
 MemberList *NamespaceDef::getMemberList(MemberListType lt) const
 {
-  NamespaceDef *that = (NamespaceDef*)this;
-  MemberList *ml = that->m_memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
   {
     if (ml->listType()==lt)
     {
       return ml;
     }
-    ml = that->m_memberLists.next();
   }
   return 0;
 }

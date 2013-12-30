@@ -371,11 +371,9 @@ class DefinitionList : public QList<Definition>, public DefinitionIntf
   public:
     ~DefinitionList() {}
     DefType definitionType() const { return TypeSymbolList; }
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const Definition *item1,const Definition *item2) const
     {
-      return qstricmp(((Definition *)item1)->name(),
-                     ((Definition *)item2)->name()
-                    );
+      return qstricmp(item1->name(),item2->name());
     }
 
 };

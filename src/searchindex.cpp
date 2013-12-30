@@ -632,16 +632,14 @@ class SearchIndexList : public SDict< SearchDefinitionList >
       }
       l->append(d);
     }
-    int compareItems(QCollection::Item item1, QCollection::Item item2)
-    {
-      QList<Definition> *md1=(QList<Definition> *)item1;
-      QList<Definition> *md2=(QList<Definition> *)item2;
-      QCString n1 = md1->first()->localName();
-      QCString n2 = md2->first()->localName();
-      return qstricmp(n1.data(),n2.data());
-    }
     uint letter() const { return m_letter; }
   private:
+    int compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const
+    {
+      QCString n1 = md1->getFirst()->localName();
+      QCString n2 = md2->getFirst()->localName();
+      return qstricmp(n1.data(),n2.data());
+    }
     uint m_letter;
 };
 
@@ -1077,7 +1075,7 @@ void writeJavascriptSearchIndex()
         int itemCount=0;
         for (li.toFirst();(dl=li.current());++li)
         {
-          Definition *d = dl->first();
+          Definition *d = dl->getFirst();
           QCString id = d->localName();
 
           if (!firstEntry)

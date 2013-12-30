@@ -35,99 +35,81 @@
 **
 **********************************************************************/
 
-/* This is a stripped version of the original QList, which has been renamed to
-   QInternalList. This implementation doesn't expose the current node and index,
-   nor direct access to the list nodes.
-   This makes it possible to have more constant methods. It also provides
-   a typesafe method to compare elements called compareValues() and a typesafe
-   methods to create and delete elements called newValue() and deleteValue().
- */
-
-#ifndef QLIST_H
-#define QLIST_H
+#ifndef QINTERNALLIST_H
+#define QINTERNALLIST_H
 
 #ifndef QT_H
 #include "qglist.h"
 #endif // QT_H
 
 
-template<class type> class Q_EXPORT QList : private QGList
+template<class type> class Q_EXPORT QInternalList : public QGList
 {
 public:
-    QList()				{}
-    QList( const QList<type> &l ) : QGList(l) {}
-   ~QList()				{ clear(); }
-    QList<type> &operator=(const QList<type> &l)
-			{ return (QList<type>&)QGList::operator=(l); }
-    bool operator==( const QList<type> &list ) const
+    QInternalList()				{}
+    QInternalList( const QInternalList<type> &l ) : QGList(l) {}
+   ~QInternalList()				{ clear(); }
+    QInternalList<type> &operator=(const QInternalList<type> &l)
+			{ return (QInternalList<type>&)QGList::operator=(l); }
+    bool operator==( const QInternalList<type> &list ) const
     { return QGList::operator==( list ); }
-
-    // capacity
     uint  count()   const		{ return QGList::count(); }
     bool  isEmpty() const		{ return QGList::count() == 0; }
-
-    // modifiers add
     bool  insert( uint i, const type *d){ return QGList::insertAt(i,(QCollection::Item)d); }
     void  inSort( const type *d )	{ QGList::inSort((QCollection::Item)d); }
     void  prepend( const type *d )	{ QGList::insertAt(0,(QCollection::Item)d); }
     void  append( const type *d )	{ QGList::append((QCollection::Item)d); }
-
-    // modifiers remove
     bool  remove( uint i )		{ return QGList::removeAt(i); }
+    bool  remove()			{ return QGList::remove((QCollection::Item)0); }
     bool  remove( const type *d )	{ return QGList::remove((QCollection::Item)d); }
     bool  removeRef( const type *d )	{ return QGList::removeRef((QCollection::Item)d); }
+    void  removeNode( QLNode *n )	{ QGList::removeNode(n); }
     bool  removeFirst()			{ return QGList::removeFirst(); }
     bool  removeLast()			{ return QGList::removeLast(); }
     type *take( uint i )		{ return (type *)QGList::takeAt(i); }
+    type *take()			{ return (type *)QGList::take(); }
+    type *takeNode( QLNode *n )		{ return (type *)QGList::takeNode(n); }
     void  clear()			{ QGList::clear(); }
-
-    // operations
     void  sort()			{ QGList::sort(); }
-
-    // search
-    int	  find( const type *d ) const	 { return const_cast<QList<type>*>(this)->QGList::find((QCollection::Item)d); }
-    int	  findRef( const type *d ) const { return const_cast<QList<type>*>(this)->QGList::findRef((QCollection::Item)d); }
+    int	  find( const type *d )		{ return QGList::find((QCollection::Item)d); }
+    int	  findNext( const type *d )	{ return QGList::find((QCollection::Item)d,FALSE); }
+    int	  findRef( const type *d )	{ return QGList::findRef((QCollection::Item)d); }
+    int	  findNextRef( const type *d ){ return QGList::findRef((QCollection::Item)d,FALSE);}
     uint  contains( const type *d ) const { return QGList::contains((QCollection::Item)d); }
-    uint  containsRef( const type *d ) const { return QGList::containsRef((QCollection::Item)d); }
-
-    // element access
-    type *at( uint i ) const		{ return (type *)const_cast<QList<type>*>(this)->QGList::at(i); }
+    uint  containsRef( const type *d ) const
+					{ return QGList::containsRef((QCollection::Item)d); }
+    type *at( uint i )			{ return (type *)QGList::at(i); }
+    int	  at() const			{ return QGList::at(); }
+    type *current()  const		{ return (type *)QGList::get(); }
+    QLNode *currentNode()  const	{ return QGList::currentNode(); }
     type *getFirst() const		{ return (type *)QGList::cfirst(); }
     type *getLast()  const		{ return (type *)QGList::clast(); }
-
-    // ownership
-    void setAutoDelete( bool enable )   { QGList::setAutoDelete(enable); }
-
+    type *first()			{ return (type *)QGList::first(); }
+    type *last()			{ return (type *)QGList::last(); }
+    type *next()			{ return (type *)QGList::next(); }
+    type *prev()			{ return (type *)QGList::prev(); }
+    void  toVector( QGVector *vec )const{ QGList::toVector(vec); }
 private:
-    // new to be reimplemented methods
-    virtual int compareValues(const type *t1,const type *t2) const
-    { return const_cast<QList<type>*>(this)->QGList::compareItems((QCollection::Item)t1,(QCollection::Item)t2); }
-    virtual type *newValue(type *item) const
-    { return item; }
-    virtual void deleteValue(type *item) const
-    { if (del_item) delete item; }
-
-    // reimplemented methods
-    virtual Item newItem( Item item)
-    { return (Item)newValue((type*)item); }
-    virtual void deleteItem( QCollection::Item item )
-    { deleteValue((type *)item); }
-    virtual int compareItems(QCollection::Item i1,QCollection::Item i2)
-    { return compareValues((const type*)i1,(const type*)i2); }
+    void  deleteItem( QCollection::Item d );
 };
 
 #if defined(Q_DELETING_VOID_UNDEFINED)
-template<> inline void QList<void>::deleteValue(void *) const
+template<> inline void QInternalList<void>::deleteItem( QCollection::Item )
 {
 }
 #endif
 
+template<class type> inline void QInternalList<type>::deleteItem( QCollection::Item d )
+{
+    if ( del_item ) delete (type *)d;
+}
 
-template<class type> class Q_EXPORT QListIterator : public QGListIterator
+
+template<class type> class Q_EXPORT QInternalListIterator : public QGListIterator
 {
 public:
-    QListIterator(const QList<type> &l) :QGListIterator((QGList &)l) {}
-   ~QListIterator()	      {}
+    QInternalListIterator(const QInternalList<type> &l) :QGListIterator((QGList &)l) {}
+   ~QInternalListIterator()	      {}
     uint  count()   const     { return list->count(); }
     bool  isEmpty() const     { return list->count() == 0; }
     bool  atFirst() const     { return QGListIterator::atFirst(); }
@@ -149,9 +131,9 @@ public:
     type *operator+=(uint j)  { return (type *)QGListIterator::operator+=(j);}
     type *operator--()	      { return (type *)QGListIterator::operator--(); }
     type *operator-=(uint j)  { return (type *)QGListIterator::operator-=(j);}
-    QListIterator<type>& operator=(const QListIterator<type>&it)
+    QInternalListIterator<type>& operator=(const QInternalListIterator<type>&it)
 			      { QGListIterator::operator=(it); return *this; }
 };
 
 
-#endif // QLIST_H
+#endif // QINTERNALLIST_H

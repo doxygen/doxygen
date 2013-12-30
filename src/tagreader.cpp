@@ -1274,8 +1274,9 @@ static QCString stripPath(const QCString &s)
 void TagFileParser::buildLists(Entry *root)
 {
   // build class list
-  TagClassInfo *tci = m_tagFileClasses.first();
-  while (tci)
+  QListIterator<TagClassInfo> cit(m_tagFileClasses);
+  TagClassInfo *tci;
+  for (cit.toFirst();(tci=cit.current());++cit)
   {
     Entry *ce = new Entry;
     ce->section = Entry::CLASS_SEC;
@@ -1290,7 +1291,7 @@ void TagFileParser::buildLists(Entry *root)
       case TagClassInfo::Category:  ce->spec = Entry::Category;  break;
     }
     ce->name     = tci->name;
-    if (tci->kind==TagClassInfo::Protocol) 
+    if (tci->kind==TagClassInfo::Protocol)
     {
       ce->name+="-p";
     }
@@ -1309,14 +1310,14 @@ void TagFileParser::buildLists(Entry *root)
     }
     if (tci->templateArguments)
     {
-      if (ce->tArgLists==0) 
+      if (ce->tArgLists==0)
       {
         ce->tArgLists = new QList<ArgumentList>;
         ce->tArgLists->setAutoDelete(TRUE);
       }
       ArgumentList *al = new ArgumentList;
       ce->tArgLists->append(al);
-      
+
       QListIterator<QCString> sli(*tci->templateArguments);
       QCString *argName;
       for (;(argName=sli.current());++sli)
@@ -1330,12 +1331,12 @@ void TagFileParser::buildLists(Entry *root)
 
     buildMemberList(ce,tci->members);
     root->addSubEntry(ce);
-    tci = m_tagFileClasses.next();
   }
 
   // build file list
-  TagFileInfo *tfi = m_tagFileFiles.first();
-  while (tfi)
+  QListIterator<TagFileInfo> fit(m_tagFileFiles);
+  TagFileInfo *tfi;
+  for (fit.toFirst();(tfi=fit.current());++fit)
   {
     Entry *fe = new Entry;
     fe->section = guessSection(tfi->name);
@@ -1367,12 +1368,12 @@ void TagFileParser::buildLists(Entry *root)
     }
     buildMemberList(fe,tfi->members);
     root->addSubEntry(fe);
-    tfi = m_tagFileFiles.next();
   }
 
   // build namespace list
-  TagNamespaceInfo *tni = m_tagFileNamespaces.first();
-  while (tni)
+  QListIterator<TagNamespaceInfo> nit(m_tagFileNamespaces);
+  TagNamespaceInfo *tni;
+  for (nit.toFirst();(tni=nit.current());++nit)
   {
     Entry *ne    = new Entry;
     ne->section  = Entry::NAMESPACE_SEC;
@@ -1386,12 +1387,12 @@ void TagFileParser::buildLists(Entry *root)
 
     buildMemberList(ne,tni->members);
     root->addSubEntry(ne);
-    tni = m_tagFileNamespaces.next();
   }
 
   // build package list
-  TagPackageInfo *tpgi = m_tagFilePackages.first();
-  while (tpgi)
+  QListIterator<TagPackageInfo> pit(m_tagFilePackages);
+  TagPackageInfo *tpgi;
+  for (pit.toFirst();(tpgi=pit.current());++pit)
   {
     Entry *pe    = new Entry;
     pe->section  = Entry::PACKAGE_SEC;
@@ -1404,34 +1405,31 @@ void TagFileParser::buildLists(Entry *root)
 
     buildMemberList(pe,tpgi->members);
     root->addSubEntry(pe);
-    tpgi = m_tagFilePackages.next();
   }
 
-  // build group list, but only if config file says to include it
-  //if (Config_getBool("EXTERNAL_GROUPS")) 
-  //{
-    TagGroupInfo *tgi = m_tagFileGroups.first();
-    while (tgi)
-    {
-      Entry *ge    = new Entry;
-      ge->section  = Entry::GROUPDOC_SEC;
-      ge->name     = tgi->name;
-      ge->type     = tgi->title;
-      addDocAnchors(ge,tgi->docAnchors);
-      TagInfo *ti  = new TagInfo;
-      ti->tagName  = m_tagName;
-      ti->fileName = tgi->filename;
-      ge->tagInfo  = ti;
-      
-      buildMemberList(ge,tgi->members);
-      root->addSubEntry(ge);
-      tgi = m_tagFileGroups.next();
-    }
-  //}
+  // build group list
+  QListIterator<TagGroupInfo> git(m_tagFileGroups);
+  TagGroupInfo *tgi;
+  for (git.toFirst();(tgi=git.current());++git)
+  {
+    Entry *ge    = new Entry;
+    ge->section  = Entry::GROUPDOC_SEC;
+    ge->name     = tgi->name;
+    ge->type     = tgi->title;
+    addDocAnchors(ge,tgi->docAnchors);
+    TagInfo *ti  = new TagInfo;
+    ti->tagName  = m_tagName;
+    ti->fileName = tgi->filename;
+    ge->tagInfo  = ti;
+
+    buildMemberList(ge,tgi->members);
+    root->addSubEntry(ge);
+  }
 
   // build page list
-  TagPageInfo *tpi = m_tagFilePages.first();
-  while (tpi)
+  QListIterator<TagPageInfo> pgit(m_tagFilePages);
+  TagPageInfo *tpi;
+  for (pgit.toFirst();(tpi=pgit.current());++pgit)
   {
     Entry *pe    = new Entry;
     pe->section  = Entry::PAGEDOC_SEC;
@@ -1444,14 +1442,14 @@ void TagFileParser::buildLists(Entry *root)
     pe->tagInfo  = ti;
 
     root->addSubEntry(pe);
-    tpi = m_tagFilePages.next();
   }
 }
 
 void TagFileParser::addIncludes()
 {
-  TagFileInfo *tfi = m_tagFileFiles.first();
-  while (tfi)
+  QListIterator<TagFileInfo> fit(m_tagFileFiles);
+  TagFileInfo *tfi;
+  for (fit.toFirst();(tfi=fit.current());++fit)
   {
     //printf("tag file tagName=%s path=%s name=%s\n",m_tagName.data(),tfi->path.data(),tfi->name.data());
     FileName *fn = Doxygen::inputNameDict->find(tfi->name);
@@ -1489,9 +1487,8 @@ void TagFileParser::addIncludes()
             }
           }
         }
-      } 
+      }
     }
-    tfi = m_tagFileFiles.next();
   }
 }
 

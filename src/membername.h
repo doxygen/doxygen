@@ -24,14 +24,14 @@
 
 /** Class representing all MemberDef objects with the same name */
 class MemberName : public QList<MemberDef>
-{ 
+{
   public:
     MemberName(const char *name);
    ~MemberName();
     const char *memberName() const { return name; }
-   
-    int compareItems(QCollection::Item item1,QCollection::Item item2);
+
   private:
+    int compareValues(const MemberDef *item1,const MemberDef *item2) const;
     QCString name;
 };
 
@@ -49,7 +49,8 @@ class MemberNameSDict : public SDict<MemberName>
     MemberNameSDict(int size) : SDict<MemberName>(size) {}
    ~MemberNameSDict() {}
 
-   int compareItems(QCollection::Item item1,QCollection::Item item2);
+  private:
+   int compareValues(const MemberName *item1,const MemberName *item2) const;
 };
 
 /** Data associated with a MemberDef in an inheritance relation. */
@@ -74,8 +75,8 @@ class MemberNameInfo : public QList<MemberInfo>
     MemberNameInfo(const char *name);  
    ~MemberNameInfo() {}
     const char *memberName() const { return name; }
-    int compareItems(QCollection::Item item1,QCollection::Item item2);
   private:
+    int compareValues(const MemberInfo *item1,const MemberInfo *item2) const;
     QCString name;
 };
 
@@ -93,11 +94,10 @@ class MemberNameInfoSDict : public SDict<MemberNameInfo>
   public:
     MemberNameInfoSDict(int size) : SDict<MemberNameInfo>(size) {}
    ~MemberNameInfoSDict() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2) 
-    { return qstricmp(
-                    ((MemberNameInfo *)item1)->memberName(),
-                    ((MemberNameInfo *)item2)->memberName()
-                   );
+  private:
+    int compareValues(const MemberNameInfo *item1,const MemberNameInfo *item2) const
+    {
+      return qstricmp(item1->memberName(), item2->memberName());
     }
 };
 

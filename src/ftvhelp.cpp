@@ -1023,15 +1023,16 @@ struct NavIndexEntry
   QCString path;
 };
 
-class NavIndexEntryList : public QList<NavIndexEntry> 
+class NavIndexEntryList : public QList<NavIndexEntry>
 {
   public:
     NavIndexEntryList() : QList<NavIndexEntry>() { setAutoDelete(TRUE); }
    ~NavIndexEntryList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+  private:
+    int compareValues(const NavIndexEntry *item1,const NavIndexEntry *item2) const
     {
       // sort list based on url
-      return qstrcmp(((NavIndexEntry*)item1)->url,((NavIndexEntry*)item2)->url);
+      return qstrcmp(item1->url,item2->url);
     }
 };
 

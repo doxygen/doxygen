@@ -310,7 +310,7 @@ void CiteDict::generatePage() const
   thisDir.remove(bib2xhtmlFile);
   while (!tempFiles.isEmpty()) 
   {
-    QCString *s=tempFiles.take();
+    QCString *s=tempFiles.take(0);
     thisDir.remove(*s);
   }
 }

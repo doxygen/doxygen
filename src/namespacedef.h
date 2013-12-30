@@ -137,14 +137,12 @@ class NamespaceDef : public Definition
 
 /** A list of NamespaceDef objects. */
 class NamespaceList : public QList<NamespaceDef>
-{ 
+{
   public:
    ~NamespaceList() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+    int compareValues(const NamespaceDef *nd1,const NamespaceDef *nd2) const
     {
-      return qstricmp(((NamespaceDef *)item1)->name(),
-                    ((NamespaceDef *)item2)->name()
-                   );
+      return qstricmp(nd1->name(), nd2->name());
     }
 };
 
@@ -170,15 +168,14 @@ class NamespaceSDict : public SDict<NamespaceDef>
   public:
     NamespaceSDict(int size=17) : SDict<NamespaceDef>(size) {}
    ~NamespaceSDict() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
-    {
-      return qstricmp(((NamespaceDef *)item1)->name(),
-                    ((NamespaceDef *)item2)->name()
-                   );
-    }
     void writeDeclaration(OutputList &ol,const char *title,
             bool isConstantGroup=false, bool localName=FALSE);
     bool declVisible() const;
+  private:
+    int compareValues(const NamespaceDef *item1,const NamespaceDef *item2) const
+    {
+      return qstricmp(item1->name(),item2->name());
+    }
 };
 
 

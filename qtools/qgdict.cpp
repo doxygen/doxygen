@@ -36,7 +36,7 @@
 **********************************************************************/
 
 #include "qgdict.h"
-#include "qlist.h"
+#include "qinternallist.h"
 #include "qstring.h"
 #include "qdatastream.h"
 #include <ctype.h>
@@ -63,14 +63,14 @@ static const int op_insert  = 1;
 static const int op_replace = 2;
 
 
-class QGDItList : public QList<QGDictIterator>
+class QGDItList : public QInternalList<QGDictIterator>
 {
 public:
-    QGDItList() : QList<QGDictIterator>() {}
-    QGDItList( const QGDItList &list ) : QList<QGDictIterator>(list) {}
+    QGDItList() : QInternalList<QGDictIterator>() {}
+    QGDItList( const QGDItList &list ) : QInternalList<QGDictIterator>(list) {}
    ~QGDItList() { clear(); }
     QGDItList &operator=(const QGDItList &list)
-	{ return (QGDItList&)QList<QGDictIterator>::operator=(list); }
+	{ return (QGDItList&)QInternalList<QGDictIterator>::operator=(list); }
 };
 
 

@@ -54,9 +54,10 @@ class IndexFieldSDict : public SDict<IndexField>
   public:
     IndexFieldSDict() : SDict<IndexField>(17) {}
    ~IndexFieldSDict() {}
-    int compareItems(QCollection::Item item1, QCollection::Item item2)
+ private:
+    int compareValues(const IndexField *item1, const IndexField *item2) const
     {
-      return qstricmp(((IndexField *)item1)->name,((IndexField *)item2)->name);
+      return qstricmp(item1->name,item2->name);
     }
 };
 

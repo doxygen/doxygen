@@ -252,7 +252,7 @@ public:
             COND_DOC_ERROR(idx < 0, QString("Anonymous namespace found."));
 
             m_namespaceStack.append(openNamespace(attributes.value(idx)));
-            openScopes(m_namespaceStack.last());
+            openScopes(m_namespaceStack.getLast());
         }
 
         if (EXTENSION("struct"))
@@ -291,7 +291,7 @@ public:
             m_currentEntry->type = getType(attributes).utf8();
 
             QString type(getDBusType(m_currentEntry->type));
-            m_structStack.last()->type.append(type.utf8());
+            m_structStack.getLast()->type.append(type.utf8());
         }
 
         if (EXTENSION("enum") || EXTENSION("flagset"))
@@ -348,9 +348,9 @@ public:
         // Clean up elements stack:
         // Since we made sure to get the elements in the proper order when
         // adding we do not need to do so again here.
-        COND_DOC_ERROR(m_elementStack.last()->element != qName.utf8(),
+        COND_DOC_ERROR(m_elementStack.getLast()->element != qName.utf8(),
                        QString("Malformed XML: Unexpected closing element found.").
-                       arg(m_elementStack.last()->element).utf8());
+                       arg(m_elementStack.getLast()->element).utf8());
         m_elementStack.removeLast();
 
         // Interface:
@@ -389,7 +389,7 @@ public:
 
         if (EXTENSION("namespace"))
         {
-            Entry * current = m_namespaceStack.last();
+            Entry * current = m_namespaceStack.getLast();
             CONDITION(!current, "end of namespace without start.");
             m_namespaceStack.removeLast();
 
@@ -399,7 +399,7 @@ public:
 
         if (EXTENSION("struct"))
         {
-            StructData * data = m_structStack.last();
+            StructData * data = m_structStack.getLast();
             CONDITION(!data, "end of struct without start.");
 
             data->entry->endBodyLine = lineNumber();
@@ -418,7 +418,7 @@ public:
 
         if (EXTENSION("member"))
         {
-           StructData * data = m_structStack.last();
+           StructData * data = m_structStack.getLast();
            CONDITION(!data, "end of member outside struct.");
            data->entry->addSubEntry(m_currentEntry);
         }
@@ -625,7 +625,7 @@ private:
         QCString scoped_name;
         if (!m_scopeStack.isEmpty())
         {
-            scoped_name = m_scopeStack.last()->scope->name;
+            scoped_name = m_scopeStack.getLast()->scope->name;
             scoped_name.append("::");
         }
         if (!type.isEmpty())
@@ -686,7 +686,7 @@ private:
             Entry * current_namespace = openNamespace(scope);
 
             if (!m_scopeStack.isEmpty())
-            { m_scopeStack.last()->scope->addSubEntry(current_namespace); }
+            { m_scopeStack.getLast()->scope->addSubEntry(current_namespace); }
 
             m_scopeStack.append(new ScopeData(current_namespace, m_scopeCount));
         }
@@ -699,7 +699,7 @@ private:
         object->name = scoped_name;
 
         if (!m_scopeStack.isEmpty())
-        { m_scopeStack.last()->scope->addSubEntry(object); }
+        { m_scopeStack.getLast()->scope->addSubEntry(object); }
         m_scopeStack.append(new ScopeData(object, m_scopeCount));
 
         ++m_scopeCount;
@@ -721,13 +721,13 @@ private:
 
     void closeScopes()
     {
-        const int current_scope_count(m_scopeStack.last()->count);
+        const int current_scope_count(m_scopeStack.getLast()->count);
 
         // Do not close the root scope.
         if (current_scope_count == 0)
         { return; }
 
-        while (current_scope_count == m_scopeStack.last()->count)
+        while (current_scope_count == m_scopeStack.getLast()->count)
         { m_scopeStack.removeLast(); }
     }
 

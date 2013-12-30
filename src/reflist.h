@@ -44,10 +44,9 @@ class SortedRefItems : public SDict<RefItem>
   public:
     SortedRefItems(int size=17) : SDict<RefItem>(size) {}
     virtual ~SortedRefItems() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+  private:
+    int compareValues(const RefItem *r1,const RefItem *r2) const
     {
-      RefItem *r1 = (RefItem*)item1;
-      RefItem *r2 = (RefItem*)item2;
       return qstricmp(r1->title,r2->title);
     }
 };

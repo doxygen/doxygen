@@ -54,9 +54,10 @@ class DefineList : public QList<Define>
   public:
     DefineList() : QList<Define>() {}
    ~DefineList() {}
-    int compareItems(QCollection::Item i1,QCollection::Item i2) 
+  private:
+    int compareValues(const Define *d1,const Define *d2) const
     {
-      return qstricmp(((Define *)i1)->name,((Define *)i2)->name); 
+      return qstricmp(d1->name,d2->name);
     }
 };
 
@@ -67,12 +68,12 @@ class DefineName : public QList<Define>
     DefineName(const char *n) : QList<Define>() { name=n; }
    ~DefineName() {}
     const char *nameString() const { return name; }
-    int compareItems(QCollection::Item i1,QCollection::Item i2) 
-    {
-      return qstricmp(((Define *)i1)->name,((Define *)i2)->name); 
-    }
-    
+
   private:
+    int compareValues(const Define *d1,const Define *d2) const
+    {
+      return qstricmp(d1->name,d2->name);
+    }
     QCString name;
 };
 
@@ -82,10 +83,10 @@ class DefineNameList : public QList<DefineName>
   public:
     DefineNameList() : QList<DefineName>() {}
    ~DefineNameList() {}
-    int compareItems(QCollection::Item i1,QCollection::Item i2)
+  private:
+    int compareValues(const DefineName *n1,const DefineName *n2) const
     {
-      return qstricmp(((DefineName *)i1)->nameString(),
-                    ((DefineName *)i2)->nameString());
+      return qstricmp(n1->nameString(),n2->nameString());
     }
 };
 

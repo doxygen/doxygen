@@ -40,18 +40,18 @@
 
 #ifndef QT_H
 #include "qstring.h"
-#include "qlist.h"
+#include "qinternallist.h"
 #include "qdatastream.h"
 #endif // QT_H
 
 
 #if defined(Q_TEMPLATEDLL)
-template class Q_EXPORT QList<char>;
-template class Q_EXPORT QListIterator<char>;
+template class Q_EXPORT QInternalList<char>;
+template class Q_EXPORT QInternalListIterator<char>;
 #endif
 
-typedef QList<char>		QStrListBase;
-typedef QListIterator<char>	QStrListIterator;
+typedef QInternalList<char>	QStrListBase;
+typedef QInternalListIterator<char>	QStrListIterator;
 
 
 class Q_EXPORT QStrList : public QStrListBase

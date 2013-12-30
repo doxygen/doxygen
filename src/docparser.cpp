@@ -1719,9 +1719,9 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
   // first parse any number of paragraphs
   bool isFirst=TRUE;
   DocPara *lastPar=0;
-  if (!children.isEmpty() && children.last()->kind()==DocNode::Kind_Para)
+  if (!children.isEmpty() && children.getLast()->kind()==DocNode::Kind_Para)
   { // last child item was a paragraph
-    lastPar = (DocPara*)children.last();
+    lastPar = (DocPara*)children.getLast();
     isFirst=FALSE;
   }
   do
@@ -4654,8 +4654,8 @@ int DocSimpleSect::parse(bool userTitle,bool needsSeparator)
   }
   else
   {
-    ASSERT(m_children.last()->kind()==DocNode::Kind_Para);
-    ((DocPara *)m_children.last())->markLast(FALSE);
+    ASSERT(m_children.getLast()->kind()==DocNode::Kind_Para);
+    ((DocPara *)m_children.getLast())->markLast(FALSE);
   }
   par->markLast();
   if (needsSeparator) m_children.append(new DocSimpleSectSep(this));
@@ -4705,8 +4705,8 @@ int DocSimpleSect::parseXml()
     }
     else
     {
-      ASSERT(m_children.last()->kind()==DocNode::Kind_Para);
-      ((DocPara *)m_children.last())->markLast(FALSE);
+      ASSERT(m_children.getLast()->kind()==DocNode::Kind_Para);
+      ((DocPara *)m_children.getLast())->markLast(FALSE);
     }
     par->markLast();
     m_children.append(par);
@@ -4730,14 +4730,14 @@ int DocSimpleSect::parseXml()
 void DocSimpleSect::appendLinkWord(const QCString &word)
 {
   DocPara *p;
-  if (m_children.isEmpty() || m_children.last()->kind()!=DocNode::Kind_Para)
+  if (m_children.isEmpty() || m_children.getLast()->kind()!=DocNode::Kind_Para)
   {
     p = new DocPara(this);
     m_children.append(p);
   }
   else
   {
-    p = (DocPara *)m_children.last();
+    p = (DocPara *)m_children.getLast();
     
     // Comma-seperate <seealso> links.
     p->injectToken(TK_WORD,",");
@@ -4881,7 +4881,7 @@ int DocParamList::parseXml(const QCString &paramName)
       }
       else
       {
-        m_paragraphs.last()->markLast(FALSE);
+        m_paragraphs.getLast()->markLast(FALSE);
       }
       par->markLast();
       m_paragraphs.append(par);
@@ -4932,8 +4932,8 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   }
   else
   {
-    ASSERT(m_children.last()->kind()==DocNode::Kind_ParamList);
-    ((DocParamList *)m_children.last())->markLast(FALSE);
+    ASSERT(m_children.getLast()->kind()==DocNode::Kind_ParamList);
+    ((DocParamList *)m_children.getLast())->markLast(FALSE);
     pl->markLast();
   }
   m_children.append(pl);
@@ -4959,12 +4959,12 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   DocSimpleSect *ss=0;
   bool needsSeparator = FALSE;
   if (!m_children.isEmpty() &&                           // previous element
-      m_children.last()->kind()==Kind_SimpleSect &&      // was a simple sect
-      ((DocSimpleSect *)m_children.last())->type()==t && // of same type
+      m_children.getLast()->kind()==Kind_SimpleSect &&      // was a simple sect
+      ((DocSimpleSect *)m_children.getLast())->type()==t && // of same type
       t!=DocSimpleSect::User)                            // but not user defined
   {
     // append to previous section
-    ss=(DocSimpleSect *)m_children.last();
+    ss=(DocSimpleSect *)m_children.getLast();
     needsSeparator = TRUE;
   }
   else // start new section
@@ -4991,11 +4991,11 @@ int DocPara::handleParamSection(const QCString &cmdName,
 {
   DocParamSect *ps=0;
   if (!m_children.isEmpty() &&                        // previous element
-      m_children.last()->kind()==Kind_ParamSect &&    // was a param sect
-      ((DocParamSect *)m_children.last())->type()==t) // of same type
+      m_children.getLast()->kind()==Kind_ParamSect &&    // was a param sect
+      ((DocParamSect *)m_children.getLast())->type()==t) // of same type
   {
     // append to previous section
-    ps=(DocParamSect *)m_children.last();
+    ps=(DocParamSect *)m_children.getLast();
   }
   else // start new section
   {
@@ -5086,13 +5086,15 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
     return;
   }
   DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context,g_isExample,g_exampleName);
-  DocNode *n1 = m_children.last();
-  DocNode *n2 = n1!=0 ? m_children.prev() : 0;
+  QListIterator<DocNode> it(m_children);
+  DocNode *n1 = it.toLast();
+  --it;
+  DocNode *n2 = n1!=0 ? it.current() : 0;
   bool isFirst = n1==0 || // no last node
-                 (n1->kind()!=DocNode::Kind_IncOperator && 
+                 (n1->kind()!=DocNode::Kind_IncOperator &&
                   n1->kind()!=DocNode::Kind_WhiteSpace
                  ) || // last node is not operator or whitespace
-                 (n1->kind()==DocNode::Kind_WhiteSpace && 
+                 (n1->kind()==DocNode::Kind_WhiteSpace &&
                   n2!=0 && n2->kind()!=DocNode::Kind_IncOperator
                  ); // previous not is not operator
   op->markFirst(isFirst);
@@ -6468,7 +6470,7 @@ reparsetoken:
                // remove leading whitespace 
                !m_children.isEmpty()  && 
                // and whitespace after certain constructs
-               (k=m_children.last()->kind())!=DocNode::Kind_HtmlDescList &&
+               (k=m_children.getLast()->kind())!=DocNode::Kind_HtmlDescList &&
                k!=DocNode::Kind_HtmlTable &&
                k!=DocNode::Kind_HtmlList &&
                k!=DocNode::Kind_SimpleSect &&

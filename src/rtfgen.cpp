@@ -492,11 +492,13 @@ void RTFGenerator::startIndexSection(IndexSections is)
       {
         //File Documentation
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList->first();
-        while (fn)
+        FileNameListIterator fnli(*Doxygen::inputNameList); 
+        FileName *fn;
+        for (fnli.toFirst();(fn=fnli.current());++fnli)
         {
-          FileDef *fd=fn->first();
-          while (fd)
+          FileNameIterator fni(*fn);
+          FileDef *fd;
+          for (;(fd=fni.current());++fni)
           {
             if (fd->isLinkableInProject())
             {
@@ -507,9 +509,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
                 break;
               }
             }
-            fd=fn->next();
           }
-          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -792,13 +792,15 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList->first();
 
         t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}"<< endl;
-        while (fn)
+        FileNameListIterator fnli(*Doxygen::inputNameList);
+        FileName *fn;
+        for (fnli.toFirst();(fn=fnli.current());++fnli)
         {
-          FileDef *fd=fn->first();
-          while (fd)
+          FileNameIterator fni(*fn);
+          FileDef *fd;
+          for (;(fd=fni.current());++fni)
           {
             if (fd->isLinkableInProject())
             {
@@ -819,9 +821,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
                 t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
               }
             }
-            fd=fn->next();
           }
-          fn=Doxygen::inputNameList->next();
         }
       }
       break;

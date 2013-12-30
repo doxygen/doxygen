@@ -847,11 +847,11 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
   {
     t << convertToComment(m_header,"");
   }
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->writeTemplate(t,sl,upd);
-    option = m_options->next();
   }
   /* print last lines of user comment that were at the end of the file */
   if (m_userComment)
@@ -863,11 +863,11 @@ void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
 
 void Config::convertStrToVal()
 {
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->convertStrToVal();
-    option = m_options->next();
   }
 }
 
@@ -1003,11 +1003,11 @@ void ConfigEnum::substEnvVars()
 
 void Config::substituteEnvironmentVars()
 {
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->substEnvVars();
-    option = m_options->next();
   }
 }
 
@@ -1577,16 +1577,15 @@ void Config::check()
 
 void Config::init()
 {
-  ConfigOption *option = m_options->first();
-  while (option)
+  QListIterator<ConfigOption> it = iterator();
+  ConfigOption *option;
+  for (;(option=it.current());++it)
   {
     option->init();
-    option = m_options->next();
   }
 
   // sanity check if all depends relations are valid
-  option = m_options->first();
-  while (option)
+  for (it.toFirst();(option=it.current());++it)
   {
     QCString depName = option->dependsOn();
     if (!depName.isEmpty())
@@ -1599,7 +1598,6 @@ void Config::init()
         exit(1);
       }
     }
-    option = m_options->next();
   }
 }
 

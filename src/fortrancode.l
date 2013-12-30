@@ -437,9 +437,11 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   // look in local variables
-  for (Scope *scope=scopeStack.last(); scope!=NULL; scope=scopeStack.prev())
+  QListIterator<Scope> it(scopeStack);
+  Scope *scope;
+  for (it.toLast();(scope=it.current());--it)
   {
-    if(scope->localVars.find(memberName))
+    if (scope->localVars.find(memberName))
       return FALSE;
   }
 
@@ -636,13 +638,13 @@ static void endScope()
 static void addUse(const QCString &moduleName) 
 {
   if (!scopeStack.isEmpty())
-    scopeStack.last()->useNames.append(moduleName);
+    scopeStack.getLast()->useNames.append(moduleName);
 }
 
 static void addLocalVar(const QCString &varName) 
 {
   if (!scopeStack.isEmpty())
-    scopeStack.last()->localVars.insert(varName, (void*)1);
+    scopeStack.getLast()->localVars.insert(varName, (void*)1);
 }
 
 //----------------------------------------------------------------------------

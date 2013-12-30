@@ -1408,7 +1408,7 @@ static Directory *findDirNode(Directory *root,const QCString &name)
           // add new branch to the root
           if (!root->children().isEmpty())
           {
-            root->children().last()->setLast(FALSE); 
+            root->children().getLast()->setLast(FALSE); 
           }
           root->addChild(base);
           return newBranch;
@@ -1428,7 +1428,7 @@ static Directory *findDirNode(Directory *root,const QCString &name)
     Directory *newBranch = new Directory(root,baseName);
     if (!root->children().isEmpty())
     {
-      root->children().last()->setLast(FALSE); 
+      root->children().getLast()->setLast(FALSE); 
     }
     root->addChild(newBranch);
     return newBranch;
@@ -1443,7 +1443,7 @@ static void mergeFileDef(Directory *root,FileDef *fd)
   Directory *dirNode = findDirNode(root,filePath);
   if (!dirNode->children().isEmpty())
   {
-    dirNode->children().last()->setLast(FALSE); 
+    dirNode->children().getLast()->setLast(FALSE); 
   }
   DirEntry *e=new DirEntry(dirNode,fd);
   dirNode->addChild(e);
@@ -1721,25 +1721,24 @@ void FileDef::addMemberToList(MemberListType lt,MemberDef *md)
 
 void FileDef::sortMemberLists()
 {
-  MemberList *ml = m_memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
-    ml = m_memberLists.next();
   }
 }
 
 MemberList *FileDef::getMemberList(MemberListType lt) const
 {
-  FileDef *that = (FileDef*)this;
-  MemberList *ml = that->m_memberLists.first();
-  while (ml)
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (;(ml=mli.current());++mli)
   {
     if (ml->listType()==lt)
     {
       return ml;
     }
-    ml = that->m_memberLists.next();
   }
   return 0;
 }

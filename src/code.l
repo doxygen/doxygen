@@ -299,21 +299,18 @@ ClassDef *VariableContext::findVariable(const QCString &name)
 {
   if (name.isEmpty()) return 0;
   ClassDef *result = 0;
-  //QListIterator<Scope> sli(m_scopes);
+  QListIterator<Scope> sli(m_scopes);
   Scope *scope;
   QCString key = name;
   // search from inner to outer scope
-  scope = m_scopes.last();
-  //for (sli.toLast();(scope=sli.current());--sli)
-  while (scope)
+  for (sli.toLast();(scope=sli.current());--sli)
   {
     result = scope->find(key);
-    if (result) 
+    if (result)
     {
       DBG_CTX((stderr,"** findVariable(%s)=%p\n",name.data(),result));
       return result;
     }
-    scope = m_scopes.prev();
   }
   // nothing found -> also try the global scope
   result=m_globalScope.find(name);
@@ -671,9 +668,10 @@ static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
   ArgumentList *al = md->argumentList();
-  if (al==0) return; 
-  Argument *a = al->first();
-  while (a)
+  if (al==0) return;
+  ArgumentListIterator it(*al);
+  Argument *a;
+  for (;(a=it.current());++it)
   {
     g_parmName = a->name.copy();
     g_parmType = a->type.copy();
@@ -684,7 +682,6 @@ static void setParameterList(MemberDef *md)
     g_parmType.stripPrefix("const ");
     g_parmType=g_parmType.stripWhiteSpace();
     g_theVarContext.addVariable(g_parmType,g_parmName);
-    a = al->next();
   }
 }
 
@@ -803,13 +800,14 @@ static MemberDef *setCallContextForVar(const QCString &name)
     }
     else if (mn->count()>1) // global defined more than once
     {
-      MemberDef *md=mn->first();
-      while (md)
+      MemberNameIterator it(*mn);
+      MemberDef *md;
+      for (;(md=it.current());++it)
       {
 	//printf("mn=%p md=%p md->getBodyDef()=%p g_sourceFileDef=%p\n",
 	//    mn,md,
 	//    md->getBodyDef(),g_sourceFileDef);
-	
+
 	// in case there are multiple members we could link to, we 
 	// only link to members if defined in the same file or 
 	// defined as external.
@@ -821,7 +819,6 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	  //printf("returning member %s in source file %s\n",md->name().data(),g_sourceFileDef->name().data());
           return md;
         }
-	md=mn->next();
       }
       return 0;
     }

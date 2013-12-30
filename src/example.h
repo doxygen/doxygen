@@ -38,9 +38,10 @@ class ExampleSDict : public SDict<Example>
   public:
     ExampleSDict(int size=17) : SDict<Example>(size) {}
    ~ExampleSDict() {}
-    int compareItems(QCollection::Item item1,QCollection::Item item2)
+  private:
+    int compareValues(const Example *item1,const Example *item2) const
     {
-      return qstricmp(((Example *)item1)->name,((Example *)item2)->name);
+      return qstricmp(item1->name,item2->name);
     }
 };
 
