@@ -504,6 +504,10 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trCompoundList();
     }
+    TemplateVariant classListDescription() const
+    {
+      return theTranslator->trCompoundListDescription();
+    }
     TemplateVariant classIndex() const
     {
       return theTranslator->trCompoundIndex();
@@ -727,6 +731,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("classes",           this,&Private::classes);
       //%% string classList
       addProperty("classList",         this,&Private::classList);
+      //%% string classListDescription
+      addProperty("classListDescription", this,&Private::classListDescription);
       //%% string classIndex
       addProperty("classIndex",        this,&Private::classIndex);
       //%% string classHierarchy
