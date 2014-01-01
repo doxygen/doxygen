@@ -280,6 +280,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
         //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
+        ol.enable(OutputGenerator::Latex);
         ol.writeString("\n\n");
       ol.popGeneratorState();
     }
