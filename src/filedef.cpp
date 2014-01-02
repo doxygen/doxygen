@@ -836,9 +836,9 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
       getDirDef()->writeNavigationPath(ol);
       ol.endQuickIndices();
     }
-    startTitle(ol,getOutputFileBase());
+    startTitle(ol,getSourceFileBase());
     ol.parseText(name());
-    endTitle(ol,getOutputFileBase(),title);
+    endTitle(ol,getSourceFileBase(),title);
   }
   else
   {
