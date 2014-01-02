@@ -184,8 +184,19 @@ class ParserManager
      */
     ParserInterface *getParser(const char *extension)
     {
-      if (extension==0) return m_defaultParser;
-      QCString ext = QCString(extension).lower();
+      QCString ext;
+      if (!extension)
+      {
+        ext = QCString(".no_extension");
+      }
+      else if (strlen(extension) == 0)
+      {
+        ext = QCString(".no_extension");
+      }
+      else
+      {
+        ext = QCString(extension).lower();
+      }
       ParserInterface *intf = m_extensions.find(ext);
       if (intf==0 && ext.length()>4)
       {
