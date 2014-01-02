@@ -234,6 +234,7 @@ static unsigned char doc_a_png[528] =
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
+#if 0
 static unsigned char module_png[528] =
 {
   255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
@@ -338,6 +339,7 @@ static unsigned char letter_a_png[528] =
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
+#endif
 
 
 static unsigned char arrow_right_png[352] =
@@ -507,6 +509,7 @@ struct FTVImageInfo
 
 //extern FTVImageInfo image_info[];
 
+#if 0
 #define FTVIMG_blank        0
 #define FTVIMG_doc          1
 #define FTVIMG_folderclosed 2
@@ -553,6 +556,7 @@ static FTVImageInfo image_info[] =
   { "M",  "ftv2mo.png",           0 /*ftv2vertline_png*/     /*,352*/,24,22 },
   {   0,  0,                      0                          /*,  0*/, 0, 0 }
 };
+#endif
 
 static ColoredImgDataItem ftv_image_data[] =
 {
@@ -560,9 +564,9 @@ static ColoredImgDataItem ftv_image_data[] =
   { "ftv2doc.png",          24,  22, doc_png,          doc_a_png          },
   { "ftv2folderclosed.png", 24,  22, folderclosed_png, folderclosed_a_png },
   { "ftv2folderopen.png",   24,  22, folderopen_png,   folderopen_a_png   },
-  { "ftv2ns.png",           24,  22, namespace_png,    letter_a_png       },
-  { "ftv2mo.png",           24,  22, module_png,       letter_a_png       },
-  { "ftv2cl.png",           24,  22, class_png,        letter_a_png       },
+//  { "ftv2ns.png",           24,  22, namespace_png,    letter_a_png       },
+//  { "ftv2mo.png",           24,  22, module_png,       letter_a_png       },
+//  { "ftv2cl.png",           24,  22, class_png,        letter_a_png       },
   { "ftv2lastnode.png",     16,  22, blank_png,        blank_png          },
   { "ftv2link.png",         24,  22, doc_png,          doc_a_png          },
   { "ftv2mlastnode.png",    16,  22, arrow_down_png,   arrow_down_a_png   },
@@ -784,64 +788,23 @@ QCString FTVHelp::generateIndentLabel(FTVNode *n,int level)
   return result;
 }
 
-void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level, bool opened)
+void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,bool opened)
 {
-  if (n->parent)
+  int indent=0;
+  FTVNode *p = n->parent;
+  while (p) { indent++; p=p->parent; }
+  if (n->isDir)
   {
-    generateIndent(t,n->parent,level+1,opened);
+    QCString dir = opened ? "&#9660;" : "&#9658;";
+    t << "<span style=\"width:" << (indent*16) << "px;display:inline-block;\">&#160;</span>"
+      << "<span id=\"arr_" << generateIndentLabel(n,0) << "\" class=\"arrow\" ";
+    t << "onclick=\"toggleFolder('" << generateIndentLabel(n,0) << "')\"";
+    t << ">" << dir
+      << "</span>";
   }
-  // from the root up to node n do...
-  if (level==0) // item before a dir or document
+  else
   {
-    if (n->isLast)
-    {
-      if (n->isDir)
-      {
-        t << "<img id=\"arr_" << generateIndentLabel(n,0) 
-          << "\" ";
-        if (opened)
-          t << FTV_IMGATTRIBS(mlastnode);
-        else 
-          t << FTV_IMGATTRIBS(plastnode);
-        t << "onclick=\"toggleFolder('" 
-          << generateIndentLabel(n,0) 
-          << "')\"/>";
-      }
-      else
-      {
-        t << "<img " << FTV_IMGATTRIBS(lastnode) << "/>";
-      }
-    }
-    else
-    {
-      if (n->isDir)
-      {
-        t << "<img id=\"arr_" << generateIndentLabel(n,0)
-          << "\" ";
-        if (opened)
-          t << FTV_IMGATTRIBS(mnode);
-        else
-          t << FTV_IMGATTRIBS(pnode);
-        t << "onclick=\"toggleFolder('" 
-          << generateIndentLabel(n,0)
-          << "')\"/>";
-      }
-      else
-      {
-        t << "<img " << FTV_IMGATTRIBS(node) << "/>";
-      }
-    }
-  }
-  else // item at another level
-  {
-    if (n->isLast)
-    {
-      t << "<img " << FTV_IMGATTRIBS(blank) << "/>";
-    }
-    else
-    {
-      t << "<img " << FTV_IMGATTRIBS(vertline) << "/>";
-    }
+    t << "<span style=\"width:" << ((indent+1)*16) << "px;display:inline-block;\">&#160;</span>";
   }
 }
 
@@ -912,7 +875,7 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       index++;
     t << "><td class=\"entry\">";
     bool nodeOpened = level+1<maxLevel;
-    generateIndent(t,n,0,nodeOpened);
+    generateIndent(t,n,nodeOpened);
     if (n->isDir)
     {
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
@@ -925,29 +888,19 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        t << "<img ";
-        t << FTV_IMGATTRIBS(ns);
-        t << "/>";
+        t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        t << "<img ";
-        t << FTV_IMGATTRIBS(cl);
-        t << "/>";
+        t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
       }
       else
       {
-        t << "<img ";
-        t << "id=\"img_" << generateIndentLabel(n,0) 
-          << "\" ";
-        if (nodeOpened)
-          t << FTV_IMGATTRIBS(folderopen);
-        else
-          t << FTV_IMGATTRIBS(folderclosed);
-        t << "onclick=\"toggleFolder('"
-          << generateIndentLabel(n,0)
-          << "')\"";
-        t << "/>";
+        t << "<span id=\"img_" << generateIndentLabel(n,0)
+          << "\" class=\"iconf"
+          << (nodeOpened?"open":"closed")
+          << "\" onclick=\"toggleFolder('" << generateIndentLabel(n,0)
+          << "')\">&#160;</span>";
       }
       generateLink(t,n);
       t << "</td><td class=\"desc\">";
@@ -983,21 +936,15 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeNamespace)
       {
-        t << "<img ";
-        t << FTV_IMGATTRIBS(ns);
-        t << "/>";
+        t << "<span class=\"icona\"><span class=\"icon\">N</span></span>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        t << "<img ";
-        t << FTV_IMGATTRIBS(cl);
-        t << "/>";
+        t << "<span class=\"icona\"><span class=\"icon\">C</span></span>";
       }
       else
       {
-        t << "<img ";
-        t << FTV_IMGATTRIBS(doc);
-        t << "/>";
+        t << "<span class=\"icondoc\"></span>";
       }
       if (srcRef)
       {
