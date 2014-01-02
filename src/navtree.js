@@ -276,7 +276,7 @@ function highlightAnchor()
   var anchor = $(aname);
   if (anchor.parent().attr('class')=='memItemLeft'){
     var rows = $('.memberdecls tr[class$="'+
-               window.location.hash.substring(1)+'"]');
+               window.location.hash.substring(1).replace(/</g,'\\3c ')+'"]');
     glowEffect(rows.children(),300); // member without details
   } else if (anchor.parents().slice(2).prop('tagName')=='TR') {
     glowEffect(anchor.parents('div.memitem'),1000); // enum value
@@ -295,7 +295,7 @@ function selectAndHighlight(hash,n)
   var a;
   if (hash) {
     var link=stripPath($(location).attr('pathname'))+':'+hash.substring(1);
-    a=$('.item a[class$="'+link+'"]');
+    a=$('.item a[class$="'+link.replace(/</g,'\\3c ')+'"]');
   }
   if (a && a.length) {
     a.parent().parent().addClass('selected');
@@ -496,7 +496,7 @@ function initNavTree(toroot,relpath)
        if ($(location).attr('hash')){
          var clslink=stripPath($(location).attr('pathname'))+':'+
                                $(location).attr('hash').substring(1);
-         a=$('.item a[class$="'+clslink+'"]');
+         a=$('.item a[class$="'+clslink.replace(/</g,'\\3c ')+'"]');
        }
        if (a==null || !$(a).parent().parent().hasClass('selected')){
          $('.item').removeClass('selected');
