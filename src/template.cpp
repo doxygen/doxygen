@@ -504,6 +504,8 @@ class Operator
          not
          in
          ==, !=, <, >, <=, >=
+         +, -
+         *, /, %
          |
          :
          ,
@@ -511,7 +513,9 @@ class Operator
     enum Type
     {
       Or, And, Not, In, Equal, NotEqual, Less, Greater, LessEqual,
-      GreaterEqual, Filter, Colon, Comma, Last
+      GreaterEqual, Plus, Minus, Multiply, Divide, Modulo, Filter, Colon, Comma,
+      LeftParen, RightParen,
+      Last
     };
 
     static const char *toString(Type op)
@@ -528,9 +532,16 @@ class Operator
         case Greater:      return ">";
         case LessEqual:    return "<=";
         case GreaterEqual: return ">=";
+        case Plus:         return "+";
+        case Minus:        return "-";
+        case Multiply:     return "*";
+        case Divide:       return "/";
+        case Modulo:       return "%";
         case Filter:       return "|";
         case Colon:        return ":";
         case Comma:        return ",";
+        case LeftParen:    return "(";
+        case RightParen:   return ")";
         case Last:         return "?";
       }
       return "?";
@@ -890,7 +901,7 @@ class ExprAstFunctionVariable : public ExprAst
   public:
     ExprAstFunctionVariable(ExprAst *var,const QList<ExprAst> &args)
       : m_var(var), m_args(args)
-    { TRACE(("ExprAstFunctionVariable(%s)\n",var->name().data()));
+    { TRACE(("ExprAstFunctionVariable()\n"));
       m_args.setAutoDelete(TRUE);
     }
     virtual TemplateVariant resolve(TemplateContext *c)
@@ -982,6 +993,28 @@ class ExprAstNegate : public ExprAst
     ExprAst *m_expr;
 };
 
+class ExprAstUnary : public ExprAst
+{
+  public:
+    ExprAstUnary(Operator::Type op,ExprAst *exp) : m_operator(op), m_exp(exp)
+    { TRACE(("ExprAstUnary %s\n",Operator::toString(op))); }
+   ~ExprAstUnary() { delete m_exp; }
+    virtual TemplateVariant resolve(TemplateContext *c)
+    {
+      TemplateVariant exp = m_exp->resolve(c);
+      switch (m_operator)
+      {
+        case Operator::Minus:
+          return -exp.toInt();
+        default:
+          return TemplateVariant();
+      }
+    }
+  private:
+    Operator::Type m_operator;
+    ExprAst *m_exp;
+};
+
 /** @brief Class representing a binary operator in the AST */
 class ExprAstBinary : public ExprAst
 {
@@ -992,6 +1025,7 @@ class ExprAstBinary : public ExprAst
    ~ExprAstBinary() { delete m_lhs; delete m_rhs; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       TemplateVariant lhs = m_lhs->resolve(c);
       TemplateVariant rhs = m_rhs ? m_rhs->resolve(c) : TemplateVariant();
       switch(m_operator)
@@ -1039,6 +1073,44 @@ class ExprAstBinary : public ExprAst
           else
           {
             return lhs.toInt()>=rhs.toInt();
+          }
+        case Operator::Plus:
+          {
+            return TemplateVariant(lhs.toInt() + rhs.toInt());
+          }
+        case Operator::Minus:
+          {
+            return TemplateVariant(lhs.toInt() - rhs.toInt());
+          }
+        case Operator::Multiply:
+          {
+            return TemplateVariant(lhs.toInt() * rhs.toInt());
+          }
+        case Operator::Divide:
+          {
+            int denom = rhs.toInt();
+            if (denom!=0)
+            {
+              return TemplateVariant(lhs.toInt() / denom);
+            }
+            else // divide by zero
+            {
+              ci->warn(ci->templateName(),ci->line(),"division by zero while evaluating expression is undefined");
+              return 0;
+            }
+          }
+        case Operator::Modulo:
+          {
+            int denom = rhs.toInt();
+            if (denom!=0)
+            {
+              return TemplateVariant(lhs.toInt() % denom);
+            }
+            else // module zero
+            {
+              ci->warn(ci->templateName(),ci->line(),"modulo zero while evaluating expression is undefined");
+              return 0;
+            }
           }
         default:
           return TemplateVariant();
@@ -1110,23 +1182,7 @@ class ExpressionParser
       if (expr==0) return 0;
       m_tokenStream = expr;
       getNextToken();
-      return parseOrExpression();
-    }
-
-    ExprAst *parsePrimary(const char *expr)
-    {
-      if (expr==0) return 0;
-      m_tokenStream = expr;
-      getNextToken();
-      return parsePrimaryExpression();
-    }
-
-    ExprAst *parseVariable(const char *varExpr)
-    {
-      if (varExpr==0) return 0;
-      m_tokenStream = varExpr;
-      getNextToken();
-      return parseFilteredVariable();
+      return parseExpression();
     }
 
   private:
@@ -1148,6 +1204,14 @@ class ExpressionParser
         QCString id;
         Operator::Type op;
     };
+
+    ExprAst *parseExpression()
+    {
+      TRACE(("{parseExpression(%s)\n",m_tokenStream));
+      ExprAst *result = parseOrExpression();
+      TRACE(("}parseExpression(%s)\n",m_tokenStream));
+      return result;
+    }
 
     ExprAst *parseOrExpression()
     {
@@ -1212,7 +1276,7 @@ class ExpressionParser
     ExprAst *parseCompareExpression()
     {
       TRACE(("{parseCompareExpression(%s)\n",m_tokenStream));
-      ExprAst *lhs = parsePrimaryExpression();
+      ExprAst *lhs = parseAdditiveExpression();
       if (lhs)
       {
         Operator::Type op = m_curToken.op;
@@ -1235,6 +1299,74 @@ class ExpressionParser
       return lhs;
     }
 
+    ExprAst *parseAdditiveExpression()
+    {
+      TRACE(("{parseAdditiveExpression(%s)\n",m_tokenStream));
+      ExprAst *lhs = parseMultiplicativeExpression();
+      if (lhs)
+      {
+        while (m_curToken.type==ExprToken::Operator &&
+               (m_curToken.op==Operator::Plus || m_curToken.op==Operator::Minus))
+        {
+          Operator::Type op = m_curToken.op;
+          getNextToken();
+          ExprAst *rhs = parseMultiplicativeExpression();
+          lhs = new ExprAstBinary(op,lhs,rhs);
+        }
+      }
+      TRACE(("}parseAdditiveExpression(%s)\n",m_tokenStream));
+      return lhs;
+    }
+
+    ExprAst *parseMultiplicativeExpression()
+    {
+      TRACE(("{parseMultiplicativeExpression(%s)\n",m_tokenStream));
+      ExprAst *lhs = parseUnaryExpression();
+      if (lhs)
+      {
+        while (m_curToken.type==ExprToken::Operator &&
+               (m_curToken.op==Operator::Multiply || m_curToken.op==Operator::Divide || m_curToken.op==Operator::Modulo))
+        {
+          Operator::Type op = m_curToken.op;
+          getNextToken();
+          ExprAst *rhs = parseUnaryExpression();
+          lhs = new ExprAstBinary(op,lhs,rhs);
+        }
+      }
+      TRACE(("}parseMultiplicativeExpression(%s)\n",m_tokenStream));
+      return lhs;
+    }
+
+    ExprAst *parseUnaryExpression()
+    {
+      TRACE(("{parseUnaryExpression(%s)\n",m_tokenStream));
+      ExprAst *result=0;
+      if (m_curToken.type==ExprToken::Operator)
+      {
+        if (m_curToken.op==Operator::Plus)
+        {
+          getNextToken();
+          result = parsePrimaryExpression();
+        }
+        else if (m_curToken.op==Operator::Minus)
+        {
+          getNextToken();
+          ExprAst *rhs = parsePrimaryExpression();
+          result = new ExprAstUnary(m_curToken.op,rhs);
+        }
+        else
+        {
+          result = parsePrimaryExpression();
+        }
+      }
+      else
+      {
+        result = parsePrimaryExpression();
+      }
+      TRACE(("}parseUnaryExpression(%s)\n",m_tokenStream));
+      return result;
+    }
+
     ExprAst *parsePrimaryExpression()
     {
       TRACE(("{parsePrimary(%s)\n",m_tokenStream));
@@ -1250,16 +1382,29 @@ class ExpressionParser
         case ExprToken::Literal:
           result = parseLiteral();
           break;
-        default:
-          if (m_curToken.type==ExprToken::Operator)
+        case ExprToken::Operator:
+          if (m_curToken.op==Operator::LeftParen)
+          {
+            getNextToken(); // skip over opening bracket
+            result = parseExpression();
+            if (m_curToken.type!=ExprToken::Operator ||
+                m_curToken.op!=Operator::RightParen)
+            {
+              warn(m_parser->templateName(),m_line,"missing closing parenthesis");
+            }
+            else
+            {
+              getNextToken(); // skip over closing bracket
+            }
+          }
+          else
           {
             warn(m_parser->templateName(),m_line,"unexpected operator '%s' in expression",
                 Operator::toString(m_curToken.op));
           }
-          else
-          {
-            warn(m_parser->templateName(),m_line,"unexpected token in expression");
-          }
+          break;
+        default:
+          warn(m_parser->templateName(),m_line,"unexpected token in expression");
       }
       TRACE(("}parsePrimary(%s)\n",m_tokenStream));
       return result;
@@ -1364,141 +1509,179 @@ class ExpressionParser
       if (p==0 || *p=='\0') return FALSE;
       while (*p==' ') p++; // skip over spaces
       char c=*p;
-      if (strncmp(p,"not ",4)==0)
+      const char *q = p;
+      switch (c)
       {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Not;
-        p+=4;
-      }
-      else if (strncmp(p,"and ",4)==0)
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::And;
-        p+=4;
-      }
-      else if (strncmp(p,"or ",3)==0)
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Or;
-        p+=3;
-      }
-      else if (c=='=' && *(p+1)=='=')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Equal;
-        p+=2;
-      }
-      else if (c=='!' && *(p+1)=='=')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::NotEqual;
-        p+=2;
-      }
-      else if (c=='<' && *(p+1)=='=')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::LessEqual;
-        p+=2;
-      }
-      else if (c=='>' && *(p+1)=='=')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::GreaterEqual;
-        p+=2;
-      }
-      else if (c=='<')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Less;
-        p++;
-      }
-      else if (c=='>')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Greater;
-        p++;
-      }
-      else if (c=='|')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Filter;
-        p++;
-      }
-      else if (c==':')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Colon;
-        p++;
-      }
-      else if (c==',')
-      {
-        m_curToken.type = ExprToken::Operator;
-        m_curToken.op = Operator::Comma;
-        p++;
-      }
-      else if ((c=='-' && *(p+1)>='0' && *(p+1)<='9') || (c>='0' && c<='9'))
-      {
-        m_curToken.type = ExprToken::Number;
-        const char *np = p;
-        if (c=='-') np++;
-        m_curToken.num = 0;
-        while (*np>='0' && *np<='9')
-        {
-          m_curToken.num*=10;
-          m_curToken.num+=*np-'0';
-          np++;
-        }
-        if (c=='-') m_curToken.num=-m_curToken.num;
-        p=np;
-      }
-      else if (c=='_' || (c>='a' && c<='z') || (c>='A' && c<='Z'))
-      {
-        m_curToken.type = ExprToken::Identifier;
-        s[0]=c;
-        m_curToken.id = s;
-        p++;
-        while ((c=*p) &&
-            (c=='_' || c=='.' ||
-             (c>='a' && c<='z') ||
-             (c>='A' && c<='Z') ||
-             (c>='0' && c<='9'))
-            )
-        {
-          s[0]=c;
-          m_curToken.id+=s;
-          p++;
-        }
-        if (m_curToken.id=="True") // treat true literal as numerical 1
-        {
-          m_curToken.type = ExprToken::Number;
-          m_curToken.num = 1;
-        }
-        else if (m_curToken.id=="False") // treat false literal as numerical 0
-        {
-          m_curToken.type = ExprToken::Number;
-          m_curToken.num = 0;
-        }
-      }
-      else if (c=='"' || c=='\'')
-      {
-        m_curToken.type = ExprToken::Literal;
-        m_curToken.id.resize(0);
-        p++;
-        char tokenChar = c;
-        char cp=0;
-        while ((c=*p) && (c!=tokenChar || (c==tokenChar && cp=='\\')))
-        {
-          s[0]=c;
-          if (c!='\\' || cp=='\\') // don't add escapes
+        case '=':
+          if (c=='=' && *(p+1)=='=') // equal
           {
-            m_curToken.id+=s;
+            m_curToken.op = Operator::Equal;
+            p+=2;
           }
-          cp=c;
+          break;
+        case '!':
+          if (c=='!' && *(p+1)=='=') // not equal
+          {
+            m_curToken.op = Operator::NotEqual;
+            p+=2;
+          }
+          break;
+        case '<':
+          if (c=='<' && *(p+1)=='=') // less or equal
+          {
+            m_curToken.op = Operator::LessEqual;
+            p+=2;
+          }
+          else // less
+          {
+            m_curToken.op = Operator::Less;
+            p++;
+          }
+          break;
+        case '>':
+          if (c=='>' && *(p+1)=='=') // greater or equal
+          {
+            m_curToken.op = Operator::GreaterEqual;
+            p+=2;
+          }
+          else // greater
+          {
+            m_curToken.op = Operator::Greater;
+            p++;
+          }
+          break;
+        case '(':
+          m_curToken.op = Operator::LeftParen;
           p++;
-        }
-        if (*p==tokenChar) p++;
+          break;
+        case ')':
+          m_curToken.op = Operator::RightParen;
+          p++;
+          break;
+        case '|':
+          m_curToken.op = Operator::Filter;
+          p++;
+          break;
+        case '+':
+          m_curToken.op = Operator::Plus;
+          p++;
+          break;
+        case '-':
+          m_curToken.op = Operator::Minus;
+          p++;
+          break;
+        case '*':
+          m_curToken.op = Operator::Multiply;
+          p++;
+          break;
+        case '/':
+          m_curToken.op = Operator::Divide;
+          p++;
+          break;
+        case '%':
+          m_curToken.op = Operator::Modulo;
+          p++;
+          break;
+        case ':':
+          m_curToken.op = Operator::Colon;
+          p++;
+          break;
+        case ',':
+          m_curToken.op = Operator::Comma;
+          p++;
+          break;
+        case 'n':
+          if (strncmp(p,"not ",4)==0)
+          {
+            m_curToken.op = Operator::Not;
+            p+=4;
+          }
+          break;
+        case 'a':
+          if (strncmp(p,"and ",4)==0)
+          {
+            m_curToken.op = Operator::And;
+            p+=4;
+          }
+          break;
+        case 'o':
+          if (strncmp(p,"or ",3)==0)
+          {
+            m_curToken.op = Operator::Or;
+            p+=3;
+          }
+          break;
+        default:
+          break;
       }
-      else
+      if (p!=q) // found an operator
+      {
+        m_curToken.type = ExprToken::Operator;
+      }
+      else // no token found yet
+      {
+        if (c>='0' && c<='9') // number?
+        {
+          m_curToken.type = ExprToken::Number;
+          const char *np = p;
+          m_curToken.num = 0;
+          while (*np>='0' && *np<='9')
+          {
+            m_curToken.num*=10;
+            m_curToken.num+=*np-'0';
+            np++;
+          }
+          p=np;
+        }
+        else if (c=='_' || (c>='a' && c<='z') || (c>='A' && c<='Z')) // identifier?
+        {
+          m_curToken.type = ExprToken::Identifier;
+          s[0]=c;
+          m_curToken.id = s;
+          p++;
+          while ((c=*p) &&
+              (c=='_' || c=='.' ||
+               (c>='a' && c<='z') ||
+               (c>='A' && c<='Z') ||
+               (c>='0' && c<='9'))
+              )
+          {
+            s[0]=c;
+            m_curToken.id+=s;
+            p++;
+          }
+          if (m_curToken.id=="True") // treat true literal as numerical 1
+          {
+            m_curToken.type = ExprToken::Number;
+            m_curToken.num = 1;
+          }
+          else if (m_curToken.id=="False") // treat false literal as numerical 0
+          {
+            m_curToken.type = ExprToken::Number;
+            m_curToken.num = 0;
+          }
+        }
+        else if (c=='"' || c=='\'') // string literal
+        {
+          m_curToken.type = ExprToken::Literal;
+          m_curToken.id.resize(0);
+          p++;
+          char tokenChar = c;
+          char cp=0;
+          while ((c=*p) && (c!=tokenChar || (c==tokenChar && cp=='\\')))
+          {
+            s[0]=c;
+            if (c!='\\' || cp=='\\') // don't add escapes
+            {
+              m_curToken.id+=s;
+            }
+            cp=c;
+            p++;
+          }
+          if (*p==tokenChar) p++;
+        }
+      }
+      if (p==q) // still no valid token found -> error
       {
         m_curToken.type = ExprToken::Unknown;
         char s[2];
@@ -1758,7 +1941,11 @@ class TemplateNodeVariable : public TemplateNode
     {
       TRACE(("TemplateNodeVariable(%s)\n",var.data()));
       ExpressionParser expParser(parser,line);
-      m_var = expParser.parseVariable(var);
+      m_var = expParser.parse(var);
+      if (m_var==0)
+      {
+        parser->warn(m_templateName,line,"invalid expression '%s' for variable",var.data());
+      }
     }
     ~TemplateNodeVariable()
     {
@@ -1769,19 +1956,22 @@ class TemplateNodeVariable : public TemplateNode
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
-      TemplateVariant v = m_var->resolve(c);
-      if (v.type()==TemplateVariant::Function)
+      if (m_var)
       {
-        v = v.call(QValueList<TemplateVariant>());
-      }
-      //printf("TemplateNodeVariable::render(%s) raw=%d\n",value.data(),v.raw());
-      if (ci->escapeIntf() && !v.raw())
-      {
-        ts << ci->escapeIntf()->escape(v.toString());
-      }
-      else
-      {
-        ts << v.toString();
+        TemplateVariant v = m_var->resolve(c);
+        if (v.type()==TemplateVariant::Function)
+        {
+          v = v.call(QValueList<TemplateVariant>());
+        }
+        //printf("TemplateNodeVariable::render(%s) raw=%d\n",value.data(),v.raw());
+        if (ci->escapeIntf() && !v.raw())
+        {
+          ts << ci->escapeIntf()->escape(v.toString());
+        }
+        else
+        {
+          ts << v.toString();
+        }
       }
     }
 
@@ -1893,7 +2083,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     {
       TRACE(("{TemplateNodeRepeat(%s)\n",data.data()));
       ExpressionParser expParser(parser,line);
-      m_expr = expParser.parseVariable(data);
+      m_expr = expParser.parse(data);
       QStrList stopAt;
       stopAt.append("endrepeat");
       parser->parse(this,line,stopAt,m_repeatNodes);
@@ -1985,7 +2175,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         }
       }
       ExpressionParser expParser(parser,line);
-      m_expr = expParser.parseVariable(exprStr);
+      m_expr = expParser.parse(exprStr);
 
       QStrList stopAt;
       stopAt.append("endfor");
@@ -2215,7 +2405,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       {
         parser->warn(m_templateName,line,"extend tag is missing template file argument");
       }
-      m_extendExpr = ep.parsePrimary(data);
+      m_extendExpr = ep.parse(data);
       QStrList stopAt;
       parser->parse(this,line,stopAt,m_nodes);
       TRACE(("}TemplateNodeExtend(%s)\n",data.data()));
@@ -2298,7 +2488,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
       {
         parser->warn(m_templateName,line,"include tag is missing template file argument");
       }
-      m_includeExpr = ep.parsePrimary(data);
+      m_includeExpr = ep.parse(data);
     }
    ~TemplateNodeInclude()
     {
@@ -2374,8 +2564,8 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       else
       {
         ExpressionParser ep(parser,line);
-        m_fileExpr = ep.parsePrimary(data.left(i).stripWhiteSpace());
-        m_templateExpr = ep.parsePrimary(data.mid(i+6).stripWhiteSpace());
+        m_fileExpr = ep.parse(data.left(i).stripWhiteSpace());
+        m_templateExpr = ep.parse(data.mid(i+6).stripWhiteSpace());
       }
     }
    ~TemplateNodeCreate()
@@ -2461,7 +2651,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       {
         parser->warn(m_templateName,line,"recursetree tag is missing data argument");
       }
-      m_treeExpr = ep.parsePrimary(data);
+      m_treeExpr = ep.parse(data);
       QStrList stopAt;
       stopAt.append("endrecursetree");
       parser->parse(this,line,stopAt,m_treeNodes);
@@ -2569,7 +2759,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
         int j=arg.find('=');
         if (j>0)
         {
-          ExprAst *expr = expParser.parsePrimary(arg.mid(j+1));
+          ExprAst *expr = expParser.parse(arg.mid(j+1));
           if (expr)
           {
             m_args.append(new Mapping(arg.left(j),expr));
@@ -2627,7 +2817,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       QValueListIterator<QCString> it = args.begin();
       while (it!=args.end())
       {
-        ExprAst *expr = expParser.parsePrimary(*it);
+        ExprAst *expr = expParser.parse(*it);
         if (expr)
         {
           m_args.append(expr);
@@ -2697,7 +2887,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
         int j=arg.find('=');
         if (j>0)
         {
-          ExprAst *expr = expParser.parsePrimary(arg.mid(j+1));
+          ExprAst *expr = expParser.parse(arg.mid(j+1));
           if (expr)
           {
             m_args.append(new Mapping(arg.left(j),expr));
@@ -2776,8 +2966,8 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       {
         ExpressionParser expParser(parser,line);
         m_var = data.left(i);
-        m_listExpr = expParser.parseVariable(data.mid(i+4,w-i-4));
-        m_patternExpr = expParser.parseVariable(data.right(data.length()-w-6));
+        m_listExpr = expParser.parse(data.mid(i+4,w-i-4));
+        m_patternExpr = expParser.parse(data.right(data.length()-w-6));
       }
       QStrList stopAt;
       stopAt.append("endmarkers");
