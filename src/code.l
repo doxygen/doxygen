@@ -3251,8 +3251,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <SkipCPP>\n/.*\n			{ 
-  					  codifyLines(yytext);
 					  endFontClass();
+  					  codifyLines(yytext);
 					  BEGIN( g_lastSkipCppContext ) ;
 					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
