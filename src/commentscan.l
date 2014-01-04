@@ -2403,6 +2403,11 @@ static bool handleParBlock(const QCString &)
     warn(yyFileName,yyLineNr,
 	"found \\parblock command while already in a parblock!");
   }
+  if (!g_spaceBeforeCmd.isEmpty()) 
+  {
+    addOutput(g_spaceBeforeCmd);
+    g_spaceBeforeCmd.resize(0);
+  }
   addOutput("@parblock ");
   g_insideParBlock = TRUE;
   return FALSE;

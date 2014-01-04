@@ -4945,6 +4945,10 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   {
     retval = pl->parse(cmdName);
   }
+  if (retval==RetVal_EndParBlock)
+  {
+    retval = RetVal_OK;
+  }
   
   DBG(("DocParamSect::parse() end retval=%d\n",retval));
   DocNode *n=g_nodeStack.pop();

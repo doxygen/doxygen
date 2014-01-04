@@ -1024,7 +1024,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 			 g_token->name = types+"#"+params.mid(i);
 			 return TK_WORD;
   		       }
-<St_Param>[^ \t\n,]+   {
+<St_Param>[^ \t\n,@\\]+  {
   			 g_token->name = yytext;
                          if (g_token->name.at(yyleng-1)==':')
                          {
