@@ -996,8 +996,9 @@ static Definition *findScope(Entry *root,int level=0)
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
-static Definition *buildScopeFromQualifiedName(const QCString name,int level,SrcLangExt lang)
+static Definition *buildScopeFromQualifiedName(const QCString name,int level,SrcLangExt lang,TagInfo *tagInfo)
 {
+  //printf("buildScopeFromQualifiedName(%s) level=%d\n",name.data(),level);
   int i=0;
   int p=0,l;
   Definition *prevScope=Doxygen::globalScope;
@@ -1020,9 +1021,11 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level,Src
     else if (nd==0 && cd==0) // scope is not known!
     {
       // introduce bogus namespace
-      //printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
+      //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",nsName.data(),prevScope->name().data(),tagInfo);
       nd=new NamespaceDef(
-        "[generated]",1,1,fullScope);
+        "[generated]",1,1,fullScope,
+        tagInfo?tagInfo->tagName:QCString(),
+        tagInfo?tagInfo->fileName:QCString());
       nd->setLanguage(lang);
 
       // add namespace to the list
@@ -1109,7 +1112,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
           // so use this instead.
           QCString fqn = QCString(ui.currentKey())+
                          scope.right(scope.length()-p);
-          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"),startScope->getLanguage());
+          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"),startScope->getLanguage(),0);
           //printf("Creating scope from fqn=%s result %p\n",fqn.data(),resultScope);
           if (resultScope) 
           {
@@ -1295,22 +1298,23 @@ static void addClassToContext(EntryNav *rootNav)
 
     QCString tagName;
     QCString refFileName;
-    if (rootNav->tagInfo())
+    TagInfo *tagInfo = rootNav->tagInfo();
+    if (tagInfo)
     {
-      tagName     = rootNav->tagInfo()->tagName;
-      refFileName = rootNav->tagInfo()->fileName;
+      tagName     = tagInfo->tagName;
+      refFileName = tagInfo->fileName;
       int i;
       if ((i=fullName.find("::"))!=-1) 
         // symbols imported via tag files may come without the parent scope, 
         // so we artificially create it here
       {
-        buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang);
+        buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang,tagInfo);
       }
     }
     cd=new ClassDef(root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
-    Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
-        fullName.data(),sec,root->tArgLists ? (int)root->tArgLists->count() : -1);
+    Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p\n",
+        fullName.data(),sec,root->tArgLists ? (int)root->tArgLists->count() : -1, tagInfo);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setLanguage(root->lang);    
@@ -1443,7 +1447,7 @@ static void resolveClassNestingRelations()
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
-      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage());
+      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
       if (d!=cd && !cd->getDefFileName().isEmpty()) 
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                  // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
@@ -1748,13 +1752,16 @@ static void buildNamespaceList(EntryNav *rootNav)
       {
         QCString tagName;
         QCString tagFileName;
-        if (rootNav->tagInfo())
+        TagInfo *tagInfo = rootNav->tagInfo();
+        if (tagInfo)
         {
-          tagName=rootNav->tagInfo()->tagName;
-          tagFileName=rootNav->tagInfo()->fileName;
+          tagName     = tagInfo->tagName;
+          tagFileName = tagInfo->fileName;
         }
-        //printf("++ new namespace %s lang=%s\n",fullName.data(),langToString(root->lang).data());
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,root->startColumn,fullName,tagName,tagFileName,root->type,root->spec&Entry::Published);
+        //printf("++ new namespace %s lang=%s tagName=%s\n",fullName.data(),langToString(root->lang).data(),tagName.data());
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,
+                             root->startColumn,fullName,tagName,tagFileName,
+                             root->type,root->spec&Entry::Published);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1786,7 +1793,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
-          Definition *d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage());
+          Definition *d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage(),tagInfo);
           d->addInnerCompound(nd);
           nd->setOuterScope(d);
           // TODO: Due to the order in which the tag file is written

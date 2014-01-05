@@ -8093,7 +8093,7 @@ bool namespaceHasVisibleChild(NamespaceDef *nd,bool includeClasses)
     NamespaceDef *cnd;
     for (cnli.toFirst();(cnd=cnli.current());++cnli)
     {
-      if (cnd->isLinkable() && cnd->localName().find('@')==-1)
+      if (cnd->isLinkableInProject() && cnd->localName().find('@')==-1)
       {
         return TRUE;
       }
