@@ -607,10 +607,16 @@ void LatexGenerator::startIndexSection(IndexSections is)
         else
         {
           QCString header = fileToString(latexHeader);
-          t << substituteKeywords(header,0,
-              Config_getString("PROJECT_NAME"),
-              Config_getString("PROJECT_NUMBER"),
-              Config_getString("PROJECT_BRIEF"));
+          QGString genStringName;
+          FTextStream tgName(&genStringName);
+          filterLatexString(tgName, Config_getString("PROJECT_NAME"), FALSE,FALSE,FALSE);
+          QGString genStringNumber;
+          FTextStream tgNumber(&genStringNumber);
+          filterLatexString(tgNumber, Config_getString("PROJECT_NUMBER"), FALSE,FALSE,FALSE);
+          QGString genStringBrief;
+          FTextStream tgBrief(&genStringBrief);
+          filterLatexString(tgBrief, Config_getString("PROJECT_BRIEF"), FALSE,FALSE,FALSE);
+          t << substituteKeywords(header,0, genStringName, genStringNumber, genStringBrief);
         }
       }
       break;
@@ -1005,10 +1011,16 @@ void LatexGenerator::endIndexSection(IndexSections is)
       else
       {
         QCString footer = fileToString(latexFooter);
-        t << substituteKeywords(footer,0,
-              Config_getString("PROJECT_NAME"),
-              Config_getString("PROJECT_NUMBER"),
-              Config_getString("PROJECT_BRIEF"));
+        QGString genStringName;
+        FTextStream tgName(&genStringName);
+        filterLatexString(tgName, Config_getString("PROJECT_NAME"), FALSE,FALSE,FALSE);
+        QGString genStringNumber;
+        FTextStream tgNumber(&genStringNumber);
+        filterLatexString(tgNumber, Config_getString("PROJECT_NUMBER"), FALSE,FALSE,FALSE);
+        QGString genStringBrief;
+        FTextStream tgBrief(&genStringBrief);
+        filterLatexString(tgBrief, Config_getString("PROJECT_BRIEF"), FALSE,FALSE,FALSE);
+        t << substituteKeywords(footer,0, genStringName, genStringNumber, genStringBrief);
       }
       break;
   }
