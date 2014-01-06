@@ -784,7 +784,7 @@ QCString FTVHelp::generateIndentLabel(FTVNode *n,int level)
   {
     result=generateIndentLabel(n->parent,level+1);
   }
-  result+=QCString().sprintf("%d_",n->index);
+  result+=QCString().setNum(n->index)+"_";
   return result;
 }
 

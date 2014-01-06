@@ -366,8 +366,10 @@ class ClassHierarchyContext : public TemplateStructIntf
 class NestingNodeContext : public TemplateStructIntf
 {
   public:
-    NestingNodeContext(Definition *,bool addClasses);
+    NestingNodeContext(const NestingNodeContext *parent,
+                       Definition *,int index,int level,bool addClasses);
    ~NestingNodeContext();
+    QCString id() const;
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -382,7 +384,7 @@ class NestingNodeContext : public TemplateStructIntf
 class NestingContext : public TemplateListIntf
 {
   public:
-    NestingContext();
+    NestingContext(const NestingNodeContext *parent,int level);
    ~NestingContext();
 
     // TemplateListIntf

@@ -4061,10 +4061,11 @@ TemplateVariant ClassHierarchyContext::get(const char *name) const
 class NestingNodeContext::Private : public PropertyMapper
 {
   public:
-    Private(Definition *d,bool addCls) : m_def(d),
-       m_classContext(m_def->definitionType()==Definition::TypeClass?(ClassDef*)d:0),
-       m_namespaceContext(m_def->definitionType()==Definition::TypeNamespace?(NamespaceDef*)d:0)
+    Private(const NestingNodeContext *parent,const NestingNodeContext *thisNode,
+        Definition *d,int index,int level,bool addCls)
+      : m_parent(parent), m_def(d), m_children(thisNode,level+1), m_level(level), m_index(index)
     {
+      printf("Node %s level=%d\n",d->name().data(),level);
       //%% bool is_leaf_node: true if this node does not have any children
       addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% Nesting children: list of nested classes/namespaces
@@ -4073,6 +4074,12 @@ class NestingNodeContext::Private : public PropertyMapper
       addProperty("class",this,&Private::getClass);
       //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
       addProperty("namespace",this,&Private::getNamespace);
+      //%% [optional] file
+      //%% id
+      addProperty("id",this,&Private::id);
+      //%% level
+      addProperty("level",this,&Private::level);
+
       addNamespaces(addCls);
       addClasses();
     }
@@ -4086,9 +4093,13 @@ class NestingNodeContext::Private : public PropertyMapper
     }
     TemplateVariant getClass() const
     {
-      if (m_def->definitionType()==Definition::TypeClass)
+      if (!m_cache.classContext && m_def->definitionType()==Definition::TypeClass)
       {
-        return TemplateVariant(&m_classContext);
+        m_cache.classContext.reset(new ClassContext((ClassDef*)m_def));
+      }
+      if (m_cache.classContext)
+      {
+        return m_cache.classContext.get();
       }
       else
       {
@@ -4097,15 +4108,32 @@ class NestingNodeContext::Private : public PropertyMapper
     }
     TemplateVariant getNamespace() const
     {
-      if (m_def->definitionType()==Definition::TypeNamespace)
+      if (!m_cache.namespaceContext && m_def->definitionType()==Definition::TypeNamespace)
       {
-        return TemplateVariant(&m_namespaceContext);
+        m_cache.namespaceContext.reset(new NamespaceContext((NamespaceDef*)m_def));
+      }
+      if (m_cache.namespaceContext)
+      {
+        return m_cache.namespaceContext.get();
       }
       else
       {
         return TemplateVariant(FALSE);
       }
     }
+    TemplateVariant level() const
+    {
+      return m_level;
+    }
+    TemplateVariant id() const
+    {
+      QCString result;
+      if (m_parent) result=m_parent->id();
+      result+=QCString().setNum(m_index)+"_";
+      return result;
+    }
+
+
     void addClasses()
     {
       ClassDef *cd = m_def->definitionType()==Definition::TypeClass ? (ClassDef*)m_def : 0;
@@ -4126,17 +4154,25 @@ class NestingNodeContext::Private : public PropertyMapper
         m_children.addClasses(*nd->getClassSDict(),FALSE);
       }
     }
-    Definition *m_def;
   private:
+    const NestingNodeContext *m_parent;
+    Definition *m_def;
     NestingContext m_children;
-    ClassContext m_classContext;
-    NamespaceContext m_namespaceContext;
+    int m_level;
+    int m_index;
+    struct Cachable
+    {
+      ScopedPtr<ClassContext>     classContext;
+      ScopedPtr<NamespaceContext> namespaceContext;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
-NestingNodeContext::NestingNodeContext(Definition *d,bool addClass)
+NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
+                                       Definition *d,int index,int level,bool addClass)
 {
-  p = new Private(d,addClass);
+  p = new Private(parent,this,d,index,level,addClass);
 }
 
 NestingNodeContext::~NestingNodeContext()
@@ -4149,12 +4185,20 @@ TemplateVariant NestingNodeContext::get(const char *n) const
   return p->get(n);
 }
 
+QCString NestingNodeContext::id() const
+{
+  return p->id().toString();
+}
+
 //------------------------------------------------------------------------
 
 //%% list Nesting[NestingNode]: namespace and class nesting relations
 class NestingContext::Private : public GenericNodeListContext<NestingNodeContext>
 {
   public:
+    Private(const NestingNodeContext *parent,int level)
+      : m_parent(parent), m_level(level), m_index(0) {}
+
     void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses)
     {
       NamespaceSDict::Iterator nli(nsDict);
@@ -4168,8 +4212,9 @@ class NestingContext::Private : public GenericNodeListContext<NestingNodeContext
           bool isLinkable  = nd->isLinkableInProject();
           if (isLinkable || hasChildren)
           {
-            NestingNodeContext *nnc = new NestingNodeContext(nd,addClasses);
+            NestingNodeContext *nnc = new NestingNodeContext(m_parent,nd,m_index,m_level,addClasses);
             append(nnc);
+            m_index++;
           }
         }
       }
@@ -4196,17 +4241,22 @@ class NestingContext::Private : public GenericNodeListContext<NestingNodeContext
         {
           if (classVisibleInIndex(cd) && cd->templateMaster()==0)
           {
-            NestingNodeContext *nnc = new NestingNodeContext(cd,TRUE);
+            NestingNodeContext *nnc = new NestingNodeContext(m_parent,cd,m_index,m_level,TRUE);
             append(nnc);
+            m_index++;
           }
         }
       }
     }
+  private:
+    const NestingNodeContext *m_parent;
+    int m_level;
+    int m_index;
 };
 
-NestingContext::NestingContext()
+NestingContext::NestingContext(const NestingNodeContext *parent,int level)
 {
-  p = new Private;
+  p = new Private(parent,level);
 }
 
 NestingContext::~NestingContext()
@@ -4242,11 +4292,71 @@ void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bo
 
 //------------------------------------------------------------------------
 
+static int computeMaxDepth(const TemplateListIntf *list)
+{
+  int maxDepth=0;
+  if (list)
+  {
+    TemplateListIntf::ConstIterator *it = list->createIterator();
+    TemplateVariant v;
+    for (it->toFirst();it->current(v);it->toNext())
+    {
+      const TemplateStructIntf *s = v.toStruct();
+      TemplateVariant child = s->get("children");
+      int d = computeMaxDepth(child.toList())+1;
+      if (d>maxDepth) maxDepth=d;
+    }
+    delete it;
+  }
+  return maxDepth;
+}
+
+static int computeNumNodesAtLevel(const TemplateStructIntf *s,int level,int maxLevel)
+{
+  int num=0;
+  if (level<maxLevel)
+  {
+    num++;
+    TemplateVariant child = s->get("children");
+    if (child.toList())
+    {
+      TemplateListIntf::ConstIterator *it = child.toList()->createIterator();
+      TemplateVariant v;
+      for (it->toFirst();it->current(v);it->toNext())
+      {
+        num+=computeNumNodesAtLevel(v.toStruct(),level+1,maxLevel);
+      }
+      delete it;
+    }
+  }
+  return num;
+}
+
 //%% struct ClassTree: Class nesting relations
 //%% {
 class ClassTreeContext::Private : public PropertyMapper
 {
   public:
+    Private() : m_classTree(0,0)
+    {
+      if (Doxygen::namespaceSDict)
+      {
+        m_classTree.addNamespaces(*Doxygen::namespaceSDict,TRUE,TRUE);
+      }
+      if (Doxygen::classSDict)
+      {
+        m_classTree.addClasses(*Doxygen::classSDict,TRUE);
+      }
+      //%% Nesting tree
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+      addProperty("preferredDepth",this,&Private::preferredDepth);
+      addProperty("maxDepth",this,&Private::maxDepth);
+    }
     TemplateVariant tree() const
     {
       return TemplateVariant(&m_classTree);
@@ -4284,26 +4394,59 @@ class ClassTreeContext::Private : public PropertyMapper
         return theTranslator->trClasses();
       }
     }
-    Private()
+    TemplateVariant maxDepth() const
     {
-      if (Doxygen::namespaceSDict)
+      if (!m_cache.maxDepthComputed)
       {
-        m_classTree.addNamespaces(*Doxygen::namespaceSDict,TRUE,TRUE);
+        m_cache.maxDepth = computeMaxDepth(&m_classTree);
+        m_cache.maxDepthComputed=TRUE;
       }
-      if (Doxygen::classSDict)
+      return m_cache.maxDepth;
+    }
+    TemplateVariant preferredDepth() const
+    {
+      if (!m_cache.preferredDepthComputed)
       {
-        m_classTree.addClasses(*Doxygen::classSDict,TRUE);
+        int preferredNumEntries = Config_getInt("HTML_INDEX_NUM_ENTRIES");
+        m_cache.preferredDepth=1;
+        if (preferredNumEntries>0)
+        {
+          int depth = maxDepth().toInt();
+          for (int i=1;i<=depth;i++)
+          {
+            int num=0;
+            TemplateListIntf::ConstIterator *it = m_classTree.createIterator();
+            TemplateVariant v;
+            for (it->toFirst();it->current(v);it->toNext())
+            {
+              num+=computeNumNodesAtLevel(v.toStruct(),0,i);
+            }
+            delete it;
+            if (num<=preferredNumEntries)
+            {
+              m_cache.preferredDepth=i;
+            }
+            else
+            {
+              break;
+            }
+          }
+        }
+        m_cache.preferredDepthComputed=TRUE;
       }
-      //%% Nesting tree
-      addProperty("tree",this,&Private::tree);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
+      return m_cache.preferredDepth;
     }
   private:
     NestingContext m_classTree;
+    struct Cachable
+    {
+      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      int   maxDepth;
+      bool  maxDepthComputed;
+      int   preferredDepth;
+      bool  preferredDepthComputed;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -4414,7 +4557,7 @@ class NamespaceTreeContext::Private : public PropertyMapper
         return theTranslator->trNamespaceList();
       }
     }
-    Private()
+    Private() : m_namespaceTree(0,0)
     {
       if (Doxygen::namespaceSDict)
       {
