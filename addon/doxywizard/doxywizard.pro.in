@@ -6,12 +6,12 @@ TEMPLATE     = app
 DESTDIR      = ../../bin
 TARGET       = 
 DEPENDPATH  += .
-INCLUDEPATH += .
+INCLUDEPATH += . ../../generated_src/doxywizard
 QT          += xml
 CONFIG      += $extraopts
-OBJECTS_DIR  = obj
-MOC_DIR      = moc
-RCC_DIR      = rcc
+OBJECTS_DIR  = ../../objects/doxywizard
+MOC_DIR      = ../../moc/doxywizard
+RCC_DIR      = ../../rcc/doxywizard
 DEFINES     += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 
 macx-g++ {
@@ -27,13 +27,13 @@ RESOURCES   += doxywizard.qrc
 INCBUFSIZE=$(PYTHON)  ../../src/increasebuffer.py
 win32:RC_FILE += doxywizard.rc
 
-config.target = config_doxyw.cpp
-config.commands = $(LEX) -P$*YY -t $*.l | $(INCBUFSIZE) >$*.cpp
-config.depends = config_doxyw.l  ../../src/increasebuffer.py
-configdoc.target = configdoc.cpp
-configdoc.commands = $(PYTHON) ../../src/configgen.py -wiz ../../src/config.xml > configdoc.cpp
+config.target = ../../generated_src/doxywizard/config_doxyw.cpp
+config.commands = $(LEX) -Pconfig_doxywYY -t ../../addon/doxywizard/config_doxyw.l | $(INCBUFSIZE) >../../generated_src/doxywizard/$*.cpp
+config.depends = ../../addon/doxywizard/config_doxyw.l  ../../src/increasebuffer.py
+configdoc.target = ../../generated_src/doxywizard/configdoc.cpp
+configdoc.commands = $(PYTHON) ../../src/configgen.py -wiz ../../src/config.xml > ../../generated_src/doxywizard/configdoc.cpp
 configdoc.depends = ../../src/config.xml ../../src/configgen.py
-version.target = ../../src/version.cpp
+version.target = ../../generated_src/doxywizard/version.cpp
 version.commands = cd ../../src;$(PYTHON) version.py
 version.depends = ../../configure
 QMAKE_EXTRA_TARGETS += configdoc config version

@@ -25,8 +25,8 @@ print """\
                 <CustomBuildRule
                         Name="Languages"
                         DisplayName="Settings"
-                        CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] &gt; $(InputDir)../src/$(InputName).h"
-                        Outputs="$(InputDir)../src/$(InputName).h"
+                        CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] &gt; $(InpDir)/$(InputName).h"
+                        Outputs="$(IntDir)/$(InputName).h"
                         FileExtensions="*.py"
                         AdditionalDependencies=""
                         ExecutionDescription="Executing languages ..."

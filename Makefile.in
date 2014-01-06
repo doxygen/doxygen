@@ -1,6 +1,3 @@
-#all: src/version.cpp doxywizard 
-#	cd qtools ; $(MAKE)
-#	cd src ; $(MAKE)
 
 DESTDIR = 
 
@@ -31,7 +28,7 @@ clean: FORCE
 	-cd addon/doxmlparser/test ; $(MAKE) clean
 	-cd addon/doxmlparser/examples/metrics ; $(MAKE) clean
 	-rm -f bin/doxy*
-	-rm -f objects/*.o
+	-rm -f objects/*/*.o
 
 distclean: clean
 	-cd src ; $(MAKE) distclean
@@ -46,13 +43,13 @@ distclean: clean
 	-rm -f bin/doxy*
 	-rm -f html
 	-rm -f latex
-	-rm -f objects/*.o
+	-rm -f objects/*/*.o
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.libdoxycfg src/libdoxycfg.t src/libdoxygen.t
 	-rm -f libmd5/Makefile.libmd5
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
-	-rm -f src/version.cpp 
+	-rm -f generated_src/doxygen/version.cpp 
 	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f VERSION
 	-rm -f packages/rpm/doxygen.spec
@@ -121,12 +118,6 @@ dist: clean
 	find $(DISTDIR) \( -name ".svn" \) -print0 | xargs -0 rm -rf
 	tar zcvf $(DISTDIR).src.tar.gz $(DISTDIR)
 	rm -rf $(DISTDIR)
-
-src/version.cpp: Makefile
-	echo "char versionString[]=\"$(VERSION)\";" > src/version.cpp
-
-addon/doxywizard/version.cpp: Makefile
-	echo "char versionString[]=\"$(VERSION)\";" > addon/doxywizard/version.cpp
 
 DISTDIR = doxygen-`echo $(VERSION) | tr - _`
 rpm: dist

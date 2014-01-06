@@ -17,7 +17,7 @@
 TEMPLATE     =	libdoxygen.t
 CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =	arguments.h \
-                bib2xhtml.pl.h \
+                ../generated_src/doxygen/bib2xhtml.pl.h \
                 bufstr.h \
 		cite.h \
 		clangparser.h \
@@ -27,7 +27,7 @@ HEADERS      =	arguments.h \
                 code.h \
 		commentcnv.h \
 		commentscan.h \
-                compound.xsd.h \
+                ../generated_src/doxygen/compound.xsd.h \
 		condparser.h \
                 config.h \
 		context.h \
@@ -47,20 +47,20 @@ HEADERS      =	arguments.h \
                 docvisitor.h \
 		dot.h \
 		doxygen.h \
-		doxygen.bst.h \
-		doxygen.css.h \
-		doxygen.sty.h \
+		../generated_src/doxygen/doxygen.bst.h \
+		../generated_src/doxygen/doxygen.css.h \
+		../generated_src/doxygen/doxygen.sty.h \
 		eclipsehelp.h \
 		entry.h \
 		example.h \
 		filedef.h \
 		filename.h \
-		footer.html.h \
+		../generated_src/doxygen/footer.html.h \
 		formula.h \
 		ftextstream.h \
 		ftvhelp.h \
 		groupdef.h \
-		header.html.h \
+		../generated_src/doxygen/header.html.h \
 		htags.h \
 		htmlattrib.h \
                 htmldocvisitor.h \
@@ -68,20 +68,20 @@ HEADERS      =	arguments.h \
 		htmlhelp.h \
 		image.h \
 		index.h \
-                index.xsd.h \
-		jquery_p1.js.h \
-		jquery_p2.js.h \
-		jquery_p3.js.h \
-		jquery_ui.js.h \
-		jquery_fx.js.h \
-		jquery_pt.js.h \
-		svgpan.js.h \
-		dynsections.js.h \
+                ../generated_src/doxygen/index.xsd.h \
+		../generated_src/doxygen/jquery_p1.js.h \
+		../generated_src/doxygen/jquery_p2.js.h \
+		../generated_src/doxygen/jquery_p3.js.h \
+		../generated_src/doxygen/jquery_ui.js.h \
+		../generated_src/doxygen/jquery_fx.js.h \
+		../generated_src/doxygen/jquery_pt.js.h \
+		../generated_src/doxygen/svgpan.js.h \
+		../generated_src/doxygen/dynsections.js.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \
                 layout.h \
-                layout_default.xml.h \
+                ../generated_src/doxygen/layout_default.xml.h \
 		logos.h \
 		mandocvisitor.h \
 		mangen.h \
@@ -96,8 +96,8 @@ HEADERS      =	arguments.h \
                 msc.h \
                 dia.h \
 		namespacedef.h \
-		navtree.css.h \
-		navtree.js.h \
+		../generated_src/doxygen/navtree.css.h \
+		../generated_src/doxygen/navtree.js.h \
                 objcache.h \
 		outputgen.h \
 		outputlist.h \
@@ -114,17 +114,17 @@ HEADERS      =	arguments.h \
 		qhp.h \
 		qhpxmlwriter.h \
 		reflist.h \
-		resize.js.h \
+		../generated_src/doxygen/resize.js.h \
                 rtfdocvisitor.h \
 		rtfgen.h \
 		rtfstyle.h \
 		scanner.h \
 		searchindex.h \
-		search.css.h \
-		search.js.h \
-		extsearch.js.h \
-		search_functions.php.h \
-		search_opensearch.php.h \
+		../generated_src/doxygen/search.css.h \
+		../generated_src/doxygen/search.js.h \
+		../generated_src/doxygen/extsearch.js.h \
+		../generated_src/doxygen/search_functions.php.h \
+		../generated_src/doxygen/search_opensearch.php.h \
 		section.h \
 		sortdict.h \
                 store.h \
@@ -146,31 +146,25 @@ HEADERS      =	arguments.h \
                 docbookgen.h
 
 SOURCES      =	arguments.cpp \
-                constexp.cpp \
-                ce_parse.cpp \
+                ../generated_src/doxygen/ce_parse.cpp \
+                ../generated_src/doxygen/constexp.cpp \
 		cite.cpp \
 		clangparser.cpp \
 		classdef.cpp \
 		classlist.cpp \
                 cmdmapper.cpp \
-		code.cpp \
-		commentcnv.cpp \
-		commentscan.cpp \
 		condparser.cpp \
 		context.cpp \
 		cppvalue.cpp \
                 dbusxmlscanner.cpp \
 		debug.cpp \
                 defgen.cpp \
-		declinfo.cpp \
-		defargs.cpp \
 		define.cpp \
 		definition.cpp \
 		diagram.cpp \
                 dirdef.cpp \
                 docparser.cpp \
 		docsets.cpp \
-                doctokenizer.cpp \
 		dot.cpp \
 		doxygen.cpp \
 		eclipsehelp.cpp \
@@ -180,8 +174,6 @@ SOURCES      =	arguments.cpp \
 		formula.cpp \
 		ftextstream.cpp \
 		ftvhelp.cpp \
-		fortrancode.cpp \
-		fortranscanner.cpp \    
 		groupdef.cpp \
 		htags.cpp \
                 htmldocvisitor.cpp \
@@ -213,46 +205,56 @@ SOURCES      =	arguments.cpp \
 		outputlist.cpp \
 		pagedef.cpp \
 		perlmodgen.cpp \
-		pre.cpp \
-		pycode.cpp \
-		pyscanner.cpp \    
 		qhp.cpp \
 		qhpxmlwriter.cpp \
 		reflist.cpp \
                 rtfdocvisitor.cpp \
 		rtfgen.cpp \
 		rtfstyle.cpp \
-		scanner.cpp \
 		searchindex.cpp \
                 store.cpp \
 		tagreader.cpp \
-                tclscanner.cpp \
 		template.cpp \
                 textdocvisitor.cpp \
                 tooltip.cpp \
 		util.cpp \
-		version.cpp \
-		vhdlcode.cpp \
+		../generated_src/doxygen/vhdlcode.cpp \
 		vhdldocgen.cpp \
-		vhdlparser.cpp \
-		vhdlscanner.cpp \
+		../generated_src/doxygen/vhdlparser.cpp \
+		../generated_src/doxygen/vhdlscanner.cpp \
 		xmldocvisitor.cpp \
                 xmlgen.cpp \
                 docbookvisitor.cpp \
-                docbookgen.cpp
+                docbookgen.cpp \
+		../generated_src/doxygen/code.cpp \
+		../generated_src/doxygen/commentcnv.cpp \
+		../generated_src/doxygen/commentscan.cpp \
+		../generated_src/doxygen/declinfo.cpp \
+		../generated_src/doxygen/defargs.cpp \
+                ../generated_src/doxygen/doctokenizer.cpp \
+		../generated_src/doxygen/pre.cpp \
+		../generated_src/doxygen/pycode.cpp \
+		../generated_src/doxygen/pyscanner.cpp \    
+		../generated_src/doxygen/scanner.cpp \
+                ../generated_src/doxygen/tclscanner.cpp \
+		../generated_src/doxygen/fortrancode.cpp \
+		../generated_src/doxygen/fortranscanner.cpp \    
+		../generated_src/doxygen/version.cpp
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions
 linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions
+INCLUDEPATH                += ../generated_src/doxygen 
+INCLUDEPATH                += ../src 
 INCLUDEPATH                += ../qtools
 #INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5
 INCLUDEPATH                += %%SQLITE3_INC%%
 win32:INCLUDEPATH          += .
 #win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12 ../libmd5
-win32-g++:INCLUDEPATH      = ../qtools ../libmd5
+win32-g++:INCLUDEPATH      = ../generated_src/doxygen ../src ../qtools ../libmd5
 DESTDIR                    =  ../lib
 TARGET                     =  doxygen
-OBJECTS_DIR                =  ../objects
+OBJECTS_DIR                =  ../objects/doxygen
 

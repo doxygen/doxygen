@@ -6,5 +6,5 @@ win32:INCLUDEPATH          += .
 win32-g++:TMAKE_CFLAGS     += -D__CYGWIN__ -DALL_STATIC
 DESTDIR                    =  ../lib
 TARGET                     =  md5
-OBJECTS_DIR                =  ../objects
+OBJECTS_DIR                =  ../objects/md5
 

@@ -45,9 +45,9 @@ sub GenerateDep {
 
 ####################
 
-#$ GenerateDep("config.cpp","config.l");
-	$(LEX) -PconfigYY -t config.l >config.cpp 
+#$ GenerateDep("../generated_src/doxygen/config.cpp","config.l");
+	$(LEX) -PconfigYY -t config.l >../generated_src/doxygen/config.cpp 
 
-configoptions.cpp: config.xml configgen.py
-	$(PYTHON) configgen.py -cpp config.xml >configoptions.cpp
+../generated_src/doxygen/configoptions.cpp: config.xml configgen.py
+	$(PYTHON) configgen.py -cpp config.xml >../generated_src/doxygen/configoptions.cpp
 

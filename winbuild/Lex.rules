@@ -7,8 +7,8 @@
 		<CustomBuildRule
 			Name="Lex"
 			DisplayName="Lex"
-			CommandLine="flex [AllOptions] -t -P$(InputName)YY [AdditionalOptions] [inputs] | python $(ProjectDir)..\src\increasebuffer.py &gt; $(InputDir)$(InputName).cpp"
-			Outputs="$(InputDir)/$(InputName).cpp"
+			CommandLine="flex [AllOptions] -t -P$(InputName)YY [AdditionalOptions] [inputs] | python $(ProjectDir)..\src\increasebuffer.py &gt; $(IntDir)/$(InputName).cpp"
+			Outputs="$(IntDir)/$(InputName).cpp"
 			FileExtensions="*.l"
 			AdditionalDependencies="$(ProjectDir)..\src\increasebuffer.py"
 			ExecutionDescription="Executing Lex for $(InputPath) ..."
