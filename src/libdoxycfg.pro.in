@@ -17,11 +17,11 @@
 TEMPLATE     =	libdoxycfg.t
 CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =  config.h configoptions.h portable.h
-SOURCES      =	config.cpp configoptions.cpp portable.cpp portable_c.c
+SOURCES      =	../generated_src/doxygen/config.cpp ../generated_src/doxygen/configoptions.cpp portable.cpp portable_c.c
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
-INCLUDEPATH                += ../qtools
+INCLUDEPATH                += . ../qtools
 win32:INCLUDEPATH          += .
 DESTDIR                    =  ../lib
 TARGET                     =  doxycfg
-OBJECTS_DIR                =  ../objects
+OBJECTS_DIR                =  ../objects/doxygen

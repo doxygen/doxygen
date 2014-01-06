@@ -9,7 +9,7 @@
 #include "config.h"
 #include "version.h"
 #include "configdoc.h"
-#include "../../src/settings.h"
+#include "settings.h"
 
 #define SA(x) QString::fromAscii(x)
 

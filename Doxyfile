@@ -102,55 +102,8 @@ FILE_PATTERNS          = *.h \
                          *.cpp \
                          *.md
 RECURSIVE              = NO
-EXCLUDE                = src/code.cpp \
-                         src/ce_lex.cpp \
-                         src/ce_parse.cpp \
-                         src/declinfo.cpp \
-                         src/defargs.cpp \
-                         src/doxytag.cpp \
-                         src/pre.cpp \
-                         src/scanner.cpp \
-                         src/tag.cpp \
-                         src/doctokenizer.cpp \
-                         src/logos.cpp \
-                         src/suffixtree.cpp \
-                         src/suffixtree.h \
-                         src/commentcnv.cpp \
-                         src/commentscan.cpp \
-                         src/pycode.cpp \
-                         src/config.cpp \
-                         src/pyscanner.cpp \
-                         src/fortranscanner.cpp \
-                         src/fortrancode.cpp \
-                         src/vhdlscanner.cpp \
-                         src/vhdlparser.cpp \
-                         src/vhdlcode.cpp \
-                         src/tclscanner.cpp \
-                         src/lodepng.cpp \
-                         src/doxygen.css.h \
-                         src/doxygen.js.h \
-                         src/doxygen.php.h \
-                         src/compound.xsd.h \
-                         src/layout_default.xml.h \
-                         src/bib2xhtml.pl.h \
-                         src/doxygen.bst.h \
-                         src/header.html.h \
-                         src/index.xsd.h \
-                         src/jquery.js.h \
-                         src/jquery_fx.js.h \
-                         src/jquery_ui.js.h \
-                         src/navtree.css.h \
-                         src/navtree.hs.h \
-                         src/search.css.h \
-                         src/search_functions.php.h \
-                         src/search_opensearch.php.h \
-                         src/search.js.h \
-                         src/navtree.js.h \
-                         src/resize.js.h \
-                         src/svgpan.js.h \
-                         src/dynsections.js.h \
-                         src/extsearch.js.h \
-                         src/footer.html.h
+EXCLUE                 = src/logos.cpp \
+                         src/lodepng.cpp
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           =

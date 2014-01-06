@@ -30,8 +30,8 @@ distclean: Makefile.doxywizard
 	$(RM) Makefile.doxywizard
 
 realclean: Makefile.doxywizard
-	$(RM) configdoc.cpp
-	$(RM) config_doxyw.cpp
+	$(RM) ../../generated_src/doxywizard/configdoc.cpp
+	$(RM) ../../generated_src/doxywizard/config_doxyw.cpp
 	$(MAKE) distclean
 	
 install:

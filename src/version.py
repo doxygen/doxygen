@@ -9,6 +9,7 @@
 # the collected information is written to: `../VERSION` and `../src/version.cpp`
 #
 import sys
+import os
 #
 # set 'default' values
 #
@@ -46,7 +47,7 @@ mnt = mnt.replace('\n','')
 # close files
 #
 f1 = open('../VERSION','w')
-f2 = open('../src/version.cpp','w')
+f2 = open(os.path.join(sys.argv[1],'version.cpp'),'w')
 if (mnt == 'NO'):
     f1.write(major + '.' + minor + '.' + revision)
     f2.write('char versionString[]="' + major + '.' + minor + '.' + revision + '";')

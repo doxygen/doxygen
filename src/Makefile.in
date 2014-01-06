@@ -14,6 +14,8 @@
 # input used in their production; they are not affected by this license.
 #
 
+GENERATED_SRC = ../generated_src/doxygen
+
 all: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile
 	$(MAKE) -f Makefile.libdoxycfg $@
 	$(MAKE) -f Makefile.libdoxygen $@
@@ -42,7 +44,7 @@ clean: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen
 
 # also clean flex/bison generated files
 distclean: clean
-	-$(RM) scanner.cpp code.cpp config.cpp pre.cpp constexp.cpp \
+	-cd $(GENERATED_SRC) && $(RM) scanner.cpp code.cpp config.cpp pre.cpp constexp.cpp \
 	       ce_parse.cpp ce_parse.h tag.cpp commentscan.cpp \
 	       declinfo.cpp defargs.cpp commentcnv.cpp doctokenizer.cpp \
 	       pycode.cpp pyscanner.cpp fortrancode.cpp fortranscanner.cpp \
@@ -51,11 +53,11 @@ distclean: clean
 
 # clean also the generated files which are in SVN
 realclean: distclean
-	-$(RM) index.xsd.h compound.xsd.h layout_default.xml.h \
+	-cd $(GENERATED_SRC) && $(RM) index.xsd.h compound.xsd.h layout_default.xml.h \
 	       header.html.h footer.html.h search_functions.php.h search_opensearch.php.h \
 	       search.js.h search.css.h doxygen.css.h navtree.js.h resize.js.h \
 	       doxygen.sty.h jquery_fx.js.h jquery_p1.js.h jquery_p2.js.h \
 	       jquery_p3.js.h jquery_ui.js.h navtree.css.h svgpan.js.h dynsections.js.h \
-	       doxygen.bst.h bib2xhtml.pl.h configoptions.cpp jquery_pt.js.h extsearch.js.h
+	       doxygen.bst.h bib2xhtml.pl.h ../generated_src/doxygen/configoptions.cpp jquery_pt.js.h extsearch.js.h
 
 FORCE:
