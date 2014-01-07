@@ -812,7 +812,10 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    n->ref.data(),n->file.data(),n->anchor.data());
-  if (n->file.isEmpty()) // no link
+  if (n->file.isEmpty() // no link
+  || (n->isDir && Config_getList("GENERATE_DOCS_FOR").find("directories")==-1)
+  || (!n->isDir &&  Config_getList("GENERATE_DOCS_FOR").find("files")==-1)
+  )
   {
     t << "<b>" << convertToHtml(n->name) << "</b>";
   }
