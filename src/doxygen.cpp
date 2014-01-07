@@ -11303,10 +11303,14 @@ void generateOutput()
     }
     g_s.end();
   }
+  QStrList generateDocsFor = Config_getList("GENERATE_DOCS_FOR");
 
-  g_s.begin("Generating example documentation...\n");
-  generateExampleDocs();
-  g_s.end();
+  if (generateDocsFor.find("examples"))
+  {
+    g_s.begin("Generating example documentation...\n");
+    generateExampleDocs();
+    g_s.end();
+  }
 
   if (!Htags::useHtags)
   {
@@ -11315,25 +11319,40 @@ void generateOutput()
     g_s.end();
   }
 
-  g_s.begin("Generating file documentation...\n");
-  generateFileDocs();
-  g_s.end();
+  if (generateDocsFor.find("files"))
+  {
+    g_s.begin("Generating file documentation...\n");
+    generateFileDocs();
+    g_s.end();
+  }
 
-  g_s.begin("Generating page documentation...\n");
-  generatePageDocs();
-  g_s.end();
+  if (generateDocsFor.find("pages"))
+  {
+    g_s.begin("Generating page documentation...\n");
+    generatePageDocs();
+    g_s.end();
+  }
 
-  g_s.begin("Generating group documentation...\n");
-  generateGroupDocs();
-  g_s.end();
+  if (generateDocsFor.find("groups"))
+  {
+    g_s.begin("Generating group documentation...\n");
+    generateGroupDocs();
+    g_s.end();
+  }
 
-  g_s.begin("Generating class documentation...\n");
-  generateClassDocs();
-  g_s.end();
+  if (generateDocsFor.find("classes"))
+  {
+    g_s.begin("Generating class documentation...\n");
+    generateClassDocs();
+    g_s.end();
+  }
 
-  g_s.begin("Generating namespace index...\n");
-  generateNamespaceDocs();
-  g_s.end();
+  if (generateDocsFor.find("namespaces"))
+  {
+    g_s.begin("Generating namespace index...\n");
+    generateNamespaceDocs();
+    g_s.end();
+  }
 
   if (Config_getBool("GENERATE_LEGEND"))
   {
@@ -11342,9 +11361,12 @@ void generateOutput()
     g_s.end();
   }
 
-  g_s.begin("Generating directory documentation...\n");
-  generateDirDocs(*g_outputList);
-  g_s.end();
+  if (generateDocsFor.find("directories"))
+  {
+    g_s.begin("Generating directory documentation...\n");
+    generateDirDocs(*g_outputList);
+    g_s.end();
+  }
 
   if (Doxygen::formulaList->count()>0 && generateHtml
       && !Config_getBool("USE_MATHJAX"))

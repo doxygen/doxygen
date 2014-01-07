@@ -1612,6 +1612,14 @@ to disable this feature.
 ]]>
       </docs>
     </option>
+    <option type='list' id='GENERATE_DOCS_FOR' format='string' defval='examples files pages groups classes namespaces directories'>
+      <docs>
+<![CDATA[
+In case of a source browser, certain docs are not needed.
+This tag lists the items for which docs will be generated.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='HTML' docs='Configuration options related to the HTML output'>
     <option type='bool' id='GENERATE_HTML' defval='1'>
