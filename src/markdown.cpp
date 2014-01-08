@@ -2279,14 +2279,7 @@ void MarkdownFileParser::parseInput(const char *fileName,
   current->fileName = fileName;
   current->docFile  = fileName;
   current->docLine  = 1;
-  int len = qstrlen(fileBuf);
-  BufStr input(len);
-  BufStr output(len);
-  input.addArray(fileBuf,qstrlen(fileBuf));
-  input.addChar('\0');
-  convertCppComments(&input,&output,fileName);
-  output.addChar('\0');
-  QCString docs = output.data();
+  QCString docs = fileBuf;
   QCString id;
   QCString title=extractPageTitle(docs,id).stripWhiteSpace();
   QCString titleFn = QFileInfo(fileName).baseName().utf8();

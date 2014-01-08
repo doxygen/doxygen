@@ -615,9 +615,9 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
+				       copyToOutput(yytext,(int)yyleng);
                                        if (g_nestingCount<=0)
                                        {
-				         copyToOutput(yytext,(int)yyleng);
 				         BEGIN(Scan);
                                        }
                                        else
@@ -977,7 +977,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
   }
-  if (g_nestingCount>0 || YY_START==CComment)
+  if (g_nestingCount>0 || (YY_START==CComment && g_lang!=SrcLangExt_Markdown))
   {
     warn(g_fileName,g_lineNr,"Reached end of file while still inside a (nested) comment. "
         "Nesting level %d",g_nestingCount+1); // add one for "normal" expected end of comment
