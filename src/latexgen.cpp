@@ -592,6 +592,14 @@ void LatexGenerator::startProjectNumber()
   t << "\\\\[1ex]\\large "; 
 }
 
+static QCString convertToLaTeX(const QCString &s)
+{
+  QGString result;
+  FTextStream t(&result);
+  filterLatexString(t,s,FALSE,FALSE,FALSE);
+  return result.data();
+}
+
 void LatexGenerator::startIndexSection(IndexSections is)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
@@ -607,16 +615,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
         else
         {
           QCString header = fileToString(latexHeader);
-          QGString genStringName;
-          FTextStream tgName(&genStringName);
-          filterLatexString(tgName, Config_getString("PROJECT_NAME"), FALSE,FALSE,FALSE);
-          QGString genStringNumber;
-          FTextStream tgNumber(&genStringNumber);
-          filterLatexString(tgNumber, Config_getString("PROJECT_NUMBER"), FALSE,FALSE,FALSE);
-          QGString genStringBrief;
-          FTextStream tgBrief(&genStringBrief);
-          filterLatexString(tgBrief, Config_getString("PROJECT_BRIEF"), FALSE,FALSE,FALSE);
-          t << substituteKeywords(header,0, genStringName, genStringNumber, genStringBrief);
+          t << substituteKeywords(header,0,
+                   convertToLaTeX(Config_getString("PROJECT_NAME")),
+                   convertToLaTeX(Config_getString("PROJECT_NUMBER")),
+                   convertToLaTeX(Config_getString("PROJECT_BRIEF")));
         }
       }
       break;
@@ -1011,16 +1013,10 @@ void LatexGenerator::endIndexSection(IndexSections is)
       else
       {
         QCString footer = fileToString(latexFooter);
-        QGString genStringName;
-        FTextStream tgName(&genStringName);
-        filterLatexString(tgName, Config_getString("PROJECT_NAME"), FALSE,FALSE,FALSE);
-        QGString genStringNumber;
-        FTextStream tgNumber(&genStringNumber);
-        filterLatexString(tgNumber, Config_getString("PROJECT_NUMBER"), FALSE,FALSE,FALSE);
-        QGString genStringBrief;
-        FTextStream tgBrief(&genStringBrief);
-        filterLatexString(tgBrief, Config_getString("PROJECT_BRIEF"), FALSE,FALSE,FALSE);
-        t << substituteKeywords(footer,0, genStringName, genStringNumber, genStringBrief);
+        t << substituteKeywords(footer,0,
+                   convertToLaTeX(Config_getString("PROJECT_NAME")),
+                   convertToLaTeX(Config_getString("PROJECT_NUMBER")),
+                   convertToLaTeX(Config_getString("PROJECT_BRIEF")));
       }
       break;
   }
