@@ -977,6 +977,11 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
   }
+  if (g_nestingCount>0 || YY_START==CComment)
+  {
+    warn(g_fileName,g_lineNr,"Reached end of file while still inside a (nested) comment. "
+        "Nesting level %d",g_nestingCount+1); // add one for "normal" expected end of comment
+  }
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     g_outBuf->at(g_outBuf->curPos())='\0';
