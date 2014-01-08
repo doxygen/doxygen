@@ -154,10 +154,6 @@ configuration file for project \e a you write:
 \verbatim
 TAGFILES = b.tag=b.chm::
 \endverbatim
-or you can use \c installdox to set the links as follows:
-\verbatim
-installdox -lb.tag@b.chm::
-\endverbatim
 
 <li><b>I don't like the quick index that is put above each HTML page, what do I do?</b>
 
