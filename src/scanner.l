@@ -5115,6 +5115,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
+<SkipInits>"("                          {
+                                          roundCount=0;
+                                          lastSkipRoundContext=YY_START;
+                                          BEGIN(SkipRound);
+                                        }
 <SkipInits>\"				{
   					  lastStringContext=YY_START;
   				          BEGIN( SkipString ); 
