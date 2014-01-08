@@ -5567,6 +5567,15 @@ static bool isSpecialization(
     return FALSE;
 }
 
+static bool scopeIsTemplate(Definition *d)
+{
+  bool result=FALSE;
+  if (d && d->definitionType()==Definition::TypeClass)
+  {
+    result = ((ClassDef*)d)->templateArguments() || scopeIsTemplate(d->getOuterScope());
+  }
+  return result;
+}
 
 static QCString substituteTemplatesInString(
     const QList<ArgumentList> &srcTempArgLists,
@@ -6154,7 +6163,7 @@ static void findMember(EntryNav *rootNav,
                   matching = FALSE;
                 }
               }
-              bool classIsTemplate = md->getClassDef() && md->getClassDef()->templateArguments();
+              bool classIsTemplate = scopeIsTemplate(md->getClassDef());
               bool mdIsTemplate    = md->templateArguments()!=0;
               bool classOrMdIsTemplate = mdIsTemplate || classIsTemplate;
               bool rootIsTemplate  = root->tArgLists!=0;
