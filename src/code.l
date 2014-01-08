@@ -111,6 +111,7 @@ static int           g_lastSkipCppContext;
 static int           g_lastVerbStringContext;
 static int           g_memCallContext;
 static int	     g_lastCContext;
+static int           g_skipInlineInitContext;
 
 static bool          g_insideObjC;
 static bool          g_insideJava;
@@ -1798,6 +1799,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 %x      OldStyleArgs
 %x	UsingName
 %x      RawString
+%x      InlineInit
 
 %%
 
@@ -2542,7 +2544,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits>{RAWBEGIN}	{
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}	{
                                           QCString text=yytext;
                                           int i=text.find('R');
                                           g_code->codify(text.left(i+1));
@@ -2554,14 +2556,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           g_delimiter=g_delimiter.left(g_delimiter.length()-1);
   					  BEGIN( RawString );
                                         }
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits>\"	{
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\"	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;
 					  g_inForEachExpression = FALSE;
   					  BEGIN( SkipString );
   					}
-<FuncCall,Body,MemberCall,MemberCall2,SkipInits>\'	{
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>\'	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;
@@ -2915,6 +2917,35 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  g_parmType.resize(0);g_parmName.resize(0);
 					}
+<MemberCall2,FuncCall>"{"		{
+                                          if (g_bracketCount>0)
+                                          {
+                                            g_code->codify(yytext);
+                                            g_skipInlineInitContext=YY_START;
+                                            g_curlyCount=0;
+                                            BEGIN(InlineInit);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<InlineInit>"{"                         { g_curlyCount++;
+                                          g_code->codify(yytext);
+                                        }
+<InlineInit>"}"                         {
+                                          g_code->codify(yytext);
+                                          if (--g_curlyCount<=0)
+                                          {
+                                            BEGIN(g_skipInlineInitContext);
+                                          }
+                                        }
+<InlineInit>\n                          {
+                                          codifyLines(yytext);
+                                        }
+<InlineInit>.                           {
+                                          g_code->codify(yytext);
+                                        }
 <MemberCall2,FuncCall>"("		{
 					  g_parmType.resize(0);g_parmName.resize(0);
   					  g_code->codify(yytext);
