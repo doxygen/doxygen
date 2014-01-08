@@ -611,11 +611,12 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
           StringList l;
           linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->type);
 
-          QCString *s=l.first();
-          while (s)
+          StringListIterator li(l);
+          QCString *s;
+          while ((s=li.current()))
           {
             insertMemberReference(db,md->anchor().data(),s->data(),def->getDefFileName().data(),md->getDefLine(),1);
-            s=l.next();
+            ++li;
           }
         }
         if (!a->name.isEmpty())
@@ -669,8 +670,9 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
-    QCString *s=l.first();
-    while (s)
+    StringListIterator li(l);
+    QCString *s;
+    while ((s=li.current()))
     {
       if (md->getBodyDef())
       {
@@ -681,7 +683,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
               md->getStartBodyLine()));
         insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
       }
-      s=l.next();
+      ++li;
     }
   }
 
