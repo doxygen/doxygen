@@ -477,7 +477,6 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // + template arguments
   //     (templateArguments(), definitionTemplateParameterLists())
   // - call graph
-  msg("=====%s\n",md->name().data());
 
   // enum values are written as part of the enum
   if (md->memberType()==MemberType_EnumValue) return;
@@ -765,7 +764,6 @@ static void generateSqlite3Section(sqlite3*db,
   int count=0;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    msg("I:%s\n",md->name().data());
     // namespace members are also inserted in the file scope, but
     // to prevent this duplication in the XML output, we filter those here.
     if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
