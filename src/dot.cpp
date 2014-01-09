@@ -879,6 +879,8 @@ DotFilePatcher::DotFilePatcher(const char *patchFile)
   : m_patchFile(patchFile)
 {
   m_maps.setAutoDelete(TRUE);
+  m_cleanupItem.file="";
+  m_cleanupItem.path="";
 }
 
 QCString DotFilePatcher::file() const
@@ -946,8 +948,12 @@ int DotFilePatcher::addSVGObject(const QCString &baseName,
   return id;
 }
 
+extern "C" { pthread_t pthread_self(void); }
 bool DotFilePatcher::run()
 {
+  QDir cwd ;
+
+  msg("%lu Patching output file\n",pthread_self());
   //printf("DotFilePatcher::run(): %s\n",m_patchFile.data());
   static bool interactiveSVG = Config_getBool("INTERACTIVE_SVG");
   bool isSVGFile = m_patchFile.right(4)==".svg";
@@ -964,7 +970,7 @@ bool DotFilePatcher::run()
   }
   QString tmpName = QString::fromUtf8(m_patchFile+".tmp");
   QString patchFile = QString::fromUtf8(m_patchFile);
-  if (!QDir::current().rename(patchFile,tmpName))
+  if (!cwd.rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.data());
     return FALSE;
@@ -974,13 +980,13 @@ bool DotFilePatcher::run()
   if (!fi.open(IO_ReadOnly)) 
   {
     err("problem opening file %s for patching!\n",tmpName.data());
-    QDir::current().rename(tmpName,patchFile);
+    cwd.rename(tmpName,patchFile);
     return FALSE;
   }
   if (!fo.open(IO_WriteOnly))
   {
     err("problem opening file %s for patching!\n",m_patchFile.data());
-    QDir::current().rename(tmpName,patchFile);
+    cwd.rename(tmpName,patchFile);
     return FALSE;
   }
   FTextStream t(&fo);
@@ -1148,20 +1154,21 @@ bool DotFilePatcher::run()
     fo.close();
   }
   // remove temporary file
-  QDir::current().remove(tmpName);
+  m_cleanupItem.file = tmpName.data();
+  m_cleanupItem.path = cwd.path().data();
   return TRUE;
 }
 
 //--------------------------------------------------------------------
 
-void DotRunnerQueue::enqueue(DotRunner *runner)
+void DotRunnerQueue::enqueue(DotTask *runner)
 {
   QMutexLocker locker(&m_mutex);
   m_queue.enqueue(runner);
   m_bufferNotEmpty.wakeAll();
 }
 
-DotRunner *DotRunnerQueue::dequeue()
+DotTask *DotRunnerQueue::dequeue()
 {
   QMutexLocker locker(&m_mutex);
   while (m_queue.isEmpty())
@@ -1169,7 +1176,7 @@ DotRunner *DotRunnerQueue::dequeue()
     // wait until something is added to the queue
     m_bufferNotEmpty.wait(&m_mutex);
   }
-  DotRunner *result = m_queue.dequeue();
+  DotTask *result = m_queue.dequeue();
   return result;
 }
 
@@ -1182,18 +1189,18 @@ uint DotRunnerQueue::count() const
 //--------------------------------------------------------------------
 
 DotWorkerThread::DotWorkerThread(DotRunnerQueue *queue)
-      : m_queue(queue)
+      : m_dotRunnerQ(queue)
 {
   m_cleanupItems.setAutoDelete(TRUE);
 }
 
 void DotWorkerThread::run()
 {
-  DotRunner *runner;
-  while ((runner=m_queue->dequeue()))
+  DotTask *runner;
+  while ((runner=m_dotRunnerQ->dequeue()))
   {
     runner->run();
-    DotRunner::CleanupItem cleanup = runner->cleanup();
+    DotTask::CleanupItem cleanup = runner->cleanup();
     if (!cleanup.file.isEmpty())
     {
       m_cleanupItems.append(new DotRunner::CleanupItem(cleanup));
@@ -1226,9 +1233,9 @@ DotManager *DotManager::instance()
 
 DotManager::DotManager() : m_dotMaps(1007)
 {
-  m_dotRuns.setAutoDelete(TRUE);
+  m_dotTaskL.setAutoDelete(TRUE);
   m_dotMaps.setAutoDelete(TRUE);
-  m_queue = new DotRunnerQueue;
+  m_dotRunnerQ = new DotRunnerQueue;
   int i;
   int numThreads = QMIN(32,Config_getInt("DOT_NUM_THREADS"));
   if (numThreads!=1)
@@ -1236,7 +1243,7 @@ DotManager::DotManager() : m_dotMaps(1007)
     if (numThreads==0) numThreads = QMAX(2,QThread::idealThreadCount()+1);
     for (i=0;i<numThreads;i++)
     {
-      DotWorkerThread *thread = new DotWorkerThread(m_queue);
+      DotWorkerThread *thread = new DotWorkerThread(m_dotRunnerQ);
       thread->start();
       if (thread->isRunning())
       {
@@ -1253,36 +1260,46 @@ DotManager::DotManager() : m_dotMaps(1007)
 
 DotManager::~DotManager()
 {
-  delete m_queue;
+  delete m_dotRunnerQ;
 }
 
 void DotManager::addRun(DotRunner *run)
 {
-  m_dotRuns.append(run);
+  m_dotTaskL.append(run);
+}
+
+// if file is found as a patcher, then it's returned,
+// otherwise a new patcher is created.
+// since patching the svg files may involve patching the header of the SVG
+// (for zoomable SVGs), and patching the .html files requires reading that
+// header _after_ the SVG is patched, we keep the .svg files in front
+// of the list.
+DotFilePatcher* DotManager::findPatcher(const QCString &file)
+{
+  DotFilePatcher *map = (DotFilePatcher*)m_dotMaps.find(file);
+  if (map==0)
+  {
+    map = new DotFilePatcher(file);
+    if (file.right(4) == ".svg")
+      m_dotMaps.prepend(file,map);
+    else
+      m_dotMaps.append(file,map);
+  }
+  return map;
 }
 
 int DotManager::addMap(const QCString &file,const QCString &mapFile,
                 const QCString &relPath,bool urlOnly,const QCString &context,
                 const QCString &label)
 {
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
+  DotFilePatcher *map = findPatcher(file);
   return map->addMap(mapFile,relPath,urlOnly,context,label);
 }
 
 int DotManager::addFigure(const QCString &file,const QCString &baseName,
                           const QCString &figureName,bool heightCheck)
 {
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
+  DotFilePatcher *map = findPatcher(file);
   return map->addFigure(baseName,figureName,heightCheck);
 }
 
@@ -1290,30 +1307,20 @@ int DotManager::addSVGConversion(const QCString &file,const QCString &relPath,
                        bool urlOnly,const QCString &context,bool zoomable,
                        int graphId)
 {
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
+  DotFilePatcher *map = findPatcher(file);
   return map->addSVGConversion(relPath,urlOnly,context,zoomable,graphId);
 }
 
 int DotManager::addSVGObject(const QCString &file,const QCString &baseName,
                              const QCString &absImgName,const QCString &relPath)
 {
-  DotFilePatcher *map = m_dotMaps.find(file);
-  if (map==0)
-  {
-    map = new DotFilePatcher(file);
-    m_dotMaps.append(file,map);
-  }
+  DotFilePatcher *map = findPatcher(file);
   return map->addSVGObject(baseName,absImgName,relPath);
 }
 
 bool DotManager::run()
 {
-  uint numDotRuns = m_dotRuns.count();
+  uint numDotRuns = m_dotTaskL.count();
   uint numDotMaps = m_dotMaps.count();
   if (numDotRuns+numDotMaps>1)
   {
@@ -1327,7 +1334,8 @@ bool DotManager::run()
     }
   }
   int i=1;
-  QListIterator<DotRunner> li(m_dotRuns);
+  QListIterator<DotTask> li(m_dotTaskL);
+  SDict<DotTask>::Iterator di(m_dotMaps);
 
   bool setPath=FALSE;
   if (Config_getBool("GENERATE_HTML"))
@@ -1347,7 +1355,7 @@ bool DotManager::run()
   }
   portable_sysTimerStart();
   // fill work queue with dot operations
-  DotRunner *dr;
+  DotTask *dr;
   int prev=1;
   if (m_workers.count()==0) // no threads to work with
   {
@@ -1362,10 +1370,16 @@ bool DotManager::run()
   {
     for (li.toFirst();(dr=li.current());++li)
     {
-      m_queue->enqueue(dr);
+      m_dotRunnerQ->enqueue(dr);
+    }
+
+    // patch the output file and insert the maps and figures
+    for (di.toFirst();(dr=di.current());++di)
+    {
+      m_dotRunnerQ->enqueue(dr);
     }
     // wait for the queue to become empty
-    while ((i=m_queue->count())>0)
+    while ((i=m_dotRunnerQ->count())>0)
     {
       i = numDotRuns - i;
       while (i>=prev)
@@ -1383,7 +1397,7 @@ bool DotManager::run()
     // signal the workers we are done
     for (i=0;i<(int)m_workers.count();i++)
     {
-      m_queue->enqueue(0); // add terminator for each worker
+      m_dotRunnerQ->enqueue(0); // add terminator for each worker
     }
     // wait for the workers to finish
     for (i=0;i<(int)m_workers.count();i++)
@@ -1400,33 +1414,6 @@ bool DotManager::run()
   if (setPath)
   {
     unsetDotFontPath();
-  }
-
-  // patch the output file and insert the maps and figures
-  i=1;
-  SDict<DotFilePatcher>::Iterator di(m_dotMaps);
-  DotFilePatcher *map;
-  // since patching the svg files may involve patching the header of the SVG
-  // (for zoomable SVGs), and patching the .html files requires reading that
-  // header after the SVG is patched, we first process the .svg files and 
-  // then the other files. 
-  for (di.toFirst();(map=di.current());++di)
-  {
-    if (map->file().right(4)==".svg")
-    {
-      msg("Patching output file %d/%d\n",i,numDotMaps);
-      if (!map->run()) return FALSE;
-      i++;
-    }
-  }
-  for (di.toFirst();(map=di.current());++di)
-  {
-    if (map->file().right(4)!=".svg")
-    {
-      msg("Patching output file %d/%d\n",i,numDotMaps);
-      if (!map->run()) return FALSE;
-      i++;
-    }
   }
   return TRUE;
 }
