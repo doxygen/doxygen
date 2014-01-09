@@ -310,7 +310,8 @@ static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst, c
     {
       sscanf(floc,"%[^:]:%d:%d",file,&line,&column);
     }
-    insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
+#warning Disabled until the xref key can be stored as file:line:column
+    //insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
   }
 }
 
@@ -476,7 +477,6 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   // + template arguments
   //     (templateArguments(), definitionTemplateParameterLists())
   // - call graph
-  msg("=====%s\n",md->name().data());
 
   // enum values are written as part of the enum
   if (md->memberType()==MemberType_EnumValue) return;
@@ -611,11 +611,12 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
           StringList l;
           linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->type);
 
-          QCString *s=l.first();
-          while (s)
+          StringListIterator li(l);
+          QCString *s;
+          while ((s=li.current()))
           {
             insertMemberReference(db,md->anchor().data(),s->data(),def->getDefFileName().data(),md->getDefLine(),1);
-            s=l.next();
+            ++li;
           }
         }
         if (!a->name.isEmpty())
@@ -669,8 +670,9 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
-    QCString *s=l.first();
-    while (s)
+    StringListIterator li(l);
+    QCString *s;
+    while ((s=li.current()))
     {
       if (md->getBodyDef())
       {
@@ -681,7 +683,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
               md->getStartBodyLine()));
         insertMemberReference(db,md->anchor().data(),s->data(),md->getBodyDef()->getDefFileName().data(),md->getStartBodyLine(),1);
       }
-      s=l.next();
+      ++li;
     }
   }
 
@@ -762,7 +764,6 @@ static void generateSqlite3Section(sqlite3*db,
   int count=0;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    msg("I:%s\n",md->name().data());
     // namespace members are also inserted in the file scope, but
     // to prevent this duplication in the XML output, we filter those here.
     if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
