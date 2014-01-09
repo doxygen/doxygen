@@ -310,7 +310,8 @@ static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst, c
     {
       sscanf(floc,"%[^:]:%d:%d",file,&line,&column);
     }
-    insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
+#warning Disabled until the xref key can be stored as file:line:column
+    //insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
   }
 }
 
