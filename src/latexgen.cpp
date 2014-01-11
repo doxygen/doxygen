@@ -464,7 +464,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   {
     // To avoid duplicate page anchors due to reuse of same numbers for
     // the index (be it as roman numbers)
-    t << "\\hypersetup{pageanchor=false}\n";
+    t << "\\hypersetup{pageanchor=false,\n"
+      << "             bookmarks=true,\n"
+      << "             bookmarksnumbered=true,\n"
+      << "             pdfencoding=unicode\n"
+      << "            }\n";
   }
   t << "\\pagenumbering{roman}\n"
        "\\begin{titlepage}\n"
