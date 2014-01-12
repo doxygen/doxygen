@@ -5771,7 +5771,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  specName = &current->name;
 					  BEGIN ( Specialization );
 					}
-<Bases>"<"   	       	                { 
+<Bases>{BN}*"<"                         {
+                                          lineCount();
   					  sharpCount=1; 
 					  roundCount=0;
 					  lastSkipSharpContext = YY_START;
