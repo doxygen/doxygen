@@ -102,7 +102,7 @@ FILE_PATTERNS          = *.h \
                          *.cpp \
                          *.md
 RECURSIVE              = NO
-EXCLUE                 = src/logos.cpp \
+EXCLUDE                = src/logos.cpp \
                          src/lodepng.cpp
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_SYMBOLS        =

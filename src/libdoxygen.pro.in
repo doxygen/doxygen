@@ -17,7 +17,6 @@
 TEMPLATE     =	libdoxygen.t
 CONFIG       =	console warn_on staticlib $extraopts
 HEADERS      =	arguments.h \
-                ../generated_src/doxygen/bib2xhtml.pl.h \
                 bufstr.h \
 		cite.h \
 		clangparser.h \
@@ -27,7 +26,6 @@ HEADERS      =	arguments.h \
                 code.h \
 		commentcnv.h \
 		commentscan.h \
-                ../generated_src/doxygen/compound.xsd.h \
 		condparser.h \
                 config.h \
 		context.h \
@@ -47,20 +45,15 @@ HEADERS      =	arguments.h \
                 docvisitor.h \
 		dot.h \
 		doxygen.h \
-		../generated_src/doxygen/doxygen.bst.h \
-		../generated_src/doxygen/doxygen.css.h \
-		../generated_src/doxygen/doxygen.sty.h \
 		eclipsehelp.h \
 		entry.h \
 		example.h \
 		filedef.h \
 		filename.h \
-		../generated_src/doxygen/footer.html.h \
 		formula.h \
 		ftextstream.h \
 		ftvhelp.h \
 		groupdef.h \
-		../generated_src/doxygen/header.html.h \
 		htags.h \
 		htmlattrib.h \
                 htmldocvisitor.h \
@@ -68,20 +61,10 @@ HEADERS      =	arguments.h \
 		htmlhelp.h \
 		image.h \
 		index.h \
-                ../generated_src/doxygen/index.xsd.h \
-		../generated_src/doxygen/jquery_p1.js.h \
-		../generated_src/doxygen/jquery_p2.js.h \
-		../generated_src/doxygen/jquery_p3.js.h \
-		../generated_src/doxygen/jquery_ui.js.h \
-		../generated_src/doxygen/jquery_fx.js.h \
-		../generated_src/doxygen/jquery_pt.js.h \
-		../generated_src/doxygen/svgpan.js.h \
-		../generated_src/doxygen/dynsections.js.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \
                 layout.h \
-                ../generated_src/doxygen/layout_default.xml.h \
 		logos.h \
 		mandocvisitor.h \
 		mangen.h \
@@ -96,8 +79,6 @@ HEADERS      =	arguments.h \
                 msc.h \
                 dia.h \
 		namespacedef.h \
-		../generated_src/doxygen/navtree.css.h \
-		../generated_src/doxygen/navtree.js.h \
                 objcache.h \
 		outputgen.h \
 		outputlist.h \
@@ -114,17 +95,11 @@ HEADERS      =	arguments.h \
 		qhp.h \
 		qhpxmlwriter.h \
 		reflist.h \
-		../generated_src/doxygen/resize.js.h \
                 rtfdocvisitor.h \
 		rtfgen.h \
 		rtfstyle.h \
 		scanner.h \
 		searchindex.h \
-		../generated_src/doxygen/search.css.h \
-		../generated_src/doxygen/search.js.h \
-		../generated_src/doxygen/extsearch.js.h \
-		../generated_src/doxygen/search_functions.php.h \
-		../generated_src/doxygen/search_opensearch.php.h \
 		section.h \
 		sortdict.h \
                 store.h \
@@ -143,11 +118,35 @@ HEADERS      =	arguments.h \
 		xmldocvisitor.h \
                 xmlgen.h \
                 docbookvisitor.h \
-                docbookgen.h
+                docbookgen.h \
+                ../generated_src/doxygen/bib2xhtml.pl.h \
+                ../generated_src/doxygen/compound.xsd.h \
+		../generated_src/doxygen/doxygen.bst.h \
+		../generated_src/doxygen/doxygen.css.h \
+		../generated_src/doxygen/doxygen.sty.h \
+		../generated_src/doxygen/footer.html.h \
+		../generated_src/doxygen/header.html.h \
+                ../generated_src/doxygen/index.xsd.h \
+                ../generated_src/doxygen/settings.h \
+		../generated_src/doxygen/jquery_p1.js.h \
+		../generated_src/doxygen/jquery_p2.js.h \
+		../generated_src/doxygen/jquery_p3.js.h \
+		../generated_src/doxygen/jquery_ui.js.h \
+		../generated_src/doxygen/jquery_fx.js.h \
+		../generated_src/doxygen/jquery_pt.js.h \
+		../generated_src/doxygen/svgpan.js.h \
+		../generated_src/doxygen/dynsections.js.h \
+                ../generated_src/doxygen/layout_default.xml.h \
+		../generated_src/doxygen/navtree.css.h \
+		../generated_src/doxygen/navtree.js.h \
+		../generated_src/doxygen/resize.js.h \
+		../generated_src/doxygen/search.css.h \
+		../generated_src/doxygen/search.js.h \
+		../generated_src/doxygen/extsearch.js.h \
+		../generated_src/doxygen/search_functions.php.h \
+		../generated_src/doxygen/search_opensearch.php.h
 
 SOURCES      =	arguments.cpp \
-                ../generated_src/doxygen/ce_parse.cpp \
-                ../generated_src/doxygen/constexp.cpp \
 		cite.cpp \
 		clangparser.cpp \
 		classdef.cpp \
@@ -218,14 +217,16 @@ SOURCES      =	arguments.cpp \
                 textdocvisitor.cpp \
                 tooltip.cpp \
 		util.cpp \
-		../generated_src/doxygen/vhdlcode.cpp \
 		vhdldocgen.cpp \
-		../generated_src/doxygen/vhdlparser.cpp \
-		../generated_src/doxygen/vhdlscanner.cpp \
 		xmldocvisitor.cpp \
                 xmlgen.cpp \
                 docbookvisitor.cpp \
                 docbookgen.cpp \
+                ../generated_src/doxygen/ce_parse.cpp \
+                ../generated_src/doxygen/constexp.cpp \
+		../generated_src/doxygen/vhdlcode.cpp \
+		../generated_src/doxygen/vhdlparser.cpp \
+		../generated_src/doxygen/vhdlscanner.cpp \
 		../generated_src/doxygen/code.cpp \
 		../generated_src/doxygen/commentcnv.cpp \
 		../generated_src/doxygen/commentscan.cpp \
@@ -234,11 +235,11 @@ SOURCES      =	arguments.cpp \
                 ../generated_src/doxygen/doctokenizer.cpp \
 		../generated_src/doxygen/pre.cpp \
 		../generated_src/doxygen/pycode.cpp \
-		../generated_src/doxygen/pyscanner.cpp \    
+		../generated_src/doxygen/pyscanner.cpp \
 		../generated_src/doxygen/scanner.cpp \
                 ../generated_src/doxygen/tclscanner.cpp \
 		../generated_src/doxygen/fortrancode.cpp \
-		../generated_src/doxygen/fortranscanner.cpp \    
+		../generated_src/doxygen/fortranscanner.cpp \
 		../generated_src/doxygen/version.cpp
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
