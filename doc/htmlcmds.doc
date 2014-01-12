@@ -25,7 +25,7 @@ of a HTML tag are passed on to the HTML output only
 <ul>
 <li><tt>\<A HREF="..."\></tt> Starts a hyperlink 
                        (if supported by the output format). 
-<li><tt>\<A NAME="..."\></tt> Starts an named anchor 
+<li><tt>\<A NAME="..."\></tt> Starts a named anchor 
                        (if supported by the output format).
 <li><tt>\</A\></tt>    Ends a link or anchor 
 <li><tt>\<B\></tt>     Starts a piece of text displayed in a bold font.
@@ -129,7 +129,7 @@ The special HTML character entities that are recognized by Doxygen:
 <li><tt>\&?uml;</tt>   where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y}, 
        writes a character with a diaeresis accent (like &auml;).
 <li><tt>\&?acute;</tt> where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y},
-       writes a character with a acute accent (like &aacute;). 
+       writes a character with an acute accent (like &aacute;). 
 <li><tt>\&?grave;</tt> where ? is one of {A,E,I,O,U,a,e,i,o,u,y},
        writes a character with a grave accent (like &agrave;).
 <li><tt>\&?circ;</tt>  where ? is one of {A,E,I,O,U,a,e,i,o,u,y},

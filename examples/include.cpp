@@ -13,7 +13,7 @@ class Test
  *  Our main function starts like this:
  *  \skip main
  *  \until {
- *  First we create a object \c t of the Test class.
+ *  First we create an object \c t of the Test class.
  *  \skipline Test
  *  Then we call the example member function 
  *  \line example

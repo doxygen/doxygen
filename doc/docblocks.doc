@@ -461,7 +461,7 @@ When using doxygen for Fortran code you should
 set \ref cfg_optimize_for_fortran "OPTIMIZE_FOR_FORTRAN" to \c YES.
 
 For Fortran "!>" or "!<" starts a comment and "!!" or "!>" can be used to 
-continuate a one line comment into a multi-line comment.
+continue an one line comment into a multi-line comment.
 
 Here is an example of a documented Fortran subroutine:
 \verbatim
@@ -476,7 +476,7 @@ Here is an example of a documented Fortran subroutine:
     Type(SpMtx), intent(out) :: Restrict !< Our restriction matrix
 \endverbatim
 
-As a alternative you can also use comments in fixed format code:
+As an alternative you can also use comments in fixed format code:
 
 \verbatim
 C> Function comment
@@ -541,7 +541,7 @@ commands without the leading namespace use p.e.:
 \verbatim TCL_SUBST = class itcl:class body itcl:body \endverbatim
 -->
 
-Following is a example using doxygen style comments:
+Following is an example using doxygen style comments:
 
 \include tclexample.tcl
  \htmlonly

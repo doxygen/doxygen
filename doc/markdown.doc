@@ -65,11 +65,11 @@ Just like Markdown, doxygen supports two types of headers
 
 Level 1 or 2 headers can be made as the follows
 
-    This is an level 1 header
-    =========================
+    This is a level 1 header
+    ========================
 
-    This is an level 2 header
-    -------------------------
+    This is a level 2 header
+    ------------------------
 
 A header is followed by a line containing only ='s or -'s.
 Note that the exact amount of ='s or -'s is not important as long as
@@ -530,7 +530,7 @@ stars, so the following will appear as-is:
     a_nice_identifier
 
 Furthermore, a `*` or `_` only starts an emphasis if
-- it is followed by an alphanumberical character, and
+- it is followed by an alphanumerical character, and
 - it is preceded by a space, newline, or one the following characters `<{([,:;`
 
 An emphasis ends if
@@ -574,7 +574,7 @@ following as one list with 3 numbered items:
 
 Doxygen however requires that the numbers used as marks are in 
 strictly ascending order, so the above example would produce 3 lists 
-with one item. An item with a equal or lower number than 
+with one item. An item with an equal or lower number than 
 the preceding item, will start a new list. For example:
 
     1. Item1 of list 1
