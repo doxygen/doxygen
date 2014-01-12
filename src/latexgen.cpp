@@ -323,6 +323,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "  \\fontseries{bc}\\selectfont%\n"
        "  \\color{darkgray}%\n"
        "}\n"
+       "\\newcommand{\\+}{\\discretionary{\\mbox{\\scriptsize$\\hookleftarrow$}}{}{}}\n"
        "\n";
 
   // Define page & text layout

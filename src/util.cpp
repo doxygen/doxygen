@@ -6527,9 +6527,9 @@ void filterLatexString(FTextStream &t,const char *str,
         case '^':  t << "$^\\wedge$";    break;
         case '&':  t << "\\&";           break;
         case '*':  t << "$\\ast$";       break;
-        case '_':  if (!insideTabbing) t << "\\-";  
+        case '_':  if (!insideTabbing) t << "\\+";  
                    t << "\\_"; 
-                   if (!insideTabbing) t << "\\-";  
+                   if (!insideTabbing) t << "\\+";  
                    break;
         case '{':  t << "\\{";           break;
         case '}':  t << "\\}";           break;
@@ -6566,7 +6566,7 @@ void filterLatexString(FTextStream &t,const char *str,
                        ((c>='A' && c<='Z' && pc!=' ' && pc!='\0') || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
-                     t << "\\-";
+                     t << "\\+";
                    }
                    t << (char)c;
       }
