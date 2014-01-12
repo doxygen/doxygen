@@ -2689,6 +2689,15 @@ EXTRA_PACKAGES=times
 ]]>
       </docs>
     </option>
+    <option type='string' id='MAN_SUBDIR' format='string' defval='man3' depends='GENERATE_MAN'>
+      <docs>
+<![CDATA[
+ The \c MAN_SUBDIR tag determines the name of the directory created within \c MAN_OUTPUT
+ in which the man pages are placed. If defaults to man followed by \c MAN_EXTENSION
+ with the initial . removed.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='MAN_LINKS' defval='0' depends='GENERATE_MAN'>
       <docs>
 <![CDATA[
