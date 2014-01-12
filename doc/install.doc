@@ -94,7 +94,7 @@ Compilation is now done by performing the following steps:
 
     If you have Qt-4.3 or higher installed and want to build the GUI 
     front-end, you should run the configure script with 
-    the <code>--with-doxywizard</code> option:
+    the `--with-doxywizard` option:
 
         configure --with-doxywizard
 
@@ -148,10 +148,10 @@ Use <code>make install_docs</code> to install the
 documentation and examples into <code>\<docdir\>/doxygen</code>. 
 
 <code>\<prefix\></code> defaults to <code>/usr/local</code> but can be changed with 
-the <code>--prefix</code> option of the configure script. 
+the `--prefix` option of the configure script. 
 The default <code>\<docdir\></code> directory is 
 <code>\<prefix\>/share/doc/packages</code> and can be changed with
-the <code>--docdir</code> option of the configure script.
+the `--docdir` option of the configure script.
 
 Alternatively, you can also copy the binaries from the <code>bin</code> 
 directory manually to some <code>bin</code> directory in your search path.
@@ -226,14 +226,14 @@ Manually adding `-Bdynamic` after the target rule in
 
 Older versions of the GNU compiler have problems with constant strings
 containing characters with character codes larger than 127. Therefore 
-the compiler will fail to compile some of the translator_xx.h files. 
+the compiler will fail to compile some of the `translator_xx.h` files. 
 A workaround, if you are planning to use the English translation only, 
-is to configure doxygen with the <code>--english-only</code> option.  
+is to configure doxygen with the `--english-only` option.  
 
 On some platforms (such as OpenBSD) using some versions of gcc with
 -O2 can lead to eating all memory during the compilation of files 
-such as config.cpp. As a workaround use --debug as a configure option 
-or omit the -O2 for the particular files in the Makefile.
+such as config.cpp. As a workaround use `--debug` as a configure option 
+or omit the `-O2` for the particular files in the Makefile.
 
 Gcc versions before 2.95 may produce broken binaries due to bugs in 
 these compilers. 
