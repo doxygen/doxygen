@@ -708,14 +708,15 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
         if (id_bfile == -1)
         {
             sqlite3_clear_bindings(i_s_memberdef);
-            return;
         }
+        else
+        {
+            bindIntParameter(i_s_memberdef,":id_ibfile",id_bfile);
+            bindIntParameter(i_s_memberdef,":bline",md->getStartBodyLine());
 
-        bindIntParameter(i_s_memberdef,":id_ibfile",id_bfile);
-        bindIntParameter(i_s_memberdef,":bline",md->getStartBodyLine());
-
-        // XXX implement getStartBodyColumn
-        bindIntParameter(i_s_memberdef,":bcolumn",1);
+            // XXX implement getStartBodyColumn
+            bindIntParameter(i_s_memberdef,":bcolumn",1);
+        }
       }
     }
   }
@@ -724,7 +725,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   {
       sqlite3_clear_bindings(i_s_memberdef);
   }
-  /*int id_src =*/ sqlite3_last_insert_rowid(db);
+  sqlite3_last_insert_rowid(db);
 
   // + source references
   // The cross-references in initializers only work when both the src and dst
@@ -825,8 +826,9 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
   bindIntParameter(i_s_compounddef,":line",cd->getDefLine());
   bindIntParameter(i_s_compounddef,":column",cd->getDefColumn());
 
-  if (-1==step(db,i_s_compounddef))
-    return;
+  if (-1==step(db,i_s_compounddef)) {
+    sqlite3_clear_bindings(i_s_compounddef);
+  }
 
   // + list of direct super classes
   if (cd->baseClasses())
@@ -848,8 +850,10 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
         bindTextParameter(i_s_basecompoundref,":base",bcd->classDef->displayName());
       }
       bindTextParameter(i_s_basecompoundref,":derived",cd->displayName());
-      if (-1==step(db,i_s_basecompoundref))
+      if (-1==step(db,i_s_basecompoundref)) {
+        sqlite3_clear_bindings(i_s_basecompoundref);
         continue;
+      }
     }
   }
 
@@ -865,8 +869,10 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       bindTextParameter(i_s_derivedcompoundref,":refid",bcd->classDef->getOutputFileBase());
       bindIntParameter(i_s_derivedcompoundref,":prot",bcd->prot);
       bindIntParameter(i_s_derivedcompoundref,":virt",bcd->virt);
-      if (-1==step(db,i_s_derivedcompoundref))
+      if (-1==step(db,i_s_derivedcompoundref)) {
+        sqlite3_reset(i_s_derivedcompoundref);
         continue;
+      }
     }
   }
 
@@ -888,7 +894,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
         bindIntParameter(i_s_includes,":id_src",id_file);
         bindTextParameter(i_s_includes,":dst",nm);
         if (-1==step(db,i_s_includes))
-          return;
+          sqlite3_clear_bindings(i_s_basecompoundref);
       }
     }
   }
