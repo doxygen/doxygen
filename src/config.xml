@@ -2689,7 +2689,7 @@ EXTRA_PACKAGES=times
 ]]>
       </docs>
     </option>
-    <option type='string' id='MAN_SUBDIR' format='string' defval='man3' depends='GENERATE_MAN'>
+    <option type='string' id='MAN_SUBDIR' format='string' defval='' depends='GENERATE_MAN'>
       <docs>
 <![CDATA[
  The \c MAN_SUBDIR tag determines the name of the directory created within \c MAN_OUTPUT
