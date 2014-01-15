@@ -4435,7 +4435,13 @@ bool resolveRef(/* in */  const char *scName,
   //printf("resolveRef(scope=%s,name=%s,inSeeBlock=%d)\n",scName,name,inSeeBlock);
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
-  QCString fullName = substitute(tsName,"#","::");
+  QCString fullName = tsName;
+  if ((1 <= tsName.length()) && ('#' == tsName[0])) {
+    // Do lookups on name following #, but isLowerCase(tsName) fails
+    // so link to all-lower-case entity is still created.
+    fullName = tsName.data() + 1;
+  }
+  fullName = substitute(fullName,"#", "::");
   if (fullName.find("anonymous_namespace{")==-1)
   {
     fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
