@@ -44,6 +44,9 @@ static QCString escapeLabelName(const char *s)
       case '%': result+="\\%"; break;
       case '|': result+="\\texttt{\"|}"; break;
       case '!': result+="\"!"; break;
+      case '{': result+="\\lcurly{}"; break;
+      case '}': result+="\\rcurly{}"; break;
+      case '~': result+="````~"; break; // to get it a bit better in index together with other special characters
       default: result+=c;
     }
   }
@@ -79,6 +82,8 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
       case '|': m_t << "\\texttt{\"|}"; break;
       case '[': m_t << "["; break;
       case ']': m_t << "]"; break;
+      case '{': m_t << "\\lcurly{}"; break;
+      case '}': m_t << "\\rcurly{}"; break;
       default:  str[0]=c; filter(str); break;
     }
   }

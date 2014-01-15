@@ -2696,6 +2696,8 @@ class Receiver
 <hr>
 \section cmdfcurlyopen \\f{environment}{
 
+  \addindex \\f{
+
   Marks the start of a formula that is in a specific environment.
   \note The second \c { is optional and is only to help editors (such as \c Vim) to
   do proper syntax highlighting by making the number of opening and closing braces
@@ -2704,6 +2706,8 @@ class Receiver
 
 <hr>
 \section cmdfcurlyclose \\f}
+
+  \addindex \\f}
 
   Marks the end of a formula that is in a specific environment.
   \sa section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
@@ -3030,7 +3034,7 @@ class Receiver
 \section cmdchardot \\.
 
   \addindex \\\.
-  This command writes a dot (\c .) to the output. This can be useful to 
+  This command writes a dot (`.`) to the output. This can be useful to 
   prevent ending a brief description when JAVADOC_AUTOBRIEF is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
@@ -3038,7 +3042,7 @@ class Receiver
 <hr>
 \section cmddcolon \\::
 
-  \addindex \\\::
+  \addindex \\::
   This command writes a double colon (\c \::) to the output. This
   character sequence has to be escaped in some cases, because it is used
   to reference to documented entities.
