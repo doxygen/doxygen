@@ -4436,7 +4436,8 @@ bool resolveRef(/* in */  const char *scName,
   QCString tsName = name;
   //bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = tsName;
-  if ((1 <= tsName.length()) && ('#' == tsName[0])) {
+  bool explicitLink = (1 <= tsName.length()) && ('#' == tsName[0]);
+  if (explicitLink) {
     // Do lookups on name following #, but isLowerCase(tsName) fails
     // so link to all-lower-case entity is still created.
     fullName = tsName.data() + 1;
@@ -4492,7 +4493,7 @@ bool resolveRef(/* in */  const char *scName,
       }
       return TRUE;
     }
-    else if (scName==fullName || (!inSeeBlock && scopePos==-1)) 
+    else if (scName==fullName || (!inSeeBlock && scopePos==-1 && !explicitLink)) 
       // nothing to link => output plain text
     {
       //printf("found scName=%s fullName=%s scName==fullName=%d "
