@@ -21,7 +21,7 @@ entity mux_using_with is
     );
 end entity;
 
---! @brief Architure definition of the MUX
+--! @brief Architecture definition of the MUX
 --! @details More details about this mux element.
 architecture behavior of mux_using_with is
 begin

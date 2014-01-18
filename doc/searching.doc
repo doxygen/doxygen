@@ -164,7 +164,7 @@ has its own advantages and disadvantages:
    doxygen as a help plugin. It will then appear as a topic in the help 
    browser that can be started from "Help contents" in the Help menu.
    Eclipse will generate a search index for the documentation when you
-   first search for an keyword.
+   first search for a keyword.
 
    To enable the help plugin set 
    \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHELP" to \c YES,

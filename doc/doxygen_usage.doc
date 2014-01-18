@@ -17,7 +17,7 @@
 /*! \page doxygen_usage Doxygen usage
 
 Doxygen is a command line based utility.  Calling \c doxygen with the
-\c --help option at the command line will give you a brief description of the 
+`--help` option at the command line will give you a brief description of the 
 usage of the program.
 
 All options consist of a leading character <tt>-</tt>, 

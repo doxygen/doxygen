@@ -109,7 +109,7 @@ helpful and it will cost me much more time to figure out what you mean.
 In the worst-case your bug report may even be completely ignored by me, so
 always try to include the following information in your bug report: 
 - The version of doxygen you are using (for instance 1.5.3, use 
-  <code>doxygen --version</code> if you are not sure).
+  `doxygen --version` if you are not sure).
 - The name and version number of your operating system (for instance 
   SuSE Linux 6.4)
 - It is usually a good idea to send along the configuration file as well, 

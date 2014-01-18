@@ -290,7 +290,7 @@ Structural indicators
   \addindex \\category
   For Objective-C only: Indicates that a comment block contains documentation
   for a class category with name \<name\>. The arguments are
-  equal to the \\class command.
+  equal to the \ref cmdclass "\\class" command.
 
   \sa section \ref cmdclass "\\class".
 
@@ -929,7 +929,7 @@ Structural indicators
 <hr>
 \section cmdrelated \\related <name>
 
-  \addindex related
+  \addindex \\related
   Equivalent to \ref cmdrelates "\\relates"
 
 <hr>
@@ -946,7 +946,7 @@ Structural indicators
 <hr>
 \section cmdrelatedalso \\relatedalso <name>
 
-  \addindex relatedalso
+  \addindex \\relatedalso
   Equivalent to \ref cmdrelatesalso "\\relatesalso"
 
 <hr>
@@ -1496,13 +1496,13 @@ void setPosition(double x,double y,double z,double t)
  *  Rest of the comment block continues.
  */
 \endverbatim
-  Note that the \\parblock command may also appear directly after
-  \\param's first argument.
+  Note that the \c \\parblock command may also appear directly after
+  \ref cmdparam "\\param"'s first argument.
 
 <hr>
 \section cmdendparblock \\endparblock
   \addindex \\endparblock
-  This ends a block of paragraphs started with \\ref cmdparblock "\\parblock".
+  This ends a block of paragraphs started with \ref cmdparblock "\\parblock".
 
 <hr>
 \section cmdtparam \\tparam <template-parameter-name> { description }
@@ -1612,7 +1612,7 @@ void setPosition(double x,double y,double z,double t)
   may be selected by including a parenthesized list of argument types after
   the method name.
 
-  Synonymous to \\see.
+  Synonymous to \ref cmdsee "\\see".
 
   \sa section \ref autolink "autolink" for information on how to create links
       to objects.
@@ -1633,7 +1633,7 @@ void setPosition(double x,double y,double z,double t)
 \section cmdsince \\since { text }
 
   \addindex \\since
-  This tag can be used to specify since when (version or time) an
+  This command can be used to specify since when (version or time) an
   entity is available. The paragraph that follows \c \\since does not have any
   special internal structure. All visual enhancement commands may be
   used inside the paragraph. The \c \\since description ends when a blank
@@ -1656,7 +1656,7 @@ void setPosition(double x,double y,double z,double t)
   Synonymous \ref cmdexception "\\exception".
 
   \par Note:
-  the tag \c \\throws is a synonym for this tag.
+  the command \ref cmdthrows "\\throws" is a synonym for this command.
 
   \sa section \ref cmdexception "\\exception"
 
@@ -2060,7 +2060,7 @@ Commands for displaying examples
   \ref cmddontinclude "\\dontinclude" command in combination with
   the \ref cmdline "\\line", \ref cmdskip "\\skip",
   \ref cmdskipline "\\skipline",
-  and \\until commands.
+  and \ref cmduntil "\\until" commands.
 
   Alternatively, the \ref cmdsnippet "\\snippet" command can be used to
   include only a fragment of a source file. For this to work the
@@ -2392,12 +2392,14 @@ Commands for visual enhancements
 <hr>
 \section cmdcopybrief \\copybrief <link-object>
 
+  \addindex \\copybrief
 Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
 only copy the brief description, not the detailed documentation.
 
 <hr>
 \section cmdcopydetails \\copydetails <link-object>
 
+  \addindex \\copydetails
 Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
 only copy the detailed documentation, not the brief description.
 
@@ -2424,7 +2426,7 @@ only copy the detailed documentation, not the brief description.
   Doxygen will pass the text on to dot and include the resulting
   image (and image map) into the output.
   The nodes of a graph can be made clickable by using the URL attribute.
-  By using the command \\ref inside the URL value you can conveniently
+  By using the command \ref cmdref "\\ref" inside the URL value you can conveniently
   link to an item inside doxygen. Here is an example:
 \code
 /*! class B */
@@ -2475,12 +2477,12 @@ Here is an example of the use of the \c \\msc command.
 class Sender
 {
   public:
-    /** Acknowledgement from server */
+    /** Acknowledgment from server */
     void Ack(bool ok);
 };
 
 /** Receiver class. Can be used to receive and execute commands.
- *  After execution of a command, the receiver will send an acknowledgement
+ *  After execution of a command, the receiver will send an acknowledgment
  *  \msc
  *    Receiver,Sender;
  *    Receiver<-Sender [label="Command()", URL="\ref Command()"];
@@ -2977,7 +2979,7 @@ class Receiver
 \section cmdamp \\\&
 
   \addindex \\\&
-  This command writes the \c \& character to output.
+  This command writes the \c \& character to the output.
   This character has to be escaped because it has a special meaning in HTML.
 
 <hr>

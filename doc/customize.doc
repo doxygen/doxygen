@@ -389,7 +389,7 @@ result this works even for very large projects where reading all XML
 files as one big DOM tree would not fit into memory.
 
 See <a href="https://github.com/michaeljones/breathe">the Breathe project</a> for
-a example that uses doxygen XML output from Python to bridge it with the 
+an example that uses doxygen XML output from Python to bridge it with the 
 <a href="http://sphinx.pocoo.org/">Sphinx</a> document generator.
 
 

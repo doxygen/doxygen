@@ -283,7 +283,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c ALLOW_UNICODE_NAMES tag is set to \c YES,
- doxygen will allow non-ascii characters to appear in the names of generated files. 
+ doxygen will allow non-ASCII characters to appear in the names of generated files. 
  If set to \c NO, non-ASCII characters will be escaped, for example _xE3_x81_x84 
  will be used for Unicode U+3044.
 ]]>
@@ -1563,7 +1563,7 @@ to disable this feature.
       <docs>
 <![CDATA[
   If the \c CLANG_ASSISTED_PARSING tag is set to \c YES, then doxygen will use the 
-  <a href="http://clang.llvm.org/">clang parser</a> for more acurate parsing 
+  <a href="http://clang.llvm.org/">clang parser</a> for more accurate parsing 
   at the cost of reduced performance. This can be particularly helpful with 
   template rich C++ code for which doxygen's built-in parser lacks the 
   necessary type information.
@@ -2338,7 +2338,7 @@ MATHJAX_CODEFILE = disableRenderer.js
 When the \c SERVER_BASED_SEARCH tag is enabled the search engine will be 
 implemented using a web server instead of a web client using Javascript. 
 
-There are two flavours of web server based searching depending on the 
+There are two flavors of web server based searching depending on the 
 \ref cfg_external_search "EXTERNAL_SEARCH" setting. When disabled, 
 doxygen will generate a PHP script for searching and an index file used 
 by the script. When \ref cfg_external_search "EXTERNAL_SEARCH" is 
@@ -2931,7 +2931,7 @@ put in front of it.
       <docs>
 <![CDATA[
  If the \c SKIP_FUNCTION_MACROS tag is set to \c YES then 
- doxygen's preprocessor will remove all refrences to function-like macros that are alone 
+ doxygen's preprocessor will remove all references to function-like macros that are alone 
  on a line, have an all uppercase name, and do not end with a semicolon. 
  Such function macros are typically 
  used for boiler-plate code, and will confuse the parser if not removed. 
@@ -2959,7 +2959,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
  See the section \ref external for more information about the use of tag files.
 
  \note
-  Each tag file must have an unique name 
+  Each tag file must have a unique name 
   (where the name does \e NOT include the path).
   If a tag file is not located in the directory in which doxygen 
   is run, you must also specify the path to the tagfile here.
