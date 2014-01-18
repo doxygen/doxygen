@@ -172,7 +172,7 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_end(args); 
 }
 
-void warn(const char *file,int line,const char *fmt,va_list args)
+void va_warn(const char *file,int line,const char *fmt,va_list args)
 {
   do_warn("WARNINGS", file, line, warning_str, fmt, args);
 }

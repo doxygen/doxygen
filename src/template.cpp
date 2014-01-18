@@ -1713,7 +1713,7 @@ void TemplateContextImpl::warn(const char *fileName,int line,const char *fmt,...
 {
   va_list args;
   va_start(args,fmt);
-  ::warn(fileName,line,fmt,args);
+  va_warn(fileName,line,fmt,args);
   va_end(args);
   m_engine->printIncludeContext(fileName,line);
 }
@@ -3342,7 +3342,7 @@ void TemplateParser::warn(const char *fileName,int line,const char *fmt,...) con
 {
   va_list args;
   va_start(args,fmt);
-  ::warn(fileName,line,fmt,args);
+  va_warn(fileName,line,fmt,args);
   va_end(args);
   m_engine->printIncludeContext(fileName,line);
 }
