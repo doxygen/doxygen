@@ -2022,6 +2022,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     TemplateNodeIf(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data) :
       TemplateNodeCreator<TemplateNodeIf>(parser,parent,line)
     {
+      m_ifGuardedNodes.setAutoDelete(TRUE);
       TRACE(("{TemplateNodeIf(%s)\n",data.data()));
       if (data.isEmpty())
       {
@@ -2029,15 +2030,37 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       }
       QStrList stopAt;
       stopAt.append("endif");
+      stopAt.append("elif");
       stopAt.append("else");
-      parser->parse(this,line,stopAt,m_trueNodes);
-      TemplateToken *tok = parser->takeNextToken();
-      ExpressionParser ex(parser,line);
-      m_guardAst = ex.parse(data);
 
+      // if 'nodes'
+      GuardedNodes *guardedNodes = new GuardedNodes;
+      ExpressionParser ex(parser,line);
+      guardedNodes->line = line;
+      guardedNodes->guardAst = ex.parse(data);
+      parser->parse(this,line,stopAt,guardedNodes->trueNodes);
+      m_ifGuardedNodes.append(guardedNodes);
+      TemplateToken *tok = parser->takeNextToken();
+
+      // elif 'nodes'
+      while (tok && tok->data.left(5)=="elif ")
+      {
+        ExpressionParser ex(parser,line);
+        guardedNodes = new GuardedNodes;
+        guardedNodes->line = tok->line;
+        guardedNodes->guardAst = ex.parse(tok->data.mid(5));
+        parser->parse(this,tok->line,stopAt,guardedNodes->trueNodes);
+        m_ifGuardedNodes.append(guardedNodes);
+        // proceed to the next token
+        delete tok;
+        tok = parser->takeNextToken();
+      }
+
+      // else 'nodes'
       if (tok && tok->data=="else")
       {
-        stopAt.removeLast();
+        stopAt.removeLast(); // remove "else"
+        stopAt.removeLast(); // remove "elif"
         parser->parse(this,line,stopAt,m_falseNodes);
         parser->removeNextToken(); // skip over endif
       }
@@ -2046,7 +2069,6 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     }
     ~TemplateNodeIf()
     {
-      delete m_guardAst;
     }
 
     void render(FTextStream &ts, TemplateContext *c)
@@ -2054,22 +2076,41 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeIf::render #trueNodes=%d #falseNodes=%d\n",m_trueNodes.count(),m_falseNodes.count());
-      if (m_guardAst)
+      bool processed=FALSE;
+      QListIterator<GuardedNodes> li(m_ifGuardedNodes);
+      GuardedNodes *nodes;
+      for (li.toFirst();(nodes=li.current()) && !processed;++li)
       {
-        TemplateVariant guardValue = m_guardAst->resolve(c);
-        if (guardValue.toBool()) // guard is true, render corresponding nodes
+        if (nodes->guardAst)
         {
-          m_trueNodes.render(ts,c);
+          TemplateVariant guardValue = nodes->guardAst->resolve(c);
+          if (guardValue.toBool()) // render nodes for the first guard that evaluated to 'true'
+          {
+            nodes->trueNodes.render(ts,c);
+           processed=TRUE;
+          }
         }
-        else // guard is false, render corresponding nodes
+        else
         {
-          m_falseNodes.render(ts,c);
+          ci->warn(m_templateName,nodes->line,"invalid expression for if/elif");
         }
+      }
+      if (!processed)
+      {
+        // all guards are false, render 'else' nodes
+        m_falseNodes.render(ts,c);
       }
     }
   private:
-    ExprAst *m_guardAst;
-    TemplateNodeList m_trueNodes;
+    struct GuardedNodes
+    {
+      GuardedNodes() : guardAst(0) {}
+     ~GuardedNodes() { delete guardAst; }
+      int line;
+      ExprAst *guardAst;
+      TemplateNodeList trueNodes;
+    };
+    QList<GuardedNodes> m_ifGuardedNodes;
     TemplateNodeList m_falseNodes;
 };
 
@@ -3474,7 +3515,7 @@ void TemplateParser::parse(
                    command=="endblock"       || command=="endwith"      ||
                    command=="endrecursetree" || command=="endspaceless" ||
                    command=="endmarkers"     || command=="endmsg"       ||
-                   command=="endrepeat")
+                   command=="endrepeat"      || command=="elif")
           {
             warn(m_templateName,tok->line,"Found tag '%s' without matching start tag",command.data());
           }
