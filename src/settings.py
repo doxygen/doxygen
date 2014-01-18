@@ -1,11 +1,12 @@
 # 
 
 import sys
+import os
 
 f_sqlite3 = sys.argv[1]
 f_libclang = sys.argv[2]
 
-f1 = open('../src/settings.h','w')
+f1 = open(os.path.join(sys.argv[3],'settings.h'),'w')
 f1.write("#ifndef SETTINGS_H\n")
 f1.write("#define SETTINGS_H\n")
 f1.write("\n")

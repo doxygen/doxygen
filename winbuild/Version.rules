@@ -7,8 +7,8 @@
 		<CustomBuildRule
 			Name="Version"
 			DisplayName="Version"
-			CommandLine="python $(InputPath)"
-			Outputs="$(InputDir)..\src\$(InputName).cpp"
+			CommandLine="python $(InputPath) $(IntDir)"
+			Outputs="$(IntDir)\$(InputName).cpp"
 			FileExtensions="*.py"
 			AdditionalDependencies="$(ProjectDir)..\configure"
 			ExecutionDescription="Executing Version ..."

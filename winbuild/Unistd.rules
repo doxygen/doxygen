@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="unistd"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="Unistd"
+			DisplayName="Unistd"
+			CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] $(IntDir)"
+			Outputs="$(IntDir)/$(InputName).h"
+			FileExtensions="*.py"
+			ExecutionDescription="Executing Unistd ..."
+			ShowOnlyRuleProperties="false"
+			>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

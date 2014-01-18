@@ -23,6 +23,9 @@
 			RelativePath=".\Settings.rules"
 		/>
 		<ToolFile
+			RelativePath=".\Unistd.rules"
+		/>
+		<ToolFile
 			RelativePath=".\Version.rules"
 		/>
 		<ToolFile
@@ -39,7 +42,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\bin\Debug"
-			IntermediateDirectory=".\Debug"
+			IntermediateDirectory=".\Debug\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -66,6 +69,9 @@
 				Name="Settings"
 			/>
 			<Tool
+				Name="Unistd"
+			/>
+			<Tool
 				Name="Gen_head"
 			/>
 			<Tool
@@ -82,22 +88,22 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug\Doxygen.tlb"
+				TypeLibraryName=".\Debug\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="$(IntDir),..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug/Doxygen.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug\$(TargetName).pdb"
+				PrecompiledHeaderFile=".\Debug\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Debug\doxygen/"
+				ObjectFile=".\Debug\doxygen/"
+				ProgramDataBaseFileName=".\Debug\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -123,7 +129,7 @@
 				GenerateManifest="false"
 				IgnoreDefaultLibraryNames="libcmtd.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Debug\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -142,7 +148,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/Doxygen.bsc"
+				OutputFile=".\Debug\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -157,7 +163,7 @@
 		<Configuration
 			Name="Debug|x64"
 			OutputDirectory="..\bin\Debug64"
-			IntermediateDirectory=".\Debug64"
+			IntermediateDirectory=".\Debug64\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -184,6 +190,9 @@
 				Name="Settings"
 			/>
 			<Tool
+				Name="Unistd"
+			/>
+			<Tool
 				Name="Gen_head"
 			/>
 			<Tool
@@ -201,22 +210,22 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Debug64\Doxygen.tlb"
+				TypeLibraryName=".\Debug64\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 /bigobj"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="$(IntDir),..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug64/Doxygen.pch"
-				AssemblerListingLocation=".\Debug64/"
-				ObjectFile=".\Debug64/"
-				ProgramDataBaseFileName=".\Debug64\$(TargetName).pdb"
+				PrecompiledHeaderFile=".\Debug64\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Debug64\doxygen/"
+				ObjectFile=".\Debug64\doxygen/"
+				ProgramDataBaseFileName=".\Debug64\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -241,7 +250,7 @@
 				AdditionalLibraryDirectories="Debug64"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug64\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Debug64\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -260,7 +269,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug64/Doxygen.bsc"
+				OutputFile=".\Debug64\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -275,7 +284,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\bin\Release"
-			IntermediateDirectory=".\Release"
+			IntermediateDirectory=".\Release\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -302,6 +311,9 @@
 				Name="Settings"
 			/>
 			<Tool
+				Name="Unistd"
+			/>
+			<Tool
 				Name="Gen_head"
 			/>
 			<Tool
@@ -318,7 +330,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release\Doxygen.tlb"
+				TypeLibraryName=".\Release\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -328,15 +340,15 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="$(IntDir),..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/Doxygen.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release\$(TargetName).pdb"
+				PrecompiledHeaderFile=".\Release\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Release\doxygen/"
+				ObjectFile=".\Release\doxygen/"
+				ProgramDataBaseFileName=".\Release\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -360,7 +372,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Release"
-				ProgramDatabaseFile=".\Release\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Release\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -379,7 +391,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/Doxygen.bsc"
+				OutputFile=".\Release\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -394,7 +406,7 @@
 		<Configuration
 			Name="Release|x64"
 			OutputDirectory="..\bin\Release64"
-			IntermediateDirectory=".\Release64"
+			IntermediateDirectory=".\Release64\doxygen"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -421,6 +433,9 @@
 				Name="Settings"
 			/>
 			<Tool
+				Name="Unistd"
+			/>
+			<Tool
 				Name="Gen_head"
 			/>
 			<Tool
@@ -438,7 +453,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\Release64\Doxygen.tlb"
+				TypeLibraryName=".\Release64\doxygen\Doxygen.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -448,15 +463,15 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				AdditionalIncludeDirectories="$(IntDir),..\src,..\qtools,..\libpng,..\libmd5,."
 				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release64/Doxygen.pch"
-				AssemblerListingLocation=".\Release64/"
-				ObjectFile=".\Release64/"
-				ProgramDataBaseFileName=".\Release64\$(TargetName).pdb"
+				PrecompiledHeaderFile=".\Release64\doxygen/Doxygen.pch"
+				AssemblerListingLocation=".\Release64\doxygen/"
+				ObjectFile=".\Release64\doxygen/"
+				ProgramDataBaseFileName=".\Release64\doxygen\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -480,7 +495,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Release64"
-				ProgramDatabaseFile=".\Release64\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Release64\doxygen\$(TargetName).pdb"
 				SubSystem="1"
 				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
@@ -499,7 +514,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release64/Doxygen.bsc"
+				OutputFile=".\Release64\doxygen/Doxygen.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -524,7 +539,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\ce_parse.cpp"
+				RelativePath="$(IntDir)\ce_parse.cpp"
 				>
 			</File>
 			<File
@@ -548,15 +563,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\code.cpp"
+				RelativePath="$(IntDir)\code.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\commentcnv.cpp"
+				RelativePath="$(IntDir)\commentcnv.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\commentscan.cpp"
+				RelativePath="$(IntDir)\commentscan.cpp"
 				>
 			</File>
 			<File
@@ -564,15 +579,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\config.cpp"
+				RelativePath="$(IntDir)\config.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\configoptions.cpp"
+				RelativePath="$(IntDir)\configoptions.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\constexp.cpp"
+				RelativePath="$(IntDir)\constexp.cpp"
 				>
 			</File>
 			<File
@@ -592,11 +607,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\declinfo.cpp"
+				RelativePath="$(IntDir)\declinfo.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\defargs.cpp"
+				RelativePath="$(IntDir)\defargs.cpp"
 				>
 			</File>
 			<File
@@ -640,7 +655,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\doctokenizer.cpp"
+				RelativePath="$(IntDir)\doctokenizer.cpp"
 				>
 			</File>
 			<File
@@ -672,11 +687,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\fortrancode.cpp"
+				RelativePath="$(IntDir)\fortrancode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\fortranscanner.cpp"
+				RelativePath="$(IntDir)\fortranscanner.cpp"
 				>
 			</File>
 			<File
@@ -820,15 +835,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\pre.cpp"
+				RelativePath="$(IntDir)\pre.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\pycode.cpp"
+				RelativePath="$(IntDir)\pycode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\pyscanner.cpp"
+				RelativePath="$(IntDir)\pyscanner.cpp"
 				>
 			</File>
 			<File
@@ -856,7 +871,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\scanner.cpp"
+				RelativePath="$(IntDir)\scanner.cpp"
 				>
 			</File>
 			<File
@@ -876,7 +891,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\tclscanner.cpp"
+				RelativePath="$(IntDir)\tclscanner.cpp"
 				>
 			</File>
 			<File
@@ -900,7 +915,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\version.cpp"
+				RelativePath="$(IntDir)\version.cpp"
 				>
 			</File>
 			<File
@@ -908,11 +923,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlparser.cpp"
+				RelativePath="$(IntDir)\vhdlparser.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlparser.hpp"
+				RelativePath="$(IntDir)\vhdlparser.h"
 				>
 			</File>
 			<File
@@ -937,8 +952,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -947,8 +962,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -957,8 +972,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -967,8 +982,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(InputDir)\..\src\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(InputDir)..\src\ce_parse.cpp&#x0D;&#x0A;del $(InputDir)..\src\ce_parse.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 			</File>
@@ -981,8 +996,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)$(InputName).cpp"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\vhdlparser.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -991,8 +1006,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)$(InputName).cpp"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\vhdlparser.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1001,8 +1016,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)$(InputName).cpp"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\vhdlparser.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1011,8 +1026,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(InputDir)\..\src\vhdlparser.cpp&#x0D;&#x0A;del $(InputDir)\..\src\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(InputDir)$(InputName).cpp"
+						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
+						Outputs="$(IntDir)\vhdlparser.cpp"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1314,6 +1329,38 @@
 					>
 					<Tool
 						Name="Settings"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="unistd.py"
+				>
+				<FileConfiguration
+					Name="Debug|win32"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|win32"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="Unistd"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="Unistd"
 					/>
 				</FileConfiguration>
 			</File>
@@ -2200,7 +2247,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\bib2xhtml.pl.h"
+				RelativePath="$(IntDir)\bib2xhtml.pl.h"
 				>
 			</File>
 			<File
@@ -2244,7 +2291,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\compound_xsd.h"
+				RelativePath="$(IntDir)\compound_xsd.h"
 				>
 			</File>
 			<File
@@ -2340,11 +2387,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\doxygen_bst.h"
+				RelativePath="$(IntDir)\doxygen_bst.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\doxygen_css.h"
+				RelativePath="$(IntDir)\doxygen_css.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\doxygen_sty.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\dynsections_js.h"
 				>
 			</File>
 			<File
@@ -2360,11 +2415,19 @@
 				>
 			</File>
 			<File
+				RelativePath="$(IntDir)\extsearch_js.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\filedef.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\filename.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\footer_html.h"
 				>
 			</File>
 			<File
@@ -2389,6 +2452,10 @@
 			</File>
 			<File
 				RelativePath="..\src\groupdef.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\header_html.h"
 				>
 			</File>
 			<File
@@ -2424,7 +2491,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\index_xsd.h"
+				RelativePath="$(INtDir)\index_xsd.h"
 				>
 			</File>
 			<File
@@ -2432,7 +2499,31 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\lang_cfg.h"
+				RelativePath="$(IntDir)\jquery_fx_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_p1_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_p2_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_p3_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_pt_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\jquery_ui_js.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\lang_cfg.h"
 				>
 			</File>
 			<File
@@ -2449,6 +2540,10 @@
 			</File>
 			<File
 				RelativePath="..\src\layout.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\layout_default_xml.h"
 				>
 			</File>
 			<File
@@ -2516,7 +2611,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\navtree_js.h"
+				RelativePath="$(IntDir)\navtree_js.h"
 				>
 			</File>
 			<File
@@ -2580,6 +2675,10 @@
 				>
 			</File>
 			<File
+				RelativePath="$(IntDir)\resize_js.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\rtfdocvisitor.h"
 				>
 			</File>
@@ -2596,15 +2695,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\search_css.h"
+				RelativePath="$(IntDir)\search_css.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\search_js.h"
+				RelativePath="$(IntDir)\search_js.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\search_php.h"
+				RelativePath="$(IntDir)\search_functionsjs.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\search_opensearch_js.h"
 				>
 			</File>
 			<File
@@ -2616,11 +2719,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\settings.h"
+				RelativePath="$(IntDir)\settings.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\sortdict.h"
+				>
+			</File>
+			<File
+				RelativePath="$(IntDir)\svgpan_js.h"
 				>
 			</File>
 			<File
@@ -2820,48 +2927,8 @@
 				>
 			</File>
 			<File
-				RelativePath="..\winbuild\unistd.h"
+				RelativePath="$(IntDir)\unistd.h"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\constexp.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\constexp.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\constexp.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="echo /* this is a dummy file, that is needed for compiling files that are &gt; $(InputPath)&#x0D;&#x0A;echo  * generated with flex under Windows 95/NT. &gt;&gt; $(InputPath)&#x0D;&#x0A;echo  */ &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #if defined(_MSC_VER) &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #include ^&lt;io.h^&gt; &gt;&gt; $(InputPath)&#x0D;&#x0A;echo #endif &gt;&gt; $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies="..\src\constexp.cpp;..\src\code.cpp;..\src\commentcnv.cpp;..\src\config.cpp;..\src\declinfo.cpp;..\src\defargs.cpp;..\src\doctokenizer.cpp;..\src\formula.cpp;..\src\pre.cpp;..\src\scanner.cpp;..\src\util.cpp;"
-						Outputs="$(InputPath)"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\util.h"
@@ -2872,7 +2939,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlcode.cpp"
+				RelativePath="$(IntDir)\vhdlcode.cpp"
 				>
 			</File>
 			<File
@@ -2884,7 +2951,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlscanner.cpp"
+				RelativePath="$(IntDir)\vhdlscanner.cpp"
 				>
 			</File>
 			<File

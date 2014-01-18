@@ -22,7 +22,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\bin\Debug"
-			IntermediateDirectory=".\Debug"
+			IntermediateDirectory=".\Debug\doxysearch"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -53,7 +53,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
-				ProgramDatabaseFileName=".\Debug\$(TargetName).pdb"
+				ProgramDatabaseFileName=".\Debug\doxysearch\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -71,7 +71,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(XAPIAN_DIR)\Debug&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Debug\doxysearch\$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="1"
 			/>
@@ -100,7 +100,7 @@
 		<Configuration
 			Name="Debug|x64"
 			OutputDirectory="..\bin\Debug64"
-			IntermediateDirectory=".\Debug64"
+			IntermediateDirectory=".\Debug64\doxysearch"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -132,7 +132,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Debug64\$(TargetName).pdb"
+				ProgramDatabaseFileName=".\Debug64\doxysearch\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -150,7 +150,7 @@
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(XAPIAN_DIR)\Debug64&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug64\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Debug64\doxysearch\$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="17"
 			/>
@@ -179,7 +179,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\bin\Release"
-			IntermediateDirectory=".\Release"
+			IntermediateDirectory=".\Release\doxysearch"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -211,7 +211,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Release\$(TargetName).pdb"
+				ProgramDatabaseFileName=".\Release\doxysearch\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -229,7 +229,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(XAPIAN_DIR)\Release&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Release\doxysearch\$(TargetName).pdb"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -260,7 +260,7 @@
 		<Configuration
 			Name="Release|x64"
 			OutputDirectory="..\bin\Release64"
-			IntermediateDirectory=".\Release64"
+			IntermediateDirectory=".\Release64\doxysearch"
 			ConfigurationType="1"
 			CharacterSet="1"
 			BuildLogFile="$(IntDir)\$(TargetName)BuildLog.htm"
@@ -293,7 +293,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Release64\$(TargetName).pdb"
+				ProgramDatabaseFileName=".\Release64\doxysearch\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -311,7 +311,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(XAPIAN_DIR)\Release64&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release64\$(TargetName).pdb"
+				ProgramDatabaseFile=".\Release64\doxysearch\$(TargetName).pdb"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

@@ -672,15 +672,32 @@ fi
 
 # -----------------------------------------------------------------------------
 
+if ! test -d "generated_src/doxygen"; then
+  mkdir -p generated_src/doxygen
+fi
+if test "$f_wizard" = YES; then
+  if ! test -d "generated_src/doxywizard"; then
+    mkdir -p generated_src/doxywizard
+  fi
+fi
+
 #
 # Make VERSION file
 #
-echo "  Creating VERSION file."
-# Output should be something like 1.4.5-20051010
-if test "x$doxygen_version_mmn" = "xNO"; then
-  echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision" > VERSION
-else
-  echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision-$doxygen_version_mmn" > VERSION
+test -f "VERSION" && chmod u+w VERSION
+test -f "generated_src/doxygen/version.cpp" && chmod u+w generated_src/doxygen/version.cpp
+echo "  Generating generated_src/doxygen/version.cpp and VERSION..."
+cd src
+$f_python version.py ../generated_src/doxygen
+cd ..
+if test "$f_wizard" = YES; then
+  test -f "VERSION" && chmod u+w VERSION
+  test -f "generated_src/doxywizard/version.cpp" && chmod u+w generated_src/doxywizard/version.cpp
+  echo "  Generating generated_src/doxywizard/version.cpp and VERSION..."
+  cd src
+  $f_python version.py ../generated_src/doxywizard
+  cd ..
+
 fi
 
 test -f .makeconfig && rm .makeconfig
@@ -828,7 +845,7 @@ EOF
 #       if test $f_search = YES; then
 #         EXTRADEPS="$EXTRADEPS doxysearch"
 #       fi
-       echo "all: src/version.cpp $EXTRADEPS" >> $DST
+       echo "all: generated_src/doxygen/version.cpp $EXTRADEPS" >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
        echo "	\$(MAKE) -C libmd5" >> $DST
        echo "	\$(MAKE) -C src" >> $DST
@@ -892,28 +909,33 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-# - generating src/lang_cfg.h 
+# - generating generated_src/doxygen/doxygen/lang_cfg.h 
 # use consistent method on Linux and Windows
 
-if test -f "src/lang_cfg.h"; then
-    chmod u+w src/lang_cfg.h   # make sure file can be overwritten
+if test -f "generated_src/doxygen/lang_cfg.h"; then
+    chmod u+w generated_src/doxygen/lang_cfg.h   # make sure file can be overwritten
 fi
-echo "  Generating src/lang_cfg.h..."
+echo "  Generating generated_src/doxygen/lang_cfg.h..."
 if test "$f_english" = YES; then
-   $f_python src/lang_cfg.py ENONLY > src/lang_cfg.h
+   $f_python src/lang_cfg.py ENONLY > generated_src/doxygen/lang_cfg.h
 else
    f_ulangs=`echo $f_langs | tr '[a-z,]' '[A-Z ]'`
-   $f_python src/lang_cfg.py $f_ulangs > src/lang_cfg.h
+   $f_python src/lang_cfg.py $f_ulangs > generated_src/doxygen/lang_cfg.h
 fi
 
-if test -f "src/config.h"; then
-    chmod u+w src/config.h
+if test -f "generated_src/doxygen/settings.h"; then
+    chmod u+w generated_src/doxygen/settings.h
 fi
-if test -f "src/settings.h"; then
-    chmod u+w src/settings.h
+echo "  Generating generated_src/doxygen/settings.h..."
+$f_python src/settings.py $f_sqlite3 $f_libclang generated_src/doxygen
+
+if test "$f_wizard" = YES; then
+  if test -f "generated_src/doxywizard/settings.h"; then
+      chmod u+w generated_src/doxywizard/settings.h
+  fi
+  echo "  Generating generated_src/doxywizard/settings.h..."
+  $f_python src/settings.py $f_sqlite3 $f_libclang generated_src/doxywizard
 fi
-echo "  Generating src/settings.h..."
-cd src
-$f_python settings.py $f_sqlite3 $f_libclang
+
 cd ..
 echo "  Finished"

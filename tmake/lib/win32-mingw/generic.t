@@ -141,9 +141,7 @@
 	$project{"VER_MIN"} =~ s/^\d+\.//;
     }    
     if ( Config("staticlib") ) {
-	$project{"TARGET"} = $project{"DESTDIR"} . "lib" . $project{"TARGET"};
-    } else {
-	$project{"TARGET"} = $project{"DESTDIR"} . $project{"TARGET"};
+	$project{"TARGET"} = "lib" . $project{"TARGET"};
     }
 #$}
 #!

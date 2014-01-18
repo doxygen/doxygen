@@ -7,8 +7,8 @@
 		<CustomBuildRule
 			Name="Config"
 			DisplayName="Config"
-			CommandLine="python $(ProjectDir)..\src\configgen.py -cpp [AllOptions] [AdditionalOptions] [inputs] &gt; $(InputDir)../src/$(InputName)options.cpp"
-			Outputs="$(InputDir)../src/$(InputName)options.cpp"
+			CommandLine="python $(ProjectDir)..\src\configgen.py -cpp [AllOptions] [AdditionalOptions] [inputs] &gt; $(IntDir)/$(InputName)options.cpp"
+			Outputs="$(IntDir)/$(InputName)options.cpp"
 			FileExtensions="*.xml"
 			AdditionalDependencies="$(ProjectDir)..\src\configgen.py"
 			ExecutionDescription="Executing configgen for doxygen..."
@@ -18,8 +18,8 @@
 		<CustomBuildRule
 			Name="Config_dw"
 			DisplayName="Config"
-			CommandLine="python $(ProjectDir)..\src\configgen.py -wiz [AllOptions] [AdditionalOptions] [inputs]  &gt; $(InputDir)../addon/doxywizard/$(InputName)doc.cpp"
-			Outputs="$(InputDir)../addon/doxywizard/$(InputName)doc.cpp"
+			CommandLine="python $(ProjectDir)..\src\configgen.py -wiz [AllOptions] [AdditionalOptions] [inputs]  &gt; $(IntDir)/$(InputName)doc.cpp"
+			Outputs="$(IntDir)/$(InputName)doc.cpp"
 			FileExtensions="*.xml"
 			AdditionalDependencies="$(ProjectDir)..\src\configgen.py"
 			ExecutionDescription="Executing configgen for doxywizard ..."
