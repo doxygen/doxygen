@@ -5765,7 +5765,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
     entityMap.insert("delta",      "\xCE\xB4");
     entityMap.insert("epsilon",    "\xCE\xB5");
     entityMap.insert("zeta",       "\xCE\xB6");
-    entityMap.insert("eta",        "\xCE\xB8");
+    entityMap.insert("eta",        "\xCE\xB7");
     entityMap.insert("theta",      "\xCE\xB8");
     entityMap.insert("iota",       "\xCE\xB9");
     entityMap.insert("kappa",      "\xCE\xBA");
@@ -5786,7 +5786,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
     entityMap.insert("sect",       "\xC2\xA7");
     entityMap.insert("deg",        "\xC2\xB0");
     entityMap.insert("prime",      "\xE2\x80\xB2");
-    entityMap.insert("Prime",      "\xE2\x80\xB2");
+    entityMap.insert("Prime",      "\xE2\x80\xB3");
     entityMap.insert("infin",      "\xE2\x88\x9E");
     entityMap.insert("empty",      "\xE2\x88\x85");
     entityMap.insert("plusmn",     "\xC2\xB1");
