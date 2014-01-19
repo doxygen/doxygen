@@ -181,7 +181,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\bin\Relase"
+			OutputDirectory="..\bin\Release"
 			IntermediateDirectory=".\Release\doxyindexer"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -263,7 +263,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="..\bin\Relase64"
+			OutputDirectory="..\bin\Release64"
 			IntermediateDirectory=".\Release64\doxyindexer"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -297,7 +297,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				ProgramDatabaseFileName=".\Relase64\doxyindexer\$(TargetName).pdb"
+				ProgramDatabaseFileName=".\Release64\doxyindexer\$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
