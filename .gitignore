@@ -110,6 +110,7 @@
 
 /doc/Makefile
 /doc/translator_report.txt
+/doc/config.doc
 
 /doxygen_docs
 /doxygen.tag
