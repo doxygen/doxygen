@@ -979,7 +979,7 @@ QCString MemberDef::getOutputFileBase() const
       );
     return "dummy";
   }
-  else if (separateMemberPages)
+  else if (separateMemberPages && isDetailedSectionLinkable())
   {
     if (getEnumScope()) // enum value, which is part of enum's documentation
     {
@@ -1791,11 +1791,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
       if (detailsVisible)
       {
+        static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
         //ol.endEmphasis();
         ol.docify(" ");
-        if (m_impl->group!=0 && gd==0) // forward link to the group
+        if (separateMemberPages || (m_impl->group!=0 && gd==0)) // forward link to the page or group
         {
           ol.startTextLink(getOutputFileBase(),anchor());
         }
@@ -1899,7 +1900,7 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const
   static bool hideUndocMembers = Config_getBool("HIDE_UNDOC_MEMBERS");
   bool groupFilter = getGroupDef()==0 || inGroup || separateMemPages;
   bool fileFilter  = getNamespaceDef()==0 || !inFile;
-  bool simpleFilter = !hideUndocMembers && inlineSimpleStructs &&
+  bool simpleFilter = (hasBriefDescription() || !hideUndocMembers) && inlineSimpleStructs &&
                       getClassDef()!=0 && getClassDef()->isSimple();
 
   bool visible = isDetailedSectionLinkable() && groupFilter && fileFilter &&
@@ -2317,7 +2318,7 @@ void MemberDef::_writeEnumValues(OutputList &ol,Definition *container,
           Doxygen::indexList->addIndexItem(container,fmd);
 
           //ol.writeListItem();
-          ol.startDescTableTitle(); // this enables emphasis!
+          ol.startDescTableTitle();
           ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
           first=FALSE;
           //ol.startEmphasis();
