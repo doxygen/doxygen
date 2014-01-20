@@ -280,9 +280,9 @@ class HtmlGenerator : public OutputGenerator
     { t << "</table>" << endl; }
     void startDescTableTitle()
     //{ t << "<tr><td valign=\"top\"><em>"; }
-    { t << "<tr><td class=\"fieldname\"><em>"; }
+    { t << "<tr><td class=\"fieldname\">"; }
     void endDescTableTitle()
-    { t << "</em>&#160;</td>"; }
+    { t << "&#160;</td>"; }
     void startDescTableData()
     //{ t << "<td>" << endl; }
     { t << "<td class=\"fielddoc\">" << endl; }

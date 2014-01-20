@@ -379,9 +379,18 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               }
               ol.startMemberDeclaration();
               ol.startMemberItem(md->anchor(),0,inheritId);
+              bool detailsLinkable = md->isDetailedSectionLinkable();
+              if (!detailsLinkable)
+              {
+                ol.startDoxyAnchor(md->getOutputFileBase(),0,md->anchor(),md->name(),QCString());
+              }
               ol.writeString("enum ");
               ol.insertMemberAlign();
               md->writeEnumDeclaration(ol,cd,nd,fd,gd,compoundType);
+              if (!detailsLinkable)
+              {
+                ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
+              }
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
               {
@@ -694,52 +703,53 @@ void MemberList::writeDocumentationPage(OutputList &ol,
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    QCString diskName=md->getOutputFileBase();
-    QCString title=md->qualifiedName();
-    startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,
-              container->getOutputFileBase());
-    if (!generateTreeView)
+    if (md->isDetailedSectionLinkable())
     {
-      container->writeNavigationPath(ol);
-      ol.endQuickIndices();
+      QCString diskName=md->getOutputFileBase();
+      QCString title=md->qualifiedName();
+      startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,diskName);
+      if (!generateTreeView)
+      {
+        container->writeNavigationPath(ol);
+        ol.endQuickIndices();
+      }
+      ol.startContents();
+
+      if (generateTreeView)
+      {
+        md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+        ol.endContents();
+        endFileWithNavPath(container,ol);
+      }
+      else
+      {
+        ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
+            "  <tr>\n"
+            "   <td valign=\"top\">\n");
+
+        container->writeQuickMemberLinks(ol,md);
+
+        ol.writeString("   </td>\n");
+        ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
+
+        md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+
+        ol.writeString("    </td>\n");
+        ol.writeString("  </tr>\n");
+        ol.writeString("</table>\n");
+
+        endFile(ol);
+      }
     }
-    ol.startContents();
-
-
-    if (generateTreeView)
+    if (memberGroupList)
     {
-      md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
-      ol.endContents();
-      endFileWithNavPath(container,ol);
-    }
-    else
-    {
-      ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
-          "  <tr>\n"
-          "   <td valign=\"top\">\n");
-
-      container->writeQuickMemberLinks(ol,md);
-
-      ol.writeString("   </td>\n");
-      ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
-
-      md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
-
-      ol.writeString("    </td>\n");
-      ol.writeString("  </tr>\n");
-      ol.writeString("</table>\n");
-
-      endFile(ol);
-    }
-  }
-  if (memberGroupList)
-  {
-    //printf("MemberList::writeDocumentation()  --  member groups\n");
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->writeDocumentationPage(ol,scopeName,container);
+      //printf("MemberList::writeDocumentation()  --  member groups\n");
+      MemberGroupListIterator mgli(*memberGroupList);
+      MemberGroup *mg;
+      for (;(mg=mgli.current());++mgli)
+      {
+        mg->writeDocumentationPage(ol,scopeName,container);
+      }
     }
   }
 }

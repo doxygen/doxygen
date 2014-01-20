@@ -3410,10 +3410,11 @@ QCString ClassDef::compoundTypeString() const
 
 QCString ClassDef::getOutputFileBase() const
 {
-  if (!Doxygen::generatingXmlOutput)
+  static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
+  static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
+  static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+  if (!Doxygen::generatingXmlOutput && !separateMemberPages)
   {
-    static bool inlineGroupedClasses = Config_getBool("INLINE_GROUPED_CLASSES");
-    static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
     Definition *scope=0;
     if (inlineGroupedClasses && partOfGroups()!=0)
     {

@@ -345,7 +345,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                 (!md->isStatic() || extractStatic)
                )
             {
-              if (md->getOuterScope()==def)
+              if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
               {
                 Doxygen::indexList->addContentsItem(isDir,
                   md->name(),md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,addToIndex);
@@ -366,15 +366,18 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
               MemberDef *emd;
               for (emli.toFirst();(emd=emli.current());++emli)
               {
-                if (emd->getOuterScope()==def)
+                if (!hideUndocMembers || emd->hasDocumentation())
                 {
-                  Doxygen::indexList->addContentsItem(FALSE,
-                      emd->name(),emd->getReference(),emd->getOutputFileBase(),emd->anchor(),FALSE,addToIndex);
-                }
-                else // inherited member
-                {
-                  Doxygen::indexList->addContentsItem(FALSE,
-                      emd->name(),def->getReference(),def->getOutputFileBase(),emd->anchor(),FALSE,addToIndex);
+                  if (emd->getOuterScope()==def || emd->getOuterScope()==Doxygen::globalScope)
+                  {
+                    Doxygen::indexList->addContentsItem(FALSE,
+                        emd->name(),emd->getReference(),emd->getOutputFileBase(),emd->anchor(),FALSE,addToIndex);
+                  }
+                  else // inherited member
+                  {
+                    Doxygen::indexList->addContentsItem(FALSE,
+                        emd->name(),def->getReference(),def->getOutputFileBase(),emd->anchor(),FALSE,addToIndex);
+                  }
                 }
               }
               if (!isAnonymous)
@@ -398,9 +401,10 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           {
             if (cd->isLinkable() && (cd->partOfGroups()==0 || def->definitionType()==Definition::TypeGroup))
             {
+              static bool inlineSimpleStructs = Config_getBool("INLINE_SIMPLE_STRUCTS");
               bool isNestedClass = def->definitionType()==Definition::TypeClass;
               addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),
-                                addToIndex && isNestedClass,
+                                addToIndex && (isNestedClass || (cd->isSimple() && inlineSimpleStructs)),
                                 preventSeparateIndex || cd->isEmbeddedInOuterScope());
             }
           }
@@ -1364,7 +1368,10 @@ void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalO
               )
              )
           {
-            addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),cd->partOfGroups()==0);
+            addMembersToIndex(cd,LayoutDocManager::Class,
+                              cd->displayName(FALSE),
+                              cd->anchor(),
+                              cd->partOfGroups()==0 && !cd->isSimple());
           }
           if (count>0)
           {
