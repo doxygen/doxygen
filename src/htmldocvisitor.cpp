@@ -2040,7 +2040,7 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
 }
 
 void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
-                                  const QCString &,
+                                  const QCString &relPath,
                                   const QCString &)
 {
   QCString baseName=fileName;
@@ -2057,7 +2057,7 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
   QCString outDir = Config_getString("HTML_OUTPUT");
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
 
-  m_t << "<img src=\"" << outDir << '/' << baseName << ".png" << "\" />" << endl;
+  m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions
