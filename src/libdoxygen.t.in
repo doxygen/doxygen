@@ -22,6 +22,7 @@ PYTHON     = %%PYTHON%%
 PERL       = %%PERL%%
 INCBUFSIZE = $(PYTHON) increasebuffer.py
 GENERATED_SRC = ../generated_src/doxygen
+GENERATED_OBJ = ../objects/doxygen
 
 #${
 sub GenerateDep {
@@ -98,46 +99,41 @@ sub GenerateLex {
 #$ GenerateDep("\$(GENERATED_SRC)/commentscan.cpp","commentscan.l");
 #$ GenerateLex("commentscan",0);
 
-#$ GenerateDep("../generated_src/doxygen/constexp.cpp","constexp.l","../generated_src/doxygen/ce_parse.h");
+#$ GenerateDep("\$(GENERATED_SRC)/constexp.cpp","constexp.l","\$(GENERATED_SRC)/ce_parse.h");
 #$ GenerateLex("constexp",0);
 
-#$ GenerateDep("../generated_src/doxygen/ce_parse.cpp","constexp.y");
-	$(YACC) -l -p constexpYY constexp.y -o ../generated_src/doxygen/ce_parse.cpp 
+#$ GenerateDep("\$(GENERATED_SRC)/ce_parse.cpp","constexp.y");
+	$(YACC) -l -p constexpYY constexp.y -o \$(GENERATED_SRC)/ce_parse.cpp 
 
-#$ GenerateDep("../generated_src/doxygen/ce_parse.h","constexp.y");
-	$(YACC) -l -d -p ce_parsexpYY constexp.y -o ../generated_src/doxygen/ce_parse.c 
-	-rm ../generated_src/doxygen/ce_parse.c
+#$ GenerateDep("\$(GENERATED_SRC)/ce_parse.h","constexp.y");
+	$(YACC) -l -d -p ce_parsexpYY constexp.y -o \$(GENERATED_SRC)/ce_parse.c 
+	-rm $(GENERATED_SRC)/ce_parse.c
 
-#$ GenerateDep("\$(GENERATED_SRC)/vhdlscanner.cpp","vhdlscanner.l","../generated_src/doxygen/vhdlparser.h");
+#$ GenerateDep("\$(GENERATED_SRC)/vhdlscanner.cpp","vhdlscanner.l","\$(GENERATED_SRC)/vhdlparser.h");
 #$ GenerateLex("vhdlscanner",1);
 
-#$ GenerateDep("../generated_src/doxygen/vhdlparser.cpp","vhdlparser.y");
-	$(YACC) -l -p vhdlscannerYY vhdlparser.y -o ../generated_src/doxygen/vhdlparser.cpp 	
+#$ GenerateDep("\$(GENERATED_SRC)/vhdlparser.cpp","vhdlparser.y");
+	$(YACC) -l -p vhdlscannerYY vhdlparser.y -o \$(GENERATED_SRC)/vhdlparser.cpp 	
 
-#$ GenerateDep("../generated_src/doxygen/vhdlparser.h","vhdlparser.y");
-	$(YACC) -l -d -p vhdlscannerYY vhdlparser.y -o ../generated_src/doxygen/vhdlparser.c 
-	-rm ../generated_src/doxygen/vhdlparser.c	
+#$ GenerateDep("\$(GENERATED_SRC)/vhdlparser.h","vhdlparser.y");
+	$(YACC) -l -d -p vhdlscannerYY vhdlparser.y -o \$(GENERATED_SRC)/vhdlparser.c 
+	-rm $(GENERATED_SRC)/vhdlparser.c	
 	
 TO_C_CMD=$(PYTHON) to_c_cmd.py < $< > $@
 
-layout.cpp: $(GENERATED_SRC)/layout_default.xml.h
+#$ GenerateDep("\$(GENERATED_OBJ)/layout.o","layout.cpp","\$(GENERATED_SRC)/layout_default.xml.h");
 
-cite.cpp: $(GENERATED_SRC)/doxygen.bst.h $(GENERATED_SRC)/bib2xhtml.pl.h
+#$ GenerateDep("\$(GENERATED_OBJ)/cite.o","cite.cpp","\$(GENERATED_SRC)/doxygen.bst.h","\$(GENERATED_SRC)/bib2xhtml.pl.h");
 
-ftvhelp.cpp: $(GENERATED_SRC)/navtree.js.h $(GENERATED_SRC)/resize.js.h $(GENERATED_SRC)/navtree.css.h
+#$ GenerateDep("\$(GENERATED_OBJ)/ftvhelp.o","ftvhelp.cpp","\$(GENERATED_SRC)/navtree.js.h","\$(GENERATED_SRC)/resize.js.h","\$(GENERATED_SRC)/navtree.css.h");
 
-htmlgen.cpp: $(GENERATED_SRC)/header.html.h $(GENERATED_SRC)/footer.html.h $(GENERATED_SRC)/doxygen.css.h $(GENERATED_SRC)/search_functions.php.h \
-             $(GENERATED_SRC)/search_opensearch.php.h $(GENERATED_SRC)/search.css.h $(GENERATED_SRC)/jquery_p1.js.h $(GENERATED_SRC)/jquery_p2.js.h \
-	     $(GENERATED_SRC)/jquery_p3.js.h $(GENERATED_SRC)/jquery_ui.js.h $(GENERATED_SRC)/jquery_fx.js.h $(GENERATED_SRC)/jquery_pt.js.h \
-	     $(GENERATED_SRC)/svgpan.js.h $(GENERATED_SRC)/dynsections.js.h $(GENERATED_SRC)/extsearch.js.h
+#$ GenerateDep("\$(GENERATED_OBJ)/htmlgen.o","htmlgen.cpp","\$(GENERATED_SRC)/header.html.h","\$(GENERATED_SRC)/footer.html.h","\$(GENERATED_SRC)/doxygen.css.h","\$(GENERATED_SRC)/search_functions.php.h","\$(GENERATED_SRC)/search_opensearch.php.h","\$(GENERATED_SRC)/search.css.h","\$(GENERATED_SRC)/jquery_p1.js.h","\$(GENERATED_SRC)/jquery_p2.js.h","\$(GENERATED_SRC)/jquery_p3.js.h","\$(GENERATED_SRC)/jquery_ui.js.h","\$(GENERATED_SRC)/jquery_fx.js.h","\$(GENERATED_SRC)/jquery_pt.js.h","\$(GENERATED_SRC)/svgpan.js.h","\$(GENERATED_SRC)/dynsections.js.h","\$(GENERATED_SRC)/extsearch.js.h");
 
-layout.cpp: $(GENERATED_SRC)/layout_default.xml.h
+#$ GenerateDep("\$(GENERATED_OBJ)/xmlgen.o","xmlgen.cpp","\$(GENERATED_SRC)/index.xsd.h","\$(GENERATED_SRC)/compound.xsd.h");
 
-xmlgen.cpp: $(GENERATED_SRC)/index.xsd.h $(GENERATED_SRC)/compound.xsd.h
+#$ GenerateDep("\$(GENERATED_OBJ)/latexgen.o","latexgen.cpp","\$(GENERATED_SRC)/doxygen.sty.h");
 
-latexgen.cpp: $(GENERATED_SRC)/doxygen.sty.h
-
-searchindex.cpp: $(GENERATED_SRC)/search.js.h
+#$ GenerateDep("\$(GENERATED_OBJ)/searchindex.o","searchindex.cpp","\$(GENERATED_SRC)/search.js.h");
 
 $(GENERATED_SRC)/index.xsd.h: index.xsd
 	$(TO_C_CMD)
