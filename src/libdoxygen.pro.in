@@ -119,32 +119,6 @@ HEADERS      =	arguments.h \
                 xmlgen.h \
                 docbookvisitor.h \
                 docbookgen.h \
-                ../generated_src/doxygen/bib2xhtml.pl.h \
-                ../generated_src/doxygen/compound.xsd.h \
-		../generated_src/doxygen/doxygen.bst.h \
-		../generated_src/doxygen/doxygen.css.h \
-		../generated_src/doxygen/doxygen.sty.h \
-		../generated_src/doxygen/footer.html.h \
-		../generated_src/doxygen/header.html.h \
-                ../generated_src/doxygen/index.xsd.h \
-                ../generated_src/doxygen/settings.h \
-		../generated_src/doxygen/jquery_p1.js.h \
-		../generated_src/doxygen/jquery_p2.js.h \
-		../generated_src/doxygen/jquery_p3.js.h \
-		../generated_src/doxygen/jquery_ui.js.h \
-		../generated_src/doxygen/jquery_fx.js.h \
-		../generated_src/doxygen/jquery_pt.js.h \
-		../generated_src/doxygen/svgpan.js.h \
-		../generated_src/doxygen/dynsections.js.h \
-                ../generated_src/doxygen/layout_default.xml.h \
-		../generated_src/doxygen/navtree.css.h \
-		../generated_src/doxygen/navtree.js.h \
-		../generated_src/doxygen/resize.js.h \
-		../generated_src/doxygen/search.css.h \
-		../generated_src/doxygen/search.js.h \
-		../generated_src/doxygen/extsearch.js.h \
-		../generated_src/doxygen/search_functions.php.h \
-		../generated_src/doxygen/search_opensearch.php.h
 
 SOURCES      =	arguments.cpp \
 		cite.cpp \
@@ -242,19 +216,14 @@ SOURCES      =	arguments.cpp \
 		../generated_src/doxygen/fortranscanner.cpp \
 		../generated_src/doxygen/version.cpp
 
-win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
+win32:TMAKE_CXXFLAGS       += -DQT_NODLL
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions
-linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions
-INCLUDEPATH                += ../generated_src/doxygen 
-INCLUDEPATH                += ../src 
-INCLUDEPATH                += ../qtools
-#INCLUDEPATH                += ../libpng
-INCLUDEPATH                += ../libmd5
+linux-g++:TMAKE_CXXFLAGS   += -fno-exceptions
+INCLUDEPATH                += ../generated_src/doxygen ../src ../qtools ../libmd5
 INCLUDEPATH                += %%SQLITE3_INC%%
+DEPENDPATH                 += ../generated_src/doxygen
 win32:INCLUDEPATH          += .
-#win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12 ../libmd5
-win32-g++:INCLUDEPATH      = ../generated_src/doxygen ../src ../qtools ../libmd5
 DESTDIR                    =  ../lib
 TARGET                     =  doxygen
 OBJECTS_DIR                =  ../objects/doxygen

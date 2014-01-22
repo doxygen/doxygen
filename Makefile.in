@@ -49,7 +49,7 @@ distclean: clean
 	-rm -f libmd5/Makefile.libmd5
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
-	-rm -f generated_src/doxygen/version.cpp 
+	-rm -f generated_src/*
 	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f VERSION
 	-rm -f packages/rpm/doxygen.spec
@@ -61,17 +61,6 @@ distclean: clean
 	-rm -f addon/doxmlparser/examples/metrics/Makefile
 	-rm -f qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f Makefile
-
-realclean: clean
-	-cd src ; $(MAKE) realclean
-	-cd libmd5 ; $(MAKE) realclean
-	-cd addon/doxywizard ; $(MAKE) realclean
-	-cd addon/doxysearch ; $(MAKE) realclean
-	-cd addon/doxyapp ; $(MAKE) realclean
-	-cd addon/doxmlparser/src ; $(MAKE) realclean
-	-cd addon/doxmlparser/test ; $(MAKE) realclean
-	-cd addon/doxmlparser/examples/metrics ; $(MAKE) realclean
-	-$(MAKE) distclean
 
 DATE=$(shell date "+%B %Y")
 

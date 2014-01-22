@@ -26,7 +26,7 @@ GENERATED_OBJ = ../objects/doxygen
 
 #${
 sub GenerateDep {
-    my($obj,$src,$dep) = @_;
+    my($obj,$src,@deps) = @_;
     my(@objv,$srcv,$i,$s,$o,$d,$c);
     @objv = split(/\s+/,$obj);
     @srcv = split(/\s+/,$src);
@@ -35,7 +35,9 @@ sub GenerateDep {
         $o = $objv[$i];
         next if $s eq "";
         $text .= $o . ": " . $s;
-	$text .= " ${linebreak}\n\t\t" . $dep if $dep ne "";
+        foreach my $dep (@deps) {
+	  $text .= " ${linebreak}\n\t\t" . $dep if $dep ne "";
+        }
         if ( $moc_output{$s} ne "" ) {
             $text .= " ${linebreak}\n\t\t" . $moc_output{$s};
         }
@@ -121,19 +123,19 @@ sub GenerateLex {
 	
 TO_C_CMD=$(PYTHON) to_c_cmd.py < $< > $@
 
-#$ GenerateDep("\$(GENERATED_OBJ)/layout.o","layout.cpp","\$(GENERATED_SRC)/layout_default.xml.h");
+#$ GenerateDep("layout.cpp","\$(GENERATED_SRC)/layout_default.xml.h");
 
-#$ GenerateDep("\$(GENERATED_OBJ)/cite.o","cite.cpp","\$(GENERATED_SRC)/doxygen.bst.h","\$(GENERATED_SRC)/bib2xhtml.pl.h");
+#$ GenerateDep("cite.cpp","\$(GENERATED_SRC)/doxygen.bst.h","\$(GENERATED_SRC)/bib2xhtml.pl.h");
 
-#$ GenerateDep("\$(GENERATED_OBJ)/ftvhelp.o","ftvhelp.cpp","\$(GENERATED_SRC)/navtree.js.h","\$(GENERATED_SRC)/resize.js.h","\$(GENERATED_SRC)/navtree.css.h");
+#$ GenerateDep("ftvhelp.cpp","\$(GENERATED_SRC)/navtree.js.h","\$(GENERATED_SRC)/resize.js.h","\$(GENERATED_SRC)/navtree.css.h");
 
-#$ GenerateDep("\$(GENERATED_OBJ)/htmlgen.o","htmlgen.cpp","\$(GENERATED_SRC)/header.html.h","\$(GENERATED_SRC)/footer.html.h","\$(GENERATED_SRC)/doxygen.css.h","\$(GENERATED_SRC)/search_functions.php.h","\$(GENERATED_SRC)/search_opensearch.php.h","\$(GENERATED_SRC)/search.css.h","\$(GENERATED_SRC)/jquery_p1.js.h","\$(GENERATED_SRC)/jquery_p2.js.h","\$(GENERATED_SRC)/jquery_p3.js.h","\$(GENERATED_SRC)/jquery_ui.js.h","\$(GENERATED_SRC)/jquery_fx.js.h","\$(GENERATED_SRC)/jquery_pt.js.h","\$(GENERATED_SRC)/svgpan.js.h","\$(GENERATED_SRC)/dynsections.js.h","\$(GENERATED_SRC)/extsearch.js.h");
+#$ GenerateDep("htmlgen.cpp","\$(GENERATED_SRC)/header.html.h","\$(GENERATED_SRC)/footer.html.h","\$(GENERATED_SRC)/doxygen.css.h","\$(GENERATED_SRC)/search_functions.php.h","\$(GENERATED_SRC)/search_opensearch.php.h","\$(GENERATED_SRC)/search.css.h","\$(GENERATED_SRC)/jquery_p1.js.h","\$(GENERATED_SRC)/jquery_p2.js.h","\$(GENERATED_SRC)/jquery_p3.js.h","\$(GENERATED_SRC)/jquery_ui.js.h","\$(GENERATED_SRC)/jquery_fx.js.h","\$(GENERATED_SRC)/jquery_pt.js.h","\$(GENERATED_SRC)/svgpan.js.h","\$(GENERATED_SRC)/dynsections.js.h","\$(GENERATED_SRC)/extsearch.js.h");
 
-#$ GenerateDep("\$(GENERATED_OBJ)/xmlgen.o","xmlgen.cpp","\$(GENERATED_SRC)/index.xsd.h","\$(GENERATED_SRC)/compound.xsd.h");
+#$ GenerateDep("xmlgen.cpp","\$(GENERATED_SRC)/index.xsd.h","\$(GENERATED_SRC)/compound.xsd.h");
 
-#$ GenerateDep("\$(GENERATED_OBJ)/latexgen.o","latexgen.cpp","\$(GENERATED_SRC)/doxygen.sty.h");
+#$ GenerateDep("latexgen.cpp","\$(GENERATED_SRC)/doxygen.sty.h");
 
-#$ GenerateDep("\$(GENERATED_OBJ)/searchindex.o","searchindex.cpp","\$(GENERATED_SRC)/search.js.h");
+#$ GenerateDep("searchindex.cpp","\$(GENERATED_SRC)/search.js.h");
 
 $(GENERATED_SRC)/index.xsd.h: index.xsd
 	$(TO_C_CMD)

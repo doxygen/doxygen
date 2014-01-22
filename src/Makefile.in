@@ -51,13 +51,4 @@ distclean: clean
 	       vhdlscanner.cpp vhdlcode.cpp tclscanner.cpp vhdlparser.h \
 	       vhdlparser.cpp
 
-# clean also the generated files which are in SVN
-realclean: distclean
-	-cd $(GENERATED_SRC) && $(RM) index.xsd.h compound.xsd.h layout_default.xml.h \
-	       header.html.h footer.html.h search_functions.php.h search_opensearch.php.h \
-	       search.js.h search.css.h doxygen.css.h navtree.js.h resize.js.h \
-	       doxygen.sty.h jquery_fx.js.h jquery_p1.js.h jquery_p2.js.h \
-	       jquery_p3.js.h jquery_ui.js.h navtree.css.h svgpan.js.h dynsections.js.h \
-	       doxygen.bst.h bib2xhtml.pl.h ../generated_src/doxygen/configoptions.cpp jquery_pt.js.h extsearch.js.h
-
 FORCE:

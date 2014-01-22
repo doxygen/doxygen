@@ -29,11 +29,6 @@ distclean: Makefile.doxywizard
 	$(MAKE) -f Makefile.doxywizard distclean 
 	$(RM) Makefile.doxywizard
 
-realclean: Makefile.doxywizard
-	$(RM) ../../generated_src/doxywizard/configdoc.cpp
-	$(RM) ../../generated_src/doxywizard/config_doxyw.cpp
-	$(MAKE) distclean
-	
 install:
 	$(INSTTOOL) -d $(INSTALL)/bin	
 	$(INSTTOOL) -m 755 ../../bin/doxywizard $(INSTALL)/bin	

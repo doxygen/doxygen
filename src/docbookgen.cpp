@@ -56,18 +56,6 @@
 
 //------------------
 
-static const char index_xsd[] =
-#include "index.xsd.h"
-;
-
-//------------------
-//
-static const char compound_xsd[] =
-#include "compound.xsd.h"
-;
-
-//------------------
-
 class DocbookSectionMapper : public QIntDict<char>
 {
   public:

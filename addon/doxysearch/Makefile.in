@@ -7,8 +7,6 @@ distclean: clean
 	$(RM) -rf Makefile doxysearch.pro Makefile.doxysearch
 	$(RM) -rf Makefile doxyindexer.pro Makefile.doxyindexer
 
-realclean: distclean
-
 tmake:
 	$(ENV) $(PERL) "$(TMAKE)" doxysearch.pro >Makefile.doxysearch
 	$(ENV) $(PERL) "$(TMAKE)" doxyindexer.pro >Makefile.doxyindexer
