@@ -3953,6 +3953,17 @@ int ClassDef::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
       count+=ml2->numDecMembers();
       //printf("-> ml2=%d\n",ml2->numDecMembers());
     }
+    // also include grouped members that have their own section in the class (see bug 722759)
+    if (inheritedFrom && m_impl->memberGroupSDict)
+    {
+      MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
+      MemberGroup *mg;
+      for (;(mg=mgli.current());++mgli)
+      {
+        count+=mg->countGroupedInheritedMembers(lt);
+        if (lt2!=1) count+=mg->countGroupedInheritedMembers((MemberListType)lt2);
+      }
+    }
     static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
     if (!inlineInheritedMembers) // show inherited members as separate lists
     {

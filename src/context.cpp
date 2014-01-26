@@ -6168,7 +6168,7 @@ void InheritedMemberInfoListContext::addMemberList(
     ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList)
 {
   QPtrDict<void> visited(17);
-  bool memberInSection = cd->countMembersIncludingGrouped(lt,cd,FALSE);
+  bool memberInSection = cd->countMembersIncludingGrouped(lt,cd,FALSE)>0;
   bool show = (additionalList && !memberInSection) || // inherited member to show in the additional inherited members list
               (!additionalList && memberInSection);   // inherited member to show in a member list of the class
   //printf("%s:%s show=%d\n",cd->name().data(),MemberList::listTypeAsString(lt).data(),show);
