@@ -1467,7 +1467,7 @@ int findTableColumns(const char *data,int size,int &start,int &end,int &columns)
   eol=i+1;
   i--;
   while (i>0 && data[i]==' ') i--;
-  if (i>0 && data[i]=='|') i--,n++; // trailing | does not count
+  if (i>0 && data[i-1]!='\\' && data[i]=='|') i--,n++; // trailing or escaped | does not count
   end = i;
 
   // count columns between start and end
