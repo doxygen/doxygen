@@ -55,8 +55,14 @@ f_langs=`ls -1 src/translator_??.h | sed -e 's%src/translator_%%g' | sed -e 's/\
 
 while test -n "$1";  do
   case $1 in
+    --prefix=*)
+       f_prefix=`echo $1 | sed 's/^--prefix=//'`
+       ;;
     --prefix | -prefix)
        shift; f_prefix=$1
+       ;;
+    --docdir=*)
+       f_docdir=`echo $1 | sed 's/^--docdir=//'`
        ;;
     --docdir | -docdir)
        shift; f_docdir=$1
@@ -76,29 +82,56 @@ while test -n "$1";  do
     --english-only | -english-only)
        f_english=YES
        ;;
+    --enable-langs=*)
+       f_langs=`echo $1 | sed 's/^--enable-langs=//'`
+       ;;
     --enable-langs | -enable-langs)
        shift; f_langs=$1
+       ;;
+    --platform=*)
+       f_platform=`echo $1 | sed 's/^--platform=//'`
        ;;
     --platform | -platform)
        shift; f_platform=$1
        ;;
+    --make=*)
+       f_make=`echo $1 | sed 's/^--make=//'`
+       ;;
     --make | -make)
        shift; f_make=$1
+       ;;
+    --dot=*)
+       f_dot=`echo $1 | sed 's/^--dot=//'`
        ;;
     --dot | -dot)
        shift; f_dot=$1
        ;;
+    --python=*)
+       f_python=`echo $1 | sed 's/^--python=//'`
+       ;;
     --python | -python)
        shift; f_python=$1
+       ;;
+    --perl=*)
+       f_perl=`echo $1 | sed 's/^--perl=//'`
        ;;
     --perl | -perl)
        shift; f_perl=$1
        ;;
+    --flex=*)
+       f_flex=`echo $1 | sed 's/^--flex=//'`
+       ;;
     --flex | -flex)
        shift; f_flex=$1
        ;;
+    --bison=*)
+       f_bison=`echo $1 | sed 's/^--bison=//'`
+       ;;
     --bison | -bison)
        shift; f_bison=$1
+       ;;
+    --install=*)
+       f_insttool=`echo $1 | sed 's/^--install=//'`
        ;;
     --install | -install)
        shift; f_insttool=$1
@@ -121,6 +154,9 @@ while test -n "$1";  do
     --with-sqlite3-static | -with-sqlite3-static)
        f_sqlite3=YES
        f_sqlite3static=YES
+       ;;
+    --sqlite3-path=*)
+       f_sqlite3_path=`echo $1 | sed 's/^--sqlite3-path=//'`
        ;;
     --sqlite3-path | -sqlite3-path)
        shift; f_sqlite3_path=$1
