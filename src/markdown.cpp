@@ -1133,8 +1133,8 @@ static int isLinkRef(const char *data,int size,
   while (i<size && data[i]==' ') i++;
   if (i<size && data[i]=='\n')
   {
-    i++;
     eol=i;
+    i++;
     while (i<size && data[i]==' ') i++;
   }
   if (i>=size) 
@@ -1152,6 +1152,7 @@ static int isLinkRef(const char *data,int size,
     int titleStart=i;
     // search for end of the line
     while (i<size && data[i]!='\n') i++;
+    eol = i;
 
     // search back to matching character
     int end=i-1;
@@ -1166,8 +1167,7 @@ static int isLinkRef(const char *data,int size,
   //printf("end of isLinkRef: i=%d size=%d data[i]='%c' eol=%d\n",
   //    i,size,data[i],eol);
   if      (i>=size)       return i;    // end of buffer while ref id was found
-  else if (data[i]=='\n') return i+1;  // end of line while ref id was found
-  else if (eol)           return eol;  // no optional title found
+  else if (eol)           return eol;  // end of line while ref id was found
   return 0;                            // invalid link ref
 }
 
