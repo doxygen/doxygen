@@ -471,7 +471,7 @@ if test "$f_sqlite3" = YES; then
   printf "  Checking for sqlite3 ... "
   if test "$f_sqlite3_path" = NO; then
     sqlite3_hdr_dir="/usr/include /usr/local/include /opt/local/include"
-    sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu"
+    sqlite3_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib/x86_64-linux-gnu /usr/lib64"
   else
     sqlite3_hdr_dir="$f_sqlite3_path/include"
     sqlite3_lib_dir="$f_sqlite3_path/lib"
