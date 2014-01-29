@@ -842,19 +842,19 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      bindTextParameter(i_s_basecompoundref,":refid",bcd->classDef->getOutputFileBase());
+      bindTextParameter(i_s_basecompoundref,":refid",bcd->classDef->getOutputFileBase(),FALSE);
       bindIntParameter(i_s_basecompoundref,":prot",bcd->prot);
       bindIntParameter(i_s_basecompoundref,":virt",bcd->virt);
 
       if (!bcd->templSpecifiers.isEmpty())
       {
-        bindTextParameter(i_s_basecompoundref,":base",insertTemplateSpecifierInScope(bcd->classDef->name(),bcd->templSpecifiers));
+        bindTextParameter(i_s_basecompoundref,":base",insertTemplateSpecifierInScope(bcd->classDef->name(),bcd->templSpecifiers),FALSE);
       }
       else
       {
-        bindTextParameter(i_s_basecompoundref,":base",bcd->classDef->displayName());
+        bindTextParameter(i_s_basecompoundref,":base",bcd->classDef->displayName(),FALSE);
       }
-      bindTextParameter(i_s_basecompoundref,":derived",cd->displayName());
+      bindTextParameter(i_s_basecompoundref,":derived",cd->displayName(),FALSE);
       if (-1==step(db,i_s_basecompoundref)) {
         sqlite3_clear_bindings(i_s_basecompoundref);
         continue;
@@ -897,7 +897,7 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
       {
         bindIntParameter(i_s_includes,":local",ii->local);
         bindIntParameter(i_s_includes,":id_src",id_file);
-        bindTextParameter(i_s_includes,":dst",nm);
+        bindTextParameter(i_s_includes,":dst",nm.data());
         if (-1==step(db,i_s_includes))
           sqlite3_clear_bindings(i_s_basecompoundref);
       }
