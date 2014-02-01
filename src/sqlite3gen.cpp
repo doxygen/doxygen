@@ -77,9 +77,9 @@ const char *i_q_xrefs="INSERT OR REPLACE INTO xrefs "
 static sqlite3_stmt *i_s_xrefs=0;
 //////////////////////////////////////////////////////
 const char *i_q_memberdef="INSERT OR REPLACE INTO memberdef "
-                            "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, initializer, kind, id_bfile, bline, bcolumn, id_file, line, column)"
+                            "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, initializer, kind, id_bodyfile, bodystart, bodyend, id_file, line, column, detaileddescription, briefdescription, inbodydescription)"
                             "VALUES "
-                            "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:initializer,:kind,:id_bfile,:bline,:bcolumn,:id_file,:line,:column)";
+                            "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:initializer,:kind,:id_bodyfile,:bodystart,:bodyend,:id_file,:line,:column,:detaileddescription,:briefdescription,:inbodydescription)";
 const char *id_q_memberdef="SELECT id FROM memberdef WHERE refid=:refid and id is not null";
 static sqlite3_stmt *id_s_memberdef=0;
 static sqlite3_stmt *i_s_memberdef=0;
@@ -202,12 +202,16 @@ const char * schema_queries[][2] =
       "raisable INTEGER,"
       "kind INTEGER,"
       "refid TEXT NOT NULL,"
-      "id_bfile INTEGER,"
-      "bline INTEGER,"
-      "bcolumn INTEGER,"
+      "id_bodyfile INTEGER,"
+      "bodystart INTEGER,"
+      "bodyend INTEGER,"
       "id_file INTEGER NOT NULL,"
       "line INTEGER NOT NULL,"
-      "column INTEGER NOT NULL)"
+      "column INTEGER NOT NULL,"
+      "detaileddescription TEXT,"
+      "briefdescription TEXT,"
+      "inbodydescription TEXT"
+      ")"
   },
 };
 
@@ -692,6 +696,12 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     bindTextParameter(i_s_memberdef,":scope",md->getScopeString().data(),FALSE);
   }
 
+  // Brief and detail description
+
+  bindTextParameter(i_s_memberdef,":briefdescription",md->briefDescription(),FALSE);
+  bindTextParameter(i_s_memberdef,":detaileddescription",md->documentation(),FALSE);
+  bindTextParameter(i_s_memberdef,":inbodydescription",md->inbodyDocumentation(),FALSE);
+
   // File location
   if (md->getDefLine() != -1)
   {
@@ -704,18 +714,16 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
       if (md->getStartBodyLine()!=-1)
       {
-        int id_bfile = insertFile(db,md->getBodyDef()->absFilePath());
-        if (id_bfile == -1)
+        int id_bodyfile = insertFile(db,md->getBodyDef()->absFilePath());
+        if (id_bodyfile == -1)
         {
             sqlite3_clear_bindings(i_s_memberdef);
         }
         else
         {
-            bindIntParameter(i_s_memberdef,":id_ibfile",id_bfile);
-            bindIntParameter(i_s_memberdef,":bline",md->getStartBodyLine());
-
-            // XXX implement getStartBodyColumn
-            bindIntParameter(i_s_memberdef,":bcolumn",1);
+            bindIntParameter(i_s_memberdef,":id_bodyfile",id_bodyfile);
+            bindIntParameter(i_s_memberdef,":bodystart",md->getStartBodyLine());
+            bindIntParameter(i_s_memberdef,":bodyend",md->getEndBodyLine());
         }
       }
     }
