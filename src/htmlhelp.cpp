@@ -626,7 +626,7 @@ void HtmlHelp::addContentsItem(bool isDir,
   }
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
-  cts << "<param name=\"Name\" value=\"" << recode(name) << "\">";
+  cts << "<param name=\"Name\" value=\"" << recode(name).replace(QRegExp("&$"),"&amp;").replace(QRegExp("\""),"&quot;") << "\">";
   if (file)      // made file optional param - KPW
   {
     if (file && (file[0]=='!' || file[0]=='^')) // special markers for user defined URLs
