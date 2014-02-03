@@ -646,7 +646,7 @@ void replaceComment(int offset);
                                        else
                                        {
                                          g_nestingCount--;
-                                         CommentCtx *ctx = g_commentStack.pop();
+                                         delete g_commentStack.pop();
                                        }
 				     }
                                    }
@@ -988,7 +988,6 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   if (g_lang==SrcLangExt_Markdown)
   {
     g_nestingCount=0;
-    g_commentStack.clear(); /*  to be on the save side */
     BEGIN(CComment);
     g_commentStack.push(new CommentCtx(g_lineNr));
   }
@@ -1007,14 +1006,15 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   }
   if (g_nestingCount>0 || (YY_START==CComment && g_lang!=SrcLangExt_Markdown))
   {
-    QString tmp= "(probable line reference: ";
+    QCString tmp= "(probable line reference: ";
     bool first = TRUE;
     while (!g_commentStack.isEmpty())
     {
       CommentCtx *ctx = g_commentStack.pop();
       if (!first) tmp += ", ";
-      tmp += QString::number(ctx->lineNr);
+      tmp += QCString().setNum(ctx->lineNr);
       first = FALSE;
+      delete ctx;
     }
     tmp += ")";
     warn(g_fileName,g_lineNr,"Reached end of file while still inside a (nested) comment. "
