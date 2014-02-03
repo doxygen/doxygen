@@ -52,6 +52,13 @@ struct CondCtx
   bool skip;
 };
   
+struct CommentCtx
+{
+  CommentCtx(int line) 
+    : lineNr(line) {}
+  int lineNr;
+};
+  
 static BufStr * g_inBuf;
 static BufStr * g_outBuf;
 static int      g_inBufPos;
@@ -64,6 +71,7 @@ static QCString g_fileName;
 static int      g_lineNr;
 static int      g_condCtx;
 static QStack<CondCtx> g_condStack;
+static QStack<CommentCtx> g_commentStack;
 static QCString g_blockName;
 static int      g_lastCommentContext;
 static bool     g_inSpecialComment;
@@ -256,8 +264,10 @@ void replaceComment(int offset);
 				     {
                                        g_pythonDocString = TRUE;
                                        g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
                                        copyToOutput(yytext,(int)yyleng);
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
                                    }
 <Scan>![><!]/.*\n	   {
@@ -269,7 +279,9 @@ void replaceComment(int offset);
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
                                        g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <Scan>[Cc\*][><!]/.*\n	   {
@@ -284,7 +296,9 @@ void replaceComment(int offset);
                                        {
                                          copyToOutput(yytext,(int)yyleng); 
                                          g_nestingCount=0;
+                                         g_commentStack.clear(); /*  to be on the save side */
 				         BEGIN(CComment);
+                                         g_commentStack.push(new CommentCtx(g_lineNr));
 				       }
 				       else
 				       {
@@ -378,8 +392,10 @@ void replaceComment(int offset);
 <Scan>"/*"[*!]?			   { /* start of a C comment */
   			             g_specialComment=(int)yyleng==3;
                                      g_nestingCount=0;
+                                     g_commentStack.clear(); /*  to be on the save side */
                                      copyToOutput(yytext,(int)yyleng); 
 				     BEGIN(CComment); 
+                                     g_commentStack.push(new CommentCtx(g_lineNr));
                                    }
 <Scan>"#"("#")?		           {
                                      if (g_lang!=SrcLangExt_Python)
@@ -390,7 +406,9 @@ void replaceComment(int offset);
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
                                        g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <Scan>"--!"		           {
@@ -402,7 +420,9 @@ void replaceComment(int offset);
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
                                        g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <Scan>![><!]		           {
@@ -414,7 +434,9 @@ void replaceComment(int offset);
 				     {
                                        copyToOutput(yytext,(int)yyleng); 
                                        g_nestingCount=0;
+                                       g_commentStack.clear(); /*  to be on the save side */
 				       BEGIN(CComment);
+                                       g_commentStack.push(new CommentCtx(g_lineNr));
 				     }
   				   }
 <CComment>"{@code"/[ \t\n]	   {
@@ -606,6 +628,7 @@ void replaceComment(int offset);
                                    }
 <CComment>"/"+"*"                  { /* nested C comment */
                                      g_nestingCount++;
+                                     g_commentStack.push(new CommentCtx(g_lineNr));
                                      copyToOutput(yytext,(int)yyleng); 
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
@@ -623,6 +646,7 @@ void replaceComment(int offset);
                                        else
                                        {
                                          g_nestingCount--;
+                                         CommentCtx *ctx = g_commentStack.pop();
                                        }
 				     }
                                    }
@@ -951,6 +975,8 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_lineNr   = 1;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
+  g_commentStack.clear();
+  g_commentStack.setAutoDelete(TRUE);
 
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   isFixedForm = FALSE;
@@ -962,7 +988,9 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   if (g_lang==SrcLangExt_Markdown)
   {
     g_nestingCount=0;
+    g_commentStack.clear(); /*  to be on the save side */
     BEGIN(CComment);
+    g_commentStack.push(new CommentCtx(g_lineNr));
   }
   else
   {
@@ -979,9 +1007,20 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   }
   if (g_nestingCount>0 || (YY_START==CComment && g_lang!=SrcLangExt_Markdown))
   {
+    QString tmp= "(probable line reference: ";
+    bool first = TRUE;
+    while (!g_commentStack.isEmpty())
+    {
+      CommentCtx *ctx = g_commentStack.pop();
+      if (!first) tmp += ", ";
+      tmp += QString::number(ctx->lineNr);
+      first = FALSE;
+    }
+    tmp += ")";
     warn(g_fileName,g_lineNr,"Reached end of file while still inside a (nested) comment. "
-        "Nesting level %d",g_nestingCount+1); // add one for "normal" expected end of comment
+        "Nesting level %d %s",g_nestingCount+1,tmp.data()); // add one for "normal" expected end of comment
   }
+  g_commentStack.clear();
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     g_outBuf->at(g_outBuf->curPos())='\0';

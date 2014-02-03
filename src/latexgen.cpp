@@ -1375,8 +1375,10 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "}";
     if (clname)
     {
-      t << "!" << clname << "@{";
-      docify(clname);
+      t << "!";
+      escapeLabelName(clname);
+      t << "@{";
+      escapeMakeIndexChars(clname);
       t << "}"; 
     }
     t << "}" << endl;
@@ -2013,13 +2015,18 @@ void LatexGenerator::escapeLabelName(const char *s)
   {
     switch (c)
     {
+      case '|': t << "\\texttt{\"|}"; break;
+      case '!': t << "\"!"; break;
       case '%': t << "\\%";       break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
+      case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
       // NOTE: adding a case here, means adding it to while below as well!
       default:  
         i=0;
         // collect as long string as possible, before handing it to docify
         result[i++]=c;
-        while ((c=*p) && c!='%')
+        while ((c=*p) && c!='|' && c!='!' && c!='%' && c!='{' && c!='}' && c!='~')
         {
           result[i++]=c;
           p++;
@@ -2042,16 +2049,20 @@ void LatexGenerator::escapeMakeIndexChars(const char *s)
   {
     switch (c)
     {
+      case '!': t << "\"!"; break;
       case '"': t << "\"\""; break;
       case '@': t << "\"@"; break;
+      case '|': t << "\\texttt{\"|}"; break;
       case '[': t << "["; break;
       case ']': t << "]"; break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
       // NOTE: adding a case here, means adding it to while below as well!
       default:  
         i=0;
         // collect as long string as possible, before handing it to docify
         result[i++]=c;
-        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']')
+        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
         {
           result[i++]=c;
           p++;
