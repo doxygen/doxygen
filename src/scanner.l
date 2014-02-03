@@ -6299,6 +6299,18 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    REJECT;
 					  }
   					}
+<DocCopyBlock>^{B}*"*"+/({ID}|"(")	{ // Assume *var or *(... is part of source code (see bug723516)
+					  if (docBlockName=="code")
+                                          {
+                                            QCString indent;
+                                            indent.fill(' ',computeIndent(yytext,-1));
+                                            docBlock+=indent+"*";
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <DocCopyBlock>^{B}*"*"+/{BN}*		{ // start of a comment line with one *
   					  if (docBlockName=="code")
                                           {
