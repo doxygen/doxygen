@@ -64,9 +64,19 @@ static QCString getExtension()
   return ext;
 }
 
+static QCString getSubdir()
+{
+  QCString dir = Config_getString("MAN_SUBDIR");
+  if (dir.isEmpty())
+  {
+    dir = "man" + getExtension();
+  }
+  return dir;
+}
+
 ManGenerator::ManGenerator() : OutputGenerator()
 {
-  dir=Config_getString("MAN_OUTPUT")+"/man" + getExtension();
+  dir=Config_getString("MAN_OUTPUT") + "/" + getSubdir();
   firstCol=TRUE;
   paragraph=TRUE;
   col=0;
@@ -106,10 +116,10 @@ void ManGenerator::init()
     err("Could not create output directory %s\n",manOutput.data());
     exit(1);
   }
-  d.setPath(manOutput+"/man"+ext);
-  if (!d.exists() && !d.mkdir(manOutput+"/man"+ext))
+  d.setPath(manOutput + "/" + getSubdir());
+  if (!d.exists() && !d.mkdir(manOutput + "/" + getSubdir()))
   {
-    err("Could not create output directory %s/man%s\n",manOutput.data(),ext.data());
+    err("Could not create output directory %s/%s\n",manOutput.data(), getSubdir().data());
     exit(1);
   }
   createSubDirs(d);
@@ -445,7 +455,7 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
 	      FTextStream linkstream;
 	      linkstream.setDevice(&linkfile);
 	      //linkstream.setEncoding(QTextStream::UnicodeUTF8);
-	      linkstream << ".so man" << getExtension() << "/" << buildFileName( manName ) << endl;
+	      linkstream << ".so " << getSubdir() << "/" << buildFileName( manName ) << endl;
 	}
     }
     linkfile.close();
