@@ -5023,6 +5023,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
 					    tempEntry = current; // temporarily switch to the previous entry
 					    current = previous;
+					    previous = 0;
 
 					    docBlockContext   = SkipCurlyEndDoc;
 					    docBlockInBody    = FALSE;
@@ -5062,7 +5063,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <SkipCurlyEndDoc>"}"			{
   				          //addToBody("}");
-					  current = tempEntry;
+                                          if (tempEntry) // we can only switch back to current if no new item was created
+					  {
+					    current = tempEntry;
+					    tempEntry = 0;
+					  }
   					  BEGIN( lastCurlyContext );
   					}
 <SkipCurly>\"			        { 
@@ -6515,7 +6520,14 @@ static void startCommentBlock(bool brief)
 
 static void newEntry()
 {
-  current_root->addSubEntry(current);
+  if (tempEntry==0) // if temp entry is not 0, it holds current, 
+                    // and current is actually replaced by previous which was 
+                    // already added to current_root, so we should not add it again 
+                    // (see bug723314)
+  {
+    current_root->addSubEntry(current);
+  }
+  tempEntry = 0;
   previous = current;
   current = new Entry ;
   initEntry();
