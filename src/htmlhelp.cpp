@@ -35,6 +35,7 @@
 #include "groupdef.h"
 #include "memberdef.h"
 #include "filedef.h"
+#include "util.h"
 
 //----------------------------------------------------------------------------
 
@@ -626,7 +627,7 @@ void HtmlHelp::addContentsItem(bool isDir,
   }
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
-  cts << "<param name=\"Name\" value=\"" << recode(name) << "\">";
+  cts << "<param name=\"Name\" value=\"" << convertToHtml(recode(name),TRUE) << "\">";
   if (file)      // made file optional param - KPW
   {
     if (file && (file[0]=='!' || file[0]=='^')) // special markers for user defined URLs
