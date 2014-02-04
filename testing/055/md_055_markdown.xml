@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="md_055_markdown" kind="page">
+    <compoundname>md_055_markdown</compoundname>
+    <title>055_markdown</title>
+    <detaileddescription>
+      <para>// objective: test markdown parsing // check: md_055_markdown.xml</para>
+      <para>
+        <ulink url="http://example.com/inline">Inline link</ulink>
+      </para>
+      <para>
+        <ulink url="http://example.com/reference">Reference link</ulink>
+      </para>
+      <para>
+        <ulink url="http://example.com/last-line">Upper-cased reference link on last line</ulink>
+      </para>
+    </detaileddescription>
+  </compounddef>
+</doxygen>
