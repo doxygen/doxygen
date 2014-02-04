@@ -2101,7 +2101,7 @@ static QCString processBlocks(const QCString &s,int indent)
     {
       //printf("found link ref: id='%s' link='%s' title='%s'\n",
       //    id.data(),link.data(),title.data());
-      g_linkRefs.insert(id,new LinkRef(link,title));
+      g_linkRefs.insert(id.lower(),new LinkRef(link,title));
     }
     else
     {

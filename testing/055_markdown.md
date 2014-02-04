@@ -1,5 +1,5 @@
 <!--
-// objective: test markdown
+// objective: test markdown parsing
 // check: md_055_markdown.xml
 -->
 
@@ -7,10 +7,16 @@
 
 ## Bar
 
-Some text with a [link][1].
+[Inline link](http://example.com/inline)
 
-[1]: http://www.example.com/
+[Reference link][1]
+
+[1]: http://example.com/reference
 
 ## Baz
 
 More text
+
+[Upper-cased reference link on last line][U]
+
+[U]: http://example.com/last-line

@@ -10,11 +10,19 @@
       <para>
         <heading level="2">Bar</heading>
       </para>
-      <para>Some text with a <ulink url="http://www.example.com/">link</ulink>.</para>
+      <para>
+        <ulink url="http://example.com/inline">Inline link</ulink>
+      </para>
+      <para>
+        <ulink url="http://example.com/reference">Reference link</ulink>
+      </para>
       <para>
         <heading level="2">Baz</heading>
       </para>
-      <para>More text </para>
+      <para>More text</para>
+      <para>
+        <ulink url="http://example.com/last-line">Upper-cased reference link on last line</ulink>
+      </para>
     </detaileddescription>
   </compounddef>
 </doxygen>
