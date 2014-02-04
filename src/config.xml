@@ -2728,24 +2728,6 @@ EXTRA_PACKAGES=times
 ]]>
       </docs>
     </option>
-    <option type='string' id='XML_SCHEMA' format='string' defval='' depends='GENERATE_XML'>
-      <docs>
-<![CDATA[
- The \c XML_SCHEMA tag can be used to specify a XML schema,
- which can be used by a validating XML parser to check the
- syntax of the XML files.
-]]>
-      </docs>
-    </option>
-    <option type='string' id='XML_DTD' format='string' defval='' depends='GENERATE_XML'>
-      <docs>
-<![CDATA[
- The \c XML_DTD tag can be used to specify a XML DTD,
- which can be used by a validating XML parser to check the
- syntax of the XML files.
-]]>
-      </docs>
-    </option>
     <option type='bool' id='XML_PROGRAMLISTING' defval='1' depends='GENERATE_XML'>
       <docs>
 <![CDATA[
@@ -3381,5 +3363,7 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='SHOW_DIRECTORIES'/>
     <option type='obsolete' id='HTML_ALIGN_MEMBERS'/>
     <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
+    <option type='obsolete' id='XML_SCHEMA'/>
+    <option type='obsolete' id='XML_DTD'/>
   </group>
 </doxygenconfig>
