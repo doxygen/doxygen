@@ -45,6 +45,7 @@ distclean: clean
 	-rm -rf html
 	-rm -rf latex
 	-rm -rf man
+	-rm -rf docbook
 	-rm -rf perlmod
 	-rm -rf rtf
 	-rm -rf xml
