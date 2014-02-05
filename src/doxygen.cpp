@@ -10349,7 +10349,7 @@ void readConfiguration(int argc, char **argv)
   }
 
 
-  if (!Config::instance()->parse(configName))
+  if (!Config::instance()->parse(configName,updateConfig))
   {
     err("could not open or read configuration file %s!\n",configName);
     cleanUpDoxygen();

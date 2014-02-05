@@ -435,6 +435,7 @@ static QCString          includeName;
 static QStrList          includePathList;
 static QStack<ConfigFileState> includeStack;  
 static int               includeDepth;
+static bool              config_upd = FALSE;
 
 static QCString     tabSizeString;
 static QCString     maxInitLinesString;
@@ -672,15 +673,31 @@ static void readIncludeFile(const char *incName)
 					         BEGIN(GetString);
 						 break;
 					       case ConfigOption::O_Obsolete:
-					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please remove this line from your configuration "
-							    "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 if (config_upd)
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' has become obsolete.\n"
+						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
+                                                 }
+                                                 else
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' has become obsolete.\n"
+						              "         To avoid this warning please remove this line from your configuration "
+							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 }
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
-					         config_err("Warning: Tag `%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
-						            "To avoid this warning please remove this line from your configuration "
-							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 if (config_upd)
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
+						              "         This tag has been removed.\n", cmd.data(),yyLineNr,yyFileName.data());
+                                                 }
+                                                 else
+                                                 {
+					           config_err("Warning: Tag `%s' at line %d of file `%s' belongs to an option that was not enabled at compile time.\n"
+						              "         To avoid this warning please remove this line from your configuration "
+							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),yyLineNr,yyFileName.data()); 
+                                                 }
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -1666,7 +1683,7 @@ static QCString configFileToString(const char *name)
   return "";
 }
 
-bool Config::parseString(const char *fn,const char *str)
+bool Config::parseString(const char *fn,const char *str,bool update)
 {
   config = Config::instance();
   inputString   = str;
@@ -1678,17 +1695,19 @@ bool Config::parseString(const char *fn,const char *str)
   includeDepth  = 0;
   configYYrestart( configYYin );
   BEGIN( Start );
+  config_upd = update;
   configYYlex();
+  config_upd = FALSE;
   inputString = 0;
   return TRUE;
 }
 
-bool Config::parse(const char *fn)
+bool Config::parse(const char *fn,bool update)
 {
   int retval;
   encoding = "UTF-8";
   printlex(yy_flex_debug, TRUE, __FILE__, fn);
-  retval =  parseString(fn,configFileToString(fn)); 
+  retval =  parseString(fn,configFileToString(fn), update); 
   printlex(yy_flex_debug, FALSE, __FILE__, fn);
   return retval;
 }

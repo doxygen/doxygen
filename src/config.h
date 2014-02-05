@@ -493,13 +493,14 @@ class Config
      *  \returns TRUE if successful, or FALSE if the string could not be
      *  parsed.
      */ 
-    bool parseString(const char *fn,const char *str);
+    //bool parseString(const char *fn,const char *str);
+    bool parseString(const char *fn,const char *str,bool upd = FALSE);
 
     /*! Parse a configuration file with name \a fn.
      *  \returns TRUE if successful, FALSE if the file could not be 
      *  opened or read.
      */ 
-    bool parse(const char *fn);
+    bool parse(const char *fn,bool upd = FALSE);
 
     /*! Called from the constructor, will add doxygen's default options
      *  to the configuration object 
