@@ -596,7 +596,7 @@ fi
 
 printf "  Checking for python... "
 if test "$f_python" = NO; then
-  python_names="python"
+  python_names="python2 python"
   python_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   python_prog=NO
   python_found=NO
