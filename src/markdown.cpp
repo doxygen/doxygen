@@ -1725,7 +1725,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
   {
     // find end of this line
     end=i+1;
-    while (end<size && data[end-1]!='\n') end++;
+    while (end<=size && data[end-1]!='\n') end++;
     int j=i;
     int level=0;
     int indent=i;
@@ -1781,7 +1781,7 @@ static int writeCodeBlock(GrowBuf &out,const char *data,int size,int refIndent)
   {
     // find end of this line
     end=i+1;
-    while (end<size && data[end-1]!='\n') end++;
+    while (end<=size && data[end-1]!='\n') end++;
     int j=i;
     int indent=0;
     while (j<end && data[j]==' ') j++,indent++;
@@ -1828,7 +1828,7 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
   // find end of the line
   int nb=0;
   end=i+1;
-  while (end<size && data[end-1]!='\n')
+  while (end<=size && data[end-1]!='\n')
   {
     // while looking for the end of the line we might encounter a block
     // that needs to be passed unprocessed.
@@ -1892,12 +1892,12 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
     }
     else if (nb==0 && data[end-1]=='`') 
     {
-      while (end<size && data[end-1]=='`') end++,nb++;
+      while (end<=size && data[end-1]=='`') end++,nb++;
     }
     else if (nb>0 && data[end-1]=='`')
     {
       int enb=0;
-      while (end<size && data[end-1]=='`') end++,enb++;
+      while (end<=size && data[end-1]=='`') end++,enb++;
       if (enb==nb) nb=0;
     }
     else
@@ -1968,7 +1968,7 @@ static QCString processBlocks(const QCString &s,int indent)
   // get indent for the first line
   end = i+1;
   int sp=0;
-  while (end<size && data[end-1]!='\n') 
+  while (end<=size && data[end-1]!='\n') 
   {
     if (data[end-1]==' ') sp++;
     end++;
