@@ -39,17 +39,22 @@ distclean: clean
 	-cd addon/doxmlparser/src ; $(MAKE) distclean
 	-cd addon/doxmlparser/test ; $(MAKE) distclean
 	-cd addon/doxmlparser/examples/metrics ; $(MAKE) distclean
-	-rm -f lib/lib*
-	-rm -f bin/doxy*
-	-rm -f html
-	-rm -f latex
-	-rm -f objects/*/*.o
+	-rm -rf lib
+	-rm -rf bin
+	-rm -rf objects
+	-rm -rf html
+	-rm -rf latex
+	-rm -rf man
+	-rm -rf docbook
+	-rm -rf perlmod
+	-rm -rf rtf
+	-rm -rf xml
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.libdoxycfg src/libdoxycfg.t src/libdoxygen.t
 	-rm -f libmd5/Makefile.libmd5
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
-	-rm -f generated_src/*
+	-rm -rf generated_src
 	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f VERSION
 	-rm -f packages/rpm/doxygen.spec
