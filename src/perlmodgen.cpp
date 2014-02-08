@@ -41,6 +41,7 @@
 #include "namespacedef.h"
 #include "membergroup.h"
 #include "section.h"
+#include "util.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -540,140 +541,66 @@ void PerlModDocVisitor::visit(DocWhiteSpace *)
 
 void PerlModDocVisitor::visit(DocSymbol *sy)
 {
-  char c = 0;
-  const char *s = 0;
-  const char *accent = 0;
-  const char *symbol = 0;
-  switch(sy->symbol())
+  const DocSymbol::PerlSymb *res = get_symbol_perl(sy->symbol());
+  const char *accent;
+  if (res-> symb)
   {
-    case DocSymbol::At:      c = '@'; break;
-    case DocSymbol::Less:    c = '<'; break;
-    case DocSymbol::Greater: c = '>'; break;
-    case DocSymbol::Amp:     c = '&'; break;
-    case DocSymbol::Dollar:  c = '$'; break;
-    case DocSymbol::Hash:    c = '#'; break;
-    case DocSymbol::DoubleColon: s = "::"; break;
-    case DocSymbol::Percent: c = '%'; break;
-    case DocSymbol::Pipe:    c = '|'; break;
-    case DocSymbol::Quot:    c = '"'; break;
-    case DocSymbol::Lsquo:   s = "\\\'"; break;
-    case DocSymbol::Rsquo:   s = "\\\'"; break;
-    case DocSymbol::Ldquo:   c = '"'; break;
-    case DocSymbol::Rdquo:   c = '"'; break;
-    case DocSymbol::Ndash:   c = '-'; break;
-    case DocSymbol::Mdash:   s = "--"; break;
-    case DocSymbol::Nbsp:    c = ' '; break;
-    case DocSymbol::Uml:     accent = "umlaut"; break;
-    case DocSymbol::Acute:   accent = "acute"; break;
-    case DocSymbol::Grave:   accent = "grave"; break;
-    case DocSymbol::Circ:    accent = "circ"; break;
-    case DocSymbol::Slash:   accent = "slash"; break;
-    case DocSymbol::Tilde:   accent = "tilde"; break;
-    case DocSymbol::Cedil:   accent = "cedilla"; break;
-    case DocSymbol::Ring:    accent = "ring"; break;
-    case DocSymbol::BSlash:  s = "\\\\"; break;
-    case DocSymbol::Copy:    symbol = "copyright"; break;
-    case DocSymbol::Tm:      symbol = "trademark"; break;
-    case DocSymbol::Reg:     symbol = "registered"; break;
-    case DocSymbol::Szlig:   symbol = "szlig"; break;
-    case DocSymbol::Apos:    s = "\\\'"; break;
-    case DocSymbol::Aelig:   symbol = "aelig"; break;
-    case DocSymbol::AElig:   symbol = "AElig"; break;
-    case DocSymbol::GrkGamma:      symbol = "Gamma"; break;
-    case DocSymbol::GrkDelta:      symbol = "Delta"; break;
-    case DocSymbol::GrkTheta:      symbol = "Theta"; break;
-    case DocSymbol::GrkLambda:     symbol = "Lambda"; break;
-    case DocSymbol::GrkXi:         symbol = "Xi"; break;
-    case DocSymbol::GrkPi:         symbol = "Pi"; break;
-    case DocSymbol::GrkSigma:      symbol = "Sigma"; break;
-    case DocSymbol::GrkUpsilon:    symbol = "Upsilon"; break;
-    case DocSymbol::GrkPhi:        symbol = "Phi"; break;
-    case DocSymbol::GrkPsi:        symbol = "Psi"; break;
-    case DocSymbol::GrkOmega:      symbol = "Omega"; break;
-    case DocSymbol::Grkalpha:      symbol = "alpha"; break;
-    case DocSymbol::Grkbeta:       symbol = "beta"; break;
-    case DocSymbol::Grkgamma:      symbol = "gamma"; break;
-    case DocSymbol::Grkdelta:      symbol = "delta"; break;
-    case DocSymbol::Grkepsilon:    symbol = "epsilon"; break;
-    case DocSymbol::Grkzeta:       symbol = "zeta"; break;
-    case DocSymbol::Grketa:        symbol = "eta"; break;
-    case DocSymbol::Grktheta:      symbol = "theta"; break;
-    case DocSymbol::Grkiota:       symbol = "iota"; break;
-    case DocSymbol::Grkkappa:      symbol = "kappa"; break;
-    case DocSymbol::Grklambda:     symbol = "lambda"; break;
-    case DocSymbol::Grkmu:         symbol = "mu"; break;
-    case DocSymbol::Grknu:         symbol = "nu"; break;
-    case DocSymbol::Grkxi:         symbol = "xi"; break;
-    case DocSymbol::Grkpi:         symbol = "pi"; break;
-    case DocSymbol::Grkrho:        symbol = "rho"; break;
-    case DocSymbol::Grksigma:      symbol = "sigma"; break;
-    case DocSymbol::Grktau:        symbol = "tau"; break;
-    case DocSymbol::Grkupsilon:    symbol = "upsilon"; break;
-    case DocSymbol::Grkphi:        symbol = "phi"; break;
-    case DocSymbol::Grkchi:        symbol = "chi"; break;
-    case DocSymbol::Grkpsi:        symbol = "psi"; break;
-    case DocSymbol::Grkomega:      symbol = "omega"; break;
-    case DocSymbol::Grkvarsigma:   symbol = "sigma"; break;
-    case DocSymbol::Section:       symbol = "sect"; break;
-    case DocSymbol::Degree:        symbol = "deg"; break;
-    case DocSymbol::Prime:         s = "\\\'"; break;
-    case DocSymbol::DoublePrime:   c = '"'; break;
-    case DocSymbol::Infinity:      symbol = "inf"; break;
-    case DocSymbol::EmptySet:      symbol = "empty"; break;
-    case DocSymbol::PlusMinus:     s = "+/-"; break;
-    case DocSymbol::Times:         c = '*'; break;
-    case DocSymbol::Minus:         c = '-'; break;
-    case DocSymbol::CenterDot:     c = '.'; break;
-    case DocSymbol::Partial:       symbol = "partial"; break;
-    case DocSymbol::Nabla:         symbol = "nabla"; break;
-    case DocSymbol::SquareRoot:    symbol = "sqrt"; break;
-    case DocSymbol::Perpendicular: symbol = "perp"; break;
-    case DocSymbol::Sum:           symbol = "sum"; break;
-    case DocSymbol::Integral:      symbol = "int"; break;
-    case DocSymbol::Product:       symbol = "prod"; break;
-    case DocSymbol::Similar:       c = '~'; break;
-    case DocSymbol::Approx:        symbol = "approx"; break;
-    case DocSymbol::NotEqual:      s = "!="; break;
-    case DocSymbol::Equivalent:    symbol = "equiv"; break;
-    case DocSymbol::Proportional:  symbol = "propto"; break;
-    case DocSymbol::LessEqual:     s = "<="; break;
-    case DocSymbol::GreaterEqual:  s = ">="; break;
-    case DocSymbol::LeftArrow:     s = "<-"; break;
-    case DocSymbol::RightArrow:    s = "->"; break;
-    case DocSymbol::SetIn:         symbol = "in"; break;
-    case DocSymbol::SetNotIn:      symbol = "notin"; break;
-    case DocSymbol::LeftCeil:      symbol = "lceil"; break;
-    case DocSymbol::RightCeil:     symbol = "rceil"; break;
-    case DocSymbol::LeftFloor:     symbol = "lfloor"; break;
-    case DocSymbol::RightFloor:    symbol = "rfloor"; break;
-    case DocSymbol::Unknown: err("unknown symbol found\n");
-                             break;
+    switch (res->type)
+    {
+      case DocSymbol::Perl_string:
+        enterText();
+        m_output.add(res->symb);
+        break;
+      case DocSymbol::Perl_char:
+        enterText();
+        m_output.add(res->symb[0]);
+        break;
+      case DocSymbol::Perl_symbol:
+        leaveText();
+        openItem("symbol");
+        m_output.addFieldQuotedString("symbol", res->symb);
+        closeItem();
+        break;
+      default:
+        switch(res->type)
+        {
+          case DocSymbol::Perl_umlaut:
+            accent = "umlaut";
+            break;
+          case DocSymbol::Perl_acute:
+            accent = "acute";
+            break;
+          case DocSymbol::Perl_grave:
+            accent = "grave";
+            break;
+          case DocSymbol::Perl_circ:
+            accent = "circ";
+            break;
+          case DocSymbol::Perl_slash:
+            accent = "slash";
+            break;
+          case DocSymbol::Perl_tilde:
+            accent = "tilde";
+            break;
+          case DocSymbol::Perl_cedilla:
+            accent = "cedilla";
+            break;
+          case DocSymbol::Perl_ring:
+            accent = "ring";
+            break;
+        }
+        leaveText();
+        openItem("accent");
+        m_output
+          .addFieldQuotedString("accent", accent)
+          .addFieldQuotedChar("letter", res->symb[0]);
+        closeItem();
+        break;
+    }
   }
-  if (c != 0) 
+  else
   {
-    enterText();
-    m_output.add(c);
-  } 
-  else if (s != 0) 
-  {
-    enterText();
-    m_output.add(s);
-  } 
-  else if (symbol != 0) 
-  {
-    leaveText();
-    openItem("symbol");
-    m_output.addFieldQuotedString("symbol", symbol);
-    closeItem();
-  } 
-  else if (accent != 0) 
-  {
-    leaveText();
-    openItem("accent");
-    m_output
-      .addFieldQuotedString("accent", accent)
-      .addFieldQuotedChar("letter", sy->letter());
-    closeItem();
+    err("perl: non supported HTML-entity found: &%s;\n",get_symbol_item(sy->symbol()));
   }
 }
 
