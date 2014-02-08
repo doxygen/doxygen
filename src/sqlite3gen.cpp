@@ -45,122 +45,28 @@
 //#define DBG_CTX(x) printf x
 #define DBG_CTX(x) do { } while(0)
 
-static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def);
 
-//////////////////////////////////////////////////////
-const char *i_q_includes="INSERT OR REPLACE INTO includes "
-                            "( local, id_src, dst ) "
-                            "VALUES "
-                            "(:local,:id_src,:dst )" ;
-const char *c_q_includes="SELECT count(*) FROM includes WHERE local=:local and id_src=:id_src and dst=:dst";
-static sqlite3_stmt *c_s_includes=0;
-static sqlite3_stmt *i_s_includes=0;
-//////////////////////////////////////////////////////
-const char *i_q_innerclass="INSERT OR REPLACE INTO innerclass "
-                            "( refid, prot, name )"
-                            "VALUES "
-                            "(:refid,:prot,:name )";
-static sqlite3_stmt *i_s_innerclass=0;
-//////////////////////////////////////////////////////
-const char *i_q_files="INSERT OR REPLACE INTO files "
-                            "( name )"
-                            "VALUES "
-                            "(:name )";
-const char *id_q_files="SELECT id FROM files WHERE name=:name";
-static sqlite3_stmt *id_s_files=0;
-static sqlite3_stmt *i_s_files=0;
-//////////////////////////////////////////////////////
-const char *i_q_xrefs="INSERT OR REPLACE INTO xrefs "
-                            "( src, dst, id_file, line, column )"
-                            "VALUES "
-                            "(:src,:dst,:id_file,:line,:column )";
-static sqlite3_stmt *i_s_xrefs=0;
-//////////////////////////////////////////////////////
-const char *i_q_memberdef="INSERT OR REPLACE INTO memberdef "
-                            "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, initializer, kind, id_bodyfile, bodystart, bodyend, id_file, line, column, detaileddescription, briefdescription, inbodydescription)"
-                            "VALUES "
-                            "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:initializer,:kind,:id_bodyfile,:bodystart,:bodyend,:id_file,:line,:column,:detaileddescription,:briefdescription,:inbodydescription)";
-const char *id_q_memberdef="SELECT id FROM memberdef WHERE refid=:refid and id is not null";
-static sqlite3_stmt *id_s_memberdef=0;
-static sqlite3_stmt *i_s_memberdef=0;
-//////////////////////////////////////////////////////
-const char *i_q_compounddef="INSERT OR REPLACE INTO compounddef "
-                            "( name, kind, prot, refid, id_file, line, column ) "
-                            "VALUES "
-                            "(:name,:kind,:prot,:refid,:id_file,:line,:column )";
-static sqlite3_stmt *i_s_compounddef=0;
-//////////////////////////////////////////////////////
-const char *i_q_basecompoundref="INSERT OR REPLACE INTO  basecompoundref "
-                            "( base, derived, refid, prot, virt ) "
-                            "VALUES "
-                            "(:base,:derived,:refid,:prot,:virt )" ;
-static sqlite3_stmt *i_s_basecompoundref=0;
-//////////////////////////////////////////////////////
-const char *i_q_derivedcompoundref="INSERT OR REPLACE INTO  derivedcompoundref "
-                            "( refid, prot, virt, base, derived ) "
-                            "VALUES "
-                            "(:refid,:prot,:virt,:base,:derived )" ;
-static sqlite3_stmt *i_s_derivedcompoundref=0;
-//////////////////////////////////////////////////////
-
-const char * schema_queries[][2] =
-{
-  {
-    "compounddef",
-    "CREATE TABLE IF NOT EXISTS compounddef ("
-      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-      "name TEXT NOT NULL,"
-      "kind TEXT NOT NULL,"
-      "prot INTEGER NOT NULL,"
-      "refid TEXT NOT NULL,"
-      "id_file INTEGER NOT NULL,"
-      "line INTEGER NOT NULL,"
-      "column INTEGER NOT NULL)"
-  },
-  {
-    "basecompoundref",
-    "CREATE TABLE IF NOT EXISTS basecompoundref ("
-      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-      "base TEXT NOT NULL,"
-      "derived TEXT NOT NULL,"
-      "refid TEXT NOT NULL,"
-      "prot INTEGER NOT NULL,"
-      "virt INTEGER NOT NULL)"
-  },
-  {
-    "derivedcompoundref",
-    "CREATE TABLE IF NOT EXISTS derivedcompoundref ("
-      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-      "base TEXT NOT NULL,"
-      "derived TEXT NOT NULL,"
-      "refid TEXT NOT NULL,"
-      "prot INTEGER NOT NULL,"
-      "virt INTEGER NOT NULL)"
-  },
-  {
-    "includes",
+const char * schema_queries[][2] = {
+  { "includes",
     "CREATE TABLE IF NOT EXISTS includes ("
       "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
       "local INTEGER NOT NULL,"
-      "id_src INTEGER NOT NULL,"
-      "dst TEXT NOT NULL)"
+      "id_src INTEGER NOT NULL REFERENCES files(id) ON UPDATE CASCADE,"
+      "id_dst INTEGER NOT NULL REFERENCES files(id) ON UPDATE CASCADE)"
   },
-  {
-    "innerclass",
+  { "innerclass",
     "CREATE TABLE IF NOT EXISTS innerclass ("
       "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
       "refid TEXT NOT NULL,"
       "prot INTEGER NOT NULL,"
       "name TEXT NOT NULL)"
   },
-  {
-    "files",
+  { "files",
     "CREATE TABLE IF NOT EXISTS files ("
-    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
-    "name TEXT NOT NULL)"
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+      "name TEXT NOT NULL)"
   },
-  {
-    "xrefs",
+  { "xrefs",
     "CREATE TABLE IF NOT EXISTS xrefs ("
     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
     "src TEXT NOT NULL, "
@@ -169,8 +75,7 @@ const char * schema_queries[][2] =
     "line INTEGER, "
     "column INTEGER)"
   },
-  {
-    "memberdef",
+  { "memberdef",
     "CREATE TABLE IF NOT EXISTS memberdef ("
       "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
       "name TEXT NOT NULL,"
@@ -205,7 +110,7 @@ const char * schema_queries[][2] =
       "id_bodyfile INTEGER,"
       "bodystart INTEGER,"
       "bodyend INTEGER,"
-      "id_file INTEGER NOT NULL,"
+      "id_file INTEGER NOT NULL REFERENCES files(id) ON UPDATE CASCADE,"
       "line INTEGER NOT NULL,"
       "column INTEGER NOT NULL,"
       "detaileddescription TEXT,"
@@ -213,6 +118,152 @@ const char * schema_queries[][2] =
       "inbodydescription TEXT"
       ")"
   },
+  { "compounddef",
+    "CREATE TABLE IF NOT EXISTS compounddef ("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "name TEXT NOT NULL,"
+      "kind TEXT NOT NULL,"
+      "prot INTEGER NOT NULL,"
+      "refid TEXT NOT NULL,"
+      "id_file INTEGER NOT NULL,"
+      "line INTEGER NOT NULL,"
+      "column INTEGER NOT NULL)"
+  },
+  { "basecompoundref",
+    "CREATE TABLE IF NOT EXISTS basecompoundref ("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+      "base TEXT NOT NULL,"
+      "derived TEXT NOT NULL,"
+      "refid TEXT NOT NULL,"
+      "prot INTEGER NOT NULL,"
+      "virt INTEGER NOT NULL)"
+  },
+  { "derivedcompoundref",
+    "CREATE TABLE IF NOT EXISTS derivedcompoundref ("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+      "base TEXT NOT NULL,"
+      "derived TEXT NOT NULL,"
+      "refid TEXT NOT NULL,"
+      "prot INTEGER NOT NULL,"
+      "virt INTEGER NOT NULL)"
+  },
+  { "params",
+    "CREATE TABLE IF NOT EXISTS params ("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "attributes TEXT,"
+      "type TEXT,"
+      "declname TEXT,"
+      "defnname TEXT,"
+      "array TEXT,"
+      "defval TEXT,"
+      "briefdescription TEXT)"
+  },
+  { "memberdef_params",
+    "CREATE TABLE IF NOT EXISTS memberdef_params ("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "id_memberdef INTEGER NOT NULL,"
+      "id_param INTEGER NOT NULL)"
+  },
+  {
+   "innernamespaces",
+    "CREATE TABLE IF NOT EXISTS innernamespaces ("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+      "refid TEXT NOT NULL,"
+      "name TEXT NOT NULL)"
+  }
+};
+
+//////////////////////////////////////////////////////
+struct sql_stmt {
+  const char   *query;
+  sqlite3_stmt *stmt;
+};
+//////////////////////////////////////////////////////
+sql_stmt incl_insert={ "INSERT OR REPLACE INTO includes "
+    "( local, id_src, id_dst ) "
+    "VALUES "
+    "(:local,:id_src,:id_dst )"
+    ,NULL
+};
+sql_stmt incl_count={ "SELECT count(*) FROM includes WHERE local=:local and id_src=:id_src and id_dst=:id_dst"
+    ,NULL
+};
+
+//////////////////////////////////////////////////////
+sql_stmt innerclass_insert={"INSERT OR REPLACE INTO innerclass "
+    "( refid, prot, name )"
+    "VALUES "
+    "(:refid,:prot,:name )"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt files_insert={"INSERT OR REPLACE INTO files "
+    "( name )"
+    "VALUES "
+    "(:name )"
+    ,NULL
+};
+sql_stmt files_select={"SELECT id FROM files WHERE name=:name"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt xrefs_insert={"INSERT OR REPLACE INTO xrefs "
+    "( src, dst, id_file, line, column )"
+    "VALUES "
+    "(:src,:dst,:id_file,:line,:column )"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt memberdef_insert={"INSERT OR REPLACE INTO memberdef "
+    "( refid, prot, static, const, explicit, inline, final, sealed, new, optional, required, virt, mutable, initonly, readable, writable, gettable, settable, accessor, addable, removable, raisable, name, type, definition, argsstring, scope, initializer, kind, id_bodyfile, bodystart, bodyend, id_file, line, column, detaileddescription, briefdescription, inbodydescription)"
+    "VALUES "
+    "(:refid,:prot,:static,:const,:explicit,:inline,:final,:sealed,:new,:optional,:required,:virt,:mutable,:initonly,:readable,:writable,:gettable,:settable,:accessor,:addable,:removable,:raisable,:name,:type,:definition,:argsstring,:scope,:initializer,:kind,:id_bodyfile,:bodystart,:bodyend,:id_file,:line,:column,:detaileddescription,:briefdescription,:inbodydescription)"
+    ,NULL
+};
+sql_stmt memberdef_select={"SELECT id FROM memberdef WHERE refid=:refid and id is not null"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt compounddef_insert={"INSERT OR REPLACE INTO compounddef "
+    "( name, kind, prot, refid, id_file, line, column ) "
+    "VALUES "
+    "(:name,:kind,:prot,:refid,:id_file,:line,:column )"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt basecompoundref_insert={"INSERT OR REPLACE INTO  basecompoundref "
+    "( base, derived, refid, prot, virt ) "
+    "VALUES "
+    "(:base,:derived,:refid,:prot,:virt )"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt derivedcompoundref_insert={"INSERT OR REPLACE INTO  derivedcompoundref "
+    "( refid, prot, virt, base, derived ) "
+    "VALUES "
+    "(:refid,:prot,:virt,:base,:derived )"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt params_insert={ "INSERT OR REPLACE INTO  params "
+    "( attributes, type, declname, defnname, array, defval, briefdescription ) "
+    "VALUES "
+    "(:attributes,:type,:declname,:defnname,:array,:defval,:briefdescription)"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt memberdef_params_insert={ "INSERT OR REPLACE INTO  memberdef_params "
+    "( id_memberdef, id_param)"
+    "VALUES "
+    "(:id_memberdef,:id_param)"
+    ,NULL
+};
+//////////////////////////////////////////////////////
+sql_stmt innernamespace_insert={"INSERT OR REPLACE INTO  innernamespaces "
+    "( refid, name)"
+    "VALUES "
+    "(:refid,:name)",
+    NULL
 };
 
 
@@ -246,47 +297,46 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 };
 
 
-static void bindTextParameter(sqlite3_stmt *stmt,const char *name,const char *value, bool _static=TRUE)
+static void bindTextParameter(sql_stmt &s,const char *name,const char *value, bool _static=TRUE)
 {
-  int idx = sqlite3_bind_parameter_index(stmt, name);
-  sqlite3_bind_text(stmt, idx, value, -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
+  int idx = sqlite3_bind_parameter_index(s.stmt, name);
+  sqlite3_bind_text(s.stmt, idx, value, -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
 }
 
-static void bindIntParameter(sqlite3_stmt *stmt,const char *name,int value)
+static void bindIntParameter(sql_stmt &s,const char *name,int value)
 {
-  int idx = sqlite3_bind_parameter_index(stmt, name);
-  sqlite3_bind_int(stmt, idx, value);
+  int idx = sqlite3_bind_parameter_index(s.stmt, name);
+  sqlite3_bind_int(s.stmt, idx, value);
 }
 
-static int step(sqlite3 *db, sqlite3_stmt *stmt,bool getRowId=FALSE)
+static int step(sqlite3 *db, sql_stmt &s,bool getRowId=FALSE, bool select=FALSE)
 {
   int id=-1;
-  int rc = sqlite3_step(stmt);
+  int rc = sqlite3_step(s.stmt);
   if (rc!=SQLITE_DONE && rc!=SQLITE_ROW)
   {
     msg("sqlite3_step failed: %s\n", sqlite3_errmsg(db));
+    sqlite3_clear_bindings(s.stmt);
     return -1;
   }
-  if (getRowId) id = sqlite3_column_int(stmt, 0);
-  sqlite3_reset(stmt);
+  if (getRowId && select) id = sqlite3_column_int(s.stmt, 0); // works on selects, doesnt on inserts
+  if (getRowId && !select) id = sqlite3_last_insert_rowid(db); //works on inserts, doesnt on selects
+  sqlite3_reset(s.stmt);
   return id;
 }
 
 static int insertFile(sqlite3 *db, const char* name)
 {
   int id=-1;
-  if (name==0) return -1;
+  if (name==0) return id;
 
   // see if it's already in DB
-  bindTextParameter(id_s_files,":name",name);
-  id=step(db,id_s_files,TRUE);
+  bindTextParameter(files_select,":name",name);
+  id=step(db,files_select,TRUE,TRUE);
   if (id==0)
   {
-    // insert it
-    bindTextParameter(i_s_files,":name",name);
-
-    step(db,i_s_files);
-    id=sqlite3_last_insert_rowid(db);
+    bindTextParameter(files_insert,":name",name);
+    id=step(db,files_insert,TRUE);
   }
   return id;
 }
@@ -294,14 +344,16 @@ static int insertFile(sqlite3 *db, const char* name)
 static int insertMemberReference(sqlite3 *db, const char*src, const char*dst, const char *file, int line, int column)
 {
   int id_file = insertFile(db,file);
-  bindTextParameter(i_s_xrefs,":src",src);
-  bindTextParameter(i_s_xrefs,":dst",dst);
+  if (id_file==-1)
+    return -1;
+  bindTextParameter(xrefs_insert,":src",src);
+  bindTextParameter(xrefs_insert,":dst",dst);
 
-  bindIntParameter(i_s_xrefs,":id_file",id_file);
-  bindIntParameter(i_s_xrefs,":line",line);
-  bindIntParameter(i_s_xrefs,":column",column);
+  bindIntParameter(xrefs_insert,":id_file",id_file);
+  bindIntParameter(xrefs_insert,":line",line);
+  bindIntParameter(xrefs_insert,":column",column);
 
-return step(db,i_s_xrefs);
+  return step(db,xrefs_insert);
 }
 
 static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst, const char*floc)
@@ -312,10 +364,14 @@ static void insertMemberReference(sqlite3 *db, MemberDef *src, MemberDef *dst, c
     int line=0,column=0;
     if (floc)
     {
-      sscanf(floc,"%[^:]:%d:%d",file,&line,&column);
+      int rv = sscanf(floc,"%[^:]:%d:%d",file,&line,&column);
+      if (rv!=3)
+      {
+        msg("unable to read file loc\n");
+        return;
+      }
     }
-#warning Disabled until the xref key can be stored as file:line:column
-    //insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
+    insertMemberReference(db,src->anchor().data(),dst->anchor().data(),file,line,column);
   }
 }
 
@@ -332,13 +388,13 @@ static void stripQualifiers(QCString &typeStr)
   }
 }
 
-static int prepareStatement(sqlite3 *db, const char* query, sqlite3_stmt **statement)
+static int prepareStatement(sqlite3 *db, sql_stmt &s)
 {
   int rc;
-  rc = sqlite3_prepare_v2(db,query,-1,statement,0);
+  rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
   if (rc!=SQLITE_OK)
   {
-    msg("prepare failed for %s\n%s\n", query, sqlite3_errmsg(db));
+    msg("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
     return -1;
   }
   return rc;
@@ -347,17 +403,20 @@ static int prepareStatement(sqlite3 *db, const char* query, sqlite3_stmt **state
 static int prepareStatements(sqlite3 *db)
 {
   if (
-  -1==prepareStatement(db, id_q_memberdef, &id_s_memberdef) ||
-  -1==prepareStatement(db, id_q_files, &id_s_files) ||
-  -1==prepareStatement(db, i_q_files, &i_s_files) ||
-  -1==prepareStatement(db, i_q_xrefs, &i_s_xrefs) ||
-  -1==prepareStatement(db, i_q_innerclass, &i_s_innerclass) ||
-  -1==prepareStatement(db, i_q_memberdef, &i_s_memberdef) ||
-  -1==prepareStatement(db, i_q_compounddef, &i_s_compounddef) ||
-  -1==prepareStatement(db, i_q_basecompoundref, &i_s_basecompoundref) ||
-  -1==prepareStatement(db, i_q_derivedcompoundref, &i_s_derivedcompoundref) ||
-  -1==prepareStatement(db, i_q_includes, &i_s_includes)||
-  -1==prepareStatement(db, c_q_includes, &c_s_includes)
+  -1==prepareStatement(db, memberdef_select) ||
+  -1==prepareStatement(db, memberdef_insert) ||
+  -1==prepareStatement(db, files_insert) ||
+  -1==prepareStatement(db, files_select) ||
+  -1==prepareStatement(db, xrefs_insert) ||
+  -1==prepareStatement(db, innerclass_insert) ||
+  -1==prepareStatement(db, compounddef_insert) ||
+  -1==prepareStatement(db, basecompoundref_insert) ||
+  -1==prepareStatement(db, derivedcompoundref_insert) ||
+  -1==prepareStatement(db, incl_insert)||
+  -1==prepareStatement(db, incl_count)||
+  -1==prepareStatement(db, params_insert) ||
+  -1==prepareStatement(db, memberdef_params_insert)||
+  -1==prepareStatement(db, innernamespace_insert)
   )
   {
     return -1;
@@ -382,6 +441,7 @@ static void pragmaTuning(sqlite3 *db)
   char * sErrMsg = 0;
   sqlite3_exec(db, "PRAGMA synchronous = OFF", NULL, NULL, &sErrMsg);
   sqlite3_exec(db, "PRAGMA journal_mode = MEMORY", NULL, NULL, &sErrMsg);
+  sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, &sErrMsg);
 }
 
 static int initializeSchema(sqlite3* db)
@@ -392,7 +452,6 @@ static int initializeSchema(sqlite3* db)
   msg("Initializing DB schema...\n");
   for (unsigned int k = 0; k < sizeof(schema_queries) / sizeof(schema_queries[0]); k++)
   {
-    //const char *tname = schema_queries[k][0];
     const char *q = schema_queries[k][1];
     // create table
     rc = sqlite3_prepare_v2(db, q, -1, &stmt, 0);
@@ -423,18 +482,17 @@ static void writeInnerClasses(sqlite3*db,const ClassSDict *cl)
   {
     if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
     {
-      bindTextParameter(i_s_innerclass,":refid",cd->getOutputFileBase(),FALSE);
-      bindIntParameter(i_s_innerclass,":prot",cd->protection());
-      bindTextParameter(i_s_innerclass,":name",cd->name());
-      if (-1==step(db,i_s_innerclass))
-          return;
+      bindTextParameter(innerclass_insert,":refid",cd->getOutputFileBase(),FALSE);
+      bindIntParameter(innerclass_insert,":prot",cd->protection());
+      bindTextParameter(innerclass_insert,":name",cd->name());
+      step(db,innerclass_insert);
     }
   }
 }
 
-static void writeInnerNamespaces(sqlite3 * /*db*/,const NamespaceSDict *nl)
+
+static void writeInnerNamespaces(sqlite3 *db,const NamespaceSDict *nl)
 {
-#warning WorkInProgress
   if (nl)
   {
     NamespaceSDict::Iterator nli(*nl);
@@ -443,25 +501,57 @@ static void writeInnerNamespaces(sqlite3 * /*db*/,const NamespaceSDict *nl)
     {
       if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
       {
-//        t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-//          << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+        bindTextParameter(innernamespace_insert,":refid",nd->getOutputFileBase(),FALSE);
+        bindTextParameter(innernamespace_insert,":name",nd->name(),FALSE);
+        step(db,innernamespace_insert);
       }
     }
   }
 }
 
-static void writeTemplateArgumentList(sqlite3* /*db*/,
-                                      ArgumentList * /*al*/,
-                                      Definition * /*scope*/,
-                                      FileDef * /*fileScope*/,
-                                      int /*indent*/)
+
+static void writeTemplateArgumentList(sqlite3* db,
+                                      ArgumentList * al,
+                                      Definition * scope,
+                                      FileDef * fileScope)
 {
-#warning WorkInProgress
+  if (al)
+  {
+    ArgumentListIterator ali(*al);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      if (!a->type.isEmpty())
+      {
+        #warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->type);
+        bindTextParameter(params_insert,":type",a->type);
+      }
+      if (!a->name.isEmpty())
+      {
+        bindTextParameter(params_insert,":declname",a->name);
+        bindTextParameter(params_insert,":defnname",a->name);
+      }
+      if (!a->defval.isEmpty())
+      {
+        #warning linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->defval);
+        bindTextParameter(params_insert,":defval",a->defval);
+      }
+      step(db,params_insert);
+    }
+  }
 }
 
+static void writeMemberTemplateLists(sqlite3* db,MemberDef *md)
+{
+  ArgumentList *templMd = md->templateArguments();
+  if (templMd) // function template prefix
+  {
+    writeTemplateArgumentList(db,templMd,md->getClassDef(),md->getFileDef());
+  }
+}
 static void writeTemplateList(sqlite3*db,ClassDef *cd)
 {
-  writeTemplateArgumentList(db,cd->templateArguments(),cd,0,4);
+  writeTemplateArgumentList(db,cd->templateArguments(),cd,0);
 }
 ////////////////////////////////////////////
 
@@ -491,10 +581,10 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
   QCString memType;
   // memberdef
-  bindTextParameter(i_s_memberdef,":refid",md->anchor().data(),FALSE);
-  bindIntParameter(i_s_memberdef,":kind",md->memberType());
-  bindIntParameter(i_s_memberdef,":prot",md->protection());
-  bindIntParameter(i_s_memberdef,":static",md->isStatic());
+  bindTextParameter(memberdef_insert,":refid",md->anchor().data(),FALSE);
+  bindIntParameter(memberdef_insert,":kind",md->memberType());
+  bindIntParameter(memberdef_insert,":prot",md->protection());
+  bindIntParameter(memberdef_insert,":static",md->isStatic());
 
   bool isFunc=FALSE;
   switch (md->memberType())
@@ -514,45 +604,45 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     ArgumentList *al = md->argumentList();
     if (al!=0 && al->constSpecifier)
     {
-      bindIntParameter(i_s_memberdef,":const",al->constSpecifier);
+      bindIntParameter(memberdef_insert,":const",al->constSpecifier);
     }
 
-    bindIntParameter(i_s_memberdef,":explicit",md->isExplicit());
-    bindIntParameter(i_s_memberdef,":inline",md->isInline());
-    bindIntParameter(i_s_memberdef,":final",md->isFinal());
-    bindIntParameter(i_s_memberdef,":sealed",md->isSealed());
-    bindIntParameter(i_s_memberdef,":new",md->isNew());
-    bindIntParameter(i_s_memberdef,":optional",md->isOptional());
-    bindIntParameter(i_s_memberdef,":required",md->isRequired());
-    bindIntParameter(i_s_memberdef,":virt",md->virtualness());
+    bindIntParameter(memberdef_insert,":explicit",md->isExplicit());
+    bindIntParameter(memberdef_insert,":inline",md->isInline());
+    bindIntParameter(memberdef_insert,":final",md->isFinal());
+    bindIntParameter(memberdef_insert,":sealed",md->isSealed());
+    bindIntParameter(memberdef_insert,":new",md->isNew());
+    bindIntParameter(memberdef_insert,":optional",md->isOptional());
+    bindIntParameter(memberdef_insert,":required",md->isRequired());
+    bindIntParameter(memberdef_insert,":virt",md->virtualness());
   }
   // place in the arguments and linkify the arguments
 
   if (md->memberType() == MemberType_Variable)
   {
-    bindIntParameter(i_s_memberdef,":mutable",md->isMutable());
-    bindIntParameter(i_s_memberdef,":initonly",md->isInitonly());
+    bindIntParameter(memberdef_insert,":mutable",md->isMutable());
+    bindIntParameter(memberdef_insert,":initonly",md->isInitonly());
   }
   else if (md->memberType() == MemberType_Property)
   {
-    bindIntParameter(i_s_memberdef,":readable",md->isReadable());
-    bindIntParameter(i_s_memberdef,":writable",md->isWritable());
-    bindIntParameter(i_s_memberdef,":gettable",md->isGettable());
-    bindIntParameter(i_s_memberdef,":settable",md->isSettable());
+    bindIntParameter(memberdef_insert,":readable",md->isReadable());
+    bindIntParameter(memberdef_insert,":writable",md->isWritable());
+    bindIntParameter(memberdef_insert,":gettable",md->isGettable());
+    bindIntParameter(memberdef_insert,":settable",md->isSettable());
 
     if (md->isAssign() || md->isCopy() || md->isRetain())
     {
       int accessor = md->isAssign() ? md->isAssign() :
           (md->isCopy() ? md->isCopy() : md->isRetain()) ;
 
-      bindIntParameter(i_s_memberdef,":accessor",accessor);
+      bindIntParameter(memberdef_insert,":accessor",accessor);
     }
   }
   else if (md->memberType() == MemberType_Event)
   {
-    bindIntParameter(i_s_memberdef,":addable",md->isAddable());
-    bindIntParameter(i_s_memberdef,":removable",md->isRemovable());
-    bindIntParameter(i_s_memberdef,":raisable",md->isRaisable());
+    bindIntParameter(memberdef_insert,":addable",md->isAddable());
+    bindIntParameter(memberdef_insert,":removable",md->isRemovable());
+    bindIntParameter(memberdef_insert,":raisable",md->isRaisable());
   }
 
   // + declaration/definition arg lists
@@ -560,117 +650,51 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
       md->memberType()!=MemberType_Enumeration
      )
   {
+    if (md->memberType()!=MemberType_Typedef)
+    {
+      writeMemberTemplateLists(db,md);
+    }
     QCString typeStr = md->typeString();
     stripQualifiers(typeStr);
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,typeStr);
     if (typeStr.data())
     {
-      bindTextParameter(i_s_memberdef,":type",typeStr.data(),FALSE);
+      bindTextParameter(memberdef_insert,":type",typeStr.data(),FALSE);
     }
 
     if (md->definition())
     {
-      bindTextParameter(i_s_memberdef,":definition",md->definition());
+      bindTextParameter(memberdef_insert,":definition",md->definition());
     }
 
     if (md->argsString())
     {
-      bindTextParameter(i_s_memberdef,":argsstring",md->argsString());
+      bindTextParameter(memberdef_insert,":argsstring",md->argsString());
     }
   }
 
-  bindTextParameter(i_s_memberdef,":name",md->name());
+  bindTextParameter(memberdef_insert,":name",md->name());
 
   if (md->memberType() == MemberType_Property)
   {
     if (md->isReadable())
     {
-      DBG_CTX(("<read>\n"));
+      bindIntParameter(memberdef_insert,":readable",1);
     }
     if (md->isWritable())
     {
-      DBG_CTX(("<write>\n"));
-    }
-  }
-  if (isFunc) //function
-  {
-    ArgumentList *declAl = md->declArgumentList();
-    ArgumentList *defAl = md->argumentList();
-    if (declAl!=0 && declAl->count()>0)
-    {
-      ArgumentListIterator declAli(*declAl);
-      ArgumentListIterator defAli(*defAl);
-      Argument *a;
-      for (declAli.toFirst();(a=declAli.current());++declAli)
-      {
-        Argument *defArg = defAli.current();
-        DBG_CTX(("<param>\n"));
-        if (!a->attrib.isEmpty())
-        {
-          DBG_CTX(("<attributes>:%s\n",a->attrib.data()));
-        }
-        if (!a->type.isEmpty())
-        {
-          StringList l;
-          linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->type);
-
-          StringListIterator li(l);
-          QCString *s;
-          while ((s=li.current()))
-          {
-            insertMemberReference(db,md->anchor().data(),s->data(),def->getDefFileName().data(),md->getDefLine(),1);
-            ++li;
-          }
-        }
-        if (!a->name.isEmpty())
-        {
-          DBG_CTX(("<declname>%s\n",a->name.data()));
-        }
-        if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
-        {
-          DBG_CTX(("<defname>%s\n",defArg->name.data()));
-        }
-        if (!a->array.isEmpty())
-        {
-          DBG_CTX(("<array>%s",a->array.data()));
-        }
-        if (!a->defval.isEmpty())
-        {
-          StringList l;
-          linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->defval);
-        }
-        if (defArg) ++defAli;
-      }
-    }
-  }
-  else if (md->memberType()==MemberType_Define &&
-          md->argsString()) // define
-  {
-    if (md->argumentList()->count()==0) // special case for "foo()" to
-                                        // disguish it from "foo".
-    {
-      DBG_CTX(("no params\n"));
-    }
-    else
-    {
-      ArgumentListIterator ali(*md->argumentList());
-      Argument *a;
-      for (ali.toFirst();(a=ali.current());++ali)
-      {
-        DBG_CTX(("<param><defname>%s\n",a->type.data()));
-      }
+      bindIntParameter(memberdef_insert,":writable",1);
     }
   }
 
 
   // Extract references from initializer
   // avoid that extremely large tables are written to the output.
-  // todo: it's better to adhere to MAX_INITIALIZER_LINES.
   // drm_mod_register_buffer,
-  if (!md->initializer().isEmpty() && md->initializer().length()<2000)
+  if (md->hasMultiLineInitializer() || md->hasOneLineInitializer())
   {
-    bindTextParameter(i_s_memberdef,":initializer",md->initializer().data());
+    bindTextParameter(memberdef_insert,":initializer",md->initializer().data());
 
     StringList l;
     linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
@@ -693,14 +717,13 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
 
   if ( md->getScopeString() )
   {
-    bindTextParameter(i_s_memberdef,":scope",md->getScopeString().data(),FALSE);
+    bindTextParameter(memberdef_insert,":scope",md->getScopeString().data(),FALSE);
   }
 
-  // Brief and detail description
-
-  bindTextParameter(i_s_memberdef,":briefdescription",md->briefDescription(),FALSE);
-  bindTextParameter(i_s_memberdef,":detaileddescription",md->documentation(),FALSE);
-  bindTextParameter(i_s_memberdef,":inbodydescription",md->inbodyDocumentation(),FALSE);
+  // +Brief, detailed and inbody description
+  bindTextParameter(memberdef_insert,":briefdescription",md->briefDescription(),FALSE);
+  bindTextParameter(memberdef_insert,":detaileddescription",md->documentation(),FALSE);
+  bindTextParameter(memberdef_insert,":inbodydescription",md->inbodyDocumentation(),FALSE);
 
   // File location
   if (md->getDefLine() != -1)
@@ -708,32 +731,114 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     int id_file = insertFile(db,md->getDefFileName());
     if (id_file!=-1)
     {
-      bindIntParameter(i_s_memberdef,":id_file",id_file);
-      bindIntParameter(i_s_memberdef,":line",md->getDefLine());
-      bindIntParameter(i_s_memberdef,":column",md->getDefColumn());
+      bindIntParameter(memberdef_insert,":id_file",id_file);
+      bindIntParameter(memberdef_insert,":line",md->getDefLine());
+      bindIntParameter(memberdef_insert,":column",md->getDefColumn());
 
       if (md->getStartBodyLine()!=-1)
       {
         int id_bodyfile = insertFile(db,md->getBodyDef()->absFilePath());
         if (id_bodyfile == -1)
         {
-            sqlite3_clear_bindings(i_s_memberdef);
+            sqlite3_clear_bindings(memberdef_insert.stmt);
         }
         else
         {
-            bindIntParameter(i_s_memberdef,":id_bodyfile",id_bodyfile);
-            bindIntParameter(i_s_memberdef,":bodystart",md->getStartBodyLine());
-            bindIntParameter(i_s_memberdef,":bodyend",md->getEndBodyLine());
+            bindIntParameter(memberdef_insert,":id_bodyfile",id_bodyfile);
+            bindIntParameter(memberdef_insert,":bodystart",md->getStartBodyLine());
+            bindIntParameter(memberdef_insert,":bodyend",md->getEndBodyLine());
         }
       }
     }
   }
 
-  if (-1==step(db,i_s_memberdef))
+  int id_memberdef=step(db,memberdef_insert,TRUE);
+
+  // + parameters
+  // ++ function
+  if (isFunc)
   {
-      sqlite3_clear_bindings(i_s_memberdef);
+    ArgumentList *declAl = md->declArgumentList();
+    ArgumentList *defAl = md->argumentList();
+    if (declAl!=0 && declAl->count()>0)
+    {
+      ArgumentListIterator declAli(*declAl);
+      ArgumentListIterator defAli(*defAl);
+      Argument *a;
+      for (declAli.toFirst();(a=declAli.current());++declAli)
+      {
+        Argument *defArg = defAli.current();
+
+        if (!a->attrib.isEmpty())
+        {
+          bindTextParameter(params_insert,":attributes",a->attrib.data());
+        }
+        if (!a->type.isEmpty())
+        {
+          StringList l;
+          linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->type);
+
+          StringListIterator li(l);
+          QCString *s;
+          while ((s=li.current()))
+          {
+            insertMemberReference(db,md->anchor().data(),s->data(),def->getDefFileName().data(),md->getDefLine(),1);
+            ++li;
+          }
+          bindTextParameter(params_insert,":type",a->type.data());
+        }
+        if (!a->name.isEmpty())
+        {
+          bindTextParameter(params_insert,":declname",a->name.data());
+        }
+        if (defArg && !defArg->name.isEmpty() && defArg->name!=a->name)
+        {
+          bindTextParameter(params_insert,":defnname",defArg->name.data());
+        }
+        if (!a->array.isEmpty())
+        {
+          bindTextParameter(params_insert,":array",a->array.data());
+        }
+        if (!a->defval.isEmpty())
+        {
+          StringList l;
+          linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a->defval);
+          bindTextParameter(params_insert,":defval",a->defval.data());
+        }
+        if (defArg) ++defAli;
+        int id_param=step(db,params_insert,TRUE);
+        sqlite3_clear_bindings(params_insert.stmt);
+        bindIntParameter(memberdef_params_insert,":id_memberdef",id_memberdef);
+        bindIntParameter(memberdef_params_insert,":id_param",id_param);
+        step(db,memberdef_params_insert);
+      }
+    }
   }
-  sqlite3_last_insert_rowid(db);
+  // ++ define
+  else if (md->memberType()==MemberType_Define &&
+          md->argsString())
+  {
+    if (md->argumentList()->count()==0) // special case for "foo()" to
+                                        // disguish it from "foo".
+    {
+      DBG_CTX(("no params\n"));
+    }
+    else
+    {
+      ArgumentListIterator ali(*md->argumentList());
+      Argument *a;
+      for (ali.toFirst();(a=ali.current());++ali)
+      {
+        bindTextParameter(params_insert,":defnname",a->type.data());
+        int id_param=step(db,params_insert,TRUE);
+        sqlite3_clear_bindings(params_insert.stmt);
+
+        bindIntParameter(memberdef_params_insert,":id_memberdef",id_memberdef);
+        bindIntParameter(memberdef_params_insert,":id_param",id_param);
+        step(db,memberdef_params_insert);
+      }
+    }
+  }
 
   // + source references
   // The cross-references in initializers only work when both the src and dst
@@ -818,25 +923,17 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
 
   msg("Generating Sqlite3 output for class %s\n",cd->name().data());
 
-  //int idx,rc;
-  //sqlite3_stmt *stmt ;
-
-  // + compounddef
-  //stmt = i_s_compounddef;
-
-  bindTextParameter(i_s_compounddef,":name",cd->name());
-  bindTextParameter(i_s_compounddef,":kind",cd->compoundTypeString(),FALSE);
-  bindIntParameter(i_s_compounddef,":prot",cd->protection());
-  bindTextParameter(i_s_compounddef,":refid",cd->getOutputFileBase(),FALSE);
+  bindTextParameter(compounddef_insert,":name",cd->name());
+  bindTextParameter(compounddef_insert,":kind",cd->compoundTypeString(),FALSE);
+  bindIntParameter(compounddef_insert,":prot",cd->protection());
+  bindTextParameter(compounddef_insert,":refid",cd->getOutputFileBase(),FALSE);
 
   int id_file = insertFile(db,cd->getDefFileName().data());
-  bindIntParameter(i_s_compounddef,":id_file",id_file);
-  bindIntParameter(i_s_compounddef,":line",cd->getDefLine());
-  bindIntParameter(i_s_compounddef,":column",cd->getDefColumn());
+  bindIntParameter(compounddef_insert,":id_file",id_file);
+  bindIntParameter(compounddef_insert,":line",cd->getDefLine());
+  bindIntParameter(compounddef_insert,":column",cd->getDefColumn());
 
-  if (-1==step(db,i_s_compounddef)) {
-    sqlite3_clear_bindings(i_s_compounddef);
-  }
+  step(db,compounddef_insert);
 
   // + list of direct super classes
   if (cd->baseClasses())
@@ -845,23 +942,20 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      bindTextParameter(i_s_basecompoundref,":refid",bcd->classDef->getOutputFileBase(),FALSE);
-      bindIntParameter(i_s_basecompoundref,":prot",bcd->prot);
-      bindIntParameter(i_s_basecompoundref,":virt",bcd->virt);
+      bindTextParameter(basecompoundref_insert,":refid",bcd->classDef->getOutputFileBase(),FALSE);
+      bindIntParameter(basecompoundref_insert,":prot",bcd->prot);
+      bindIntParameter(basecompoundref_insert,":virt",bcd->virt);
 
       if (!bcd->templSpecifiers.isEmpty())
       {
-        bindTextParameter(i_s_basecompoundref,":base",insertTemplateSpecifierInScope(bcd->classDef->name(),bcd->templSpecifiers),FALSE);
+        bindTextParameter(basecompoundref_insert,":base",insertTemplateSpecifierInScope(bcd->classDef->name(),bcd->templSpecifiers),FALSE);
       }
       else
       {
-        bindTextParameter(i_s_basecompoundref,":base",bcd->classDef->displayName(),FALSE);
+        bindTextParameter(basecompoundref_insert,":base",bcd->classDef->displayName(),FALSE);
       }
-      bindTextParameter(i_s_basecompoundref,":derived",cd->displayName(),FALSE);
-      if (-1==step(db,i_s_basecompoundref)) {
-        sqlite3_clear_bindings(i_s_basecompoundref);
-        continue;
-      }
+      bindTextParameter(basecompoundref_insert,":derived",cd->displayName(),FALSE);
+      step(db,basecompoundref_insert);
     }
   }
 
@@ -872,15 +966,12 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      bindTextParameter(i_s_derivedcompoundref,":base",cd->displayName());
-      bindTextParameter(i_s_derivedcompoundref,":dervied",bcd->classDef->displayName());
-      bindTextParameter(i_s_derivedcompoundref,":refid",bcd->classDef->getOutputFileBase());
-      bindIntParameter(i_s_derivedcompoundref,":prot",bcd->prot);
-      bindIntParameter(i_s_derivedcompoundref,":virt",bcd->virt);
-      if (-1==step(db,i_s_derivedcompoundref)) {
-        sqlite3_reset(i_s_derivedcompoundref);
-        continue;
-      }
+      bindTextParameter(derivedcompoundref_insert,":base",cd->displayName());
+      bindTextParameter(derivedcompoundref_insert,":dervied",bcd->classDef->displayName());
+      bindTextParameter(derivedcompoundref_insert,":refid",bcd->classDef->getOutputFileBase());
+      bindIntParameter(derivedcompoundref_insert,":prot",bcd->prot);
+      bindIntParameter(derivedcompoundref_insert,":virt",bcd->virt);
+      step(db,derivedcompoundref_insert);
     }
   }
 
@@ -892,21 +983,20 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
     if (!nm.isEmpty())
     {
-      bindIntParameter(c_s_includes,":local",ii->local);
-      bindIntParameter(c_s_includes,":id_src",id_file);
-      bindTextParameter(c_s_includes,":dst",nm);
-      int count=step(db,c_s_includes,TRUE);
+      int id_dst=insertFile(db,nm);
+      bindIntParameter(incl_count,":local",ii->local);
+      bindIntParameter(incl_count,":id_src",id_file);
+      bindIntParameter(incl_count,":id_dst",id_dst);
+      int count=step(db,incl_count,TRUE,TRUE);
       if (count==0)
       {
-        bindIntParameter(i_s_includes,":local",ii->local);
-        bindIntParameter(i_s_includes,":id_src",id_file);
-        bindTextParameter(i_s_includes,":dst",nm);
-        if (-1==step(db,i_s_includes))
-          sqlite3_clear_bindings(i_s_basecompoundref);
+        bindIntParameter(incl_insert,":local",ii->local);
+        bindIntParameter(incl_insert,":id_src",id_file);
+        bindIntParameter(incl_insert,":id_dst",id_dst);
+        step(db,incl_insert);
       }
     }
   }
-
   // + list of inner classes
   writeInnerClasses(db,cd->getClassSDict());
 
@@ -1005,12 +1095,12 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
     QListIterator<IncludeInfo> ili(*fd->includeFileList());
     for (ili.toFirst();(ii=ili.current());++ili)
     {
-      int id_file=insertFile(db,fd->absFilePath().data());
-      bindIntParameter(i_s_includes,":local",ii->local);
-      bindIntParameter(i_s_includes,":id_src",id_file);
-      bindTextParameter(i_s_includes,":dst",ii->includeName.data(),FALSE);
-      if (-1==step(db,i_s_includes))
-        continue;
+      int id_src=insertFile(db,fd->absFilePath().data());
+      int id_dst=insertFile(db,ii->includeName.data());
+      bindIntParameter(incl_insert,":local",ii->local);
+      bindIntParameter(incl_insert,":id_src",id_src);
+      bindIntParameter(incl_insert,":id_dst",id_dst);
+      step(db,incl_insert);
     }
   }
 
@@ -1020,13 +1110,12 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
     QListIterator<IncludeInfo> ili(*fd->includedByFileList());
     for (ili.toFirst();(ii=ili.current());++ili)
     {
-      int id_file=insertFile(db,ii->includeName);
-      bindIntParameter(i_s_includes,":local",ii->local);
-      bindIntParameter(i_s_includes,":id_src",id_file);
-      bindTextParameter(i_s_includes,":dst",fd->absFilePath().data(),FALSE);
-      if (-1==step(db,i_s_includes))
-        continue;
-
+      int id_src=insertFile(db,ii->includeName);
+      int id_dst=insertFile(db,fd->absFilePath());
+      bindIntParameter(incl_insert,":local",ii->local);
+      bindIntParameter(incl_insert,":id_src",id_src);
+      bindIntParameter(incl_insert,":id_dst",id_dst);
+      step(db,incl_insert);
     }
   }
 
@@ -1068,16 +1157,17 @@ static void generateSqlite3ForFile(sqlite3 *db, FileDef *fd)
 
 static void generateSqlite3ForGroup(sqlite3*db,GroupDef *gd)
 {
-    db=db;
-    gd=gd;
+#warning WorkInProgress
 }
 
 static void generateSqlite3ForDir(sqlite3 *db,DirDef *dd)
 {
+#warning WorkInProgress
 }
 
 static void generateSqlite3ForPage(sqlite3 *db,PageDef *pd,bool isExample)
 {
+#warning WorkInProgress
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
