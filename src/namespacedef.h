@@ -71,6 +71,7 @@ class NamespaceDef : public Definition
 
     bool isLinkableInProject() const;
     bool isLinkable() const;
+    bool hasDetailedDescription() const;
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();

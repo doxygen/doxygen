@@ -1990,6 +1990,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       addProperty("highlight",this,&Private::highlight);
       addProperty("subhighlight",this,&Private::subHighlight);
       addProperty("compoundType",this,&Private::compoundType);
+      addProperty("hasDetails",this,&Private::hasDetails);
     }
     TemplateVariant title() const
     {
@@ -2006,6 +2007,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     TemplateVariant compoundType() const
     {
       return m_namespaceDef->compoundTypeString();
+    }
+    TemplateVariant hasDetails() const
+    {
+      return m_namespaceDef->hasDetailedDescription();
     }
   private:
     NamespaceDef *m_namespaceDef;
@@ -4074,11 +4079,18 @@ class NestingNodeContext::Private : public PropertyMapper
       addProperty("class",this,&Private::getClass);
       //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
       addProperty("namespace",this,&Private::getNamespace);
-      //%% [optional] file
-      //%% id
+      //%% int id
       addProperty("id",this,&Private::id);
-      //%% level
+      //%% string level
       addProperty("level",this,&Private::level);
+      //%% string name
+      addProperty("name",this,&Private::name);
+      //%% string brief
+      addProperty("brief",this,&Private::brief);
+      //%% bool isLinkable
+      addProperty("isLinkable",this,&Private::isLinkable);
+      addProperty("anchor",this,&Private::anchor);
+      addProperty("fileName",this,&Private::fileName);
 
       addNamespaces(addCls);
       addClasses();
@@ -4132,7 +4144,43 @@ class NestingNodeContext::Private : public PropertyMapper
       result+=QCString().setNum(m_index)+"_";
       return result;
     }
-
+    TemplateVariant name() const
+    {
+      return m_def->name();
+    }
+    QCString relPathAsString() const
+    {
+      static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
+      return createSubdirs ? QCString("../../") : QCString("");
+    }
+    TemplateVariant brief() const
+    {
+      if (!m_cache.brief)
+      {
+        if (m_def->hasBriefDescription())
+        {
+          m_cache.brief.reset(new TemplateVariant(parseDoc(m_def,m_def->briefFile(),m_def->briefLine(),
+                              "",m_def->briefDescription(),TRUE)));
+        }
+        else
+        {
+          m_cache.brief.reset(new TemplateVariant(""));
+        }
+      }
+      return *m_cache.brief;
+    }
+    TemplateVariant isLinkable() const
+    {
+      return m_def->isLinkable();
+    }
+    TemplateVariant anchor() const
+    {
+      return m_def->anchor();
+    }
+    TemplateVariant fileName() const
+    {
+      return m_def->getOutputFileBase();
+    }
 
     void addClasses()
     {
@@ -4164,6 +4212,7 @@ class NestingNodeContext::Private : public PropertyMapper
     {
       ScopedPtr<ClassContext>     classContext;
       ScopedPtr<NamespaceContext> namespaceContext;
+      ScopedPtr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
 };

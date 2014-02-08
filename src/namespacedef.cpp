@@ -248,11 +248,17 @@ void NamespaceDef::computeAnchors()
   if (allMemberList) setAnchors(allMemberList);
 }
 
+bool NamespaceDef::hasDetailedDescription() const
+{
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
+  return ((!briefDescription().isEmpty() && repeatBrief) ||
+          !documentation().isEmpty());
+}
+
+
 void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
-  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty()
-     )
+  if (hasDetailedDescription())
   {
     ol.pushGeneratorState();
       ol.disable(OutputGenerator::Html);
@@ -294,7 +300,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
 
 void NamespaceDef::writeBriefDescription(OutputList &ol)
 {
-  if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
+  if (hasBriefDescription())
   {
     DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
                         briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
@@ -307,9 +313,7 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
       ol.writeString(" \n");
       ol.enable(OutputGenerator::RTF);
 
-      if (Config_getBool("REPEAT_BRIEF") ||
-          !documentation().isEmpty()
-         )
+      if (hasDetailedDescription())
       {
         ol.disableAllBut(OutputGenerator::Html);
         ol.startTextLink(0,"details");
