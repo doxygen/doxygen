@@ -293,7 +293,9 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{makeidx}\n"
        "\\usepackage{multicol}\n"
        "\\usepackage{multirow}\n"
+       "\\PassOptionsToPackage{warn}{textcomp}\n"
        "\\usepackage{textcomp}\n"
+       "\\usepackage[nointegrals]{wasysym}\n"
        "\\usepackage[table]{xcolor}\n"
        "\n";
 

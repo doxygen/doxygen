@@ -73,109 +73,14 @@ void DocbookDocVisitor::visit(DocWhiteSpace *w)
 void DocbookDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  switch(s->symbol())
+  const char *res = get_symbol_docbook(s->symbol());
+  if (res)
   {
-    case DocSymbol::BSlash:  m_t << "\\"; break;
-    case DocSymbol::At:      m_t << "@"; break;
-    case DocSymbol::Less:    m_t << "&lt;"; break;
-    case DocSymbol::Greater: m_t << "&gt;"; break;
-    case DocSymbol::Amp:     m_t << "&amp;"; break;
-    case DocSymbol::Dollar:  m_t << "$"; break;
-    case DocSymbol::Hash:    m_t << "#"; break;
-    case DocSymbol::DoubleColon: m_t << "::"; break;
-    case DocSymbol::Percent: m_t << "%"; break;
-    case DocSymbol::Copy:    m_t << "&#x00A9;"; break;
-    case DocSymbol::Tm:      m_t << "&#8482;"; break;
-    case DocSymbol::Reg:     m_t << "&#174;"; break;
-    case DocSymbol::Apos:    m_t << "&apos;"; break;
-    case DocSymbol::Quot:    m_t << "&quot;"; break;
-    case DocSymbol::Lsquo:   m_t << "&#8216;"; break;
-    case DocSymbol::Rsquo:   m_t << "&#8217;"; break;
-    case DocSymbol::Ldquo:   m_t << "&#8220;"; break;
-    case DocSymbol::Rdquo:   m_t << "&#8221;"; break;
-    case DocSymbol::Ndash:   m_t << "&#8211;"; break;
-    case DocSymbol::Mdash:   m_t << "&#8212;"; break;
-    case DocSymbol::Uml:     m_t << "&#168;"; break;
-    case DocSymbol::Acute:   m_t << "&#180;"; break;
-    case DocSymbol::Grave:   m_t << "&#192;"; break;
-    case DocSymbol::Circ:    m_t << "&#710;"; break;
-    case DocSymbol::Tilde:   m_t << "&#732;"; break;
-    case DocSymbol::Szlig:   m_t << "&#223;"; break;
-    case DocSymbol::Cedil:   m_t << "&#184;"; break;
-    case DocSymbol::Ring:    m_t << "&#197;"; break;
-    case DocSymbol::Slash:   m_t << "&#216;"; break;
-    case DocSymbol::Nbsp:    m_t << "&#160;"; break;
-    case DocSymbol::Aelig:   m_t << "&#230;"; break;
-    case DocSymbol::AElig:   m_t << "&#198;"; break;
-    case DocSymbol::GrkGamma:      m_t << "&#915;"; break;
-    case DocSymbol::GrkDelta:      m_t << "&#916;"; break;
-    case DocSymbol::GrkTheta:      m_t << "&#920;"; break;
-    case DocSymbol::GrkLambda:     m_t << "&#923;"; break;
-    case DocSymbol::GrkXi:         m_t << "&#926;"; break;
-    case DocSymbol::GrkPi:         m_t << "&#928;"; break;
-    case DocSymbol::GrkSigma:      m_t << "&#931;"; break;
-    case DocSymbol::GrkUpsilon:    m_t << "&#933;"; break;
-    case DocSymbol::GrkPhi:        m_t << "&#934;"; break;
-    case DocSymbol::GrkPsi:        m_t << "&#936;"; break;
-    case DocSymbol::GrkOmega:      m_t << "&#937;"; break;
-    case DocSymbol::Grkalpha:      m_t << "&#945;"; break;
-    case DocSymbol::Grkbeta:       m_t << "&#946;"; break;
-    case DocSymbol::Grkgamma:      m_t << "&#947;"; break;
-    case DocSymbol::Grkdelta:      m_t << "&#948;"; break;
-    case DocSymbol::Grkepsilon:    m_t << "&#949;"; break;
-    case DocSymbol::Grkzeta:       m_t << "&#950;"; break;
-    case DocSymbol::Grketa:        m_t << "&#951;"; break;
-    case DocSymbol::Grktheta:      m_t << "&#952;"; break;
-    case DocSymbol::Grkiota:       m_t << "&#953;"; break;
-    case DocSymbol::Grkkappa:      m_t << "&#954;"; break;
-    case DocSymbol::Grklambda:     m_t << "&#955;"; break;
-    case DocSymbol::Grkmu:         m_t << "&#956;"; break;
-    case DocSymbol::Grknu:         m_t << "&#957;"; break;
-    case DocSymbol::Grkxi:         m_t << "&#958;"; break;
-    case DocSymbol::Grkpi:         m_t << "&#960;"; break;
-    case DocSymbol::Grkrho:        m_t << "&#961;"; break;
-    case DocSymbol::Grksigma:      m_t << "&#963;"; break;
-    case DocSymbol::Grktau:        m_t << "&#964;"; break;
-    case DocSymbol::Grkupsilon:    m_t << "&#965;"; break;
-    case DocSymbol::Grkphi:        m_t << "&#966;"; break;
-    case DocSymbol::Grkchi:        m_t << "&#967;"; break;
-    case DocSymbol::Grkpsi:        m_t << "&#968;"; break;
-    case DocSymbol::Grkomega:      m_t << "&#969;"; break;
-    case DocSymbol::Grkvarsigma:   m_t << "&#962;"; break;
-    case DocSymbol::Section:       m_t << "<simplesect/>"; break;
-    case DocSymbol::Degree:        m_t << "&#176;"; break;
-    case DocSymbol::Prime:         m_t << "&#8242;"; break;
-    case DocSymbol::DoublePrime:   m_t << "&#8243;"; break;
-    case DocSymbol::Infinity:      m_t << "&#8734;"; break;
-    case DocSymbol::EmptySet:      m_t << "&#8709;"; break;
-    case DocSymbol::PlusMinus:     m_t << "&#177;"; break;
-    case DocSymbol::Times:         m_t << "&#215;"; break;
-    case DocSymbol::Minus:         m_t << "&#8722;"; break;
-    case DocSymbol::CenterDot:     m_t << "&#8901;"; break;
-    case DocSymbol::Partial:       m_t << "&#8706;"; break;
-    case DocSymbol::Nabla:         m_t << "&#8711;"; break;
-    case DocSymbol::SquareRoot:    m_t << "&#8730;"; break;
-    case DocSymbol::Perpendicular: m_t << "&#8869;"; break;
-    case DocSymbol::Sum:           m_t << "&#8721;"; break;
-    case DocSymbol::Integral:      m_t << "&#8747;"; break;
-    case DocSymbol::Product:       m_t << "&#8719;"; break;
-    case DocSymbol::Similar:       m_t << "&#8764;"; break;
-    case DocSymbol::Approx:        m_t << "&#8776;"; break;
-    case DocSymbol::NotEqual:      m_t << "&#8800;"; break;
-    case DocSymbol::Equivalent:    m_t << "&#8801;"; break;
-    case DocSymbol::Proportional:  m_t << "&#8733;"; break;
-    case DocSymbol::LessEqual:     m_t << "&#8804;"; break;
-    case DocSymbol::GreaterEqual:  m_t << "&#8805;"; break;
-    case DocSymbol::LeftArrow:     m_t << "&#8592;"; break;
-    case DocSymbol::RightArrow:    m_t << "&#8594;"; break;
-    case DocSymbol::SetIn:         m_t << "&#8712;"; break;
-    case DocSymbol::SetNotIn:      m_t << "&#8713;"; break;
-    case DocSymbol::LeftCeil:      m_t << "&#8968;"; break;
-    case DocSymbol::RightCeil:     m_t << "&#8969;"; break;
-    case DocSymbol::LeftFloor:     m_t << "&#8970;"; break;
-    case DocSymbol::RightFloor:    m_t << "&#8971;"; break;
-    default:
-                                   err("unknown symbol found\n");
+    m_t << res;
+  }
+  else
+  {
+    err("DocBook: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
   }
 }
 
