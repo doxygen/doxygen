@@ -239,6 +239,7 @@ void CiteDict::generatePage() const
   QFileInfo fi(citeListFile);
   QCString input(fi.size()+1);
   f.readBlock(input.data(),fi.size());
+  f.close();
   input.at(fi.size())='\0';
   int p=0,s;
   //printf("input=[%s]\n",input.data());
