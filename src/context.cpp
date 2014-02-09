@@ -717,6 +717,10 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trCompoundMembers();
     }
+    TemplateVariant detailLevel() const
+    {
+      return theTranslator->trDetailLevel();
+    }
     Private()
     {
       //%% string generatedBy
@@ -825,6 +829,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("classDocumentation", this,&Private::classDocumentation);
       //%% string compoundMembers
       addProperty("compoundMembers",    this,&Private::compoundMembers);
+      //%% strint detailLevel
+      addProperty("detailLevel",        this,&Private::detailLevel);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -4070,7 +4076,6 @@ class NestingNodeContext::Private : public PropertyMapper
         Definition *d,int index,int level,bool addCls)
       : m_parent(parent), m_def(d), m_children(thisNode,level+1), m_level(level), m_index(index)
     {
-      printf("Node %s level=%d\n",d->name().data(),level);
       //%% bool is_leaf_node: true if this node does not have any children
       addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% Nesting children: list of nested classes/namespaces
@@ -4079,6 +4084,10 @@ class NestingNodeContext::Private : public PropertyMapper
       addProperty("class",this,&Private::getClass);
       //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
       addProperty("namespace",this,&Private::getNamespace);
+      //%% [optional] File file: file info (if this node represents a file)
+      addProperty("file",this,&Private::file);
+      //%% [optional] Dir dir: directory info (if this node represents a directory)
+      addProperty("dir",this,&Private::dir);
       //%% int id
       addProperty("id",this,&Private::id);
       //%% string level
@@ -4132,6 +4141,14 @@ class NestingNodeContext::Private : public PropertyMapper
       {
         return TemplateVariant(FALSE);
       }
+    }
+    TemplateVariant file() const
+    {
+      return FALSE;
+    }
+    TemplateVariant dir() const
+    {
+      return FALSE;
     }
     TemplateVariant level() const
     {

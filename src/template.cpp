@@ -2169,6 +2169,176 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
 
 //----------------------------------------------------------
 
+/** @brief Class representing a 'range' tag in a template */
+class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
+{
+  public:
+    TemplateNodeRange(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeRange>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeRange(%s)\n",data.data()));
+      QCString start,end;
+      int i1 = data.find(" from ");
+      int i2 = data.find(" to ");
+      int i3 = data.find(" downto ");
+      if (i1==-1)
+      {
+        if (data.right(5)==" from")
+        {
+          parser->warn(m_templateName,line,"range missing after 'from' keyword");
+        }
+        else if (data=="from")
+        {
+          parser->warn(m_templateName,line,"range needs an iterator variable and a range");
+        }
+        else
+        {
+          parser->warn(m_templateName,line,"range is missing 'from' keyword");
+        }
+      }
+      else if (i2==-1 && i3==-1)
+      {
+        if (data.right(3)==" to")
+        {
+          parser->warn(m_templateName,line,"range is missing end value after 'to' keyword");
+        }
+        else if (data.right(7)==" downto")
+        {
+          parser->warn(m_templateName,line,"range is missing end value after 'downto' keyword");
+        }
+        else
+        {
+          parser->warn(m_templateName,line,"range is missing 'to' or 'downto' keyword");
+        }
+      }
+      else
+      {
+        m_var = data.left(i1).stripWhiteSpace();
+        if (m_var.isEmpty())
+        {
+          parser->warn(m_templateName,line,"range needs an iterator variable");
+        }
+        start = data.mid(i1+6,i2-i1-6).stripWhiteSpace();
+        if (i2!=-1)
+        {
+          end = data.right(data.length()-i2-4).stripWhiteSpace();
+          m_down = FALSE;
+        }
+        else if (i3!=-1)
+        {
+          end = data.right(data.length()-i3-8).stripWhiteSpace();
+          m_down = TRUE;
+        }
+      }
+      ExpressionParser expParser(parser,line);
+      m_startExpr = expParser.parse(start);
+      m_endExpr   = expParser.parse(end);
+
+      QStrList stopAt;
+      stopAt.append("endrange");
+      parser->parse(this,line,stopAt,m_loopNodes);
+      parser->removeNextToken(); // skip over endrange
+      TRACE(("}TemplateNodeRange(%s)\n",data.data()));
+    }
+
+    ~TemplateNodeRange()
+    {
+      delete m_startExpr;
+      delete m_endExpr;
+    }
+
+    void render(FTextStream &ts, TemplateContext *c)
+    {
+      TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
+      //printf("TemplateNodeRange::render #loopNodes=%d\n",
+      //    m_loopNodes.count());
+      if (m_startExpr && m_endExpr)
+      {
+        TemplateVariant vs = m_startExpr->resolve(c);
+        TemplateVariant ve = m_endExpr->resolve(c);
+        if (vs.type()==TemplateVariant::Integer && ve.type()==TemplateVariant::Integer)
+        {
+          int s = vs.toInt();
+          int e = ve.toInt();
+          int l = m_down ? s-e+1 : e-s+1;
+          if (l>0)
+          {
+            c->push();
+            //int index = m_reversed ? list.count() : 0;
+            TemplateVariant v;
+            const TemplateVariant *parentLoop = c->getRef("forloop");
+            uint index = 0;
+            int i = m_down ? e : s;
+            bool done=false;
+            while (!done)
+            {
+              // set the forloop meta-data variable
+              TemplateStruct s;
+              s.set("counter0",    (int)index);
+              s.set("counter",     (int)(index+1));
+              s.set("revcounter",  (int)(l-index));
+              s.set("revcounter0", (int)(l-index-1));
+              s.set("first",index==0);
+              s.set("last", (int)index==l-1);
+              s.set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
+              c->set("forloop",&s);
+
+              // set the iterator variable
+              c->set(m_var,i);
+
+              // render all items for this iteration of the loop
+              m_loopNodes.render(ts,c);
+
+              index++;
+              if (m_down)
+              {
+                i--;
+                done = i<e;
+              }
+              else
+              {
+                i++;
+                done = i>e;
+              }
+            }
+            c->pop();
+          }
+          else
+          {
+            ci->warn(m_templateName,m_line,"range %d %s %d is empty!",
+                s,m_down?"downto":"to",e);
+          }
+        }
+        else if (vs.type()!=TemplateVariant::Integer)
+        {
+          ci->warn(m_templateName,m_line,"range requires a start value of integer type!");
+        }
+        else if (ve.type()!=TemplateVariant::Integer)
+        {
+          ci->warn(m_templateName,m_line,"range requires an end value of integer type!");
+        }
+      }
+      else if (!m_startExpr)
+      {
+        ci->warn(m_templateName,m_line,"range has empty start value");
+      }
+      else if (!m_endExpr)
+      {
+        ci->warn(m_templateName,m_line,"range has empty end value");
+      }
+    }
+
+  private:
+    bool m_down;
+    ExprAst *m_startExpr;
+    ExprAst *m_endExpr;
+    QCString m_var;
+    TemplateNodeList m_loopNodes;
+};
+
+//----------------------------------------------------------
+
 /** @brief Class representing a 'for' tag in a template */
 class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
 {
@@ -3141,6 +3311,7 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeTree>      autoRefTree("rec
 static TemplateNodeFactory::AutoRegister<TemplateNodeWith>      autoRefWith("with");
 static TemplateNodeFactory::AutoRegister<TemplateNodeBlock>     autoRefBlock("block");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCycle>     autoRefCycle("cycle");
+static TemplateNodeFactory::AutoRegister<TemplateNodeRange>     autoRefRange("range");
 static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>    autoRefExtend("extend");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>    autoRefCreate("create");
 static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>    autoRefRepeat("repeat");
@@ -3515,7 +3686,8 @@ void TemplateParser::parse(
                    command=="endblock"       || command=="endwith"      ||
                    command=="endrecursetree" || command=="endspaceless" ||
                    command=="endmarkers"     || command=="endmsg"       ||
-                   command=="endrepeat"      || command=="elif")
+                   command=="endrepeat"      || command=="elif"         ||
+                   command=="endrange")
           {
             warn(m_templateName,tok->line,"Found tag '%s' without matching start tag",command.data());
           }
