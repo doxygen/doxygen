@@ -1244,34 +1244,34 @@ reparsetoken:
       switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
-          children.append(new DocSymbol(parent,DocSymbol::BSlash));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_BSlash));
           break;
         case CMD_AT:
-          children.append(new DocSymbol(parent,DocSymbol::At));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_At));
           break;
         case CMD_LESS:
-          children.append(new DocSymbol(parent,DocSymbol::Less));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Less));
           break;
         case CMD_GREATER:
-          children.append(new DocSymbol(parent,DocSymbol::Greater));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Greater));
           break;
         case CMD_AMP:
-          children.append(new DocSymbol(parent,DocSymbol::Amp));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Amp));
           break;
         case CMD_DOLLAR:
-          children.append(new DocSymbol(parent,DocSymbol::Dollar));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Dollar));
           break;
         case CMD_HASH:
-          children.append(new DocSymbol(parent,DocSymbol::Hash));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Hash));
           break;
         case CMD_DCOLON:
-          children.append(new DocSymbol(parent,DocSymbol::DoubleColon));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_DoubleColon));
           break;
         case CMD_PERCENT:
-          children.append(new DocSymbol(parent,DocSymbol::Percent));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Percent));
           break;
         case CMD_QUOTE:
-          children.append(new DocSymbol(parent,DocSymbol::Quot));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Quot));
           break;
         case CMD_EMPHASIS:
           {
@@ -1488,11 +1488,10 @@ reparsetoken:
       break;
     case TK_SYMBOL: 
       {
-        char letter='\0';
-        DocSymbol::SymType s = DocSymbol::decodeSymbol(tokenName,&letter);
-        if (s!=DocSymbol::Unknown)
+        DocSymbol::SymType s = DocSymbol::decodeSymbol(tokenName);
+        if (s!=DocSymbol::Sym_Unknown)
         {
-          children.append(new DocSymbol(parent,s,letter));
+          children.append(new DocSymbol(parent,s));
         }
         else
         {
@@ -1571,138 +1570,10 @@ static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribL
 
 //---------------------------------------------------------------------------
 
-DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
+DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName)
 {
-  int l=symName.length();
-  DBG(("decodeSymbol(%s) l=%d\n",qPrint(symName),l));
-  // TODO: replace this with a hash
-  if      (symName=="&copy;")  return DocSymbol::Copy;
-  else if (symName=="&trade;") return DocSymbol::Tm;
-  else if (symName=="&tm;")    return DocSymbol::Tm; // alias for &trade;
-  else if (symName=="&reg;")   return DocSymbol::Reg;
-  else if (symName=="&lt;")    return DocSymbol::Less;
-  else if (symName=="&gt;")    return DocSymbol::Greater;
-  else if (symName=="&amp;")   return DocSymbol::Amp;
-  else if (symName=="&apos;")  return DocSymbol::Apos;
-  else if (symName=="&quot;")  return DocSymbol::Quot;
-  else if (symName=="&lsquo;") return DocSymbol::Lsquo;
-  else if (symName=="&rsquo;") return DocSymbol::Rsquo;
-  else if (symName=="&ldquo;") return DocSymbol::Ldquo;
-  else if (symName=="&rdquo;") return DocSymbol::Rdquo;
-  else if (symName=="&ndash;") return DocSymbol::Ndash;
-  else if (symName=="&mdash;") return DocSymbol::Mdash;
-  else if (symName=="&szlig;") return DocSymbol::Szlig;
-  else if (symName=="&nbsp;")  return DocSymbol::Nbsp;
-  else if (symName=="&AElig;") return DocSymbol::AElig;
-  else if (symName=="&aelig;") return DocSymbol::Aelig;
-  else if (symName=="&Gamma;")     return DocSymbol::GrkGamma;
-  else if (symName=="&Delta;")     return DocSymbol::GrkDelta;
-  else if (symName=="&Theta;")     return DocSymbol::GrkTheta;
-  else if (symName=="&Lambda;")    return DocSymbol::GrkLambda;
-  else if (symName=="&Xi;")        return DocSymbol::GrkXi;
-  else if (symName=="&Pi;")        return DocSymbol::GrkPi;
-  else if (symName=="&Sigma;")     return DocSymbol::GrkSigma;
-  else if (symName=="&Upsilon;")   return DocSymbol::GrkUpsilon;
-  else if (symName=="&Phi;")       return DocSymbol::GrkPhi;
-  else if (symName=="&Psi;")       return DocSymbol::GrkPsi;
-  else if (symName=="&Omega;")     return DocSymbol::GrkOmega;
-  else if (symName=="&alpha;")     return DocSymbol::Grkalpha;
-  else if (symName=="&beta;")      return DocSymbol::Grkbeta;
-  else if (symName=="&gamma;")     return DocSymbol::Grkgamma;
-  else if (symName=="&delta;")     return DocSymbol::Grkdelta;
-  else if (symName=="&epsilon;")   return DocSymbol::Grkepsilon;
-  else if (symName=="&zeta;")      return DocSymbol::Grkzeta;
-  else if (symName=="&eta;")       return DocSymbol::Grketa;
-  else if (symName=="&theta;")     return DocSymbol::Grktheta;
-  else if (symName=="&iota;")      return DocSymbol::Grkiota;
-  else if (symName=="&kappa;")     return DocSymbol::Grkkappa;
-  else if (symName=="&lambda;")    return DocSymbol::Grklambda;
-  else if (symName=="&mu;")        return DocSymbol::Grkmu;
-  else if (symName=="&nu;")        return DocSymbol::Grknu;
-  else if (symName=="&xi;")        return DocSymbol::Grkxi;
-  else if (symName=="&pi;")        return DocSymbol::Grkpi;
-  else if (symName=="&rho;")       return DocSymbol::Grkrho;
-  else if (symName=="&sigma;")     return DocSymbol::Grksigma;
-  else if (symName=="&tau;")       return DocSymbol::Grktau;
-  else if (symName=="&upsilon;")   return DocSymbol::Grkupsilon;
-  else if (symName=="&phi;")       return DocSymbol::Grkphi;
-  else if (symName=="&chi;")       return DocSymbol::Grkchi;
-  else if (symName=="&psi;")       return DocSymbol::Grkpsi;
-  else if (symName=="&omega;")     return DocSymbol::Grkomega;
-  else if (symName=="&sigmaf;")    return DocSymbol::Grkvarsigma;
-  else if (symName=="&sect;")      return DocSymbol::Section;
-  else if (symName=="&deg;")       return DocSymbol::Degree;
-  else if (symName=="&prime;")     return DocSymbol::Prime;
-  else if (symName=="&Prime;")     return DocSymbol::DoublePrime;
-  else if (symName=="&infin;")     return DocSymbol::Infinity;
-  else if (symName=="&empty;")     return DocSymbol::EmptySet;
-  else if (symName=="&plusmn;")    return DocSymbol::PlusMinus;
-  else if (symName=="&times;")     return DocSymbol::Times;
-  else if (symName=="&minus;")     return DocSymbol::Minus;
-  else if (symName=="&sdot;")      return DocSymbol::CenterDot;
-  else if (symName=="&part;")      return DocSymbol::Partial;
-  else if (symName=="&nabla;")     return DocSymbol::Nabla;
-  else if (symName=="&radic;")     return DocSymbol::SquareRoot;
-  else if (symName=="&perp;")      return DocSymbol::Perpendicular;
-  else if (symName=="&sum;")       return DocSymbol::Sum;
-  else if (symName=="&int;")       return DocSymbol::Integral;
-  else if (symName=="&prod;")      return DocSymbol::Product;
-  else if (symName=="&sim;")       return DocSymbol::Similar;
-  else if (symName=="&asymp;")     return DocSymbol::Approx;
-  else if (symName=="&ne;")        return DocSymbol::NotEqual;
-  else if (symName=="&equiv;")     return DocSymbol::Equivalent;
-  else if (symName=="&prop;")      return DocSymbol::Proportional;
-  else if (symName=="&le;")        return DocSymbol::LessEqual;
-  else if (symName=="&ge;")        return DocSymbol::GreaterEqual;
-  else if (symName=="&larr;")      return DocSymbol::LeftArrow;
-  else if (symName=="&rarr;")      return DocSymbol::RightArrow;
-  else if (symName=="&isin;")      return DocSymbol::SetIn;
-  else if (symName=="&notin;")     return DocSymbol::SetNotIn;
-  else if (symName=="&lceil;")     return DocSymbol::LeftCeil;
-  else if (symName=="&rceil;")     return DocSymbol::RightCeil;
-  else if (symName=="&lfloor;")    return DocSymbol::LeftFloor;
-  else if (symName=="&rfloor;")    return DocSymbol::RightFloor;
-  else if (l==6 && symName.right(4)=="uml;")  
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Uml;
-  }
-  else if (l==8 && symName.right(6)=="acute;")  
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Acute;
-  }
-  else if (l==8 && symName.right(6)=="grave;")
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Grave;
-  }
-  else if (l==7 && symName.right(5)=="circ;")
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Circ;
-  }
-  else if (l==8 && symName.right(6)=="tilde;")
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Tilde;
-  }
-  else if (l==8 && symName.right(6)=="cedil;")
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Cedil;
-  }
-  else if (l==7 && symName.right(5)=="ring;")
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Ring;
-  }
-  else if (l==8 && symName.right(6)=="slash;")
-  {
-    *letter=symName.at(1);
-    return DocSymbol::Slash;
-  }
-  return DocSymbol::Unknown;
+  DBG(("decodeSymbol(%s)\n",qPrint(symName)));
+  return code_symbol(symName);
 }
 
 //---------------------------------------------------------------------------
@@ -3369,26 +3240,25 @@ int DocIndexEntry::parse()
         break;
       case TK_SYMBOL:
         {
-          char letter='\0';
-          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name,&letter);
+          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name);
           switch (s)
           {
-            case DocSymbol::BSlash:  m_entry+='\\'; break;
-            case DocSymbol::At:      m_entry+='@';  break;
-            case DocSymbol::Less:    m_entry+='<';  break;
-            case DocSymbol::Greater: m_entry+='>';  break;
-            case DocSymbol::Amp:     m_entry+='&';  break;
-            case DocSymbol::Dollar:  m_entry+='$';  break;
-            case DocSymbol::Hash:    m_entry+='#';  break;
-            case DocSymbol::Percent: m_entry+='%';  break;
-            case DocSymbol::Apos:    m_entry+='\''; break;
-            case DocSymbol::Quot:    m_entry+='"';  break;
-            case DocSymbol::Lsquo:   m_entry+='`';  break;
-            case DocSymbol::Rsquo:   m_entry+='\'';  break;
-            case DocSymbol::Ldquo:   m_entry+="``";  break;
-            case DocSymbol::Rdquo:   m_entry+="''";  break;
-            case DocSymbol::Ndash:   m_entry+="--";  break;
-            case DocSymbol::Mdash:   m_entry+="---";  break;
+            case DocSymbol::Sym_BSlash:  m_entry+='\\'; break;
+            case DocSymbol::Sym_At:      m_entry+='@';  break;
+            case DocSymbol::Sym_Less:    m_entry+='<';  break;
+            case DocSymbol::Sym_Greater: m_entry+='>';  break;
+            case DocSymbol::Sym_Amp:     m_entry+='&';  break;
+            case DocSymbol::Sym_Dollar:  m_entry+='$';  break;
+            case DocSymbol::Sym_Hash:    m_entry+='#';  break;
+            case DocSymbol::Sym_Percent: m_entry+='%';  break;
+            case DocSymbol::Sym_apos:    m_entry+='\''; break;
+            case DocSymbol::Sym_Quot:    m_entry+='"';  break;
+            case DocSymbol::Sym_lsquo:   m_entry+='`';  break;
+            case DocSymbol::Sym_rsquo:   m_entry+='\'';  break;
+            case DocSymbol::Sym_ldquo:   m_entry+="``";  break;
+            case DocSymbol::Sym_rdquo:   m_entry+="''";  break;
+            case DocSymbol::Sym_ndash:   m_entry+="--";  break;
+            case DocSymbol::Sym_mdash:   m_entry+="---";  break;
             default:
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected symbol found as argument of \\addindex");
               break;
@@ -5470,37 +5340,37 @@ int DocPara::handleCommand(const QCString &cmdName)
       if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BSLASH:
-      m_children.append(new DocSymbol(this,DocSymbol::BSlash));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_BSlash));
       break;
     case CMD_AT:
-      m_children.append(new DocSymbol(this,DocSymbol::At));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_At));
       break;
     case CMD_LESS:
-      m_children.append(new DocSymbol(this,DocSymbol::Less));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Less));
       break;
     case CMD_GREATER:
-      m_children.append(new DocSymbol(this,DocSymbol::Greater));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Greater));
       break;
     case CMD_AMP:
-      m_children.append(new DocSymbol(this,DocSymbol::Amp));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Amp));
       break;
     case CMD_DOLLAR:
-      m_children.append(new DocSymbol(this,DocSymbol::Dollar));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Dollar));
       break;
     case CMD_HASH:
-      m_children.append(new DocSymbol(this,DocSymbol::Hash));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Hash));
       break;
     case CMD_PIPE:
-      m_children.append(new DocSymbol(this,DocSymbol::Pipe));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Pipe));
       break;
     case CMD_DCOLON:
-      m_children.append(new DocSymbol(this,DocSymbol::DoubleColon));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_DoubleColon));
       break;
     case CMD_PERCENT:
-      m_children.append(new DocSymbol(this,DocSymbol::Percent));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Percent));
       break;
     case CMD_QUOTE:
-      m_children.append(new DocSymbol(this,DocSymbol::Quot));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
       break;
     case CMD_SA:
       g_inSeeBlock=TRUE;
@@ -6691,11 +6561,10 @@ reparsetoken:
         break;
       case TK_SYMBOL:     
         {
-          char letter='\0';
-          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name,&letter);
-          if (s!=DocSymbol::Unknown)
+          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name);
+          if (s!=DocSymbol::Sym_Unknown)
           {
-            m_children.append(new DocSymbol(this,s,letter));
+            m_children.append(new DocSymbol(this,s));
           }
           else
           {
@@ -6910,11 +6779,10 @@ void DocText::parse()
 	break;
       case TK_SYMBOL:     
         {
-          char letter='\0';
-          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name,&letter);
-          if (s!=DocSymbol::Unknown)
+          DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name);
+          if (s!=DocSymbol::Sym_Unknown)
           {
-            m_children.append(new DocSymbol(this,s,letter));
+            m_children.append(new DocSymbol(this,s));
           }
           else
           {
@@ -6927,34 +6795,34 @@ void DocText::parse()
         switch (Mappers::cmdMapper->map(g_token->name))
         {
           case CMD_BSLASH:
-            m_children.append(new DocSymbol(this,DocSymbol::BSlash));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_BSlash));
             break;
           case CMD_AT:
-            m_children.append(new DocSymbol(this,DocSymbol::At));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_At));
             break;
           case CMD_LESS:
-            m_children.append(new DocSymbol(this,DocSymbol::Less));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Less));
             break;
           case CMD_GREATER:
-            m_children.append(new DocSymbol(this,DocSymbol::Greater));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Greater));
             break;
           case CMD_AMP:
-            m_children.append(new DocSymbol(this,DocSymbol::Amp));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Amp));
             break;
           case CMD_DOLLAR:
-            m_children.append(new DocSymbol(this,DocSymbol::Dollar));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Dollar));
             break;
           case CMD_HASH:
-            m_children.append(new DocSymbol(this,DocSymbol::Hash));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Hash));
             break;
           case CMD_DCOLON:
-            m_children.append(new DocSymbol(this,DocSymbol::DoubleColon));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_DoubleColon));
             break;
           case CMD_PERCENT:
-            m_children.append(new DocSymbol(this,DocSymbol::Percent));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Percent));
             break;
           case CMD_QUOTE:
-            m_children.append(new DocSymbol(this,DocSymbol::Quot));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
             break;
           default:
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command `%s' found",

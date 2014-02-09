@@ -56,106 +56,14 @@ class PrintDocVisitor : public DocVisitor
     void visit(DocSymbol *s)
     {
       indent_leaf();
-      switch(s->symbol())
+      const char *res = get_symbol_print(s->symbol());
+      if (res)
       {
-        case DocSymbol::BSlash:  printf("\\"); break;
-        case DocSymbol::At:      printf("@"); break;
-        case DocSymbol::Less:    printf("<"); break;
-        case DocSymbol::Greater: printf(">"); break;
-        case DocSymbol::Amp:     printf("&"); break;
-        case DocSymbol::Dollar:  printf("$"); break;
-        case DocSymbol::Hash:    printf("#"); break;
-        case DocSymbol::Percent: printf("%%"); break;
-        case DocSymbol::Pipe:    printf("|"); break;
-        case DocSymbol::Copy:    printf("&copy;"); break;
-        case DocSymbol::Apos:    printf("'"); break;
-        case DocSymbol::Quot:    printf("\""); break;
-        case DocSymbol::Lsquo:   printf("&lsquo;"); break;
-        case DocSymbol::Rsquo:   printf("&rsquo;"); break;
-        case DocSymbol::Ldquo:   printf("&ldquo;"); break;
-        case DocSymbol::Rdquo:   printf("&rdquo;"); break;
-        case DocSymbol::Ndash:   printf("&ndash;"); break;
-        case DocSymbol::Mdash:   printf("&mdash;"); break;
-        case DocSymbol::Uml:     printf("&%cuml;",s->letter()); break;
-        case DocSymbol::Acute:   printf("&%cacute;",s->letter()); break;
-        case DocSymbol::Grave:   printf("&%cgrave;",s->letter()); break;
-        case DocSymbol::Circ:    printf("&%ccirc;",s->letter()); break;
-        case DocSymbol::Tilde:   printf("&%ctilde;",s->letter()); break;
-        case DocSymbol::Szlig:   printf("&szlig;"); break;
-        case DocSymbol::Cedil:   printf("&%ccedul;",s->letter()); break;
-        case DocSymbol::Ring:    printf("&%cring;",s->letter()); break;
-        case DocSymbol::Nbsp:    printf("&nbsp;"); break;
-        case DocSymbol::Aelig:   printf("&aelig;"); break;
-        case DocSymbol::AElig:   printf("&AElig;"); break;
-        case DocSymbol::GrkGamma:      printf("&Gamma;"); break;
-        case DocSymbol::GrkDelta:      printf("&Delta;"); break;
-        case DocSymbol::GrkTheta:      printf("&Theta;"); break;
-        case DocSymbol::GrkLambda:     printf("&Lambda;"); break;
-        case DocSymbol::GrkXi:         printf("&Xi;"); break;
-        case DocSymbol::GrkPi:         printf("&Pi;"); break;
-        case DocSymbol::GrkSigma:      printf("&Sigma;"); break;
-        case DocSymbol::GrkUpsilon:    printf("&Upsilon;"); break;
-        case DocSymbol::GrkPhi:        printf("&Phi;"); break;
-        case DocSymbol::GrkPsi:        printf("&Psi;"); break;
-        case DocSymbol::GrkOmega:      printf("&Omega;"); break;
-        case DocSymbol::Grkalpha:      printf("&alpha;"); break;
-        case DocSymbol::Grkbeta:       printf("&beta;"); break;
-        case DocSymbol::Grkgamma:      printf("&gamma;"); break;
-        case DocSymbol::Grkdelta:      printf("&delta;"); break;
-        case DocSymbol::Grkepsilon:    printf("&epsilon;"); break;
-        case DocSymbol::Grkzeta:       printf("&zeta;"); break;
-        case DocSymbol::Grketa:        printf("&eta;"); break;
-        case DocSymbol::Grktheta:      printf("&theta;"); break;
-        case DocSymbol::Grkiota:       printf("&iota;"); break;
-        case DocSymbol::Grkkappa:      printf("&kappa;"); break;
-        case DocSymbol::Grklambda:     printf("&lambda;"); break;
-        case DocSymbol::Grkmu:         printf("&mu;"); break;
-        case DocSymbol::Grknu:         printf("&nu;"); break;
-        case DocSymbol::Grkxi:         printf("&xi;"); break;
-        case DocSymbol::Grkpi:         printf("&pi;"); break;
-        case DocSymbol::Grkrho:        printf("&rho;"); break;
-        case DocSymbol::Grksigma:      printf("&sigma;"); break;
-        case DocSymbol::Grktau:        printf("&tau;"); break;
-        case DocSymbol::Grkupsilon:    printf("&upsilon;"); break;
-        case DocSymbol::Grkphi:        printf("&phi;"); break;
-        case DocSymbol::Grkchi:        printf("&chi;"); break;
-        case DocSymbol::Grkpsi:        printf("&psi;"); break;
-        case DocSymbol::Grkomega:      printf("&omega;"); break;
-        case DocSymbol::Grkvarsigma:   printf("&sigmaf;"); break;
-        case DocSymbol::Section:       printf("&sect;"); break;
-        case DocSymbol::Degree:        printf("&deg;"); break;
-        case DocSymbol::Prime:         printf("&prime;"); break;
-        case DocSymbol::DoublePrime:   printf("&Prime;"); break;
-        case DocSymbol::Infinity:      printf("&infin;"); break;
-        case DocSymbol::EmptySet:      printf("&empty;"); break;
-        case DocSymbol::PlusMinus:     printf("&plusmn;"); break;
-        case DocSymbol::Times:         printf("&times;"); break;
-        case DocSymbol::Minus:         printf("&minus;"); break;
-        case DocSymbol::CenterDot:     printf("&sdot;"); break;
-        case DocSymbol::Partial:       printf("&part;"); break;
-        case DocSymbol::Nabla:         printf("&nabla;"); break;
-        case DocSymbol::SquareRoot:    printf("&radic;"); break;
-        case DocSymbol::Perpendicular: printf("&perp;"); break;
-        case DocSymbol::Sum:           printf("&sum;"); break;
-        case DocSymbol::Integral:      printf("&int;"); break;
-        case DocSymbol::Product:       printf("&prod;"); break;
-        case DocSymbol::Similar:       printf("&sim;"); break;
-        case DocSymbol::Approx:        printf("&asymp;"); break;
-        case DocSymbol::NotEqual:      printf("&ne;"); break;
-        case DocSymbol::Equivalent:    printf("&equiv;"); break;
-        case DocSymbol::Proportional:  printf("&prop;"); break;
-        case DocSymbol::LessEqual:     printf("&le;"); break;
-        case DocSymbol::GreaterEqual:  printf("&ge;"); break;
-        case DocSymbol::LeftArrow:     printf("&larr;"); break;
-        case DocSymbol::RightArrow:    printf("&rarr;"); break;
-        case DocSymbol::SetIn:         printf("&isin;"); break;
-        case DocSymbol::SetNotIn:      printf("&notin;"); break;
-        case DocSymbol::LeftCeil:      printf("&lceil;"); break;
-        case DocSymbol::RightCeil:     printf("&rceil;"); break;
-        case DocSymbol::LeftFloor:     printf("&lfloor;"); break;
-        case DocSymbol::RightFloor:    printf("&rfloor;"); break;
-        default:
-          printf("unknown symbol found\n");
+        printf("%s",res);
+      }
+      else
+      {
+        printf("print: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
       }
     }
     void visit(DocURL *u)

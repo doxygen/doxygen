@@ -1897,7 +1897,48 @@ void generateXML()
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  f.writeBlock(compound_xsd,qstrlen(compound_xsd));
+  /*
+   * If the compound_xsd contyains the special string
+   *   write part till special string
+   *   for each html entity
+   *     write xsd entry with xml element name without enclosing < and />
+   *   write part after special string
+   * otherwise
+   *   write original compound_xsd
+   */
+  QCString cmp_org(compound_xsd);
+  QCString ins("<!-- Automatically insert here the HTML entities -->");
+  if (cmp_org.contains(QRegExp(ins)))
+  {
+    QCString xsd_txt;
+    QCString xsd_tmp;
+    QCString cmp_tmp1;
+    QCString cmp_tmp2;
+    QRegExp beg("^<");
+    QRegExp end("/>$");
+    cmp_tmp1 = cmp_org;
+    cmp_tmp1 = cmp_tmp1.replace(QRegExp(" *"+ins+".*"),"");
+    f.writeBlock(cmp_tmp1,qstrlen(cmp_tmp1));
+    int num_std = get_num_standard_symbols();
+    for (int i = 0; i < num_std; i++)
+    {
+      xsd_tmp = QCString(get_symbol_xml((DocSymbol::SymType)i));
+      if (xsd_tmp.contains(beg))
+      {
+        xsd_txt = "      <xsd:element name=\"";
+        xsd_txt += xsd_tmp.replace(beg,"").replace(end,"");
+        xsd_txt += "\" type=\"docEmptyType\" />\n";
+        f.writeBlock(xsd_txt,qstrlen(xsd_txt));
+      }
+    }
+    cmp_tmp2 = cmp_org;
+    cmp_tmp2 = cmp_tmp2.replace(QRegExp(".*"+ins),"");
+    f.writeBlock(cmp_tmp2,qstrlen(cmp_tmp2));
+  }
+  else
+  {
+    f.writeBlock(compound_xsd,qstrlen(compound_xsd));
+  }
   f.close();
 
   fileName=outputDirectory+"/index.xml";

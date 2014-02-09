@@ -1,5 +1,4 @@
 /*****************************************************************************
- *
  * 
  *
  * Copyright (C) 1997-2013 by Dimitri van Heesch.
@@ -5680,141 +5679,16 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
   static QDict<char> entityMap(127);
   static bool init=TRUE;
   QCString result;
-  static QRegExp entityPat("&[a-zA-Z]+;");
+  static QRegExp entityPat("&[a-zA-Z]+[0-9]*;");
 
   if (init)
   {
-    entityMap.insert("copy",       "\xC2\xA9");
-    entityMap.insert("tm",         "\xE2\x84\xA2");
-    entityMap.insert("trade",      "\xE2\x84\xA2");
-    entityMap.insert("reg",        "\xC2\xAE");
-    entityMap.insert("lsquo",      "\xE2\x80\x98");
-    entityMap.insert("rsquo",      "\xE2\x80\x99");
-    entityMap.insert("ldquo",      "\xE2\x80\x9C");
-    entityMap.insert("rdquo",      "\xE2\x80\x9D");
-    entityMap.insert("ndash",      "\xE2\x80\x93");
-    entityMap.insert("mdash",      "\xE2\x80\x94");
-    entityMap.insert("Auml",       "\xC3\x84");
-    entityMap.insert("Euml",       "\xC3\x8B");
-    entityMap.insert("Iuml",       "\xC3\x8F");
-    entityMap.insert("Ouml",       "\xC3\x96");
-    entityMap.insert("Uuml",       "\xC3\x9C");
-    entityMap.insert("Yuml",       "\xC5\xB8");
-    entityMap.insert("auml",       "\xC3\xA4");
-    entityMap.insert("euml",       "\xC3\xAB");
-    entityMap.insert("iuml",       "\xC3\xAF");
-    entityMap.insert("ouml",       "\xC3\xB6");
-    entityMap.insert("uuml",       "\xC3\xBC");
-    entityMap.insert("yuml",       "\xC3\xBF");
-    entityMap.insert("Aacute",     "\xC3\x81");
-    entityMap.insert("Eacute",     "\xC3\x89");
-    entityMap.insert("Iacute",     "\xC3\x8D");
-    entityMap.insert("Oacute",     "\xC3\x93");
-    entityMap.insert("Uacute",     "\xC3\x9A");
-    entityMap.insert("aacute",     "\xC3\xA1");
-    entityMap.insert("eacute",     "\xC3\xA9");
-    entityMap.insert("iacute",     "\xC3\xAD");
-    entityMap.insert("oacute",     "\xC3\xB3");
-    entityMap.insert("uacute",     "\xC3\xBA");
-    entityMap.insert("Agrave",     "\xC3\x80");
-    entityMap.insert("Egrave",     "\xC3\x88");
-    entityMap.insert("Igrave",     "\xC3\x8C");
-    entityMap.insert("Ograve",     "\xC3\x92");
-    entityMap.insert("Ugrave",     "\xC3\x99");
-    entityMap.insert("agrave",     "\xC3\xA0");
-    entityMap.insert("egrave",     "\xC3\xA8");
-    entityMap.insert("igrave",     "\xC3\xAC");
-    entityMap.insert("ograve",     "\xC3\xB2");
-    entityMap.insert("ugrave",     "\xC3\xB9");
-    entityMap.insert("Acirc",      "\xC3\x82");
-    entityMap.insert("Ecirc",      "\xC3\x8A");
-    entityMap.insert("Icirc",      "\xC3\x8E");
-    entityMap.insert("Ocirc",      "\xC3\x94");
-    entityMap.insert("Ucirc",      "\xC3\x9B");
-    entityMap.insert("acirc",      "\xC3\xA2");
-    entityMap.insert("ecirc",      "\xC3\xAA");
-    entityMap.insert("icirc",      "\xC3\xAE");
-    entityMap.insert("ocirc",      "\xC3\xB4");
-    entityMap.insert("ucirc",      "\xC3\xBB");
-    entityMap.insert("Atilde",     "\xC3\x83");
-    entityMap.insert("Ntilde",     "\xC3\x91");
-    entityMap.insert("Otilde",     "\xC3\x95");
-    entityMap.insert("atilde",     "\xC3\xA3");
-    entityMap.insert("ntilde",     "\xC3\xB1");
-    entityMap.insert("otilde",     "\xC3\xB5");
-    entityMap.insert("szlig",      "\xC3\x9F");
-    entityMap.insert("Ccedil",     "\xC3\x87");
-    entityMap.insert("ccedil",     "\xC3\xA7");
-    entityMap.insert("Aring",      "\xC3\x85");
-    entityMap.insert("aring",      "\xC3\xA5");
-    entityMap.insert("nbsp",       "\xC2\xA0");
-    entityMap.insert("Gamma",      "\xCE\x93");
-    entityMap.insert("Delta",      "\xCE\x94");
-    entityMap.insert("Theta",      "\xCE\x98");
-    entityMap.insert("Lambda",     "\xCE\x9B");
-    entityMap.insert("Xi",         "\xCE\x9E");
-    entityMap.insert("Pi",         "\xCE\xA0");
-    entityMap.insert("Sigma",      "\xCE\xA3");
-    entityMap.insert("Upsilon",    "\xCE\xA5");
-    entityMap.insert("Phi",        "\xCE\xA6");
-    entityMap.insert("Psi",        "\xCE\xA8");
-    entityMap.insert("Omega",      "\xCE\xA9");
-    entityMap.insert("alpha",      "\xCE\xB1");
-    entityMap.insert("beta",       "\xCE\xB2");
-    entityMap.insert("gamma",      "\xCE\xB3");
-    entityMap.insert("delta",      "\xCE\xB4");
-    entityMap.insert("epsilon",    "\xCE\xB5");
-    entityMap.insert("zeta",       "\xCE\xB6");
-    entityMap.insert("eta",        "\xCE\xB7");
-    entityMap.insert("theta",      "\xCE\xB8");
-    entityMap.insert("iota",       "\xCE\xB9");
-    entityMap.insert("kappa",      "\xCE\xBA");
-    entityMap.insert("lambda",     "\xCE\xBB");
-    entityMap.insert("mu",         "\xCE\xBC");
-    entityMap.insert("nu",         "\xCE\xBD");
-    entityMap.insert("xi",         "\xCE\xBE");
-    entityMap.insert("pi",         "\xCF\x80");
-    entityMap.insert("rho",        "\xCF\x81");
-    entityMap.insert("sigma",      "\xCF\x83");
-    entityMap.insert("tau",        "\xCF\x84");
-    entityMap.insert("upsilon",    "\xCF\x85");
-    entityMap.insert("phi",        "\xCF\x86");
-    entityMap.insert("chi",        "\xCF\x87");
-    entityMap.insert("psi",        "\xCF\x88");
-    entityMap.insert("omega",      "\xCF\x89");
-    entityMap.insert("sigmaf",     "\xCF\x82");
-    entityMap.insert("sect",       "\xC2\xA7");
-    entityMap.insert("deg",        "\xC2\xB0");
-    entityMap.insert("prime",      "\xE2\x80\xB2");
-    entityMap.insert("Prime",      "\xE2\x80\xB3");
-    entityMap.insert("infin",      "\xE2\x88\x9E");
-    entityMap.insert("empty",      "\xE2\x88\x85");
-    entityMap.insert("plusmn",     "\xC2\xB1");
-    entityMap.insert("times",      "\xC3\x97");
-    entityMap.insert("minus",      "\xE2\x88\x92");
-    entityMap.insert("sdot",       "\xE2\x8B\x85");
-    entityMap.insert("part",       "\xE2\x88\x82");
-    entityMap.insert("nabla",      "\xE2\x88\x87");
-    entityMap.insert("radic",      "\xE2\x88\x9A");
-    entityMap.insert("perp",       "\xE2\x8A\xA5");
-    entityMap.insert("sum",        "\xE2\x88\x91");
-    entityMap.insert("int",        "\xE2\x88\xAB");
-    entityMap.insert("prod",       "\xE2\x88\x8F");
-    entityMap.insert("sim",        "\xE2\x88\xBC");
-    entityMap.insert("asymp",      "\xE2\x89\x88");
-    entityMap.insert("ne",         "\xE2\x89\xA0");
-    entityMap.insert("equiv",      "\xE2\x89\xA1");
-    entityMap.insert("prop",       "\xE2\x88\x9D");
-    entityMap.insert("le",         "\xE2\x89\xA4");
-    entityMap.insert("ge",         "\xE2\x89\xA5");
-    entityMap.insert("larr",       "\xE2\x86\x90");
-    entityMap.insert("rarr",       "\xE2\x86\x92");
-    entityMap.insert("isin",       "\xE2\x88\x88");
-    entityMap.insert("notin",      "\xE2\x88\x89");
-    entityMap.insert("lceil",      "\xE2\x8C\x88");
-    entityMap.insert("rceil",      "\xE2\x8C\x89");
-    entityMap.insert("lfloor",     "\xE2\x8C\x8A");
-    entityMap.insert("rfloor",     "\xE2\x8C\x8B");
+    validate_html_entities();
+    int num_standard_symbols = get_num_standard_symbols();
+    for (int i = 0; i < num_standard_symbols; i++)
+    {
+      entityMap.insert(get_symbol_item((DocSymbol::SymType)i), get_symbol_UTF8((DocSymbol::SymType)i));
+    }
     init=FALSE;
   }
 
@@ -8338,4 +8212,446 @@ void convertProtectionLevel(
   }
   //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
   //    inListType,inProt,*outListType1,*outListType2);
+}
+
+//! Number of doxygen commands mapped as if it were HTML entities
+static const int number_html_mapped_cmds = 11;
+
+//! @brief Structure defining all HTML4 entities, doxygen extensions and doxygen commands representing special symbols.
+//! @details In case an entity does not exist a NULL is given for the entity. The first column contains the symbolic code
+//!          for the entity, see also doxparser.h The second column contains the name of the enitity (without the starting \& and
+//!          ending ;)
+static struct html_ent
+{
+  DocSymbol::SymType symb;
+  const char *item;
+  const char *UTF8;
+  const char *html;
+  const char *print;
+  const char *text;
+  const char *xml;
+  const char *docbook;
+  const char *latex;
+  const char *man;
+  const char *rtf;
+  DocSymbol::PerlSymb perl;
+} html_entities[] = 
+{
+  // HTML4 entities
+  {DocSymbol::Sym_nbsp, "nbsp", "\xc2\xa0", "&#160;", "&nbsp;", "&nbsp;", "<nonbreakablespace/>", "&#160;", "~", " ", "\\~", {" ",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_iexcl, "iexcl", "\xc2\xa1", "&iexcl;", "&iexcl;", "&iexcl;", "<iexcl/>", "&#161;", "!`", NULL, "\\'A1", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_cent, "cent", "\xc2\xa2", "&cent;", "&cent;", "&cent;", "<cent/>", "&#162;", "\\textcent{}", NULL, "\\'A2", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_pound, "pound", "\xc2\xa3", "&pound;", "&pound;", "&pound;", "<pound/>", "&#163;", "{$\\pounds$}", NULL, "\\'A3", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_curren, "curren", "\xc2\xa4", "&curren;", "&curren;", "&curren;", "<curren/>", "&#164;", "\\textcurrency{}", NULL, "\\'A4", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_yen, "yen", "\xc2\xa5", "&yen;", "&yen;", "&yen;", "<yen/>", "&#165;", "{$\\yen$}", NULL, "\\'A5", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_brvbar, "brvbar", "\xc2\xa6", "&brvbar;", "&brvbar;", "&brvbar;", "<brvbar/>", "&#166;", "\\textbrokenbar{}", NULL, "\\'A6", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_sect, "sect", "\xc2\xa7", "&sect;", "&sect;", "&sect;", "<sect/>", "<simplesect/>", "{$\\S$}", NULL, "\\'A7", {"sect",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_uml, "uml", "\xc2\xa8", "&uml;", "&uml;", "&uml;", "<umlaut/>", "&#168;", "\\textasciidieresis{}", " \\*(4", "\\'A8", {" ",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_copy, "copy", "\xc2\xa9", "&copy;", "&copy;", "&copy;", "<copy/>", "&#169;", "\\copyright{}", "(C)", "\\'A9", {"copyright",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_ordf, "ordf", "\xc2\xaa", "&ordf;", "&ordf;", "&ordf;", "<ordf/>", "&#170;", "\\textordfeminine{}", NULL, "\\'AA", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_laquo, "laquo", "\xc2\xab", "&laquo;", "&laquo;", "&laquo;", "<laquo/>", "&#171;", "\\guillemotleft{}", NULL, "\\'AB", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_not, "not", "\xc2\xac", "&not;", "&not;", "&not;", "<not/>", "&#172;", "\\textlnot", NULL, "\\'AC", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_shy, "shy", "\xc2\xad", "&shy;", "&shy;", "&shy;", "<shy/>", "&#173;", "{$\\-$}", NULL, "\\-", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_reg, "reg", "\xc2\xae", "&reg;", "&reg;", "&reg;", "<registered/>", "&#174;", "\\textregistered{}", "(R)", "\\'AE", {"registered",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_macr, "macr", "\xc2\xaf", "&macr;", "&macr;", "&macr;", "<macr/>", "&#175;", "\\={}", NULL, "\\'AF ", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_deg, "deg", "\xc2\xb0", "&deg;", "&deg;", "&deg;", "<deg/>", "&#176;", "\\textdegree", NULL, "\\'B0", {"deg",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_plusmn, "plusmn", "\xc2\xb1", "&plusmn;", "&plusmn;", "&plusmn;", "<plusmn/>", "&#177;", "{$\\pm$}", NULL, "\\'B1", {"+/-",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_sup2, "sup2", "\xc2\xb2", "&sup2;", "&sup2;", "&sup2;", "<sup2/>", "&#178;", "\\texttwosuperior{}", NULL, "\\'B2", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_sup3, "sup3", "\xc2\xb3", "&sup3;", "&sup3;", "&sup3;", "<sup3/>", "&#179;", "\\textthreesuperior{}", NULL, "\\'B3", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_acute, "acute", "\xc2\xb4", "&acute;", "&acute;", "&acute;", "<acute/>", "&#180;", "\\'{}", NULL, "\\'B4", {" ",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_micro, "micro", "\xc2\xb5", "&micro;", "&micro;", "&micro;", "<micro/>", "&#181;", "{$\\mu$}", NULL, "\\'B5", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_para, "para", "\xc2\xb6", "&para;", "&para;", "&para;", "<para/>", "&#182;", "{$\\P$}", NULL, "\\'B6", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_middot, "middot", "\xc2\xb7", "&middot;", "&middot;", "&middot;", "<middot/>", "&#183;", "\\textperiodcentered{}", NULL, "\\'B7", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_cedil, "cedil", "\xc2\xb8", "&cedil;", "&cedil;", "&cedil;", "<cedil/>", "&#184;", "\\c{}", " \\*,", "\\'B8", {" ",DocSymbol::Perl_cedilla}},
+  {DocSymbol::Sym_sup1, "sup1", "\xc2\xb9", "&sup1;", "&sup1;", "&sup1;", "<sup1/>", "&#185;", "\\textonesuperior{}", NULL, "\\'B9", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_ordm, "ordm", "\xc2\xba", "&ordm;", "&ordm;", "&ordm;", "<ordm/>", "&#186;", "\\textordmasculine{}", NULL, "\\'BA", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_raquo, "raquo", "\xc2\xbb", "&raquo;", "&raquo;", "&raquo;", "<raquo/>", "&#187;", "\\guillemotright{}", NULL, "\\'BB", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_frac14, "frac14", "\xc2\xbc", "&frac14;", "&frac14;", "&frac14;", "<frac14/>", "&#188;", "{$\\frac14$}", "1/4", "\\'BC", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_frac12, "frac12", "\xc2\xbd", "&frac12;", "&frac12;", "&frac12;", "<frac12/>", "&#189;", "{$\\frac12$}", "1/2", "\\'BD", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_frac34, "frac34", "\xc2\xbe", "&frac34;", "&frac34;", "&frac34;", "<frac34/>", "&#190;", "{$\\frac34$}", "3/4", "\\'BE", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_iquest, "iquest", "\xc2\xbf", "&iquest;", "&iquest;", "&iquest;", "<iquest/>", "&#191;", "?`", NULL, "\\'BF", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_Agrave, "Agrave", "\xc3\x80", "&Agrave;", "&Agrave;", "&Agrave;", "<Agrave/>", "&#192;", "\\`{A}", "A\\*:", "\\'C0", {"A",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_Aacute, "Aacute", "\xc3\x81", "&Aacute;", "&Aacute;", "&Aacute;", "<Aacute/>", "&#193;", "\\'{A}", "A\\*(`", "\\'C1", {"A",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_Acirc, "Acirc", "\xc3\x82", "&Acirc;", "&Acirc;", "&Acirc;", "<Acirc/>", "&#194;", "\\^{A}", "A\\*^", "\\'C2", {"A",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_Atilde, "Atilde", "\xc3\x83", "&Atilde;", "&Atilde;", "&Atilde;", "<Atilde/>", "&#195;", "\\~{A}", "A\\*~", "\\'C3", {"A",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_Auml, "Auml", "\xc3\x84", "&Auml;", "&Auml;", "&Auml;", "<Aumlaut/>", "&#196;", "\\\"{A}", "A\\*(4", "\\'C4", {"A",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_Aring, "Aring", "\xc3\x85", "&Aring;", "&Aring;", "&Aring;", "<Aring/>", "&#197;", "\\AA", "A\\*o", "\\'C5", {"A",DocSymbol::Perl_ring}},
+  {DocSymbol::Sym_AElig, "AElig", "\xc3\x86", "&AElig;", "&AElig;", "&AElig;", "<AElig/>", "&#198;", "{\\AE}", NULL, "\\'C6", {"AElig",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Ccedil, "Ccedil", "\xc3\x87", "&Ccedil;", "&Ccedil;", "&Ccedil;", "<Ccedil/>", "&#199;", "\\c{C}", "C\\*,", "\\'C7", {"C",DocSymbol::Perl_cedilla}},
+  {DocSymbol::Sym_Egrave, "Egrave", "\xc3\x88", "&Egrave;", "&Egrave;", "&Egrave;", "<Egrave/>", "&#200;", "\\`{E}", "E\\*:", "\\'C8", {"E",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_Eacute, "Eacute", "\xc3\x89", "&Eacute;", "&Eacute;", "&Eacute;", "<Eacute/>", "&#201;", "\\'{E}", "E\\*(`", "\\'C9", {"E",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_Ecirc, "Ecirc", "\xc3\x8a", "&Ecirc;", "&Ecirc;", "&Ecirc;", "<Ecirc/>", "&#202;", "\\^{E}", "E\\*^", "\\'CA", {"E",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_Euml, "Euml", "\xc3\x8b", "&Euml;", "&Euml;", "&Euml;", "<Eumlaut/>", "&#203;", "\\\"{E}", "E\\*(4", "\\'CB", {"E",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_Igrave, "Igrave", "\xc3\x8c", "&Igrave;", "&Igrave;", "&Igrave;", "<Igrave/>", "&#204;", "\\`{I}", "I\\*:", "\\'CC", {"I",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_Iacute, "Iacute", "\xc3\x8d", "&Iacute;", "&Iacute;", "&Iacute;", "<Iacute/>", "&#205;", "\\'{I}", "I\\*(`", "\\'CD", {"I",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_Icirc, "Icirc", "\xc3\x8e", "&Icirc;", "&Icirc;", "&Icirc;", "<Icirc/>", "&#206;", "\\^{I}", "I\\*^", "\\'CE", {"I",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_Iuml, "Iuml", "\xc3\x8f", "&Iuml;", "&Iuml;", "&Iuml;", "<Iumlaut/>", "&#207;", "\\\"{I}", "I\\*(4", "\\'CF", {"I",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_ETH, "ETH", "\xc3\x90", "&ETH;", "&ETH;", "&ETH;", "<ETH/>", "&#208;", "\\DH", NULL, "\\'D0", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_Ntilde, "Ntilde", "\xc3\x91", "&Ntilde;", "&Ntilde;", "&Ntilde;", "<Ntilde/>", "&#209;", "\\~{N}", "N\\*~", "\\'D1", {"N",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_Ograve, "Ograve", "\xc3\x92", "&Ograve;", "&Ograve;", "&Ograve;", "<Ograve/>", "&#210;", "\\`{O}", "O\\*:", "\\'D2", {"O",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_Oacute, "Oacute", "\xc3\x93", "&Oacute;", "&Oacute;", "&Oacute;", "<Oacute/>", "&#211;", "\\'{O}", "O\\*(`", "\\'D3", {"O",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_Ocirc, "Ocirc", "\xc3\x94", "&Ocirc;", "&Ocirc;", "&Ocirc;", "<Ocirc/>", "&#212;", "\\^{O}", "O\\*^", "\\'D4", {"O",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_Otilde, "Otilde", "\xc3\x95", "&Otilde;", "&Otilde;", "&Otilde;", "<Otilde/>", "&#213;", "\\~{O}", "O\\*~", "\\'D5", {"O",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_Ouml, "Ouml", "\xc3\x96", "&Ouml;", "&Ouml;", "&Ouml;", "<Oumlaut/>", "&#214;", "\\\"{O}", "O\\*(4", "\\'D6", {"O",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_times, "times", "\xc3\x97", "&times;", "&times;", "&times;", "<imes/>", "&#215;", "{$\\times$}", NULL, "\\'D7", {"*",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Oslash, "Oslash", "\xc3\x98", "&Oslash;", "&Oslash;", "&Oslash;", "<Oslash/>", "&#216;", "{\\O}", "O\x08/", "\\'D8", {"O",DocSymbol::Perl_slash}},
+  {DocSymbol::Sym_Ugrave, "Ugrave", "\xc3\x99", "&Ugrave;", "&Ugrave;", "&Ugrave;", "<Ugrave/>", "&#217;", "\\`{U}", "U\\*:", "\\'D9", {"U",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_Uacute, "Uacute", "\xc3\x9a", "&Uacute;", "&Uacute;", "&Uacute;", "<Uacute/>", "&#218;", "\\'{U}", "U\\*(`", "\\'DA", {"U",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_Ucirc, "Ucirc", "\xc3\x9b", "&Ucirc;", "&Ucirc;", "&Ucirc;", "<Ucirc/>", "&#219;", "\\^{U}", "U\\*^", "\\'DB", {"U",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_Uuml, "Uuml", "\xc3\x9c", "&Uuml;", "&Uuml;", "&Uuml;", "<Uumlaut/>", "&#220;", "\\\"{U}", "U\\*(4", "\\'DC", {"U",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_Yacute, "Yacute", "\xc3\x9d", "&Yacute;", "&Yacute;", "&Yacute;", "<Yacute/>", "&#221;", "\\'{Y}", "Y\\*(`", "\\'DD", {"Y",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_THORN, "THORN", "\xc3\x9e", "&THORN;", "&THORN;", "&THORN;", "<THORN/>", "&#222;", "\\TH", NULL, "\\'DE", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_szlig, "szlig", "\xc3\x9f", "&szlig;", "&szlig;", "&szlig;", "<szlig/>", "&#223;", "{\\ss}", "s\\*:", "\\'DF", {"szlig",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_agrave, "agrave", "\xc3\xa0", "&agrave;", "&agrave;", "&agrave;", "<agrave/>", "&#224;", "\\`{a}", "a\\*:", "\\'E0", {"a",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_aacute, "aacute", "\xc3\xa1", "&aacute;", "&aacute;", "&aacute;", "<aacute/>", "&#225;", "\\'{a}", "a\\*(`", "\\'E1", {"a",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_acirc, "acirc", "\xc3\xa2", "&acirc;", "&acirc;", "&acirc;", "<acirc/>", "&#226;", "\\^{a}", "a\\*^", "\\'E2", {"a",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_atilde, "atilde", "\xc3\xa3", "&atilde;", "&atilde;", "&atilde;", "<atilde/>", "&#227;", "\\~{a}", "a\\*~", "\\'E3", {"a",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_auml, "auml", "\xc3\xa4", "&auml;", "&auml;", "&auml;", "<aumlaut/>", "&#228;", "\\\"{a}", "a\\*(4", "\\'E4", {"a",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_aring, "aring", "\xc3\xa5", "&aring;", "&aring;", "&aring;", "<aring/>", "&#229;", "\\aa", "a\\*o", "\\'E5", {"a",DocSymbol::Perl_ring}},
+  {DocSymbol::Sym_aelig, "aelig", "\xc3\xa6", "&aelig;", "&aelig;", "&aelig;", "<aelig/>", "&#230;", "{\\ae}", NULL, "\\'E6", {"aelig",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_ccedil, "ccedil", "\xc3\xa7", "&ccedil;", "&ccedil;", "&ccedil;", "<ccedil/>", "&#231;", "\\c{c}", "c\\*,", "\\'E7", {"c",DocSymbol::Perl_cedilla}},
+  {DocSymbol::Sym_egrave, "egrave", "\xc3\xa8", "&egrave;", "&egrave;", "&egrave;", "<egrave/>", "&#232;", "\\`{e}", "e\\*:", "\\'E8", {"e",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_eacute, "eacute", "\xc3\xa9", "&eacute;", "&eacute;", "&eacute;", "<eacute/>", "&#233;", "\\'{e}", "e\\*(`", "\\'E9", {"e",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_ecirc, "ecirc", "\xc3\xaa", "&ecirc;", "&ecirc;", "&ecirc;", "<ecirc/>", "&#234;", "\\^{e}", "e\\*^", "\\'EA", {"e",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_euml, "euml", "\xc3\xab", "&euml;", "&euml;", "&euml;", "<eumlaut/>", "&#235;", "\\\"{e}", "e\\*(4", "\\'EB", {"e",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_igrave, "igrave", "\xc3\xac", "&igrave;", "&igrave;", "&igrave;", "<igrave/>", "&#236;", "\\`{\\i}", "i\\*:", "\\'EC", {"i",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_iacute, "iacute", "\xc3\xad", "&iacute;", "&iacute;", "&iacute;", "<iacute/>", "&#237;", "\\'{\\i}", "i\\*(`", "\\'ED", {"i",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_icirc, "icirc", "\xc3\xae", "&icirc;", "&icirc;", "&icirc;", "<icirc/>", "&#238;", "\\^{\\i}", "i\\*^", "\\'EE", {"i",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_iuml, "iuml", "\xc3\xaf", "&iuml;", "&iuml;", "&iuml;", "<iumlaut/>", "&#239;", "\\\"{\\i}", "i\\*(4", "\\'EF", {"i",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_eth, "eth", "\xc3\xb0", "&eth;", "&eth;", "&eth;", "<eth/>", "&#240;", "\\dh", NULL, "\\'F0", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_ntilde, "ntilde", "\xc3\xb1", "&ntilde;", "&ntilde;", "&ntilde;", "<ntilde/>", "&#241;", "\\~{n}", "n\\*~", "\\'F1", {"n",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_ograve, "ograve", "\xc3\xb2", "&ograve;", "&ograve;", "&ograve;", "<ograve/>", "&#242;", "\\`{o}", "o\\*:", "\\'F2", {"o",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_oacute, "oacute", "\xc3\xb3", "&oacute;", "&oacute;", "&oacute;", "<oacute/>", "&#243;", "\\'{o}", "o\\*(`", "\\'F3", {"o",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_ocirc, "ocirc", "\xc3\xb4", "&ocirc;", "&ocirc;", "&ocirc;", "<ocirc/>", "&#244;", "\\^{o}", "o\\*^", "\\'F4", {"o",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_otilde, "otilde", "\xc3\xb5", "&otilde;", "&otilde;", "&otilde;", "<otilde/>", "&#245;", "\\~{o}", "o\\*~", "\\'F5", {"o",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_ouml, "ouml", "\xc3\xb6", "&ouml;", "&ouml;", "&ouml;", "<oumlaut/>", "&#246;", "\\\"{o}", "o\\*(4", "\\'F6", {"o",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_divide, "divide", "\xc3\xb7", "&divide;", "&divide;", "&divide;", "<divide/>", "&#247;", "{$\\div$}", NULL, "\\'F7", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_oslash, "oslash", "\xc3\xb8", "&oslash;", "&oslash;", "&oslash;", "<oslash/>", "&#248;", "{\\o}", "o\x08/", "\\'F8", {"o",DocSymbol::Perl_slash}},
+  {DocSymbol::Sym_ugrave, "ugrave", "\xc3\xb9", "&ugrave;", "&ugrave;", "&ugrave;", "<ugrave/>", "&#249;", "\\`{u}", "u\\*:", "\\'F9", {"u",DocSymbol::Perl_grave}},
+  {DocSymbol::Sym_uacute, "uacute", "\xc3\xba", "&uacute;", "&uacute;", "&uacute;", "<uacute/>", "&#250;", "\\'{u}", "u\\*(`", "\\'FA", {"u",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_ucirc, "ucirc", "\xc3\xbb", "&ucirc;", "&ucirc;", "&ucirc;", "<ucirc/>", "&#251;", "\\^{u}", "u\\*^", "\\'FB", {"u",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_uuml, "uuml", "\xc3\xbc", "&uuml;", "&uuml;", "&uuml;", "<uumlaut/>", "&#252;", "\\\"{u}", "u\\*(4", "\\'FC", {"u",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_yacute, "yacute", "\xc3\xbd", "&yacute;", "&yacute;", "&yacute;", "<yacute/>", "&#253;", "\\'{y}", "y\\*(`", "\\'FD", {"y",DocSymbol::Perl_acute}},
+  {DocSymbol::Sym_thorn, "thorn", "\xc3\xbe", "&thorn;", "&thorn;", "&thorn;", "<thorn/>", "&#254;", "\\th", NULL, "\\'FE", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_yuml, "yuml", "\xc3\xbf", "&yuml;", "&yuml;", "&yuml;", "<yumlaut/>", "&#255;", "\\\"{y}", "y\\*(4", "\\'FF", {"y",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_fnof, "fnof", "\xc6\x92", "&fnof;", "&fnof;", "&fnof;", "<fnof/>", "&#402;", "\\textflorin", NULL, "\\'83", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_Alpha, "Alpha", "\xce\x91", "&Alpha;", "&Alpha;", "&Alpha;", "<Alpha/>", "&#913;", "A", NULL, "\\u0913?", {"A",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Beta, "Beta", "\xce\x92", "&Beta;", "&Beta;", "&Beta;", "<Beta/>", "&#914;", "B", NULL, "\\u0914?", {"B",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Gamma, "Gamma", "\xce\x93", "&Gamma;", "&Gamma;", "&Gamma;", "<Gamma/>", "&#915;", "{$\\Gamma$}", NULL, "\\u0915?", {"Gamma",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Delta, "Delta", "\xce\x94", "&Delta;", "&Delta;", "&Delta;", "<Delta/>", "&#916;", "{$\\Delta$}", NULL, "\\u0916?", {"Delta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Epsilon, "Epsilon", "\xce\x95", "&Epsilon;", "&Epsilon;", "&Epsilon;", "<Epsilon/>", "&#917;", "E", NULL, "\\u0917?", {"E",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Zeta, "Zeta", "\xce\x96", "&Zeta;", "&Zeta;", "&Zeta;", "<Zeta/>", "&#918;", "Z", NULL, "\\u0918?", {"Z",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Eta, "Eta", "\xce\x97", "&Eta;", "&Eta;", "&Eta;", "<Eta/>", "&#919;", "H", NULL, "\\u0919?", {"H",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Theta, "Theta", "\xce\x98", "&Theta;", "&Theta;", "&Theta;", "<Theta/>", "&#920;", "{$\\Theta$}", NULL, "\\u0920?", {"Theta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Iota, "Iota", "\xce\x99", "&Iota;", "&Iota;", "&Iota;", "<Iota/>", "&#921;", "I", NULL, "\\u0921?", {"I",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Kappa, "Kappa", "\xce\x9a", "&Kappa;", "&Kappa;", "&Kappa;", "<Kappa/>", "&#922;", "K", NULL, "\\u0922?", {"K",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Lambda, "Lambda", "\xce\x9b", "&Lambda;", "&Lambda;", "&Lambda;", "<Lambda/>", "&#923;", "{$\\Lambda$}", NULL, "\\u0923?", {"Lambda",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Mu, "Mu", "\xce\x9c", "&Mu;", "&Mu;", "&Mu;", "<Mu/>", "&#924;", "M", NULL, "\\u0924?", {"M",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Nu, "Nu", "\xce\x9d", "&Nu;", "&Nu;", "&Nu;", "<Nu/>", "&#925;", "N", NULL, "\\u0925?", {"N",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Xi, "Xi", "\xce\x9e", "&Xi;", "&Xi;", "&Xi;", "<Xi/>", "&#926;", "{$\\Xi$}", NULL, "\\u0926?", {"Xi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Omicron, "Omicron", "\xce\x9f", "&Omicron;", "&Omicron;", "&Omicron;", "<Omicron/>", "&#927;", "O", NULL, "\\u0927?", {"O",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Pi, "Pi", "\xce\xa0", "&Pi;", "&Pi;", "&Pi;", "<Pi/>", "&#928;", "{$\\Pi$}", NULL, "\\u0928?", {"Pi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Rho, "Rho", "\xce\xa1", "&Rho;", "&Rho;", "&Rho;", "<Rho/>", "&#929;", "P", NULL, "\\u0929?", {"P",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Sigma, "Sigma", "\xce\xa3", "&Sigma;", "&Sigma;", "&Sigma;", "<Sigma/>", "&#931;", "{$\\Sigma$}", NULL, "\\u0931?", {"Sigma",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Tau, "Tau", "\xce\xa4", "&Tau;", "&Tau;", "&Tau;", "<Tau/>", "&#932;", "T", NULL, "\\u0932?", {"T",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Upsilon, "Upsilon", "\xce\xa5", "&Upsilon;", "&Upsilon;", "&Upsilon;", "<Upsilon/>", "&#933;", "{$\\Upsilon$}", NULL, "\\u0933?", {"Upsilon",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Phi, "Phi", "\xce\xa6", "&Phi;", "&Phi;", "&Phi;", "<Phi/>", "&#934;", "{$\\Phi$}", NULL, "\\u0934?", {"Phi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Chi, "Chi", "\xce\xa7", "&Chi;", "&Chi;", "&Chi;", "<Chi/>", "&#935;", "X", NULL, "\\u0935?", {"X",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Psi, "Psi", "\xce\xa8", "&Psi;", "&Psi;", "&Psi;", "<Psi/>", "&#936;", "{$\\Psi$}", NULL, "\\u0936?", {"Psi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_Omega, "Omega", "\xce\xa9", "&Omega;", "&Omega;", "&Omega;", "<Omega/>", "&#937;", "{$\\Omega$}", NULL, "\\u0937?", {"Omega",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_alpha, "alpha", "\xce\xb1", "&alpha;", "&alpha;", "&alpha;", "<alpha/>", "&#945;", "{$\\alpha$}", NULL, "\\u0945?", {"alpha",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_beta, "beta", "\xce\xb2", "&beta;", "&beta;", "&beta;", "<beta/>", "&#946;", "{$\\beta$}", NULL, "\\u0946?", {"beta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_gamma, "gamma", "\xce\xb3", "&gamma;", "&gamma;", "&gamma;", "<gamma/>", "&#947;", "{$\\gamma$}", NULL, "\\u0947?", {"gamma",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_delta, "delta", "\xce\xb4", "&delta;", "&delta;", "&delta;", "<delta/>", "&#948;", "{$\\delta$}", NULL, "\\u0948?", {"delta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_epsilon, "epsilon", "\xce\xb5", "&epsilon;", "&epsilon;", "&epsilon;", "<epsilon/>", "&#949;", "{$\\varepsilon$}", NULL, "\\u0949?", {"epsilon",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_zeta, "zeta", "\xce\xb6", "&zeta;", "&zeta;", "&zeta;", "<zeta/>", "&#950;", "{$\\zeta$}", NULL, "\\u0950?", {"zeta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_eta, "eta", "\xce\xb7", "&eta;", "&eta;", "&eta;", "<eta/>", "&#951;", "{$\\eta$}", NULL, "\\u0951?", {"eta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_theta, "theta", "\xce\xb8", "&theta;", "&theta;", "&theta;", "<theta/>", "&#952;", "{$\\theta$}", NULL, "\\u0952?", {"theta",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_iota, "iota", "\xce\xb9", "&iota;", "&iota;", "&iota;", "<iota/>", "&#953;", "{$\\iota$}", NULL, "\\u0953?", {"iota",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_kappa, "kappa", "\xce\xba", "&kappa;", "&kappa;", "&kappa;", "<kappa/>", "&#954;", "{$\\kappa$}", NULL, "\\u0954?", {"kappa",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_lambda, "lambda", "\xce\xbb", "&lambda;", "&lambda;", "&lambda;", "<lambda/>", "&#955;", "{$\\lambda$}", NULL, "\\u0955?", {"lambda",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_mu, "mu", "\xce\xbc", "&mu;", "&mu;", "&mu;", "<mu/>", "&#956;", "{$\\mu$}", NULL, "\\u0956?", {"mu",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_nu, "nu", "\xce\xbd", "&nu;", "&nu;", "&nu;", "<nu/>", "&#957;", "{$\\nu$}", NULL, "\\u0957?", {"nu",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_xi, "xi", "\xce\xbe", "&xi;", "&xi;", "&xi;", "<xi/>", "&#958;", "{$\\xi$}", NULL, "\\u0958?", {"xi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_omicron, "omicron", "\xce\xbf", "&omicron;", "&omicron;", "&omicron;", "<omicron/>", "&#959;", "{$\\omicron$}", NULL, "\\u0959?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_pi, "pi", "\xcf\x80", "&pi;", "&pi;", "&pi;", "<pi/>", "&#960;", "{$\\pi$}", NULL, "\\u0960?", {"pi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_rho, "rho", "\xcf\x81", "&rho;", "&rho;", "&rho;", "<rho/>", "&#961;", "{$\\rho$}", NULL, "\\u0961?", {"rho",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_sigmaf, "sigmaf", "\xcf\x82", "&sigmaf;", "&sigmaf;", "&sigmaf;", "<sigmaf/>", "&#962;", "{$\\varsigma$}", NULL, "\\u0962?", {"sigma",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_sigma, "sigma", "\xcf\x83", "&sigma;", "&sigma;", "&sigma;", "<sigma/>", "&#963;", "{$\\sigma$}", NULL, "\\u0963?", {"sigma",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_tau, "tau", "\xcf\x84", "&tau;", "&tau;", "&tau;", "<tau/>", "&#964;", "{$\\tau$}", NULL, "\\u0964?", {"tau",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_upsilon, "upsilon", "\xcf\x85", "&upsilon;", "&upsilon;", "&upsilon;", "<upsilon/>", "&#965;", "{$\\upsilon$}", NULL, "\\u0965?", {"upsilon",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_phi, "phi", "\xcf\x86", "&phi;", "&phi;", "&phi;", "<phi/>", "&#966;", "{$\\varphi$}", NULL, "\\u0966?", {"phi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_chi, "chi", "\xcf\x87", "&chi;", "&chi;", "&chi;", "<chi/>", "&#967;", "{$\\chi$}", NULL, "\\u0967?", {"chi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_psi, "psi", "\xcf\x88", "&psi;", "&psi;", "&psi;", "<psi/>", "&#968;", "{$\\psi$}", NULL, "\\u0968?", {"psi",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_omega, "omega", "\xcf\x89", "&omega;", "&omega;", "&omega;", "<omega/>", "&#969;", "{$\\omega$}", NULL, "\\u0969?", {"omega",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_thetasym, "thetasym", "\xcf\x91", "&thetasym;", "&thetasym;", "&thetasym;", "<thetasym/>", "&#977;", "{$\\vartheta$}", NULL, "\\u977?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_upsih, "upsih", "\xcf\x92", "&upsih;", "&upsih;", "&upsih;", "<upsih/>", "&#978;", "{$\\Upsilon$}", NULL, "\\u978?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_piv, "piv", "\xcf\x96", "&piv;", "&piv;", "&piv;", "<piv/>", "&#982;", "{$\\varpi$}", NULL, "\\u982?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_bull, "bull", "\xe2\x80\xa2", "&bull;", "&bull;", "&bull;", "<bull/>", "&#8226;", "\\textbullet{}", NULL, "\\'95", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_hellip, "hellip", "\xe2\x80\xa6", "&hellip;", "&hellip;", "&hellip;", "<hellip/>", "&#8230;", "{$\\cdots$}", NULL, "\\'85", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_prime, "prime", "\xe2\x80\xb2", "&prime;", "&prime;", "&prime;", "<prime/>", "&#8242;", "'", NULL, "\\u8242?", {"\\\'",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_Prime, "Prime", "\xe2\x80\xb3", "&Prime;", "&Prime;", "&Prime;", "<Prime/>", "&#8243;", "''", NULL, "\\u8243?", {"\"",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_oline, "oline", "\xe2\x80\xbe", "&oline;", "&oline;", "&oline;", "<oline/>", "&#8254;", "{$\\overline{\\,}$}", NULL, "\\u8254?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_frasl, "frasl", "\xe2\x81\x84", "&frasl;", "&frasl;", "&frasl;", "<frasl/>", "&#8260;", "/", NULL, "\\u8260?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_weierp, "weierp", "\xe2\x84\x98", "&weierp;", "&weierp;", "&weierp;", "<weierp/>", "&#8472;", "{$\\wp$}", NULL, "\\u8472?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_image, "image", "\xe2\x84\x91", "&image;", "&image;", "&image;", "<image/>", "&#8465;", "{$\\Im$}", NULL, "\\u8465?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_real, "real", "\xe2\x84\x9c", "&real;", "&real;", "&real;", "<real/>", "&#8476;", "{$\\Re$}", NULL, "\\u8476?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_trade, "trade", "\xe2\x84\xa2", "&trade;", "(TM)", "&tm;", "<trademark/>", "&#8482;", "\\texttrademark{}", "(TM)", "\\'99", {"trademark",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_alefsym, "alefsym", "\xe2\x85\xb5", "&alefsym;", "&alefsym;", "&alefsym;", "<alefsym/>", "&#8501;", "{$\\aleph$}", NULL, "\\u8501?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_larr, "larr", "\xe2\x86\x90", "&larr;", "&larr;", "&larr;", "<larr/>", "&#8592;", "{$\\leftarrow$}", NULL, "\\u8592?", {"<-",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_uarr, "uarr", "\xe2\x86\x91", "&uarr;", "&uarr;", "&uarr;", "<uarr/>", "&#8593;", "{$\\uparrow$}", NULL, "\\u8593?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_rarr, "rarr", "\xe2\x86\x92", "&rarr;", "&rarr;", "&rarr;", "<rarr/>", "&#8594;", "{$\\rightarrow$}", NULL, "\\u8594?", {"->",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_darr, "darr", "\xe2\x86\x93", "&darr;", "&darr;", "&darr;", "<darr/>", "&#8595;", "{$\\downarrow$}", NULL, "\\u8595?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_harr, "harr", "\xe2\x86\x94", "&harr;", "&harr;", "&harr;", "<harr/>", "&#8596;", "{$\\leftrightarrow$}", NULL, "\\u8596?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_crarr, "crarr", "\xe2\x86\xb5", "&crarr;", "&crarr;", "&crarr;", "<crarr/>", "&#8629;", "{$\\lrcorner$}" /* best I could find */, NULL, "\\u8629?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_lArr, "lArr", "\xe2\x87\x90", "&lArr;", "&lArr;", "&lArr;", "<lArr/>", "&#8656;", "{$\\Leftarrow$}", NULL, "\\u8656?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_uArr, "uArr", "\xe2\x87\x91", "&uArr;", "&uArr;", "&uArr;", "<uArr/>", "&#8657;", "{$\\Uparrow$}", NULL, "\\u8657?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_rArr, "rArr", "\xe2\x87\x92", "&rArr;", "&rArr;", "&rArr;", "<rArr/>", "&#8658;", "{$\\Rightarrow$}", NULL, "\\u8658?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_dArr, "dArr", "\xe2\x87\x93", "&dArr;", "&dArr;", "&dArr;", "<dArr/>", "&#8659;", "{$\\Downarrow$}", NULL, "\\u8659?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_hArr, "hArr", "\xe2\x87\x94", "&hArr;", "&hArr;", "&hArr;", "<hArr/>", "&#8660;", "{$\\Leftrightarrow$}", NULL, "\\u8660?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_forall, "forall", "\xe2\x88\x80", "&forall;", "&forall;", "&forall;", "<forall/>", "&#8704;", "{$\\forall$}", NULL, "\\u8704?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_part, "part", "\xe2\x88\x82", "&part;", "&part;", "&part;", "<part/>", "&#8706;", "{$\\partial$}", NULL, "\\u8706?", {"partial",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_exist, "exist", "\xe2\x88\x83", "&exist;", "&exist;", "&exist;", "<exist/>", "&#8707;", "{$\\exists$}", NULL, "\\u8707?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_empty, "empty", "\xe2\x88\x85", "&empty;", "&empty;", "&empty;", "<empty/>", "&#8709;", "{$\\emptyset$}", NULL, "\\u8709?", {"empty",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_nabla, "nabla", "\xe2\x88\x87", "&nabla;", "&nabla;", "&nabla;", "<nabla/>", "&#8711;", "{$\\nabla$}", NULL, "\\u8711?", {"nabla",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_isin, "isin", "\xe2\x88\x88", "&isin;", "&isin;", "&isin;", "<isin/>", "&#8712;", "{$\\in$}", NULL, "\\u8712?", {"in",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_notin, "notin", "\xe2\x88\x89", "&notin;", "&notin;", "&notin;", "<notin/>", "&#8713;", "{$\\notin$}", NULL, "\\u8713?", {"notin",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_ni, "ni", "\xe2\x88\x8b", "&ni;", "&ni;", "&ni;", "<ni/>", "&#8715;", "{$\\ni$}", NULL, "\\u8715?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_prod, "prod", "\xe2\x88\x8f", "&prod;", "&prod;", "&prod;", "<prod/>", "&#8719;", "{$\\prod$}", NULL, "\\u8719?", {"prod",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_sum, "sum", "\xe2\x88\x91", "&sum;", "&sum;", "&sum;", "<sum/>", "&#8721;", "{$\\sum$}", NULL, "\\u8721?", {"sum",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_minus, "minus", "\xe2\x88\x92", "&minus;", "&minus;", "&minus;", "<minus/>", "&#8722;", "-", NULL, "\\u8722?", {"-",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_lowast, "lowast", "\xe2\x88\x97", "&lowast;", "&lowast;", "&lowast;", "<lowast/>", "&#8727;", "{$\\ast$}", NULL, "\\u8727?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_radic, "radic", "\xe2\x88\x9a", "&radic;", "&radic;", "&radic;", "<radic/>", "&#8730;", "{$\\surd$}", NULL, "\\u8730?", {"sqrt",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_prop, "prop", "\xe2\x88\x9d", "&prop;", "&prop;", "&prop;", "<prop/>", "&#8733;", "{$\\propto$}", NULL, "\\u8733?", {"propto",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_infin, "infin", "\xe2\x88\x9e", "&infin;", "&infin;", "&infin;", "<infin/>", "&#8734;", "{$\\infty$}", NULL, "\\u8734?", {"inf",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_ang, "ang", "\xe2\x88\xa0", "&ang;", "&ang;", "&ang;", "<ang/>", "&#8736;", "{$\\angle$}", NULL, "\\u8736?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_and, "and", "\xe2\x88\xa7", "&and;", "&and;", "&and;", "<and/>", "&#8743;", "{$\\wedge$}", NULL, "\\u8743?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_or, "or", "\xe2\x88\xa8", "&or;", "&or;", "&or;", "<or/>", "&#8744;", "{$\\vee$}", NULL, "\\u8744?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_cap, "cap", "\xe2\x88\xa9", "&cap;", "&cap;", "&cap;", "<cap/>", "&#8745;", "{$\\cap$}", NULL, "\\u8745?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_cup, "cup", "\xe2\x88\xaa", "&cup;", "&cup;", "&cup;", "<cup/>", "&#8746;", "{$\\cup$}", NULL, "\\u8746?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_int, "int", "\xe2\x88\xab", "&int;", "&int;", "&int;", "<int/>", "&#8747;", "{$\\int$}", NULL, "\\u8747?", {"int",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_there4, "there4", "\xe2\x88\xb4", "&there4;", "&there4;", "&there4;", "<there4/>", "&#8756;", "{$\\therefore$}", NULL, "\\u8756?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_sim, "sim", "\xe2\x88\xbc", "&sim;", "&sim;", "&sim;", "<sim/>", "&#8764;", "{$\\sim$}", NULL, "\\u8764?", {"~",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_cong, "cong", "\xe2\x89\x85", "&cong;", "&cong;", "&cong;", "<cong/>", "&#8773;", "{$\\cong$}", NULL, "\\u8773?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_asymp, "asymp", "\xe2\x89\x88", "&asymp;", "&asymp;", "&asymp;", "<asymp/>", "&#8776;", "{$\\approx$}", NULL, "\\u8776?", {"approx",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_ne, "ne", "\xe2\x89\xa0", "&ne;", "&ne;", "&ne;", "<ne/>", "&#8800;", "{$\\ne$}", NULL, "\\u8800?", {"!=",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_equiv, "equiv", "\xe2\x89\xa1", "&equiv;", "&equiv;", "&equiv;", "<equiv/>", "&#8801;", "{$\\equiv$}", NULL, "\\u8801?", {"equiv",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_le, "le", "\xe2\x89\xa4", "&le;", "&le;", "&le;", "<le/>", "&#8804;", "{$\\le$}", NULL, "\\u8804?", {"<=",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_ge, "ge", "\xe2\x89\xa5", "&ge;", "&ge;", "&ge;", "<ge/>", "&#8805;", "{$\\ge$}", NULL, "\\u8805?", {">=",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_sub, "sub", "\xe2\x8a\x82", "&sub;", "&sub;", "&sub;", "<sub/>", "&#8834;", "{$\\subset$}", NULL, "\\u8834?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_sup, "sup", "\xe2\x8a\x83", "&sup;", "&sup;", "&sup;", "<sup/>", "&#8835;", "{$\\supset$}", NULL, "\\u8835?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_nsub, "nsub", "\xe2\x8a\x84", "&nsub;", "&nsub;", "&nsub;", "<nsub/>", "&#8836;", "{$\\not\\subset$}", NULL, "\\u8836?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_sube, "sube", "\xe2\x8a\x86", "&sube;", "&sube;", "&sube;", "<sube/>", "&#8838;", "{$\\subseteq$}", NULL, "\\u8838?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_supe, "supe", "\xe2\x8a\x87", "&supe;", "&supe;", "&supe;", "<supe/>", "&#8839;", "{$\\supseteq$}", NULL, "\\u8839?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_oplus, "oplus", "\xe2\x8a\x95", "&oplus;", "&oplus;", "&oplus;", "<oplus/>", "&#8853;", "{$\\oplus$}", NULL, "\\u8853?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_otimes, "otimes", "\xe2\x8a\x97", "&otimes;", "&otimes;", "&otimes;", "<otimes/>", "&#8855;", "{$\\otimes$}", NULL, "\\u8855?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_perp, "perp", "\xe2\x8a\xa5", "&perp;", "&perp;", "&perp;", "<perp/>", "&#8869;", "{$\\perp$}", NULL, "\\u8869?", {"perp",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_sdot, "sdot", "\xe2\x8b\x85", "&sdot;", "&sdot;", "&sdot;", "<sdot/>", "&#8901;", "{$\\cdot$}", NULL, "\\u8901?", {".",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_lceil, "lceil", "\xe2\x8c\x88", "&lceil;", "&lceil;", "&lceil;", "<lceil/>", "&#8968;", "{$\\lceil$}", NULL, "\\u8968?", {"lceil",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_rceil, "rceil", "\xe2\x8c\x89", "&rceil;", "&rceil;", "&rceil;", "<rceil/>", "&#8969;", "{$\\rceil$}", NULL, "\\u8969?", {"rceil",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_lfloor, "lfloor", "\xe2\x8c\x8a", "&lfloor;", "&lfloor;", "&lfloor;", "<lfloor/>", "&#8970;", "{$\\lfloor$}", NULL, "\\u8970?", {"lfloor",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_rfloor, "rfloor", "\xe2\x8c\x8b", "&rfloor;", "&rfloor;", "&rfloor;", "<rfloor/>", "&#8971;", "{$\\rfloor$}", NULL, "\\u8971?", {"rfloor",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_lang, "lang", "\xe2\x8c\xa9", "&lang;", "&lang;", "&lang;", "<lang/>", "&#9001;", "{$\\langle$}", NULL, "\\u9001?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_rang, "rang", "\xe2\x8c\xaa", "&rang;", "&rang;", "&rang;", "<rang/>", "&#9002;", "{$\\rangle$}", NULL, "\\u9002?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_loz, "loz", "\xe2\x97\x8a", "&loz;", "&loz;", "&loz;", "<loz/>", "&#9674;", "{$\\lozenge$}", NULL, "\\u9674?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_spades, "spades", "\xe2\x99\xa0", "&spades;", "&spades;", "&spades;", "<spades/>", "&#9824;", "{$\\spadesuit$}", NULL, "\\u9824?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_clubs, "clubs", "\xe2\x99\xa3", "&clubs;", "&clubs;", "&clubs;", "<clubs/>", "&#9827;", "{$\\clubsuit$}", NULL, "\\u9827?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_hearts, "hearts", "\xe2\x99\xa5", "&hearts;", "&hearts;", "&hearts;", "<hearts/>", "&#9829;", "{$\\heartsuit$}", NULL, "\\u9829?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_diams, "diams", "\xe2\x99\xa6", "&diams;", "&diams;", "&diams;", "<diams/>", "&#9830;", "{$\\diamondsuit$}", NULL, "\\u9830?", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_quot, "quot", "\"", "\"", "\"", "\"", "\"", "&quot;", "\"", "\"", "\"", {"\"",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_amp, "amp", "&", "&amp;", "&", "&amp;", "&amp;", "&amp;", "\\&", "&", "&", {"&",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_lt, "lt", "<", "&lt;", "<", "&lt;", "&lt;", "&lt;", "<", "<", "<", {"<",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_gt, "gt", ">", "&gt;", ">", "&gt;", "&gt;", "&gt;", ">", ">", ">", {">",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_OElig, "OElig", "\xc5\x92", "&OElig;", "&OElig;", "&OElig;", "<OElig/>", "&#338;", "\\OE", NULL, "\\'8C", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_oelig, "oelig", "\xc5\x93", "&oelig;", "&oelig;", "&oelig;", "<oelig/>", "&#339;", "\\oe", NULL, "\\'9C", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_Scaron, "Scaron", "\xc5\xa0", "&Scaron;", "&Scaron;", "&Scaron;", "<Scaron/>", "&#352;", "\\v{S}", NULL, "\\'8A", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_scaron, "scaron", "\xc5\xa1", "&scaron;", "&scaron;", "&scaron;", "<scaron/>", "&#353;", "\\v{s}", NULL, "\\'9A", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_Yuml, "Yuml", "\xc5\xb8", "&Yuml;", "&Yuml;", "&Yuml;", "<Yumlaut/>", "&#376;", "\\\"{Y}", "Y\\*(4", "\\'9F", {"Y",DocSymbol::Perl_umlaut}},
+  {DocSymbol::Sym_circ, "circ", "\xcb\x86", "&circ;", "&circ;", "&circ;", "<circ/>", "&#710;", "{$\\circ$}", NULL, "\\'88", {" ",DocSymbol::Perl_circ}},
+  {DocSymbol::Sym_tilde, "tilde", "\xcb\x9c", "&tilde;", "&tilde;", "&tilde;", "<tilde/>", "&#732;", "\\~{}", "~", "\\'98", {" ",DocSymbol::Perl_tilde}},
+  {DocSymbol::Sym_ensp, "ensp", "\xe2\x80\x82", "&ensp;", "&ensp;", "&ensp;", "<ensp/>", "&#8194;", "\\enskip{}", NULL, "{\\enspace}", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_emsp, "emsp", "\xe2\x80\x83", "&emsp;", "&emsp;", "&emsp;", "<emsp/>", "&#8195;", "\\quad{}", NULL, "{\\emspace}", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_thinsp, "thinsp", "\xe2\x80\x89", "&thinsp;", "&thinsp;", "&thinsp;", "<thinsp/>", "&#8201;", "\\,", NULL, "{\\qmspace}", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_zwnj, "zwnj", "\xe2\x80\x8c", "&zwnj;", "&zwnj;", "&zwnj;", "<zwnj/>", "&#8204;", "{}", NULL, "\\zwnj", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_zwj, "zwj", "\xe2\x80\x8d", "&zwj;", "&zwj;", "&zwj;", "<zwj/>", "&#8205;", "", NULL, "\\zwj", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_lrm, "lrm", "\xe2\x80\x8e", "&lrm;", "&lrm;", "&lrm;", "<lrm/>", "&#8206;", "", NULL, "\\ltrmark", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_rlm, "rlm", "\xe2\x80\x8f", "&rlm;", "&rlm;", "&rlm;", "<rlm/>", "&#8207;", "", NULL, "\\rtlmark", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_ndash, "ndash", "\xe2\x80\x93", "&ndash;", "&ndash;", "&ndash;", "<ndash/>", "&#8211;", "--", "--", "\\'96", {"-",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_mdash, "mdash", "\xe2\x80\x94", "&mdash;", "&mdash;", "&mdash;", "<mdash/>", "&#8212;", "---", "---", "\\'97", {"--",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_lsquo, "lsquo", "\xe2\x80\x98", "&lsquo;", "&lsquo;", "&lsquo;", "<lsquo/>", "&#8216;", "`", "`", "\\'91", {"\\\'",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_rsquo, "rsquo", "\xe2\x80\x99", "&rsquo;", "&rsquo;", "&rsquo;", "<rsquo/>", "&#8217;", "'", "'", "\\'92", {"\\\'",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_sbquo, "sbquo", "\xe2\x80\x9a", "&sbquo;", "&sbquo;", "&sbquo;", "<sbquo/>", "&#8218;", "\\quotesinglbase{}", NULL, "\\'82", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_ldquo, "ldquo", "\xe2\x80\x9c", "&ldquo;", "&ldquo;", "&ldquo;", "<ldquo/>", "&#8220;", "``", "``", "\\'93", {"\"",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_rdquo, "rdquo", "\xe2\x80\x9d", "&rdquo;", "&rdquo;", "&rdquo;", "<rdquo/>", "&#8221;", "''", "''", "\\'94", {"\"",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_bdquo, "bdquo", "\xe2\x80\x9e", "&bdquo;", "&bdquo;", "&bdquo;", "<bdquo/>", "&#8222;", "\\quotedblbase{}", NULL, "\\'84", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_dagger, "dagger", "\xe2\x80\xa0", "&dagger;", "&dagger;", "&dagger;", "<dagger/>", "&#8224;", "{$\\dagger$}", NULL, "\\'86", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_Dagger, "Dagger", "\xe2\x80\xa1", "&Dagger;", "&Dagger;", "&Dagger;", "<Dagger/>", "&#8225;", "{$\\ddagger$}", NULL, "\\'87", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_permil, "permil", "\xe2\x80\xb0", "&permil;", "&permil;", "&permil;", "<permil/>", "&#8240;", "{$\\permil{}$}", NULL, "\\'89", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_lsaquo, "lsaquo", "\xe2\x80\xb9", "&lsaquo;", "&lsaquo;", "&lsaquo;", "<lsaquo/>", "&#8249;", "\\guilsinglleft{}", NULL, "\\'8B", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_rsaquo, "rsaquo", "\xe2\x80\xba", "&rsaquo;", "&rsaquo;", "&rsaquo;", "<rsaquo/>", "&#8250;", "\\guilsinglright{}", NULL, "\\'9B", {NULL,DocSymbol::Perl_unknown}},
+  {DocSymbol::Sym_euro, "euro", "\xe2\x82\xac", "&euro;", "&euro;", "&euro;", "<euro/>", "&#8364;", "\\texteuro{}", NULL, "\\'80", {NULL,DocSymbol::Perl_unknown}},
+
+  // doxygen extension to the HTML4 table of HTML entities
+  {DocSymbol::Sym_tm, "tm", "\xe2\x84\xa2", "&trade;", "(TM)", "&tm;", "<trademark/>", "&#8482;", "\\texttrademark{}", "(TM)", "\\'99", {"trademark",DocSymbol::Perl_symbol}},
+  {DocSymbol::Sym_apos, "apos", "'", "'", "'", "'", "'", "&apos;", "'", "'", "'", {"\\\'",DocSymbol::Perl_string}},
+
+  // doxygen commands represented as HTML entities
+  {DocSymbol::Sym_BSlash, "BSlash", "\\", "\\", "\\", "\\", "\\", "\\", "\\textbackslash{}", "\\\\", "\\\\", {"\\\\",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_At, "At", "@", "@", "@", "@", "@", "@", "@", "@", "@", {"@",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Less, "Less", "<", "&lt;", "<", "&lt;", "&lt;", "&lt;", "<", "<", "<", {"<",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Greater, "Greater", ">", "&gt;", ">", "&gt;", "&gt;", "&gt;", ">", ">", ">", {">",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Amp, "Amp", "&", "&amp;", "&", "&amp;", "&amp;", "&amp;", "\\&", "&", "&", {"&",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Dollar, "Dollar", "$", "$", "$", "$", "$", "$", "\\$", "$", "$", {"$",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Hash, "Hash", "#;", "#", "#", "#", "#", "#", "\\#", "#", "#", {"#",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_DoubleColon, "DoubleColon", "::", "::", "::", "::", "::", "::", "::", "::", "::", {"::",DocSymbol::Perl_string}},
+  {DocSymbol::Sym_Percent, "Percent", "%", "%", "%%", "%", "%", "%", "\\%", "%", "%", {"%",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Pipe, "Pipe", "|", "|", "|", "|", "|", "|", "$|$", "|", "|", {"|",DocSymbol::Perl_char}},
+  {DocSymbol::Sym_Quot, "Quot", "\"", "\"", "\"", "\"", "\"", "&quot;", "\"", "\"", "\"", {"\"",DocSymbol::Perl_char}},
+};
+
+/*! @brief Access routine to the name of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the name of the HTML entity (excluding the & and ;),
+ *         in case the name is unknown \c NULL is returned.
+ */
+const char *get_symbol_item(DocSymbol::SymType symb)
+{
+  return html_entities[symb].item;
+}
+/*! @brief Access routine to the UTF8 code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the UTF8 code of the HTML entity,
+ *         in case the UTF code is unknown \c NULL is returned.
+ */
+const char *get_symbol_UTF8(DocSymbol::SymType symb)
+{
+  return html_entities[symb].UTF8;
+}
+/*! @brief Access routine to the html code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the html of the HTML entity,
+ *         in case the html code is unknown \c NULL is returned.
+ */
+const char *get_symbol_html(DocSymbol::SymType symb)
+{
+  return html_entities[symb].html;
+}
+/*! @brief Access routine to the printable code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the printable code of the HTML entity,
+ *         in case the printable code is unknown \c NULL is returned.
+ */
+const char *get_symbol_print(DocSymbol::SymType symb)
+{
+  return html_entities[symb].print;
+}
+/*! @brief Access routine to the text representation of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the text representation the HTML entity,
+ *         in case the text representation is unknown \c NULL is returned.
+ */
+const char *get_symbol_text(DocSymbol::SymType symb)
+{
+  return html_entities[symb].text;
+}
+/*! @brief Access routine to the XML code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the XML code of the HTML entity,
+ *         in case the XML code is unknown \c NULL is returned.
+ */
+const char *get_symbol_xml(DocSymbol::SymType symb)
+{
+  return html_entities[symb].xml;
+}
+/*! @brief Access routine to the docbook code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the docbook code of the HTML entity, 
+ *         in case the docbook code is unknown \c NULL is returned.
+ */
+const char *get_symbol_docbook(DocSymbol::SymType symb)
+{
+  return html_entities[symb].docbook;
+}
+/*! @brief Access routine to the LaTeX code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the LaTeX code of the HTML entity,
+ *         in case the LaTeX code is unknown \c NULL is returned.
+ */
+const char *get_symbol_latex(DocSymbol::SymType symb)
+{
+  return html_entities[symb].latex;
+}
+/*! @brief Access routine to the man code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the man of the HTML entity,
+ *         in case the man code is unknown \c NULL is returned.
+ */
+const char *get_symbol_man(DocSymbol::SymType symb)
+{
+  return html_entities[symb].man;
+}
+/*! @brief Access routine to the RTF code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the RTF of the HTML entity,
+ *         in case the RTF code is unknown \c NULL is returned.
+ */
+const char *get_symbol_rtf(DocSymbol::SymType symb)
+{
+  return html_entities[symb].rtf;
+}
+/*! @brief Access routine to the perl struct with the perl code of the HTML entity
+ *
+ * @param symb Code of the requested HTML entity
+ * @return the pointer to perl struct with the perl code of the HTML entity,
+ *         in case the perl code does not exists the NULL pointer is entered in the 
+ *         \c symb field and in the `DocSymbol::Perl_unknown` in the \c type field.
+ */
+const DocSymbol::PerlSymb *get_symbol_perl(DocSymbol::SymType symb)
+{
+  return &html_entities[symb].perl;
+}
+
+/*!
+ * @brief Give code of the requested HTML entity name
+ * @param symName HTML entity name without \c & and \c;
+ * @return the code for the requested HTML entity name,
+ *         in case the requested HTML item does not exist `DocSymbol::Sym_unknown` is returned.
+ */
+DocSymbol::SymType code_symbol(const QCString &symName)
+{
+  for (int i = 0; i < sizeof(html_entities)/ sizeof(*html_entities); i++)
+  {
+    if (QCString("&")+ html_entities[i].item+";" == symName) return(html_entities[i].symb);
+  }
+  return DocSymbol::Sym_Unknown;
+}
+
+/*! @brief Gives number of standard HTML4 entities plus the doxygen extensions
+ *  @return the number of standard HTML4 entities plus the doxygen extensions
+ */
+int get_num_standard_symbols(void)
+{
+  return sizeof(html_entities)/ sizeof(*html_entities) - number_html_mapped_cmds;
+}
+
+/*! @brief Routine to check if the entries of the html_entities are numbered correctly
+ *  @details in case of a mismatch a warning message is given.
+ */
+void validate_html_entities(void)
+{
+  for (int i = 0; i < sizeof(html_entities)/ sizeof(*html_entities); i++)
+  {
+    if (i != html_entities[i].symb)
+      warn_uncond("Internal inconsistency, htmlentries code %d (item=%s)\n",i,html_entities[i].item);
+  }
 }
