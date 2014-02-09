@@ -55,6 +55,7 @@
 /doc/Makefile
 /doc/translator_report.txt
 /doc/config.doc
+/doc/language.doc
 
 /doxygen_docs
 /doxygen.tag

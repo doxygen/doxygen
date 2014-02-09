@@ -151,7 +151,7 @@ Francisco Oltra Thennet: [unreachable] foltra at puc dot cl
 David Vaquero: david at grupoikusnet dot com
 
 TranslatorSwedish
-Mikael Hallin: mikaelhallin at yahoo dot se
+Björn Palmqvist: bjorn.palmqvist at aidium.se
 
 TranslatorTurkish
 Emin Ilker Cetinbas: niw3 at yahoo dot com
