@@ -42,6 +42,7 @@
 #include "membergroup.h"
 #include "section.h"
 #include "util.h"
+#include "htmlentity.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -541,8 +542,8 @@ void PerlModDocVisitor::visit(DocWhiteSpace *)
 
 void PerlModDocVisitor::visit(DocSymbol *sy)
 {
-  const DocSymbol::PerlSymb *res = get_symbol_perl(sy->symbol());
-  const char *accent;
+  const DocSymbol::PerlSymb *res = HtmlEntityMapper::instance()->perl(sy->symbol());
+  const char *accent=0;
   if (res-> symb)
   {
     switch (res->type)
@@ -588,19 +589,24 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
           case DocSymbol::Perl_ring:
             accent = "ring";
             break;
+          default:
+            break;
         }
         leaveText();
-        openItem("accent");
-        m_output
-          .addFieldQuotedString("accent", accent)
-          .addFieldQuotedChar("letter", res->symb[0]);
-        closeItem();
+        if (accent)
+        {
+          openItem("accent");
+          m_output
+            .addFieldQuotedString("accent", accent)
+            .addFieldQuotedChar("letter", res->symb[0]);
+          closeItem();
+        }
         break;
     }
   }
   else
   {
-    err("perl: non supported HTML-entity found: &%s;\n",get_symbol_item(sy->symbol()));
+    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy->symbol()));
   }
 }
 

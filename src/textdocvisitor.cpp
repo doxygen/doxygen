@@ -20,19 +20,20 @@
 #include "textdocvisitor.h"
 #include "message.h"
 #include "util.h"
+#include "htmlentity.h"
 
 //-------------------------------------------------------------------------
 
 void TextDocVisitor::visit(DocSymbol *s)
 {
-  const char *res = get_symbol_text(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->html(s->symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("text: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
   }
 }
 

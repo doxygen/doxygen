@@ -1224,7 +1224,7 @@ DotManager *DotManager::instance()
   return m_theInstance;
 }
 
-DotManager::DotManager() : m_dotMaps(1007)
+DotManager::DotManager() : m_dotMaps(1009)
 {
   m_dotRuns.setAutoDelete(TRUE);
   m_dotMaps.setAutoDelete(TRUE);

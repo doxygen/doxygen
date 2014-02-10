@@ -29,6 +29,7 @@
 #include "message.h"
 #include "parserintf.h"
 #include "filedef.h"
+#include "htmlentity.h"
 
 ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -75,7 +76,7 @@ void ManDocVisitor::visit(DocWhiteSpace *w)
 void ManDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = get_symbol_man(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->man(s->symbol());
   if (res)
   {
     m_t << res;

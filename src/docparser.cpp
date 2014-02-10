@@ -53,6 +53,7 @@
 #include "config.h"
 #include "growbuf.h"
 #include "markdown.h"
+#include "htmlentity.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -1573,7 +1574,7 @@ static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribL
 DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName)
 {
   DBG(("decodeSymbol(%s)\n",qPrint(symName)));
-  return code_symbol(symName);
+  return HtmlEntityMapper::instance()->name2sym(symName);
 }
 
 //---------------------------------------------------------------------------

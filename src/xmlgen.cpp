@@ -45,6 +45,7 @@
 #include "membergroup.h"
 #include "dirdef.h"
 #include "section.h"
+#include "htmlentity.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -1897,47 +1898,31 @@ void generateXML()
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  /*
-   * If the compound_xsd contyains the special string
-   *   write part till special string
-   *   for each html entity
-   *     write xsd entry with xml element name without enclosing < and />
-   *   write part after special string
-   * otherwise
-   *   write original compound_xsd
-   */
-  QCString cmp_org(compound_xsd);
-  QCString ins("<!-- Automatically insert here the HTML entities -->");
-  if (cmp_org.contains(QRegExp(ins)))
+
+  // write compound.xsd, but replace special marker with the entities
+  const char *startLine = compound_xsd;
+  while (*startLine)
   {
-    QCString xsd_txt;
-    QCString xsd_tmp;
-    QCString cmp_tmp1;
-    QCString cmp_tmp2;
-    QRegExp beg("^<");
-    QRegExp end("/>$");
-    cmp_tmp1 = cmp_org;
-    cmp_tmp1 = cmp_tmp1.replace(QRegExp(" *"+ins+".*"),"");
-    f.writeBlock(cmp_tmp1,qstrlen(cmp_tmp1));
-    int num_std = get_num_standard_symbols();
-    for (int i = 0; i < num_std; i++)
+    // find end of the line
+    const char *endLine = startLine+1;
+    while (*(endLine-1) && *(endLine-1)!='\n') endLine++; // skip to end of the line
+    int len=endLine-startLine;
+    if (len>0)
     {
-      xsd_tmp = QCString(get_symbol_xml((DocSymbol::SymType)i));
-      if (xsd_tmp.contains(beg))
+      QCString s(len+1);
+      strlcpy(s.data(),startLine,len);
+      s[len]='\0';
+      if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
       {
-        xsd_txt = "      <xsd:element name=\"";
-        xsd_txt += xsd_tmp.replace(beg,"").replace(end,"");
-        xsd_txt += "\" type=\"docEmptyType\" />\n";
-        f.writeBlock(xsd_txt,qstrlen(xsd_txt));
+        FTextStream t(&f);
+        HtmlEntityMapper::instance()->writeXMLSchema(t);
+      }
+      else
+      {
+        f.writeBlock(startLine,len);
       }
     }
-    cmp_tmp2 = cmp_org;
-    cmp_tmp2 = cmp_tmp2.replace(QRegExp(".*"+ins),"");
-    f.writeBlock(cmp_tmp2,qstrlen(cmp_tmp2));
-  }
-  else
-  {
-    f.writeBlock(compound_xsd,qstrlen(compound_xsd));
+    startLine=endLine;
   }
   f.close();
 

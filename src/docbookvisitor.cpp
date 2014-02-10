@@ -33,6 +33,7 @@
 #include "filedef.h"
 #include "msc.h"
 #include "dia.h"
+#include "htmlentity.h"
 
 DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci)
   : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
@@ -73,14 +74,14 @@ void DocbookDocVisitor::visit(DocWhiteSpace *w)
 void DocbookDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = get_symbol_docbook(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->docbook(s->symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("DocBook: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
   }
 }
 

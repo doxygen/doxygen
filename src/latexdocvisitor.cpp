@@ -31,6 +31,7 @@
 #include "cite.h"
 #include "filedef.h"
 #include "config.h"
+#include "htmlentity.h"
 
 static QCString escapeLabelName(const char *s)
 {
@@ -135,7 +136,7 @@ void LatexDocVisitor::visit(DocWhiteSpace *w)
 void LatexDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = get_symbol_latex(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->latex(s->symbol());
   if (res)
   {
     if (((s->symbol() == DocSymbol::Sym_lt) || (s->symbol() == DocSymbol::Sym_Less))&& (!m_insidePre))
@@ -153,7 +154,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
   }
 }
 

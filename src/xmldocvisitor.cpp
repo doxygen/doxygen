@@ -30,6 +30,7 @@
 #include "parserintf.h"
 #include "filename.h"
 #include "config.h"
+#include "htmlentity.h"
 
 XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci) 
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
@@ -70,14 +71,14 @@ void XmlDocVisitor::visit(DocWhiteSpace *w)
 void XmlDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = get_symbol_xml(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->xml(s->symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("XML: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    err("XML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
   }
 }
 

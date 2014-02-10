@@ -32,6 +32,7 @@
 #include "dia.h"
 #include "filedef.h"
 #include "config.h"
+#include "htmlentity.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -121,14 +122,14 @@ void RTFDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocSymbol)}\n");
-  const char *res = get_symbol_rtf(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->rtf(s->symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("RTF: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
   }
   m_lastIsPara=FALSE;
 }

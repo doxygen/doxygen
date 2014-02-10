@@ -21,6 +21,7 @@
 
 #include <qglobal.h>
 #include "docvisitor.h"
+#include "htmlentity.h"
 
 /*! Concrete visitor implementation for pretty printing */
 class PrintDocVisitor : public DocVisitor
@@ -56,14 +57,21 @@ class PrintDocVisitor : public DocVisitor
     void visit(DocSymbol *s)
     {
       indent_leaf();
-      const char *res = get_symbol_print(s->symbol());
+      const char *res = HtmlEntityMapper::instance()->utf8(s->symbol());
       if (res)
       {
-        printf("%s",res);
+        if (qstrcmp(res,"%")==0)
+        {
+          printf("%%");
+        }
+        else
+        {
+          printf("%s",res);
+        }
       }
       else
       {
-        printf("print: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
       }
     }
     void visit(DocURL *u)

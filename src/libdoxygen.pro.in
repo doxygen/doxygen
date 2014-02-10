@@ -59,6 +59,7 @@ HEADERS      =	arguments.h \
                 htmldocvisitor.h \
 		htmlgen.h \
 		htmlhelp.h \
+		htmlentity.h \
 		image.h \
 		index.h \
 		language.h \
@@ -152,6 +153,7 @@ SOURCES      =	arguments.cpp \
                 htmldocvisitor.cpp \
 		htmlgen.cpp \
 		htmlhelp.cpp \
+		htmlentity.cpp \
 		image.cpp \
 		index.cpp \
 		language.cpp \

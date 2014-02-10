@@ -33,6 +33,7 @@
 #include "vhdldocgen.h"
 #include "filedef.h"
 #include "memberdef.h"
+#include "htmlentity.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -182,14 +183,14 @@ void HtmlDocVisitor::visit(DocWhiteSpace *w)
 void HtmlDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
-  const char *res = get_symbol_html(s->symbol());
+  const char *res = HtmlEntityMapper::instance()->html(s->symbol());
   if (res)
   {
     m_t << res;
   }
   else
   {
-    err("HTML: non supported HTML-entity found: &%s;\n",get_symbol_item(s->symbol()));
+    err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
   }
 }
 

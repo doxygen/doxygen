@@ -455,19 +455,5 @@ void convertProtectionLevel(
                    int *outListType2
                   );
 
-DocSymbol::SymType code_symbol(const QCString &symName);
-const char *get_symbol_item(DocSymbol::SymType symb);
-const char *get_symbol_UTF8(DocSymbol::SymType symb);
-const char *get_symbol_html(DocSymbol::SymType symb);
-const char *get_symbol_print(DocSymbol::SymType symb);
-const char *get_symbol_text(DocSymbol::SymType symb);
-const char *get_symbol_xml(DocSymbol::SymType symb);
-const char *get_symbol_docbook(DocSymbol::SymType symb);
-const char *get_symbol_latex(DocSymbol::SymType symb);
-const char *get_symbol_man(DocSymbol::SymType symb);
-const char *get_symbol_rtf(DocSymbol::SymType symb);
-const DocSymbol::PerlSymb *get_symbol_perl(DocSymbol::SymType symb);
-int get_num_standard_symbols(void);
-void validate_html_entities(void);
 #endif
 
