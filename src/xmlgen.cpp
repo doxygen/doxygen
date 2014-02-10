@@ -1905,7 +1905,7 @@ void generateXML()
   {
     // find end of the line
     const char *endLine = startLine+1;
-    while (*(endLine-1) && *(endLine-1)!='\n') endLine++; // skip to end of the line
+    while (*endLine && *(endLine-1)!='\n') endLine++; // skip to end of the line including \n
     int len=endLine-startLine;
     if (len>0)
     {
