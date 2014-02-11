@@ -1842,8 +1842,14 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  }
 					  else
 					  {
-					    delete guards.pop();
-					    BEGIN( GuardParamEnd );
+					    GuardedSection *s = guards.pop();
+                                            bool parentVisible = s->parentVisible();
+                                            delete s;
+                                            if (parentVisible)
+                                            {
+					      enabledSectionFound=TRUE;
+					      BEGIN( GuardParamEnd );
+                                            }
 					  }
   					}
 <SkipGuardedSection>{CMD}"else"/{NW}	{
