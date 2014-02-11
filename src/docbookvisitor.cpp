@@ -81,7 +81,7 @@ void DocbookDocVisitor::visit(DocSymbol *s)
   }
   else
   {
-    err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
+    err("DocBook: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 

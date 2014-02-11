@@ -57,21 +57,14 @@ class PrintDocVisitor : public DocVisitor
     void visit(DocSymbol *s)
     {
       indent_leaf();
-      const char *res = HtmlEntityMapper::instance()->utf8(s->symbol());
+      const char *res = HtmlEntityMapper::instance()->utf8(s->symbol(),TRUE);
       if (res)
       {
-        if (qstrcmp(res,"%")==0)
-        {
-          printf("%%");
-        }
-        else
-        {
-          printf("%s",res);
-        }
+        printf("%s",res);
       }
       else
       {
-        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
+        printf("print: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
       }
     }
     void visit(DocURL *u)

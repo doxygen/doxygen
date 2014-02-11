@@ -190,7 +190,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
   }
   else
   {
-    err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
+    err("HTML: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 

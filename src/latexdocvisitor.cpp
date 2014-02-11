@@ -154,7 +154,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
   }
   else
   {
-    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
+    err("LaTeX: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 

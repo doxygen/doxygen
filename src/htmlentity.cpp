@@ -354,23 +354,41 @@ void HtmlEntityMapper::deleteInstance()
 /*! @brief Access routine to the UTF8 code of the HTML entity
  *
  * @param symb Code of the requested HTML entity
+ * @param useInPrintf If TRUE the result will be escaped such that it can be
+ *                    used in a printf string pattern
  * @return the UTF8 code of the HTML entity,
  *         in case the UTF code is unknown \c NULL is returned.
  */
-const char *HtmlEntityMapper::utf8(DocSymbol::SymType symb) const
+const char *HtmlEntityMapper::utf8(DocSymbol::SymType symb,bool useInPrintf) const
 {
-  return g_htmlEntities[symb].UTF8;
+  if (useInPrintf && symb==DocSymbol::Sym_Percent)
+  {
+    return "%%"; // escape for printf
+  }
+  else
+  {
+    return g_htmlEntities[symb].UTF8;
+  }
 }
 
 /*! @brief Access routine to the html code of the HTML entity
  *
- * @param symb Code of the requested HTML entity
- * @return the html of the HTML entity,
+ * @param symb        Code of the requested HTML entity
+ * @param useInPrintf If TRUE the result will be escaped such that it can be
+ *                    used in a printf string pattern
+ * @return the html representation of the HTML entity,
  *         in case the html code is unknown \c NULL is returned.
  */
-const char *HtmlEntityMapper::html(DocSymbol::SymType symb) const
+const char *HtmlEntityMapper::html(DocSymbol::SymType symb,bool useInPrintf) const
 {
-  return g_htmlEntities[symb].html;
+  if (useInPrintf && symb==DocSymbol::Sym_Percent)
+  {
+    return "%%"; // escape for printf
+  }
+  else
+  {
+    return g_htmlEntities[symb].html;
+  }
 }
 
 /*! @brief Access routine to the XML code of the HTML entity

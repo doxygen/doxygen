@@ -33,7 +33,7 @@ void TextDocVisitor::visit(DocSymbol *s)
   }
   else
   {
-    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
+    err("text: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
 }
 

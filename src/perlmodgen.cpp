@@ -606,7 +606,7 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   }
   else
   {
-    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy->symbol()));
+    err("perl: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(sy->symbol(),TRUE));
   }
 }
 

@@ -129,7 +129,7 @@ void RTFDocVisitor::visit(DocSymbol *s)
   }
   else
   {
-    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol()));
+    err("RTF: non supported HTML-entity found: %s\n",HtmlEntityMapper::instance()->html(s->symbol(),TRUE));
   }
   m_lastIsPara=FALSE;
 }
