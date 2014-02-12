@@ -715,6 +715,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\htmlentity.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\htmlgen.cpp"
 				>
 			</File>
@@ -2468,6 +2472,10 @@
 			</File>
 			<File
 				RelativePath="..\src\htmldocvisitor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\htmlentity.h"
 				>
 			</File>
 			<File
