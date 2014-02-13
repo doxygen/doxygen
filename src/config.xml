@@ -3361,6 +3361,14 @@ remove the intermediate dot files that are used to generate the various graphs.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HIDE_INHERITS_FROM' defval='0'>
+      <docs>
+<![CDATA[
+If the \c HIDE_INHERITS_FROM tag is set to \c YES then the "inherits from" text
+will not appear in class definitions.
+]]>
+      </docs>
+    </option>
 
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
