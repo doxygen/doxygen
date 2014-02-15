@@ -326,6 +326,7 @@ HtmlEntityMapper::HtmlEntityMapper()
   {
     m_name2sym->insert(g_htmlEntities[i].item,new int(g_htmlEntities[i].symb));
   }
+  validate();
 }
 
 HtmlEntityMapper::~HtmlEntityMapper()

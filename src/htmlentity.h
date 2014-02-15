@@ -36,8 +36,8 @@ class HtmlEntityMapper
     const char *rtf(DocSymbol::SymType symb) const;
     const DocSymbol::PerlSymb *perl(DocSymbol::SymType symb) const;
     void  writeXMLSchema(FTextStream &t);
-    void  validate();
   private:
+    void  validate();
     HtmlEntityMapper();
    ~HtmlEntityMapper();
     static HtmlEntityMapper *s_instance;
