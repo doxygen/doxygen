@@ -167,7 +167,8 @@ static void createSVG()
     QRegExp ep("[\\s]");
     QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
-    if (portable_system("dot",vlargs)!=0)
+    QCString dotExe   = Config_getString("DOT_PATH")+"dot";
+    if (portable_system(dotExe,vlargs)!=0)
     {
       err("could not create dot file");
     }
@@ -3884,8 +3885,9 @@ void FlowChart::createSVG()
   ov+="/flow_design.dot";
 
   QCString vlargs="-Tsvg "+ov+dir ;
+  QCString dotExe   = Config_getString("DOT_PATH")+"dot";
 
-  if (portable_system("dot",vlargs)!=0)
+  if (portable_system(dotExe,vlargs)!=0)
   {
     err("could not create dot file");
   }
