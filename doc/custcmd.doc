@@ -37,10 +37,10 @@ The simplest form of an alias is a simple substitution of the form
  ALIASES += sideeffect="\par Side Effects:\n" 
 \endverbatim
  will allow you to
- put the command \\sideeffect (or \@sideeffect) in the documentation, which 
+ put the command `\sideeffect` (or `@sideeffect`) in the documentation, which 
  will result in a user-defined paragraph with heading <b>Side Effects:</b>.
 
-Note that you can put \\n's in the value part of an alias to insert newlines.
+Note that you can put `\n`'s in the value part of an alias to insert newlines.
 
 Also note that you can redefine existing special commands if you wish.
 
@@ -50,7 +50,7 @@ combination with aliases.
 \section custcmd_complex Aliases with arguments
 Aliases can also have one or more arguments. In the alias definition you then need
 to specify the number of arguments between curly braces. In the value part of the
-definition you can place \\x markers, where 'x' represents the argument number starting
+definition you can place `\x` markers, where '`x`' represents the argument number starting
 with 1.
 
 Here is an example of an alias definition with a single argument:
@@ -85,11 +85,11 @@ inside the comment block and it will expand to
 where the command with a single argument would still work as shown before.
 
 Aliases can also be expressed in terms of other aliases, e.g. a new command
-\\reminder can be expressed as a \\xrefitem via an intermediate \\xreflist command
+`\reminder` can be expressed as a \ref cmdxrefitem "\\xrefitem" via an intermediate `\xreflist` command
 as follows:
 \verbatim
-ALIASES += xreflist{3}="\xrefitem \1 \"\2\" \"\3\" " \
-ALIASES += reminder="\xreflist{reminders,Reminder,Reminders}" \
+ALIASES += xreflist{3}="\xrefitem \1 \"\2\" \"\3\" "
+ALIASES += reminder="\xreflist{reminders,Reminder,Reminders}"
 \endverbatim
 
 Note that if for aliases with more than one argument a comma is used as a separator,
@@ -98,7 +98,7 @@ i.e.
 \verbatim
 \l{SomeClass,Some text\, with an escaped comma} 
 \endverbatim
-given the alias definition of \\l in the example above.
+given the alias definition of `\l` in the example above.
 
 \section custcmd_nesting Nesting custom command
 
