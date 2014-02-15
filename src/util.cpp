@@ -6413,14 +6413,9 @@ void filterLatexString(FTextStream &t,const char *str,
                    break;
         case '-':  t << "-\\/";
                    break;
-        case '\\': if (*p=='<') 
-                   { t << "$<$"; p++; }
-                   else if (*p=='>')
-                   { t << "$>$"; p++; } 
-                   else  
-                   { t << "\\textbackslash{}"; }
+        case '\\': t << "\\textbackslash{}";
                    break;           
-        case '"':  { t << "\\char`\\\"{}"; }
+        case '"':  t << "\\char`\\\"{}";
                    break;
 
         default:   
