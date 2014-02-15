@@ -6163,12 +6163,14 @@ static void findMember(EntryNav *rootNav,
                   matching = FALSE;
                 }
               }
+              bool rootIsUserDoc = (root->section&Entry::MEMBERDOC_SEC)!=0;
               bool classIsTemplate = scopeIsTemplate(md->getClassDef());
               bool mdIsTemplate    = md->templateArguments()!=0;
               bool classOrMdIsTemplate = mdIsTemplate || classIsTemplate;
               bool rootIsTemplate  = root->tArgLists!=0;
               //printf("classIsTemplate=%d mdIsTemplate=%d rootIsTemplate=%d\n",classIsTemplate,mdIsTemplate,rootIsTemplate);
-              if ((mdIsTemplate || rootIsTemplate) && // either md or root is a template
+              if (!rootIsUserDoc && // don't check out-of-line @fn references, see bug722457
+                  (mdIsTemplate || rootIsTemplate) && // either md or root is a template
                   ((classOrMdIsTemplate && !rootIsTemplate) || (!classOrMdIsTemplate && rootIsTemplate))
                  )
               {
