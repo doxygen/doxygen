@@ -68,6 +68,7 @@ class NamespaceDef : public Definition
 
     bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
     bool isModule()        const { return MODULE == m_type; }
+    bool isLibrary() const { return LIBRARY == m_type; }
 
     bool isLinkableInProject() const;
     bool isLinkable() const;
@@ -132,7 +133,7 @@ class NamespaceDef : public Definition
     ClassSDict           *classSDict;
     NamespaceSDict       *namespaceSDict;
     bool                  m_subGrouping;
-    enum { NAMESPACE, MODULE, CONSTANT_GROUP } m_type;
+    enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
     bool m_isPublished;
 };
 
