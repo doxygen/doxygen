@@ -394,6 +394,10 @@ class NestingContext : public TemplateListIntf
 
     void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses);
     void addClasses(const ClassSDict &clDict,bool rootOnly);
+    void addDirs(const DirSDict &);
+    void addDirs(const DirList &);
+    void addFiles(const FileNameList &);
+    void addFiles(const FileList &);
   private:
     class Private;
     Private *p;
@@ -450,6 +454,7 @@ class NamespaceTreeContext : public TemplateStructIntf
 };
 
 //----------------------------------------------------
+#if 0
 
 class DirFileNodeContext : public TemplateStructIntf
 {
@@ -488,6 +493,7 @@ class DirFileContext : public TemplateListIntf
     class Private;
     Private *p;
 };
+#endif
 
 //----------------------------------------------------
 

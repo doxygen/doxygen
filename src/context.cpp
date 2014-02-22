@@ -4092,9 +4092,9 @@ class NestingNodeContext::Private : public PropertyMapper
       //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
       addProperty("namespace",this,&Private::getNamespace);
       //%% [optional] File file: file info (if this node represents a file)
-      addProperty("file",this,&Private::file);
+      addProperty("file",this,&Private::getFile);
       //%% [optional] Dir dir: directory info (if this node represents a directory)
-      addProperty("dir",this,&Private::dir);
+      addProperty("dir",this,&Private::getDir);
       //%% int id
       addProperty("id",this,&Private::id);
       //%% string level
@@ -4110,6 +4110,7 @@ class NestingNodeContext::Private : public PropertyMapper
 
       addNamespaces(addCls);
       addClasses();
+      addDirFiles();
     }
     TemplateVariant isLeafNode() const
     {
@@ -4149,13 +4150,35 @@ class NestingNodeContext::Private : public PropertyMapper
         return TemplateVariant(FALSE);
       }
     }
-    TemplateVariant file() const
+    TemplateVariant getDir() const
     {
-      return FALSE;
+      if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
+      {
+        m_cache.dirContext.reset(new DirContext((DirDef*)m_def));
+      }
+      if (m_cache.dirContext)
+      {
+        return m_cache.dirContext.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
     }
-    TemplateVariant dir() const
+    TemplateVariant getFile() const
     {
-      return FALSE;
+      if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
+      {
+        m_cache.fileContext.reset(new FileContext((FileDef*)m_def));
+      }
+      if (m_cache.fileContext)
+      {
+        return m_cache.fileContext.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
     }
     TemplateVariant level() const
     {
@@ -4226,6 +4249,18 @@ class NestingNodeContext::Private : public PropertyMapper
         m_children.addClasses(*nd->getClassSDict(),FALSE);
       }
     }
+    void addDirFiles()
+    {
+      DirDef *dd = m_def->definitionType()==Definition::TypeDir ? (DirDef*)m_def : 0;
+      if (dd)
+      {
+        m_children.addDirs(dd->subDirs());
+        if (dd && dd->getFiles())
+        {
+          m_children.addFiles(*dd->getFiles());
+        }
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     Definition *m_def;
@@ -4236,6 +4271,8 @@ class NestingNodeContext::Private : public PropertyMapper
     {
       ScopedPtr<ClassContext>     classContext;
       ScopedPtr<NamespaceContext> namespaceContext;
+      ScopedPtr<DirContext>       dirContext;
+      ScopedPtr<FileContext>      fileContext;
       ScopedPtr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
@@ -4321,6 +4358,57 @@ class NestingContext::Private : public GenericNodeListContext<NestingNodeContext
         }
       }
     }
+    void addDirs(const DirSDict &dirDict)
+    {
+      SDict<DirDef>::Iterator dli(dirDict);
+      DirDef *dd;
+      for (dli.toFirst();(dd=dli.current());++dli)
+      {
+        if (dd->getOuterScope()==Doxygen::globalScope)
+        {
+          append(new NestingNodeContext(m_parent,dd,m_index,m_level,FALSE));
+          m_index++;
+        }
+      }
+    }
+    void addDirs(const DirList &dirList)
+    {
+      QListIterator<DirDef> li(dirList);
+      DirDef *dd;
+      for (li.toFirst();(dd=li.current());++li)
+      {
+        append(new NestingNodeContext(m_parent,dd,m_index,m_level,FALSE));
+        m_index++;
+      }
+    }
+    void addFiles(const FileNameList &fnList)
+    {
+      FileNameListIterator fnli(fnList);
+      FileName *fn;
+      for (fnli.toFirst();(fn=fnli.current());++fnli)
+      {
+        FileNameIterator fni(*fn);
+        FileDef *fd;
+        for (;(fd=fni.current());++fni)
+        {
+          if (fd->getDirDef()==0) // top level file
+          {
+            append(new NestingNodeContext(m_parent,fd,m_index,m_level,FALSE));
+            m_index++;
+          }
+        }
+      }
+    }
+    void addFiles(const FileList &fList)
+    {
+      QListIterator<FileDef> li(fList);
+      FileDef *fd;
+      for (li.toFirst();(fd=li.current());++li)
+      {
+        append(new NestingNodeContext(m_parent,fd,m_index,m_level,FALSE));
+        m_index++;
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     int m_level;
@@ -4362,6 +4450,27 @@ void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bo
 {
   p->addNamespaces(nsDict,rootOnly,addClasses);
 }
+
+void NestingContext::addDirs(const DirSDict &dirs)
+{
+  p->addDirs(dirs);
+}
+
+void NestingContext::addDirs(const DirList &dirs)
+{
+  p->addDirs(dirs);
+}
+
+void NestingContext::addFiles(const FileNameList &files)
+{
+  p->addFiles(files);
+}
+
+void NestingContext::addFiles(const FileList &files)
+{
+  p->addFiles(files);
+}
+
 
 //------------------------------------------------------------------------
 
@@ -4781,300 +4890,6 @@ void UsedFilesContext::addFile(FileDef *fd)
 
 //------------------------------------------------------------------------
 
-
-//%% struct DirFileNode: node is a directory hierarchy
-//%% {
-class DirFileNodeContext::Private : public PropertyMapper
-{
-  public:
-    Private(const DirFileNodeContext *parent,const DirFileNodeContext *thisNode,
-            Definition *d,int index,int level) :
-       m_parent(parent), m_def(d), m_children(thisNode,m_level+1), m_index(index), m_level(level)
-    {
-      //%% bool is_leaf_node: true if this node does not have any children
-      addProperty("is_leaf_node",this,&Private::isLeafNode);
-      //%% DirFile children: list of nested classes/namespaces
-      addProperty("children",this,&Private::children);
-      //%% [optional] Class class: class info (if this node represents a class)
-      addProperty("class",this,&Private::getClass);
-      //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
-      addProperty("namespace",this,&Private::getNamespace);
-      //%% [optional] Dir dir: directory info (if this node represents a directory)
-      addProperty("dir",this,&Private::getDir);
-      //%% [optional] File file: file info (if this node represents a file)
-      addProperty("file",this,&Private::getFile);
-      //%% int id
-      addProperty("id",this,&Private::id);
-      //%% string level
-      addProperty("level",this,&Private::level);
-      //%% string name
-      addProperty("name",this,&Private::name);
-      //%% string brief
-      addProperty("brief",this,&Private::brief);
-      //%% bool isLinkable
-      addProperty("isLinkable",this,&Private::isLinkable);
-      addProperty("anchor",this,&Private::anchor);
-      addProperty("fileName",this,&Private::fileName);
-      addDirFiles();
-    }
-    TemplateVariant isLeafNode() const
-    {
-      return m_children.count()==0;
-    }
-    TemplateVariant children() const
-    {
-      return TemplateVariant(&m_children);
-    }
-    TemplateVariant getClass() const
-    {
-      return FALSE;
-    }
-    TemplateVariant getNamespace() const
-    {
-      return FALSE;
-    }
-    TemplateVariant getDir() const
-    {
-      if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
-      {
-        m_cache.dirContext.reset(new DirContext((DirDef*)m_def));
-      }
-      if (m_cache.dirContext)
-      {
-        return m_cache.dirContext.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
-    }
-    TemplateVariant getFile() const
-    {
-      if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
-      {
-        m_cache.fileContext.reset(new FileContext((FileDef*)m_def));
-      }
-      if (m_cache.fileContext)
-      {
-        return m_cache.fileContext.get();
-      }
-      else
-      {
-        return TemplateVariant(FALSE);
-      }
-    }
-    TemplateVariant level() const
-    {
-      return m_level;
-    }
-    TemplateVariant id() const
-    {
-      QCString result;
-      if (m_parent) result=m_parent->id();
-      result+=QCString().setNum(m_index)+"_";
-      return result;
-    }
-    TemplateVariant name() const
-    {
-      return m_def->displayName(FALSE);
-    }
-    QCString relPathAsString() const
-    {
-      static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
-      return createSubdirs ? QCString("../../") : QCString("");
-    }
-    TemplateVariant brief() const
-    {
-      if (!m_cache.brief)
-      {
-        if (m_def->hasBriefDescription())
-        {
-          m_cache.brief.reset(new TemplateVariant(parseDoc(m_def,m_def->briefFile(),m_def->briefLine(),
-                              "",m_def->briefDescription(),TRUE)));
-        }
-        else
-        {
-          m_cache.brief.reset(new TemplateVariant(""));
-        }
-      }
-      return *m_cache.brief;
-    }
-    TemplateVariant isLinkable() const
-    {
-      return m_def->isLinkable();
-    }
-    TemplateVariant anchor() const
-    {
-      return m_def->anchor();
-    }
-    TemplateVariant fileName() const
-    {
-      return m_def->getOutputFileBase();
-    }
-    void addDirFiles()
-    {
-      DirDef *dd = m_def->definitionType()==Definition::TypeDir ? (DirDef*)m_def : 0;
-      if (dd)
-      {
-        m_children.addDirs(dd->subDirs());
-        if (dd && dd->getFiles())
-        {
-          m_children.addFiles(*dd->getFiles());
-        }
-      }
-    }
-  private:
-    const DirFileNodeContext *m_parent;
-    Definition *m_def;
-    DirFileContext m_children;
-    int m_index;
-    int m_level;
-    struct Cachable
-    {
-      ScopedPtr<DirContext>     dirContext;
-      ScopedPtr<FileContext>    fileContext;
-      ScopedPtr<TemplateVariant>  brief;
-    };
-    mutable Cachable m_cache;
-};
-//%% }
-
-DirFileNodeContext::DirFileNodeContext(const DirFileNodeContext *parent,
-                       Definition *def,int index,int level)
-{
-  p = new Private(parent,this,def,index,level);
-}
-
-DirFileNodeContext::~DirFileNodeContext()
-{
-  delete p;
-}
-
-TemplateVariant DirFileNodeContext::get(const char *n) const
-{
-  return p->get(n);
-}
-
-QCString DirFileNodeContext::id() const
-{
-  return p->id().toString();
-}
-
-
-//------------------------------------------------------------------------
-
-//%% list DirFile[DirFileNode]: list of directories and/or files
-class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext>
-{
-  public:
-    Private(const DirFileNodeContext *parent,int level)
-      : m_parent(parent), m_level(level), m_index(0) {}
-    void addDirs(const DirSDict &dirDict)
-    {
-      SDict<DirDef>::Iterator dli(dirDict);
-      DirDef *dd;
-      for (dli.toFirst();(dd=dli.current());++dli)
-      {
-        if (dd->getOuterScope()==Doxygen::globalScope)
-        {
-          append(new DirFileNodeContext(m_parent,dd,m_index,m_level));
-          m_index++;
-        }
-      }
-    }
-    void addDirs(const DirList &dirList)
-    {
-      QListIterator<DirDef> li(dirList);
-      DirDef *dd;
-      for (li.toFirst();(dd=li.current());++li)
-      {
-        append(new DirFileNodeContext(m_parent,dd,m_index,m_level));
-        m_index++;
-      }
-    }
-    void addFiles(const FileNameList &fnList)
-    {
-      FileNameListIterator fnli(fnList);
-      FileName *fn;
-      for (fnli.toFirst();(fn=fnli.current());++fnli)
-      {
-        FileNameIterator fni(*fn);
-        FileDef *fd;
-        for (;(fd=fni.current());++fni)
-        {
-          if (fd->getDirDef()==0) // top level file
-          {
-            append(new DirFileNodeContext(m_parent,fd,m_index,m_level));
-            m_index++;
-          }
-        }
-      }
-    }
-    void addFiles(const FileList &fList)
-    {
-      QListIterator<FileDef> li(fList);
-      FileDef *fd;
-      for (li.toFirst();(fd=li.current());++li)
-      {
-        append(new DirFileNodeContext(m_parent,fd,m_index,m_level));
-        m_index++;
-      }
-    }
-  private:
-    const DirFileNodeContext *m_parent;
-    int m_level;
-    int m_index;
-};
-
-DirFileContext::DirFileContext(const DirFileNodeContext *parent,int level)
-{
-  p = new Private(parent,level);
-}
-
-DirFileContext::~DirFileContext()
-{
-  delete p;
-}
-
-// TemplateListIntf
-int DirFileContext::count() const
-{
-  return p->count();
-}
-
-TemplateVariant DirFileContext::at(int index) const
-{
-  return p->at(index);
-}
-
-TemplateListIntf::ConstIterator *DirFileContext::createIterator() const
-{
-  return p->createIterator();
-}
-
-void DirFileContext::addDirs(const DirSDict &dirs)
-{
-  p->addDirs(dirs);
-}
-
-void DirFileContext::addDirs(const DirList &dirs)
-{
-  p->addDirs(dirs);
-}
-
-void DirFileContext::addFiles(const FileNameList &files)
-{
-  p->addFiles(files);
-}
-
-void DirFileContext::addFiles(const FileList &files)
-{
-  p->addFiles(files);
-}
-
-
-//------------------------------------------------------------------------
-
 //%% struct FileTree: tree of directories and files
 //%% {
 class FileTreeContext::Private : public PropertyMapper
@@ -5144,7 +4959,7 @@ class FileTreeContext::Private : public PropertyMapper
       return m_cache.preferredDepth;
     }
   private:
-    DirFileContext m_dirFileTree;
+    NestingContext m_dirFileTree;
     struct Cachable
     {
       Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
