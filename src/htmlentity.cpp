@@ -475,9 +475,12 @@ void HtmlEntityMapper::writeXMLSchema(FTextStream &t)
 {
   for (int i=0;i<g_numHtmlEntities - g_numberHtmlMappedCmds;i++)
   {
-    QCString bareName = g_htmlEntities[i].item;
-    bareName = bareName.mid(1,bareName.length()-2);
-    t << "      <xsd:element name=\"" << bareName << "\" type=\"docEmptyType\" />\n";
+    QCString bareName = g_htmlEntities[i].xml;
+    if (!bareName.isEmpty() && bareName.at(0)=='<' && bareName.right(2)=="/>")
+    {
+      bareName = bareName.mid(1,bareName.length()-3); // strip < and />
+      t << "      <xsd:element name=\"" << bareName << "\" type=\"docEmptyType\" />\n";
+    }
   }
 }
 
