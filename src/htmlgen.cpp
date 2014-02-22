@@ -1683,7 +1683,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   Doxygen::indexList->addIndexFile(fileName);
   
   lastFile = fileName;
-  t << substituteHtmlKeywords(g_header,convertToHtml(title),relPath);
+  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),relPath);
 
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;

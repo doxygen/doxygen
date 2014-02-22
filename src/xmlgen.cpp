@@ -1845,7 +1845,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     SectionInfo *si = Doxygen::sectionDict->find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(si->title)) 
+      t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(filterTitle(si->title))) 
         << "</title>" << endl;
     }
   }

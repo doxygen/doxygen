@@ -3102,7 +3102,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     if (pd->title().isEmpty())
       pageTitle=pd->name();
     else
-      pageTitle=pd->title();
+      pageTitle=filterTitle(pd->title());
 
     if (ftv)
     {

@@ -68,6 +68,10 @@ NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
   {
     m_type = CONSTANT_GROUP;
   }
+  else if (type && !strcmp("library", type))
+  {
+    m_type = LIBRARY;
+  }
   else
   {
     m_type = NAMESPACE;
@@ -1117,9 +1121,13 @@ QCString NamespaceDef::compoundTypeString() const
     {
       return "constants";
     }
+    else if (isLibrary())
+    {
+      return "library";
+    }
     else
     {
-      err("Internal inconsistency: namespace in IDL not module or constant group\n");
+      err("Internal inconsistency: namespace in IDL not module, library or constant group\n");
     }
   }
   return "";
