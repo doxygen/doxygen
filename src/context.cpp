@@ -721,6 +721,11 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trDetailLevel();
     }
+    TemplateVariant fileListDescription() const
+    {
+      bool extractAll = Config_getBool("EXTRACT_ALL");
+      return theTranslator->trFileListDescription(extractAll);
+    }
     Private()
     {
       //%% string generatedBy
@@ -829,8 +834,10 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("classDocumentation", this,&Private::classDocumentation);
       //%% string compoundMembers
       addProperty("compoundMembers",    this,&Private::compoundMembers);
-      //%% strint detailLevel
+      //%% string detailLevel
       addProperty("detailLevel",        this,&Private::detailLevel);
+      //%% string fileListDescription
+      addProperty("fileListDescription",this,&Private::fileListDescription);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -4163,7 +4170,7 @@ class NestingNodeContext::Private : public PropertyMapper
     }
     TemplateVariant name() const
     {
-      return m_def->name();
+      return m_def->displayName(FALSE);
     }
     QCString relPathAsString() const
     {
@@ -4398,6 +4405,37 @@ static int computeNumNodesAtLevel(const TemplateStructIntf *s,int level,int maxL
   return num;
 }
 
+static int computePreferredDepth(const TemplateListIntf *list,int maxDepth)
+{
+  int preferredNumEntries = Config_getInt("HTML_INDEX_NUM_ENTRIES");
+  int preferredDepth=1;
+  if (preferredNumEntries>0)
+  {
+    int depth = maxDepth;
+    for (int i=1;i<=depth;i++)
+    {
+      int num=0;
+      TemplateListIntf::ConstIterator *it = list->createIterator();
+      TemplateVariant v;
+      for (it->toFirst();it->current(v);it->toNext())
+      {
+        num+=computeNumNodesAtLevel(v.toStruct(),0,i);
+      }
+      delete it;
+      if (num<=preferredNumEntries)
+      {
+        preferredDepth=i;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+  return preferredDepth;
+}
+
+
 //%% struct ClassTree: Class nesting relations
 //%% {
 class ClassTreeContext::Private : public PropertyMapper
@@ -4473,31 +4511,7 @@ class ClassTreeContext::Private : public PropertyMapper
     {
       if (!m_cache.preferredDepthComputed)
       {
-        int preferredNumEntries = Config_getInt("HTML_INDEX_NUM_ENTRIES");
-        m_cache.preferredDepth=1;
-        if (preferredNumEntries>0)
-        {
-          int depth = maxDepth().toInt();
-          for (int i=1;i<=depth;i++)
-          {
-            int num=0;
-            TemplateListIntf::ConstIterator *it = m_classTree.createIterator();
-            TemplateVariant v;
-            for (it->toFirst();it->current(v);it->toNext())
-            {
-              num+=computeNumNodesAtLevel(v.toStruct(),0,i);
-            }
-            delete it;
-            if (num<=preferredNumEntries)
-            {
-              m_cache.preferredDepth=i;
-            }
-            else
-            {
-              break;
-            }
-          }
-        }
+        m_cache.preferredDepth = computePreferredDepth(&m_classTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
@@ -4773,18 +4787,34 @@ void UsedFilesContext::addFile(FileDef *fd)
 class DirFileNodeContext::Private : public PropertyMapper
 {
   public:
-    Private(Definition *d) : m_def(d),
-       m_dirContext (m_def->definitionType()==Definition::TypeDir  ? (DirDef*)d  : 0),
-       m_fileContext(m_def->definitionType()==Definition::TypeFile ? (FileDef*)d : 0)
+    Private(const DirFileNodeContext *parent,const DirFileNodeContext *thisNode,
+            Definition *d,int index,int level) :
+       m_parent(parent), m_def(d), m_children(thisNode,m_level+1), m_index(index), m_level(level)
     {
       //%% bool is_leaf_node: true if this node does not have any children
       addProperty("is_leaf_node",this,&Private::isLeafNode);
       //%% DirFile children: list of nested classes/namespaces
       addProperty("children",this,&Private::children);
+      //%% [optional] Class class: class info (if this node represents a class)
+      addProperty("class",this,&Private::getClass);
+      //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
+      addProperty("namespace",this,&Private::getNamespace);
       //%% [optional] Dir dir: directory info (if this node represents a directory)
       addProperty("dir",this,&Private::getDir);
       //%% [optional] File file: file info (if this node represents a file)
       addProperty("file",this,&Private::getFile);
+      //%% int id
+      addProperty("id",this,&Private::id);
+      //%% string level
+      addProperty("level",this,&Private::level);
+      //%% string name
+      addProperty("name",this,&Private::name);
+      //%% string brief
+      addProperty("brief",this,&Private::brief);
+      //%% bool isLinkable
+      addProperty("isLinkable",this,&Private::isLinkable);
+      addProperty("anchor",this,&Private::anchor);
+      addProperty("fileName",this,&Private::fileName);
       addDirFiles();
     }
     TemplateVariant isLeafNode() const
@@ -4795,11 +4825,23 @@ class DirFileNodeContext::Private : public PropertyMapper
     {
       return TemplateVariant(&m_children);
     }
+    TemplateVariant getClass() const
+    {
+      return FALSE;
+    }
+    TemplateVariant getNamespace() const
+    {
+      return FALSE;
+    }
     TemplateVariant getDir() const
     {
-      if (m_def->definitionType()==Definition::TypeDir)
+      if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
       {
-        return TemplateVariant(&m_dirContext);
+        m_cache.dirContext.reset(new DirContext((DirDef*)m_def));
+      }
+      if (m_cache.dirContext)
+      {
+        return m_cache.dirContext.get();
       }
       else
       {
@@ -4808,14 +4850,66 @@ class DirFileNodeContext::Private : public PropertyMapper
     }
     TemplateVariant getFile() const
     {
-      if (m_def->definitionType()==Definition::TypeFile)
+      if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
       {
-        return TemplateVariant(&m_fileContext);
+        m_cache.fileContext.reset(new FileContext((FileDef*)m_def));
+      }
+      if (m_cache.fileContext)
+      {
+        return m_cache.fileContext.get();
       }
       else
       {
         return TemplateVariant(FALSE);
       }
+    }
+    TemplateVariant level() const
+    {
+      return m_level;
+    }
+    TemplateVariant id() const
+    {
+      QCString result;
+      if (m_parent) result=m_parent->id();
+      result+=QCString().setNum(m_index)+"_";
+      return result;
+    }
+    TemplateVariant name() const
+    {
+      return m_def->displayName(FALSE);
+    }
+    QCString relPathAsString() const
+    {
+      static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
+      return createSubdirs ? QCString("../../") : QCString("");
+    }
+    TemplateVariant brief() const
+    {
+      if (!m_cache.brief)
+      {
+        if (m_def->hasBriefDescription())
+        {
+          m_cache.brief.reset(new TemplateVariant(parseDoc(m_def,m_def->briefFile(),m_def->briefLine(),
+                              "",m_def->briefDescription(),TRUE)));
+        }
+        else
+        {
+          m_cache.brief.reset(new TemplateVariant(""));
+        }
+      }
+      return *m_cache.brief;
+    }
+    TemplateVariant isLinkable() const
+    {
+      return m_def->isLinkable();
+    }
+    TemplateVariant anchor() const
+    {
+      return m_def->anchor();
+    }
+    TemplateVariant fileName() const
+    {
+      return m_def->getOutputFileBase();
     }
     void addDirFiles()
     {
@@ -4830,16 +4924,25 @@ class DirFileNodeContext::Private : public PropertyMapper
       }
     }
   private:
+    const DirFileNodeContext *m_parent;
     Definition *m_def;
     DirFileContext m_children;
-    DirContext m_dirContext;
-    FileContext m_fileContext;
+    int m_index;
+    int m_level;
+    struct Cachable
+    {
+      ScopedPtr<DirContext>     dirContext;
+      ScopedPtr<FileContext>    fileContext;
+      ScopedPtr<TemplateVariant>  brief;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
-DirFileNodeContext::DirFileNodeContext(Definition *d)
+DirFileNodeContext::DirFileNodeContext(const DirFileNodeContext *parent,
+                       Definition *def,int index,int level)
 {
-  p = new Private(d);
+  p = new Private(parent,this,def,index,level);
 }
 
 DirFileNodeContext::~DirFileNodeContext()
@@ -4852,6 +4955,11 @@ TemplateVariant DirFileNodeContext::get(const char *n) const
   return p->get(n);
 }
 
+QCString DirFileNodeContext::id() const
+{
+  return p->id().toString();
+}
+
 
 //------------------------------------------------------------------------
 
@@ -4859,6 +4967,8 @@ TemplateVariant DirFileNodeContext::get(const char *n) const
 class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext>
 {
   public:
+    Private(const DirFileNodeContext *parent,int level)
+      : m_parent(parent), m_level(level), m_index(0) {}
     void addDirs(const DirSDict &dirDict)
     {
       SDict<DirDef>::Iterator dli(dirDict);
@@ -4867,7 +4977,8 @@ class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext
       {
         if (dd->getOuterScope()==Doxygen::globalScope)
         {
-          append(new DirFileNodeContext(dd));
+          append(new DirFileNodeContext(m_parent,dd,m_index,m_level));
+          m_index++;
         }
       }
     }
@@ -4877,7 +4988,8 @@ class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext
       DirDef *dd;
       for (li.toFirst();(dd=li.current());++li)
       {
-        append(new DirFileNodeContext(dd));
+        append(new DirFileNodeContext(m_parent,dd,m_index,m_level));
+        m_index++;
       }
     }
     void addFiles(const FileNameList &fnList)
@@ -4892,7 +5004,8 @@ class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(new DirFileNodeContext(fd));
+            append(new DirFileNodeContext(m_parent,fd,m_index,m_level));
+            m_index++;
           }
         }
       }
@@ -4903,14 +5016,19 @@ class DirFileContext::Private : public GenericNodeListContext<DirFileNodeContext
       FileDef *fd;
       for (li.toFirst();(fd=li.current());++li)
       {
-        append(new DirFileNodeContext(fd));
+        append(new DirFileNodeContext(m_parent,fd,m_index,m_level));
+        m_index++;
       }
     }
+  private:
+    const DirFileNodeContext *m_parent;
+    int m_level;
+    int m_index;
 };
 
-DirFileContext::DirFileContext()
+DirFileContext::DirFileContext(const DirFileNodeContext *parent,int level)
 {
-  p = new Private;
+  p = new Private(parent,level);
 }
 
 DirFileContext::~DirFileContext()
@@ -4962,6 +5080,27 @@ void DirFileContext::addFiles(const FileList &files)
 class FileTreeContext::Private : public PropertyMapper
 {
   public:
+    Private() : m_dirFileTree(0,0)
+    {
+      // Add dirs tree
+      if (Doxygen::directories)
+      {
+        m_dirFileTree.addDirs(*Doxygen::directories);
+      }
+      if (Doxygen::inputNameList)
+      {
+        m_dirFileTree.addFiles(*Doxygen::inputNameList);
+      }
+      //%% DirFile tree:
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+      addProperty("preferredDepth",this,&Private::preferredDepth);
+      addProperty("maxDepth",this,&Private::maxDepth);
+    }
     TemplateVariant tree() const
     {
       return TemplateVariant(&m_dirFileTree);
@@ -4986,27 +5125,35 @@ class FileTreeContext::Private : public PropertyMapper
     {
       return theTranslator->trFileList();
     }
-    Private()
+    TemplateVariant maxDepth() const
     {
-      // Add dirs tree
-      if (Doxygen::directories)
+      if (!m_cache.maxDepthComputed)
       {
-        m_dirFileTree.addDirs(*Doxygen::directories);
+        m_cache.maxDepth = computeMaxDepth(&m_dirFileTree);
+        m_cache.maxDepthComputed=TRUE;
       }
-      if (Doxygen::inputNameList)
+      return m_cache.maxDepth;
+    }
+    TemplateVariant preferredDepth() const
+    {
+      if (!m_cache.preferredDepthComputed)
       {
-        m_dirFileTree.addFiles(*Doxygen::inputNameList);
+        m_cache.preferredDepth = computePreferredDepth(&m_dirFileTree,maxDepth().toInt());
+        m_cache.preferredDepthComputed=TRUE;
       }
-      //%% DirFile tree:
-      addProperty("tree",this,&Private::tree);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
+      return m_cache.preferredDepth;
     }
   private:
     DirFileContext m_dirFileTree;
+    struct Cachable
+    {
+      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      int   maxDepth;
+      bool  maxDepthComputed;
+      int   preferredDepth;
+      bool  preferredDepthComputed;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 

@@ -454,8 +454,10 @@ class NamespaceTreeContext : public TemplateStructIntf
 class DirFileNodeContext : public TemplateStructIntf
 {
   public:
-    DirFileNodeContext(Definition *);
+    DirFileNodeContext(const DirFileNodeContext *parent,
+                       Definition *,int index,int level);
    ~DirFileNodeContext();
+    QCString id() const;
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -470,7 +472,7 @@ class DirFileNodeContext : public TemplateStructIntf
 class DirFileContext : public TemplateListIntf
 {
   public:
-    DirFileContext();
+    DirFileContext(const DirFileNodeContext *parent,int level);
    ~DirFileContext();
 
     // TemplateListIntf
