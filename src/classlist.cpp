@@ -36,7 +36,6 @@ ClassList::~ClassList()
 static int compItems(const ClassDef *c1,const ClassDef *c2)
 {
   static bool b = Config_getBool("SORT_BY_SCOPE_NAME");
-  //printf("compItems: %d %s<->%s\n",b,c1->name().data(),c2->name().data());
   if (b)
   {
      return qstricmp(c1->name(), c2->name());

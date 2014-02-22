@@ -1413,7 +1413,7 @@ static void writeNamespaceTree(NamespaceSDict *nsDict,FTVHelp *ftv,
           }
         }
 
-        if (isLinkable || hasChildren)
+        if ((isLinkable && !showClasses) || hasChildren)
         {
           ftv->addContentsItem(hasChildren,nd->localName(),ref,file,0,FALSE,TRUE,nd); 
 

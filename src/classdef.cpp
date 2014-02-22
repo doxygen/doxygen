@@ -3930,6 +3930,10 @@ void ClassDef::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
+  if (m_impl->innerClasses)
+  {
+    m_impl->innerClasses->sort();
+  }
 }
 
 int ClassDef::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,

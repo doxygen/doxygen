@@ -998,6 +998,14 @@ void NamespaceDef::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
+  if (classSDict)
+  {
+    classSDict->sort();
+  }
+  if (namespaceSDict)
+  {
+    namespaceSDict->sort();
+  }
 }
 
 
