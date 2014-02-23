@@ -1230,7 +1230,7 @@ DotManager::DotManager() : m_dotMaps(1009)
   m_dotMaps.setAutoDelete(TRUE);
   m_queue = new DotRunnerQueue;
   int i;
-  int numThreads = QMIN(32,Config_getInt("DOT_NUM_THREADS"));
+  int numThreads = QMIN(QThread::idealThreadCount()+1,Config_getInt("DOT_NUM_THREADS"));
   if (numThreads!=1)
   {
     if (numThreads==0) numThreads = QMAX(2,QThread::idealThreadCount()+1);
