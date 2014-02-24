@@ -497,6 +497,24 @@ class DirFileContext : public TemplateListIntf
 
 //----------------------------------------------------
 
+class DirListContext : public TemplateListIntf
+{
+  public:
+    DirListContext();
+   ~DirListContext();
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+
+  private:
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
 class FileListContext : public TemplateListIntf
 {
   public:

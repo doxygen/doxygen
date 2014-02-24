@@ -172,8 +172,9 @@ void FileDef::findSectionsInDocumentation()
 
 bool FileDef::hasDetailedDescription() const
 {
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
   static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
-  return ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
+  return ((!briefDescription().isEmpty() && repeatBrief) || 
           !documentation().stripWhiteSpace().isEmpty() || // avail empty section
           (sourceBrowser && getStartBodyLine()!=-1 && getBodyDef())
          );

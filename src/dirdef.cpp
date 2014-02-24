@@ -335,6 +335,12 @@ QCString DirDef::shortTitle() const
   return theTranslator->trDirReference(m_shortName);
 }
 
+bool DirDef::hasDetailedDescription() const
+{
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
+  return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
+}
+
 void DirDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");

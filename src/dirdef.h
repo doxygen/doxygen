@@ -67,6 +67,7 @@ class DirDef : public Definition
     bool isParentOf(DirDef *dir) const;
     bool depGraphIsTrivial() const;
     QCString shortTitle() const;
+    bool hasDetailedDescription() const;
 
     // generate output
     void writeDocumentation(OutputList &ol);

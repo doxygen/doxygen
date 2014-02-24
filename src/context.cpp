@@ -726,6 +726,10 @@ class TranslateContext::Private : public PropertyMapper
       bool extractAll = Config_getBool("EXTRACT_ALL");
       return theTranslator->trFileListDescription(extractAll);
     }
+    TemplateVariant directories() const
+    {
+      return theTranslator->trDirectories();
+    }
     Private()
     {
       //%% string generatedBy
@@ -838,6 +842,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("detailLevel",        this,&Private::detailLevel);
       //%% string fileListDescription
       addProperty("fileListDescription",this,&Private::fileListDescription);
+      //%% string directories
+      addProperty("directories",        this,&Private::directories);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -1132,6 +1138,10 @@ class DefinitionContext : public PropertyMapper
         if (m_def->getOuterScope() && m_def->getOuterScope()!=Doxygen::globalScope)
         {
           fillPath(m_def->getOuterScope(),list);
+        }
+        else if (m_def->definitionType()==Definition::TypeFile && ((const FileDef *)m_def)->getDirDef())
+        {
+          fillPath(((const FileDef *)m_def)->getDirDef(),list);
         }
         m_cache.navPath.reset(list);
       }
@@ -2082,6 +2092,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       addProperty("detailedFunctions",         this,&Private::detailedFunctions);
       addProperty("detailedVariables",         this,&Private::detailedVariables);
       addProperty("inlineClasses",             this,&Private::inlineClasses);
+      addProperty("compoundType",              this,&Private::compoundType);
     }
     TemplateVariant title() const
     {
@@ -2369,6 +2380,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       }
       return m_cache.inlineClasses.get();
     }
+    TemplateVariant compoundType() const
+    {
+      return theTranslator->trFile(FALSE,TRUE);
+    }
 
   private:
     FileDef *m_fileDef;
@@ -2422,10 +2437,14 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
   public:
     Private(DirDef *dd) : DefinitionContext<DirContext::Private>(dd) , m_dirDef(dd)
     {
-      addProperty("title",this,&Private::title);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subHighlight);
-      addProperty("dirName",this,&Private::dirName);
+      addProperty("title",         this,&Private::title);
+      addProperty("highlight",     this,&Private::highlight);
+      addProperty("subhighlight",  this,&Private::subHighlight);
+      addProperty("dirName",       this,&Private::dirName);
+      addProperty("dirs",          this,&Private::dirs);
+      addProperty("files",         this,&Private::files);
+      addProperty("hasDetails",    this,&Private::hasDetails);
+      addProperty("compoundType",  this,&Private::compoundType);
     }
     TemplateVariant title() const
     {
@@ -2443,8 +2462,68 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     {
       return TemplateVariant(m_dirDef->shortName());
     }
+    TemplateVariant dirs() const
+    {
+      if (!m_cache.dirs)
+      {
+        m_cache.dirs.reset(new TemplateList);
+        const DirList &subDirs = m_dirDef->subDirs();
+        QListIterator<DirDef> it(subDirs);
+        DirDef *dd;
+        for (it.toFirst();(dd=it.current());++it)
+        {
+          DirContext *dc = new DirContext(dd);
+          m_cache.dirs->append(dc);
+          m_cache.dirContextList.append(dc);
+        }
+      }
+      return m_cache.dirs.get();
+    }
+    TemplateVariant files() const
+    {
+      // FileList *list = m_dirDef->getFiles();
+      if (!m_cache.files)
+      {
+        m_cache.files.reset(new TemplateList);
+        FileList *files = m_dirDef->getFiles();
+        if (files)
+        {
+          QListIterator<FileDef> it(*files);
+          FileDef *fd;
+          for (it.toFirst();(fd=it.current());++it)
+          {
+            FileContext *fc = new FileContext(fd);
+            m_cache.files->append(fc);
+            m_cache.fileContextList.append(fc);
+          }
+        }
+      }
+      return m_cache.files.get();
+    }
+    TemplateVariant hasDetails() const
+    {
+      return m_dirDef->hasDetailedDescription();
+    }
+    TemplateVariant compoundType() const
+    {
+      return theTranslator->trDir(FALSE,TRUE);
+    }
+
   private:
     DirDef *m_dirDef;
+    struct Cachable
+    {
+      Cachable()
+      {
+        dirContextList.setAutoDelete(TRUE);
+        fileContextList.setAutoDelete(TRUE);
+      }
+      QList<DirContext>        dirContextList;
+      QList<FileContext>       fileContextList;
+      ScopedPtr<TemplateList>  dirs;
+      ScopedPtr<TemplateList>  files;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -4838,6 +4917,50 @@ TemplateListIntf::ConstIterator *FileListContext::createIterator() const
 
 //------------------------------------------------------------------------
 
+//%% list DirList[Dir] : list of files
+class DirListContext::Private : public GenericNodeListContext<DirContext>
+{
+  public:
+    Private()
+    {
+      DirDef *dir;
+      DirSDict::Iterator sdi(*Doxygen::directories);
+      for (sdi.toFirst();(dir=sdi.current());++sdi)
+      {
+        append(new DirContext(dir));
+      }
+    }
+};
+
+DirListContext::DirListContext()
+{
+  p = new Private;
+}
+
+DirListContext::~DirListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int DirListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant DirListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *DirListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+
+//------------------------------------------------------------------------
+
 //%% list UsedFiles[File] : list of files
 class UsedFilesContext::Private : public GenericNodeListContext<FileContext>
 {
@@ -6618,6 +6741,7 @@ void generateOutputViaTemplate()
     ClassHierarchyContext classHierarchy;
     NamespaceListContext  namespaceList;
     NamespaceTreeContext  namespaceTree;
+    DirListContext        dirList;
     FileListContext       fileList;
     FileTreeContext       fileTree;
     PageTreeContext       pageTree;
@@ -6654,6 +6778,8 @@ void generateOutputViaTemplate()
     ctx->set("moduleTree",&moduleTree);
     //%% ExampleList exampleList
     ctx->set("exampleList",&exampleList);
+    //%% DirList dirList
+    ctx->set("dirList",&dirList);
 
     // render HTML output
     Template *tpl = e.loadByName("htmllayout.tpl",1);
