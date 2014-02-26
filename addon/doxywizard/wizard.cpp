@@ -481,10 +481,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   m_projNumber = new QLineEdit;
   QPushButton *projIconSel = new QPushButton(this);
   projIconSel->setText(tr("Select..."));
-  QPixmap pm(QSize(120,55));
-  pm.fill();
   m_projIconLab = new QLabel;
-  m_projIconLab->setPixmap(pm);
 
   grid->addWidget(m_projName,0,1,1,2);
   grid->addWidget(m_projBrief,1,1,1,2);
@@ -567,12 +564,24 @@ void Step1::selectProjectIcon()
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
   QString iconName = QFileDialog::getOpenFileName(this,
                                     tr("Select project icon/image"),path);
-  QPixmap pm(iconName);
-  if (!pm.isNull())
+  QFile Fout(iconName);
+  if(!Fout.exists()) 
   {
-    m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
-    updateStringOption(m_modelData,STR_PROJECT_LOGO,iconName);
+    m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
   }
+  else
+  {
+    QPixmap pm(iconName);
+    if (!pm.isNull())
+    {
+      m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+    }
+    else
+    {
+      m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+    }
+  }
+  updateStringOption(m_modelData,STR_PROJECT_LOGO,iconName);
 }
 
 void Step1::selectSourceDir()
@@ -663,17 +672,27 @@ void Step1::init()
   QString iconName = getStringOption(m_modelData,STR_PROJECT_LOGO);
   if (!iconName.isEmpty())
   {
-    QPixmap pm(iconName);
-    if (!pm.isNull())
+    QFile Fout(iconName);
+    if(!Fout.exists()) 
     {
-      m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+    }
+    else
+    {
+      QPixmap pm(iconName);
+      if (!pm.isNull())
+      {
+        m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      }
+      else
+      {
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+      }
     }
   }
   else
   {
-    QPixmap pm(QSize(120,55));
-    pm.fill();
-    m_projIconLab->setPixmap(pm);
+    m_projIconLab->setText(tr("No Project logo selected."));
   }
   option = m_modelData[STR_INPUT];
   if (option->value().toStringList().count()>0)
