@@ -1,5 +1,4 @@
 #include <QtGui>
-#include <QImageReader>
 #include "doxywizard.h"
 #include "version.h"
 #include "expert.h"
