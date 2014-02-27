@@ -624,20 +624,34 @@ bool MainWindow::discardUnsavedChanges(bool saveOption)
 }
 
 //-----------------------------------------------------------------------
-
 int main(int argc,char **argv)
 {
   QApplication a(argc,argv);
-  MainWindow &main = MainWindow::instance();
-  if (argc==2 && argv[1][0]!='-') // name of config file as an argument
+  if (argc == 2)
   {
-    main.loadConfigFromFile(QString::fromLocal8Bit(argv[1]));
+    if (!qstrcmp(argv[1],"--help"))
+    {
+      QMessageBox msgBox;
+      msgBox.setText(QString().sprintf("Usage: %s [config file]",argv[0]));
+      msgBox.exec();
+      exit(0);
+    }
   }
-  else if (argc>1)
+  if (argc > 2)
   {
-    printf("Usage: %s [config file]\n",argv[0]);
+    QMessageBox msgBox;
+    msgBox.setText(QString().sprintf("Too many arguments specified\n\nUsage: %s [config file]",argv[0]));
+    msgBox.exec();
     exit(1);
   }
-  main.show();
-  return a.exec();
+  else
+  {
+    MainWindow &main = MainWindow::instance();
+    if (argc==2 && argv[1][0]!='-') // name of config file as an argument
+    {
+      main.loadConfigFromFile(QString::fromLocal8Bit(argv[1]));
+    }
+    main.show();
+    return a.exec();
+  }
 }
