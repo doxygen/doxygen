@@ -7443,6 +7443,11 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
   { 
     QStrListIterator it(*patList);
     QCString pattern;
+
+    QCString fn = fi.fileName().data();
+    QCString fp = fi.filePath().data();
+    QCString afp= fi.absFilePath().data();
+
     for (it.toFirst();(pattern=it.current());++it)
     {
       if (!pattern.isEmpty())
@@ -7455,9 +7460,9 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
 #else                // unix
         QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
 #endif
-        found = found || re.match(fi.fileName().data())!=-1 || 
-                         re.match(fi.filePath().data())!=-1 ||
-                         re.match(fi.absFilePath().data())!=-1;
+        found = re.match(fn)!=-1 ||
+                re.match(fp)!=-1 ||
+                re.match(afp)!=-1;
         if (found) break;
         //printf("Matching `%s' against pattern `%s' found=%d\n",
         //    fi->fileName().data(),pattern.data(),found);
