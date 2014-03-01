@@ -1418,6 +1418,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
   _writeTagData(compoundType);
+  _addToSearchIndex();
 
   QCString cname  = d->name();
   QCString cdname = d->displayName();
@@ -3610,7 +3611,6 @@ void MemberDef::_writeTagData(const DefType compoundType)
     }
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "    </member>" << endl;
-    _addToSearchIndex();
   }
   m_impl->tagDataWritten |= typeMask;
 }
@@ -3740,6 +3740,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
       _writeTagData(compoundType);
+      _addToSearchIndex();
       writeLink(typeDecl,cd,nd,fd,gd);
     }
     else
@@ -3788,6 +3789,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
           if (fmd->hasDocumentation()) // enum value has docs
           {
             fmd->_writeTagData(compoundType);
+            fmd->_addToSearchIndex();
             fmd->writeLink(typeDecl,cd,nd,fd,gd);
           }
           else // no docs for this enum value
