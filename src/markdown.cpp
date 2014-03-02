@@ -48,6 +48,7 @@
 #include "commentcnv.h"
 #include "config.h"
 #include "section.h"
+#include "message.h"
 
 //-----------
 
@@ -90,6 +91,7 @@ static QDict<LinkRef> g_linkRefs(257);
 static action_t       g_actions[256];
 static Entry         *g_current;
 static QCString       g_fileName;
+static int            g_lineNr;
 
 // In case a markdown page starts with a level1 header, that header is used
 // as a title of the page, in effect making it a level0 header, so the
@@ -1690,12 +1692,27 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
       out.addStr(" ");
       out.addStr(header);
       out.addStr("\n");
-      SectionInfo *si = new SectionInfo(g_fileName,id,header,type,level);
-      if (g_current)
+      SectionInfo *si = Doxygen::sectionDict->find(header);
+      if (si)
       {
-        g_current->anchors->append(si);
+        if (si->lineNr != -1)
+        {
+          warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",header.data(),si->fileName.data(),si->lineNr);
+        }
+        else
+        {
+          warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s)",header.data(),si->fileName.data());
+        }
       }
-      Doxygen::sectionDict->append(header,si);
+      else
+      {
+        si = new SectionInfo(g_fileName,g_lineNr,id,header,type,level);
+        if (g_current)
+        {
+          g_current->anchors->append(si);
+        }
+        Doxygen::sectionDict->append(header,si);
+      }
     }
     else
     {
@@ -2020,13 +2037,28 @@ static QCString processBlocks(const QCString &s,int indent)
             out.addStr(" ");
             out.addStr(header);
             out.addStr("\n\n");
-            SectionInfo *si = new SectionInfo(g_fileName,id,header,
-                level==1 ? SectionInfo::Section : SectionInfo::Subsection,level);
-            if (g_current)
+            SectionInfo *si = Doxygen::sectionDict->find(header);
+            if (si)
             {
-              g_current->anchors->append(si);
+              if (si->lineNr != -1)
+              {
+                warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",header.data(),si->fileName.data(),si->lineNr);
+              }
+              else
+              {
+                warn(g_fileName,g_lineNr,"multiple use of section label '%s', (first occurrence: %s)",header.data(),si->fileName.data());
+              }
             }
-            Doxygen::sectionDict->append(header,si);
+            else
+            {
+              si = new SectionInfo(g_fileName,g_lineNr,id,header,
+                      level==1 ? SectionInfo::Section : SectionInfo::Subsection,level);
+              if (g_current)
+              {
+                g_current->anchors->append(si);
+              }
+              Doxygen::sectionDict->append(header,si);
+            }
           }
           else
           {
@@ -2214,7 +2246,7 @@ static QCString detab(const QCString &s,int &refIndent)
 
 //---------------------------------------------------------------------------
 
-QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input)
+QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,const QCString &input)
 {
   static bool init=FALSE;
   if (!init)
@@ -2237,6 +2269,7 @@ QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &input
   g_linkRefs.clear();
   g_current = e;
   g_fileName = fileName;
+  g_lineNr   = lineNr;
   static GrowBuf out;
   if (input.isEmpty()) return input;
   out.clear();

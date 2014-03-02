@@ -22,7 +22,7 @@
 class Entry;
 
 /** processes string \a s and converts markdown into doxygen/html commands. */
-QCString processMarkdown(const QCString &fileName,Entry *e,const QCString &s);
+QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,const QCString &s);
 QCString markdownFileNameToId(const QCString &fileName);
 
 class MarkdownFileParser : public ParserInterface

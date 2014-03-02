@@ -8643,15 +8643,30 @@ static void findMainPage(EntryNav *rootNav)
       Doxygen::mainPage->setShowToc(root->stat);
       addPageToContext(Doxygen::mainPage,rootNav);
           
-      // a page name is a label as well!
-      SectionInfo *si=new SectionInfo(
-          indexName,
+      SectionInfo *si = Doxygen::sectionDict->find(Doxygen::mainPage->name());
+      if (si)
+      {
+        if (si->lineNr != -1)
+        {
+          warn(root->fileName,root->startLine,"multiple use of section label '%s', (first occurrence: %s, line %d)",Doxygen::mainPage->name().data(),si->fileName.data(),si->lineNr);
+        }
+        else
+        {
+          warn(root->fileName,root->startLine,"multiple use of section label '%s', (first occurrence: %s)",Doxygen::mainPage->name().data(),si->fileName.data());
+        }
+      }
+      else
+      {
+        // a page name is a label as well! but should no be double either
+        si=new SectionInfo(
+          indexName, root->startLine,
           Doxygen::mainPage->name(),
           Doxygen::mainPage->title(),
           SectionInfo::Page,
           0); // level 0
-      Doxygen::sectionDict->append(indexName,si);
-      Doxygen::mainPage->addSectionsToDefinition(root->anchors);
+        Doxygen::sectionDict->append(indexName,si);
+        Doxygen::mainPage->addSectionsToDefinition(root->anchors);
+      }
     }
     else
     {

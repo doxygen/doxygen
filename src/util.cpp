@@ -6280,14 +6280,29 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       {
         file=pd->getOutputFileBase();
       }
-      SectionInfo *si=new SectionInfo(
-          file,pd->name(),pd->title(),SectionInfo::Page,0,pd->getReference());
-      //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
-      //      si->label.data(),si->definition?si->definition->name().data():"<none>",
-      //      si->fileName.data());
-      //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
-      //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
-      Doxygen::sectionDict->append(pd->name(),si);
+      SectionInfo *si = Doxygen::sectionDict->find(pd->name());
+      if (si)
+      {
+        if (si->lineNr != -1)
+        {
+          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName.data(),si->lineNr);
+        }
+        else
+        {
+          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName.data());
+        }
+      }
+      else
+      {
+        si=new SectionInfo(
+            file,-1,pd->name(),pd->title(),SectionInfo::Page,0,pd->getReference());
+        //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
+        //      si->label.data(),si->definition?si->definition->name().data():"<none>",
+        //      si->fileName.data());
+        //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
+        //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
+        Doxygen::sectionDict->append(pd->name(),si);
+      }
     }
   }
   return pd;
