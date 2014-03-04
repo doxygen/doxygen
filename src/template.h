@@ -399,7 +399,7 @@ class TemplateContext
     /** Sets the interface that will be used for escaping the result
      *  of variable expansion before writing it to the output.
      */
-    virtual void setEscapeIntf(TemplateEscapeIntf *intf) = 0;
+    virtual void setEscapeIntf(const QCString &extension, TemplateEscapeIntf *intf) = 0;
 
     /** Sets the interface that will be used inside a spaceless block
      *  to remove any redundant whitespace.

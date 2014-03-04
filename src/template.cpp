@@ -584,8 +584,17 @@ class TemplateContextImpl : public TemplateContext
     const TemplateVariant *getRef(const QCString &name) const;
     void setOutputDirectory(const QCString &dir)
     { m_outputDir = dir; }
-    void setEscapeIntf(TemplateEscapeIntf *intf)
-    { m_escapeIntf = intf; }
+    void setEscapeIntf(const QCString &ext,TemplateEscapeIntf *intf)
+    {
+      int i=(!ext.isEmpty() && ext.at(0)=='.') ? 1 : 0;
+      m_escapeIntfDict.insert(ext.mid(i),new TemplateEscapeIntf*(intf));
+    }
+    void selectEscapeIntf(const QCString &ext)
+    { TemplateEscapeIntf **ppIntf = m_escapeIntfDict.find(ext);
+      m_activeEscapeIntf = ppIntf ? *ppIntf : 0;
+    }
+    void setActiveEscapeIntf(TemplateEscapeIntf *intf)
+    { m_activeEscapeIntf = intf; }
     void setSpacelessIntf(TemplateSpacelessIntf *intf)
     { m_spacelessIntf = intf; }
 
@@ -597,7 +606,7 @@ class TemplateContextImpl : public TemplateContext
     QCString templateName() const { return m_templateName; }
     int line() const { return m_line; }
     QCString outputDirectory() const { return m_outputDir; }
-    TemplateEscapeIntf *escapeIntf() const { return m_escapeIntf; }
+    TemplateEscapeIntf *escapeIntf() const { return m_activeEscapeIntf; }
     TemplateSpacelessIntf *spacelessIntf() const { return m_spacelessIntf; }
     void enableSpaceless(bool b) { m_spacelessEnabled=b; }
     bool spacelessEnabled() const { return m_spacelessEnabled && m_spacelessIntf; }
@@ -610,7 +619,8 @@ class TemplateContextImpl : public TemplateContext
     QCString m_outputDir;
     QList< QDict<TemplateVariant> > m_contextStack;
     TemplateBlockContext m_blockContext;
-    TemplateEscapeIntf *m_escapeIntf;
+    QDict<TemplateEscapeIntf*> m_escapeIntfDict;
+    TemplateEscapeIntf *m_activeEscapeIntf;
     TemplateSpacelessIntf *m_spacelessIntf;
     bool m_spacelessEnabled;
 };
@@ -1763,10 +1773,11 @@ class TemplateImpl : public TemplateNode, public Template
 
 
 TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
-  : m_engine(e), m_templateName("<unknown>"), m_line(1), m_escapeIntf(0),
+  : m_engine(e), m_templateName("<unknown>"), m_line(1), m_activeEscapeIntf(0),
     m_spacelessIntf(0), m_spacelessEnabled(FALSE)
 {
   m_contextStack.setAutoDelete(TRUE);
+  m_escapeIntfDict.setAutoDelete(TRUE);
   push();
 }
 
@@ -2510,13 +2521,13 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
       TemplateEscapeIntf *escIntf = ci->escapeIntf();
-      ci->setEscapeIntf(0); // avoid escaping things we send to standard out
+      ci->setActiveEscapeIntf(0); // avoid escaping things we send to standard out
       bool enable = ci->spacelessEnabled();
       ci->enableSpaceless(FALSE);
       FTextStream ts(stdout);
       m_nodes.render(ts,c);
       ts << endl;
-      ci->setEscapeIntf(escIntf);
+      ci->setActiveEscapeIntf(escIntf);
       ci->enableSpaceless(enable);
     }
   private:
@@ -2809,6 +2820,12 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
             TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
+              QCString extension=outputFile;
+              int i=extension.findRev('.');
+              if (i!=-1)
+              {
+                extension=extension.right(extension.length()-i-1);
+              }
               if (!ci->outputDirectory().isEmpty())
               {
                 outputFile.prepend(ci->outputDirectory()+"/");
@@ -2816,9 +2833,12 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
               QFile f(outputFile);
               if (f.open(IO_WriteOnly))
               {
+                TemplateEscapeIntf *escIntf = ci->escapeIntf();
+                ci->selectEscapeIntf(extension);
                 FTextStream ts(&f);
                 createTemplate->render(ts,c);
                 t->engine()->unload(t);
+                ci->setActiveEscapeIntf(escIntf);
               }
               else
               {

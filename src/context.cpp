@@ -6788,8 +6788,8 @@ void generateOutputViaTemplate()
       g_globals.outputFormat = ContextGlobals::Html;
       g_globals.dynSectionId    = 0;
       g_globals.outputDir    = Config_getString("HTML_OUTPUT");
-      HtmlEscaper esc;
-      ctx->setEscapeIntf(&esc);
+      HtmlEscaper htmlEsc;
+      ctx->setEscapeIntf(Config_getString("HTML_FILE_EXTENSION"),&htmlEsc);
       HtmlSpaceless spl;
       ctx->setSpacelessIntf(&spl);
       ctx->setOutputDirectory(g_globals.outputDir);
