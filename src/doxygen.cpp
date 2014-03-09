@@ -9877,13 +9877,15 @@ void initDoxygen()
   initPreprocessor();
 
   Doxygen::parserManager = new ParserManager;
-  Doxygen::parserManager->registerParser("c",       new CLanguageScanner, TRUE);
-  Doxygen::parserManager->registerParser("python",  new PythonLanguageScanner);
-  Doxygen::parserManager->registerParser("fortran", new FortranLanguageScanner);
-  Doxygen::parserManager->registerParser("vhdl",    new VHDLLanguageScanner);
-  Doxygen::parserManager->registerParser("dbusxml", new DBusXMLScanner);
-  Doxygen::parserManager->registerParser("tcl",     new TclLanguageScanner);
-  Doxygen::parserManager->registerParser("md",      new MarkdownFileParser);
+  Doxygen::parserManager->registerParser("c",            new CLanguageScanner, TRUE);
+  Doxygen::parserManager->registerParser("python",       new PythonLanguageScanner);
+  Doxygen::parserManager->registerParser("fortran",      new FortranLanguageScanner);
+  Doxygen::parserManager->registerParser("fortranfree",  new FortranLanguageScannerFree);
+  Doxygen::parserManager->registerParser("fortranfixed", new FortranLanguageScannerFixed);
+  Doxygen::parserManager->registerParser("vhdl",         new VHDLLanguageScanner);
+  Doxygen::parserManager->registerParser("dbusxml",      new DBusXMLScanner);
+  Doxygen::parserManager->registerParser("tcl",          new TclLanguageScanner);
+  Doxygen::parserManager->registerParser("md",           new MarkdownFileParser);
 
   // register any additional parsers here...
 

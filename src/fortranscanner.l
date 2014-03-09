@@ -187,7 +187,7 @@ static InterfaceType     ifType = IF_NONE;
 static bool              functionLine = FALSE;
 
 static char              stringStartSymbol; // single or double quote
-static bool 		 parsingPrototype = FALSE; // see parsePrototype()
+static bool              parsingPrototype = FALSE; // see parsePrototype()
 
 //! Accumulated modifiers of current statement, eg variable declaration.
 static SymbolModifiers currentModifiers;
@@ -1313,10 +1313,13 @@ void truncatePrepass(int index)
 
 // simplified way to know if this is fixed form
 // duplicate in fortrancode.l
-static bool recognizeFixedForm(const char* contents)
+static bool recognizeFixedForm(const char* contents, FortranKind codeType)
 {
   int column=0;
   bool skipLine=FALSE;
+
+  if (codeType == FORTRAN_FIXED) return TRUE;
+  if (codeType == FORTRAN_FREE) return FALSE;
 
   for(int i=0;;i++) {
     column++;
@@ -2243,7 +2246,7 @@ level--;
 #endif
 
 
-static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
+static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, FortranKind codeType)
 {
   char *tmpBuf = NULL;
   initParser();
@@ -2263,7 +2266,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
-    isFixedForm = recognizeFixedForm(fileBuf);
+    isFixedForm = recognizeFixedForm(fileBuf,codeType);
 
     if (isFixedForm) 
     {
@@ -2342,7 +2345,7 @@ void FortranLanguageScanner::parseInput(const char *fileName,
 
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
-  ::parseMain(fileName,fileBuf,root);
+  ::parseMain(fileName,fileBuf,root,this->codeType);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
@@ -2365,7 +2368,7 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
 {
   ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                      fileDef,startLine,endLine,inlineFragment,memberDef,
-                     showLineNumbers,searchCtx,collectXRefs);
+                     showLineNumbers,searchCtx,collectXRefs,this->codeType);
 }
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)

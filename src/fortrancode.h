@@ -28,7 +28,7 @@ void parseFortranCode(CodeOutputInterface &,const char *,const QCString &,
             bool ,const char *,FileDef *fd,
             int startLine,int endLine,bool inlineFragment,
             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
-            bool collectRefs);
+            bool collectRefs, FortranKind codeType);
 void resetFortranCodeParserState();
 void codeFreeScanner();
 

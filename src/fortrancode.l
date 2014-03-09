@@ -154,11 +154,13 @@ static int 	     bracketCount = 0;
 
 // simplified way to know if this is fixed form
 // duplicate in fortranscanner.l
-static bool recognizeFixedForm(const char* contents)
+static bool recognizeFixedForm(const char* contents, FortranKind codeType)
 {
   int column=0;
   bool skipLine=FALSE;
 
+  if (codeType == FORTRAN_FIXED) return TRUE;
+  if (codeType == FORTRAN_FREE) return FALSE;
   for (int i=0;;i++) 
   {
     column++;
@@ -1108,7 +1110,7 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
 		  MemberDef *memberDef,bool,Definition *searchCtx,
-                  bool collectXRefs)
+                  bool collectXRefs, FortranKind codeType)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
 
@@ -1122,7 +1124,7 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
-  g_isFixedForm = recognizeFixedForm((const char*)s);
+  g_isFixedForm = recognizeFixedForm((const char*)s,codeType);
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
   g_searchCtx = searchCtx;
