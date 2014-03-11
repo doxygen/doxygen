@@ -103,8 +103,8 @@ class TemplateVariant::Private
     int                 intVal;
     QCString            strVal;
     bool                boolVal;
-    const TemplateStructIntf *strukt;
-    const TemplateListIntf   *list;
+    TemplateStructIntf *strukt;
+    TemplateListIntf   *list;
     Delegate            delegate;
     bool                raw;
 };
@@ -145,17 +145,20 @@ TemplateVariant::TemplateVariant(const QCString &s,bool raw)
   p->raw = raw;
 }
 
-TemplateVariant::TemplateVariant(const TemplateStructIntf *s)
+TemplateVariant::TemplateVariant(TemplateStructIntf *s)
 {
   p = new Private;
   p->type = Struct;
-  p->strukt = s; }
+  p->strukt = s;
+  p->strukt->addRef();
+}
 
-TemplateVariant::TemplateVariant(const TemplateListIntf *l)
+TemplateVariant::TemplateVariant(TemplateListIntf *l)
 {
   p = new Private;
   p->type = List;
   p->list = l;
+  p->list->addRef();
 }
 
 TemplateVariant::TemplateVariant(const TemplateVariant::Delegate &delegate)
@@ -167,6 +170,8 @@ TemplateVariant::TemplateVariant(const TemplateVariant::Delegate &delegate)
 
 TemplateVariant::~TemplateVariant()
 {
+  if (p->type==Struct) p->strukt->release();
+  else if (p->type==List) p->list->release();
   delete p;
 }
 
@@ -181,14 +186,20 @@ TemplateVariant::TemplateVariant(const TemplateVariant &v)
     case Bool:     p->boolVal = v.p->boolVal; break;
     case Integer:  p->intVal  = v.p->intVal;  break;
     case String:   p->strVal  = v.p->strVal;  break;
-    case Struct:   p->strukt  = v.p->strukt;  break;
-    case List:     p->list    = v.p->list;    break;
+    case Struct:   p->strukt  = v.p->strukt;  p->strukt->addRef(); break;
+    case List:     p->list    = v.p->list;    p->list->addRef();   break;
     case Function: p->delegate= v.p->delegate;break;
   }
 }
 
 TemplateVariant &TemplateVariant::operator=(const TemplateVariant &v)
 {
+  // assignment can change the type of the variable, so we have to be
+  // careful with reference counted content.
+  TemplateStructIntf *tmpStruct = p->type==Struct ? p->strukt : 0;
+  TemplateListIntf   *tmpList   = p->type==List   ? p->list   : 0;
+  Type tmpType = p->type;
+
   p->type    = v.p->type;
   p->raw     = v.p->raw;
   switch (p->type)
@@ -197,10 +208,14 @@ TemplateVariant &TemplateVariant::operator=(const TemplateVariant &v)
     case Bool:     p->boolVal = v.p->boolVal; break;
     case Integer:  p->intVal  = v.p->intVal;  break;
     case String:   p->strVal  = v.p->strVal;  break;
-    case Struct:   p->strukt  = v.p->strukt;  break;
-    case List:     p->list    = v.p->list;    break;
+    case Struct:   p->strukt  = v.p->strukt;  p->strukt->addRef(); break;
+    case List:     p->list    = v.p->list;    p->list->addRef();   break;
     case Function: p->delegate= v.p->delegate;break;
   }
+
+  // release overwritten reference counted values
+  if      (tmpType==Struct && tmpStruct) tmpStruct->release();
+  else if (tmpType==List   && tmpList  ) tmpList->release();
   return *this;
 }
 
@@ -353,9 +368,10 @@ bool TemplateVariant::raw() const
 class TemplateStruct::Private
 {
   public:
-    Private() : fields(17)
+    Private() : fields(17), refCount(0)
     { fields.setAutoDelete(TRUE); }
     QDict<TemplateVariant> fields;
+    int refCount;
 };
 
 TemplateStruct::TemplateStruct()
@@ -366,6 +382,21 @@ TemplateStruct::TemplateStruct()
 TemplateStruct::~TemplateStruct()
 {
   delete p;
+}
+
+int TemplateStruct::addRef()
+{
+  return ++p->refCount;
+}
+
+int TemplateStruct::release()
+{
+  int count = --p->refCount;
+  if (count<=0)
+  {
+    delete this;
+  }
+  return count;
 }
 
 void TemplateStruct::set(const char *name,const TemplateVariant &v)
@@ -387,6 +418,11 @@ TemplateVariant TemplateStruct::get(const char *name) const
   return v ? *v : TemplateVariant();
 }
 
+TemplateStruct *TemplateStruct::alloc()
+{
+  return new TemplateStruct;
+}
+
 //- Template list implementation ----------------------------------------------
 
 
@@ -394,9 +430,10 @@ TemplateVariant TemplateStruct::get(const char *name) const
 class TemplateList::Private
 {
   public:
-    Private() : index(-1) {}
+    Private() : index(-1), refCount(0) {}
     QValueList<TemplateVariant> elems;
     int index;
+    int refCount;
 };
 
 
@@ -408,6 +445,21 @@ TemplateList::TemplateList()
 TemplateList::~TemplateList()
 {
   delete p;
+}
+
+int TemplateList::addRef()
+{
+  return ++p->refCount;
+}
+
+int TemplateList::release()
+{
+  int count = --p->refCount;
+  if (count<=0)
+  {
+    delete this;
+  }
+  return count;
 }
 
 int TemplateList::count() const
@@ -490,6 +542,11 @@ TemplateVariant TemplateList::at(int index) const
   {
     return TemplateVariant();
   }
+}
+
+TemplateList *TemplateList::alloc()
+{
+  return new TemplateList;
 }
 
 //- Operator types ------------------------------------------------------------
@@ -2156,14 +2213,14 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
         int i, n = v.toInt();
         for (i=0;i<n;i++)
         {
-          TemplateStruct s;
-          s.set("counter0",    (int)i);
-          s.set("counter",     (int)(i+1));
-          s.set("revcounter",  (int)(n-i));
-          s.set("revcounter0", (int)(n-i-1));
-          s.set("first",i==0);
-          s.set("last", i==n-1);
-          c->set("repeatloop",&s);
+          TemplateAutoRef<TemplateStruct> s(TemplateStruct::alloc());
+          s->set("counter0",    (int)i);
+          s->set("counter",     (int)(i+1));
+          s->set("revcounter",  (int)(n-i));
+          s->set("revcounter0", (int)(n-i-1));
+          s->set("first",i==0);
+          s->set("last", i==n-1);
+          c->set("repeatloop",s.get());
           // render all items for this iteration of the loop
           m_repeatNodes.render(ts,c);
         }
@@ -2285,15 +2342,15 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
             while (!done)
             {
               // set the forloop meta-data variable
-              TemplateStruct s;
-              s.set("counter0",    (int)index);
-              s.set("counter",     (int)(index+1));
-              s.set("revcounter",  (int)(l-index));
-              s.set("revcounter0", (int)(l-index-1));
-              s.set("first",index==0);
-              s.set("last", (int)index==l-1);
-              s.set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
-              c->set("forloop",&s);
+              TemplateAutoRef<TemplateStruct> s(TemplateStruct::alloc());
+              s->set("counter0",    (int)index);
+              s->set("counter",     (int)(index+1));
+              s->set("revcounter",  (int)(l-index));
+              s->set("revcounter0", (int)(l-index-1));
+              s->set("first",index==0);
+              s->set("last", (int)index==l-1);
+              s->set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
+              c->set("forloop",s.get());
 
               // set the iterator variable
               c->set(m_var,i);
@@ -2447,15 +2504,15 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
               (it->current(v));
               m_reversed ? it->toPrev() : it->toNext())
           {
-            TemplateStruct s;
-            s.set("counter0",    (int)index);
-            s.set("counter",     (int)(index+1));
-            s.set("revcounter",  (int)(listSize-index));
-            s.set("revcounter0", (int)(listSize-index-1));
-            s.set("first",index==0);
-            s.set("last", index==listSize-1);
-            s.set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
-            c->set("forloop",&s);
+            TemplateAutoRef<TemplateStruct> s(TemplateStruct::alloc());
+            s->set("counter0",    (int)index);
+            s->set("counter",     (int)(index+1));
+            s->set("revcounter",  (int)(listSize-index));
+            s->set("revcounter0", (int)(listSize-index-1));
+            s->set("first",index==0);
+            s->set("last", index==listSize-1);
+            s->set("parentloop",parentLoop ? *parentLoop : TemplateVariant());
+            c->set("forloop",s.get());
 
             // add variables for this loop to the context
             //obj->addVariableToContext(index,m_vars,c);
@@ -2582,9 +2639,9 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
             m_nodes.render(ss,c); // render parent of nb to string
           }
           // add 'block.super' variable to allow access to parent block content
-          TemplateStruct superBlock;
-          superBlock.set("super",TemplateVariant(super.data(),TRUE));
-          ci->set("block",&superBlock);
+          TemplateAutoRef<TemplateStruct> superBlock(TemplateStruct::alloc());
+          superBlock->set("super",TemplateVariant(super.data(),TRUE));
+          ci->set("block",superBlock.get());
           // render the overruled block contents
           t->engine()->enterBlock(nb->m_templateName,nb->m_blockName,nb->m_line);
           nb->m_nodes.render(ts,c);
@@ -3235,9 +3292,9 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               for (it->toFirst(); (it->current(var)) && i<entryIndex; it->toNext(),i++) {}
               if (ok && i==entryIndex) // found element
               {
-                TemplateStruct s;
-                s.set("id",(int)i);
-                c->set("markers",&s);
+                TemplateAutoRef<TemplateStruct> s(TemplateStruct::alloc());
+                s->set("id",(int)i);
+                c->set("markers",s.get());
                 c->set(m_var,var); // define local variable to hold element of list type
                 bool wasSpaceless = ci->spacelessEnabled();
                 ci->enableSpaceless(TRUE);

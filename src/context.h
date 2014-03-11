@@ -4,6 +4,7 @@
 #include "types.h"
 #include "template.h"
 #include <qlist.h>
+#include <stdio.h>
 
 class Definition;
 class ClassDef;
@@ -38,102 +39,190 @@ class MemberGroupList;
 
 //----------------------------------------------------
 
-class ConfigContext : public TemplateStructIntf
+#define DEBUG_REF 0
+
+/** @brief Helper class to support reference counting */
+#if DEBUG_REF
+class RefCountedContext
 {
   public:
+    RefCountedContext(const char *className) : m_refCount(0)
+    {
+      m_className=className;
+      m_insideRelease = FALSE;
+    }
+    virtual ~RefCountedContext()
+    {
+      if (!m_insideRelease) abort();
+    }
+    int addRef()
+    {
+      ++s_totalCount;
+      printf("%p:%s::addRef()=%d\n",this,m_className.data(),m_refCount);
+      return ++m_refCount;
+    }
+    int release()
+    {
+      --s_totalCount;
+      printf("%p:%s::release()=%d\n",this,m_className.data(),m_refCount-1);
+      int count = --m_refCount;
+      if (count<=0)
+      {
+        m_insideRelease=TRUE;
+        delete this;
+      }
+      return count;
+    }
+  private:
+    int m_refCount;
+    QCString m_className;
+    bool m_insideRelease;
+  public:
+    static int s_totalCount;
+};
+
+#else // release version
+
+class RefCountedContext
+{
+  public:
+    RefCountedContext(const char *) : m_refCount(0) {}
+    virtual ~RefCountedContext() {}
+    int addRef() { return ++m_refCount; }
+    int release()
+    {
+      int count = --m_refCount;
+      if (count<=0)
+      {
+        delete this;
+      }
+      return count;
+    }
+  private:
+    int m_refCount;
+};
+#endif
+
+
+//----------------------------------------------------
+
+class ConfigContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static ConfigContext *alloc() { return new ConfigContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ConfigContext();
    ~ConfigContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class DoxygenContext : public TemplateStructIntf
+class DoxygenContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static DoxygenContext *alloc() { return new DoxygenContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     DoxygenContext();
    ~DoxygenContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class TranslateContext : public TemplateStructIntf
+class TranslateContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static TranslateContext *alloc() { return new TranslateContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     TranslateContext();
    ~TranslateContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class UsedFilesContext : public TemplateListIntf
+class UsedFilesContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    UsedFilesContext(ClassDef *cd);
-   ~UsedFilesContext();
+    static UsedFilesContext *alloc(ClassDef *cd) { return new UsedFilesContext(cd); }
 
     // TemplateListIntf
     virtual int count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void addFile(FileDef *fd);
 
   private:
+    UsedFilesContext(ClassDef *cd);
+   ~UsedFilesContext();
+
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class IncludeInfoContext : public TemplateStructIntf
+class IncludeInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    IncludeInfoContext(const IncludeInfo *,SrcLangExt lang);
-   ~IncludeInfoContext();
+    static IncludeInfoContext *alloc(const IncludeInfo *info,SrcLangExt lang)
+    { return new IncludeInfoContext(info,lang); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    IncludeInfoContext(const IncludeInfo *,SrcLangExt lang);
+   ~IncludeInfoContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class IncludeInfoListContext : public TemplateListIntf
+class IncludeInfoListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang);
-   ~IncludeInfoListContext();
+    static IncludeInfoListContext *alloc(const QList<IncludeInfo> &list,SrcLangExt lang)
+    { return new IncludeInfoListContext(list,lang); }
 
     // TemplateListIntf
     virtual int count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang);
+   ~IncludeInfoListContext();
     class Private;
     Private *p;
 };
@@ -141,63 +230,75 @@ class IncludeInfoListContext : public TemplateListIntf
 
 //----------------------------------------------------
 
-class ClassContext : public TemplateStructIntf
+class ClassContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static ClassContext *alloc(ClassDef *cd) { return new ClassContext(cd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ClassContext(ClassDef *);
    ~ClassContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NamespaceContext : public TemplateStructIntf
+class NamespaceContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static NamespaceContext *alloc(NamespaceDef *nd) { return new NamespaceContext(nd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     NamespaceContext(NamespaceDef *);
    ~NamespaceContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class FileContext : public TemplateStructIntf
+class FileContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static FileContext *alloc(FileDef *fd) { return new FileContext(fd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     FileContext(FileDef *);
    ~FileContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 //----------------------------------------------------
 
-class DirContext : public TemplateStructIntf
+class DirContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static DirContext *alloc(DirDef *dd) { return new DirContext(dd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     DirContext(DirDef *);
    ~DirContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
@@ -205,32 +306,38 @@ class DirContext : public TemplateStructIntf
 
 //----------------------------------------------------
 
-class PageContext : public TemplateStructIntf
+class PageContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static PageContext *alloc(PageDef *pd) { return new PageContext(pd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     PageContext(PageDef *);
    ~PageContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class MemberContext : public TemplateStructIntf
+class MemberContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static MemberContext *alloc(MemberDef *md) { return new MemberContext(md); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     MemberContext(MemberDef *);
    ~MemberContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
@@ -238,159 +345,190 @@ class MemberContext : public TemplateStructIntf
 
 //----------------------------------------------------
 
-class ModuleContext : public TemplateStructIntf
+class ModuleContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static ModuleContext *alloc(GroupDef *gd) { return new ModuleContext(gd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ModuleContext(GroupDef *);
    ~ModuleContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NestedClassListContext : public TemplateListIntf
+class NestedClassListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    NestedClassListContext();
-   ~NestedClassListContext();
+    static NestedClassListContext *alloc() { return new NestedClassListContext; }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void append(ClassDef *cd);
 
   private:
+    NestedClassListContext();
+   ~NestedClassListContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NestedNamespaceListContext : public TemplateListIntf
+class NestedNamespaceListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    NestedNamespaceListContext();
-   ~NestedNamespaceListContext();
+    static NestedNamespaceListContext *alloc() { return new NestedNamespaceListContext; }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void append(NamespaceDef *cd);
 
   private:
+    NestedNamespaceListContext();
+   ~NestedNamespaceListContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ClassListContext : public TemplateListIntf
+class ClassListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
+    static ClassListContext *alloc() { return new ClassListContext; }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ClassListContext();
    ~ClassListContext();
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ClassInheritanceNodeContext : public TemplateStructIntf
+class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    ClassInheritanceNodeContext(ClassDef *);
-   ~ClassInheritanceNodeContext();
+    static ClassInheritanceNodeContext *alloc(ClassDef *cd)
+    { return new ClassInheritanceNodeContext(cd); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void addChildren(const BaseClassList *bcl,bool hideSuper);
+
   private:
+    ClassInheritanceNodeContext(ClassDef *);
+   ~ClassInheritanceNodeContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ClassInheritanceContext : public TemplateListIntf
+class ClassInheritanceContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    ClassInheritanceContext();
-   ~ClassInheritanceContext();
+    static ClassInheritanceContext *alloc() { return new ClassInheritanceContext; }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    ClassInheritanceContext();
+   ~ClassInheritanceContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ClassHierarchyContext : public TemplateStructIntf
+class ClassHierarchyContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    ClassHierarchyContext();
-   ~ClassHierarchyContext();
+    static ClassHierarchyContext *alloc() { return new ClassHierarchyContext; }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    ClassHierarchyContext();
+   ~ClassHierarchyContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NestingNodeContext : public TemplateStructIntf
+class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    NestingNodeContext(const NestingNodeContext *parent,
-                       Definition *,int index,int level,bool addClasses);
-   ~NestingNodeContext();
+    static NestingNodeContext *alloc(const NestingNodeContext *parent,Definition *def,
+                                     int index,int level,bool addClasses)
+    { return new NestingNodeContext(parent,def,index,level,addClasses); }
+
     QCString id() const;
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    NestingNodeContext(const NestingNodeContext *parent,
+                       Definition *,int index,int level,bool addClasses);
+   ~NestingNodeContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NestingContext : public TemplateListIntf
+class NestingContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    NestingContext(const NestingNodeContext *parent,int level);
-   ~NestingContext();
+    static NestingContext *alloc(const NestingNodeContext *parent,int level)
+    { return new NestingContext(parent,level); }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses);
     void addClasses(const ClassSDict &clDict,bool rootOnly);
@@ -398,302 +536,310 @@ class NestingContext : public TemplateListIntf
     void addDirs(const DirList &);
     void addFiles(const FileNameList &);
     void addFiles(const FileList &);
+
   private:
+    NestingContext(const NestingNodeContext *parent,int level);
+   ~NestingContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ClassTreeContext : public TemplateStructIntf
+class ClassTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static ClassTreeContext *alloc() { return new ClassTreeContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ClassTreeContext();
    ~ClassTreeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NamespaceListContext : public TemplateListIntf
+class NamespaceListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
+    static NamespaceListContext *alloc() { return new NamespaceListContext; }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     NamespaceListContext();
    ~NamespaceListContext();
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NamespaceTreeContext : public TemplateStructIntf
+class NamespaceTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static NamespaceTreeContext *alloc() { return new NamespaceTreeContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     NamespaceTreeContext();
    ~NamespaceTreeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-#if 0
-
-class DirFileNodeContext : public TemplateStructIntf
-{
-  public:
-    DirFileNodeContext(const DirFileNodeContext *parent,
-                       Definition *,int index,int level);
-   ~DirFileNodeContext();
-    QCString id() const;
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class DirFileContext : public TemplateListIntf
+class DirListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    DirFileContext(const DirFileNodeContext *parent,int level);
-   ~DirFileContext();
+    static DirListContext *alloc() { return new DirListContext; }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
-    void addDirs(const DirSDict &);
-    void addDirs(const DirList &);
-    void addFiles(const FileNameList &);
-    void addFiles(const FileList &);
   private:
-    class Private;
-    Private *p;
-};
-#endif
-
-//----------------------------------------------------
-
-class DirListContext : public TemplateListIntf
-{
-  public:
     DirListContext();
    ~DirListContext();
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class FileListContext : public TemplateListIntf
+class FileListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
+    static FileListContext *alloc() { return new FileListContext; }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     FileListContext();
    ~FileListContext();
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class FileTreeContext : public TemplateStructIntf
+class FileTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static FileTreeContext *alloc() { return new FileTreeContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     FileTreeContext();
    ~FileTreeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class PageNodeContext : public TemplateStructIntf
+class PageNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static PageNodeContext *alloc(PageDef *pd) { return new PageNodeContext(pd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     PageNodeContext(PageDef *);
    ~PageNodeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class PageNodeListContext : public TemplateListIntf
+class PageNodeListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    PageNodeListContext();
-   ~PageNodeListContext();
+    static PageNodeListContext *alloc() { return new PageNodeListContext; }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void addPages(const PageSDict &,bool rootOnly);
+
   private:
+    PageNodeListContext();
+   ~PageNodeListContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class PageListContext : public TemplateStructIntf
+class PageListContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static PageListContext *alloc() { return new PageListContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     PageListContext();
    ~PageListContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class PageTreeContext : public TemplateStructIntf
+class PageTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static PageTreeContext *alloc() { return new PageTreeContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     PageTreeContext();
    ~PageTreeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ModuleNodeContext : public TemplateStructIntf
+class ModuleNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static ModuleNodeContext *alloc(GroupDef *gd) { return new ModuleNodeContext(gd); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ModuleNodeContext(GroupDef *);
    ~ModuleNodeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ModuleListContext : public TemplateListIntf
+class ModuleListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    ModuleListContext();
-   ~ModuleListContext();
+    static ModuleListContext *alloc() { return new ModuleListContext(); }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
     void addModules(const GroupSDict &);
     void addModules(const GroupList &);
+
   private:
+    ModuleListContext();
+   ~ModuleListContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ModuleTreeContext : public TemplateStructIntf
+class ModuleTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static ModuleTreeContext *alloc() { return new ModuleTreeContext(); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ModuleTreeContext();
    ~ModuleTreeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ExampleListContext : public TemplateStructIntf
+class ExampleListContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static ExampleListContext *alloc() { return new ExampleListContext(); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     ExampleListContext();
    ~ExampleListContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class NavPathElemContext : public TemplateStructIntf
+class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static NavPathElemContext *alloc(Definition *def) { return new NavPathElemContext(def); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     NavPathElemContext(Definition *def);
    ~NavPathElemContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
@@ -701,90 +847,118 @@ class NavPathElemContext : public TemplateStructIntf
 
 //----------------------------------------------------
 
-class InheritanceNodeContext : public TemplateStructIntf
+class InheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static InheritanceNodeContext *alloc(ClassDef *cd,const QCString &name)
+    { return new InheritanceNodeContext(cd,name); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     InheritanceNodeContext(ClassDef *cd,const QCString &name);
    ~InheritanceNodeContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class InheritanceListContext : public TemplateListIntf
+class InheritanceListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    InheritanceListContext(const BaseClassList *list,bool baseClasses);
-   ~InheritanceListContext();
+    static InheritanceListContext *alloc(const BaseClassList *list,bool baseClasses)
+    { return new InheritanceListContext(list,baseClasses); }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    InheritanceListContext(const BaseClassList *list,bool baseClasses);
+   ~InheritanceListContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class MemberListContext : public TemplateListIntf
+class MemberListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
+    static MemberListContext *alloc()
+    { return new MemberListContext; }
+    static MemberListContext *alloc(const MemberList *ml)
+    { return new MemberListContext(ml); }
+    static MemberListContext *alloc(MemberSDict *ml,bool doSort)
+    { return new MemberListContext(ml,doSort); }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     MemberListContext();
     MemberListContext(const MemberList *ml);
     MemberListContext(MemberSDict *ml,bool doSort);
    ~MemberListContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class MemberGroupInfoContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static MemberGroupInfoContext *alloc(Definition *def,const QCString &relPath,const MemberGroup *mg)
+    { return new MemberGroupInfoContext(def,relPath,mg); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    MemberGroupInfoContext(Definition *def,const QCString &relPath,const MemberGroup *mg);
+   ~MemberGroupInfoContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
+{
+  public:
+    static MemberGroupListContext *alloc()
+    { return new MemberGroupListContext; }
+    static MemberGroupListContext *alloc(Definition *def,const QCString &relPath,const MemberGroupList *list)
+    { return new MemberGroupListContext(def,relPath,list); }
+    static MemberGroupListContext *alloc(Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
+    { return new MemberGroupListContext(def,relPath,dict,subGrouping); }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class MemberGroupInfoContext : public TemplateStructIntf
-{
-  public:
-    MemberGroupInfoContext(Definition *def,const QCString &relPath,const MemberGroup *mg);
-   ~MemberGroupInfoContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class MemberGroupListContext : public TemplateListIntf
-{
-  public:
     MemberGroupListContext();
     MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupList *list);
     MemberGroupListContext(Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
    ~MemberGroupListContext();
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-
-  private:
     class Private;
     Private *p;
 };
@@ -792,123 +966,154 @@ class MemberGroupListContext : public TemplateListIntf
 
 //----------------------------------------------------
 
-class MemberListInfoContext : public TemplateStructIntf
+class MemberListInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static MemberListInfoContext *alloc(Definition *def,const QCString &relPath,
+                          const MemberList *ml,const QCString &title,
+                          const QCString &subtitle=QCString())
+    { return new MemberListInfoContext(def,relPath,ml,title,subtitle); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     MemberListInfoContext(Definition *def,const QCString &relPath,
                           const MemberList *ml,const QCString &title,
                           const QCString &subtitle=QCString());
    ~MemberListInfoContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class MemberInfoContext : public TemplateStructIntf
+class MemberInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static MemberInfoContext *alloc(const MemberInfo *mi) { return new MemberInfoContext(mi); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     MemberInfoContext(const MemberInfo *mi);
    ~MemberInfoContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class InheritedMemberInfoContext : public TemplateStructIntf
+class InheritedMemberInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
+    static InheritedMemberInfoContext *alloc(ClassDef *cd,MemberList *ml,const QCString &title)
+    { return new InheritedMemberInfoContext(cd,ml,title); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     InheritedMemberInfoContext(ClassDef *cd,MemberList *ml,const QCString &title);
    ~InheritedMemberInfoContext();
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class InheritedMemberInfoListContext : public TemplateListIntf
+class InheritedMemberInfoListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    InheritedMemberInfoListContext();
+    static InheritedMemberInfoListContext *alloc() { return new InheritedMemberInfoListContext; }
     void addMemberList(ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList=TRUE);
-   ~InheritedMemberInfoListContext();
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    InheritedMemberInfoListContext();
+   ~InheritedMemberInfoListContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class AllMembersListContext : public TemplateListIntf
+class AllMembersListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
+    static AllMembersListContext *alloc()
+    { return new AllMembersListContext; }
+    static AllMembersListContext *alloc(const MemberNameInfoSDict *ml)
+    { return new AllMembersListContext(ml); }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
     AllMembersListContext();
     AllMembersListContext(const MemberNameInfoSDict *ml);
    ~AllMembersListContext();
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-
-  private:
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ArgumentContext : public TemplateStructIntf
+class ArgumentContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    ArgumentContext(const Argument *arg,Definition *def,const QCString &relPath);
-   ~ArgumentContext();
+    static ArgumentContext *alloc(const Argument *arg,Definition *def,const QCString &relPath)
+    { return new ArgumentContext(arg,def,relPath); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    ArgumentContext(const Argument *arg,Definition *def,const QCString &relPath);
+   ~ArgumentContext();
     class Private;
     Private *p;
 };
 
 //----------------------------------------------------
 
-class ArgumentListContext : public TemplateListIntf
+class ArgumentListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    ArgumentListContext();
-    ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
-   ~ArgumentListContext();
+    static ArgumentListContext *alloc() { return new ArgumentListContext; }
+    static ArgumentListContext *alloc(const ArgumentList *al,Definition *def,const QCString &relPath)
+    { return new ArgumentListContext(al,def,relPath); }
 
     // TemplateListIntf
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
 
   private:
+    ArgumentListContext();
+    ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
+   ~ArgumentListContext();
     class Private;
     Private *p;
 };

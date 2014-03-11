@@ -165,6 +165,7 @@ FTextStream::FTextStream( FILE *fh )
 {
   m_dev = new QFile;
   ((QFile *)m_dev)->open( IO_WriteOnly, fh);
+  m_owndev = TRUE;
 }
 
 FTextStream::~FTextStream()

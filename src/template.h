@@ -145,16 +145,14 @@ class TemplateVariant
     TemplateVariant(const QCString &s,bool raw=FALSE);
 
     /** Constructs a new variant with a struct value \a s.
-     *  @note. Only a pointer to the struct is stored. The caller
-     *  is responsible to manage the memory for the struct object.
+     *  @note. The variant will hold a reference to the object.
      */
-    TemplateVariant(const TemplateStructIntf *s);
+    TemplateVariant(TemplateStructIntf *s);
 
     /** Constructs a new variant with a list value \a l.
-     *  @note. Only a pointer to the struct is stored. The caller
-     *  is responsible to manage the memory for the list object.
+     *  @note. The variant will hold a reference to the object.
      */
-    TemplateVariant(const TemplateListIntf *l);
+    TemplateVariant(TemplateListIntf *l);
 
     /** Constructs a new variant which represents a method call
      *  @param[in] delegate Delegate object to invoke when
@@ -223,6 +221,27 @@ class TemplateVariant
 
 //------------------------------------------------------------------------
 
+template<class T> class TemplateAutoRef
+{
+  public:
+    TemplateAutoRef(T *obj) : m_obj(obj)
+    {
+      m_obj->addRef();
+    }
+   ~TemplateAutoRef()
+    {
+      m_obj->release();
+    }
+    T &operator*() const { return *m_obj; }
+    T *operator->() const { return m_obj; }
+    T *get() const { return m_obj; }
+
+  private:
+   T *m_obj;
+};
+
+//------------------------------------------------------------------------
+
 /** @brief Abstract read-only interface for a context value of type list.
  *  @note The values of the list are TemplateVariants.
  */
@@ -264,26 +283,37 @@ class TemplateListIntf
      *  @note the user should call delete on the returned pointer.
      */
     virtual TemplateListIntf::ConstIterator *createIterator() const = 0;
+
+    /** Increase object's reference count */
+    virtual int addRef() = 0;
+
+    /** Decreases object's referenc count, destroy object if 0 */
+    virtual int release() = 0;
 };
 
 /** @brief Default implementation of a context value of type list. */
 class TemplateList : public TemplateListIntf
 {
   public:
-    /** Creates a list */
-    TemplateList();
-    /** Destroys the list */
-   ~TemplateList();
-
     // TemplateListIntf methods
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef();
+    virtual int release();
+
+    /** Creates an instance with ref count set to 0 */
+    static TemplateList *alloc();
 
     /** Appends element \a v to the end of the list */
     virtual void append(const TemplateVariant &v);
 
   private:
+    /** Creates a list */
+    TemplateList();
+    /** Destroys the list */
+   ~TemplateList();
+
     friend class TemplateListConstIterator;
     class Private;
     Private *p;
@@ -302,6 +332,12 @@ class TemplateStructIntf
      *  @param[in] name The name of the field.
      */
     virtual TemplateVariant get(const char *name) const = 0;
+
+    /** Increase object's reference count */
+    virtual int addRef() = 0;
+
+    /** Decreases object's referenc count, destroy object if 0 */
+    virtual int release() = 0;
 };
 
 
@@ -309,13 +345,13 @@ class TemplateStructIntf
 class TemplateStruct : public TemplateStructIntf
 {
   public:
-    /** Creates a struct */
-    TemplateStruct();
-    /** Destroys the struct */
-    virtual ~TemplateStruct();
-
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
+    virtual int addRef();
+    virtual int release();
+
+    /** Creates an instance with ref count set to 0. */
+    static TemplateStruct *alloc();
 
     /** Sets the value the field of a struct
      *  @param[in] name The name of the field.
@@ -323,7 +359,13 @@ class TemplateStruct : public TemplateStructIntf
      */
     virtual void set(const char *name,const TemplateVariant &v);
 
+
   private:
+    /** Creates a struct */
+    TemplateStruct();
+    /** Destroys the struct */
+    virtual ~TemplateStruct();
+
     class Private;
     Private *p;
 };
