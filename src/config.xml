@@ -3056,14 +3056,15 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_NUM_THREADS' defval='0' minval='0' maxval='1000000' depends='HAVE_DOT'>
+    <option type='int' id='DOT_NUM_THREADS' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_NUM_THREADS specifies the number of \c dot invocations doxygen is 
  allowed to run in parallel. When set to \c 0 doxygen will 
  base this on the number of processors available in the system. You can set it 
  explicitly to a value larger than 0 to get control over the balance 
- between CPU load and processing speed. The maximum number of threads will be
+ between CPU load and processing speed. When setting it to a negative number 
+ the absolute number of processes that is specified is used with a maximum of
  the number of availabele processors + 1 (enforced during runtime).
 ]]>
       </docs>
