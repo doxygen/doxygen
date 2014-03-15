@@ -19,6 +19,7 @@
 #define SCANNER_FORTRAN_H
 
 #include "parserintf.h"
+#include "util.h"
 
 /** \brief Fortran language parser using state-based lexical scanning.
  *
@@ -27,9 +28,10 @@
 class FortranLanguageScanner : public ParserInterface
 {
   public:
-    virtual ~FortranLanguageScanner() {}
+    FortranLanguageScanner(void) { codeType = FORTRAN_UNKNOWN;}
+    virtual ~FortranLanguageScanner(void) {}
     void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
+    void finishTranslationUnit(void) {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
                     Entry *root,
@@ -51,8 +53,22 @@ class FortranLanguageScanner : public ParserInterface
                    Definition *searchCtx=0,
                    bool collectXRefs=TRUE
                   );
-    void resetCodeParserState();
+    void resetCodeParserState(void);
     void parsePrototype(const char *text);
+
+    FortranKind codeType;
+};
+
+class FortranLanguageScannerFree : public FortranLanguageScanner
+{
+  public:
+    FortranLanguageScannerFree(void) { codeType = FORTRAN_FREE; } 
+};
+
+class FortranLanguageScannerFixed : public FortranLanguageScanner
+{
+  public:
+    FortranLanguageScannerFixed(void) { codeType = FORTRAN_FIXED; }
 };
 
 #endif
