@@ -414,7 +414,6 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
 const char *writeUtf8Char(FTextStream &t,const char *s);
 
-enum FortranKind { FORTRAN_UNKNOWN = 0, FORTRAN_FREE, FORTRAN_FIXED};
 
 /** Data associated with a HSV colored image. */
 struct ColoredImgDataItem

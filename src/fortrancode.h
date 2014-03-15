@@ -15,8 +15,10 @@
  *
  */
 
-#ifndef CODE_H
-#define CODE_H
+#ifndef FORTRANCODE_H
+#define FORTRANCODE_H
+
+#include "types.h"
 
 class CodeOutputInterface;
 class FileDef;
@@ -28,7 +30,7 @@ void parseFortranCode(CodeOutputInterface &,const char *,const QCString &,
             bool ,const char *,FileDef *fd,
             int startLine,int endLine,bool inlineFragment,
             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
-            bool collectRefs, FortranKind codeType);
+            bool collectRefs, FortranFormat format);
 void resetFortranCodeParserState();
 void codeFreeScanner();
 

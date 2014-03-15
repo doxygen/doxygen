@@ -460,10 +460,10 @@ settings where overruled.
 When using doxygen for Fortran code you should
 set \ref cfg_optimize_for_fortran "OPTIMIZE_FOR_FORTRAN" to \c YES.
 
-The parser tries to guess wheter the source code is fixed format Fortran or
-free format Fortran code. This is not always correct, in the later case 
+The parser tries to guess if the source code is fixed format Fortran or
+free format Fortran code. This may not always be correct. If not
 one should use \ref cfg_extension_mapping "EXTENSION_MAPPING" to correct this.
-By setteing `EXTENSION_MAPPING =  f=FortranFixed f90=FortranFree` files with
+By setting `EXTENSION_MAPPING =  f=FortranFixed f90=FortranFree` files with
 extension \c f90 are interpreted as fixed format Fortran code and files with
 extension \c f are interpreted as free format Fortran code.
 

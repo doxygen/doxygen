@@ -1146,10 +1146,10 @@ static unsigned encodeLZ77_brute(uivector* out, const unsigned char* in, size_t 
 }
 #endif
 
+/*
 static const unsigned HASH_NUM_VALUES = 65536;
 static const unsigned HASH_NUM_CHARACTERS = 6;
 static const unsigned HASH_SHIFT = 2;
-/*
 Good and fast values: HASH_NUM_VALUES=65536, HASH_NUM_CHARACTERS=6, HASH_SHIFT=2
 making HASH_NUM_CHARACTERS larger (like 8), makes the file size larger but is a bit faster
 making HASH_NUM_CHARACTERS smaller (like 3), makes the file size smaller but is slower

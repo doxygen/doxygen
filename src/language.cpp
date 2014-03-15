@@ -156,16 +156,6 @@
 
 Translator *theTranslator=0;
 
-static const char obsoleteMsg[] =
-        "---------\n"
-        "ERROR: The selected language is no longer supported!\n"
-        "If you want doxygen to produce output in this language \n"
-        "you are kindly requested to help bringing the documentation \n"
-        "up to date. Please read the development section of the manual \n"
-        "for more information or contact Petr Prikryl (Prikryl@skil.cz).\n"
-        "Thanks in advance!\n"
-        "---------\n";
-
 bool setTranslator(const char *langName)
 {
   if (L_EQUAL("english"))

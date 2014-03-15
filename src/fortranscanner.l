@@ -1313,13 +1313,13 @@ void truncatePrepass(int index)
 
 // simplified way to know if this is fixed form
 // duplicate in fortrancode.l
-static bool recognizeFixedForm(const char* contents, FortranKind codeType)
+static bool recognizeFixedForm(const char* contents, FortranFormat format)
 {
   int column=0;
   bool skipLine=FALSE;
 
-  if (codeType == FORTRAN_FIXED) return TRUE;
-  if (codeType == FORTRAN_FREE) return FALSE;
+  if (format == FortranFormat_Fixed) return TRUE;
+  if (format == FortranFormat_Free)  return FALSE;
 
   for(int i=0;;i++) {
     column++;
@@ -2246,7 +2246,7 @@ level--;
 #endif
 
 
-static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, FortranKind codeType)
+static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, FortranFormat format)
 {
   char *tmpBuf = NULL;
   initParser();
@@ -2266,7 +2266,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt, Fortra
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
-    isFixedForm = recognizeFixedForm(fileBuf,codeType);
+    isFixedForm = recognizeFixedForm(fileBuf,format);
 
     if (isFixedForm) 
     {
@@ -2345,7 +2345,7 @@ void FortranLanguageScanner::parseInput(const char *fileName,
 
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
 
-  ::parseMain(fileName,fileBuf,root,this->codeType);
+  ::parseMain(fileName,fileBuf,root,m_format);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
 }
@@ -2368,7 +2368,7 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
 {
   ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
                      fileDef,startLine,endLine,inlineFragment,memberDef,
-                     showLineNumbers,searchCtx,collectXRefs,this->codeType);
+                     showLineNumbers,searchCtx,collectXRefs,m_format);
 }
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)

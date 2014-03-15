@@ -210,4 +210,11 @@ enum MemberType
   MemberType_Service,
 };
 
+enum FortranFormat
+{
+  FortranFormat_Unknown,
+  FortranFormat_Free,
+  FortranFormat_Fixed
+};
+
 #endif
