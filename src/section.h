@@ -35,9 +35,9 @@ struct SectionInfo
                    };
   SectionInfo(const char *f,const int lin,const char *l,const char *t,
               SectionType st,int lev,const char *r=0) :
-    label(l), title(t), type(st), ref(r), definition(0), 
-    fileName(f), generated(FALSE), level(lev), lineNr(lin)
-  { 
+    label(l), title(t), type(st), ref(r), definition(0),
+    fileName(f), lineNr(lin), generated(FALSE), level(lev)
+  {
   }
   SectionInfo(const SectionInfo &s)
   {
@@ -52,7 +52,7 @@ struct SectionInfo
     level=s.level;
   }
  ~SectionInfo() {}
-  QCString label; 
+  QCString label;
   QCString title;
   SectionType type;
   QCString ref;
