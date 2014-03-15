@@ -3056,7 +3056,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_NUM_THREADS' defval='0' depends='HAVE_DOT'>
+    <option type='int' id='DOT_NUM_THREADS' minval='-100000' maxval='100000' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
  The \c DOT_NUM_THREADS specifies the number of \c dot invocations doxygen is 
