@@ -1120,7 +1120,7 @@ void TagFileParser::addDocAnchors(Entry *e,const TagAnchorInfoList &l)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
       //    ta->fileName.data(),ta->label.data());
-      SectionInfo *si=new SectionInfo(ta->fileName,ta->label,ta->title,
+      SectionInfo *si=new SectionInfo(ta->fileName,-1,ta->label,ta->title,
           SectionInfo::Anchor,0,m_tagName);
       Doxygen::sectionDict->append(ta->label,si);
       e->anchors->append(si);

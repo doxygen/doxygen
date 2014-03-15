@@ -139,6 +139,7 @@ void marshalSectionInfoList(StorageIntf *s, QList<SectionInfo> *anchors)
       marshalQCString(s,si->ref);
       marshalInt(s,(int)si->type);
       marshalQCString(s,si->fileName);
+      marshalInt(s,si->lineNr);
       marshalInt(s,si->level);
     }
   }
@@ -546,8 +547,9 @@ QList<SectionInfo> *unmarshalSectionInfoList(StorageIntf *s)
     QCString ref   = unmarshalQCString(s);
     SectionInfo::SectionType type = (SectionInfo::SectionType)unmarshalInt(s);
     QCString fileName = unmarshalQCString(s);
+    int lineNr = unmarshalInt(s);
     int level = unmarshalInt(s);
-    result->append(new SectionInfo(fileName,label,title,type,level,ref));
+    result->append(new SectionInfo(fileName,lineNr,label,title,type,level,ref));
   }
   return result;
 }
