@@ -191,12 +191,12 @@ class TemplateVariant
     /** Returns the pointer to list referenced by this variant
      *  or 0 if this variant does not have list type.
      */
-    const TemplateListIntf   *toList() const;
+    TemplateListIntf   *toList() const;
 
     /** Returns the pointer to struct referenced by this variant
      *  or 0 if this variant does not have struct type.
      */
-    const TemplateStructIntf *toStruct() const;
+    TemplateStructIntf *toStruct() const;
 
     /** Return the result of apply this function with \a args.
      *  Returns an empty string if the variant type is not a function.
@@ -399,7 +399,7 @@ class TemplateSpacelessIntf
  *  A key is searched starting with the dictionary at the top of the stack
  *  and searching downwards until it is found. The stack is used to create
  *  local scopes.
- *  @note This object must be created by TemplateEngine
+ *  @note This object must be created by TemplateEngine::createContext()
  */
 class TemplateContext
 {
