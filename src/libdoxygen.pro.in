@@ -224,7 +224,6 @@ win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions
 linux-g++:TMAKE_CXXFLAGS   += -fno-exceptions
 INCLUDEPATH                += ../generated_src/doxygen ../src ../qtools ../libmd5
 INCLUDEPATH                += %%SQLITE3_INC%%
-INCLUDEPATH		   += %%LIBCLANG_INC%%
 DEPENDPATH                 += ../generated_src/doxygen
 win32:INCLUDEPATH          += .
 DESTDIR                    =  ../lib
