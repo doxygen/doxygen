@@ -627,7 +627,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
                          QCString tagName(yytext+1);
 			 int index=tagName.find(':');
-  			 g_token->name = tagName.left(index+1);
+  			 g_token->name = tagName.left(index);
 			 g_token->text = tagName.mid(index+2,tagName.length()-index-3);
 			 return TK_RCSTAG;
   		       }
