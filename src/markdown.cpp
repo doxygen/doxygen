@@ -1925,12 +1925,29 @@ static void findEndOfLine(GrowBuf &out,const char *data,int size,
   //printf("findEndOfLine pi=%d i=%d end=%d {%s}\n",pi,i,end,QCString(data+i).left(end-i).data());
 }
 
+static void writeFencedCodeBlock(GrowBuf &out,const char *data,const char *lng,
+                int blockStart,int blockEnd)
+{
+  QCString lang = lng;
+  if (!lang.isEmpty() && lang.at(0)=='.') lang=lang.mid(1);
+  out.addStr("@code");
+  if (!lang.isEmpty())
+  {
+    out.addStr("{"+lang+"}");
+  }
+  out.addStr(data+blockStart,blockEnd-blockStart);
+  out.addStr("\n");
+  out.addStr("@endcode");
+}
+
 static QCString processQuotations(const QCString &s,int refIndent)
 {
   GrowBuf out;
   const char *data = s.data();
   int size = s.length();
   int i=0,end=0,pi=-1;
+  int blockStart,blockEnd,blockOffset;
+  QCString lang;
   while (i<size)
   {
     findEndOfLine(out,data,size,pi,i,end);
@@ -1938,7 +1955,15 @@ static QCString processQuotations(const QCString &s,int refIndent)
 
     if (pi!=-1)
     {
-      if (isBlockQuote(data+pi,i-pi,refIndent))
+      if (isFencedCodeBlock(data+pi,size-pi,refIndent,lang,blockStart,blockEnd,blockOffset))
+      {
+        writeFencedCodeBlock(out,data+pi,lang,blockStart,blockEnd);
+        i=pi+blockOffset;
+        pi=-1;
+        end=i+1;
+        continue;
+      }
+      else if (isBlockQuote(data+pi,i-pi,refIndent))
       {
         i = pi+writeBlockQuote(out,data+pi,size-pi);
         pi=-1;
@@ -2089,15 +2114,7 @@ static QCString processBlocks(const QCString &s,int indent)
       {
         //printf("Found FencedCodeBlock lang='%s' start=%d end=%d code={%s}\n",
         //       lang.data(),blockStart,blockEnd,QCString(data+pi+blockStart).left(blockEnd-blockStart).data());
-        if (!lang.isEmpty() && lang.at(0)=='.') lang=lang.mid(1);
-        out.addStr("@code");
-        if (!lang.isEmpty())
-        {
-          out.addStr("{"+lang+"}");
-        }
-        out.addStr(data+pi+blockStart,blockEnd-blockStart);       
-        out.addStr("\n");
-        out.addStr("@endcode");
+        writeFencedCodeBlock(out,data+pi,lang,blockStart,blockEnd);
         i=pi+blockOffset;
         pi=-1;
         end=i+1;
