@@ -628,7 +628,15 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
                          QCString tagName(yytext+1);
 			 int index=tagName.find(':');
   			 g_token->name = tagName.left(index+1);
-			 g_token->text = tagName.mid(index+2,tagName.length()-index-3);
+			 int text_begin = index+2;
+			 int text_end = tagName.length()-1;
+			 if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
+			 {
+				 ++text_begin;
+				 if (tagName[text_end-1]=='#')
+					 --text_end;
+			 }
+			 g_token->text = tagName.mid(text_begin,text_end-text_begin);
 			 return TK_RCSTAG;
   		       }
 <St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */
