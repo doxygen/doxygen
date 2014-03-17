@@ -3927,7 +3927,7 @@ class ClassInheritanceContext::Private : public
         bool b;
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          if (!(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS)
+          if (((VhdlDocGen::VhdlClasses)cd->protection())!=VhdlDocGen::ENTITYCLASS)
           {
             continue;
           }

@@ -2462,8 +2462,8 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
   for (cli.toLast();(cd=cli.current());--cli)
   {
     //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
-    if (cd->getLanguage()==SrcLangExt_VHDL  && !(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS)
-      continue; 
+    if (cd->getLanguage()==SrcLangExt_VHDL  && ((VhdlDocGen::VhdlClasses)cd->protection())!=VhdlDocGen::ENTITYCLASS)
+      continue;
     if (!hasVisibleRoot(cd->baseClasses()) &&
         cd->isVisibleInHierarchy()
        ) // root node in the forest

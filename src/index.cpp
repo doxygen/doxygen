@@ -811,7 +811,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
     bool b;
     if (cd->getLanguage()==SrcLangExt_VHDL)
     {
-      if (!(VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS)      
+      if (((VhdlDocGen::VhdlClasses)cd->protection())!=VhdlDocGen::ENTITYCLASS)
       {
         continue;
       }
