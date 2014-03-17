@@ -16,7 +16,7 @@
  */
 
 #ifndef _COMMENTCNV_H
-#define _COMMNETCNV_H
+#define _COMMENTCNV_H
 
 class BufStr;
 
