@@ -1656,6 +1656,16 @@ static int writeTableBlock(GrowBuf &out,const char *data,int size)
 }
 
 
+static int hasLineBreak(const char *data,int size)
+{
+  int i=0;
+  while (i<size && data[i]!='\n') i++;
+  if (i>=size) return 0; // empty line
+  if (i<2) return 0; // not long enough
+  return (data[i-1]==' ' && data[i-2]==' ');
+}
+
+
 void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
 {
   int level;
@@ -1729,6 +1739,10 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
   else // nothing interesting -> just output the line
   {
     out.addStr(data,size);
+    if (hasLineBreak(data,size))
+    {
+      out.addStr("<br>");
+    }
   }
 }
 
