@@ -2597,6 +2597,14 @@ EXTRA_PACKAGES=times
 ]]>
       </docs>
     </option>
+    <option type='string' id='HTML_BIB_STYLE' format='string' defval='plain' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ The \c HTML_BIB_STYLE tag can be used to specify the style to use for the 
+ bibliography and citations of the HTML documentation.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='RTF' docs='Configuration options related to the RTF output'>
     <option type='bool' id='GENERATE_RTF' defval='0'>

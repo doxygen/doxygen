@@ -220,9 +220,14 @@ void CiteDict::generatePage() const
   QCString oldDir = QDir::currentDirPath().utf8();
   QDir::setCurrent(outputDir);
 
-  // 5. run bib2xhtml perl script on the generated file which will insert the
+  // 5.a Get cite configuration from config file
+  QCString style = Config_getString("HTML_BIB_STYLE");
+	  if (style.isEmpty())
+		style="plain";
+
+  // 5.b run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
-  portable_system("perl","\""+bib2xhtmlFile+"\" "+getListOfBibFiles(" ",FALSE)+" \""+
+  portable_system("perl","\""+bib2xhtmlFile+"\" -s "+style+" "+getListOfBibFiles(" ",FALSE)+" \""+
                          citeListFile+"\"");
 
   QDir::setCurrent(oldDir);
