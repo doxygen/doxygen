@@ -44,6 +44,7 @@ InputString::InputString( QGridLayout *layout,int &row,
     layout->addWidget( m_com, row, 1, 1, 3, Qt::AlignLeft );
     m_le=0;
     m_br=0;
+    m_im=0;
     row++;
   }
   else
@@ -51,28 +52,39 @@ InputString::InputString( QGridLayout *layout,int &row,
     layout->addWidget( m_lab, row, 0 );
     m_le = new QLineEdit;
     m_le->setText( s );
+    m_im = 0;
     //layout->setColumnMinimumWidth(2,150);
-    if (m==StringFile || m==StringDir)
+    if (m==StringFile || m==StringDir || m==StringImage)
     {
       layout->addWidget( m_le, row, 1 );
       m_br = new QToolBar;
       m_br->setIconSize(QSize(24,24));
-      if (m==StringFile) 
+      if (m==StringFile || m==StringImage) 
       {
         QAction *file = m_br->addAction(QIcon(QString::fromAscii(":/images/file.png")),QString(),this,SLOT(browse()));
         file->setToolTip(tr("Browse to a file"));
+        layout->addWidget( m_br,row,2 );
+        if (m==StringImage) 
+        {
+          m_im = new QLabel;
+          m_im->setMinimumSize(1,55);
+          m_im->setAlignment(Qt::AlignLeft|Qt::AlignTop);
+          row++;
+          layout->addWidget( m_im,row,1 );
+        }
       }
       else 
       {
         QAction *dir = m_br->addAction(QIcon(QString::fromAscii(":/images/folder.png")),QString(),this,SLOT(browse()));
         dir->setToolTip(tr("Browse to a folder"));
+        layout->addWidget( m_br,row,2 );
       }
-      layout->addWidget( m_br,row,2 );
     }
     else
     {
       layout->addWidget( m_le, row, 1, 1, 2 );
       m_br=0;
+      m_im=0;
     }
     m_com=0;
     row++;
@@ -119,6 +131,33 @@ void InputString::updateDefault()
     {
       m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
     }
+    if (m_im)
+    {
+      if (m_str.isEmpty())
+      {
+        m_im->setText(tr("No Project logo selected."));
+      }
+      else
+      {
+        QFile Fout(m_str);
+        if(!Fout.exists()) 
+        {
+          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromAscii(");"));
+        }
+        else
+        {
+          QPixmap pm(m_str);
+          if (!pm.isNull())
+          {
+            m_im->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+          }
+          else
+          {
+            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromAscii(");"));
+          }
+        }
+      }
+    }
     if (m_le && m_le->text()!=m_str) m_le->setText( m_str );
     emit changed();
   }
@@ -128,6 +167,7 @@ void InputString::setEnabled(bool state)
 {
   m_lab->setEnabled(state);
   if (m_le)  m_le->setEnabled(state);
+  if (m_im)  m_le->setEnabled(state);
   if (m_br)  m_br->setEnabled(state);
   if (m_com) m_com->setEnabled(state);
   updateDefault();
@@ -136,7 +176,7 @@ void InputString::setEnabled(bool state)
 void InputString::browse()
 {
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
-  if (m_sm==StringFile)
+  if (m_sm==StringFile || m_sm==StringImage)
   {
     QString fileName = QFileDialog::getOpenFileName(&MainWindow::instance(),
         tr("Select file"),path);

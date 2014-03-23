@@ -35,7 +35,8 @@ class InputString : public QObject, public Input
     enum StringMode { StringFree=0, 
                       StringFile=1, 
                       StringDir=2, 
-                      StringFixed=3
+                      StringFixed=3,
+                      StringImage=4
                     };
 
     InputString( QGridLayout *layout,int &row,
@@ -77,6 +78,7 @@ class InputString : public QObject, public Input
     void updateDefault();
     QLabel       *m_lab;
     QLineEdit    *m_le;
+    QLabel       *m_im;
     QToolBar     *m_br;
     QComboBox    *m_com;
     QString       m_str;

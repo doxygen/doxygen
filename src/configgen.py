@@ -201,6 +201,19 @@ def prepCDocs(node):
 				else:
 					if abspath == '1':
 						doc += "<br/>The file has to be specified with full path."
+			elif file =='image':
+				abspath = node.getAttribute('abspath')
+				if defval != '':
+					if abspath != '1':
+						doc += "<br/>The default image is: <code>%s</code>." % (
+							defval)
+					else:
+						doc += "<br/>%s: %s%s%s." % (
+							"The default image (with absolute path) is",
+							"<code>",defval,"</code>")
+				else:
+					if abspath == '1':
+						doc += "<br/>The image has to be specified with full path."
 			else: # format == 'string':
 				if defval != '':
 					doc += "<br/>The default value is: <code>%s</code>." % (
@@ -262,6 +275,8 @@ def parseOption(node):
 			print "  cs->setDefaultValue(\"%s\");" % (defval)
 		if format == 'file':
 			print "  cs->setWidgetType(ConfigString::File);"
+		elif format == 'image':
+			print "  cs->setWidgetType(ConfigString::Image);"
 		elif format == 'dir':
 			print "  cs->setWidgetType(ConfigString::Dir);"
 		if depends != '':
@@ -453,6 +468,21 @@ def parseOptionDoc(node, first):
 					if abspath == '1':
 						print ""
 						print "The file has to be specified with full path."
+			elif file =='image':
+				abspath = node.getAttribute('abspath')
+				if defval != '':
+					print ""
+					if abspath != '1':
+						print "The default image is: <code>%s</code>." % (
+							defval)
+					else:
+						print "%s: %s%s%s." % (
+							"The default image (with absolute path) is",
+							"<code>",defval,"</code>")
+				else:
+					if abspath == '1':
+						print ""
+						print "The image has to be specified with full path."
 			else: # format == 'string':
 				if defval != '':
 					print ""
