@@ -1770,7 +1770,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
     {
       for (l=level;l<curLevel;l++)
       {
-        out.addStr("\n</blockquote>\n");
+        out.addStr("</blockquote>\n");
       }
     }
     curLevel=level;
@@ -1783,7 +1783,7 @@ static int writeBlockQuote(GrowBuf &out,const char *data,int size)
   // end of comment within blockquote => add end markers
   for (l=0;l<curLevel;l++)
   {
-    out.addStr("\n</blockquote>\n");
+    out.addStr("</blockquote>\n");
   }
   return i;
 }
