@@ -1591,21 +1591,22 @@ void Config::check()
 
   checkFileName("GENERATE_TAGFILE");
 
-  // sanity check if all depends relations are valid
+  // disable any boolean options that depend on disabled options
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
   for (it.toFirst();(option=it.current());++it)
   {
-    QCString depName = option->dependsOn();
+    QCString depName = option->dependsOn(); // option has a dependency
     if (!depName.isEmpty())
     {
       ConfigOption * dep = Config::instance()->get(depName);
-      if (dep->kind()==ConfigOption::O_Bool
-         && Config_getBool(depName)==FALSE)
+      if (dep->kind()==ConfigOption::O_Bool &&
+          Config_getBool(depName)==FALSE) // dependent option is disabled
       {
-        msg("disabling %s since its dependency(%s) is also disabled\n",option->name().data(),depName.data());
         if (option->kind()==ConfigOption::O_Bool)
-          Config_getBool(option->name())=FALSE;
+        {
+          Config_getBool(option->name())=FALSE; // also disable this option
+        }
       }
     }
   }
