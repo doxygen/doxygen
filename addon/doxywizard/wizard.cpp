@@ -468,6 +468,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
   projVersion->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
   // project icon
   QLabel *projLogo = new QLabel(this);
+  projLogo->setMinimumSize(1,55);
   projLogo->setText(tr("Project logo:"));
   projLogo->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
 
@@ -564,21 +565,28 @@ void Step1::selectProjectIcon()
   QString path = QFileInfo(MainWindow::instance().configFileName()).path();
   QString iconName = QFileDialog::getOpenFileName(this,
                                     tr("Select project icon/image"),path);
-  QFile Fout(iconName);
-  if(!Fout.exists()) 
+  if (iconName.isEmpty())
   {
-    m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+    m_projIconLab->setText(tr("No Project logo selected."));
   }
   else
   {
-    QPixmap pm(iconName);
-    if (!pm.isNull())
+    QFile Fout(iconName);
+    if(!Fout.exists()) 
     {
-      m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
     }
     else
     {
-      m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+      QPixmap pm(iconName);
+      if (!pm.isNull())
+      {
+        m_projIconLab->setPixmap(pm.scaledToHeight(55,Qt::SmoothTransformation));
+      }
+      else
+      {
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+      }
     }
   }
   updateStringOption(m_modelData,STR_PROJECT_LOGO,iconName);

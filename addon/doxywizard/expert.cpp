@@ -323,6 +323,32 @@ static QString getDocsForNode(const QDomElement &child)
         }
       }
     }
+    else if (child.attribute(SA("format")) == SA("image"))
+    {
+      QString abspath = child.attribute(SA("abspath"));
+      if (defval != SA(""))
+      {
+        docs+=SA("<br/>");
+        if (abspath != SA("1"))
+        {
+          docs += SA(" The default image is: <code>") + defval + SA("</code>.");
+        }
+        else
+        {
+          docs += SA(" The default image (with absolute path) is: <code>") + defval + SA("</code>.");
+        }
+        docs += SA("<br/>");
+      }
+      else
+      {
+        if (abspath == SA("1"))
+        {
+          docs+=SA("<br/>");
+          docs += SA(" The image has to be specified with full path.");
+          docs += SA("<br/>");
+        }
+      }
+    }
     else // if (child.attribute(SA("format")) == SA("string"))
     {
       if (defval != SA(""))
@@ -476,6 +502,10 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         else if (format==SA("file"))
         {
           mode = InputString::StringFile;
+        }
+        else if (format==SA("image"))
+        {
+          mode = InputString::StringImage;
         }
         else // format=="string"
         {

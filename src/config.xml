@@ -247,7 +247,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       </docs>
     </option>
 
-    <option type='string' id='PROJECT_LOGO' format='file' defval=''>
+    <option type='string' id='PROJECT_LOGO' format='image' defval=''>
       <docs>
 <![CDATA[
  With the \c PROJECT_LOGO tag one can specify an logo or icon that is 
