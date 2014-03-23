@@ -3173,9 +3173,10 @@ static void writePageIndex(OutputList &ol)
     PageDef *pd=0;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
-      if (pd->getOuterScope()==0 || 
-          pd->getOuterScope()->definitionType()!=Definition::TypePage
-         )  // not a sub page
+      if ((pd->getOuterScope()==0 ||
+          pd->getOuterScope()->definitionType()!=Definition::TypePage) && // not a sub page
+          !pd->isReference() // not an external page
+         )
       {
         writePages(pd,ftv);
       }
