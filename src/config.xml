@@ -2029,7 +2029,8 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c BINARY_TOC flag
  controls whether a binary table of contents is generated (\c YES) or a
- normal table of contents (\c NO) in the `.chm` file.
+ normal table of contents (\c NO) in the `.chm` file. Furthermore it enables
+ the `Previous` and `Next` buttons.
 ]]>
       </docs>
     </option>

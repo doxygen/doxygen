@@ -1469,13 +1469,13 @@ void LatexDocVisitor::visitPost(DocText *)
 void LatexDocVisitor::visitPre(DocHtmlBlockQuote *)
 {
   if (m_hide) return;
-  m_t << "\\begin{quotation}" << endl;
+  m_t << "\\begin{quote}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocHtmlBlockQuote *)
 {
   if (m_hide) return;
-  m_t << "\\end{quotation}" << endl;
+  m_t << "\\end{quote}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocVhdlFlow *)
