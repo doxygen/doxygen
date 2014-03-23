@@ -709,6 +709,6 @@ void HtmlHelp::addIndexItem(Definition *context,MemberDef *md,
 
 void HtmlHelp::addImageFile(const char *fileName)
 {
-  imageFiles.append(fileName);
+  if (!imageFiles.contains(fileName)) imageFiles.append(fileName);
 }
 
