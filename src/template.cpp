@@ -305,12 +305,12 @@ int TemplateVariant::toInt() const
   return result;
 }
 
-const TemplateStructIntf *TemplateVariant::toStruct() const
+TemplateStructIntf *TemplateVariant::toStruct() const
 {
   return p->type==Struct ? p->strukt : 0;
 }
 
-const TemplateListIntf *TemplateVariant::toList() const
+TemplateListIntf *TemplateVariant::toList() const
 {
   return p->type==List ? p->list : 0;
 }
@@ -624,6 +624,14 @@ class TemplateBlockContext
     QDict< QList<TemplateNodeBlock> > m_blocks;
 };
 
+/** @brief A container to store a key-value pair */
+struct TemplateKeyValue
+{
+  TemplateKeyValue() {}
+  TemplateKeyValue(const QCString &k,const TemplateVariant &v) : key(k), value(v) {}
+  QCString key;
+  TemplateVariant value;
+};
 
 /** @brief Internal class representing the implementation of a template
  *  context */
@@ -650,24 +658,27 @@ class TemplateContextImpl : public TemplateContext
     { TemplateEscapeIntf **ppIntf = m_escapeIntfDict.find(ext);
       m_activeEscapeIntf = ppIntf ? *ppIntf : 0;
     }
-    void setActiveEscapeIntf(TemplateEscapeIntf *intf)
-    { m_activeEscapeIntf = intf; }
-    void setSpacelessIntf(TemplateSpacelessIntf *intf)
-    { m_spacelessIntf = intf; }
+    void setActiveEscapeIntf(TemplateEscapeIntf *intf) { m_activeEscapeIntf = intf; }
+    void setSpacelessIntf(TemplateSpacelessIntf *intf) { m_spacelessIntf = intf; }
 
     // internal methods
     TemplateBlockContext *blockContext();
     TemplateVariant getPrimary(const QCString &name) const;
     void setLocation(const QCString &templateName,int line)
     { m_templateName=templateName; m_line=line; }
-    QCString templateName() const { return m_templateName; }
-    int line() const { return m_line; }
-    QCString outputDirectory() const { return m_outputDir; }
-    TemplateEscapeIntf *escapeIntf() const { return m_activeEscapeIntf; }
+    QCString templateName() const                { return m_templateName; }
+    int line() const                             { return m_line; }
+    QCString outputDirectory() const             { return m_outputDir; }
+    TemplateEscapeIntf *escapeIntf() const       { return m_activeEscapeIntf; }
     TemplateSpacelessIntf *spacelessIntf() const { return m_spacelessIntf; }
-    void enableSpaceless(bool b) { m_spacelessEnabled=b; }
-    bool spacelessEnabled() const { return m_spacelessEnabled && m_spacelessIntf; }
+    void enableSpaceless(bool b)                 { m_spacelessEnabled=b; }
+    bool spacelessEnabled() const                { return m_spacelessEnabled && m_spacelessIntf; }
     void warn(const char *fileName,int line,const char *fmt,...) const;
+
+    // index related functions
+    void openSubIndex(const QCString &indexName);
+    void closeSubIndex(const QCString &indexName);
+    void addIndexEntry(const QCString &indexName,const QValueList<TemplateKeyValue> &arguments);
 
   private:
     const TemplateEngine *m_engine;
@@ -680,6 +691,8 @@ class TemplateContextImpl : public TemplateContext
     TemplateEscapeIntf *m_activeEscapeIntf;
     TemplateSpacelessIntf *m_spacelessIntf;
     bool m_spacelessEnabled;
+    TemplateAutoRef<TemplateStruct> m_indices;
+    QDict< QStack<TemplateVariant> > m_indexStacks;
 };
 
 //-----------------------------------------------------------------------------
@@ -1831,11 +1844,13 @@ class TemplateImpl : public TemplateNode, public Template
 
 TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
   : m_engine(e), m_templateName("<unknown>"), m_line(1), m_activeEscapeIntf(0),
-    m_spacelessIntf(0), m_spacelessEnabled(FALSE)
+    m_spacelessIntf(0), m_spacelessEnabled(FALSE), m_indices(TemplateStruct::alloc())
 {
+  m_indexStacks.setAutoDelete(TRUE);
   m_contextStack.setAutoDelete(TRUE);
   m_escapeIntfDict.setAutoDelete(TRUE);
   push();
+  set("index",m_indices.get());
 }
 
 TemplateContextImpl::~TemplateContextImpl()
@@ -1967,6 +1982,102 @@ void TemplateContextImpl::warn(const char *fileName,int line,const char *fmt,...
   va_warn(fileName,line,fmt,args);
   va_end(args);
   m_engine->printIncludeContext(fileName,line);
+}
+
+void TemplateContextImpl::openSubIndex(const QCString &indexName)
+{
+  //printf("TemplateContextImpl::openSubIndex(%s)\n",indexName.data());
+  QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
+  if (!stack || stack->isEmpty() || stack->top()->type()==TemplateVariant::List) // error: no stack yet or no entry
+  {
+    warn(m_templateName,m_line,"opensubindex for index %s without preceding indexentry",indexName.data());
+    return;
+  }
+  // get the parent entry to add the list to
+  TemplateStruct *entry = dynamic_cast<TemplateStruct*>(stack->top()->toStruct());
+  if (entry)
+  {
+    // add new list to the stack
+    TemplateList *list = TemplateList::alloc();
+    stack->push(new TemplateVariant(list));
+    entry->set("children",list);
+    entry->set("is_leaf_node",false);
+  }
+}
+
+void TemplateContextImpl::closeSubIndex(const QCString &indexName)
+{
+  //printf("TemplateContextImpl::closeSubIndex(%s)\n",indexName.data());
+  QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
+  if (!stack || stack->count()<3)
+  {
+    warn(m_templateName,m_line,"closesubindex for index %s without matching open",indexName.data());
+  }
+  else // stack->count()>=2
+  {
+    if (stack->top()->type()==TemplateVariant::Struct)
+    {
+      delete stack->pop(); // pop struct
+      delete stack->pop(); // pop list
+    }
+    else // empty list! correct "is_left_node" attribute of the parent entry
+    {
+      delete stack->pop(); // pop list
+      TemplateStruct *entry = dynamic_cast<TemplateStruct*>(stack->top()->toStruct());
+      if (entry)
+      {
+        entry->set("is_leaf_node",true);
+      }
+    }
+  }
+}
+
+void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueList<TemplateKeyValue> &arguments)
+{
+  QValueListConstIterator<TemplateKeyValue> it = arguments.begin();
+  //printf("TemplateContextImpl::addIndexEntry(%s)\n",indexName.data());
+  //while (it!=arguments.end())
+  //{
+  //  printf("  key=%s value=%s\n",(*it).key.data(),(*it).value.toString().data());
+  //  ++it;
+  //}
+  QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
+  if (!stack) // no stack yet, create it!
+  {
+    stack = new QStack<TemplateVariant>;
+    stack->setAutoDelete(TRUE);
+    m_indexStacks.insert(indexName,stack);
+  }
+  TemplateList *list  = 0;
+  if (stack->isEmpty()) // first item, create empty list and add it to the index
+  {
+    list = TemplateList::alloc();
+    stack->push(new TemplateVariant(list));
+    m_indices->set(indexName,list); // make list available under index
+  }
+  else // stack not empty
+  {
+    if (stack->top()->type()==TemplateVariant::Struct) // already an entry in the list
+    {
+      // remove current entry from the stack
+      delete stack->pop();
+    }
+    else // first entry after opensubindex
+    {
+      ASSERT(stack->top()->type()==TemplateVariant::List);
+    }
+    // get list to add new item
+    list = dynamic_cast<TemplateList*>(stack->top()->toList());
+  }
+  TemplateStruct *entry = TemplateStruct::alloc();
+  // add user specified fields to the entry
+  for (it=arguments.begin();it!=arguments.end();++it)
+  {
+    entry->set((*it).key,(*it).value);
+  }
+  entry->set("is_leaf_node",true);
+  stack->push(new TemplateVariant(entry));
+  list->append(entry);
 }
 
 //----------------------------------------------------------
@@ -3022,6 +3133,148 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
 
 //----------------------------------------------------------
 
+/** @brief Class representing an 'indexentry' tag in a template */
+class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry>
+{
+    struct Mapping
+    {
+      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
+     ~Mapping() { delete value; }
+      QCString name;
+      ExprAst *value;
+    };
+  public:
+    TemplateNodeIndexEntry(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeIndexEntry>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeIndexEntry(%s)\n",data.data()));
+      m_args.setAutoDelete(TRUE);
+      ExpressionParser expParser(parser,line);
+      QValueList<QCString> args = split(data," ");
+      QValueListIterator<QCString> it = args.begin();
+      if (it==args.end() || (*it).find('=')!=-1)
+      {
+        parser->warn(parser->templateName(),line,"Missing name for indexentry tag");
+      }
+      else
+      {
+        m_name = *it;
+        ++it;
+        while (it!=args.end())
+        {
+          QCString arg = *it;
+          int j=arg.find('=');
+          if (j>0)
+          {
+            ExprAst *expr = expParser.parse(arg.mid(j+1));
+            if (expr)
+            {
+              m_args.append(new Mapping(arg.left(j),expr));
+            }
+          }
+          else
+          {
+            parser->warn(parser->templateName(),line,"invalid argument '%s' for indexentry tag",arg.data());
+          }
+          ++it;
+        }
+      }
+      TRACE(("}TemplateNodeIndexEntry(%s)\n",data.data()));
+    }
+    void render(FTextStream &, TemplateContext *c)
+    {
+      if (!m_name.isEmpty())
+      {
+        TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+        ci->setLocation(m_templateName,m_line);
+        QListIterator<Mapping> it(m_args);
+        Mapping *mapping;
+        QValueList<TemplateKeyValue> list;
+        for (it.toFirst();(mapping=it.current());++it)
+        {
+          list.append(TemplateKeyValue(mapping->name,mapping->value->resolve(c)));
+        }
+        ci->addIndexEntry(m_name,list);
+      }
+    }
+  private:
+    QCString m_name;
+    QList<Mapping> m_args;
+};
+
+//----------------------------------------------------------
+
+/** @brief Class representing an 'opensubindex' tag in a template */
+class TemplateNodeOpenSubIndex : public TemplateNodeCreator<TemplateNodeOpenSubIndex>
+{
+  public:
+    TemplateNodeOpenSubIndex(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeOpenSubIndex>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeOpenSubIndex(%s)\n",data.data()));
+      m_name = data.stripWhiteSpace();
+      if (m_name.isEmpty())
+      {
+        parser->warn(parser->templateName(),line,"Missing argument for opensubindex tag");
+      }
+      else if (m_name.find(' ')!=-1)
+      {
+        parser->warn(parser->templateName(),line,"Expected single argument for opensubindex tag got '%s'",data.data());
+        m_name="";
+      }
+      TRACE(("}TemplateNodeOpenSubIndex(%s)\n",data.data()));
+    }
+    void render(FTextStream &, TemplateContext *c)
+    {
+      if (!m_name.isEmpty())
+      {
+        TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+        ci->setLocation(m_templateName,m_line);
+        ci->openSubIndex(m_name);
+      }
+    }
+  private:
+    QCString m_name;
+};
+
+//----------------------------------------------------------
+
+/** @brief Class representing an 'closesubindex' tag in a template */
+class TemplateNodeCloseSubIndex : public TemplateNodeCreator<TemplateNodeCloseSubIndex>
+{
+  public:
+    TemplateNodeCloseSubIndex(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeCloseSubIndex>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeCloseSubIndex(%s)\n",data.data()));
+      m_name = data.stripWhiteSpace();
+      if (m_name.isEmpty())
+      {
+        parser->warn(parser->templateName(),line,"Missing argument for closesubindex tag");
+      }
+      else if (m_name.find(' ')!=-1 || m_name.isEmpty())
+      {
+        parser->warn(parser->templateName(),line,"Expected single argument for closesubindex tag got '%s'",data.data());
+        m_name="";
+      }
+      TRACE(("}TemplateNodeCloseSubIndex(%s)\n",data.data()));
+    }
+    void render(FTextStream &, TemplateContext *c)
+    {
+      if (!m_name.isEmpty())
+      {
+        TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+        ci->setLocation(m_templateName,m_line);
+        ci->closeSubIndex(m_name);
+      }
+    }
+  private:
+    QCString m_name;
+};
+
+
+//----------------------------------------------------------
+
 /** @brief Class representing an 'with' tag in a template */
 class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
 {
@@ -3395,6 +3648,9 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>    autoRefRepeat("r
 static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>   autoRefInclude("include");
 static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>   autoRefMarkers("markers");
 static TemplateNodeFactory::AutoRegister<TemplateNodeSpaceless> autoRefSpaceless("spaceless");
+static TemplateNodeFactory::AutoRegister<TemplateNodeIndexEntry> autoRefIndexEntry("indexentry");
+static TemplateNodeFactory::AutoRegister<TemplateNodeOpenSubIndex> autoRefOpenSubIndex("opensubindex");
+static TemplateNodeFactory::AutoRegister<TemplateNodeCloseSubIndex> autoRefCloseSubIndex("closesubindex");
 
 //----------------------------------------------------------
 
