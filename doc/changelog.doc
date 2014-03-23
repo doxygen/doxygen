@@ -817,7 +817,7 @@
 <li>   Additional Inherited Members could turn up empty of all members of
        the inherited class were grouped and SUBGROUPING was set to NO.
 </ul>
-<\endhtmlonly
+\endhtmlonly
 \subsection log_1_8_1 Release 1.8.1
 \htmlonly
 <a name="1.8.1"></a>
