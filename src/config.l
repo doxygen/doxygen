@@ -1591,6 +1591,8 @@ void Config::check()
 
   checkFileName("GENERATE_TAGFILE");
 
+#if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
+      // So this and other regressions should be analysed and fixed before this can be enabled
   // disable any boolean options that depend on disabled options
   QListIterator<ConfigOption> it = iterator();
   ConfigOption *option;
@@ -1605,11 +1607,13 @@ void Config::check()
       {
         if (option->kind()==ConfigOption::O_Bool)
         {
+          printf("disabling option %s\n",option->name().data());
           Config_getBool(option->name())=FALSE; // also disable this option
         }
       }
     }
   }
+#endif
 }
 
 void Config::init()
