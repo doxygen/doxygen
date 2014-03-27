@@ -124,7 +124,8 @@ enum CommandType
   CMD_ENDINTERNAL  = 94,
   CMD_PARBLOCK     = 95,
   CMD_ENDPARBLOCK  = 96,
-  CMD_DIAFILE      = 97
+  CMD_DIAFILE      = 97,
+  CMD_LATEXINCLUDE  = 98
 };
 
 enum HtmlTagType

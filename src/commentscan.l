@@ -234,6 +234,7 @@ static DocCmdMap docCmdMap[] =
   { "include",         0,                       TRUE  },
   { "includelineno",   0,                       TRUE  },
   { "invariant",       0,                       TRUE  },
+  { "latexinclude",    0,                       FALSE },
   { "li",              0,                       TRUE  },
   { "line",            0,                       TRUE  },
   { "note",            0,                       TRUE  },
@@ -879,7 +880,7 @@ DCMD1     ("arg"|"attention"|"author"|"cite"|"code")
 DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
-DCMD5     ("latexonly"|"li"|"line"|"manonly"|"name") 
+DCMD5     ("latexinclude"|"latexonly"|"li"|"line"|"manonly"|"name")
 DCMD6     ("note"|"par"|"paragraph"|"param"|"post")
 DCMD7     ("pre"|"remarks"|(("relate"[sd])("also")?))
 DCMD8     ("remarks"|("return"[s]?)|"retval"|"sa"|"section")

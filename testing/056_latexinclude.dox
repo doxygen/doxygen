@@ -1,0 +1,8 @@
+// objective: test the \latexinclude command
+// check: indexpage.xml
+// config: EXAMPLE_PATH = .
+/** \mainpage
+ * Some text.
+ * \latexinclude sample.tex
+ * More text.
+ */

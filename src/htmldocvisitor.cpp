@@ -490,6 +490,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::HtmlInclude: 
       m_t << inc->text(); 
       break;
+    case DocInclude::LatexInclude:
+      break;
     case DocInclude::VerbInclude: 
       forceEndParagraph(inc);
       m_t << /*PREFRAG_START <<*/ "<pre class=\"fragment\">";

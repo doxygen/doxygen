@@ -285,6 +285,8 @@ void DocbookDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::HtmlInclude:
       break;
+    case DocInclude::LatexInclude:
+      break;
     case DocInclude::VerbInclude:
       m_t << "<verbatim>";
       filter(inc->text());

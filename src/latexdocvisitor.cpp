@@ -362,6 +362,9 @@ void LatexDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::HtmlInclude: 
       break;
+    case DocInclude::LatexInclude:
+      m_t << inc->text();
+      break;
     case DocInclude::VerbInclude: 
       m_t << "\n\\begin{DoxyVerbInclude}\n";
       m_t << inc->text();

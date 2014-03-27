@@ -262,6 +262,8 @@ void ManDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::HtmlInclude: 
       break;
+    case DocInclude::LatexInclude:
+      break;
     case DocInclude::VerbInclude: 
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;

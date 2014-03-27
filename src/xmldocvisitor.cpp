@@ -255,6 +255,11 @@ void XmlDocVisitor::visit(DocInclude *inc)
       filter(inc->text());
       m_t << "</htmlonly>";
       break;
+    case DocInclude::LatexInclude:
+      m_t << "<latexonly>";
+      filter(inc->text());
+      m_t << "</latexonly>";
+      break;
     case DocInclude::VerbInclude: 
       m_t << "<verbatim>";
       filter(inc->text());

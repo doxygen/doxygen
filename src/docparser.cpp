@@ -1777,6 +1777,9 @@ void DocInclude::parse()
     case HtmlInclude:
       readTextFileByName(m_file,m_text);
       break;
+    case LatexInclude:
+      readTextFileByName(m_file,m_text);
+      break;
     case Snippet:
       readTextFileByName(m_file,m_text);
       // check here for the existence of the blockId inside the file, so we
@@ -5627,6 +5630,9 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_HTMLINCLUDE:
       handleInclude(cmdName,DocInclude::HtmlInclude);
+      break;
+    case CMD_LATEXINCLUDE:
+      handleInclude(cmdName,DocInclude::LatexInclude);
       break;
     case CMD_VERBINCLUDE:
       handleInclude(cmdName,DocInclude::VerbInclude);

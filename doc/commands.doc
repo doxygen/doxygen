@@ -117,6 +117,7 @@ documentation:
 \refitem cmdinternal \\internal
 \refitem cmdinvariant \\invariant
 \refitem cmdinterface \\interface
+\refitem cmdlatexinclude \\latexinclude
 \refitem cmdlatexonly \\latexonly
 \refitem cmdli \\li
 \refitem cmdline \\line
@@ -2217,6 +2218,19 @@ Commands for displaying examples
   This command includes the file \<file-name\> as is in the HTML documentation.
   The command is equivalent to pasting the file in the documentation and
   placing \ref cmdhtmlonly "\\htmlonly" and \ref cmdendhtmlonly "\\endhtmlonly"
+  commands around it.
+
+  Files or directories that doxygen should look for can be specified using the
+  \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
+
+<hr>
+
+\section cmdlatexinclude \\latexinclude <file-name>
+
+  \addindex \\latexinclude
+  This command includes the file \<file-name\> as is in the LaTeX documentation.
+  The command is equivalent to pasting the file in the documentation and
+  placing \ref cmdlatexonly "\\latexonly" and \ref cmdendlatexonly "\\endlatexonly"
   commands around it.
 
   Files or directories that doxygen should look for can be specified using the
