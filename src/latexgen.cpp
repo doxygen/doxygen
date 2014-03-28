@@ -293,6 +293,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{makeidx}\n"
        "\\usepackage{multicol}\n"
        "\\usepackage{multirow}\n"
+       "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\PassOptionsToPackage{warn}{textcomp}\n"
        "\\usepackage{textcomp}\n"
        "\\usepackage[nointegrals]{wasysym}\n"

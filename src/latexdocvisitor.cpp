@@ -199,10 +199,10 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "{\\ttfamily ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
-      if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
+      if (s->enable()) m_t << "\\textsubscript{";    else m_t << "}";
       break;
     case DocStyleChange::Superscript:
-      if (s->enable()) m_t << "$^{\\mbox{";    else m_t << "}}$ ";
+      if (s->enable()) m_t << "\\textsuperscript{";    else m_t << "}";
       break;
     case DocStyleChange::Center:
       if (s->enable()) m_t << "\\begin{center}"; else m_t << "\\end{center} ";
