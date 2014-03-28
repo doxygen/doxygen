@@ -175,8 +175,7 @@ void LatexDocVisitor::visit(DocURL *u)
 void LatexDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
-  if (m_insideTable) m_t << "\\newline\n";
-  else m_t << "\\par\n";
+  m_t << "\\newline\n";
 }
 
 void LatexDocVisitor::visit(DocHorRuler *)
