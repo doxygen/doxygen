@@ -2222,7 +2222,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   }
 
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
-  if (htmlOn && /*Config_getBool("HTML_ALIGN_MEMBERS") &&*/ !ltype.isEmpty())
+  if (htmlOn && !ltype.isEmpty())
   {
     ol.disable(OutputGenerator::Html);
   }

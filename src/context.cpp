@@ -2663,7 +2663,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
 
     void writeBreak(int indent) const
     {
-      m_ts << "<br/>";
+      m_ts << "<br />";
       for (int i=0;i<indent;i++)
       {
         m_ts << "&#160;";

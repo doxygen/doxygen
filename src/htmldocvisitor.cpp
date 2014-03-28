@@ -237,7 +237,7 @@ void HtmlDocVisitor::visit(DocURL *u)
 void HtmlDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
-  m_t << "<br/>\n";
+  m_t << "<br />\n";
 }
 
 void HtmlDocVisitor::visit(DocHorRuler *hr)
@@ -1780,7 +1780,7 @@ void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
     m_t << "</a>";
     if (vf->hasCaption())
     {
-      m_t << "<br/>";
+      m_t << "<br />";
     }
   }
 }

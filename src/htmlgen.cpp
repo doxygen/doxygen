@@ -2181,25 +2181,11 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
 void HtmlGenerator::startMemberList()  
 { 
   DBG_HTML(t << "<!-- startMemberList -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-  //}
-  //else
-  //{
-  //  t << "<ul>" << endl; 
-  //}
 }
 
 void HtmlGenerator::endMemberList()    
 { 
   DBG_HTML(t << "<!-- endMemberList -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-  //}
-  //else
-  //{
-  //  t << "</ul>" << endl; 
-  //}
 }
 
 // anonymous type:
@@ -2254,93 +2240,63 @@ void HtmlGenerator::endMemberTemplateParams(const char *anchor,const char *inher
 void HtmlGenerator::insertMemberAlign(bool templ) 
 { 
   DBG_HTML(t << "<!-- insertMemberAlign -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    QCString className = templ ? "memTemplItemRight" : "memItemRight";
-    t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
-  //}
+  QCString className = templ ? "memTemplItemRight" : "memItemRight";
+  t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
 }
 
 void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheritId) 
 { 
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
     if (m_emptySection)
     {
       t << "<table class=\"memberdecls\">" << endl;
       m_emptySection=FALSE;
     }
-    t << "<tr class=\"memdesc:" << anchor;
-    if (inheritId)
-    {
-      t << " inherit " << inheritId;
-    }
-    t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
-  //}
-  //else
-  //{
-  //  t << "<dl class=\"el\"><dd class=\"mdescRight\">";
-  //}
+  t << "<tr class=\"memdesc:" << anchor;
+  if (inheritId)
+  {
+    t << " inherit " << inheritId;
+  }
+  t << "\"><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
 }
 
 void HtmlGenerator::endMemberDescription()   
 { 
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    t << "<br/></td></tr>" << endl; 
-  //}
-  //else
-  //{
-  //  t << "<br/></dl>";
-  //}
+  t << "<br /></td></tr>" << endl; 
 }
 
 void HtmlGenerator::startMemberSections()
 {
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    m_emptySection=TRUE; // we postpone writing <table> until we actually
-                         // write a row to prevent empty tables, which 
-                         // are not valid XHTML!
-  //}
+  m_emptySection=TRUE; // we postpone writing <table> until we actually
+                       // write a row to prevent empty tables, which 
+                       // are not valid XHTML!
 }
 
 void HtmlGenerator::endMemberSections()
 {
   DBG_HTML(t << "<!-- endMemberSections -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    if (!m_emptySection)
-    {
-      t << "</table>" << endl;
-    }
-  //}
+  if (!m_emptySection)
+  {
+    t << "</table>" << endl;
+  }
 }
 
 void HtmlGenerator::startMemberHeader(const char *anchor)
 {
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    if (!m_emptySection)
-    {
-      t << "</table>";
-      m_emptySection=TRUE;
-    }
-    if (m_emptySection)
-    {
-      t << "<table class=\"memberdecls\">" << endl;
-      m_emptySection=FALSE;
-    }
-    t << "<tr class=\"heading\"><td colspan=\"2\"><h2 class=\"groupheader\">";
-  //}
-  //else
-  //{
-  //  startGroupHeader(FALSE);
-  //}
+  if (!m_emptySection)
+  {
+    t << "</table>";
+    m_emptySection=TRUE;
+  }
+  if (m_emptySection)
+  {
+    t << "<table class=\"memberdecls\">" << endl;
+    m_emptySection=FALSE;
+  }
+  t << "<tr class=\"heading\"><td colspan=\"2\"><h2 class=\"groupheader\">";
   if (anchor)
   {
     t << "<a name=\"" << anchor << "\"></a>" << endl;
@@ -2350,28 +2306,19 @@ void HtmlGenerator::startMemberHeader(const char *anchor)
 void HtmlGenerator::endMemberHeader()
 {
   DBG_HTML(t << "<!-- endMemberHeader -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS"))
-  //{
-    t << "</h2></td></tr>" << endl;
-  //}
-  //else
-  //{
-  //  endGroupHeader(FALSE);
-  //}
+  t << "</h2></td></tr>" << endl;
 }
 
 void HtmlGenerator::startMemberSubtitle()
 {
   DBG_HTML(t << "<!-- startMemberSubtitle -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS")) 
-    t << "<tr><td class=\"ititle\" colspan=\"2\">";
+  t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  //if (Config_getBool("HTML_ALIGN_MEMBERS")) 
-    t << "</td></tr>" << endl;
+  t << "</td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
@@ -3324,11 +3271,11 @@ void HtmlGenerator::lineBreak(const char *style)
 {
   if (style)
   {
-    t << "<br class=\"" << style << "\"/>" << endl;
+    t << "<br class=\"" << style << "\" />" << endl;
   }
   else
   {
-    t << "<br/>" << endl;
+    t << "<br />" << endl;
   }
 }
 
