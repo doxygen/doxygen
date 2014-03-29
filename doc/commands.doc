@@ -2729,7 +2729,7 @@ class Receiver
   \sa section \ref cmdfcurlyopen "\\f{" and section \ref formulas "formulas".
 
 <hr>
-\section cmdhtmlonly \\htmlonly
+\section cmdhtmlonly \\htmlonly ["[block]"]
 
   \addindex \\htmlonly
   Starts a block of text that will be verbatim included in the
@@ -2738,12 +2738,17 @@ class Receiver
 
   This command can be used to include HTML code that is too complex
   for doxygen (i.e. applets, java-scripts, and HTML tags that
-  require attributes). You can use the \ref cmdlatexonly "\\latexonly" and 
-  \ref cmdendlatexonly "\\endlatexonly"
-  pair to provide a proper \f$\mbox{\LaTeX}\f$ alternative.
+  require specific attributes).
+
+  Normally the contents between \ref cmdhtmlonly "\\htmlonly" and
+  \ref cmdendhtmlonly "\\endhtmlonly" is inserted as-is. When you
+  want to insert a HTML fragment that has block scope like a table or list
+  which should appear outside \<p\>..\</p\>, this can lead to invalid HTML.
+  You can use \\htmlonly[block] to make doxygen
+  end the current paragraph and restart it after \\endhtmlonly.
 
   \note environment variables (like \$(HOME) ) are resolved inside a
-    HTML-only block.
+  HTML-only block.
 
   \sa section \ref cmdmanonly "\\manonly", 
               \ref cmdlatexonly "\\latexonly", 

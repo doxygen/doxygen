@@ -6,6 +6,8 @@
     <detaileddescription>
       <para>Text. <htmlonly> 
 HTML
+</htmlonly> <htmlonly>
+HTML with block
 </htmlonly> <rtfonly> 
 RTF
 </rtfonly> <manonly> 

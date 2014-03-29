@@ -5,6 +5,9 @@
  * \htmlonly
  * HTML
  * \endhtmlonly
+ * \htmlonly[block]
+ * HTML with block
+ * \endhtmlonly
  * \rtfonly
  * RTF
  * \endrtfonly

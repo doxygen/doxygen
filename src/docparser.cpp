@@ -1320,7 +1320,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateHtmlOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName));
+            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName,g_token->name=="block"));
             if (tok==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"htmlonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -1745,12 +1745,12 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
 
 DocVerbatim::DocVerbatim(DocNode *parent,const QCString &context,
     const QCString &text, Type t,bool isExample,
-    const QCString &exampleFile,const QCString &lang) 
+    const QCString &exampleFile,bool isBlock,const QCString &lang)
   : m_context(context), m_text(text), m_type(t),
-    m_isExample(isExample), m_exampleFile(exampleFile), 
-    m_relPath(g_relPath), m_lang(lang)
-{ 
-  m_parent = parent; 
+    m_isExample(isExample), m_exampleFile(exampleFile),
+    m_relPath(g_relPath), m_lang(lang), m_isBlock(isBlock)
+{
+  m_parent = parent;
 }
 
 
@@ -5280,7 +5280,7 @@ int DocPara::handleStartCode()
     if (g_token->verb.at(i)=='\n') li=i+1;
     i++;
   }
-  m_children.append(new DocVerbatim(this,g_context,stripIndentation(g_token->verb.mid(li)),DocVerbatim::Code,g_isExample,g_exampleName,lang));
+  m_children.append(new DocVerbatim(this,g_context,stripIndentation(g_token->verb.mid(li)),DocVerbatim::Code,g_isExample,g_exampleName,FALSE,lang));
   if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"code section ended without end marker");
   doctokenizerYYsetStatePara();
   return retval;
@@ -5468,7 +5468,7 @@ int DocPara::handleCommand(const QCString &cmdName)
       {
         doctokenizerYYsetStateHtmlOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName));
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName,g_token->name=="block"));
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"htmlonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }

@@ -357,7 +357,9 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       forceStartParagraph(s);
       break;
     case DocVerbatim::HtmlOnly: 
+      if (s->isBlock()) forceEndParagraph(s);
       m_t << s->text(); 
+      if (s->isBlock()) forceStartParagraph(s);
       break;
     case DocVerbatim::ManOnly: 
     case DocVerbatim::LatexOnly: 
@@ -1999,7 +2001,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     //printf("forceEnd first=%d last=%d\n",isFirst,isLast);
     if (isFirst && isLast) return;
 
-    m_t << "</p>" << endl;
+    m_t << "</p>";
   }
 }
 
