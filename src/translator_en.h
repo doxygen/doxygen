@@ -530,7 +530,7 @@ class TranslatorEnglish : public Translator
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "See Also"; }
+    { return "See also"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
