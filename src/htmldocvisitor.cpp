@@ -92,7 +92,6 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_Internal:
           /* <div> */
         case DocNode::Kind_Include:
-        case DocNode::Kind_Verbatim:
         case DocNode::Kind_Image:
         case DocNode::Kind_SecRefList:
           /* <hr> */
@@ -107,6 +106,11 @@ static bool mustBeOutsideParagraph(DocNode *n)
           /* \parblock */
         case DocNode::Kind_ParBlock:
           return TRUE;
+        case DocNode::Kind_Verbatim:
+          {
+            DocVerbatim *dv = (DocVerbatim*)n;
+            return dv->type()!=DocVerbatim::HtmlOnly || dv->isBlock();
+          }
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
                  ((DocStyleChange*)n)->style()==DocStyleChange::Div ||
