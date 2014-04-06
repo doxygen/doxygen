@@ -1797,7 +1797,7 @@ Commands to create links
   Adds a bibliographic reference in the text and in the list of bibliographic
   references. The \<label\> must be a valid BibTeX label that can be found 
   in one of the .bib files listed in \ref cfg_cite_bib_files "CITE_BIB_FILES".  
-  For the LaTeX output the formatting of the reference in the text can be 
+  For the \f$\mbox{\LaTeX}\f$ output the formatting of the reference in the text can be 
   configured with \ref cfg_latex_bib_style "LATEX_BIB_STYLE". For other
   output formats a fixed representation is used. Note that using this
   command requires the \c bibtex tool to be present in the search path.
@@ -2228,7 +2228,7 @@ Commands for displaying examples
 \section cmdlatexinclude \\latexinclude <file-name>
 
   \addindex \\latexinclude
-  This command includes the file \<file-name\> as is in the LaTeX documentation.
+  This command includes the file \<file-name\> as is in the \f$\mbox{\LaTeX}\f$ documentation.
   The command is equivalent to pasting the file in the documentation and
   placing \ref cmdlatexonly "\\latexonly" and \ref cmdendlatexonly "\\endlatexonly"
   commands around it.
