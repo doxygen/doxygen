@@ -1810,7 +1810,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of if/ifnot commands ------- */
 
-<GuardParam>"("                         {
+<GuardParam>{B}*"("                         {
                                           g_guardExpr=yytext;
                                           g_roundCount=1;
                                           BEGIN(GuardExpr);
