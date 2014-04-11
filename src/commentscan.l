@@ -1810,7 +1810,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle arguments of if/ifnot commands ------- */
 
-<GuardParam>"("                         {
+<GuardParam>{B}*"("                         {
                                           g_guardExpr=yytext;
                                           g_roundCount=1;
                                           BEGIN(GuardExpr);
@@ -1836,7 +1836,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
-<GuardParam>[a-z_A-Z0-9.\-]+            { // parameter of if/ifnot guard
+<GuardParam>{B}*[a-z_A-Z0-9.\-]+            { // parameter of if/ifnot guard
                                           handleGuard(yytext);
   					}
 <GuardParam>{DOCNL}			{ // end of argument
@@ -3135,7 +3135,7 @@ static void groupAddDocs(Entry *e,const char *fileName)
 static void handleGuard(const QCString &expr)
 {
   CondParser prs;
-  bool sectionEnabled=prs.parse(yyFileName,yyLineNr,expr);
+  bool sectionEnabled=prs.parse(yyFileName,yyLineNr,expr.stripWhiteSpace());
   bool parentEnabled = TRUE;
   if (!guards.isEmpty()) parentEnabled = guards.top()->isEnabled();
   if (parentEnabled)
