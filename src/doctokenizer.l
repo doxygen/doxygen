@@ -628,7 +628,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
                          QCString tagName(yytext+1);
 			 int index=tagName.find(':');
-  			 g_token->name = tagName.left(index+1);
+  			 g_token->name = tagName.left(index);
 			 int text_begin = index+2;
 			 int text_end = tagName.length()-1;
 			 if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
