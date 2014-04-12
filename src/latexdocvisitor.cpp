@@ -1544,8 +1544,8 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
     m_t << "{"; 
     filter(theTranslator->trPageAbbreviation());
     m_t << "}{" << file;
-    if (!anchor.isEmpty()) m_t << "_" << anchor;
-    m_t << "}";
+    if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
+    m_t << anchor << "}";
   }
 }
 
