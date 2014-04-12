@@ -2201,7 +2201,6 @@ static QCString extractPageTitle(QCString &docs,QCString &id)
   {
     docs=docs.mid(end1);
   }
-  id = extractTitleId(title);
   //printf("extractPageTitle(title='%s' docs='%s' id='%s')\n",title.data(),docs.data(),id.data());
   return title;
 }
