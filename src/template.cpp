@@ -2075,7 +2075,14 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
   {
     entry->set((*it).key,(*it).value);
   }
+  if (list->count()>0)
+  {
+    TemplateStruct *lastEntry = dynamic_cast<TemplateStruct*>(list->at(list->count()-1).toStruct());
+    lastEntry->set("last",false);
+  }
   entry->set("is_leaf_node",true);
+  entry->set("first",list->count()==0);
+  entry->set("last",true);
   stack->push(new TemplateVariant(entry));
   list->append(entry);
 }
