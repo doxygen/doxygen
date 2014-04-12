@@ -645,6 +645,8 @@ STARTDOCSYMS      "##"
 }
 
 <FromMod>{
+  "."                 { // python3 style imports
+                      }
   {IDENTIFIER}({B}"."{B}{IDENTIFIER})* { // from package import 
                         g_packageName=yytext;
 		      }
