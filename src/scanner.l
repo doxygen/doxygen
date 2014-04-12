@@ -6205,7 +6205,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
                                         }
-<DocBlock>"<"{PRE}">"			{
+<DocBlock>{B}*"<"{PRE}">"		{
                                           docBlock+=yytext;
 				          docBlockName="<pre>";
                                           g_fencedSize=0;
@@ -6221,6 +6221,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					}
 <DocBlock>"~~~"[~]*                     {
                                           docBlock+=yytext;
+                                          docBlockName="~~~";
                                           g_fencedSize=yyleng;
                                           g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
