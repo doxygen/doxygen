@@ -209,6 +209,8 @@ documentation:
 \refitem cmdchardot \\\.
 \refitem cmddcolon \::
 \refitem cmdpipe \\|
+\refitem cmdndash \\\--
+\refitem cmdmdash \\\---
 \endsecreflist
 
 The following subsections provide a list of all commands that are recognized by
@@ -3075,6 +3077,20 @@ class Receiver
   This command writes a pipe symbol (\|) to the output. This
   character has to be escaped in some cases, because it is used
   for Markdown tables.
+
+<hr>
+\section cmdndash \\--
+
+  \addindex \\\--
+  This command writes two dashes (\--) to the output. This allows
+  writing two consecutive dashes to the output instead of one n-dash character (--).
+
+<hr>
+\section cmdmdash \\---
+
+  \addindex \\\---
+  This command writes three dashes (\---) to the output. This allows
+  writing three consecutuve dashes to the output instead of one m-dash character (---).
 
 <hr>
 \htmlonly <center> \endhtmlonly

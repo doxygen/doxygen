@@ -1271,6 +1271,15 @@ reparsetoken:
         case CMD_PERCENT:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Percent));
           break;
+        case CMD_NDASH:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          break;
+        case CMD_MDASH:
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          break;
         case CMD_QUOTE:
           children.append(new DocSymbol(parent,DocSymbol::Sym_Quot));
           break;
@@ -3281,6 +3290,8 @@ int DocIndexEntry::parse()
         case CMD_HASH:    m_entry+='#';  break;
         case CMD_DCOLON:  m_entry+="::"; break;
         case CMD_PERCENT: m_entry+='%';  break;
+        case CMD_NDASH:   m_entry+="--";  break;
+        case CMD_MDASH:   m_entry+="---";  break;
         case CMD_QUOTE:   m_entry+='"';  break;
         default:
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected command %s found as argument of \\addindex",
@@ -5373,6 +5384,15 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_PERCENT:
       m_children.append(new DocSymbol(this,DocSymbol::Sym_Percent));
       break;
+    case CMD_NDASH:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      break;
+    case CMD_MDASH:
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      break;
     case CMD_QUOTE:
       m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
       break;
@@ -6827,6 +6847,15 @@ void DocText::parse()
             break;
           case CMD_PERCENT:
             m_children.append(new DocSymbol(this,DocSymbol::Sym_Percent));
+            break;
+          case CMD_NDASH:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            break;
+          case CMD_MDASH:
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
             break;
           case CMD_QUOTE:
             m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));

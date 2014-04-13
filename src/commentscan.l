@@ -1200,6 +1200,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>^{B}*([\-:|]{B}*)*("--"|"---")({B}*[\-:|])*{B}*/\n { // horizontal line (dashed)
   				          addOutput(yytext); 
                                         }
+<Comment>{CMD}"---"                     { // escaped mdash
+                                          addOutput(yytext);
+                                        }
+<Comment>{CMD}"--"                      { // escaped mdash
+                                          addOutput(yytext);
+                                        }
 <Comment>"---"                          { // mdash
                                           addOutput(insidePre || Doxygen::markdownSupport ? yytext : "&mdash;");
                                         }

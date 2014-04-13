@@ -136,6 +136,8 @@ CommandMap cmdMap[] =
   { "parblock",      CMD_PARBLOCK },
   { "endparblock",   CMD_ENDPARBLOCK },
   { "diafile",       CMD_DIAFILE },
+  { "--",            CMD_NDASH },
+  { "---",           CMD_MDASH },
   { 0,               0 },
 };
 
