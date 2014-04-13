@@ -51,3 +51,5 @@ PDF_HYPERLINKS    = YES
 USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
 HTML_STYLESHEET   = doxygen_manual.css
+ALIASES           = LaTeX="\f$\mbox{\LaTeX}\f$"
+ALIASES          += TeX="\f$\mbox{\TeX}\f$"

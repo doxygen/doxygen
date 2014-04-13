@@ -165,7 +165,7 @@ doxygen <config-file>
 Depending on your settings doxygen will create \c html, \c rtf, 
 \c latex, \c xml, \c man, and/or docbook directories inside the output directory. 
 As the names suggest these directories contain the
-generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$, XML,
+generated documentation in HTML, RTF, \LaTeX, XML,
 Unix-Man page, and DocBook format.
 
 The default output directory is the directory in which \c doxygen
@@ -193,8 +193,8 @@ require a browser that supports Dynamic HTML and Javascript enabled.
 
 \subsection latex_out LaTeX output
 \addindex LaTeX
-The generated \f$\mbox{\LaTeX}\f$ documentation must first be compiled by 
-a \f$\mbox{\LaTeX}\f$ compiler (I use a recent teTeX distribution for Linux
+The generated \LaTeX documentation must first be compiled by 
+a \LaTeX compiler (I use a recent teTeX distribution for Linux
 and MacOSX and MikTex for Windows). 
 To simplify the process of compiling the generated
 documentation, \c doxygen writes a \c Makefile into the \c latex directory
@@ -302,7 +302,7 @@ structural command; just putting a special documentation block in front or
 behind them will work fine. 
 
 The text inside a special documentation block is parsed
-before it is written to the HTML and/or \f$\mbox{\LaTeX}\f$ output files.
+before it is written to the HTML and/or \LaTeX output files.
 
 \addindex parsing
 During parsing the following steps take place:
@@ -323,7 +323,7 @@ During parsing the following steps take place:
   text. See section \ref autolink
   for more information on how the automatic link generation works.
 - HTML tags that are in the documentation are interpreted and converted 
-  to \f$\mbox{\LaTeX}\f$ equivalents for the \f$\mbox{\LaTeX}\f$ output. 
+  to \LaTeX equivalents for the \LaTeX output. 
   See section \ref htmlcmds for an overview of all supported HTML tags.
 
 \htmlonly
