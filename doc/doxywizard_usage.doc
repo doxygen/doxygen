@@ -80,7 +80,7 @@ The latter does not affect the way doxygen parses your source code.
 \image latex doxywizard_page3.png "Wizard dialog: Output to produce" width=13cm
 
 You can select one or more of the output formats that doxygen should
-produce. For HTML and LaTeX there are additional options. 
+produce. For HTML and \f$\mbox{\LaTeX}\f$ there are additional options. 
 
 \image html doxywizard_page4.png "Wizard dialog: Diagrams to generate"
 \image latex doxywizard_page4.png "Wizard dialog: Diagrams to generate" width=13cm

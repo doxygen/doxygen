@@ -15,10 +15,10 @@ use.
 and could be changed in incompatible ways in future versions, although 
 this should not be very probable.  It is also lacking some features of 
 other Doxygen backends.  However, it can be already used to generate 
-useful output, as shown by the Perl Module-based LaTeX generator.
+useful output, as shown by the Perl Module-based \f$\mbox{\LaTeX}\f$ generator.
 
 <p>Please report any bugs or problems you find in the Perl Module 
-backend or the Perl Module-based LaTeX generator to the 
+backend or the Perl Module-based \f$\mbox{\LaTeX}\f$ generator to the 
 doxygen-develop mailing list.  Suggestions are welcome as well.
 
 \section using_perlmod_fmt Usage
@@ -49,7 +49,7 @@ file is intended to be included by your own Makefile.
 
 <p>To make use of the documentation stored in DoxyDocs.pm you can use
 one of the default Perl Module-based generators provided by Doxygen
-(at the moment this includes the Perl Module-based LaTeX generator,
+(at the moment this includes the Perl Module-based \f$\mbox{\LaTeX}\f$ generator,
 see \ref perlmod_latex "below") or write your own customized
 generator.  This should not be too hard if you have some knowledge of
 Perl and it's the main purpose of including the Perl Module backend in
@@ -58,7 +58,7 @@ to do this.
 
 \section perlmod_latex Using the LaTeX generator.
 
-<p>The Perl Module-based LaTeX generator is pretty experimental and
+<p>The Perl Module-based \f$\mbox{\LaTeX}\f$ generator is pretty experimental and
 incomplete at the moment, but you could find it useful nevertheless.
 It can generate documentation for functions, typedefs and variables
 within files and classes and can be customized quite a lot by
@@ -68,7 +68,7 @@ how to do this.
 <p>Setting the \ref cfg_perlmod_latex "PERLMOD_LATEX" tag to \c YES in the 
 \c Doxyfile enables the creation of some additional files in the `perlmod/` 
 subdirectory of your output directory.  These files contain the Perl 
-scripts and LaTeX code necessary to generate PDF and DVI output from 
+scripts and \f$\mbox{\LaTeX}\f$ code necessary to generate PDF and DVI output from 
 the Perl Module output, using `pdflatex` and `latex` respectively.  Rules 
 to automate the use of these files are also added to 
 `doxyrules.make` and the `Makefile`.
@@ -79,11 +79,11 @@ to automate the use of these files are also added to
 
 <li>`doxylatex.pl`: This Perl script uses `DoxyDocs.pm` and 
 DoxyModel.pm to generate `doxydocs.tex`, a TeX file containing 
-the documentation in a format that can be accessed by LaTeX code. This 
+the documentation in a format that can be accessed by \f$\mbox{\LaTeX}\f$ code. This 
 file is not directly LaTeXable.
 
 <li>`doxyformat.tex`: This file contains the \f$\mbox{\LaTeX}\f$ code that 
-transforms the documentation from doxydocs.tex into LaTeX text 
+transforms the documentation from doxydocs.tex into \f$\mbox{\LaTeX}\f$ text 
 suitable to be \f$\mbox{\LaTeX}\f$'ed and presented to the user.
 
 <li>`doxylatex-template.pl`:  This Perl script uses `DoxyModel.pm` 
@@ -100,7 +100,7 @@ rules added to `doxyrules.make`.
 
 \subsection pm_pdf_gen Creation of PDF and DVI output 
 
-<p>To try this you need to have installed LaTeX, PDFLaTeX and the 
+<p>To try this you need to have installed \c latex, \c pdflatex and the 
 packages used by `doxylatex.tex`.
 
 <ol>
