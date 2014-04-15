@@ -1102,7 +1102,7 @@ bool DotFilePatcher::run()
       }
       else // error invalid map id!
       {
-        err("Found invalid bounding FIG id in file %s!\n",mapId,m_patchFile.data());
+        err("Found invalid bounding FIG %d in file %s!\n",mapId,m_patchFile.data());
         t << line;
       }
     }
