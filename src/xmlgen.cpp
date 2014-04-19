@@ -148,6 +148,19 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
   } 
 }
 
+static void xmlgen_xml(FTextStream &t)
+{
+  t << "  <project>" <<endl;
+  t << "    <projectname>";
+  t <<        convertToXML(convertCharEntitiesToUTF8(Config_getString("PROJECT_NAME")));
+  t << "    </projectname>" <<endl;
+  t << "    <projectnumber>" << Config_getString("PROJECT_NUMBER") << "</projectnumber>" <<endl;
+  t << "    <projectbrief>";
+  t <<        convertToXML(convertCharEntitiesToUTF8(Config_getString("PROJECT_BRIEF")));
+  t << "    </projectbrief>" <<endl;
+  t << "    <projectlogo>" << Config_getString("PROJECT_LOGO") << "</projectlogo>" <<endl;
+  t << "  </project>" <<endl;
+}
 
 static void writeXMLHeader(FTextStream &t)
 {
@@ -155,6 +168,7 @@ static void writeXMLHeader(FTextStream &t)
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
+  xmlgen_xml(t);
 }
 
 static void writeCombineScript()
@@ -170,6 +184,13 @@ static void writeCombineScript()
   FTextStream t(&f);
   //t.setEncoding(FTextStream::UnicodeUTF8);
 
+  // Note:
+  // The code
+  //   "    <xsl:text>\n  </xsl:text>\n"
+  // is there to get a better readable result at the output i.e. a newline and some indentation.
+  //   "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/compounddef\" />\n"
+  // has been used to have from the compound part only the <compounddef> part and not the <project>
+  // part. The later is taken from the index.
   t <<
   "<!-- XSLT script to combine the generated output into a single file. \n"
   "     If you have xsltproc you could use:\n"
@@ -178,10 +199,14 @@ static void writeCombineScript()
   "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">\n"
   "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"no\" standalone=\"yes\" />\n"
   "  <xsl:template match=\"/\">\n"
-  "    <doxygen version=\"{doxygenindex/@version}\">\n"
+  "    <doxygen version=\"{doxygenindex/@version}\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"compound.xsd\">\n"
+  "    <xsl:text>\n  </xsl:text>\n"
+  "    <xsl:copy-of select=\"/doxygenindex/project\" />\n"
+  "    <xsl:text>\n  </xsl:text>\n"
   "      <!-- Load all doxgen generated xml files -->\n"
   "      <xsl:for-each select=\"doxygenindex/compound\">\n"
-  "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/*\" />\n"
+  "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/compounddef\" />\n"
+  "        <xsl:text>\n  </xsl:text>\n"
   "      </xsl:for-each>\n"
   "    </doxygen>\n"
   "  </xsl:template>\n"
@@ -267,7 +292,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void startCodeLine(bool) 
     {
       XML_DB(("(startCodeLine)\n"));
-      m_t << "<codeline";
+      m_t << "      <codeline";
       if (m_lineNumber!=-1)
       {
         m_t << " lineno=\"" << m_lineNumber << "\"";
@@ -1941,6 +1966,7 @@ void generateXML()
   t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
+  xmlgen_xml(t);
 
   {
     ClassSDict::Iterator cli(*Doxygen::classSDict);
