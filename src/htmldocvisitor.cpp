@@ -44,27 +44,30 @@ static QCString convertIndexWordToAnchor(const QString &word)
   QCString result;
   const char *str = word.data();
   unsigned char c;
-  while ((c = *str++)) 
+  if (str)
   {
-    if ((c >= 'a' && c <= 'z') || // ALPHA
-        (c >= 'A' && c <= 'A') || // ALPHA
-        (c >= '0' && c <= '9') || // DIGIT
-        c == '-' || 
-        c == '.' || 
-        c == '_' || 
-        c == '~'
-       )
+    while ((c = *str++))
     {
-      result += c;
-    }
-    else 
-    {
-      char enc[4];
-      enc[0] = '%';
-      enc[1] = hex[(c & 0xf0) >> 4];
-      enc[2] = hex[c & 0xf];
-      enc[3] = 0;
-      result += enc;
+      if ((c >= 'a' && c <= 'z') || // ALPHA
+          (c >= 'A' && c <= 'A') || // ALPHA
+          (c >= '0' && c <= '9') || // DIGIT
+          c == '-' ||
+          c == '.' ||
+          c == '_' ||
+          c == '~'
+         )
+      {
+        result += c;
+      }
+      else
+      {
+        char enc[4];
+        enc[0] = '%';
+        enc[1] = hex[(c & 0xf0) >> 4];
+        enc[2] = hex[c & 0xf];
+        enc[3] = 0;
+        result += enc;
+      }
     }
   }
   return result;

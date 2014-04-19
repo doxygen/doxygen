@@ -38,17 +38,20 @@ static QCString escapeLabelName(const char *s)
   QCString result;
   const char *p=s;
   char c;
-  while ((c=*p++))
+  if (p)
   {
-    switch (c)
+    while ((c=*p++))
     {
-      case '%': result+="\\%"; break;
-      case '|': result+="\\texttt{\"|}"; break;
-      case '!': result+="\"!"; break;
-      case '{': result+="\\lcurly{}"; break;
-      case '}': result+="\\rcurly{}"; break;
-      case '~': result+="````~"; break; // to get it a bit better in index together with other special characters
-      default: result+=c;
+      switch (c)
+      {
+        case '%': result+="\\%"; break;
+        case '|': result+="\\texttt{\"|}"; break;
+        case '!': result+="\"!"; break;
+        case '{': result+="\\lcurly{}"; break;
+        case '}': result+="\\rcurly{}"; break;
+        case '~': result+="````~"; break; // to get it a bit better in index together with other special characters
+        default: result+=c;
+      }
     }
   }
   return result;
@@ -73,19 +76,22 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
   const char *p=s;
   char str[2]; str[1]=0;
   char c;
-  while ((c=*p++))
+  if (p)
   {
-    switch (c)
+    while ((c=*p++))
     {
-      case '!': m_t << "\"!"; break;
-      case '"': m_t << "\"\""; break;
-      case '@': m_t << "\"@"; break;
-      case '|': m_t << "\\texttt{\"|}"; break;
-      case '[': m_t << "["; break;
-      case ']': m_t << "]"; break;
-      case '{': m_t << "\\lcurly{}"; break;
-      case '}': m_t << "\\rcurly{}"; break;
-      default:  str[0]=c; filter(str); break;
+      switch (c)
+      {
+        case '!': m_t << "\"!"; break;
+        case '"': m_t << "\"\""; break;
+        case '@': m_t << "\"@"; break;
+        case '|': m_t << "\\texttt{\"|}"; break;
+        case '[': m_t << "["; break;
+        case ']': m_t << "]"; break;
+        case '{': m_t << "\\lcurly{}"; break;
+        case '}': m_t << "\\rcurly{}"; break;
+        default:  str[0]=c; filter(str); break;
+      }
     }
   }
   return result;
