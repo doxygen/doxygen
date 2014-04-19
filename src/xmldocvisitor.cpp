@@ -337,9 +337,10 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
          "</indexentry>";
 }
 
-void XmlDocVisitor::visit(DocSimpleSectSep *)
+void XmlDocVisitor::visit(DocSimpleSectSep *dsss)
 {
-  m_t << "<simplesectsep/>";
+  visitPost((DocSimpleSect *)(dsss->parent()));
+  visitPre((DocSimpleSect *)(dsss->parent()));
 }
 
 void XmlDocVisitor::visit(DocCite *cite)

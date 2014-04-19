@@ -473,7 +473,6 @@
       <xsd:element name="title" type="docTitleType" minOccurs="0" />
       <xsd:sequence minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="para" type="docParaType" minOccurs="1" maxOccurs="unbounded" />
-        <xsd:element name="simplesectsep" type="docEmptyType" minOccurs="0"/>
       </xsd:sequence>
     </xsd:sequence>
     <xsd:attribute name="kind" type="DoxSimpleSectKind" />
