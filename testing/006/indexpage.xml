@@ -7,7 +7,8 @@
       <para>
         <simplesect kind="author">
           <para>John Doe </para>
-          <simplesectsep/>
+        </simplesect>
+        <simplesect kind="author">
           <para>Jane Doe </para>
         </simplesect>
         <simplesect kind="authors">

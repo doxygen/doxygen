@@ -337,9 +337,13 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
          "</indexentry>";
 }
 
-void XmlDocVisitor::visit(DocSimpleSectSep *)
+void XmlDocVisitor::visit(DocSimpleSectSep *sep)
 {
-  m_t << "<simplesectsep/>";
+  if (sep->parent() && sep->parent()->kind()==DocNode::Kind_SimpleSect)
+  {
+    visitPost((DocSimpleSect*)sep->parent()); // end current section
+    visitPre((DocSimpleSect*)sep->parent());  // start new section
+  }
 }
 
 void XmlDocVisitor::visit(DocCite *cite)
