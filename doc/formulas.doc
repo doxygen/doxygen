@@ -16,13 +16,13 @@
  */
 /*! \page formulas Including formulas 
 
-Doxygen allows you to put \f$\mbox{\LaTeX}\f$ formulas in the
-output (this works only for the HTML and \f$\mbox{\LaTeX}\f$ output, 
+Doxygen allows you to put \LaTeX formulas in the
+output (this works only for the HTML and \LaTeX output, 
 not for the RTF nor for the man page output). To be able to include 
 formulas (as images) in the HTML documentation, you will also need to 
 have the following tools installed
 <ul>
-<li>\c latex: the \f$\mbox{\LaTeX}\f$ compiler, needed to parse the formulas. 
+<li>\c latex: the \LaTeX compiler, needed to parse the formulas. 
     To test I have used the teTeX 1.0 distribution.
 <li>\c dvips: a tool to convert DVI files to PostScript files 
     I have used version 5.92b from Radical Eye software for testing.
@@ -76,7 +76,7 @@ There are three ways to include formulas in the documentation.
   \f]
 <li>Formulas or other latex elements that are not in a math 
     environment can be specified using \\f{environment}, where
-    \c environment is the name of the \f$\mbox{\LaTeX}\f$ environment, 
+    \c environment is the name of the \LaTeX environment, 
     the corresponding end command is \\f}. Here is an example for an 
     equation array
 \verbatim
@@ -96,7 +96,7 @@ There are three ways to include formulas in the documentation.
    \f}
 </ol>
 For the first two commands one should make sure formulas contain 
-valid commands in \f$\mbox{\LaTeX}\f$'s math-mode. For the third command
+valid commands in \LaTeX's math-mode. For the third command
 the section should contain valid command for the specific environment.
 
 \warning Currently, doxygen is not very fault tolerant in recovering 

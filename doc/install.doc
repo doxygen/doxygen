@@ -51,9 +51,9 @@ tools should be installed.
     \addindex Qt
     version 4.3 or higher (but currently, Qt 5.x is not supported).
     This is needed to build the GUI front-end doxywizard. 
-<li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
+<li>A \LaTeX distribution: for instance
     <a href="http://www.tug.org/interest.html#free">TeX Live</a>
-    This is needed for generating LaTeX, Postscript, and PDF output.
+    This is needed for generating \LaTeX, Postscript, and PDF output.
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10 or higher</a>
     Needed for the include dependency graphs, 
@@ -61,7 +61,7 @@ tools should be installed.
     If you compile graphviz yourself, make sure you do include
     freetype support (which requires the freetype library and header files), 
     otherwise the graphs will not render proper text labels.
-<li>For formulas or if you do not wish to use pdflatex, the ghostscript interpreter
+<li>For formulas or if you do not wish to use `pdflatex, the ghostscript interpreter
     is needed. You can find it at 
     <a href="http://www.ghostscript.com/">www.ghostscript.com</a>.
 <li>In order to generate doxygen's own documentation, Python is needed, you
@@ -402,7 +402,7 @@ Compilation is now done by performing the following steps:
     the command-line (add them to the PATH environment variable if
     needed).
 
-    Notice: The use of LaTeX is optional and only needed for compilation
+    Notice: The use of \LaTeX is optional and only needed for compilation
     of the documentation into PostScript or PDF. 
     It is \e not needed for compiling the doxygen's binaries. 
     
@@ -437,7 +437,7 @@ Compilation is now done by performing the following steps:
     The generated HTML docs are located in the <code>..\\html</code>
     subdirectory.
 
-    The sources for LaTeX documentation are located in the <code>..\\latex</code>
+    The sources for \LaTeX documentation are located in the <code>..\\latex</code>
     subdirectory. From those sources, the DVI, PostScript, and PDF
     documentation can be generated. 
 </ol>
@@ -469,14 +469,14 @@ In order to generate PDF output or use scientific formulas you will also need to
 install <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
 <a href="http://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>. 
 
-For LaTeX a number of distributions exists. Popular ones that should work with
+For \LaTeX a number of distributions exists. Popular ones that should work with
 doxygen are <a href="http://www.miktex.org">MikTex</a> 
 and <a href="http://www.tug.org/protext/">proTeXt</a>.
 
 Ghostscript can be <a href="http://sourceforge.net/projects/ghostscript/">downloaded</a> 
 from Sourceforge.
 
-After installing LaTeX and Ghostscript you'll need to make sure the tools
+After installing \LaTeX and Ghostscript you'll need to make sure the tools
 latex.exe, pdflatex.exe, and gswin32c.exe are present in the search path of a
 command box. Follow <a href="http://www.computerhope.com/issues/ch000549.htm">these</a>
 instructions if you are unsure and run the commands from a command box to verify it works.
@@ -493,7 +493,7 @@ There are a couple of tools you may want to install to use all of doxygen's
 features:
 
 <ul>
-<li>To generate LaTeX documentation or formulas in HTML you need the tools:
+<li>To generate \LaTeX documentation or formulas in HTML you need the tools:
     <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 
     To get these working under Windows
     install the fpTeX distribution. You can find more info at:
@@ -504,8 +504,8 @@ features:
     Make sure the tools are available from a dos box, by adding the 
     directory they are in to the search path.
 
-    For your information, the LaTeX is freely available set of so
-    called macros and styles on the top of the famous TeX program
+    For your information, \LaTeX is a freely available set of so
+    called macros and styles on the top of the famous \TeX program
     (by famous Donald Knuth) and the accompanied utilities (all
     available for free). It is used for high quality
     typesetting. The result -- in the form of so called
@@ -515,7 +515,7 @@ features:
     to convert the <code>dvi</code> to the high quality PostScript
     (i.e. PostScript that can be processed by utilities like 
     <code>psnup</code>, <code>psbook</code>, <code>psselect</code>,
-    and others). The derived version of TeX (the pdfTeX) can be used
+    and others). The derived version of \TeX (the pdfTeX) can be used
     to produce PDF output instead of DVI, or the PDF can be produced
     from PostScript using the utility <code>ps2pdf</code>.
 

@@ -83,7 +83,7 @@
   <li> A <b>dotted dark green</b> arrow indicates private inheritance.
   </ul>
 
-  The elements in the class diagram in \f$\mbox{\LaTeX}\f$ have the 
+  The elements in the class diagram in \LaTeX have the 
   following meaning:
   <ul>
   <li> A \b white box indicates a class.
