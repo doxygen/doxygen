@@ -35,7 +35,7 @@ languages such as C, Objective-C, C#, PHP, Java, Python, IDL
 Doxygen can help you in three ways:
 <ol>
 <li> It can generate an on-line documentation browser (in HTML) and/or an 
-     off-line reference manual (in \f$\mbox{\LaTeX}\f$) from a set 
+     off-line reference manual (in \LaTeX) from a set 
      of documented source files. 
      There is also support for generating output in RTF (MS-Word), 
      PostScript, hyperlinked PDF, compressed HTML, and Unix man pages.

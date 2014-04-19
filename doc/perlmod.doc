@@ -15,10 +15,10 @@ use.
 and could be changed in incompatible ways in future versions, although 
 this should not be very probable.  It is also lacking some features of 
 other Doxygen backends.  However, it can be already used to generate 
-useful output, as shown by the Perl Module-based LaTeX generator.
+useful output, as shown by the Perl Module-based \LaTeX generator.
 
 <p>Please report any bugs or problems you find in the Perl Module 
-backend or the Perl Module-based LaTeX generator to the 
+backend or the Perl Module-based \LaTeX generator to the 
 doxygen-develop mailing list.  Suggestions are welcome as well.
 
 \section using_perlmod_fmt Usage
@@ -49,26 +49,27 @@ file is intended to be included by your own Makefile.
 
 <p>To make use of the documentation stored in DoxyDocs.pm you can use
 one of the default Perl Module-based generators provided by Doxygen
-(at the moment this includes the Perl Module-based LaTeX generator,
+(at the moment this includes the Perl Module-based \LaTeX generator,
 see \ref perlmod_latex "below") or write your own customized
 generator.  This should not be too hard if you have some knowledge of
 Perl and it's the main purpose of including the Perl Module backend in
 Doxygen.  See \ref doxydocs_format "below" for details on how
 to do this.
 
+<-- want to use \LaTeX but not possible in headings -->
 \section perlmod_latex Using the LaTeX generator.
 
-<p>The Perl Module-based LaTeX generator is pretty experimental and
+<p>The Perl Module-based \LaTeX generator is pretty experimental and
 incomplete at the moment, but you could find it useful nevertheless.
 It can generate documentation for functions, typedefs and variables
 within files and classes and can be customized quite a lot by
-redefining TeX macros.  However, there is still no documentation on
+redefining \TeX macros.  However, there is still no documentation on
 how to do this.
 
 <p>Setting the \ref cfg_perlmod_latex "PERLMOD_LATEX" tag to \c YES in the 
 \c Doxyfile enables the creation of some additional files in the `perlmod/` 
 subdirectory of your output directory.  These files contain the Perl 
-scripts and LaTeX code necessary to generate PDF and DVI output from 
+scripts and \LaTeX code necessary to generate PDF and DVI output from 
 the Perl Module output, using `pdflatex` and `latex` respectively.  Rules 
 to automate the use of these files are also added to 
 `doxyrules.make` and the `Makefile`.
@@ -78,29 +79,29 @@ to automate the use of these files are also added to
 <ul>
 
 <li>`doxylatex.pl`: This Perl script uses `DoxyDocs.pm` and 
-DoxyModel.pm to generate `doxydocs.tex`, a TeX file containing 
-the documentation in a format that can be accessed by LaTeX code. This 
+DoxyModel.pm to generate `doxydocs.tex`, a \TeX file containing 
+the documentation in a format that can be accessed by \LaTeX code. This 
 file is not directly LaTeXable.
 
-<li>`doxyformat.tex`: This file contains the \f$\mbox{\LaTeX}\f$ code that 
-transforms the documentation from doxydocs.tex into LaTeX text 
-suitable to be \f$\mbox{\LaTeX}\f$'ed and presented to the user.
+<li>`doxyformat.tex`: This file contains the \LaTeX code that 
+transforms the documentation from doxydocs.tex into \LaTeX text 
+suitable to be \LaTeX'ed and presented to the user.
 
 <li>`doxylatex-template.pl`:  This Perl script uses `DoxyModel.pm` 
-to generate `doxytemplate.tex`, a \f$\mbox{\TeX}\f$ file defining default 
+to generate `doxytemplate.tex`, a \TeX file defining default 
 values for some macros.  doxytemplate.tex is included by 
 doxyformat.tex to avoid the need of explicitly defining some macros.
 
-<li>`doxylatex.tex`:  This is a very simple \f$\mbox{\LaTeX}\f$ document that 
+<li>`doxylatex.tex`:  This is a very simple \LaTeX document that 
 loads some packages and includes doxyformat.tex and doxydocs.tex. This 
-document is \f$\mbox{\LaTeX}\f$'ed to produce the PDF and DVI documentation by the 
+document is \LaTeX'ed to produce the PDF and DVI documentation by the 
 rules added to `doxyrules.make`.
 
 </ul>
 
 \subsection pm_pdf_gen Creation of PDF and DVI output 
 
-<p>To try this you need to have installed LaTeX, PDFLaTeX and the 
+<p>To try this you need to have installed `latex`, `pdflatex` and the 
 packages used by `doxylatex.tex`.
 
 <ol>

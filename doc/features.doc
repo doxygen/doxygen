@@ -37,7 +37,7 @@
 <li>Comes with a GUI frontend (Doxywizard) to ease editing the options and 
     run doxygen. The GUI is available on Windows, Linux, and MacOSX.
 <li>Automatically generates class and collaboration diagrams in HTML (as clickable 
-    image maps) and \f$\mbox{\LaTeX}\f$ (as Encapsulated PostScript images).
+    image maps) and \LaTeX (as Encapsulated PostScript images).
 <li>Uses the `dot` tool of the Graphviz tool kit to generate
     include dependency graphs, collaboration diagrams, call graphs, directory structure
     graphs, and graphical class hierarchy graphs. 
@@ -49,12 +49,12 @@
 <li>Generates a list of all members of a class (including any inherited
     members) along with their protection level.
 <li>Outputs documentation in on-line format (XHTML and UNIX man page) and 
-    off-line format (\f$\mbox{\LaTeX}\f$ and RTF) simultaneously 
+    off-line format (\LaTeX and RTF) simultaneously 
     (any of these can be disabled if desired). All formats are optimized for 
     ease of reading. <br>
     Furthermore, compressed HTML can be generated from HTML output using 
     Microsoft's HTML Help Workshop (Windows only) and PDF can be generated 
-    from the \f$\mbox{\LaTeX}\f$ output.
+    from the \LaTeX output.
 <li>Support for various third party help formats including HTML Help,
     docsets, Qt-Help, and eclipse help.
 <li>Includes a full C preprocessor to allow proper parsing of conditional 
@@ -72,7 +72,7 @@
 <li>Includes an Javascript based live search feature to search for symbols
     as you type (for small to medium sized projects).
 <li>You can type normal HTML tags in your documentation. Doxygen will convert
-    them to their equivalent \f$\mbox{\LaTeX}\f$, RTF, and man-page 
+    them to their equivalent \LaTeX, RTF, and man-page 
     counterparts automatically.
 <li>Allows references to documentation generated for other (doxygen documented) 
     projects (or another part of the same project) in a location independent way.
