@@ -361,7 +361,7 @@ void DocbookDocVisitor::visit(DocIndexEntry *ie)
 
 void DocbookDocVisitor::visit(DocSimpleSectSep *)
 {
-  m_t << "<simplesectsep/>";
+  m_t << "<simplesect/>";
 }
 
 void DocbookDocVisitor::visit(DocCite *cite)
