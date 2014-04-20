@@ -2506,11 +2506,10 @@ EXTRA_PACKAGES=times
  The following commands have a special meaning inside the header:
  <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
  <code>\$doxygenversion</code>, <code>\$projectname</code>, 
- <code>\$projectnumber</code>. 
- Doxygen will replace them by respectively 
- the title of the page, the current date and time, only the current date,
- the version number of doxygen, the project name (see \ref cfg_project_name "PROJECT_NAME"), or the
- project number (see \ref cfg_project_number "PROJECT_NUMBER").
+ <code>\$projectnumber</code>, <code>\$projectbrief</code>, 
+ <code>\$projectlogo</code>. 
+ Doxygen will replace <code>\$title</code> with the empy string, for the replacement values of the
+ other commands the user is refered to \ref cfg_html_header "HTML_HEADER".
 ]]>
       </docs>
     </option>
@@ -2521,6 +2520,9 @@ EXTRA_PACKAGES=times
  the generated \f$\mbox{\LaTeX}\f$ document. The footer should contain everything after 
  the last chapter. If it is left blank doxygen will generate a 
  standard footer.
+ See \ref cfg_latex_header "LATEX_HEADER" for more information on 
+ how to generate a default footer and what special commands can be 
+ used inside the footer.
  
  <br>Note: Only use a user-defined footer if you know what you are doing!
 ]]>
