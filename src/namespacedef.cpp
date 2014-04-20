@@ -664,7 +664,7 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
     MemberDef *md;
     for (mli.toFirst();(md=mli.current());++mli)
     {
-      if (md->getNamespaceDef()==this && md->isLinkable())
+      if (md->getNamespaceDef()==this && md->isLinkable() && !md->isEnumValue())
       {
         ol.writeString("          <tr><td class=\"navtab\">");
         if (md->isLinkableInProject())

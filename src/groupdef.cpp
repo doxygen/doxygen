@@ -1134,7 +1134,7 @@ void GroupDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
   MemberDef *md;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    if (md->getGroupDef()==this && md->isLinkable())
+    if (md->getGroupDef()==this && md->isLinkable() && !md->isEnumValue())
     {
       ol.writeString("          <tr><td class=\"navtab\">");
       if (md->isLinkableInProject())

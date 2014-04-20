@@ -2103,7 +2103,8 @@ void ClassDef::writeMemberPages(OutputList &ol)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if (ml->listType()&MemberListType_detailedLists)
+    ml->countDocMembers();
+    if (ml->numDocMembers()>0 && (ml->listType()&MemberListType_detailedLists))
     {
       ml->writeDocumentationPage(ol,displayName(),this);
     }
@@ -2130,7 +2131,7 @@ void ClassDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
       for (mnii.toFirst();(mi=mnii.current());++mnii)
       {
         MemberDef *md=mi->memberDef;
-        if (md->getClassDef()==this && md->isLinkable())
+        if (md->getClassDef()==this && md->isLinkable() && !md->isEnumValue())
         {
           ol.writeString("          <tr><td class=\"navtab\">");
           if (md->isLinkableInProject())
