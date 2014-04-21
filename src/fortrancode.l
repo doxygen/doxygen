@@ -173,6 +173,9 @@ static bool recognizeFixedForm(const char* contents, FortranFormat format)
         break;
       case ' ':
         break;
+      case '#':
+        skipLine=TRUE;
+        break;
       case '\000':
         return FALSE;
       case 'C':
