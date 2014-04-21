@@ -623,7 +623,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         else
         {
           QCString header = fileToString(latexHeader);
-          t << substituteKeywords(header,0,
+          t << substituteKeywords(header,"",
                    convertToLaTeX(Config_getString("PROJECT_NAME")),
                    convertToLaTeX(Config_getString("PROJECT_NUMBER")),
                    convertToLaTeX(Config_getString("PROJECT_BRIEF")));
@@ -1021,7 +1021,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       else
       {
         QCString footer = fileToString(latexFooter);
-        t << substituteKeywords(footer,0,
+        t << substituteKeywords(footer,"",
                    convertToLaTeX(Config_getString("PROJECT_NAME")),
                    convertToLaTeX(Config_getString("PROJECT_NUMBER")),
                    convertToLaTeX(Config_getString("PROJECT_BRIEF")));
