@@ -521,7 +521,7 @@
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694027">694027</a>: Fortran: derive intent from documentation in case no 
        intent is specified
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694610">694610</a>: Warning was not reported at the correct line in two cases.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694631">694631</a>, 694632: @cond..@endcond did not work properly for removing
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694631">694631</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694632">694632</a>: @cond..@endcond did not work properly for removing
        macro definitions.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=694685">694685</a>: Fixed crash when adding two different functions with the
        same name to the same group.
@@ -596,10 +596,10 @@
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=644350">644350</a>: Fortran: Included patch to improve parsing line continuation 
        characters.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=645423">645423</a>: Fortran: added support for protected attribute
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=682550">682550</a>,691315: When using @copydoc, paragraphs breaks did not appear 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=682550">682550</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=691315">691315</a>: When using @copydoc, paragraphs breaks did not appear 
        in the copied documentation.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=686581">686581</a>: Fortran: handle single quotes in normal Fortran comment.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=686689">686689</a>, 691335: Scope of forwardly declared template class was lost 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=686689">686689</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=691335">691335</a>: Scope of forwardly declared template class was lost 
        in the output.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=689713">689713</a>: Tcl: Inline source code was not rendered correctly.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=690787">690787</a>: Fixed case were a cyclic inheritance relation could crash 
@@ -895,7 +895,7 @@
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=590518">590518</a>: Added missing class member initialization to a
        class in doxmlparser and made the library compile again.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=667678">667678</a>: Added support for Obj-C property attribute "unsafe_retained".
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=674842">674842</a>,676984: Unmatched quote in a comment prevented alias expansion.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=674842">674842</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=676984">676984</a>: Unmatched quote in a comment prevented alias expansion.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=676019">676019</a>: Fixed another case where local include path did not appear
        correctly in the class documentation.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=676966">676966</a>: Fortran: Some keyword were not colored in the source view.
@@ -915,7 +915,7 @@
        to invalid SVG images.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=678288">678288</a>: -- and --- inside a Markdown code block were not handled
        properly.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=679331">679331</a>,675766: In body documentation with a different indentation then the
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=679331">679331</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=675766">675766</a>: In body documentation with a different indentation then the
        main documentation was not rendered correctly (MARKDOWN=YES).
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=679436">679436</a>: Using an escaped pipe symbol in a Markdown table did not get 
        unescaped in the output.
@@ -1059,7 +1059,7 @@ make sure you add the following:
        starting with 1.).
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=670889">670889</a>: Java: last enum value did not appear in the output unless it was
        followed by a comma.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671023">671023</a>, 671312: Regression: Autolist items starting on a new paragraph 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671023">671023</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671312">671312</a>: Regression: Autolist items starting on a new paragraph 
        at indent level larger than 0 were not processed correctly. 
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=671076">671076</a>: Sections could be missing from the navigation tree in 
        some situations.
@@ -1220,7 +1220,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=498703">498703</a>: Fixed encoding issue in CHM index file for group titles.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=510975">510975</a>: FORTRAN: Keywords like .GT. recognized as symbols for 
        cross ref.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=511906">511906</a>, 581303, 622749: \copydoc did copy the brief description 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=511906">511906</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=581303">581303</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=622749">622749</a>: \copydoc did copy the brief description 
        into the detailed section, causing a difference between the original  
        and the copy.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=555327">555327</a>: Using @ref for an example file, caused it to appear as
@@ -1263,7 +1263,7 @@ make sure you add the following:
        directories when computing a names for the directory's output files.
        This will make the names of the output more stable.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=668519">668519</a>: Added missing newline in man page output.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=669071">669071</a>, 669072: Fixed parse problem for Q_PROPERTY when a template
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=669071">669071</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=669072">669072</a>: Fixed parse problem for Q_PROPERTY when a template
        with a namespaced type was used.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=669078">669078</a>: Included patch which changes MATHJAX_RELPATH to use the
        content delivery network by default.
@@ -1482,7 +1482,7 @@ make sure you add the following:
        lines.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=318061">318061</a>: Putting two functions in the same group that only
        different in the number of template arguments did not work.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=437346">437346</a>,564614: Fixed proper encoding of multibyte output in RTF
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=437346">437346</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=564614">564614</a>: Fixed proper encoding of multibyte output in RTF
        depending on the code page (thanks to Hirao for the patch).
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=521717">521717</a>: The .spec file in the source distribution did not get
        updated to the latest version.
@@ -1514,7 +1514,7 @@ make sure you add the following:
        paths.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=646533">646533</a>: Included patch to sort overloaded members by appearance in
        the code.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=646747">646747</a>,646879: Putting an autolist inside a @todo, @bug or similar
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=646747">646747</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=646879">646879</a>: Putting an autolist inside a @todo, @bug or similar
        section did not work anymore.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=646922">646922</a>: Referring to a logo with a relative path, caused 
        a broken image target when using a custom HTML header.
@@ -1699,11 +1699,11 @@ make sure you add the following:
 <ul>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=306076">306076</a>: code blocks with using directives did not get hyperlinked.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=313527">313527</a>: enum values with bitfields did not get parsed correctly.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=565715">565715</a>,630582: Included a patch that fixes a couple of Fortran issues
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=565715">565715</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=630582">630582</a>: Included a patch that fixes a couple of Fortran issues
        (thanks to Albert).
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615507">615507</a>: Fixed problem handling @cond..@endcond in Fortran code.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=619040">619040</a>: Scope was missing in Tokens.xml when using docsets.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625517">625517</a>,523156: Applied patch tp avoid stripping prefixes for Fortran 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625517">625517</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=523156">523156</a>: Applied patch tp avoid stripping prefixes for Fortran 
        subroutines.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626476">626476</a>: allow label before end statement in Fortran
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=630901">630901</a>: &lt;/see&gt; was not handled properly in comment block.
@@ -1772,7 +1772,7 @@ make sure you add the following:
 <ul>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=306076">306076</a>: Fixed case where using of a namespace did not work inside
        an example.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=336053">336053</a>,487871: /// were not stripped from formulas and \dot..\enddot
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=336053">336053</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=487871">487871</a>: /// were not stripped from formulas and \dot..\enddot
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=563698">563698</a>: dropped support for a4wide paper format for LaTeX, since
        it is on the LaTeX taboo list.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=571014">571014</a>: Behaviour of CLASS_DIAGRAM=NO in combination with
@@ -1819,7 +1819,7 @@ make sure you add the following:
        doxygen incorrected ended the brief description with a dot.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=625952">625952</a>: setting MULTILINE_CPP_IS_BRIEF to YES, cause /// to appear
        in the output.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626033">626033</a>,567774: EXTENSION_MAPPING did not work if a the mapped 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626033">626033</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=567774">567774</a>: EXTENSION_MAPPING did not work if a the mapped 
        language was handled by the same parser as used for the original  
        extension.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=626175">626175</a>: Fixed bracket bug in LaTeX fancy headers.
@@ -1882,7 +1882,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621785">621785</a>: Doxygen could hang when using \copydoc in a function with
        \param.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621805">621805</a>: Using //!&lt; after a #define no longer worked.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621854">621854</a>,622219,622593: html help compiler (and also the Qt 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621854">621854</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=622219">622219</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=622593">622593</a>: html help compiler (and also the Qt 
        help compiler) was called before all dot images were generated.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=621984">621984</a>: Using a auto-list in combination with \subpage cause the
        items to be inlined.
@@ -1927,7 +1927,7 @@ make sure you add the following:
 <h3>Bug fixes</h3>
 <ul>
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=306076">306076</a>: source browser could miss links for used namespaces.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=361476">361476</a>,620924: \if and \endif did not work properly inside auto lists.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=361476">361476</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=620924">620924</a>: \if and \endif did not work properly inside auto lists.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=557164">557164</a>: No warning for missing return type documentation even though
        WARN_NO_PARAMDOC was set to YES.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=577005">577005</a>: Handling of nesting \defgroup's was not always working
@@ -1939,7 +1939,7 @@ make sure you add the following:
        was broken.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=593679">593679</a>: Links in the search results were broken if they pointed to
        symbols imported via tag files using an absolute path or URL.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=593760">593760</a>,615682: Fixed man page output problem when using @par.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=593760">593760</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615682">615682</a>: Fixed man page output problem when using @par.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=594021">594021</a>: A C comment before a #endif caused the preprocessor 
        statement to be ignored.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=597013">597013</a>: When HIDE_SCOPE_NAMES was enabled also the scope for
@@ -1993,7 +1993,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=615670">615670</a>: C# namespaces are now extracted also without comment block
        (the language spec does not allow XML documentation).
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616209">616209</a>: included patch that fixes some typos in the code.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616344">616344</a>,610604: Pages with an underscore in the label generated a 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616344">616344</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=610604">610604</a>: Pages with an underscore in the label generated a 
        file name containing two underscores.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=616387">616387</a>: text of the form something.symbol got autolinked when
        symbol had a global scope.
@@ -2046,7 +2046,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=600525">600525</a>: Included patch for VHDL.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=605698">605698</a>: Replaced size attribute of hr tag by class attribute in the
                   HTML output.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606030">606030</a>,606192,607563: 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606030">606030</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606192">606192</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607563">607563</a>: 
                   Using \dot produced "Error opening map file" or 
                   could even crash doxygen.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606084">606084</a>: Loading a new config file in doxywizard did not reset all
@@ -2054,18 +2054,18 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606104">606104</a>: Grouped members with todo-like items were shown with 
                   "GlobalScope" prefix.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606156">606156</a>: Fixed RTF rendering problem with group index.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606206">606206</a>,610133: Added missing line break in LaTeX output.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606330">606330</a>, 608056: The title of pages whose label had an underscore
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606206">606206</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=610133">610133</a>: Added missing line break in LaTeX output.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606330">606330</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=608056">608056</a>: The title of pages whose label had an underscore
                   was not shown
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606717">606717</a>: Include guard not starting with #ifndef SOME_GUARD_H were not
                   recognised as such.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606718">606718</a>: Setting SEARCHENGINE to YES and GENERATE_HTML to NO caused
                   error that search results directory could not be created.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606772">606772</a>,608493: typedef'ed enums or struct with the same as the 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=606772">606772</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=608493">608493</a>: typedef'ed enums or struct with the same as the 
                   typedef did no longer show up.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607088">607088</a>,607946: Related pages (manual and automatic like the todo page) 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607088">607088</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607946">607946</a>: Related pages (manual and automatic like the todo page) 
                   caused broken links when SHORT_NAMES was enabled.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607432">607432</a>,608002: Automatically generated related pages (like the 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607432">607432</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=608002">608002</a>: Automatically generated related pages (like the 
                   todo page) caused broken links when CREATE_SUBDIR was enabled.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=607736">607736</a>: comments after #if could cause next function call not to be
                   cross-referenced.
@@ -2144,7 +2144,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=593273">593273</a>: GENERATE_TODOLIST=NO and friends not longer worked.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=593928">593928</a>: Added support for UCS-2 encoded input files.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=594391">594391</a>: Fixed problem parsing fully-qualified java annotations.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=594592">594592</a>,596815: Fixed problem handling quotes.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=594592">594592</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596815">596815</a>: Fixed problem handling quotes.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=595191">595191</a>: Not all configuration options appeared in the index of
                   the documentation and some were not sorted correctly.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=595253">595253</a>: formulas had the .png extension while they were gifs.
@@ -2154,7 +2154,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596085">596085</a>: Removed obsolete option USE_WINDOWS_ENCODING from the docs.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596233">596233</a>: RTF output was missing a new paragraph for brief 
                   member descriptions.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596807">596807</a>,596819: Code reformatting done for the LaTeX output could 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596807">596807</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596819">596819</a>: Code reformatting done for the LaTeX output could 
                   break multibyte UTF-8 characters causing invalid output.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=596809">596809</a>: Using multibyte characters in a page label caused invalid
                   output.
@@ -2212,7 +2212,7 @@ make sure you add the following:
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=133418">133418</a>: Multiline second argument of \ref caused unexpected " warning.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592454">592454</a>: Feeding invalid XML could crash doxygen's DBus XML parser.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592485">592485</a>: Include patch to fix problem with building rpms.
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592511">592511</a>,592625: Doxywizard problem with GENERATE_TREEVIEW.
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592511">592511</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592625">592625</a>: Doxywizard problem with GENERATE_TREEVIEW.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592650">592650</a>: SHOW_USED_FILES now works again.
 <li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=592808">592808</a>: xrefitems (like @todo) did not appear in the list when
        found in comments marked with @enum or @name.
@@ -2221,7 +2221,7 @@ make sure you add the following:
 <h2>(release date 20-08-2009)</h2>
 <h3>Changes</h3>
 <ul>
-<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=580924">580924</a>, 541234: Replaced the PHP based search engine by a 
+<li>   id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=580924">580924</a>, <a href="https://bugzilla.gnome.org/show_bug.cgi?id=541234">541234</a>: Replaced the PHP based search engine by a 
        Javascript/DHTML based one.
        As a result the search feature no longer requires a HTTP server
        with PHP enabled to be usable. Searching is limited to symbols
