@@ -1417,9 +1417,9 @@ make sure you add the following:
 </ul>
 <h3>Bug fixes</h3>
 <ul>
-<li>id 521717: .spec file was only updated after running ./configure
-<li>id 656642: Fixed potential crash when using doxygen for large projects.
-<li>id 656878: Fixed problem running bibtex with \cite command on Windows.
+<li> id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=521717">521717</a>: .spec file was only updated after running ./configure
+<li> id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=656642">656642</a>: Fixed potential crash when using doxygen for large projects.
+<li> id <a href="https://bugzilla.gnome.org/show_bug.cgi?id=656878">656878</a>: Fixed problem running bibtex with \cite command on Windows.
 <li>Regression: some information was no longer available for a class, 
     due to accidental deletion of a code block.
 <li>Regression: fixed matching problem in the code parser.
