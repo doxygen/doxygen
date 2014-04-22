@@ -648,8 +648,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
           t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}" << endl;
       }
-      
-      t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      if (Config_getBool("SHOW_NAMESPACES"))
+      {
+          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      }
       break;
     case isClassHierarchyIndex:
       t << "\\par " << rtf_Style_Reset << endl;
