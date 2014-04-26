@@ -51,7 +51,7 @@ f_libclangstatic=NO
 # first setup the list with availabe languages, so we cannot forget any
 # list will be in case as specified (f_langs) and in uppercase (f_ulangs) as used in the internal perl script
 #
-f_langs=`ls -1 src/translator_??.h | sed -e 's%src/translator_%%g' | sed -e 's/\.h//' | tr '\012' ',' | sed -e 's/,$//'`
+f_langs=`ls -1 src/translator_??.h | sed -e 's%src/translator_%%g' | sed -e 's/\.h//' | tr '\012' ','`
 
 while test -n "$1";  do
   case $1 in
@@ -708,13 +708,9 @@ fi
 
 # -----------------------------------------------------------------------------
 
-if ! test -d "generated_src/doxygen"; then
-  mkdir -p generated_src/doxygen
-fi
+mkdir -p generated_src/doxygen
 if test "$f_wizard" = YES; then
-  if ! test -d "generated_src/doxywizard"; then
-    mkdir -p generated_src/doxywizard
-  fi
+  mkdir -p generated_src/doxywizard
 fi
 
 #
