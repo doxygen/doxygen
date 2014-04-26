@@ -1,6 +1,6 @@
 import sys
 
-if (len(sys.argv) > 0):
+if (len(sys.argv) > 1):
     if (sys.argv[1] == "ENONLY"):
         print "#define ENGLISH_ONLY"
     else:
