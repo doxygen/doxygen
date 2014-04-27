@@ -234,6 +234,8 @@ void replaceComment(int offset);
 
 %}
 
+BS        [ \t]*
+
 %option noyywrap
 
 %x Scan
@@ -831,10 +833,11 @@ void replaceComment(int offset);
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
 				     replaceAliases(yytext);
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*"{" { // expand alias with arguments
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*{BS}"{" { // expand alias with arguments
                                      g_lastBlockContext=YY_START;
 				     g_blockCount=1;
 				     g_aliasString=yytext;
+				     g_aliasString=g_aliasString.left(g_aliasString.length() - 1).stripWhiteSpace() + "{";
 				     g_lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
   				   }

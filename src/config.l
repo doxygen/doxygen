@@ -1226,7 +1226,7 @@ void Config::check()
     alias=alias.stripWhiteSpace();
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
-      config_err("Error: Illegal alias format `%s'. Use \"name=value\" or \"name(n)=value\", where n is the number of arguments\n",
+      config_err("Error: Illegal alias format `%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
 	  alias.data());
     }
     s=aliasList.next();

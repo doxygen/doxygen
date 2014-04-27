@@ -7122,7 +7122,7 @@ static QCString escapeCommas(const QCString &s)
 static QCString expandAliasRec(const QCString s,bool allowRecursion)
 {
   QCString result;
-  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
+  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*[ \t]*");
   QCString value=s;
   int i,p=0,l;
   while ((i=cmdPat.match(value,p,&l))!=-1)
@@ -7137,6 +7137,7 @@ static QCString expandAliasRec(const QCString s,bool allowRecursion)
     if (hasArgs)
     {
       numArgs = countAliasArguments(args);
+      cmd = cmd.stripWhiteSpace();
       cmd += QCString().sprintf("{%d}",numArgs);  // alias name + {n}
     }
     QCString *aliasText=Doxygen::aliasDict.find(cmd);
