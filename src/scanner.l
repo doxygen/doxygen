@@ -682,7 +682,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x      SkipCurlyBlock
 %x      SkipRoundBlock
 %x	Sharp
-%x      SkipSharp
 %x	SkipRound
 %x	SkipSquare
 %x	SkipRemainder
@@ -5353,13 +5352,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( ClassVar );
                                           }
 					}
-<AlignAs>"("                            { roundCount=1; 
+<AlignAs>"("                            { roundCount=0; 
                                           BEGIN( AlignAsEnd ); 
                                         }
 <AlignAs>\n                             { lineCount(); }
 <AlignAs>.
 <AlignAsEnd>"("                         { roundCount++; }
-<AlignAsEnd>")"                         { if (--roundCount<=0) 
+<AlignAsEnd>")"                         { if (--roundCount<0) 
                                           {
                                             BEGIN( lastAlignAsContext ); 
                                           }
@@ -5843,12 +5842,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <Specialization>.			{
   					  *specName += *yytext;
   					}
-<SkipSharp>"<"				{ ++sharpCount; }
-<SkipSharp>">"				{ if (--sharpCount<=0)
-					    BEGIN ( lastSkipSharpContext );
-					}
 <SkipRound>"("				{ ++roundCount; }
-<SkipRound>")"				{ if (--roundCount<=0)
+<SkipRound>")"				{ if (--roundCount<0)
 					    BEGIN ( lastSkipRoundContext );
 					}
 <SkipRound>\"				{
