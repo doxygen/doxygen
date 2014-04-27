@@ -834,12 +834,20 @@ BS        [ \t]*
 				     replaceAliases(yytext);
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*{BS}"{" { // expand alias with arguments
-                                     g_lastBlockContext=YY_START;
-				     g_blockCount=1;
 				     g_aliasString=yytext;
-				     g_aliasString=g_aliasString.left(g_aliasString.length() - 1).stripWhiteSpace() + "{";
-				     g_lastEscaped=0;
-				     BEGIN( ReadAliasArgs );
+				     g_aliasString=g_aliasString.left(g_aliasString.length() - 1).stripWhiteSpace();
+                                     if (isAliasCommand(g_aliasString.right(g_aliasString.length() - 1)))
+                                     {
+                                       g_lastBlockContext=YY_START;
+				       g_blockCount=1;
+				       g_aliasString += "{";
+				       g_lastEscaped=0;
+				       BEGIN( ReadAliasArgs );
+                                     }
+                                     else
+                                     { /* not an alias, so a normal command with a pattern starting with a { */
+                                       REJECT
+                                     }
   				   }
 <ReadAliasArgs>^[ \t]*"//"[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
   				   }
