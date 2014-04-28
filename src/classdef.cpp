@@ -249,7 +249,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   {
     isLocal=FALSE;
   }
-  isGeneric = lang==SrcLangExt_CSharp && QCString(name).find('<')!=-1;
+  isGeneric = (lang==SrcLangExt_CSharp || lang==SrcLangExt_Java) && QCString(name).find('<')!=-1;
   isAnonymous = QCString(name).find('@')!=-1;
 }
 

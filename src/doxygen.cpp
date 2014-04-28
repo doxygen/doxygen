@@ -1347,11 +1347,12 @@ static void addClassToContext(EntryNav *rootNav)
     cd->insertUsedFile(fd);
 
     // add class to the list
-    //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
+    //printf("ClassDict.insert(%s)\n",fullName.data());
     Doxygen::classSDict->append(fullName,cd);
 
     if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instantions
     {
+      //printf("inserting generic '%s' cd=%p\n",fullName.data(),cd);
       Doxygen::genericsDict->insert(fullName,cd);
     }
   }
@@ -4113,7 +4114,9 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = getClass(name);
   }
-  if (result==0 && cd && cd->getLanguage()==SrcLangExt_CSharp && name.find('<')!=-1)
+  if (result==0 && cd &&
+      (cd->getLanguage()==SrcLangExt_CSharp || cd->getLanguage()==SrcLangExt_Java) &&
+      name.find('<')!=-1)
   {
     result = Doxygen::genericsDict->find(name);
   }
@@ -4638,34 +4641,32 @@ static bool findClassRelation(
         int i=baseClassName.find('<');
         int si=baseClassName.findRev("::",i==-1 ? baseClassName.length() : i);
         if (si==-1) si=0;
+        if (baseClass==0 && (root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java))
+        {
+          baseClass = Doxygen::genericsDict->find(baseClassName);
+          //printf("looking for '%s' result=%p\n",baseClassName.data(),baseClass);
+        }
         if (baseClass==0 && i!=-1) 
           // base class has template specifiers
         {
-          if (root->lang == SrcLangExt_CSharp)
+          // TODO: here we should try to find the correct template specialization
+          // but for now, we only look for the unspecializated base class.
+          int e=findEndOfTemplate(baseClassName,i+1);
+          //printf("baseClass==0 i=%d e=%d\n",i,e);
+          if (e!=-1) // end of template was found at e
           {
-            baseClass = Doxygen::genericsDict->find(baseClassName);
-          }
-          else
-          {
-            // TODO: here we should try to find the correct template specialization
-            // but for now, we only look for the unspecializated base class.
-            int e=findEndOfTemplate(baseClassName,i+1);
-            //printf("baseClass==0 i=%d e=%d\n",i,e);
-            if (e!=-1) // end of template was found at e
-            {
-              templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
-              baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
-              baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
-                  cd->getFileDef(),
-                  baseClassName,
-                  &baseClassTypeDef,
-                  0, //&templSpec,
-                  mode==Undocumented,
-                  TRUE
-                  );
-              //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
-              //      baseClass,baseClassName.data(),templSpec.data());
-            }
+            templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
+            baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
+            baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
+                cd->getFileDef(),
+                baseClassName,
+                &baseClassTypeDef,
+                0, //&templSpec,
+                mode==Undocumented,
+                TRUE
+                );
+            //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
+            //      baseClass,baseClassName.data(),templSpec.data());
           }
         }
         else if (baseClass && !templSpec.isEmpty()) // we have a known class, but also
