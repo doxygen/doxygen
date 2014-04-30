@@ -2050,9 +2050,16 @@ QCString ClassDef::title() const
   }
   else
   {
-    pageTitle = theTranslator->trCompoundReference(displayName(),
-              m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
-              m_impl->tempArgs != 0);
+    if (Config_getBool("HIDE_COMPOUND_REFERENCE"))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trCompoundReference(displayName(),
+                m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
+                m_impl->tempArgs != 0);
+    }
   }
   return pageTitle;
 }

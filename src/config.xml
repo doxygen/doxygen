@@ -886,6 +886,15 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='HIDE_COMPOUND_REFERENCE' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c HIDE_COMPOUND_REFERENCE tag is set to \c NO (default) then
+ doxygen will append additional text to a page's title, such as Class Reference.
+ If set to \c YES the compound reference will be hidden. 
+]]>
+      </docs>
+    </option>
     <option type='bool' id='SHOW_INCLUDE_FILES' defval='1'>
       <docs>
 <![CDATA[
