@@ -16,8 +16,10 @@
  */
 /*! \page faq Frequently Asked Questions
 
-<ol>
-<li><b>How to get information on the index page in HTML?</b>
+\tableofcontents
+
+
+\section faq_index How to get information on the index page in HTML?
 <p>
 You should use the \ref cmdmainpage "\\mainpage" command inside a comment block like this:
 \verbatim
@@ -35,8 +37,7 @@ You should use the \ref cmdmainpage "\\mainpage" command inside a comment block 
  */
 \endverbatim
 
-<li><b>Help, some/all of the members of my class / file / namespace 
-       are not documented?</b>
+\section fac_al Help, some/all of the members of my class / file / namespace are not documented?
 
   Check the following:
   <ol>
@@ -62,8 +63,7 @@ PREDEFINED             = MY_MACRO()=
       manual for more information.
   </ol> 
 
-<li><b>When I set EXTRACT_ALL to NO none of my functions are shown in the 
-    documentation.</b>
+\section faq_extract_allWhen I set EXTRACT_ALL to NO none of my functions are shown in the documentation.
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
@@ -77,7 +77,7 @@ block containing the \ref cmddefgroup "\\defgroup" command.
 For member functions or functions that are part of a namespace you should
 document either the class or namespace.
  
-<li><b>How can I make doxygen ignore some code fragment?</b>
+\section faq_code How can I make doxygen ignore some code fragment?
 
 The new and easiest way is to add one comment block 
 with a \ref cmdcond "\\cond" command at the start and one comment block 
@@ -100,8 +100,7 @@ around the blocks that should be hidden and put:
 in the config file then all blocks should be skipped by Doxygen as long
 as \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" is set to `YES`.
 
-<li><b>How can I change what is after the <code>\#include</code> 
-in the class documentation?</b>
+\section faq_code_inc How can I change what is after the <code>\#include</code> in the class documentation?
 
 In most cases you can use \ref cfg_strip_from_inc_path "STRIP_FROM_INC_PATH" 
 to strip a user defined part of a path.
@@ -132,7 +131,7 @@ quotes instead of angle brackets you should type:
  */
 \endverbatim
 
-<li><b>How can I use tag files in combination with compressed HTML?</b>
+\section faq_chm How can I use tag files in combination with compressed HTML?
 
 If you want to refer from one compressed HTML file 
 \c a.chm to another compressed HTML file 
@@ -155,14 +154,13 @@ configuration file for project \e a you write:
 TAGFILES = b.tag=b.chm::
 \endverbatim
 
-<li><b>I don't like the quick index that is put above each HTML page, what do I do?</b>
+\section faq_html I don't like the quick index that is put above each HTML page, what do I do?
 
 You can disable the index by setting \ref cfg_disable_index "DISABLE_INDEX" to `YES`. Then you can
 put in your own header file by writing your own header and feed that to
 \ref cfg_html_header "HTML_HEADER".
 
-<li><b>The overall HTML output looks different, while I only wanted to 
-       use my own html header file</b>
+\section faq_html_header The overall HTML output looks different, while I only wanted to use my own html header file
 
 You probably forgot to include the stylesheet <code>doxygen.css</code> that 
 doxygen generates. You can include this by putting
@@ -171,7 +169,7 @@ doxygen generates. You can include this by putting
 \endverbatim
 in the HEAD section of the HTML page.
 
-<li><b>Why does doxygen use Qt?</b>
+\section faq_use_qt Why does doxygen use Qt?
 
 The most important reason is to have a platform abstraction for most 
 Unices and Windows by means of the QFile, QFileInfo, QDir, QDate, 
@@ -181,7 +179,7 @@ QDict, QString, QArray, QTextStream, QRegExp, QXML etc.
 
 The GUI front-end doxywizard uses Qt for... well... the GUI!
 
-<li><b>How can I exclude all test directories from my directory tree?</b>
+\section faq_excl_dir How can I exclude all test directories from my directory tree?
 
 Simply put an exclude pattern like this in the configuration file:
 
@@ -189,14 +187,12 @@ Simply put an exclude pattern like this in the configuration file:
 EXCLUDE_PATTERNS = */test/*
 \endverbatim
 
-<li><b>Doxygen automatically generates a link to the 
-       class MyClass somewhere in the running text. 
-       How do I prevent that at a certain place?</b>
+\section faq_class Doxygen automatically generates a link to the class MyClass somewhere in the running text.  How do I prevent that at a certain place?
 
 Put a \% in front of the class name. Like this: \%MyClass. Doxygen will then
 remove the % and keep the word unlinked.
 
-<li><b>My favorite programming language is X. Can I still use doxygen?</b>
+\section faq_pgm_X My favorite programming language is X. Can I still use doxygen?
 
 No, not as such; doxygen needs to understand the structure of what it reads. 
 If you don't mind spending some time on it, there are several options:
@@ -212,8 +208,7 @@ If you don't mind spending some time on it, there are several options:
   write a backend that produces a similar syntax tree as is done by 
   src/scanner.l (and also by src/tagreader.cpp while reading tag files).
 
-<li><b>Help! I get the cryptic message 
- "input buffer overflow, can't enlarge buffer because scanner uses REJECT"</b>
+\section faq_lex Help! I get the cryptic message "input buffer overflow, can't enlarge buffer because scanner uses REJECT"
 
 This error happens when doxygen's lexical scanner has a rule that matches
 more than 256K of input characters in one go. I've seen this happening 
@@ -227,21 +222,21 @@ should send me a code fragment that triggers the message. To work around
 the problem, put some line-breaks into your file, split it up into smaller 
 parts, or exclude it from the input using EXCLUDE.
 
-<li><b>When running make in the latex dir I get "TeX capacity exceeded". Now what?</b>
+\section faq_latex When running make in the latex dir I get "TeX capacity exceeded". Now what?
 
 You can edit the texmf.cfg file to increase the default values of the 
 various buffers and then run "texconfig init".
 
-<li><b>Why are dependencies via STL classes not shown in the dot graphs?</b>
+\section faq_stl Why are dependencies via STL classes not shown in the dot graphs?
 
 Doxygen is unaware of the STL classes, unless the 
 option \ref cfg_builtin_stl_support "BUILTIN_STL_SUPPORT" is turned on.
 
-<li><b>I have problems getting the search engine to work with PHP5 and/or windows</b>
+\section faq_search I have problems getting the search engine to work with PHP5 and/or windows
 
 Please read <a href="searchengine.html">this</a> for hints on where to look. 
 
-<li><b>Can I configure doxygen from the command line?</b>
+\section faq_cmdline Can I configure doxygen from the command line?
 
 Not via command line options, but doxygen can read from <code>stdin</code>,
 so you can pipe things through it. Here's an example how to override an option
@@ -260,7 +255,7 @@ For Windows the following would do the same:
 If multiple options with the same name are specified then doxygen will use 
 the last one. To append to an existing option you can use the += operator.
 
-<li><b>How did doxygen get its name?</b>
+\section faq_name How did doxygen get its name?
 
 Doxygen got its name from playing with the words 
 documentation and generator.
@@ -274,7 +269,7 @@ At the time I was looking into \c lex and \c yacc, where a lot of things start w
 "yy", so the "y" slipped in and made things pronounceable 
 (the proper pronouncement is Docs-ee-gen, so with a long "e").
 
-<li><b>What was the reason to develop doxygen?</b>
+\section faq_why What was the reason to develop doxygen?
 
 I once wrote a GUI widget based on the Qt library (it is still available at
 http://sourceforge.net/projects/qdbttabular/ but hasn't been updated since 2002). 
@@ -285,8 +280,6 @@ This was a nightmare to maintain, so I wanted a similar tool. I looked at
 Doc++ but that just wasn't good enough (it didn't support signals and
 slots and did not have the Qt look and feel I had grown to like), 
 so I started to write my own tool...
-
-</ol>
 
 \htmlonly
 Go to the <a href="trouble.html">next</a> section or return to the
