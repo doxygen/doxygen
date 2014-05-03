@@ -14,6 +14,7 @@ class QTextEdit;
 class QMenu;
 class QProcess;
 class QTimer;
+class QTabWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -51,6 +52,7 @@ class MainWindow : public QMainWindow
     void showSettings();
     void configChanged();
     void clearRecent();
+    void selectRunTab();
     
   private:
     MainWindow();
@@ -77,6 +79,7 @@ class MainWindow : public QMainWindow
     QStringList m_recentFiles;
     QProcess *m_runProcess;
     QTimer *m_timer;
+    QTabWidget *m_tabs;
     bool m_running;
     bool m_modified;
 };

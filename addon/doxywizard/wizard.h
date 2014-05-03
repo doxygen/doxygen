@@ -238,6 +238,9 @@ class Wizard : public QSplitter
     void nextTopic();
     void prevTopic();
 
+  signals:
+    void done();
+
   private:
     const QHash<QString,Input *> &m_modelData;
     QTreeWidget    *m_treeWidget;

@@ -97,15 +97,15 @@ MainWindow::MainWindow()
   grid->addLayout(launchLayout,1,0);
   runTabLayout->addLayout(grid);
 
-  QTabWidget *tabs = new QTabWidget;
-  tabs->addTab(m_wizard,tr("Wizard"));
-  tabs->addTab(m_expert,tr("Expert"));
-  tabs->addTab(runTab,tr("Run"));
+  m_tabs = new QTabWidget;
+  m_tabs->addTab(m_wizard,tr("Wizard"));
+  m_tabs->addTab(m_expert,tr("Expert"));
+  m_tabs->addTab(runTab,tr("Run"));
 
   rowLayout->addWidget(new QLabel(tr("Step 1: Specify the working directory from which doxygen will run")));
   rowLayout->addLayout(dirLayout);
   rowLayout->addWidget(new QLabel(tr("Step 2: Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation")));
-  rowLayout->addWidget(tabs);
+  rowLayout->addWidget(m_tabs);
 
   setCentralWidget(topPart);
   statusBar()->showMessage(tr("Welcome to Doxygen"),messageTimeout);
@@ -115,7 +115,7 @@ MainWindow::MainWindow()
   m_timer = new QTimer;
 
   // connect signals and slots
-  connect(tabs,SIGNAL(currentChanged(int)),SLOT(selectTab(int)));
+  connect(m_tabs,SIGNAL(currentChanged(int)),SLOT(selectTab(int)));
   connect(m_selWorkingDir,SIGNAL(clicked()),SLOT(selectWorkingDir()));
   connect(m_recentMenu,SIGNAL(triggered(QAction*)),SLOT(openRecent(QAction*)));
   connect(m_workingDir,SIGNAL(returnPressed()),SLOT(updateWorkingDir()));
@@ -127,6 +127,7 @@ MainWindow::MainWindow()
   connect(m_saveLog,SIGNAL(clicked()),SLOT(saveLog()));
   connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
+  connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
 
   loadSettings();
   updateLaunchButtonState();
@@ -371,6 +372,11 @@ void MainWindow::saveSettings()
 void MainWindow::selectTab(int id)
 {
   if (id==0) m_wizard->refresh();
+}
+
+void MainWindow::selectRunTab()
+{
+  m_tabs->setCurrentIndex(2);
 }
 
 void MainWindow::addRecentFile(const QString &fileName)

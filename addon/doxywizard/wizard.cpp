@@ -1292,17 +1292,24 @@ void Wizard::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
     {
       m_topicStack->setCurrentWidget(m_step4);
       m_prev->setEnabled(true);
-      m_next->setEnabled(false);
+      m_next->setEnabled(true);
     }
   }
 }
 
 void Wizard::nextTopic()
 {
-  m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
-  m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
-  m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+  if (m_topicStack->currentIndex()+1==m_topicStack->count()) // last topic
+  {
+    done();
+  }
+  else
+  {
+    m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
+    m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
+    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+    m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+  }
 }
 
 void Wizard::prevTopic()
@@ -1315,6 +1322,7 @@ void Wizard::prevTopic()
 
 void Wizard::refresh()
 {
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
   m_step1->init();
   m_step2->init();
   m_step3->init();
