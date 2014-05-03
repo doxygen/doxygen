@@ -744,6 +744,7 @@ ENV       = env TMAKEPATH="\$(TMAKEPATH)"
 TMAKE     = $configPWD/tmake/bin/tmake
 MAKE      = $f_make
 PYTHON    = $f_python
+PERL      = $f_perl
 LEX       = $f_flex
 RM        = rm -f
 CP        = cp
