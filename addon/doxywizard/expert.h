@@ -42,6 +42,7 @@ class Expert : public QSplitter, public DocIntf
   public slots:
     void activateTopic(QTreeWidgetItem *,QTreeWidgetItem *);
     QWidget *createTopicWidget(QDomElement &elem);
+    void refresh();
 
   private slots:
     void showHelp(Input *);
@@ -50,6 +51,7 @@ class Expert : public QSplitter, public DocIntf
 
   signals:
     void changed();
+    void done();
 
   private:
     void createTopics(const QDomElement &);

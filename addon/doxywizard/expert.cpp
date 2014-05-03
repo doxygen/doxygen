@@ -683,7 +683,7 @@ void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
     QWidget *w = m_topics[item->text(0)];
     m_topicStack->setCurrentWidget(w);
     m_prev->setEnabled(m_topicStack->currentIndex()!=0); 
-    m_next->setEnabled(m_topicStack->currentIndex()!=m_topicStack->count()-1); 
+    m_next->setEnabled(true);
   }
 }
 
@@ -824,10 +824,17 @@ void Expert::showHelp(Input *option)
 
 void Expert::nextTopic()
 {
-  m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
-  m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
-  m_prev->setEnabled(m_topicStack->currentIndex()!=0);
-  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+  if (m_topicStack->currentIndex()+1==m_topicStack->count()) // last topic
+  {
+    done();
+  }
+  else
+  {
+    m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
+    m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
+    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+    m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+  }
 }
 
 void Expert::prevTopic()
@@ -929,5 +936,10 @@ bool Expert::pdfOutputPresent(const QString &workingDir) const
   }
   QFileInfo fi(indexFile);
   return fi.exists() && fi.isFile();
+}
+
+void Expert::refresh()
+{
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(0));
 }
 

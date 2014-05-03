@@ -128,6 +128,7 @@ MainWindow::MainWindow()
   connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
   connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
+  connect(m_expert,SIGNAL(done()),SLOT(selectRunTab()));
 
   loadSettings();
   updateLaunchButtonState();
@@ -372,6 +373,7 @@ void MainWindow::saveSettings()
 void MainWindow::selectTab(int id)
 {
   if (id==0) m_wizard->refresh();
+  else if (id==1) m_expert->refresh();
 }
 
 void MainWindow::selectRunTab()
