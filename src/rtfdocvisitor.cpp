@@ -168,7 +168,7 @@ void RTFDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocLineBreak)}\n");
-  m_t << "\\par";
+  m_t << "\\par" << endl; 
   m_lastIsPara=TRUE;
 }
 
