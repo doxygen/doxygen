@@ -1990,7 +1990,7 @@ static void addModule(const char *name, bool isModule)
   DBG_CTX((stderr, "0=========> got module %s\n", name));
 
   if (isModule)
-    current->section = Entry::CLASS_SEC;
+    current->section = Entry::NAMESPACE_SEC;
   else
     current->section = Entry::FUNCTION_SEC;
 

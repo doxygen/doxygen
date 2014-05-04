@@ -248,7 +248,14 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       if (a->type!="...")
       {
         if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-        linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
+        Definition *scope = md->getNamespaceDef();
+        if ( scope == 0) {
+          linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
+        }
+        else
+        {
+          linkifyText(TextGeneratorOLImpl(ol),md->getNamespaceDef(),md->getBodyDef(),md,n);
+        }
       }
     }
     if (!isDefine)
