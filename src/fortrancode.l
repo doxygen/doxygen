@@ -805,15 +805,13 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_pop_state();YY_FTN_RESET
                                         }
 <Start>"import"{BS_}                    {
-                                          startFontClass("keywordflow");
+                                          startFontClass("keywordtype");
                                           codifyLines(yytext);
                                           endFontClass();
                                           yy_push_state(YY_START);
                                           BEGIN(Import);
                                         }
 <Import>{ID}                            {
-                                          QCString tmp = yytext;
-                                          tmp = tmp.lower();
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
                                           g_insideBody=FALSE;
