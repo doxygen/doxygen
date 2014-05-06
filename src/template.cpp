@@ -11,6 +11,7 @@
 #include <qstack.h>
 #include <qfile.h>
 #include <qregexp.h>
+#include <qcstring.h>
 
 #include "sortdict.h"
 #include "ftextstream.h"
@@ -806,6 +807,184 @@ class FilterDefault
 
 //--------------------------------------------------------------------
 
+/** @brief The implementation of the "flatten" filter */
+class FilterFlatten
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (!v.isValid() || v.type()!=TemplateVariant::List)
+      {
+        return v;
+      }
+      else
+      {
+        TemplateList *list = TemplateList::alloc();
+        flatten(v.toList(),list);
+        return TemplateVariant(list);
+      }
+    }
+
+  private:
+    static void flatten(TemplateListIntf *tree,TemplateList *list)
+    {
+      TemplateListIntf::ConstIterator *it = tree->createIterator();
+      TemplateVariant item;
+      for (it->toFirst();(it->current(item));it->toNext())
+      {
+        TemplateStructIntf *s = item.toStruct();
+        if (s)
+        {
+          list->append(item);
+          // if s has "children" then recurse into the children
+          TemplateVariant children = s->get("children");
+          if (children.isValid() && children.type()==TemplateVariant::List)
+          {
+            flatten(children.toList(),list);
+          }
+        }
+        else
+        {
+          list->append(item);
+        }
+      }
+      delete it;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "listsort" filter */
+class FilterListSort
+{
+    struct ListElem
+    {
+      ListElem(const QCString &k,const TemplateVariant &v) : key(k), value(v) {}
+      QCString key;
+      TemplateVariant value;
+    };
+    class SortList : public QList<ListElem>
+    {
+      public:
+        SortList() { setAutoDelete(TRUE); }
+      private:
+        int compareValues(const ListElem *item1,const ListElem *item2) const
+        {
+          return qstrcmp(item1->key,item2->key);
+        }
+    };
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.type()==TemplateVariant::List && args.type()==TemplateVariant::String)
+      {
+        //printf("FilterListSort::apply: v=%s args=%s\n",v.toString().data(),args.toString().data());
+        TemplateListIntf::ConstIterator *it = v.toList()->createIterator();
+
+        TemplateVariant item;
+        TemplateList *result = TemplateList::alloc();
+
+        // create list of items based on v using the data in args as a sort key
+        SortList sortList;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          TemplateStructIntf *s = item.toStruct();
+          if (s)
+          {
+            QCString sortKey = determineSortKey(s,args.toString());
+            sortList.append(new ListElem(sortKey,item));
+            //printf("sortKey=%s\n",sortKey.data());
+          }
+        }
+        delete it;
+
+        // sort the list
+        sortList.sort();
+
+        // add sorted items to the result list
+        QListIterator<ListElem> sit(sortList);
+        ListElem *elem;
+        for (sit.toFirst();(elem=sit.current());++sit)
+        {
+          result->append(elem->value);
+        }
+        return result;
+      }
+      return v;
+    }
+
+  private:
+    static QCString determineSortKey(TemplateStructIntf *s,const QCString &arg)
+    {
+      int i,p=0;
+      QCString result;
+      while ((i=arg.find("{{",p))!=-1)
+      {
+        result+=arg.mid(p,i-p);
+        int j=arg.find("}}",i+2);
+        if (j!=-1)
+        {
+          QCString var = arg.mid(i+2,j-i-2);
+          TemplateVariant val=s->get(var);
+          //printf("found argument %s value=%s\n",var.data(),val.toString().data());
+          result+=val.toString();
+          p=j+2;
+        }
+        else
+        {
+          p=i+1;
+        }
+      }
+      result+=arg.right(arg.length()-p);
+      return result;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "listsort" filter */
+class FilterPaginate
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::List &&
+          args.isValid() && args.type()==TemplateVariant::Integer)
+      {
+        int pageSize = args.toInt();
+        TemplateListIntf *list   = v.toList();
+        TemplateList     *result = TemplateList::alloc();
+        TemplateListIntf::ConstIterator *it = list->createIterator();
+        TemplateVariant   item;
+        TemplateList     *pageList=0;
+        int i = 0;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          if (pageList==0)
+          {
+            pageList = TemplateList::alloc();
+            result->append(pageList);
+          }
+          pageList->append(item);
+          i++;
+          if (i==pageSize) // page is full start a new one
+          {
+            pageList=0;
+            i=0;
+          }
+        }
+        delete it;
+        return result;
+      }
+      else // wrong arguments
+      {
+        return v;
+      }
+    }
+};
+
+//--------------------------------------------------------------------
+
 /** @brief The implementation of the "default" filter */
 class FilterStripPath
 {
@@ -926,8 +1105,11 @@ static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
 static TemplateFilterFactory::AutoRegister<FilterAdd>         fAppend("append");
 static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");
+static TemplateFilterFactory::AutoRegister<FilterFlatten>     fFlatten("flatten");
 static TemplateFilterFactory::AutoRegister<FilterDefault>     fDefault("default");
 static TemplateFilterFactory::AutoRegister<FilterPrepend>     fPrepend("prepend");
+static TemplateFilterFactory::AutoRegister<FilterListSort>    fListSort("listsort");
+static TemplateFilterFactory::AutoRegister<FilterPaginate>    fPaginate("paginate");
 static TemplateFilterFactory::AutoRegister<FilterStripPath>   fStripPath("stripPath");
 static TemplateFilterFactory::AutoRegister<FilterDivisibleBy> fDivisibleBy("divisibleby");
 
