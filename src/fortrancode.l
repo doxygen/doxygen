@@ -696,9 +696,9 @@ ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC
 ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION
-FLOW  (DO|SELECT|CASE|SELECTCASE|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT)
+FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT)
 COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|PRESENT|DEALLOCATE|NULLIFY|SIZE|INQUIRE|OPEN|CLOSE|FLUSH|DATA|COMMON)
-IGNORE (CALL)
+IGNORE    (CALL)
 PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|IMPURE|PURE|ELEMENTAL)?
 
 /* |  */
@@ -735,13 +735,13 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                         }
  /*-------- inner construct ---------------------------------------------------*/
  
-<Start>{COMMANDS}/[,( \t\n].*           {  // highlight
+<Start>{COMMANDS}/[,( \t\n]             {  // highlight
    					  /* font class is defined e.g. in doxygen.css */
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>{FLOW}/[,( \t\n].*               {
+<Start>{FLOW}/[,( \t\n]                 {
                                           if (g_isFixedForm)
                                           {
                                             if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
@@ -751,6 +751,11 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
   					  codifyLines(yytext);
 					  endFontClass();
 					}
+<Start>^{BS}(CASE|CLASS|TYPE){BS_}(IS|DEFAULT) {
+                                          startFontClass("keywordflow");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                        }
 <Start>"end"({BS}{FLOW})?/[ \t\n]       { // list is a bit long as not all have possible end
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
@@ -763,9 +768,9 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
                                         }
 <Start>^{BS}"namelist"/[//]             {  // Namelist specification
-              startFontClass("keywordtype");
-              codifyLines(yytext);
-            endFontClass();
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
                                         }
  /*-------- use statement -------------------------------------------*/
 <Start>"use"{BS_}                       { 
