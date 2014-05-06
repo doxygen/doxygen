@@ -716,6 +716,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 %x DocBlock
 %x Use
 %x UseOnly
+%x Import
 %x TypeDecl
 %x Declaration
 %x DeclContLine
@@ -791,19 +792,30 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_push_state(YY_START);
 					  BEGIN(UseOnly);     
                                         }           
-<UseOnly>{BS},{BS}                      { codifyLines(yytext); }
-<UseOnly>{BS}&{BS}"\n"                  { codifyLines(yytext); YY_FTN_RESET}
+<UseOnly,Import>{BS},{BS}               { codifyLines(yytext); }
+<UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext); YY_FTN_RESET}
 <UseOnly>{ID}                           {
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
                                           g_insideBody=FALSE;
                                           useEntry->onlyNames.append(yytext);
                                         }
-<Use,UseOnly>"\n"                       {
+<Use,UseOnly,Import>"\n"                {
                                           unput(*yytext);
                                           yy_pop_state();YY_FTN_RESET
                                         }
-       
+<Start>"import"{BS_}                    {
+                                          startFontClass("keywordtype");
+                                          codifyLines(yytext);
+                                          endFontClass();
+                                          yy_push_state(YY_START);
+                                          BEGIN(Import);
+                                        }
+<Import>{ID}                            {
+                                          g_insideBody=TRUE;
+                                          generateLink(*g_code, yytext);
+                                          g_insideBody=FALSE;
+                                        }
  /*-------- fortran module  -----------------------------------------*/
 <Start>("block"{BS}"data"|"program"|"module"|"type"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
 					  startScope();
