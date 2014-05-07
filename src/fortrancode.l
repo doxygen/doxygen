@@ -735,13 +735,13 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                         }
  /*-------- inner construct ---------------------------------------------------*/
  
-<Start>{COMMANDS}/[,( \t\n]             {  // highlight
+<Start>{COMMANDS}/{BS}[,( \t\n]         {  // highlight
    					  /* font class is defined e.g. in doxygen.css */
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>{FLOW}/[,( \t\n]                 {
+<Start>{FLOW}/{BS}[,( \t\n]               {
                                           if (g_isFixedForm)
                                           {
                                             if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
