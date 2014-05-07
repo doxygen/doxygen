@@ -751,7 +751,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>^{BS}(CASE|CLASS|TYPE){BS_}(IS|DEFAULT) {
+<Start>{BS}(CASE|CLASS|TYPE){BS_}(IS|DEFAULT) {
                                           startFontClass("keywordflow");
                                           codifyLines(yytext);
                                           endFontClass();
