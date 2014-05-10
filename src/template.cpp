@@ -738,13 +738,34 @@ class FilterAdd
 
 //-----------------------------------------------------------------------------
 
+/** @brief The implementation of the "append" filter */
+class FilterAppend
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
+    {
+      if ((v.type()==TemplateVariant::String || v.type()==TemplateVariant::Integer) &&
+          arg.type()==TemplateVariant::String)
+      {
+        return TemplateVariant(v.toString() + arg.toString());
+      }
+      else
+      {
+        return v;
+      }
+    }
+};
+
+//-----------------------------------------------------------------------------
+
 /** @brief The implementation of the "prepend" filter */
 class FilterPrepend
 {
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
     {
-      if (v.type()==TemplateVariant::String && arg.type()==TemplateVariant::String)
+      if ((v.type()==TemplateVariant::String || v.type()==TemplateVariant::Integer) &&
+          arg.type()==TemplateVariant::String)
       {
         return TemplateVariant(arg.toString() + v.toString());
       }
@@ -1102,7 +1123,7 @@ class TemplateFilterFactory
 
 // register a handlers for each filter we support
 static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
-static TemplateFilterFactory::AutoRegister<FilterAdd>         fAppend("append");
+static TemplateFilterFactory::AutoRegister<FilterAppend>      fAppend("append");
 static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");
 static TemplateFilterFactory::AutoRegister<FilterFlatten>     fFlatten("flatten");
@@ -2214,6 +2235,24 @@ void TemplateContextImpl::closeSubIndex(const QCString &indexName)
   }
 }
 
+static void getPathListFunc(TemplateStructIntf *entry,TemplateList *list)
+{
+  TemplateVariant parent = entry->get("parent");
+  if (parent.type()==TemplateVariant::Struct)
+  {
+    getPathListFunc(parent.toStruct(),list);
+  }
+  list->append(entry);
+}
+
+static TemplateVariant getPathFunc(const void *ctx, const QValueList<TemplateVariant> &)
+{
+  TemplateStruct *entry = (TemplateStruct*)ctx;
+  TemplateList *result = TemplateList::alloc();
+  getPathListFunc(entry,result);
+  return result;
+}
+
 void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueList<TemplateKeyValue> &arguments)
 {
   QValueListConstIterator<TemplateKeyValue> it = arguments.begin();
@@ -2223,6 +2262,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
   //  printf("  key=%s value=%s\n",(*it).key.data(),(*it).value.toString().data());
   //  ++it;
   //}
+  TemplateVariant parent(FALSE);
   QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
   if (!stack) // no stack yet, create it!
   {
@@ -2248,6 +2288,13 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
     {
       ASSERT(stack->top()->type()==TemplateVariant::List);
     }
+    if (stack->count()>1)
+    {
+      TemplateVariant *tmp = stack->pop();
+      parent = *stack->top();
+      stack->push(tmp);
+      ASSERT(parent.type()==TemplateVariant::Struct);
+    }
     // get list to add new item
     list = dynamic_cast<TemplateList*>(stack->top()->toList());
   }
@@ -2264,6 +2311,9 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
   }
   entry->set("is_leaf_node",true);
   entry->set("first",list->count()==0);
+  entry->set("index",list->count());
+  entry->set("parent",parent);
+  entry->set("path",TemplateVariant::Delegate::fromFunction(entry,getPathFunc));
   entry->set("last",true);
   stack->push(new TemplateVariant(entry));
   list->append(entry);
@@ -2785,6 +2835,10 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       if (m_expr)
       {
         TemplateVariant v = m_expr->resolve(c);
+        if (v.type()==TemplateVariant::Function)
+        {
+          v = v.call(QValueList<TemplateVariant>());
+        }
         const TemplateListIntf *list = v.toList();
         if (list)
         {
@@ -3160,6 +3214,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       {
         QCString templateFile = m_templateExpr->resolve(c).toString();
         QCString outputFile = m_fileExpr->resolve(c).toString();
+        printf("TemplateNodeCreate file='%s' template='%s'\n",outputFile.data(),templateFile.data());
         if (templateFile.isEmpty())
         {
           ci->warn(m_templateName,m_line,"empty template name parameter for create command\n");
