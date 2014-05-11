@@ -309,7 +309,7 @@ class DirContext : public RefCountedContext, public TemplateStructIntf
 class PageContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static PageContext *alloc(PageDef *pd) { return new PageContext(pd); }
+    static PageContext *alloc(PageDef *pd,bool isMainPage=FALSE) { return new PageContext(pd,isMainPage); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -317,7 +317,7 @@ class PageContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    PageContext(PageDef *);
+    PageContext(PageDef *,bool isMainPage);
    ~PageContext();
     class Private;
     Private *p;
@@ -536,6 +536,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addDirs(const DirList &);
     void addFiles(const FileNameList &);
     void addFiles(const FileList &);
+    void addPages(const PageSDict &pages,bool rootOnly);
 
   private:
     NestingContext(const NestingNodeContext *parent,int level);

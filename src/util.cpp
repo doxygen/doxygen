@@ -8222,3 +8222,11 @@ void convertProtectionLevel(
   //    inListType,inProt,*outListType1,*outListType2);
 }
 
+bool mainPageHasTitle()
+{
+  if (Doxygen::mainPage==0) return FALSE;
+  if (Doxygen::mainPage->title().isEmpty()) return FALSE;
+  if (Doxygen::mainPage->title().lower()=="notitle") return FALSE;
+  return TRUE;
+}
+

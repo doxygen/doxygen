@@ -2590,7 +2590,8 @@ TemplateVariant DirContext::get(const char *n) const
 class PageContext::Private : public DefinitionContext<PageContext::Private>
 {
   public:
-    Private(PageDef *pd) : DefinitionContext<PageContext::Private>(pd) , m_pageDef(pd)
+    Private(PageDef *pd,bool isMainPage)
+      : DefinitionContext<PageContext::Private>(pd) , m_pageDef(pd), m_isMainPage(isMainPage)
     {
       addProperty("title",this,&Private::title);
       addProperty("highlight",this,&Private::highlight);
@@ -2598,24 +2599,39 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     }
     TemplateVariant title() const
     {
-      return TemplateVariant(m_pageDef->title());
+      if (m_isMainPage)
+      {
+        if (mainPageHasTitle())
+        {
+          return m_pageDef->title();
+        }
+        else
+        {
+          return theTranslator->trMainPage();
+        }
+      }
+      else
+      {
+        return m_pageDef->title();
+      }
     }
     TemplateVariant highlight() const
     {
-      return TemplateVariant("pages");
+      return "pages";
     }
     TemplateVariant subHighlight() const
     {
-      return TemplateVariant("");
+      return "";
     }
   private:
     PageDef *m_pageDef;
+    bool m_isMainPage;
 };
 //%% }
 
-PageContext::PageContext(PageDef *pd) : RefCountedContext("PageContext")
+PageContext::PageContext(PageDef *pd,bool isMainPage) : RefCountedContext("PageContext")
 {
-  p = new Private(pd);
+  p = new Private(pd,isMainPage);
 }
 
 PageContext::~PageContext()
@@ -4240,6 +4256,8 @@ class NestingNodeContext::Private : public PropertyMapper
       addProperty("file",this,&Private::getFile);
       //%% [optional] Dir dir: directory info (if this node represents a directory)
       addProperty("dir",this,&Private::getDir);
+      //%% [optional] Page page: page info (if this node represents a page)
+      addProperty("page",this,&Private::getPage);
       //%% int id
       addProperty("id",this,&Private::id);
       //%% string level
@@ -4256,6 +4274,7 @@ class NestingNodeContext::Private : public PropertyMapper
       addNamespaces(addCls);
       addClasses();
       addDirFiles();
+      addPages();
     }
     TemplateVariant isLeafNode() const
     {
@@ -4319,6 +4338,21 @@ class NestingNodeContext::Private : public PropertyMapper
       if (m_cache.fileContext)
       {
         return m_cache.fileContext.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant getPage() const
+    {
+      if (!m_cache.pageContext && m_def->definitionType()==Definition::TypePage)
+      {
+        m_cache.pageContext.reset(PageContext::alloc((PageDef*)m_def));
+      }
+      if (m_cache.pageContext)
+      {
+        return m_cache.pageContext.get();
       }
       else
       {
@@ -4406,6 +4440,14 @@ class NestingNodeContext::Private : public PropertyMapper
         }
       }
     }
+    void addPages()
+    {
+      PageDef *pd = m_def->definitionType()==Definition::TypePage ? (PageDef*)m_def : 0;
+      if (pd && pd->getSubPages())
+      {
+        m_children->addPages(*pd->getSubPages(),FALSE);
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     Definition *m_def;
@@ -4418,6 +4460,7 @@ class NestingNodeContext::Private : public PropertyMapper
       SharedPtr<NamespaceContext> namespaceContext;
       SharedPtr<DirContext>       dirContext;
       SharedPtr<FileContext>      fileContext;
+      SharedPtr<PageContext>      pageContext;
       ScopedPtr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
@@ -4554,6 +4597,21 @@ class NestingContext::Private : public GenericNodeListContext
         m_index++;
       }
     }
+    void addPages(const PageSDict &pages,bool rootOnly)
+    {
+      SDict<PageDef>::Iterator pli(pages);
+      PageDef *pd;
+      for (pli.toFirst();(pd=pli.current());++pli)
+      {
+        if (!rootOnly ||
+            pd->getOuterScope()==0 ||
+            pd->getOuterScope()->definitionType()!=Definition::TypePage)
+        {
+          append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE));
+          m_index++;
+        }
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     int m_level;
@@ -4616,6 +4674,10 @@ void NestingContext::addFiles(const FileList &files)
   p->addFiles(files);
 }
 
+void NestingContext::addPages(const PageSDict &pages,bool rootOnly)
+{
+  p->addPages(pages,rootOnly);
+}
 
 //------------------------------------------------------------------------
 
@@ -5247,6 +5309,7 @@ class PageNodeListContext::Private : public GenericNodeListContext
   public:
     void addPages(const PageSDict &pages,bool rootOnly)
     {
+      //printf("** PageNodeListContext::Private(%d)\n",rootOnly);
       SDict<PageDef>::Iterator pli(pages);
       PageDef *pd;
       for (pli.toFirst();(pd=pli.current());++pli)
@@ -5299,9 +5362,28 @@ void PageNodeListContext::addPages(const PageSDict &pages,bool rootOnly)
 class PageTreeContext::Private : public PropertyMapper
 {
   public:
+    Private()
+    {
+      m_pageTree.reset(NestingContext::alloc(0,0));
+      // Add pages
+      if (Doxygen::pageSDict)
+      {
+        m_pageTree->addPages(*Doxygen::pageSDict,TRUE);
+      }
+
+      //%% PageNodeList tree:
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+      addProperty("preferredDepth",this,&Private::preferredDepth);
+      addProperty("maxDepth",this,&Private::maxDepth);
+    }
     TemplateVariant tree() const
     {
-      return m_pageList.get();
+      return m_pageTree.get();
     }
     TemplateVariant fileName() const
     {
@@ -5323,25 +5405,35 @@ class PageTreeContext::Private : public PropertyMapper
     {
       return theTranslator->trRelatedPages();
     }
-    Private()
+    TemplateVariant maxDepth() const
     {
-      m_pageList.reset(PageNodeListContext::alloc());
-      // Add pages
-      if (Doxygen::pageSDict)
+      if (!m_cache.maxDepthComputed)
       {
-        m_pageList->addPages(*Doxygen::pageSDict,TRUE);
+        m_cache.maxDepth = computeMaxDepth(m_pageTree.get());
+        m_cache.maxDepthComputed=TRUE;
       }
-
-      //%% PageNodeList tree:
-      addProperty("tree",this,&Private::tree);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
+      return m_cache.maxDepth;
+    }
+    TemplateVariant preferredDepth() const
+    {
+      if (!m_cache.preferredDepthComputed)
+      {
+        m_cache.preferredDepth = computePreferredDepth(m_pageTree.get(),maxDepth().toInt());
+        m_cache.preferredDepthComputed=TRUE;
+      }
+      return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<PageNodeListContext> m_pageList;
+    SharedPtr<NestingContext> m_pageTree;
+    struct Cachable
+    {
+      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      int   maxDepth;
+      bool  maxDepthComputed;
+      int   preferredDepth;
+      bool  preferredDepthComputed;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -5663,7 +5755,7 @@ class NavPathElemContext::Private : public PropertyMapper
       {
         text = ((const GroupDef*)m_def)->groupTitle();
       }
-      else if (type==Definition::TypePage && !(((const PageDef*)this)->title().isEmpty()))
+      else if (type==Definition::TypePage && !(((const PageDef*)m_def)->title().isEmpty()))
       {
         text = ((const PageDef*)m_def)->title();
       }
@@ -6859,6 +6951,7 @@ void generateOutputViaTemplate()
     SharedPtr<PageListContext>       pageList        (PageListContext::alloc());
     SharedPtr<ModuleTreeContext>     moduleTree      (ModuleTreeContext::alloc());
     SharedPtr<ExampleListContext>    exampleList     (ExampleListContext::alloc());
+    SharedPtr<PageContext>           mainPage        (PageContext::alloc(Doxygen::mainPage,TRUE));
 
     //%% Doxygen doxygen:
     ctx->set("doxygen",doxygen.get());
@@ -6891,6 +6984,8 @@ void generateOutputViaTemplate()
     ctx->set("exampleList",exampleList.get());
     //%% DirList dirList
     ctx->set("dirList",dirList.get());
+    //%% Page mainPage
+    ctx->set("mainPage",mainPage.get());
 
     // render HTML output
     Template *tpl = e.loadByName("htmllayout.tpl",1);

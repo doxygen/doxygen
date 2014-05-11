@@ -456,5 +456,7 @@ void convertProtectionLevel(
                    int *outListType2
                   );
 
+bool mainPageHasTitle();
+
 #endif
 
