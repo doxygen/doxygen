@@ -4856,7 +4856,7 @@ class NamespaceTreeContext::Private : public PropertyMapper
   public:
     TemplateVariant tree() const
     {
-      return TemplateVariant(&m_namespaceTree);
+      return m_namespaceTree.get();
     }
     TemplateVariant fileName() const
     {
@@ -5110,7 +5110,7 @@ class FileTreeContext::Private : public PropertyMapper
     }
     TemplateVariant tree() const
     {
-      return TemplateVariant(&m_dirFileTree);
+      return m_dirFileTree.get();
     }
     TemplateVariant fileName() const
     {
@@ -5570,7 +5570,7 @@ class ModuleTreeContext::Private : public PropertyMapper
   public:
     TemplateVariant tree() const
     {
-      return TemplateVariant(&m_moduleList);
+      return m_moduleList.get();
     }
     TemplateVariant fileName() const
     {
@@ -5706,7 +5706,7 @@ class ExampleListContext::Private : public PropertyMapper
   public:
     TemplateVariant items() const
     {
-      return TemplateVariant(&m_pageList);
+      return m_pageList.get();
     }
     TemplateVariant fileName() const
     {

@@ -3214,7 +3214,6 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       {
         QCString templateFile = m_templateExpr->resolve(c).toString();
         QCString outputFile = m_fileExpr->resolve(c).toString();
-        printf("TemplateNodeCreate file='%s' template='%s'\n",outputFile.data(),templateFile.data());
         if (templateFile.isEmpty())
         {
           ci->warn(m_templateName,m_line,"empty template name parameter for create command\n");
