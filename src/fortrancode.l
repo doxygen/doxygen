@@ -688,8 +688,7 @@ NUM_TYPE  (complex|integer|logical|real)
 LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|PROCEDURE)
-TYPE_PREFIX ((TYPE|CLASS|PROCEDURE){BS}"(")
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE|CLASS|PROCEDURE)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|IMPURE|ELEMENTAL|VALUE|NOPASS|DEFERRED)
@@ -718,7 +717,6 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 %x Use
 %x UseOnly
 %x Import
-%x TypeDecl
 %x Declaration
 %x DeclContLine
 %x Parameterlist
@@ -828,7 +826,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           g_insideBody=FALSE;
                                         }
  /*-------- fortran module  -----------------------------------------*/
-<Start>("block"{BS}"data"|"program"|"module"|"type"|"interface")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
+<Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
 					  startScope();
   					  startFontClass("keyword"); 
   					  codifyLines(yytext);
@@ -837,6 +835,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  BEGIN(ClassName); 
 	                                  if (!qstricmp(yytext,"module")) currentModule="module";
 					}
+<Start>("type")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
+            startScope();
+              startFontClass("keyword");
+              codifyLines(yytext);
+            endFontClass();
+                                          yy_push_state(YY_START);
+            BEGIN(ClassName);
+          }
 <ClassName>{ID}               	        {
 	                                  if (currentModule == "module")
                                           {
@@ -905,24 +911,6 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
                                         }
  /*-------- variable declaration ----------------------------------*/
-<Start>^{BS}{TYPE_PREFIX}/{ID}          {
-                                          yy_push_state(YY_START);
-					  BEGIN(TypeDecl);
-   					  startFontClass("keywordtype");
-					  g_code->codify(yytext);
-					  endFontClass();
-                                        }
-<TypeDecl>{ID}                          { // link type
-					  g_insideBody=TRUE;
-					  generateLink(*g_code,yytext);
-					  g_insideBody=FALSE;
-                                        }
-<TypeDecl>")"                           { 
-					  BEGIN(Declaration);
-   					  startFontClass("keywordtype");
-					  g_code->codify(yytext);
-					  endFontClass();
-                                        }
 <Start>{TYPE_SPEC}/[,:( ]               { 
                                           yy_push_state(YY_START);
 					  BEGIN(Declaration);
