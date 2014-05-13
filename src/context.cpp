@@ -2057,11 +2057,24 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
   public:
     Private(NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>(nd) , m_namespaceDef(nd)
     {
-      addProperty("title",this,&Private::title);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subHighlight);
-      addProperty("compoundType",this,&Private::compoundType);
-      addProperty("hasDetails",this,&Private::hasDetails);
+      addProperty("title",             this,&Private::title);
+      addProperty("highlight",         this,&Private::highlight);
+      addProperty("subhighlight",      this,&Private::subHighlight);
+      addProperty("compoundType",      this,&Private::compoundType);
+      addProperty("hasDetails",        this,&Private::hasDetails);
+      addProperty("classes",           this,&Private::classes);
+      addProperty("namespaces",        this,&Private::namespaces);
+      addProperty("constantgroups",    this,&Private::constantgroups);
+      addProperty("typedefs",          this,&Private::typedefs);
+      addProperty("enums",             this,&Private::enums);
+      addProperty("functions",         this,&Private::functions);
+      addProperty("variables",         this,&Private::variables);
+      addProperty("memberGroups",      this,&Private::memberGroups);
+      addProperty("detailedTypedefs",  this,&Private::detailedTypedefs);
+      addProperty("detailedEnums",     this,&Private::detailedEnums);
+      addProperty("detailedFunctions", this,&Private::detailedFunctions);
+      addProperty("detailedVariables", this,&Private::detailedVariables);
+      addProperty("inlineClasses",     this,&Private::inlineClasses);
     }
     TemplateVariant title() const
     {
@@ -2083,8 +2096,182 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       return m_namespaceDef->hasDetailedDescription();
     }
+    TemplateVariant classes() const
+    {
+      if (!m_cache.classes)
+      {
+        NestedClassListContext *classList = NestedClassListContext::alloc();
+        if (m_namespaceDef->getClassSDict())
+        {
+          ClassSDict::Iterator sdi(*m_namespaceDef->getClassSDict());
+          ClassDef *cd;
+          for (sdi.toFirst();(cd=sdi.current());++sdi)
+          {
+            if (cd->visibleInParentsDeclList())
+            {
+              classList->append(cd);
+            }
+          }
+        }
+        m_cache.classes.reset(classList);
+      }
+      return m_cache.classes.get();
+    }
+    TemplateVariant namespaces() const
+    {
+      if (!m_cache.namespaces)
+      {
+        NestedNamespaceListContext *namespaceList = NestedNamespaceListContext::alloc();
+        if (m_namespaceDef->getNamespaceSDict())
+        {
+          NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
+          NamespaceDef *nd;
+          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          {
+            if (nd->isLinkable() && !nd->isConstantGroup())
+            {
+              namespaceList->append(nd);
+            }
+          }
+        }
+        m_cache.namespaces.reset(namespaceList);
+      }
+      return m_cache.namespaces.get();
+    }
+    TemplateVariant constantgroups() const
+    {
+      if (!m_cache.constantgroups)
+      {
+        NestedNamespaceListContext *namespaceList = NestedNamespaceListContext::alloc();
+        if (m_namespaceDef->getNamespaceSDict())
+        {
+          NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
+          NamespaceDef *nd;
+          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          {
+            if (nd->isLinkable() && nd->isConstantGroup())
+            {
+              namespaceList->append(nd);
+            }
+          }
+        }
+        m_cache.constantgroups.reset(namespaceList);
+      }
+      return m_cache.constantgroups.get();
+    }
+    TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
+                                  MemberListType type,const char *title,bool detailed=FALSE) const
+    {
+      if (!list)
+      {
+        MemberList *ml = m_namespaceDef->getMemberList(type);
+        if (ml)
+        {
+          list.reset(MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,detailed));
+        }
+      }
+      if (list)
+      {
+        return list.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant typedefs() const
+    {
+      return getMemberList(m_cache.typedefs,MemberListType_decTypedefMembers,theTranslator->trTypedefs());
+    }
+    TemplateVariant enums() const
+    {
+      return getMemberList(m_cache.enums,MemberListType_decEnumMembers,theTranslator->trEnumerations());
+    }
+    TemplateVariant functions() const
+    {
+      // TODO: Fortran: trSubprograms()
+      // TODO: VHDL:    VhdlDocGen::trFunctionAndProc()
+      return getMemberList(m_cache.functions,MemberListType_decFuncMembers,theTranslator->trFunctions());
+    }
+    TemplateVariant variables() const
+    {
+      return getMemberList(m_cache.variables,MemberListType_decVarMembers,theTranslator->trVariables());
+    }
+    TemplateVariant memberGroups() const
+    {
+      if (!m_cache.memberGroups)
+      {
+        if (m_namespaceDef->getMemberGroupSDict())
+        {
+          m_cache.memberGroups.reset(MemberGroupListContext::alloc(m_namespaceDef,relPathAsString(),m_namespaceDef->getMemberGroupSDict(),m_namespaceDef->subGrouping()));
+        }
+        else
+        {
+          m_cache.memberGroups.reset(MemberGroupListContext::alloc());
+        }
+      }
+      return m_cache.memberGroups.get();
+    }
+    TemplateVariant detailedTypedefs() const
+    {
+      return getMemberList(m_cache.detailedTypedefs,MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation());
+    }
+    TemplateVariant detailedEnums() const
+    {
+      return getMemberList(m_cache.detailedEnums,MemberListType_docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
+    }
+    TemplateVariant detailedFunctions() const
+    {
+      // TODO: Fortran: trSubprogramDocumentation()
+      return getMemberList(m_cache.detailedFunctions,MemberListType_docFuncMembers,theTranslator->trFunctionDocumentation());
+    }
+    TemplateVariant detailedVariables() const
+    {
+      return getMemberList(m_cache.detailedVariables,MemberListType_docVarMembers,theTranslator->trVariableDocumentation());
+    }
+    TemplateVariant inlineClasses() const
+    {
+      if (!m_cache.inlineClasses)
+      {
+        NestedClassListContext *classList = NestedClassListContext::alloc();
+        if (m_namespaceDef->getClassSDict())
+        {
+          ClassSDict::Iterator sdi(*m_namespaceDef->getClassSDict());
+          ClassDef *cd;
+          for (sdi.toFirst();(cd=sdi.current());++sdi)
+          {
+            if (cd->name().find('@')==-1 &&
+                cd->isLinkableInProject() &&
+                cd->isEmbeddedInOuterScope() &&
+                cd->partOfGroups()==0)
+            {
+              classList->append(cd);
+            }
+          }
+        }
+        m_cache.inlineClasses.reset(classList);
+      }
+      return m_cache.inlineClasses.get();
+    }
   private:
     NamespaceDef *m_namespaceDef;
+    struct Cachable
+    {
+      SharedPtr<NestedClassListContext>     classes;
+      SharedPtr<NestedNamespaceListContext> namespaces;
+      SharedPtr<NestedNamespaceListContext> constantgroups;
+      SharedPtr<MemberListInfoContext>      typedefs;
+      SharedPtr<MemberListInfoContext>      enums;
+      SharedPtr<MemberListInfoContext>      functions;
+      SharedPtr<MemberListInfoContext>      variables;
+      SharedPtr<MemberGroupListContext>     memberGroups;
+      SharedPtr<MemberListInfoContext>      detailedTypedefs;
+      SharedPtr<MemberListInfoContext>      detailedEnums;
+      SharedPtr<MemberListInfoContext>      detailedFunctions;
+      SharedPtr<MemberListInfoContext>      detailedVariables;
+      SharedPtr<NestedClassListContext>     inlineClasses;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -4258,6 +4445,8 @@ class NestingNodeContext::Private : public PropertyMapper
       addProperty("dir",this,&Private::getDir);
       //%% [optional] Page page: page info (if this node represents a page)
       addProperty("page",this,&Private::getPage);
+      //%% [optional] Module module: module info (if this node represents a module)
+      addProperty("module",this,&Private::getModule);
       //%% int id
       addProperty("id",this,&Private::id);
       //%% string level
@@ -4353,6 +4542,21 @@ class NestingNodeContext::Private : public PropertyMapper
       if (m_cache.pageContext)
       {
         return m_cache.pageContext.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant getModule() const
+    {
+      if (!m_cache.moduleContext && m_def->definitionType()==Definition::TypeGroup)
+      {
+        m_cache.moduleContext.reset(ModuleContext::alloc((GroupDef*)m_def));
+      }
+      if (m_cache.moduleContext)
+      {
+        return m_cache.moduleContext.get();
       }
       else
       {
@@ -4461,6 +4665,7 @@ class NestingNodeContext::Private : public PropertyMapper
       SharedPtr<DirContext>       dirContext;
       SharedPtr<FileContext>      fileContext;
       SharedPtr<PageContext>      pageContext;
+      SharedPtr<ModuleContext>    moduleContext;
       ScopedPtr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
@@ -6964,6 +7169,8 @@ void generateOutputViaTemplate()
     //%% ClassTree classTree:
     ctx->set("classTree",classTree.get());
     // classIndex
+    // globals
+    // members
     //%% ClassHierarchy classHierarchy:
     ctx->set("classHierarchy",classHierarchy.get());
     //%% NamespaceList namespaceList:
@@ -6986,6 +7193,7 @@ void generateOutputViaTemplate()
     ctx->set("dirList",dirList.get());
     //%% Page mainPage
     ctx->set("mainPage",mainPage.get());
+
 
     // render HTML output
     Template *tpl = e.loadByName("htmllayout.tpl",1);
