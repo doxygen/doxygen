@@ -15,7 +15,7 @@ RCC_DIR      = ../../rcc/doxywizard
 DEFINES     += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 
 macx-g++ {
-  CONFIG += x86 
+  CONFIG += x86 x86_64
 }
 
 # Input
