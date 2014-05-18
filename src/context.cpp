@@ -23,6 +23,7 @@
 #include "membername.h"
 #include "parserintf.h"
 #include "portable.h"
+#include "arguments.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well

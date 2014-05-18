@@ -201,7 +201,6 @@ SOURCES      =	arguments.cpp \
                 ../generated_src/doxygen/ce_parse.cpp \
                 ../generated_src/doxygen/constexp.cpp \
 		../generated_src/doxygen/vhdlcode.cpp \
-		../generated_src/doxygen/vhdlparser.cpp \
 		../generated_src/doxygen/vhdlscanner.cpp \
 		../generated_src/doxygen/code.cpp \
 		../generated_src/doxygen/commentcnv.cpp \

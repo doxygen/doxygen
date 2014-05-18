@@ -111,16 +111,9 @@ sub GenerateLex {
 	$(YACC) -l -d -p ce_parsexpYY constexp.y -o \$(GENERATED_SRC)/ce_parse.c 
 	-rm $(GENERATED_SRC)/ce_parse.c
 
-#$ GenerateDep("\$(GENERATED_SRC)/vhdlscanner.cpp","vhdlscanner.l","\$(GENERATED_SRC)/vhdlparser.h");
+#$ GenerateDep("\$(GENERATED_SRC)/vhdlscanner.cpp","vhdlscanner.l");
 #$ GenerateLex("vhdlscanner",1);
 
-#$ GenerateDep("\$(GENERATED_SRC)/vhdlparser.cpp","vhdlparser.y");
-	$(YACC) -l -p vhdlscannerYY vhdlparser.y -o \$(GENERATED_SRC)/vhdlparser.cpp 	
-
-#$ GenerateDep("\$(GENERATED_SRC)/vhdlparser.h","vhdlparser.y");
-	$(YACC) -l -d -p vhdlscannerYY vhdlparser.y -o \$(GENERATED_SRC)/vhdlparser.c 
-	-rm $(GENERATED_SRC)/vhdlparser.c	
-	
 TO_C_CMD=$(PYTHON) to_c_cmd.py < $< > $@
 
 #$ GenerateDep("layout.cpp","\$(GENERATED_SRC)/layout_default.xml.h");

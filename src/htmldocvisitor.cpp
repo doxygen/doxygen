@@ -1773,35 +1773,14 @@ void HtmlDocVisitor::visitPost(DocHtmlBlockQuote *b)
   forceStartParagraph(b);
 }
 
-void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
+void HtmlDocVisitor::visitPre(DocVhdlFlow *)
 {
   if (m_hide) return;
-  if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
-  {
-    forceEndParagraph(vf);
-    QCString fname=FlowChart::convertNameToFileName(); 
-    m_t << "<p>";
-    m_t << "flowchart: " ; // TODO: translate me
-    m_t << "<a href=\"";
-    m_t << fname.data(); 
-    m_t << ".svg\">";
-    m_t << VhdlDocGen::getFlowMember()->name().data(); 
-    m_t << "</a>";
-    if (vf->hasCaption())
-    {
-      m_t << "<br />";
-    }
-  }
 }
 
-void HtmlDocVisitor::visitPost(DocVhdlFlow *vf)
+void HtmlDocVisitor::visitPost(DocVhdlFlow *)
 {
   if (m_hide) return;
-  if (VhdlDocGen::getFlowMember()) // use VHDL flow chart creator
-  {
-    m_t << "</p>";
-    forceStartParagraph(vf);
-  }
 }
 
 void HtmlDocVisitor::visitPre(DocParBlock *)

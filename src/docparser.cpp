@@ -2904,8 +2904,6 @@ void DocVhdlFlow::parse()
   DBG(("DocVhdlFlow::parse() end\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
-
-  VhdlDocGen::createFlowChart(g_memberDef);
 }
 
 

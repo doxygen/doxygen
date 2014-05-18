@@ -11049,7 +11049,7 @@ void parseInput()
   flushUnresolvedRelations();
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
   {
-    VhdlDocGen::computeVhdlComponentRelations(); 
+    VhdlDocGen::computeVhdlComponentRelations();
   }
   computeClassRelations();
   g_classEntries.clear();
@@ -11192,13 +11192,6 @@ void parseInput()
   g_s.begin("Adding members to index pages...\n");
   addMembersToIndex();
   g_s.end();
-
-  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
-      Config_getBool("HAVE_DOT") &&
-      Config_getEnum("DOT_IMAGE_FORMAT")=="svg")
-  {
-    VhdlDocGen::writeOverview();
-  }
 }
 
 void generateOutput()

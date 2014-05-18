@@ -28,8 +28,9 @@
 #include <unistd.h>
 #include <qfile.h>
 #include <qdict.h>
-#include "vhdldocgen.h"
+
 #include "entry.h"
+#include "memberlist.h"
 
 class Entry;
 class ClassSDict;
@@ -37,10 +38,9 @@ class FileStorage;
 class ClassDef;
 class MemberDef;
 class QStringList;
-class MemberList;
 
 
-/** VHDL parser using state-based lexical scanning.
+/** \brief VHDL parser using state-based lexical scanning.
  *
  * This is the VHDL language parser for doxygen.
  */
@@ -50,8 +50,8 @@ class VHDLLanguageScanner : public ParserInterface
     virtual ~VHDLLanguageScanner() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
-    void parseInput(const char * fileName, 
-                    const char *fileBuf, 
+    void parseInput(const char * fileName,
+                    const char *fileBuf,
                     Entry *root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
@@ -75,73 +75,8 @@ class VHDLLanguageScanner : public ParserInterface
     void parsePrototype(const char *text);
 };
 
-/** Container for vhdlscanner */
-struct VhdlContainer
-{
-  int yyLineNr;          // current line no
-  int iLine;             // line no of last t_identifier  
-  QCString qstr;         //  t_identifier 
-  QCString fileName;     // current file
-  Entry*  root;          // root
-};   
-
-/** Configuration node for VHDL */
-struct VhdlConfNode
-{ 
-  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf) 
-  { 
-    arch=a;              // architecture  e.g. for iobuffer
-    arch=arch.lower();
-    binding=b;           // binding e.g.  use entiy work.xxx(bev)
-    binding=binding.lower();
-    confVhdl=config;     // configuration foo is bar
-    compSpec=cs;        
-    isInlineConf=false;  // primary configuration?
-    isLeaf=leaf;
-  };
-
-  QCString confVhdl;
-  QCString arch;
-  QCString binding;
-  QCString compSpec;
-  int level;
-  bool isLeaf;
-  bool isInlineConf;
-
-};
-
-
-
-// returns the current conpound entity,architecture, package,package body 
-Entry* getVhdlCompound();
-
-// return the current parsed entry
-Entry* getCurrentVhdlEntry();
-
-void newVhdlEntry();
-
-void initVhdlParser();
-
-struct VhdlContainer* getVhdlCont();
-
-// returns the  parsed line 
-// @ param object index of vhdl keyword like t_Identifier t_Entity 
-int getParsedLine(int object);
-
 void vhdlscanFreeScanner();
 
-void vhdlParse();
-
-// return the list of component instantiations e.g. foo: component bar 
-QList<Entry> &  getVhdlInstList();
-
-// returns   configuration list
-QList<VhdlConfNode>& getVhdlConfiguration();
-
-// returns library/used list
-QList<Entry> &  getLibUse();
-
-void isVhdlDocPending();
-
+//---------------------------------------------------------------------------------
 
 #endif

@@ -2053,10 +2053,6 @@ static void writeAnnotatedIndex(OutputList &ol)
   QCString title = lne ? lne->title() : theTranslator->trCompoundList();
   bool addToIndex = lne==0 || lne->visible();
 
-  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL")) 
-  {
-    VhdlDocGen::findConstraintFile(lne);
-  }
   
   startFile(ol,"annotated",0,title,HLI_Annotated);
 

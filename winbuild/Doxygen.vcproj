@@ -927,14 +927,6 @@
 				>
 			</File>
 			<File
-				RelativePath="$(IntDir)\vhdlparser.cpp"
-				>
-			</File>
-			<File
-				RelativePath="$(IntDir)\vhdlparser.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\xmldocvisitor.cpp"
 				>
 			</File>
@@ -988,50 +980,6 @@
 						Description="Running bison on constexp.y"
 						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ce_parse.cpp"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\vhdlparser.y"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(IntDir)\vhdlparser.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(IntDir)\vhdlparser.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(IntDir)\vhdlparser.cpp"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Running bison on vhdlparser.y"
-						CommandLine="bison -l -d -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.c&#x0D;&#x0A;bison -l -p vhdlscannerYY $(InputPath) -o $(IntDir)\vhdlparser.cpp&#x0D;&#x0A;del $(IntDir)\vhdlparser.c&#x0D;&#x0A;"
-						Outputs="$(IntDir)\vhdlparser.cpp"
 					/>
 				</FileConfiguration>
 			</File>

@@ -169,8 +169,6 @@ void OutputList::writeDoc(DocRoot *root,Definition *ctx,MemberDef *md)
     //    ctx?ctx->getDefFileExtension().data():"<null>");
     if (og->isEnabled()) og->writeDoc(root,ctx,md);
   }
-
-  VhdlDocGen::setFlowMember(0);
 }
 
 bool OutputList::parseText(const QCString &textStr)
