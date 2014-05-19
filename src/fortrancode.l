@@ -150,7 +150,9 @@ static bool          g_includeCodeFragment;
 static char          stringStartSymbol; // single or double quote
 // count in variable declaration to filter out
 //  declared from referenced names
-static int 	     bracketCount = 0; 
+static int 	     bracketCount = 0;
+
+static bool      g_endComment;
 
 // simplified way to know if this is fixed form
 // duplicate in fortranscanner.l
@@ -255,6 +257,7 @@ static void startCodeLine()
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
       g_insideBody = FALSE;
+      g_endComment = FALSE;
       g_parmType.resize(0);
       g_parmName.resize(0);
       QCString lineAnchor;
@@ -929,7 +932,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
   					}
 <Declaration>{ID}                       { // local var
-                                          if (g_currentMemberDef && !g_currentMemberDef->isFunction())
+                                          if (g_currentMemberDef && !g_currentMemberDef->isFunction() && bracketCount==0)
                                           {
                                             g_code->codify(yytext);
                                             addLocalVar(yytext);
@@ -961,7 +964,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           YY_FTN_RESET
  				 	}
 <Declaration>"\n"                       { // end declaration line
-					  codifyLines(yytext);
+					  if (g_endComment)
+            {
+            g_endComment=FALSE;
+            }
+            else
+            {
+            codifyLines(yytext);
+            }
 					  bracketCount = 0;
                                           yy_pop_state();
                                           YY_FTN_RESET
@@ -1018,16 +1028,17 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  docBlock+=yytext; 
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
- 					  docBlock+=yytext; 
                                           // remove special comment (default config)
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=((QCString)docBlock).contains('\n');
+              g_yyLineNr+=1;
 					    endCodeLine();
-					    if (g_yyLineNr<g_inputLines) 
+					    if (g_yyLineNr<g_inputLines)
 					    {
 					      startCodeLine();
 					    }
+              g_endComment=TRUE;
 					  }
 					  else // do not remove comment
 					  {
@@ -1035,6 +1046,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					    codifyLines(docBlock);
 					    endFontClass();
 					  }
+            unput(*yytext);
                                          yy_pop_state();
                                           YY_FTN_RESET
 					}
@@ -1106,7 +1118,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
  /*-----------------------------------------------------------------------------*/
 
 <*>\n					{
-  					  codifyLines(yytext); 
+  					if (g_endComment)
+            {
+            g_endComment=FALSE;
+            }
+            else
+            {
+            codifyLines(yytext);
+            }
                                           YY_FTN_RESET
   					}
 <*>.					{ 
