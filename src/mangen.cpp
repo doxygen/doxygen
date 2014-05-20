@@ -56,7 +56,7 @@ static QCString getExtension()
         ext = ext.mid(1);
       }
     }
-    if (ext.at(0)<='0' || ext.at(0)>='9')
+    if (ext.at(0)<'0' || ext.at(0)>'9')
     {
       ext.prepend("3");
     }
