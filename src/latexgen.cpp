@@ -249,6 +249,7 @@ static void writeMakeBat()
     t << mkidx_command << " refman.idx\n";
     t << "pdflatex refman\n";
     t << "cd /D %Dir_Old%\n";
+    t << "set Dir_Old=\n";
   }
 #endif
 }
