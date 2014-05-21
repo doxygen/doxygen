@@ -186,6 +186,7 @@ static void writeMakeBat()
     exit(1);
   }
   FTextStream t(&file);
+  t << "cd %~p0\n\n";   // switch current directory with make.bat (for external calls of make.bat)
   t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
   if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
   {
