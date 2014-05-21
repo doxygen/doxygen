@@ -186,7 +186,8 @@ static void writeMakeBat()
     exit(1);
   }
   FTextStream t(&file);
-  t << "cd %~p0\n\n";   // switch current directory with make.bat (for external calls of make.bat)
+  t << "set Dir_Old=%cd%\n";
+  t << "cd /D %~dp0\n\n";
   t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
   if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
   {
@@ -247,6 +248,7 @@ static void writeMakeBat()
     t << "endlocal\n";
     t << mkidx_command << " refman.idx\n";
     t << "pdflatex refman\n";
+    t << "cd /D %Dir_Old%\n";
   }
 #endif
 }
