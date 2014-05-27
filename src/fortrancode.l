@@ -932,7 +932,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
   					}
 <Declaration>{ID}                       { // local var
-                                          if (g_currentMemberDef && !g_currentMemberDef->isFunction() && bracketCount==0)
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction() && bracketCount==0)
                                           {
                                             g_code->codify(yytext);
                                             addLocalVar(yytext);
