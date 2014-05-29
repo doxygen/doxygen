@@ -11515,7 +11515,7 @@ static inline bool format(QChar::Decomposition tag, QString & str,
 
     switch (tag) {
     case QChar::Medial:
-	return (left & right);
+	return (left && right);
     case QChar::Initial:
 	return (left && !right);
     case QChar::Final:
