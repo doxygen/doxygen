@@ -150,7 +150,9 @@ static bool          g_includeCodeFragment;
 static char          stringStartSymbol; // single or double quote
 // count in variable declaration to filter out
 //  declared from referenced names
-static int 	     bracketCount = 0; 
+static int 	     bracketCount = 0;
+
+static bool      g_endComment;
 
 // simplified way to know if this is fixed form
 // duplicate in fortranscanner.l
@@ -255,6 +257,7 @@ static void startCodeLine()
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
       g_insideBody = FALSE;
+      g_endComment = FALSE;
       g_parmType.resize(0);
       g_parmName.resize(0);
       QCString lineAnchor;
@@ -688,8 +691,7 @@ NUM_TYPE  (complex|integer|logical|real)
 LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
 KIND      {ARGS}
 CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|PROCEDURE)
-TYPE_PREFIX ((TYPE|CLASS|PROCEDURE){BS}"(")
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE|CLASS|PROCEDURE)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|RECURSIVE|PURE|IMPURE|ELEMENTAL|VALUE|NOPASS|DEFERRED)
@@ -718,7 +720,6 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 %x Use
 %x UseOnly
 %x Import
-%x TypeDecl
 %x Declaration
 %x DeclContLine
 %x Parameterlist
@@ -828,7 +829,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           g_insideBody=FALSE;
                                         }
  /*-------- fortran module  -----------------------------------------*/
-<Start>("block"{BS}"data"|"program"|"module"|"type"|"interface")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
+<Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
 					  startScope();
   					  startFontClass("keyword"); 
   					  codifyLines(yytext);
@@ -837,6 +838,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  BEGIN(ClassName); 
 	                                  if (!qstricmp(yytext,"module")) currentModule="module";
 					}
+<Start>("type")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
+            startScope();
+              startFontClass("keyword");
+              codifyLines(yytext);
+            endFontClass();
+                                          yy_push_state(YY_START);
+            BEGIN(ClassName);
+          }
 <ClassName>{ID}               	        {
 	                                  if (currentModule == "module")
                                           {
@@ -905,24 +914,6 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
                                         }
  /*-------- variable declaration ----------------------------------*/
-<Start>^{BS}{TYPE_PREFIX}/{ID}          {
-                                          yy_push_state(YY_START);
-					  BEGIN(TypeDecl);
-   					  startFontClass("keywordtype");
-					  g_code->codify(yytext);
-					  endFontClass();
-                                        }
-<TypeDecl>{ID}                          { // link type
-					  g_insideBody=TRUE;
-					  generateLink(*g_code,yytext);
-					  g_insideBody=FALSE;
-                                        }
-<TypeDecl>")"                           { 
-					  BEGIN(Declaration);
-   					  startFontClass("keywordtype");
-					  g_code->codify(yytext);
-					  endFontClass();
-                                        }
 <Start>{TYPE_SPEC}/[,:( ]               { 
                                           yy_push_state(YY_START);
 					  BEGIN(Declaration);
@@ -941,7 +932,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  endFontClass();
   					}
 <Declaration>{ID}                       { // local var
-                                          if (g_currentMemberDef && !g_currentMemberDef->isFunction())
+                                          if (g_currentMemberDef && g_currentMemberDef->isFunction() && bracketCount==0)
                                           {
                                             g_code->codify(yytext);
                                             addLocalVar(yytext);
@@ -973,7 +964,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           YY_FTN_RESET
  				 	}
 <Declaration>"\n"                       { // end declaration line
-					  codifyLines(yytext);
+					  if (g_endComment)
+            {
+            g_endComment=FALSE;
+            }
+            else
+            {
+            codifyLines(yytext);
+            }
 					  bracketCount = 0;
                                           yy_pop_state();
                                           YY_FTN_RESET
@@ -1030,16 +1028,17 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  docBlock+=yytext; 
    					}
 <DocBlock>"\n"        			{ // comment block ends at the end of this line
- 					  docBlock+=yytext; 
                                           // remove special comment (default config)
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=((QCString)docBlock).contains('\n');
+              g_yyLineNr+=1;
 					    endCodeLine();
-					    if (g_yyLineNr<g_inputLines) 
+					    if (g_yyLineNr<g_inputLines)
 					    {
 					      startCodeLine();
 					    }
+              g_endComment=TRUE;
 					  }
 					  else // do not remove comment
 					  {
@@ -1047,6 +1046,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					    codifyLines(docBlock);
 					    endFontClass();
 					  }
+            unput(*yytext);
                                          yy_pop_state();
                                           YY_FTN_RESET
 					}
@@ -1118,7 +1118,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
  /*-----------------------------------------------------------------------------*/
 
 <*>\n					{
-  					  codifyLines(yytext); 
+  					if (g_endComment)
+            {
+            g_endComment=FALSE;
+            }
+            else
+            {
+            codifyLines(yytext);
+            }
                                           YY_FTN_RESET
   					}
 <*>.					{ 
