@@ -2553,7 +2553,7 @@ EXTRA_PACKAGES=times
     <option type='bool' id='USE_PDFLATEX' defval='1' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c LATEX_PDFLATEX tag is set to \c YES, doxygen will use
+ If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use
  \c pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
  files.  Set this option to \c YES to get a higher quality PDF documentation. 
 ]]>
