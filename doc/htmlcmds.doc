@@ -62,9 +62,15 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</H2\></tt>   Ends an unnumbered subsection.
 <li><tt>\<H3\></tt>    Starts an unnumbered subsubsection.
 <li><tt>\</H3\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\<H4\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\</H4\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\<H5\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\</H5\></tt>   Ends an unnumbered subsubsection.
+<li><tt>\<H6\></tt>    Starts an unnumbered subsubsection.
+<li><tt>\</H6\></tt>   Ends an unnumbered subsubsection.
 <li><tt>\<I\></tt>     Starts a piece of text displayed in an italic font.
 <li><tt>\</I\></tt>    Ends a <tt>\<I\></tt> section.
-<li><tt>\<IMG\></tt>   This command is written with attributes to the HTML output only.
+<li><tt>\<IMG SRC="..." ...\></tt>   This command is written with its attributes to the HTML output only. The SRC attribute is mandatory.
 <li><tt>\<LI\></tt>    Starts a new list item.
 <li><tt>\</LI\></tt>   Ends a list item.
 <li><tt>\<OL\></tt>    Starts a numbered item list.
