@@ -11492,8 +11492,6 @@ int QLigature::match(QString & str, unsigned int index)
     return 0;
 }
 
-#endif
-
 // this function is just used in QString::compose()
 static inline bool format(QChar::Decomposition tag, QString & str,
 			  int index, int len)
@@ -11515,7 +11513,7 @@ static inline bool format(QChar::Decomposition tag, QString & str,
 
     switch (tag) {
     case QChar::Medial:
-	return (left & right);
+	return (left && right);
     case QChar::Initial:
 	return (left && !right);
     case QChar::Final:
@@ -11525,6 +11523,7 @@ static inline bool format(QChar::Decomposition tag, QString & str,
 	return (!right && !left);
     }
 } // format()
+#endif
 
 /*
   QString::compose() and visual() were developed by Gordon Tisher
@@ -11602,7 +11601,6 @@ static inline bool is_arabic(unsigned short x) {
 	    ((x >= 0xfb50) && (x <= 0xfdff)) ||
 	    ((x >= 0xfe70) && (x <= 0xfeff)));
 }
-#endif
 
 static inline bool is_neutral(unsigned short dir) {
   return ((dir == QChar::DirB) ||
@@ -11611,6 +11609,7 @@ static inline bool is_neutral(unsigned short dir) {
 		  (dir == QChar::DirON) ||
 	          (dir == QChar::DirNSM));
 }
+#endif
 
 /*!
   This function returns the basic directionality of the string (QChar::DirR for
