@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
@@ -364,52 +379,6 @@ class ModuleContext : public RefCountedContext, public TemplateStructIntf
 
 //----------------------------------------------------
 
-class NestedClassListContext : public RefCountedContext, public TemplateListIntf
-{
-  public:
-    static NestedClassListContext *alloc() { return new NestedClassListContext; }
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
-
-    void append(ClassDef *cd);
-
-  private:
-    NestedClassListContext();
-   ~NestedClassListContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class NestedNamespaceListContext : public RefCountedContext, public TemplateListIntf
-{
-  public:
-    static NestedNamespaceListContext *alloc() { return new NestedNamespaceListContext; }
-
-    // TemplateListIntf
-    virtual int  count() const;
-    virtual TemplateVariant at(int index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
-
-    void append(NamespaceDef *cd);
-
-  private:
-    NestedNamespaceListContext();
-   ~NestedNamespaceListContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
 class ClassListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
@@ -425,6 +394,25 @@ class ClassListContext : public RefCountedContext, public TemplateListIntf
   private:
     ClassListContext();
    ~ClassListContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class ClassIndexContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static ClassIndexContext *alloc() { return new ClassIndexContext; }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    ClassIndexContext();
+   ~ClassIndexContext();
     class Private;
     Private *p;
 };
@@ -537,6 +525,8 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addFiles(const FileNameList &);
     void addFiles(const FileList &);
     void addPages(const PageSDict &pages,bool rootOnly);
+    void addModules(const GroupSDict &modules);
+    void addModules(const GroupList &modules);
 
   private:
     NestingContext(const NestingNodeContext *parent,int level);
@@ -667,60 +657,22 @@ class FileTreeContext : public RefCountedContext, public TemplateStructIntf
 
 //----------------------------------------------------
 
-class PageNodeContext : public RefCountedContext, public TemplateStructIntf
+class PageListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static PageNodeContext *alloc(PageDef *pd) { return new PageNodeContext(pd); }
+    static PageListContext *alloc(const PageSDict *pages) { return new PageListContext(pages); }
 
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
-
-  private:
-    PageNodeContext(PageDef *);
-   ~PageNodeContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class PageNodeListContext : public RefCountedContext, public TemplateListIntf
-{
-  public:
-    static PageNodeListContext *alloc() { return new PageNodeListContext; }
-
-    // TemplateListIntf
+    // TemplateListIntf methods
     virtual int  count() const;
     virtual TemplateVariant at(int index) const;
     virtual TemplateListIntf::ConstIterator *createIterator() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
-    void addPages(const PageSDict &,bool rootOnly);
+    void addPages(const PageSDict &pages);
 
   private:
-    PageNodeListContext();
-   ~PageNodeListContext();
-    class Private;
-    Private *p;
-};
-
-//----------------------------------------------------
-
-class PageListContext : public RefCountedContext, public TemplateStructIntf
-{
-  public:
-    static PageListContext *alloc() { return new PageListContext; }
-
-    // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
-    virtual int addRef()  { return RefCountedContext::addRef(); }
-    virtual int release() { return RefCountedContext::release(); }
-
-  private:
-    PageListContext();
+    PageListContext(const PageSDict *pages);
    ~PageListContext();
     class Private;
     Private *p;

@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #include "context.h"
 #include "config.h"
 #include "index.h"
@@ -24,6 +39,7 @@
 #include "parserintf.h"
 #include "portable.h"
 #include "arguments.h"
+#include "groupdef.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -143,6 +159,10 @@ class GenericNodeListContext : public TemplateListIntf
     GenericNodeListContext() : m_refCount(0)
     {
       m_children.setAutoDelete(TRUE);
+    }
+    static GenericNodeListContext *alloc()
+    {
+      return new GenericNodeListContext;
     }
 
     // TemplateListIntf methods
@@ -770,6 +790,11 @@ class TranslateContext::Private : public PropertyMapper
       bool extractAll = Config_getBool("EXTRACT_ALL");
       return theTranslator->trFileListDescription(extractAll);
     }
+    TemplateVariant modulesDescription() const
+    {
+      bool extractAll = Config_getBool("EXTRACT_ALL");
+      return theTranslator->trModulesListDescription(extractAll);
+    }
     TemplateVariant directories() const
     {
       return theTranslator->trDirectories();
@@ -888,6 +913,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("fileListDescription",this,&Private::fileListDescription);
       //%% string directories
       addProperty("directories",        this,&Private::directories);
+      //%% string moduleDescript
+      addProperty("modulesDescription", this,&Private::modulesDescription);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -1745,7 +1772,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     {
       if (!m_cache.classes)
       {
-        NestedClassListContext *classList = NestedClassListContext::alloc();
+        TemplateList *classList = TemplateList::alloc();
         if (m_classDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_classDef->getClassSDict());
@@ -1754,7 +1781,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
           {
             if (cd->visibleInParentsDeclList())
             {
-              classList->append(cd);
+              classList->append(ClassContext::alloc(cd));
             }
           }
         }
@@ -1975,7 +2002,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       SharedPtr<InheritanceListContext> inheritedByList;
       ScopedPtr<DotClassGraph>          classGraph;
       ScopedPtr<DotClassGraph>          collaborationGraph;
-      SharedPtr<NestedClassListContext> classes;
+      SharedPtr<TemplateList>           classes;
       SharedPtr<MemberListInfoContext>  publicTypes;
       SharedPtr<MemberListInfoContext>  publicMethods;
       SharedPtr<MemberListInfoContext>  publicStaticMethods;
@@ -2100,7 +2127,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       if (!m_cache.classes)
       {
-        NestedClassListContext *classList = NestedClassListContext::alloc();
+        TemplateList *classList = TemplateList::alloc();
         if (m_namespaceDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_namespaceDef->getClassSDict());
@@ -2109,7 +2136,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           {
             if (cd->visibleInParentsDeclList())
             {
-              classList->append(cd);
+              classList->append(ClassContext::alloc(cd));
             }
           }
         }
@@ -2121,7 +2148,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       if (!m_cache.namespaces)
       {
-        NestedNamespaceListContext *namespaceList = NestedNamespaceListContext::alloc();
+        TemplateList *namespaceList = TemplateList::alloc();
         if (m_namespaceDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
@@ -2130,7 +2157,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           {
             if (nd->isLinkable() && !nd->isConstantGroup())
             {
-              namespaceList->append(nd);
+              namespaceList->append(NamespaceContext::alloc(nd));
             }
           }
         }
@@ -2142,7 +2169,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       if (!m_cache.constantgroups)
       {
-        NestedNamespaceListContext *namespaceList = NestedNamespaceListContext::alloc();
+        TemplateList *namespaceList = TemplateList::alloc();
         if (m_namespaceDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
@@ -2151,7 +2178,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           {
             if (nd->isLinkable() && nd->isConstantGroup())
             {
-              namespaceList->append(nd);
+              namespaceList->append(NamespaceContext::alloc(nd));
             }
           }
         }
@@ -2189,9 +2216,11 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant functions() const
     {
-      // TODO: Fortran: trSubprograms()
-      // TODO: VHDL:    VhdlDocGen::trFunctionAndProc()
-      return getMemberList(m_cache.functions,MemberListType_decFuncMembers,theTranslator->trFunctions());
+      QCString title = theTranslator->trFunctions();
+      SrcLangExt lang = m_namespaceDef->getLanguage();
+      if (lang==SrcLangExt_Fortran) title=theTranslator->trSubprograms();
+      else if (lang==SrcLangExt_VHDL) title=VhdlDocGen::trFunctionAndProc();
+      return getMemberList(m_cache.functions,MemberListType_decFuncMembers,title);
     }
     TemplateVariant variables() const
     {
@@ -2222,8 +2251,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     }
     TemplateVariant detailedFunctions() const
     {
-      // TODO: Fortran: trSubprogramDocumentation()
-      return getMemberList(m_cache.detailedFunctions,MemberListType_docFuncMembers,theTranslator->trFunctionDocumentation());
+      QCString title = theTranslator->trFunctionDocumentation();
+      SrcLangExt lang = m_namespaceDef->getLanguage();
+      if (lang==SrcLangExt_Fortran) title=theTranslator->trSubprogramDocumentation();
+      return getMemberList(m_cache.detailedFunctions,MemberListType_docFuncMembers,title);
     }
     TemplateVariant detailedVariables() const
     {
@@ -2233,7 +2264,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       if (!m_cache.inlineClasses)
       {
-        NestedClassListContext *classList = NestedClassListContext::alloc();
+        TemplateList *classList = TemplateList::alloc();
         if (m_namespaceDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_namespaceDef->getClassSDict());
@@ -2245,7 +2276,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
             {
-              classList->append(cd);
+              classList->append(ClassContext::alloc(cd));
             }
           }
         }
@@ -2257,9 +2288,9 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     NamespaceDef *m_namespaceDef;
     struct Cachable
     {
-      SharedPtr<NestedClassListContext>     classes;
-      SharedPtr<NestedNamespaceListContext> namespaces;
-      SharedPtr<NestedNamespaceListContext> constantgroups;
+      SharedPtr<TemplateList>               classes;
+      SharedPtr<TemplateList>               namespaces;
+      SharedPtr<TemplateList>               constantgroups;
       SharedPtr<MemberListInfoContext>      typedefs;
       SharedPtr<MemberListInfoContext>      enums;
       SharedPtr<MemberListInfoContext>      functions;
@@ -2269,7 +2300,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       SharedPtr<MemberListInfoContext>      detailedEnums;
       SharedPtr<MemberListInfoContext>      detailedFunctions;
       SharedPtr<MemberListInfoContext>      detailedVariables;
-      SharedPtr<NestedClassListContext>     inlineClasses;
+      SharedPtr<TemplateList>               inlineClasses;
     };
     mutable Cachable m_cache;
 };
@@ -2455,7 +2486,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (!m_cache.classes)
       {
-        NestedClassListContext *classList = NestedClassListContext::alloc();
+        TemplateList *classList = TemplateList::alloc();
         if (m_fileDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_fileDef->getClassSDict());
@@ -2464,7 +2495,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
           {
             if (cd->visibleInParentsDeclList())
             {
-              classList->append(cd);
+              classList->append(ClassContext::alloc(cd));
             }
           }
         }
@@ -2476,7 +2507,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (!m_cache.namespaces)
       {
-        NestedNamespaceListContext *namespaceList = NestedNamespaceListContext::alloc();
+        TemplateList *namespaceList = TemplateList::alloc();
         if (m_fileDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_fileDef->getNamespaceSDict());
@@ -2485,7 +2516,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
           {
             if (nd->isLinkable() && !nd->isConstantGroup())
             {
-              namespaceList->append(nd);
+              namespaceList->append(NamespaceContext::alloc(nd));
             }
           }
         }
@@ -2497,7 +2528,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (!m_cache.constantgroups)
       {
-        NestedNamespaceListContext *namespaceList = NestedNamespaceListContext::alloc();
+        TemplateList *namespaceList = TemplateList::alloc();
         if (m_fileDef->getNamespaceSDict())
         {
           NamespaceSDict::Iterator sdi(*m_fileDef->getNamespaceSDict());
@@ -2506,7 +2537,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
           {
             if (nd->isLinkable() && nd->isConstantGroup())
             {
-              namespaceList->append(nd);
+              namespaceList->append(NamespaceContext::alloc(nd));
             }
           }
         }
@@ -2548,9 +2579,11 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant functions() const
     {
-      // TODO: Fortran: trSubprograms()
-      // TODO: VHDL:    VhdlDocGen::trFunctionAndProc()
-      return getMemberList(m_cache.functions,MemberListType_decFuncMembers,theTranslator->trFunctions());
+      QCString title = theTranslator->trFunctions();
+      SrcLangExt lang = m_fileDef->getLanguage();
+      if (lang==SrcLangExt_Fortran) title=theTranslator->trSubprograms();
+      else if (lang==SrcLangExt_VHDL) title=VhdlDocGen::trFunctionAndProc();
+      return getMemberList(m_cache.functions,MemberListType_decFuncMembers,title);
     }
     TemplateVariant variables() const
     {
@@ -2585,8 +2618,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     }
     TemplateVariant detailedFunctions() const
     {
-      // TODO: Fortran: trSubprogramDocumentation()
-      return getMemberList(m_cache.detailedFunctions,MemberListType_docFuncMembers,theTranslator->trFunctionDocumentation());
+      QCString title = theTranslator->trFunctionDocumentation();
+      SrcLangExt lang = m_fileDef->getLanguage();
+      if (lang==SrcLangExt_Fortran) title=theTranslator->trSubprogramDocumentation();
+      return getMemberList(m_cache.detailedFunctions,MemberListType_docFuncMembers,title);
     }
     TemplateVariant detailedVariables() const
     {
@@ -2596,7 +2631,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (!m_cache.inlineClasses)
       {
-        NestedClassListContext *classList = NestedClassListContext::alloc();
+        TemplateList *classList = TemplateList::alloc();
         if (m_fileDef->getClassSDict())
         {
           ClassSDict::Iterator sdi(*m_fileDef->getClassSDict());
@@ -2608,7 +2643,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
                 cd->isEmbeddedInOuterScope() &&
                 cd->partOfGroups()==0)
             {
-              classList->append(cd);
+              classList->append(ClassContext::alloc(cd));
             }
           }
         }
@@ -2629,9 +2664,9 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       ScopedPtr<DotInclDepGraph>            includeGraph;
       ScopedPtr<DotInclDepGraph>            includedByGraph;
       ScopedPtr<TemplateVariant>            sources;
-      SharedPtr<NestedClassListContext>     classes;
-      SharedPtr<NestedNamespaceListContext> namespaces;
-      SharedPtr<NestedNamespaceListContext> constantgroups;
+      SharedPtr<TemplateList>               classes;
+      SharedPtr<TemplateList>               namespaces;
+      SharedPtr<TemplateList>               constantgroups;
       SharedPtr<MemberListInfoContext>      macros;
       SharedPtr<MemberListInfoContext>      typedefs;
       SharedPtr<MemberListInfoContext>      enums;
@@ -2643,7 +2678,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       SharedPtr<MemberListInfoContext>      detailedEnums;
       SharedPtr<MemberListInfoContext>      detailedFunctions;
       SharedPtr<MemberListInfoContext>      detailedVariables;
-      SharedPtr<NestedClassListContext>     inlineClasses;
+      SharedPtr<TemplateList>               inlineClasses;
     };
     mutable Cachable m_cache;
 };
@@ -3977,9 +4012,48 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
   public:
     Private(GroupDef *gd) : DefinitionContext<ModuleContext::Private>(gd) , m_groupDef(gd)
     {
-      addProperty("title",this,&Private::title);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subHighlight);
+      addProperty("title",                     this,&Private::title);
+      addProperty("highlight",                 this,&Private::highlight);
+      addProperty("subhighlight",              this,&Private::subHighlight);
+      addProperty("hasGroupGraph",             this,&Private::hasGroupGraph);
+      addProperty("groupGraph",                this,&Private::groupGraph);
+      addProperty("hasDetails",                this,&Private::hasDetails);
+      addProperty("modules",                   this,&Private::modules);
+      addProperty("dirs",                      this,&Private::dirs);
+      addProperty("files",                     this,&Private::files);
+      addProperty("namespaces",                this,&Private::namespaces);
+      addProperty("classes",                   this,&Private::classes);
+      addProperty("constantgroups",            this,&Private::constantgroups);
+      addProperty("examples",                  this,&Private::examples);
+      addProperty("macros",                    this,&Private::macros);
+      addProperty("typedefs",                  this,&Private::typedefs);
+      addProperty("enums",                     this,&Private::enums);
+      addProperty("enumvalues",                this,&Private::enumValues);
+      addProperty("functions",                 this,&Private::functions);
+      addProperty("variables",                 this,&Private::variables);
+      addProperty("signals",                   this,&Private::signals);
+      addProperty("publicSlots",               this,&Private::publicSlots);
+      addProperty("protectedSlots",            this,&Private::protectedSlots);
+      addProperty("privateSlots",              this,&Private::privateSlots);
+      addProperty("events",                    this,&Private::events);
+      addProperty("properties",                this,&Private::properties);
+      addProperty("friends",                   this,&Private::friends);
+      addProperty("memberGroups",              this,&Private::memberGroups);
+      addProperty("detailedMacros",            this,&Private::detailedMacros);
+      addProperty("detailedTypedefs",          this,&Private::detailedTypedefs);
+      addProperty("detailedEnums",             this,&Private::detailedEnums);
+      addProperty("detailedEnumValues",        this,&Private::detailedEnumValues);
+      addProperty("detailedFunctions",         this,&Private::detailedFunctions);
+      addProperty("detailedVariables",         this,&Private::detailedVariables);
+      addProperty("detailedSignals",           this,&Private::detailedSignals);
+      addProperty("detailedPublicSlots",       this,&Private::detailedPublicSlots);
+      addProperty("detailedProtectedSlots",    this,&Private::detailedProtectedSlots);
+      addProperty("detailedPrivateSlots",      this,&Private::detailedPrivateSlots);
+      addProperty("detailedEvents",            this,&Private::detailedEvents);
+      addProperty("detailedProperties",        this,&Private::detailedProperties);
+      addProperty("detailedFriends",           this,&Private::detailedFriends);
+      addProperty("inlineClasses",             this,&Private::inlineClasses);
+      addProperty("compoundType",              this,&Private::compoundType);
     }
     TemplateVariant title() const
     {
@@ -3993,8 +4067,423 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     {
       return TemplateVariant("");
     }
+    DotGroupCollaboration *getGroupGraph() const
+    {
+      if (!m_cache.groupGraph)
+      {
+        m_cache.groupGraph.reset(new DotGroupCollaboration(m_groupDef));
+      }
+      return m_cache.groupGraph.get();
+    }
+    TemplateVariant hasGroupGraph() const
+    {
+      bool result=FALSE;
+      static bool haveDot     = Config_getBool("HAVE_DOT");
+      static bool groupGraphs = Config_getBool("GROUP_GRAPHS");
+      if (haveDot && groupGraphs)
+      {
+        DotGroupCollaboration *graph = getGroupGraph();
+        result = !graph->isTrivial();
+      }
+      return result;
+    }
+    TemplateVariant groupGraph() const
+    {
+      QGString result;
+      static bool haveDot     = Config_getBool("HAVE_DOT");
+      static bool groupGraphs = Config_getBool("GROUP_GRAPHS");
+      if (haveDot && groupGraphs)
+      {
+        DotGroupCollaboration *graph = getGroupGraph();
+        FTextStream t(&result);
+        graph->writeGraph(t,BITMAP,
+                          g_globals.outputDir,
+                          g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                          relPathAsString(),
+                          TRUE,
+                          g_globals.dynSectionId);
+      }
+      g_globals.dynSectionId++;
+      return TemplateVariant(result.data(),TRUE);
+    }
+    TemplateVariant hasDetails() const
+    {
+      return m_groupDef->hasDetailedDescription();
+    }
+    TemplateVariant modules() const
+    {
+      if (!m_cache.modules)
+      {
+        TemplateList *moduleList = TemplateList::alloc();
+        if (m_groupDef->getSubGroups())
+        {
+          GroupListIterator gli(*m_groupDef->getSubGroups());
+          GroupDef *gd;
+          for (gli.toFirst();(gd=gli.current());++gli)
+          {
+            if (gd->isVisible())
+            {
+              moduleList->append(ModuleContext::alloc(gd));
+            }
+          }
+        }
+        m_cache.modules.reset(moduleList);
+      }
+      return m_cache.modules.get();
+    }
+    TemplateVariant examples() const
+    {
+      if (!m_cache.examples)
+      {
+        TemplateList *exampleList = TemplateList::alloc();
+        if (m_groupDef->getExamples())
+        {
+          PageSDict::Iterator eli(*m_groupDef->getExamples());
+          PageDef *ex;
+          for (eli.toFirst();(ex=eli.current());++eli)
+          {
+            exampleList->append(PageContext::alloc(ex));
+          }
+        }
+        m_cache.examples.reset(exampleList);
+      }
+      return m_cache.examples.get();
+    }
+    TemplateVariant pages() const
+    {
+      if (!m_cache.pages)
+      {
+        TemplateList *pageList = TemplateList::alloc();
+        if (m_groupDef->getExamples())
+        {
+          PageSDict::Iterator eli(*m_groupDef->getPages());
+          PageDef *ex;
+          for (eli.toFirst();(ex=eli.current());++eli)
+          {
+            pageList->append(PageContext::alloc(ex));
+          }
+        }
+        m_cache.pages.reset(pageList);
+      }
+      return m_cache.pages.get();
+    }
+    TemplateVariant dirs() const
+    {
+      if (!m_cache.dirs)
+      {
+        TemplateList *dirList = TemplateList::alloc();
+        if (m_groupDef->getDirs())
+        {
+          QListIterator<DirDef> it(*m_groupDef->getDirs());
+          DirDef *dd;
+          for (it.toFirst();(dd=it.current());++it)
+          {
+            dirList->append(DirContext::alloc(dd));
+          }
+        }
+        m_cache.dirs.reset(dirList);
+      }
+      return m_cache.dirs.get();
+    }
+    TemplateVariant files() const
+    {
+      if (!m_cache.files)
+      {
+        TemplateList *fileList = TemplateList::alloc();
+        if (m_groupDef->getFiles())
+        {
+          QListIterator<FileDef> it(*m_groupDef->getFiles());
+          FileDef *fd;
+          for (it.toFirst();(fd=it.current());++it)
+          {
+            fileList->append(FileContext::alloc(fd));
+          }
+        }
+        m_cache.files.reset(fileList);
+      }
+      return m_cache.files.get();
+    }
+    TemplateVariant classes() const
+    {
+      if (!m_cache.classes)
+      {
+        TemplateList *classList = TemplateList::alloc();
+        if (m_groupDef->getClasses())
+        {
+          ClassSDict::Iterator sdi(*m_groupDef->getClasses());
+          ClassDef *cd;
+          for (sdi.toFirst();(cd=sdi.current());++sdi)
+          {
+            if (cd->visibleInParentsDeclList())
+            {
+              classList->append(ClassContext::alloc(cd));
+            }
+          }
+        }
+        m_cache.classes.reset(classList);
+      }
+      return m_cache.classes.get();
+    }
+    TemplateVariant namespaces() const
+    {
+      if (!m_cache.namespaces)
+      {
+        TemplateList *namespaceList = TemplateList::alloc();
+        if (m_groupDef->getNamespaces())
+        {
+          NamespaceSDict::Iterator sdi(*m_groupDef->getNamespaces());
+          NamespaceDef *nd;
+          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          {
+            if (nd->isLinkable() && !nd->isConstantGroup())
+            {
+              namespaceList->append(NamespaceContext::alloc(nd));
+            }
+          }
+        }
+        m_cache.namespaces.reset(namespaceList);
+      }
+      return m_cache.namespaces.get();
+    }
+    TemplateVariant constantgroups() const
+    {
+      if (!m_cache.constantgroups)
+      {
+        TemplateList *namespaceList = TemplateList::alloc();
+        if (m_groupDef->getNamespaces())
+        {
+          NamespaceSDict::Iterator sdi(*m_groupDef->getNamespaces());
+          NamespaceDef *nd;
+          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          {
+            if (nd->isLinkable() && nd->isConstantGroup())
+            {
+              namespaceList->append(NamespaceContext::alloc(nd));
+            }
+          }
+        }
+        m_cache.constantgroups.reset(namespaceList);
+      }
+      return m_cache.constantgroups.get();
+    }
+
+    TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
+                                  MemberListType type,const char *title,bool detailed=FALSE) const
+    {
+      if (!list)
+      {
+        MemberList *ml = m_groupDef->getMemberList(type);
+        if (ml)
+        {
+          list.reset(MemberListInfoContext::alloc(m_groupDef,relPathAsString(),ml,title,detailed));
+        }
+      }
+      if (list)
+      {
+        return list.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
+    TemplateVariant macros() const
+    {
+      return getMemberList(m_cache.macros,MemberListType_decDefineMembers,theTranslator->trDefines());
+    }
+    TemplateVariant typedefs() const
+    {
+      return getMemberList(m_cache.typedefs,MemberListType_decTypedefMembers,theTranslator->trTypedefs());
+    }
+    TemplateVariant enums() const
+    {
+      return getMemberList(m_cache.enums,MemberListType_decEnumMembers,theTranslator->trEnumerations());
+    }
+    TemplateVariant enumValues() const
+    {
+      return getMemberList(m_cache.enums,MemberListType_decEnumValMembers,theTranslator->trEnumerationValues());
+    }
+    TemplateVariant functions() const
+    {
+      QCString title = theTranslator->trFunctions();
+      SrcLangExt lang = m_groupDef->getLanguage();
+      if (lang==SrcLangExt_Fortran) title=theTranslator->trSubprograms();
+      else if (lang==SrcLangExt_VHDL) title=VhdlDocGen::trFunctionAndProc();
+      return getMemberList(m_cache.functions,MemberListType_decFuncMembers,title);
+    }
+    TemplateVariant variables() const
+    {
+      return getMemberList(m_cache.variables,MemberListType_decVarMembers,theTranslator->trVariables());
+    }
+    TemplateVariant signals() const
+    {
+      return getMemberList(m_cache.signals,MemberListType_signals,theTranslator->trSignals());
+    }
+    TemplateVariant publicSlots() const
+    {
+      return getMemberList(m_cache.publicSlots,MemberListType_pubSlots,theTranslator->trPublicSlots());
+    }
+    TemplateVariant protectedSlots() const
+    {
+      return getMemberList(m_cache.protectedSlots,MemberListType_proSlots,theTranslator->trProtectedSlots());
+    }
+    TemplateVariant privateSlots() const
+    {
+      return getMemberList(m_cache.privateSlots,MemberListType_priSlots,theTranslator->trPrivateSlots());
+    }
+    TemplateVariant events() const
+    {
+      return getMemberList(m_cache.events,MemberListType_events,theTranslator->trEvents());
+    }
+    TemplateVariant properties() const
+    {
+      return getMemberList(m_cache.properties,MemberListType_properties,theTranslator->trProperties());
+    }
+    TemplateVariant friends() const
+    {
+      return getMemberList(m_cache.friends,MemberListType_friends,theTranslator->trFriends());
+    }
+    TemplateVariant memberGroups() const
+    {
+      if (!m_cache.memberGroups)
+      {
+        if (m_groupDef->getMemberGroupSDict())
+        {
+          m_cache.memberGroups.reset(MemberGroupListContext::alloc(m_groupDef,relPathAsString(),m_groupDef->getMemberGroupSDict(),m_groupDef->subGrouping()));
+        }
+        else
+        {
+          m_cache.memberGroups.reset(MemberGroupListContext::alloc());
+        }
+      }
+      return m_cache.memberGroups.get();
+    }
+    TemplateVariant detailedMacros() const
+    {
+      return getMemberList(m_cache.detailedMacros,MemberListType_docDefineMembers,theTranslator->trDefineDocumentation());
+    }
+    TemplateVariant detailedTypedefs() const
+    {
+      return getMemberList(m_cache.detailedTypedefs,MemberListType_docTypedefMembers,theTranslator->trTypedefDocumentation());
+    }
+    TemplateVariant detailedEnums() const
+    {
+      return getMemberList(m_cache.detailedEnums,MemberListType_docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
+    }
+    TemplateVariant detailedEnumValues() const
+    {
+      return getMemberList(m_cache.detailedEnumValues,MemberListType_docEnumValMembers,theTranslator->trEnumerationValueDocumentation());
+    }
+    TemplateVariant detailedFunctions() const
+    {
+      QCString title = theTranslator->trFunctionDocumentation();
+      SrcLangExt lang = m_groupDef->getLanguage();
+      if (lang==SrcLangExt_Fortran) title=theTranslator->trSubprogramDocumentation();
+      return getMemberList(m_cache.detailedFunctions,MemberListType_docFuncMembers,title);
+    }
+    TemplateVariant detailedVariables() const
+    {
+      return getMemberList(m_cache.detailedVariables,MemberListType_docVarMembers,theTranslator->trVariableDocumentation());
+    }
+    TemplateVariant detailedSignals() const
+    {
+      return getMemberList(m_cache.detailedSignals,MemberListType_docSignalMembers,theTranslator->trSignals());
+    }
+    TemplateVariant detailedPublicSlots() const
+    {
+      return getMemberList(m_cache.detailedPublicSlots,MemberListType_docPubSlotMembers,theTranslator->trPublicSlots());
+    }
+    TemplateVariant detailedProtectedSlots() const
+    {
+      return getMemberList(m_cache.detailedProtectedSlots,MemberListType_docProSlotMembers,theTranslator->trProtectedSlots());
+    }
+    TemplateVariant detailedPrivateSlots() const
+    {
+      return getMemberList(m_cache.detailedPrivateSlots,MemberListType_docPriSlotMembers,theTranslator->trPrivateSlots());
+    }
+    TemplateVariant detailedEvents() const
+    {
+      return getMemberList(m_cache.detailedEvents,MemberListType_docEventMembers,theTranslator->trEventDocumentation(),TRUE);
+    }
+    TemplateVariant detailedProperties() const
+    {
+      return getMemberList(m_cache.detailedProperties,MemberListType_docPropMembers,theTranslator->trPropertyDocumentation(),TRUE);
+    }
+    TemplateVariant detailedFriends() const
+    {
+      return getMemberList(m_cache.detailedFriends,MemberListType_docFriendMembers,theTranslator->trFriends(),TRUE);
+    }
+    TemplateVariant inlineClasses() const
+    {
+      if (!m_cache.inlineClasses)
+      {
+        TemplateList *classList = TemplateList::alloc();
+        if (m_groupDef->getClasses())
+        {
+          ClassSDict::Iterator sdi(*m_groupDef->getClasses());
+          ClassDef *cd;
+          for (sdi.toFirst();(cd=sdi.current());++sdi)
+          {
+            if (cd->name().find('@')==-1 &&
+                cd->isLinkableInProject() &&
+                cd->isEmbeddedInOuterScope() &&
+                cd->partOfGroups()==0)
+            {
+              classList->append(ClassContext::alloc(cd));
+            }
+          }
+        }
+        m_cache.inlineClasses.reset(classList);
+      }
+      return m_cache.inlineClasses.get();
+    }
+    TemplateVariant compoundType() const
+    {
+      return "module"; //theTranslator->trGroup(FALSE,TRUE);
+    }
   private:
     GroupDef *m_groupDef;
+    struct Cachable
+    {
+      SharedPtr<TemplateList>               modules;
+      SharedPtr<TemplateList>               dirs;
+      SharedPtr<TemplateList>               files;
+      SharedPtr<TemplateList>               classes;
+      SharedPtr<TemplateList>               namespaces;
+      SharedPtr<TemplateList>               constantgroups;
+      SharedPtr<TemplateList>               examples;
+      SharedPtr<TemplateList>               pages;
+      SharedPtr<MemberListInfoContext>      macros;
+      SharedPtr<MemberListInfoContext>      typedefs;
+      SharedPtr<MemberListInfoContext>      enums;
+      SharedPtr<MemberListInfoContext>      enumValues;
+      SharedPtr<MemberListInfoContext>      functions;
+      SharedPtr<MemberListInfoContext>      variables;
+      SharedPtr<MemberListInfoContext>      signals;
+      SharedPtr<MemberListInfoContext>      publicSlots;
+      SharedPtr<MemberListInfoContext>      protectedSlots;
+      SharedPtr<MemberListInfoContext>      privateSlots;
+      SharedPtr<MemberListInfoContext>      events;
+      SharedPtr<MemberListInfoContext>      properties;
+      SharedPtr<MemberListInfoContext>      friends;
+      SharedPtr<MemberGroupListContext>     memberGroups;
+      SharedPtr<MemberListInfoContext>      detailedMacros;
+      SharedPtr<MemberListInfoContext>      detailedTypedefs;
+      SharedPtr<MemberListInfoContext>      detailedEnums;
+      SharedPtr<MemberListInfoContext>      detailedEnumValues;
+      SharedPtr<MemberListInfoContext>      detailedFunctions;
+      SharedPtr<MemberListInfoContext>      detailedVariables;
+      SharedPtr<MemberListInfoContext>      detailedSignals;
+      SharedPtr<MemberListInfoContext>      detailedPublicSlots;
+      SharedPtr<MemberListInfoContext>      detailedProtectedSlots;
+      SharedPtr<MemberListInfoContext>      detailedPrivateSlots;
+      SharedPtr<MemberListInfoContext>      detailedEvents;
+      SharedPtr<MemberListInfoContext>      detailedProperties;
+      SharedPtr<MemberListInfoContext>      detailedFriends;
+      SharedPtr<TemplateList>               inlineClasses;
+      ScopedPtr<DotGroupCollaboration>      groupGraph;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -4011,88 +4500,6 @@ ModuleContext::~ModuleContext()
 TemplateVariant ModuleContext::get(const char *n) const
 {
   return p->get(n);
-}
-
-//------------------------------------------------------------------------
-
-//%% list NestedClassList[Class] : list of nested classes
-class NestedClassListContext::Private : public GenericNodeListContext
-{
-};
-
-NestedClassListContext::NestedClassListContext() : RefCountedContext("NestedClassListContext")
-{
-  p = new Private;
-}
-
-NestedClassListContext::~NestedClassListContext()
-{
-  delete p;
-}
-
-// TemplateListIntf
-int NestedClassListContext::count() const
-{
-  return p->count();
-}
-
-TemplateVariant NestedClassListContext::at(int index) const
-{
-  return p->at(index);
-}
-
-TemplateListIntf::ConstIterator *NestedClassListContext::createIterator() const
-{
-  return p->createIterator();
-}
-
-void NestedClassListContext::append(ClassDef *cd)
-{
-  if (cd)
-  {
-    p->append(ClassContext::alloc(cd));
-  }
-}
-
-//------------------------------------------------------------------------
-
-//%% list NestedClassList[Class] : list of nested namespaces
-class NestedNamespaceListContext::Private : public GenericNodeListContext
-{
-};
-
-NestedNamespaceListContext::NestedNamespaceListContext() : RefCountedContext("NestedNamespaceListContext")
-{
-  p = new Private;
-}
-
-NestedNamespaceListContext::~NestedNamespaceListContext()
-{
-  delete p;
-}
-
-// TemplateListIntf
-int NestedNamespaceListContext::count() const
-{
-  return p->count();
-}
-
-TemplateVariant NestedNamespaceListContext::at(int index) const
-{
-  return p->at(index);
-}
-
-TemplateListIntf::ConstIterator *NestedNamespaceListContext::createIterator() const
-{
-  return p->createIterator();
-}
-
-void NestedNamespaceListContext::append(NamespaceDef *cd)
-{
-  if (cd)
-  {
-    p->append(NamespaceContext::alloc(cd));
-  }
 }
 
 //------------------------------------------------------------------------
@@ -4148,6 +4555,107 @@ TemplateVariant ClassListContext::at(int index) const
 TemplateListIntf::ConstIterator *ClassListContext::createIterator() const
 {
   return p->createIterator();
+}
+
+//------------------------------------------------------------------------
+
+//%% list ClassIndex[Class] : list of classes
+class ClassIndexContext::Private : public PropertyMapper
+{
+  public:
+    Private()
+    {
+      addProperty("list",        this,&Private::list);
+      addProperty("fileName",    this,&Private::fileName);
+      addProperty("relPath",     this,&Private::relPath);
+      addProperty("highlight",   this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",       this,&Private::title);
+    }
+    TemplateVariant list() const
+    {
+      if (!m_cache.classes)
+      {
+        TemplateList *classList = TemplateList::alloc();
+        if (Doxygen::classSDict)
+        {
+          ClassSDict::Iterator cli(*Doxygen::classSDict);
+          ClassDef *cd;
+          for (cli.toFirst() ; (cd=cli.current()) ; ++cli )
+          {
+            if (cd->getLanguage()==SrcLangExt_VHDL &&
+                ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
+                 (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+               ) // no architecture
+            {
+              continue;
+            }
+            if (cd->isLinkableInProject() && cd->templateMaster()==0)
+            {
+              classList->append(ClassContext::alloc(cd));
+            }
+          }
+        }
+        m_cache.classes.reset(classList);
+      }
+      return m_cache.classes.get();
+    }
+    TemplateVariant fileName() const
+    {
+      return "classes";
+    }
+    TemplateVariant relPath() const
+    {
+      return "";
+    }
+    TemplateVariant highlight() const
+    {
+      return "classes";
+    }
+    TemplateVariant subhighlight() const
+    {
+      return "classindex";
+    }
+    TemplateVariant title() const
+    {
+      static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+      if (fortranOpt)
+      {
+        return theTranslator->trDataTypes();
+      }
+      else if (vhdlOpt)
+      {
+        return VhdlDocGen::trDesignUnits();
+      }
+      else
+      {
+        return theTranslator->trCompoundIndex();
+      }
+    }
+  private:
+    struct Cachable
+    {
+      SharedPtr<TemplateList> classes;
+    };
+    mutable Cachable m_cache;
+};
+
+ClassIndexContext::ClassIndexContext() : RefCountedContext("ClassIndexContext")
+{
+  p = new Private;
+  //p->addClasses(*Doxygen::hiddenClasses);
+}
+
+ClassIndexContext::~ClassIndexContext()
+{
+  delete p;
+}
+
+// TemplateStructIntf
+TemplateVariant ClassIndexContext::get(const char *n) const
+{
+  return p->get(n);
 }
 
 //------------------------------------------------------------------------
@@ -4464,6 +4972,7 @@ class NestingNodeContext::Private : public PropertyMapper
       addClasses();
       addDirFiles();
       addPages();
+      addModules();
     }
     TemplateVariant isLeafNode() const
     {
@@ -4652,6 +5161,14 @@ class NestingNodeContext::Private : public PropertyMapper
         m_children->addPages(*pd->getSubPages(),FALSE);
       }
     }
+    void addModules()
+    {
+      GroupDef *gd = m_def->definitionType()==Definition::TypeGroup ? (GroupDef*)m_def : 0;
+      if (gd && gd->getSubGroups())
+      {
+        m_children->addModules(*gd->getSubGroups());
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     Definition *m_def;
@@ -4817,6 +5334,35 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
+    void addModules(const GroupSDict &groups)
+    {
+      GroupSDict::Iterator gli(groups);
+      GroupDef *gd;
+      for (gli.toFirst();(gd=gli.current());++gli)
+      {
+        static bool externalGroups = Config_getBool("EXTERNAL_GROUPS");
+        if (!gd->isASubGroup() && gd->isVisible() &&
+             (!gd->isReference() || externalGroups)
+           )
+        {
+          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE));
+          m_index++;
+        }
+      }
+    }
+    void addModules(const GroupList &list)
+    {
+      GroupListIterator gli(list);
+      GroupDef *gd;
+      for (gli.toFirst();(gd=gli.current());++gli)
+      {
+        if (gd->isVisible())
+        {
+          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE));
+          m_index++;
+        }
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     int m_level;
@@ -4882,6 +5428,16 @@ void NestingContext::addFiles(const FileList &files)
 void NestingContext::addPages(const PageSDict &pages,bool rootOnly)
 {
   p->addPages(pages,rootOnly);
+}
+
+void NestingContext::addModules(const GroupSDict &modules)
+{
+  p->addModules(modules);
+}
+
+void NestingContext::addModules(const GroupList &modules)
+{
+  p->addModules(modules);
 }
 
 //------------------------------------------------------------------------
@@ -5448,120 +6004,6 @@ TemplateVariant FileTreeContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
-//%% struct PageNode: node is a directory hierarchy
-//%% {
-class PageNodeContext::Private : public PropertyMapper
-{
-  public:
-    Private(PageDef *pd) : m_pageDef(pd)
-    {
-      m_children.reset(PageNodeListContext::alloc());
-      m_pageContext.reset(PageContext::alloc(pd));
-      //%% bool is_leaf_node: true if this node does not have any children
-      addProperty("is_leaf_node",this,&Private::isLeafNode);
-      //%% PageList children: list of nested classes/namespaces
-      addProperty("children",this,&Private::children);
-      //%% Page page: page info
-      addProperty("page",this,&Private::getPage);
-      addPages();
-    }
-    TemplateVariant isLeafNode() const
-    {
-      return m_children->count()==0;
-    }
-    TemplateVariant children() const
-    {
-      return m_children.get();
-    }
-    TemplateVariant getPage() const
-    {
-      return m_pageContext.get();
-    }
-    void addPages()
-    {
-      if (m_pageDef->getSubPages())
-      {
-        m_children->addPages(*m_pageDef->getSubPages(),FALSE);
-      }
-    }
-  private:
-    PageDef                       *m_pageDef;
-    SharedPtr<PageNodeListContext> m_children;
-    SharedPtr<PageContext>         m_pageContext;
-};
-//%% }
-
-PageNodeContext::PageNodeContext(PageDef *pd) : RefCountedContext("PageNodeContext")
-{
-  p = new Private(pd);
-}
-
-PageNodeContext::~PageNodeContext()
-{
-  delete p;
-}
-
-TemplateVariant PageNodeContext::get(const char *n) const
-{
-  return p->get(n);
-}
-
-//------------------------------------------------------------------------
-
-//%% list PageList[PageNode]: list of directories and/or files
-class PageNodeListContext::Private : public GenericNodeListContext
-{
-  public:
-    void addPages(const PageSDict &pages,bool rootOnly)
-    {
-      //printf("** PageNodeListContext::Private(%d)\n",rootOnly);
-      SDict<PageDef>::Iterator pli(pages);
-      PageDef *pd;
-      for (pli.toFirst();(pd=pli.current());++pli)
-      {
-        if (!rootOnly ||
-            pd->getOuterScope()==0 ||
-            pd->getOuterScope()->definitionType()!=Definition::TypePage)
-        {
-          append(PageNodeContext::alloc(pd));
-        }
-      }
-    }
-};
-
-PageNodeListContext::PageNodeListContext() : RefCountedContext("PageNodeListContext")
-{
-  p = new Private;
-}
-
-PageNodeListContext::~PageNodeListContext()
-{
-  delete p;
-}
-
-// TemplateListIntf
-int PageNodeListContext::count() const
-{
-  return p->count();
-}
-
-TemplateVariant PageNodeListContext::at(int index) const
-{
-  return p->at(index);
-}
-
-TemplateListIntf::ConstIterator *PageNodeListContext::createIterator() const
-{
-  return p->createIterator();
-}
-
-void PageNodeListContext::addPages(const PageSDict &pages,bool rootOnly)
-{
-  p->addPages(pages,rootOnly);
-}
-
-//------------------------------------------------------------------------
-
 //%% struct PageTree: tree of related pages
 //%% {
 class PageTreeContext::Private : public PropertyMapper
@@ -5659,65 +6101,28 @@ TemplateVariant PageTreeContext::get(const char *name) const
 
 //------------------------------------------------------------------------
 
-//%% struct PageList: list of related pages
-//%% {
-class PageListContext::Private : public PropertyMapper
+//%% list PageList[Page]: list of pages
+class PageListContext::Private : public GenericNodeListContext
 {
   public:
-    TemplateVariant items() const
+    void addPages(const PageSDict &pages)
     {
-      return m_pageList.get();
-    }
-    TemplateVariant fileName() const
-    {
-      return "pages";
-    }
-    TemplateVariant relPath() const
-    {
-      return "";
-    }
-    TemplateVariant highlight() const
-    {
-      return "pages";
-    }
-    TemplateVariant subhighlight() const
-    {
-      return "";
-    }
-    TemplateVariant title() const
-    {
-      return theTranslator->trRelatedPages();
-    }
-    Private()
-    {
-      m_pageList.reset(new GenericNodeListContext);
-      // Add pages
-      PageSDict::Iterator pdi(*Doxygen::pageSDict);
+      PageSDict::Iterator pdi(pages);
       PageDef *pd=0;
       for (pdi.toFirst();(pd=pdi.current());++pdi)
       {
         if (!pd->getGroupDef() && !pd->isReference())
         {
-          m_pageList->append(PageContext::alloc(pd));
+          append(PageContext::alloc(pd));
         }
       }
-
-      //%% list[Page] items:
-      addProperty("items",this,&Private::items);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
     }
-  private:
-    SharedPtr<GenericNodeListContext> m_pageList;
 };
-//%% }
 
-PageListContext::PageListContext() : RefCountedContext("PageListContext")
+PageListContext::PageListContext(const PageSDict *pages) : RefCountedContext("PageListContext")
 {
   p = new Private;
+  if (pages) p->addPages(*pages);
 }
 
 PageListContext::~PageListContext()
@@ -5725,70 +6130,20 @@ PageListContext::~PageListContext()
   delete p;
 }
 
-TemplateVariant PageListContext::get(const char *name) const
+// TemplateListIntf
+int PageListContext::count() const
 {
-  return p->get(name);
+  return p->count();
 }
 
-
-//------------------------------------------------------------------------
-
-//%% struct ModuleNode: node is a directory hierarchy
-//%% {
-class ModuleNodeContext::Private : public PropertyMapper
+TemplateVariant PageListContext::at(int index) const
 {
-  public:
-    Private(GroupDef *gd) : m_groupDef(gd)
-    {
-      m_children.reset(ModuleListContext::alloc());
-      m_moduleContext.reset(ModuleContext::alloc(gd));
-      //%% bool is_leaf_node: true if this node does not have any children
-      addProperty("is_leaf_node",this,&Private::isLeafNode);
-      //%% ModuleList children: list of submodules
-      addProperty("children",this,&Private::children);
-      //%% Module module: module info
-      addProperty("module",this,&Private::getModule);
-      addModules();
-    }
-    TemplateVariant isLeafNode() const
-    {
-      return m_children->count()==0;
-    }
-    TemplateVariant children() const
-    {
-      return m_children.get();
-    }
-    TemplateVariant getModule() const
-    {
-      return m_moduleContext.get();
-    }
-    void addModules()
-    {
-      if (m_groupDef->getSubGroups())
-      {
-        m_children->addModules(*m_groupDef->getSubGroups());
-      }
-    }
-  private:
-    GroupDef                    *m_groupDef;
-    SharedPtr<ModuleListContext> m_children;
-    SharedPtr<ModuleContext>     m_moduleContext;
-};
-//%% }
-
-ModuleNodeContext::ModuleNodeContext(GroupDef *gd) : RefCountedContext("ModuleNodeContext")
-{
-  p = new Private(gd);
+  return p->at(index);
 }
 
-ModuleNodeContext::~ModuleNodeContext()
+TemplateListIntf::ConstIterator *PageListContext::createIterator() const
 {
-  delete p;
-}
-
-TemplateVariant ModuleNodeContext::get(const char *n) const
-{
-  return p->get(n);
+  return p->createIterator();
 }
 
 //------------------------------------------------------------------------
@@ -5797,26 +6152,16 @@ TemplateVariant ModuleNodeContext::get(const char *n) const
 class ModuleListContext::Private : public GenericNodeListContext
 {
   public:
-    void addModules(const GroupSDict &modules)
+    void addModules()
     {
-      static bool externalGroups = Config_getBool("EXTERNAL_GROUPS");
-      GroupSDict::Iterator gli(modules);
+      GroupSDict::Iterator gli(*Doxygen::groupSDict);
       GroupDef *gd;
       for (gli.toFirst();(gd=gli.current());++gli)
       {
-        if (!gd->isASubGroup() && gd->isVisible() && (!gd->isReference() || externalGroups))
+        if (!gd->isReference())
         {
-          append(ModuleNodeContext::alloc(gd));
+          append(ModuleContext::alloc(gd));
         }
-      }
-    }
-    void addModules(const GroupList &list)
-    {
-      QListIterator<GroupDef> gli(list);
-      GroupDef *gd;
-      for (gli.toFirst();(gd=gli.current());++gli)
-      {
-        append(ModuleNodeContext::alloc(gd));
       }
     }
 };
@@ -5824,6 +6169,7 @@ class ModuleListContext::Private : public GenericNodeListContext
 ModuleListContext::ModuleListContext() : RefCountedContext("ModuleListContext")
 {
   p = new Private;
+  p->addModules();
 }
 
 ModuleListContext::~ModuleListContext()
@@ -5847,17 +6193,6 @@ TemplateListIntf::ConstIterator *ModuleListContext::createIterator() const
   return p->createIterator();
 }
 
-void ModuleListContext::addModules(const GroupSDict &modules)
-{
-  p->addModules(modules);
-}
-
-void ModuleListContext::addModules(const GroupList &modules)
-{
-  p->addModules(modules);
-}
-
-
 //------------------------------------------------------------------------
 
 //%% struct ModuleTree: tree of modules
@@ -5865,9 +6200,28 @@ void ModuleListContext::addModules(const GroupList &modules)
 class ModuleTreeContext::Private : public PropertyMapper
 {
   public:
+    Private()
+    {
+      m_moduleTree.reset(NestingContext::alloc(0,0));
+      // Add modules
+      if (Doxygen::groupSDict)
+      {
+        m_moduleTree->addModules(*Doxygen::groupSDict);
+      }
+
+      //%% ModuleList tree:
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+      addProperty("preferredDepth",this,&Private::preferredDepth);
+      addProperty("maxDepth",this,&Private::maxDepth);
+    }
     TemplateVariant tree() const
     {
-      return m_moduleList.get();
+      return m_moduleTree.get();
     }
     TemplateVariant fileName() const
     {
@@ -5889,25 +6243,35 @@ class ModuleTreeContext::Private : public PropertyMapper
     {
       return theTranslator->trModules();
     }
-    Private()
+    TemplateVariant maxDepth() const
     {
-      m_moduleList.reset(ModuleListContext::alloc());
-      // Add modules
-      if (Doxygen::groupSDict)
+      if (!m_cache.maxDepthComputed)
       {
-        m_moduleList->addModules(*Doxygen::groupSDict);
+        m_cache.maxDepth = computeMaxDepth(m_moduleTree.get());
+        m_cache.maxDepthComputed=TRUE;
       }
-
-      //%% ModuleList tree:
-      addProperty("tree",this,&Private::tree);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
+      return m_cache.maxDepth;
+    }
+    TemplateVariant preferredDepth() const
+    {
+      if (!m_cache.preferredDepthComputed)
+      {
+        m_cache.preferredDepth = computePreferredDepth(m_moduleTree.get(),maxDepth().toInt());
+        m_cache.preferredDepthComputed=TRUE;
+      }
+      return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<ModuleListContext> m_moduleList;
+    SharedPtr<NestingContext> m_moduleTree;
+    struct Cachable
+    {
+      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      int   maxDepth;
+      bool  maxDepthComputed;
+      int   preferredDepth;
+      bool  preferredDepthComputed;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -6027,12 +6391,7 @@ class ExampleListContext::Private : public PropertyMapper
     }
     Private()
     {
-      m_pageList.reset(PageNodeListContext::alloc());
-      // Add pages
-      if (Doxygen::exampleSDict)
-      {
-        m_pageList->addPages(*Doxygen::exampleSDict,FALSE);
-      }
+      m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
 
       //%% PageNodeList items:
       addProperty("items",this,&Private::items);
@@ -6043,7 +6402,7 @@ class ExampleListContext::Private : public PropertyMapper
       addProperty("title",this,&Private::title);
     }
   private:
-    SharedPtr<PageNodeListContext> m_pageList;
+    SharedPtr<PageListContext> m_pageList;
 };
 //%% }
 
@@ -7137,86 +7496,91 @@ int RefCountedContext::s_totalCount;
 void generateOutputViaTemplate()
 {
   {
-  TemplateEngine e;
-  TemplateContext *ctx = e.createContext();
-  if (ctx)
-  {
-    SharedPtr<DoxygenContext>        doxygen         (DoxygenContext::alloc());
-    SharedPtr<ConfigContext>         config          (ConfigContext::alloc());
-    SharedPtr<TranslateContext>      tr              (TranslateContext::alloc());
-    SharedPtr<ClassListContext>      classList       (ClassListContext::alloc());
-    SharedPtr<ClassTreeContext>      classTree       (ClassTreeContext::alloc());
-    SharedPtr<ClassHierarchyContext> classHierarchy  (ClassHierarchyContext::alloc());
-    SharedPtr<NamespaceListContext>  namespaceList   (NamespaceListContext::alloc());
-    SharedPtr<NamespaceTreeContext>  namespaceTree   (NamespaceTreeContext::alloc());
-    SharedPtr<DirListContext>        dirList         (DirListContext::alloc());
-    SharedPtr<FileListContext>       fileList        (FileListContext::alloc());
-    SharedPtr<FileTreeContext>       fileTree        (FileTreeContext::alloc());
-    SharedPtr<PageTreeContext>       pageTree        (PageTreeContext::alloc());
-    SharedPtr<PageListContext>       pageList        (PageListContext::alloc());
-    SharedPtr<ModuleTreeContext>     moduleTree      (ModuleTreeContext::alloc());
-    SharedPtr<ExampleListContext>    exampleList     (ExampleListContext::alloc());
-    SharedPtr<PageContext>           mainPage        (PageContext::alloc(Doxygen::mainPage,TRUE));
-
-    //%% Doxygen doxygen:
-    ctx->set("doxygen",doxygen.get());
-    //%% Translator tr:
-    ctx->set("tr",tr.get());
-    //%% Config config:
-    ctx->set("config",config.get());
-    //%% ClassList classList:
-    ctx->set("classList",classList.get()); // not used for standard HTML
-    //%% ClassTree classTree:
-    ctx->set("classTree",classTree.get());
-    // classIndex
-    // globals
-    // members
-    //%% ClassHierarchy classHierarchy:
-    ctx->set("classHierarchy",classHierarchy.get());
-    //%% NamespaceList namespaceList:
-    ctx->set("namespaceList",namespaceList.get());
-    //%% NamespaceTree namespaceTree:
-    ctx->set("namespaceTree",namespaceTree.get());
-    //%% FileList fileList:
-    ctx->set("fileList",fileList.get());
-    //%% FileTree fileTree:
-    ctx->set("fileTree",fileTree.get());
-    //%% PageList pageList
-    ctx->set("pageList",pageList.get());
-    //%% PageTree pageTree
-    ctx->set("pageTree",pageTree.get());
-    //%% ModuleTree moduleTree
-    ctx->set("moduleTree",moduleTree.get());
-    //%% ExampleList exampleList
-    ctx->set("exampleList",exampleList.get());
-    //%% DirList dirList
-    ctx->set("dirList",dirList.get());
-    //%% Page mainPage
-    ctx->set("mainPage",mainPage.get());
-
-
-    // render HTML output
-    Template *tpl = e.loadByName("htmllayout.tpl",1);
-    if (tpl)
+    TemplateEngine e;
+    TemplateContext *ctx = e.createContext();
+    if (ctx)
     {
-      g_globals.outputFormat = ContextGlobals::Html;
-      g_globals.dynSectionId    = 0;
-      g_globals.outputDir    = Config_getString("HTML_OUTPUT");
-      HtmlEscaper htmlEsc;
-      ctx->setEscapeIntf(Config_getString("HTML_FILE_EXTENSION"),&htmlEsc);
-      HtmlSpaceless spl;
-      ctx->setSpacelessIntf(&spl);
-      ctx->setOutputDirectory(g_globals.outputDir);
-      FTextStream ts;
-      tpl->render(ts,ctx);
-    }
-    e.unload(tpl);
+      SharedPtr<DoxygenContext>        doxygen         (DoxygenContext::alloc());
+      SharedPtr<ConfigContext>         config          (ConfigContext::alloc());
+      SharedPtr<TranslateContext>      tr              (TranslateContext::alloc());
+      SharedPtr<ClassListContext>      classList       (ClassListContext::alloc());
+      SharedPtr<ClassIndexContext>     classIndex      (ClassIndexContext::alloc());
+      SharedPtr<ClassTreeContext>      classTree       (ClassTreeContext::alloc());
+      SharedPtr<ClassHierarchyContext> classHierarchy  (ClassHierarchyContext::alloc());
+      SharedPtr<NamespaceListContext>  namespaceList   (NamespaceListContext::alloc());
+      SharedPtr<NamespaceTreeContext>  namespaceTree   (NamespaceTreeContext::alloc());
+      SharedPtr<DirListContext>        dirList         (DirListContext::alloc());
+      SharedPtr<FileListContext>       fileList        (FileListContext::alloc());
+      SharedPtr<FileTreeContext>       fileTree        (FileTreeContext::alloc());
+      SharedPtr<PageTreeContext>       pageTree        (PageTreeContext::alloc());
+      SharedPtr<PageListContext>       pageList        (PageListContext::alloc(Doxygen::pageSDict));
+      SharedPtr<ExampleListContext>    exampleList     (ExampleListContext::alloc());
+      SharedPtr<ModuleTreeContext>     moduleTree      (ModuleTreeContext::alloc());
+      SharedPtr<ModuleListContext>     moduleList      (ModuleListContext::alloc());
+      SharedPtr<PageContext>           mainPage        (PageContext::alloc(Doxygen::mainPage,TRUE));
 
-    // TODO: render other outputs
+      //%% Doxygen doxygen:
+      ctx->set("doxygen",doxygen.get());
+      //%% Translator tr:
+      ctx->set("tr",tr.get());
+      //%% Config config:
+      ctx->set("config",config.get());
+      //%% ClassList classList:
+      ctx->set("classList",classList.get()); // not used for standard HTML
+      //%% ClassTree classTree:
+      ctx->set("classTree",classTree.get());
+      //%% ClassIndex classIndex:
+      ctx->set("classIndex",classIndex.get());
+      // globals
+      // members
+      //%% ClassHierarchy classHierarchy:
+      ctx->set("classHierarchy",classHierarchy.get());
+      //%% NamespaceList namespaceList:
+      ctx->set("namespaceList",namespaceList.get());
+      //%% NamespaceTree namespaceTree:
+      ctx->set("namespaceTree",namespaceTree.get());
+      //%% FileList fileList:
+      ctx->set("fileList",fileList.get());
+      //%% FileTree fileTree:
+      ctx->set("fileTree",fileTree.get());
+      //%% PageList pageList
+      ctx->set("pageList",pageList.get());
+      //%% PageTree pageTree
+      ctx->set("pageTree",pageTree.get());
+      //%% ExampleList exampleList
+      ctx->set("exampleList",exampleList.get());
+      //%% ModuleTree moduleTree
+      ctx->set("moduleTree",moduleTree.get());
+      //%% ModuleList moduleList
+      ctx->set("moduleList",moduleList.get());
+      //%% DirList dirList
+      ctx->set("dirList",dirList.get());
+      //%% Page mainPage
+      ctx->set("mainPage",mainPage.get());
+
+      // render HTML output
+      Template *tpl = e.loadByName("htmllayout.tpl",1);
+      if (tpl)
+      {
+        g_globals.outputFormat = ContextGlobals::Html;
+        g_globals.dynSectionId = 0;
+        g_globals.outputDir    = Config_getString("HTML_OUTPUT");
+        HtmlEscaper htmlEsc;
+        ctx->setEscapeIntf(Config_getString("HTML_FILE_EXTENSION"),&htmlEsc);
+        HtmlSpaceless spl;
+        ctx->setSpacelessIntf(&spl);
+        ctx->setOutputDirectory(g_globals.outputDir);
+        FTextStream ts;
+        tpl->render(ts,ctx);
+        e.unload(tpl);
+      }
+
+      // TODO: render other outputs
+
+      e.destroyContext(ctx);
+    }
   }
-  delete ctx;
-  }
-#if DEBUG_REF
+#if DEBUG_REF // should be 0, i.e. all objects are deleted
   printf("==== total ref count %d\n",RefCountedContext::s_totalCount);
 #endif
 }

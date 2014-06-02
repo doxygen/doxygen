@@ -71,6 +71,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
 
   visited = 0;
   groupScope = 0;
+  m_subGrouping=Config_getBool("SUBGROUPING");
 }
 
 GroupDef::~GroupDef()
@@ -1512,3 +1513,9 @@ void GroupDef::updateLanguage(const Definition *d)
   }
 }
 
+bool GroupDef::hasDetailedDescription() const
+{
+  static bool repeatBrief = Config_getBool("REPEAT_BRIEF");
+  return ((!briefDescription().isEmpty() && repeatBrief) ||
+          !documentation().isEmpty());
+}
