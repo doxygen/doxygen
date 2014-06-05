@@ -780,6 +780,63 @@ class ExampleListContext : public RefCountedContext, public TemplateStructIntf
 
 //----------------------------------------------------
 
+class GlobalsIndexContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static GlobalsIndexContext *alloc() { return new GlobalsIndexContext(); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    GlobalsIndexContext();
+   ~GlobalsIndexContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class ClassMembersIndexContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static ClassMembersIndexContext *alloc() { return new ClassMembersIndexContext(); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    ClassMembersIndexContext();
+   ~ClassMembersIndexContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class NamespaceMembersIndexContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static NamespaceMembersIndexContext *alloc() { return new NamespaceMembersIndexContext(); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    NamespaceMembersIndexContext();
+   ~NamespaceMembersIndexContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
 class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
 {
   public:

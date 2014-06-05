@@ -6393,7 +6393,6 @@ class ExampleListContext::Private : public PropertyMapper
     {
       m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
 
-      //%% PageNodeList items:
       addProperty("items",this,&Private::items);
       addProperty("fileName",this,&Private::fileName);
       addProperty("relPath",this,&Private::relPath);
@@ -6417,6 +6416,193 @@ ExampleListContext::~ExampleListContext()
 }
 
 TemplateVariant ExampleListContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% struct GlobalsIndex: list of examples page
+//%% {
+class GlobalsIndexContext::Private : public PropertyMapper
+{
+  public:
+    //TemplateVariant items() const
+    //{
+    //  return m_pageList.get();
+    //}
+    TemplateVariant fileName() const
+    {
+      return "globals";
+    }
+    TemplateVariant relPath() const
+    {
+      return "";
+    }
+    TemplateVariant highlight() const
+    {
+      return "files";
+    }
+    TemplateVariant subhighlight() const
+    {
+      return "globals";
+    }
+    TemplateVariant title() const
+    {
+      return theTranslator->trFileMembers();
+    }
+    Private()
+    {
+      //m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
+
+      //addProperty("items",this,&Private::items);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+    }
+  private:
+    //SharedPtr<PageListContext> m_pageList;
+};
+//%% }
+
+GlobalsIndexContext::GlobalsIndexContext() : RefCountedContext("GlobalsIndexContext")
+{
+  p = new Private;
+}
+
+GlobalsIndexContext::~GlobalsIndexContext()
+{
+  delete p;
+}
+
+TemplateVariant GlobalsIndexContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% struct ClassMembersIndex: list of examples page
+//%% {
+class ClassMembersIndexContext::Private : public PropertyMapper
+{
+  public:
+    //TemplateVariant items() const
+    //{
+    //  return m_pageList.get();
+    //}
+    TemplateVariant fileName() const
+    {
+      return "functions";
+    }
+    TemplateVariant relPath() const
+    {
+      return "";
+    }
+    TemplateVariant highlight() const
+    {
+      return "classes";
+    }
+    TemplateVariant subhighlight() const
+    {
+      return "classmembers";
+    }
+    TemplateVariant title() const
+    {
+      return theTranslator->trCompoundMembers();
+    }
+    Private()
+    {
+      //m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
+
+      //addProperty("items",this,&Private::items);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+    }
+  private:
+    //SharedPtr<PageListContext> m_pageList;
+};
+//%% }
+
+ClassMembersIndexContext::ClassMembersIndexContext() : RefCountedContext("ClassMembersIndexContext")
+{
+  p = new Private;
+}
+
+ClassMembersIndexContext::~ClassMembersIndexContext()
+{
+  delete p;
+}
+
+TemplateVariant ClassMembersIndexContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% struct NamespaceMembersIndex: list of examples page
+//%% {
+class NamespaceMembersIndexContext::Private : public PropertyMapper
+{
+  public:
+    //TemplateVariant items() const
+    //{
+    //  return m_pageList.get();
+    //}
+    TemplateVariant fileName() const
+    {
+      return "namespacemembers";
+    }
+    TemplateVariant relPath() const
+    {
+      return "";
+    }
+    TemplateVariant highlight() const
+    {
+      return "namespaces";
+    }
+    TemplateVariant subhighlight() const
+    {
+      return "namespacemembers";
+    }
+    TemplateVariant title() const
+    {
+      return theTranslator->trNamespaceMembers();
+    }
+    Private()
+    {
+      //m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
+
+      //%% PageNodeList items:
+      //addProperty("items",this,&Private::items);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+    }
+  private:
+    //SharedPtr<PageListContext> m_pageList;
+};
+//%% }
+
+NamespaceMembersIndexContext::NamespaceMembersIndexContext() : RefCountedContext("NamespaceMembersIndexContext")
+{
+  p = new Private;
+}
+
+NamespaceMembersIndexContext::~NamespaceMembersIndexContext()
+{
+  delete p;
+}
+
+TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
 {
   return p->get(name);
 }
@@ -7500,24 +7686,27 @@ void generateOutputViaTemplate()
     TemplateContext *ctx = e.createContext();
     if (ctx)
     {
-      SharedPtr<DoxygenContext>        doxygen         (DoxygenContext::alloc());
-      SharedPtr<ConfigContext>         config          (ConfigContext::alloc());
-      SharedPtr<TranslateContext>      tr              (TranslateContext::alloc());
-      SharedPtr<ClassListContext>      classList       (ClassListContext::alloc());
-      SharedPtr<ClassIndexContext>     classIndex      (ClassIndexContext::alloc());
-      SharedPtr<ClassTreeContext>      classTree       (ClassTreeContext::alloc());
-      SharedPtr<ClassHierarchyContext> classHierarchy  (ClassHierarchyContext::alloc());
-      SharedPtr<NamespaceListContext>  namespaceList   (NamespaceListContext::alloc());
-      SharedPtr<NamespaceTreeContext>  namespaceTree   (NamespaceTreeContext::alloc());
-      SharedPtr<DirListContext>        dirList         (DirListContext::alloc());
-      SharedPtr<FileListContext>       fileList        (FileListContext::alloc());
-      SharedPtr<FileTreeContext>       fileTree        (FileTreeContext::alloc());
-      SharedPtr<PageTreeContext>       pageTree        (PageTreeContext::alloc());
-      SharedPtr<PageListContext>       pageList        (PageListContext::alloc(Doxygen::pageSDict));
-      SharedPtr<ExampleListContext>    exampleList     (ExampleListContext::alloc());
-      SharedPtr<ModuleTreeContext>     moduleTree      (ModuleTreeContext::alloc());
-      SharedPtr<ModuleListContext>     moduleList      (ModuleListContext::alloc());
-      SharedPtr<PageContext>           mainPage        (PageContext::alloc(Doxygen::mainPage,TRUE));
+      SharedPtr<DoxygenContext>               doxygen              (DoxygenContext::alloc());
+      SharedPtr<ConfigContext>                config               (ConfigContext::alloc());
+      SharedPtr<TranslateContext>             tr                   (TranslateContext::alloc());
+      SharedPtr<ClassListContext>             classList            (ClassListContext::alloc());
+      SharedPtr<ClassIndexContext>            classIndex           (ClassIndexContext::alloc());
+      SharedPtr<ClassTreeContext>             classTree            (ClassTreeContext::alloc());
+      SharedPtr<ClassHierarchyContext>        classHierarchy       (ClassHierarchyContext::alloc());
+      SharedPtr<NamespaceListContext>         namespaceList        (NamespaceListContext::alloc());
+      SharedPtr<NamespaceTreeContext>         namespaceTree        (NamespaceTreeContext::alloc());
+      SharedPtr<DirListContext>               dirList              (DirListContext::alloc());
+      SharedPtr<FileListContext>              fileList             (FileListContext::alloc());
+      SharedPtr<FileTreeContext>              fileTree             (FileTreeContext::alloc());
+      SharedPtr<PageTreeContext>              pageTree             (PageTreeContext::alloc());
+      SharedPtr<PageListContext>              pageList             (PageListContext::alloc(Doxygen::pageSDict));
+      SharedPtr<ExampleListContext>           exampleList          (ExampleListContext::alloc());
+      SharedPtr<ModuleTreeContext>            moduleTree           (ModuleTreeContext::alloc());
+      SharedPtr<ModuleListContext>            moduleList           (ModuleListContext::alloc());
+      SharedPtr<PageContext>                  mainPage             (PageContext::alloc(Doxygen::mainPage,TRUE));
+      SharedPtr<GlobalsIndexContext>          globalsIndex         (GlobalsIndexContext::alloc());
+      SharedPtr<ClassMembersIndexContext>     classMembersIndex    (ClassMembersIndexContext::alloc());
+      SharedPtr<NamespaceMembersIndexContext> namespaceMembersIndex(NamespaceMembersIndexContext::alloc());
 
       //%% Doxygen doxygen:
       ctx->set("doxygen",doxygen.get());
@@ -7531,8 +7720,6 @@ void generateOutputViaTemplate()
       ctx->set("classTree",classTree.get());
       //%% ClassIndex classIndex:
       ctx->set("classIndex",classIndex.get());
-      // globals
-      // members
       //%% ClassHierarchy classHierarchy:
       ctx->set("classHierarchy",classHierarchy.get());
       //%% NamespaceList namespaceList:
@@ -7557,6 +7744,12 @@ void generateOutputViaTemplate()
       ctx->set("dirList",dirList.get());
       //%% Page mainPage
       ctx->set("mainPage",mainPage.get());
+      //%% GlobalsIndex globalsIndex:
+      ctx->set("globalsIndex",globalsIndex.get());
+      //%% ClassMembersIndex classMembersIndex:
+      ctx->set("classMembersIndex",classMembersIndex.get());
+      //%% NamespaceMembersIndex namespaceMembersIndex:
+      ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
 
       // render HTML output
       Template *tpl = e.loadByName("htmllayout.tpl",1);
