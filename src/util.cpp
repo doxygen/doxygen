@@ -1798,8 +1798,9 @@ nextChar:
           ) 
         )
     {
+      if (c=='\t') c=' ';
       if (c=='*' || c=='&' || c=='@' || c=='$')
-      {  
+      {
         //uint rl=result.length();
         uint rl=growBuf.getPos();
         if ((rl>0 && (isId(growBuf.at(rl-1)) || growBuf.at(rl-1)=='>')) &&
@@ -1827,8 +1828,8 @@ nextChar:
       }
     }
   }
-  //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),result.data());
   growBuf.addChar(0);
+  //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),growBuf.get());
   //result.resize(resultPos);
   return growBuf.get();
 }  
