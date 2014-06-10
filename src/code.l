@@ -1748,6 +1748,7 @@ SCOPENAME ({SEP}{BN}*)?({ID}{BN}*{SEP}{BN}*)*("~"{BN}*)?{ID}
 SCOPENAMECS ({SEPCS}{BN}*)?({ID}{BN}*{SEPCS}{BN}*)*("~"{BN}*)?{ID}
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
+SCOPETNAMECS (((({ID}{TEMPLIST}?){BN}*)?{SEPCS}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
 KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|{KEYWORD_OBJC})
@@ -2542,6 +2543,14 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_bracketCount=0;
 					  g_args.resize(0);
   					  g_name+=yytext; 
+  					  BEGIN( FuncCall );
+					}
+<Body>{SCOPETNAMECS}/{BN}*"("		{ // a() or c.a() or t<A,B>.a()
+  					  addType();
+					  generateFunctionLink(*g_code,yytext);
+  					  g_bracketCount=0;
+					  g_args.resize(0);
+  					  g_name+=yytext;
   					  BEGIN( FuncCall );
 					}
 <FuncCall,Body,MemberCall,MemberCall2,SkipInits,InlineInit>{RAWBEGIN}	{
