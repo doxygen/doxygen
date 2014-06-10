@@ -329,44 +329,44 @@ class CallContext
   public:
     struct Ctx
     {
-      Ctx() : name(g_name), type(g_type), cd(0) {}
+      Ctx() : name(g_name), type(g_type), d(0) {}
       QCString name;
       QCString type;
-      ClassDef *cd;
+      Definition *d;
     };
 
     CallContext() 
     {
-      m_classList.append(new Ctx);
-      m_classList.setAutoDelete(TRUE);
+      m_defList.append(new Ctx);
+      m_defList.setAutoDelete(TRUE);
     }
     virtual ~CallContext() {}
-    void setClass(ClassDef *cd)
+    void setScope(Definition *d)
     {
-      Ctx *ctx = m_classList.getLast();
+      Ctx *ctx = m_defList.getLast();
       if (ctx)
       {
-	DBG_CTX((stderr,"** Set call context %s (%p)\n",cd==0 ? "<null>" : cd->name().data(),cd));
-        ctx->cd=cd;
+	DBG_CTX((stderr,"** Set call context %s (%p)\n",d==0 ? "<null>" : d->name().data(),d));
+        ctx->d=d;
       }
     }
     void pushScope()
     {
-      m_classList.append(new Ctx);
-      DBG_CTX((stderr,"** Push call context %d\n",m_classList.count()));
+      m_defList.append(new Ctx);
+      DBG_CTX((stderr,"** Push call context %d\n",m_defList.count()));
     }
     void popScope()
     {
-      if (m_classList.count()>1)
+      if (m_defList.count()>1)
       {
-        DBG_CTX((stderr,"** Pop call context %d\n",m_classList.count()));
-	Ctx *ctx = m_classList.getLast();
+        DBG_CTX((stderr,"** Pop call context %d\n",m_defList.count()));
+	Ctx *ctx = m_defList.getLast();
 	if (ctx)
 	{
 	  g_name = ctx->name;
 	  g_type = ctx->type;
 	}
-	m_classList.removeLast();
+	m_defList.removeLast();
       }
       else
       {
@@ -376,17 +376,17 @@ class CallContext
     void clear()
     {
       DBG_CTX((stderr,"** Clear call context\n"));
-      m_classList.clear();
-      m_classList.append(new Ctx);
+      m_defList.clear();
+      m_defList.append(new Ctx);
     }
-    ClassDef *getClass() const
+    Definition *getScope() const
     {
-      Ctx *ctx = m_classList.getLast();
-      if (ctx) return ctx->cd; else return 0;
+      Ctx *ctx = m_defList.getLast();
+      if (ctx) return ctx->d; else return 0;
     }
 
   private:
-    QList<Ctx> m_classList;    
+    QList<Ctx> m_defList;
 };
 
 static CallContext g_theCallContext;
@@ -732,7 +732,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
       if (md)
       {
         //printf("name=%s scope=%s\n",locName.data(),scope.data());
-        g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+        g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
         return md;
       }
     }
@@ -745,7 +745,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	if (md)
 	{
 	  //printf("name=%s scope=%s\n",locName.data(),scope.data());
-	  g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+	  g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
 	  return md;
 	}
       }
@@ -760,7 +760,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
     if (mcd!=VariableContext::dummyContext)
     {
       DBG_CTX((stderr,"local var `%s' mcd=%s\n",name.data(),mcd->name().data()));
-      g_theCallContext.setClass(mcd);
+      g_theCallContext.setScope(mcd);
     }
   }
   else
@@ -778,7 +778,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	if (g_scopeStack.top()!=CLASSBLOCK)
 	{
           DBG_CTX((stderr,"class member `%s' mcd=%s\n",name.data(),mcd->name().data()));
-	  g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+	  g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
 	}
 	return md;
       }
@@ -794,7 +794,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
       MemberDef *md=mn->getFirst();
       if (!md->isStatic() || md->getBodyDef()==g_sourceFileDef)
       {
-        g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+        g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
         return md;
       }
       return 0;
@@ -816,7 +816,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
 	    (g_forceTagReference.isEmpty() || g_forceTagReference==md->getReference())
 	   )
         {
-          g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+          g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
 	  //printf("returning member %s in source file %s\n",md->name().data(),g_sourceFileDef->name().data());
           return md;
         }
@@ -829,15 +829,15 @@ static MemberDef *setCallContextForVar(const QCString &name)
 
 static void updateCallContextForSmartPointer()
 {
-  ClassDef *cd = g_theCallContext.getClass();
-  //printf("updateCallContextForSmartPointer() cd=%s\n",cd ? cd->name().data() : "<none>");
+  Definition *d = g_theCallContext.getScope();
+  //printf("updateCallContextForSmartPointer() cd=%s\n",cd ? d->name().data() : "<none>");
   MemberDef *md;
-  if (cd && (md=cd->isSmartPointer()))
+  if (d && d->definitionType()==Definition::TypeClass && (md=((ClassDef*)d)->isSmartPointer()))
   {
     ClassDef *ncd = stripClassName(md->typeString(),md->getOuterScope());
     if (ncd)
     {
-      g_theCallContext.setClass(ncd);
+      g_theCallContext.setScope(ncd);
       //printf("Found smart pointer call %s->%s!\n",cd->name().data(),ncd->name().data());
     }
   }
@@ -879,7 +879,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     if (md->getGroupDef()) d = md->getGroupDef();
     if (d && d->isLinkable())
     {
-      g_theCallContext.setClass(stripClassName(md->typeString(),md->getOuterScope()));
+      g_theCallContext.setScope(stripClassName(md->typeString(),md->getOuterScope()));
       //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
       //        g_currentDefinition,g_currentMemberDef,g_insideBody);
 
@@ -965,8 +965,18 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
 	cd=getResolvedClass(d,g_sourceFileDef,bareName,&md); // try unspecialized version
       }
     }
+    NamespaceDef *nd = getResolvedNamespace(className);
+    if (nd)
+    {
+      g_theCallContext.setScope(nd);
+      addToSearchIndex(className);
+      writeMultiLineCodeLink(*g_code,nd,clName);
+      return;
+    }
     //printf("md=%s\n",md?md->name().data():"<none>");
-    DBG_CTX((stderr,"is found as a type %s\n",cd?cd->name().data():"<null>"));
+    DBG_CTX((stderr,"is found as a type cd=%s nd=%s\n",
+          cd?cd->name().data():"<null>",
+          nd?nd->name().data():"<null>"));
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
       if (getLink(g_classScope,clName,ol,clName,varOnly))
@@ -981,7 +991,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     if (lcd!=VariableContext::dummyContext) 
     {
       //printf("non-dummy context lcd=%s!\n",lcd->name().data());
-      g_theCallContext.setClass(lcd);
+      g_theCallContext.setScope(lcd);
 
       // to following is needed for links to a global variable, but is
       // no good for a link to a local variable that is also a global symbol.
@@ -1011,7 +1021,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName
     }
     writeMultiLineCodeLink(ol,cd,clName);
     addToSearchIndex(className);
-    g_theCallContext.setClass(cd);
+    g_theCallContext.setScope(cd);
     if (md)
     {
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
@@ -1111,7 +1121,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
 
   ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()),xmd->getOuterScope());
   DBG_CTX((stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass));
-  g_theCallContext.setClass(typeClass);
+  g_theCallContext.setScope(typeClass);
 
   Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
                    xmd->getFileDef() : xmd->getOuterScope();
@@ -1142,18 +1152,42 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   return FALSE;
 }
 
-static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const char *memName)
+static bool generateClassMemberLink(CodeOutputInterface &ol,Definition *def,const char *memName)
 {
-  if (mcd)
+  if (def && def->definitionType()==Definition::TypeClass)
   {
-    MemberDef *xmd = mcd->getMemberByName(memName);
-    //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",mcd->name().data(),memName,xmd);
+    ClassDef *cd = (ClassDef*)def;
+    MemberDef *xmd = cd->getMemberByName(memName);
+    //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",def->name().data(),memName,xmd);
     if (xmd)
     {
       return generateClassMemberLink(ol,xmd,memName);
     }
+    else
+    {
+      Definition *innerDef = cd->findInnerCompound(memName);
+      if (innerDef)
+      {
+        g_theCallContext.setScope(innerDef);
+        addToSearchIndex(memName);
+        writeMultiLineCodeLink(*g_code,innerDef,memName);
+        return TRUE;
+      }
+    }
   }
-  
+  else if (def && def->definitionType()==Definition::TypeNamespace)
+  {
+    NamespaceDef *nd = (NamespaceDef*)def;
+    //printf("Looking for %s inside namespace %s\n",memName,nd->name().data());
+    Definition *innerDef = nd->findInnerCompound(memName);
+    if (innerDef)
+    {
+      g_theCallContext.setScope(innerDef);
+      addToSearchIndex(memName);
+      writeMultiLineCodeLink(*g_code,innerDef,memName);
+      return TRUE;
+    }
+  }
   return FALSE;
 }
 
@@ -1743,9 +1777,7 @@ B       [ \t]
 BN      [ \t\n\r]
 ID	"$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SEP     ("::"|"\\")
-SEPCS   (".")
 SCOPENAME ({SEP}{BN}*)?({ID}{BN}*{SEP}{BN}*)*("~"{BN}*)?{ID}
-SCOPENAMECS ({SEPCS}{BN}*)?({ID}{BN}*{SEPCS}{BN}*)*("~"{BN}*)?{ID}
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
@@ -2490,38 +2522,12 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
-<Body>{SCOPENAMECS}/{BN}*[;,)\]]	{ // "int var;" or "var, var2" or "debug(f) macro" 
-                                          if (!g_insideCS && !g_insideJava)
-                                          {
-                                            REJECT;
-                                          }
-                                          else
-                                          {
-					    addType();
-					    // changed this to generateFunctionLink, see bug 624514
-					    //generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
-					    generateFunctionLink(*g_code,yytext);
-  					    g_name+=yytext; 
-                                          }
-                                        }
 <Body>{SCOPENAME}/{BN}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
 					  addType();
 					  // changed this to generateFunctionLink, see bug 624514
 					  //generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
 					  generateFunctionLink(*g_code,yytext);
   					  g_name+=yytext; 
-					}
-<Body>{SCOPENAMECS}/{B}* 		{ // p->func()
-                                          if (!g_insideCS && !g_insideJava)
-                                          {
-                                            REJECT;
-                                          }
-                                          else
-                                          {
-					    addType();
-					    generateClassOrGlobalLink(*g_code,yytext);
-  					    g_name+=yytext; 
-                                          }
 					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()
 					  addType();
@@ -2657,9 +2663,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  BEGIN( MemberCall ); 
 					}
 <MemberCall>{SCOPETNAME}/{BN}*"(" 	{
-					  if (g_theCallContext.getClass())
+					  if (g_theCallContext.getScope())
 					  {
-					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
+					    if (!generateClassMemberLink(*g_code,g_theCallContext.getScope(),yytext))
 					    {
 					      g_code->codify(yytext);
 					      addToSearchIndex(yytext);
@@ -2684,10 +2690,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  }
   					}
 <MemberCall>{SCOPENAME}/{B}*		{
-					  if (g_theCallContext.getClass())
+					  if (g_theCallContext.getScope())
 					  {
-					    DBG_CTX((stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getClass()));
-					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
+					    DBG_CTX((stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getScope()));
+					    if (!generateClassMemberLink(*g_code,g_theCallContext.getScope(),yytext))
 					    {
 					      g_code->codify(yytext);
 					      addToSearchIndex(yytext);
@@ -2733,7 +2739,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    if (*yytext!='[' && !g_type.isEmpty()) 
 					    {
 					      //printf("g_scopeStack.bottom()=%p\n",g_scopeStack.bottom());
-					      if (g_scopeStack.top()!=CLASSBLOCK)
+					      //if (g_scopeStack.top()!=CLASSBLOCK) // commented out for bug731363
 					      {
 						//printf("AddVariable: '%s' '%s' context=%d\n",
 						//    g_type.data(),g_name.data(),g_theVarContext.count());
@@ -3008,7 +3014,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    g_theVarContext.addVariable(g_type,g_name);
 					  }
 					  g_parmType.resize(0);g_parmName.resize(0);
-					  g_theCallContext.setClass(0);
+					  g_theCallContext.setScope(0);
   					  if (*yytext==';' || g_insideBody)
 					  {
 					    if (!g_insideBody)
