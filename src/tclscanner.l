@@ -451,6 +451,7 @@ static struct
   QList<Entry> entry; // list of all created entries, will be deleted after codifying
   Protection protection; // current protections state
   MemberDef *memberdef; // contain current MemberDef when codifying
+  bool collectXRefs;
 } tcl;
 
 // scanner functions
@@ -1652,6 +1653,40 @@ static void tcl_codify_link(QCString name)
     {
         myDef->addSourceReferencedBy(tcl.memberdef);
         tcl.memberdef->addSourceReferences(myDef);
+    } else {
+      Entry* callerEntry;
+      unsigned int i;
+      // walk the stack of scan contexts and find the enclosing method or proc
+      for (i=0;i<tcl.scan.count();i++)
+      {
+        callerEntry=tcl.scan.at(i)->entry_scan;
+        if (callerEntry->mtype==Method && !callerEntry->name.isEmpty())
+        {
+          break;
+        }
+      }
+      if (i<tcl.scan.count())
+      {
+        // enclosing method found
+        QCString callerName = callerEntry->name;
+        if (callerName.mid(0,2)=="::") // fully qualified global command
+        {
+          callerName = callerName.mid(2);
+        }
+        else
+        {
+          if (!(tcl.scan.at(0)->ns.stripWhiteSpace().isEmpty()))
+          {
+            callerName = tcl.scan.at(0)->ns + "::" + callerEntry->name;
+          }
+        }
+        MemberDef *callerDef=NULL;
+        callerDef = fn.find(callerName);
+        if (callerDef!=NULL && myDef!= NULL && tcl.collectXRefs)
+        {
+          addDocCrossReference(callerDef,myDef);
+        }
+      }
     }
   }
   else if (tcl_keyword(myName)) // check keyword
@@ -2634,6 +2669,7 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.ascii(),startLine,endLine,isExampleBlock,inli
     return;
   }
   tcl_init();
+  tcl.collectXRefs = collectXRefs;
   tcl.memberdef = memberDef;
   tcl.code = &codeOutIntf;
   if (startLine<0) 
