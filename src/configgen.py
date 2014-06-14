@@ -18,7 +18,6 @@ import re
 import textwrap
 from xml.dom import minidom, Node
 
-
 def transformDocs(doc):
 	# join lines, unless it is an empty line
 	# remove doxygen layout constructs
@@ -112,7 +111,7 @@ def addValues(var, node):
 		if (n.nodeName == "value"):
 			if n.nodeType == Node.ELEMENT_NODE:
 				name = n.getAttribute('name')
-				print "  %s->addValue(\"%s\");" % (var, name)
+				print("  %s->addValue(\"%s\");" % (var, name))
 
 
 def parseHeader(node,objName):
@@ -123,15 +122,15 @@ def parseHeader(node,objName):
 				if (n.getAttribute('doxyfile') != "0"):
 					doc += parseDocs(n)
 	docC = transformDocs(doc)
-	print "  %s->setHeader(" % (objName)
+	print("  %s->setHeader(" % (objName))
 	rng = len(docC)
 	for i in range(rng):
 		line = docC[i]
 		if i != rng - 1:  # since we go from 0 to rng-1
-			print "              \"%s\\n\"" % (line)
+			print("              \"%s\\n\"" % (line))
 		else:
-			print "              \"%s\"" % (line)
-	print "             );"
+			print("              \"%s\"" % (line))
+	print("             );")
 
 
 def prepCDocs(node):
@@ -201,7 +200,7 @@ def prepCDocs(node):
 				else:
 					if abspath == '1':
 						doc += "<br/>The file has to be specified with full path."
-			elif file =='image':
+			elif format =='image':
 				abspath = node.getAttribute('abspath')
 				if defval != '':
 					if abspath != '1':
@@ -238,8 +237,8 @@ def parseOption(node):
 	setting = node.getAttribute('setting')
 	docC = prepCDocs(node);
 	if len(setting) > 0:
-		print "#if %s" % (setting)
-	print "  //----"
+		print("#if %s" % (setting))
+	print("  //----")
 	if type == 'bool':
 		if len(adefval) > 0:
 			enabled = adefval
@@ -247,108 +246,108 @@ def parseOption(node):
 			enabled = "TRUE"
 		else:
 			enabled = "FALSE"
-		print "  cb = cfg->addBool("
-		print "             \"%s\"," % (name)
+		print("  cb = cfg->addBool(")
+		print("             \"%s\"," % (name))
 		rng = len(docC)
 		for i in range(rng):
 			line = docC[i]
 			if i != rng - 1:  # since we go from 0 to rng-1
-				print "              \"%s\\n\"" % (line)
+				print("              \"%s\\n\"" % (line))
 			else:
-				print "              \"%s\"," % (line)
-		print "              %s" % (enabled)
-		print "             );"
+				print("              \"%s\"," % (line))
+		print("              %s" % (enabled))
+		print("             );")
 		if depends != '':
-			print "  cb->addDependency(\"%s\");" % (depends)
+			print("  cb->addDependency(\"%s\");" % (depends))
 	elif type == 'string':
-		print "  cs = cfg->addString("
-		print "              \"%s\"," % (name)
+		print("  cs = cfg->addString(")
+		print("              \"%s\"," % (name))
 		rng = len(docC)
 		for i in range(rng):
 			line = docC[i]
 			if i != rng - 1:  # since we go from 0 to rng-1
-				print "              \"%s\\n\"" % (line)
+				print("              \"%s\\n\"" % (line))
 			else:
-				print "              \"%s\"" % (line)
-		print "             );"
+				print("              \"%s\"" % (line))
+		print("             );")
 		if defval != '':
-			print "  cs->setDefaultValue(\"%s\");" % (defval)
+			print("  cs->setDefaultValue(\"%s\");" % (defval))
 		if format == 'file':
-			print "  cs->setWidgetType(ConfigString::File);"
+			print("  cs->setWidgetType(ConfigString::File);")
 		elif format == 'image':
-			print "  cs->setWidgetType(ConfigString::Image);"
+			print("  cs->setWidgetType(ConfigString::Image);")
 		elif format == 'dir':
-			print "  cs->setWidgetType(ConfigString::Dir);"
+			print("  cs->setWidgetType(ConfigString::Dir);")
 		if depends != '':
-			print "  cs->addDependency(\"%s\");" % (depends)
+			print("  cs->addDependency(\"%s\");" % (depends))
 	elif type == 'enum':
-		print "  ce = cfg->addEnum("
-		print "              \"%s\"," % (name)
+		print("  ce = cfg->addEnum(")
+		print("              \"%s\"," % (name))
 		rng = len(docC)
 		for i in range(rng):
 			line = docC[i]
 			if i != rng - 1:  # since we go from 0 to rng-1
-				print "              \"%s\\n\"" % (line)
+				print("              \"%s\\n\"" % (line))
 			else:
-				print "              \"%s\"," % (line)
-		print "              \"%s\"" % (defval)
-		print "             );"
+				print("              \"%s\"," % (line))
+		print("              \"%s\"" % (defval))
+		print("             );")
 		addValues("ce", node)
 		if depends != '':
-			print "  ce->addDependency(\"%s\");" % (depends)
+			print("  ce->addDependency(\"%s\");" % (depends))
 	elif type == 'int':
 		minval = node.getAttribute('minval')
 		maxval = node.getAttribute('maxval')
-		print "  ci = cfg->addInt("
-		print "              \"%s\"," % (name)
+		print("  ci = cfg->addInt(")
+		print("              \"%s\"," % (name))
 		rng = len(docC)
 		for i in range(rng):
 			line = docC[i]
 			if i != rng - 1:  # since we go from 0 to rng-1
-				print "              \"%s\\n\"" % (line)
+				print("              \"%s\\n\"" % (line))
 			else:
-				print "              \"%s\"," % (line)
-		print "              %s,%s,%s" % (minval, maxval, defval)
-		print "             );"
+				print("              \"%s\"," % (line))
+		print("              %s,%s,%s" % (minval, maxval, defval))
+		print("             );")
 		if depends != '':
-			print "  ci->addDependency(\"%s\");" % (depends)
+			print("  ci->addDependency(\"%s\");" % (depends))
 	elif type == 'list':
-		print "  cl = cfg->addList("
-		print "              \"%s\"," % (name)
+		print("  cl = cfg->addList(")
+		print("              \"%s\"," % (name))
 		rng = len(docC)
 		for i in range(rng):
 			line = docC[i]
 			if i != rng - 1:  # since we go from 0 to rng-1
-				print "              \"%s\\n\"" % (line)
+				print("              \"%s\\n\"" % (line))
 			else:
-				print "              \"%s\"" % (line)
-		print "             );"
+				print("              \"%s\"" % (line))
+		print("             );")
 		addValues("cl", node)
 		if depends != '':
-			print "  cl->addDependency(\"%s\");" % (depends)
+			print("  cl->addDependency(\"%s\");" % (depends))
 		if format == 'file':
-			print "  cl->setWidgetType(ConfigList::File);"
+			print("  cl->setWidgetType(ConfigList::File);")
 		elif format == 'dir':
-			print "  cl->setWidgetType(ConfigList::Dir);"
+			print("  cl->setWidgetType(ConfigList::Dir);")
 		elif format == 'filedir':
-			print "  cl->setWidgetType(ConfigList::FileAndDir);"
+			print("  cl->setWidgetType(ConfigList::FileAndDir);")
 	elif type == 'obsolete':
-		print "  cfg->addObsolete(\"%s\");" % (name)
+		print("  cfg->addObsolete(\"%s\");" % (name))
 	if len(setting) > 0:
-		print "#else"
-		print "  cfg->addDisabled(\"%s\");" % (name)
-		print "#endif"
+		print("#else")
+		print("  cfg->addDisabled(\"%s\");" % (name))
+		print("#endif")
 
 
 def parseGroups(node):
 	name = node.getAttribute('name')
 	doc = node.getAttribute('docs')
-	print "%s%s" % ("  //-----------------------------------------",
-					"----------------------------------")
-	print "  cfg->addInfo(\"%s\",\"%s\");" % (name, doc)
-	print "%s%s" % ("  //-----------------------------------------",
-					"----------------------------------")
-	print
+	print("%s%s" % ("  //-----------------------------------------",
+					"----------------------------------"))
+	print("  cfg->addInfo(\"%s\",\"%s\");" % (name, doc))
+	print("%s%s" % ("  //-----------------------------------------",
+					"----------------------------------"))
+	print("")
 	for n in node.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			parseOption(n)
@@ -360,16 +359,16 @@ def parseGroupCDocs(node):
 			name = n.getAttribute('id')
 			docC = prepCDocs(n);
 			if type != 'obsolete':
-				print "  doc->add("
-				print "              \"%s\"," % (name)
+				print("  doc->add(")
+				print("              \"%s\"," % (name))
 				rng = len(docC)
 				for i in range(rng):
 					line = docC[i]
 					if i != rng - 1:  # since we go from 0 to rng-1
-						print "              \"%s\\n\"" % (line)
+						print("              \"%s\\n\"" % (line))
 					else:
-						print "              \"%s\"" % (line)
-				print "          );"
+						print("              \"%s\"" % (line))
+				print("          );")
 
 def parseOptionDoc(node, first):
 	# Handling part for documentation
@@ -388,52 +387,52 @@ def parseOptionDoc(node, first):
 					if n.nodeType == Node.ELEMENT_NODE:
 						doc += parseDocs(n)
 		if (first):
-			print " \\anchor cfg_%s" % (name.lower())
-			print "<dl>"
-			print ""
-			print "<dt>\\c %s <dd>" % (name)
+			print(" \\anchor cfg_%s" % (name.lower()))
+			print("<dl>")
+			print("")
+			print("<dt>\\c %s <dd>" % (name))
 		else:
-			print " \\anchor cfg_%s" % (name.lower())
-			print "<dt>\\c %s <dd>" % (name)
-		print " \\addindex %s" % (name)
-		print doc
+			print(" \\anchor cfg_%s" % (name.lower()))
+			print("<dt>\\c %s <dd>" % (name))
+		print(" \\addindex %s" % (name))
+		print(doc)
 		if (type == 'enum'):
 			values = collectValues(node)
-			print ""
-			print "Possible values are: "
+			print("")
+			print("Possible values are: ")
 			rng = len(values)
 			for i in range(rng):
 				val = values[i]
 				if i == rng - 2:
-					print "%s and " % (val)
+					print("%s and " % (val))
 				elif i == rng - 1:
-					print "%s." % (val)
+					print("%s." % (val))
 				else:
-					print "%s, " % (val)
+					print("%s, " % (val))
 			if (defval != ""):
-				print ""
-				print ""
-				print "The default value is: <code>%s</code>." % (defval)
-			print ""
+				print("")
+				print("")
+				print("The default value is: <code>%s</code>." % (defval))
+			print("")
 		elif (type == 'int'):
 			minval = node.getAttribute('minval')
 			maxval = node.getAttribute('maxval')
-			print ""
-			print ""
-			print "%s: %s%s%s, %s: %s%s%s, %s: %s%s%s." % (
+			print("")
+			print("")
+			print("%s: %s%s%s, %s: %s%s%s, %s: %s%s%s." % (
 					 " Minimum value", "<code>", minval, "</code>", 
 					 "maximum value", "<code>", maxval, "</code>",
-					 "default value", "<code>", defval, "</code>")
-			print ""
+					 "default value", "<code>", defval, "</code>"))
+			print("")
 		elif (type == 'bool'):
-			print ""
-			print ""
+			print("")
+			print("")
 			if (node.hasAttribute('altdefval')):
-				print "The default value is: system dependent."
+				print("The default value is: system dependent.")
 			else:
-				print "The default value is: <code>%s</code>." % (
-					"YES" if (defval == "1") else "NO")
-			print ""
+				print("The default value is: <code>%s</code>." % (
+					"YES" if (defval == "1") else "NO"))
+			print("")
 		elif (type == 'list'):
 			if format == 'string':
 				values = collectValues(node)
@@ -441,67 +440,67 @@ def parseOptionDoc(node, first):
 				for i in range(rng):
 					val = values[i]
 					if i == rng - 2:
-						print "%s and " % (val)
+						print("%s and " % (val))
 					elif i == rng - 1:
-						print "%s." % (val)
+						print("%s." % (val))
 					else:
-						print "%s, " % (val)
-			print ""
+						print("%s, " % (val))
+			print("")
 		elif (type == 'string'):
 			if format == 'dir':
 				if defval != '':
-					print ""
-					print "The default directory is: <code>%s</code>." % (
-						defval)
+					print("")
+					print("The default directory is: <code>%s</code>." % (
+						defval))
 			elif format == 'file':
 				abspath = node.getAttribute('abspath')
 				if defval != '':
-					print ""
+					print("")
 					if abspath != '1':
-						print "The default file is: <code>%s</code>." % (
-							defval)
+						print("The default file is: <code>%s</code>." % (
+							defval))
 					else:
-						print "%s: %s%s%s." % (
+						print("%s: %s%s%s." % (
 							"The default file (with absolute path) is",
-							"<code>",defval,"</code>")
+							"<code>",defval,"</code>"))
 				else:
 					if abspath == '1':
-						print ""
-						print "The file has to be specified with full path."
-			elif file =='image':
+						print("")
+						print("The file has to be specified with full path.")
+			elif format =='image':
 				abspath = node.getAttribute('abspath')
 				if defval != '':
-					print ""
+					print("")
 					if abspath != '1':
-						print "The default image is: <code>%s</code>." % (
-							defval)
+						print("The default image is: <code>%s</code>." % (
+							defval))
 					else:
-						print "%s: %s%s%s." % (
+						print("%s: %s%s%s." % (
 							"The default image (with absolute path) is",
-							"<code>",defval,"</code>")
+							"<code>",defval,"</code>"))
 				else:
 					if abspath == '1':
-						print ""
-						print "The image has to be specified with full path."
+						print("")
+						print("The image has to be specified with full path.")
 			else: # format == 'string':
 				if defval != '':
-					print ""
-					print "The default value is: <code>%s</code>." % (
-						defval)
-			print ""
+					print("")
+					print("The default value is: <code>%s</code>." % (
+						defval))
+			print("")
 		# depends handling
 		if (node.hasAttribute('depends')):
 			depends = node.getAttribute('depends')
-			print ""
-			print "%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
-				"This tag requires that the tag", depends.lower(), depends.upper())
+			print("")
+			print("%s \\ref cfg_%s \"%s\" is set to \\c YES." % (
+				"This tag requires that the tag", depends.lower(), depends.upper()))
 		return False
 
 
 def parseGroupsDoc(node):
 	name = node.getAttribute('name')
 	doc = node.getAttribute('docs')
-	print "\section config_%s %s" % (name.lower(), doc)
+	print("\section config_%s %s" % (name.lower(), doc))
 	# Start of list has been moved to the first option for better
 	# anchor placement
 	#  print "<dl>"
@@ -511,7 +510,7 @@ def parseGroupsDoc(node):
 		if n.nodeType == Node.ELEMENT_NODE:
 			first = parseOptionDoc(n, first)
 	if (not first):
-		print "</dl>"
+		print("</dl>")
 
 
 def parseGroupsList(node, commandsList):
@@ -542,7 +541,7 @@ def parseHeaderDoc(node):
 			if (n.nodeName == "docs"):
 				if (n.getAttribute('documentation') != "0"):
 					doc += parseDocs(n)
-	print doc
+	print(doc)
 
 
 def parseFooterDoc(node):
@@ -552,7 +551,7 @@ def parseFooterDoc(node):
 			if (n.nodeName == "docs"):
 				if (n.getAttribute('documentation') != "0"):
 					doc += parseDocs(n)
-	print doc
+	print(doc)
 
 
 def main():
@@ -561,16 +560,17 @@ def main():
 	try:
 		doc = xml.dom.minidom.parse(sys.argv[2])
 	except Exception as inst:
-		print >> sys.stderr
-		print >> sys.stderr, inst
-		print >> sys.stderr
+		sys.stdout = sys.stderr
+		print("")
+		print(inst)
+		print("")
 		sys.exit(1)
 	elem = doc.documentElement
 	if (sys.argv[1] == "-doc"):
-		print "/* WARNING: This file is generated!"
-		print " * Do not edit this file, but edit config.xml instead and run"
-		print " * python configgen.py -doc config.xml to regenerate this file!"
-		print " */"
+		print("/* WARNING: This file is generated!")
+		print(" * Do not edit this file, but edit config.xml instead and run")
+		print(" * python configgen.py -doc config.xml to regenerate this file!")
+		print(" */")
 		# process header
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
@@ -582,10 +582,10 @@ def main():
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
 					commandsList = parseGroupsList(n, commandsList)
-		print "\\secreflist"
+		print("\\secreflist")
 		for x in sorted(commandsList):
-			print "\\refitem cfg_%s %s" % (x.lower(), x)
-		print "\\endsecreflist"
+			print("\\refitem cfg_%s %s" % (x.lower(), x))
+		print("\\endsecreflist")
 		# process groups and options
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
@@ -597,24 +597,24 @@ def main():
 				if (n.nodeName == "footer"):
 					parseFooterDoc(n)
 	elif (sys.argv[1] == "-cpp"):
-		print "/* WARNING: This file is generated!"
-		print " * Do not edit this file, but edit config.xml instead and run"
-		print " * python configgen.py -cpp config.xml to regenerate this file!"
-		print " */"
-		print ""
-		print "#include \"configoptions.h\""
-		print "#include \"config.h\""
-		print "#include \"portable.h\""
-		print "#include \"settings.h\""
-		print ""
-		print "void addConfigOptions(Config *cfg)"
-		print "{"
-		print "  ConfigString *cs;"
-		print "  ConfigEnum   *ce;"
-		print "  ConfigList   *cl;"
-		print "  ConfigInt    *ci;"
-		print "  ConfigBool   *cb;"
-		print ""
+		print("/* WARNING: This file is generated!")
+		print(" * Do not edit this file, but edit config.xml instead and run")
+		print(" * python configgen.py -cpp config.xml to regenerate this file!")
+		print(" */")
+		print("")
+		print("#include \"configoptions.h\"")
+		print("#include \"config.h\"")
+		print("#include \"portable.h\"")
+		print("#include \"settings.h\"")
+		print("")
+		print("void addConfigOptions(Config *cfg)")
+		print("{")
+		print("  ConfigString *cs;")
+		print("  ConfigEnum   *ce;")
+		print("  ConfigList   *cl;")
+		print("  ConfigInt    *ci;")
+		print("  ConfigBool   *cb;")
+		print("")
 		# process header
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
@@ -624,17 +624,17 @@ def main():
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
 					parseGroups(n)
-		print "}"
+		print("}")
 	elif (sys.argv[1] == "-wiz"):
-		print "/* WARNING: This file is generated!"
-		print " * Do not edit this file, but edit config.xml instead and run"
-		print " * python configgen.py -wiz config.xml to regenerate this file!"
-		print " */"
-		print "#include \"configdoc.h\""
-		print "#include \"docintf.h\""
-		print ""
-		print "void addConfigDocs(DocIntf *doc)"
-		print "{"
+		print("/* WARNING: This file is generated!")
+		print(" * Do not edit this file, but edit config.xml instead and run")
+		print(" * python configgen.py -wiz config.xml to regenerate this file!")
+		print(" */")
+		print("#include \"configdoc.h\"")
+		print("#include \"docintf.h\"")
+		print("")
+		print("void addConfigDocs(DocIntf *doc)")
+		print("{")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "header"):
@@ -643,7 +643,7 @@ def main():
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
 					parseGroupCDocs(n)
-		print "}"
+		print("}")
 
 if __name__ == '__main__':
 	main()

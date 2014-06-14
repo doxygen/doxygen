@@ -1,3 +1,9 @@
+#if defined(__APPLE__) || defined(macintosh)
+// define this before including iconv.h to avoid a mapping of
+// iconv_open and friends to libicon_open (done by mac ports),
+// while the symbols without 'lib' are linked from /usr/lib/libiconv
+#define LIBICONV_PLUG
+#endif
 #include <iconv.h>
 
 // These functions are implemented in a C file, because there are different

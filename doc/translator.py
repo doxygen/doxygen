@@ -66,7 +66,7 @@
                of translators introduced.
   """
 
-from __future__ import generators
+
 import codecs
 import os
 import re
@@ -276,7 +276,7 @@ class Transl:
                     # If it is an unknown item, it can still be recognized
                     # here. Keywords and separators are the example.
                     if tokenId == 'unknown':
-                        if tokenDic.has_key(tokenStr):
+                        if tokenStr in tokenDic:
                             tokenId = tokenDic[tokenStr]
                         elif tokenStr.isdigit():
                             tokenId = 'num'
@@ -329,7 +329,7 @@ class Transl:
                     tokenStr = c
                     tokenLineNo = lineNo
                     status = 8
-                elif tokenDic.has_key(c):  # known one-char token
+                elif c in tokenDic:  # known one-char token
                     tokenId = tokenDic[c]
                     tokenStr = c
                     tokenLineNo = lineNo
@@ -424,7 +424,7 @@ class Transl:
                 if c.isspace():
                     pos += 1
                     status = 0           # tokenId may be determined later
-                elif tokenDic.has_key(c):  # separator, don't move pos
+                elif c in tokenDic:  # separator, don't move pos
                     status = 0
                 else:
                     tokenStr += c        # collect
@@ -457,7 +457,7 @@ class Transl:
 
             # Always assume that the previous tokens were processed. Get
             # the next one.
-            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            tokenId, tokenStr, tokenLineNo = next(tokenIterator)
 
             # Process the token and never return back.
             if status == 0:    # waiting for the 'class' keyword.
@@ -588,7 +588,7 @@ class Transl:
         while status != 777:
 
             # Get the next token.
-            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            tokenId, tokenStr, tokenLineNo = next(tokenIterator)
 
             if status == 0:      # waiting for 'public:'
                 if tokenId == 'public':
@@ -616,7 +616,7 @@ class Transl:
                     prototype += ' ' + tokenStr
                     uniPrototype = tokenStr  # start collecting the unified prototype
                     status = 4
-		elif tokenId == 'tilde':
+                elif tokenId == 'tilde':
                     status = 4
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -670,7 +670,7 @@ class Transl:
 
             elif status == 9:    # after semicolon, produce the dic item
                 if tokenId == 'semic':
-                    assert(not resultDic.has_key(uniPrototype))
+                    assert(uniPrototype not in resultDic)
                     resultDic[uniPrototype] = prototype
                     status = 2
                 else:
@@ -752,7 +752,7 @@ class Transl:
 
         # Eat the rest of the source to cause closing the file.
         while tokenId != 'eof':
-            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            tokenId, tokenStr, tokenLineNo = next(tokenIterator)
 
         # Return the resulting dictionary with 'uniPrototype -> prototype'.
         return resultDic
@@ -800,7 +800,7 @@ class Transl:
         while status != 777:
 
             # Get the next token.
-            tokenId, tokenStr, tokenLineNo = tokenIterator.next()
+            tokenId, tokenStr, tokenLineNo = next(tokenIterator)
 
             if status == 0:      # waiting for 'public:'
                 if tokenId == 'public':
@@ -912,7 +912,7 @@ class Transl:
                             sys.stderr.write(msg)
                             assert False
 
-                        assert(not self.prototypeDic.has_key(uniPrototype))
+                        assert(uniPrototype not in self.prototypeDic)
                         # Insert new dictionary item.
                         self.prototypeDic[uniPrototype] = prototype
                         status = 2      # body consumed
@@ -1056,12 +1056,12 @@ class Transl:
                 # For the required methods, update the dictionary of methods
                 # implemented by the adapter.
                 for protoUni in self.prototypeDic:
-                    if reqDic.has_key(protoUni):
+                    if protoUni in reqDic:
                         # This required method will be marked as implemented
                         # by this adapter class. This implementation assumes
                         # that newer adapters do not reimplement any required
                         # methods already implemented by older adapters.
-                        assert(not adaptDic.has_key(protoUni))
+                        assert(protoUni not in adaptDic)
                         adaptDic[protoUni] = (version, self.classId)
 
                 # Clear the dictionary object and the information related
@@ -1094,7 +1094,7 @@ class Transl:
         # Eat the rest of the source to cause closing the file.
         while True:
             try:
-                t = tokenIterator.next()
+                t = next(tokenIterator)
             except StopIteration:
                 break
 
@@ -1106,7 +1106,7 @@ class Transl:
         # Build the list of obsolete methods.
         self.obsoleteMethods = []
         for p in myDic:
-            if not reqDic.has_key(p):
+            if p not in reqDic:
                 self.obsoleteMethods.append(p)
 
         # Build the list of missing methods and the list of implemented
@@ -1114,7 +1114,7 @@ class Transl:
         self.missingMethods = []
         self.implementedMethods = []
         for p in reqDic:
-            if myDic.has_key(p):
+            if p in myDic:
                 self.implementedMethods.append(p)
             else:
                 self.missingMethods.append(p)
@@ -1133,7 +1133,7 @@ class Transl:
                 adaptMinVersion = '9.9.99'
                 adaptMinClass = 'TranslatorAdapter_9_9_99'
                 for uniProto in self.missingMethods:
-                    if adaptDic.has_key(uniProto):
+                    if uniProto in adaptDic:
                         version, cls = adaptDic[uniProto]
                         if version < adaptMinVersion:
                             adaptMinVersion = version
@@ -1342,9 +1342,9 @@ class TrManager:
                     sys.exit(1)
         else:
             lst = os.listdir(self.src_path)
-            lst = filter(lambda x: x[:11] == 'translator_'
+            lst = [x for x in lst if x[:11] == 'translator_'
                                    and x[-2:] == '.h'
-                                   and x != 'translator_adapter.h', lst)
+                                   and x != 'translator_adapter.h']
 
         # Build the object for the translator_xx.h files, and process the
         # content of the file. Then insert the object to the dictionary
@@ -1366,7 +1366,7 @@ class TrManager:
         # Build the auxiliary list with strings compound of the status,
         # readable form of the language, and classId.
         statLst = []
-        for obj in self.__translDic.values():
+        for obj in list(self.__translDic.values()):
             assert(obj.classId != 'Translator')
             s = obj.status + '|' + obj.langReadable + '|' + obj.classId
             statLst.append(s)
@@ -1384,9 +1384,10 @@ class TrManager:
         # Build the list of tuples that contain (langReadable, obj).
         # Sort it by readable name.
         self.langLst = []
-        for obj in self.__translDic.values():
+        for obj in list(self.__translDic.values()):
             self.langLst.append((obj.langReadable, obj))
-        self.langLst.sort(lambda a, b: cmp(a[0], b[0]))
+        #self.langLst.sort(lambda a, b: cmp(a[0], b[0]))
+        self.langLst.sort(key=lambda a: a[0])
 
         # Create the list with readable language names. If the language has
         # also the English-based version, modify the item by appending
@@ -1400,7 +1401,7 @@ class TrManager:
             # of the English-based object. If the object exists, modify the
             # name for the readable list of supported languages.
             classIdEn = obj.classId + 'En'
-            if self.__translDic.has_key(classIdEn):
+            if classIdEn in self.__translDic:
                 name += ' (+En)'
 
             # Append the result name of the language, possibly with note.
@@ -1424,7 +1425,7 @@ class TrManager:
         for name, obj in self.langLst:
             if obj.status == 'En':
                 classId = obj.classId[:-2]
-                if self.__translDic.has_key(classId):
+                if classId in self.__translDic:
                     self.numLang -= 1    # the couple will be counted as one
 
         # Extract the version of Doxygen.
@@ -1433,7 +1434,7 @@ class TrManager:
         f.close()
 
         # Update the last modification time.
-        for tr in self.__translDic.values():
+        for tr in list(self.__translDic.values()):
             tim = tr.getmtime()
             if tim > self.lastModificationTime:
                 self.lastModificationTime = tim
@@ -1472,7 +1473,7 @@ class TrManager:
         probably used should be checked first and the resulting reduced
         dictionary should be used for checking the next files (speed up).
         """
-        lst_in = dic.keys()   # identifiers to be searched for
+        lst_in = list(dic.keys())   # identifiers to be searched for
 
         # Read content of the file as one string.
         assert os.path.isfile(fname)
@@ -1497,7 +1498,7 @@ class TrManager:
         # Build the dictionary of the required method prototypes with
         # method identifiers used as keys.
         trdic = {}
-        for prototype in self.requiredMethodsDic.keys():
+        for prototype in list(self.requiredMethodsDic.keys()):
             ri = prototype.split('(')[0]
             identifier = ri.split()[1].strip()
             trdic[identifier] = prototype
@@ -1665,12 +1666,12 @@ class TrManager:
             # adapters.
             if not self.script_argLst:
                 to_remove = {}
-                for version, adaptClassId in self.adaptMethodsDic.values():
+                for version, adaptClassId in list(self.adaptMethodsDic.values()):
                     if version < adaptMinVersion:
                         to_remove[adaptClassId] = True
 
                 if to_remove:
-                    lst = to_remove.keys()
+                    lst = list(to_remove.keys())
                     lst.sort()
                     plural = len(lst) > 1
                     note = 'Note: The adapter class'
@@ -1716,7 +1717,7 @@ class TrManager:
                 f.write('\n' + '=' * 70 + '\n')
                 f.write(fill(s) + '\n\n')
 
-                keys = dic.keys()
+                keys = list(dic.keys())
                 keys.sort()
                 for key in keys:
                     f.write('  ' + dic[key] + '\n')
@@ -1726,7 +1727,7 @@ class TrManager:
         f.write('\n' + '=' * 70)
         f.write('\nDetails for translators (classes sorted alphabetically):\n')
 
-        cls = self.__translDic.keys()
+        cls = list(self.__translDic.keys())
         cls.sort()
 
         for c in cls:
@@ -1764,28 +1765,28 @@ class TrManager:
             lineReady = line != ''         # when eof, then line == ''
 
             line = line.strip()            # eof should also behave as separator
-            if line != u'' and line[0] == u'%':    # skip the comment line
+            if line != '' and line[0] == '%':    # skip the comment line
                 continue
 
             if not inside:                 # if outside of the record
-                if line != u'':            # should be language identifier
+                if line != '':            # should be language identifier
                     classId = line
                     maintainersLst = []
                     inside = True
                 # Otherwise skip empty line that do not act as separator.
 
             else:                          # if inside the record
-                if line == u'':            # separator found
+                if line == '':            # separator found
                     inside = False
                 else:
                     # If it is the first maintainer, create the empty list.
-                    if not self.__maintainersDic.has_key(classId):
+                    if classId not in self.__maintainersDic:
                         self.__maintainersDic[classId] = []
 
                     # Split the information about the maintainer and append
                     # the tuple. The address may be prefixed '[unreachable]'
                     # or whatever '[xxx]'. This will be processed later.
-                    lst = line.split(u':', 1)
+                    lst = line.split(':', 1)
                     assert(len(lst) == 2)
                     t = (lst[0].strip(), lst[1].strip())
                     self.__maintainersDic[classId].append(t)
@@ -1821,7 +1822,7 @@ class TrManager:
         doctpl = f.read()
         f.close()
 
-        pos = doctpl.find(u'/***')
+        pos = doctpl.find('/***')
         assert pos != -1
         doctpl = doctpl[pos:]
 
@@ -1829,21 +1830,21 @@ class TrManager:
         # document template.
         tplDic = {}
 
-        s = u'Do not edit this file. It was generated by the %s script.\n * Instead edit %s and %s' % (self.script_name, self.languageTplFileName, self.maintainersFileName)
+        s = 'Do not edit this file. It was generated by the %s script.\n * Instead edit %s and %s' % (self.script_name, self.languageTplFileName, self.maintainersFileName)
         tplDic['editnote'] = s
 
         tplDic['doxVersion'] = self.doxVersion
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = u'<a href="../doc/' + self.translatorReportFileName
-        ahref += u'"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += u'</code></a>'
+        ahref = '<a href="../doc/' + self.translatorReportFileName
+        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
+        ahref += '</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 
         # Define templates for HTML table parts of the documentation.
-        htmlTableTpl = u'''\
+        htmlTableTpl = '''\
             \\htmlonly
             <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
@@ -1866,9 +1867,9 @@ class TrManager:
             \\endhtmlonly
             '''
         htmlTableTpl = dedent(htmlTableTpl)
-        htmlTrTpl = u'\n  <tr bgcolor="#ffffff">%s\n  </tr>'
-        htmlTdTpl = u'\n    <td>%s</td>'
-        htmlTdStatusColorTpl = u'\n    <td bgcolor="%s">%s</td>'
+        htmlTrTpl = '\n  <tr bgcolor="#ffffff">%s\n  </tr>'
+        htmlTdTpl = '\n    <td>%s</td>'
+        htmlTdStatusColorTpl = '\n    <td bgcolor="%s">%s</td>'
 
         # Loop through transl objects in the order of sorted readable names
         # and add generate the content of the HTML table.
@@ -1896,8 +1897,8 @@ class TrManager:
                 classId = obj.classId[:-2]
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
-                    mm = u'see the %s language' % lang
-                    ee = u'&nbsp;'
+                    mm = 'see the %s language' % lang
+                    ee = '&nbsp;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.
@@ -1905,25 +1906,25 @@ class TrManager:
                 lm = []
                 for maintainer in self.__maintainersDic[obj.classId]:
                     name = maintainer[0]
-                    if name.startswith(u'--'):
-                        name = u'<span style="color: red; background-color: yellow">'\
-                               + name + u'</span>'
+                    if name.startswith('--'):
+                        name = '<span style="color: red; background-color: yellow">'\
+                               + name + '</span>'
                     lm.append(name)
-                mm = u'<br/>'.join(lm)
+                mm = '<br/>'.join(lm)
 
                 # The marked adresses (they start with the mark '[unreachable]',
                 # '[resigned]', whatever '[xxx]') will not be displayed at all.
                 # Only the mark will be used instead.
-                rexMark = re.compile(ur'(?P<mark>\[.*?\])')
+                rexMark = re.compile(r'(?P<mark>\[.*?\])')
                 le = []
                 for maintainer in self.__maintainersDic[obj.classId]:
                     address = maintainer[1]
                     m = rexMark.search(address)
                     if m is not None:
-                        address = u'<span style="color: brown">'\
-                                  + m.group(u'mark') + u'</span>'
+                        address = '<span style="color: brown">'\
+                                  + m.group('mark') + '</span>'
                     le.append(address)
-                ee = u'<br/>'.join(le)
+                ee = '<br/>'.join(le)
 
             # Append the maintainer and e-mail elements.
             lst.append(htmlTdTpl % mm)
@@ -1940,7 +1941,7 @@ class TrManager:
         htmlTable = htmlTableTpl % (''.join(trlst))
 
         # Define templates for LaTeX table parts of the documentation.
-        latexTableTpl = ur'''
+        latexTableTpl = r'''
             \latexonly
             \footnotesize
             \begin{longtable}{|l|l|l|l|}
@@ -1954,7 +1955,7 @@ class TrManager:
             \endlatexonly
             '''
         latexTableTpl = dedent(latexTableTpl)
-        latexLineTpl = u'\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
+        latexLineTpl = '\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
 
         # Loop through transl objects in the order of sorted readable names
         # and add generate the content of the LaTeX table.
@@ -1965,7 +1966,7 @@ class TrManager:
             # in the table is placed explicitly above the first
             # maintainer. Prepare the arguments for the LaTeX row template.
             maintainers = []
-            if self.__maintainersDic.has_key(obj.classId):
+            if obj.classId in self.__maintainersDic:
                 maintainers = self.__maintainersDic[obj.classId]
 
             lang = obj.langReadable
@@ -1976,8 +1977,8 @@ class TrManager:
                 classId = obj.classId[:-2]
                 if classId in self.__translDic:
                     langNE = self.__translDic[classId].langReadable
-                    maintainer = u'see the %s language' % langNE
-                    email = u'~'
+                    maintainer = 'see the %s language' % langNE
+                    email = '~'
 
             if not maintainer and (obj.classId in self.__maintainersDic):
                 lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]
@@ -1989,27 +1990,27 @@ class TrManager:
             # Use the template to produce the line of the table and insert
             # the hline plus the constructed line into the table content.
             # The underscore character must be escaped.
-            trlst.append(u'\n  \\hline')
+            trlst.append('\n  \\hline')
             s = latexLineTpl % (lang, maintainer, email, status)
-            s = s.replace(u'_', u'\\_')
+            s = s.replace('_', '\\_')
             trlst.append(s)
 
             # List the other maintainers for the language. Do not set
             # lang and status for them.
-            lang = u'~'
-            status = u'~'
+            lang = '~'
+            status = '~'
             for m in maintainers[1:]:
                 maintainer = m[0]
                 email = m[1]
                 s = latexLineTpl % (lang, maintainer, email, status)
-                s = s.replace(u'_', u'\\_')
+                s = s.replace('_', '\\_')
                 trlst.append(s)
 
         # Join the table lines and insert into the template.
-        latexTable = latexTableTpl % (u''.join(trlst))
+        latexTable = latexTableTpl % (''.join(trlst))
 
         # Put the HTML and LaTeX parts together and define the dic item.
-        tplDic['informationTable'] = htmlTable + u'\n' + latexTable
+        tplDic['informationTable'] = htmlTable + '\n' + latexTable
 
         # Insert the symbols into the document template and write it down.
         f = codecs.open(fDocName, 'w', 'utf-8')

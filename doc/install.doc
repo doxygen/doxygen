@@ -556,6 +556,7 @@ open-source tools:
 <li>GNU bison version 2.5 (Linux) and 2.3 (MacOSX)
 <li>GNU make version 3.81
 <li>Perl version 5.12
+<li>Python verion 2.7 and 3.4
 <li>TeX Live 2009 (or later)
 </ul>
 
