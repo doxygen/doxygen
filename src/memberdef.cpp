@@ -942,7 +942,9 @@ bool MemberDef::hasExamples()
 QCString MemberDef::getOutputFileBase() const
 {
   static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+  static bool inlineSimpleClasses = Config_getBool("INLINE_SIMPLE_STRUCTS");
   QCString baseName;
+
   //printf("Member: %s: templateMaster=%p group=%p classDef=%p nspace=%p fileDef=%p\n",
   //    name().data(),m_impl->templateMaster,m_impl->group,m_impl->classDef,
   //    m_impl->nspace,m_impl->fileDef);
@@ -961,6 +963,10 @@ QCString MemberDef::getOutputFileBase() const
   else if (m_impl->classDef)
   {
     baseName=m_impl->classDef->getOutputFileBase();
+    if (inlineSimpleClasses && m_impl->classDef->isSimple())
+    {
+      return baseName;
+    }
   }
   else if (m_impl->nspace)
   {

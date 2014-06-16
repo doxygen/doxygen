@@ -24,6 +24,7 @@
 #include "vhdldocgen.h"
 #include "defargs.h"
 #include "arguments.h"
+#include "groupdef.h"
 
 ClassList::ClassList() : QList<ClassDef>()
 {
@@ -131,21 +132,17 @@ void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
     ClassDef *cd=0;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
-      //printf("%s:writeDocumentation() %p embedded=%d container=%p\n",
-      //  cd->name().data(),cd->getOuterScope(),cd->isEmbeddedInOuterScope(),
-      //  container);
+      //printf("%s:writeDocumentation() %p linkable=%d embedded=%d container=%p partOfGroups=%d\n",
+      //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
+      //  container,cd->partOfGroups() ? cd->partOfGroups()->count() : 0);
 
       if (cd->name().find('@')==-1 &&
           cd->isLinkableInProject() &&
           cd->isEmbeddedInOuterScope() &&
           (container==0 || cd->partOfGroups()==0) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group
-          //&&
-          //(container==0 || // no container -> used for groups
-          // cd->getOuterScope()==container || // correct container -> used for namespaces and classes
-          // (container->definitionType()==Definition::TypeFile && cd->getOuterScope()==Doxygen::globalScope && cd->partOfGroups()==0) // non grouped class with file scope -> used for files
-          //)
          )
       {
+        //printf("  showing class %s\n",cd->name().data());
         if (!found)
         {
           ol.writeRuler();
