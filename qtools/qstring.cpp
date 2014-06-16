@@ -11601,7 +11601,9 @@ static inline bool is_arabic(unsigned short x) {
 	    ((x >= 0xfb50) && (x <= 0xfdff)) ||
 	    ((x >= 0xfe70) && (x <= 0xfeff)));
 }
+#endif
 
+#ifndef QT_NO_UNICODETABLES
 static inline bool is_neutral(unsigned short dir) {
   return ((dir == QChar::DirB) ||
 		  (dir == QChar::DirS) ||

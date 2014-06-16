@@ -15,7 +15,7 @@ for f in files:
 # generating file is lang_cfg.py
 # the rules file has to output lang_cfg.h
 #
-print """\
+print("""\
 <?xml version="1.0" encoding="utf-8"?>
 <VisualStudioToolFile
         Name="languages"
@@ -52,7 +52,7 @@ print """\
                                                />
                                        </Values>
                                </EnumProperty>
-"""
+""")
 #
 # generate loop, English is mandatory (so cannot be chosen)
 #
@@ -76,7 +76,7 @@ for f in new_list:
         l1 = l.replace("-","")
         # capatalize first letter
         l = l.title()
-        print """\
+        print("""\
                                    <EnumProperty
                                            Name="%s"
                                            DisplayName="Use %s"
@@ -96,11 +96,11 @@ for f in new_list:
                                                    />
                                            </Values>
                                    </EnumProperty>
-        """ % (l1, l, l, l, f[1], l)
+        """ % (l1, l, l, l, f[1], l))
 
-print """\
+print("""\
                         </Properties>
                 </CustomBuildRule>
         </Rules>
 </VisualStudioToolFile>
-"""
+""")

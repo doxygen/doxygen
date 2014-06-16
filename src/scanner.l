@@ -6675,6 +6675,18 @@ static void parseCompounds(Entry *rt)
       current = new Entry;
       gstat = FALSE;
       initEntry();
+
+      // deep copy group list from parent (see bug 727732)
+      if (rt->groups)
+      {
+        QListIterator<Grouping> gli(*rt->groups);
+        Grouping *g;
+        for (;(g=gli.current());++gli)
+        {
+          ce->groups->append(new Grouping(*g));
+        }
+      }
+
       int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class

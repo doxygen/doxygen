@@ -594,9 +594,10 @@ fi
 
 # - check for python ----------------------------------------------------------
 
+python_version=0
 printf "  Checking for python... "
 if test "$f_python" = NO; then
-  python_names="python2 python"
+  python_names="python3 python2 python"
   python_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   python_prog=NO
   python_found=NO
@@ -604,26 +605,33 @@ if test "$f_python" = NO; then
     for j in $python_dirs; do
       if test -x "$j/$i"; then
         python_found=YES
-        if test `$j/$i -c "import sys; print sys.version_info[0]"` = 2; then
-          python_prog="$j/$i"
+        if test `$j/$i -c "import sys; print(sys.version_info[0])"` = 3; then
+          python_prog="$j/$i";
+          python_version=`$j/$i -c "import platform; print(platform.python_version())"`;
           break 2
+        elif test `$j/$i -c "import sys; print(sys.version_info[0])"` = 2; then
+          if test `$j/$i -c "import sys; print(sys.version_info[1])"` -ge 6; then
+            python_prog="$j/$i";
+            python_version=`$j/$i -c "import platform; print(platform.python_version())"`;
+            break 2
+          fi
         fi
       fi
     done
   done
-  f_python="$python_prog" 
+  f_python="$python_prog"
 fi
 
 if test "$f_python" = NO; then
   if test "$python_found" = YES; then
-    echo "version should be python 2."
+    echo "version should be python 2.6 or higher."
   else
     echo "not found!";
   fi
   echo
   exit 2
 fi
-echo "using $f_python";
+echo "using $f_python (version $python_version)";
 
 # - check for perl ------------------------------------------------------------
 

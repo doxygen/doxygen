@@ -167,7 +167,7 @@ void InputString::setEnabled(bool state)
 {
   m_lab->setEnabled(state);
   if (m_le)  m_le->setEnabled(state);
-  if (m_im)  m_le->setEnabled(state);
+  if (m_im)  m_im->setEnabled(state);
   if (m_br)  m_br->setEnabled(state);
   if (m_com) m_com->setEnabled(state);
   updateDefault();
