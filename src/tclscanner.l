@@ -451,6 +451,7 @@ static struct
   QList<Entry> entry; // list of all created entries, will be deleted after codifying
   Protection protection; // current protections state
   MemberDef *memberdef; // contain current MemberDef when codifying
+  bool collectXRefs;
 } tcl;
 
 // scanner functions
@@ -1652,6 +1653,40 @@ static void tcl_codify_link(QCString name)
     {
         myDef->addSourceReferencedBy(tcl.memberdef);
         tcl.memberdef->addSourceReferences(myDef);
+    } else {
+      Entry* callerEntry;
+      unsigned int i;
+      // walk the stack of scan contexts and find the enclosing method or proc
+      for (i=0;i<tcl.scan.count();i++)
+      {
+        callerEntry=tcl.scan.at(i)->entry_scan;
+        if (callerEntry->mtype==Method && !callerEntry->name.isEmpty())
+        {
+          break;
+        }
+      }
+      if (i<tcl.scan.count())
+      {
+        // enclosing method found
+        QCString callerName = callerEntry->name;
+        if (callerName.mid(0,2)=="::") // fully qualified global command
+        {
+          callerName = callerName.mid(2);
+        }
+        else
+        {
+          if (!(tcl.scan.at(0)->ns.stripWhiteSpace().isEmpty()))
+          {
+            callerName = tcl.scan.at(0)->ns + "::" + callerEntry->name;
+          }
+        }
+        MemberDef *callerDef=NULL;
+        callerDef = fn.find(callerName);
+        if (callerDef!=NULL && myDef!= NULL && tcl.collectXRefs)
+        {
+          addDocCrossReference(callerDef,myDef);
+        }
+      }
     }
   }
   else if (tcl_keyword(myName)) // check keyword
@@ -1665,6 +1700,122 @@ static void tcl_codify_link(QCString name)
   
 }
 
+//! scan general argument for brackets
+//
+// parses (*tcl.list_commandwords.at(i)).utf8() and checks for brackets.
+// Starts a new scan context if needed (*myScan==0 and brackets found).
+// Returns NULL or the created scan context.
+//
+static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOutermostBraces)
+{
+  QCString myName;
+  bool insideQuotes=false;
+  unsigned int insideBrackets=0;
+  unsigned int insideBraces=0;
+  myName = (*tcl.list_commandwords.at(i)).utf8();
+  if (i%2 != 0)
+  {
+    // handle white space
+    if (myScan!=NULL)
+    {
+      myScan->after << "NULL" << myName;
+    }
+    else
+    {
+      tcl_codify(NULL,myName);
+    }
+  }
+  else
+  {
+    QCString myStr = "";
+    unsigned int j;
+    for (j=0;j<myName.length();j++)
+    {
+      QChar c = myName[j];
+      bool backslashed = false;
+      if (j>0)
+      {
+        backslashed = myName[j-1]=='\\';
+      }
+      // this is a state machine
+      // input is c
+      // internal state is myScan and insideXXX
+      // these are the transitions:
+      if (c=='[' && !backslashed && insideBraces==0)
+      {
+        insideBrackets++;
+      }
+      if (c==']' && !backslashed && insideBraces==0 && insideBrackets>0)
+      {
+        insideBrackets--;
+      }
+      if (c=='{' && !backslashed && !insideQuotes && !(ignoreOutermostBraces && j==0))
+      {
+        insideBraces++;
+      }
+      if (c=='}' && !backslashed && !insideQuotes && insideBraces>0)
+      {
+        insideBraces--;
+      }
+      if (c=='"' && !backslashed && insideBraces==0)
+      {
+        insideQuotes=!insideQuotes;
+      }
+      // all output, depending on state and input
+      if (c=='[' && !backslashed && insideBrackets==1 && insideBraces==0)
+      {
+        // the first opening bracket, output what we have so far
+        myStr+=c;
+        if (myScan!=NULL)
+        {
+          myScan->after << "NULL" << myStr;
+        }
+        else
+        {
+          tcl_codify(NULL,myStr);
+        }
+        myStr="";
+      }
+      else if (c==']' && !backslashed && insideBrackets==0 && insideBraces==0)
+      {
+        // the last closing bracket, start recursion, switch to deferred
+        if (myScan!=NULL)
+        {
+          myScan->after << "script" << myStr;
+        }
+        else
+        {
+          myScan=tcl.scan.at(0);
+          myScan = tcl_scan_start('?',myStr,
+                  myScan->ns,myScan->entry_cl,myScan->entry_fn);
+        }
+        myStr="";
+        myStr+=c;
+      }
+      else
+      {
+         myStr+=c;
+      }
+    }
+    if (myScan!=NULL)
+    {
+      myScan->after << "NULL" << myStr;
+    }
+    else
+    {
+      if (i==0)
+      {
+        tcl_codify_link(myStr);
+      }
+      else
+      {
+        tcl_codify(NULL,myStr);
+      }
+    }
+  }
+  return (myScan);
+}
+
 //! Handle internal tcl commands.
 // "if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?"
 static void tcl_command_IF(QStringList type)
@@ -1672,12 +1823,27 @@ static void tcl_command_IF(QStringList type)
 D
   tcl_codify_cmd("keyword",0);
   tcl_codify_cmd(NULL,1);
-  tcl_scan *myScan=tcl.scan.at(0);
-  myScan = tcl_scan_start('?',*tcl.list_commandwords.at(2),
-        myScan->ns,myScan->entry_cl,myScan->entry_fn);
+  tcl_scan *myScan = NULL;
+  myScan = tcl_command_ARG(myScan, 2, true);
   for (unsigned int i = 3;i<tcl.list_commandwords.count();i++)
   {
-    myScan->after << type[i] << tcl.list_commandwords[i];
+    if (type[i] == "expr")
+    {
+      myScan = tcl_command_ARG(myScan, i, true);
+    }
+    else
+    {
+      if (myScan!=0)
+      {
+        myScan->after << type[i] << tcl.list_commandwords[i];
+      }
+      else
+      {
+        myScan=tcl.scan.at(0);
+        myScan = tcl_scan_start('?',*tcl.list_commandwords.at(i),
+              myScan->ns,myScan->entry_cl,myScan->entry_fn);
+      }
+    }
   }
 }
 //! Handle internal tcl commands.
@@ -1691,7 +1857,7 @@ D
   myScan = tcl_scan_start('?',*tcl.list_commandwords.at(2),
         myScan->ns,myScan->entry_cl,myScan->entry_fn);
   myScan->after << "NULL" << tcl.list_commandwords[3];
-  myScan->after << "script" << tcl.list_commandwords[4];
+  myScan = tcl_command_ARG(myScan, 4, true);
   myScan->after << "NULL" << tcl.list_commandwords[5];
   myScan->after << "script" << tcl.list_commandwords[6];
   myScan->after << "NULL" << tcl.list_commandwords[7];
@@ -1705,14 +1871,22 @@ static void tcl_command_FOREACH()
 {
 D
   unsigned int i;
+  tcl_scan *myScan=NULL;
   tcl_codify_cmd("keyword",0);
   for (i = 1;i<tcl.list_commandwords.count()-1;i++)
   {
-    tcl_codify_cmd(NULL,i);
+    myScan = tcl_command_ARG(myScan, i, false);
   }
-  tcl_scan *myScan=tcl.scan.at(0);
-  myScan = tcl_scan_start('?',*tcl.list_commandwords.at(tcl.list_commandwords.count()-1),
-        myScan->ns,myScan->entry_cl,myScan->entry_fn);
+  if (myScan!=0)
+  {
+    myScan->after << "script" << tcl.list_commandwords[tcl.list_commandwords.count()-1];
+  }
+  else
+  {
+    myScan=tcl.scan.at(0);
+    myScan = tcl_scan_start('?',*tcl.list_commandwords.at(tcl.list_commandwords.count()-1),
+          myScan->ns,myScan->entry_cl,myScan->entry_fn);
+  }
 }
 
 ///! Handle internal tcl commands.
@@ -1722,68 +1896,29 @@ static void tcl_command_WHILE()
 D
   tcl_codify_cmd("keyword",0);
   tcl_codify_cmd(NULL,1);
-  tcl_scan *myScan=tcl.scan.at(0);
-  myScan = tcl_scan_start('?',*tcl.list_commandwords.at(2),
+  tcl_scan *myScan = NULL;
+  myScan = tcl_command_ARG(myScan, 2, true);
+  myScan = tcl_command_ARG(myScan, 3, false);
+  if (myScan!=0)
+  {
+    myScan->after << "script" << tcl.list_commandwords[4];
+  }
+  else
+  {
+  myScan=tcl.scan.at(0);
+  myScan = tcl_scan_start('?',*tcl.list_commandwords.at(4),
         myScan->ns,myScan->entry_cl,myScan->entry_fn);
-  myScan->after << "NULL" << tcl.list_commandwords[3];
-  myScan->after << "script" << tcl.list_commandwords[4];
+  }
 }
 
 //! Handle all other commands.
 // Create links of first command word or first command word inside [].
 static void tcl_command_OTHER()
 {
-  if (tcl.code == NULL) return;
-D
-  QCString myName;
+  tcl_scan *myScan=NULL;
   for (unsigned int i=0; i< tcl.list_commandwords.count(); i++)
   {
-    myName = (*tcl.list_commandwords.at(i)).utf8();
-    if (i==0)
-    {
-      tcl_codify_link(myName);
-    }
-    else if (i%2 != 0)
-    {
-      tcl_codify(NULL,myName);
-    }
-    else
-    {
-      QCString myStr="";
-      int myCmd=0;
-      unsigned int i;
-      for (i=0;i<myName.length();i++)
-      {
-        QChar c = myName[i];
-        if (myCmd) 
-        {
-          if (c==' '||c=='\t'||c=='\n'||c==']') 
-          {//end of command
-            tcl_codify_link(myStr);
-            myStr="";
-            myCmd=0;
-          }
-          myStr+=c;
-        } 
-        else 
-        {
-          myStr+=c;
-          if (c=='[') 
-          {//start of command
-            for (;i<myName.length();i++)
-            {
-              c = myName[i+1];
-              if (c!=' ' && c!='\t' && c!='\n') break;
-              myStr+=c;
-            }
-            tcl_codify(NULL,myStr);
-            myStr="";
-            myCmd=1;
-          }
-        }
-      }
-      tcl_codify(NULL,myStr);
-    }
+    myScan = tcl_command_ARG(myScan, i, false);
   }
 }
 
@@ -2165,13 +2300,14 @@ tcl_inf("->\n");
 
   // check command
   QCString myStr = (*tcl.list_commandwords.at(0)).utf8();
+  tcl_scan *myScanBackup=tcl.scan.at(0);
   int myLevel = 0;
   Protection myProt = tcl.protection;
 
   if (tcl.list_commandwords.count() < 3)
   {
     tcl_command_OTHER();
-    goto command_text;
+    goto command_end;
   }
   // remove leading "::" and apply TCL_SUBST
   if (myStr.left(2)=="::") myStr = myStr.mid(2);
@@ -2259,7 +2395,7 @@ tcl_inf("->\n");
       goto command_end;
     }
     tcl_command_OTHER();
-    goto command_text;
+    goto command_end;
   }
   if (myStr=="itcl::class")
   {
@@ -2282,7 +2418,7 @@ tcl_inf("->\n");
       goto command_end;
     }
     tcl_command_OTHER();
-    goto command_text;
+    goto command_end;
   }
   if (myStr=="oo::define")
   {
@@ -2296,7 +2432,7 @@ tcl_inf("->\n");
     if (tcl.scan.at(0)->entry_fn == NULL)
     {// only parsed outside functions
       tcl_command_VARIABLE(tcl.scan.at(0)->entry_cl && tcl.scan.at(0)->entry_cl->name!="");
-      goto command_text;
+      goto command_end;
     }
   }
   if (myStr=="common")
@@ -2305,7 +2441,7 @@ tcl_inf("->\n");
     if (tcl.scan.at(0)->entry_fn == NULL)
     {// only parsed outside functions
       tcl_command_VARIABLE(0);
-      goto command_text;
+      goto command_end;
     }
   }
   if (myStr=="inherit" || myStr=="superclass")
@@ -2343,7 +2479,7 @@ if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
   if (myStr=="if" && tcl.list_commandwords.count() > 4)
   {
     QStringList myType;
-    myType << "keyword" << "NULL" << "script" << "NULL";
+    myType << "keyword" << "NULL" << "expr" << "NULL";
     char myState='x';// last word: e'x'pr 't'hen 'b'ody 'e'lse else'i'f..
     for (unsigned int i = 4; i < tcl.list_commandwords.count(); i = i + 2)
     {
@@ -2392,7 +2528,7 @@ if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
       else if (myState=='i')
       {
         myState='x';
-        myType << "script" << "NULL";
+        myType << "expr" << "NULL";
       }
     }
     if (myState != 'b') {myLine=__LINE__;goto command_warn;}
@@ -2406,15 +2542,22 @@ if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?
     goto command_end;
   }
   tcl_command_OTHER();
-  goto command_text;
+  goto command_end;
   command_warn:// print warning message because of wrong used syntax
     tcl_war("%d count=%d: %s\n",myLine,tcl.list_commandwords.count(),tcl.list_commandwords.join(" ").ascii());
     tcl_command_OTHER();
-  command_text:// print remaining text as comment
-    if (!myText.isEmpty()) tcl_codify("comment",myText);
-    myText = "";
   command_end:// add remaining text to current context
-    if (!myText.isEmpty()) tcl.scan.at(0)->after << "comment" << myText;
+    if (!myText.isEmpty())
+    {
+      if(myScanBackup==tcl.scan.at(0))
+      {
+        tcl_codify("comment",myText);  
+      }
+      else
+      {
+        tcl.scan.at(0)->after << "comment" << myText;
+      }
+    }
     tcl.list_commandwords.clear();
     tcl.command = 0;
     tcl.protection = myProt;
@@ -2634,6 +2777,7 @@ tcl_inf("%s (%d,%d) %d %d\n",myStr.ascii(),startLine,endLine,isExampleBlock,inli
     return;
   }
   tcl_init();
+  tcl.collectXRefs = collectXRefs;
   tcl.memberdef = memberDef;
   tcl.code = &codeOutIntf;
   if (startLine<0) 
