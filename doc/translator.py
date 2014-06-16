@@ -66,11 +66,31 @@
                of translators introduced.
   """
 
-
-import codecs
 import os
+import platform
 import re
 import sys
+import textwrap
+
+
+def xopen(fname, mode='r', encoding='utf-8-sig'):
+    '''Unified open of text files with UTF-8 default encoding.
+
+    The 'utf-8-sig' skips the BOM automatically.
+    '''
+
+    # Use UTF-8 without BOM when writing to a text file.
+    if encoding == 'utf-8-sig' and mode == 'w':
+        encoding = 'utf-8'
+
+    major, minor, patch = (int(e) for e in platform.python_version_tuple())
+    if major == 2:
+        if mode == 'w':
+            mode = 'wU'
+        import codecs
+        return codecs.open(fname, mode=mode, encoding=encoding) # Python 2
+    else:
+        return open(fname, mode=mode, encoding=encoding)        # Python 3
 
 
 def fill(s):
@@ -96,58 +116,6 @@ def fill(s):
                 lines.append(line)  # another full line formed
                 line = word         # next line started
         lines.append(line)          # the last line
-    return '\n'.join(lines)
-
-
-# The following function dedent() is the verbatim copy from the textwrap.py
-# module. The textwrap.py was introduced in Python 2.3. To make this script
-# working also in older Python versions, I have decided to copy it.
-# Notice that the textwrap.py is copyrighted:
-#
-# Copyright (C) 1999-2001 Gregory P. Ward.
-# Copyright (C) 2002, 2003 Python Software Foundation.
-# Written by Greg Ward <gward@python.net>
-#
-# The explicit permission to use the code here was sent by Guido van Rossum
-# (4th June, 2004).
-#
-def dedent(text):
-    """dedent(text : string) -> string
-
-    Remove any whitespace than can be uniformly removed from the left
-    of every line in `text`.
-
-    This can be used e.g. to make triple-quoted strings line up with
-    the left edge of screen/whatever, while still presenting it in the
-    source code in indented form.
-
-    For example:
-
-        def test():
-            # end first line with \ to avoid the empty line!
-            s = '''\
-            hello
-              world
-            '''
-            print repr(s)          # prints '    hello\n      world\n    '
-            print repr(dedent(s))  # prints 'hello\n  world\n'
-    """
-    lines = text.expandtabs().split('\n')
-    margin = None
-    for line in lines:
-        content = line.lstrip()
-        if not content:
-            continue
-        indent = len(line) - len(content)
-        if margin is None:
-            margin = indent
-        else:
-            margin = min(margin, indent)
-
-    if margin is not None and margin > 0:
-        for i in range(len(lines)):
-            lines[i] = lines[i][margin:]
-
     return '\n'.join(lines)
 
 
@@ -237,7 +205,7 @@ class Transl:
 
         # Open the file for reading and extracting tokens until the eof.
         # Initialize the finite automaton.
-        f = open(self.fname)
+        f = xopen(self.fname)
         lineNo = 0
         line = ''         # init -- see the pos initialization below
         linelen = 0       # init
@@ -256,8 +224,6 @@ class Transl:
             else:
                 lineNo += 1
                 line = f.readline()
-                if line.startswith('\xef\xbb\xbf'):
-                    line = line[3:]    # skip the BOM
                 linelen = len(line)
                 pos = 0
                 if line == '':         # eof
@@ -1386,8 +1352,8 @@ class TrManager:
         self.langLst = []
         for obj in list(self.__translDic.values()):
             self.langLst.append((obj.langReadable, obj))
-        #self.langLst.sort(lambda a, b: cmp(a[0], b[0]))
-        self.langLst.sort(key=lambda a: a[0])
+
+        self.langLst.sort(key=lambda x: x[0])
 
         # Create the list with readable language names. If the language has
         # also the English-based version, modify the item by appending
@@ -1429,7 +1395,7 @@ class TrManager:
                     self.numLang -= 1    # the couple will be counted as one
 
         # Extract the version of Doxygen.
-        f = open(os.path.join(self.doxy_path, 'VERSION'))
+        f = xopen(os.path.join(self.doxy_path, 'VERSION'))
         self.doxVersion = f.readline().strip()
         f.close()
 
@@ -1477,7 +1443,7 @@ class TrManager:
 
         # Read content of the file as one string.
         assert os.path.isfile(fname)
-        f = open(fname)
+        f = xopen(fname)
         cont = f.read()
         f.close()
 
@@ -1554,7 +1520,7 @@ class TrManager:
         output = os.path.join(self.doc_path, self.translatorReportFileName)
 
         # Open the textual report file for the output.
-        f = open(output, 'w')
+        f = xopen(output, 'w')
 
         # Output the information about the version.
         f.write('(' + self.doxVersion + ')\n\n')
@@ -1582,7 +1548,7 @@ class TrManager:
         # The e-mail addresses of the maintainers will be collected to
         # the auxiliary file in the order of translator classes listed
         # in the translator report.
-        fmail = open('mailto.txt', 'w')
+        fmail = xopen('mailto.txt', 'w')
 
         # Write the list of "up-to-date" translator classes.
         if self.upToDateIdLst:
@@ -1754,7 +1720,7 @@ class TrManager:
             self.lastModificationTime = tim
 
         # Process the content of the maintainers file.
-        f = codecs.open(fname, 'r', 'utf-8')
+        f = xopen(fname)
         inside = False  # inside the record for the language
         lineReady = True
         classId = None
@@ -1818,11 +1784,11 @@ class TrManager:
         #
         # Read the template of the documentation, and remove the first
         # attention lines.
-        f = codecs.open(fTplName, 'r', 'utf-8')
+        f = xopen(fTplName)
         doctpl = f.read()
         f.close()
 
-        pos = doctpl.find('/***')
+        pos = doctpl.find(u'/***')
         assert pos != -1
         doctpl = doctpl[pos:]
 
@@ -1830,21 +1796,21 @@ class TrManager:
         # document template.
         tplDic = {}
 
-        s = 'Do not edit this file. It was generated by the %s script.\n * Instead edit %s and %s' % (self.script_name, self.languageTplFileName, self.maintainersFileName)
+        s = u'Do not edit this file. It was generated by the %s script. * Instead edit %s and %s' % (self.script_name, self.languageTplFileName, self.maintainersFileName)
         tplDic['editnote'] = s
 
         tplDic['doxVersion'] = self.doxVersion
         tplDic['supportedLangReadableStr'] = self.supportedLangReadableStr
         tplDic['translatorReportFileName'] = self.translatorReportFileName
 
-        ahref = '<a href="../doc/' + self.translatorReportFileName
-        ahref += '"\n><code>doxygen/doc/'  + self.translatorReportFileName
-        ahref += '</code></a>'
+        ahref = u'<a href="../doc/' + self.translatorReportFileName
+        ahref += u'"\n><code>doxygen/doc/'  + self.translatorReportFileName
+        ahref += u'</code></a>'
         tplDic['translatorReportLink'] = ahref
         tplDic['numLangStr'] = str(self.numLang)
 
         # Define templates for HTML table parts of the documentation.
-        htmlTableTpl = '''\
+        htmlTableTpl = u'''\
             \\htmlonly
             <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
@@ -1866,10 +1832,10 @@ class TrManager:
             </table>
             \\endhtmlonly
             '''
-        htmlTableTpl = dedent(htmlTableTpl)
-        htmlTrTpl = '\n  <tr bgcolor="#ffffff">%s\n  </tr>'
-        htmlTdTpl = '\n    <td>%s</td>'
-        htmlTdStatusColorTpl = '\n    <td bgcolor="%s">%s</td>'
+        htmlTableTpl = textwrap.dedent(htmlTableTpl)
+        htmlTrTpl = u'\n  <tr bgcolor="#ffffff">%s\n  </tr>'
+        htmlTdTpl = u'\n    <td>%s</td>'
+        htmlTdStatusColorTpl = u'\n    <td bgcolor="%s">%s</td>'
 
         # Loop through transl objects in the order of sorted readable names
         # and add generate the content of the HTML table.
@@ -1882,7 +1848,7 @@ class TrManager:
             if obj.readableStatus.startswith('1.4'):
                 bkcolor = self.getBgcolorByReadableStatus('1.4')
             else:
-                bkcolor = '#ffffff'
+                bkcolor = u'#ffffff'
 
             lst = [ htmlTdStatusColorTpl % (bkcolor, obj.langReadable) ]
 
@@ -1897,8 +1863,8 @@ class TrManager:
                 classId = obj.classId[:-2]
                 if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
-                    mm = 'see the %s language' % lang
-                    ee = '&nbsp;'
+                    mm = u'see the %s language' % lang
+                    ee = u'&nbsp;'
 
             if not mm and obj.classId in self.__maintainersDic:
                 # Build a string of names separated by the HTML break element.
@@ -1907,24 +1873,24 @@ class TrManager:
                 for maintainer in self.__maintainersDic[obj.classId]:
                     name = maintainer[0]
                     if name.startswith('--'):
-                        name = '<span style="color: red; background-color: yellow">'\
-                               + name + '</span>'
+                        name = u'<span style="color: red; background-color: yellow">'\
+                               + name + u'</span>'
                     lm.append(name)
                 mm = '<br/>'.join(lm)
 
                 # The marked adresses (they start with the mark '[unreachable]',
                 # '[resigned]', whatever '[xxx]') will not be displayed at all.
                 # Only the mark will be used instead.
-                rexMark = re.compile(r'(?P<mark>\[.*?\])')
+                rexMark = re.compile(u'(?P<mark>\\[.*?\\])')
                 le = []
                 for maintainer in self.__maintainersDic[obj.classId]:
                     address = maintainer[1]
                     m = rexMark.search(address)
                     if m is not None:
-                        address = '<span style="color: brown">'\
-                                  + m.group('mark') + '</span>'
+                        address = u'<span style="color: brown">'\
+                                  + m.group('mark') + u'</span>'
                     le.append(address)
-                ee = '<br/>'.join(le)
+                ee = u'<br/>'.join(le)
 
             # Append the maintainer and e-mail elements.
             lst.append(htmlTdTpl % mm)
@@ -1941,7 +1907,7 @@ class TrManager:
         htmlTable = htmlTableTpl % (''.join(trlst))
 
         # Define templates for LaTeX table parts of the documentation.
-        latexTableTpl = r'''
+        latexTableTpl = b'''
             \latexonly
             \footnotesize
             \begin{longtable}{|l|l|l|l|}
@@ -1953,9 +1919,9 @@ class TrManager:
             \end{longtable}
             \normalsize
             \endlatexonly
-            '''
-        latexTableTpl = dedent(latexTableTpl)
-        latexLineTpl = '\n' + r'  %s & %s & {\tt\tiny %s} & %s \\'
+            '''.decode('utf_8')
+        latexTableTpl = textwrap.dedent(latexTableTpl)
+        latexLineTpl = u'\n  %s & %s & {\\tt\\tiny %s} & %s \\\\'
 
         # Loop through transl objects in the order of sorted readable names
         # and add generate the content of the LaTeX table.
@@ -1990,9 +1956,9 @@ class TrManager:
             # Use the template to produce the line of the table and insert
             # the hline plus the constructed line into the table content.
             # The underscore character must be escaped.
-            trlst.append('\n  \\hline')
+            trlst.append(u'\n  \\hline')
             s = latexLineTpl % (lang, maintainer, email, status)
-            s = s.replace('_', '\\_')
+            s = s.replace(u'_', u'\\_')
             trlst.append(s)
 
             # List the other maintainers for the language. Do not set
@@ -2003,24 +1969,30 @@ class TrManager:
                 maintainer = m[0]
                 email = m[1]
                 s = latexLineTpl % (lang, maintainer, email, status)
-                s = s.replace('_', '\\_')
+                s = s.replace(u'_', u'\\_')
                 trlst.append(s)
 
         # Join the table lines and insert into the template.
-        latexTable = latexTableTpl % (''.join(trlst))
+        latexTable = latexTableTpl % (u''.join(trlst))
 
         # Put the HTML and LaTeX parts together and define the dic item.
-        tplDic['informationTable'] = htmlTable + '\n' + latexTable
+        tplDic['informationTable'] = htmlTable + u'\n' + latexTable
 
         # Insert the symbols into the document template and write it down.
-        f = codecs.open(fDocName, 'w', 'utf-8')
+        f = xopen(fDocName, 'w')
         f.write(doctpl % tplDic)
         f.close()
 
 if __name__ == '__main__':
 
-    # Create the manager, build the transl objects, and parse the related
-    # sources.
+    # The Python 2.6+ or 3.3+ is required.
+    major, minor, patch = (int(e) for e in platfor      m.python_version_tuple())
+    if (major == 2 and minor < 6) or (major == 3 and minor < 3):
+        print('Python 2.6+ or Python 3.3+ are required for the script')
+        sys.exit(1)
+
+    # The translator manager builds the transl objects, parses the related
+    # sources, and keeps them in memory.
     trMan = TrManager()
 
     # Generate the language.doc.
