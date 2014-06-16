@@ -1,4 +1,4 @@
-#! python2
+#!python2
 
 from __future__ import print_function
 
@@ -92,16 +92,18 @@ def copyBinaries(dist_dir, subdir):
     # Source file should exist.
     sdir, fname = getThisScriptPathAndName()
     src = os.path.normpath(os.path.join(sdir, '..', 'bin', subdir, 'doxygen.exe'))
-    assert os.path.isfile(src)
+    if os.path.isfile(src):
+        # Destination directory must not exist. It must be created first.
+        dst_dir = os.path.normpath(os.path.join(dist_dir, 'bin', subdir))
+        assert not os.path.isdir(dst_dir)
+        os.makedirs(dst_dir)
 
-    # Destination directory must not exist. It must be created first.
-    dst_dir = os.path.normpath(os.path.join(dist_dir, 'bin', subdir))
-    assert not os.path.isdir(dst_dir)
-    os.makedirs(dst_dir)
-
-    # Copy the file.
-    print("Copying '{}'".format(src))
-    shutil.copy2(src, dst_dir)
+        # Copy the file.
+        print("Copying '{}'".format(src))
+        shutil.copy2(src, dst_dir)
+    else:
+        print("The binary '" + src + "'")
+        print('was not found. It will not be present in the distribution.')
 
 
 def getBinariesZipBareName():
