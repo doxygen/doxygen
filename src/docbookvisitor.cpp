@@ -1005,7 +1005,16 @@ void DocbookDocVisitor::visitPre(DocParamSect *s)
         break;
       }
     case DocParamSect::Exception:
-      m_t << "exception"; break;
+      {
+        m_t <<  endl;
+        m_t << "                <formalpara>" << endl;
+        m_t << "                    <title/>" << endl;
+        m_t << "                    <table frame=\"all\">" << endl;
+        m_t << "                        <title>Exceptions</title>" << endl;
+        m_t << "                        <tgroup cols=\"2\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
+        m_t << "                        <tbody>" << endl;
+        break;
+      }
     case DocParamSect::TemplateParam:
       m_t << "templateparam"; break;
     default:
