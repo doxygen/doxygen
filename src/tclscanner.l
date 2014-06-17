@@ -1817,6 +1817,42 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
 }
 
 //! Handle internal tcl commands.
+// "eval arg ?arg ...?"
+static void tcl_command_EVAL()
+{
+D
+  tcl_codify_cmd("keyword", 0);
+  tcl_scan *myScan = tcl.scan.at(0);
+  QCString myString = "";
+  // we simply rescan the line without the eval
+  // we include leading whitespace because tcl_scan_start will examine
+  // the first char. If it finds a bracket it will assume one expression in brackets.
+  // Example: eval [list set] [list NotInvoked] [Invoked NotInvoked]
+  for (unsigned int i = 1; i < tcl.list_commandwords.count(); i++)
+  {
+    myString += (*tcl.list_commandwords.at(i)).utf8();
+  }
+  myScan = tcl_scan_start('?', myString,
+        myScan->ns, myScan->entry_cl, myScan->entry_fn);
+}
+
+//! Handle internal tcl commands.
+// "catch script ?resultVarName? ?optionsVarName?"
+static void tcl_command_CATCH()
+{
+D
+  tcl_codify_cmd("keyword", 0);
+  tcl_codify_cmd(NULL, 1);
+  tcl_scan *myScan = tcl.scan.at(0);
+  myScan = tcl_scan_start('?', *tcl.list_commandwords.at(2),
+        myScan->ns, myScan->entry_cl, myScan->entry_fn);
+  for (unsigned int i = 3; i < tcl.list_commandwords.count(); i++)
+  {
+    myScan = tcl_command_ARG(myScan, i, false);
+  }
+}
+
+//! Handle internal tcl commands.
 // "if expr1 ?then? body1 elseif expr2 ?then? body2 elseif ... ?else?  ?bodyN?"
 static void tcl_command_IF(QStringList type)
 {
@@ -2458,9 +2494,20 @@ tcl_inf("->\n");
   }
   /*
    * Start of internal tcl keywords
-   * Ready: if, for, foreach, while
-   * TODO: switch, eval, ?
+   * Ready: eval, catch, if, for, foreach, while
    */
+  if (myStr=="eval")
+  {
+    if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
+    tcl_command_EVAL();
+    goto command_end;
+  }
+  if (myStr=="catch")
+  {
+    if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
+    tcl_command_CATCH();
+    goto command_end;
+  }
   if (myStr=="for")
   {
     if (tcl.list_commandwords.count() != 9) {myLine=__LINE__;goto command_warn;}
