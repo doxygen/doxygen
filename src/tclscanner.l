@@ -1837,6 +1837,181 @@ D
 }
 
 //! Handle internal tcl commands.
+// switch ?options? string pattern body ?pattern body ...? 
+// switch ?options? string {pattern body ?pattern body ...?} 
+static void tcl_command_SWITCH()
+{
+D
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_scan *myScan=NULL;
+  unsigned int i;
+  QCString token;
+  // first: find the last option token
+  unsigned int lastOptionIndex = 0;
+  for (i = 2; i<tcl.list_commandwords.count(); i += 2)
+  {
+    token = (*tcl.list_commandwords.at(i)).utf8();
+    if (token == "--")
+    {
+      lastOptionIndex = i;
+      break;
+    }
+    if (token[0] == '-' && i - lastOptionIndex == 2)
+    {
+      // options start with dash and should form a continuous chain
+      lastOptionIndex = i;
+    }
+  }
+  // second: eat up options
+  for (i = 2; i <= lastOptionIndex; i++)
+  {
+    myScan = tcl_command_ARG(myScan, i, false);
+  }
+  // third: how many tokens are left?
+  if (tcl.list_commandwords.count() - lastOptionIndex == 5)
+  {
+    //printf("syntax: switch ?options? string {pattern body ?pattern body ...?}\n");
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 1, false);
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 2, false);
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 3, false);
+    // walk trough the list step by step
+    // this way we can preserve whitespace
+    bool inBraces = false;
+    bool nextIsPattern = true;
+    int size;
+    const char *elem;
+    const char *next;
+    token = (*tcl.list_commandwords.at(lastOptionIndex + 4)).utf8();
+    if (token[0] == '{')
+    {
+      inBraces = true;
+      token = token.mid(1, token.length() - 2);
+      if (myScan!=NULL)
+      {
+        myScan->after << "NULL" << QCString("{");
+      }
+      else
+      {
+        tcl_codify(NULL,QCString("{"));
+      }
+    }
+    // ToDo: check if multibyte chars are handled correctly
+    while (token.length() > 0)
+    {
+      TclFindElement((const char*)token, token.length(), &elem, &next, &size, NULL);
+      //printf("%s\nstart=%d, elem=%d, next=%d, size=%d, brace=%d\n",
+      //        (const char*) token, (const char*) token, elem, next, size, brace);
+      //
+      // handle leading whitespace/opening brace/double quotes
+      if (elem - token > 0)
+      {
+        if (myScan != NULL)
+        {
+          myScan->after << "NULL" << token.left(elem - token);
+        }
+        else
+        {
+          tcl_codify(NULL, token.left(elem - token));
+        }
+      }
+      // handle actual element without braces/double quotes
+      if (nextIsPattern)
+      {
+        if (myScan != NULL)
+        {
+          myScan->after << "NULL" << token.mid(elem - token,size);
+        }
+        else
+        {
+          tcl_codify(NULL,token.mid(elem - token, size));
+        }
+        //printf("pattern=%s\n",(const char*) token.mid(elem - token, size));
+      }
+      else {
+        if (myScan != NULL)
+        {
+          myScan->after << "script" << token.mid(elem - token, size);
+        }
+        else
+        {
+          myScan = tcl.scan.at(0);
+          myScan = tcl_scan_start('?', token.mid(elem - token, size),
+                myScan->ns, myScan->entry_cl, myScan->entry_fn);
+        }
+        //printf("script =%s\n", (const char*) token.mid(elem - token, size));
+      }
+      // handle trailing whitespace/closing brace/double quotes
+      if (next - elem - size > 0)
+      {
+        if (myScan != NULL)
+        {
+          myScan->after << "NULL" << token.mid(elem - token + size, next - elem - size);
+        }
+        else
+        {
+          tcl_codify(NULL, token.mid(elem - token + size, next - elem - size));
+        }
+      }
+      nextIsPattern = !nextIsPattern;
+      token = token.mid(next - token);
+    }
+    if (inBraces)
+    {
+      if (myScan != NULL)
+      {
+        myScan->after << "NULL" << QCString("}");
+      }
+      else
+      {
+        tcl_codify(NULL, QCString("}"));
+      }
+    }
+    if (!nextIsPattern)
+    {
+      tcl_war("Invalid switch syntax: last token is not a list of even elements.\n");
+      //tcl_war("%s\n", tcl.list_commandwords.join(" ").ascii());
+    }
+  }
+  else if ((tcl.list_commandwords.count() - lastOptionIndex > 6) &&
+           ((tcl.list_commandwords.count() - lastOptionIndex-3) % 4 == 0))
+  {
+    //printf("detected: switch ?options? string pattern body ?pattern body ...?\n");
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 1, false);
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 2, false);
+    //printf("value=%s\n",(const char*) (*tcl.list_commandwords.at(lastOptionIndex + 2)).utf8());
+    for (i = lastOptionIndex + 3; i < tcl.list_commandwords.count(); i += 4)
+    {
+      myScan = tcl_command_ARG(myScan, i + 0, false); // whitespace
+      myScan = tcl_command_ARG(myScan, i + 1, false); // pattern
+      myScan = tcl_command_ARG(myScan, i + 2, false); // whitespace
+      if (myScan != NULL)                           // script
+      {
+        myScan->after << "script" << tcl.list_commandwords[i+3];
+      }
+      else
+      {
+        myScan = tcl.scan.at(0);
+        myScan = tcl_scan_start('?', *tcl.list_commandwords.at(i+3),
+              myScan->ns, myScan->entry_cl, myScan->entry_fn);
+      }
+      //printf("pattern=%s\n",(const char*) (*tcl.list_commandwords.at(i+1)).utf8());
+      //printf("script=%s\n",(const char*) (*tcl.list_commandwords.at(i+3)).utf8());
+    }
+  }
+  else
+  {
+    // not properly detected syntax
+    tcl_war("Invalid switch syntax: %d options followed by %d tokens.\n",
+            lastOptionIndex / 2, (tcl.list_commandwords.count() - 1) / 2 - lastOptionIndex / 2);
+    for (i = lastOptionIndex + 1; i <= tcl.list_commandwords.count(); i++)
+    {
+      myScan = tcl_command_ARG(myScan, i, false);
+    }
+  }
+}
+
+//! Handle internal tcl commands.
 // "catch script ?resultVarName? ?optionsVarName?"
 static void tcl_command_CATCH()
 {
@@ -2494,8 +2669,14 @@ tcl_inf("->\n");
   }
   /*
    * Start of internal tcl keywords
-   * Ready: eval, catch, if, for, foreach, while
+   * Ready: switch, eval, catch, if, for, foreach, while
    */
+  if (myStr=="switch")
+  {
+    if (tcl.list_commandwords.count() < 5) {myLine=__LINE__;goto command_warn;}
+    tcl_command_SWITCH();
+    goto command_end;
+  }
   if (myStr=="eval")
   {
     if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
