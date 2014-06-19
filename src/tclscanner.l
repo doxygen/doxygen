@@ -714,6 +714,40 @@ static void tcl_codify_cmd(const char *s,int i)
 {
   tcl_codify(s,(*tcl.list_commandwords.at(i)).utf8());
 }
+//! codify a string token
+//
+// codifies string according to type.
+// Starts a new scan context if needed (*myScan==0 and type == "script").
+// Returns NULL or the created scan context.
+//
+static tcl_scan *tcl_codify_token(tcl_scan *myScan, const QCString type, const QCString string)
+{
+    if (myScan != NULL)
+    {
+      if (type != NULL)
+      {
+        myScan->after << type << string;
+      }
+      else
+      {
+        myScan->after << "NULL" << string;
+      }
+    }
+    else
+    {
+      if (qstrcmp(type, "script") == 0)
+      {
+        myScan = tcl.scan.at(0);
+        myScan = tcl_scan_start('?', string,
+                myScan->ns, myScan->entry_cl, myScan->entry_fn);
+      }
+      else
+      {
+        tcl_codify((const char*)type, string);
+      }
+    }
+    return myScan;
+}
 
 //-----------------------------------------------------------------------------
 #undef  YY_INPUT
@@ -1716,14 +1750,7 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
   if (i%2 != 0)
   {
     // handle white space
-    if (myScan!=NULL)
-    {
-      myScan->after << "NULL" << myName;
-    }
-    else
-    {
-      tcl_codify(NULL,myName);
-    }
+    myScan = tcl_codify_token(myScan, "NULL", myName);
   }
   else
   {
@@ -1766,29 +1793,13 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
       {
         // the first opening bracket, output what we have so far
         myStr+=c;
-        if (myScan!=NULL)
-        {
-          myScan->after << "NULL" << myStr;
-        }
-        else
-        {
-          tcl_codify(NULL,myStr);
-        }
+        myScan = tcl_codify_token(myScan, "NULL", myStr);
         myStr="";
       }
       else if (c==']' && !backslashed && insideBrackets==0 && insideBraces==0)
       {
         // the last closing bracket, start recursion, switch to deferred
-        if (myScan!=NULL)
-        {
-          myScan->after << "script" << myStr;
-        }
-        else
-        {
-          myScan=tcl.scan.at(0);
-          myScan = tcl_scan_start('?',myStr,
-                  myScan->ns,myScan->entry_cl,myScan->entry_fn);
-        }
+        myScan = tcl_codify_token(myScan, "script", myStr);
         myStr="";
         myStr+=c;
       }
@@ -1797,20 +1808,13 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
          myStr+=c;
       }
     }
-    if (myScan!=NULL)
+    if (i == 0 && myScan == NULL)
     {
-      myScan->after << "NULL" << myStr;
+      tcl_codify_link(myStr);
     }
     else
     {
-      if (i==0)
-      {
-        tcl_codify_link(myStr);
-      }
-      else
-      {
-        tcl_codify(NULL,myStr);
-      }
+      myScan = tcl_codify_token(myScan, "NULL", myStr);
     }
   }
   return (myScan);
@@ -1887,14 +1891,7 @@ D
     {
       inBraces = true;
       token = token.mid(1, token.length() - 2);
-      if (myScan!=NULL)
-      {
-        myScan->after << "NULL" << QCString("{");
-      }
-      else
-      {
-        tcl_codify(NULL,QCString("{"));
-      }
+      myScan = tcl_codify_token(myScan, "NULL", QCString("{"));
     }
     // ToDo: check if multibyte chars are handled correctly
     while (token.length() > 0)
@@ -1906,66 +1903,29 @@ D
       // handle leading whitespace/opening brace/double quotes
       if (elem - token > 0)
       {
-        if (myScan != NULL)
-        {
-          myScan->after << "NULL" << token.left(elem - token);
-        }
-        else
-        {
-          tcl_codify(NULL, token.left(elem - token));
-        }
+        myScan = tcl_codify_token(myScan, "NULL", token.left(elem - token));
       }
       // handle actual element without braces/double quotes
       if (nextIsPattern)
       {
-        if (myScan != NULL)
-        {
-          myScan->after << "NULL" << token.mid(elem - token,size);
-        }
-        else
-        {
-          tcl_codify(NULL,token.mid(elem - token, size));
-        }
+        myScan = tcl_codify_token(myScan, "NULL", token.mid(elem - token,size));
         //printf("pattern=%s\n",(const char*) token.mid(elem - token, size));
       }
       else {
-        if (myScan != NULL)
-        {
-          myScan->after << "script" << token.mid(elem - token, size);
-        }
-        else
-        {
-          myScan = tcl.scan.at(0);
-          myScan = tcl_scan_start('?', token.mid(elem - token, size),
-                myScan->ns, myScan->entry_cl, myScan->entry_fn);
-        }
+        myScan = tcl_codify_token(myScan, "script", token.mid(elem - token, size));
         //printf("script =%s\n", (const char*) token.mid(elem - token, size));
       }
       // handle trailing whitespace/closing brace/double quotes
       if (next - elem - size > 0)
       {
-        if (myScan != NULL)
-        {
-          myScan->after << "NULL" << token.mid(elem - token + size, next - elem - size);
-        }
-        else
-        {
-          tcl_codify(NULL, token.mid(elem - token + size, next - elem - size));
-        }
+        myScan = tcl_codify_token(myScan, "NULL", token.mid(elem - token + size, next - elem - size));
       }
       nextIsPattern = !nextIsPattern;
       token = token.mid(next - token);
     }
     if (inBraces)
     {
-      if (myScan != NULL)
-      {
-        myScan->after << "NULL" << QCString("}");
-      }
-      else
-      {
-        tcl_codify(NULL, QCString("}"));
-      }
+      myScan = tcl_codify_token(myScan, "NULL", QCString("}"));
     }
     if (!nextIsPattern)
     {
@@ -1985,16 +1945,7 @@ D
       myScan = tcl_command_ARG(myScan, i + 0, false); // whitespace
       myScan = tcl_command_ARG(myScan, i + 1, false); // pattern
       myScan = tcl_command_ARG(myScan, i + 2, false); // whitespace
-      if (myScan != NULL)                           // script
-      {
-        myScan->after << "script" << tcl.list_commandwords[i+3];
-      }
-      else
-      {
-        myScan = tcl.scan.at(0);
-        myScan = tcl_scan_start('?', *tcl.list_commandwords.at(i+3),
-              myScan->ns, myScan->entry_cl, myScan->entry_fn);
-      }
+      myScan = tcl_codify_token(myScan, "script", (*tcl.list_commandwords.at(i+3)).utf8());  // script
       //printf("pattern=%s\n",(const char*) (*tcl.list_commandwords.at(i+1)).utf8());
       //printf("script=%s\n",(const char*) (*tcl.list_commandwords.at(i+3)).utf8());
     }
