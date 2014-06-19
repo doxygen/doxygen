@@ -948,7 +948,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						CommandLine="bison -l -d -p ce_parseexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
@@ -958,7 +958,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						CommandLine="bison -l -d -p ce_parseexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
@@ -968,7 +968,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						CommandLine="bison -l -d -p ce_parseexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>
@@ -978,7 +978,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Running bison on constexp.y"
-						CommandLine="bison -l -d -p ce_parseexpYY $(InputPath) -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY $(InputPath) -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
+						CommandLine="bison -l -d -p ce_parseexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.c&#x0D;&#x0A;bison -l -p constexpYY &quot;$(InputPath)&quot; -o $(IntDir)\ce_parse.cpp&#x0D;&#x0A;del $(IntDir)\ce_parse.c&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ce_parse.cpp"
 					/>
 				</FileConfiguration>

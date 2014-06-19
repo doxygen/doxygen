@@ -17,7 +17,7 @@ all: language config.doc FORCE
 	export DOXYGEN_DOCDIR; \
         VERSION=$(VERSION) ; \
 	export VERSION; \
-	$(DOXYGEN)/bin/doxygen
+	"$(DOXYGEN)/bin/doxygen"
 	@rm -f ../latex/refman.tex
 	@cp doxygen_logo*.gif ../html
 	@cp Makefile.latex ../latex/Makefile
