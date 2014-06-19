@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="Gen_head"
 			DisplayName="Gen_head"
-			CommandLine="python $(ProjectDir)..\src\to_c_cmd.py [AllOptions] [AdditionalOptions] [inputs] &lt; $(InputPath) &gt; $(IntDir)/$(InputName)$(InputExt).h"
+			CommandLine="python &quot;$(ProjectDir)..\src\to_c_cmd.py&quot; [AllOptions] [AdditionalOptions] [inputs] &lt; &quot;$(InputPath)&quot; &gt; $(IntDir)/$(InputName)$(InputExt).h"
 			Outputs="$(IntDir)/$(InputName)$(InputExt).h"
 			FileExtensions=".*"
 			AdditionalDependencies="$(ProjectDir)..\src\to_c_cmd.py"

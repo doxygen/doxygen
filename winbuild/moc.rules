@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="moc"
 			DisplayName="Moc"
-			CommandLine="$(QTDIR)/bin/moc.exe $(InputPath) -o moc_$(InputName).cpp"
+			CommandLine="$(QTDIR)/bin/moc.exe &quot;$(InputPath)&quot; -o moc_$(InputName).cpp"
 			Outputs="moc_$(InputName).cpp"
 			AdditionalDependencies="$(QTDIR)/bin/moc.exe"
 			FileExtensions="*.h"

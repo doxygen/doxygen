@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="Config"
 			DisplayName="Config"
-			CommandLine="python $(ProjectDir)..\src\configgen.py -cpp [AllOptions] [AdditionalOptions] [inputs] &gt; $(IntDir)/$(InputName)options.cpp"
+			CommandLine="python &quot;$(ProjectDir)..\src\configgen.py&quot; -cpp [AllOptions] [AdditionalOptions] [inputs] &gt; $(IntDir)/$(InputName)options.cpp"
 			Outputs="$(IntDir)/$(InputName)options.cpp"
 			FileExtensions="*.xml"
 			AdditionalDependencies="$(ProjectDir)..\src\configgen.py"
@@ -18,7 +18,7 @@
 		<CustomBuildRule
 			Name="Config_dw"
 			DisplayName="Config"
-			CommandLine="python $(ProjectDir)..\src\configgen.py -wiz [AllOptions] [AdditionalOptions] [inputs]  &gt; $(IntDir)/$(InputName)doc.cpp"
+			CommandLine="python &quot;$(ProjectDir)..\src\configgen.py&quot; -wiz [AllOptions] [AdditionalOptions] [inputs]  &gt; $(IntDir)/$(InputName)doc.cpp"
 			Outputs="$(IntDir)/$(InputName)doc.cpp"
 			FileExtensions="*.xml"
 			AdditionalDependencies="$(ProjectDir)..\src\configgen.py"
