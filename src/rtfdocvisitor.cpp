@@ -1653,7 +1653,7 @@ void RTFDocVisitor::writeDotFile(const QCString &fileName)
     baseName=baseName.right(baseName.length()-i-1);
   } 
   QCString outDir = Config_getString("RTF_OUTPUT");
-  writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
+  writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;

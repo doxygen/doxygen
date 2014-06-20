@@ -2763,6 +2763,16 @@ front of it.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='DOCBOOK_PROGRAMLISTING' defval='0' depends='GENERATE_DOCBOOK'>
+      <docs>
+<![CDATA[
+ If the \c DOCBOOK_PROGRAMLISTING tag is set to \c YES doxygen will
+ include the program listings (including syntax highlighting
+ and cross-referencing information) to the DOCBOOK output. Note that
+ enabling this will significantly increase the size of the DOCBOOK output.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='AutoGen' docs='Configuration options for the AutoGen Definitions output'>
     <option type='bool' id='GENERATE_AUTOGEN_DEF' defval='0'>

@@ -257,13 +257,17 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       QCString outputDir;
       switch(type)
       {
-        case DocImage::Html: 
+        case DocImage::Html:
 	  if (!Config_getBool("GENERATE_HTML")) return result;
 	  outputDir = Config_getString("HTML_OUTPUT");
 	  break;
-        case DocImage::Latex: 
+        case DocImage::Latex:
 	  if (!Config_getBool("GENERATE_LATEX")) return result;
 	  outputDir = Config_getString("LATEX_OUTPUT");
+	  break;
+        case DocImage::DocBook:
+	  if (!Config_getBool("GENERATE_DOCBOOK")) return result;
+	  outputDir = Config_getString("DOCBOOK_OUTPUT");
 	  break;
         case DocImage::Rtf:
 	  if (!Config_getBool("GENERATE_RTF")) return result;
@@ -5025,9 +5029,10 @@ void DocPara::handleImage(const QCString &cmdName)
   }
   DocImage::Type t;
   QCString imgType = g_token->name.lower();
-  if      (imgType=="html")  t=DocImage::Html;
-  else if (imgType=="latex") t=DocImage::Latex;
-  else if (imgType=="rtf")   t=DocImage::Rtf;
+  if      (imgType=="html")    t=DocImage::Html;
+  else if (imgType=="latex")   t=DocImage::Latex;
+  else if (imgType=="docbook") t=DocImage::DocBook;
+  else if (imgType=="rtf")     t=DocImage::Rtf;
   else
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"image type %s specified as the first argument of "
