@@ -39,7 +39,8 @@ class GroupDef;
 class DotGroupCollaboration;
 class DotRunnerQueue;
 
-enum GraphOutputFormat { BITMAP , EPS };
+enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
+enum EmbeddedOutputFormat { EOF_Html, EOF_LaTeX, EOF_Rtf, EOF_DocBook };
 
 /** Attributes of an edge of a dot graph */
 struct EdgeInfo
@@ -165,8 +166,8 @@ class DotClassGraph
    ~DotClassGraph();
     bool isTrivial() const;
     bool isTooBig() const;
-    QCString writeGraph(FTextStream &t,GraphOutputFormat f,const char *path,
-                    const char *fileName, const char *relPath, 
+    QCString writeGraph(FTextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
+                    const char *path, const char *fileName, const char *relPath,
                     bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1) const;
 
     void writeXML(FTextStream &t);
@@ -196,7 +197,7 @@ class DotInclDepGraph
   public:
     DotInclDepGraph(FileDef *fd,bool inverse);
    ~DotInclDepGraph();
-    QCString writeGraph(FTextStream &t, GraphOutputFormat f,
+    QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                     const char *path,const char *fileName,const char *relPath,
                     bool writeImageMap=TRUE,int graphId=-1) const;
     bool isTrivial() const;
@@ -222,7 +223,7 @@ class DotCallGraph
   public:
     DotCallGraph(MemberDef *md,bool inverse);
    ~DotCallGraph();
-    QCString writeGraph(FTextStream &t, GraphOutputFormat f,
+    QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const char *path,const char *fileName,
                         const char *relPath,bool writeImageMap=TRUE,
                         int graphId=-1) const;
@@ -249,7 +250,8 @@ class DotDirDeps
    ~DotDirDeps();
     bool isTrivial() const;
     QCString writeGraph(FTextStream &out,
-                        GraphOutputFormat format,
+                        GraphOutputFormat gf,
+                        EmbeddedOutputFormat ef,
                         const char *path,
                         const char *fileName,
                         const char *relPath,
@@ -298,7 +300,7 @@ class DotGroupCollaboration
 
     DotGroupCollaboration(GroupDef* gd);
     ~DotGroupCollaboration();
-    QCString writeGraph(FTextStream &t, GraphOutputFormat format,
+    QCString writeGraph(FTextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
                     const char *path,const char *fileName,const char *relPath,
                     bool writeImageMap=TRUE,int graphId=-1) const;
     void buildGraph(GroupDef* gd);

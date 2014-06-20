@@ -160,16 +160,16 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "<programlisting>";
+      m_t << "<literallayout><computeroutput>";
       Doxygen::parserManager->getParser(m_langExt)
         ->parseCode(m_ci,s->context(),s->text(),langExt,
             s->isExample(),s->exampleFile());
-      m_t << "</programlisting>";
+      m_t << "</computeroutput></literallayout>";
       break;
     case DocVerbatim::Verbatim:
-      m_t << "<programlisting><literallayout>";
+      m_t << "<literallayout>";
       filter(s->text());
-      m_t << "</literallayout></programlisting>";
+      m_t << "</literallayout>";
       break;
     case DocVerbatim::HtmlOnly:    
       break;
@@ -189,8 +189,10 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
       {
         static int dotindex = 1;
         QCString baseName(4096);
+        QCString name;
         QCString stext = s->text();
         m_t << "<para>" << endl;
+        name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
         baseName.sprintf("%s%d",
             (Config_getString("DOCBOOK_OUTPUT")+"/inline_dotgraph_").data(),
             dotindex++
@@ -203,7 +205,7 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
         file.writeBlock( stext, stext.length() );
         file.close();
         m_t << "    <figure>" << endl;
-        m_t << "        <title></title>" << endl;
+        m_t << "        <title>" << name << "</title>" << endl;
         m_t << "        <mediaobject>" << endl;
         m_t << "            <imageobject>" << endl;
         writeDotFile(baseName);
@@ -216,8 +218,10 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::Msc:
       static int mscindex = 1;
       QCString baseName(4096);
+      QCString name;
       QCString stext = s->text();
       m_t << "<para>" << endl;
+      name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
       baseName.sprintf("%s%d",
           (Config_getString("DOCBOOK_OUTPUT")+"/inline_mscgraph_").data(),
           mscindex++
@@ -233,7 +237,7 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
       file.writeBlock( text, text.length() );
       file.close();
       m_t << "    <figure>" << endl;
-      m_t << "        <title></title>" << endl;
+      m_t << "        <title>" << name << "</title>" << endl;
       m_t << "        <mediaobject>" << endl;
       m_t << "            <imageobject>" << endl;
       writeMscFile(baseName);
@@ -259,7 +263,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::IncWithLines:
       {
-        m_t << "<programlisting>";
+        m_t << "<literallayout><computeroutput>";
         QFileInfo cfi( inc->file() );
         FileDef fd( cfi.dirPath().utf8(), cfi.fileName().utf8() );
         Doxygen::parserManager->getParser(inc->extension())
@@ -268,18 +272,18 @@ void DocbookDocVisitor::visit(DocInclude *inc)
               langExt,
               inc->isExample(),
               inc->exampleFile(), &fd);
-        m_t << "</programlisting>";
+        m_t << "</computeroutput></literallayout>";
       }
       break;
     case DocInclude::Include:
-      m_t << "<programlisting>";
+      m_t << "<literallayout><computeroutput>";
       Doxygen::parserManager->getParser(inc->extension())
         ->parseCode(m_ci,inc->context(),
             inc->text(),
             langExt,
             inc->isExample(),
             inc->exampleFile());
-      m_t << "</programlisting>";
+      m_t << "</computeroutput></literallayout>";
       break;
     case DocInclude::DontInclude:
       break;
@@ -293,7 +297,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
       m_t << "</verbatim>";
       break;
     case DocInclude::Snippet:
-      m_t << "<programlisting>";
+      m_t << "<literallayout><computeroutput>";
       Doxygen::parserManager->getParser(inc->extension())
         ->parseCode(m_ci,
             inc->context(),
@@ -302,7 +306,7 @@ void DocbookDocVisitor::visit(DocInclude *inc)
             inc->isExample(),
             inc->exampleFile()
             );
-      m_t << "</programlisting>";
+      m_t << "</computeroutput></literallayout>";
       break;
   }
 }
@@ -361,7 +365,7 @@ void DocbookDocVisitor::visit(DocIndexEntry *ie)
 
 void DocbookDocVisitor::visit(DocSimpleSectSep *)
 {
-  m_t << "<simplesectsep/>";
+  m_t << "<simplesect/>";
 }
 
 void DocbookDocVisitor::visit(DocCite *cite)
@@ -818,14 +822,14 @@ void DocbookDocVisitor::visitPost(DocHtmlHeader *)
 
 void DocbookDocVisitor::visitPre(DocImage *img)
 {
-  if (img->type()==DocImage::Latex)
+  if (img->type()==DocImage::DocBook)
   {
     if (m_hide) return;
     m_t << endl;
     m_t << "    <figure>" << endl;
     m_t << "        <title>";
-  } 
-  else 
+  }
+  else
   {
     pushEnabled();
     m_hide=TRUE;
@@ -834,7 +838,7 @@ void DocbookDocVisitor::visitPre(DocImage *img)
 
 void DocbookDocVisitor::visitPost(DocImage *img)
 {
-  if (img->type()==DocImage::Latex)
+  if (img->type()==DocImage::DocBook)
   {
     if (m_hide) return;
     QCString typevar;
@@ -854,13 +858,17 @@ void DocbookDocVisitor::visitPost(DocImage *img)
       filter(img->width());
       m_t << "\"";
     }
-    else if (!img->height().isEmpty())
+    else
+    {
+      m_t << " width=\"50%\"";
+    }
+    if (!img->height().isEmpty())
     {
       m_t << " depth=\"";
       filter(img->height());
       m_t << "\"";
     }
-    m_t << " align=\"center\" fileref=\"" << baseName << "\">";
+    m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << baseName << "\">";
     m_t << "</imagedata>" << endl;
     m_t << "        </imageobject>" << endl;
     m_t << "    </mediaobject>" << endl;
@@ -980,46 +988,23 @@ void DocbookDocVisitor::visitPost(DocSecRefList *)
 void DocbookDocVisitor::visitPre(DocParamSect *s)
 {
   if (m_hide) return;
+  m_t <<  endl;
+  m_t << "                <formalpara>" << endl;
+  m_t << "                    <title/>" << endl;
+  m_t << "                    <table frame=\"all\">" << endl;
+  m_t << "                        <title>";
   switch(s->type())
   {
-    case DocParamSect::Param:
-      {
-        m_t <<  endl;
-        m_t << "                <formalpara>" << endl;
-        m_t << "                    <title/>" << endl;
-        m_t << "                    <table frame=\"all\">" << endl;
-        m_t << "                        <title>Parameters</title>" << endl;
-        m_t << "                        <tgroup cols=\"2\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
-        m_t << "                        <tbody>" << endl;
-        break;
-      }
-    case DocParamSect::RetVal:
-      {
-        m_t <<  endl;
-        m_t << "                <formalpara>" << endl;
-        m_t << "                    <title/>" << endl;
-        m_t << "                    <table frame=\"all\">" << endl;
-        m_t << "                        <title>Parameters</title>" << endl;
-        m_t << "                        <tgroup cols=\"2\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
-        m_t << "                        <tbody>" << endl;
-        break;
-      }
-    case DocParamSect::Exception:
-      {
-        m_t <<  endl;
-        m_t << "                <formalpara>" << endl;
-        m_t << "                    <title/>" << endl;
-        m_t << "                    <table frame=\"all\">" << endl;
-        m_t << "                        <title>Exceptions</title>" << endl;
-        m_t << "                        <tgroup cols=\"2\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
-        m_t << "                        <tbody>" << endl;
-        break;
-      }
-    case DocParamSect::TemplateParam:
-      m_t << "templateparam"; break;
+    case DocParamSect::Param:         m_t << theTranslator->trParameters();         break;
+    case DocParamSect::RetVal:        m_t << theTranslator->trReturnValues();       break;
+    case DocParamSect::Exception:     m_t << theTranslator->trExceptions();         break;
+    case DocParamSect::TemplateParam: m_t << theTranslator->trTemplateParameters(); break;
     default:
       ASSERT(0);
   }
+  m_t << "                        </title>" << endl;
+  m_t << "                        <tgroup cols=\"2\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
+  m_t << "                        <tbody>" << endl;
 }
 
 void DocbookDocVisitor::visitPost(DocParamSect *)
@@ -1038,17 +1023,17 @@ void DocbookDocVisitor::visitPre(DocParamList *pl)
   QListIterator<DocNode> li(pl->parameters());
   DocNode *param;
   m_t << "                            <row>" << endl;
-  if (!li.toFirst()) 
+  if (!li.toFirst())
   {
     m_t << "                                <entry></entry>" << endl;
-  } 
-  else 
+  }
+  else
   {
     m_t << "                                <entry>";
     int cnt = 0;
     for (li.toFirst();(param=li.current());++li)
     {
-      if (cnt) 
+      if (cnt)
       {
         m_t << ", ";
       }
@@ -1205,7 +1190,8 @@ void DocbookDocVisitor::writeMscFile(const QCString &baseName)
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP);
   m_t << "                <imagedata";
-  m_t << " align=\"center\" fileref=\"" << shortName << ".png" << "\">";
+  m_t << " width=\"50%\"";
+  m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << shortName << ".png" << "\">";
   m_t << "</imagedata>" << endl;
 }
 
@@ -1240,13 +1226,17 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     m_t << width;
     m_t << "\"";
   }
-  else if (!height.isEmpty())
+  else
+  {
+    m_t << " width=\"50%\"";
+  }
+  if (!height.isEmpty())
   {
     m_t << " depth=\"";
     m_t << height;
     m_t << "\"";
   }
-  m_t << " align=\"center\" fileref=\"" << baseName << ".png" << "\">";
+  m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << baseName << ".png" << "\">";
   m_t << "</imagedata>" << endl;
   m_t << "            </imageobject>" << endl;
   if (hasCaption)
@@ -1351,9 +1341,12 @@ void DocbookDocVisitor::writeDotFile(const QCString &baseName)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
-  writeDotGraphFromFile(baseName+".dot",outDir,shortName,BITMAP);
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP);
   m_t << "                <imagedata";
-  m_t << " align=\"center\" fileref=\"" << shortName << ".png" << "\">";
+  //If no width is specified use default value for PDF rendering
+  m_t << " width=\"50%\"";
+  m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << shortName << "." << imgExt << "\">";
   m_t << "</imagedata>" << endl;
 }
 
@@ -1375,7 +1368,8 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
   }
   baseName.prepend("dot_");
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
-  writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP);
   m_t << "<para>" << endl;
   m_t << "    <figure>" << endl;
   m_t << "        <title></title>" << endl;
@@ -1388,13 +1382,17 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     m_t << width;
     m_t << "\"";
   }
-  else if (!height.isEmpty())
+  else
+  {
+    m_t << " width=\"50%\"";
+  }
+  if (!height.isEmpty())
   {
     m_t << " depth=\"";
     m_t << height;
     m_t << "\"";
   }
-  m_t << " align=\"center\" fileref=\"" << baseName << ".png" << "\">";
+  m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << baseName << "." << imgExt << "\">";
   m_t << "</imagedata>" << endl;
   m_t << "            </imageobject>" << endl;
   if (hasCaption)

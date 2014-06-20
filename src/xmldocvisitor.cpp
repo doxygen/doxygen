@@ -678,9 +678,10 @@ void XmlDocVisitor::visitPre(DocImage *img)
   m_t << "<image type=\"";
   switch(img->type())
   {
-    case DocImage::Html:  m_t << "html"; break;
-    case DocImage::Latex: m_t << "latex"; break;
-    case DocImage::Rtf:   m_t << "rtf"; break;
+    case DocImage::Html:    m_t << "html"; break;
+    case DocImage::Latex:   m_t << "latex"; break;
+    case DocImage::Rtf:     m_t << "rtf"; break;
+    case DocImage::DocBook: m_t << "docbook"; break;
   }
   m_t << "\"";
 
