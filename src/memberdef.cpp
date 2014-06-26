@@ -506,6 +506,7 @@ class MemberDefImpl
     int initLines;            // number of lines in the initializer
 
     uint64  memSpec;          // The specifiers present for this member
+    uint csSpec;              // C# specifiers for this member
     MemberType mtype;         // returns the kind of member
     int maxInitLines;         // when the initializer will be displayed
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
@@ -651,6 +652,7 @@ void MemberDefImpl::init(Definition *def,
   proto=FALSE;
   annScope=FALSE;
   memSpec=0;
+  csSpec=0;
   annMemb=0;
   annUsed=FALSE;
   annEnumType=0;
@@ -4033,6 +4035,11 @@ uint64 MemberDef::getMemberSpecifiers() const
   return m_impl->memSpec;
 }
 
+uint MemberDef::getCSharpSpecifiers() const
+{
+  return m_impl->csSpec;
+}
+
 ClassDef *MemberDef::getClassDef() const
 {
   return m_impl->classDef;
@@ -4193,9 +4200,29 @@ bool MemberDef::isGettable() const
   return (m_impl->memSpec&Entry::Gettable)!=0;
 }
 
+bool MemberDef::isPrivateGettable() const
+{
+  return (m_impl->csSpec&Entry::PrivateGettable)!=0;
+}
+
+bool MemberDef::isProtectedGettable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedGettable)!=0;
+}
+
 bool MemberDef::isSettable() const
 {
   return (m_impl->memSpec&Entry::Settable)!=0;
+}
+
+bool MemberDef::isPrivateSettable() const
+{
+  return (m_impl->csSpec&Entry::PrivateSettable)!=0;
+}
+
+bool MemberDef::isProtectedSettable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedSettable)!=0;
 }
 
 bool MemberDef::isAddable() const
@@ -4203,14 +4230,44 @@ bool MemberDef::isAddable() const
   return (m_impl->memSpec&Entry::Addable)!=0;
 }
 
+bool MemberDef::isPrivateAddable() const
+{
+  return (m_impl->csSpec&Entry::PrivateAddable)!=0;
+}
+
+bool MemberDef::isProtectedAddable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedAddable)!=0;
+}
+
 bool MemberDef::isRemovable() const
 {
   return (m_impl->memSpec&Entry::Removable)!=0;
 }
 
+bool MemberDef::isPrivateRemovable() const
+{
+  return (m_impl->csSpec&Entry::PrivateRemovable)!=0;
+}
+
+bool MemberDef::isProtectedRemovable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedRemovable)!=0;
+}
+
 bool MemberDef::isRaisable() const
 {
   return (m_impl->memSpec&Entry::Raisable)!=0;
+}
+
+bool MemberDef::isPrivateRaisable() const
+{
+  return (m_impl->csSpec&Entry::PrivateRaisable)!=0;
+}
+
+bool MemberDef::isProtectedRaisable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedRaisable)!=0;
 }
 
 bool MemberDef::isReadable() const
@@ -4584,6 +4641,16 @@ void MemberDef::setMemberSpecifiers(uint64 s)
 void MemberDef::mergeMemberSpecifiers(uint64 s)
 {
   m_impl->memSpec|=s;
+}
+
+void MemberDef::setCSharpSpecifiers(uint s)
+{
+  m_impl->csSpec=s;
+}
+
+void MemberDef::mergeCSharpSpecifiers(uint s)
+{
+  m_impl->csSpec|=s;
 }
 
 void MemberDef::setBitfields(const char *s)

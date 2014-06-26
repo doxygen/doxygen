@@ -248,7 +248,7 @@ class Entry
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
     uint64 spec;              //!< class/member specifiers
-    uint csSpec;            //!< C# member specifiers
+    uint csSpec;              //!< C# member specifiers
     int  initLines;           //!< define/variable initializer lines to show 
     bool stat;                //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
