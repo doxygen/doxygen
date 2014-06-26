@@ -254,6 +254,7 @@ void Entry::reset()
   proto   = FALSE;
   explicitExternal = FALSE;
   spec  = 0;
+  csSpec = 0;
   lang = SrcLangExt_Unknown;
   hidden = FALSE;
   artificial = FALSE;

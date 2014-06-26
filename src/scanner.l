@@ -6129,13 +6129,23 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(FindMembers);
 					  }
                                         }
-<CSAccessorDecl>"set"			{ if (curlyCount==0) current->spec |= Entry::Settable;  }
-<CSAccessorDecl>"get"			{ if (curlyCount==0) current->spec |= Entry::Gettable;  }
-<CSAccessorDecl>"add"			{ if (curlyCount==0) current->spec |= Entry::Addable;   }
-<CSAccessorDecl>"remove"		{ if (curlyCount==0) current->spec |= Entry::Removable; }
-<CSAccessorDecl>"raise"			{ if (curlyCount==0) current->spec |= Entry::Raisable;  }
-<CSAccessorDecl>.			{}
-<CSAccessorDecl>\n			{ lineCount(); }
+<CSAccessorDecl>"private "{BN}*"set"		{ if (curlyCount==0) current->csSpec |= Entry::PrivateSettable;  }
+<CSAccessorDecl>"protected "{BN}*"set"		{ if (curlyCount==0) current->csSpec |= Entry::ProtectedSettable;  }
+<CSAccessorDecl>"set"				{ if (curlyCount==0) current->spec |= Entry::Settable;  }
+<CSAccessorDecl>"private "{BN}*"get"		{ if (curlyCount==0) current->csSpec |= Entry::PrivateGettable;  }
+<CSAccessorDecl>"protected "{BN}*"get"		{ if (curlyCount==0) current->csSpec |= Entry::ProtectedGettable;  }
+<CSAccessorDecl>"get"				{ if (curlyCount==0) current->spec |= Entry::Gettable;  }
+<CSAccessorDecl>"private "{BN}*"add"		{ if (curlyCount==0) current->csSpec |= Entry::PrivateAddable;  }
+<CSAccessorDecl>"protected "{BN}*"add"		{ if (curlyCount==0) current->csSpec |= Entry::ProtectedAddable;  }
+<CSAccessorDecl>"add"				{ if (curlyCount==0) current->spec |= Entry::Addable;   }
+<CSAccessorDecl>"private "{BN}*"remove"		{ if (curlyCount==0) current->csSpec |= Entry::PrivateRemovable;  }
+<CSAccessorDecl>"protected "{BN}*"remove"	{ if (curlyCount==0) current->csSpec |= Entry::ProtectedRemovable;  }
+<CSAccessorDecl>"remove"			{ if (curlyCount==0) current->spec |= Entry::Removable; }
+<CSAccessorDecl>"private "{BN}*"raise"		{ if (curlyCount==0) current->csSpec |= Entry::PrivateRaisable;  }
+<CSAccessorDecl>"protected "{BN}*"raise"	{ if (curlyCount==0) current->csSpec |= Entry::ProtectedRaisable;  }
+<CSAccessorDecl>"raise"				{ if (curlyCount==0) current->spec |= Entry::Raisable;  }
+<CSAccessorDecl>.				{}
+<CSAccessorDecl>\n				{ lineCount(); }
 
 
 
