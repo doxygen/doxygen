@@ -4103,7 +4103,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       {
         DotGroupCollaboration *graph = getGroupGraph();
         FTextStream t(&result);
-        graph->writeGraph(t,BITMAP,
+        graph->writeGraph(t,GOF_BITMAP,
+                          EOF_Html,
                           g_globals.outputDir,
                           g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                           relPathAsString(),
