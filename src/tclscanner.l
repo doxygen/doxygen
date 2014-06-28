@@ -2195,15 +2195,62 @@ D
   }
   myEntryCl = tcl_entry_class(myName);
   myStr = (*tcl.list_commandwords.at(4)).utf8();
-  if (tcl.list_commandwords.count() > 5)
+  //
+  // special cases first
+  // oo::define classname method methodname args script
+  // oo::define classname constructor argList bodyScript
+  // oo::define classname destructor bodyScript
+  unsigned int n =tcl.list_commandwords.count();
+  if ((myStr == "method"      && n == 11) ||
+      (myStr == "constructor" && n == 9) ||
+      (myStr == "destructor"  && n == 7))
   {
-    for (uint i=5;i<tcl.list_commandwords.count();i++)
+    for (unsigned int i = 4; i < n-1; i++)
     {
-      myStr.append((*tcl.list_commandwords.at(i)).utf8());
+      tcl_codify_cmd("NULL",i);
     }
-    tcl.word_is=' ';
+    Entry *myEntry;
+    QCString myMethod;
+    tcl_name(myScan->ns,(*tcl.list_commandwords.at(n==11?6:4)).utf8(),myNs,myMethod);
+    // code snippet taken from tcl_command_METHOD()/tcl_command_CONSTRUCTOR
+    tcl.fn.remove(myMethod);
+    tcl.entry_current->section = Entry::FUNCTION_SEC;
+    tcl.entry_current->mtype = Method;
+    tcl.entry_current->name = myMethod;
+    tcl.entry_current->startLine = tcl.line_command;
+    tcl.entry_current->bodyLine = tcl.line_body0;
+    tcl.entry_current->endBodyLine = tcl.line_body1;
+    tcl_protection(tcl.entry_current);
+    if (n==11)
+    {
+      tcl_command_ARGLIST(*tcl.list_commandwords.at(8));
+    }
+    else if (n==9)
+    {
+      tcl_command_ARGLIST(*tcl.list_commandwords.at(6));
+    }
+    if (myEntryCl) myEntryCl->addSubEntry(tcl.entry_current);
+    tcl.fn.insert(myMethod,tcl.entry_current);
+    myEntry = tcl.entry_current;
+    myScan = tcl_scan_start('?',*tcl.list_commandwords.at(n-1),
+          myNs, myEntryCl, myEntry);
   }
-  myScan = tcl_scan_start(tcl.word_is,myStr,myName,myEntryCl,NULL);
+  else
+  {
+    // The general case
+    // Simply concat all arguments into a script.
+    // Note: all documentation collected just before the
+    // oo::define command is lost
+    if (tcl.list_commandwords.count() > 5)
+    {
+      for (uint i=5;i<tcl.list_commandwords.count();i++)
+      {
+        myStr.append((*tcl.list_commandwords.at(i)).utf8());
+      }
+      tcl.word_is=' ';
+    }
+    myScan = tcl_scan_start(tcl.word_is,myStr,myName,myEntryCl,NULL);
+  }
 }
 
 //! Handle \c variable statements.
