@@ -1146,7 +1146,7 @@ class FilterAlphaIndex
             indexList = TemplateList::alloc();
             indexNode->set("letter", keyToLetter(elem->key));
             indexNode->set("label",  keyToLabel(elem->key));
-            indexNode->set("classes",indexList);
+            indexNode->set("items",indexList);
             result->append(indexNode);
             letter=elem->key;
           }

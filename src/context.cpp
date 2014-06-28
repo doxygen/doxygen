@@ -653,6 +653,11 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trFileMembers();
     }
+    TemplateVariant fileMembersDescription() const
+    {
+      static bool extractAll = Config_getBool("EXTRACT_ALL");
+      return theTranslator->trFileMembersDescription(extractAll);
+    }
     TemplateVariant relatedPagesDesc() const
     {
       return theTranslator->trRelatedPagesDescription();
@@ -839,6 +844,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("fileList",          this,&Private::fileList);
       //%% string fileMembers
       addProperty("fileMembers",       this,&Private::fileMembers);
+      //%% string fileMembersDescription
+      addProperty("fileMembersDescription", this,&Private::fileMembersDescription);
       //%% string relatedPagesDescripiton
       addProperty("relatedPagesDesc",  this,&Private::relatedPagesDesc);
       //%% string more
@@ -6427,10 +6434,78 @@ TemplateVariant ExampleListContext::get(const char *name) const
 class GlobalsIndexContext::Private : public PropertyMapper
 {
   public:
-    //TemplateVariant items() const
-    //{
-    //  return m_pageList.get();
-    //}
+    Private()
+    {
+      addProperty("all",         this,&Private::all);
+      addProperty("functions",   this,&Private::functions);
+      addProperty("variables",   this,&Private::variables);
+      addProperty("typedefs",    this,&Private::typedefs);
+      addProperty("enums",       this,&Private::enums);
+      addProperty("enumValues",  this,&Private::enumValues);
+      addProperty("macros",      this,&Private::macros);
+      addProperty("fileName",    this,&Private::fileName);
+      addProperty("relPath",     this,&Private::relPath);
+      addProperty("highlight",   this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",       this,&Private::title);
+    }
+    typedef bool (MemberDef::*MemberFunc)() const;
+    TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
+    {
+      if (!listRef)
+      {
+        TemplateList *list = TemplateList::alloc();
+        MemberName *mn;
+        MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
+        for (fnli.toFirst();(mn=fnli.current());++fnli)
+        {
+          MemberDef *md;
+          MemberNameIterator mni(*mn);
+          for (mni.toFirst();(md=mni.current());++mni)
+          {
+            FileDef *fd=md->getFileDef();
+            if (fd && fd->isLinkableInProject() &&
+                !md->name().isEmpty() && !md->getNamespaceDef() && md->isLinkableInProject())
+            {
+              if (filter==0 || (md->*filter)())
+              {
+                list->append(MemberContext::alloc(md));
+              }
+            }
+          }
+        }
+        listRef.reset(list);
+      }
+      return listRef.get();
+    }
+    TemplateVariant all() const
+    {
+      return getMembersFiltered(m_cache.all,0);
+    }
+    TemplateVariant functions() const
+    {
+      return getMembersFiltered(m_cache.functions,&MemberDef::isFunction);
+    }
+    TemplateVariant variables() const
+    {
+      return getMembersFiltered(m_cache.variables,&MemberDef::isVariable);
+    }
+    TemplateVariant typedefs() const
+    {
+      return getMembersFiltered(m_cache.typedefs,&MemberDef::isTypedef);
+    }
+    TemplateVariant enums() const
+    {
+      return getMembersFiltered(m_cache.enums,&MemberDef::isEnumerate);
+    }
+    TemplateVariant enumValues() const
+    {
+      return getMembersFiltered(m_cache.enumValues,&MemberDef::isEnumValue);
+    }
+    TemplateVariant macros() const
+    {
+      return getMembersFiltered(m_cache.macros,&MemberDef::isDefine);
+    }
     TemplateVariant fileName() const
     {
       return "globals";
@@ -6451,19 +6526,19 @@ class GlobalsIndexContext::Private : public PropertyMapper
     {
       return theTranslator->trFileMembers();
     }
-    Private()
-    {
-      //m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
-
-      //addProperty("items",this,&Private::items);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
-    }
   private:
-    //SharedPtr<PageListContext> m_pageList;
+    struct Cachable
+    {
+      Cachable() {}
+      SharedPtr<TemplateList> all;
+      SharedPtr<TemplateList> functions;
+      SharedPtr<TemplateList> variables;
+      SharedPtr<TemplateList> typedefs;
+      SharedPtr<TemplateList> enums;
+      SharedPtr<TemplateList> enumValues;
+      SharedPtr<TemplateList> macros;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -6489,10 +6564,88 @@ TemplateVariant GlobalsIndexContext::get(const char *name) const
 class ClassMembersIndexContext::Private : public PropertyMapper
 {
   public:
-    //TemplateVariant items() const
-    //{
-    //  return m_pageList.get();
-    //}
+    Private()
+    {
+      addProperty("all",         this,&Private::all);
+      addProperty("functions",   this,&Private::functions);
+      addProperty("variables",   this,&Private::variables);
+      addProperty("typedefs",    this,&Private::typedefs);
+      addProperty("enums",       this,&Private::enums);
+      addProperty("enumvalues",  this,&Private::enumvalues);
+      addProperty("properties",  this,&Private::properties);
+      addProperty("events",      this,&Private::events);
+      addProperty("related",     this,&Private::related);
+      addProperty("fileName",    this,&Private::fileName);
+      addProperty("relPath",     this,&Private::relPath);
+      addProperty("highlight",   this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",       this,&Private::title);
+    }
+    typedef bool (MemberDef::*MemberFunc)() const;
+    TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
+    {
+      if (!listRef)
+      {
+        TemplateList *list = TemplateList::alloc();
+        MemberName *mn;
+        MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
+        for (mnli.toFirst();(mn=mnli.current());++mnli)
+        {
+          MemberDef *md;
+          MemberNameIterator mni(*mn);
+          for (mni.toFirst();(md=mni.current());++mni)
+          {
+            ClassDef *cd = md->getClassDef();
+            if (cd && cd->isLinkableInProject() && cd->templateMaster()==0 &&
+                md->isLinkableInProject() && !md->name().isEmpty())
+            {
+              if (filter==0 || (md->*filter)())
+              {
+                list->append(MemberContext::alloc(md));
+              }
+            }
+          }
+        }
+        listRef.reset(list);
+      }
+      return listRef.get();
+    }
+    TemplateVariant all() const
+    {
+      return getMembersFiltered(m_cache.all,&MemberDef::isNotFriend);
+    }
+    TemplateVariant functions() const
+    {
+      return getMembersFiltered(m_cache.functions,&MemberDef::isFunctionOrSignalSlot);
+    }
+    TemplateVariant variables() const
+    {
+      return getMembersFiltered(m_cache.variables,&MemberDef::isVariable);
+    }
+    TemplateVariant typedefs() const
+    {
+      return getMembersFiltered(m_cache.typedefs,&MemberDef::isTypedef);
+    }
+    TemplateVariant enums() const
+    {
+      return getMembersFiltered(m_cache.enums,&MemberDef::isEnumerate);
+    }
+    TemplateVariant enumvalues() const
+    {
+      return getMembersFiltered(m_cache.enumValues,&MemberDef::isEnumValue);
+    }
+    TemplateVariant properties() const
+    {
+      return getMembersFiltered(m_cache.properties,&MemberDef::isProperty);
+    }
+    TemplateVariant events() const
+    {
+      return getMembersFiltered(m_cache.events,&MemberDef::isEvent);
+    }
+    TemplateVariant related() const
+    {
+      return getMembersFiltered(m_cache.related,&MemberDef::isRelated);
+    }
     TemplateVariant fileName() const
     {
       return "functions";
@@ -6513,19 +6666,21 @@ class ClassMembersIndexContext::Private : public PropertyMapper
     {
       return theTranslator->trCompoundMembers();
     }
-    Private()
-    {
-      //m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
-
-      //addProperty("items",this,&Private::items);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
-    }
   private:
-    //SharedPtr<PageListContext> m_pageList;
+    struct Cachable
+    {
+      Cachable() {}
+      SharedPtr<TemplateList> all;
+      SharedPtr<TemplateList> functions;
+      SharedPtr<TemplateList> variables;
+      SharedPtr<TemplateList> typedefs;
+      SharedPtr<TemplateList> enums;
+      SharedPtr<TemplateList> enumValues;
+      SharedPtr<TemplateList> properties;
+      SharedPtr<TemplateList> events;
+      SharedPtr<TemplateList> related;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -6551,10 +6706,73 @@ TemplateVariant ClassMembersIndexContext::get(const char *name) const
 class NamespaceMembersIndexContext::Private : public PropertyMapper
 {
   public:
-    //TemplateVariant items() const
-    //{
-    //  return m_pageList.get();
-    //}
+    Private()
+    {
+      addProperty("all",         this,&Private::all);
+      addProperty("functions",   this,&Private::functions);
+      addProperty("variables",   this,&Private::variables);
+      addProperty("typedefs",    this,&Private::typedefs);
+      addProperty("enums",       this,&Private::enums);
+      addProperty("enumValues",  this,&Private::enumValues);
+      addProperty("fileName",    this,&Private::fileName);
+      addProperty("relPath",     this,&Private::relPath);
+      addProperty("highlight",   this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",       this,&Private::title);
+    }
+    typedef bool (MemberDef::*MemberFunc)() const;
+    TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
+    {
+      if (!listRef)
+      {
+        TemplateList *list = TemplateList::alloc();
+        MemberName *mn;
+        MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
+        for (fnli.toFirst();(mn=fnli.current());++fnli)
+        {
+          MemberDef *md;
+          MemberNameIterator mni(*mn);
+          for (mni.toFirst();(md=mni.current());++mni)
+          {
+            NamespaceDef *nd=md->getNamespaceDef();
+            if (nd && nd->isLinkableInProject() &&
+                !md->name().isEmpty() && md->isLinkableInProject())
+            {
+              if (filter==0 || (md->*filter)())
+              {
+                list->append(MemberContext::alloc(md));
+              }
+            }
+          }
+        }
+        listRef.reset(list);
+      }
+      return listRef.get();
+    }
+    TemplateVariant all() const
+    {
+      return getMembersFiltered(m_cache.all,0);
+    }
+    TemplateVariant functions() const
+    {
+      return getMembersFiltered(m_cache.functions,&MemberDef::isFunction);
+    }
+    TemplateVariant variables() const
+    {
+      return getMembersFiltered(m_cache.variables,&MemberDef::isVariable);
+    }
+    TemplateVariant typedefs() const
+    {
+      return getMembersFiltered(m_cache.typedefs,&MemberDef::isTypedef);
+    }
+    TemplateVariant enums() const
+    {
+      return getMembersFiltered(m_cache.enums,&MemberDef::isEnumerate);
+    }
+    TemplateVariant enumValues() const
+    {
+      return getMembersFiltered(m_cache.enumValues,&MemberDef::isEnumValue);
+    }
     TemplateVariant fileName() const
     {
       return "namespacemembers";
@@ -6575,20 +6793,18 @@ class NamespaceMembersIndexContext::Private : public PropertyMapper
     {
       return theTranslator->trNamespaceMembers();
     }
-    Private()
-    {
-      //m_pageList.reset(PageListContext::alloc(Doxygen::exampleSDict));
-
-      //%% PageNodeList items:
-      //addProperty("items",this,&Private::items);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
-    }
   private:
-    //SharedPtr<PageListContext> m_pageList;
+    struct Cachable
+    {
+      Cachable() {}
+      SharedPtr<TemplateList> all;
+      SharedPtr<TemplateList> functions;
+      SharedPtr<TemplateList> variables;
+      SharedPtr<TemplateList> typedefs;
+      SharedPtr<TemplateList> enums;
+      SharedPtr<TemplateList> enumValues;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 

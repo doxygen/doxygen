@@ -177,6 +177,12 @@ class MemberDef : public Definition
     bool showInCallGraph() const;
     bool isStrongEnumValue() const;
 
+    // derived getters
+    bool isFriendToHide() const;
+    bool isNotFriend() const;
+    bool isFunctionOrSignalSlot() const;
+    bool isRelatedOrFriend() const;
+
     // output info
     bool isLinkableInProject() const;
     bool isLinkable() const;

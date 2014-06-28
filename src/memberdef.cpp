@@ -5080,4 +5080,28 @@ const ArgumentList *MemberDef::typeConstraints() const
   return m_impl->typeConstraints;
 }
 
+bool MemberDef::isFriendToHide() const
+{
+  static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
+  bool isFriendToHide = hideFriendCompounds &&
+     (m_impl->type=="friend class"  ||
+      m_impl->type=="friend struct" ||
+      m_impl->type=="friend union");
+  return isFriendToHide;
+}
+
+bool MemberDef::isNotFriend() const
+{
+  return !(isFriend() && isFriendToHide());
+}
+
+bool MemberDef::isFunctionOrSignalSlot() const
+{
+  return isFunction() || isSlot() || isSignal();
+}
+
+bool MemberDef::isRelatedOrFriend() const
+{
+  return isRelated() || isForeign() || isFriend() && !isFriendToHide();
+}
 
