@@ -1561,6 +1561,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
       imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
+      imd->setCSharpSpecifiers(md->getCSharpSpecifiers());
       imd->setMemberGroupId(md->getMemberGroupId());
       imd->setInitializer(md->initializer());
       imd->setMaxInitLines(md->initializerLines());
@@ -2167,6 +2168,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   newMd->setMaxInitLines(md->initializerLines());
                   newMd->setMemberGroupId(root->mGrpId);
                   newMd->setMemberSpecifiers(md->getMemberSpecifiers());
+                  newMd->setCSharpSpecifiers(md->getCSharpSpecifiers());
                   newMd->setLanguage(root->lang);
                   newMd->setId(root->id);
 
@@ -2345,6 +2347,7 @@ static MemberDef *addVariableToClass(
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   md->setMemberSpecifiers(root->spec);
+  md->setCSharpSpecifiers(root->csSpec);
   md->setReadAccessor(root->read);
   md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
@@ -2566,6 +2569,7 @@ static MemberDef *addVariableToFile(
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberSpecifiers(root->spec);
+  md->setCSharpSpecifiers(root->csSpec);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -3080,6 +3084,7 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->spec);
+  md->setCSharpSpecifiers(root->csSpec);
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
   md->setLanguage(root->lang);
@@ -3261,6 +3266,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->spec);
+  md->setCSharpSpecifiers(root->csSpec);
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
   md->setLanguage(root->lang);
@@ -3661,6 +3667,7 @@ static void buildFunctionList(EntryNav *rootNav)
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberSpecifiers(root->spec);
+          md->setCSharpSpecifiers(root->csSpec);
           md->setMemberGroupId(root->mGrpId);
 
           // see if the function is inside a namespace that was not part of
@@ -6392,6 +6399,7 @@ static void findMember(EntryNav *rootNav,
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->spec);
+          md->setCSharpSpecifiers(root->csSpec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -6459,6 +6467,7 @@ static void findMember(EntryNav *rootNav,
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->spec);
+          md->setCSharpSpecifiers(root->csSpec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -6647,6 +6656,7 @@ static void findMember(EntryNav *rootNav,
           //}
           md->setMemberClass(cd);
           md->setMemberSpecifiers(root->spec);
+          md->setCSharpSpecifiers(root->csSpec);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
@@ -6732,6 +6742,7 @@ localObjCMethod:
         FileDef *fd=rootNav->fileDef();
         md->setBodyDef(fd);
         md->setMemberSpecifiers(root->spec);
+        md->setCSharpSpecifiers(root->csSpec);
         md->setMemberGroupId(root->mGrpId);
         cd->insertMember(md);
         cd->insertUsedFile(fd);
@@ -7057,6 +7068,7 @@ static void findEnums(EntryNav *rootNav)
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       md->setBodyDef(rootNav->fileDef());
       md->setMemberSpecifiers(root->spec); // UNO IDL "published"
+      md->setCSharpSpecifiers(root->csSpec);
       md->setEnumBaseType(root->args);
       //printf("Enum %s definition at line %d of %s: protection=%d\n",
       //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);

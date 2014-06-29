@@ -506,6 +506,7 @@ class MemberDefImpl
     int initLines;            // number of lines in the initializer
 
     uint64  memSpec;          // The specifiers present for this member
+    uint csSpec;              // C# specifiers for this member
     MemberType mtype;         // returns the kind of member
     int maxInitLines;         // when the initializer will be displayed
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
@@ -651,6 +652,7 @@ void MemberDefImpl::init(Definition *def,
   proto=FALSE;
   annScope=FALSE;
   memSpec=0;
+  csSpec=0;
   annMemb=0;
   annUsed=FALSE;
   annEnumType=0;
@@ -1729,15 +1731,26 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.docify(" [implementation]");
     ol.endTypewriter();
   }
+  
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
 
-  if (isProperty() && (isSettable() || isGettable()))
+  if (isProperty() && (isSettable() || isGettable() ||
+    isPrivateSettable() || isPrivateGettable() ||
+    isProtectedSettable() || isProtectedGettable()))
   {
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
       QStrList sl;
-      if (isGettable())  sl.append("get");
-      if (isSettable())  sl.append("set");
+      if (isGettable())             sl.append("get");
+      if (isProtectedGettable())    sl.append("protected get");
+      if (isSettable())             sl.append("set");
+      if (isProtectedSettable())    sl.append("protected set");
+      if (extractPrivate)
+      {
+        if (isPrivateGettable())    sl.append("private get");
+        if (isPrivateSettable())    sl.append("private set");
+      }
       const char *s=sl.first();
       while (s)
       {
@@ -1749,15 +1762,26 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.endTypewriter();
   }
 
-  if (isEvent() && (isAddable() || isRemovable() || isRaisable()))
+  if (isEvent() && (isAddable() || isRemovable() || isRaisable() ||
+    isPrivateAddable() || isPrivateRemovable() || isPrivateRaisable() ||
+    isProtectedAddable() || isProtectedRemovable() || isProtectedRaisable()))
   {
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
       QStrList sl;
-      if (isAddable())   sl.append("add");
-      if (isRemovable()) sl.append("remove");
-      if (isRaisable())  sl.append("raise");
+      if (isAddable())               sl.append("add");
+      if (isProtectedAddable())      sl.append("protected add");
+      if (isRemovable())             sl.append("remove");
+      if (isProtectedRemovable())    sl.append("protected remove");
+      if (isRaisable())              sl.append("raise");
+      if (isProtectedRaisable())     sl.append("protected raise");
+      if (extractPrivate)
+      {
+        if (isPrivateAddable())      sl.append("private add");
+        if (isPrivateRemovable())    sl.append("private remove");
+        if (isPrivateRaisable())     sl.append("private raise");
+      }
       const char *s=sl.first();
       while (s)
       {
@@ -1950,15 +1974,29 @@ void MemberDef::getLabels(QStrList &sl,Definition *container) const
       else if (isRelated()) sl.append("related");
       else
       {
+        static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
         if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
         if      (isExplicit())            sl.append("explicit");
         if      (isMutable())             sl.append("mutable");
         if      (isStatic())              sl.append("static");
         if      (isGettable())            sl.append("get");
+        if      (isProtectedGettable())   sl.append("protected get");
         if      (isSettable())            sl.append("set");
+        if      (isProtectedSettable())   sl.append("protected set");
         if      (isAddable())             sl.append("add");
-        if      (!isUNOProperty() && isRemovable()) sl.append("remove");
+        if      (isProtectedAddable())    sl.append("protected add");
+        if      (!isUNOProperty() && isRemovable())          sl.append("remove");
+        if      (!isUNOProperty() && isProtectedRemovable()) sl.append("protected remove");
         if      (isRaisable())            sl.append("raise");
+        if      (isProtectedRaisable())   sl.append("protected raise");
+        if (extractPrivate)
+        {
+          if      (isPrivateGettable())   sl.append("private get");
+          if      (isPrivateSettable())   sl.append("private set");
+          if      (isPrivateAddable())    sl.append("private add");
+          if      (!isUNOProperty() && isPrivateRemovable()) sl.append("private remove");
+          if      (isPrivateRaisable())   sl.append("private raise");
+        }
         if      (isReadable())            sl.append("read");
         if      (isWritable())            sl.append("write");
         if      (isFinal())               sl.append("final");
@@ -4033,6 +4071,11 @@ uint64 MemberDef::getMemberSpecifiers() const
   return m_impl->memSpec;
 }
 
+uint MemberDef::getCSharpSpecifiers() const
+{
+  return m_impl->csSpec;
+}
+
 ClassDef *MemberDef::getClassDef() const
 {
   return m_impl->classDef;
@@ -4193,9 +4236,29 @@ bool MemberDef::isGettable() const
   return (m_impl->memSpec&Entry::Gettable)!=0;
 }
 
+bool MemberDef::isPrivateGettable() const
+{
+  return (m_impl->csSpec&Entry::PrivateGettable)!=0;
+}
+
+bool MemberDef::isProtectedGettable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedGettable)!=0;
+}
+
 bool MemberDef::isSettable() const
 {
   return (m_impl->memSpec&Entry::Settable)!=0;
+}
+
+bool MemberDef::isPrivateSettable() const
+{
+  return (m_impl->csSpec&Entry::PrivateSettable)!=0;
+}
+
+bool MemberDef::isProtectedSettable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedSettable)!=0;
 }
 
 bool MemberDef::isAddable() const
@@ -4203,14 +4266,44 @@ bool MemberDef::isAddable() const
   return (m_impl->memSpec&Entry::Addable)!=0;
 }
 
+bool MemberDef::isPrivateAddable() const
+{
+  return (m_impl->csSpec&Entry::PrivateAddable)!=0;
+}
+
+bool MemberDef::isProtectedAddable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedAddable)!=0;
+}
+
 bool MemberDef::isRemovable() const
 {
   return (m_impl->memSpec&Entry::Removable)!=0;
 }
 
+bool MemberDef::isPrivateRemovable() const
+{
+  return (m_impl->csSpec&Entry::PrivateRemovable)!=0;
+}
+
+bool MemberDef::isProtectedRemovable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedRemovable)!=0;
+}
+
 bool MemberDef::isRaisable() const
 {
   return (m_impl->memSpec&Entry::Raisable)!=0;
+}
+
+bool MemberDef::isPrivateRaisable() const
+{
+  return (m_impl->csSpec&Entry::PrivateRaisable)!=0;
+}
+
+bool MemberDef::isProtectedRaisable() const
+{
+  return (m_impl->csSpec&Entry::ProtectedRaisable)!=0;
 }
 
 bool MemberDef::isReadable() const
@@ -4584,6 +4677,16 @@ void MemberDef::setMemberSpecifiers(uint64 s)
 void MemberDef::mergeMemberSpecifiers(uint64 s)
 {
   m_impl->memSpec|=s;
+}
+
+void MemberDef::setCSharpSpecifiers(uint s)
+{
+  m_impl->csSpec=s;
+}
+
+void MemberDef::mergeCSharpSpecifiers(uint s)
+{
+  m_impl->csSpec|=s;
 }
 
 void MemberDef::setBitfields(const char *s)

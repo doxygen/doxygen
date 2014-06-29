@@ -353,6 +353,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalInt(s,(int)e->protection);
   marshalInt(s,(int)e->mtype);
   marshalUInt64(s,e->spec);
+  marshalUInt(s,e->csSpec);
   marshalInt(s,e->initLines);
   marshalBool(s,e->stat);
   marshalBool(s,e->explicitExternal);
@@ -735,6 +736,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->protection       = (Protection)unmarshalInt(s);
   e->mtype            = (MethodTypes)unmarshalInt(s);
   e->spec             = unmarshalUInt64(s);
+  e->csSpec           = unmarshalUInt(s);
   e->initLines        = unmarshalInt(s);
   e->stat             = unmarshalBool(s);
   e->explicitExternal = unmarshalBool(s);

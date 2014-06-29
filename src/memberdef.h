@@ -74,6 +74,7 @@ class MemberDef : public Definition
     const QCString &initializer() const;
     int initializerLines() const;
     uint64 getMemberSpecifiers() const;
+    uint getCSharpSpecifiers() const;
     MemberList *getSectionList(Definition *d) const;
     QCString    displayDefinition() const;
 
@@ -123,12 +124,22 @@ class MemberDef : public Definition
     bool isExplicit() const;
     bool isMutable() const;
     bool isGettable() const;
+    bool isPrivateGettable() const;
+    bool isProtectedGettable() const;
     bool isSettable() const;
+    bool isPrivateSettable() const;
+    bool isProtectedSettable() const;
     bool isReadable() const;
     bool isWritable() const;
     bool isAddable() const;
+    bool isPrivateAddable() const;
+    bool isProtectedAddable() const;
     bool isRemovable() const;
+    bool isPrivateRemovable() const;
+    bool isProtectedRemovable() const;
     bool isRaisable() const;
+    bool isPrivateRaisable() const;
+    bool isProtectedRaisable() const;
     bool isFinal() const;
     bool isAbstract() const;
     bool isOverride() const;
@@ -267,6 +278,8 @@ class MemberDef : public Definition
     void setProtection(Protection p);
     void setMemberSpecifiers(uint64 s);
     void mergeMemberSpecifiers(uint64 s);
+    void setCSharpSpecifiers(uint s);
+    void mergeCSharpSpecifiers(uint s);
     void setInitializer(const char *i);
     void setBitfields(const char *s);
     void setMaxInitLines(int lines);

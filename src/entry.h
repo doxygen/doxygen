@@ -175,6 +175,18 @@ class Entry
     static const uint64 MaybeDefault    = (1ULL<<61); // on UNO IDL property
     static const uint64 MaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
     static const uint64 Published       = (1ULL<<63); // UNO IDL keyword
+    
+    // C# member specifiers (use separately from specifiers above)
+    static const uint PrivateSettable   = (1ULL<<0);
+    static const uint ProtectedSettable = (1ULL<<1);
+    static const uint PrivateGettable   = (1ULL<<2);
+    static const uint ProtectedGettable = (1ULL<<3);
+    static const uint PrivateAddable   = (1ULL<<4);
+    static const uint ProtectedAddable = (1ULL<<5);
+    static const uint PrivateRemovable   = (1ULL<<6);
+    static const uint ProtectedRemovable = (1ULL<<7);
+    static const uint PrivateRaisable   = (1ULL<<8);
+    static const uint ProtectedRaisable = (1ULL<<9);
 
     enum GroupDocType
     {
@@ -236,6 +248,7 @@ class Entry
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
     uint64 spec;              //!< class/member specifiers
+    uint csSpec;              //!< C# member specifiers
     int  initLines;           //!< define/variable initializer lines to show 
     bool stat;                //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
