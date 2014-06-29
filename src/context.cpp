@@ -2766,12 +2766,22 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("isExplicit",          this,&Private::isExplicit);
       addProperty("isMutable",           this,&Private::isMutable);
       addProperty("isGettable",          this,&Private::isGettable);
+      addProperty("isPrivateGettable",   this,&Private::isPrivateGettable);
+      addProperty("isProtectedGettable", this,&Private::isProtectedGettable);
       addProperty("isSettable",          this,&Private::isSettable);
+      addProperty("isPrivateSettable",   this,&Private::isPrivateSettable);
+      addProperty("isProtectedSettable", this,&Private::isProtectedSettable);
       addProperty("isReadable",          this,&Private::isReadable);
       addProperty("isWritable",          this,&Private::isWritable);
       addProperty("isAddable",           this,&Private::isAddable);
+      addProperty("isPrivateAddable",    this,&Private::isPrivateAddable);
+      addProperty("isProtectedAddable",  this,&Private::isProtectedAddable);
       addProperty("isRemovable",         this,&Private::isRemovable);
+      addProperty("isPrivateRemovable",  this,&Private::isPrivateRemovable);
+      addProperty("isProtectedRemovable",this,&Private::isProtectedRemovable);
       addProperty("isRaisable",          this,&Private::isRaisable);
+      addProperty("isPrivateRaisable",   this,&Private::isPrivateRaisable);
+      addProperty("isProtectedRaisable", this,&Private::isProtectedRaisable);
       addProperty("isFinal",             this,&Private::isFinal);
       addProperty("isAbstract",          this,&Private::isAbstract);
       addProperty("isOverride",          this,&Private::isOverride);
@@ -2853,17 +2863,34 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("fieldType",           this,&Private::fieldType);
 
       m_cache.propertyAttrs.reset(TemplateList::alloc());
+      static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
       if (md && md->isProperty())
       {
-        if (md->isGettable()) m_cache.propertyAttrs->append("get");
-        if (md->isSettable()) m_cache.propertyAttrs->append("set");
+        if (md->isGettable())           m_cache.propertyAttrs->append("get");
+        if (md->isProtectedGettable())  m_cache.propertyAttrs->append("protected get");
+        if (md->isSettable())           m_cache.propertyAttrs->append("set");
+        if (md->isProtectedSettable())  m_cache.propertyAttrs->append("protected set");
+        if (extractPrivate)
+        {
+          if (md->isPrivateGettable())  m_cache.propertyAttrs->append("private get");
+          if (md->isPrivateSettable())  m_cache.propertyAttrs->append("private set");
+        }
       }
       m_cache.eventAttrs.reset(TemplateList::alloc());
       if (md && md->isEvent())
       {
-        if (md->isAddable())   m_cache.eventAttrs->append("add");
-        if (md->isRemovable()) m_cache.eventAttrs->append("remove");
-        if (md->isRaisable())  m_cache.eventAttrs->append("raise");
+        if (md->isAddable())            m_cache.eventAttrs->append("add");
+        if (md->isProtectedAddable())   m_cache.propertyAttrs->append("protected add");
+        if (md->isRemovable())          m_cache.eventAttrs->append("remove");
+        if (md->isProtectedRemovable()) m_cache.propertyAttrs->append("protected remove");
+        if (md->isRaisable())           m_cache.eventAttrs->append("raise");
+        if (md->isProtectedRaisable())  m_cache.propertyAttrs->append("protected raise");
+        if (extractPrivate)
+        {
+          if (md->isPrivateAddable())   m_cache.propertyAttrs->append("private add");
+          if (md->isPrivateRemovable()) m_cache.propertyAttrs->append("private remove");
+          if (md->isPrivateRaisable())  m_cache.propertyAttrs->append("private raise");
+        }
       }
     }
     TemplateVariant fieldType() const
@@ -2948,11 +2975,27 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant isGettable() const
     {
-      return m_memberDef->isSettable();
+      return m_memberDef->isGettable();
+    }
+    TemplateVariant isPrivateGettable() const
+    {
+      return m_memberDef->isPrivateGettable();
+    }
+    TemplateVariant isProtectedGettable() const
+    {
+      return m_memberDef->isProtectedGettable();
     }
     TemplateVariant isSettable() const
     {
       return m_memberDef->isSettable();
+    }
+    TemplateVariant isPrivateSettable() const
+    {
+      return m_memberDef->isPrivateSettable();
+    }
+    TemplateVariant isProtectedSettable() const
+    {
+      return m_memberDef->isProtectedSettable();
     }
     TemplateVariant isReadable() const
     {
@@ -2966,13 +3009,37 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       return m_memberDef->isAddable();
     }
+    TemplateVariant isPrivateAddable() const
+    {
+      return m_memberDef->isPrivateAddable();
+    }
+    TemplateVariant isProtectedAddable() const
+    {
+      return m_memberDef->isProtectedAddable();
+    }
     TemplateVariant isRemovable() const
     {
       return m_memberDef->isRemovable();
     }
+    TemplateVariant isPrivateRemovable() const
+    {
+      return m_memberDef->isPrivateRemovable();
+    }
+    TemplateVariant isProtectedRemovable() const
+    {
+      return m_memberDef->isProtectedRemovable();
+    }
     TemplateVariant isRaisable() const
     {
       return m_memberDef->isRaisable();
+    }
+    TemplateVariant isPrivateRaisable() const
+    {
+      return m_memberDef->isPrivateRaisable();
+    }
+    TemplateVariant isProtectedRaisable() const
+    {
+      return m_memberDef->isProtectedRaisable();
     }
     TemplateVariant isFinal() const
     {

@@ -1731,15 +1731,26 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.docify(" [implementation]");
     ol.endTypewriter();
   }
+  
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
 
-  if (isProperty() && (isSettable() || isGettable()))
+  if (isProperty() && (isSettable() || isGettable() ||
+    isPrivateSettable() || isPrivateGettable() ||
+    isProtectedSettable() || isProtectedGettable()))
   {
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
       QStrList sl;
-      if (isGettable())  sl.append("get");
-      if (isSettable())  sl.append("set");
+      if (isGettable())             sl.append("get");
+      if (isProtectedGettable())    sl.append("protected get");
+      if (isSettable())             sl.append("set");
+      if (isProtectedSettable())    sl.append("protected set");
+      if (extractPrivate)
+      {
+        if (isPrivateGettable())    sl.append("private get");
+        if (isPrivateSettable())    sl.append("private set");
+      }
       const char *s=sl.first();
       while (s)
       {
@@ -1751,15 +1762,26 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.endTypewriter();
   }
 
-  if (isEvent() && (isAddable() || isRemovable() || isRaisable()))
+  if (isEvent() && (isAddable() || isRemovable() || isRaisable() ||
+    isPrivateAddable() || isPrivateRemovable() || isPrivateRaisable() ||
+    isProtectedAddable() || isProtectedRemovable() || isProtectedRaisable()))
   {
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
       QStrList sl;
-      if (isAddable())   sl.append("add");
-      if (isRemovable()) sl.append("remove");
-      if (isRaisable())  sl.append("raise");
+      if (isAddable())               sl.append("add");
+      if (isProtectedAddable())      sl.append("protected add");
+      if (isRemovable())             sl.append("remove");
+      if (isProtectedRemovable())    sl.append("protected remove");
+      if (isRaisable())              sl.append("raise");
+      if (isProtectedRaisable())     sl.append("protected raise");
+      if (extractPrivate)
+      {
+        if (isPrivateAddable())      sl.append("private add");
+        if (isPrivateRemovable())    sl.append("private remove");
+        if (isPrivateRaisable())     sl.append("private raise");
+      }
       const char *s=sl.first();
       while (s)
       {
@@ -1952,15 +1974,29 @@ void MemberDef::getLabels(QStrList &sl,Definition *container) const
       else if (isRelated()) sl.append("related");
       else
       {
+        static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
         if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
         if      (isExplicit())            sl.append("explicit");
         if      (isMutable())             sl.append("mutable");
         if      (isStatic())              sl.append("static");
         if      (isGettable())            sl.append("get");
+        if      (isProtectedGettable())   sl.append("protected get");
         if      (isSettable())            sl.append("set");
+        if      (isProtectedSettable())   sl.append("protected set");
         if      (isAddable())             sl.append("add");
-        if      (!isUNOProperty() && isRemovable()) sl.append("remove");
+        if      (isProtectedAddable())    sl.append("protected add");
+        if      (!isUNOProperty() && isRemovable())          sl.append("remove");
+        if      (!isUNOProperty() && isProtectedRemovable()) sl.append("protected remove");
         if      (isRaisable())            sl.append("raise");
+        if      (isProtectedRaisable())   sl.append("protected raise");
+        if (extractPrivate)
+        {
+          if      (isPrivateGettable())   sl.append("private get");
+          if      (isPrivateSettable())   sl.append("private set");
+          if      (isPrivateAddable())    sl.append("private add");
+          if      (!isUNOProperty() && isPrivateRemovable()) sl.append("private remove");
+          if      (isPrivateRaisable())   sl.append("private raise");
+        }
         if      (isReadable())            sl.append("read");
         if      (isWritable())            sl.append("write");
         if      (isFinal())               sl.append("final");
