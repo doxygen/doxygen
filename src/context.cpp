@@ -2766,7 +2766,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("isExplicit",          this,&Private::isExplicit);
       addProperty("isMutable",           this,&Private::isMutable);
       addProperty("isGettable",          this,&Private::isGettable);
+      addProperty("isPrivateGettable",   this,&Private::isPrivateGettable);
+      addProperty("isProtectedGettable", this,&Private::isProtectedGettable);
       addProperty("isSettable",          this,&Private::isSettable);
+      addProperty("isPrivateSettable",   this,&Private::isPrivateSettable);
+      addProperty("isProtectedSettable", this,&Private::isProtectedSettable);
       addProperty("isReadable",          this,&Private::isReadable);
       addProperty("isWritable",          this,&Private::isWritable);
       addProperty("isAddable",           this,&Private::isAddable);
@@ -2855,8 +2859,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       m_cache.propertyAttrs.reset(TemplateList::alloc());
       if (md && md->isProperty())
       {
-        if (md->isGettable()) m_cache.propertyAttrs->append("get");
-        if (md->isSettable()) m_cache.propertyAttrs->append("set");
+        if (md->isGettable())           m_cache.propertyAttrs->append("get");
+        if (md->isPrivateGettable())    m_cache.propertyAttrs->append("private get");
+        if (md->isProtectedGettable())  m_cache.propertyAttrs->append("protected get");
+        if (md->isSettable())           m_cache.propertyAttrs->append("set");
+        if (md->isPrivateSettable())    m_cache.propertyAttrs->append("private set");
+        if (md->isProtectedSettable())  m_cache.propertyAttrs->append("protected set");
       }
       m_cache.eventAttrs.reset(TemplateList::alloc());
       if (md && md->isEvent())
@@ -2948,11 +2956,27 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant isGettable() const
     {
-      return m_memberDef->isSettable();
+      return m_memberDef->isGettable();
+    }
+    TemplateVariant isPrivateGettable() const
+    {
+      return m_memberDef->isPrivateGettable();
+    }
+    TemplateVariant isProtectedGettable() const
+    {
+      return m_memberDef->isProtectedGettable();
     }
     TemplateVariant isSettable() const
     {
       return m_memberDef->isSettable();
+    }
+    TemplateVariant isPrivateSettable() const
+    {
+      return m_memberDef->isPrivateSettable();
+    }
+    TemplateVariant isProtectedSettable() const
+    {
+      return m_memberDef->isProtectedSettable();
     }
     TemplateVariant isReadable() const
     {

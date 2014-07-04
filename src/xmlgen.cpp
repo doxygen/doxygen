@@ -727,8 +727,24 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     if (md->isGettable()) t << "yes"; else t << "no";
     t << "\"";
 
+    t << " privategettable=\"";
+    if (md->isPrivateGettable()) t << "yes"; else t << "no";
+    t << "\"";
+
+    t << " protectedgettable=\"";
+    if (md->isProtectedGettable()) t << "yes"; else t << "no";
+    t << "\"";
+
     t << " settable=\"";
     if (md->isSettable()) t << "yes"; else t << "no";
+    t << "\"";
+
+    t << " privatesettable=\"";
+    if (md->isPrivateSettable()) t << "yes"; else t << "no";
+    t << "\"";
+
+    t << " protectedsettable=\"";
+    if (md->isProtectedSettable()) t << "yes"; else t << "no";
     t << "\"";
 
     if (md->isAssign() || md->isCopy() || md->isRetain() || md->isStrong() || md->isWeak())
