@@ -1092,7 +1092,9 @@ void LatexDocVisitor::visitPre(DocImage *img)
              "  \\mbox{";
     }
     QCString gfxName = img->name();
-    if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
+    QFileInfo gfx(gfxName);
+    QString completeSuffix(gfx.extension(TRUE));
+    if (completeSuffix=="eps" || completeSuffix=="pdf")
     {
       gfxName=gfxName.left(gfxName.length()-4);
     }
