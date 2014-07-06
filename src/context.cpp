@@ -804,6 +804,46 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trDirectories();
     }
+    TemplateVariant all() const
+    {
+      return theTranslator->trAll();
+    }
+    TemplateVariant functions() const
+    {
+      static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+      static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+      return fortranOpt ? theTranslator->trSubprograms() :
+             vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
+                          theTranslator->trFunctions();
+    }
+    TemplateVariant variables() const
+    {
+      return theTranslator->trVariables();
+    }
+    TemplateVariant typedefs() const
+    {
+      return theTranslator->trTypedefs();
+    }
+    TemplateVariant enums() const
+    {
+      return theTranslator->trEnumerations();
+    }
+    TemplateVariant properties() const
+    {
+      return theTranslator->trProperties();
+    }
+    TemplateVariant events() const
+    {
+      return theTranslator->trEvents();
+    }
+    TemplateVariant related() const
+    {
+      return theTranslator->trRelatedFunctions();
+    }
+    TemplateVariant macros() const
+    {
+      return theTranslator->trDefines();
+    }
     Private()
     {
       //%% string generatedBy
@@ -878,8 +918,6 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("defineValue",        this,&Private::defineValue);
       //%% string initialValue
       addProperty("initialValue",       this,&Private::initialValue);
-      //%% string enumerationValues
-      addProperty("enumerationValues",  this,&Private::enumerationValues);
       //%% markerstring implements
       addProperty("implements",         this,&Private::implements);
       //%% markerstring reimplements
@@ -922,6 +960,26 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("directories",        this,&Private::directories);
       //%% string moduleDescript
       addProperty("modulesDescription", this,&Private::modulesDescription);
+      //%% string all
+      addProperty("all",                this,&Private::all);
+      //%% string functions
+      addProperty("functions",          this,&Private::functions);
+      //%% string variables
+      addProperty("variables",          this,&Private::variables);
+      //%% string typedefs
+      addProperty("typedefs",           this,&Private::typedefs);
+      //%% string enums
+      addProperty("enums",              this,&Private::enums);
+      //%% string enumValues
+      addProperty("enumValues",         this,&Private::enumerationValues);
+      //%% string properties
+      addProperty("properties",         this,&Private::properties);
+      //%% string events
+      addProperty("events",             this,&Private::events);
+      //%% string related
+      addProperty("related",            this,&Private::related);
+      //%% string macros
+      addProperty("macros",             this,&Private::macros);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -3072,6 +3130,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("propertyAttrs",       this,&Private::propertyAttrs);
       addProperty("eventAttrs",          this,&Private::eventAttrs);
       addProperty("class",               this,&Private::getClass);
+      addProperty("file",                this,&Private::getFile);
       addProperty("definition",          this,&Private::definition);
       addProperty("parameters",          this,&Private::parameters);
       addProperty("hasParameterList",    this,&Private::hasParameterList);
@@ -3536,6 +3595,21 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         return TemplateVariant(FALSE);
       }
     }
+    TemplateVariant getFile() const
+    {
+      if (!m_cache.fileDef && m_memberDef->getFileDef())
+      {
+        m_cache.fileDef.reset(FileContext::alloc(m_memberDef->getFileDef()));
+      }
+      if (m_cache.fileDef)
+      {
+        return m_cache.fileDef.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
     TemplateVariant definition() const
     {
       return createLinkedText(m_memberDef,relPathAsString(),
@@ -3966,6 +4040,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       SharedPtr<ArgumentListContext> templateArgs;
       SharedPtr<ArgumentListContext> arguments;
       SharedPtr<MemberListContext>   enumValues;
+      SharedPtr<FileContext>         fileDef;
       SharedPtr<ClassContext>        classDef;
       SharedPtr<ClassContext>        anonymousType;
       SharedPtr<TemplateList>        templateDecls;
@@ -6521,7 +6596,7 @@ class GlobalsIndexContext::Private : public PropertyMapper
     }
     TemplateVariant subhighlight() const
     {
-      return "globals";
+      return "filemembers";
     }
     TemplateVariant title() const
     {
@@ -7826,7 +7901,13 @@ class HtmlEscaper : public TemplateEscapeIntf
 class HtmlSpaceless : public TemplateSpacelessIntf
 {
   public:
-    HtmlSpaceless() : m_insideTag(FALSE), m_insideString('\0'), m_removeSpaces(TRUE) {}
+    HtmlSpaceless() { reset(); }
+    void reset()
+    {
+      m_insideTag = FALSE;
+      m_insideString = '\0';
+      m_removeSpaces = TRUE;
+    }
     QCString remove(const QCString &s)
     {
       QGString result;
@@ -7880,7 +7961,7 @@ class HtmlSpaceless : public TemplateSpacelessIntf
         }
       }
       result+='\0';
-      //printf("HtmlSpaceless::remove('%s')='%s' m_insideTag=%d m_insideString=%d removeSpaces=%d\n",s.data(),result.data(),
+      //printf("HtmlSpaceless::remove({%s})={%s} m_insideTag=%d m_insideString=%d removeSpaces=%d\n",s.data(),result.data(),
       //    m_insideTag,m_insideString,m_removeSpaces);
       return result.data();
     }

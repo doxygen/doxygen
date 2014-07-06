@@ -406,6 +406,8 @@ class TemplateSpacelessIntf
   public:
     /** Returns the \a input after removing redundant whitespace */
     virtual QCString remove(const QCString &input) = 0;
+    /** Reset filter state */
+    virtual void reset() = 0;
 };
 
 //------------------------------------------------------------------------
