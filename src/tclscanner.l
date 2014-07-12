@@ -534,6 +534,24 @@ static void tcl_name(const QCString &ns0, const QCString &name0, QCString &ns, Q
   }
 }
 
+//! Check name. Strip namespace qualifiers from name0 if inside inlined code segment.
+// @return 'ns' and 'name' of given current 'ns0' and 'name0'
+static void tcl_name_SnippetAware(const QCString &ns0, const QCString &name0, QCString &ns, QCString &name)
+{
+  // If we are inside an inlined code snippet then ns0
+  // already containes the complete namespace path.
+  // Any namespace qualifiers in name0 are redundant.
+  int i = name0.findRev("::");
+  if (i>=0 && tcl.memberdef)
+  {
+    tcl_name(ns0, name0.mid(i+2), ns, name);
+  }
+  else
+  {
+    tcl_name(ns0, name0, ns, name);
+  }
+}
+
 // Check and return namespace entry.
 // @return namespace entry
 Entry* tcl_entry_namespace(const QCString ns)
@@ -2099,7 +2117,7 @@ D
   tcl_codify_cmd(NULL,3);
   tcl_codify_cmd(NULL,4);
   tcl_codify_cmd(NULL,5);
-  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
+  tcl_name_SnippetAware(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myEntryNs = tcl_entry_namespace(myNs);
