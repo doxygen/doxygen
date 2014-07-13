@@ -770,6 +770,29 @@ class FilterAdd
 
 //-----------------------------------------------------------------------------
 
+/** @brief The implementation of the "get" filter */
+class FilterGet
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::Struct && arg.type()==TemplateVariant::String)
+      {
+        TemplateVariant result = v.toStruct()->get(arg.toString());
+        //printf("\nok[%s]=%d\n",arg.toString().data(),result.type());
+        return result;
+      }
+      else
+      {
+        //printf("\nnok[%s]\n",arg.toString().data());
+        return FALSE;
+      }
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+
 /** @brief The implementation of the "append" filter */
 class FilterAppend
 {
@@ -1356,6 +1379,7 @@ class TemplateFilterFactory
 
 // register a handlers for each filter we support
 static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
+static TemplateFilterFactory::AutoRegister<FilterGet>         fGet("get");
 static TemplateFilterFactory::AutoRegister<FilterAppend>      fAppend("append");
 static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");

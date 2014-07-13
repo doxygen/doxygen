@@ -658,6 +658,11 @@ class TranslateContext::Private : public PropertyMapper
       static bool extractAll = Config_getBool("EXTRACT_ALL");
       return theTranslator->trFileMembersDescription(extractAll);
     }
+    TemplateVariant namespaceMembersDescription() const
+    {
+      static bool extractAll = Config_getBool("EXTRACT_ALL");
+      return theTranslator->trNamespaceMemberDescription(extractAll);
+    }
     TemplateVariant relatedPagesDesc() const
     {
       return theTranslator->trRelatedPagesDescription();
@@ -980,6 +985,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("related",            this,&Private::related);
       //%% string macros
       addProperty("macros",             this,&Private::macros);
+      //%% string namespaceMembersDescription
+      addProperty("namespaceMembersDescription",this,&Private::namespaceMembersDescription);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -3131,6 +3138,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("eventAttrs",          this,&Private::eventAttrs);
       addProperty("class",               this,&Private::getClass);
       addProperty("file",                this,&Private::getFile);
+      addProperty("namespace",           this,&Private::getNamespace);
       addProperty("definition",          this,&Private::definition);
       addProperty("parameters",          this,&Private::parameters);
       addProperty("hasParameterList",    this,&Private::hasParameterList);
@@ -3610,6 +3618,21 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         return TemplateVariant(FALSE);
       }
     }
+    TemplateVariant getNamespace() const
+    {
+      if (!m_cache.namespaceDef && m_memberDef->getNamespaceDef())
+      {
+        m_cache.namespaceDef.reset(NamespaceContext::alloc(m_memberDef->getNamespaceDef()));
+      }
+      if (m_cache.namespaceDef)
+      {
+        return m_cache.namespaceDef.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
     TemplateVariant definition() const
     {
       return createLinkedText(m_memberDef,relPathAsString(),
@@ -4041,6 +4064,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       SharedPtr<ArgumentListContext> arguments;
       SharedPtr<MemberListContext>   enumValues;
       SharedPtr<FileContext>         fileDef;
+      SharedPtr<NamespaceContext>    namespaceDef;
       SharedPtr<ClassContext>        classDef;
       SharedPtr<ClassContext>        anonymousType;
       SharedPtr<TemplateList>        templateDecls;
@@ -6519,6 +6543,9 @@ class GlobalsIndexContext::Private : public PropertyMapper
       addProperty("enums",       this,&Private::enums);
       addProperty("enumValues",  this,&Private::enumValues);
       addProperty("macros",      this,&Private::macros);
+      addProperty("properties",  this,&Private::properties);
+      addProperty("events",      this,&Private::events);
+      addProperty("related",     this,&Private::related);
       addProperty("fileName",    this,&Private::fileName);
       addProperty("relPath",     this,&Private::relPath);
       addProperty("highlight",   this,&Private::highlight);
@@ -6581,6 +6608,18 @@ class GlobalsIndexContext::Private : public PropertyMapper
     TemplateVariant macros() const
     {
       return getMembersFiltered(m_cache.macros,&MemberDef::isDefine);
+    }
+    TemplateVariant properties() const
+    {
+      return FALSE;
+    }
+    TemplateVariant events() const
+    {
+      return FALSE;
+    }
+    TemplateVariant related() const
+    {
+      return FALSE;
     }
     TemplateVariant fileName() const
     {
@@ -6647,7 +6686,8 @@ class ClassMembersIndexContext::Private : public PropertyMapper
       addProperty("variables",   this,&Private::variables);
       addProperty("typedefs",    this,&Private::typedefs);
       addProperty("enums",       this,&Private::enums);
-      addProperty("enumvalues",  this,&Private::enumvalues);
+      addProperty("enumValues",  this,&Private::enumValues);
+      addProperty("macros",      this,&Private::macros);
       addProperty("properties",  this,&Private::properties);
       addProperty("events",      this,&Private::events);
       addProperty("related",     this,&Private::related);
@@ -6706,9 +6746,13 @@ class ClassMembersIndexContext::Private : public PropertyMapper
     {
       return getMembersFiltered(m_cache.enums,&MemberDef::isEnumerate);
     }
-    TemplateVariant enumvalues() const
+    TemplateVariant enumValues() const
     {
       return getMembersFiltered(m_cache.enumValues,&MemberDef::isEnumValue);
+    }
+    TemplateVariant macros() const
+    {
+      return FALSE;
     }
     TemplateVariant properties() const
     {
@@ -6790,6 +6834,10 @@ class NamespaceMembersIndexContext::Private : public PropertyMapper
       addProperty("typedefs",    this,&Private::typedefs);
       addProperty("enums",       this,&Private::enums);
       addProperty("enumValues",  this,&Private::enumValues);
+      addProperty("macros",      this,&Private::macros);
+      addProperty("properties",  this,&Private::properties);
+      addProperty("events",      this,&Private::events);
+      addProperty("related",     this,&Private::related);
       addProperty("fileName",    this,&Private::fileName);
       addProperty("relPath",     this,&Private::relPath);
       addProperty("highlight",   this,&Private::highlight);
@@ -6848,6 +6896,22 @@ class NamespaceMembersIndexContext::Private : public PropertyMapper
     TemplateVariant enumValues() const
     {
       return getMembersFiltered(m_cache.enumValues,&MemberDef::isEnumValue);
+    }
+    TemplateVariant macros() const
+    {
+      return FALSE;
+    }
+    TemplateVariant properties() const
+    {
+      return FALSE;
+    }
+    TemplateVariant events() const
+    {
+      return FALSE;
+    }
+    TemplateVariant related() const
+    {
+      return FALSE;
     }
     TemplateVariant fileName() const
     {
