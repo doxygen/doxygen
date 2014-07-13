@@ -14,9 +14,6 @@
 # the creation of megawidgets using TclOO by overriding the unknown method to
 # detect if the user is trying to instantiate a widget (because the method
 # will be unknown and start with a dot).
-# @warning Do not modify! (unless you're waaay smarter than the writer of the
-# below Tcl/Tk book).
-# @cite flynt2012tcl
 #
 proc ::oo::define::classmethod {name {args ""} {body ""}} {
     # Create the method on the class if the caller gave arguments and body.
@@ -33,9 +30,6 @@ proc ::oo::define::classmethod {name {args ""} {body ""}} {
 # Extension to TclOO to add static variables.
 # Defines variables on the class instead of on the object. Can be used to
 # enforce a limited number of instantiations.
-# @warning Do not modify! (unless you're waaay smarter than the writer of the
-# below Tcl/Tk book).
-# @cite flynt2012tcl
 #
 proc ::oo::Helpers::classvar {args} {
     # Get reference to class's namespace.

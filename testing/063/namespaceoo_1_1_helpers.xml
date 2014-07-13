@@ -11,12 +11,11 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Extension to TclOO to add static variables. Defines variables on the class instead of on the object. Can be used to enforce a limited number of instantiations. <simplesect kind="warning"><para>Do not modify! (unless you're waaay smarter than the writer of the below Tcl/Tk book). flynt2012tcl </para></simplesect>
-</para>
+          <para>Extension to TclOO to add static variables. Defines variables on the class instead of on the object. Can be used to enforce a limited number of instantiations. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="063_bug_729092.tcl" bodystart="40" bodyend="49"/>
+        <location file="063_bug_729092.tcl" bodystart="34" bodyend="43"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

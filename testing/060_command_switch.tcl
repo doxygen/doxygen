@@ -204,29 +204,29 @@ proc s args {
     return
 }
 # wrong syntax
-proc x args {
-    catch {switch -exact -- [Invoked] pattern1 NotInvoked pattern2}
-    return
-}
+#proc x args {
+#    catch {switch -exact -- [Invoked] pattern1 NotInvoked pattern2}
+#    return
+#}
 # The current version does not check the last argument beforehand.
 # Therefore, all script elements are evaluated as scripts before
 # the parser detects the dangling pattern. It throws a warning, at the very least.
 # Anyway, for working code the documentation will be correct.
-proc y args {
-    catch {switch -exact -- [Invoked] {
-        pattern {
-            NotInvoked
-        }
-        NotInvoked {
-            NotInvoked
-        }
-        default {
-            NotInvoked
-        }
-        pattern
-    }}
-    return
-}
+#proc y args {
+#    catch {switch -exact -- [Invoked] {
+#        pattern {
+#            NotInvoked
+#        }
+#        NotInvoked {
+#            NotInvoked
+#        }
+#        default {
+#            NotInvoked
+#        }
+#        pattern
+#    }}
+#    return
+#}
 #
 # call all single letter procs
 # let tcl check what is called and what is not called

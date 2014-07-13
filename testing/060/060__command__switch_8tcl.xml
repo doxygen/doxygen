@@ -35,8 +35,6 @@
         <referencedby refid="060__command__switch_8tcl_1ab678a0a9a7e94bce5b17141f40220d88" compoundref="060__command__switch_8tcl" startline="176" endline="185">q</referencedby>
         <referencedby refid="060__command__switch_8tcl_1a0a0bd3dc69dd06934c4e6362155e0ace" compoundref="060__command__switch_8tcl" startline="186" endline="195">r</referencedby>
         <referencedby refid="060__command__switch_8tcl_1a011c73f2dbb87635a3b4206c72355f6e" compoundref="060__command__switch_8tcl" startline="196" endline="205">s</referencedby>
-        <referencedby refid="060__command__switch_8tcl_1a429306927a4581ad93fac620e605eec5" compoundref="060__command__switch_8tcl" startline="207" endline="210">x</referencedby>
-        <referencedby refid="060__command__switch_8tcl_1a32b6e5206a2cc75dbb8ed2eff74f5ce4" compoundref="060__command__switch_8tcl" startline="215" endline="229">y</referencedby>
       </memberdef>
       <memberdef kind="function" id="060__command__switch_8tcl_1a3f55465410c57ed00ab28827a741b1c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
@@ -51,7 +49,6 @@
         <inbodydescription>
         </inbodydescription>
         <location file="060_command_switch.tcl" bodystart="16" bodyend="19"/>
-        <referencedby refid="060__command__switch_8tcl_1a32b6e5206a2cc75dbb8ed2eff74f5ce4" compoundref="060__command__switch_8tcl" startline="215" endline="229">y</referencedby>
       </memberdef>
       <memberdef kind="function" id="060__command__switch_8tcl_1ab08ae027fc5777bc4f0629f1b60b35db" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
@@ -318,35 +315,6 @@
         </inbodydescription>
         <location file="060_command_switch.tcl" bodystart="196" bodyend="205"/>
         <references refid="060__command__switch_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="060__command__switch_8tcl" startline="10" endline="13">Invoked</references>
-      </memberdef>
-      <memberdef kind="function" id="060__command__switch_8tcl_1a429306927a4581ad93fac620e605eec5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type/>
-        <definition>x</definition>
-        <argsstring>args</argsstring>
-        <name>x</name>
-        <briefdescription>
-        </briefdescription>
-        <detaileddescription>
-        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="060_command_switch.tcl" bodystart="207" bodyend="210"/>
-        <references refid="060__command__switch_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="060__command__switch_8tcl" startline="10" endline="13">Invoked</references>
-      </memberdef>
-      <memberdef kind="function" id="060__command__switch_8tcl_1a32b6e5206a2cc75dbb8ed2eff74f5ce4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
-        <type/>
-        <definition>y</definition>
-        <argsstring>args</argsstring>
-        <name>y</name>
-        <briefdescription>
-        </briefdescription>
-        <detaileddescription>
-        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="060_command_switch.tcl" bodystart="215" bodyend="229"/>
-        <references refid="060__command__switch_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="060__command__switch_8tcl" startline="10" endline="13">Invoked</references>
-        <references refid="060__command__switch_8tcl_1a3f55465410c57ed00ab28827a741b1c3" compoundref="060__command__switch_8tcl" startline="16" endline="19">NotInvoked</references>
       </memberdef>
     </sectiondef>
     <briefdescription>

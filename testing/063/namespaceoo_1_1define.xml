@@ -11,12 +11,11 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
-          <para>Extension to TclOO to add static methods. Defines the method on the class instead of on the object. Can be used for the creation of megawidgets using TclOO by overriding the unknown method to detect if the user is trying to instantiate a widget (because the method will be unknown and start with a dot). <simplesect kind="warning"><para>Do not modify! (unless you're waaay smarter than the writer of the below Tcl/Tk book). flynt2012tcl </para></simplesect>
-</para>
+          <para>Extension to TclOO to add static methods. Defines the method on the class instead of on the object. Can be used for the creation of megawidgets using TclOO by overriding the unknown method to detect if the user is trying to instantiate a widget (because the method will be unknown and start with a dot). </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="063_bug_729092.tcl" bodystart="21" bodyend="30"/>
+        <location file="063_bug_729092.tcl" bodystart="18" bodyend="27"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
