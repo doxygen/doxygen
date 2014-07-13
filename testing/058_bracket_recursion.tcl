@@ -129,7 +129,23 @@ proc t args {
     set foo ]]]][Invoked]
     return
 }
-
+# Example according to
+# https://bugzilla.gnome.org/show_bug.cgi?id=729135
+#                                       |
+# Note the subtle difference in this    | whitespace
+#                                       V
+proc y {} {
+    set classifier_state {{bphy} }
+    if { ($classifier_state == {{bphy} }) } {
+        Invoked
+    }
+}
+proc z {} {
+    set classifier_state {{bphy} }
+    if { ($classifier_state == {{bphy} } ) } {
+        Invoked
+    }
+}
 #
 # call all single letter procs
 # let tcl check what is called and what is not called
