@@ -203,6 +203,8 @@ documentation:
 \refitem cmdtilde \\~
 \refitem cmdlt \\\<
 \refitem cmdgt \\\>
+\refitem cmdgroupopen \\{
+\refitem cmdgroupclose \\}
 \refitem cmdhash \\\#
 \refitem cmdperc \\\%
 \refitem cmdquot \\\"
@@ -233,7 +235,7 @@ Structural indicators
   any of the commands.
 
   The title is optional, so this command can also be used to add a number of
-  entities to an existing group using \c \@{ and \c \@} like this:
+  entities to an existing group using \ref cmdgroupopen "\@{" and \ref cmdgroupclose "\@}" like this:
 
 \verbatim
   /*! \addtogroup mygrp
@@ -696,7 +698,8 @@ Structural indicators
   <code>//\@{ ... //\@}</code> block containing the
   members of the group.
 
-  See section \ref memgroup for an example.
+  \sa sections \ref cmdgroupopen "\@{" and \ref cmdgroupclose "\@}".
+  \sa \ref memgroup for an example.
 
 <hr>
 \section cmdnamespace \\namespace <name>
@@ -3036,6 +3039,26 @@ class Receiver
   \addindex \\\>
   This command writes the \c \> character to the output. This
   character has to be escaped because it has a special meaning in HTML.
+
+<hr>
+\section cmdgroupopen \\{
+
+  \addindex \\{
+  This command starts a grouping block in the documentation.
+  \note Due to the limited possibilities of detecting of continuation lines, it
+        is advised to to have a comment block with this comment as a separate
+        comment line and having it followed by a non doxygen comment line.
+  \sa section \ref cmdgroupclose "\\}" and section \ref grouping "grouping".
+
+<hr>
+\section cmdgroupclose \\}
+
+  \addindex \\}
+  This command ends a grouping block in the documentation.
+  \note Due to the limited possibilities of detecting of continuation lines, it
+        is advised to to have a comment block with this comment as a separate
+        comment line and having it preceded by a non doxygen comment line.<br>
+  \sa section \ref cmdgroupopen "\\{" and section \ref grouping "grouping".
 
 <hr>
 \section cmdperc \\\%
