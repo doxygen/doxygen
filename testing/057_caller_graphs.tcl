@@ -1,5 +1,6 @@
 #// objective: test for completeness and correctness of references/referencedby relations 
 #// check: 057__caller__graphs_8tcl.xml
+#// check: __057__caller__graphs_8tcl.xml
 #// check: namespacebar.xml
 #// check: namespacefoo.xml
 #// check: namespace1.xml
@@ -14,6 +15,7 @@
 #// config: INLINE_SOURCES = no
 #// config: REFERENCED_BY_RELATION = yes
 #// config: REFERENCES_RELATION = yes
+#// config: INPUT = 057_caller_graphs.tcl _057_caller_graphs.tcl
 # config: HAVE_DOT = yes
 # config: CALLER_GRAPH = yes
 # config: CALL_GRAPH = yes
@@ -126,6 +128,20 @@ proc ::2::2::2::2::2::next args {
     array set info [info frame 0]; puts $info(proc)
     2::next
 }
+#
+# cross check with two files
+# If doxygen did not do two passes, then xrefs would depend on file order
+# and would be incomplete.
+source _057_caller_graphs.tcl
+proc master args {
+    array set info [info frame 0]; puts -nonewline ->$info(proc)
+    inFileB
+    return
+}
+proc inFileA args {
+    array set info [info frame 0]; puts -nonewline ->$info(proc)
+    return
+}
 # now, check with tcl what is called
 foo::master
 puts ""
@@ -134,5 +150,6 @@ foreach proc [lsort [info procs ::1::test?]] {
     puts ""
 }
 ::next
+master
 exit
 
