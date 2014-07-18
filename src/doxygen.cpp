@@ -551,7 +551,7 @@ static void addSTLClasses(EntryNav *rootNav)
 //----------------------------------------------------------------------------
 
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
-                                              FileDef *fileScope=0);
+                                              FileDef *fileScope,TagInfo *tagInfo);
 
 static void addPageToContext(PageDef *pd,EntryNav *rootNav)
 {
@@ -564,7 +564,7 @@ static void addPageToContext(PageDef *pd,EntryNav *rootNav)
     }
     scope = stripAnonymousNamespaceScope(scope);
     scope+="::"+pd->name();
-    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope);
+    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,rootNav->tagInfo());
     if (d) 
     {
       pd->setPageScope(d);
@@ -708,7 +708,7 @@ static void findGroupScope(EntryNav *rootNav)
       }
       scope = stripAnonymousNamespaceScope(scope);
       scope+="::"+gd->name();
-      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope);
+      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,rootNav->tagInfo());
       if (d) 
       {
         gd->setGroupScope(d);
@@ -996,7 +996,8 @@ static Definition *findScope(Entry *root,int level=0)
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
-static Definition *buildScopeFromQualifiedName(const QCString name,int level,SrcLangExt lang,TagInfo *tagInfo)
+static Definition *buildScopeFromQualifiedName(const QCString name,
+                                               int level,SrcLangExt lang,TagInfo *tagInfo)
 {
   //printf("buildScopeFromQualifiedName(%s) level=%d\n",name.data(),level);
   int i=0;
@@ -1018,7 +1019,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level,Src
     {
       innerScope = cd;
     }
-    else if (nd==0 && cd==0) // scope is not known!
+    else if (nd==0 && cd==0 && fullScope.find('<')==-1) // scope is not known and could be a namespace!
     {
       // introduce bogus namespace
       //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",nsName.data(),prevScope->name().data(),tagInfo);
@@ -1047,7 +1048,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level,Src
 }
 
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
-                                              FileDef *fileScope)
+                                              FileDef *fileScope,TagInfo *tagInfo)
 {
   //printf("<findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
   Definition *resultScope=startScope;
@@ -1080,7 +1081,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
         for (ni.toFirst();((nd=ni.current()) && resultScope==0);++ni)
         {
           // restart search within the used namespace
-          resultScope = findScopeFromQualifiedName(nd,n,fileScope);
+          resultScope = findScopeFromQualifiedName(nd,n,fileScope,tagInfo);
         }
         if (resultScope) 
         {
@@ -1112,7 +1113,8 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
           // so use this instead.
           QCString fqn = QCString(ui.currentKey())+
                          scope.right(scope.length()-p);
-          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"),startScope->getLanguage(),0);
+          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"),
+                                                    startScope->getLanguage(),0);
           //printf("Creating scope from fqn=%s result %p\n",fqn.data(),resultScope);
           if (resultScope) 
           {
@@ -1420,7 +1422,7 @@ static void resolveClassNestingRelations()
         //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
         // also add class to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,
-                                                 name,cd->getFileDef());
+                                                 name,cd->getFileDef(),0);
         if (d)
         {
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
@@ -1788,7 +1790,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         Doxygen::namespaceSDict->inSort(fullName,nd);
 
         // also add namespace to the correct structural context 
-        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName,0,tagInfo);
         //printf("adding namespace %s to context %s\n",nd->name().data(),d?d->name().data():"<none>");
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
@@ -4823,7 +4825,7 @@ static bool findClassRelation(
               int si = baseClassName.findRev("::");
               if (si!=-1) // class is nested
               {
-                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si));
+                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,rootNav->tagInfo());
                 if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
                 {
                   baseClass->setArtificial(TRUE); // see bug678139
