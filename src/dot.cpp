@@ -1812,7 +1812,7 @@ void DotNode::writeBox(FTextStream &t,
   t << "\",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\" fontcolor=\"black\"";
+    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\", fontcolor=\"black\"";
   }
   else 
   {
