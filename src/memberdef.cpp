@@ -3312,6 +3312,13 @@ static QCString escapeAnchor(const QCString &anchor)
 
 void MemberDef::setAnchor()
 {
+  if (Config_getBool("USE_METHOD_NAME_FOR_ANCHORS"))
+  {
+    // TODO: Handle conflicting anchors.
+    m_impl->anc = name();
+    return;
+  }
+
   QCString memAnchor = name();
   if (!m_impl->args.isEmpty()) memAnchor+=m_impl->args;
 

@@ -3361,6 +3361,16 @@ remove the intermediate dot files that are used to generate the various graphs.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='USE_METHOD_NAME_FOR_ANCHORS' defval='0'>
+      <docs>
+<![CDATA[
+If the \c USE_METHOD_NAME_FOR_ANCHORS tag is set to \c YES then anchor links (#)
+will use the method name rather than an md5 hash.
+Notice: this does not differentiate between identical method names in the
+same file.
+]]>
+      </docs>
+    </option>
 
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
