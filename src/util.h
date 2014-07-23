@@ -456,5 +456,6 @@ void convertProtectionLevel(
                    int *outListType2
                   );
 
+bool isAliasCommand(QCString cmd);
 #endif
 

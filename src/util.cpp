@@ -7120,10 +7120,37 @@ static QCString escapeCommas(const QCString &s)
   return result.data();
 }
 
+bool isAliasCommand(QCString cmd)
+{
+  // the keys also contain the {n} part of the alias so we cannot use find but have to loop over over the keys
+  // if the length of the key matches the length of the input copmmand we can directly do a check
+  // in case the key is longer we have to check the length of the input cmd and the following character has to be a {
+  // otherwise key is to small
+
+  int l = qstrlen(cmd);
+  QDictIterator<QCString> adi(Doxygen::aliasDict);
+  const char *s;
+  for (adi.toFirst();(s=adi.currentKey());++adi)
+  {
+    int l1 = strlen(s);
+    if (l1 == l)
+    {
+      if (qstrcmp(cmd,s) == 0) return(true);
+    }
+    else if (l1 > l)
+    {
+      if (qstrncmp(cmd,s,l) == 0)
+      {
+        if (s[l] == '{') return(true);
+      }
+    }
+  }
+  return(false);
+}
 static QCString expandAliasRec(const QCString s,bool allowRecursion)
 {
   QCString result;
-  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
+  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*[ \t]*");
   QCString value=s;
   int i,p=0,l;
   while ((i=cmdPat.match(value,p,&l))!=-1)
@@ -7138,6 +7165,7 @@ static QCString expandAliasRec(const QCString s,bool allowRecursion)
     if (hasArgs)
     {
       numArgs = countAliasArguments(args);
+      cmd = cmd.stripWhiteSpace();
       cmd += QCString().sprintf("{%d}",numArgs);  // alias name + {n}
     }
     QCString *aliasText=Doxygen::aliasDict.find(cmd);
