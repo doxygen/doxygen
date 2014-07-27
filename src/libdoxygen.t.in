@@ -111,8 +111,7 @@ sub GenerateLex {
 	$(YACC) -l -d -p ce_parsexpYY constexp.y -o \$(GENERATED_SRC)/ce_parse.c 
 	-rm $(GENERATED_SRC)/ce_parse.c
 
-#$ GenerateDep("\$(GENERATED_SRC)/vhdlscanner.cpp","vhdlscanner.l");
-#$ GenerateLex("vhdlscanner",1);
+
 
 TO_C_CMD=$(PYTHON) to_c_cmd.py < $< > $@
 

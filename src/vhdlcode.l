@@ -1576,6 +1576,8 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   // g_args.resize(0);
   g_parmName.resize(0);
   g_parmType.resize(0);
+  if(!g_lexInit)
+    VhdlDocGen::init();
   if (memberDef) 
   {
     setParameterList(memberDef);

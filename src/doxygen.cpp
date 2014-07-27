@@ -79,7 +79,7 @@
 #include "store.h"
 #include "marshal.h"
 #include "portable.h"
-#include "vhdlscanner.h"
+#include "vhdljjparser.h"
 #include "vhdldocgen.h"
 #include "eclipsehelp.h"
 #include "cite.h"

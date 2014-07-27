@@ -37,7 +37,7 @@
 #include "parserintf.h"
 #include "marshal.h"
 #include "objcache.h"
-#include "vhdlscanner.h"
+
 #include "vhdldocgen.h"
 #include "arguments.h"
 #include "memberlist.h"

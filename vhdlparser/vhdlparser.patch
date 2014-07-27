@@ -1,0 +1,10 @@
+--- VhdlParser.h	2014-07-27 14:26:18.000000000 +0200
++++ VhdlParser.h.new	2014-07-27 14:23:22.000000000 +0200
+@@ -6,6 +6,7 @@
+ #include "TokenManager.h"
+ #include "VhdlParserTokenManager.h"
+ #include "VhdlParser.h"
++#include "vhdljjparser.h"
+ 
+ #include "VhdlParserConstants.h"
+ #include "ErrorHandler.h"
