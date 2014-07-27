@@ -1360,7 +1360,7 @@ QCString Definition::qualifiedName() const
   //printf("end %s::qualifiedName()=%s\n",name().data(),m_impl->qualifiedName.data());
   //count--;
   return m_impl->qualifiedName;
-};
+}
 
 void Definition::setOuterScope(Definition *d)
 {

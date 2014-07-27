@@ -27,6 +27,7 @@
 #include <qfile.h>
 #include <qregexp.h>
 #include <qcstring.h>
+#include <qdir.h>
 
 #include "sortdict.h"
 #include "ftextstream.h"
@@ -3465,6 +3466,25 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       delete m_templateExpr;
       delete m_fileExpr;
     }
+    void mkpath(TemplateContextImpl *ci,const QCString &fileName)
+    {
+      int i=fileName.find('/');
+      QCString outputDir = ci->outputDirectory();
+      QDir d(outputDir);
+      int j=0;
+      while (i!=-1) // fileName contains path part
+      {
+        if (d.exists())
+        {
+          bool ok = d.mkdir(fileName.mid(j,i-j));
+          if (!ok) break;
+          QCString dirName = outputDir+'/'+fileName.left(i);
+          d = QDir(dirName);
+          j = i+1;
+        }
+        i=fileName.find('/',i+1);
+      }
+    }
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -3490,6 +3510,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
             TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
+              //mkpath(ci,outputFile);
               QCString extension=outputFile;
               int i=extension.findRev('.');
               if (i!=-1)

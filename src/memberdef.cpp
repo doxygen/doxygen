@@ -5102,6 +5102,6 @@ bool MemberDef::isFunctionOrSignalSlot() const
 
 bool MemberDef::isRelatedOrFriend() const
 {
-  return isRelated() || isForeign() || isFriend() && !isFriendToHide();
+  return isRelated() || isForeign() || (isFriend() && !isFriendToHide());
 }
 

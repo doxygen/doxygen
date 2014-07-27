@@ -13,6 +13,8 @@
  *
  */
 
+#include <qdir.h>
+
 #include "context.h"
 #include "config.h"
 #include "index.h"
@@ -286,7 +288,7 @@ class ConfigContext::Private
 {
   public:
     Private() { m_cachedLists.setAutoDelete(TRUE); }
-   ~Private() { }
+    virtual ~Private() { }
     TemplateVariant fetchList(const QCString &name,const QStrList *list)
     {
       TemplateVariant *v = m_cachedLists.find(name);
@@ -663,6 +665,19 @@ class TranslateContext::Private : public PropertyMapper
       static bool extractAll = Config_getBool("EXTRACT_ALL");
       return theTranslator->trNamespaceMemberDescription(extractAll);
     }
+    TemplateVariant classMembersDescription() const
+    {
+      static bool extractAll = Config_getBool("EXTRACT_ALL");
+      static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+      if (fortranOpt)
+      {
+        return theTranslator->trCompoundMembersDescriptionFortran(extractAll);
+      }
+      else
+      {
+        return theTranslator->trCompoundMembersDescription(extractAll);
+      }
+    }
     TemplateVariant relatedPagesDesc() const
     {
       return theTranslator->trRelatedPagesDescription();
@@ -805,6 +820,11 @@ class TranslateContext::Private : public PropertyMapper
       bool extractAll = Config_getBool("EXTRACT_ALL");
       return theTranslator->trModulesListDescription(extractAll);
     }
+    TemplateVariant namespaceListDescription() const
+    {
+      bool extractAll = Config_getBool("EXTRACT_ALL");
+      return theTranslator->trNamespaceListDescription(extractAll);
+    }
     TemplateVariant directories() const
     {
       return theTranslator->trDirectories();
@@ -871,6 +891,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("classHierarchy",    this,&Private::classHierarchy);
       //%% string classMembers
       addProperty("classMembers",      this,&Private::classMembers);
+      //%% string classMembersDescription
+      addProperty("classMembersDescription",this,&Private::classMembersDescription);
       //%% string modules
       addProperty("modules",           this,&Private::modules);
       //%% string namespaces
@@ -961,6 +983,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("detailLevel",        this,&Private::detailLevel);
       //%% string fileListDescription
       addProperty("fileListDescription",this,&Private::fileListDescription);
+      //%% string namespaceListDescription
+      addProperty("namespaceListDescription",this,&Private::namespaceListDescription);
       //%% string directories
       addProperty("directories",        this,&Private::directories);
       //%% string moduleDescript
@@ -1177,7 +1201,7 @@ class DefinitionContext : public PropertyMapper
       static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
       return createSubdirs ? QCString("../../") : QCString("");
     }
-    TemplateVariant relPath() const
+    virtual TemplateVariant relPath() const
     {
       return relPathAsString();
     }
@@ -1499,6 +1523,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       addProperty("memberGroups",              this,&Private::memberGroups);
       addProperty("additionalInheritedMembers",this,&Private::additionalInheritedMembers);
     }
+    virtual ~Private() {}
     TemplateVariant title() const
     {
       return TemplateVariant(m_classDef->title());
@@ -2175,6 +2200,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       addProperty("detailedVariables", this,&Private::detailedVariables);
       addProperty("inlineClasses",     this,&Private::inlineClasses);
     }
+    virtual ~Private() {}
     TemplateVariant title() const
     {
       return TemplateVariant(m_namespaceDef->title());
@@ -2433,6 +2459,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       addProperty("inlineClasses",             this,&Private::inlineClasses);
       addProperty("compoundType",              this,&Private::compoundType);
     }
+    virtual ~Private() {}
     TemplateVariant title() const
     {
       return m_fileDef->title();
@@ -2789,6 +2816,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       addProperty("hasDetails",    this,&Private::hasDetails);
       addProperty("compoundType",  this,&Private::compoundType);
     }
+    virtual ~Private() {}
     TemplateVariant title() const
     {
       return TemplateVariant(m_dirDef->shortTitle());
@@ -2849,6 +2877,10 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     {
       return theTranslator->trDir(FALSE,TRUE);
     }
+    TemplateVariant relPath() const
+    {
+      return "";
+    }
 
   private:
     DirDef *m_dirDef;
@@ -2891,6 +2923,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
       addProperty("highlight",this,&Private::highlight);
       addProperty("subhighlight",this,&Private::subHighlight);
     }
+    virtual ~Private() {}
     TemplateVariant title() const
     {
       if (m_isMainPage)
@@ -2909,9 +2942,27 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
         return m_pageDef->title();
       }
     }
+    TemplateVariant relPath() const
+    {
+      if (m_pageDef==Doxygen::mainPage)
+      {
+        return "";
+      }
+      else
+      {
+        return DefinitionContext<PageContext::Private>::relPath();
+      }
+    }
     TemplateVariant highlight() const
     {
-      return "pages";
+      if (m_pageDef==Doxygen::mainPage)
+      {
+        return "main";
+      }
+      else
+      {
+        return "pages";
+      }
     }
     TemplateVariant subHighlight() const
     {
@@ -3186,6 +3237,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         if (md->isRaisable())  m_cache.eventAttrs->append("raise");
       }
     }
+    virtual ~Private() {}
     TemplateVariant fieldType() const
     {
       return createLinkedText(m_memberDef,relPathAsString(),m_memberDef->fieldType());
@@ -4161,6 +4213,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       addProperty("inlineClasses",             this,&Private::inlineClasses);
       addProperty("compoundType",              this,&Private::compoundType);
     }
+    virtual ~Private() {}
     TemplateVariant title() const
     {
       return TemplateVariant(m_groupDef->groupTitle());
@@ -5784,6 +5837,23 @@ TemplateListIntf::ConstIterator *NamespaceListContext::createIterator() const
 class NamespaceTreeContext::Private : public PropertyMapper
 {
   public:
+    Private()
+    {
+      m_namespaceTree.reset(NestingContext::alloc(0,0));
+      if (Doxygen::namespaceSDict)
+      {
+        m_namespaceTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,FALSE);
+      }
+      //%% Nesting tree
+      addProperty("tree",this,&Private::tree);
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("relPath",this,&Private::relPath);
+      addProperty("highlight",this,&Private::highlight);
+      addProperty("subhighlight",this,&Private::subhighlight);
+      addProperty("title",this,&Private::title);
+      addProperty("preferredDepth",this,&Private::preferredDepth);
+      addProperty("maxDepth",this,&Private::maxDepth);
+    }
     TemplateVariant tree() const
     {
       return m_namespaceTree.get();
@@ -5822,23 +5892,35 @@ class NamespaceTreeContext::Private : public PropertyMapper
         return theTranslator->trNamespaceList();
       }
     }
-    Private()
+    TemplateVariant maxDepth() const
     {
-      m_namespaceTree.reset(NestingContext::alloc(0,0));
-      if (Doxygen::namespaceSDict)
+      if (!m_cache.maxDepthComputed)
       {
-        m_namespaceTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,FALSE);
+        m_cache.maxDepth = computeMaxDepth(m_namespaceTree.get());
+        m_cache.maxDepthComputed=TRUE;
       }
-      //%% Nesting tree
-      addProperty("tree",this,&Private::tree);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
+      return m_cache.maxDepth;
+    }
+    TemplateVariant preferredDepth() const
+    {
+      if (!m_cache.preferredDepthComputed)
+      {
+        m_cache.preferredDepth = computePreferredDepth(m_namespaceTree.get(),maxDepth().toInt());
+        m_cache.preferredDepthComputed=TRUE;
+      }
+      return m_cache.preferredDepth;
     }
   private:
     SharedPtr<NestingContext> m_namespaceTree;
+    struct Cachable
+    {
+      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      int   maxDepth;
+      bool  maxDepthComputed;
+      int   preferredDepth;
+      bool  preferredDepthComputed;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
@@ -7581,7 +7663,7 @@ class InheritedMemberInfoContext::Private : public PropertyMapper
       addProperty("id",            this,&Private::id);
       addProperty("inheritedFrom", this,&Private::inheritedFrom);
     }
-    ~Private()
+    virtual ~Private()
     {
       delete m_memberList;
     }
@@ -8120,6 +8202,8 @@ void generateOutputViaTemplate()
         g_globals.outputFormat = ContextGlobals::Html;
         g_globals.dynSectionId = 0;
         g_globals.outputDir    = Config_getString("HTML_OUTPUT");
+        QDir dir(g_globals.outputDir);
+        createSubDirs(dir);
         HtmlEscaper htmlEsc;
         ctx->setEscapeIntf(Config_getString("HTML_FILE_EXTENSION"),&htmlEsc);
         HtmlSpaceless spl;

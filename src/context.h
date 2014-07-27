@@ -66,7 +66,7 @@ class RefCountedContext
       m_className=className;
       m_insideRelease = FALSE;
     }
-    virtual ~RefCountedContext()
+    ~RefCountedContext()
     {
       if (!m_insideRelease) abort();
     }
@@ -152,7 +152,7 @@ class DoxygenContext : public RefCountedContext, public TemplateStructIntf
 
   private:
     DoxygenContext();
-   ~DoxygenContext();
+    ~DoxygenContext();
     class Private;
     Private *p;
 };
