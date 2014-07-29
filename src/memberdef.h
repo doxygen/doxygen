@@ -123,7 +123,11 @@ class MemberDef : public Definition
     bool isExplicit() const;
     bool isMutable() const;
     bool isGettable() const;
+    bool isPrivateGettable() const;
+    bool isProtectedGettable() const;
     bool isSettable() const;
+    bool isPrivateSettable() const;
+    bool isProtectedSettable() const;
     bool isReadable() const;
     bool isWritable() const;
     bool isAddable() const;

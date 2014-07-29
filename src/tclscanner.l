@@ -534,6 +534,24 @@ static void tcl_name(const QCString &ns0, const QCString &name0, QCString &ns, Q
   }
 }
 
+//! Check name. Strip namespace qualifiers from name0 if inside inlined code segment.
+// @return 'ns' and 'name' of given current 'ns0' and 'name0'
+static void tcl_name_SnippetAware(const QCString &ns0, const QCString &name0, QCString &ns, QCString &name)
+{
+  // If we are inside an inlined code snippet then ns0
+  // already containes the complete namespace path.
+  // Any namespace qualifiers in name0 are redundant.
+  int i = name0.findRev("::");
+  if (i>=0 && tcl.memberdef)
+  {
+    tcl_name(ns0, name0.mid(i+2), ns, name);
+  }
+  else
+  {
+    tcl_name(ns0, name0, ns, name);
+  }
+}
+
 // Check and return namespace entry.
 // @return namespace entry
 Entry* tcl_entry_namespace(const QCString ns)
@@ -713,6 +731,40 @@ static void tcl_codify(const char *s,const QCString &str)
 static void tcl_codify_cmd(const char *s,int i)
 {
   tcl_codify(s,(*tcl.list_commandwords.at(i)).utf8());
+}
+//! codify a string token
+//
+// codifies string according to type.
+// Starts a new scan context if needed (*myScan==0 and type == "script").
+// Returns NULL or the created scan context.
+//
+static tcl_scan *tcl_codify_token(tcl_scan *myScan, const QCString type, const QCString string)
+{
+    if (myScan != NULL)
+    {
+      if (type != NULL)
+      {
+        myScan->after << type << string;
+      }
+      else
+      {
+        myScan->after << "NULL" << string;
+      }
+    }
+    else
+    {
+      if (qstrcmp(type, "script") == 0)
+      {
+        myScan = tcl.scan.at(0);
+        myScan = tcl_scan_start('?', string,
+                myScan->ns, myScan->entry_cl, myScan->entry_fn);
+      }
+      else
+      {
+        tcl_codify((const char*)type, string);
+      }
+    }
+    return myScan;
 }
 
 //-----------------------------------------------------------------------------
@@ -1716,14 +1768,7 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
   if (i%2 != 0)
   {
     // handle white space
-    if (myScan!=NULL)
-    {
-      myScan->after << "NULL" << myName;
-    }
-    else
-    {
-      tcl_codify(NULL,myName);
-    }
+    myScan = tcl_codify_token(myScan, "NULL", myName);
   }
   else
   {
@@ -1766,29 +1811,13 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
       {
         // the first opening bracket, output what we have so far
         myStr+=c;
-        if (myScan!=NULL)
-        {
-          myScan->after << "NULL" << myStr;
-        }
-        else
-        {
-          tcl_codify(NULL,myStr);
-        }
+        myScan = tcl_codify_token(myScan, "NULL", myStr);
         myStr="";
       }
       else if (c==']' && !backslashed && insideBrackets==0 && insideBraces==0)
       {
         // the last closing bracket, start recursion, switch to deferred
-        if (myScan!=NULL)
-        {
-          myScan->after << "script" << myStr;
-        }
-        else
-        {
-          myScan=tcl.scan.at(0);
-          myScan = tcl_scan_start('?',myStr,
-                  myScan->ns,myScan->entry_cl,myScan->entry_fn);
-        }
+        myScan = tcl_codify_token(myScan, "script", myStr);
         myStr="";
         myStr+=c;
       }
@@ -1797,23 +1826,174 @@ static tcl_scan *tcl_command_ARG(tcl_scan *myScan, unsigned int i, bool ignoreOu
          myStr+=c;
       }
     }
-    if (myScan!=NULL)
+    if (i == 0 && myScan == NULL)
     {
-      myScan->after << "NULL" << myStr;
+      tcl_codify_link(myStr);
     }
     else
     {
-      if (i==0)
-      {
-        tcl_codify_link(myStr);
-      }
-      else
-      {
-        tcl_codify(NULL,myStr);
-      }
+      myScan = tcl_codify_token(myScan, "NULL", myStr);
     }
   }
   return (myScan);
+}
+
+//! Handle internal tcl commands.
+// "eval arg ?arg ...?"
+static void tcl_command_EVAL()
+{
+D
+  tcl_codify_cmd("keyword", 0);
+  tcl_scan *myScan = tcl.scan.at(0);
+  QCString myString = "";
+  // we simply rescan the line without the eval
+  // we include leading whitespace because tcl_scan_start will examine
+  // the first char. If it finds a bracket it will assume one expression in brackets.
+  // Example: eval [list set] [list NotInvoked] [Invoked NotInvoked]
+  for (unsigned int i = 1; i < tcl.list_commandwords.count(); i++)
+  {
+    myString += (*tcl.list_commandwords.at(i)).utf8();
+  }
+  myScan = tcl_scan_start('?', myString,
+        myScan->ns, myScan->entry_cl, myScan->entry_fn);
+}
+
+//! Handle internal tcl commands.
+// switch ?options? string pattern body ?pattern body ...? 
+// switch ?options? string {pattern body ?pattern body ...?} 
+static void tcl_command_SWITCH()
+{
+D
+  tcl_codify_cmd("keyword",0);
+  tcl_codify_cmd(NULL,1);
+  tcl_scan *myScan=NULL;
+  unsigned int i;
+  QCString token;
+  // first: find the last option token
+  unsigned int lastOptionIndex = 0;
+  for (i = 2; i<tcl.list_commandwords.count(); i += 2)
+  {
+    token = (*tcl.list_commandwords.at(i)).utf8();
+    if (token == "--")
+    {
+      lastOptionIndex = i;
+      break;
+    }
+    if (token[0] == '-' && i - lastOptionIndex == 2)
+    {
+      // options start with dash and should form a continuous chain
+      lastOptionIndex = i;
+    }
+  }
+  // second: eat up options
+  for (i = 2; i <= lastOptionIndex; i++)
+  {
+    myScan = tcl_command_ARG(myScan, i, false);
+  }
+  // third: how many tokens are left?
+  if (tcl.list_commandwords.count() - lastOptionIndex == 5)
+  {
+    //printf("syntax: switch ?options? string {pattern body ?pattern body ...?}\n");
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 1, false);
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 2, false);
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 3, false);
+    // walk trough the list step by step
+    // this way we can preserve whitespace
+    bool inBraces = false;
+    bool nextIsPattern = true;
+    int size;
+    const char *elem;
+    const char *next;
+    token = (*tcl.list_commandwords.at(lastOptionIndex + 4)).utf8();
+    if (token[0] == '{')
+    {
+      inBraces = true;
+      token = token.mid(1, token.length() - 2);
+      myScan = tcl_codify_token(myScan, "NULL", QCString("{"));
+    }
+    // ToDo: check if multibyte chars are handled correctly
+    while (token.length() > 0)
+    {
+      TclFindElement((const char*)token, token.length(), &elem, &next, &size, NULL);
+      //printf("%s\nstart=%d, elem=%d, next=%d, size=%d, brace=%d\n",
+      //        (const char*) token, (const char*) token, elem, next, size, brace);
+      //
+      // handle leading whitespace/opening brace/double quotes
+      if (elem - token > 0)
+      {
+        myScan = tcl_codify_token(myScan, "NULL", token.left(elem - token));
+      }
+      // handle actual element without braces/double quotes
+      if (nextIsPattern)
+      {
+        myScan = tcl_codify_token(myScan, "NULL", token.mid(elem - token,size));
+        //printf("pattern=%s\n",(const char*) token.mid(elem - token, size));
+      }
+      else {
+        myScan = tcl_codify_token(myScan, "script", token.mid(elem - token, size));
+        //printf("script =%s\n", (const char*) token.mid(elem - token, size));
+      }
+      // handle trailing whitespace/closing brace/double quotes
+      if (next - elem - size > 0)
+      {
+        myScan = tcl_codify_token(myScan, "NULL", token.mid(elem - token + size, next - elem - size));
+      }
+      nextIsPattern = !nextIsPattern;
+      token = token.mid(next - token);
+    }
+    if (inBraces)
+    {
+      myScan = tcl_codify_token(myScan, "NULL", QCString("}"));
+    }
+    if (!nextIsPattern)
+    {
+      tcl_war("Invalid switch syntax: last token is not a list of even elements.\n");
+      //tcl_war("%s\n", tcl.list_commandwords.join(" ").ascii());
+    }
+  }
+  else if ((tcl.list_commandwords.count() - lastOptionIndex > 6) &&
+           ((tcl.list_commandwords.count() - lastOptionIndex-3) % 4 == 0))
+  {
+    //printf("detected: switch ?options? string pattern body ?pattern body ...?\n");
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 1, false);
+    myScan = tcl_command_ARG(myScan, lastOptionIndex + 2, false);
+    //printf("value=%s\n",(const char*) (*tcl.list_commandwords.at(lastOptionIndex + 2)).utf8());
+    for (i = lastOptionIndex + 3; i < tcl.list_commandwords.count(); i += 4)
+    {
+      myScan = tcl_command_ARG(myScan, i + 0, false); // whitespace
+      myScan = tcl_command_ARG(myScan, i + 1, false); // pattern
+      myScan = tcl_command_ARG(myScan, i + 2, false); // whitespace
+      myScan = tcl_codify_token(myScan, "script", (*tcl.list_commandwords.at(i+3)).utf8());  // script
+      //printf("pattern=%s\n",(const char*) (*tcl.list_commandwords.at(i+1)).utf8());
+      //printf("script=%s\n",(const char*) (*tcl.list_commandwords.at(i+3)).utf8());
+    }
+  }
+  else
+  {
+    // not properly detected syntax
+    tcl_war("Invalid switch syntax: %d options followed by %d tokens.\n",
+            lastOptionIndex / 2, (tcl.list_commandwords.count() - 1) / 2 - lastOptionIndex / 2);
+    for (i = lastOptionIndex + 1; i <= tcl.list_commandwords.count(); i++)
+    {
+      myScan = tcl_command_ARG(myScan, i, false);
+    }
+  }
+}
+
+//! Handle internal tcl commands.
+// "catch script ?resultVarName? ?optionsVarName?"
+static void tcl_command_CATCH()
+{
+D
+  tcl_codify_cmd("keyword", 0);
+  tcl_codify_cmd(NULL, 1);
+  tcl_scan *myScan = tcl.scan.at(0);
+  myScan = tcl_scan_start('?', *tcl.list_commandwords.at(2),
+        myScan->ns, myScan->entry_cl, myScan->entry_fn);
+  for (unsigned int i = 3; i < tcl.list_commandwords.count(); i++)
+  {
+    myScan = tcl_command_ARG(myScan, i, false);
+  }
 }
 
 //! Handle internal tcl commands.
@@ -1937,7 +2117,7 @@ D
   tcl_codify_cmd(NULL,3);
   tcl_codify_cmd(NULL,4);
   tcl_codify_cmd(NULL,5);
-  tcl_name(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
+  tcl_name_SnippetAware(myScan->ns,(*tcl.list_commandwords.at(2)).utf8(),myNs,myName);
   if (myNs.length())
   {
     myEntryNs = tcl_entry_namespace(myNs);
@@ -2195,15 +2375,62 @@ D
   }
   myEntryCl = tcl_entry_class(myName);
   myStr = (*tcl.list_commandwords.at(4)).utf8();
-  if (tcl.list_commandwords.count() > 5)
+  //
+  // special cases first
+  // oo::define classname method methodname args script
+  // oo::define classname constructor argList bodyScript
+  // oo::define classname destructor bodyScript
+  unsigned int n =tcl.list_commandwords.count();
+  if ((myStr == "method"      && n == 11) ||
+      (myStr == "constructor" && n == 9) ||
+      (myStr == "destructor"  && n == 7))
   {
-    for (uint i=5;i<tcl.list_commandwords.count();i++)
+    for (unsigned int i = 4; i < n-1; i++)
     {
-      myStr.append((*tcl.list_commandwords.at(i)).utf8());
+      tcl_codify_cmd("NULL",i);
     }
-    tcl.word_is=' ';
+    Entry *myEntry;
+    QCString myMethod;
+    tcl_name(myScan->ns,(*tcl.list_commandwords.at(n==11?6:4)).utf8(),myNs,myMethod);
+    // code snippet taken from tcl_command_METHOD()/tcl_command_CONSTRUCTOR
+    tcl.fn.remove(myMethod);
+    tcl.entry_current->section = Entry::FUNCTION_SEC;
+    tcl.entry_current->mtype = Method;
+    tcl.entry_current->name = myMethod;
+    tcl.entry_current->startLine = tcl.line_command;
+    tcl.entry_current->bodyLine = tcl.line_body0;
+    tcl.entry_current->endBodyLine = tcl.line_body1;
+    tcl_protection(tcl.entry_current);
+    if (n==11)
+    {
+      tcl_command_ARGLIST(*tcl.list_commandwords.at(8));
+    }
+    else if (n==9)
+    {
+      tcl_command_ARGLIST(*tcl.list_commandwords.at(6));
+    }
+    if (myEntryCl) myEntryCl->addSubEntry(tcl.entry_current);
+    tcl.fn.insert(myMethod,tcl.entry_current);
+    myEntry = tcl.entry_current;
+    myScan = tcl_scan_start('?',*tcl.list_commandwords.at(n-1),
+          myNs, myEntryCl, myEntry);
   }
-  myScan = tcl_scan_start(tcl.word_is,myStr,myName,myEntryCl,NULL);
+  else
+  {
+    // The general case
+    // Simply concat all arguments into a script.
+    // Note: all documentation collected just before the
+    // oo::define command is lost
+    if (tcl.list_commandwords.count() > 5)
+    {
+      for (uint i=5;i<tcl.list_commandwords.count();i++)
+      {
+        myStr.append((*tcl.list_commandwords.at(i)).utf8());
+      }
+      tcl.word_is=' ';
+    }
+    myScan = tcl_scan_start(tcl.word_is,myStr,myName,myEntryCl,NULL);
+  }
 }
 
 //! Handle \c variable statements.
@@ -2458,9 +2685,26 @@ tcl_inf("->\n");
   }
   /*
    * Start of internal tcl keywords
-   * Ready: if, for, foreach, while
-   * TODO: switch, eval, ?
+   * Ready: switch, eval, catch, if, for, foreach, while
    */
+  if (myStr=="switch")
+  {
+    if (tcl.list_commandwords.count() < 5) {myLine=__LINE__;goto command_warn;}
+    tcl_command_SWITCH();
+    goto command_end;
+  }
+  if (myStr=="eval")
+  {
+    if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
+    tcl_command_EVAL();
+    goto command_end;
+  }
+  if (myStr=="catch")
+  {
+    if (tcl.list_commandwords.count() < 3) {myLine=__LINE__;goto command_warn;}
+    tcl_command_CATCH();
+    goto command_end;
+  }
   if (myStr=="for")
   {
     if (tcl.list_commandwords.count() != 9) {myLine=__LINE__;goto command_warn;}

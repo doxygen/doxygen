@@ -1362,13 +1362,21 @@ QCString Definition::qualifiedName() const
   return m_impl->qualifiedName;
 };
 
-void Definition::setOuterScope(Definition *d) 
+void Definition::setOuterScope(Definition *d)
 {
   //printf("%s::setOuterScope(%s)\n",name().data(),d?d->name().data():"<none>");
-  if (m_impl->outerScope!=d)
-  { 
+  Definition *p = m_impl->outerScope;
+  bool found=false;
+  // make sure that we are not creating a recursive scope relation.
+  while (p && !found)
+  {
+    found = (p==d);
+    p = p->m_impl->outerScope;
+  }
+  if (!found)
+  {
     m_impl->qualifiedName.resize(0); // flush cached scope name
-    m_impl->outerScope = d; 
+    m_impl->outerScope = d;
   }
   m_impl->hidden = m_impl->hidden || d->isHidden();
 }

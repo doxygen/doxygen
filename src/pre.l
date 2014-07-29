@@ -886,8 +886,9 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   }
 
   // PHASE 2: apply the macro function
-  if (argCount==def->nargs || 
-      (argCount>def->nargs && def->varArgs)) // matching parameters lists
+  if (argCount==def->nargs || // same number of arguments
+      (argCount>=def->nargs-1 && def->varArgs)) // variadic macro with at least as many
+                                                // params as the non-variadic part (see bug731985)
   {
     uint k=0;
     // substitution of all formal arguments

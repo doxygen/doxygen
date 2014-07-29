@@ -58,6 +58,10 @@ static QCString getListOfBibFiles(const QCString &sep,bool namesOnly)
     {
       bibFile = bibFile.left(bibFile.length()-4);
     }
+    else
+    {
+      if (!namesOnly && bibFile.right(4)!=".bib") bibFile += ".bib";
+    }
     if ((i=bibFile.findRev('/'))!=-1) // strip path
     {
       bibFile = bibFile.mid(i+1);

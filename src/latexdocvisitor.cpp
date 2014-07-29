@@ -1587,7 +1587,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   baseName.prepend("dot_");
   QCString outDir = Config_getString("LATEX_OUTPUT");
   QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,EPS);
+  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS);
   if (hasCaption)
   {
     m_t << "\n\\begin{DoxyImage}\n";

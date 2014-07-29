@@ -464,8 +464,8 @@ The parser tries to guess if the source code is fixed format Fortran or
 free format Fortran code. This may not always be correct. If not
 one should use \ref cfg_extension_mapping "EXTENSION_MAPPING" to correct this.
 By setting `EXTENSION_MAPPING =  f=FortranFixed f90=FortranFree` files with
-extension \c f90 are interpreted as fixed format Fortran code and files with
-extension \c f are interpreted as free format Fortran code.
+extension \c f are interpreted as fixed format Fortran code and files with
+extension \c f90 are interpreted as free format Fortran code.
 
 For Fortran "!>" or "!<" starts a comment and "!!" or "!>" can be used to 
 continue an one line comment into a multi-line comment.

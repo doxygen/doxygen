@@ -716,9 +716,13 @@ fi
 
 # -----------------------------------------------------------------------------
 
-mkdir -p generated_src/doxygen
+if test '!' -d "generated_src/doxygen"; then
+  mkdir -p generated_src/doxygen
+fi
 if test "$f_wizard" = YES; then
-  mkdir -p generated_src/doxywizard
+  if test '!' -d "generated_src/doxywizard"; then
+    mkdir -p generated_src/doxywizard
+  fi
 fi
 
 #
@@ -960,7 +964,7 @@ echo "  Generating generated_src/doxygen/lang_cfg.h..."
 if test "$f_english" = YES; then
    $f_python src/lang_cfg.py ENONLY > generated_src/doxygen/lang_cfg.h
 else
-   f_ulangs=`echo $f_langs | tr '[a-z,]' '[A-Z ]'`
+   f_ulangs=`echo $f_langs | tr '[a-z]' '[A-Z]' | tr ',' ' '`
    $f_python src/lang_cfg.py $f_ulangs > generated_src/doxygen/lang_cfg.h
 fi
 

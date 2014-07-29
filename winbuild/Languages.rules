@@ -6,8 +6,8 @@
         <Rules>
                 <CustomBuildRule
                         Name="Languages"
-                        DisplayName="Settings"
-                        CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] &gt; $(IntDir)/$(InputName).h"
+                        DisplayName="Languages"
+                        CommandLine="python &quot;$(InputPath)&quot; [AllOptions] [AdditionalOptions] &gt; $(IntDir)/$(InputName).h"
                         Outputs="$(IntDir)/$(InputName).h"
                         FileExtensions="*.py"
                         AdditionalDependencies=""

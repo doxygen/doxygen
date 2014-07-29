@@ -16,11 +16,6 @@
  *
  */
 
-#ifdef _WIN32
-#include <windows.h>
-#define BITMAP W_BITMAP
-#endif
-
 #include <stdlib.h>
 
 #include <qdir.h>
@@ -1812,7 +1807,7 @@ void DotNode::writeBox(FTextStream &t,
   t << "\",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\" fontcolor=\"black\"";
+    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\", fontcolor=\"black\"";
   }
   else 
   {
@@ -1896,7 +1891,7 @@ void DotNode::writeArrow(FTextStream &t,
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->m_color] << "\"";
   }
 
-  if (format==BITMAP) t << ",fontname=\"" << FONTNAME << "\"";
+  if (format==GOF_BITMAP) t << ",fontname=\"" << FONTNAME << "\"";
   t << "];" << endl; 
 }
 
@@ -2313,7 +2308,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
     {
       if (node->m_subgraphId==n->m_subgraphId) 
       {
-        node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,TRUE,TRUE);
+        node->write(md5stream,DotNode::Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE,TRUE);
       }
     }
     writeGraphFooter(md5stream);
@@ -3080,7 +3075,8 @@ QCString DotClassGraph::diskName() const
 }
 
 QCString DotClassGraph::writeGraph(FTextStream &out,
-                               GraphOutputFormat format,
+                               GraphOutputFormat graphFormat,
+                               EmbeddedOutputFormat textFormat,
                                const char *path,
                                const char *fileName,
                                const char *relPath,
@@ -3128,19 +3124,19 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   if (updateDotGraph(m_startNode,
                  m_graphType,
                  absBaseName,
-                 format,
+                 graphFormat,
                  m_lrRank,
                  m_graphType==DotNode::Inheritance,
                  TRUE,
                  m_startNode->label()
                 ) ||
-      !checkDeliverables(format==BITMAP ? absImgName : 
+      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName : 
                          usePDFLatex    ? absPdfName : absEpsName,
-                         format==BITMAP && generateImageMap ? absMapName : QCString())
+                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
      )
   {
     regenerate=TRUE;
-    if (format==BITMAP) // run dot to create a bitmap image
+    if (graphFormat==GOF_BITMAP) // run dot to create a bitmap image
     {
       QCString dotArgs(maxCmdLine);
 
@@ -3151,7 +3147,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       DotManager::instance()->addRun(dotRun);
 
     }
-    else if (format==EPS) // run dot to create a .eps image
+    else if (graphFormat==GOF_EPS) // run dot to create a .eps image
     {
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
@@ -3167,7 +3163,35 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
-  if (format==BITMAP && generateImageMap) // produce HTML to include the image
+  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
+  {
+    out << "<para>" << endl;
+    out << "    <figure>" << endl;
+    out << "        <title>";
+    switch (m_graphType)
+    {
+      case DotNode::Collaboration:
+        out << "Collaboration graph";
+        break;
+      case DotNode::Inheritance:
+        out << "Inheritance graph";
+        break;
+      default:
+        ASSERT(0);
+        break;
+    }
+    out << "</title>" << endl;
+    out << "        <mediaobject>" << endl;
+    out << "            <imageobject>" << endl;
+    out << "                <imagedata";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << "</imagedata>" << endl;
+    out << "            </imageobject>" << endl;
+    out << "        </mediaobject>" << endl;
+    out << "    </figure>" << endl;
+    out << "</para>" << endl;
+  }
+  else if (graphFormat==GOF_BITMAP && generateImageMap) // produce HTML to include the image
   {
     QCString mapLabel = escapeCharsInString(m_startNode->m_label,FALSE)+"_"+
                         escapeCharsInString(mapName,FALSE);
@@ -3189,7 +3213,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
     {
       out << "<div class=\"center\">";
       out << "<img src=\"" << relPath << baseName << "." 
-        << imgExt << "\" border=\"0\" usemap=\"#"
+        << imgExt << "\" border=\"0\" usemap=\"#" 
         << mapLabel << "\" alt=\"";
       switch (m_graphType)
       {
@@ -3202,10 +3226,9 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
         default:
           ASSERT(0);
           break;
-      } 
+      }
       out << "\"/>";
       out << "</div>" << endl;
-
       if (regenerate || !insertMapFile(out,absMapName,relPath,mapLabel))
       {
         int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
@@ -3214,7 +3237,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       }
     }
   }
-  else if (format==EPS) // produce tex to include the .eps image
+  else if (graphFormat==GOF_EPS) // produce tex to include the .eps image
   {
     if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
@@ -3423,7 +3446,8 @@ QCString DotInclDepGraph::diskName() const
 }
 
 QCString DotInclDepGraph::writeGraph(FTextStream &out,
-                                 GraphOutputFormat format,
+                                 GraphOutputFormat graphFormat,
+                                 EmbeddedOutputFormat textFormat,
                                  const char *path,
                                  const char *fileName,
                                  const char *relPath,
@@ -3458,19 +3482,19 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   if (updateDotGraph(m_startNode,
                  DotNode::Dependency,
                  absBaseName,
-                 format,
+                 graphFormat,
                  FALSE,        // lrRank
                  FALSE,        // renderParents
                  m_inverse,    // backArrows
                  m_startNode->label()
                 ) ||
-      !checkDeliverables(format==BITMAP ? absImgName :
+      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
-                         format==BITMAP && generateImageMap ? absMapName : QCString())
+                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
      )
   {
     regenerate=TRUE;
-    if (format==BITMAP)
+    if (graphFormat==GOF_BITMAP)
     {
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
@@ -3479,7 +3503,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
       DotManager::instance()->addRun(dotRun);
     }
-    else if (format==EPS)
+    else if (graphFormat==GOF_EPS)
     {
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
@@ -3491,12 +3515,27 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
         dotRun->addJob("ps",absEpsName);
       }
       DotManager::instance()->addRun(dotRun);
-            
-    }    
+    }
   }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
-  if (format==BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
+  {
+    out << "<para>" << endl;
+    out << "    <figure>" << endl;
+    out << "        <title>Dependency diagram";
+    out << "</title>" << endl;
+    out << "        <mediaobject>" << endl;
+    out << "            <imageobject>" << endl;
+    out << "                <imagedata";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << "</imagedata>" << endl;
+    out << "            </imageobject>" << endl;
+    out << "        </mediaobject>" << endl;
+    out << "    </figure>" << endl;
+    out << "</para>" << endl;
+  }
+  else if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     if (imgExt=="svg") // Scalable vector graphics
     {
@@ -3514,9 +3553,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
     }
     else // bitmap graphics
     {
-      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
-          << imgExt << "\" border=\"0\" usemap=\"#"
-          << mapName << "\" alt=\"\"/>";
+      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." << imgExt << "\" border=\"0\" usemap=\"#" << mapName << "\" alt=\"\"/>";
       out << "</div>" << endl;
 
       QCString absMapName = absBaseName+".map";
@@ -3528,7 +3565,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       }
     }
   }
-  else if (format==EPS) // encapsulated postscript
+  else if (graphFormat==GOF_EPS) // encapsulated postscript
   {
     if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
@@ -3729,7 +3766,8 @@ DotCallGraph::~DotCallGraph()
   delete m_usedNodes;
 }
 
-QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
+QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphFormat,
+                        EmbeddedOutputFormat textFormat,
                         const char *path,const char *fileName,
                         const char *relPath,bool generateImageMap,int
                         graphId) const
@@ -3757,19 +3795,19 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   if (updateDotGraph(m_startNode,
                  DotNode::CallGraph,
                  absBaseName,
-                 format,
+                 graphFormat,
                  TRUE,         // lrRank
                  FALSE,        // renderParents
                  m_inverse,    // backArrows
                  m_startNode->label()
                 ) ||
-      !checkDeliverables(format==BITMAP ? absImgName :
+      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
-                         format==BITMAP && generateImageMap ? absMapName : QCString())
+                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
      )
   {
     regenerate=TRUE;
-    if (format==BITMAP)
+    if (graphFormat==GOF_BITMAP)
     {
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
@@ -3779,7 +3817,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
       DotManager::instance()->addRun(dotRun);
 
     }
-    else if (format==EPS)
+    else if (graphFormat==GOF_EPS)
     {
       // run dot to create a .eps image
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
@@ -3797,7 +3835,23 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
-  if (format==BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
+  {
+    out << "<para>" << endl;
+    out << "    <figure>" << endl;
+    out << "        <title>Call diagram";
+    out << "</title>" << endl;
+    out << "        <mediaobject>" << endl;
+    out << "            <imageobject>" << endl;
+    out << "                <imagedata";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << "</imagedata>" << endl;
+    out << "            </imageobject>" << endl;
+    out << "        </mediaobject>" << endl;
+    out << "    </figure>" << endl;
+    out << "</para>" << endl;
+  }
+  else if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     if (imgExt=="svg") // Scalable vector graphics
     {
@@ -3815,7 +3869,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
     }
     else // bitmap graphics
     {
-      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
+      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "."
           << imgExt << "\" border=\"0\" usemap=\"#"
           << mapName << "\" alt=\"";
       out << "\"/>";
@@ -3829,7 +3883,7 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
       }
     }
   }
-  else if (format==EPS) // encapsulated postscript
+  else if (graphFormat==GOF_EPS) // encapsulated postscript
   {
     if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
@@ -3865,7 +3919,8 @@ DotDirDeps::~DotDirDeps()
 }
 
 QCString DotDirDeps::writeGraph(FTextStream &out,
-                            GraphOutputFormat format,
+                            GraphOutputFormat graphFormat,
+                            EmbeddedOutputFormat textFormat,
                             const char *path,
                             const char *fileName,
                             const char *relPath,
@@ -3901,9 +3956,9 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   MD5SigToString(md5_sig,sigStr.data(),33);
   bool regenerate=FALSE;
   if (checkAndUpdateMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(format==BITMAP ? absImgName :
+      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
-                         format==BITMAP && generateImageMap ? absMapName : QCString())
+                         graphFormat==GOF_BITMAP && generateImageMap ? absMapName : QCString())
      )
   {
     regenerate=TRUE;
@@ -3917,7 +3972,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
     t << theGraph.data();
     f.close();
 
-    if (format==BITMAP)
+    if (graphFormat==GOF_BITMAP)
     {
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
@@ -3926,7 +3981,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
       DotManager::instance()->addRun(dotRun);
     }
-    else if (format==EPS)
+    else if (graphFormat==GOF_EPS)
     {
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
@@ -3942,7 +3997,23 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   }
   Doxygen::indexList->addImageFile(baseName+"."+imgExt);
 
-  if (format==BITMAP && generateImageMap)
+  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
+  {
+    out << "<para>" << endl;
+    out << "    <figure>" << endl;
+    out << "        <title>Directory Dependency diagram";
+    out << "</title>" << endl;
+    out << "        <mediaobject>" << endl;
+    out << "            <imageobject>" << endl;
+    out << "                <imagedata";
+    out << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    out << "</imagedata>" << endl;
+    out << "            </imageobject>" << endl;
+    out << "        </mediaobject>" << endl;
+    out << "    </figure>" << endl;
+    out << "</para>" << endl;
+  }
+  else if (graphFormat==GOF_BITMAP && generateImageMap)
   {
     if (imgExt=="svg") // Scalable vector graphics
     {
@@ -3960,7 +4031,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
     }
     else // bitmap graphics
     {
-      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
+      out << "<div class=\"center\"><img src=\"" << relPath << baseName << "."
           << imgExt << "\" border=\"0\" usemap=\"#"
           << mapName << "\" alt=\"";
       out << convertToXML(m_dir->displayName());
@@ -3975,7 +4046,7 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
       }
     }
   }
-  else if (format==EPS)
+  else if (graphFormat==GOF_EPS)
   {
     if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
@@ -4085,9 +4156,9 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QCString absOutFile = d.absPath().utf8()+"/"+outFile;
 
   DotRunner dotRun(inFile,d.absPath().data(),FALSE,absImgName);
-  if (format==BITMAP)
+  if (format==GOF_BITMAP)
     dotRun.addJob(imgExt,absImgName);
-  else // format==EPS
+  else // format==GOF_EPS
   {
     if (Config_getBool("USE_PDFLATEX"))
     {
@@ -4105,7 +4176,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
      return;
   }
 
-  if (format==BITMAP) checkDotResult(absImgName);
+  if (format==GOF_BITMAP) checkDotResult(absImgName);
 
   Doxygen::indexList->addImageFile(imgName);
 
@@ -4384,7 +4455,8 @@ void DotGroupCollaboration::addCollaborationMember(
 }
 
 
-QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat format,
+QCString DotGroupCollaboration::writeGraph( FTextStream &t,
+    GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
     const char *path, const char *fileName, const char *relPath,
     bool writeImageMap,int graphId) const
 {
@@ -4411,7 +4483,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
   // write other nodes.
   for (dni.toFirst();(pn=dni.current());++dni)
   {
-    pn->write(md5stream,DotNode::Inheritance,format,TRUE,FALSE,FALSE,FALSE);
+    pn->write(md5stream,DotNode::Inheritance,graphFormat,TRUE,FALSE,FALSE,FALSE);
   }
 
   // write edges
@@ -4441,9 +4513,9 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
   QCString absEpsName  = absBaseName+".eps";
   bool regenerate=FALSE;
   if (checkAndUpdateMd5Signature(absBaseName,sigStr) ||
-      !checkDeliverables(format==BITMAP ? absImgName :
+      !checkDeliverables(graphFormat==GOF_BITMAP ? absImgName :
                          usePDFLatex ? absPdfName : absEpsName,
-                         format==BITMAP /*&& generateImageMap*/ ? absMapName : QCString())
+                         graphFormat==GOF_BITMAP /*&& generateImageMap*/ ? absMapName : QCString())
      )
   {
     regenerate=TRUE;
@@ -4456,7 +4528,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
       dotfile.close();
     }
 
-    if (format==BITMAP) // run dot to create a bitmap image
+    if (graphFormat==GOF_BITMAP) // run dot to create a bitmap image
     {
       QCString dotArgs(maxCmdLine);
 
@@ -4466,7 +4538,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
       DotManager::instance()->addRun(dotRun);
 
     }
-    else if (format==EPS)
+    else if (graphFormat==GOF_EPS)
     {
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       if (usePDFLatex)
@@ -4481,7 +4553,23 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
     }
 
   }
-  if (format==BITMAP && writeImageMap)
+  if (graphFormat==GOF_BITMAP && textFormat==EOF_DocBook)
+  {
+    t << "<para>" << endl;
+    t << "    <figure>" << endl;
+    t << "        <title>Group Collaboration diagram";
+    t << "</title>" << endl;
+    t << "        <mediaobject>" << endl;
+    t << "            <imageobject>" << endl;
+    t << "                <imagedata";
+    t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << relPath << baseName << "." << imgExt << "\">";
+    t << "</imagedata>" << endl;
+    t << "            </imageobject>" << endl;
+    t << "        </mediaobject>" << endl;
+    t << "    </figure>" << endl;
+    t << "</para>" << endl;
+  }
+  else if (graphFormat==GOF_BITMAP && writeImageMap)
   {
     QCString mapLabel = escapeCharsInString(baseName,FALSE);
     t << "<center><table><tr><td>";
@@ -4503,7 +4591,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
     else
     {
       t << "<img src=\"" << relPath << imgName
-        << "\" border=\"0\" alt=\"\" usemap=\"#" 
+        << "\" border=\"0\" alt=\"\" usemap=\"#"
         << mapLabel << "\"/>" << endl;
       if (regenerate || !insertMapFile(t,absMapName,relPath,mapLabel))
       {
@@ -4512,10 +4600,9 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
         t << "<!-- MAP " << mapId << " -->" << endl;
       }
     }
-
     t << "</td></tr></table></center>" << endl;
   }
-  else if (format==EPS)
+  else if (graphFormat==GOF_EPS)
   {
     if (regenerate || !writeVecGfxFigure(t,baseName,absBaseName))
     {

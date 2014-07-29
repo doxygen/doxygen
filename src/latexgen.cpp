@@ -1814,7 +1814,7 @@ void LatexGenerator::startDotGraph()
 
 void LatexGenerator::endDotGraph(const DotClassGraph &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString("LATEX_OUTPUT"),fileName,relPath);
 }
 
 void LatexGenerator::startInclDepGraph() 
@@ -1823,7 +1823,7 @@ void LatexGenerator::startInclDepGraph()
 
 void LatexGenerator::endInclDepGraph(const DotInclDepGraph &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString("LATEX_OUTPUT"),fileName,relPath);
 }
 
 void LatexGenerator::startGroupCollaboration() 
@@ -1832,7 +1832,7 @@ void LatexGenerator::startGroupCollaboration()
 
 void LatexGenerator::endGroupCollaboration(const DotGroupCollaboration &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString("LATEX_OUTPUT"),fileName,relPath);
 }
 
 void LatexGenerator::startCallGraph() 
@@ -1841,7 +1841,7 @@ void LatexGenerator::startCallGraph()
 
 void LatexGenerator::endCallGraph(const DotCallGraph &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString("LATEX_OUTPUT"),fileName,relPath);
 }
 
 void LatexGenerator::startDirDepGraph() 
@@ -1850,7 +1850,7 @@ void LatexGenerator::startDirDepGraph()
 
 void LatexGenerator::endDirDepGraph(const DotDirDeps &g) 
 {
-  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),fileName,relPath);
+  g.writeGraph(t,GOF_EPS,EOF_LaTeX,Config_getString("LATEX_OUTPUT"),fileName,relPath);
 }
 
 void LatexGenerator::startDescription() 

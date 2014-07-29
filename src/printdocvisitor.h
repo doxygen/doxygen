@@ -476,9 +476,10 @@ class PrintDocVisitor : public DocVisitor
       printf("<image src=\"%s\" type=\"",img->name().data());
       switch(img->type())
       {
-        case DocImage::Html: printf("html"); break;
-        case DocImage::Latex: printf("latex"); break;
-        case DocImage::Rtf: printf("rtf"); break;
+        case DocImage::Html:    printf("html"); break;
+        case DocImage::Latex:   printf("latex"); break;
+        case DocImage::Rtf:     printf("rtf"); break;
+        case DocImage::DocBook: printf("docbook"); break;
       }
       printf("\" width=%s height=%s>\n",img->width().data(),img->height().data());
     }

@@ -14,14 +14,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="057_caller_graphs.tcl" bodystart="42" bodyend="46"/>
-        <references refid="namespacebar_1aa1678a9adb588c0b91b118de7cc38ddb" compoundref="057__caller__graphs_8tcl" startline="27" endline="33">bar::slave</references>
+        <location file="057_caller_graphs.tcl" bodystart="44" bodyend="48"/>
+        <references refid="namespacebar_1aa1678a9adb588c0b91b118de7cc38ddb" compoundref="057__caller__graphs_8tcl" startline="29" endline="35">bar::slave</references>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="057_caller_graphs.tcl" line="41" column="1"/>
+    <location file="057_caller_graphs.tcl" line="43" column="1"/>
   </compounddef>
 </doxygen>

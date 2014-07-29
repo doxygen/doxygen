@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="Unistd"
 			DisplayName="Unistd"
-			CommandLine="python $(InputPath) [AllOptions] [AdditionalOptions] $(IntDir)"
+			CommandLine="python &quot;$(InputPath)&quot; [AllOptions] [AdditionalOptions] $(IntDir)"
 			Outputs="$(IntDir)/$(InputName).h"
 			FileExtensions="*.py"
 			ExecutionDescription="Executing Unistd ..."
