@@ -152,15 +152,15 @@ static void format_warn(const char *file,int line,const char *text)
 static void do_warn(const char *tag, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!Config_getBool(tag)) return; // warning type disabled
-  char text[4096];
+  char text[40960];
   int l=0;
   if (prefix)
   {
     strcpy(text,prefix);
     l=strlen(prefix);
   }
-  vsnprintf(text+l, 4096-l, fmt, args);
-  text[4095]='\0';
+  vsnprintf(text+l, 40960-l, fmt, args);
+  text[40960-1]='\0';
   format_warn(file,line,text);
 }
 
