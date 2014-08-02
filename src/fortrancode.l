@@ -1128,6 +1128,8 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
             }
                                           YY_FTN_RESET
   					}
+<*>^{BS}"type"{BS}"="                     { g_code->codify(yytext); }
+
 <*>.					{ 
   					  g_code->codify(yytext);
 					}
