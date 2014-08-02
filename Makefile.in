@@ -21,6 +21,7 @@ clean: FORCE
 	- cd qtools ; $(MAKE) clean
 	- cd src ; $(MAKE) clean
 	- cd libmd5 ; $(MAKE) clean
+	- cd vhdlparser ; $(MAKE) clean
 	-cd addon/doxywizard ; $(MAKE) clean
 	-cd addon/doxysearch ; $(MAKE) clean
 	-cd addon/doxyapp ; $(MAKE) clean
@@ -33,6 +34,7 @@ clean: FORCE
 distclean: clean
 	-cd src ; $(MAKE) distclean
 	-cd libmd5 ; $(MAKE) distclean
+	-cd vhdlparser ; $(MAKE) distclean
 	-cd addon/doxywizard ; $(MAKE) distclean
 	-cd addon/doxysearch ; $(MAKE) distclean
 	-cd addon/doxyapp ; $(MAKE) distclean
@@ -52,8 +54,9 @@ distclean: clean
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.libdoxycfg src/libdoxycfg.t src/libdoxygen.t
 	-rm -f libmd5/Makefile.libmd5
+	-rm -f vhdlparser/Makefile.vhdlparser
 	-rm -f .makeconfig .tmakeconfig
-	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
+	-rm -f src/doxygen.pro src/libdoxygen.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro vhdlparser/vhdlparser.pro
 	-rm -rf generated_src
 	-rm -f addon/doxywizard/doxywizard.pro
 	-rm -f VERSION
@@ -95,7 +98,7 @@ docs: FORCE
 pdf: docs
 	cd latex ; $(MAKE)
 
-DISTFILES =  Doxyfile libmd5 addon tmake doc examples bin lib objects testing \
+DISTFILES =  Doxyfile vhdlparser libmd5 addon tmake doc examples bin lib objects testing \
              qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
              Makefile.win_make.in INSTALL LANGUAGE.HOWTO LICENSE PLATFORMS \
              VERSION README.md packages winbuild jquery
