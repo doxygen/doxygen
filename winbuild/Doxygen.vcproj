@@ -127,7 +127,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Debug"
 				GenerateManifest="false"
-				IgnoreDefaultLibraryNames="libcmtd.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib libcpmtd.lib libcmt.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug\doxygen\$(TargetName).pdb"
 				SubSystem="1"
