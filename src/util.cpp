@@ -1838,7 +1838,7 @@ nextChar:
  * Returns the position in the string where a function parameter list
  * begins, or -1 if one is not found.
  */
-int findParameterList(const QString &name)
+int findParameterList(const QCString &name)
 {
   int pos=-1;
   int templateDepth=0;
@@ -1875,7 +1875,8 @@ int findParameterList(const QString &name)
       else
       {
         int bp = bracePos>0 ? name.findRev('(',bracePos-1) : -1;
-        return bp==-1 ? bracePos : bp;
+        // bp test is to allow foo(int(&)[10]), but we need to make an exception for operator()
+        return bp==-1 || (bp>=8 && name.mid(bp-8,10)=="operator()") ? bracePos : bp;
       }
     }
   } while (pos!=-1);
@@ -5365,10 +5366,10 @@ void createSubDirs(QDir &d)
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
-      d.mkdir(QString().sprintf("d%x",l1));
+      d.mkdir(QCString().sprintf("d%x",l1));
       for (l2=0;l2<256;l2++)
       {
-        d.mkdir(QString().sprintf("d%x/d%02x",l1,l2));
+        d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2));
       }
     }
   }
