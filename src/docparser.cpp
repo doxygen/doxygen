@@ -2465,7 +2465,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   CiteInfo *cite = Doxygen::citeDict->find(target);
-  if (numBibFiles>0 && cite) // ref to citation
+  if (numBibFiles>0 && cite && cite -> text) // ref to citation
   {
     m_text         = cite->text;
     if (m_text.isEmpty()) m_text = cite->label;
