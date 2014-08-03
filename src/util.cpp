@@ -1667,10 +1667,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   uint l=s.length();
   uint csp=0;
   uint vsp=0;
+  char c;
   for (i=0;i<l;i++)
   {
 nextChar:
-    char c=s.at(i);
+    c=s.at(i);
 
     // search for "const"
     if (csp<6 && c==constScope[csp] && // character matches substring "const"
@@ -1705,7 +1706,7 @@ nextChar:
         if (cc=='\\') // escaped character
         { 
           growBuf.addChar(s.at(i+1));
-          i+=2; 
+          i+=2;
         }
         else if (cc=='"') // end of string
         { i++; goto nextChar; }
@@ -1737,14 +1738,16 @@ nextChar:
       growBuf.addChar(',');
       growBuf.addChar(' ');
     }
-    else if (i>0 && 
-         ((isId(s.at(i)) && s.at(i-1)==')') || 
-          (s.at(i)=='\''  && s.at(i-1)==' ')
+    else if (i>0 &&
+         (
+          (s.at(i-1)==')' && isId(c))
+          ||
+          (c=='\''  && s.at(i-1)==' ')
          )
         )
     {
       growBuf.addChar(' ');
-      growBuf.addChar(s.at(i));
+      growBuf.addChar(c);
     }
     else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
              !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
