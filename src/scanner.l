@@ -5300,6 +5300,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    {
 					      prependScope();
 					    }
+                                            current->spec|=Entry::ForwardDecl;
                                             current_root->addSubEntry(current);
                                             current = new Entry;
                                           }

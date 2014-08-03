@@ -4364,6 +4364,11 @@ bool ClassDef::isPublished() const
   return m_impl->spec&Entry::Published;
 }
 
+bool ClassDef::isForwardDeclared() const
+{
+  return m_impl->spec&Entry::ForwardDecl;
+}
+
 bool ClassDef::isObjectiveC() const
 {
   return getLanguage()==SrcLangExt_ObjC;

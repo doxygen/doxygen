@@ -1256,7 +1256,7 @@ static void addClassToContext(EntryNav *rootNav)
   Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
       cd ? cd->name().data() : root->name.data(), qualifiedName.data(),cd);
 
-  if (cd) 
+  if (cd)
   {
     fullName=cd->name();
     Debug::print(Debug::Classes,0,"  Existing class %s!\n",cd->name().data());
@@ -1276,11 +1276,12 @@ static void addClassToContext(EntryNav *rootNav)
     }
     //cd->setName(fullName); // change name to match docs
 
-    if (cd->templateArguments()==0) 
+    if (cd->templateArguments()==0 || (cd->isForwardDeclared() && (root->spec&Entry::ForwardDecl)==0))
     {
       // this happens if a template class declared with @class is found
-      // before the actual definition.
-      ArgumentList *tArgList = 
+      // before the actual definition or if a forward declaration has different template
+      // parameter names.
+      ArgumentList *tArgList =
         getTemplateArgumentsFromName(cd->name(),root->tArgLists);
       cd->setTemplateArguments(tArgList);
     }
