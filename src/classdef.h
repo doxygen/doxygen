@@ -310,6 +310,7 @@ class ClassDef : public Definition
     bool isJavaEnum() const;
 
     bool isGeneric() const;
+    bool isAnonymous() const;
     const ClassSDict *innerClasses() const;
     QCString title() const;
 
@@ -360,6 +361,7 @@ class ClassDef : public Definition
 
     void addTaggedInnerClass(ClassDef *cd);
     void setTagLessReference(ClassDef *cd);
+    void setName(const char *name);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
