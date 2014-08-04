@@ -651,7 +651,9 @@ void XmlDocVisitor::visitPost(DocInternal *)
 void XmlDocVisitor::visitPre(DocHRef *href)
 {
   if (m_hide) return;
-  m_t << "<ulink url=\"" << href->url() << "\">";
+  m_t << "<ulink url=\"";
+  filter(href->url());
+  m_t << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocHRef *) 
