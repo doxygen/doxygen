@@ -6353,26 +6353,42 @@ void addRefItem(const QList<ListItemInfo> *sli,
   }
 }
 
-void addGroupListToTitle(OutputList &ol,Definition *d)
+bool recursivelyAddGroupListToTitle(OutputList &ol,Definition *d,bool root)
 {
   GroupList *groups = d->partOfGroups();
   if (groups) // write list of group to which this definition belongs
   {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString("<div class=\"ingroups\">");
+    if (root)
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.writeString("<div class=\"ingroups\">");
+    }
     GroupListIterator gli(*groups);
     GroupDef *gd;
-    bool first=TRUE;
+    bool first=true;
     for (gli.toFirst();(gd=gli.current());++gli)
     {
-      if (!first) { ol.writeString(" &#124; "); } else first=FALSE; 
-      ol.writeObjectLink(gd->getReference(),
-          gd->getOutputFileBase(),0,gd->groupTitle());
+      if (recursivelyAddGroupListToTitle(ol, gd, FALSE))
+      {
+        ol.writeString(" &raquo; ");
+      }
+      if (!first) { ol.writeString(" &#124; "); } else first=FALSE;
+      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
     }
-    ol.writeString("</div>");
-    ol.popGeneratorState();
+    if (root)
+    {
+      ol.writeString("</div>");
+      ol.popGeneratorState();
+    }
+    return true;
   }
+  return false;
+}
+
+void addGroupListToTitle(OutputList &ol,Definition *d)
+{
+  recursivelyAddGroupListToTitle(ol,d,TRUE);
 }
 
 void filterLatexString(FTextStream &t,const char *str,
