@@ -98,6 +98,7 @@
 #include "formula.h"
 #include "settings.h"
 #include "context.h"
+#include "fileparser.h"
 
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
@@ -9895,7 +9896,8 @@ void initDoxygen()
   initPreprocessor();
 
   Doxygen::parserManager = new ParserManager;
-  Doxygen::parserManager->registerParser("c",            new CLanguageScanner, TRUE);
+  Doxygen::parserManager->registerDefaultParser(         new FileParser);
+  Doxygen::parserManager->registerParser("c",            new CLanguageScanner);
   Doxygen::parserManager->registerParser("python",       new PythonLanguageScanner);
   Doxygen::parserManager->registerParser("fortran",      new FortranLanguageScanner);
   Doxygen::parserManager->registerParser("fortranfree",  new FortranLanguageScannerFree);

@@ -148,17 +148,19 @@ class ParserManager
     ParserManager()
       : m_defaultParser(0) { m_parsers.setAutoDelete(TRUE); }
 
+    void registerDefaultParser(ParserInterface *parser)
+    {
+      m_defaultParser = parser;
+    }
+
     /** Registers an additional parser.
      *  @param[in] name      A symbolic name of the parser, i.e. "c",
      *                       "python", "fortran", "vhdl", ...
      *  @param[in] parser    The parser that is to be used for the
      *                       given name.
-     *  @param[in] defParser Use this parser as the default parser, used
-     *                       for unregistered file extensions.
      */
-    void registerParser(const char *name,ParserInterface *parser,bool defParser=FALSE)
+    void registerParser(const char *name,ParserInterface *parser)
     {
-      if (defParser && m_defaultParser==0) m_defaultParser=parser;
       m_parsers.insert(name,parser);
     }
 

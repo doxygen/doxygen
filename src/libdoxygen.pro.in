@@ -50,6 +50,7 @@ HEADERS      =	arguments.h \
 		example.h \
 		filedef.h \
 		filename.h \
+		fileparser.h \
 		formula.h \
 		ftextstream.h \
 		ftvhelp.h \
@@ -146,6 +147,7 @@ SOURCES      =	arguments.cpp \
 		entry.cpp \
 		filedef.cpp \
 		filename.cpp \
+		fileparser.cpp \
 		formula.cpp \
 		ftextstream.cpp \
 		ftvhelp.cpp \
