@@ -1448,16 +1448,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (!detailsVisible)
   {
     QCString doxyArgs=argsString();
-    if (m_impl->annMemb)
-    {
-      QCString doxyName=m_impl->annMemb->name();
-      if (!cname.isEmpty())
-      {
-        doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
-      }
-      ol.startDoxyAnchor(cfname,cname,m_impl->annMemb->anchor(),doxyName,doxyArgs);
-    }
-    else
+    if (!m_impl->annMemb)
     {
       QCString doxyName=name();
       if (!cname.isEmpty())
