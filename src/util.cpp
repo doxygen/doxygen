@@ -6353,12 +6353,13 @@ void addRefItem(const QList<ListItemInfo> *sli,
   }
 }
 
-bool recursivelyAddGroupListToTitle(OutputList &ol,Definition *d,bool root,bool shouldRecurse)
+bool recursivelyAddGroupListToTitle(OutputList &ol,Definition *d,bool root)
 {
   GroupList *groups = d->partOfGroups();
   if (groups) // write list of group to which this definition belongs
   {
-    if (root) {
+    if (root)
+    {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
       ol.writeString("<div class=\"ingroups\">");
@@ -6368,14 +6369,15 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,Definition *d,bool root,bool 
     bool first=true;
     for (gli.toFirst();(gd=gli.current());++gli)
     {
-      if (shouldRecurse && recursivelyAddGroupListToTitle(ol, gd, false, shouldRecurse)) {
-        ol.writeString(" > ");
+      if (recursivelyAddGroupListToTitle(ol, gd, FALSE))
+      {
+        ol.writeString(" &raquo; ");
       }
       if (!first) { ol.writeString(" &#124; "); } else first=FALSE;
-      ol.writeObjectLink(gd->getReference(),
-          gd->getOutputFileBase(),0,gd->groupTitle());
+      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
     }
-    if (root) {
+    if (root)
+    {
       ol.writeString("</div>");
       ol.popGeneratorState();
     }
@@ -6386,7 +6388,7 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,Definition *d,bool root,bool 
 
 void addGroupListToTitle(OutputList &ol,Definition *d)
 {
-  recursivelyAddGroupListToTitle(ol,d,true,Config_getBool("BREAD_CRUMB_TRAIL"));
+  recursivelyAddGroupListToTitle(ol,d,TRUE);
 }
 
 void filterLatexString(FTextStream &t,const char *str,
