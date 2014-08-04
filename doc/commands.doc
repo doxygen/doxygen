@@ -2356,6 +2356,20 @@ Commands for visual enhancements
   \endcode
 \endverbatim
 
+  If the contents of the code block are in a language that doxygen cannot parse, doxygen
+  will just show the output as-is. You can make this explicit using .unparsed, or by
+  giving some other extension that doxygen doesn't support, e.g.
+
+\verbatim
+  \code{.unparsed}
+  Show this as-is please
+  \endcode
+
+  \code{.sh}
+  echo "This is a shell script"
+  \endcode
+\endverbatim
+
   \sa section \ref cmdendcode "\\endcode" and section \ref cmdverbatim "\\verbatim".
 
 <hr>

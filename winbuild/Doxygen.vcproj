@@ -687,6 +687,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\fileparser.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\formula.cpp"
 				>
 			</File>
@@ -2380,6 +2384,10 @@
 			</File>
 			<File
 				RelativePath="..\src\filename.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fileparser.h"
 				>
 			</File>
 			<File
