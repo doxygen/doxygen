@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -24,281 +24,148 @@
 #include <qregexp.h>
 #include <qdatastream.h>
 
-
-QCString::QCString(int size)
-{
-  if (size>0)
-  {
-    m_data = (char *)malloc(size);
-    if (m_data)
-    {
-      if (size>1) memset(m_data,' ',size-1);
-      m_data[size-1]='\0';
-    }
-  }
-  else
-  {
-    m_data=0;
-  }
-}
-
-QCString::QCString( const QCString &s ) 
-{ 
-  duplicate(s);
-}
-
-QCString::QCString( const char *str )
-{ 
-  duplicate(str);
-}
-
-QCString::QCString( const char *str, uint maxlen )
-{ 
-  uint l;
-  if (str && ( l = QMIN(qstrlen(str),maxlen) )) 
-  { 
-    m_data=(char *)malloc(l+1);
-    strncpy(m_data,str,l+1);
-    m_data[l]='\0';
-  } 
-  else
-  {
-    m_data=0;
-  }
-}
-
-QCString::~QCString()
-{
-  if (m_data) free(m_data);
-  m_data=0;
-}
-
-QCString &QCString::assign( const char *str )
-{
-  if (m_data) free(m_data);
-  duplicate(str);
-  return *this;
-}
-
-bool QCString::resize( uint newlen )
-{
-  if (newlen==0)
-  {
-    if (m_data) { free(m_data); m_data=0; }
-    return TRUE;
-  }
-  if (m_data==0) // newlen>0
-  {
-    m_data = (char *)malloc(newlen);
-  }
-  else
-  {
-    m_data = (char *)realloc(m_data,newlen);
-  }
-  if (m_data==0) return FALSE;
-  m_data[newlen-1]='\0';
-  return TRUE;
-}
-
-bool QCString::fill( char c, int len )
-{
-  uint l=length();
-  if (len<0) len=l;
-  if ((uint)len!=l) 
-  {
-    if (m_data) free(m_data);
-    if (len>0)
-    {
-      m_data=(char *)malloc(len+1);
-      if (m_data==0) return FALSE;
-      m_data[len]='\0';
-    }
-    else
-    {
-      m_data=0;
-    }
-  }
-  if (len>0)
-  {
-    uint i;
-    for (i=0;i<(uint)len;i++) m_data[i]=c;
-  }
-  return TRUE;
-}
-
 QCString &QCString::sprintf( const char *format, ... )
 {
   va_list ap;
   va_start( ap, format );
-  uint l = length();
-  const uint minlen=256;
-  if (l<minlen)
-  {
-    if (m_data) 
-      m_data = (char *)realloc(m_data,minlen);
-    else
-      m_data = (char *)malloc(minlen);
-  }
-  vsprintf( m_data, format, ap );
-  resize( qstrlen(m_data) + 1 );              // truncate
+  const int minlen=256;
+  if (length()<minlen) resize(minlen);
+  vsnprintf( data(), minlen, format, ap);
+  resize(strlen(data())+1);
   va_end( ap );
   return *this;
 }
 
-
 int QCString::find( char c, int index, bool cs ) const
 {
-  uint len = length();
-  if ( m_data==0 || (uint)index>len )               // index outside string
-    return -1;
-  register const char *d;
-  if ( cs ) // case sensitive
-  {  
-    d = strchr( m_data+index, c );
-  } 
-  else 
+  if (index<0 || index>=(int)length()) return -1; // index outside string
+  register const char *pos;
+  if (cs)
   {
-    d = m_data+index;
-    c = tolower( (uchar) c );
-    while ( *d && tolower((uchar) *d) != c )
-      d++;
-    if ( !*d && c )                         // not found
-      d = 0;
+    pos = strchr(data()+index,c);
   }
-  return d ? (int)(d - m_data) : -1;
+  else
+  {
+    pos = data()+index;
+    c = tolower((unsigned char)c);
+    while (*pos && tolower((unsigned char)*pos)!=c) pos++;
+    if (!*pos && c) pos=0; // not found
+  }
+  return pos ? (int)(pos - data()) : -1;
 }
 
 int QCString::find( const char *str, int index, bool cs ) const
 {
-  uint l = length();
-  if ( m_data==0 || (uint)index > l )         // index outside string
-    return -1;
-  if ( !str )                                 // no search string
-    return -1;
-  if ( !*str )                                // zero-length search string
-    return index;
-  register const char *d;
-  if ( cs )                                   // case sensitive
-  {              
-    d = strstr( m_data+index, str );
-  } 
-  else                                        // case insensitive
+  int l = length();
+  if (index<0 || index>=l) return -1; // index outside string
+  if (!str)  return -1;               // no string to search for
+  if (!*str) return index;           // empty string matching at index
+  register char *pos;
+  if (cs) // case sensitive
   {
-    d = m_data+index;
-    int len = qstrlen( str );
-    while ( *d ) 
-    {
-      if ( qstrnicmp(d, str, len) == 0 )
-        break;
-      d++;
-    }
-    if ( !*d )                              // not found
-      d = 0;
+    pos = strstr(data()+index,str);
   }
-  return d ? (int)(d - m_data) : -1;
+  else // case insensitive
+  {
+    pos = data();
+    int len = strlen(str);
+    while (*pos)
+    {
+      if (strncasecmp(pos,str,len)==0) break;
+      pos++;
+    }
+    if (!*pos) pos = 0; // not found
+  }
+  return pos ? (int)(pos - data()) : -1;
 }
 
-int QCString::find( const QCString &str,int index,bool cs) const
+int QCString::find( const QCString &str, int index, bool cs ) const
 {
   return find(str.data(),index,cs);
 }
 
 int QCString::find( const QRegExp &rx, int index ) const
 {
-  QString d = QString::fromLatin1( m_data );
+  QString d = QString::fromLatin1( data() );
   return d.find( rx, index );
 }
 
 int QCString::findRev( char c, int index, bool cs) const
 {
-  const char *b = m_data;
-  const char *d;
-  uint len = length();
-  if ( b == 0 ) return -1;  // empty string
-  if ( index < 0 )          // neg index ==> start from end
+//  printf("QCString::findRev(%d,%d,%d)\n",c,index,cs);
+  const char *b = data();
+  const char *pos;
+  int len = length();
+  if (len==0) return -1; // empty string
+  if (index<0) // start from end
   {
-    if ( len == 0 ) return -1;
-    if ( cs ) 
+    if (cs)
     {
-      d = strrchr( b, c );
-      return d ? (int)(d - b) : -1;
+      pos = strrchr(b,c);
+      return pos ? (int)(pos - b) : -1;
     }
-    index = len;
-  } 
-  else if ( (uint)index > len )  // bad index
-  {      
+    index=len;
+  }
+  else if (index>len) // bad index
+  {
     return -1;
   }
-  d = b+index;
-  if ( cs )   // case sensitive
+  pos = b+index;
+  if (cs)
   {
-    while ( d >= b && *d != c )
-      d--;
-  } 
-  else  // case insensitive
-  {
-    c = tolower( (uchar) c );
-    while ( d >= b && tolower((uchar) *d) != c )
-      d--;
+    while ( pos>=b && *pos!=c) pos--;
   }
-  return d >= b ? (int)(d - b) : -1;
+  else
+  {
+    c = tolower((unsigned char)c);
+    while ( pos>=b && tolower((unsigned char)*pos)!=c) pos--;
+  }
+  //printf("pos=%p b=%p diff=%d\n",pos,b,(int)(pos-b));
+  return pos>=b ? (int)(pos - b) : -1;
 }
 
 int QCString::findRev( const char *str, int index, bool cs) const
 {
-  int slen = qstrlen(str);
-  uint len = length();
-  if ( index < 0 )                           // neg index ==> start from end
-    index = len-slen;
-  else if ( (uint)index > len )              // bad index
-    return -1;
-  else if ( (uint)(index + slen) > len )     // str would be too long
-    index = len - slen;
-  if ( index < 0 )
-    return -1;
-
-  register char *d = m_data + index;
-  if ( cs )                     // case sensitive 
-  {      
-    for ( int i=index; i>=0; i-- )
-      if ( qstrncmp(d--,str,slen)==0 )
-        return i;
-  } 
-  else                          // case insensitive
-  {           
-    for ( int i=index; i>=0; i-- )
-      if ( qstrnicmp(d--,str,slen)==0 )
-        return i;
+  int slen = strlen(str);
+  int len = length();
+  if (index<0) index = len-slen; // start from end
+  else if (index>len) return -1; // bad index
+  else if (index+slen>len) index=len-slen; // str would be too long
+  if (index<0) return -1; // no match possible
+  register char *pos = data()+index;
+  if (cs) // case sensitive
+  {
+    for (int i=index; i>=0; i--) if (strncmp(pos--,str,slen)==0) return i;
+  }
+  else // case insensitive
+  {
+    for (int i=index; i>=0; i--) if (strncasecmp(pos,str,slen)==0) return i;
   }
   return -1;
-
 }
 
 int QCString::findRev( const QRegExp &rx, int index ) const
 {
-  QString d = QString::fromLatin1( m_data );
+  QString d = QString::fromLatin1( data() );
   return d.findRev( rx, index );
 }
 
 int QCString::contains( char c, bool cs ) const
 {
-  int count = 0;
-  char *d = m_data;
-  if ( !d )
-    return 0;                               
-  if ( cs )                                // case sensitive
+  if (length()==0) return 0;
+  int count=0;
+  const char *pos = data();
+  if (cs)
   {
-    while ( *d )
-      if ( *d++ == c )
-        count++;                        
-  } 
-  else                                     // case insensitive
+    while (*pos) if (*pos++ == c) count++;
+  }
+  else
   {
-    c = tolower( (uchar) c );
-    while ( *d ) {
-      if ( tolower((uchar) *d) == c )
-        count++;
-      d++;
+    c = tolower((unsigned char)c);
+    while (*pos)
+    {
+      if (tolower((unsigned char)*pos)==c) count++;
+      pos++;
     }
   }
   return count;
@@ -306,96 +173,106 @@ int QCString::contains( char c, bool cs ) const
 
 int QCString::contains( const char *str, bool cs ) const
 {
-  int count = 0;
-  char *d = data();
-  if ( !d )
-    return 0;
-  int len = qstrlen( str );
-  while ( *d )   // counts overlapping strings
+  if (str==0 || length()==0) return 0;
+  int count=0;
+  const char *pos = data();
+  int len = strlen(str);
+  while (*pos)
   {
-    if ( cs ) 
+    if (cs)
     {
-      if ( qstrncmp( d, str, len ) == 0 )
-        count++;
-    } 
-    else 
-    {
-      if ( qstrnicmp(d, str, len) == 0 )
-        count++;
+      if (strncmp(pos,str,len)==0) count++;
     }
-    d++;
+    else
+    {
+      if (strncasecmp(pos,str,len)==0) count++;
+    }
+    pos++;
   }
   return count;
 }
 
 int QCString::contains( const QRegExp &rx ) const
-{ 
-  QString d = QString::fromLatin1( m_data );
+{
+  QString d = QString::fromLatin1( data() );
   return d.contains( rx );
+}
+
+bool QCString::stripPrefix(const char *prefix)
+{
+  if (prefix==0 || length()==0) return FALSE;
+  int len = strlen(prefix);
+  if (strncmp(prefix,data(),len)==0)
+  {
+    int newlen = length()-len+1;
+    qmemmove(data(),data()+len,newlen);
+    resize(newlen);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 QCString QCString::left( uint len )  const
 {
-  if ( isEmpty() ) 
+  if (isEmpty())
   {
     return QCString();
-  } 
-  else if ( len >= length() ) 
+  }
+  else if (len>=length())
   {
-    return *this;
-  } 
-  else 
+    return QCString(data());
+  }
+  else
   {
     QCString s( len+1 );
-    strncpy( s.data(), m_data, len );
-    *(s.data()+len) = '\0';
+    memcpy( s.data(), data(), len);
     return s;
   }
 }
 
 QCString QCString::right( uint len ) const
 {
-  if ( isEmpty() ) 
+  if (isEmpty())
   {
     return QCString();
-  } 
-  else 
+  }
+  else
   {
-    uint l = length();
-    if ( len > l ) len = l;
-    char *p = m_data + (l - len); 
-    return QCString( p ); 
-  }       
+    int l = length();
+    if ((int)len>l) len=l;
+    const char *pos = data() + (l-len);
+    return QCString(pos);
+  }
 }
 
 QCString QCString::mid( uint index, uint len) const
 {
-  uint slen = length();
-  if ( len == 0xffffffff ) len = slen-index;
-  if ( isEmpty() || index >= slen ) 
+  int slen = length();
+  if (len==0xffffffff) len = slen-index;
+  if (isEmpty() || (int)index>=slen)
   {
     return QCString();
-  } 
-  else 
+  }
+  else
   {
     register char *p = data()+index;
-    QCString s( len+1 );
-    strncpy( s.data(), p, len );
-    *(s.data()+len) = '\0';
+    QCString s(len+1);
+    memcpy(s.data(),p,len);
     return s;
   }
 }
 
 QCString QCString::lower() const
 {
-  QCString s( m_data );
-  register char *p = s.data();
-  if ( p ) 
+  if (length()==0) return QCString();
+  QCString s(data());
+  register char *pos = s.data();
+  if (pos)
   {
-    while ( *p ) 
+    while (*pos)
     {
-      *p = tolower((uchar) *p);
-      p++;
+      *pos = tolower((unsigned char)*pos);
+      pos++;
     }
   }
   return s;
@@ -403,41 +280,44 @@ QCString QCString::lower() const
 
 QCString QCString::upper() const
 {
-  QCString s( m_data );
-  register char *p = s.data();
-  if ( p ) {
-    while ( *p ) {
-      *p = toupper((uchar)*p);
-      p++;
+  if (length()==0) return QCString();
+  QCString s(data());
+  register char *pos = s.data();
+  if (pos)
+  {
+    while (*pos)
+    {
+      *pos = toupper((unsigned char)*pos);
+      pos++;
     }
   }
   return s;
 }
 
-QCString QCString::stripWhiteSpace()	const
+QCString QCString::stripWhiteSpace() const
 {
   if ( isEmpty() )                            // nothing to do
     return *this;
 
-  register char *s = m_data;
+  register char *s = data();
   int reslen = length();
-  if ( !isspace((uchar) s[0]) && !isspace((uchar) s[reslen-1]) )
-    return *this;                           // returns a copy
+  if ( !isspace((uchar)s[0]) && !isspace((uchar)s[reslen-1]) )
+    return *this;                             // returns a copy
 
   QCString result(s);
-  s = result.data(); 
+  s = result.data();
   int start = 0;
   int end = reslen - 1;
   while ( isspace((uchar) s[start]) )                 // skip white space from start
-    start++; 
-  if ( s[start] == '\0' ) 
+    start++;
+  if ( s[start] == '\0' )
   {                                                   // only white space
     return QCString();
   }
   while ( end && isspace((uchar) s[end]) )            // skip white space from end
     end--;
   end -= start - 1;
-  memmove( result.data(), &s[start], end );
+  qmemmove( result.data(), &s[start], end );
   result.resize( end + 1 );
   return result;
 }
@@ -451,7 +331,7 @@ QCString QCString::simplifyWhiteSpace() const
   char *from  = data();
   char *to    = result.data();
   char *first = to;
-  while ( TRUE ) 
+  while ( TRUE )
   {
     while ( *from && isspace((uchar) *from) )
       from++;
@@ -469,84 +349,66 @@ QCString QCString::simplifyWhiteSpace() const
   return result;
 }
 
+QCString &QCString::assign( const char *str )
+{
+  return operator=(str);
+}
+
 QCString &QCString::insert( uint index, const char *s )
-{   
+{
   int len = s ? qstrlen(s) : 0;
-  if ( len == 0 )
-    return *this;
-  uint olen = length();
-  int nlen = olen + len;                      
-  if ( index >= olen )  // insert after end of string
-  {                     
-    m_data = (char *)realloc(m_data,nlen+index-olen+1);
-    if ( m_data ) 
-    {
-      memset( m_data+olen, ' ', index-olen );
-      memcpy( m_data+index, s, len+1 );
-    }
-  } 
-  else if ( (m_data = (char *)realloc(m_data,nlen+1)) )  // normal insert
-  { 
-    memmove( m_data+index+len, m_data+index, olen-index+1 );
-    memcpy( m_data+index, s, len );
+  if ( len == 0 ) return *this;
+  int olen = length();
+  int nlen = olen + len;
+  if ((int)index>=olen)
+  {
+    resize(nlen+index-olen+1);
+    memset(data()+olen, ' ', index-olen);
+    memcpy(data()+index,s, len+1);
+  }
+  else
+  {
+    resize(nlen+1);
+    qmemmove(data()+index+len,data()+index,olen-index+1);
+    memcpy(data()+index,s,len);
   }
   return *this;
 }
 
-QCString &QCString::insert( uint index, char c )        // insert char
+QCString &QCString::insert( uint index, char c)
 {
   char buf[2];
   buf[0] = c;
   buf[1] = '\0';
   return insert( index, buf );
 }
-
-QCString& QCString::operator+=( const char *str )
+QCString &QCString::append( const char *s )
 {
-  if ( !str ) return *this;  // nothing to append
-  uint len1 = length();
-  uint len2 = qstrlen(str);
-  char *newData = (char *)realloc( m_data, len1 + len2 + 1 );
-  if (newData)
-  {
-    m_data = newData;
-    memcpy( m_data + len1, str, len2 + 1 );
-  }
-  return *this;      
+  return operator+=(s);
 }
-
-QCString &QCString::operator+=( char c )
+QCString &QCString::prepend( const char *s )
 {
-  uint len = length();
-  char *newData = (char *)realloc( m_data, length()+2 );
-  if (newData)
-  {
-    m_data = newData;
-    m_data[len] = c;
-    m_data[len+1] = '\0';
-  }
-  return *this;
+  return insert(0,s);
 }
-
 QCString &QCString::remove( uint index, uint len )
 {
   uint olen = length();
   if ( index + len >= olen ) // range problems
-  {             
+  {
     if ( index < olen )  // index ok
-    {                  
+    {
       resize( index+1 );
     }
-  } 
-  else if ( len != 0 ) 
+  }
+  else if ( len != 0 )
   {
-    memmove( m_data+index, m_data+index+len, olen-index-len+1 );
+    qmemmove( data()+index, data()+index+len, olen-index-len+1 );
     resize( olen-len+1 );
   }
   return *this;
 }
 
-QCString &QCString::replace( uint index, uint len, const char *s )
+QCString &QCString::replace( uint index, uint len, const char *s)
 {
   remove( index, len );
   insert( index, s );
@@ -555,65 +417,85 @@ QCString &QCString::replace( uint index, uint len, const char *s )
 
 QCString &QCString::replace( const QRegExp &rx, const char *str )
 {
-  QString d = QString::fromLatin1( m_data );
+  QString d = QString::fromLatin1( data() );
   QString r = QString::fromLatin1( str );
   d.replace( rx, r );
   operator=( d.ascii() );
   return *this;
 }
 
-long  QCString::toLong( bool *ok ) const
+short QCString::toShort(bool *ok) const
 {
-  QString s(m_data);
-  return s.toLong(ok);
-}
-
-ulong QCString::toULong( bool *ok ) const
-{
-  QString s(m_data);
-  return s.toULong(ok);
-}
-
-short QCString::toShort( bool *ok )	const
-{
-  QString s(m_data);
+  QString s(data());
   return s.toShort(ok);
 }
 
-ushort QCString::toUShort( bool *ok ) const
+ushort QCString::toUShort(bool *ok) const
 {
-  QString s(m_data);
+  QString s(data());
   return s.toUShort(ok);
 }
 
-int QCString::toInt( bool *ok ) const
+int QCString::toInt(bool *ok) const
 {
-  QString s(m_data);
+  QString s(data());
   return s.toInt(ok);
 }
 
-uint QCString::toUInt( bool *ok ) const
+uint QCString::toUInt(bool *ok) const
 {
-  QString s(m_data);
+  QString s(data());
   return s.toUInt(ok);
 }
 
-QCString &QCString::setNum( long n )
+long QCString::toLong(bool *ok) const
+{
+  QString s(data());
+  return s.toLong(ok);
+}
+
+ulong QCString::toULong(bool *ok) const
+{
+  QString s(data());
+  return s.toULong(ok);
+}
+
+QCString &QCString::setNum(short n)
+{
+  return setNum((long)n);
+}
+
+QCString &QCString::setNum(ushort n)
+{
+  return setNum((ulong)n);
+}
+
+QCString &QCString::setNum(int n)
+{
+  return setNum((long)n);
+}
+
+QCString &QCString::setNum(uint n)
+{
+  return setNum((ulong)n);
+}
+
+QCString &QCString::setNum(long n)
 {
   char buf[20];
   register char *p = &buf[19];
   bool neg;
-  if ( n < 0 ) 
+  if ( n < 0 )
   {
     neg = TRUE;
     n = -n;
-  } 
-  else 
+  }
+  else
   {
     neg = FALSE;
   }
   *p = '\0';
-  do 
+  do
   {
     *--p = ((int)(n%10)) + '0';
     n /= 10;
@@ -623,12 +505,12 @@ QCString &QCString::setNum( long n )
   return *this;
 }
 
-QCString &QCString::setNum( ulong n )
+QCString &QCString::setNum( ulong n)
 {
   char buf[20];
   register char *p = &buf[19];
   *p = '\0';
-  do 
+  do
   {
     *--p = ((int)(n%10)) + '0';
     n /= 10;
@@ -637,31 +519,7 @@ QCString &QCString::setNum( ulong n )
   return *this;
 }
 
-void QCString::msg_index( uint index )
-{
-#if defined(CHECK_RANGE)
-    qWarning( "QCString::at: Absolute index %d out of range", index );
-#else
-    Q_UNUSED( index )
-#endif
-}
-
-bool QCString::stripPrefix(const char *prefix)
-{
-  if (prefix==0) return FALSE;
-  uint plen   = qstrlen(prefix);
-  if (m_data && qstrncmp(prefix,m_data,plen)==0) // prefix matches
-  {
-    uint len    = qstrlen(m_data);
-    uint newlen = len-plen+1;
-    qmemmove(m_data,m_data+plen,newlen);
-    resize(newlen);
-    return TRUE;
-  }
-  return FALSE;
-}
-
-//---------------------------------------------------------------------------
+//-------------------------------------------------
 
 void *qmemmove( void *dst, const void *src, uint len )
 {

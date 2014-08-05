@@ -1,21 +1,22 @@
-/****************************************************************************
-**
-** Copyright (C) 1997-2004 by Dimitri van Heesch.
-**
-** Permission to use, copy, modify, and distribute this software and its
-** documentation under the terms of the GNU General Public License is hereby
-** granted. No representations are made about the suitability of this software
-** for any purpose. It is provided "as is" without express or implied warranty.
-** See the GNU General Public License for more details.
-**
-** Note: this is a reimplementation of the qcstring.h that came with
-** an Qt version 2.2.3. For short strings it stores the string data inside
-** the object. For long strings it uses a separate array with reference counting.
-**
-**********************************************************************/
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
 
-#ifndef QCSTRING_H
-#define QCSTRING_H
+#ifndef RCSTRING_H
+#define RCSTRING_H
+
+#define RCString QCString
 
 #ifndef QT_H
 #include "qarray.h"
@@ -128,52 +129,52 @@ class QRegExp;
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses reference counting and copy on write.
  */
-class QCString
+class RCString
 {
 public:
     /** creates an empty string */
-    QCString()
+    RCString()
     {
     }
 
     /** destroys the string */
-   ~QCString()
+   ~RCString()
     {
     }
 
     /** makes a copy of a string. */
-    QCString( const QCString &s ) : m_rep(s.m_rep)
+    RCString( const RCString &s ) : m_rep(s.m_rep)
     {
     }
 
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (including the 0-terminator)
      */
-    QCString( int size ) : m_rep(size)
+    RCString( int size ) : m_rep(size)
     {
     }
 
     /** creates a string from a plain C string.
      *  @param[in] str A zero terminated C string. When 0 an empty string is created.
      */
-    QCString( const char *str ) : m_rep(str)
+    RCString( const char *str ) : m_rep(str)
     {
     }
 
     /** creates a string from \a str and copies over the first \a maxlen characters. */
-    QCString( const char *str, uint maxlen ) : m_rep(str,maxlen)
+    RCString( const char *str, uint maxlen ) : m_rep(str,maxlen)
     {
     }
 
     /** replaces the contents by that of string \a s. */
-    QCString &operator=( const QCString &s )
+    RCString &operator=( const RCString &s )
     {
       m_rep = s.m_rep;
       return *this;
     }
 
     /** replaces the contents by that of C string \a str. */
-    QCString &operator=( const char *str)
+    RCString &operator=( const char *str)
     {
       m_rep = str;
       return *this;
@@ -238,18 +239,18 @@ public:
     }
 
     /** Returns a deep copy of the string. */
-    QCString copy() const
+    RCString copy() const
     {
-      if (length()==0) return QCString();
-      QCString cs(length()+1);
+      if (length()==0) return RCString();
+      RCString cs(length()+1);
       memcpy(cs.data(),data(),length());
       return cs;
     }
 
-    QCString &sprintf( const char *format, ... );
+    RCString &sprintf( const char *format, ... );
     int	find( char c, int index=0, bool cs=TRUE ) const;
     int	find( const char *str, int index=0, bool cs=TRUE ) const;
-    int find( const QCString &str, int index=0, bool cs=TRUE ) const;
+    int find( const RCString &str, int index=0, bool cs=TRUE ) const;
     int	find( const QRegExp &rx, int index=0 ) const;
     int	findRev( char c, int index=-1, bool cs=TRUE) const;
     int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
@@ -258,33 +259,33 @@ public:
     int	contains( const char *str, bool cs=TRUE ) const;
     int contains( const QRegExp &rx ) const;
     bool stripPrefix(const char *prefix);
-    QCString left( uint len ) const;
-    QCString right( uint len ) const;
-    QCString mid( uint index, uint len=0xffffffff) const;
-    QCString lower() const;
-    QCString upper() const;
-    QCString stripWhiteSpace() const;
-    QCString simplifyWhiteSpace() const;
-    QCString &assign( const char *str );
-    QCString &insert( uint index, const char *s );
-    QCString &insert( uint index, char c);
-    QCString &append( const char *s );
-    QCString &prepend( const char *s );
-    QCString &remove( uint index, uint len );
-    QCString &replace( uint index, uint len, const char *s);
-    QCString &replace( const QRegExp &rx, const char *str );
+    RCString left( uint len ) const;
+    RCString right( uint len ) const;
+    RCString mid( uint index, uint len=0xffffffff) const;
+    RCString lower() const;
+    RCString upper() const;
+    RCString stripWhiteSpace() const;
+    RCString simplifyWhiteSpace() const;
+    RCString &assign( const char *str );
+    RCString &insert( uint index, const char *s );
+    RCString &insert( uint index, char c);
+    RCString &append( const char *s );
+    RCString &prepend( const char *s );
+    RCString &remove( uint index, uint len );
+    RCString &replace( uint index, uint len, const char *s);
+    RCString &replace( const QRegExp &rx, const char *str );
     short toShort( bool *ok=0 ) const;
     ushort toUShort( bool *ok=0 ) const;
     int	toInt( bool *ok=0 ) const;
     uint toUInt( bool *ok=0 ) const;
     long toLong( bool *ok=0 ) const;
     ulong toULong( bool *ok=0 )	const;
-    QCString &setNum(short n);
-    QCString &setNum(ushort n);
-    QCString &setNum(int n);
-    QCString &setNum(uint n);
-    QCString &setNum(long n);
-    QCString &setNum(ulong n);
+    RCString &setNum(short n);
+    RCString &setNum(ushort n);
+    RCString &setNum(int n);
+    RCString &setNum(uint n);
+    RCString &setNum(long n);
+    RCString &setNum(ulong n);
 
     /** Converts the string to a plain C string */
     operator const char *() const
@@ -293,7 +294,7 @@ public:
     }
 
     /** Appends string \a str to this string and returns a reference to the result. */
-    QCString &operator+=( const char *str )
+    RCString &operator+=( const char *str )
     {
       if (!str) return *this;
       int len1 = length();
@@ -304,7 +305,7 @@ public:
     }
 
     /** Appends character \a c to this string and returns a reference to the result. */
-    QCString &operator+=( char c )
+    RCString &operator+=( char c )
     {
       int len = length();
       resize(len+2);
@@ -338,6 +339,7 @@ public:
 
 #define SHORT_STR_CAPACITY ((int)sizeof(LongStringRep)-1)
 #define SHORT_STR_MAX_LEN (SHORT_STR_CAPACITY-1)
+
 
     // short string representation
     struct ShortStringRep
@@ -379,7 +381,7 @@ public:
       }
 
       // resizes LSData so it can hold size bytes (which includes the 0 terminator!)
-      // Since this is for long strings only, size should be > SHORT_STR_CAPACITY
+      // if size is zero, the string will become empty
       static LSData *resize(LSData *d,int size)
       {
         if (d->len>0 && d->refCount==0) // non-const, non-empty
@@ -407,11 +409,13 @@ public:
       public:
         StringRep()
         {
+          //printf("%p:StringRep:empty construct\n",this);
           u.s.isShort=TRUE;
           u.s.len=0;
         }
        ~StringRep()
         {
+          //printf("%p:StringRep:destruct(short=%d) str='%s'\n",this,u.s.isShort,data());
           if (!u.s.isShort)
           {
             u.l.d->dispose();
@@ -421,6 +425,7 @@ public:
         {
           if (&s!=this)
           {
+            //printf("%p:StringRep:copy construct(short=%d)\n",this,s.u.s.isShort);
             u = s.u;
             if (!u.s.isShort)
             {
@@ -431,6 +436,7 @@ public:
         StringRep(int size)
         {
           u.s.isShort = size<=SHORT_STR_CAPACITY;
+          //printf("%p:StringRep:size construct(size=%d,isShort=%d)\n",this,size,u.s.isShort);
           if (u.s.isShort) // init short string
           {
             if (size>0)
@@ -454,6 +460,7 @@ public:
           {
             int len = strlen(str);
             u.s.isShort = len<=SHORT_STR_MAX_LEN;
+            //printf("%p:StringRep:c_str construct(isShort=%d,str='%s')\n",this,u.s.isShort,str);
             if (u.s.isShort)
             {
               u.s.len = len;
@@ -467,6 +474,7 @@ public:
           }
           else // create empty string
           {
+            //printf("%p:StringRep:empty c_str construct\n",this);
             u.s.isShort=TRUE;
             u.s.len=0;
           }
@@ -478,6 +486,7 @@ public:
             uint len=strlen(str);
             if (len>maxlen) len=maxlen;
             u.s.isShort = len<=SHORT_STR_MAX_LEN;
+            //printf("%p:StringRep:c_str maxlen construct(isShort=%d)\n",this,u.s.isShort);
             if (u.s.isShort)
             {
               u.s.len = len;
@@ -492,6 +501,7 @@ public:
           }
           else // create empty string
           {
+            //printf("%p:StringRep:empty c_str construct\n",this);
             u.s.isShort=TRUE;
             u.s.len=0;
           }
@@ -504,10 +514,12 @@ public:
           }
           if (s.u.s.isShort) // copy by value
           {
+            //printf("%p:StringRep:operator=(short) s='%s'\n",this,s.data());
             u.s = s.u.s;
           }
           else // copy by reference
           {
+            //printf("%p:StringRep:operator=(long) s='%s'\n",this,s.data());
             u.l.isShort=FALSE;
             u.l.d = s.u.l.d;
             u.l.d->refCount++;
@@ -524,6 +536,7 @@ public:
           {
             int len = strlen(str);
             u.s.isShort = len<=SHORT_STR_MAX_LEN;
+            //printf("%p:StringRep:operator=(c_str) isShort=%d\n",this,u.s.isShort);
             if (u.s.isShort)
             {
               u.s.len = len;
@@ -537,6 +550,7 @@ public:
           }
           else
           {
+            //printf("%p:StringRep:operator=(empty c_str)\n",this);
             u.s.isShort=TRUE;
             u.s.len=0;
           }
@@ -578,16 +592,19 @@ public:
           {
             if (newlen>0)
             {
+              //printf("%p:StringRep:resize short2short\n",this);
               u.s.len = newlen-1;
               u.s.str[newlen-1]='\0';
             }
-            else // string becomes empty
+            else
             {
+              //printf("%p:StringRep:resize short2empty\n",this);
               u.s.len = 0;
             }
           }
           else if (u.s.isShort) // turn short string into long string
           {
+            //printf("%p:StringRep:resize short2long\n",this);
             StringRep tmp = *this;
             u.s.isShort=FALSE;
             u.l.d = LSData::create(newlen);
@@ -604,6 +621,7 @@ public:
           {
             if (newlen>0)
             {
+              //printf("%p:StringRep:resize long2short\n",this);
               StringRep tmp(newlen); // copy short part into tmp buffer
               memcpy(tmp.u.s.str,u.l.d->toStr(),newlen-1);
               tmp.u.s.str[newlen-1]='\0';
@@ -612,6 +630,7 @@ public:
             }
             else
             {
+              //printf("%p:StringRep:resize long2empty\n",this);
               u.l.d->dispose();
               u.s.isShort=TRUE;
               u.s.len=0;
@@ -619,6 +638,7 @@ public:
           }
           else // resize long string
           {
+            //printf("%p:StringRep:resize long2long\n",this);
             u.l.d = u.l.d->resize(u.l.d,newlen);
           }
           return TRUE;
@@ -667,90 +687,90 @@ Q_EXPORT QDataStream &operator>>( QDataStream &, QCString & );
 #endif
 
 /*****************************************************************************
-  QCString non-member operators
+  RCString non-member operators
  *****************************************************************************/
 
-Q_EXPORT inline bool operator==( const QCString &s1, const QCString &s2 )
+Q_EXPORT inline bool operator==( const RCString &s1, const RCString &s2 )
 { return qstrcmp(s1.data(),s2.data()) == 0; }
 
-Q_EXPORT inline bool operator==( const QCString &s1, const char *s2 )
+Q_EXPORT inline bool operator==( const RCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) == 0; }
 
-Q_EXPORT inline bool operator==( const char *s1, const QCString &s2 )
+Q_EXPORT inline bool operator==( const char *s1, const RCString &s2 )
 { return qstrcmp(s1,s2.data()) == 0; }
 
-Q_EXPORT inline bool operator!=( const QCString &s1, const QCString &s2 )
+Q_EXPORT inline bool operator!=( const RCString &s1, const RCString &s2 )
 { return qstrcmp(s1.data(),s2.data()) != 0; }
 
-Q_EXPORT inline bool operator!=( const QCString &s1, const char *s2 )
+Q_EXPORT inline bool operator!=( const RCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) != 0; }
 
-Q_EXPORT inline bool operator!=( const char *s1, const QCString &s2 )
+Q_EXPORT inline bool operator!=( const char *s1, const RCString &s2 )
 { return qstrcmp(s1,s2.data()) != 0; }
 
-Q_EXPORT inline bool operator<( const QCString &s1, const QCString& s2 )
+Q_EXPORT inline bool operator<( const RCString &s1, const RCString& s2 )
 { return qstrcmp(s1.data(),s2.data()) < 0; }
 
-Q_EXPORT inline bool operator<( const QCString &s1, const char *s2 )
+Q_EXPORT inline bool operator<( const RCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) < 0; }
 
-Q_EXPORT inline bool operator<( const char *s1, const QCString &s2 )
+Q_EXPORT inline bool operator<( const char *s1, const RCString &s2 )
 { return qstrcmp(s1,s2.data()) < 0; }
 
-Q_EXPORT inline bool operator<=( const QCString &s1, const char *s2 )
+Q_EXPORT inline bool operator<=( const RCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) <= 0; }
 
-Q_EXPORT inline bool operator<=( const char *s1, const QCString &s2 )
+Q_EXPORT inline bool operator<=( const char *s1, const RCString &s2 )
 { return qstrcmp(s1,s2.data()) <= 0; }
 
-Q_EXPORT inline bool operator>( const QCString &s1, const char *s2 )
+Q_EXPORT inline bool operator>( const RCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) > 0; }
 
-Q_EXPORT inline bool operator>( const char *s1, const QCString &s2 )
+Q_EXPORT inline bool operator>( const char *s1, const RCString &s2 )
 { return qstrcmp(s1,s2.data()) > 0; }
 
-Q_EXPORT inline bool operator>=( const QCString &s1, const char *s2 )
+Q_EXPORT inline bool operator>=( const RCString &s1, const char *s2 )
 { return qstrcmp(s1.data(),s2) >= 0; }
 
-Q_EXPORT inline bool operator>=( const char *s1, const QCString &s2 )
+Q_EXPORT inline bool operator>=( const char *s1, const RCString &s2 )
 { return qstrcmp(s1,s2.data()) >= 0; }
 
-Q_EXPORT inline QCString operator+( const QCString &s1, const QCString &s2 )
+Q_EXPORT inline RCString operator+( const RCString &s1, const RCString &s2 )
 {
-    QCString tmp(s1);
+    RCString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
 
-inline QCString operator+( const QCString &s1, const QGString &s2 );
-inline QCString operator+( const QGString &s1, const QCString &s2 );
+inline RCString operator+( const RCString &s1, const QGString &s2 );
+inline RCString operator+( const QGString &s1, const RCString &s2 );
 
 
-Q_EXPORT inline QCString operator+( const QCString &s1, const char *s2 )
+Q_EXPORT inline RCString operator+( const RCString &s1, const char *s2 )
 {
-    QCString tmp(s1);
+    RCString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
-Q_EXPORT inline QCString operator+( const char *s1, const QCString &s2 )
+Q_EXPORT inline RCString operator+( const char *s1, const RCString &s2 )
 {
-    QCString tmp(s1);
+    RCString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
-Q_EXPORT inline QCString operator+( const QCString &s1, char c2 )
+Q_EXPORT inline RCString operator+( const RCString &s1, char c2 )
 {
-    QCString tmp( s1.data() );
+    RCString tmp( s1.data() );
     tmp += c2;
     return tmp;
 }
 
-Q_EXPORT inline QCString operator+( char c1, const QCString &s2 )
+Q_EXPORT inline RCString operator+( char c1, const RCString &s2 )
 {
-    QCString tmp;
+    RCString tmp;
     tmp += c1;
     tmp += s2;
     return tmp;
@@ -761,9 +781,11 @@ inline const char *qPrint(const char *s)
   if (s) return s; else return "";
 }
 
-inline const char *qPrint(const QCString &s)
+inline const char *qPrint(const RCString &s)
 {
   if (!s.isEmpty()) return s.data(); else return "";
 }
 
-#endif // QCSTRING_H
+
+#endif
+
