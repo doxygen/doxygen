@@ -70,3 +70,6 @@
 /man
 /docbook
 /perlmod
+!/templates/html
+!/templates/latex
+

@@ -297,7 +297,7 @@ public:
     {
       if (!str) return *this;
       int len1 = length();
-      int len2 = strlen(str);
+      int len2 = (int)strlen(str);
       resize(len1+len2+1);
       memcpy(data()+len1,str,len2);
       return *this;
@@ -467,7 +467,7 @@ public:
         {
           if (str)
           {
-            int len = strlen(str);
+            int len = (int)strlen(str);
             u.s.isShort = len<SHORT_STR_CAPACITY;
             if (len<SHORT_STR_CAPACITY)
             {
@@ -489,7 +489,7 @@ public:
         {
           if (str && maxlen>0)
           {
-            uint len=strlen(str);
+            uint len=(uint)strlen(str);
             if (len>maxlen) len=maxlen;
             u.s.isShort = len<=SHORT_STR_MAX_LEN;
             if (u.s.isShort)
@@ -543,7 +543,7 @@ public:
           }
           if (str)
           {
-            int len = strlen(str);
+            int len = (int)strlen(str);
             u.s.isShort = len<SHORT_STR_CAPACITY;
             if (len<SHORT_STR_CAPACITY)
             {

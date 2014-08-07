@@ -11,7 +11,4 @@ packages:
 - jquery.scrollTo: 1.4.2: https://github.com/flesler/jquery.scrollTo
 - jquery.powertip: 1.2.0: http://stevenbenner.github.io/jquery-powertip/
 
-The Makefile will built the jquery_*.js files used by doxygen.
-Some files are split into smaller parts to make sure Visual Studio can compile them 
-as strings.
-
+The Makefile will built the jquery.js files used by doxygen.

@@ -33,6 +33,7 @@
 #include "ftextstream.h"
 #include "message.h"
 #include "util.h"
+#include "resourcemgr.h"
 
 #define ENABLE_TRACING 0
 
@@ -2060,6 +2061,11 @@ class ExpressionParser
       if (p==0 || *p=='\0') return FALSE;
       while (*p==' ') p++; // skip over spaces
       char c=*p;
+      if (*p=='\0') // only spaces...
+      {
+        m_tokenStream = p;
+        return FALSE;
+      }
       const char *q = p;
       switch (c)
       {
@@ -2238,7 +2244,7 @@ class ExpressionParser
         char s[2];
         s[0]=c;
         s[1]=0;
-        warn(m_parser->templateName(),m_line,"Found unknown token %s while parsing %s",s,m_tokenStream);
+        warn(m_parser->templateName(),m_line,"Found unknown token '%s' (%d) while parsing %s",s,c,m_tokenStream);
         m_curToken.id = s;
         p++;
       }
@@ -2297,7 +2303,7 @@ class TemplateNodeList : public QList<TemplateNode>
 class TemplateImpl : public TemplateNode, public Template
 {
   public:
-    TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data);
+    TemplateImpl(TemplateEngine *e,const QCString &name,const char *data,int size);
     void render(FTextStream &ts, TemplateContext *c);
 
     TemplateEngine *engine() const { return m_engine; }
@@ -2695,6 +2701,37 @@ template<class T> class TemplateNodeCreator : public TemplateNode
       return dynamic_cast<TemplateImpl*>(root);
     }
   protected:
+    void mkpath(TemplateContextImpl *ci,const QCString &fileName)
+    {
+      int i=fileName.find('/');
+      QCString outputDir = ci->outputDirectory();
+      QDir d(outputDir);
+      if (!d.exists())
+      {
+        QDir rootDir;
+        rootDir.setPath(QDir::currentDirPath());
+        if (!rootDir.mkdir(outputDir))
+        {
+          err("tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+	      "exist and cannot be created\n",outputDir.data());
+          return;
+        }
+        d.setPath(outputDir);
+      }
+      int j=0;
+      while (i!=-1) // fileName contains path part
+      {
+        if (d.exists())
+        {
+          bool ok = d.mkdir(fileName.mid(j,i-j));
+          if (!ok) break;
+          QCString dirName = outputDir+'/'+fileName.left(i);
+          d = QDir(dirName);
+          j = i+1;
+        }
+        i=fileName.find('/',i+1);
+      }
+    }
     QCString m_templateName;
     int m_line;
 };
@@ -3192,7 +3229,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       QStrList stopAt;
       stopAt.append("endmsg");
       parser->parse(this,line,stopAt,m_nodes);
-      parser->removeNextToken(); // skip over endmarkers
+      parser->removeNextToken(); // skip over endmsg
       TRACE(("}TemplateNodeMsg()\n"));
     }
     void render(FTextStream &, TemplateContext *c)
@@ -3474,25 +3511,6 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       delete m_templateExpr;
       delete m_fileExpr;
     }
-    void mkpath(TemplateContextImpl *ci,const QCString &fileName)
-    {
-      int i=fileName.find('/');
-      QCString outputDir = ci->outputDirectory();
-      QDir d(outputDir);
-      int j=0;
-      while (i!=-1) // fileName contains path part
-      {
-        if (d.exists())
-        {
-          bool ok = d.mkdir(fileName.mid(j,i-j));
-          if (!ok) break;
-          QCString dirName = outputDir+'/'+fileName.left(i);
-          d = QDir(dirName);
-          j = i+1;
-        }
-        i=fileName.find('/',i+1);
-      }
-    }
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -3518,7 +3536,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
             TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
-              //mkpath(ci,outputFile);
+              mkpath(ci,outputFile);
               QCString extension=outputFile;
               int i=extension.findRev('.');
               if (i!=-1)
@@ -4106,6 +4124,75 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
 
 //----------------------------------------------------------
 
+/** @brief Class representing an 'markers' tag in a template */
+class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
+{
+  public:
+    TemplateNodeResource(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeResource>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeResource(%s)\n",data.data()));
+      ExpressionParser ep(parser,line);
+      int i;
+      if (data.isEmpty())
+      {
+        parser->warn(m_templateName,line,"resource tag is missing resource file argument");
+        m_resExpr=0;
+        m_asExpr=0;
+      }
+      else if ((i=data.find(" as "))!=-1) // resource a as b
+      {
+        m_resExpr = ep.parse(data.left(i));  // part before as
+        m_asExpr  = ep.parse(data.mid(i+4)); // part after as
+      }
+      else // resource a
+      {
+        m_resExpr = ep.parse(data);
+        m_asExpr  = 0;
+      }
+      TRACE(("}TemplateNodeResource(%s)\n",data.data()));
+    }
+    void render(FTextStream &, TemplateContext *c)
+    {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      ci->setLocation(m_templateName,m_line);
+      if (m_resExpr)
+      {
+        QCString resourceFile = m_resExpr->resolve(c).toString();
+        if (resourceFile.isEmpty())
+        {
+          ci->warn(m_templateName,m_line,"invalid parameter for resource command\n");
+        }
+        else
+        {
+          QCString outputDirectory = ci->outputDirectory();
+          if (m_asExpr)
+          {
+            QCString targetFile = m_asExpr->resolve(c).toString();
+            mkpath(ci,targetFile);
+            if (targetFile.isEmpty())
+            {
+              ci->warn(m_templateName,m_line,"invalid parameter at right side of 'as' for resource command\n");
+            }
+            else
+            {
+              ResourceMgr::instance().copyResourceAs(resourceFile,outputDirectory,targetFile);
+            }
+          }
+          else
+          {
+            ResourceMgr::instance().copyResource(resourceFile,outputDirectory);
+          }
+        }
+      }
+    }
+  private:
+    ExprAst *m_resExpr;
+    ExprAst *m_asExpr;
+};
+
+//----------------------------------------------------------
+
 /** @brief Factory class for creating tag AST nodes found in a template */
 class TemplateNodeFactory
 {
@@ -4152,23 +4239,24 @@ class TemplateNodeFactory
 };
 
 // register a handler for each start tag we support
-static TemplateNodeFactory::AutoRegister<TemplateNodeIf>        autoRefIf("if");
-static TemplateNodeFactory::AutoRegister<TemplateNodeFor>       autoRefFor("for");
-static TemplateNodeFactory::AutoRegister<TemplateNodeMsg>       autoRefMsg("msg");
-static TemplateNodeFactory::AutoRegister<TemplateNodeSet>       autoRefSet("set");
-static TemplateNodeFactory::AutoRegister<TemplateNodeTree>      autoRefTree("recursetree");
-static TemplateNodeFactory::AutoRegister<TemplateNodeWith>      autoRefWith("with");
-static TemplateNodeFactory::AutoRegister<TemplateNodeBlock>     autoRefBlock("block");
-static TemplateNodeFactory::AutoRegister<TemplateNodeCycle>     autoRefCycle("cycle");
-static TemplateNodeFactory::AutoRegister<TemplateNodeRange>     autoRefRange("range");
-static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>    autoRefExtend("extend");
-static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>    autoRefCreate("create");
-static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>    autoRefRepeat("repeat");
-static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>   autoRefInclude("include");
-static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>   autoRefMarkers("markers");
-static TemplateNodeFactory::AutoRegister<TemplateNodeSpaceless> autoRefSpaceless("spaceless");
-static TemplateNodeFactory::AutoRegister<TemplateNodeIndexEntry> autoRefIndexEntry("indexentry");
-static TemplateNodeFactory::AutoRegister<TemplateNodeOpenSubIndex> autoRefOpenSubIndex("opensubindex");
+static TemplateNodeFactory::AutoRegister<TemplateNodeIf>            autoRefIf("if");
+static TemplateNodeFactory::AutoRegister<TemplateNodeFor>           autoRefFor("for");
+static TemplateNodeFactory::AutoRegister<TemplateNodeMsg>           autoRefMsg("msg");
+static TemplateNodeFactory::AutoRegister<TemplateNodeSet>           autoRefSet("set");
+static TemplateNodeFactory::AutoRegister<TemplateNodeTree>          autoRefTree("recursetree");
+static TemplateNodeFactory::AutoRegister<TemplateNodeWith>          autoRefWith("with");
+static TemplateNodeFactory::AutoRegister<TemplateNodeBlock>         autoRefBlock("block");
+static TemplateNodeFactory::AutoRegister<TemplateNodeCycle>         autoRefCycle("cycle");
+static TemplateNodeFactory::AutoRegister<TemplateNodeRange>         autoRefRange("range");
+static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>        autoRefExtend("extend");
+static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>        autoRefCreate("create");
+static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>        autoRefRepeat("repeat");
+static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>       autoRefInclude("include");
+static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>       autoRefMarkers("markers");
+static TemplateNodeFactory::AutoRegister<TemplateNodeResource>      autoRefResource("resource");
+static TemplateNodeFactory::AutoRegister<TemplateNodeSpaceless>     autoRefSpaceless("spaceless");
+static TemplateNodeFactory::AutoRegister<TemplateNodeIndexEntry>    autoRefIndexEntry("indexentry");
+static TemplateNodeFactory::AutoRegister<TemplateNodeOpenSubIndex>  autoRefOpenSubIndex("opensubindex");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCloseSubIndex> autoRefCloseSubIndex("closesubindex");
 
 //----------------------------------------------------------
@@ -4253,7 +4341,7 @@ void TemplateBlockContext::push(TemplateNodeBlock *block)
 class TemplateLexer
 {
   public:
-    TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data);
+    TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const char *data,int size);
     void tokenize(QList<TemplateToken> &tokens);
   private:
     void addToken(QList<TemplateToken> &tokens,
@@ -4265,9 +4353,12 @@ class TemplateLexer
     QCString m_data;
 };
 
-TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data) :
-  m_engine(engine), m_fileName(fileName), m_data(data)
+TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const char *data,int size) :
+  m_engine(engine), m_fileName(fileName)
 {
+  m_data.resize(size+1);
+  memcpy(m_data.data(),data,size);
+  m_data[size]=0;
 }
 
 void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
@@ -4472,9 +4563,8 @@ void TemplateLexer::addToken(QList<TemplateToken> &tokens,
   if (startPos<endPos)
   {
     int len = endPos-startPos+1;
-    QCString text(len+1);
+    QCString text(len);
     qstrncpy(text.data(),data+startPos,len);
-    text[len]='\0';
     if (type!=TemplateToken::Text) text = text.stripWhiteSpace();
     tokens.append(new TemplateToken(type,text,line));
   }
@@ -4607,12 +4697,12 @@ void TemplateParser::warn(const char *fileName,int line,const char *fmt,...) con
 //----------------------------------------------------------
 
 
-TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCString &data)
+TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const char *data,int size)
   : TemplateNode(0)
 {
   m_name = name;
   m_engine = engine;
-  TemplateLexer lexer(engine,name,data);
+  TemplateLexer lexer(engine,name,data,size);
   QList<TemplateToken> tokens;
   tokens.setAutoDelete(TRUE);
   lexer.tokenize(tokens);
@@ -4681,6 +4771,13 @@ class TemplateEngine::Private
       Template *templ = m_templateCache.find(fileName);
       if (templ==0)
       {
+        const Resource *res = ResourceMgr::instance().get(fileName);
+        if (res)
+        {
+          templ = new TemplateImpl(m_engine,fileName,(const char *)res->data,res->size);
+          m_templateCache.insert(fileName,templ);
+        }
+#if 0
         QFile f(fileName);
         if (f.open(IO_ReadOnly))
         {
@@ -4697,6 +4794,7 @@ class TemplateEngine::Private
             delete[] data;
           }
         }
+#endif
         else
         {
           err("Cound not open template file %s\n",fileName.data());

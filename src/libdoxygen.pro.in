@@ -98,6 +98,7 @@ HEADERS      =	arguments.h \
 		qhp.h \
 		qhpxmlwriter.h \
 		reflist.h \
+		resourcemgr.h \
                 rtfdocvisitor.h \
 		rtfgen.h \
 		rtfstyle.h \
@@ -188,6 +189,7 @@ SOURCES      =	arguments.cpp \
 		qhp.cpp \
 		qhpxmlwriter.cpp \
 		reflist.cpp \
+		resourcemgr.cpp \
                 rtfdocvisitor.cpp \
 		rtfgen.cpp \
 		rtfstyle.cpp \
@@ -220,7 +222,8 @@ SOURCES      =	arguments.cpp \
                 ../generated_src/doxygen/tclscanner.cpp \
 		../generated_src/doxygen/fortrancode.cpp \
 		../generated_src/doxygen/fortranscanner.cpp \
-		../generated_src/doxygen/version.cpp 
+		../generated_src/doxygen/version.cpp \
+		../generated_src/doxygen/resources.cpp 
 		
 		
 

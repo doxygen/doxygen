@@ -100,6 +100,9 @@
 #include "context.h"
 #include "fileparser.h"
 
+// provided by the generated file resources.cpp
+extern void initResources();
+
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
     EntryNavListIterator eli(*var->children()); \
@@ -9915,6 +9918,7 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 void initDoxygen()
 {
+  initResources();
   const char *lang = portable_getenv("LC_ALL");
   if (lang) portable_setenv("LANG",lang);
   setlocale(LC_ALL,"");
@@ -10884,7 +10888,7 @@ void parseInput()
 
   QCString htmlOutput;
   bool &generateHtml = Config_getBool("GENERATE_HTML");
-  if (generateHtml)
+  if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
     htmlOutput = createOutputDirectory(outputDirectory,"HTML_OUTPUT","/html");
 
   QCString docbookOutput;

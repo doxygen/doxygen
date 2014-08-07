@@ -36,30 +36,7 @@
 #include "classlist.h"
 #include "namespacedef.h"
 #include "filename.h"
-
-static const char doxygenLatexStyle[] =
-#include "doxygen.sty.h"
-;
-
-//static QCString filterTitle(const char *s)
-//{
-//  QCString tmp=s,result;
-//  uint i;for (i=0;i<tmp.length();i++)
-//  {
-//    char c=tmp.at(i);
-//    switch(c)
-//    {
-//      case '#': result+="\\#";  break;
-//      case '"': result+="\\\""; break;
-//      case '%': result+="\\%";  break;
-//      case '[': result+="{";    break;
-//      case ']': result+="}";    break;
-//      default:  result+=c;      break;
-//    }
-//  }
-//  return result;  
-//}
-
+#include "resourcemgr.h"
 
 
 LatexGenerator::LatexGenerator() : OutputGenerator()
@@ -524,7 +501,7 @@ static void writeDefaultHeaderPart3(FTextStream &t)
 
 static void writeDefaultStyleSheet(FTextStream &t)
 {
-  t << doxygenLatexStyle;
+  t << ResourceMgr::instance().getAsString("doxygen.sty");
 }
 
 static void writeDefaultFooter(FTextStream &t)
