@@ -145,12 +145,12 @@
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="prot" type="DoxProtectionKind" />
     <xsd:attribute name="static" type="DoxBool" />
-    <xsd:attribute name="const" type="DoxBool" />
-    <xsd:attribute name="explicit" type="DoxBool" />
-    <xsd:attribute name="inline" type="DoxBool" />
-    <xsd:attribute name="virt" type="DoxVirtualKind" />
-    <xsd:attribute name="volatile" type="DoxBool" />
-    <xsd:attribute name="mutable" type="DoxBool" />
+    <xsd:attribute name="const" type="DoxBool" use="optional"/>
+    <xsd:attribute name="explicit" type="DoxBool" use="optional"/>
+    <xsd:attribute name="inline" type="DoxBool" use="optional"/>
+    <xsd:attribute name="virt" type="DoxVirtualKind" use="optional"/>
+    <xsd:attribute name="volatile" type="DoxBool" use="optional"/>
+    <xsd:attribute name="mutable" type="DoxBool" use="optional"/>
     <!-- Qt property -->
     <xsd:attribute name="readable" type="DoxBool" use="optional"/>
     <xsd:attribute name="writable" type="DoxBool" use="optional"/>

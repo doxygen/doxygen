@@ -646,6 +646,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       t << " required=\"yes\"";
     }
 
+    if (al && al->volatileSpecifier)
+    {
+      t << " volatile=\"yes\"";
+    }
+
     t << " virt=\"";
     switch (md->virtualness())
     {
@@ -671,7 +676,6 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     {
       t << " initonly=\"yes\"";
     }
-
     if (md->isAttribute())
     {
       t << " attribute=\"yes\"";
