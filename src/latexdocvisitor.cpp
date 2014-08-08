@@ -809,21 +809,32 @@ void LatexDocVisitor::visitPost(DocHtmlDescData *)
 {
 }
 
+static const char *getTableName(const DocNode *n)
+{
+  bool isNested=FALSE;
+  while (n && !isNested)
+  {
+    isNested = n->kind()==DocNode::Kind_HtmlTable;
+    n  = n->parent();
+  }
+  return isNested ? "TabularNC" : "TabularC";
+}
+
 void LatexDocVisitor::visitPre(DocHtmlTable *t)
 {
   m_rowSpans.clear();
   m_insideTable=TRUE;
   if (m_hide) return;
-  if (t->hasCaption()) 
+  if (t->hasCaption())
   {
     m_t << "\\begin{table}[h]";
   }
-  m_t << "\\begin{TabularC}{" << t->numColumns() << "}\n";
+  m_t << "\\begin{" << getTableName(t->parent()) << "}{" << t->numColumns() << "}\n";
   m_numCols = t->numColumns();
   m_t << "\\hline\n";
 }
 
-void LatexDocVisitor::visitPost(DocHtmlTable *t) 
+void LatexDocVisitor::visitPost(DocHtmlTable *t)
 {
   m_insideTable=FALSE;
   if (m_hide) return;
@@ -833,14 +844,14 @@ void LatexDocVisitor::visitPost(DocHtmlTable *t)
   }
   else
   {
-    m_t << "\\end{TabularC}\n";
+    m_t << "\\end{" << getTableName(t->parent()) << "}\n";
   }
 }
 
-void LatexDocVisitor::visitPre(DocHtmlCaption *)
+void LatexDocVisitor::visitPre(DocHtmlCaption *c)
 {
   if (m_hide) return;
-  m_t << "\\end{TabularC}\n\\centering\n\\caption{";
+  m_t << "\\end{" << getTableName(c->parent()) << "}\n\\centering\n\\caption{";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlCaption *) 
