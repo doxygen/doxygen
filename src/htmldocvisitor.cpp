@@ -34,6 +34,7 @@
 #include "filedef.h"
 #include "memberdef.h"
 #include "htmlentity.h"
+#include "plantuml.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -429,9 +430,21 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         m_t << "<div align=\"center\">" << endl;
         writeMscFile(baseName+".msc",s->relPath(),s->context());
         if (Config_getBool("DOT_CLEANUP")) file.remove();
+        m_t << "</div>" << endl;
+        forceStartParagraph(s);
       }
-      m_t << "</div>" << endl;
-      forceStartParagraph(s);
+      break;
+    case DocVerbatim::PlantUML:
+      {
+        forceEndParagraph(s);
+
+        static QCString htmlOutput = Config_getString("HTML_OUTPUT");
+        QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text());
+        m_t << "<div align=\"center\">" << endl;
+        writePlantUMLFile(baseName,s->relPath(),s->context());
+        m_t << "</div>" << endl;
+        forceStartParagraph(s);
+      }
       break;
   }
 }
@@ -1974,6 +1987,37 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
 
   m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
+}
+
+void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
+                                       const QCString &relPath,
+                                       const QCString &)
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1) // strip path
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.findRev('.'))!=-1) // strip extension
+  {
+    baseName=baseName.left(i);
+  }
+  static QCString outDir = Config_getString("HTML_OUTPUT");
+  static QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  if (imgExt=="svg")
+  {
+    generatePlantUMLOutput(fileName,outDir,PUML_SVG);
+    //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />" << endl;
+    //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
+    //m_t << "</iframe>" << endl;
+    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>" << endl;
+  }
+  else
+  {
+    generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
+    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
+  }
 }
 
 /** Used for items found inside a paragraph, which due to XHTML restrictions

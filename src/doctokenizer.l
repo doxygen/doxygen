@@ -417,6 +417,8 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 %x St_Verbatim
 %x St_Dot
 %x St_Msc
+%x St_PlantUMLOpt
+%x St_PlantUML
 %x St_Param
 %x St_XRefItem
 %x St_XRefItem2
@@ -843,12 +845,29 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 <St_Dot>.              { /* dot text */
   			 g_token->verb+=yytext;
   		       }
-<St_Msc>{CMD}("endmsc"|"endvhdlflow")  {
+<St_Msc>{CMD}("endmsc")  {
                          return RetVal_OK;
                        }
 <St_Msc>[^\\@\n]+      |
 <St_Msc>\n             |
 <St_Msc>.              { /* msc text */
+  			 g_token->verb+=yytext;
+  		       }
+<St_PlantUMLOpt>\n     {
+                         g_token->sectionId=g_token->sectionId.stripWhiteSpace();
+                         BEGIN(St_PlantUML);
+                       }
+<St_PlantUMLOpt>["{}]   { // skip curly brackets or quotes around the optional image name
+                       }
+<St_PlantUMLOpt>.      {
+                         g_token->sectionId += yytext;
+                       }
+<St_PlantUML>{CMD}"enduml"  {
+                         return RetVal_OK;
+                       }
+<St_PlantUML>[^\\@\n]+ |
+<St_PlantUML>\n        |
+<St_PlantUML>.         { /* plantuml text */
   			 g_token->verb+=yytext;
   		       }
 <St_Title>"\""	       { // quoted title
@@ -1121,6 +1140,10 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
                                       g_endMarker="endmsc";
 				      BEGIN(St_SecSkip);
   				    }
+<St_Sections>{CMD}"startuml"/[^a-z_A-Z0-9] {
+                                      g_endMarker="enduml";
+				      BEGIN(St_SecSkip);
+  				    }
 <St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endhtmlonly";
 				      BEGIN(St_SecSkip);
@@ -1316,6 +1339,13 @@ void doctokenizerYYsetStateMsc()
 {
   g_token->verb="";
   BEGIN(St_Msc);
+}
+
+void doctokenizerYYsetStatePlantUML()
+{
+  g_token->verb="";
+  g_token->sectionId="";
+  BEGIN(St_PlantUMLOpt);
 }
 
 void doctokenizerYYsetStateParam()

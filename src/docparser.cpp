@@ -5569,6 +5569,23 @@ int DocPara::handleCommand(const QCString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_STARTUML:
+      {
+        static QCString jarPath = Config_getString("PLANTUML_JAR_PATH");
+        doctokenizerYYsetStatePlantUML();
+        retval = doctokenizerYYlex();
+        if (jarPath.isEmpty())
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"ignoring startuml command because PLANTUML_JAR_PATH is not set");
+        }
+        else
+        {
+          m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,g_token->sectionId));
+        }
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"startuml section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_ENDPARBLOCK:
       retval=RetVal_EndParBlock;
       break;
@@ -5583,6 +5600,7 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_ENDVERBATIM:
     case CMD_ENDDOT:
     case CMD_ENDMSC:
+    case CMD_ENDUML:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected command %s",qPrint(g_token->name));
       break; 
     case CMD_PARAM:

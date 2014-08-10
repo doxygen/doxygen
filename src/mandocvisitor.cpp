@@ -208,6 +208,7 @@ void ManDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::DocbookOnly:
     case DocVerbatim::Dot: 
     case DocVerbatim::Msc: 
+    case DocVerbatim::PlantUML: 
       /* nothing */ 
       break;
   }

@@ -134,6 +134,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::DocbookOnly: printf("<docbookonly>"); break;
         case DocVerbatim::Dot: printf("<dot>"); break;
         case DocVerbatim::Msc: printf("<msc>"); break;
+        case DocVerbatim::PlantUML: printf("<plantuml>"); break;
       }
       printf("%s",s->text().data());
       switch(s->type())
@@ -148,6 +149,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::DocbookOnly: printf("</docbookonly>"); break;
         case DocVerbatim::Dot: printf("</dot>"); break;
         case DocVerbatim::Msc: printf("</msc>"); break;
+        case DocVerbatim::PlantUML: printf("</plantuml>"); break;
       }
     }
     void visit(DocAnchor *a)

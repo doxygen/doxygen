@@ -843,6 +843,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\plantuml.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\portable.cpp"
 				>
 			</File>
@@ -2612,6 +2616,10 @@
 			</File>
 			<File
 				RelativePath="..\src\perlmodgen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\plantuml.h"
 				>
 			</File>
 			<File

@@ -208,6 +208,10 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   {
     return "end"+blockName;
   }
+  else if (blockName=="startuml")
+  {
+    return "enduml";
+  }
   else if (blockName=="f" && end<size)
   {
     if (data[end]=='$')

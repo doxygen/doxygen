@@ -462,7 +462,7 @@ const DocSymbol::PerlSymb *HtmlEntityMapper::perl(DocSymbol::SymType symb) const
 
 /*!
  * @brief Give code of the requested HTML entity name
- * @param symName HTML entity name without \c & and \c;
+ * @param symName HTML entity name without \c & and \c ;
  * @return the code for the requested HTML entity name,
  *         in case the requested HTML item does not exist `DocSymbol::Sym_unknown` is returned.
  */

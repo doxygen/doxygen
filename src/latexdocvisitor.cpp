@@ -32,6 +32,7 @@
 #include "filedef.h"
 #include "config.h"
 #include "htmlentity.h"
+#include "plantuml.h"
 
 static QCString escapeLabelName(const char *s)
 {
@@ -319,6 +320,16 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         m_t << "\\end{center}\n";
 
         if (Config_getBool("DOT_CLEANUP")) file.remove();
+      }
+      break;
+    case DocVerbatim::PlantUML: 
+      {
+        QCString latexOutput = Config_getString("LATEX_OUTPUT");
+        QCString baseName = writePlantUMLSource(latexOutput,s->exampleFile(),s->text());
+
+        m_t << "\\begin{center}\n";
+        writePlantUMLFile(baseName);
+        m_t << "\\end{center}\n";
       }
       break;
   }
@@ -1743,6 +1754,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName)
   m_t << "\\end{DoxyImageNoCaption}\n";
 }
 
+
 void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    const QCString &width,
                                    const QCString &height,
@@ -1827,6 +1839,23 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName)
   }
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS);
+  m_t << "\n\\begin{DoxyImageNoCaption}"
+         "  \\mbox{\\includegraphics";
+  m_t << "{" << shortName << "}";
+  m_t << "}\n"; // end mbox
+  m_t << "\\end{DoxyImageNoCaption}\n";
+}
+
+void LatexDocVisitor::writePlantUMLFile(const QCString &baseName)
+{
+  QCString shortName = baseName;
+  int i;
+  if ((i=shortName.findRev('/'))!=-1)
+  {
+    shortName=shortName.right(shortName.length()-i-1);
+  }
+  QCString outDir = Config_getString("LATEX_OUTPUT");
+  generatePlantUMLOutput(baseName,outDir,PUML_EPS);
   m_t << "\n\\begin{DoxyImageNoCaption}"
          "  \\mbox{\\includegraphics";
   m_t << "{" << shortName << "}";

@@ -1329,6 +1329,37 @@ void Config::check()
     mscgenPath="";
   }
 
+  // check plantuml path
+  QCString &plantumlJarPath = Config_getString("PLANTUML_JAR_PATH");
+  if (!plantumlJarPath.isEmpty())
+  {
+    QFileInfo pu(plantumlJarPath);
+    if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
+    {
+      QFileInfo jar(plantumlJarPath+portable_pathSeparator()+"plantuml.jar");
+      if (jar.exists() && jar.isFile())
+      {
+        plantumlJarPath = jar.dirPath(TRUE).utf8()+portable_pathSeparator();
+      }
+      else
+      {
+        config_err("Jar file plantuml.jar not found at location "
+                   "specified via PLANTUML_JAR_PATH: '%s'\n",plantumlJarPath.data());
+        plantumlJarPath="";
+      }
+    }
+    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    {
+      plantumlJarPath = pu.dirPath(TRUE).utf8()+portable_pathSeparator();
+    }
+    else
+    {
+      config_err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+                 plantumlJarPath.data());
+      plantumlJarPath="";
+    }
+  }
+
   // check dia path
   QCString &diaPath = Config_getString("DIA_PATH");
   if (!diaPath.isEmpty())

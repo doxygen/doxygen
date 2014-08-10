@@ -160,5 +160,6 @@ void doctokenizerYYpushBackHtmlTag(const char *tag);
 void doctokenizerYYsetStateSnippet();
 void doctokenizerYYstartAutoList();
 void doctokenizerYYendAutoList();
+void doctokenizerYYsetStatePlantUML();
 
 #endif

@@ -209,6 +209,11 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       filter(s->text());
       m_t << "</msc>";
       break;
+    case DocVerbatim::PlantUML:
+      m_t << "<plantuml>";
+      filter(s->text());
+      m_t << "</plantuml>";
+      break;
   }
 }
 
