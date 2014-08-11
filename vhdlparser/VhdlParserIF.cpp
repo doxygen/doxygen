@@ -7,7 +7,7 @@
 
 using namespace vhdl::parser;
 
-static VhdlParser * myParser;
+static VhdlParser * myParser=0;
 
 void  VhdlParserIF::parseVhdlfile(const char* inputBuffer,bool inLine) 
 {
@@ -28,13 +28,11 @@ void  VhdlParserIF::parseVhdlfile(const char* inputBuffer,bool inLine)
       myParser->design_file();
     }
   }
-  catch( std::exception &)
-  {
-    /* fprintf(stderr,"\n[%s]",e.what()); */
-  }
+  catch( std::exception &){ /* fprintf(stderr,"\n[%s]",e.what()); */ }
   //  fprintf(stderr,"\n\nparsed lines: %d\n",yyLineNr);
   //  fprintf(stderr,"\n\nerrors : %d\n\n",myErr->getErrorCount());
   delete myParser;
+ 
 }
 
 void VhdlParser::error_skipto(int kind)
@@ -42,8 +40,9 @@ void VhdlParser::error_skipto(int kind)
   Token *op;
   do
   {
-    op=myParser->getToken(1);
-    if (op==0) break;
+     Token *t = myParser->getNextToken();// step to next token
+	 op=myParser->getToken(1);           // get first token
+     if (op==0) break;
     //fprintf(stderr,"\n %s",t->image.data());
   } while (op->kind != kind);
   myParser->hasError=false;

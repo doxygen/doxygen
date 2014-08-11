@@ -3,7 +3,7 @@
 #ifndef __JAVACC_H
 #define __JAVACC_H
 #include <stdio.h>
-#include <string>
+#include <string.h>
 #include <memory.h>
 #include <assert.h>
 #include <cstring>
@@ -23,6 +23,7 @@
 #define JAVACC_SIMPLE_STRING VhdlString
 
 JAVACC_SIMPLE_STRING addUnicodeEscapes(JAVACC_STRING_TYPE str);
+
 
 typedef JAVACC_STRING_TYPE StringBuffer;
 typedef JAVACC_STRING_TYPE String;

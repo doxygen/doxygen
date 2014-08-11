@@ -6,6 +6,7 @@
 #include <exception>
 #include "VhdlParser.h"
 #include "ErrorHandler.h"
+#include "vhdlstring.h"
 
 namespace vhdl { namespace parser {
 

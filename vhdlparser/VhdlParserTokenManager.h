@@ -3,6 +3,7 @@
 #include "JavaCC.h"
 #include "CharStream.h"
 #include "Token.h"
+#include "ErrorHandler.h"
 #include "TokenManager.h"
 #include "VhdlParserConstants.h"
 #include "VhdlParser.h"
@@ -78,8 +79,6 @@ Token * getNextToken();
 
 void  SkipLexicalActions(Token *matchedToken);
 
-void  MoreLexicalActions();
-
 void  TokenLexicalActions(Token *matchedToken);
 #define jjCheckNAdd(state)\
 {\
@@ -120,13 +119,20 @@ void  TokenLexicalActions(Token *matchedToken);
   const JAVACC_SIMPLE_STRING jjKindsForBitVector(int i, unsigned long long vec);
   const JAVACC_SIMPLE_STRING jjKindsForStateVector(int lexState, int vec[], int start, int end);
     JAVACC_CHARSTREAM  *input_stream;
-    int jjrounds[65];
-    int jjstateSet[2 * 65];
+    int jjrounds[75];
+    int jjstateSet[2 * 75];
     JAVACC_STRING_TYPE jjimage;
     JAVACC_STRING_TYPE image;
     int jjimageLen;
     int lengthOfMatch;
     JAVACC_CHAR_TYPE curChar;
+    TokenManagerErrorHandler *errorHandler;
+    bool errorHandlerCreated;
+    public: void setErrorHandler(TokenManagerErrorHandler *eh) {
+      if (errorHandlerCreated && errorHandler != NULL) delete errorHandler;
+      errorHandler = eh;
+      errorHandlerCreated = false;
+    }
 };
 }
 }

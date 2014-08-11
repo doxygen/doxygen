@@ -28,9 +28,9 @@
 #include <qfileinfo.h>
 #include <qstringlist.h>
 
-#ifdef DEBUGFLOW
+//#ifdef DEBUGFLOW
 #include <qmap.h>
-#endif
+//#endif
 
 /* --------------------------------------------------------------- */
 
@@ -58,7 +58,9 @@
 #include "namespacedef.h"
 #include "filename.h"
 #include "membergroup.h"
+#include "memberdef.h"
 
+#include "vhdljjparser.h"
 #include "VhdlParser.h"
 
 #include "vhdlcode.h"
@@ -712,11 +714,13 @@ ClassDef* VhdlDocGen::getPackageName(const QCString & name)
   return cd;
 }
 
+static QMap<QCString,MemberDef*> varMap;
+static QList<ClassDef> qli;
+static QMap<ClassDef*,QList<ClassDef> > packages;
+
 MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
-  QDict<QCString> packages(17,FALSE);
-  packages.setAutoDelete(TRUE);
-  ClassDef* cd;
+  ClassDef* cd,*ecd;
   MemberDef *mdef=0;
 
   cd=getClass(className);
@@ -738,7 +742,7 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     // searching upper/lower case names
 
     QCString tt=d->name();
-    ClassDef *ecd =getClass(tt);
+    ecd =getClass(tt);
     if (!ecd)
     {
       tt=tt.upper();
@@ -758,12 +762,9 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
       mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType_pubMethods);
       if (mdef) return mdef;
     }
-    //cd=getClass(getClassName(cd));
-    //if (!cd) return 0;
-  }
-  // nothing found , so we are now searching all included packages
-  VhdlDocGen::findAllPackages(className,packages);
-  //cd=getClass(className.data());
+   }
+
+
   if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS ||
       (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
   {
@@ -781,60 +782,88 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
       tt=tt.lower();
       ecd =getClass(tt);
     }
-
     if (ecd) //d && d->definitionType()==Definition::TypeClass)
     {
-      VhdlDocGen::findAllPackages(ecd->className(),packages);
+      if(!packages.contains(ecd))
+      {
+        VhdlDocGen::findAllPackages(ecd);
+      }
     }
   }
-
-  QDictIterator<QCString> packli(packages);
-  QCString *curString;
-  for (packli.toFirst();(curString=packli.current());++packli)
+  else
   {
-    if (curString)
+    ecd=cd;
+    if (!packages.contains(ecd)) VhdlDocGen::findAllPackages(ecd);
+  }
+
+  uint len=packages.count();
+  for (uint j=0;j<len;j++)
+  {
+    for (QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.begin();cList != packages.end();cList++)
     {
-      cd=VhdlDocGen::getPackageName(*curString);
-      if (!cd)
+      if (cList.key()==0) continue;
+      QList<ClassDef> mlist=cList.data();
+      for (uint j=0;j<mlist.count();j++)
       {
-        *curString=curString->upper();
-        cd=VhdlDocGen::getPackageName(*curString);
-      }
-      if (!cd)
-      {
-        *curString=curString->lower();
-        cd=VhdlDocGen::getPackageName(*curString);
+        mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_variableMembers);
+        if (mdef) return mdef;
+        mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_pubMethods);
+        if (mdef) return mdef;
       }
     }
-    if (cd)
-    {
-      mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType_variableMembers);
-      if (mdef)  return mdef;
-      mdef=VhdlDocGen::findMemberDef(cd,memName,MemberListType_pubMethods);
-      if (mdef) return mdef;
-    }
-  } // for
+  }
   return 0;
+
 }//findMember
 
 /**
  *  This function returns the entity|package
  *  in which the key (type) is found
  */
-
 MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberListType type)
 {
-  //    return cd->getMemberByName(key);//does not work
   MemberDef *md=0;
+  MemberList *ml=0;
+  QCString keyType=cd->symbolName()+"@"+key;
+  //printf("\n %s | %s | %s",cd->symbolName().data(),key.data(,),keyType.data());
 
-  MemberList *ml=    cd->getMemberList(type);
-  if (ml==0) return 0;
-
+  QMap<QCString, MemberDef*>::Iterator it =varMap.find(keyType);
+  if (it.key())
+  {
+    md=it.data();
+    if (md)
+    {
+      return md;
+    }
+  }
+  if (qli.contains(cd))
+  {
+    return 0;
+  }
+  ml=cd->getMemberList(type);
+  qli.append(cd);
+  if (!ml)
+  {
+    return 0;
+  }
   MemberListIterator fmni(*ml);
+  //int l=ml->count();
+  //	fprintf(stderr,"\n loading enity %s %s: %d",cd->symbolName().data(),keyType.data(),l);
 
   for (fmni.toFirst();(md=fmni.current());++fmni)
   {
-    if (qstricmp(key,md->name())==0)
+    QCString tkey=cd->symbolName()+"@"+md->name();
+    if (varMap.contains(tkey))
+    {
+      continue;
+    }
+    varMap.insert(tkey.data(),md);
+  }
+  it=varMap.find(keyType.data());
+  if (it.key())
+  {
+    md=it.data();
+    if (md)
     {
       return md;
     }
@@ -846,42 +875,30 @@ MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberList
  * finds all included packages of an Entity or Package
  */
 
-void VhdlDocGen::findAllPackages(const QCString& className,QDict<QCString>& qdict)
+void VhdlDocGen::findAllPackages( ClassDef *cdef)
 {
-  ClassDef *cdef=getClass(className);
-  if (cdef)
-  {
-    MemberList *mem=cdef->getMemberList(MemberListType_variableMembers);
-    MemberDef *md;
+  QList<ClassDef> cList;
+  if (packages.contains(cdef)) return;
+  MemberList *mem=cdef->getMemberList(MemberListType_variableMembers);
+  MemberDef *md;
 
-    if (mem)
+  if (!mem) return;
+
+  MemberListIterator fmni(*mem);
+  for (fmni.toFirst();(md=fmni.current());++fmni)
+  {
+    if (VhdlDocGen::isPackage(md))
     {
-      MemberListIterator fmni(*mem);
-      for (fmni.toFirst();(md=fmni.current());++fmni)
+      ClassDef* cd=VhdlDocGen::getPackageName(md->name());
+      if (cd)
       {
-        if (VhdlDocGen::isPackage(md))
-        {
-          QCString *temp1=new QCString(md->name().data());
-          //*temp1=temp1->lower();
-          QCString p(md->name().data());
-          //p=p.lower();
-          ClassDef* cd=VhdlDocGen::getPackageName(*temp1);
-          if (cd)
-          {
-            QCString *ss=qdict.find(*temp1);
-            if (ss==0)
-            {
-              qdict.insert(p,temp1);
-              QCString tmp=cd->className();
-              VhdlDocGen::findAllPackages(tmp,qdict);
-            }
-            else delete temp1;
-          }
-          else delete temp1;
-        }
-      }//for
-    }//if
-  }//cdef
+        cList.append(cd);
+        VhdlDocGen::findAllPackages(cd);
+        packages.insert(cdef,cList);
+      }
+    }
+  }//for
+
 }// findAllPackages
 
 /*!
@@ -1939,17 +1956,6 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
 
   Definition *d=0;
 
-  /* some vhdl files contain only a configuration  description
-
-     library work;
-     configuration cfg_tb_jtag_gotoBackup of tb_jtag_gotoBackup is
-     for RTL
-     end for;
-     end cfg_tb_jtag_gotoBackup;
-
-     in this case library work does not belong to an entity, package ...
-
-   */
 
   ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 ||
       mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY ||
@@ -2024,13 +2030,13 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   ClassDef *annoClassDef=mdef->getClassDefOfAnonymousType();
 
   // start a new member declaration
-  bool isAnonymous = annoClassDef; // || m_impl->annMemb || m_impl->annEnumType;
+  uint isAnonymous = (bool)(annoClassDef); // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
   int mm=mdef->getMemberSpecifiers();
   if (mm==VhdlDocGen::MISCELLANEOUS)
-      isAnonymous=TRUE;
+      isAnonymous=3;
 
-  ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
+   ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
   bool detailsVisible = mdef->isDetailedSectionLinkable();
@@ -2248,8 +2254,8 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
       if (bUnit) ol.lineBreak();
       if (bRec || bUnit)
       {
-		  writeRecorUnit(largs,ol,mdef);
-		  mdef->setType("");
+        writeRecorUnit(largs,ol,mdef);
+        mdef->setType("");
       }
       ol.endBold();
       break;
@@ -2274,8 +2280,8 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     ol.endDoxyAnchor(cfname,mdef->anchor());
   }
 
-  //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
   //    name().data(),annoClassDef,annEnumType);
+ // if(mm!=VhdlDocGen::MISCELLANEOUS)
   ol.endMemberItem();
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
@@ -2592,7 +2598,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 void VhdlDocGen::writeSource(MemberDef *mdef,OutputList& ol,QCString & cname)
 {
   ParserInterface *pIntf = Doxygen::parserManager->getParser(".vhd");
-  pIntf->resetCodeParserState();
+ // pIntf->resetCodeParserState();
 
   QCString codeFragment=mdef->documentation();
 
@@ -3361,6 +3367,13 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   pIntf->startTranslationUnit("");
   pIntf->parseInput("",codeFragment.data(),&root,FALSE,filesInSameTu);
   pIntf->finishTranslationUnit();
+}
+
+void VhdlDocGen::resetCodeVhdlParserState()
+{
+  varMap.clear();
+  qli.clear();
+  packages.clear();
 }
 
 bool VhdlDocGen::isConstraint(const MemberDef *mdef)
@@ -4437,7 +4450,7 @@ void FlowChart::writeFlowLinks(FTextStream &t)
 void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     const char *scopeName,
     const QCString &input,
-    SrcLangExt ,
+    SrcLangExt, // lang
     bool isExampleBlock,
     const char *exampleName,
     FileDef *fileDef,

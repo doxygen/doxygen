@@ -108,8 +108,7 @@ class VhdlDocGen
     static ClassDef* getPackageName(const QCString& name);
     static MemberDef* findMember(const QCString& className, 
                                  const QCString& memName);
-    static void findAllPackages(const QCString& className,
-                                QDict<QCString>&);
+    static void findAllPackages(ClassDef*);
     static MemberDef* findMemberDef(ClassDef* cd,
                                 const QCString& key,
                                 MemberListType type);
@@ -246,7 +245,7 @@ class VhdlDocGen
              cu->spec==VhdlDocGen::PACKAGE_BODY;
     }
 
-
+  static void resetCodeVhdlParserState();
 
   private:
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);

@@ -14,11 +14,11 @@ options {
   OUTPUT_LANGUAGE = "c++";
   NAMESPACE = "vhdl::parser";
   STATIC=false;
-  PARSER_INCLUDES="VhdlParser.h";
+  PARSER_INCLUDES="vhdljjparser.h";
   TOKEN_MANAGER_INCLUDES="VhdlParser.h";
 
  //OUTPUT_DIRECTORY = ".";
- //DEBUG_PARSER=true;
+// DEBUG_PARSER=true;
  //DEBUG_LOOKAHEAD=true;
  
   }
@@ -58,6 +58,7 @@ static void createFunction(const char *impure,uint64 spec,const char *fname);
 static void addVhdlType(const char *n,int startLine,int section, uint64 spec,const char* args,const char* type,Protection prot);
 static void addCompInst(char *n, char* instName, char* comp,int iLine);
 static void handleCommentBlock(const char* doc,bool brief);
+static void handleFlowComment(const char*);
 static void initEntry(Entry *e);
 static  void newEntry();
 static  bool isFuncProcProced();
@@ -78,20 +79,27 @@ SKIP :
 | "\r"
 }
 
-MORE :
+SKIP:
 {
   // VHDL comment -- ......
-  // VHDL doxygen comment --! .... 
-  <#DOXYGEN_VHDL_COMMENT: "--!" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> 
-  | <MULT_DOXYGEN_COMMENT: (<DOXYGEN_VHDL_COMMENT>)+ >                                  {::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),TRUE);image.clear();}
-  | <VHDL_COMMENT: "--" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> { ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
-}
+  // VHDL doxygen line comment --! .... 
+  <#DOXYGEN_VHDL_COMMENT: (" "|"\t")*"--!"(~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> 
+  | <MULT_DOXYGEN_COMMENT: (<DOXYGEN_VHDL_COMMENT>)+ >  { ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),TRUE); }
+  |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { ::vhdl::parser::VhdlParser::handleFlowComment(image.data());}
+  |<VHDL_COMMENT: "--" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> { ::vhdl::parser::VhdlParser::lineCount(image.data());}
+ }
 
 // VHDL 2008  comment /* .... */
 // VHDL 2008 doxygen comment /*! .... */
-MORE :
+SKIP :
 {
-  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" > {::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),TRUE);image.clear();} 
+  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" > 
+  {
+   QCString q(image.data());
+   q.stripPrefix("/*!"); 
+   q.resize(q.length()-2);   
+  ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
+  } 
   | <MULT_VHDL_2008_COMMENT : "/*"  (~[])* "*/" >  {::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
 }
 
@@ -106,7 +114,7 @@ TOKEN [IGNORE_CASE] :
 | <ALL_T: "all">
 | <AND_T: "and">
 | <ARCHITECTURE_T: "architecture"> {::vhdl::parser::VhdlParser::setLineParsed(ARCHITECTURE_T);}
-| <ARRAY_T: "array"> {::vhdl::parser::VhdlParser::setLineParsed(ARRAY_T);}
+| <ARRAY_T: "array"> {VhdlParser::setLineParsed(ARRAY_T);}
 | <ASSERT_T: "assert"> 
 | <ASSUME_T: "assume"> 
 | <ASSUME_GUARANTEE_T: "assume_guarentee"> 
@@ -116,28 +124,28 @@ TOKEN [IGNORE_CASE] :
 | <BODY_T: "body"> {::vhdl::parser::VhdlParser::setLineParsed(BODY_T);}
 | <BUFFER_T: "buffer">
 | <BUS_T: "bus"> 
-| <COMPONENT_T: "component"> {::vhdl::parser::VhdlParser::setLineParsed(COMPONENT_T);}
+| <COMPONENT_T: "component"> {VhdlParser::setLineParsed(COMPONENT_T);}
 | <CASE_T: "case"> 
-| <CONFIGURATION_T: "configuration"> {::vhdl::parser::VhdlParser::setLineParsed(CONFIGURATION_T);}
-| <CONSTANT_T: "constant">  {::vhdl::parser::VhdlParser::setLineParsed(CONSTANT_T);}
-| <CONTEXT_T: "context"> {::vhdl::parser::VhdlParser::setLineParsed(CONTEXT_T);}
+| <CONFIGURATION_T: "configuration"> {VhdlParser::setLineParsed(CONFIGURATION_T);}
+| <CONSTANT_T: "constant">  {VhdlParser::setLineParsed(CONSTANT_T);}
+| <CONTEXT_T: "context"> {VhdlParser::setLineParsed(CONTEXT_T);}
 | <COVER_T: "cover"> 
 | <DEFAULT_T: "default"> 
 | <DISCONNECT_T: "disconnect"> 
 | <DOWNTO_T: "downto"> 
 | <ELSE_T: "else"> 
 | <ELSIF_T: "elsif"> 
-| <END_T: "end"> {::vhdl::parser::VhdlParser::setLineParsed(END_T);}
-| <ENTITY_T: "entity"> {::vhdl::parser::VhdlParser::setLineParsed(ENTITY_T);}
+| <END_T: "end"> {VhdlParser::setLineParsed(END_T);}
+| <ENTITY_T: "entity"> {VhdlParser::setLineParsed(ENTITY_T);}
 | <EXIT_T: "exit"> 
 | <FAIRNESS_T: "fairness"> 
-| <FILE_T: "file"> {::vhdl::parser::VhdlParser::setLineParsed(FILE_T);}
+| <FILE_T: "file"> {VhdlParser::setLineParsed(FILE_T);}
 | <FOR_T: "for"> 
 | <FORCE_T: "force">
-| <FUNCTION_T: "function">  {::vhdl::parser::VhdlParser::setLineParsed(FUNCTION_T);}
+| <FUNCTION_T: "function">  {VhdlParser::setLineParsed(FUNCTION_T);}
 | <GENERATE_T: "generate"> 
 | <GENERIC_T: "generic">  
-| <GROUP_T: "group"> {::vhdl::parser::VhdlParser::setLineParsed(GROUP_T);}
+| <GROUP_T: "group"> {VhdlParser::setLineParsed(GROUP_T);}
 | <GUARDED_T: "guarded"> 
 | <IF_T: "if"> 
 | <IMPURE_T: "impure"> 
@@ -146,7 +154,7 @@ TOKEN [IGNORE_CASE] :
 | <INOUT_T: "inout"> 
 | <IS_T: "is"> 
 | <LABEL_T: "label">
-| <LIBRARY_T: "library"> {::vhdl::parser::VhdlParser::setLineParsed(LIBRARY_T);}
+| <LIBRARY_T: "library"> {VhdlParser::setLineParsed(LIBRARY_T);}
 | <LINKAGE_T: "linkage">  
 | <LITERAL_T: "literal"> 
 | <LOOP_T: "loop"> 
@@ -285,9 +293,8 @@ TOKEN:
  | < #OTHER_SPECIAL_CHARACTER: ["%","!","$","@","?","[","\\","]","^","`","{","}","~","\u00A0"-"\u00FF"]>
  | < #SPACE_CHARACTER: [" ","\t"] >
  | < #LOWER_CASE_LETTER: ["a"-"z"] >
- | <VHDL2008TOOLDIR  : ["`"](<GRAPHIC_CHARACTER>)+ >
-   
-
+ | <VHDL2008TOOLDIR  : ["`"](<GRAPHIC_CHARACTER>|<STRINGLITERAL>)+ >
+ 
 }
 
 QCString abstract_literal() : 
@@ -344,7 +351,7 @@ QCString adding_operator () :
 
 QCString aggregate() :  {QCString s,s1,s2;}
 {
-  <LPAREN_T> s=element_association() (LOOKAHEAD(1)<COMMA_T> s1=element_association(){s+=","+s1;})* <RPAREN_T> { return s;}
+  <LPAREN_T> s=element_association() (<COMMA_T> s1=element_association(){s+=","+s1;})* <RPAREN_T> { return "("+s+")";}
 }
 
 QCString alias_declaration() :  {QCString s,s1,s2;}
@@ -397,11 +404,13 @@ void architecture_body() : {QCString s,s1;}
 void architecture_declarative_part() : {}
 {
   (block_declarative_item() )*
+ // | (<VHDL2008TOOLDIR>)
 }
 
 void architecture_statement_part() :  {}
 {
   (concurrent_statement())*
+ // | (<VHDL2008TOOLDIR>)
 }
 
 QCString array_type_definition ():  { QCString s;}
@@ -433,10 +442,10 @@ QCString assertion_statement() :  {QCString s,s1,s2;Token *t=0;}
 	return s+s1+";";
   }
 }
-QCString association_element() : {}
+QCString association_element() : {QCString s,s1;}
 {
- [LOOKAHEAD(formal_part() <ARROW_T>) formal_part() <ARROW_T> ] actual_part()
- { return " ";}
+ [LOOKAHEAD(formal_part() <ARROW_T>) s=formal_part() <ARROW_T> ] s1=actual_part()
+ { return s+" => "+s1;}
 }
 
 QCString association_list ():  {QCString s,s1;}
@@ -555,6 +564,7 @@ attribute_declaration()
 LOOKAHEAD(3)
 group_template_declaration()
 | group_declaration()
+| <VHDL2008TOOLDIR>
 }
 
 void block_declarative_part() : {}
@@ -606,7 +616,7 @@ void  case_statement() : {QCString s;}
 		<END_T> <CASE_T> [ identifier() ] <SEMI_T>
 		{
          FlowChart::moveToPrevLevel();
-         FlowChart::addFlowChart(FlowChart::END_CASE,0,0);
+         FlowChart::addFlowChart(FlowChart::END_CASE,"end case",0);
       	}
 }
 
@@ -628,18 +638,20 @@ QCString character_literal() :  {Token *tok;}
 
 QCString choice() : {QCString s;}
 {
+   LOOKAHEAD(simple_expression())
+  s=simple_expression(){ return s; }
+  | 
   LOOKAHEAD(discrete_range())
   s=discrete_range(){ return s; }
   |
-  LOOKAHEAD(simple_expression())
-  s=simple_expression(){ return s; }
-  | s=identifier(){ return s; }
+  LOOKAHEAD(identifier())
+  s=identifier(){ return s; }
   | <OTHER_T> { return " others "; }
 }
  
 QCString choices() :  {QCString s,s1;}
 {
-  s=choice() (<BAR_T> choice(){s+="|";s+=s1;})* { return s; } 
+  s=choice() (<BAR_T> s1=choice(){s+="|";s+=s1;})* { return s; } 
 }
 
 void component_configuration () :{}
@@ -733,8 +745,8 @@ component_instantiation_statement()
 |
 LOOKAHEAD(concurrent_procedure_call_statement())
 concurrent_procedure_call_statement()
+| <VHDL2008TOOLDIR>
  /*
- }
   catch( ParseException e )
   {
     error_skipto(SEMI_T, "syntax error in declarative item");
@@ -911,7 +923,12 @@ QCString discrete_range() : {QCString s;}
 
 QCString element_association() :  {QCString s,s1;}
 {
- [LOOKAHEAD(choices() <ARROW_T>) choices() <ARROW_T>  ] s1=expression() { return s1;}
+[LOOKAHEAD(choices() <ARROW_T>) s=choices() <ARROW_T> ]  s1=expression() 
+ { 
+if(!s.isEmpty()) 
+ return s+"=>"+s1;
+return s1; 
+ }
 }
 
 QCString element_declaration() :  {QCString s,s1;}
@@ -960,7 +977,7 @@ QCString entity_class_entry_list() :  {QCString s,s1,s2;}
 
 void entity_declaration() :  {QCString s;}
 {
-    try{
+   // try{
 	<ENTITY_T> s=identifier()  <IS_T>
 	         {
                 lastEntity=current;
@@ -971,7 +988,7 @@ void entity_declaration() :  {QCString s;}
         entity_declarative_part ()
       [ <BEGIN_T> entity_statement_part() ] 
        <END_T> [ <ENTITY_T> ] [ name() ]
-     	}catch(...){error_skipto(SEMI_T);}  
+     //	}catch(...){error_skipto(SEMI_T);}  
 	 <SEMI_T>
 	 { lastEntity=0;lastCompound=0; genLabels.resize(0); }
 }
@@ -1001,6 +1018,7 @@ group_template_declaration()
 LOOKAHEAD(5)
  package_instantiation_declaration()
 |package_declaration()
+| <VHDL2008TOOLDIR>
 }
 
 void entity_declarative_part() : {}
@@ -1071,8 +1089,11 @@ QCString exit_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 [ s=identifier() t=<COLON_T> ] <EXIT_T> [ s1=identifier() ] 
 [ t1=<WHEN_T> s2=condition() ] <SEMI_T>
 {
+  lab.resize(0);         
   if(t) s+=":";
   if(t1) s2.prepend(" when ");
+   FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2.data(),s1.data()); 
+ 
   return s+s1+s2+";";
 }
 }
@@ -1091,8 +1112,7 @@ QCString logop() : {}
   |<XNOR_T> { return "xnor" ;}
   |<XOR_T> { return "xor" ;}
   |<OR_T> { return "or" ;}
- 
-}
+ }
 
 QCString extended_identifier ():  {Token *t;}
 {
@@ -1177,7 +1197,7 @@ s=identifier() <COLON_T>
           try{
 		generate_scheme() <GENERATE_T> 
         { pushLabel(genLabels,s); }
-        [ (block_declarative_item() )* <BEGIN_T> ]  (concurrent_statement())*  
+          generate_statement_body1()
 		<END_T> 
 			     }catch(...){error_skipto(GENERATE_T);}  
 		<GENERATE_T> [ identifier() ] <SEMI_T> {genLabels=popLabel(genLabels); }
@@ -1392,7 +1412,7 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
                     {
                       if (currP==VhdlDocGen::FUNCTION || currP==VhdlDocGen::PROCEDURE)
                       {
-                        addProto(s5.data(),s.data(),s2.data(),s3.data(),0,s4.data());
+                        addProto(s5.data(),s.data(),s1.data(),s2.data(),s3.data(),s4.data());
                       }
                       else
                       {
@@ -1408,10 +1428,22 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
 			}
 }
 
-void iteration_scheme() :  {}
+QCString iteration_scheme() :  {QCString s;}
 {
-<WHILE_T> condition()
-| <FOR_T> parameter_specification()
+<WHILE_T> s=condition()
+{
+   s.prepend("while ");
+   FlowChart::addFlowChart(FlowChart::WHILE_NO,0,s.data(),lab.data());
+   lab="";    
+  return s;   
+}
+| <FOR_T> s=parameter_specification()
+{
+    QCString q=lab+" for "+s;
+    FlowChart::addFlowChart(FlowChart::FOR_NO,0,q.data(),lab.data());
+    lab="";
+	return q;
+}
 }
 
 QCString label() :  {QCString s;}
@@ -1463,12 +1495,25 @@ QCString logical_operator() :  {QCString s;}
  s=logop() { return s;}
 }
 
-void loop_statement() :  {}
+QCString loop_statement() :  {QCString s,s1,s2,s3;}
 {
-[ identifier() <COLON_T> ]
-    [ iteration_scheme() ] <LOOP_T>
-        sequence_of_statement() 
-		<END_T> <LOOP_T> [ identifier() ] <SEMI_T> 
+[ s=identifier() <COLON_T> {s+=":";} ]
+    [ s1=iteration_scheme()  ]
+	  {
+	   if(s1.isEmpty())
+ 	   FlowChart::addFlowChart(FlowChart::LOOP_NO,0,"infinite");
+	   }
+	  <LOOP_T>
+        s2=sequence_of_statement() 
+		<END_T> <LOOP_T> [ s3=identifier() ] <SEMI_T> 
+		{
+		 QCString q = s+" loop "+s2+" end loop" +s3;
+         QCString endLoop="end loop" + s3;
+         FlowChart::moveToPrevLevel();
+         FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop.data(),0);
+		return q;
+		}
+		
 }
 
 
@@ -1550,8 +1595,10 @@ QCString next_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 [LOOKAHEAD(1)  t1=<WHEN_T> s2=condition() ] <SEMI_T>
 {
   if(t) s+=":";
-  if(t1) s2.prepend("when "); 
-   return s+s1+s2+";";
+   FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2.data(),s1.data()); 
+    lab.resize(0);
+  if(t1) s2.prepend("when ");                
+  return s+s1+s2+";";
 }
 }
 
@@ -1813,7 +1860,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;}
                current->bodyLine=getLine();
   }
  <PROCESS_T>
- try{
+ //try{
  [ <LPAREN_T> (tok=<ALL_T> | s1=sensitivity_list()) <RPAREN_T> ] [ <IS_T> ]
         s2=process_declarative_part() 
 		     {
@@ -1824,7 +1871,7 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;}
 		<BEGIN_T>
         process_statement_part()
 		<END_T> [ <POSTPONED_T> ] 
-		  }catch(...){error_skipto(PROCESS_T);}  
+		 // }catch(...){error_skipto(PROCESS_T);}  
 		<PROCESS_T> [ identifier() ] <SEMI_T>
  { 
   if(s.isEmpty())
@@ -1878,9 +1925,9 @@ QCString range_constraint() :  {QCString s,s1;}
 void record_type_definition() : {}
 {
     <RECORD_T>
-       try{
+     //  try{
 	   (element_declaration())+ 
-	   	     }catch(...){error_skipto(END_T);}  
+	   	 //    }catch(...){error_skipto(END_T);}  
        <END_T> 
 	   <RECORD_T> [ name()] 
 }
@@ -1969,50 +2016,50 @@ QCString sensitivity_list() :  {QCString s,s1;}
  s=name() (<COMMA_T> s1=name(){s+=",";s+=s1;} )* { return s;}
 }
 
-void sequence_of_statement() : {}
+QCString sequence_of_statement() : {QCString s,s1;}
 {
- ( LOOKAHEAD(3)sequential_statement())*
+ ( LOOKAHEAD(3) s1=sequential_statement() {s+=s1;} )* { return s;}
 }
 
-void sequential_statement() :{QCString s;}
+QCString sequential_statement() :{QCString s;}
 {
     LOOKAHEAD( [ identifier() ":" ] target() "<=")
-	s=signal_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);}
+	s=signal_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
     | 
 	LOOKAHEAD(3)
-	s=assertion_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);}
+	s=assertion_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
     | 
 	 LOOKAHEAD(3)
-	s=report_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);}
+	s=report_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
     | 
 	LOOKAHEAD(3)
-	s=wait_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);}
+	s=wait_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
     | 
     LOOKAHEAD(  [ identifier() ":" ] target() ":=" )
-	s=variable_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);}
+	s=variable_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
     | 
     LOOKAHEAD(3)
-	s=procedure_call_statement(){ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0); }
+	s=procedure_call_statement(){ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s; }
     | 
 	 LOOKAHEAD(3)
-	if_statement()
+	if_statement(){return s;}
     | 
 	 LOOKAHEAD(3)
-	case_statement()
+	case_statement(){return s;}
     | 
 	LOOKAHEAD(3)
-	loop_statement()
+	loop_statement(){return s;}
     | 
 	LOOKAHEAD(3)
-	s=next_statement()  
+	s=next_statement() {return s;} 
 	| 
 	LOOKAHEAD(3)	
-	s=exit_statement()
+	s=exit_statement(){return s;}
     | 
     LOOKAHEAD(3)
-	s=return_statement(){FlowChart::addFlowChart(FlowChart::RETURN_NO,s.data(),0);}
+	s=return_statement(){FlowChart::addFlowChart(FlowChart::RETURN_NO,s.data(),0);return s;}
     | 
-	s=null_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);}
+	s=null_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
 }
 
 QCString shift_expression() :  {QCString s,s1,s2;}
@@ -2059,10 +2106,12 @@ void semi() :  {}
 <SEMI_T> 
 }
 
-void signal_declaration() :  {QCString s,s1,s2,s3,s4;}
+void signal_declaration() :  { Token* tok=0;QCString s,s1,s2,s3,s4;}
 {
-<SIGNAL_T> s=identifier_list() <COLON_T> s1=subtype_indication() [ s2=signal_kind() ] [ <VARASSIGN_T> s3=expression() ] <SEMI_T> 
+<SIGNAL_T> s=identifier_list() <COLON_T> s1=subtype_indication() [ s2=signal_kind() ] [ tok=<VARASSIGN_T> s3=expression() ] <SEMI_T> 
      {
+	 if(tok)
+	  s3.prepend(":=");
 	 s4=s1+s2+s3;
 	 addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SIGNAL,0,s4.data(),Public);
      }
@@ -2091,7 +2140,7 @@ QCString signature() : {QCString s,s1,s2;}
 
 QCString simple_expression():  {QCString s,s1,s2;}
 {
-[ s=sign() ] s1=term() {s+=s1;} ( LOOKAHEAD(adding_operator()) s1=adding_operator() s2=term() {s+=s1;s+=s2;})* { return s;}
+[ s=sign() ] s1=term() {s+=s1;} ( LOOKAHEAD(adding_operator() term()) s1=adding_operator() s2=term() {s+=s1;s+=s2;})* { return s;}
 }
 
 void simple_name() :  {}
@@ -2113,7 +2162,7 @@ tok=<STRINGLITERAL> {return tok->image.c_str();}
 {
 //subprogram_specification() 
 <IS_T>
- try{
+ //try{
  s=subprogram_declarative_part()
    {
       if (s.data())
@@ -2122,7 +2171,7 @@ tok=<STRINGLITERAL> {return tok->image.c_str();}
       }
       FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
     } 
-  }catch(...){error_skipto(BEGIN_T);}  
+ // }catch(...){error_skipto(BEGIN_T);}  
 <BEGIN_T>
 subprogram_statement_part()
 <END_T> [ subprogram_kind() ] [ designator() ] <SEMI_T> 
@@ -2309,10 +2358,11 @@ QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
                    QStringList ql1=QStringList::split(",",s,FALSE);
                    for (uint j=0;j<ql1.count();j++)
                    {
-                     QCString it=ql1[j].utf8();
+                    QStringList ql=QStringList::split(".",ql1[j],FALSE);                    
+					QCString it=ql[1].utf8();
                      if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
                      {
-                       ::vhdl::parser::VhdlParser::addVhdlType(it.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
+                       VhdlParser::addVhdlType(it.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
                      }
                    }
                    s1="use "+s;
@@ -2329,15 +2379,17 @@ QCString variable_assignment_statement() :  {QCString s,s1,s2;}
  selected_variable_assignment() { return "";  } 
 }
 
-QCString variable_declaration() :  {Token *tok=0;QCString s,s1,s2;}
+QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
 {
 [ tok=<SHARED_T> ] <VARIABLE_T> s=identifier_list() <COLON_T> s1=subtype_indication() 
-[ <VARASSIGN_T> s2=expression() ] <SEMI_T> 
+[ t1=<VARASSIGN_T> s2=expression() ] <SEMI_T> 
 
 {
     int spec;
-	QCString val=" variable "+s+":"+s1+":="+s2+";";
-	QCString it=s1+" "+s2;
+	if(t1)
+	 s2.prepend(":=");
+	QCString val=" variable "+s+":"+s1+s2+";";
+	QCString it=s1;
 	if(tok != 0)
 	{
 	 it.prepend(" shared ");
@@ -2347,6 +2399,10 @@ QCString variable_declaration() :  {Token *tok=0;QCString s,s1,s2;}
 	 else
 	 spec=VhdlDocGen::SHAREDVARIABLE;
     
+	if(t1){
+	 it+=":=";
+     it+=s2;
+	 }
 	addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,spec,0,it.data(),Public);
     return val;
  }
@@ -2355,7 +2411,7 @@ QCString variable_declaration() :  {Token *tok=0;QCString s,s1,s2;}
 
 QCString wait_statement() :  {QCString s,s1,s2,s3;Token *t=0;}
 {
-[ s=identifier() <COLON_T> ] <WAIT_T> [ s1=sensitivity_clause() ] [ s2=condition_clause() ] [ s3=timeout_clause() ] <SEMI_T> 
+[ s=identifier() t=<COLON_T> ] <WAIT_T> [ s1=sensitivity_clause() ] [ s2=condition_clause() ] [ s3=timeout_clause() ] <SEMI_T> 
 {
   if(t) s.append(":");
   return s+" wait "+s1+s2+s3+";";
@@ -2364,7 +2420,7 @@ QCString wait_statement() :  {QCString s,s1,s2,s3;Token *t=0;}
 
 QCString waveform() :  {QCString s,s1;}
 {
-s=waveform_element() (<COMMA_T> s1=waveform_element(){s+=","; s+=s1;})* { return s;}
+s=waveform_element() (LOOKAHEAD(1) <COMMA_T> s1=waveform_element(){s+=","; s+=s1;})* { return s;}
 | 
 <UNAFFECTED_T> { return " unaffected ";}
 
@@ -2383,11 +2439,11 @@ QCString waveform_element() :  {QCString s,s1;}
 
 QCString protected_type_body() :{ }
 {
-   try{
+  // try{
    <PROTECTED_T> <BODY_T> 
           protected_type_body_declarative_part()    
    
-	}catch(...){error_skipto(END_T);} 
+	//}catch(...){error_skipto(END_T);} 
 	<END_T><PROTECTED_T> <BODY_T>   [identifier()]  {return "";}  
 }
 
@@ -2451,7 +2507,6 @@ QCString context_ref() : {QCString s;}
   return "context "+s ; 
  }
 }
-
 
 void context_declaration(): {QCString s,s1;}
 {
@@ -2531,17 +2586,22 @@ void when_stats() : {}
    )+
 }
 
-
 void ttend(): {}
 {
   <END_T> [identifier()] <SEMI_T>
  } 
 
-
-
+ 
 void generate_statement_body() : {}
 {
-   <BEGIN_T> [block_declarative_part()  <BEGIN_T>] (concurrent_statement())*
+   <BEGIN_T> generate_statement_body()
+}
+ 
+void generate_statement_body1() : {}
+{
+   LOOKAHEAD(block_declarative_item()<BEGIN_T> )
+   (block_declarative_item() )*  <BEGIN_T> (concurrent_statement())*
+   | (concurrent_statement())*
 }
 
 QCString external_name(): {QCString s,s1,s2;}
@@ -2674,8 +2734,6 @@ void sel_wave_list() : {}
    waveform_element() <WHEN_T> choices() (LOOKAHEAD(1) <COMMA_T> sel_wave_list())* <SEMI_T>
   // |  sel_wave_list_1()
 }
-
-
 
 void inout_stat(): {}
 { 

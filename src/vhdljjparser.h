@@ -11,14 +11,16 @@
 #include <qfile.h>
 #include <qdict.h>
 #include <string>
-#include "memberlist.h"
 #include "types.h"
 #include "entry.h"
-
 #include "vhdldocgen.h"
 #include "qstringlist.h"
 #include "vhdlcode.h"
+#include "memberlist.h"
 #include "config.h"
+
+
+
 
 enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 void  parserVhdlfile(const char* inputBuffer);
@@ -29,7 +31,8 @@ class FileStorage;
 class ClassDef;
 class MemberDef;
 class QStringList;
-class VhdlConfNode;
+struct VhdlConfNode;
+
 
 /** \brief VHDL parser using state-based lexical scanning.
  *
@@ -46,8 +49,8 @@ class VHDLLanguageScanner : public ParserInterface
                     Entry *root,
                     bool sameTranslationUnit,
                     QStrList &filesInSameTranslationUnit);
-
-    void parseCode(CodeOutputInterface &codeOutIntf,
+  
+ void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
                    SrcLangExt lang,
@@ -60,39 +63,40 @@ class VHDLLanguageScanner : public ParserInterface
                    MemberDef *memberDef=0,
                    bool showLineNumbers=TRUE,
                    Definition *searchCtx=0,
-                   bool collectXRefs=TRUE);
-
-    bool needsPreprocessing(const QCString &) { return TRUE; }
-    void resetCodeParserState() {}
-    void parsePrototype(const char *) {}
+                   bool collectXRefs=TRUE
+				   );
+		bool needsPreprocessing(const QCString &) { return TRUE; }
+		void resetCodeParserState(){};
+	    void parsePrototype(const char *text);
 };
 
-class VhdlConfNode
-{
-  public:
-    VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf)
-    {
-      arch=a;              // architecture  e.g. for iobuffer
-      arch=arch.lower();
-      binding=b;           // binding e.g.  use entiy work.xxx(bev)
-      binding=binding.lower();
-      confVhdl=config;     // configuration foo is bar
-      compSpec=cs;
-      isInlineConf=false;  // primary configuration?
-      isLeaf=leaf;
-    };
+struct VhdlConfNode
+{ 
+  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf) 
+  { 
+    arch=a;              // architecture  e.g. for iobuffer
+    arch=arch.lower();
+    binding=b;           // binding e.g.  use entiy work.xxx(bev)
+    binding=binding.lower();
+    confVhdl=config;     // configuration foo is bar
+    compSpec=cs;        
+    isInlineConf=false;  // primary configuration?
+    isLeaf=leaf;
+  };
 
-    QCString confVhdl;
-    QCString arch;
-    QCString binding;
-    QCString compSpec;
-    int level;
-    bool isLeaf;
-    bool isInlineConf;
+  QCString confVhdl;
+  QCString arch;
+  QCString binding;
+  QCString compSpec;
+  int level;
+  bool isLeaf;
+  bool isInlineConf;
+
 };
 
-void                 vhdlscanFreeScanner();
+void vhdlscanFreeScanner();
+
 QList<VhdlConfNode>& getVhdlConfiguration();
-QList<Entry>&        getVhdlInstList();
+QList<Entry>& getVhdlInstList();
 
 #endif
