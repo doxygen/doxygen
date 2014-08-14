@@ -665,11 +665,11 @@ static void addSection()
   {
     if (si->lineNr != -1)
     {
-      warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",g_sectionLabel.data(),si->fileName.data(),si->lineNr);
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",g_sectionLabel.data(),si->fileName.data(),si->lineNr);
     }
     else
     {
-      warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",g_sectionLabel.data(),si->fileName.data());
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",g_sectionLabel.data(),si->fileName.data());
     }
   }
   else
@@ -1745,11 +1745,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           {
                                             if (si->lineNr != -1)
                                             {
-                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",yytext,si->fileName.data(),si->lineNr);
+                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",yytext,si->fileName.data(),si->lineNr);
                                             }
                                             else
                                             {
-                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",yytext,si->fileName.data());
+                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",yytext,si->fileName.data());
                                             }
                                           }
                                           else

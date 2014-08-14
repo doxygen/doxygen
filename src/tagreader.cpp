@@ -1431,17 +1431,19 @@ void TagFileParser::buildLists(Entry *root)
   TagPageInfo *tpi;
   for (pgit.toFirst();(tpi=pgit.current());++pgit)
   {
-    Entry *pe    = new Entry;
-    pe->section  = Entry::PAGEDOC_SEC;
-    pe->name     = tpi->name;
-    pe->args     = tpi->title;
-    addDocAnchors(pe,tpi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tpi->filename;
-    pe->tagInfo  = ti;
-
-    root->addSubEntry(pe);
+    if (tpi->filename!="index") // skip mainpage, there can be only one (see bug734727)
+    {
+      Entry *pe    = new Entry;
+      pe->section  = Entry::PAGEDOC_SEC;
+      pe->name     = tpi->name;
+      pe->args     = tpi->title;
+      addDocAnchors(pe,tpi->docAnchors);
+      TagInfo *ti  = new TagInfo;
+      ti->tagName  = m_tagName;
+      ti->fileName = tpi->filename;
+      pe->tagInfo  = ti;
+      root->addSubEntry(pe);
+    }
   }
 }
 

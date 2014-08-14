@@ -8653,11 +8653,11 @@ static void findMainPage(EntryNav *rootNav)
       {
         if (si->lineNr != -1)
         {
-          warn(root->fileName,root->startLine,"multiple use of section label '%s', (first occurrence: %s, line %d)",Doxygen::mainPage->name().data(),si->fileName.data(),si->lineNr);
+          warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s, line %d)",Doxygen::mainPage->name().data(),si->fileName.data(),si->lineNr);
         }
         else
         {
-          warn(root->fileName,root->startLine,"multiple use of section label '%s', (first occurrence: %s)",Doxygen::mainPage->name().data(),si->fileName.data());
+          warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s)",Doxygen::mainPage->name().data(),si->fileName.data());
         }
       }
       else
