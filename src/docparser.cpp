@@ -5218,6 +5218,7 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
   QCString blockId;
   if (t==DocInclude::Snippet)
   {
+    if (fileName == "this") fileName=g_fileName;
     doctokenizerYYsetStateSnippet();
     tok=doctokenizerYYlex();
     doctokenizerYYsetStatePara();
