@@ -9152,22 +9152,24 @@ static void copyStyleSheet()
       copyFile(htmlStyleSheet,destFileName);
     }
   }
-  QCString &htmlExtraStyleSheet = Config_getString("HTML_EXTRA_STYLESHEET");
-  if (!htmlExtraStyleSheet.isEmpty())
+  QStrList htmlExtraStyleSheet = Config_getList("HTML_EXTRA_STYLESHEET");
+  for (uint i=0; i<htmlExtraStyleSheet.count(); ++i)
   {
-    QFileInfo fi(htmlExtraStyleSheet);
-    if (!fi.exists())
+    QCString fileName(htmlExtraStyleSheet.at(i));
+    if (!fileName.isEmpty())
     {
-      err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",htmlExtraStyleSheet.data());
-      htmlExtraStyleSheet.resize(0); // revert to the default
-    }
-    else
-    {
-      QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
-      copyFile(htmlExtraStyleSheet,destFileName);
+      QFileInfo fi(fileName);
+      if (!fi.exists())
+      {
+        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.data());
+      }
+      else
+      {
+        QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+        copyFile(fileName, destFileName);
+      }
     }
   }
-  
 }
 
 static void copyLogo()

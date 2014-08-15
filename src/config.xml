@@ -1780,16 +1780,18 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
 ]]>
       </docs>
     </option>
-    <option type='string' id='HTML_EXTRA_STYLESHEET' format='file' defval='' depends='GENERATE_HTML'>
+    <option type='list' id='HTML_EXTRA_STYLESHEET' format='file' defval='' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_EXTRA_STYLESHEET tag can be used to specify an additional 
- user-defined cascading style sheet that is included after the standard 
+ The \c HTML_EXTRA_STYLESHEET tag can be used to specify additional 
+ user-defined cascading style sheets that are included after the standard 
  style sheets created by doxygen. Using this option one can overrule 
  certain style aspects. This is preferred over using \ref cfg_html_stylesheet "HTML_STYLESHEET" 
  since it does not replace the standard style sheet and is therefor more 
- robust against future updates. Doxygen will copy the style sheet file to 
+ robust against future updates. Doxygen will copy the style sheet files to 
  the output directory.
+ \note The order of the extra stylesheet files is of importance (e.g. the last
+ stylesheet in the list overrules the setting of the previous ones in the list).
 ]]>
       </docs>
       <docs doxywizard='0' doxyfile='0'>
