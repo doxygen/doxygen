@@ -2245,7 +2245,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers>"Q_OBJECT"			{ // Qt object macro
   					}
 <FindMembers>"Q_PROPERTY"		{ // Qt property declaration
-					  current->protection = protection = Public ;
+					  //current->protection = protection = Public ; // see bug734245
   					  current->mtype = mtype = Property;
 					  current->type.resize(0);
   					  BEGIN(QtPropType);
@@ -3372,6 +3372,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
 					  else
 					  {
+                                            mtype = Method;
+                                            virt = Normal;
 					    if (needNewCurrent)
 					    {
 					      current = new Entry ;
@@ -6126,6 +6128,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  else
 					  {
   					    mtype = Method;
+                                            virt = Normal;
                                             unput(';');
 					    BEGIN(FindMembers);
 					  }
