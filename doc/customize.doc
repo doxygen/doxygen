@@ -110,8 +110,8 @@ This will create 3 files:
   link to www.doxygen.org and the body and html end tags.
 - customdoxygen.css is the default cascading style sheet
   used by doxygen. It is recommended only to look into this file and overrule
-  some settings you like by putting them in a separate stylesheet and
-  referencing that extra file 
+  some settings you like by putting them in a separate stylesheets and
+  referencing those extra files
   via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
 
 You should edit these files and then reference them from the config file.
