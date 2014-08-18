@@ -211,7 +211,7 @@ void CiteDict::generatePage() const
   f.setName(citeListFile);
   if (!f.open(IO_ReadOnly)) 
   {
-    err("could not open file %s/citelist.doc for reading\n",outputDir.data());
+    err("could not open file %s for reading\n",citeListFile.data());
   }
   bool insideBib=FALSE;
   
