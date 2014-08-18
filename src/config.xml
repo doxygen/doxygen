@@ -1145,9 +1145,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  \c bibtex tool to be installed. See also http://en.wikipedia.org/wiki/BibTeX for
  more info. For \f$\mbox{\LaTeX}\f$ the style of the bibliography can be controlled 
  using \ref cfg_latex_bib_style "LATEX_BIB_STYLE".
- To use this 
- feature you need \c bibtex and \c perl available in the search path. Do not use 
- file names with spaces, \c bibtex cannot handle them.
+ To use this feature you need \c bibtex and \c perl available in the search path.
  See also \ref cmdcite "\\cite" for info how to create references.
 ]]>
       </docs>
