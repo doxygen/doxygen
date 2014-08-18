@@ -2279,7 +2279,9 @@ void addClassMemberNameToIndex(MemberDef *md)
         (QCString(md->typeString())=="friend class" || 
          QCString(md->typeString())=="friend struct" ||
          QCString(md->typeString())=="friend union");
-      if (!(md->isFriend() && isFriendToHide))
+      if (!(md->isFriend() && isFriendToHide) &&
+          (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
+         )
       {
         g_memberIndexLetterUsed[CMHL_All].append(letter,md);
         documentedClassMembers[CMHL_All]++;
@@ -2288,7 +2290,7 @@ void addClassMemberNameToIndex(MemberDef *md)
       {
         g_memberIndexLetterUsed[CMHL_Functions].append(letter,md);
         documentedClassMembers[CMHL_Functions]++;
-      } 
+      }
       else if (md->isVariable())
       {
         g_memberIndexLetterUsed[CMHL_Variables].append(letter,md);
@@ -2304,7 +2306,7 @@ void addClassMemberNameToIndex(MemberDef *md)
         g_memberIndexLetterUsed[CMHL_Enums].append(letter,md);
         documentedClassMembers[CMHL_Enums]++;
       }
-      else if (md->isEnumValue())
+      else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
         g_memberIndexLetterUsed[CMHL_EnumValues].append(letter,md);
         documentedClassMembers[CMHL_EnumValues]++;
@@ -2349,10 +2351,13 @@ void addNamespaceMemberNameToIndex(MemberDef *md)
     QCString n = md->name();
     int index = getPrefixIndex(n);
     uint letter = getUtf8CodeToLower(n,index);
-    if (!n.isEmpty()) 
+    if (!n.isEmpty())
     {
-      g_namespaceIndexLetterUsed[NMHL_All].append(letter,md);
-      documentedNamespaceMembers[NMHL_All]++;
+      if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
+      {
+        g_namespaceIndexLetterUsed[NMHL_All].append(letter,md);
+        documentedNamespaceMembers[NMHL_All]++;
+      }
 
       if (md->isFunction()) 
       {
@@ -2374,7 +2379,7 @@ void addNamespaceMemberNameToIndex(MemberDef *md)
         g_namespaceIndexLetterUsed[NMHL_Enums].append(letter,md);
         documentedNamespaceMembers[NMHL_Enums]++;
       }
-      else if (md->isEnumValue())
+      else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
         g_namespaceIndexLetterUsed[NMHL_EnumValues].append(letter,md);
         documentedNamespaceMembers[NMHL_EnumValues]++;
@@ -2405,8 +2410,11 @@ void addFileMemberNameToIndex(MemberDef *md)
     uint letter = getUtf8CodeToLower(n,index);
     if (!n.isEmpty()) 
     {
-      g_fileIndexLetterUsed[FMHL_All].append(letter,md);
-      documentedFileMembers[FMHL_All]++;
+      if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
+      {
+        g_fileIndexLetterUsed[FMHL_All].append(letter,md);
+        documentedFileMembers[FMHL_All]++;
+      }
 
       if (md->isFunction()) 
       {
@@ -2428,7 +2436,7 @@ void addFileMemberNameToIndex(MemberDef *md)
         g_fileIndexLetterUsed[FMHL_Enums].append(letter,md);
         documentedFileMembers[FMHL_Enums]++;
       }
-      else if (md->isEnumValue())
+      else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
         g_fileIndexLetterUsed[FMHL_EnumValues].append(letter,md);
         documentedFileMembers[FMHL_EnumValues]++;
