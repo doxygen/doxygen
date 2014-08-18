@@ -8628,15 +8628,16 @@ static void buildPageList(EntryNav *rootNav)
   RECURSE_ENTRYTREE(buildPageList,rootNav);
 }
 
+// search for the main page defined in this project
 static void findMainPage(EntryNav *rootNav)
 {
   if (rootNav->section() == Entry::MAINPAGEDOC_SEC)
   {
     rootNav->loadEntry(g_storage);
-    Entry *root = rootNav->entry();
 
-    if (Doxygen::mainPage==0)
+    if (Doxygen::mainPage==0 && rootNav->tagInfo()==0)
     {
+      Entry *root = rootNav->entry();
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
       //QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
@@ -8648,7 +8649,7 @@ static void findMainPage(EntryNav *rootNav)
       Doxygen::mainPage->setFileName(indexName,TRUE);
       Doxygen::mainPage->setShowToc(root->stat);
       addPageToContext(Doxygen::mainPage,rootNav);
-          
+
       SectionInfo *si = Doxygen::sectionDict->find(Doxygen::mainPage->name());
       if (si)
       {
@@ -8674,17 +8675,34 @@ static void findMainPage(EntryNav *rootNav)
         Doxygen::mainPage->addSectionsToDefinition(root->anchors);
       }
     }
-    else
+    else if (rootNav->tagInfo()==0)
     {
+      Entry *root = rootNav->entry();
       warn(root->fileName,root->startLine,
-           "found more than one \\mainpage comment block! Skipping this "
-           "block."
+          "found more than one \\mainpage comment block! Skipping this "
+          "block."
           );
     }
 
     rootNav->releaseEntry();
   }
   RECURSE_ENTRYTREE(findMainPage,rootNav);
+}
+
+// search for the main page imported via tag files and add only the section labels
+static void findMainPageTagFiles(EntryNav *rootNav)
+{
+  if (rootNav->section() == Entry::MAINPAGEDOC_SEC)
+  {
+    rootNav->loadEntry(g_storage);
+
+    if (Doxygen::mainPage && rootNav->tagInfo())
+    {
+      Entry *root = rootNav->entry();
+      Doxygen::mainPage->addSectionsToDefinition(root->anchors);
+    }
+  }
+  RECURSE_ENTRYTREE(findMainPageTagFiles,rootNav);
 }
 
 static void computePageRelations(EntryNav *rootNav)
@@ -11083,6 +11101,7 @@ void parseInput()
 
   g_s.begin("Search for main page...\n");
   findMainPage(rootNav);
+  findMainPageTagFiles(rootNav);
   g_s.end();
 
   g_s.begin("Computing page relations...\n");
