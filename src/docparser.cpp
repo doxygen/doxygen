@@ -2459,16 +2459,15 @@ void DocRef::parse()
 DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //context)
 {
   static uint numBibFiles = Config_getList("CITE_BIB_FILES").count();
-  m_parent = parent; 
-  QCString     anchor;
+  m_parent = parent;
+  QCString anchor;
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   CiteInfo *cite = Doxygen::citeDict->find(target);
-  if (numBibFiles>0 && cite && cite -> text) // ref to citation
+  if (numBibFiles>0 && cite && !cite->text.isEmpty()) // ref to citation
   {
     m_text         = cite->text;
-    if (m_text.isEmpty()) m_text = cite->label;
     m_ref          = cite->ref;
     m_anchor       = CiteConsts::anchorPrefix+cite->label;
     m_file         = convertNameToFile(CiteConsts::fileName,FALSE,TRUE);
@@ -2476,9 +2475,9 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
     //    m_text.data(),m_ref.data(),m_file.data(),m_anchor.data());
     return;
   }
-  m_text = linkToText(SrcLangExt_Unknown,target,FALSE);
+  m_text = target;
   warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to `%s' for \\cite command",
-           qPrint(target)); 
+           qPrint(target));
 }
 
 //---------------------------------------------------------------------------
