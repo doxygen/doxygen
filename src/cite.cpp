@@ -166,10 +166,9 @@ void CiteDict::generatePage() const
   f.close();
 
   // 4. for all formats we just copy the bib files to as special output directory
-  //    s bibtex can find them without path (bibtex doesn't support paths or
+  //    so bibtex can find them without path (bibtex doesn't support paths or
   //    filenames with spaces!)
   //    Strictly not required when only latex is generated
-  // copy bib files to the latex output dir
   QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
@@ -198,7 +197,7 @@ void CiteDict::generatePage() const
     bibdata = citeDataList.next();
   }
 
-  QCString oldDir = QDir::currentDirPath().utf8();
+  QString oldDir = QDir::currentDirPath();
   QDir::setCurrent(outputDir);
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
