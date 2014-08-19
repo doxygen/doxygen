@@ -1706,7 +1706,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
       out.addStr(" ");
       out.addStr(header);
       out.addStr("\n");
-      SectionInfo *si = Doxygen::sectionDict->find(header);
+      SectionInfo *si = Doxygen::sectionDict->find(id);
       if (si)
       {
         if (si->lineNr != -1)
@@ -1725,7 +1725,7 @@ void writeOneLineHeaderOrRuler(GrowBuf &out,const char *data,int size)
         {
           g_current->anchors->append(si);
         }
-        Doxygen::sectionDict->append(header,si);
+        Doxygen::sectionDict->append(id,si);
       }
     }
     else
@@ -2076,7 +2076,7 @@ static QCString processBlocks(const QCString &s,int indent)
             out.addStr(" ");
             out.addStr(header);
             out.addStr("\n\n");
-            SectionInfo *si = Doxygen::sectionDict->find(header);
+            SectionInfo *si = Doxygen::sectionDict->find(id);
             if (si)
             {
               if (si->lineNr != -1)
@@ -2096,7 +2096,7 @@ static QCString processBlocks(const QCString &s,int indent)
               {
                 g_current->anchors->append(si);
               }
-              Doxygen::sectionDict->append(header,si);
+              Doxygen::sectionDict->append(id,si);
             }
           }
           else
