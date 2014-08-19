@@ -1,4 +1,4 @@
-#if defined(__APPLE__) || defined(macintosh)
+#if (defined(__APPLE__) || defined(macintosh)) && !defined(DMG_BUILD)
 // define this before including iconv.h to avoid a mapping of
 // iconv_open and friends to libicon_open (done by mac ports),
 // while the symbols without 'lib' are linked from /usr/lib/libiconv
