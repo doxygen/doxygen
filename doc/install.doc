@@ -272,7 +272,7 @@ or <a href="http://www.mingw.org/">MinGW</a>.
 The next step is to install modern versions of \c bison and \c flex
 (see http://sourceforge.net/projects/winflexbison. After installation and adding them to
 your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.exe`)
-Furthermore you have to install \c python (version 2, see http://www.python.org).
+Furthermore you have to install \c python (version 2.6 or higher, see http://www.python.org).
 These packages are needed during the
 compilation process if you use a GitHub snapshot of doxygen (the official source releases 
 come with pre-generated sources).
