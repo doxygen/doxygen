@@ -3025,8 +3025,15 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 	// gather the formal arguments in a dictionary 
 	while (i<i_cbrace && (p=reId.match(ds,i,&l)))
 	{
-	  argDict.insert(ds.mid(p,l),new int(count++));
-	  i=p+l;
+          if (l>0) // see bug375037
+          {
+	    argDict.insert(ds.mid(p,l),new int(count++));
+	    i=p+l;
+          }
+          else
+          {
+            i++;
+          }
 	}
 	// strip definition part
 	QCString tmp=ds.right(ds.length()-i_equals-1);
