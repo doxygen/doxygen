@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
@@ -125,6 +140,9 @@ class TemplateVariant
 
     /** Returns the type of the value stored in the variant */
     Type type() const;
+
+    /** Return a string representation of the type of the value stored in the variant */
+    QCString typeAsString() const;
 
     /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
     bool isValid() const;
@@ -388,6 +406,8 @@ class TemplateSpacelessIntf
   public:
     /** Returns the \a input after removing redundant whitespace */
     virtual QCString remove(const QCString &input) = 0;
+    /** Reset filter state */
+    virtual void reset() = 0;
 };
 
 //------------------------------------------------------------------------
@@ -484,6 +504,11 @@ class TemplateEngine
      *  @see Template::render()
      */
     TemplateContext *createContext() const;
+
+    /** Destroys a context created via createContext().
+     *  @param[in] ctx The context.
+     */
+    void destroyContext(TemplateContext *ctx);
 
     /** Creates a new template whole contents are in a file.
      *  @param[in] fileName The name of the file containing the

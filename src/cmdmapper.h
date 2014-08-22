@@ -127,7 +127,9 @@ enum CommandType
   CMD_DIAFILE      = 97,
   CMD_LATEXINCLUDE = 98,
   CMD_NDASH        = 99,
-  CMD_MDASH        = 100
+  CMD_MDASH        = 100,
+  CMD_STARTUML     = 101,
+  CMD_ENDUML       = 102
 };
 
 enum HtmlTagType

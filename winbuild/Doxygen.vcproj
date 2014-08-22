@@ -95,7 +95,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,..\vhdlparser,$(IntDir),."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -127,7 +127,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="Debug"
 				GenerateManifest="false"
-				IgnoreDefaultLibraryNames="libcmtd.lib"
+				IgnoreDefaultLibraryNames="libcmtd.lib libcpmtd.lib libcmt.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug\doxygen\$(TargetName).pdb"
 				SubSystem="1"
@@ -217,7 +217,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 /bigobj"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,..\vhdlparser,$(IntDir),."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -340,7 +340,7 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,..\vhdlparser,$(IntDir),."
 				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -463,7 +463,7 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,$(IntDir),."
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,..\vhdlparser,$(IntDir),."
 				PreprocessorDefinitions="WIN32;_CINDEX_LIB_;_CINDEX_LIB_;NDEBUG;_CONSOLE; _CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -540,6 +540,10 @@
 			</File>
 			<File
 				RelativePath="$(IntDir)\ce_parse.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\CharStream.cc"
 				>
 			</File>
 			<File
@@ -680,6 +684,10 @@
 			</File>
 			<File
 				RelativePath="..\src\filename.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fileparser.cpp"
 				>
 			</File>
 			<File
@@ -827,7 +835,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\vhdlparser\ParseException.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\perlmodgen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\plantuml.cpp"
 				>
 			</File>
 			<File
@@ -911,6 +927,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\vhdlparser\Token.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\TokenMgrError.cc"
+				>
+			</File>
+			<File
 				RelativePath="..\src\tooltip.cpp"
 				>
 			</File>
@@ -924,6 +948,22 @@
 			</File>
 			<File
 				RelativePath="..\src\vhdldocgen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdljjparser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParser.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParserIF.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParserTokenManager.cc"
 				>
 			</File>
 			<File
@@ -1146,42 +1186,6 @@
 			</File>
 			<File
 				RelativePath="..\src\vhdlcode.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						Case="true"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="Lex"
-						Case="true"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						Case="true"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="Lex"
-						Case="true"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\vhdlscanner.l"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2211,6 +2215,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\vhdlparser\CharStream.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\cite.h"
 				>
 			</File>
@@ -2363,6 +2371,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\vhdlparser\ErrorHandler.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\example.h"
 				>
 			</File>
@@ -2376,6 +2388,10 @@
 			</File>
 			<File
 				RelativePath="..\src\filename.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fileparser.h"
 				>
 			</File>
 			<File
@@ -2452,6 +2468,10 @@
 			</File>
 			<File
 				RelativePath="..\src\instdox.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\JavaCC.h"
 				>
 			</File>
 			<File
@@ -2587,11 +2607,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\vhdlparser\ParseException.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\parserintf.h"
 				>
 			</File>
 			<File
 				RelativePath="..\src\perlmodgen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\plantuml.h"
 				>
 			</File>
 			<File
@@ -2700,6 +2728,18 @@
 			</File>
 			<File
 				RelativePath="..\src\template.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\Token.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\TokenManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\TokenMgrError.h"
 				>
 			</File>
 			<File
@@ -2907,11 +2947,31 @@
 				>
 			</File>
 			<File
-				RelativePath="$(IntDir)\vhdlscanner.cpp"
+				RelativePath="..\src\vhdljjparser.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\vhdlscanner.h"
+				RelativePath="..\vhdlparser\vhdlparser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParserConstants.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParserErrorHandler.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParserIF.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\VhdlParserTokenManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhdlparser\vhdlstring.h"
 				>
 			</File>
 			<File

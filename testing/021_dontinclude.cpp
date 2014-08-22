@@ -11,7 +11,7 @@ class Test
 };
 
 /*! \mainpage
- *  \dontinclude 021_dontinclude.cpp
+ *  \dontinclude example_test.cpp
  *  Our main function starts like this:
  *  \skip main
  *  \until {

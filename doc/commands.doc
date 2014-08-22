@@ -90,6 +90,7 @@ documentation:
 \refitem cmdendrtfonly \\endrtfonly
 \refitem cmdendsecreflist \\endsecreflist
 \refitem cmdendverbatim \\endverbatim
+\refitem cmdenduml \\enduml
 \refitem cmdendxmlonly \\endxmlonly
 \refitem cmdenum \\enum
 \refitem cmdexample \\example
@@ -174,6 +175,7 @@ documentation:
 \refitem cmdskip \\skip
 \refitem cmdskipline \\skipline
 \refitem cmdsnippet \\snippet
+\refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
 \refitem cmdsubsection \\subsection
@@ -2356,6 +2358,20 @@ Commands for visual enhancements
   \endcode
 \endverbatim
 
+  If the contents of the code block are in a language that doxygen cannot parse, doxygen
+  will just show the output as-is. You can make this explicit using .unparsed, or by
+  giving some other extension that doxygen doesn't support, e.g.
+
+\verbatim
+  \code{.unparsed}
+  Show this as-is please
+  \endcode
+
+  \code{.sh}
+  echo "This is a shell script"
+  \endcode
+\endverbatim
+
   \sa section \ref cmdendcode "\\endcode" and section \ref cmdverbatim "\\verbatim".
 
 <hr>
@@ -2517,6 +2533,59 @@ class Receiver
   \sa section \ref cmdmscfile "\\mscfile".
 
 <hr>
+\section cmdstartuml \\startuml
+
+  \addindex \\startuml
+  Starts a text fragment which should contain a valid description of a
+  PlantUML diagram. See http://plantuml.sourceforge.net/ for examples.
+  The text fragment ends with \ref cmdenduml "\\enduml".
+  \note You need to install Java and the PlantUML's jar file,
+  if you want to use this command. The location of the jar file should be specified
+  using \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
+
+Here is an example of the use of the \c \\startuml command.
+\code
+/** Sender class. Can be used to send a command to the server.
+ *  The receiver will acknowledge the command by calling Ack().
+ *  \startuml
+ *    Sender->Receiver  : Command()
+ *    Sender<--Receiver : Ack()
+ *  \enduml
+ */
+class Sender
+{
+  public:
+    /** Acknowledgment from server */
+    void Ack(bool ok);
+};
+
+/** Receiver class. Can be used to receive and execute commands.
+ *  After execution of a command, the receiver will send an acknowledgment
+ *  \startuml
+ *    Receiver<-Sender  : Command()
+ *    Receiver-->Sender : Ack()
+ *  \enduml
+ */
+class Receiver
+{
+  public:
+    /** Executable a command on the server */
+    void Command(int commandId);
+};
+\endcode
+
+\note For compatibility with running PlantUML as a preprocessing step before
+running doxygen, you can also add the name of the image file after \c \\startuml
+and inside curly brackets, i.e.
+\verbatim
+@startuml{myimage.png}
+Alice -> Bob : Hello
+@enduml
+\endverbatim
+When the name of the image is specified, doxygen will generate an image with that name.
+Without the name doxygen will choose a name automatically.
+
+<hr>
 \section cmddotfile \\dotfile <file> ["caption"]
 
   \addindex \\dotfile
@@ -2635,6 +2704,12 @@ class Receiver
 
   \addindex \\endmsc
   Ends a block that was started with \ref cmdmsc "\\msc".
+
+<hr>
+\section cmdenduml \\enduml
+
+  \addindex \\enduml
+  Ends a block that was started with \ref cmdstartuml "\\startuml".
 
 <hr>
 \section cmdendhtmlonly \\endhtmlonly

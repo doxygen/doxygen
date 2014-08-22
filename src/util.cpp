@@ -1667,10 +1667,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   uint l=s.length();
   uint csp=0;
   uint vsp=0;
+  char c;
   for (i=0;i<l;i++)
   {
 nextChar:
-    char c=s.at(i);
+    c=s.at(i);
 
     // search for "const"
     if (csp<6 && c==constScope[csp] && // character matches substring "const"
@@ -1705,7 +1706,7 @@ nextChar:
         if (cc=='\\') // escaped character
         { 
           growBuf.addChar(s.at(i+1));
-          i+=2; 
+          i+=2;
         }
         else if (cc=='"') // end of string
         { i++; goto nextChar; }
@@ -1737,14 +1738,16 @@ nextChar:
       growBuf.addChar(',');
       growBuf.addChar(' ');
     }
-    else if (i>0 && 
-         ((isId(s.at(i)) && s.at(i-1)==')') || 
-          (s.at(i)=='\''  && s.at(i-1)==' ')
+    else if (i>0 &&
+         (
+          (s.at(i-1)==')' && isId(c))
+          ||
+          (c=='\''  && s.at(i-1)==' ')
          )
         )
     {
       growBuf.addChar(' ');
-      growBuf.addChar(s.at(i));
+      growBuf.addChar(c);
     }
     else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
              !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
@@ -1838,7 +1841,7 @@ nextChar:
  * Returns the position in the string where a function parameter list
  * begins, or -1 if one is not found.
  */
-int findParameterList(const QString &name)
+int findParameterList(const QCString &name)
 {
   int pos=-1;
   int templateDepth=0;
@@ -1875,7 +1878,8 @@ int findParameterList(const QString &name)
       else
       {
         int bp = bracePos>0 ? name.findRev('(',bracePos-1) : -1;
-        return bp==-1 ? bracePos : bp;
+        // bp test is to allow foo(int(&)[10]), but we need to make an exception for operator()
+        return bp==-1 || (bp>=8 && name.mid(bp-8,10)=="operator()") ? bracePos : bp;
       }
     }
   } while (pos!=-1);
@@ -5365,10 +5369,10 @@ void createSubDirs(QDir &d)
     int l1,l2;
     for (l1=0;l1<16;l1++)
     {
-      d.mkdir(QString().sprintf("d%x",l1));
+      d.mkdir(QCString().sprintf("d%x",l1));
       for (l2=0;l2<256;l2++)
       {
-        d.mkdir(QString().sprintf("d%x/d%02x",l1,l2));
+        d.mkdir(QCString().sprintf("d%x/d%02x",l1,l2));
       }
     }
   }
@@ -5601,6 +5605,11 @@ QCString convertToXML(const char *s)
       case '&':  growBuf.addStr("&amp;");  break;
       case '\'': growBuf.addStr("&apos;"); break; 
       case '"':  growBuf.addStr("&quot;"); break;
+      case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
+      case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
+      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
+      case 27: case 28: case 29: case 30: case 31:
+        break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
       default:   growBuf.addChar(c);       break;
     }
   }
@@ -6349,26 +6358,42 @@ void addRefItem(const QList<ListItemInfo> *sli,
   }
 }
 
-void addGroupListToTitle(OutputList &ol,Definition *d)
+bool recursivelyAddGroupListToTitle(OutputList &ol,Definition *d,bool root)
 {
   GroupList *groups = d->partOfGroups();
   if (groups) // write list of group to which this definition belongs
   {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString("<div class=\"ingroups\">");
+    if (root)
+    {
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.writeString("<div class=\"ingroups\">");
+    }
     GroupListIterator gli(*groups);
     GroupDef *gd;
-    bool first=TRUE;
+    bool first=true;
     for (gli.toFirst();(gd=gli.current());++gli)
     {
-      if (!first) { ol.writeString(" &#124; "); } else first=FALSE; 
-      ol.writeObjectLink(gd->getReference(),
-          gd->getOutputFileBase(),0,gd->groupTitle());
+      if (recursivelyAddGroupListToTitle(ol, gd, FALSE))
+      {
+        ol.writeString(" &raquo; ");
+      }
+      if (!first) { ol.writeString(" &#124; "); } else first=FALSE;
+      ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
     }
-    ol.writeString("</div>");
-    ol.popGeneratorState();
+    if (root)
+    {
+      ol.writeString("</div>");
+      ol.popGeneratorState();
+    }
+    return true;
   }
+  return false;
+}
+
+void addGroupListToTitle(OutputList &ol,Definition *d)
+{
+  recursivelyAddGroupListToTitle(ol,d,TRUE);
 }
 
 void filterLatexString(FTextStream &t,const char *str,
@@ -6700,15 +6725,37 @@ void initDefaultExtensionMapping()
 {
   g_extLookup.setAutoDelete(TRUE);
   //                  extension      parser id
-  updateLanguageMapping(".idl",      "idl"); 
-  updateLanguageMapping(".ddl",      "idl"); 
-  updateLanguageMapping(".odl",      "idl"); 
+  updateLanguageMapping(".dox",      "c");
+  updateLanguageMapping(".txt",      "c");
+  updateLanguageMapping(".doc",      "c");
+  updateLanguageMapping(".c",        "c");
+  updateLanguageMapping(".C",        "c");
+  updateLanguageMapping(".cc",       "c");
+  updateLanguageMapping(".CC",       "c");
+  updateLanguageMapping(".cxx",      "c");
+  updateLanguageMapping(".cpp",      "c");
+  updateLanguageMapping(".c++",      "c");
+  updateLanguageMapping(".ii",       "c");
+  updateLanguageMapping(".ixx",      "c");
+  updateLanguageMapping(".ipp",      "c");
+  updateLanguageMapping(".i++",      "c");
+  updateLanguageMapping(".inl",      "c");
+  updateLanguageMapping(".h",        "c");
+  updateLanguageMapping(".H",        "c");
+  updateLanguageMapping(".hh",       "c");
+  updateLanguageMapping(".HH",       "c");
+  updateLanguageMapping(".hxx",      "c");
+  updateLanguageMapping(".hpp",      "c");
+  updateLanguageMapping(".h++",      "c");
+  updateLanguageMapping(".idl",      "idl");
+  updateLanguageMapping(".ddl",      "idl");
+  updateLanguageMapping(".odl",      "idl");
   updateLanguageMapping(".java",     "java");
-  updateLanguageMapping(".as",       "javascript"); 
+  updateLanguageMapping(".as",       "javascript");
   updateLanguageMapping(".js",       "javascript");
   updateLanguageMapping(".cs",       "csharp");
   updateLanguageMapping(".d",        "d");
-  updateLanguageMapping(".php",      "php"); 
+  updateLanguageMapping(".php",      "php");
   updateLanguageMapping(".php4",     "php");
   updateLanguageMapping(".php5",     "php");
   updateLanguageMapping(".inc",      "php");
@@ -8220,5 +8267,13 @@ void convertProtectionLevel(
   }
   //printf("convertProtectionLevel(type=%d prot=%d): %d,%d\n",
   //    inListType,inProt,*outListType1,*outListType2);
+}
+
+bool mainPageHasTitle()
+{
+  if (Doxygen::mainPage==0) return FALSE;
+  if (Doxygen::mainPage->title().isEmpty()) return FALSE;
+  if (Doxygen::mainPage->title().lower()=="notitle") return FALSE;
+  return TRUE;
 }
 

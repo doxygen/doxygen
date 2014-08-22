@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #include "template.h"
 
 #include <stdio.h>
@@ -11,6 +26,8 @@
 #include <qstack.h>
 #include <qfile.h>
 #include <qregexp.h>
+#include <qcstring.h>
+#include <qdir.h>
 
 #include "sortdict.h"
 #include "ftextstream.h"
@@ -346,6 +363,21 @@ TemplateVariant::Type TemplateVariant::type() const
   return p->type;
 }
 
+QCString TemplateVariant::typeAsString() const
+{
+  switch (p->type)
+  {
+    case None:     return "none";
+    case Bool:     return "bool";
+    case Integer:  return "integer";
+    case String:   return "string";
+    case Struct:   return "struct";
+    case List:     return "list";
+    case Function: return "function";
+  }
+  return "invalid";
+}
+
 bool TemplateVariant::isValid() const
 {
   return p->type!=None;
@@ -671,7 +703,9 @@ class TemplateContextImpl : public TemplateContext
     QCString outputDirectory() const             { return m_outputDir; }
     TemplateEscapeIntf *escapeIntf() const       { return m_activeEscapeIntf; }
     TemplateSpacelessIntf *spacelessIntf() const { return m_spacelessIntf; }
-    void enableSpaceless(bool b)                 { m_spacelessEnabled=b; }
+    void enableSpaceless(bool b)                 { if (b && !m_spacelessEnabled) m_spacelessIntf->reset(); 
+                                                   m_spacelessEnabled=b;
+                                                 }
     bool spacelessEnabled() const                { return m_spacelessEnabled && m_spacelessIntf; }
     void warn(const char *fileName,int line,const char *fmt,...) const;
 
@@ -737,13 +771,57 @@ class FilterAdd
 
 //-----------------------------------------------------------------------------
 
+/** @brief The implementation of the "get" filter */
+class FilterGet
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::Struct && arg.type()==TemplateVariant::String)
+      {
+        TemplateVariant result = v.toStruct()->get(arg.toString());
+        //printf("\nok[%s]=%d\n",arg.toString().data(),result.type());
+        return result;
+      }
+      else
+      {
+        //printf("\nnok[%s]\n",arg.toString().data());
+        return FALSE;
+      }
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+
+/** @brief The implementation of the "append" filter */
+class FilterAppend
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
+    {
+      if ((v.type()==TemplateVariant::String || v.type()==TemplateVariant::Integer) &&
+          arg.type()==TemplateVariant::String)
+      {
+        return TemplateVariant(v.toString() + arg.toString());
+      }
+      else
+      {
+        return v;
+      }
+    }
+};
+
+//-----------------------------------------------------------------------------
+
 /** @brief The implementation of the "prepend" filter */
 class FilterPrepend
 {
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
     {
-      if (v.type()==TemplateVariant::String && arg.type()==TemplateVariant::String)
+      if ((v.type()==TemplateVariant::String || v.type()==TemplateVariant::Integer) &&
+          arg.type()==TemplateVariant::String)
       {
         return TemplateVariant(arg.toString() + v.toString());
       }
@@ -801,6 +879,385 @@ class FilterDefault
       {
         return v;
       }
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "flatten" filter */
+class FilterFlatten
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (!v.isValid() || v.type()!=TemplateVariant::List)
+      {
+        return v;
+      }
+      else
+      {
+        TemplateList *list = TemplateList::alloc();
+        flatten(v.toList(),list);
+        return TemplateVariant(list);
+      }
+    }
+
+  private:
+    static void flatten(TemplateListIntf *tree,TemplateList *list)
+    {
+      TemplateListIntf::ConstIterator *it = tree->createIterator();
+      TemplateVariant item;
+      for (it->toFirst();(it->current(item));it->toNext())
+      {
+        TemplateStructIntf *s = item.toStruct();
+        if (s)
+        {
+          list->append(item);
+          // if s has "children" then recurse into the children
+          TemplateVariant children = s->get("children");
+          if (children.isValid() && children.type()==TemplateVariant::List)
+          {
+            flatten(children.toList(),list);
+          }
+        }
+        else
+        {
+          list->append(item);
+        }
+      }
+      delete it;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "listsort" filter */
+class FilterListSort
+{
+    struct ListElem
+    {
+      ListElem(const QCString &k,const TemplateVariant &v) : key(k), value(v) {}
+      QCString key;
+      TemplateVariant value;
+    };
+    class SortList : public QList<ListElem>
+    {
+      public:
+        SortList() { setAutoDelete(TRUE); }
+      private:
+        int compareValues(const ListElem *item1,const ListElem *item2) const
+        {
+          return qstrcmp(item1->key,item2->key);
+        }
+    };
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.type()==TemplateVariant::List && args.type()==TemplateVariant::String)
+      {
+        //printf("FilterListSort::apply: v=%s args=%s\n",v.toString().data(),args.toString().data());
+        TemplateListIntf::ConstIterator *it = v.toList()->createIterator();
+
+        TemplateVariant item;
+        TemplateList *result = TemplateList::alloc();
+
+        // create list of items based on v using the data in args as a sort key
+        SortList sortList;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          TemplateStructIntf *s = item.toStruct();
+          if (s)
+          {
+            QCString sortKey = determineSortKey(s,args.toString());
+            sortList.append(new ListElem(sortKey,item));
+            //printf("sortKey=%s\n",sortKey.data());
+          }
+        }
+        delete it;
+
+        // sort the list
+        sortList.sort();
+
+        // add sorted items to the result list
+        QListIterator<ListElem> sit(sortList);
+        ListElem *elem;
+        for (sit.toFirst();(elem=sit.current());++sit)
+        {
+          result->append(elem->value);
+        }
+        return result;
+      }
+      return v;
+    }
+
+  private:
+    static QCString determineSortKey(TemplateStructIntf *s,const QCString &arg)
+    {
+      int i,p=0;
+      QCString result;
+      while ((i=arg.find("{{",p))!=-1)
+      {
+        result+=arg.mid(p,i-p);
+        int j=arg.find("}}",i+2);
+        if (j!=-1)
+        {
+          QCString var = arg.mid(i+2,j-i-2);
+          TemplateVariant val=s->get(var);
+          //printf("found argument %s value=%s\n",var.data(),val.toString().data());
+          result+=val.toString();
+          p=j+2;
+        }
+        else
+        {
+          p=i+1;
+        }
+      }
+      result+=arg.right(arg.length()-p);
+      return result;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "groupBy" filter */
+class FilterGroupBy
+{
+    struct ListElem
+    {
+      ListElem(const QCString &k,const TemplateVariant &v) : key(k), value(v) {}
+      QCString key;
+      TemplateVariant value;
+    };
+    class SortList : public QList<ListElem>
+    {
+      public:
+        SortList() { setAutoDelete(TRUE); }
+      private:
+        int compareValues(const ListElem *item1,const ListElem *item2) const
+        {
+          return qstrcmp(item1->key,item2->key);
+        }
+    };
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.type()==TemplateVariant::List && args.type()==TemplateVariant::String)
+      {
+        //printf("FilterListSort::apply: v=%s args=%s\n",v.toString().data(),args.toString().data());
+        TemplateListIntf::ConstIterator *it = v.toList()->createIterator();
+
+        TemplateVariant item;
+        TemplateList *result = TemplateList::alloc();
+
+        // create list of items based on v using the data in args as a sort key
+        SortList sortList;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          TemplateStructIntf *s = item.toStruct();
+          if (s)
+          {
+            QCString sortKey = determineSortKey(s,args.toString());
+            sortList.append(new ListElem(sortKey,item));
+            //printf("sortKey=%s\n",sortKey.data());
+          }
+        }
+        delete it;
+
+        // sort the list
+        sortList.sort();
+
+        // add sorted items to the result list
+        QListIterator<ListElem> sit(sortList);
+        ListElem *elem;
+        TemplateList *groupList=0;
+        QCString prevKey;
+        for (sit.toFirst();(elem=sit.current());++sit)
+        {
+          if (groupList==0 || elem->key!=prevKey)
+          {
+            groupList = TemplateList::alloc();
+            result->append(groupList);
+            prevKey = elem->key;
+          }
+          groupList->append(elem->value);
+        }
+        return result;
+      }
+      return v;
+    }
+
+  private:
+    static QCString determineSortKey(TemplateStructIntf *s,const QCString &attribName)
+    {
+       TemplateVariant v = s->get(attribName);
+       return v.toString();
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "paginate" filter */
+class FilterPaginate
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::List &&
+          args.isValid() && args.type()==TemplateVariant::Integer)
+      {
+        int pageSize = args.toInt();
+        TemplateListIntf *list   = v.toList();
+        TemplateList     *result = TemplateList::alloc();
+        TemplateListIntf::ConstIterator *it = list->createIterator();
+        TemplateVariant   item;
+        TemplateList     *pageList=0;
+        int i = 0;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          if (pageList==0)
+          {
+            pageList = TemplateList::alloc();
+            result->append(pageList);
+          }
+          pageList->append(item);
+          i++;
+          if (i==pageSize) // page is full start a new one
+          {
+            pageList=0;
+            i=0;
+          }
+        }
+        delete it;
+        return result;
+      }
+      else // wrong arguments
+      {
+        return v;
+      }
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "alphaIndex" filter */
+class FilterAlphaIndex
+{
+  private:
+    struct ListElem
+    {
+      ListElem(uint k,const TemplateVariant &v) : key(k), value(v) {}
+      uint key;
+      TemplateVariant value;
+    };
+    class SortList : public QList<ListElem>
+    {
+      public:
+        SortList() { setAutoDelete(TRUE); }
+      private:
+        int compareValues(const ListElem *item1,const ListElem *item2) const
+        {
+          return item1->key-item2->key;
+        }
+    };
+    static QCString keyToLetter(uint startLetter)
+    {
+      return QString(QChar(startLetter)).utf8();
+    }
+    static QCString keyToLabel(uint startLetter)
+    {
+      char s[10];
+      if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
+      {
+        s[0]=tolower((char)startLetter);
+        s[1]=0;
+      }
+      else
+      {
+        const char hex[]="0123456789abcdef";
+        int i=0;
+        s[i++]='0';
+        s[i++]='x';
+        if (startLetter>(1<<24)) // 4 byte character
+        {
+          s[i++]=hex[(startLetter>>28)&0xf];
+          s[i++]=hex[(startLetter>>24)&0xf];
+        }
+        if (startLetter>(1<<16)) // 3 byte character
+        {
+          s[i++]=hex[(startLetter>>20)&0xf];
+          s[i++]=hex[(startLetter>>16)&0xf];
+        }
+        if (startLetter>(1<<8)) // 2 byte character
+        {
+          s[i++]=hex[(startLetter>>12)&0xf];
+          s[i++]=hex[(startLetter>>8)&0xf];
+        }
+        // one byte character
+        s[i++]=hex[(startLetter>>4)&0xf];
+        s[i++]=hex[(startLetter>>0)&0xf];
+        s[i++]=0;
+      }
+      return s;
+    }
+    static uint determineSortKey(TemplateStructIntf *s,const QCString &attribName)
+    {
+       TemplateVariant v = s->get(attribName);
+       int index = getPrefixIndex(v.toString());
+       return getUtf8CodeToUpper(v.toString(),index);
+    }
+
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.type()==TemplateVariant::List && args.type()==TemplateVariant::String)
+      {
+        //printf("FilterListSort::apply: v=%s args=%s\n",v.toString().data(),args.toString().data());
+        TemplateListIntf::ConstIterator *it = v.toList()->createIterator();
+
+        TemplateVariant item;
+        TemplateList *result = TemplateList::alloc();
+
+        // create list of items based on v using the data in args as a sort key
+        SortList sortList;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          TemplateStructIntf *s = item.toStruct();
+          if (s)
+          {
+            uint sortKey = determineSortKey(s,args.toString());
+            sortList.append(new ListElem(sortKey,item));
+            //printf("sortKey=%s\n",sortKey.data());
+          }
+        }
+        delete it;
+
+        // sort the list
+        sortList.sort();
+
+        // create an index from the sorted list
+        uint letter=0;
+        QListIterator<ListElem> sit(sortList);
+        ListElem *elem;
+        TemplateStruct *indexNode = 0;
+        TemplateList *indexList = 0;
+        for (sit.toFirst();(elem=sit.current());++sit)
+        {
+          if (letter!=elem->key || indexNode==0)
+          {
+            // create new indexNode
+            indexNode = TemplateStruct::alloc();
+            indexList = TemplateList::alloc();
+            indexNode->set("letter", keyToLetter(elem->key));
+            indexNode->set("label",  keyToLabel(elem->key));
+            indexNode->set("items",indexList);
+            result->append(indexNode);
+            letter=elem->key;
+          }
+          indexList->append(elem->value);
+        }
+        return result;
+      }
+      return v;
     }
 };
 
@@ -923,12 +1380,18 @@ class TemplateFilterFactory
 
 // register a handlers for each filter we support
 static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
-static TemplateFilterFactory::AutoRegister<FilterAdd>         fAppend("append");
+static TemplateFilterFactory::AutoRegister<FilterGet>         fGet("get");
+static TemplateFilterFactory::AutoRegister<FilterAppend>      fAppend("append");
 static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");
+static TemplateFilterFactory::AutoRegister<FilterFlatten>     fFlatten("flatten");
 static TemplateFilterFactory::AutoRegister<FilterDefault>     fDefault("default");
 static TemplateFilterFactory::AutoRegister<FilterPrepend>     fPrepend("prepend");
+static TemplateFilterFactory::AutoRegister<FilterGroupBy>     fGroupBy("groupBy");
+static TemplateFilterFactory::AutoRegister<FilterListSort>    fListSort("listsort");
+static TemplateFilterFactory::AutoRegister<FilterPaginate>    fPaginate("paginate");
 static TemplateFilterFactory::AutoRegister<FilterStripPath>   fStripPath("stripPath");
+static TemplateFilterFactory::AutoRegister<FilterAlphaIndex>  fAlphaIndex("alphaIndex");
 static TemplateFilterFactory::AutoRegister<FilterDivisibleBy> fDivisibleBy("divisibleby");
 
 //--------------------------------------------------------------------
@@ -2032,6 +2495,24 @@ void TemplateContextImpl::closeSubIndex(const QCString &indexName)
   }
 }
 
+static void getPathListFunc(TemplateStructIntf *entry,TemplateList *list)
+{
+  TemplateVariant parent = entry->get("parent");
+  if (parent.type()==TemplateVariant::Struct)
+  {
+    getPathListFunc(parent.toStruct(),list);
+  }
+  list->append(entry);
+}
+
+static TemplateVariant getPathFunc(const void *ctx, const QValueList<TemplateVariant> &)
+{
+  TemplateStruct *entry = (TemplateStruct*)ctx;
+  TemplateList *result = TemplateList::alloc();
+  getPathListFunc(entry,result);
+  return result;
+}
+
 void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueList<TemplateKeyValue> &arguments)
 {
   QValueListConstIterator<TemplateKeyValue> it = arguments.begin();
@@ -2041,6 +2522,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
   //  printf("  key=%s value=%s\n",(*it).key.data(),(*it).value.toString().data());
   //  ++it;
   //}
+  TemplateVariant parent(FALSE);
   QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
   if (!stack) // no stack yet, create it!
   {
@@ -2066,6 +2548,13 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
     {
       ASSERT(stack->top()->type()==TemplateVariant::List);
     }
+    if (stack->count()>1)
+    {
+      TemplateVariant *tmp = stack->pop();
+      parent = *stack->top();
+      stack->push(tmp);
+      ASSERT(parent.type()==TemplateVariant::Struct);
+    }
     // get list to add new item
     list = dynamic_cast<TemplateList*>(stack->top()->toList());
   }
@@ -2082,6 +2571,9 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const QValueLi
   }
   entry->set("is_leaf_node",true);
   entry->set("first",list->count()==0);
+  entry->set("index",list->count());
+  entry->set("parent",parent);
+  entry->set("path",TemplateVariant::Delegate::fromFunction(entry,getPathFunc));
   entry->set("last",true);
   stack->push(new TemplateVariant(entry));
   list->append(entry);
@@ -2603,6 +3095,10 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       if (m_expr)
       {
         TemplateVariant v = m_expr->resolve(c);
+        if (v.type()==TemplateVariant::Function)
+        {
+          v = v.call(QValueList<TemplateVariant>());
+        }
         const TemplateListIntf *list = v.toList();
         if (list)
         {
@@ -2662,7 +3158,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
         }
         else // simple type...
         {
-          ci->warn(m_templateName,m_line,"for requires a variable of list type!");
+          ci->warn(m_templateName,m_line,"for requires a variable of list type, got type '%s'!",v.typeAsString().data());
         }
       }
     }
@@ -2970,6 +3466,25 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       delete m_templateExpr;
       delete m_fileExpr;
     }
+    void mkpath(TemplateContextImpl *ci,const QCString &fileName)
+    {
+      int i=fileName.find('/');
+      QCString outputDir = ci->outputDirectory();
+      QDir d(outputDir);
+      int j=0;
+      while (i!=-1) // fileName contains path part
+      {
+        if (d.exists())
+        {
+          bool ok = d.mkdir(fileName.mid(j,i-j));
+          if (!ok) break;
+          QCString dirName = outputDir+'/'+fileName.left(i);
+          d = QDir(dirName);
+          j = i+1;
+        }
+        i=fileName.find('/',i+1);
+      }
+    }
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -2995,6 +3510,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
             TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
+              //mkpath(ci,outputFile);
               QCString extension=outputFile;
               int i=extension.findRev('.');
               if (i!=-1)
@@ -3315,7 +3831,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
         }
         else
         {
-          parser->warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
+          parser->warn(parser->templateName(),line,"invalid argument '%s' for 'with' tag",arg.data());
         }
         ++it;
       }
@@ -3422,47 +3938,35 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     };
   public:
     TemplateNodeSet(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeSet>(parser,parent,line)
+      : TemplateNodeCreator<TemplateNodeSet>(parser,parent,line), m_mapping(0)
     {
       TRACE(("{TemplateNodeSet(%s)\n",data.data()));
-      m_args.setAutoDelete(TRUE);
       ExpressionParser expParser(parser,line);
-      QValueList<QCString> args = split(data," ");
-      QValueListIterator<QCString> it = args.begin();
-      while (it!=args.end())
+      // data format: name=expression
+      int j=data.find('=');
+      ExprAst *expr = 0;
+      if (j>0 && (expr = expParser.parse(data.mid(j+1))))
       {
-        QCString arg = *it;
-        int j=arg.find('=');
-        if (j>0)
-        {
-          ExprAst *expr = expParser.parse(arg.mid(j+1));
-          if (expr)
-          {
-            m_args.append(new Mapping(arg.left(j),expr));
-          }
-        }
-        else
-        {
-          parser->warn(parser->templateName(),line,"invalid argument '%s' for with tag",arg.data());
-        }
-        ++it;
+        m_mapping = new Mapping(data.left(j),expr);
       }
       TRACE(("}TemplateNodeSet(%s)\n",data.data()));
+    }
+    ~TemplateNodeSet()
+    {
+      delete m_mapping;
     }
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
-      QListIterator<Mapping> it(m_args);
-      Mapping *mapping;
-      for (it.toFirst();(mapping=it.current());++it)
+      if (m_mapping)
       {
-        TemplateVariant value = mapping->value->resolve(c);
-        ci->set(mapping->name,value);
+        TemplateVariant value = m_mapping->value->resolve(c);
+        ci->set(m_mapping->name,value);
       }
     }
   private:
-    QList<Mapping> m_args;
+    Mapping *m_mapping;
 };
 
 //----------------------------------------------------------
@@ -4261,6 +4765,11 @@ TemplateEngine::~TemplateEngine()
 TemplateContext *TemplateEngine::createContext() const
 {
   return new TemplateContextImpl(this);
+}
+
+void TemplateEngine::destroyContext(TemplateContext *ctx)
+{
+  delete ctx;
 }
 
 Template *TemplateEngine::loadByName(const QCString &fileName,int line)

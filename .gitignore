@@ -17,6 +17,8 @@
 /libmd5/Makefile.libmd5
 /qtools/Makefile
 /qtools/Makefile.qtools
+/vhdlparser/Makefile
+/vhdlparser/Makefile.vhdlparser
 /src/Makefile.doxygen
 /src/Makefile.libdoxycfg
 /src/Makefile.libdoxygen

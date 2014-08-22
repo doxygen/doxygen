@@ -37,7 +37,7 @@
 #include "parserintf.h"
 #include "marshal.h"
 #include "objcache.h"
-#include "vhdlscanner.h"
+
 #include "vhdldocgen.h"
 #include "arguments.h"
 #include "memberlist.h"
@@ -1448,16 +1448,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (!detailsVisible)
   {
     QCString doxyArgs=argsString();
-    if (m_impl->annMemb)
-    {
-      QCString doxyName=m_impl->annMemb->name();
-      if (!cname.isEmpty())
-      {
-        doxyName.prepend(cdname+getLanguageSpecificSeparator(getLanguage()));
-      }
-      ol.startDoxyAnchor(cfname,cname,m_impl->annMemb->anchor(),doxyName,doxyArgs);
-    }
-    else
+    if (!m_impl->annMemb)
     {
       QCString doxyName=name();
       if (!cname.isEmpty())
@@ -5080,4 +5071,28 @@ const ArgumentList *MemberDef::typeConstraints() const
   return m_impl->typeConstraints;
 }
 
+bool MemberDef::isFriendToHide() const
+{
+  static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
+  bool isFriendToHide = hideFriendCompounds &&
+     (m_impl->type=="friend class"  ||
+      m_impl->type=="friend struct" ||
+      m_impl->type=="friend union");
+  return isFriendToHide;
+}
+
+bool MemberDef::isNotFriend() const
+{
+  return !(isFriend() && isFriendToHide());
+}
+
+bool MemberDef::isFunctionOrSignalSlot() const
+{
+  return isFunction() || isSlot() || isSignal();
+}
+
+bool MemberDef::isRelatedOrFriend() const
+{
+  return isRelated() || isForeign() || (isFriend() && !isFriendToHide());
+}
 

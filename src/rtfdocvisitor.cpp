@@ -16,6 +16,8 @@
  *
  */
 
+#include <qfileinfo.h>
+
 #include "rtfdocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -26,13 +28,13 @@
 #include "util.h"
 #include "rtfstyle.h"
 #include "message.h"
-#include <qfileinfo.h> 
 #include "parserintf.h"
 #include "msc.h"
 #include "dia.h"
 #include "filedef.h"
 #include "config.h"
 #include "htmlentity.h"
+#include "plantuml.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -315,6 +317,16 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         writeMscFile(baseName);
         m_t << "} ";
         if (Config_getBool("DOT_CLEANUP")) file.remove();
+      }
+      break;
+    case DocVerbatim::PlantUML:
+      {
+        static QCString rtfOutput = Config_getString("RTF_OUTPUT");
+        QCString baseName = writePlantUMLSource(rtfOutput,s->exampleFile(),s->text());
+
+        m_t << "\\par{\\qc "; // center picture
+        writePlantUMLFile(baseName);
+        m_t << "} ";
       }
       break;
   }
@@ -1694,6 +1706,26 @@ void RTFDocVisitor::writeDiaFile(const QCString &fileName)
   }
   QCString outDir = Config_getString("RTF_OUTPUT");
   writeDiaGraphFromFile(fileName+".dia",outDir,baseName,DIA_BITMAP);
+  if (!m_lastIsPara) m_t << "\\par" << endl;
+  m_t << "{" << endl;
+  m_t << rtf_Style_Reset;
+  m_t << "\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
+  m_t << baseName << ".png";
+  m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  m_t << "}" << endl;
+  m_lastIsPara=TRUE;
+}
+
+void RTFDocVisitor::writePlantUMLFile(const QCString &fileName)
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  QCString outDir = Config_getString("RTF_OUTPUT");
+  generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;

@@ -24,11 +24,10 @@ HEADERS     += doxywizard.h version.h expert.h config.h helplabel.h \
 SOURCES     += doxywizard.cpp expert.cpp wizard.cpp \
                inputbool.cpp inputstring.cpp inputint.cpp inputstrlist.cpp 
 RESOURCES   += doxywizard.qrc
-INCBUFSIZE=$(PYTHON)  ../../src/increasebuffer.py
 win32:RC_FILE += doxywizard.rc
 
 config.target = ../../generated_src/doxywizard/config_doxyw.cpp
-config.commands = $(LEX) -Pconfig_doxywYY -t ../../addon/doxywizard/config_doxyw.l | $(INCBUFSIZE) >../../generated_src/doxywizard/$*.cpp
+config.commands = $(LEX) -Pconfig_doxywYY -t ../../addon/doxywizard/config_doxyw.l | $(PYTHON) ../../src/increasebuffer.py >../../generated_src/doxywizard/$*.cpp
 config.depends = ../../addon/doxywizard/config_doxyw.l  ../../src/increasebuffer.py
 configdoc.target = ../../generated_src/doxywizard/configdoc.cpp
 configdoc.commands = $(PYTHON) ../../src/configgen.py -wiz ../../src/config.xml > ../../generated_src/doxywizard/configdoc.cpp

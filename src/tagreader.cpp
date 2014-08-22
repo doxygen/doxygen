@@ -1432,7 +1432,7 @@ void TagFileParser::buildLists(Entry *root)
   for (pgit.toFirst();(tpi=pgit.current());++pgit)
   {
     Entry *pe    = new Entry;
-    pe->section  = Entry::PAGEDOC_SEC;
+    pe->section  = tpi->filename=="index" ? Entry::MAINPAGEDOC_SEC : Entry::PAGEDOC_SEC;
     pe->name     = tpi->name;
     pe->args     = tpi->title;
     addDocAnchors(pe,tpi->docAnchors);
@@ -1440,7 +1440,6 @@ void TagFileParser::buildLists(Entry *root)
     ti->tagName  = m_tagName;
     ti->fileName = tpi->filename;
     pe->tagInfo  = ti;
-
     root->addSubEntry(pe);
   }
 }

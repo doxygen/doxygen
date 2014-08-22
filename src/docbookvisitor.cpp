@@ -34,6 +34,7 @@
 #include "msc.h"
 #include "dia.h"
 #include "htmlentity.h"
+#include "plantuml.h"
 
 DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci)
   : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
@@ -216,35 +217,58 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
       }
       break;
     case DocVerbatim::Msc:
-      static int mscindex = 1;
-      QCString baseName(4096);
-      QCString name;
-      QCString stext = s->text();
-      m_t << "<para>" << endl;
-      name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
-      baseName.sprintf("%s%d",
-          (Config_getString("DOCBOOK_OUTPUT")+"/inline_mscgraph_").data(),
-          mscindex++
-          );
-      QFile file(baseName+".msc");
-      if (!file.open(IO_WriteOnly))
       {
-        err("Could not open file %s.msc for writing\n",baseName.data());
+        static int mscindex = 1;
+        QCString baseName(4096);
+        QCString name;
+        QCString stext = s->text();
+        m_t << "<para>" << endl;
+        name.sprintf("%s%d", "msc_inline_mscgraph_", mscindex);
+        baseName.sprintf("%s%d",
+            (Config_getString("DOCBOOK_OUTPUT")+"/inline_mscgraph_").data(),
+            mscindex++
+            );
+        QFile file(baseName+".msc");
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s.msc for writing\n",baseName.data());
+        }
+        QCString text = "msc {";
+        text+=stext;
+        text+="}";
+        file.writeBlock( text, text.length() );
+        file.close();
+        m_t << "    <figure>" << endl;
+        m_t << "        <title>" << name << "</title>" << endl;
+        m_t << "        <mediaobject>" << endl;
+        m_t << "            <imageobject>" << endl;
+        writeMscFile(baseName);
+        m_t << "            </imageobject>" << endl;
+        m_t << "       </mediaobject>" << endl;
+        m_t << "    </figure>" << endl;
+        m_t << "</para>" << endl;
       }
-      QCString text = "msc {";
-      text+=stext;
-      text+="}";
-      file.writeBlock( text, text.length() );
-      file.close();
-      m_t << "    <figure>" << endl;
-      m_t << "        <title>" << name << "</title>" << endl;
-      m_t << "        <mediaobject>" << endl;
-      m_t << "            <imageobject>" << endl;
-      writeMscFile(baseName);
-      m_t << "            </imageobject>" << endl;
-      m_t << "       </mediaobject>" << endl;
-      m_t << "    </figure>" << endl;
-      m_t << "</para>" << endl;
+      break;
+    case DocVerbatim::PlantUML:
+      {
+        static QCString docbookOutput = Config_getString("DOCBOOK_OUTPUT");
+        QCString baseName = writePlantUMLSource(docbookOutput,s->exampleFile(),s->text());
+        QCString shortName = baseName;
+        int i;
+        if ((i=shortName.findRev('/'))!=-1)
+        {
+          shortName=shortName.right(shortName.length()-i-1);
+        }
+        m_t << "    <figure>" << endl;
+        m_t << "        <title>" << shortName << "</title>" << endl;
+        m_t << "        <mediaobject>" << endl;
+        m_t << "            <imageobject>" << endl;
+        writePlantUMLFile(baseName);
+        m_t << "            </imageobject>" << endl;
+        m_t << "       </mediaobject>" << endl;
+        m_t << "    </figure>" << endl;
+        m_t << "</para>" << endl;
+      }
       break;
   }
 }
@@ -1189,6 +1213,22 @@ void DocbookDocVisitor::writeMscFile(const QCString &baseName)
   }
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP);
+  m_t << "                <imagedata";
+  m_t << " width=\"50%\"";
+  m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << shortName << ".png" << "\">";
+  m_t << "</imagedata>" << endl;
+}
+
+void DocbookDocVisitor::writePlantUMLFile(const QCString &baseName)
+{
+  QCString shortName = baseName;
+  int i;
+  if ((i=shortName.findRev('/'))!=-1)
+  {
+    shortName=shortName.right(shortName.length()-i-1);
+  }
+  QCString outDir = Config_getString("DOCBOOK_OUTPUT");
+  generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
   m_t << "                <imagedata";
   m_t << " width=\"50%\"";
   m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << shortName << ".png" << "\">";

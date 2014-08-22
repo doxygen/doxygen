@@ -79,6 +79,7 @@ class GroupDef : public Definition
 
     void addListReferences();
     void sortMemberLists();
+    bool subGrouping() const { return m_subGrouping; }
 
     bool visited;    // number of times accessed for output - KPW
 
@@ -101,6 +102,7 @@ class GroupDef : public Definition
     PageSDict *     getPages() const        { return pageDict; }
     DirList *       getDirs() const         { return dirList; }
     PageSDict *     getExamples() const     { return exampleDict; }
+    bool hasDetailedDescription() const;
     //MemberList*     getMembers() const      { return allMemberList; }
     void sortSubGroups();
     
@@ -150,6 +152,7 @@ class GroupDef : public Definition
 
     QList<MemberList> m_memberLists;
     MemberGroupSDict *memberGroupSDict;
+    bool              m_subGrouping;
 
 };
 

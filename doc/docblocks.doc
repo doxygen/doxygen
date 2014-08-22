@@ -371,7 +371,7 @@ typedef, enum or preprocessor definition you must first document the file
 that contains it (usually this will be a header file, because that file 
 contains the information that is exported to other source files).
 
-Let's repeat that, because it is often overlooked:
+@attention Let's repeat that, because it is often overlooked:
 to document global objects (functions, typedefs, enum, macros, etc), you
 <em>must</em> document the file in which they are defined. In other words, 
 there <em>must</em> at least be a \verbatim /*! \file */ \endverbatim
@@ -394,6 +394,23 @@ using structural commands:
  commands if possible. I often receive examples that contain \\fn command
  in comment blocks which are place in front of a function. This is clearly
  a case where the \\fn command is redundant and will only lead to problems.
+
+ When you place a comment block in a file with one of the following extensions
+ `.dox`, `.txt`, or `.doc` then doxygen will hide this file from the file list.
+
+ If you have a file that doxygen cannot parse but still would like to document it,
+ you can show it as-is using \ref cmdverbinclude "\\verbinclude", e.g.
+
+\verbatim
+/*! \file myscript.sh
+ *  Look at this nice script:
+ *  \verbinclude myscript.sh
+ */
+\endverbatim
+
+Make sure that the script is explicitly listed in the \ref cfg_input "INPUT" or
+that \ref cfg_file_patterns "FILE_PATTERNS" includes the `.sh` extention and the
+the script can be found in the path set via \ref cfg_example_path "EXAMPLE_PATH".
 
 \subsection pythonblocks Comment blocks in Python
 

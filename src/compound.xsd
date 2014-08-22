@@ -145,12 +145,12 @@
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="prot" type="DoxProtectionKind" />
     <xsd:attribute name="static" type="DoxBool" />
-    <xsd:attribute name="const" type="DoxBool" />
-    <xsd:attribute name="explicit" type="DoxBool" />
-    <xsd:attribute name="inline" type="DoxBool" />
-    <xsd:attribute name="virt" type="DoxVirtualKind" />
-    <xsd:attribute name="volatile" type="DoxBool" />
-    <xsd:attribute name="mutable" type="DoxBool" />
+    <xsd:attribute name="const" type="DoxBool" use="optional"/>
+    <xsd:attribute name="explicit" type="DoxBool" use="optional"/>
+    <xsd:attribute name="inline" type="DoxBool" use="optional"/>
+    <xsd:attribute name="virt" type="DoxVirtualKind" use="optional"/>
+    <xsd:attribute name="volatile" type="DoxBool" use="optional"/>
+    <xsd:attribute name="mutable" type="DoxBool" use="optional"/>
     <!-- Qt property -->
     <xsd:attribute name="readable" type="DoxBool" use="optional"/>
     <xsd:attribute name="writable" type="DoxBool" use="optional"/>
@@ -386,7 +386,7 @@
       <xsd:element name="rtfonly" type="xsd:string" />
       <xsd:element name="latexonly" type="xsd:string" />
       <xsd:element name="dot" type="xsd:string" />
-      <xsd:element name="msc" type="xsd:string" />
+      <xsd:element name="plantuml" type="xsd:string" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />

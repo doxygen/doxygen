@@ -1145,9 +1145,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  \c bibtex tool to be installed. See also http://en.wikipedia.org/wiki/BibTeX for
  more info. For \f$\mbox{\LaTeX}\f$ the style of the bibliography can be controlled 
  using \ref cfg_latex_bib_style "LATEX_BIB_STYLE".
- To use this 
- feature you need \c bibtex and \c perl available in the search path. Do not use 
- file names with spaces, \c bibtex cannot handle them.
+ To use this feature you need \c bibtex and \c perl available in the search path.
  See also \ref cmdcite "\\cite" for info how to create references.
 ]]>
       </docs>
@@ -1780,16 +1778,18 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
 ]]>
       </docs>
     </option>
-    <option type='string' id='HTML_EXTRA_STYLESHEET' format='file' defval='' depends='GENERATE_HTML'>
+    <option type='list' id='HTML_EXTRA_STYLESHEET' format='file' defval='' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_EXTRA_STYLESHEET tag can be used to specify an additional 
- user-defined cascading style sheet that is included after the standard 
+ The \c HTML_EXTRA_STYLESHEET tag can be used to specify additional 
+ user-defined cascading style sheets that are included after the standard 
  style sheets created by doxygen. Using this option one can overrule 
  certain style aspects. This is preferred over using \ref cfg_html_stylesheet "HTML_STYLESHEET" 
  since it does not replace the standard style sheet and is therefor more 
- robust against future updates. Doxygen will copy the style sheet file to 
+ robust against future updates. Doxygen will copy the style sheet files to 
  the output directory.
+ \note The order of the extra stylesheet files is of importance (e.g. the last
+ stylesheet in the list overrules the setting of the previous ones in the list).
 ]]>
       </docs>
       <docs doxywizard='0' doxyfile='0'>
@@ -3295,6 +3295,16 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval='' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where 
+ java can find the \c plantuml.jar file. If left blank, it is assumed PlantUML is not used or 
+ called during a preprocessing step. Doxygen will generate a warning when it encounters a 
+ \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
+]]>
+      </docs>
+    </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
@@ -3361,7 +3371,6 @@ remove the intermediate dot files that are used to generate the various graphs.
 ]]>
       </docs>
     </option>
-
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
     <option type='obsolete' id='QTHELP_FILE'/>

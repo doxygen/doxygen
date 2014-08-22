@@ -515,7 +515,7 @@ void Definition::writeDocAnchorsToTagFile()
 {
   if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_impl->sectionDict)
   {
-    //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_sectionDict->count());
+    //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_impl->sectionDict->count());
     SDict<SectionInfo>::Iterator sdi(*m_impl->sectionDict);
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
@@ -1360,7 +1360,7 @@ QCString Definition::qualifiedName() const
   //printf("end %s::qualifiedName()=%s\n",name().data(),m_impl->qualifiedName.data());
   //count--;
   return m_impl->qualifiedName;
-};
+}
 
 void Definition::setOuterScope(Definition *d)
 {

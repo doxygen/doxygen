@@ -129,10 +129,10 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
   {
     switch(c)
     {
-      case '\t': 
-      { 
+      case '\t':
+      {
         static int tabSize = Config_getInt("TAB_SIZE");
-	int spacesToNextTabStop = tabSize - (col%tabSize); 
+	int spacesToNextTabStop = tabSize - (col%tabSize);
 	col+=spacesToNextTabStop;
 	while (spacesToNextTabStop--) t << "<sp/>";
 	break;
@@ -141,11 +141,16 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
       case '<':  t << "&lt;"; col++;   break;
       case '>':  t << "&gt;"; col++;   break;
       case '&':  t << "&amp;"; col++;  break;
-      case '\'': t << "&apos;"; col++; break; 
+      case '\'': t << "&apos;"; col++; break;
       case '"':  t << "&quot;"; col++; break;
-      default:   s=writeUtf8Char(t,s-1); col++; break;         
+      case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8:
+      case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
+      case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
+      case 27: case 28: case 29: case 30: case 31:
+        break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
+      default:   s=writeUtf8Char(t,s-1); col++; break;
     }
-  } 
+  }
 }
 
 
@@ -646,6 +651,11 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       t << " required=\"yes\"";
     }
 
+    if (al && al->volatileSpecifier)
+    {
+      t << " volatile=\"yes\"";
+    }
+
     t << " virt=\"";
     switch (md->virtualness())
     {
@@ -671,7 +681,6 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
     {
       t << " initonly=\"yes\"";
     }
-
     if (md->isAttribute())
     {
       t << " attribute=\"yes\"";

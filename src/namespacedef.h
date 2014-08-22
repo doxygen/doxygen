@@ -81,6 +81,8 @@ class NamespaceDef : public Definition
     virtual Definition *findInnerCompound(const char *name);
     void addInnerCompound(Definition *d);
     void addListReferences();
+
+    bool subGrouping() const { return m_subGrouping; }
     
     MemberList *getMemberList(MemberListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }

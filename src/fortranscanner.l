@@ -739,6 +739,7 @@ private                                 {
 {ID}	                               {
                                        }  
 ^{BS}"type"{BS_}"is"/{BS_}             { }
+^{BS}"type"{BS}"="                     { }
 }
 <AttributeList>{
 {COMMA}					{}
@@ -2186,7 +2187,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       }
       else
       {
-        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documenation for variable: "+argName);
+        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documentation for variable: "+argName);
         handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	                   argName + " " + doc,brief);
       }
@@ -2201,7 +2202,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       }
       else
       {
-        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documenation for variable: "+argName);
+        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documentation for variable: "+argName);
         handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	                   argName + " " + doc,brief);
       }
@@ -2216,7 +2217,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
       }
       else
       {
-        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documenation for variable: "+argName);
+        warn(yyFileName,yyLineNr, "inconsistency between intent attribute and documentation for variable: "+argName);
         handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
 	                   argName + " " + doc,brief);
       }

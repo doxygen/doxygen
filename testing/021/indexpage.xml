@@ -4,7 +4,7 @@
     <compoundname>index</compoundname>
     <title>My Project</title>
     <detaileddescription>
-      <para> Our main function starts like this: <programlisting><codeline/></programlisting> First we create a object <computeroutput>t</computeroutput> of the <ref refid="class_test" kindref="compound">Test</ref> class. <programlisting><codeline><highlight class="normal"><sp/>*<sp/><sp/>First<sp/>we<sp/>create<sp/>a<sp/>object<sp/>\c<sp/>t<sp/>of<sp/>the<sp/><ref refid="class_test" kindref="compound">Test</ref><sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal">.</highlight></codeline></programlisting> Then we call the example member function <programlisting/> After that our little test routine ends. <programlisting/> </para>
+      <para> Our main function starts like this: <programlisting><codeline><highlight class="normal">void<sp/>main()</highlight></codeline><codeline><highlight class="normal">{</highlight></codeline></programlisting> First we create a object <computeroutput>t</computeroutput> of the <ref refid="class_test" kindref="compound">Test</ref> class. <programlisting><codeline><highlight class="normal"><sp/><sp/>Test<sp/>t;</highlight></codeline></programlisting> Then we call the example member function <programlisting><codeline><highlight class="normal"><sp/><sp/>t.example();</highlight></codeline></programlisting> After that our little test routine ends. <programlisting><codeline><highlight class="normal">}</highlight></codeline></programlisting> </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

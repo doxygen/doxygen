@@ -271,7 +271,7 @@ class Definition : public DefinitionIntf
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    void setName(const char *name);
+    virtual void setName(const char *name);
 
     /*! Sets a unique id for the symbol. Used for libclang integration. */
     void setId(const char *name);

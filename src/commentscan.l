@@ -191,6 +191,7 @@ static DocCmdMap docCmdMap[] =
   { "manonly",         &handleFormatBlock,      FALSE },
   { "dot",             &handleFormatBlock,      TRUE  },
   { "msc",             &handleFormatBlock,      TRUE  },
+  { "startuml",        &handleFormatBlock,      TRUE  },
   { "code",            &handleFormatBlock,      TRUE  },
   { "addindex",        &handleAddIndex,         FALSE },
   { "if",              &handleIf,               FALSE },
@@ -664,11 +665,11 @@ static void addSection()
   {
     if (si->lineNr != -1)
     {
-      warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",g_sectionLabel.data(),si->fileName.data(),si->lineNr);
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",g_sectionLabel.data(),si->fileName.data(),si->lineNr);
     }
     else
     {
-      warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",g_sectionLabel.data(),si->fileName.data());
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",g_sectionLabel.data(),si->fileName.data());
     }
   }
   else
@@ -877,7 +878,7 @@ static int yyread(char *buf,int max_size)
        /* start command character */
 CMD	  ("\\"|"@")
 DCMD1     ("arg"|"attention"|"author"|"cite"|"code")
-DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example")
+DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example"|"startuml")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
 DCMD5     ("latexinclude"|"latexonly"|"li"|"line"|"manonly"|"name")
@@ -1744,11 +1745,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           {
                                             if (si->lineNr != -1)
                                             {
-                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",yytext,si->fileName.data(),si->lineNr);
+                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",yytext,si->fileName.data(),si->lineNr);
                                             }
                                             else
                                             {
-                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s', (first occurrence: %s)",yytext,si->fileName.data());
+                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",yytext,si->fileName.data());
                                             }
                                           }
                                           else
@@ -1785,6 +1786,13 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					    BEGIN(Comment);
 					  }
   					}
+<FormatBlock>{CMD}"enduml"              {
+  					  addOutput(yytext);
+					  if (blockName=="startuml") // found end of the block
+					  {
+  					    BEGIN(Comment);
+					  }
+                                        }
 <FormatBlock>[^ \@\*\/\\\n]*		{ // some word
   					  addOutput(yytext);
   					}
@@ -1809,9 +1817,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  addOutput(*yytext);
   					}
 <FormatBlock><<EOF>>			{
+                                          QCString endTag = "@end"+blockName;
+                                          if (blockName=="startuml") endTag="enduml";
                                           warn(yyFileName,yyLineNr,
-	                                    "reached end of comment while inside a @%s block; check for missing @end%s tag!",
-	                                    blockName.data(),blockName.data()
+	                                    "reached end of comment while inside a @%s block; check for missing @%s tag!",
+	                                    blockName.data(),endTag.data()
 	                                  );				
 					  yyterminate();
     					}
