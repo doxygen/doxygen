@@ -35,6 +35,7 @@ distclean: clean
 	-cd src ; $(MAKE) distclean
 	-cd libmd5 ; $(MAKE) distclean
 	-cd vhdlparser ; $(MAKE) distclean
+	-cd qtools ; $(MAKE) distclean
 	-cd addon/doxywizard ; $(MAKE) distclean
 	-cd addon/doxysearch ; $(MAKE) distclean
 	-cd addon/doxyapp ; $(MAKE) distclean
