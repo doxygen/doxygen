@@ -3079,6 +3079,17 @@ static void countRelatedPages(int &docPages,int &indexPages)
 
 //----------------------------------------------------------------------------
 
+static bool mainPageHasOwnTitle()
+{
+  static QCString projectName = Config_getString("PROJECT_NAME");
+  QCString title;
+  if (Doxygen::mainPage)
+  {
+    title = filterTitle(Doxygen::mainPage->title());
+  }
+  return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
+}
+
 static void writePages(PageDef *pd,FTVHelp *ftv)
 {
   //printf("writePages()=%s pd=%p mainpage=%p\n",pd->name().data(),pd,Doxygen::mainPage);
@@ -3115,8 +3126,8 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
-  bool doIndent = (hasSections || hasSubPages) &&  
-                  (pd!=Doxygen::mainPage || mainPageHasTitle());
+  bool doIndent = (hasSections || hasSubPages) &&
+                  (pd!=Doxygen::mainPage || mainPageHasOwnTitle());
   if (doIndent)
   {
     Doxygen::indexList->incContentsDepth();

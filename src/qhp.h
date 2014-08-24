@@ -64,8 +64,7 @@ class Qhp : public IndexIntf
     int m_prevSectionLevel;
     int m_sectionLevel;
 
-    //QCString m_prevIdName;
-    //QCString m_prevIdRef;
+    bool m_skipMainPageSection;
 };
 
 #endif // DOXYGEN_QHP_H
