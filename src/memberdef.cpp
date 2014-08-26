@@ -270,8 +270,11 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       //{
       //  ol.docify(" ");
       //}
-      ol.disable(OutputGenerator::Man);
       ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::Html);
+      ol.docify(" "); /* man page */
+      if (htmlOn) ol.enable(OutputGenerator::Html);
+      ol.disable(OutputGenerator::Man);
       ol.startEmphasis();
       ol.enable(OutputGenerator::Man);
       if (latexOn) ol.enable(OutputGenerator::Latex);
