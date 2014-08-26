@@ -194,6 +194,7 @@ void ManGenerator::endTitleHead(const char *,const char *name)
   t << ".SH NAME" << endl;
   t << name << " \\- ";
   firstCol=FALSE;
+  paragraph=TRUE;
   inHeader=TRUE;
 }
 
@@ -828,10 +829,4 @@ void ManGenerator::endLabels()
 
 void ManGenerator::endHeaderSection()
 {
-  if (!firstCol) 
-  { 
-    t<< endl; firstCol=TRUE; 
-  }
 }
-
-
