@@ -95,7 +95,7 @@ class TagMemberInfo
 class TagClassInfo
 {
   public:
-    enum Kind { Class, Struct, Union, Interface, Exception, Protocol, Category };
+    enum Kind { Class, Struct, Union, Interface, Exception, Protocol, Category, Enum };
     TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); isObjC=FALSE; }
    ~TagClassInfo() { delete bases; delete templateArguments; }
     QCString name;
@@ -299,6 +299,12 @@ class TagFileParser : public QXmlDefaultHandler
       {
         m_curClass = new TagClassInfo;
         m_curClass->kind = TagClassInfo::Interface;
+        m_state = InClass;
+      }
+      else if (kind=="enum")
+      {
+        m_curClass = new TagClassInfo;
+        m_curClass->kind = TagClassInfo::Enum;
         m_state = InClass;
       }
       else if (kind=="exception")
@@ -1286,6 +1292,7 @@ void TagFileParser::buildLists(Entry *root)
       case TagClassInfo::Struct:    ce->spec = Entry::Struct;    break;
       case TagClassInfo::Union:     ce->spec = Entry::Union;     break;
       case TagClassInfo::Interface: ce->spec = Entry::Interface; break;
+      case TagClassInfo::Enum:      ce->spec = Entry::Enum;      break;
       case TagClassInfo::Exception: ce->spec = Entry::Exception; break;
       case TagClassInfo::Protocol:  ce->spec = Entry::Protocol;  break;
       case TagClassInfo::Category:  ce->spec = Entry::Category;  break;

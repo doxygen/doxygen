@@ -1037,9 +1037,16 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
     else // scope is a namespace
     {
     }
-    // make the parent/child scope relation
-    prevScope->addInnerCompound(innerScope);
-    innerScope->setOuterScope(prevScope);
+    if (innerScope)
+    {
+      // make the parent/child scope relation
+      prevScope->addInnerCompound(innerScope);
+      innerScope->setOuterScope(prevScope);
+    }
+    else // current scope is a class, so return only the namespace part...
+    {
+      return prevScope;
+    }
     // proceed to the next scope fragment
     p=idx+l+2;
     prevScope=innerScope;
