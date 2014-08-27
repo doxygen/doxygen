@@ -1675,8 +1675,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 getBodyDef(),            // fileScope
                 this,                    // self
                 isDefine() ?
-                   QString(argsString()).replace(QRegExp(","),
-                                                 QString(", ")).data() :
+                   (const char*)substitute(argsString(),",",", ") :
                    argsString(),         // text
                 m_impl->annMemb,         // autoBreak
                 TRUE,                    // external
