@@ -10697,7 +10697,6 @@ void searchInputFiles()
 
   g_s.begin("Searching for files to process...\n");
   QDict<void> *killDict = new QDict<void>(10007);
-  int inputSize=0;
   QStrList &inputList=Config_getList("INPUT");
   g_inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
@@ -10709,8 +10708,8 @@ void searchInputFiles()
     {
       // strip trailing slashes
       if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
-  
-      inputSize+=readFileOrDirectory(
+
+      readFileOrDirectory(
           path,
           Doxygen::inputNameList,
           Doxygen::inputNameDict,
