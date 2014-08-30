@@ -4667,9 +4667,10 @@ void DotGroupCollaboration::Edge::write( FTextStream &t ) const
   }
   switch( eType )
   {
-    case thierarchy :
+    case thierarchy:
       arrowStyle = "dir=\"back\", style=\"solid\"";
-    default :
+      break;
+    default:
       t << ", color=\"" << linkTypeColor[(int)eType] << "\"";
       break;
   }
