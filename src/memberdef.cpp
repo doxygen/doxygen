@@ -3784,7 +3784,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
     {
       MemberListIterator mli(*fmdl);
       MemberDef *fmd=mli.current();
-      bool fmdVisible = fmd->isBriefSectionVisible();
+      bool fmdVisible = fmd ? fmd->isBriefSectionVisible() : TRUE;
       while (fmd)
       {
         if (fmdVisible)
