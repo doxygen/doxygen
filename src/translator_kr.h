@@ -1203,9 +1203,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool, bool singular)
     {
-      QCString result((first_capital ? "클래스" : "클래스"));
+      QCString result("클래스");
       if (!singular)  result+="들";
       return result;
     }
@@ -1214,9 +1214,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trFile(bool, bool singular)
     {
-      QCString result((first_capital ? "파일" : "파일"));
+      QCString result("파일");
       if (!singular)  result+="들";
       return result;
     }
@@ -1225,9 +1225,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trNamespace(bool first_capital, bool singular)
+    virtual QCString trNamespace(bool, bool singular)
     {
-      QCString result((first_capital ? "네임스페이스" : "네임스페이스"));
+      QCString result("네임스페이스");
       if (!singular)  result+="들";
       return result;
     }
@@ -1236,9 +1236,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trGroup(bool, bool singular)
     {
-      QCString result((first_capital ? "그룹" : "그룹"));
+      QCString result("그룹");
       if (!singular)  result+="들";
       return result;
     }
@@ -1247,9 +1247,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trPage(bool, bool singular)
     {
-      QCString result((first_capital ? "페이지" : "페이지"));
+      QCString result("페이지");
       if (!singular)  result+="들";
       return result;
     }
@@ -1258,9 +1258,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trMember(bool, bool singular)
     {
-      QCString result((first_capital ? "멤버" : "멤버"));
+      QCString result("멤버");
       if (!singular)  result+="들";
       return result;
     }
@@ -1269,9 +1269,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trGlobal(bool first_capital, bool singular)
+    virtual QCString trGlobal(bool, bool singular)
     {
-      QCString result((first_capital ? "전역" : "전역"));
+      QCString result("전역");
       if (!singular)  result+="";
       return result;
     }
@@ -1282,9 +1282,9 @@ class TranslatorKorean : public Translator
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trAuthor(bool, bool singular)
     {
-      QCString result((first_capital ? "작성자" : "작성자"));
+      QCString result("작성자");
       if (!singular)  result+="들";
       return result;
     }
@@ -1509,9 +1509,9 @@ class TranslatorKorean : public Translator
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    virtual QCString trDir(bool, bool singular)
     {
-      QCString result((first_capital ? "디렉토리" : "디렉토리"));
+      QCString result("디렉토리");
       if (singular) result+=""; else result+="들";
       return result;
     }
@@ -1690,9 +1690,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trModule(bool, bool singular)
     {
-      QCString result((first_capital ? "모듈" : "모듈"));
+      QCString result("모듈");
       if (!singular)  result+="들";
       return result;
     }
@@ -1725,9 +1725,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trType(bool, bool singular)
     {
-      QCString result((first_capital ? "타입" : "타입"));
+      QCString result("타입");
       if (!singular)  result+="들";
       return result;
     }
@@ -1735,9 +1735,9 @@ class TranslatorKorean : public Translator
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trSubprogram(bool, bool singular)
     {
-      QCString result((first_capital ? "서브프로그램" : "서브프로그램"));
+      QCString result("서브프로그램");
       if (!singular)  result+="들";
       return result;
     }
