@@ -444,7 +444,7 @@ SearchIndexExternal::~SearchIndexExternal()
 
 static QCString definitionToName(Definition *ctx)
 {
-  if (ctx->definitionType()==Definition::TypeMember)
+  if (ctx && ctx->definitionType()==Definition::TypeMember)
   {
     MemberDef *md = (MemberDef*)ctx;
     if (md->isFunction())
