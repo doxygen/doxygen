@@ -1657,16 +1657,19 @@ void FileDef::acquireFileVersion()
     }
     const int bufSize=1024;
     char buf[bufSize];
-    int numRead = (int)fread(buf,1,bufSize,f);
+    int numRead = (int)fread(buf,1,bufSize-1,f);
     portable_pclose(f);
-    if (numRead>0 && !(m_fileVersion=QCString(buf,numRead).stripWhiteSpace()).isEmpty())
+    if (numRead>0 && numRead<bufSize)
     {
-      msg("%s\n",m_fileVersion.data());
+      buf[numRead]='\0';
+      m_fileVersion=QCString(buf,numRead).stripWhiteSpace();
+      if (!m_fileVersion.isEmpty())
+      {
+        msg("%s\n",m_fileVersion.data());
+        return;
+      }
     }
-    else 
-    {
-      msg("no version available\n");
-    }
+    msg("no version available\n");
   }
 }
 
