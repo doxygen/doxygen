@@ -371,7 +371,7 @@ Definition::Definition(const Definition &d) : DefinitionIntf()
   }
   if (d.m_impl->inbodyDocs)
   {
-    m_impl->details = new DocInfo(*d.m_impl->inbodyDocs);
+    m_impl->inbodyDocs = new DocInfo(*d.m_impl->inbodyDocs);
   }
 
   m_isSymbol = d.m_isSymbol;
