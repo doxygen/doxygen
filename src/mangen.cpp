@@ -341,7 +341,7 @@ void ManGenerator::codify(const char *str)
                     break;
         case '\n':  t << "\n"; firstCol=TRUE; col=0; break;
         case '\\':  t << "\\"; col++; break;
-        case '\"':  c = '\''; // no break!
+        case '\"':  // no break!
         default:    p=writeUtf8Char(t,p-1); firstCol=FALSE; col++; break;
       }
     }
