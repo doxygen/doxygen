@@ -479,7 +479,11 @@ static QList<MemberDef>* getPorts(ClassDef *cd)
   QList<MemberDef> *portList=new QList<MemberDef>;
   MemberList *ml=cd->getMemberList(MemberListType_variableMembers);
 
-  if (ml==0) return NULL;
+  if (ml==0)
+  {
+    delete portList;
+    return 0;
+  }
 
   MemberListIterator fmni(*ml);
 
