@@ -1596,7 +1596,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       }
       else
       {
-	if (isTemplate) result+=" Шаблон ";
+	result+=" Шаблон ";
 	switch(compType)
 	{
 	  case ClassDef::Class:      result+="модуля"; break;

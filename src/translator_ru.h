@@ -1605,7 +1605,7 @@ class TranslatorRussian : public Translator
       }
       else
       {
-	if (isTemplate) result+=" Шаблон ";
+	result+=" Шаблон ";
 	switch(compType)
 	{
 	  case ClassDef::Class:      result+="модуля"; break;
