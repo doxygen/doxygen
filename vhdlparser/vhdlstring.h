@@ -49,7 +49,7 @@ class VhdlString
     }
    ~VhdlString()
     {
-      delete[] m_str;
+      free(m_str);
     }
     VhdlString& append(const char *s,int size)
     {
