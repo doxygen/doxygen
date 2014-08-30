@@ -1179,7 +1179,7 @@ int ClassDef::countInheritanceNodes()
 void ClassDef::writeInheritanceGraph(OutputList &ol)
 {
   // count direct inheritance relations
-  int count=countInheritanceNodes();
+  const int count=countInheritanceNodes();
 
   bool renderDiagram = FALSE;
   if (Config_getBool("HAVE_DOT") &&
@@ -1216,7 +1216,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
     ol.disableAllBut(OutputGenerator::Man);
   }
 
-  if (m_impl->inherits && (count=m_impl->inherits->count())>0)
+  if (m_impl->inherits && m_impl->inherits->count()>0)
   {
     ol.startParagraph();
     //parseText(ol,theTranslator->trInherits()+" ");
@@ -1281,7 +1281,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
   }
 
   // write subclasses
-  if (m_impl->inheritedBy && (count=m_impl->inheritedBy->count())>0)
+  if (m_impl->inheritedBy && m_impl->inheritedBy->count()>0)
   {
     ol.startParagraph();
     QCString inheritLine = theTranslator->trInheritedByList(m_impl->inheritedBy->count());
