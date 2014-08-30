@@ -1319,7 +1319,15 @@ class FilterDivisibleBy
       }
       if (v.type()==TemplateVariant::Integer && n.type()==TemplateVariant::Integer)
       {
-        return TemplateVariant((v.toInt()%n.toInt())==0);
+        int ni = n.toInt();
+        if (ni>0)
+        {
+          return TemplateVariant((v.toInt()%ni)==0);
+        }
+        else
+        {
+          return TemplateVariant(FALSE);
+        }
       }
       else
       {
