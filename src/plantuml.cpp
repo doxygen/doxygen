@@ -85,8 +85,8 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   portable_sysTimerStart();
   if ((exitCode=portable_system(pumlExe,pumlArgs,FALSE))!=0)
   {
-    err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line\n",
-        plantumlJarPath.data());
+    err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
+        plantumlJarPath.data(),exitCode);
   }
   else if (Config_getBool("DOT_CLEANUP"))
   {
