@@ -1531,7 +1531,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                     getBodyDef(),            // fileScope
                     this,                    // self
                     ltype.left(i),           // text
-                    TRUE                     // autoBreak
+                    FALSE                    // autoBreak
                    );
         getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,compoundType);
         //ol+=*getAnonymousEnumType()->enumDecl();
@@ -1545,7 +1545,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                     getBodyDef(),            // fileScope
                     this,                    // self
                     ltype,                   // text
-                    TRUE                     // autoBreak
+                    FALSE                    // autoBreak
                    );
       }
     }
@@ -1566,7 +1566,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                 getBodyDef(),            // fileScope
                 this,                    // self
                 ltype,                   // text
-                TRUE                     // autoBreak
+                FALSE                    // autoBreak
                );
   }
   bool htmlOn = ol.isEnabled(OutputGenerator::Html);
