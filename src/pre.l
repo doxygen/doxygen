@@ -207,6 +207,7 @@ class DefineManager
       if (dpf==0)
       {
 	dpf = new DefinesPerFile;
+	m_fileMap.insert(fileName,dpf);
       }
       dpf->addDefine(def);
     }
@@ -223,6 +224,7 @@ class DefineManager
       if (dpf==0)
       {
 	dpf = new DefinesPerFile;
+	m_fileMap.insert(fromFileName,dpf);
       }
       dpf->addInclude(toFileName);
     }
@@ -2283,6 +2285,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <DefName>{ID}/("\\\n")*"("		{ // define with argument
   					  //printf("Define() `%s'\n",yytext);
+					  delete g_argDict;
 					  g_argDict = new QDict<int>(31);
 					  g_argDict->setAutoDelete(TRUE);
 					  g_defArgs = 0; 

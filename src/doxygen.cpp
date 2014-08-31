@@ -2077,18 +2077,15 @@ static void findUsingDeclarations(EntryNav *rootNav)
             usingCd->name().data(),nd?nd->name().data():fd->name().data());
       }
 
-      if (usingCd) // add the class to the correct scope
+      if (nd)
       {
-        if (nd)
-        {
-          //printf("Inside namespace %s\n",nd->name().data());
-          nd->addUsingDeclaration(usingCd);
-        }
-        else if (fd)
-        {
-          //printf("Inside file %s\n",fd->name().data());
-          fd->addUsingDeclaration(usingCd);
-        }
+        //printf("Inside namespace %s\n",nd->name().data());
+        nd->addUsingDeclaration(usingCd);
+      }
+      else if (fd)
+      {
+        //printf("Inside file %s\n",fd->name().data());
+        fd->addUsingDeclaration(usingCd);
       }
     }
 
@@ -4107,8 +4104,12 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
  */
 static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,const QCString &name)
 {
-  FileDef *fd=cd->getFileDef();
   ClassDef *result=0;
+  if (cd==0)
+  {
+    return result;
+  }
+  FileDef *fd=cd->getFileDef();
   if (context && cd!=context)
   {
     result = getResolvedClass(context,0,name,0,0,TRUE,TRUE);
@@ -4121,7 +4122,7 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = getClass(name);
   }
-  if (result==0 && cd &&
+  if (result==0 &&
       (cd->getLanguage()==SrcLangExt_CSharp || cd->getLanguage()==SrcLangExt_Java) &&
       name.find('<')!=-1)
   {
@@ -4243,13 +4244,10 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                     usedCd->setLanguage(masterCd->getLanguage());
                     Doxygen::hiddenClasses->append(usedName,usedCd);
                   }
-                  if (usedCd)
-                  {
-                    if (isArtificial) usedCd->setArtificial(TRUE);
-                    Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
-                    instanceCd->addUsedClass(usedCd,md->name(),md->protection());
-                    usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
-                  }
+                  if (isArtificial) usedCd->setArtificial(TRUE);
+                  Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
+                  instanceCd->addUsedClass(usedCd,md->name(),md->protection());
+                  usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
                 }
               }
             }
@@ -6585,7 +6583,7 @@ static void findMember(EntryNav *rootNav,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
               root->stat && !isMemberOf,
-              isMemberOf ? Foreign : isRelated ? Related : Member,
+              isMemberOf ? Foreign : Related,
               mtype,
               (root->tArgLists ? root->tArgLists->getLast() : 0),
               funcArgs.isEmpty() ? 0 : root->argList);
@@ -8062,13 +8060,14 @@ static void generateClassList(ClassSDict &classSDict)
     ClassDef *cd=cli.current();
    
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
-    if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+    if (cd &&
+        (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
         ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
-       ) 
+       )
     {
-      // skip external references, anonymous compounds and 
-      // template instances 
+      // skip external references, anonymous compounds and
+      // template instances
       if ( cd->isLinkableInProject() && cd->templateMaster()==0)
       {
         msg("Generating docs for compound %s...\n",cd->name().data());
@@ -9003,9 +9002,9 @@ static void generateNamespaceDocs()
 
     // for each class in the namespace...
     ClassSDict::Iterator cli(*nd->getClassSDict());
-    for ( ; cli.current() ; ++cli )
+    ClassDef *cd;
+    for ( ; (cd=cli.current()) ; ++cli )
     {
-      ClassDef *cd=cli.current();
       if ( ( cd->isLinkableInProject() && 
              cd->templateMaster()==0
            ) // skip external references, anonymous compounds and 

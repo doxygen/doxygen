@@ -1640,7 +1640,7 @@ static void writeAnnotatedClassList(OutputList &ol)
 
 static QCString letterToLabel(uint startLetter)
 {
-  char s[10];
+  char s[11]; // max 0x12345678 + '\0'
   if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
   {
     s[0]=(char)startLetter;

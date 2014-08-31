@@ -209,7 +209,7 @@ QGString &QGString::operator+=( const QGString &s )
   assert(memSize>=len1+len2+1);
   char *newData = memSize!=m_memSize ? (char*)realloc( m_data, memSize ) : m_data;
   m_memSize = memSize;
-  if (m_data)
+  if (newData)
   {
     m_data = newData;
     memcpy( m_data + len1, s, len2 + 1 );

@@ -74,6 +74,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
         t << externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty()) t << df->file() << Doxygen::htmlFileExtension;
         if (!df->anchor().isEmpty()) t << "#" << df->anchor();
+        delete df;
       }
       else
       {

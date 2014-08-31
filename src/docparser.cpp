@@ -76,7 +76,8 @@ static const char *sectionLevelToName[] =
   "section",
   "subsection",
   "subsubsection",
-  "paragraph"
+  "paragraph",
+  "subparagraph"
 };
 
 //---------------------------------------------------------------------------
