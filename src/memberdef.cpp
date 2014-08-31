@@ -1669,13 +1669,15 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // *** write arguments
   if (argsString() && !isObjCMethod())
   {
-    if (!isDefine()) ol.writeString(" ");
+    if (!isDefine() && !isTypedef()) ol.writeString(" ");
     linkifyText(TextGeneratorOLImpl(ol), // out
                 d,                       // scope
                 getBodyDef(),            // fileScope
                 this,                    // self
                 isDefine() ?
                    (const char*)substitute(argsString(),",",", ") :
+                isTypedef() ?
+                   (const char*)substitute(argsString(),")(",") (") :
                    argsString(),         // text
                 m_impl->annMemb,         // autoBreak
                 TRUE,                    // external
