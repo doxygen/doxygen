@@ -62,9 +62,14 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
     unit = "chapter";
   t << "% Bibliography\n"
        "\\newpage\n"
-       "\\phantomsection\n"
-       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n"
-       "\\bibliographystyle{" << style << "}\n"
+       "\\phantomsection\n";
+  bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (!pdfHyperlinks)
+  {
+    t << "\\clearemptydoublepage\n";
+    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+  }
+  t << "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{";
   QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
   QCString latexOutputDir = Config_getString("LATEX_OUTPUT")+"/";
@@ -87,8 +92,12 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
     }
     bibdata = citeDataList.next();
   }
-  t << "}\n"
-       "\n";
+  t << "}\n";
+  if (pdfHyperlinks)
+  {
+    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+  }
+  t << "\n";
 }
 
 void CiteDict::insert(const char *label)

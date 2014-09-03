@@ -543,8 +543,10 @@ static void writeDefaultFooter(FTextStream &t)
   else
     unit = "chapter";
   t << "% Index\n"
+       "\\backmatter\n"
        "\\newpage\n"
        "\\phantomsection\n"
+       "\\clearemptydoublepage\n"
        "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
        "\\printindex\n"
        "\n"
@@ -1260,7 +1262,7 @@ void LatexGenerator::startTitleHead(const char *fileName)
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   if (usePDFLatex && pdfHyperlinks && fileName)
   {
-    t << "\\hypertarget{" << stripPath(fileName) << "}{";
+    t << "\\hypertarget{" << stripPath(fileName) << "}{}";
   }
   if (Config_getBool("COMPACT_LATEX")) 
   {
@@ -1274,8 +1276,6 @@ void LatexGenerator::startTitleHead(const char *fileName)
 
 void LatexGenerator::endTitleHead(const char *fileName,const char *name)
 {
-  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   t << "}" << endl;
   if (name)
   {
@@ -1284,10 +1284,6 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
     t << "@{";
     escapeMakeIndexChars(name);
     t << "}}" << endl;
-  }
-  if (usePDFLatex && pdfHyperlinks && fileName)
-  {
-    t << "}" << endl;
   }
 }
 
@@ -1428,18 +1424,12 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
     t << "\\hypertarget{";
     if (fName) t << stripPath(fName);
     if (anchor) t << "_" << anchor;
-    t << "}{";
+    t << "}{}";
   }
 }
 
 void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 {
-  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
-  if (usePDFLatex && pdfHyperlinks)
-  {
-    t << "}";
-  }
   t << "\\label{";
   if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;
