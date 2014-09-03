@@ -4671,12 +4671,15 @@ int DocParamList::parse(const QCString &cmdName)
   DBG(("DocParamList::parse() start\n"));
   g_nodeStack.push(this);
   DocPara *par=0;
+  QCString saveCmdName = cmdName;
 
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
     warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
         qPrint(cmdName));
+    retval=0;
+    goto endparamlist;
   }
   doctokenizerYYsetStateParam();
   tok=doctokenizerYYlex();
@@ -4716,7 +4719,13 @@ int DocParamList::parse(const QCString &cmdName)
     retval=0;
     goto endparamlist;
   }
-  ASSERT(tok==TK_WHITESPACE);
+  if (tok!=TK_WHITESPACE) /* premature end of comment block */
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token in comment block while parsing the "
+        "argument of command %s",qPrint(saveCmdName));
+    retval=0;
+    goto endparamlist;
+  }
 
   par = new DocPara(this);
   m_paragraphs.append(par);
