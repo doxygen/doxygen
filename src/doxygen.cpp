@@ -2837,14 +2837,14 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
         else if (root->type.find(')',i)!=-1) // function ptr, not variable like "int (*bla)[10]"
         {
           root->type=root->type.left(root->type.length()-1);
-          root->args.prepend(")");
+          root->args.prepend(") ");
           //printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
         }
       }
       else if (root->type.find("typedef ")!=-1 && root->type.right(2)=="()") // typedef void (func)(int)
       {
         root->type=root->type.left(root->type.length()-1);
-        root->args.prepend(")");
+        root->args.prepend(") ");
       }
     }
     
