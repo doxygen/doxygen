@@ -20,7 +20,7 @@
 
 #include <qdir.h>
 
-//static const int maxCmdLine = 40960;
+static const int maxCmdLine = 40960;
 
 QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,const QCString &content)
 {
@@ -93,5 +93,16 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     QFile(QCString(baseName)+".pu").remove();
   }
   portable_sysTimerStop();
+  if ( (format==PUML_EPS) && (Config_getBool("USE_PDFLATEX")) )
+  {
+    QCString epstopdfArgs(maxCmdLine);
+    epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
+    portable_sysTimerStart();
+    if (exitCode=portable_system("epstopdf",epstopdfArgs)!=0)
+    {
+      err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
+    }
+    portable_sysTimerStop();
+  }
 }
 
