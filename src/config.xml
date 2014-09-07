@@ -3305,6 +3305,14 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    <option type='list' id='PLANTUML_INCLUDE_PATH' format='dir' defval='' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ When using plantuml, the specified paths are searched for files specified by the \c !include
+ statement in a plantuml block. 
+]]>
+      </docs>
+    </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
