@@ -1310,17 +1310,30 @@ static void addClassToContext(EntryNav *rootNav)
     QCString tagName;
     QCString refFileName;
     TagInfo *tagInfo = rootNav->tagInfo();
+    int i;
     if (tagInfo)
     {
       tagName     = tagInfo->tagName;
       refFileName = tagInfo->fileName;
-      int i;
       if ((i=fullName.find("::"))!=-1) 
         // symbols imported via tag files may come without the parent scope, 
         // so we artificially create it here
       {
         buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang,tagInfo);
       }
+    }
+    ArgumentList *tArgList = 0;
+    if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.find('<'))!=-1)
+    {
+      // a Java/C# generic class looks like a C++ specialization, so we need to split the
+      // name and template arguments here
+      tArgList = new ArgumentList;
+      stringToArgumentList(fullName.mid(i),tArgList);
+      fullName=fullName.left(i);
+    }
+    else
+    {
+      tArgList = getTemplateArgumentsFromName(fullName,root->tArgLists);
     }
     cd=new ClassDef(root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
@@ -1336,8 +1349,6 @@ static void addClassToContext(EntryNav *rootNav)
     cd->setTypeConstraints(root->typeConstr);   
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());    
 
-    ArgumentList *tArgList =    
-      getTemplateArgumentsFromName(fullName,root->tArgLists);   
     //printf("class %s template args=%s\n",fullName.data(),     
     //    tArgList ? tempArgListToString(tArgList).data() : "<none>");          
     cd->setTemplateArguments(tArgList);         
@@ -4710,7 +4721,7 @@ static bool findClassRelation(
           if (found) templSpec = tmpTemplSpec;
         }
         //printf("2. found=%d\n",found);
-        
+
         //printf("root->name=%s biName=%s baseClassName=%s\n",
         //        root->name.data(),biName.data(),baseClassName.data());
         //if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
