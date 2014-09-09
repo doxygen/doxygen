@@ -749,8 +749,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result=(QCString)"Thông tin cho ";
@@ -766,7 +765,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         default: break;
       }
       result+=" được biên soạn từ các file sau đây";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
 
@@ -1501,10 +1500,9 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
-    virtual QCString trDir(bool first_capital, bool singular)
+    virtual QCString trDir(bool first_capital, bool)
     {
       QCString result((first_capital ? "Thư mục" : "thư mục"));
-      if (singular) result+=""; else result+="";
       return result;
     }
 
