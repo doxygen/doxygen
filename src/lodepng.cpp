@@ -3535,20 +3535,11 @@ static void filterScanline(unsigned char* out, const unsigned char* scanline, co
   switch(filterType)
   {
     case 0:
-      if(prevline) for(i = 0; i < length; i++) out[i] = scanline[i];
-      else         for(i = 0; i < length; i++) out[i] = scanline[i];
+      for(i = 0; i < length; i++) out[i] = scanline[i];
       break;
     case 1:
-      if(prevline)
-      {
-        for(i =         0; i < bytewidth; i++) out[i] = scanline[i];
-        for(i = bytewidth; i < length   ; i++) out[i] = scanline[i] - scanline[i - bytewidth];
-      }
-      else
-      {
-        for(i =         0; i < bytewidth; i++) out[i] = scanline[i];
-        for(i = bytewidth; i <    length; i++) out[i] = scanline[i] - scanline[i - bytewidth];
-      }
+      for(i =         0; i < bytewidth; i++) out[i] = scanline[i];
+      for(i = bytewidth; i <    length; i++) out[i] = scanline[i] - scanline[i - bytewidth];
       break;
     case 2:
       if(prevline) for(i = 0; i < length; i++) out[i] = scanline[i] - prevline[i];
