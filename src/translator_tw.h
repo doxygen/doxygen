@@ -749,8 +749,7 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result=(QCString)"此";
@@ -766,7 +765,7 @@ class TranslatorChinesetraditional : public Translator
         default: break;
       }
       result+=" 文件是由下列檔案中產生";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
 
