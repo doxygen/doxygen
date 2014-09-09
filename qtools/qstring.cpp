@@ -11499,9 +11499,9 @@ static inline bool format(QChar::Decomposition tag, QString & str,
     unsigned int l = index + len;
     unsigned int r = index;
 
-    bool left = FALSE, right = FALSE;
+    bool right = FALSE;
 
-    left = ((l < str.length()) &&
+    bool left = ((l < str.length()) &&
 	    ((str[(int)l].joining() == QChar::Dual) ||
 	     (str[(int)l].joining() == QChar::Right)));
     if (r > 0) {
