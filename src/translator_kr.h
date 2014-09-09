@@ -677,10 +677,10 @@ class TranslatorKorean : public Translator
 
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
+          //if (i<numEntries-2) // not the fore last entry
             result+=", ";
-          else                // the fore last entry
-            result+=", ";
+          //else                // the fore last entry
+          //  result+=", ";     // TODO: does the 'and' need to be translated here?
         }
       }
       return result;
