@@ -1315,7 +1315,7 @@ static void addClassToContext(EntryNav *rootNav)
     {
       tagName     = tagInfo->tagName;
       refFileName = tagInfo->fileName;
-      if ((i=fullName.find("::"))!=-1) 
+      if (fullName.find("::")!=-1)
         // symbols imported via tag files may come without the parent scope, 
         // so we artificially create it here
       {
