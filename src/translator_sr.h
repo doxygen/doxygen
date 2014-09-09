@@ -188,14 +188,14 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      {
-       return "Članovi datoteke";
-      }
-      else
-      {
-       return "Članovi datoteke";
-      }
+      //if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      //{
+      // return "Članovi datoteke"; // TODO: translate me
+      //}
+      //else
+      //{
+      return "Članovi datoteke";
+      //}
     }
 
     /*! This is put above each page as a link to all related pages. */
