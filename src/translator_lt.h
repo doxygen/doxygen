@@ -197,7 +197,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       }
       else
       {
-        return "Globalūs Nariai";
+        return "Failų Nariai";
       }
     }
 
