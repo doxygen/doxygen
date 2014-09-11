@@ -4659,7 +4659,8 @@ static bool findClassRelation(
         if (si==-1) si=0;
         if (baseClass==0 && (root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java))
         {
-          baseClass = Doxygen::genericsDict->find(baseClassName);
+          // for Java/C# strip the template part before looking for matching
+          baseClass = Doxygen::genericsDict->find(baseClassName.left(i));
           //printf("looking for '%s' result=%p\n",baseClassName.data(),baseClass);
         }
         if (baseClass==0 && i!=-1) 
@@ -4949,6 +4950,22 @@ static void findClassEntries(EntryNav *rootNav)
   RECURSE_ENTRYTREE(findClassEntries,rootNav);
 }
 
+static QCString extractClassName(EntryNav *rootNav)
+{
+  // strip any anonymous scopes first
+  QCString bName=stripAnonymousNamespaceScope(rootNav->name());
+  bName=stripTemplateSpecifiersFromScope(bName);
+  int i;
+  if ((rootNav->lang()==SrcLangExt_CSharp || rootNav->lang()==SrcLangExt_Java) &&
+      (i=bName.find('<'))!=-1)
+  {
+    // a Java/C# generic class looks like a C++ specialization, so we need to strip the
+    // template part before looking for matches
+    bName=bName.left(i);
+  }
+  return bName;
+}
+
 /*! Using the dictionary build by findClassEntries(), this 
  *  function will look for additional template specialization that
  *  exists as inheritance relations only. These instances will be
@@ -4963,9 +4980,7 @@ static void findInheritedTemplateInstances()
   for (;(rootNav=edi.current());++edi)
   {
     ClassDef *cd;
-    // strip any anonymous scopes first 
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    bName=stripTemplateSpecifiersFromScope(bName);
+    QCString bName = extractClassName(rootNav);
     Debug::print(Debug::Classes,0,"  Inheritance: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
@@ -4986,9 +5001,7 @@ static void findUsedTemplateInstances()
   for (;(rootNav=edi.current());++edi)
   {
     ClassDef *cd;
-    // strip any anonymous scopes first 
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    bName=stripTemplateSpecifiersFromScope(bName);
+    QCString bName = extractClassName(rootNav);
     Debug::print(Debug::Classes,0,"  Usage: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
@@ -5011,10 +5024,7 @@ static void computeClassRelations()
 
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
-
-    // strip any anonymous scopes first 
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    bName=stripTemplateSpecifiersFromScope(bName);
+    QCString bName = extractClassName(rootNav);
     Debug::print(Debug::Classes,0,"  Relations: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
