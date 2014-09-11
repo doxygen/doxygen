@@ -31,6 +31,8 @@ Developers
 ---------
 * Build Status: <a href="https://travis-ci.org/doxygen/doxygen"><img src="https://secure.travis-ci.org/doxygen/doxygen.png?branch=master"/></a>
 
+* Coverity Scan Build Status: <a href="https://scan.coverity.com/projects/2860"> <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/2860/badge.svg"/> </a>
+
 * Install
   * Quick install see (./INSTALL) 
   * else http://www.doxygen.org/manual/install.html
