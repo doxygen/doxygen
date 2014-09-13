@@ -118,6 +118,7 @@ void InputString::setValue(const QString &s)
     m_str = s;
     m_value = m_str;
     updateDefault();
+    updateDependencies();
   }
 }
 void InputString::updateDefault()
@@ -171,6 +172,15 @@ void InputString::setEnabled(bool state)
   if (m_br)  m_br->setEnabled(state);
   if (m_com) m_com->setEnabled(state);
   updateDefault();
+  updateDependencies();
+}
+
+void InputString::updateDependencies()
+{
+  for (int i=0;i<m_dependencies.count();i++)
+  {
+    m_dependencies[i]->setEnabled(m_lab->isEnabled() && !m_le->text().trimmed().isEmpty());
+  }
 }
 
 void InputString::browse()

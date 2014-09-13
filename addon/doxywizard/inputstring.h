@@ -55,9 +55,9 @@ class InputString : public QObject, public Input
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
     QString templateDocs() const { return m_tdocs; }
-    void addDependency(Input *) { Q_ASSERT(false); }
+    void addDependency(Input *option) { m_dependencies+=option; }
     void setEnabled(bool);
-    void updateDependencies() {}
+    void updateDependencies();
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
@@ -91,6 +91,7 @@ class InputString : public QObject, public Input
     QString       m_id;
     bool          m_absPath;
     QString       m_tdocs;
+    QList<Input*> m_dependencies;
 };
 
 #endif
