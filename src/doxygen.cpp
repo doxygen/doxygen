@@ -4405,7 +4405,7 @@ static bool findTemplateInstanceRelation(Entry *root,
   //printf("\n");
   
   bool existingClass = (templSpec ==
-                        tempArgListToString(templateClass->templateArguments())
+                        tempArgListToString(templateClass->templateArguments(),root->lang)
                        );
   if (existingClass) return TRUE;
 
@@ -6332,7 +6332,7 @@ static void findMember(EntryNav *rootNav,
               for (;(al=alli.current());++alli)
               {
                 warnMsg+="  template ";
-                warnMsg+=tempArgListToString(al);
+                warnMsg+=tempArgListToString(al,root->lang);
                 warnMsg+='\n';
               }
             }
@@ -6355,7 +6355,7 @@ static void findMember(EntryNav *rootNav,
                   if (templAl!=0)
                   {
                     warnMsg+="  'template ";
-                    warnMsg+=tempArgListToString(templAl);
+                    warnMsg+=tempArgListToString(templAl,root->lang);
                     warnMsg+='\n';
                   }
                   warnMsg+="  ";

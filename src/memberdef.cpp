@@ -194,7 +194,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     }
     else if (cd->templateArguments())
     {
-      cName=tempArgListToString(cd->templateArguments());
+      cName=tempArgListToString(cd->templateArguments(),cd->getLanguage());
       //printf("2. cName=%s\n",cName.data());
     }
     else // no template specifier

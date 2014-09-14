@@ -854,13 +854,14 @@ void ClassDef::setIncludeFile(FileDef *fd,
 
 static void searchTemplateSpecs(/*in*/  Definition *d,
                                 /*out*/ QList<ArgumentList> &result,
-                                /*out*/ QCString &name)
+                                /*out*/ QCString &name,
+                                /*in*/  SrcLangExt lang)
 {
   if (d->definitionType()==Definition::TypeClass)
   {
     if (d->getOuterScope())
     {
-      searchTemplateSpecs(d->getOuterScope(),result,name);
+      searchTemplateSpecs(d->getOuterScope(),result,name,lang);
     }
     ClassDef *cd=(ClassDef *)d;
     if (!name.isEmpty()) name+="::";
@@ -876,7 +877,7 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
       result.append(cd->templateArguments());
       if (!isSpecialization)
       {
-        name+=tempArgListToString(cd->templateArguments());
+        name+=tempArgListToString(cd->templateArguments(),lang);
       }
     }
   }
@@ -887,11 +888,11 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
 }
 
 static void writeTemplateSpec(OutputList &ol,Definition *d,
-            const QCString &type)
+            const QCString &type,SrcLangExt lang)
 {
   QList<ArgumentList> specs;
   QCString name;
-  searchTemplateSpecs(d,specs,name);
+  searchTemplateSpecs(d,specs,name,lang);
   if (specs.count()>0) // class has template scope specifiers
   {
     ol.startSubsubsection();
@@ -962,7 +963,7 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
 
   if (getLanguage()==SrcLangExt_Cpp)
   {
-    writeTemplateSpec(ol,this,compoundTypeString());
+    writeTemplateSpec(ol,this,compoundTypeString(),getLanguage());
   }
 
   // repeat brief description
@@ -3774,7 +3775,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   //{
   //  clName = clName.left(clName.length()-2);
   //}
-  //printf("m_impl->lang=%d clName=%s\n",m_impl->lang,clName.data());
+  //printf("m_impl->lang=%d clName=%s isSpecialization=%d\n",getLanguage(),clName.data(),isSpecialization);
   scName+=clName;
   ArgumentList *al=0;
   if (templateArguments())
@@ -3784,7 +3785,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
       al = actualParams->at(*actualParamIndex);
       if (!isSpecialization)
       {
-        scName+=tempArgListToString(al);
+        scName+=tempArgListToString(al,lang);
       }
       (*actualParamIndex)++;
     }
@@ -3792,7 +3793,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
     {
       if (!isSpecialization)
       {
-        scName+=tempArgListToString(templateArguments());
+        scName+=tempArgListToString(templateArguments(),lang);
       }
     }
   }

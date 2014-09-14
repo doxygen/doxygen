@@ -2190,7 +2190,7 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals
   return removeRedundantWhiteSpace(result);
 }
 
-QCString tempArgListToString(ArgumentList *al)
+QCString tempArgListToString(ArgumentList *al,SrcLangExt lang)
 {
   QCString result;
   if (al==0) return result;
@@ -2208,6 +2208,10 @@ QCString tempArgListToString(ArgumentList *al)
       else if (a->type.left(3)=="in") // C# contravariance
       {
         result+="in ";
+      }
+      if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+      {
+        result+=a->type+" ";
       }
       result+=a->name;
     }
