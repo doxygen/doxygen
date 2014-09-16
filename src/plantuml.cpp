@@ -79,6 +79,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
   pumlArgs+=" \"";
   pumlArgs+=baseName;
   pumlArgs+=".pu\" ";
+  pumlArgs+="-charset " + Config_getString("INPUT_ENCODING") + " ";
   int exitCode;
   //printf("*** running: %s %s outDir:%s %s\n",pumlExe.data(),pumlArgs.data(),outDir,outFile);
   msg("Running PlantUML on generated file %s.pu\n",baseName);
