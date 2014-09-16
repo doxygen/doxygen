@@ -2444,7 +2444,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <StaticAssert>"("                       {
 					  lastSkipRoundContext = FindMembers;
-					  roundCount=1;
+					  roundCount=0;
                                           BEGIN(SkipRound);
                                         }
 <StaticAssert>{BN}+                     { lineCount(); }
