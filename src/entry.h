@@ -133,7 +133,7 @@ class Entry
     static const uint64 Enum            = (1ULL<<12); // for Java-style enums
     static const uint64 Service         = (1ULL<<13); // UNO IDL
     static const uint64 Singleton       = (1ULL<<14); // UNO IDL
-    static const uint64 ForwardDecl     = (1ULL<<14); // forward declarad template classes
+    static const uint64 ForwardDecl     = (1ULL<<15); // forward declarad template classes
 
     // member specifiers (add new items to the beginning)
     static const uint64 PrivateGettable     = (1ULL<<20); // C# private getter
