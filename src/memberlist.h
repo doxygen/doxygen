@@ -55,12 +55,11 @@ class MemberList : public QList<MemberDef>
     void countDocMembers(bool countEnumValues=FALSE);
     int countInheritableMembers(ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,
-               GroupDef *gd,const DefinitionIntf::DefType compoundType,
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd, GroupDef *gd,
                ClassDef *inheritedFrom,const char *inheritId);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *title,const char *subtitle,const DefinitionIntf::DefType compoundType,
+               const char *title,const char *subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
                ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods);
     void writeDocumentation(OutputList &ol,const char *scopeName,
@@ -68,6 +67,7 @@ class MemberList : public QList<MemberDef>
     void writeSimpleDocumentation(OutputList &ol,Definition *container);
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, Definition *container);
+    void writeTagFile(FTextStream &);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
     void setInGroup(bool inGroup) { m_inGroup=inGroup; }

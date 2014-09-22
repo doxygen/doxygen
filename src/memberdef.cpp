@@ -576,8 +576,6 @@ class MemberDefImpl
                               // FALSE => block is put before declaration.
     ClassDef *category;
     MemberDef *categoryRelation;
-
-    unsigned tagDataWritten;
 };
 
 MemberDefImpl::MemberDefImpl() :
@@ -707,7 +705,6 @@ void MemberDefImpl::init(Definition *def,
   hasDocumentedReturnType = FALSE;
   docProvider = 0;
   isDMember = def->getDefFileName().right(2).lower()==".d";
-  tagDataWritten = 0; // save separate written status for file, group, class, etc.
 }
 
 
@@ -1413,8 +1410,7 @@ QCString MemberDef::getDeclType() const
 
 void MemberDef::writeDeclaration(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup, const DefType compoundType,
-               ClassDef *inheritedFrom,const char *inheritId)
+               bool inGroup, ClassDef *inheritedFrom,const char *inheritId)
 {
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",qualifiedName().data(),inGroup);
 
@@ -1426,7 +1422,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
-  _writeTagData(compoundType);
+  //_writeTagData(compoundType);
   _addToSearchIndex();
 
   QCString cname  = d->name();
@@ -1536,7 +1532,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                     ltype.left(i),           // text
                     FALSE                    // autoBreak
                    );
-        getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd,compoundType);
+        getAnonymousEnumType()->writeEnumDeclaration(ol,cd,nd,fd,gd);
         //ol+=*getAnonymousEnumType()->enumDecl();
         linkifyText(TextGeneratorOLImpl(ol),d,m_impl->fileDef,this,ltype.right(ltype.length()-i-l),TRUE);
       }
@@ -2618,7 +2614,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),showInline);
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.left(i));
-        vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef(),definitionType());
+        vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),this,ldef.right(ldef.length()-i-l));
 
         found=TRUE;
@@ -3554,89 +3550,83 @@ Specifier MemberDef::virtualness(int count) const
   return v;
 }
 
-void MemberDef::_writeTagData(const DefType compoundType)
+void MemberDef::writeTagFile(FTextStream &tagFile)
 {
-  unsigned typeMask = 1 << compoundType;
-  if ((m_impl->tagDataWritten) & typeMask) return; // member already written for this type
-  if (m_impl->mtype==MemberType_EnumValue && m_impl->enumScope &&
-      m_impl->enumScope->isStrong()) return; // enum value is part of enum
-  static bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
-  // write tag file information of this member
-  if (generateTagFile && isLinkableInProject())
+  if (!isLinkableInProject()) return;
+  tagFile << "    <member kind=\"";
+  switch (m_impl->mtype)
   {
-    Doxygen::tagFile << "    <member kind=\"";
-    switch (m_impl->mtype)
+    case MemberType_Define:      tagFile << "define";      break;
+    case MemberType_EnumValue:   tagFile << "enumvalue";   break;
+    case MemberType_Property:    tagFile << "property";    break;
+    case MemberType_Event:       tagFile << "event";       break;
+    case MemberType_Variable:    tagFile << "variable";    break;
+    case MemberType_Typedef:     tagFile << "typedef";     break;
+    case MemberType_Enumeration: tagFile << "enumeration"; break;
+    case MemberType_Function:    tagFile << "function";    break;
+    case MemberType_Signal:      tagFile << "signal";      break;
+    case MemberType_Friend:      tagFile << "friend";      break;
+    case MemberType_DCOP:        tagFile << "dcop";        break;
+    case MemberType_Slot:        tagFile << "slot";        break;
+    case MemberType_Interface:   tagFile << "interface";   break;
+    case MemberType_Service:     tagFile << "service";     break;
+  }
+  if (m_impl->prot!=Public)
+  {
+    tagFile << "\" protection=\"";
+    if (m_impl->prot==Protected)    tagFile << "protected";
+    else if (m_impl->prot==Package) tagFile << "package";
+    else /* Private */              tagFile << "private";
+  }
+  if (m_impl->virt!=Normal)
+  {
+    tagFile << "\" virtualness=\"";
+    if (m_impl->virt==Virtual) tagFile << "virtual";
+    else /* Pure */            tagFile << "pure";
+  }
+  if (isStatic())
+  {
+    tagFile << "\" static=\"yes";
+  }
+  tagFile << "\">" << endl;
+  if (typeString()!=QCString("@"))
+  {
+    tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
+  }
+  tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
+  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
+  tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+  QCString idStr = id();
+  if (!idStr.isEmpty())
+  {
+    tagFile << "      <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+  }
+  tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
+  if (isStrong())
+  {
+    MemberList *fmdl=m_impl->enumFields;
+    if (fmdl)
     {
-      case MemberType_Define:      Doxygen::tagFile << "define";      break;
-      case MemberType_EnumValue:   Doxygen::tagFile << "enumvalue";   break;
-      case MemberType_Property:    Doxygen::tagFile << "property";    break;
-      case MemberType_Event:       Doxygen::tagFile << "event";       break;
-      case MemberType_Variable:    Doxygen::tagFile << "variable";    break;
-      case MemberType_Typedef:     Doxygen::tagFile << "typedef";     break;
-      case MemberType_Enumeration: Doxygen::tagFile << "enumeration"; break;
-      case MemberType_Function:    Doxygen::tagFile << "function";    break;
-      case MemberType_Signal:      Doxygen::tagFile << "signal";      break;
-      case MemberType_Friend:      Doxygen::tagFile << "friend";      break;
-      case MemberType_DCOP:        Doxygen::tagFile << "dcop";        break;
-      case MemberType_Slot:        Doxygen::tagFile << "slot";        break;
-      case MemberType_Interface:   Doxygen::tagFile << "interface";   break;
-      case MemberType_Service:     Doxygen::tagFile << "service";     break;
-    }
-    if (m_impl->prot!=Public)
-    {
-      Doxygen::tagFile << "\" protection=\"";
-      if (m_impl->prot==Protected)    Doxygen::tagFile << "protected";
-      else if (m_impl->prot==Package) Doxygen::tagFile << "package";
-      else /* Private */              Doxygen::tagFile << "private";
-    }
-    if (m_impl->virt!=Normal)
-    {
-      Doxygen::tagFile << "\" virtualness=\"";
-      if (m_impl->virt==Virtual) Doxygen::tagFile << "virtual";
-      else /* Pure */            Doxygen::tagFile << "pure";
-    }
-    if (isStatic())
-    {
-      Doxygen::tagFile << "\" static=\"yes";
-    }
-    Doxygen::tagFile << "\">" << endl;
-    Doxygen::tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
-    Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
-    Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
-    QCString idStr = id();
-    if (!idStr.isEmpty())
-    {
-      Doxygen::tagFile << "      <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
-    }
-    Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
-    if (isStrong())
-    {
-      MemberList *fmdl=m_impl->enumFields;
-      if (fmdl)
+      MemberListIterator mli(*fmdl);
+      MemberDef *fmd;
+      for (mli.toFirst();(fmd=mli.current());++mli)
       {
-        MemberListIterator mli(*fmdl);
-        MemberDef *fmd;
-        for (mli.toFirst();(fmd=mli.current());++mli)
+        if (!fmd->isReference())
         {
-          if (!fmd->isReference())
+          tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
+          tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
+          QCString idStr = fmd->id();
+          if (!idStr.isEmpty())
           {
-            Doxygen::tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
-            Doxygen::tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
-            QCString idStr = fmd->id();
-            if (!idStr.isEmpty())
-            {
-              Doxygen::tagFile << "\" clangid=\"" << convertToXML(idStr);
-            }
-            Doxygen::tagFile  << "\">" << convertToXML(fmd->name()) << "</enumvalue>" << endl;
+            tagFile << "\" clangid=\"" << convertToXML(idStr);
           }
+          tagFile  << "\">" << convertToXML(fmd->name()) << "</enumvalue>" << endl;
         }
       }
     }
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "    </member>" << endl;
   }
-  m_impl->tagDataWritten |= typeMask;
+  writeDocAnchorsToTagFile(tagFile);
+  tagFile << "    </member>" << endl;
 }
 
 void MemberDef::_computeIsConstructor()
@@ -3735,8 +3725,7 @@ bool MemberDef::isDestructor() const
 }
 
 void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
-     ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-     const DefType compoundType)
+     ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
 {
   int enumMemCount=0;
 
@@ -3763,7 +3752,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
   {
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
-      _writeTagData(compoundType);
+      //_writeTagData(compoundType);
       _addToSearchIndex();
       writeLink(typeDecl,cd,nd,fd,gd);
     }
@@ -3812,7 +3801,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
 
           if (fmd->hasDocumentation()) // enum value has docs
           {
-            fmd->_writeTagData(compoundType);
+            //fmd->_writeTagData(compoundType);
             fmd->_addToSearchIndex();
             fmd->writeLink(typeDecl,cd,nd,fd,gd);
           }

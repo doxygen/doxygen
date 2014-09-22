@@ -259,6 +259,85 @@ bool NamespaceDef::hasDetailedDescription() const
           !documentation().isEmpty());
 }
 
+void NamespaceDef::writeTagFile(FTextStream &tagFile)
+{
+  tagFile << "  <compound kind=\"namespace\">" << endl;
+  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  QCString idStr = id();
+  if (!idStr.isEmpty())
+  {
+    tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+  }
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    switch (lde->kind())
+    {
+      case LayoutDocEntry::NamespaceNestedNamespaces:
+        {
+          if (namespaceSDict)
+          {
+            SDict<NamespaceDef>::Iterator ni(*namespaceSDict);
+            NamespaceDef *nd;
+            for (ni.toFirst();(nd=ni.current());++ni)
+            {
+              if (nd->isLinkableInProject())
+              {
+                tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+              }
+            }
+          }
+        }
+        break;
+      case LayoutDocEntry::NamespaceClasses:
+        {
+          if (classSDict)
+          {
+            SDict<ClassDef>::Iterator ci(*classSDict);
+            ClassDef *cd;
+            for (ci.toFirst();(cd=ci.current());++ci)
+            {
+              if (cd->isLinkableInProject())
+              {
+                tagFile << "    <class kind=\"" << cd->compoundTypeString()
+                        << "\">" << convertToXML(cd->name()) << "</class>" << endl;
+              }
+            }
+          }
+        }
+      case LayoutDocEntry::MemberDecl:
+        {
+          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          MemberList * ml = getMemberList(lmd->type);
+          if (ml)
+          {
+            ml->writeTagFile(tagFile);
+          }
+        }
+        break;
+      case LayoutDocEntry::MemberGroups:
+        {
+          if (memberGroupSDict)
+          {
+            MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+            MemberGroup *mg;
+            for (;(mg=mgli.current());++mgli)
+            {
+              mg->writeTagFile(tagFile);
+            }
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  writeDocAnchorsToTagFile(tagFile);
+  tagFile << "  </compound>" << endl;
+}
 
 void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
@@ -496,19 +575,6 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
 
-  bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
-  if (generateTagFile)
-  {
-    Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
-    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-    QCString idStr = id();
-    if (!idStr.isEmpty())
-    {
-      Doxygen::tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
-    }
-  }
-
   Doxygen::indexList->addIndexItem(this,0);
 
   //---------------------------------------- start flexible part -------------------------------
@@ -618,12 +684,6 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.endContents();
 
   endFileWithNavPath(this,ol);
-
-  if (generateTagFile)
-  {
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
-  }
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -939,10 +999,6 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,
         name = nd->displayName();
       }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,name);
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && nd->isLinkableInProject()) 
-      {
-        Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
-      }
       ol.endMemberItem();
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {

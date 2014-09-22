@@ -39,6 +39,7 @@ class DirList;
 class FTVHelp;
 class Entry;
 class MemberDef;
+class FTextStream;
 
 /** A model of a group of symbols. */
 class GroupDef : public Definition
@@ -67,6 +68,7 @@ class GroupDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
+    void writeTagFile(FTextStream &);
     int  countMembers() const;
     bool isLinkableInProject() const;
     bool isLinkable() const;

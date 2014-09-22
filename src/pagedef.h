@@ -23,6 +23,7 @@
 
 class PageSDict;
 class OutputList;
+class FTextStream;
 
 /** @brief A model of a page symbol. */
 class PageDef : public Definition
@@ -64,6 +65,7 @@ class PageDef : public Definition
     QCString displayName(bool=TRUE) const { return !m_title.isEmpty() ? m_title : Definition::name(); }
 
     void writeDocumentation(OutputList &ol);
+    void writeTagFile(FTextStream &);
 
   private:
     void setNestingLevel(int l);

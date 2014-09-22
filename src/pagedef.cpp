@@ -99,6 +99,30 @@ bool PageDef::hasParentPage() const
          getOuterScope()->definitionType()==Definition::TypePage;
 }
 
+void PageDef::writeTagFile(FTextStream &tagFile)
+{
+  bool found = name()=="citelist";
+  QDictIterator<RefList> rli(*Doxygen::xrefLists);
+  RefList *rl;
+  for (rli.toFirst();(rl=rli.current()) && !found;++rli)
+  {
+    if (rl->listName()==name())
+    {
+      found=TRUE;
+      break;
+    }
+  }
+  if (!found) // not one of the generated related pages
+  {
+    tagFile << "  <compound kind=\"page\">" << endl;
+    tagFile << "    <name>" << name() << "</name>" << endl;
+    tagFile << "    <title>" << convertToXML(title()) << "</title>" << endl;
+    tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << "</filename>" << endl;
+    writeDocAnchorsToTagFile(tagFile);
+    tagFile << "  </compound>" << endl;
+  }
+}
+
 void PageDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
@@ -199,30 +223,6 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   ol.popGeneratorState();
   //1.}
-
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-  {
-    bool found = name()=="citelist";
-    QDictIterator<RefList> rli(*Doxygen::xrefLists);
-    RefList *rl;
-    for (rli.toFirst();(rl=rli.current()) && !found;++rli)
-    {
-      if (rl->listName()==name())
-      {
-        found=TRUE;
-        break;
-      }
-    }
-    if (!found) // not one of the generated related pages
-    {
-      Doxygen::tagFile << "  <compound kind=\"page\">" << endl;
-      Doxygen::tagFile << "    <name>" << name() << "</name>" << endl;
-      Doxygen::tagFile << "    <title>" << convertToXML(title()) << "</title>" << endl;
-      Doxygen::tagFile << "    <filename>" << getOutputFileBase() << "</filename>" << endl;
-      writeDocAnchorsToTagFile();
-      Doxygen::tagFile << "  </compound>" << endl;
-    }
-  }
 
   Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title()));
 }
