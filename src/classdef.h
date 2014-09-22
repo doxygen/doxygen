@@ -46,6 +46,7 @@ class StringDict;
 struct IncludeInfo;
 class ClassDefImpl;
 class ArgumentList;
+class FTextStream;
 
 /** A class representing of a compound symbol.
  *
@@ -391,6 +392,7 @@ class ClassDef : public Definition
                               ClassDef *inheritedFrom,const QCString &inheritId);
     int countMembersIncludingGrouped(MemberListType lt,ClassDef *inheritedFrom,bool additional);
     int countInheritanceNodes();
+    void writeTagFile(FTextStream &);
     
     bool visited;
 
@@ -400,7 +402,6 @@ class ClassDef : public Definition
     void showUsedFiles(OutputList &ol);
 
   private: 
-    void writeTagFileMarker();
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle);
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);

@@ -301,8 +301,7 @@ bool MemberList::declVisible() const
 
 void MemberList::writePlainDeclarations(OutputList &ol,
                        ClassDef *cd,NamespaceDef *nd,FileDef *fd,
-                       GroupDef *gd, const DefinitionIntf::DefType compoundType,
-                       ClassDef *inheritedFrom,const char *inheritId
+                       GroupDef *gd,ClassDef *inheritedFrom,const char *inheritId
                       )
 {
   //printf("----- writePlainDeclaration() ----\n");
@@ -344,7 +343,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
         case MemberType_Event:  
           {
             if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             break;
           }
         case MemberType_Enumeration: 
@@ -386,7 +385,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               }
               ol.writeString("enum ");
               ol.insertMemberAlign();
-              md->writeEnumDeclaration(ol,cd,nd,fd,gd,compoundType);
+              md->writeEnumDeclaration(ol,cd,nd,fd,gd);
               if (!detailsLinkable)
               {
                 ol.endDoxyAnchor(md->getOutputFileBase(),md->anchor());
@@ -431,7 +430,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.startMemberList();
               first=FALSE;
             }
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             break;
           }
         case MemberType_EnumValue: 
@@ -440,7 +439,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
-              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType,inheritedFrom,inheritId);
+              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,inheritedFrom,inheritId);
             }
           }
           break;
@@ -466,7 +465,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             ol.startMemberList();
             first=FALSE;
           }
-          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup,compoundType);
+          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         }
         md->setFromAnonymousScope(TRUE);
       }
@@ -490,7 +489,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
  *  @param gd non-null if this list is part of group documentation.
  *  @param title Title to use for the member list.
  *  @param subtitle Sub title to use for the member list.
- *  @param compoundType Container type for this member list.
  *  @param showEnumValues Obsolete, always set to FALSE.
  *  @param showInline if set to TRUE if title is rendered differently
  *  @param inheritedFrom if not 0, the list is shown inside the
@@ -500,8 +498,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
  */
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-             const char *title,const char *subtitle,
-             const DefinitionIntf::DefType compoundType,bool showEnumValues,
+             const char *title,const char *subtitle, bool showEnumValues,
              bool showInline,ClassDef *inheritedFrom,MemberListType lt)
 {
   (void)showEnumValues; // unused
@@ -587,7 +584,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
     else
     {
-      writePlainDeclarations(ol,cd,nd,fd,gd,compoundType,inheritedFrom,inheritId);
+      writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
@@ -943,6 +940,31 @@ QCString MemberList::listTypeAsString(MemberListType type)
   return "";
 }
 
+void MemberList::writeTagFile(FTextStream &tagFile)
+{
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for ( ; (md=mli.current()) ; ++mli)
+  {
+    if (md->getLanguage()!=SrcLangExt_VHDL)
+    {
+      md->writeTagFile(tagFile);
+    }
+    else
+    {
+      VhdlDocGen::writeTagFile(md,tagFile);
+    }
+  }
+  if (memberGroupList)
+  {
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->writeTagFile(tagFile);
+    }
+  }
+}
 
 //--------------------------------------------------------------------------
 

@@ -39,6 +39,7 @@ class NamespaceSDict;
 class MemberGroupSDict;
 class PackageDef;
 class DirDef;
+class FTextStream;
 
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
@@ -146,6 +147,7 @@ class FileDef : public Definition
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
     void writeSummaryLinks(OutputList &ol);
+    void writeTagFile(FTextStream &t);
 
     void startParsing();
     void writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu);

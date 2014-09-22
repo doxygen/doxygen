@@ -142,7 +142,6 @@ QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
 PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
-FTextStream      Doxygen::tagFile;
 NamespaceDef    *Doxygen::globalScope = 0;
 QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
@@ -1667,26 +1666,6 @@ static void processTagLessClasses(ClassDef *rootCd,
         }
       }
     }
-  }
-}
-
-static void writeMainPageTagFileData()
-{
-  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
-  {
-    Doxygen::tagFile << "  <compound kind=\"page\">" << endl
-                     << "    <name>"
-                     << convertToXML(Doxygen::mainPage->name())
-                     << "</name>" << endl
-                     << "    <title>"
-                     << convertToXML(Doxygen::mainPage->title())
-                     << "</title>" << endl
-                     << "    <filename>"
-                     << convertToXML(Doxygen::mainPage->getOutputFileBase())
-                     << "</filename>" << endl;
-
-    Doxygen::mainPage->writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
   }
 }
 
@@ -10554,6 +10533,87 @@ static void stopDoxygen(int)
 }
 #endif
 
+static void writeTagFile()
+{
+  QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
+  if (generateTagFile.isEmpty()) return;
+
+  QFile tag(generateTagFile);
+  if (!tag.open(IO_WriteOnly))
+  {
+    err("cannot open tag file %s for writing\n",
+        generateTagFile.data()
+       );
+    return;
+  }
+  FTextStream tagFile(&tag);
+  tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
+  tagFile << "<tagfile>" << endl;
+
+  // for each file
+  FileNameListIterator fnli(*Doxygen::inputNameList);
+  FileName *fn;
+  for (fnli.toFirst();(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (fni.toFirst();(fd=fni.current());++fni)
+    {
+      fd->writeTagFile(tagFile);
+    }
+  }
+  // for each class
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd;
+  for ( ; (cd=cli.current()) ; ++cli )
+  {
+    cd->writeTagFile(tagFile);
+  }
+  // for each namespace
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for ( ; (nd=nli.current()) ; ++nli )
+  {
+    nd->writeTagFile(tagFile);
+  }
+  // for each group
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    gd->writeTagFile(tagFile);
+  }
+  // for each page
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  {
+    pd->writeTagFile(tagFile);
+  }
+  if (Doxygen::mainPage) Doxygen::mainPage->writeTagFile(tagFile);
+
+  /*
+  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
+  {
+    tagFile << "  <compound kind=\"page\">" << endl
+                     << "    <name>"
+                     << convertToXML(Doxygen::mainPage->name())
+                     << "</name>" << endl
+                     << "    <title>"
+                     << convertToXML(Doxygen::mainPage->title())
+                     << "</title>" << endl
+                     << "    <filename>"
+                     << convertToXML(Doxygen::mainPage->getOutputFileBase())
+                     << "</filename>" << endl;
+
+    mainPage->writeDocAnchorsToTagFile();
+    tagFile << "  </compound>" << endl;
+  }
+  */
+
+  tagFile << "</tagfile>" << endl;
+}
+
 static void exitDoxygen()
 {
   if (!g_successfulRun)  // premature exit
@@ -11327,24 +11387,6 @@ void generateOutput()
    *                        Generate documentation                          *
    **************************************************************************/
 
-  QFile *tag=0;
-  QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
-  if (!generateTagFile.isEmpty())
-  {
-    tag=new QFile(generateTagFile);
-    if (!tag->open(IO_WriteOnly))
-    {
-      err("cannot open tag file %s for writing\n",
-          generateTagFile.data()
-         );
-      cleanUpDoxygen();
-      exit(1);
-    }
-    Doxygen::tagFile.setDevice(tag);
-    Doxygen::tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
-    Doxygen::tagFile << "<tagfile>" << endl;
-  }
-
   if (generateHtml)  writeDoxFont(Config_getString("HTML_OUTPUT"));
   if (generateLatex) writeDoxFont(Config_getString("LATEX_OUTPUT"));
   if (generateRtf)   writeDoxFont(Config_getString("RTF_OUTPUT"));
@@ -11440,8 +11482,6 @@ void generateOutput()
     }
   }
   
-  writeMainPageTagFileData();
-
   if (g_outputList->count()>0)
   {
     writeIndexHierarchy(*g_outputList);
@@ -11451,11 +11491,9 @@ void generateOutput()
   Doxygen::indexList->finalize();
   g_s.end();
 
-  if (!generateTagFile.isEmpty())
-  {
-    Doxygen::tagFile << "</tagfile>" << endl;
-    delete tag;
-  }
+  g_s.begin("writing tag file...\n");
+  writeTagFile();
+  g_s.end();
 
   if (Config_getBool("DOT_CLEANUP"))
   {
