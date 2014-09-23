@@ -3300,7 +3300,7 @@ to be found in the default search path.
 <![CDATA[
  The \c DIAFILE_DIRS tag can be used to specify one or more directories that 
  contain dia files that are included in the documentation (see the
- \ref cmdmscfile "\\diafile" command).
+ \ref cmddiafile "\\diafile" command).
 ]]>
       </docs>
     </option>
