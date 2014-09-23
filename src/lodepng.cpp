@@ -4125,9 +4125,12 @@ unsigned LodePNG_loadFile(unsigned char** out, size_t* outsize, const char* file
   rewind(file);
   
   /*read contents of the file into the vector*/
-  *outsize = 0;
-  *out = (unsigned char*)malloc((size_t)size);
-  if(size && (*out)) (*outsize) = fread(*out, 1, (size_t)size, file);
+  if (size>0)
+  {
+    *outsize = 0;
+    *out = (unsigned char*)malloc((size_t)size);
+    if(size && (*out)) (*outsize) = fread(*out, 1, (size_t)size, file);
+  }
 
   fclose(file);
   if(!(*out) && size) return 80; /*the above malloc failed*/
