@@ -1329,7 +1329,7 @@ void DocbookDocVisitor::startDiaFile(const QCString &fileName,
   {
     baseName=baseName.left(i);
   }
-  baseName.prepend("msc_");
+  baseName.prepend("dia_");
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
   m_t << "<para>" << endl;
