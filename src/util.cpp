@@ -3236,7 +3236,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   // all arguments.
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
-  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  for (;(srcA=srcAli.current()) && (dstA=dstAli.current());++srcAli,++dstAli)
   { 
     if (!matchArgument(srcA,dstA,className,namespaceName,
           usingNamespaces,usingClasses))
