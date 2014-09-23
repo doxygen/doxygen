@@ -169,10 +169,16 @@ int portable_system(const char *command,const char *args,bool commandHasConsole)
     else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
     {
       WaitForSingleObject(sInfo.hProcess,INFINITE); 
+      /* get process exit code */
+      DWORD exitCode;
+      if (!GetExitCodeProcess(sInfo.hProcess,&exitCode))
+      {
+        exitCode = -1;
+      }
       CloseHandle(sInfo.hProcess);
+      return exitCode;
     }
   }
-  return 0;
 #endif
 
 }
