@@ -1952,7 +1952,7 @@ class TranslatorChinesetraditional : public Translator
       // single is true implies a single file
       QCString result=(QCString)"本服務的文件由以下的檔案"
                                 "所產生";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
     /** UNO IDL singleton page */
@@ -1961,7 +1961,7 @@ class TranslatorChinesetraditional : public Translator
       // single is true implies a single file
       QCString result=(QCString)"本singleton的文件由下面的檔案"
                                 "所產生";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
 
