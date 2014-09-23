@@ -1095,7 +1095,7 @@ bool DotFilePatcher::run()
         //   mapId,m_patchFile.data(),map->mapFile.data());
         if (!writeVecGfxFigure(t,map->label,map->mapFile))
         {
-          err("problem writing Gfx %d figure!\n",t);
+          err("problem writing FIG %d figure!\n",mapId);
           return FALSE;
         }
       }

@@ -1947,7 +1947,7 @@ class TranslatorChinesetraditional : public Translator
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool)
     {
       // single is true implies a single file
       QCString result=(QCString)"本服務的文件由以下的檔案"
@@ -1956,7 +1956,7 @@ class TranslatorChinesetraditional : public Translator
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool)
     {
       // single is true implies a single file
       QCString result=(QCString)"本singleton的文件由下面的檔案"

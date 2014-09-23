@@ -923,9 +923,9 @@ static int countClassesInTreeList(const ClassSDict &cl)
 {
   int count=0;
   ClassSDict::Iterator cli(cl);
-  for (;cli.current(); ++cli)
+  ClassDef *cd;
+  for (;(cd=cli.current());++cli)
   {
-    ClassDef *cd=cli.current();
     if (!hasVisibleRoot(cd->baseClasses())) // filter on root classes
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
