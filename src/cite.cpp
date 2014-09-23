@@ -303,7 +303,6 @@ void CiteDict::generatePage() const
   thisDir.remove(citeListFile);
   thisDir.remove(doxygenBstFile);
   thisDir.remove(bib2xhtmlFile);
-  bibdata = citeDataList.first();
   // we might try to remove too many files as empty files didn't get a coresponding new file
   // but the remove function does not emit an error for it and we don't catch the error return
   // so no problem.
