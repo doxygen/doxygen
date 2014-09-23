@@ -3669,7 +3669,7 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
   // all arguments.
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
-  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  for (;(srcA=srcAli.current()) && (dstA=dstAli.current());++srcAli,++dstAli)
   { 
     if (!matchArgument2(srcScope,srcFileScope,srcA,
           dstScope,dstFileScope,dstA)
