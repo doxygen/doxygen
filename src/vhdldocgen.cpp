@@ -941,9 +941,8 @@ MemberDef* VhdlDocGen::findFunction(const QList<Argument> &ql,
         Argument *arg,*arg1;
         int equ=0;
 
-        for (;(arg=ali.current());++ali)
+        for (;(arg=ali.current()) && (arg1=ali1.current());++ali,++ali1)
         {
-          arg1=ali1.current(); ++ali1;
           equ+=abs(compareString(arg->type,arg1->type));
 
           QCString s1=arg->type;
