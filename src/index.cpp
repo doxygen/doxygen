@@ -800,9 +800,9 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
 static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FTVHelp* ftv,bool addToIndex)
 {
   ClassSDict::Iterator cli(*cl);
-  for (;cli.current(); ++cli)
+  ClassDef *cd;
+  for (;(cd=cli.current());++cli)
   {
-    ClassDef *cd=cli.current();
     //printf("class %s hasVisibleRoot=%d isVisibleInHierarchy=%d\n",
     //             cd->name().data(),
     //              hasVisibleRoot(cd->baseClasses()),
