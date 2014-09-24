@@ -299,11 +299,12 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         static int mscindex = 1;
         QCString baseName(4096);
 
-        baseName.sprintf("%s%d", 
+        baseName.sprintf("%s%d%s",
             (Config_getString("RTF_OUTPUT")+"/inline_mscgraph_").data(), 
-            mscindex++
+            mscindex++,
+            ".msc"
            );
-        QFile file(baseName+".msc");
+        QFile file(baseName);
         if (!file.open(IO_WriteOnly))
         {
           err("Could not open file %s for writing\n",baseName.data());
@@ -1685,7 +1686,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName)
     baseName=baseName.right(baseName.length()-i-1);
   } 
   QCString outDir = Config_getString("RTF_OUTPUT");
-  writeMscGraphFromFile(fileName+".msc",outDir,baseName,MSC_BITMAP);
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;
@@ -1705,7 +1706,7 @@ void RTFDocVisitor::writeDiaFile(const QCString &fileName)
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString("RTF_OUTPUT");
-  writeDiaGraphFromFile(fileName+".dia",outDir,baseName,DIA_BITMAP);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;

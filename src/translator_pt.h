@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ * Copyright (C) 1997-2013 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -24,6 +24,9 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20131129:
+ *  - Updated to 1.8.5;
+ *  - Translation in the method trFileMembers() fixed;
  * 20110628:
  *	- Updated to 1.7.5;
  *      - All obsolete methods have been removed;
@@ -52,7 +55,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public TranslatorAdapter_1_8_0
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -216,7 +219,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_0
       }
       else
       {
-        return "Ficheiros membro";
+        return "Membros dos Ficheiros";
       }
     }
 
@@ -442,7 +445,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_0
      *  list of (global) variables
      */
     QCString trEnumerationValues()
-    { return "Valores da enumeração"; }
+    { return "Valores de enumerações"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
@@ -1835,6 +1838,185 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_0
     /*! Header for the graph showing the directory dependencies */
     virtual QCString trDirDepGraph(const char *name)
     { return QCString("Grafo de dependências do directório ")+name+":"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Detail level selector shown for hierarchical indices */
+    virtual QCString trDetailLevel()
+    { return "nível de detalhes"; }
+
+    /*! Section header for list of template parameters */
+    virtual QCString trTemplateParameters()
+    { return "Parâmetros de template"; }
+
+    /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
+    virtual QCString trAndMore(const QCString &number)
+    { return "e "+number+" mais..."; }
+
+    /*! Used file list for a Java enum */
+    virtual QCString trEnumGeneratedFromFiles(bool single)
+    { QCString result = "A documentação para esta enumeração foi gerada a partir";
+      if (single) {
+        result += "do seguinte ficheiro:";
+      } else {
+        result += "dos seguintes ficheiros:";
+      }
+      return result;
+    }
+
+    /*! Header of a Java enum page (Java enums are represented as classes). */
+    virtual QCString trEnumReference(const char *name)
+    {
+      QCString result = "Referência da enumeração ";
+      return result + name;
+    }
+
+    /*! Used for a section containing inherited members */
+    virtual QCString trInheritedFrom(const char *members,const char *what)
+    { return QCString(members)+" herdados de "+what; }
+
+    /*! Header of the sections with inherited members specific for the
+     *  base class(es)
+     */
+    virtual QCString trAdditionalInheritedMembers()
+    { return "Outros membros herdados"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "ativar" : "desativar";
+      return "clique para "+opt+" a sincronização do painel";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "Provido pela categoria @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "estende a classe @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Métodos de classe";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Métodos de instância";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Documentação do método";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      // I'm not sure how to accurately translate it
+      return "Visão geral do design";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Interfaces Exportadas"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Serviços Incluídos"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Grupos de Constantes"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result = "Referência do grupo de constantes ";
+      result += namespaceName;
+      return result;
+    }
+
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result = "Referência do serviço ";
+      result += sName;
+      return result;
+    }
+
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result = "Referência do Singleton ";
+      result += sName;
+      return result;
+    }
+
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"A documentação para este serviço "
+                                "foi gerada a partir ";
+      if (single) {
+        result+="do seguinte ficheiro:";
+      } else {
+        result+="dos: seguintes ficheiros:";
+      }
+      return result;
+    }
+
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"A documentação para este singleton "
+                                "foi gerada a partir ";
+      if (single) {
+        result+="do seguinte ficheiro:";
+      } else {
+        result+="dos: seguintes ficheiros:";
+      }
+
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
 };
 
 #endif

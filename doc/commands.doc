@@ -2147,7 +2147,8 @@ Commands for displaying examples
  \addindex \\snippet
  Where the \ref cmdinclude "\\include" command can be used to include
  a complete file as source code, this command can be used to quote only
- a fragment of a source file.
+ a fragment of a source file. In case `this` is used as <file-name> the
+ current file is taken as file to take the snippet from.
 
  For example, the putting the following command in the documentation,
  references a snippet in file \c example.cpp residing in a subdirectory 

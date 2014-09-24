@@ -2245,7 +2245,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers>"Q_OBJECT"			{ // Qt object macro
   					}
 <FindMembers>"Q_PROPERTY"		{ // Qt property declaration
-					  //current->protection = protection = Public ; // see bug734245
+					  current->protection = Public ; // see bug734245 & bug735462
   					  current->mtype = mtype = Property;
 					  current->type.resize(0);
   					  BEGIN(QtPropType);
@@ -2444,7 +2444,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <StaticAssert>"("                       {
 					  lastSkipRoundContext = FindMembers;
-					  roundCount=1;
+					  roundCount=0;
                                           BEGIN(SkipRound);
                                         }
 <StaticAssert>{BN}+                     { lineCount(); }

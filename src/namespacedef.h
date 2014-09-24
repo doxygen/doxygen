@@ -33,6 +33,7 @@ class MemberDef;
 class NamespaceList;
 class MemberGroupSDict;
 class NamespaceSDict;
+class FTextStream;
 
 /** A model of a namespace symbol. */
 class NamespaceDef : public Definition
@@ -51,6 +52,7 @@ class NamespaceDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
+    void writeTagFile(FTextStream &);
 
     void insertClass(ClassDef *cd);
     void insertNamespace(NamespaceDef *nd);

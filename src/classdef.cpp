@@ -854,13 +854,14 @@ void ClassDef::setIncludeFile(FileDef *fd,
 
 static void searchTemplateSpecs(/*in*/  Definition *d,
                                 /*out*/ QList<ArgumentList> &result,
-                                /*out*/ QCString &name)
+                                /*out*/ QCString &name,
+                                /*in*/  SrcLangExt lang)
 {
   if (d->definitionType()==Definition::TypeClass)
   {
     if (d->getOuterScope())
     {
-      searchTemplateSpecs(d->getOuterScope(),result,name);
+      searchTemplateSpecs(d->getOuterScope(),result,name,lang);
     }
     ClassDef *cd=(ClassDef *)d;
     if (!name.isEmpty()) name+="::";
@@ -876,7 +877,7 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
       result.append(cd->templateArguments());
       if (!isSpecialization)
       {
-        name+=tempArgListToString(cd->templateArguments());
+        name+=tempArgListToString(cd->templateArguments(),lang);
       }
     }
   }
@@ -887,11 +888,11 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
 }
 
 static void writeTemplateSpec(OutputList &ol,Definition *d,
-            const QCString &type)
+            const QCString &type,SrcLangExt lang)
 {
   QList<ArgumentList> specs;
   QCString name;
-  searchTemplateSpecs(d,specs,name);
+  searchTemplateSpecs(d,specs,name,lang);
   if (specs.count()>0) // class has template scope specifiers
   {
     ol.startSubsubsection();
@@ -962,7 +963,7 @@ void ClassDef::writeDetailedDocumentationBody(OutputList &ol)
 
   if (getLanguage()==SrcLangExt_Cpp)
   {
-    writeTemplateSpec(ol,this,compoundTypeString());
+    writeTemplateSpec(ol,this,compoundTypeString(),getLanguage());
   }
 
   // repeat brief description
@@ -1179,7 +1180,7 @@ int ClassDef::countInheritanceNodes()
 void ClassDef::writeInheritanceGraph(OutputList &ol)
 {
   // count direct inheritance relations
-  int count=countInheritanceNodes();
+  const int count=countInheritanceNodes();
 
   bool renderDiagram = FALSE;
   if (Config_getBool("HAVE_DOT") &&
@@ -1216,7 +1217,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
     ol.disableAllBut(OutputGenerator::Man);
   }
 
-  if (m_impl->inherits && (count=m_impl->inherits->count())>0)
+  if (m_impl->inherits && m_impl->inherits->count()>0)
   {
     ol.startParagraph();
     //parseText(ol,theTranslator->trInherits()+" ");
@@ -1242,24 +1243,6 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
 
         if (cd->isLinkable())
         {
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-          {
-            Doxygen::tagFile << "    <base";
-            if (bcd->prot==Protected)
-            {
-              Doxygen::tagFile << " protection=\"protected\"";
-            }
-            else if (bcd->prot==Private)
-            {
-              Doxygen::tagFile << " protection=\"private\"";
-            }
-            if (bcd->virt==Virtual)
-            {
-              Doxygen::tagFile << " virtualness=\"virtual\"";
-            }
-            Doxygen::tagFile << ">" << convertToXML(cd->name())
-                             << "</base>" << endl;
-          }
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),
                              cd->anchor(),
@@ -1281,7 +1264,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
   }
 
   // write subclasses
-  if (m_impl->inheritedBy && (count=m_impl->inheritedBy->count())>0)
+  if (m_impl->inheritedBy && m_impl->inheritedBy->count()>0)
   {
     ol.startParagraph();
     QCString inheritLine = theTranslator->trInheritedByList(m_impl->inheritedBy->count());
@@ -1573,36 +1556,118 @@ void ClassDef::writeSummaryLinks(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void ClassDef::writeTagFileMarker()
+void ClassDef::writeTagFile(FTextStream &tagFile)
 {
-  // write section to the tag file
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (!isLinkableInProject()) return;
+  tagFile << "  <compound kind=\"" << compoundTypeString();
+  tagFile << "\"";
+  if (isObjectiveC()) { tagFile << " objc=\"yes\""; }
+  tagFile << ">" << endl;
+  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  if (!anchor().isEmpty())
   {
-    Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
-    Doxygen::tagFile << "\"";
-    if (isObjectiveC()) { Doxygen::tagFile << " objc=\"yes\""; }
-    Doxygen::tagFile << ">" << endl;
-    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-    if (!anchor().isEmpty())
+    tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+  }
+  QCString idStr = id();
+  if (!idStr.isEmpty())
+  {
+    tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+  }
+  if (m_impl->tempArgs)
+  {
+    ArgumentListIterator ali(*m_impl->tempArgs);
+    Argument *a;
+    for (;(a=ali.current());++ali)
     {
-      Doxygen::tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+      tagFile << "    <templarg>" << convertToXML(a->name) << "</templarg>" << endl;
     }
-    QCString idStr = id();
-    if (!idStr.isEmpty())
+  }
+  if (m_impl->inherits)
+  {
+    BaseClassListIterator it(*m_impl->inherits);
+    BaseClassDef *ibcd;
+    for (it.toFirst();(ibcd=it.current());++it)
     {
-      Doxygen::tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
-    }
-    if (m_impl->tempArgs)
-    {
-      ArgumentListIterator ali(*m_impl->tempArgs);
-      Argument *a;
-      for (;(a=ali.current());++ali)
+      ClassDef *cd=ibcd->classDef;
+      if (cd && cd->isLinkable())
       {
-        Doxygen::tagFile << "    <templarg>" << convertToXML(a->name) << "</templarg>" << endl;
+        if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+        {
+          tagFile << "    <base";
+          if (ibcd->prot==Protected)
+          {
+            tagFile << " protection=\"protected\"";
+          }
+          else if (ibcd->prot==Private)
+          {
+            tagFile << " protection=\"private\"";
+          }
+          if (ibcd->virt==Virtual)
+          {
+            tagFile << " virtualness=\"virtual\"";
+          }
+          tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+        }
       }
     }
   }
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    switch (lde->kind())
+    {
+      case LayoutDocEntry::ClassNestedClasses:
+        {
+          if (m_impl->innerClasses)
+          {
+            ClassSDict::Iterator cli(*m_impl->innerClasses);
+            ClassDef *innerCd;
+            for (cli.toFirst();(innerCd=cli.current());++cli)
+            {
+              if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+                  protectionLevelVisible(innerCd->protection()) &&
+                  !innerCd->isEmbeddedInOuterScope()
+                 )
+              {
+                tagFile << "    <class kind=\"" << innerCd->compoundTypeString() <<
+                  "\">" << convertToXML(innerCd->name()) << "</class>" << endl;
+              }
+            }
+          }
+        }
+        break;
+      case LayoutDocEntry::MemberDecl:
+        {
+          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          MemberList * ml = getMemberList(lmd->type);
+          if (ml)
+          {
+            ml->writeTagFile(tagFile);
+          }
+        }
+        break;
+      case LayoutDocEntry::MemberGroups:
+        {
+          if (m_impl->memberGroupSDict)
+          {
+            MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
+            MemberGroup *mg;
+            for (;(mg=mgli.current());++mgli)
+            {
+              mg->writeTagFile(tagFile);
+            }
+          }
+        }
+        break;
+     default:
+        break;
+    }
+  }
+  writeDocAnchorsToTagFile(tagFile);
+  tagFile << "  </compound>" << endl;
 }
 
 /** Write class documentation inside another container (i.e. a group) */
@@ -1721,9 +1786,6 @@ void ClassDef::writeInlineDocumentation(OutputList &ol)
     ol.endIndent();
   }
   ol.popGeneratorState();
-
-  // part 4: write tag file information
-  writeTagFileMarker();
 }
 
 void ClassDef::writeMoreLink(OutputList &ol,const QCString &anchor)
@@ -1808,12 +1870,6 @@ void ClassDef::writeDeclarationLink(OutputList &ol,bool &found,const char *heade
       ol.endMemberHeader();
       ol.startMemberList();
       found=TRUE;
-    }
-    if (!Config_getString("GENERATE_TAGFILE").isEmpty() &&
-        !isReference())  // skip classes found in tag files
-    {
-      Doxygen::tagFile << "    <class kind=\"" << compoundTypeString()
-        << "\">" << convertToXML(name()) << "</class>" << endl;
     }
     ol.startMemberDeclaration();
     ol.startMemberItem(anchor(),FALSE);
@@ -1901,8 +1957,6 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
   QCString pageType = " ";
   pageType += compoundTypeString();
   toupper(pageType.at(1));
-
-  writeTagFileMarker();
 
   Doxygen::indexList->addIndexItem(this,0);
 
@@ -2016,11 +2070,6 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
     }
   }
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-  {
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
-  }
   ol.endContents();
 }
 
@@ -2053,9 +2102,16 @@ QCString ClassDef::title() const
   }
   else
   {
-    pageTitle = theTranslator->trCompoundReference(displayName(),
-              m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
-              m_impl->tempArgs != 0);
+    if (Config_getBool("HIDE_COMPOUND_REFERENCE"))
+    {
+      pageTitle = displayName();
+    }
+    else
+    {
+      pageTitle = theTranslator->trCompoundReference(displayName(),
+                m_impl->compType == Interface && getLanguage()==SrcLangExt_ObjC ? Class : m_impl->compType,
+                m_impl->tempArgs != 0);
+    }
   }
   return pageTitle;
 }
@@ -3767,7 +3823,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   //{
   //  clName = clName.left(clName.length()-2);
   //}
-  //printf("m_impl->lang=%d clName=%s\n",m_impl->lang,clName.data());
+  //printf("m_impl->lang=%d clName=%s isSpecialization=%d\n",getLanguage(),clName.data(),isSpecialization);
   scName+=clName;
   ArgumentList *al=0;
   if (templateArguments())
@@ -3777,7 +3833,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
       al = actualParams->at(*actualParamIndex);
       if (!isSpecialization)
       {
-        scName+=tempArgListToString(al);
+        scName+=tempArgListToString(al,lang);
       }
       (*actualParamIndex)++;
     }
@@ -3785,7 +3841,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
     {
       if (!isSpecialization)
       {
-        scName+=tempArgListToString(templateArguments());
+        scName+=tempArgListToString(templateArguments(),lang);
       }
     }
   }
@@ -4191,14 +4247,14 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QC
     if (ml)
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt,ml->numDecMembers());
-      ml->writeDeclarations(ol,this,0,0,0,tt,st,definitionType(),FALSE,showInline,inheritedFrom,lt);
+      ml->writeDeclarations(ol,this,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
       tt.resize(0);
       st.resize(0);
     }
     if (ml2)
     {
       //printf("  writeDeclaration type=%d count=%d\n",lt2,ml2->numDecMembers());
-      ml2->writeDeclarations(ol,this,0,0,0,tt,st,definitionType(),FALSE,showInline,inheritedFrom,lt);
+      ml2->writeDeclarations(ol,this,0,0,0,tt,st,FALSE,showInline,inheritedFrom,lt);
     }
     static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
     if (!inlineInheritedMembers) // show inherited members as separate lists
@@ -4253,7 +4309,7 @@ void ClassDef::writePlainMemberDeclaration(OutputList &ol,
   if (ml)
   {
     ml->setInGroup(inGroup);
-    ml->writePlainDeclarations(ol,this,0,0,0,definitionType(),inheritedFrom,inheritId);
+    ml->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
   }
 }
 

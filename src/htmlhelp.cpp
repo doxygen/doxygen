@@ -281,6 +281,7 @@ HtmlHelp::HtmlHelp() : indexFileDict(1009)
 HtmlHelp::~HtmlHelp()
 {
   if (m_fromUtf8!=(void *)(-1))   portable_iconv_close(m_fromUtf8);
+  delete index;
 }
 #if 0
 /*! return a reference to the one and only instance of this class. 

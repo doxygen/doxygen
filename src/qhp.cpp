@@ -53,7 +53,7 @@ static QCString makeRef(const char * withoutExtension, const char * anchor)
   return result+"#"+anchor;
 }
 
-Qhp::Qhp() : m_prevSectionLevel(0), m_sectionLevel(0)
+Qhp::Qhp() : m_prevSectionLevel(0), m_sectionLevel(0), m_skipMainPageSection(FALSE)
 {
   m_doc.setIndentLevel(0);
   m_toc.setIndentLevel(2);
@@ -177,14 +177,13 @@ void Qhp::finalize()
 void Qhp::incContentsDepth()
 {
   m_sectionLevel++;
-  //printf("Qhp::incContentsDepth() %d->%d\n",m_sectionLevel-1,m_sectionLevel);
 }
 
 void Qhp::decContentsDepth()
 {
-  //printf("Qhp::decContentsDepth() %d->%d\n",m_sectionLevel,m_sectionLevel-1);
-  if (m_sectionLevel <= 0)
+  if (m_sectionLevel<=0 || (m_sectionLevel==1 && m_skipMainPageSection))
   {
+    m_skipMainPageSection=FALSE;
     return;
   }
   m_sectionLevel--;
@@ -208,6 +207,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
   setPrevSection(name, f, anchor, m_sectionLevel);
 
   // Close sections as needed
+  //printf("Qhp::addContentsItem() closing %d sections\n",diff);
   for (; diff > 0; diff--)
   {
     m_toc.close("section");
@@ -330,6 +330,10 @@ void Qhp::handlePrevSection()
       // Section without children
       m_toc.openClose("section", attributes);
     }
+  }
+  else
+  {
+    m_skipMainPageSection=TRUE;
   }
 
   clearPrevSection();

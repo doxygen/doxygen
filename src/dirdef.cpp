@@ -235,10 +235,6 @@ void DirDef::writeSubDirList(OutputList &ol)
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
       ol.endMemberItem();
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-      {
-        Doxygen::tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
-      }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription(dd->getOutputFileBase());
@@ -297,10 +293,6 @@ void DirDef::writeFileList(OutputList &ol)
         ol.endTextLink();
         ol.popGeneratorState();
       }
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-      {
-        Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
-      }
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
@@ -341,6 +333,53 @@ bool DirDef::hasDetailedDescription() const
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
+void DirDef::writeTagFile(FTextStream &tagFile)
+{
+  tagFile << "  <compound kind=\"dir\">" << endl;
+  tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
+  tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Directory));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    switch (lde->kind())
+    {
+      case LayoutDocEntry::DirSubDirs:
+        {
+          if (m_subdirs.count()>0)
+          {
+            DirDef *dd;
+            QListIterator<DirDef> it(m_subdirs);
+            for (;(dd=it.current());++it)
+            {
+              tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
+            }
+          }
+        }
+        break;
+      case LayoutDocEntry::DirFiles:
+        {
+          if (m_fileList->count()>0)
+          {
+            QListIterator<FileDef> it(*m_fileList);
+            FileDef *fd;
+            for (;(fd=it.current());++it)
+            {
+              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
+            }
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  writeDocAnchorsToTagFile(tagFile);
+  tagFile << "  </compound>" << endl;
+}
+
 void DirDef::writeDocumentation(OutputList &ol)
 {
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
@@ -367,14 +406,6 @@ void DirDef::writeDocumentation(OutputList &ol)
   endTitle(ol,getOutputFileBase(),title);
   ol.startContents();
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-  {
-    Doxygen::tagFile << "  <compound kind=\"dir\">" << endl;
-    Doxygen::tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
-    Doxygen::tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-  }
-  
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang = getLanguage();
@@ -449,12 +480,6 @@ void DirDef::writeDocumentation(OutputList &ol)
   }
 
   //---------------------------------------- end flexible part -------------------------------
-
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-  {
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
-  }
 
   ol.endContents();
 

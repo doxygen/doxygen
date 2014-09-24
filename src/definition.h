@@ -34,6 +34,7 @@ struct ListItemInfo;
 struct SectionInfo;
 class Definition;
 class DefinitionImpl;
+class FTextStream;
   
 /** Data associated with a detailed description. */
 struct DocInfo
@@ -334,7 +335,7 @@ class Definition : public DefinitionIntf
     /*! Writes the documentation anchors of the definition to 
      *  the Doxygen::tagFile stream.
      */
-    void writeDocAnchorsToTagFile();
+    void writeDocAnchorsToTagFile(FTextStream &);
     void setLocalName(const QCString name);
 
     void addSectionsToIndex();

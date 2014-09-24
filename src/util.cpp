@@ -2190,7 +2190,7 @@ QCString argListToString(ArgumentList *al,bool useCanonicalType,bool showDefVals
   return removeRedundantWhiteSpace(result);
 }
 
-QCString tempArgListToString(ArgumentList *al)
+QCString tempArgListToString(ArgumentList *al,SrcLangExt lang)
 {
   QCString result;
   if (al==0) return result;
@@ -2208,6 +2208,10 @@ QCString tempArgListToString(ArgumentList *al)
       else if (a->type.left(3)=="in") // C# contravariance
       {
         result+="in ";
+      }
+      if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+      {
+        result+=a->type+" ";
       }
       result+=a->name;
     }
@@ -3232,7 +3236,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   // all arguments.
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
-  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  for (;(srcA=srcAli.current()) && (dstA=dstAli.current());++srcAli,++dstAli)
   { 
     if (!matchArgument(srcA,dstA,className,namespaceName,
           usingNamespaces,usingClasses))
@@ -3665,7 +3669,7 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
   // all arguments.
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
-  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  for (;(srcA=srcAli.current()) && (dstA=dstAli.current());++srcAli,++dstAli)
   { 
     if (!matchArgument2(srcScope,srcFileScope,srcA,
           dstScope,dstFileScope,dstA)

@@ -1165,7 +1165,7 @@ class FilterAlphaIndex
     }
     static QCString keyToLabel(uint startLetter)
     {
-      char s[10];
+      char s[11]; // 0x12345678 + '\0'
       if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
       {
         s[0]=tolower((char)startLetter);
@@ -1319,7 +1319,15 @@ class FilterDivisibleBy
       }
       if (v.type()==TemplateVariant::Integer && n.type()==TemplateVariant::Integer)
       {
-        return TemplateVariant((v.toInt()%n.toInt())==0);
+        int ni = n.toInt();
+        if (ni>0)
+        {
+          return TemplateVariant((v.toInt()%ni)==0);
+        }
+        else
+        {
+          return TemplateVariant(FALSE);
+        }
       }
       else
       {
@@ -2395,7 +2403,7 @@ TemplateVariant TemplateContextImpl::get(const QCString &name) const
         warn(m_templateName,m_line,"using . on an object '%s' is not an struct or list",objName.data());
         return TemplateVariant();
       }
-    } while (i!=-1);
+    }
     return v;
   }
 }
@@ -2852,7 +2860,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
 {
   public:
     TemplateNodeRange(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeRange>(parser,parent,line)
+      : TemplateNodeCreator<TemplateNodeRange>(parser,parent,line), m_down(FALSE)
     {
       TRACE(("{TemplateNodeRange(%s)\n",data.data()));
       QCString start,end;
@@ -3022,7 +3030,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
 {
   public:
     TemplateNodeFor(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeFor>(parser,parent,line)
+      : TemplateNodeCreator<TemplateNodeFor>(parser,parent,line), m_reversed(FALSE)
     {
       TRACE(("{TemplateNodeFor(%s)\n",data.data()));
       QCString exprStr;
@@ -3430,7 +3438,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
 {
   public:
     TemplateNodeCreate(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line)
+      : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line), m_templateExpr(0), m_fileExpr(0)
     {
       TRACE(("TemplateNodeCreate(%s)\n",data.data()));
       ExpressionParser ep(parser,line);
@@ -4005,7 +4013,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
 {
   public:
     TemplateNodeMarkers(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeMarkers>(parser,parent,line)
+      : TemplateNodeCreator<TemplateNodeMarkers>(parser,parent,line), m_listExpr(0), m_patternExpr(0)
     {
       TRACE(("{TemplateNodeMarkers(%s)\n",data.data()));
       int i = data.find(" in ");

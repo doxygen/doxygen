@@ -749,8 +749,7 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
-        bool single)
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result=(QCString)"此";
@@ -766,7 +765,7 @@ class TranslatorChinesetraditional : public Translator
         default: break;
       }
       result+=" 文件是由下列檔案中產生";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
 
@@ -1948,21 +1947,21 @@ class TranslatorChinesetraditional : public Translator
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool single)
+    virtual QCString trServiceGeneratedFromFiles(bool)
     {
       // single is true implies a single file
       QCString result=(QCString)"本服務的文件由以下的檔案"
                                 "所產生";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    virtual QCString trSingletonGeneratedFromFiles(bool)
     {
       // single is true implies a single file
       QCString result=(QCString)"本singleton的文件由下面的檔案"
                                 "所產生";
-      if (single) result+=":"; else result+=":";
+      result+=":";
       return result;
     }
 

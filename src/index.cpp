@@ -800,9 +800,9 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
 static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FTVHelp* ftv,bool addToIndex)
 {
   ClassSDict::Iterator cli(*cl);
-  for (;cli.current(); ++cli)
+  ClassDef *cd;
+  for (;(cd=cli.current());++cli)
   {
-    ClassDef *cd=cli.current();
     //printf("class %s hasVisibleRoot=%d isVisibleInHierarchy=%d\n",
     //             cd->name().data(),
     //              hasVisibleRoot(cd->baseClasses()),
@@ -923,9 +923,9 @@ static int countClassesInTreeList(const ClassSDict &cl)
 {
   int count=0;
   ClassSDict::Iterator cli(cl);
-  for (;cli.current(); ++cli)
+  ClassDef *cd;
+  for (;(cd=cli.current());++cli)
   {
-    ClassDef *cd=cli.current();
     if (!hasVisibleRoot(cd->baseClasses())) // filter on root classes
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
@@ -1640,7 +1640,7 @@ static void writeAnnotatedClassList(OutputList &ol)
 
 static QCString letterToLabel(uint startLetter)
 {
-  char s[10];
+  char s[11]; // max 0x12345678 + '\0'
   if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
   {
     s[0]=(char)startLetter;
@@ -3079,6 +3079,17 @@ static void countRelatedPages(int &docPages,int &indexPages)
 
 //----------------------------------------------------------------------------
 
+static bool mainPageHasOwnTitle()
+{
+  static QCString projectName = Config_getString("PROJECT_NAME");
+  QCString title;
+  if (Doxygen::mainPage)
+  {
+    title = filterTitle(Doxygen::mainPage->title());
+  }
+  return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
+}
+
 static void writePages(PageDef *pd,FTVHelp *ftv)
 {
   //printf("writePages()=%s pd=%p mainpage=%p\n",pd->name().data(),pd,Doxygen::mainPage);
@@ -3115,8 +3126,8 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     }
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
-  bool doIndent = (hasSections || hasSubPages) &&  
-                  (pd!=Doxygen::mainPage || mainPageHasTitle());
+  bool doIndent = (hasSections || hasSubPages) &&
+                  (pd!=Doxygen::mainPage || mainPageHasOwnTitle());
   if (doIndent)
   {
     Doxygen::indexList->incContentsDepth();

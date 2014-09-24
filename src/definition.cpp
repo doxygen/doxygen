@@ -371,7 +371,7 @@ Definition::Definition(const Definition &d) : DefinitionIntf()
   }
   if (d.m_impl->inbodyDocs)
   {
-    m_impl->details = new DocInfo(*d.m_impl->inbodyDocs);
+    m_impl->inbodyDocs = new DocInfo(*d.m_impl->inbodyDocs);
   }
 
   m_isSymbol = d.m_isSymbol;
@@ -511,9 +511,9 @@ void Definition::addSectionsToIndex()
   }
 }
 
-void Definition::writeDocAnchorsToTagFile()
+void Definition::writeDocAnchorsToTagFile(FTextStream &tagFile)
 {
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_impl->sectionDict)
+  if (m_impl->sectionDict)
   {
     //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_impl->sectionDict->count());
     SDict<SectionInfo>::Iterator sdi(*m_impl->sectionDict);
@@ -523,15 +523,13 @@ void Definition::writeDocAnchorsToTagFile()
       if (!si->generated)
       {
         //printf("write an entry!\n");
-        if (definitionType()==TypeMember) Doxygen::tagFile << "  ";
-        Doxygen::tagFile << "    <docanchor file=\"" 
-                         << si->fileName << "\"";
+        if (definitionType()==TypeMember) tagFile << "  ";
+        tagFile << "    <docanchor file=\"" << si->fileName << "\"";
         if (!si->title.isEmpty())
         {
-          Doxygen::tagFile << " title=\"" << convertToXML(si->title) << "\"";
+          tagFile << " title=\"" << convertToXML(si->title) << "\"";
         }
-        Doxygen::tagFile << ">" << si->label 
-                         << "</docanchor>" << endl;
+        tagFile << ">" << si->label << "</docanchor>" << endl;
       }
     }
   }

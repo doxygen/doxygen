@@ -479,7 +479,11 @@ static QList<MemberDef>* getPorts(ClassDef *cd)
   QList<MemberDef> *portList=new QList<MemberDef>;
   MemberList *ml=cd->getMemberList(MemberListType_variableMembers);
 
-  if (ml==0) return NULL;
+  if (ml==0)
+  {
+    delete portList;
+    return 0;
+  }
 
   MemberListIterator fmni(*ml);
 
@@ -937,9 +941,8 @@ MemberDef* VhdlDocGen::findFunction(const QList<Argument> &ql,
         Argument *arg,*arg1;
         int equ=0;
 
-        for (;(arg=ali.current());++ali)
+        for (;(arg=ali.current()) && (arg1=ali1.current());++ali,++ali1)
         {
-          arg1=ali1.current(); ++ali1;
           equ+=abs(compareString(arg->type,arg1->type));
 
           QCString s1=arg->type;
@@ -1946,6 +1949,48 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
   return hasParams;
 }
 
+void VhdlDocGen::writeTagFile(MemberDef *mdef,FTextStream &tagFile)
+{
+  tagFile << "    <member kind=\"";
+  if (VhdlDocGen::isGeneric(mdef))      tagFile << "generic";
+  if (VhdlDocGen::isPort(mdef))         tagFile << "port";
+  if (VhdlDocGen::isEntity(mdef))       tagFile << "entity";
+  if (VhdlDocGen::isComponent(mdef))    tagFile << "component";
+  if (VhdlDocGen::isVType(mdef))        tagFile << "type";
+  if (VhdlDocGen::isConstant(mdef))     tagFile << "constant";
+  if (VhdlDocGen::isSubType(mdef))      tagFile << "subtype";
+  if (VhdlDocGen::isVhdlFunction(mdef)) tagFile << "function";
+  if (VhdlDocGen::isProcedure(mdef))    tagFile << "procedure";
+  if (VhdlDocGen::isProcess(mdef))      tagFile << "process";
+  if (VhdlDocGen::isSignals(mdef))      tagFile << "signal";
+  if (VhdlDocGen::isAttribute(mdef))    tagFile << "attribute";
+  if (VhdlDocGen::isRecord(mdef))       tagFile << "record";
+  if (VhdlDocGen::isLibrary(mdef))      tagFile << "library";
+  if (VhdlDocGen::isPackage(mdef))      tagFile << "package";
+  if (VhdlDocGen::isVariable(mdef))     tagFile << "shared variable";
+  if (VhdlDocGen::isFile(mdef))         tagFile << "file";
+  if (VhdlDocGen::isGroup(mdef))        tagFile << "group";
+  if (VhdlDocGen::isCompInst(mdef))     tagFile << "instantiation";
+  if (VhdlDocGen::isAlias(mdef))        tagFile << "alias";
+  if (VhdlDocGen::isCompInst(mdef))     tagFile << "configuration";
+
+  tagFile << "\">" << endl;
+  tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>" << endl;
+  tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>" << endl;
+  tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
+  tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>" << endl;
+
+  if (VhdlDocGen::isVhdlFunction(mdef))
+    tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),TRUE)) << "</arglist>" << endl;
+  else if (VhdlDocGen::isProcedure(mdef))
+    tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),FALSE)) << "</arglist>" << endl;
+  else
+    tagFile << "      <arglist>" << convertToXML(mdef->argsString()) << "</arglist>" << endl;
+
+  mdef->writeDocAnchorsToTagFile(tagFile);
+  tagFile << "    </member>" << endl;
+}
+
 /* writes a vhdl type declaration */
 
 void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
@@ -1966,50 +2011,6 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   else if (fd) d=fd;
   else if (gd) d=gd;
   else d=(Definition*)mdef;
-
-  // write tag file information of this member
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-  {
-    Doxygen::tagFile << "    <member kind=\"";
-    if (VhdlDocGen::isGeneric(mdef))      Doxygen::tagFile << "generic";
-    if (VhdlDocGen::isPort(mdef))         Doxygen::tagFile << "port";
-    if (VhdlDocGen::isEntity(mdef))       Doxygen::tagFile << "entity";
-    if (VhdlDocGen::isComponent(mdef))    Doxygen::tagFile << "component";
-    if (VhdlDocGen::isVType(mdef))        Doxygen::tagFile << "type";
-    if (VhdlDocGen::isConstant(mdef))     Doxygen::tagFile << "constant";
-    if (VhdlDocGen::isSubType(mdef))      Doxygen::tagFile << "subtype";
-    if (VhdlDocGen::isVhdlFunction(mdef)) Doxygen::tagFile << "function";
-    if (VhdlDocGen::isProcedure(mdef))    Doxygen::tagFile << "procedure";
-    if (VhdlDocGen::isProcess(mdef))      Doxygen::tagFile << "process";
-    if (VhdlDocGen::isSignals(mdef))      Doxygen::tagFile << "signal";
-    if (VhdlDocGen::isAttribute(mdef))    Doxygen::tagFile << "attribute";
-    if (VhdlDocGen::isRecord(mdef))       Doxygen::tagFile << "record";
-    if (VhdlDocGen::isLibrary(mdef))      Doxygen::tagFile << "library";
-    if (VhdlDocGen::isPackage(mdef))      Doxygen::tagFile << "package";
-    if (VhdlDocGen::isVariable(mdef))     Doxygen::tagFile << "shared variable";
-    if (VhdlDocGen::isFile(mdef))         Doxygen::tagFile << "file";
-    if (VhdlDocGen::isGroup(mdef))        Doxygen::tagFile << "group";
-    if (VhdlDocGen::isCompInst(mdef))     Doxygen::tagFile << " instantiation";
-    if (VhdlDocGen::isAlias(mdef))        Doxygen::tagFile << "alias";
-    if (VhdlDocGen::isCompInst(mdef))     Doxygen::tagFile << "configuration";
-
-    Doxygen::tagFile << "\">" << endl;
-    Doxygen::tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>" << endl;
-    Doxygen::tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>" << endl;
-    Doxygen::tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
-    Doxygen::tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>" << endl;
-
-    if (VhdlDocGen::isVhdlFunction(mdef))
-      Doxygen::tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),TRUE)) << "</arglist>" << endl;
-    else if (VhdlDocGen::isProcedure(mdef))
-      Doxygen::tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),FALSE)) << "</arglist>" << endl;
-    else
-      Doxygen::tagFile << "      <arglist>" << convertToXML(mdef->argsString()) << "</arglist>" << endl;
-
-    mdef->writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "    </member>" << endl;
-
-  }
 
   // write search index info
   if (Doxygen::searchIndex)

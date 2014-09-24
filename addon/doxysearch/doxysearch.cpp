@@ -401,7 +401,7 @@ int main(int argc,char **argv)
       Xapian::Document doc = i.get_document();
       highlighter(doc.get_value(FIELD_DOC),words,hl);
       std::cout << "  {\"type\": \"" << doc.get_value(FIELD_TYPE) << "\"," << std::endl
-                << "   \"name\": \"" << doc.get_value(FIELD_NAME) << doc.get_value(FIELD_ARGS) << "\"," << std::endl
+                << "   \"name\": \"" << doc.get_value(FIELD_NAME) << escapeString(doc.get_value(FIELD_ARGS)) << "\"," << std::endl
                 << "   \"tag\": \""  << doc.get_value(FIELD_TAG) << "\"," << std::endl
                 << "   \"url\": \""  << doc.get_value(FIELD_URL) << "\"," << std::endl;
       std::cout << "   \"fragments\":[" << std::endl;

@@ -62,9 +62,14 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
     unit = "chapter";
   t << "% Bibliography\n"
        "\\newpage\n"
-       "\\phantomsection\n"
-       "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n"
-       "\\bibliographystyle{" << style << "}\n"
+       "\\phantomsection\n";
+  bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (!pdfHyperlinks)
+  {
+    t << "\\clearemptydoublepage\n";
+    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+  }
+  t << "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{";
   QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
   QCString latexOutputDir = Config_getString("LATEX_OUTPUT")+"/";
@@ -87,8 +92,12 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
     }
     bibdata = citeDataList.next();
   }
-  t << "}\n"
-       "\n";
+  t << "}\n";
+  if (pdfHyperlinks)
+  {
+    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
+  }
+  t << "\n";
 }
 
 void CiteDict::insert(const char *label)
@@ -294,7 +303,6 @@ void CiteDict::generatePage() const
   thisDir.remove(citeListFile);
   thisDir.remove(doxygenBstFile);
   thisDir.remove(bib2xhtmlFile);
-  bibdata = citeDataList.first();
   // we might try to remove too many files as empty files didn't get a coresponding new file
   // but the remove function does not emit an error for it and we don't catch the error return
   // so no problem.

@@ -1540,7 +1540,7 @@ static bool isTableBlock(const char *data,int size)
 
   i+=ret; // goto next line
   int cc2;
-  ret = findTableColumns(data+i,size-i,start,end,cc2);
+  findTableColumns(data+i,size-i,start,end,cc2);
 
   //printf("isTableBlock: %d\n",cc1==cc2);
   return cc1==cc2;

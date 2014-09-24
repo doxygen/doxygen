@@ -3535,20 +3535,11 @@ static void filterScanline(unsigned char* out, const unsigned char* scanline, co
   switch(filterType)
   {
     case 0:
-      if(prevline) for(i = 0; i < length; i++) out[i] = scanline[i];
-      else         for(i = 0; i < length; i++) out[i] = scanline[i];
+      for(i = 0; i < length; i++) out[i] = scanline[i];
       break;
     case 1:
-      if(prevline)
-      {
-        for(i =         0; i < bytewidth; i++) out[i] = scanline[i];
-        for(i = bytewidth; i < length   ; i++) out[i] = scanline[i] - scanline[i - bytewidth];
-      }
-      else
-      {
-        for(i =         0; i < bytewidth; i++) out[i] = scanline[i];
-        for(i = bytewidth; i <    length; i++) out[i] = scanline[i] - scanline[i - bytewidth];
-      }
+      for(i =         0; i < bytewidth; i++) out[i] = scanline[i];
+      for(i = bytewidth; i <    length; i++) out[i] = scanline[i] - scanline[i - bytewidth];
       break;
     case 2:
       if(prevline) for(i = 0; i < length; i++) out[i] = scanline[i] - prevline[i];
@@ -4134,9 +4125,12 @@ unsigned LodePNG_loadFile(unsigned char** out, size_t* outsize, const char* file
   rewind(file);
   
   /*read contents of the file into the vector*/
-  *outsize = 0;
-  *out = (unsigned char*)malloc((size_t)size);
-  if(size && (*out)) (*outsize) = fread(*out, 1, (size_t)size, file);
+  if (size>0)
+  {
+    *outsize = 0;
+    *out = (unsigned char*)malloc((size_t)size);
+    if(size && (*out)) (*outsize) = fread(*out, 1, (size_t)size, file);
+  }
 
   fclose(file);
   if(!(*out) && size) return 80; /*the above malloc failed*/

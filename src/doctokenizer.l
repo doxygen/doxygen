@@ -335,7 +335,7 @@ LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z\x80-\xFF]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/]*
-CITEID    {CITESCHAR}*{CITEECHAR}+("."{CITESCHAR}*{CITEECHAR}+)*
+CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*
 MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS  ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}

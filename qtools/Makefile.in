@@ -26,5 +26,6 @@ clean: Makefile.qtools
 	$(MAKE) -f Makefile.qtools    clean 
 
 distclean: clean
+	$(RM) Makefile.qtools
 
 FORCE:

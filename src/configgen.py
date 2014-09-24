@@ -26,6 +26,7 @@ def transformDocs(doc):
 	doc = doc.replace("\r", " ")
 	doc = doc.replace("\t", " ")
 	doc = doc.replace("\\&", "&")
+	doc = doc.replace("(\\c ", "(")
 	doc = doc.replace("\\c ", " ")
 	doc = doc.replace("\\b ", " ")
 	doc = doc.replace("\\e ", " ")

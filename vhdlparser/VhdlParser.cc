@@ -5579,7 +5579,7 @@ if(tok)
                                         s5=tok->image.c_str();
 
                                         if(tok1)
-                                         s3=tok->image.data();
+                                         s3=tok1->image.data();
 
                                         if(tok2)
                                          s3+=":=";

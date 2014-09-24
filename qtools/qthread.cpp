@@ -52,6 +52,7 @@ QThread::~QThread()
    QMutexLocker locker(&d->mutex);
    if (d->running && !d->finished)
       qWarning("QThread: Destroyed while thread is still running");
+   delete d;
 }
 
 bool QThread::isFinished() const

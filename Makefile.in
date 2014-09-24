@@ -35,6 +35,7 @@ distclean: clean
 	-cd src ; $(MAKE) distclean
 	-cd libmd5 ; $(MAKE) distclean
 	-cd vhdlparser ; $(MAKE) distclean
+	-cd qtools ; $(MAKE) distclean
 	-cd addon/doxywizard ; $(MAKE) distclean
 	-cd addon/doxysearch ; $(MAKE) distclean
 	-cd addon/doxyapp ; $(MAKE) distclean
@@ -111,7 +112,7 @@ DISTDIR = doxygen-`echo $(VERSION) | tr - _`
 dist: clean
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
-	cp -a $(DISTFILES) README $(DISTDIR)
+	cp -a $(DISTFILES) $(DISTDIR)
 	find $(DISTDIR) \( -name ".svn" \) -print0 | xargs -0 rm -rf
 	tar zcvf $(DISTDIR).src.tar.gz $(DISTDIR)
 	rm -rf $(DISTDIR)

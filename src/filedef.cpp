@@ -180,6 +180,112 @@ bool FileDef::hasDetailedDescription() const
          );
 }
 
+void FileDef::writeTagFile(FTextStream &tagFile)
+{
+  tagFile << "  <compound kind=\"file\">" << endl;
+  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+  tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << "</filename>" << endl;
+  if (m_includeList && m_includeList->count()>0)
+  {
+    QListIterator<IncludeInfo> ili(*m_includeList);
+    IncludeInfo *ii;
+    for (;(ii=ili.current());++ili)
+    {
+      if (!ii->indirect)
+      {
+        FileDef *fd=ii->fileDef;
+        if (fd && fd->isLinkable() && !fd->isReference()) 
+        {
+          bool isIDLorJava = FALSE;
+          SrcLangExt lang = fd->getLanguage();
+          isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+          const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
+          const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
+          tagFile << "    <includes id=\"" 
+                  << convertToXML(fd->getOutputFileBase()) << "\" "
+                  << "name=\"" << convertToXML(fd->name()) << "\" "
+                  << "local=\"" << locStr << "\" "
+                  << "imported=\"" << impStr << "\">"
+                  << convertToXML(ii->includeName)
+                  << "</includes>" 
+                  << endl;
+        }
+      }
+    }
+  }
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::File));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    switch (lde->kind())
+    {
+      case LayoutDocEntry::FileClasses:
+        {
+          if (m_classSDict)
+          {
+            SDict<ClassDef>::Iterator ci(*m_classSDict);
+            ClassDef *cd;
+            for (ci.toFirst();(cd=ci.current());++ci)
+            {
+              if (cd->isLinkableInProject())
+              {
+                tagFile << "    <class kind=\"" << cd->compoundTypeString() <<
+                  "\">" << convertToXML(cd->name()) << "</class>" << endl;
+              }
+            }
+          }
+        }
+        break;
+      case LayoutDocEntry::FileNamespaces:
+        {
+          if (m_namespaceSDict)
+          {
+            SDict<NamespaceDef>::Iterator ni(*m_namespaceSDict);
+            NamespaceDef *nd;
+            for (ni.toFirst();(nd=ni.current());++ni)
+            {
+              if (nd->isLinkableInProject())
+              {
+                tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+              }
+            }
+          }
+        }
+        break;
+      case LayoutDocEntry::MemberDecl:
+        {
+          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          MemberList * ml = getMemberList(lmd->type);
+          if (ml)
+          {
+            ml->writeTagFile(tagFile);
+          }
+        }
+        break;
+      case LayoutDocEntry::MemberGroups:
+        {
+          if (m_memberGroupSDict)
+          {
+            MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
+            MemberGroup *mg;
+            for (;(mg=mgli.current());++mgli)
+            {
+              mg->writeTagFile(tagFile);
+            }
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  writeDocAnchorsToTagFile(tagFile);
+  tagFile << "  </compound>" << endl;
+}
+
 void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if (hasDetailedDescription())
@@ -319,19 +425,6 @@ void FileDef::writeIncludeFiles(OutputList &ol)
           ol.writeObjectLink(fd->getReference(),
               fd->generateSourceFile() ? fd->includeName() : fd->getOutputFileBase(),
               0,ii->includeName);
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fd->isReference()) 
-          {
-            const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
-            const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
-            Doxygen::tagFile << "    <includes id=\"" 
-                             << convertToXML(fd->getOutputFileBase()) << "\" "
-                             << "name=\"" << convertToXML(fd->name()) << "\" "
-                             << "local=\"" << locStr << "\" "
-                             << "imported=\"" << impStr << "\">"
-                             << convertToXML(ii->includeName)
-                             << "</includes>" 
-                             << endl;
-          }
         }
         else
         {
@@ -616,15 +709,6 @@ void FileDef::writeDocumentation(OutputList &ol)
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
   
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-  {
-    Doxygen::tagFile << "  <compound kind=\"file\">" << endl;
-    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
-    Doxygen::tagFile << "    <filename>" 
-                     << convertToXML(getOutputFileBase()) 
-                     << "</filename>" << endl;
-  }
 
   //---------------------------------------- start flexible part -------------------------------
   
@@ -737,12 +821,6 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
 
   //---------------------------------------- end flexible part -------------------------------
-
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-  {
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
-  }
 
   ol.endContents();
 
@@ -1657,16 +1735,19 @@ void FileDef::acquireFileVersion()
     }
     const int bufSize=1024;
     char buf[bufSize];
-    int numRead = (int)fread(buf,1,bufSize,f);
+    int numRead = (int)fread(buf,1,bufSize-1,f);
     portable_pclose(f);
-    if (numRead>0 && !(m_fileVersion=QCString(buf,numRead).stripWhiteSpace()).isEmpty())
+    if (numRead>0 && numRead<bufSize)
     {
-      msg("%s\n",m_fileVersion.data());
+      buf[numRead]='\0';
+      m_fileVersion=QCString(buf,numRead).stripWhiteSpace();
+      if (!m_fileVersion.isEmpty())
+      {
+        msg("%s\n",m_fileVersion.data());
+        return;
+      }
     }
-    else 
-    {
-      msg("no version available\n");
-    }
+    msg("no version available\n");
   }
 }
 

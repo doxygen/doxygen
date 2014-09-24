@@ -142,7 +142,6 @@ QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
 PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
-FTextStream      Doxygen::tagFile;
 NamespaceDef    *Doxygen::globalScope = 0;
 QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
@@ -1037,9 +1036,16 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
     else // scope is a namespace
     {
     }
-    // make the parent/child scope relation
-    prevScope->addInnerCompound(innerScope);
-    innerScope->setOuterScope(prevScope);
+    if (innerScope)
+    {
+      // make the parent/child scope relation
+      prevScope->addInnerCompound(innerScope);
+      innerScope->setOuterScope(prevScope);
+    }
+    else // current scope is a class, so return only the namespace part...
+    {
+      return prevScope;
+    }
     // proceed to the next scope fragment
     p=idx+l+2;
     prevScope=innerScope;
@@ -1303,17 +1309,30 @@ static void addClassToContext(EntryNav *rootNav)
     QCString tagName;
     QCString refFileName;
     TagInfo *tagInfo = rootNav->tagInfo();
+    int i;
     if (tagInfo)
     {
       tagName     = tagInfo->tagName;
       refFileName = tagInfo->fileName;
-      int i;
-      if ((i=fullName.find("::"))!=-1) 
+      if (fullName.find("::")!=-1)
         // symbols imported via tag files may come without the parent scope, 
         // so we artificially create it here
       {
         buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang,tagInfo);
       }
+    }
+    ArgumentList *tArgList = 0;
+    if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.find('<'))!=-1)
+    {
+      // a Java/C# generic class looks like a C++ specialization, so we need to split the
+      // name and template arguments here
+      tArgList = new ArgumentList;
+      stringToArgumentList(fullName.mid(i),tArgList);
+      fullName=fullName.left(i);
+    }
+    else
+    {
+      tArgList = getTemplateArgumentsFromName(fullName,root->tArgLists);
     }
     cd=new ClassDef(root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
@@ -1329,8 +1348,6 @@ static void addClassToContext(EntryNav *rootNav)
     cd->setTypeConstraints(root->typeConstr);   
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());    
 
-    ArgumentList *tArgList =    
-      getTemplateArgumentsFromName(fullName,root->tArgLists);   
     //printf("class %s template args=%s\n",fullName.data(),     
     //    tArgList ? tempArgListToString(tArgList).data() : "<none>");          
     cd->setTemplateArguments(tArgList);         
@@ -1649,26 +1666,6 @@ static void processTagLessClasses(ClassDef *rootCd,
         }
       }
     }
-  }
-}
-
-static void writeMainPageTagFileData()
-{
-  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
-  {
-    Doxygen::tagFile << "  <compound kind=\"page\">" << endl
-                     << "    <name>"
-                     << convertToXML(Doxygen::mainPage->name())
-                     << "</name>" << endl
-                     << "    <title>"
-                     << convertToXML(Doxygen::mainPage->title())
-                     << "</title>" << endl
-                     << "    <filename>"
-                     << convertToXML(Doxygen::mainPage->getOutputFileBase())
-                     << "</filename>" << endl;
-
-    Doxygen::mainPage->writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
   }
 }
 
@@ -2070,18 +2067,15 @@ static void findUsingDeclarations(EntryNav *rootNav)
             usingCd->name().data(),nd?nd->name().data():fd->name().data());
       }
 
-      if (usingCd) // add the class to the correct scope
+      if (nd)
       {
-        if (nd)
-        {
-          //printf("Inside namespace %s\n",nd->name().data());
-          nd->addUsingDeclaration(usingCd);
-        }
-        else if (fd)
-        {
-          //printf("Inside file %s\n",fd->name().data());
-          fd->addUsingDeclaration(usingCd);
-        }
+        //printf("Inside namespace %s\n",nd->name().data());
+        nd->addUsingDeclaration(usingCd);
+      }
+      else if (fd)
+      {
+        //printf("Inside file %s\n",fd->name().data());
+        fd->addUsingDeclaration(usingCd);
       }
     }
 
@@ -2833,14 +2827,14 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
         else if (root->type.find(')',i)!=-1) // function ptr, not variable like "int (*bla)[10]"
         {
           root->type=root->type.left(root->type.length()-1);
-          root->args.prepend(")");
+          root->args.prepend(") ");
           //printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
         }
       }
       else if (root->type.find("typedef ")!=-1 && root->type.right(2)=="()") // typedef void (func)(int)
       {
         root->type=root->type.left(root->type.length()-1);
-        root->args.prepend(")");
+        root->args.prepend(") ");
       }
     }
     
@@ -4100,8 +4094,12 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
  */
 static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,const QCString &name)
 {
-  FileDef *fd=cd->getFileDef();
   ClassDef *result=0;
+  if (cd==0)
+  {
+    return result;
+  }
+  FileDef *fd=cd->getFileDef();
   if (context && cd!=context)
   {
     result = getResolvedClass(context,0,name,0,0,TRUE,TRUE);
@@ -4114,7 +4112,7 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = getClass(name);
   }
-  if (result==0 && cd &&
+  if (result==0 &&
       (cd->getLanguage()==SrcLangExt_CSharp || cd->getLanguage()==SrcLangExt_Java) &&
       name.find('<')!=-1)
   {
@@ -4236,13 +4234,10 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                     usedCd->setLanguage(masterCd->getLanguage());
                     Doxygen::hiddenClasses->append(usedName,usedCd);
                   }
-                  if (usedCd)
-                  {
-                    if (isArtificial) usedCd->setArtificial(TRUE);
-                    Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
-                    instanceCd->addUsedClass(usedCd,md->name(),md->protection());
-                    usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
-                  }
+                  if (isArtificial) usedCd->setArtificial(TRUE);
+                  Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
+                  instanceCd->addUsedClass(usedCd,md->name(),md->protection());
+                  usedCd->addUsedByClass(instanceCd,md->name(),md->protection());
                 }
               }
             }
@@ -4389,7 +4384,7 @@ static bool findTemplateInstanceRelation(Entry *root,
   //printf("\n");
   
   bool existingClass = (templSpec ==
-                        tempArgListToString(templateClass->templateArguments())
+                        tempArgListToString(templateClass->templateArguments(),root->lang)
                        );
   if (existingClass) return TRUE;
 
@@ -4643,7 +4638,8 @@ static bool findClassRelation(
         if (si==-1) si=0;
         if (baseClass==0 && (root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java))
         {
-          baseClass = Doxygen::genericsDict->find(baseClassName);
+          // for Java/C# strip the template part before looking for matching
+          baseClass = Doxygen::genericsDict->find(baseClassName.left(i));
           //printf("looking for '%s' result=%p\n",baseClassName.data(),baseClass);
         }
         if (baseClass==0 && i!=-1) 
@@ -4705,7 +4701,7 @@ static bool findClassRelation(
           if (found) templSpec = tmpTemplSpec;
         }
         //printf("2. found=%d\n",found);
-        
+
         //printf("root->name=%s biName=%s baseClassName=%s\n",
         //        root->name.data(),biName.data(),baseClassName.data());
         //if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
@@ -4933,6 +4929,22 @@ static void findClassEntries(EntryNav *rootNav)
   RECURSE_ENTRYTREE(findClassEntries,rootNav);
 }
 
+static QCString extractClassName(EntryNav *rootNav)
+{
+  // strip any anonymous scopes first
+  QCString bName=stripAnonymousNamespaceScope(rootNav->name());
+  bName=stripTemplateSpecifiersFromScope(bName);
+  int i;
+  if ((rootNav->lang()==SrcLangExt_CSharp || rootNav->lang()==SrcLangExt_Java) &&
+      (i=bName.find('<'))!=-1)
+  {
+    // a Java/C# generic class looks like a C++ specialization, so we need to strip the
+    // template part before looking for matches
+    bName=bName.left(i);
+  }
+  return bName;
+}
+
 /*! Using the dictionary build by findClassEntries(), this 
  *  function will look for additional template specialization that
  *  exists as inheritance relations only. These instances will be
@@ -4947,9 +4959,7 @@ static void findInheritedTemplateInstances()
   for (;(rootNav=edi.current());++edi)
   {
     ClassDef *cd;
-    // strip any anonymous scopes first 
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    bName=stripTemplateSpecifiersFromScope(bName);
+    QCString bName = extractClassName(rootNav);
     Debug::print(Debug::Classes,0,"  Inheritance: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
@@ -4970,9 +4980,7 @@ static void findUsedTemplateInstances()
   for (;(rootNav=edi.current());++edi)
   {
     ClassDef *cd;
-    // strip any anonymous scopes first 
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    bName=stripTemplateSpecifiersFromScope(bName);
+    QCString bName = extractClassName(rootNav);
     Debug::print(Debug::Classes,0,"  Usage: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
@@ -4995,10 +5003,7 @@ static void computeClassRelations()
 
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
-
-    // strip any anonymous scopes first 
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    bName=stripTemplateSpecifiersFromScope(bName);
+    QCString bName = extractClassName(rootNav);
     Debug::print(Debug::Classes,0,"  Relations: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
@@ -6306,7 +6311,7 @@ static void findMember(EntryNav *rootNav,
               for (;(al=alli.current());++alli)
               {
                 warnMsg+="  template ";
-                warnMsg+=tempArgListToString(al);
+                warnMsg+=tempArgListToString(al,root->lang);
                 warnMsg+='\n';
               }
             }
@@ -6329,7 +6334,7 @@ static void findMember(EntryNav *rootNav,
                   if (templAl!=0)
                   {
                     warnMsg+="  'template ";
-                    warnMsg+=tempArgListToString(templAl);
+                    warnMsg+=tempArgListToString(templAl,root->lang);
                     warnMsg+='\n';
                   }
                   warnMsg+="  ";
@@ -6578,7 +6583,7 @@ static void findMember(EntryNav *rootNav,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
               root->stat && !isMemberOf,
-              isMemberOf ? Foreign : isRelated ? Related : Member,
+              isMemberOf ? Foreign : Related,
               mtype,
               (root->tArgLists ? root->tArgLists->getLast() : 0),
               funcArgs.isEmpty() ? 0 : root->argList);
@@ -8055,13 +8060,14 @@ static void generateClassList(ClassSDict &classSDict)
     ClassDef *cd=cli.current();
    
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
-    if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+    if (cd &&
+        (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
          cd->getOuterScope()==Doxygen::globalScope // only look at global classes
         ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
-       ) 
+       )
     {
-      // skip external references, anonymous compounds and 
-      // template instances 
+      // skip external references, anonymous compounds and
+      // template instances
       if ( cd->isLinkableInProject() && cd->templateMaster()==0)
       {
         msg("Generating docs for compound %s...\n",cd->name().data());
@@ -8996,9 +9002,9 @@ static void generateNamespaceDocs()
 
     // for each class in the namespace...
     ClassSDict::Iterator cli(*nd->getClassSDict());
-    for ( ; cli.current() ; ++cli )
+    ClassDef *cd;
+    for ( ; (cd=cli.current()) ; ++cli )
     {
-      ClassDef *cd=cli.current();
       if ( ( cd->isLinkableInProject() && 
              cd->templateMaster()==0
            ) // skip external references, anonymous compounds and 
@@ -10527,6 +10533,87 @@ static void stopDoxygen(int)
 }
 #endif
 
+static void writeTagFile()
+{
+  QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
+  if (generateTagFile.isEmpty()) return;
+
+  QFile tag(generateTagFile);
+  if (!tag.open(IO_WriteOnly))
+  {
+    err("cannot open tag file %s for writing\n",
+        generateTagFile.data()
+       );
+    return;
+  }
+  FTextStream tagFile(&tag);
+  tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
+  tagFile << "<tagfile>" << endl;
+
+  // for each file
+  FileNameListIterator fnli(*Doxygen::inputNameList);
+  FileName *fn;
+  for (fnli.toFirst();(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (fni.toFirst();(fd=fni.current());++fni)
+    {
+      fd->writeTagFile(tagFile);
+    }
+  }
+  // for each class
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd;
+  for ( ; (cd=cli.current()) ; ++cli )
+  {
+    cd->writeTagFile(tagFile);
+  }
+  // for each namespace
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for ( ; (nd=nli.current()) ; ++nli )
+  {
+    nd->writeTagFile(tagFile);
+  }
+  // for each group
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    gd->writeTagFile(tagFile);
+  }
+  // for each page
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageDef *pd=0;
+  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  {
+    pd->writeTagFile(tagFile);
+  }
+  if (Doxygen::mainPage) Doxygen::mainPage->writeTagFile(tagFile);
+
+  /*
+  if (Doxygen::mainPage && !Config_getString("GENERATE_TAGFILE").isEmpty())
+  {
+    tagFile << "  <compound kind=\"page\">" << endl
+                     << "    <name>"
+                     << convertToXML(Doxygen::mainPage->name())
+                     << "</name>" << endl
+                     << "    <title>"
+                     << convertToXML(Doxygen::mainPage->title())
+                     << "</title>" << endl
+                     << "    <filename>"
+                     << convertToXML(Doxygen::mainPage->getOutputFileBase())
+                     << "</filename>" << endl;
+
+    mainPage->writeDocAnchorsToTagFile();
+    tagFile << "  </compound>" << endl;
+  }
+  */
+
+  tagFile << "</tagfile>" << endl;
+}
+
 static void exitDoxygen()
 {
   if (!g_successfulRun)  // premature exit
@@ -10690,7 +10777,6 @@ void searchInputFiles()
 
   g_s.begin("Searching for files to process...\n");
   QDict<void> *killDict = new QDict<void>(10007);
-  int inputSize=0;
   QStrList &inputList=Config_getList("INPUT");
   g_inputFiles.setAutoDelete(TRUE);
   s=inputList.first();
@@ -10702,8 +10788,8 @@ void searchInputFiles()
     {
       // strip trailing slashes
       if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
-  
-      inputSize+=readFileOrDirectory(
+
+      readFileOrDirectory(
           path,
           Doxygen::inputNameList,
           Doxygen::inputNameDict,
@@ -11301,24 +11387,6 @@ void generateOutput()
    *                        Generate documentation                          *
    **************************************************************************/
 
-  QFile *tag=0;
-  QCString &generateTagFile = Config_getString("GENERATE_TAGFILE");
-  if (!generateTagFile.isEmpty())
-  {
-    tag=new QFile(generateTagFile);
-    if (!tag->open(IO_WriteOnly))
-    {
-      err("cannot open tag file %s for writing\n",
-          generateTagFile.data()
-         );
-      cleanUpDoxygen();
-      exit(1);
-    }
-    Doxygen::tagFile.setDevice(tag);
-    Doxygen::tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
-    Doxygen::tagFile << "<tagfile>" << endl;
-  }
-
   if (generateHtml)  writeDoxFont(Config_getString("HTML_OUTPUT"));
   if (generateLatex) writeDoxFont(Config_getString("LATEX_OUTPUT"));
   if (generateRtf)   writeDoxFont(Config_getString("RTF_OUTPUT"));
@@ -11414,8 +11482,6 @@ void generateOutput()
     }
   }
   
-  writeMainPageTagFileData();
-
   if (g_outputList->count()>0)
   {
     writeIndexHierarchy(*g_outputList);
@@ -11425,11 +11491,9 @@ void generateOutput()
   Doxygen::indexList->finalize();
   g_s.end();
 
-  if (!generateTagFile.isEmpty())
-  {
-    Doxygen::tagFile << "</tagfile>" << endl;
-    delete tag;
-  }
+  g_s.begin("writing tag file...\n");
+  writeTagFile();
+  g_s.end();
 
   if (Config_getBool("DOT_CLEANUP"))
   {

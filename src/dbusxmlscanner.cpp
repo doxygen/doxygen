@@ -432,7 +432,7 @@ public:
             m_currentEnum = 0;
         }
 
-        if (EXTENSION("value"))
+        if (EXTENSION("value") && m_currentEnum)
         {
             CONDITION(!m_currentEntry, "end of value without start");
             m_currentEntry->endBodyLine = lineNumber();
