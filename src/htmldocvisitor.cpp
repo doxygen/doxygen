@@ -377,7 +377,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
                                         -1,    // endLine
                                         FALSE, // inlineFragment
                                         0,     // memberDef
-                                        TRUE,  // show line numbers
+                                        FALSE,  // show line numbers
                                         m_ctx  // search context
                                        );
       m_t << PREFRAG_END;
