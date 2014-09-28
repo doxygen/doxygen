@@ -147,6 +147,10 @@ class ParserManager
      */
     ParserManager()
       : m_defaultParser(0) { m_parsers.setAutoDelete(TRUE); }
+   ~ParserManager()
+    {
+      delete m_defaultParser;
+    }
 
     void registerDefaultParser(ParserInterface *parser)
     {

@@ -116,7 +116,7 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",baseName,baseName);
     portable_sysTimerStart();
-    if (exitCode=portable_system("epstopdf",epstopdfArgs)!=0)
+    if ((exitCode=portable_system("epstopdf",epstopdfArgs))!=0)
     {
       err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
     }

@@ -533,6 +533,7 @@ class Config
       m_dict     = new QDict<ConfigOption>(257);
       m_options->setAutoDelete(TRUE);
       m_obsolete->setAutoDelete(TRUE);
+      m_disabled->setAutoDelete(TRUE);
       m_initialized = FALSE;
       create();
     }
