@@ -316,7 +316,6 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // Define default fonts
   t << "% Font selection\n"
        "\\usepackage[T1]{fontenc}\n"
-       "\\usepackage{mathptmx}\n"
        "\\usepackage[scaled=.90]{helvet}\n"
        "\\usepackage{courier}\n"
        "\\usepackage{amssymb}\n"
