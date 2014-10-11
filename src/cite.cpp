@@ -211,8 +211,15 @@ void CiteDict::generatePage() const
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
-  portable_system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
-                         citeListFile+"\"");
+  int exitCode;
+  portable_sysTimerStop();
+  if ((exitCode=portable_system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
+                         citeListFile+"\"")) != 0)
+  {
+    err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
+        exitCode);
+  }
+  portable_sysTimerStop();
 
   QDir::setCurrent(oldDir);
 
