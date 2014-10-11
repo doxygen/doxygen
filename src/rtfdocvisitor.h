@@ -155,7 +155,7 @@ class RTFDocVisitor : public DocVisitor
     void writeDotFile(const QCString &fileName);
     void writeMscFile(const QCString &fileName);
     void writeDiaFile(const QCString &fileName);
-    void writePlantUMLFile(const QCString &fileName);
+    void writePlantUMLFile(const QCString &fileName,const bool generate);
 
     //--------------------------------------
     // state variables

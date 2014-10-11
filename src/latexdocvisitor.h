@@ -176,7 +176,7 @@ class LatexDocVisitor : public DocVisitor
                       const QCString &height, bool hasCaption);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName);
-    void writePlantUMLFile(const QCString &fileName);
+    void writePlantUMLFile(const QCString &fileName,const bool generate = TRUE);
 
     void pushEnabled();
     void popEnabled();
