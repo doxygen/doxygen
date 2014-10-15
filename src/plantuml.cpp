@@ -92,6 +92,10 @@ void generatePlantUMLOutput(const char *baseName,const char *outDir,PlantUMLOutp
       pumlArgs+="-tsvg";
       extension=".svg";
       break;
+    case PUML_ASCII:
+      pumlArgs+="-ttxt";
+      extension=".atxt";
+      break;
   }
   pumlArgs+=" \"";
   pumlArgs+=baseName;

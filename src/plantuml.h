@@ -19,7 +19,7 @@
 class QCString;
 
 /** Plant UML output image formats */
-enum PlantUMLOutputFormat { PUML_BITMAP, PUML_EPS, PUML_SVG };
+enum PlantUMLOutputFormat { PUML_BITMAP, PUML_EPS, PUML_SVG, PUML_ASCII };
 
 /** Write a PlantUML compatible file.
  *  @param[in] outDir   the output directory to write the file to.

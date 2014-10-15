@@ -29,7 +29,9 @@
 #include "message.h"
 #include "parserintf.h"
 #include "filedef.h"
+#include "config.h"
 #include "htmlentity.h"
+#include "plantuml.h"
 
 ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -201,6 +203,15 @@ void ManDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::ManOnly: 
       m_t << s->text(); 
       break;
+    case DocVerbatim::PlantUML:
+      {
+        static QCString manOutput = Config_getString("MAN_OUTPUT");
+        QCString baseName = writePlantUMLSource(manOutput,s->exampleFile(),s->text());
+        m_t << ".nf" << endl;
+        writePlantUMLFile(baseName);
+        m_t << ".fi" << endl;
+      }
+      break;
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
     case DocVerbatim::LatexOnly: 
@@ -208,7 +219,6 @@ void ManDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::DocbookOnly:
     case DocVerbatim::Dot: 
     case DocVerbatim::Msc: 
-    case DocVerbatim::PlantUML: 
       /* nothing */ 
       break;
   }
@@ -1029,3 +1039,11 @@ void ManDocVisitor::popEnabled()
   delete v;
 }
 
+void ManDocVisitor::writePlantUMLFile(const QCString &baseName)
+{
+  QCString outDir = Config_getString("MAN_OUTPUT");
+  generatePlantUMLOutput(baseName,outDir,PUML_ASCII);
+  // Contrary to the other PlantUML formats this format is not (yet, plantUML version 8008)
+  // splitted into multile files, so just 1 file has to be written.
+  dumpFile(baseName + ".atxt", m_t);
+}

@@ -7712,6 +7712,29 @@ bool copyFile(const QCString &src,const QCString &dest)
   return TRUE;
 }
 
+/** Dumps the contents of file with name \a src to an existing stream
+ *  \a m_t. Returns TRUE if successful.
+ */
+bool dumpFile(const QCString &src,FTextStream &m_t)
+{
+  QFile sf(src);
+  if (sf.open(IO_ReadOnly))
+  {
+    QFileInfo fi(src);
+    char *buffer = new char[fi.size() + 1];
+    sf.readBlock(buffer,fi.size());
+    buffer[fi.size()] = '\0';
+    m_t << buffer;
+    delete[] buffer;
+  }
+  else
+  {
+    err("could not open user specified file %s\n",src.data());
+    return FALSE;
+  }
+  return TRUE;
+}
+
 /** Returns the section of text, in between a pair of markers. 
  *  Full lines are returned, excluding the lines on which the markers appear.
  */
