@@ -5584,7 +5584,11 @@ int DocPara::handleCommand(const QCString &cmdName)
         static QCString jarPath = Config_getString("PLANTUML_JAR_PATH");
         doctokenizerYYsetStatePlantUML();
         retval = doctokenizerYYlex();
-        if (jarPath.isEmpty())
+        if (!Config_getBool("HAVE_DOT"))
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"ignoring startuml command because HAVE_DOT is not set");
+        }
+        else if (jarPath.isEmpty())
         {
           warn_doc_error(g_fileName,doctokenizerYYlineno,"ignoring startuml command because PLANTUML_JAR_PATH is not set");
         }
