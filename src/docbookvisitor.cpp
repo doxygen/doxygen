@@ -1241,6 +1241,7 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     bool hasCaption
     )
 {
+  static int cntMscFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1252,6 +1253,12 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   baseName.prepend("msc_");
+  //if (!inl)
+  //{
+    baseName += "_";
+    cntMscFile++;
+    baseName += QCString().setNum(cntMscFile);
+  //}
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   m_t << "<para>" << endl;

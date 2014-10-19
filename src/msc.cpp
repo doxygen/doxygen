@@ -149,8 +149,14 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
     portable_sysTimerStop();
   }
 
-error:
   QDir::setCurrent(oldDir);
+  return;
+
+error:
+  err("Problems running mscgen: exit code=%d, command='%s', arguments='%s'\n",
+      exitCode,mscExe.data(),mscArgs.data());
+  QDir::setCurrent(oldDir);
+  return;
 }
 
 QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
