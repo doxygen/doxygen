@@ -81,8 +81,12 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
     }
     portable_sysTimerStop();
   }
+  QDir::setCurrent(oldDir);
+  return;
 
 error:
+  err("Problems running dia: exit code=%d, command='%s', arguments='%s'\n",
+      exitCode,diaExe.data(),diaArgs.data());
   QDir::setCurrent(oldDir);
 }
 

@@ -1972,6 +1972,7 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
                                   const QCString &relPath,
                                   const QCString &)
 {
+  static int cntDiaFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1) // strip path
@@ -1983,6 +1984,12 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   baseName.prepend("dia_");
+  //if (!inl)
+  //{
+    baseName += "_";
+    cntDiaFile++;
+    baseName += QCString().setNum(cntDiaFile);
+  //}
   QCString outDir = Config_getString("HTML_OUTPUT");
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
 

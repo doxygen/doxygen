@@ -1761,6 +1761,7 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    bool hasCaption
                                   )
 {
+  static int cntDiaFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1772,6 +1773,12 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   baseName.prepend("dia_");
+  //if (!inl)
+  //{
+    baseName += "_";
+    cntDiaFile++;
+    baseName += QCString().setNum(cntDiaFile);
+  //}
 
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_EPS);

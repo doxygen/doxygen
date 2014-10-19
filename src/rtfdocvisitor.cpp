@@ -1699,12 +1699,19 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName)
 
 void RTFDocVisitor::writeDiaFile(const QCString &fileName)
 {
+  static int cntDiaFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
+  //if (!inl)
+  //{
+    baseName += "_";
+    cntDiaFile++;
+    baseName += QCString().setNum(cntDiaFile);
+  //}
   QCString outDir = Config_getString("RTF_OUTPUT");
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
