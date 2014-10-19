@@ -1396,6 +1396,7 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     bool hasCaption
     )
 {
+  static int cntDotFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1407,6 +1408,12 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   baseName.prepend("dot_");
+  //if (!inl)
+  //{
+    baseName += "_";
+    cntDotFile++;
+    baseName += QCString().setNum(cntDotFile);
+  //}
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP);

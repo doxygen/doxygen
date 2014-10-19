@@ -397,7 +397,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 
         forceEndParagraph(s);
         m_t << "<div align=\"center\">" << endl;
-        writeDotFile(fileName,s->relPath(),s->context());
+        writeDotFile(fileName,s->relPath(),s->context(),TRUE);
         m_t << "</div>" << endl;
         forceStartParagraph(s);
 
@@ -1438,8 +1438,9 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
+  forceEndParagraph(df);
   m_t << "<div class=\"dotgraph\">" << endl;
-  writeDotFile(df->file(),df->relPath(),df->context());
+  writeDotFile(df->file(),df->relPath(),df->context(),FALSE);
   if (df->hasCaption())
   { 
     m_t << "<div class=\"caption\">" << endl;
@@ -1454,6 +1455,7 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
     m_t << "</div>" << endl;
   }
   m_t << "</div>" << endl;
+  forceStartParagraph(df);
 }
 
 void HtmlDocVisitor::visitPre(DocMscFile *df)
@@ -1926,8 +1928,9 @@ void HtmlDocVisitor::popEnabled()
 }
 
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
-                                  const QCString &context)
+                                  const QCString &context,const bool inl)
 {
+  static int cntDotFile = 0;
   QCString baseName=fn;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1939,6 +1942,12 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
     baseName=baseName.left(i);
   }
   baseName.prepend("dot_");
+  if (!inl)
+  {
+    baseName += "_";
+    cntDotFile++;
+    baseName += QCString().setNum(cntDotFile);
+  }
   QCString outDir = Config_getString("HTML_OUTPUT");
   writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP);
   writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context);

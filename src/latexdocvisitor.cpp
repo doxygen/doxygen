@@ -288,7 +288,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         file.close();
 
         m_t << "\\begin{center}\n";
-        startDotFile(fileName,"","",FALSE);
+        startDotFile(fileName,"","",FALSE,TRUE);
         endDotFile(FALSE);
         m_t << "\\end{center}\n";
 
@@ -1163,7 +1163,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  startDotFile(df->file(),df->width(),df->height(),df->hasCaption());
+  startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),FALSE);
 }
 
 void LatexDocVisitor::visitPost(DocDotFile *df) 
@@ -1593,9 +1593,11 @@ void LatexDocVisitor::popEnabled()
 void LatexDocVisitor::startDotFile(const QCString &fileName,
                                    const QCString &width,
                                    const QCString &height,
-                                   bool hasCaption
+                                   bool hasCaption,
+                                   const bool inl
                                   )
 {
+  static int cntDotFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
@@ -1607,6 +1609,12 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   baseName.prepend("dot_");
+  if (!inl)
+  {
+    baseName += "_";
+    cntDotFile++;
+    baseName += QCString().setNum(cntDotFile);
+  }
   QCString outDir = Config_getString("LATEX_OUTPUT");
   QCString name = fileName;
   writeDotGraphFromFile(name,outDir,baseName,GOF_EPS);
