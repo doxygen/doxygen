@@ -498,19 +498,22 @@ public:
         }
         StringRep &operator=(const StringRep &s)
         {
-          if (!u.s.isShort)
+          if (&s!=this)
           {
-            u.l.d->dispose();
-          }
-          if (s.u.s.isShort) // copy by value
-          {
-            u.s = s.u.s;
-          }
-          else // copy by reference
-          {
-            u.l.isShort=FALSE;
-            u.l.d = s.u.l.d;
-            u.l.d->refCount++;
+            if (!u.s.isShort)
+            {
+              u.l.d->dispose();
+            }
+            if (s.u.s.isShort) // copy by value
+            {
+              u.s = s.u.s;
+            }
+            else // copy by reference
+            {
+              u.l.isShort=FALSE;
+              u.l.d = s.u.l.d;
+              u.l.d->refCount++;
+            }
           }
           return *this;
         }
