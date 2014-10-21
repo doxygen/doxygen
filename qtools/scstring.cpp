@@ -13,8 +13,17 @@
  *
  */
 
+// with this switch you can choose between the original qcstring implementation,
+// which implicitly shares data so copying is faster, but requires at least 12 bytes, and
+// the new implementation in this file, which has a smaller footprint (only 4 bytes for
+// an empty string), but always copies strings.
+#define SMALLSTRING
+
 #include "qcstring.h"
-#include "qgstring.h"
+#ifndef SMALLSTRING
+#include "qcstring.cpp"
+#else
+#define SCString QCString
 
 #include <qstring.h>
 #include <stdlib.h>
@@ -25,7 +34,7 @@
 #include <qdatastream.h>
 
 
-QCString::QCString(int size)
+SCString::SCString(int size)
 {
   if (size>0)
   {
@@ -42,17 +51,17 @@ QCString::QCString(int size)
   }
 }
 
-QCString::QCString( const QCString &s ) 
+SCString::SCString( const SCString &s ) 
 { 
   duplicate(s);
 }
 
-QCString::QCString( const char *str )
+SCString::SCString( const char *str )
 { 
   duplicate(str);
 }
 
-QCString::QCString( const char *str, uint maxlen )
+SCString::SCString( const char *str, uint maxlen )
 { 
   uint l;
   if (str && ( l = QMIN(qstrlen(str),maxlen) )) 
@@ -67,20 +76,21 @@ QCString::QCString( const char *str, uint maxlen )
   }
 }
 
-QCString::~QCString()
+SCString::~SCString()
 {
   if (m_data) free(m_data);
   m_data=0;
 }
 
-QCString &QCString::assign( const char *str )
+SCString &SCString::assign( const char *str )
 {
+  if (m_data==str) return *this;
   if (m_data) free(m_data);
   duplicate(str);
   return *this;
 }
 
-bool QCString::resize( uint newlen )
+bool SCString::resize( uint newlen )
 {
   if (newlen==0)
   {
@@ -100,7 +110,7 @@ bool QCString::resize( uint newlen )
   return TRUE;
 }
 
-bool QCString::fill( char c, int len )
+bool SCString::fill( char c, int len )
 {
   uint l=length();
   if (len<0) len=l;
@@ -126,27 +136,28 @@ bool QCString::fill( char c, int len )
   return TRUE;
 }
 
-QCString &QCString::sprintf( const char *format, ... )
+SCString &SCString::sprintf( const char *format, ... )
 {
   va_list ap;
   va_start( ap, format );
   uint l = length();
-  const uint minlen=256;
+  const uint minlen=4095;
   if (l<minlen)
   {
     if (m_data) 
-      m_data = (char *)realloc(m_data,minlen);
+      m_data = (char *)realloc(m_data,minlen+1);
     else
-      m_data = (char *)malloc(minlen);
+      m_data = (char *)malloc(minlen+1);
+    m_data[minlen]='\0';
   }
-  vsprintf( m_data, format, ap );
+  vsnprintf( m_data, minlen, format, ap );
   resize( qstrlen(m_data) + 1 );              // truncate
   va_end( ap );
   return *this;
 }
 
 
-int QCString::find( char c, int index, bool cs ) const
+int SCString::find( char c, int index, bool cs ) const
 {
   uint len = length();
   if ( m_data==0 || (uint)index>len )               // index outside string
@@ -168,7 +179,7 @@ int QCString::find( char c, int index, bool cs ) const
   return d ? (int)(d - m_data) : -1;
 }
 
-int QCString::find( const char *str, int index, bool cs ) const
+int SCString::find( const char *str, int index, bool cs ) const
 {
   uint l = length();
   if ( m_data==0 || (uint)index > l )         // index outside string
@@ -198,18 +209,18 @@ int QCString::find( const char *str, int index, bool cs ) const
   return d ? (int)(d - m_data) : -1;
 }
 
-int QCString::find( const QCString &str,int index,bool cs) const
+int SCString::find( const QCString &str, int index, bool cs ) const
 {
   return find(str.data(),index,cs);
 }
 
-int QCString::find( const QRegExp &rx, int index ) const
+int SCString::find( const QRegExp &rx, int index ) const
 {
   QString d = QString::fromLatin1( m_data );
   return d.find( rx, index );
 }
 
-int QCString::findRev( char c, int index, bool cs) const
+int SCString::findRev( char c, int index, bool cs) const
 {
   const char *b = m_data;
   const char *d;
@@ -244,7 +255,7 @@ int QCString::findRev( char c, int index, bool cs) const
   return d >= b ? (int)(d - b) : -1;
 }
 
-int QCString::findRev( const char *str, int index, bool cs) const
+int SCString::findRev( const char *str, int index, bool cs) const
 {
   int slen = qstrlen(str);
   uint len = length();
@@ -274,13 +285,13 @@ int QCString::findRev( const char *str, int index, bool cs) const
 
 }
 
-int QCString::findRev( const QRegExp &rx, int index ) const
+int SCString::findRev( const QRegExp &rx, int index ) const
 {
   QString d = QString::fromLatin1( m_data );
   return d.findRev( rx, index );
 }
 
-int QCString::contains( char c, bool cs ) const
+int SCString::contains( char c, bool cs ) const
 {
   int count = 0;
   char *d = m_data;
@@ -304,7 +315,7 @@ int QCString::contains( char c, bool cs ) const
   return count;
 }
 
-int QCString::contains( const char *str, bool cs ) const
+int SCString::contains( const char *str, bool cs ) const
 {
   int count = 0;
   char *d = data();
@@ -328,17 +339,17 @@ int QCString::contains( const char *str, bool cs ) const
   return count;
 }
 
-int QCString::contains( const QRegExp &rx ) const
+int SCString::contains( const QRegExp &rx ) const
 { 
   QString d = QString::fromLatin1( m_data );
   return d.contains( rx );
 }
 
-QCString QCString::left( uint len )  const
+SCString SCString::left( uint len )  const
 {
   if ( isEmpty() ) 
   {
-    return QCString();
+    return SCString();
   } 
   else if ( len >= length() ) 
   {
@@ -346,49 +357,49 @@ QCString QCString::left( uint len )  const
   } 
   else 
   {
-    QCString s( len+1 );
+    SCString s( len+1 );
     strncpy( s.data(), m_data, len );
     *(s.data()+len) = '\0';
     return s;
   }
 }
 
-QCString QCString::right( uint len ) const
+SCString SCString::right( uint len ) const
 {
   if ( isEmpty() ) 
   {
-    return QCString();
+    return SCString();
   } 
   else 
   {
     uint l = length();
     if ( len > l ) len = l;
     char *p = m_data + (l - len); 
-    return QCString( p ); 
+    return SCString( p ); 
   }       
 }
 
-QCString QCString::mid( uint index, uint len) const
+SCString SCString::mid( uint index, uint len) const
 {
   uint slen = length();
   if ( len == 0xffffffff ) len = slen-index;
   if ( isEmpty() || index >= slen ) 
   {
-    return QCString();
+    return SCString();
   } 
   else 
   {
     register char *p = data()+index;
-    QCString s( len+1 );
+    SCString s( len+1 );
     strncpy( s.data(), p, len );
     *(s.data()+len) = '\0';
     return s;
   }
 }
 
-QCString QCString::lower() const
+SCString SCString::lower() const
 {
-  QCString s( m_data );
+  SCString s( m_data );
   register char *p = s.data();
   if ( p ) 
   {
@@ -401,9 +412,9 @@ QCString QCString::lower() const
   return s;
 }
 
-QCString QCString::upper() const
+SCString SCString::upper() const
 {
-  QCString s( m_data );
+  SCString s( m_data );
   register char *p = s.data();
   if ( p ) {
     while ( *p ) {
@@ -414,7 +425,7 @@ QCString QCString::upper() const
   return s;
 }
 
-QCString QCString::stripWhiteSpace()	const
+SCString SCString::stripWhiteSpace()	const
 {
   if ( isEmpty() )                            // nothing to do
     return *this;
@@ -424,7 +435,7 @@ QCString QCString::stripWhiteSpace()	const
   if ( !isspace((uchar) s[0]) && !isspace((uchar) s[reslen-1]) )
     return *this;                           // returns a copy
 
-  QCString result(s);
+  SCString result(s);
   s = result.data(); 
   int start = 0;
   int end = reslen - 1;
@@ -432,7 +443,7 @@ QCString QCString::stripWhiteSpace()	const
     start++; 
   if ( s[start] == '\0' ) 
   {                                                   // only white space
-    return QCString();
+    return SCString();
   }
   while ( end && isspace((uchar) s[end]) )            // skip white space from end
     end--;
@@ -442,12 +453,12 @@ QCString QCString::stripWhiteSpace()	const
   return result;
 }
 
-QCString QCString::simplifyWhiteSpace() const
+SCString SCString::simplifyWhiteSpace() const
 {
   if ( isEmpty() )                            // nothing to do
     return *this;
 
-  QCString result( length()+1 );
+  SCString result( length()+1 );
   char *from  = data();
   char *to    = result.data();
   char *first = to;
@@ -469,9 +480,9 @@ QCString QCString::simplifyWhiteSpace() const
   return result;
 }
 
-QCString &QCString::insert( uint index, const char *s )
+SCString &SCString::insert( uint index, const char *s )
 {   
-  int len = s ? qstrlen(s) : 0;
+  int len = qstrlen(s);
   if ( len == 0 )
     return *this;
   uint olen = length();
@@ -493,7 +504,7 @@ QCString &QCString::insert( uint index, const char *s )
   return *this;
 }
 
-QCString &QCString::insert( uint index, char c )        // insert char
+SCString &SCString::insert( uint index, char c )        // insert char
 {
   char buf[2];
   buf[0] = c;
@@ -501,7 +512,7 @@ QCString &QCString::insert( uint index, char c )        // insert char
   return insert( index, buf );
 }
 
-QCString& QCString::operator+=( const char *str )
+SCString& SCString::operator+=( const char *str )
 {
   if ( !str ) return *this;  // nothing to append
   uint len1 = length();
@@ -515,7 +526,7 @@ QCString& QCString::operator+=( const char *str )
   return *this;      
 }
 
-QCString &QCString::operator+=( char c )
+SCString &SCString::operator+=( char c )
 {
   uint len = length();
   char *newData = (char *)realloc( m_data, length()+2 );
@@ -528,7 +539,7 @@ QCString &QCString::operator+=( char c )
   return *this;
 }
 
-QCString &QCString::remove( uint index, uint len )
+SCString &SCString::remove( uint index, uint len )
 {
   uint olen = length();
   if ( index + len >= olen ) // range problems
@@ -546,59 +557,58 @@ QCString &QCString::remove( uint index, uint len )
   return *this;
 }
 
-QCString &QCString::replace( uint index, uint len, const char *s )
+SCString &SCString::replace( uint index, uint len, const char *s )
 {
   remove( index, len );
   insert( index, s );
   return *this;
 }
 
-QCString &QCString::replace( const QRegExp &rx, const char *str )
+SCString &SCString::replace( const QRegExp &rx, const char *str )
 {
   QString d = QString::fromLatin1( m_data );
   QString r = QString::fromLatin1( str );
   d.replace( rx, r );
-  operator=( d.ascii() );
-  return *this;
+  return assign(d.ascii());
 }
 
-long  QCString::toLong( bool *ok ) const
+long  SCString::toLong( bool *ok ) const
 {
   QString s(m_data);
   return s.toLong(ok);
 }
 
-ulong QCString::toULong( bool *ok ) const
+ulong SCString::toULong( bool *ok ) const
 {
   QString s(m_data);
   return s.toULong(ok);
 }
 
-short QCString::toShort( bool *ok )	const
+short SCString::toShort( bool *ok )	const
 {
   QString s(m_data);
   return s.toShort(ok);
 }
 
-ushort QCString::toUShort( bool *ok ) const
+ushort SCString::toUShort( bool *ok ) const
 {
   QString s(m_data);
   return s.toUShort(ok);
 }
 
-int QCString::toInt( bool *ok ) const
+int SCString::toInt( bool *ok ) const
 {
   QString s(m_data);
   return s.toInt(ok);
 }
 
-uint QCString::toUInt( bool *ok ) const
+uint SCString::toUInt( bool *ok ) const
 {
   QString s(m_data);
   return s.toUInt(ok);
 }
 
-QCString &QCString::setNum( long n )
+SCString &SCString::setNum( long n )
 {
   char buf[20];
   register char *p = &buf[19];
@@ -623,7 +633,7 @@ QCString &QCString::setNum( long n )
   return *this;
 }
 
-QCString &QCString::setNum( ulong n )
+SCString &SCString::setNum( ulong n )
 {
   char buf[20];
   register char *p = &buf[19];
@@ -637,16 +647,16 @@ QCString &QCString::setNum( ulong n )
   return *this;
 }
 
-void QCString::msg_index( uint index )
+void SCString::msg_index( uint index )
 {
 #if defined(CHECK_RANGE)
-    qWarning( "QCString::at: Absolute index %d out of range", index );
+    qWarning( "SCString::at: Absolute index %d out of range", index );
 #else
     Q_UNUSED( index )
 #endif
 }
 
-bool QCString::stripPrefix(const char *prefix)
+bool SCString::stripPrefix(const char *prefix)
 {
   if (prefix==0) return FALSE;
   uint plen   = qstrlen(prefix);
@@ -757,12 +767,12 @@ QDataStream &operator>>( QDataStream &s, QByteArray &a )
     return s;
 }
 
-QDataStream &operator<<( QDataStream &s, const QCString &str )
+QDataStream &operator<<( QDataStream &s, const SCString &str )
 {
     return s.writeBytes( str.data(), str.size() );
 }
 
-QDataStream &operator>>( QDataStream &s, QCString &str )
+QDataStream &operator>>( QDataStream &s, SCString &str )
 {
     Q_UINT32 len;
     s >> len;					// read size of string
@@ -783,17 +793,6 @@ QDataStream &operator>>( QDataStream &s, QCString &str )
 
 #endif //QT_NO_DATASTREAM
 
-inline QCString operator+( const QCString &s1, const QGString &s2 )
-{
-    QCString tmp(s1);
-    tmp += s2.data();
-    return tmp;
-}
 
-inline QCString operator+( const QGString &s1, const QCString &s2 )
-{
-    QCString tmp(s1.data());
-    tmp += s2;
-    return tmp;
-}
 
+#endif

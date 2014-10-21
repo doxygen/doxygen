@@ -1,16 +1,38 @@
 /****************************************************************************
+** 
 **
-** Copyright (C) 1997-2004 by Dimitri van Heesch.
+** Definition of the extended char array operations,
+** and QByteArray and QCString classes
 **
-** Permission to use, copy, modify, and distribute this software and its
-** documentation under the terms of the GNU General Public License is hereby
-** granted. No representations are made about the suitability of this software
-** for any purpose. It is provided "as is" without express or implied warranty.
-** See the GNU General Public License for more details.
+** Created : 920609
 **
-** Note: this is a reimplementation of the qcstring.h that came with
-** an Qt version 2.2.3. For short strings it stores the string data inside
-** the object. For long strings it uses a separate array with reference counting.
+** Copyright (C) 1992-2000 Trolltech AS.  All rights reserved.
+**
+** This file is part of the tools module of the Qt GUI Toolkit.
+**
+** This file may be distributed under the terms of the Q Public License
+** as defined by Trolltech AS of Norway and appearing in the file
+** LICENSE.QPL included in the packaging of this file.
+**
+** This file may be distributed and/or modified under the terms of the
+** GNU General Public License version 2 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.
+**
+** Licensees holding valid Qt Enterprise Edition or Qt Professional Edition
+** licenses may use this file in accordance with the Qt Commercial License
+** Agreement provided with the Software.
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+** See http://www.trolltech.com/pricing.html or email sales@trolltech.com for
+**   information about Qt Commercial License Agreements.
+** See http://www.trolltech.com/qpl/ for QPL licensing information.
+** See http://www.trolltech.com/gpl/ for GPL licensing information.
+**
+** Contact info@trolltech.com if any conditions of this licensing are
+** not clear to you.
 **
 **********************************************************************/
 
@@ -21,7 +43,6 @@
 #include "qarray.h"
 #endif // QT_H
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,7 +54,6 @@
 #include <strings.h>
 #endif
 
-#include <assert.h>
 
 class QGString;
 
@@ -56,6 +76,7 @@ inline char *hack_strrchr( const char *s, int c )
 #define strchr(s,c)	hack_strchr((s),(c))
 #define strrchr(s,c)	hack_strrchr((s),(c))
 #endif
+
 
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
@@ -106,6 +127,39 @@ Q_EXPORT int qstricmp( const char *str1, const char *str2 );
 
 Q_EXPORT int qstrnicmp( const char *str1, const char *str2, uint len );
 
+#if 0
+// ### TODO for 3.0: these and the cstr* functions should be used if
+//                   !defined(QT_CLEAN_NAMESPACE)
+//                   We want to keep source compatibility for 2.x
+// ### TODO for 4.0: completely remove these and the cstr* functions
+
+#if !defined(QT_GENUINE_STR)
+
+#undef	strlen
+#define strlen qstrlen
+
+#undef	strcpy
+#define strcpy qstrcpy
+
+#undef	strcmp
+#define strcmp qstrcmp
+
+#undef	strncmp
+#define strncmp qstrncmp
+
+#undef	stricmp
+#define stricmp	 qstricmp
+
+#undef	strnicmp
+#define strnicmp qstrnicmp
+
+#endif
+#endif
+
+// qChecksum: Internet checksum
+
+Q_EXPORT Q_UINT16 qChecksum( const char *s, uint len );
+
 /*****************************************************************************
   QByteArray class
  *****************************************************************************/
@@ -114,6 +168,7 @@ Q_EXPORT int qstrnicmp( const char *str1, const char *str2, uint len );
 template class Q_EXPORT QArray<char>;
 #endif
 typedef QArray<char> QByteArray;
+
 
 /*****************************************************************************
   QByteArray stream functions
@@ -126,540 +181,142 @@ Q_EXPORT QDataStream &operator>>( QDataStream &, QByteArray & );
 class QRegExp;
 
 /** This is an alternative implementation of QCString. It provides basically
- *  the same functions but uses reference counting and copy on write.
+ *  the same functions but uses less memory for administration. This class
+ *  is just a wrapper around a plain C string requiring only 4 bytes "overhead".
+ *  QCString features sharing of data and stores the string length, but 
+ *  requires 4 + 12 bytes for this (even for the empty string). As doxygen 
+ *  uses a LOT of string during a run it saves a lot of memory to use a 
+ *  more memory efficient implementation at the cost of relatively low
+ *  runtime overhead.
  */
-class QCString
+class QCString 
 {
 public:
-    /** creates an empty string */
-    QCString()
-    {
-    }
+    QCString() : m_data(0) {}		// make null string
+    QCString( const QCString &s );
+    QCString( int size );
+    QCString( const char *str );
+    QCString( const char *str, uint maxlen );
+    ~QCString();
 
-    /** destroys the string */
-   ~QCString()
-    {
-    }
+    QCString    &operator=( const QCString &s );// deep copy
+    QCString    &operator=( const char *str );	// deep copy
 
-    /** makes a copy of a string. */
-    QCString( const QCString &s ) : m_rep(s.m_rep)
-    {
-    }
+    bool        isNull()        const;
+    bool	isEmpty()	const;
+    uint	length()	const;
+    uint        size()          const { return m_data ? length()+1 : 0; }
+    char *      data()          const { return m_data; }
+    bool	resize( uint newlen );
+    bool	truncate( uint pos );
+    bool	fill( char c, int len = -1 );
 
-    /** creates a string with room for size characters
-     *  @param[in] size the number of character to allocate (including the 0-terminator)
-     */
-    QCString( int size ) : m_rep(size)
-    {
-    }
+    QCString	copy()	const;
 
-    /** creates a string from a plain C string.
-     *  @param[in] str A zero terminated C string. When 0 an empty string is created.
-     */
-    QCString( const char *str ) : m_rep(str)
-    {
-    }
+    QCString    &sprintf( const char *format, ... );
 
-    /** creates a string from \a str and copies over the first \a maxlen characters. */
-    QCString( const char *str, uint maxlen ) : m_rep(str,maxlen)
-    {
-    }
+    int		find( char c, int index=0, bool cs=TRUE ) const;
+    int		find( const char *str, int index=0, bool cs=TRUE ) const;
+    int		find( const QCString &str, int index=0, bool cs=TRUE ) const;
+    int		find( const QRegExp &, int index=0 ) const;
+    int		findRev( char c, int index=-1, bool cs=TRUE) const;
+    int		findRev( const char *str, int index=-1, bool cs=TRUE) const;
+    int		findRev( const QRegExp &, int index=-1 ) const;
+    int		contains( char c, bool cs=TRUE ) const;
+    int		contains( const char *str, bool cs=TRUE ) const;
+    int		contains( const QRegExp & ) const;
+    bool        stripPrefix(const char *prefix);
 
-    /** replaces the contents by that of string \a s. */
-    QCString &operator=( const QCString &s )
-    {
-      m_rep = s.m_rep;
-      return *this;
-    }
+    QCString	left( uint len )  const;
+    QCString	right( uint len ) const;
+    QCString	mid( uint index, uint len=0xffffffff) const;
 
-    /** replaces the contents by that of C string \a str. */
-    QCString &operator=( const char *str)
-    {
-      m_rep = str;
-      return *this;
-    }
+    QCString	lower() const;
+    QCString	upper() const;
 
-    /** Returns TRUE iff the string is empty. Equivalent to isEmpty(). */
-    bool isNull() const
-    {
-      return m_rep.isEmpty();
-    }
+    QCString	stripWhiteSpace()	const;
+    QCString	simplifyWhiteSpace()	const;
 
-    /** Returns TRUE iff the string is empty */
-    bool isEmpty() const
-    {
-      return m_rep.isEmpty();
-    }
+    QCString    &assign( const char *str );
+    QCString    &insert( uint index, const char * );
+    QCString    &insert( uint index, char );
+    QCString    &append( const char *s );
+    QCString    &prepend( const char *s );
+    QCString    &remove( uint index, uint len );
+    QCString    &replace( uint index, uint len, const char * );
+    QCString    &replace( const QRegExp &, const char * );
 
-    /** Returns the length of the string, excluding the 0-terminator. Equivalent to size(). */
-    uint length() const
-    {
-      return m_rep.length();
-    }
+    short	toShort( bool *ok=0 )	const;
+    ushort	toUShort( bool *ok=0 )	const;
+    int		toInt( bool *ok=0 )	const;
+    uint	toUInt( bool *ok=0 )	const;
+    long	toLong( bool *ok=0 )	const;
+    ulong	toULong( bool *ok=0 )	const;
 
-    /** Returns the length of the string, excluding the 0-terminator. */
-    uint size() const
-    {
-      return m_rep.length();
-    }
+    QCString    &setNum( short );
+    QCString    &setNum( ushort );
+    QCString    &setNum( int );
+    QCString    &setNum( uint );
+    QCString    &setNum( long );
+    QCString    &setNum( ulong );
+    QCString    &setNum( float, char f='g', int prec=6 );
+    QCString    &setNum( double, char f='g', int prec=6 );
 
-    /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
-    char *data() const
-    {
-      return m_rep.data();
-    }
-
-    /** Resizes the string to hold \a newlen characters
-     *  (this value should include the 0-terminator). If the string is enlarged the contents will
-     *  be left unmodified.
-     */
-    bool resize( uint newlen )
-    {
-      m_rep.resize(newlen);
-      return TRUE;
-    }
-
-    /** Truncates the string at position \a pos. */
-    bool truncate( uint pos )
-    {
-      return resize(pos+1);
-    }
-
-    /** Fills a string with a predefined character
-     *  @param[in] c the character used to fill the string with.
-     *  @param[in] len the number of character to fill. Use -1 to fill the whole string.
-     *  @note the string will be resized to contain \a len characters. The contents of the
-     *  string will be lost.
-     */
-    bool fill( char c, int len = -1 )
-    {
-      m_rep.fill(c,len);
-      return TRUE;
-    }
-
-    /** Returns a deep copy of the string. */
-    QCString copy() const
-    {
-      if (length()==0) return QCString();
-      QCString cs(length()+1);
-      memcpy(cs.data(),data(),length());
-      return cs;
-    }
-
-    QCString &sprintf( const char *format, ... );
-    int	find( char c, int index=0, bool cs=TRUE ) const;
-    int	find( const char *str, int index=0, bool cs=TRUE ) const;
-    int find( const QCString &str, int index=0, bool cs=TRUE ) const;
-    int	find( const QRegExp &rx, int index=0 ) const;
-    int	findRev( char c, int index=-1, bool cs=TRUE) const;
-    int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
-    int	findRev( const QRegExp &rx, int index=-1 ) const;
-    int	contains( char c, bool cs=TRUE ) const;
-    int	contains( const char *str, bool cs=TRUE ) const;
-    int contains( const QRegExp &rx ) const;
-    bool stripPrefix(const char *prefix);
-    QCString left( uint len ) const;
-    QCString right( uint len ) const;
-    QCString mid( uint index, uint len=0xffffffff) const;
-    QCString lower() const;
-    QCString upper() const;
-    QCString stripWhiteSpace() const;
-    QCString simplifyWhiteSpace() const;
-    QCString &assign( const char *str );
-    QCString &insert( uint index, const char *s );
-    QCString &insert( uint index, char c);
-    QCString &append( const char *s );
-    QCString &prepend( const char *s );
-    QCString &remove( uint index, uint len );
-    QCString &replace( uint index, uint len, const char *s);
-    QCString &replace( const QRegExp &rx, const char *str );
-    short toShort( bool *ok=0 ) const;
-    ushort toUShort( bool *ok=0 ) const;
-    int	toInt( bool *ok=0 ) const;
-    uint toUInt( bool *ok=0 ) const;
-    long toLong( bool *ok=0 ) const;
-    ulong toULong( bool *ok=0 )	const;
-    QCString &setNum(short n);
-    QCString &setNum(ushort n);
-    QCString &setNum(int n);
-    QCString &setNum(uint n);
-    QCString &setNum(long n);
-    QCString &setNum(ulong n);
-
-    /** Converts the string to a plain C string */
-    operator const char *() const
-    {
-      return (const char *)data();
-    }
-
-    /** Appends string \a str to this string and returns a reference to the result. */
-    QCString &operator+=( const char *str )
-    {
-      if (!str) return *this;
-      int len1 = length();
-      int len2 = strlen(str);
-      resize(len1+len2+1);
-      memcpy(data()+len1,str,len2);
-      return *this;
-    }
-
-    /** Appends character \a c to this string and returns a reference to the result. */
-    QCString &operator+=( char c )
-    {
-      int len = length();
-      resize(len+2);
-      data()[len]=c;
-      return *this;
-    }
-
-    /** Returns a reference to the character at index \a i. */
-    char &at( uint i) const
-    {
-      return m_rep.at(i);
-    }
-
-    /** Indexing operator. Equavalent to at(). */
-    char &operator[]( int i ) const
-    {
-      return m_rep.at((uint)i);
-    }
-
+		operator const char *() const;
+    QCString    &operator+=( const char *str );
+    QCString    &operator+=( char c );
+    char &at( uint index ) const;
+    char &operator[]( int i ) const { return at(i); }
+    
   private:
+    static void msg_index( uint );
+    void duplicate( const QCString &s );
+    void duplicate( const char *str);
+    QCString &duplicate( const char *str, int);
 
-    struct LSData;
-
-    // long string representation
-    struct LongStringRep
-    {
-      uchar isShort : 1;  // should be shared with ShortStringRep
-      uchar : 7;
-      LSData *d;
-    };
-
-#define SHORT_STR_CAPACITY ((int)sizeof(LongStringRep)-1)
-#define SHORT_STR_MAX_LEN (SHORT_STR_CAPACITY-1)
-
-    // short string representation
-    struct ShortStringRep
-    {
-      uchar isShort : 1;  // should be shared with LongStringRep
-      uchar len     : 7;
-      char str[SHORT_STR_CAPACITY]; // size including 0-terminator
-    };
-
-    // ref counting string header
-    struct LSHeader
-    {
-      int           len;      // length of string without 0 terminator
-      int           refCount; // -1=leaked, 0=one ref & non-cost, n>0, n+1 refs, const
-    };
-    // ref counting string data and methods
-    struct LSData : public LSHeader
-    {
-      char *toStr()
-      {
-        return (char*)(this+1); // string data starts after the header
-      }
-
-      // creates a LSData item with room for size bytes (which includes the 0 terminator!)
-      // if size is zero, an empty string will be created.
-      static LSData *create(int size)
-      {
-        LSData *data;
-        data = (LSData*)malloc(sizeof(LSHeader)+size);
-        data->len = size-1;
-        data->refCount = 0;
-        data->toStr()[size-1] = 0;
-        return data;
-      }
-      // remove out reference to the data. Frees memory if no more users
-      void dispose()
-      {
-        if (--refCount<0) free(this);
-      }
-
-      // resizes LSData so it can hold size bytes (which includes the 0 terminator!)
-      // Since this is for long strings only, size should be > SHORT_STR_CAPACITY
-      static LSData *resize(LSData *d,int size)
-      {
-        if (d->len>0 && d->refCount==0) // non-const, non-empty
-        {
-          d = (LSData*)realloc(d,sizeof(LSHeader)+size);
-          d->len = size-1;
-          d->toStr()[size-1] = 0;
-          return d;
-        }
-        else // need to make a copy
-        {
-          LSData *newData = LSData::create(size);
-          int len = d->len;
-          if (len>=size) len=size-1;
-          memcpy(newData->toStr(),d->toStr(),len);
-          newData->toStr()[len]=0;
-          d->dispose();
-          return newData;
-        }
-      }
-    };
-
-    class StringRep
-    {
-      public:
-        StringRep()
-        {
-          u.s.isShort=TRUE;
-          u.s.len=0;
-        }
-       ~StringRep()
-        {
-          if (!u.s.isShort)
-          {
-            u.l.d->dispose();
-          }
-        }
-        StringRep(const StringRep &s)
-        {
-          if (&s!=this)
-          {
-            u = s.u;
-            if (!u.s.isShort)
-            {
-              u.l.d->refCount++;
-            }
-          }
-        }
-        StringRep(int size)
-        {
-          u.s.isShort = size<=SHORT_STR_CAPACITY;
-          if (size<=SHORT_STR_CAPACITY) // init short string
-          {
-            if (size>0)
-            {
-              u.s.len = size-1;
-              u.s.str[size-1]='\0';
-            }
-            else
-            {
-              u.s.len = 0;
-            }
-          }
-          else // int long string
-          {
-            u.l.d = LSData::create(size);
-          }
-        }
-        StringRep(const char *str)
-        {
-          if (str)
-          {
-            int len = strlen(str);
-            u.s.isShort = len<SHORT_STR_CAPACITY;
-            if (len<SHORT_STR_CAPACITY)
-            {
-              u.s.len = len;
-              memcpy(u.s.str,str,len+1);
-            }
-            else
-            {
-              u.l.d = LSData::create(len+1);
-              memcpy(u.l.d->toStr(),str,u.l.d->len);
-            }
-          }
-          else // create empty string
-          {
-            u.s.isShort=TRUE;
-            u.s.len=0;
-          }
-        }
-        StringRep( const char *str, uint maxlen )
-        {
-          if (str && maxlen>0)
-          {
-            uint len=strlen(str);
-            if (len>maxlen) len=maxlen;
-            u.s.isShort = len<=SHORT_STR_MAX_LEN;
-            if (u.s.isShort)
-            {
-              u.s.len = len;
-              memcpy(u.s.str,str,len);
-              u.s.str[len]='\0';
-            }
-            else
-            {
-              u.l.d = LSData::create(len+1);
-              memcpy(u.l.d->toStr(),str,len);
-            }
-          }
-          else // create empty string
-          {
-            u.s.isShort=TRUE;
-            u.s.len=0;
-          }
-        }
-        StringRep &operator=(const StringRep &s)
-        {
-          if (&s!=this)
-          {
-            if (!u.s.isShort)
-            {
-              u.l.d->dispose();
-            }
-            if (s.u.s.isShort) // copy by value
-            {
-              u.s = s.u.s;
-            }
-            else // copy by reference
-            {
-              u.l.isShort=FALSE;
-              u.l.d = s.u.l.d;
-              u.l.d->refCount++;
-            }
-          }
-          return *this;
-        }
-        StringRep &operator=(const char *str)
-        {
-          if (!u.s.isShort)
-          {
-            u.l.d->dispose();
-          }
-          if (str)
-          {
-            int len = strlen(str);
-            u.s.isShort = len<=SHORT_STR_MAX_LEN;
-            if (len<SHORT_STR_CAPACITY)
-            {
-              u.s.len = len;
-              memcpy(u.s.str,str,len+1);
-            }
-            else
-            {
-              u.l.d = LSData::create(len+1);
-              memcpy(u.l.d->toStr(),str,u.l.d->len);
-            }
-          }
-          else
-          {
-            u.s.isShort=TRUE;
-            u.s.len=0;
-          }
-          return *this;
-        }
-        bool isEmpty() const
-        {
-          return u.s.isShort && u.s.len==0;
-        }
-        uint length() const
-        {
-          return u.s.isShort ? u.s.len : u.l.d->len;
-        }
-        char *data() const
-        {
-          if (u.s.isShort)
-          {
-            return u.s.len==0 ? 0 : (char*)u.s.str;
-          }
-          else
-          {
-            return u.l.d->len==0 ? 0 : u.l.d->toStr();
-          }
-        }
-        char &at(int i) const
-        {
-          if (u.s.isShort)
-          {
-            return (char&)u.s.str[i];
-          }
-          else
-          {
-            return u.l.d->toStr()[i];
-          }
-        }
-        bool resize( uint newlen )
-        {
-          if (u.s.isShort && newlen<=SHORT_STR_CAPACITY) // resize short string
-          {
-            if (newlen>0)
-            {
-              u.s.len = newlen-1;
-              u.s.str[newlen-1]='\0';
-            }
-            else // string becomes empty
-            {
-              u.s.len = 0;
-            }
-          }
-          else if (u.s.isShort) // turn short string into long string
-          {
-            StringRep tmp = *this;
-            u.s.isShort=FALSE;
-            u.l.d = LSData::create(newlen);
-            if (tmp.u.s.len>0)
-            {
-              memcpy(u.l.d->toStr(),tmp.u.s.str,tmp.u.s.len+1);
-            }
-            else
-            {
-              u.l.d->toStr()[0]='\0';
-            }
-          }
-          else if (!u.s.isShort && newlen<=SHORT_STR_CAPACITY) // turn long string into short string
-          {
-            if (newlen>0)
-            {
-              StringRep tmp(newlen); // copy short part into tmp buffer
-              memcpy(tmp.u.s.str,u.l.d->toStr(),newlen-1);
-              tmp.u.s.str[newlen-1]='\0';
-              u.l.d->dispose();
-              u.s = tmp.u.s;
-            }
-            else
-            {
-              u.l.d->dispose();
-              u.s.isShort=TRUE;
-              u.s.len=0;
-            }
-          }
-          else // resize long string
-          {
-            u.l.d = u.l.d->resize(u.l.d,newlen);
-          }
-          return TRUE;
-        }
-        bool fill( char c, int len )
-        {
-          if (len<0) len=length();
-          if (len!=(int)length())
-          {
-            if (len>0)
-            {
-              resize(len+1);
-            }
-            else
-            {
-              if (!u.s.isShort)
-              {
-                u.l.d->dispose();
-              }
-              u.s.isShort=TRUE;
-              u.s.len=0;
-            }
-          }
-          if (len>0)
-          {
-            memset(data(),c,len);
-          }
-          return TRUE;
-        }
-      private:
-        union
-        {
-          ShortStringRep s;
-          LongStringRep  l;
-        } u;
-    };
-    StringRep m_rep;
+    char *      m_data;
 };
+
+inline char &QCString::at( uint index ) const
+{
+  return m_data[index];
+}
+
+inline void QCString::duplicate( const QCString &s )
+{
+  if (!s.isEmpty()) 
+  {
+    uint l = (uint)strlen(s.data());
+    m_data = (char *)malloc(l+1);
+    if (m_data) memcpy(m_data,s.data(),l+1);
+  }
+  else 
+  {
+    m_data=0; 
+  }
+}
+
+inline void QCString::duplicate( const char *str)
+{
+  if (str && str[0]!='\0') 
+  {
+    uint l = (uint)strlen(str);
+    m_data = (char *)malloc(l+1);
+    if (m_data) memcpy(m_data,str,l+1);
+  }
+  else 
+  {
+    m_data=0;
+  }
+}
+
+inline QCString &QCString::duplicate( const char *str, int)
+{
+  if (m_data==str) return *this;
+  if (m_data) free(m_data);
+  duplicate(str);
+  return *this;
+}
 
 /*****************************************************************************
   QCString stream functions
@@ -668,6 +325,56 @@ public:
 Q_EXPORT QDataStream &operator<<( QDataStream &, const QCString & );
 Q_EXPORT QDataStream &operator>>( QDataStream &, QCString & );
 #endif
+
+/*****************************************************************************
+  QCString inline functions
+ *****************************************************************************/
+
+inline QCString &QCString::operator=( const QCString &s )
+{ return (QCString&)assign( s ); }
+
+inline QCString &QCString::operator=( const char *str )
+{ return (QCString&)duplicate( str, qstrlen(str)+1 ); }
+
+inline bool QCString::isNull() const
+{ return data() == 0; }
+
+inline bool QCString::isEmpty() const
+{ return data() == 0 || *data() == '\0'; }
+
+inline uint QCString::length() const
+{ return qstrlen( data() ); }
+
+inline bool QCString::truncate( uint pos )
+{ return resize(pos+1); }
+
+inline QCString QCString::copy() const
+{ return QCString( data() ); }
+
+inline QCString &QCString::prepend( const char *s )
+{ return insert(0,s); }
+
+inline QCString &QCString::append( const char *s )
+{ return operator+=(s); }
+
+inline QCString &QCString::setNum( short n )
+{ return setNum((long)n); }
+
+inline QCString &QCString::setNum( ushort n )
+{ return setNum((ulong)n); }
+
+inline QCString &QCString::setNum( int n )
+{ return setNum((long)n); }
+
+inline QCString &QCString::setNum( uint n )
+{ return setNum((ulong)n); }
+
+inline QCString &QCString::setNum( float n, char f, int prec )
+{ return setNum((double)n,f,prec); }
+
+inline QCString::operator const char *() const
+{ return (const char *)data(); }
+
 
 /*****************************************************************************
   QCString non-member operators
@@ -768,5 +475,6 @@ inline const char *qPrint(const QCString &s)
 {
   if (!s.isEmpty()) return s.data(); else return "";
 }
+
 
 #endif // QCSTRING_H
