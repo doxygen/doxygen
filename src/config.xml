@@ -3304,7 +3304,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval='' depends='HAVE_DOT'>
+    <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
  When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where 
@@ -3314,7 +3314,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='list' id='PLANTUML_INCLUDE_PATH' format='dir' defval='' depends='HAVE_DOT'>
+    <option type='list' id='PLANTUML_INCLUDE_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
  When using plantuml, the specified paths are searched for files specified by the \c !include

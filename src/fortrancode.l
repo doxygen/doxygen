@@ -1136,6 +1136,17 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 <*>{LOG_OPER}                           { // Fortran logical comparison keywords
                                           g_code->codify(yytext);
                                         }
+<*><<EOF>>                              {
+                                          if (YY_START == DocBlock) {
+                                            if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                                            {
+                                              startFontClass("comment");
+                                              codifyLines(docBlock);
+                                              endFontClass();
+                                            }
+                                          }
+                                          yyterminate();
+                                        }
 %%
 
 /*@ ----------------------------------------------------------------------------
