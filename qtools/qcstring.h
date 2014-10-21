@@ -431,7 +431,7 @@ public:
         StringRep(int size)
         {
           u.s.isShort = size<=SHORT_STR_CAPACITY;
-          if (u.s.isShort) // init short string
+          if (size<=SHORT_STR_CAPACITY) // init short string
           {
             if (size>0)
             {
@@ -453,8 +453,8 @@ public:
           if (str)
           {
             int len = strlen(str);
-            u.s.isShort = len<=SHORT_STR_MAX_LEN;
-            if (u.s.isShort)
+            u.s.isShort = len<SHORT_STR_CAPACITY;
+            if (len<SHORT_STR_CAPACITY)
             {
               u.s.len = len;
               memcpy(u.s.str,str,len+1);
@@ -527,7 +527,7 @@ public:
           {
             int len = strlen(str);
             u.s.isShort = len<=SHORT_STR_MAX_LEN;
-            if (u.s.isShort)
+            if (len<SHORT_STR_CAPACITY)
             {
               u.s.len = len;
               memcpy(u.s.str,str,len+1);
