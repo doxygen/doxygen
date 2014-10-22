@@ -1045,5 +1045,5 @@ void ManDocVisitor::writePlantUMLFile(const QCString &baseName)
   generatePlantUMLOutput(baseName,outDir,PUML_ASCII);
   // Contrary to the other PlantUML formats this format is not (yet, plantUML version 8008)
   // splitted into multile files, so just 1 file has to be written.
-  dumpFile(baseName + ".atxt", m_t);
+  m_t << fileToString(baseName + ".atxt");
 }
