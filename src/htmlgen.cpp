@@ -912,40 +912,6 @@ static void writeServerSearchBox(FTextStream &t,const char *relPath,bool highlig
 
 //------------------------------------------------------------------------
 
-/// substitute all occurrences of \a src in \a s by \a dst
-QCString substitute(const char *s,const char *src,const char *dst)
-{
-  if (s==0 || src==0) return s;
-  const char *p, *q;
-  int srcLen = qstrlen(src);
-  int dstLen = dst ? qstrlen(dst) : 0;
-  int resLen;
-  if (srcLen!=dstLen)
-  {
-    int count;
-    for (count=0, p=s; (q=strstr(p,src))!=0; p=q+srcLen) count++;
-    resLen = (int)(p-s)+qstrlen(p)+count*(dstLen-srcLen);
-  }
-  else // result has same size as s
-  {
-    resLen = qstrlen(s);
-  }
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.data(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
-  {
-    int l = (int)(q-p);
-    memcpy(r,p,l);
-    r+=l;
-    if (dst) memcpy(r,dst,dstLen);
-    r+=dstLen;
-  }
-  qstrcpy(r,p);
-  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
-  return result;
-}
-//----------------------------------------------------------------------
-
 /// Clear a text block \a s from \a begin to \a end markers
 QCString clearBlock(const char *s,const char *begin,const char *end)
 {
@@ -989,6 +955,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
 
 QCString selectBlock(const QCString& s,const QCString &name,bool enable)
 {
+  // TODO: this is an expensive function that is called a lot -> optimize it
   const QCString begin = "<!--BEGIN " + name + "-->";
   const QCString end = "<!--END " + name + "-->";
   const QCString nobegin = "<!--BEGIN !" + name + "-->";
@@ -1341,9 +1308,11 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
                                     const char *anchor,int l)
 {
   if (!m_streamSet) return;
-  QCString lineNumber,lineAnchor;
-  lineNumber.sprintf("%5d",l);
-  lineAnchor.sprintf("l%05d",l);
+  const int maxLineNrStr = 10;
+  char lineNumber[maxLineNrStr];
+  char lineAnchor[maxLineNrStr];
+  snprintf(lineNumber,maxLineNrStr,"%5d",l);
+  snprintf(lineAnchor,maxLineNrStr,"l%05d",l);
 
   m_t << "<div class=\"line\">";
   m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">"; 

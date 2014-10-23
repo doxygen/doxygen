@@ -96,7 +96,7 @@ class FileDef : public Definition
     QCString absFilePath() const { return m_filePath; }
     
     /*! Returns the name as it is used in the documentation */
-    QCString docName() const { return m_docname; }
+    const QCString &docName() const { return m_docname; }
 
     /*! Returns TRUE if this file is a source file. */
     bool isSource() const { return m_isSource; }

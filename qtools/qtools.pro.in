@@ -7,7 +7,6 @@ HEADERS		= qarray.h \
 		  qcollection.h \
 		  qconfig.h \
 		  qcstring.h \
-		  scstring.h \
 		  qdatastream.h \
 		  qdatetime.h \
 		  qdict.h \
@@ -54,7 +53,7 @@ HEADERS		= qarray.h \
 
 SOURCES		= qbuffer.cpp \
 		  qcollection.cpp \
-		  scstring.cpp \
+		  qcstring.cpp \
 		  qdatastream.cpp \
 		  qdatetime.cpp \
 		  qdir.cpp \

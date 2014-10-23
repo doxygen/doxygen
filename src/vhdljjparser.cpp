@@ -92,7 +92,7 @@ int VhdlParser::levelCounter;
 
 static QList<VhdlConfNode> configL;
 
-struct
+static struct
 {
   QCString doc;
   bool brief;
@@ -217,7 +217,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   VhdlParser::current=new Entry();
   VhdlParser::initEntry(VhdlParser::current);
   groupEnterFile(fileName,yyLineNr);
-  lineParse=new int[200];
+  lineParse=new int[200]; // Dimitri: dangerous constant: should be bigger than largest token id in VhdlParserConstants.h
   VhdlParserIF::parseVhdlfile(fileBuf,inLine);
 
   delete VhdlParser::current;
@@ -226,7 +226,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   if (!inLine)
   VhdlParser::mapLibPackage(root);
 
-  delete lineParse;
+  delete[] lineParse;
   yyFileName.resize(0);
   libUse.clear();
   VhdlDocGen::resetCodeVhdlParserState();

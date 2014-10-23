@@ -890,16 +890,17 @@ QCString Definition::getSourceFileBase() const
 
 QCString Definition::getSourceAnchor() const
 {
-  QCString anchorStr;
+  const int maxAnchorStrLen = 20;
+  char anchorStr[maxAnchorStrLen];
   if (m_impl->body && m_impl->body->startLine!=-1)
   {
     if (Htags::useHtags)
     {
-      anchorStr.sprintf("L%d",m_impl->body->startLine);
+      snprintf(anchorStr,maxAnchorStrLen,"L%d",m_impl->body->startLine);
     }
     else
     {
-      anchorStr.sprintf("l%05d",m_impl->body->startLine);
+      snprintf(anchorStr,maxAnchorStrLen,"l%05d",m_impl->body->startLine);
     }
   }
   return anchorStr;
@@ -1163,8 +1164,9 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
-          QCString lineStr,anchorStr;
-          anchorStr.sprintf("l%05d",md->getStartBodyLine());
+          const int maxLineNrStr = 10;
+          char anchorStr[maxLineNrStr];
+          snprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
           //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
           ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
           ol.popGeneratorState();

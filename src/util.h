@@ -192,7 +192,7 @@ void mergeArguments(ArgumentList *,ArgumentList *,bool forceNameOverwrite=FALSE)
 
 QCString substituteClassNames(const QCString &s);
 
-QCString substitute(const char *s,const char *src,const char *dst);
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst);
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
 

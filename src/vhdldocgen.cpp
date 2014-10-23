@@ -1445,7 +1445,7 @@ bool VhdlDocGen::isNumber(const QCString& s)
 void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef* mdef)
 {
   QCString qcs = s;
-  QCString temp(qcs.length());
+  QCString temp;
   qcs.stripPrefix(":");
   qcs.stripPrefix("is");
   qcs.stripPrefix("IS");
@@ -1464,7 +1464,7 @@ void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef*
     if (j>0) b=qcs[j-1];
     if (c=='"' || c==',' || c=='\''|| c=='(' || c==')'  || c==':' || c=='[' || c==']' ) // || (c==':' && b!='=')) // || (c=='=' && b!='>'))
     {
-      if (temp.at(index-1) != ' ')
+      if (temp.length()>=index && temp.at(index-1) != ' ')
       {
         temp+=" ";
       }
@@ -2322,6 +2322,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
 {
 
   SDict<QCString> pack(1009);
+  pack.setAutoDelete(TRUE);
 
   bool first=TRUE;
   MemberDef *md;
