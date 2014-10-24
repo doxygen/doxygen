@@ -9247,8 +9247,9 @@ static ParserInterface *getParserForFile(const char *fn)
 {
   QCString fileName=fn;
   QCString extension;
+  int sep = fileName.findRev('/');
   int ei = fileName.findRev('.');
-  if (ei!=-1)
+  if (ei!=-1 && (sep==-1 || ei>sep)) // matches dir/file.ext but not dir.1/file
   {
     extension=fileName.right(fileName.length()-ei);
   }
