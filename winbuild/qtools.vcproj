@@ -1328,7 +1328,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\qtools\scstring.cpp"
+				RelativePath="..\qtools\qcstring.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1574,10 +1574,6 @@
 			</File>
 			<File
 				RelativePath="..\qtools\qxml.h"
-				>
-			</File>
-			<File
-				RelativePath="..\qtools\scstring.h"
 				>
 			</File>
 		</Filter>

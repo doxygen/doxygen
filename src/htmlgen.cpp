@@ -1311,8 +1311,8 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
   char lineAnchor[maxLineNrStr];
-  snprintf(lineNumber,maxLineNrStr,"%5d",l);
-  snprintf(lineAnchor,maxLineNrStr,"l%05d",l);
+  qsnprintf(lineNumber,maxLineNrStr,"%5d",l);
+  qsnprintf(lineAnchor,maxLineNrStr,"l%05d",l);
 
   m_t << "<div class=\"line\">";
   m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">"; 

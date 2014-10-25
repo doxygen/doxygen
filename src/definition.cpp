@@ -896,11 +896,11 @@ QCString Definition::getSourceAnchor() const
   {
     if (Htags::useHtags)
     {
-      snprintf(anchorStr,maxAnchorStrLen,"L%d",m_impl->body->startLine);
+      qsnprintf(anchorStr,maxAnchorStrLen,"L%d",m_impl->body->startLine);
     }
     else
     {
-      snprintf(anchorStr,maxAnchorStrLen,"l%05d",m_impl->body->startLine);
+      qsnprintf(anchorStr,maxAnchorStrLen,"l%05d",m_impl->body->startLine);
     }
   }
   return anchorStr;
@@ -1166,7 +1166,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           }
           const int maxLineNrStr = 10;
           char anchorStr[maxLineNrStr];
-          snprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
+          qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
           //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
           ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
           ol.popGeneratorState();

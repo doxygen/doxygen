@@ -266,7 +266,7 @@ QCString generateMarker(int id)
 {
   const int maxMarkerStrLen = 20;
   char result[maxMarkerStrLen];
-  snprintf(result,maxMarkerStrLen,"@%d",id);
+  qsnprintf(result,maxMarkerStrLen,"@%d",id);
   return result;
 }
 
@@ -4916,7 +4916,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
-  snprintf(addr,maxAddrSize,"%p:",fnDict);
+  qsnprintf(addr,maxAddrSize,"%p:",fnDict);
   QCString key = addr;
   key+=n;
 
