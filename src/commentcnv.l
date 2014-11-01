@@ -762,11 +762,11 @@ void replaceComment(int offset);
 <CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,(int)yyleng);
   				   }
-<CComment,ReadLine>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
+<CComment,ReadLine>[ \t]*[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
   				     g_condCtx = YY_START; 
   				     BEGIN(CondLine);
   				   }
-<CComment,ReadLine>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
+<CComment,ReadLine>[ \t]*[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
   				     bool oldSkip=g_skip;
   				     endCondSection();
 				     if (YY_START==CComment && oldSkip && !g_skip) 
@@ -809,7 +809,7 @@ void replaceComment(int offset);
                                      }
   				   }
 <CondLine>[ \t]*
-<CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
+<CComment,ReadLine>[ \t]*[\\@]"cond"[ \t\r]*/\n |
 <CondLine>.			   { // forgot section id?
   				     if (YY_START!=CondLine) g_condCtx=YY_START;
   				     bool oldSkip=g_skip;
