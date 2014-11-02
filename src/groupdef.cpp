@@ -510,7 +510,31 @@ void GroupDef::removeMember(MemberDef *md)
 
 bool GroupDef::containsGroup(const GroupDef *def)
 {
-    return this==def || groupList->find(def) >= 0;
+  if (this==def)
+  {
+    return TRUE;
+  }
+  else if (groupList->find(def)>=0)
+  {
+    return TRUE;
+  }
+  else // look for subgroups as well
+  {
+    GroupList *groups = partOfGroups();
+    if (groups)
+    {
+      GroupListIterator it(*groups);
+      GroupDef *gd;
+      for (;(gd=it.current());++it)
+      {
+        if (gd->containsGroup(def))
+        {
+          return TRUE;
+        }
+      }
+    }
+  }
+  return FALSE;
 }
 
 void GroupDef::addGroup(const GroupDef *def)
@@ -1346,16 +1370,23 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)) &&
-	!gd->containsGroup(subGroup) )
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
-      gd->addGroup(subGroup);
-      subGroup->makePartOfGroup(gd);
-    }
-    else if (gd==subGroup)
-    {
-      warn(root->fileName,root->startLine,"Trying to add group %s to itself!",
-          gd->name().data());
+      if (gd==subGroup)
+      {
+        warn(root->fileName,root->startLine,"Refusing to add group %s to itself",
+            gd->name().data());
+      }
+      else if (gd->containsGroup(subGroup))
+      {
+        warn(root->fileName,root->startLine,"Refusing to add group %s to group %s, since the latter is already a "
+                                            "subgroup of the former\n", subGroup->name().data(),gd->name().data());
+      }
+      else
+      {
+        gd->addGroup(subGroup);
+        subGroup->makePartOfGroup(gd);
+      }
     }
   }
 }
