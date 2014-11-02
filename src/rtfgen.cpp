@@ -2268,11 +2268,12 @@ bool isLeadBytes(int c)
 
 
 // note: function is not reentrant!
-static void encodeForOutput(FTextStream &t,const QCString &s)
+static void encodeForOutput(FTextStream &t,const char *s)
 {
+  if (s==0) return;
   QCString encoding;
   bool converted=FALSE;
-  int l = s.length();
+  int l = qstrlen(s);
   static QByteArray enc;
   if (l*4>(int)enc.size()) enc.resize(l*4); // worst case
   encoding.sprintf("CP%s",theTranslator->trRTFansicp().data());
@@ -2284,7 +2285,7 @@ static void encodeForOutput(FTextStream &t,const QCString &s)
     {
       size_t iLeft=l;
       size_t oLeft=enc.size();
-      char *inputPtr = s.data();
+      char *inputPtr = (char*)s;
       char *outputPtr = enc.data();
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
@@ -2296,7 +2297,7 @@ static void encodeForOutput(FTextStream &t,const QCString &s)
   }
   if (!converted) // if we did not convert anything, copy as is.
   {
-    memcpy(enc.data(),s.data(),l);
+    memcpy(enc.data(),s,l);
     enc.resize(l);
   }
   uint i;
@@ -2355,7 +2356,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
       err("read error in %s before end of RTF header!\n",infName.data());
       return FALSE;
     }
-    if (bIncludeHeader) encodeForOutput(t,lineBuf);
+    if (bIncludeHeader) encodeForOutput(t,lineBuf.data());
   } while (lineBuf.find("\\comment begin body")==-1);
 
 
