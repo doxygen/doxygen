@@ -9196,7 +9196,7 @@ static void copyStyleSheet()
   }
 }
 
-static void copyLogo()
+static void copyLogo(const QCString& str)
 {
   QCString &projectLogo = Config_getString("PROJECT_LOGO");
   if (!projectLogo.isEmpty())
@@ -9209,7 +9209,7 @@ static void copyLogo()
     }
     else
     {
-      QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
+      QCString destFileName = Config_getString(str)+"/"+fi.fileName().data();
       copyFile(projectLogo,destFileName);
       Doxygen::indexList->addImageFile(fi.fileName().data());
     }
@@ -11326,6 +11326,7 @@ void generateOutput()
 
   bool generateHtml  = Config_getBool("GENERATE_HTML");
   bool generateLatex = Config_getBool("GENERATE_LATEX");
+  bool generateXml   = Config_getBool("GENERATE_XML");
   bool generateMan   = Config_getBool("GENERATE_MAN");
   bool generateRtf   = Config_getBool("GENERATE_RTF");
 
@@ -11352,7 +11353,7 @@ void generateOutput()
 
     // copy static stuff
     copyStyleSheet();
-    copyLogo();
+    copyLogo("HTML_OUTPUT");
     copyExtraFiles("HTML_EXTRA_FILES","HTML_OUTPUT");
     FTVHelp::generateTreeViewImages();
   }
@@ -11363,6 +11364,10 @@ void generateOutput()
 
     // copy static stuff
     copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
+  }
+  if (generateXml)
+  {
+    copyLogo("XML_OUTPUT");
   }
   if (generateMan)
   {
@@ -11506,7 +11511,7 @@ void generateOutput()
       removeDoxFont(Config_getString("LATEX_OUTPUT"));
   }
 
-  if (Config_getBool("GENERATE_XML"))
+  if (generateXml)
   {
     g_s.begin("Generating XML output...\n");
     Doxygen::generatingXmlOutput=TRUE;
