@@ -3,8 +3,8 @@
  * Copyright (C) 2014 by M. Kreis
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,13 +20,12 @@ options {
  //OUTPUT_DIRECTORY = ".";
 // DEBUG_PARSER=true;
  //DEBUG_LOOKAHEAD=true;
- 
+
   }
 
 PARSER_BEGIN(VhdlParser)
 
 typedef unsigned long long uint64;
-
 
 static Entry* current_root;
 static Entry* tempEntry;
@@ -68,7 +67,8 @@ static  bool addLibUseClause(const QCString &type);
 static  void mapLibPackage( Entry* root);
 static void createFlow();
 static void error_skipto(int kind);
-
+static void oneLineComment(QCString qcs);
+static void setMultCommentLine();
 PARSER_END(VhdlParser)
 
 SKIP :
@@ -82,24 +82,37 @@ SKIP :
 SKIP:
 {
   // VHDL comment -- ......
-  // VHDL doxygen line comment --! .... 
-  <#DOXYGEN_VHDL_COMMENT: (" "|"\t")*"--!"(~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> 
-  | <MULT_DOXYGEN_COMMENT: (<DOXYGEN_VHDL_COMMENT>)+ >  { ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),TRUE); }
+  // VHDL doxygen line comment --! ....
+  <#DOXYGEN_VHDL_COMMENT: (" "|"\t")*"--!"(~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>
+  | <MULT_DOXYGEN_COMMENT: (<DOXYGEN_VHDL_COMMENT>)+ >
+  {
+    QCString doc(image.data());
+    int count=doc.contains("--!");
+    ::vhdl::parser::VhdlParser::setMultCommentLine();
+    ::vhdl::parser::VhdlParser::lineCount(image.data());
+    if (count == 1)
+      ::vhdl::parser::VhdlParser::oneLineComment(doc);
+    else
+      ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),FALSE); ;
+
+  }
   |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { ::vhdl::parser::VhdlParser::handleFlowComment(image.data());}
-  |<VHDL_COMMENT: "--" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> { ::vhdl::parser::VhdlParser::lineCount(image.data());}
- }
+  |<VHDL_COMMENT: "--" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>
+  {
+    ::vhdl::parser::VhdlParser::lineCount(image.data());}
+  }
 
 // VHDL 2008  comment /* .... */
 // VHDL 2008 doxygen comment /*! .... */
 SKIP :
 {
-  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" > 
+  <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" >
   {
    QCString q(image.data());
-   q.stripPrefix("/*!"); 
-   q.resize(q.length()-2);   
+   q.stripPrefix("/*!");
+   q.resize(q.length()-2);
   ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
-  } 
+  }
   | <MULT_VHDL_2008_COMMENT : "/*"  (~[])* "*/" >  {::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
 }
 
@@ -107,7 +120,7 @@ SKIP :
 
 TOKEN [IGNORE_CASE] :
 {
- <ABS_T: "abs">     
+ <ABS_T: "abs">
 | <ACCESS_T: "access">
 | <AFTER_T: "after">
 | <ALIAS_T: "alias">
@@ -115,86 +128,86 @@ TOKEN [IGNORE_CASE] :
 | <AND_T: "and">
 | <ARCHITECTURE_T: "architecture"> {::vhdl::parser::VhdlParser::setLineParsed(ARCHITECTURE_T);}
 | <ARRAY_T: "array"> {VhdlParser::setLineParsed(ARRAY_T);}
-| <ASSERT_T: "assert"> 
-| <ASSUME_T: "assume"> 
-| <ASSUME_GUARANTEE_T: "assume_guarentee"> 
+| <ASSERT_T: "assert">
+| <ASSUME_T: "assume">
+| <ASSUME_GUARANTEE_T: "assume_guarentee">
 | <ATTRIBUTE_T: "attribute"> {::vhdl::parser::VhdlParser::setLineParsed(ATTRIBUTE_T);}
-| <BEGIN_T: "begin"> 
-| <BLOCK_T: "block"> 
+| <BEGIN_T: "begin">
+| <BLOCK_T: "block">
 | <BODY_T: "body"> {::vhdl::parser::VhdlParser::setLineParsed(BODY_T);}
 | <BUFFER_T: "buffer">
-| <BUS_T: "bus"> 
+| <BUS_T: "bus">
 | <COMPONENT_T: "component"> {VhdlParser::setLineParsed(COMPONENT_T);}
-| <CASE_T: "case"> 
+| <CASE_T: "case">
 | <CONFIGURATION_T: "configuration"> {VhdlParser::setLineParsed(CONFIGURATION_T);}
 | <CONSTANT_T: "constant">  {VhdlParser::setLineParsed(CONSTANT_T);}
 | <CONTEXT_T: "context"> {VhdlParser::setLineParsed(CONTEXT_T);}
-| <COVER_T: "cover"> 
-| <DEFAULT_T: "default"> 
-| <DISCONNECT_T: "disconnect"> 
-| <DOWNTO_T: "downto"> 
-| <ELSE_T: "else"> 
-| <ELSIF_T: "elsif"> 
+| <COVER_T: "cover">
+| <DEFAULT_T: "default">
+| <DISCONNECT_T: "disconnect">
+| <DOWNTO_T: "downto">
+| <ELSE_T: "else">
+| <ELSIF_T: "elsif">
 | <END_T: "end"> {VhdlParser::setLineParsed(END_T);}
 | <ENTITY_T: "entity"> {VhdlParser::setLineParsed(ENTITY_T);}
-| <EXIT_T: "exit"> 
-| <FAIRNESS_T: "fairness"> 
+| <EXIT_T: "exit">
+| <FAIRNESS_T: "fairness">
 | <FILE_T: "file"> {VhdlParser::setLineParsed(FILE_T);}
-| <FOR_T: "for"> 
+| <FOR_T: "for">
 | <FORCE_T: "force">
 | <FUNCTION_T: "function">  {VhdlParser::setLineParsed(FUNCTION_T);}
-| <GENERATE_T: "generate"> 
-| <GENERIC_T: "generic">  
+| <GENERATE_T: "generate">
+| <GENERIC_T: "generic">
 | <GROUP_T: "group"> {VhdlParser::setLineParsed(GROUP_T);}
-| <GUARDED_T: "guarded"> 
-| <IF_T: "if"> 
-| <IMPURE_T: "impure"> 
-| <IN_T: "in"> 
-| <INERTIAL_T: "inertial">  
-| <INOUT_T: "inout"> 
-| <IS_T: "is"> 
+| <GUARDED_T: "guarded">
+| <IF_T: "if">
+| <IMPURE_T: "impure">
+| <IN_T: "in">
+| <INERTIAL_T: "inertial">
+| <INOUT_T: "inout">
+| <IS_T: "is">
 | <LABEL_T: "label">
 | <LIBRARY_T: "library"> {VhdlParser::setLineParsed(LIBRARY_T);}
-| <LINKAGE_T: "linkage">  
-| <LITERAL_T: "literal"> 
-| <LOOP_T: "loop"> 
-| <MAP_T: "map">  
-| <MOD_T: "mod"> 
-| <NAND_T: "nand"> 
-| <NEW_T: "new"> 
-| <NEXT_T: "next"> 
+| <LINKAGE_T: "linkage">
+| <LITERAL_T: "literal">
+| <LOOP_T: "loop">
+| <MAP_T: "map">
+| <MOD_T: "mod">
+| <NAND_T: "nand">
+| <NEW_T: "new">
+| <NEXT_T: "next">
 | <NOR_T: "nor">
 | <NOT_T: "not">
-| <NULL_T: "null">   
+| <NULL_T: "null">
 | <OF_T: "of">
-| <ON_T: "on">  
-| <OPEN_T: "open"> 
-| <OR_T: "or"> 
-| <OTHER_T: "others"> 
-| <OUT_T: "out"> 
+| <ON_T: "on">
+| <OPEN_T: "open">
+| <OR_T: "or">
+| <OTHER_T: "others">
+| <OUT_T: "out">
 | <PACKAGE_T: "package"> {::vhdl::parser::VhdlParser::setLineParsed(PACKAGE_T);}
-| <PARAMETER_T: "parameter"> 
+| <PARAMETER_T: "parameter">
 | <PORT_T: "port"> {::vhdl::parser::VhdlParser::setLineParsed(PORT_T);}
-| <POSTPONED_T: "postponed"> 
+| <POSTPONED_T: "postponed">
 | <PROCEDURE_T: "procedure"> {::vhdl::parser::VhdlParser::setLineParsed(PROCEDURE_T);}
 | <PROCESS_T: "process"> {::vhdl::parser::VhdlParser::setLineParsed(PROCESS_T);}
-| <PROPERTY_T: "property"> 
-| <PROTECTED_T: "protected"> 
-| <PURE_T: "pure"> 
-| <RANGE_T: "range"> 
+| <PROPERTY_T: "property">
+| <PROTECTED_T: "protected">
+| <PURE_T: "pure">
+| <RANGE_T: "range">
 | <RECORD_T: "record"> {::vhdl::parser::VhdlParser::setLineParsed(RECORD_T);}
-| <REGISTER_T: "register"> 
-| <REJECT_T: "reject"> 
-| <RELEASE_T: "release">  
-| <RESTRICT_T: "restrict"> 
-| <RESTRICT_GUARANTEE_T: "restrict_guarantee"> 
-| <REM_T: "rem"> 
-| <REPORT_T: "report"> 
-| <ROL_T: "rol"> 
-| <ROR_T: "ror"> 
-| <RETURN_T: "return"> 
-| <SELECT_T: "select">  
-| <SEQUENCE_T: "sequence"> 
+| <REGISTER_T: "register">
+| <REJECT_T: "reject">
+| <RELEASE_T: "release">
+| <RESTRICT_T: "restrict">
+| <RESTRICT_GUARANTEE_T: "restrict_guarantee">
+| <REM_T: "rem">
+| <REPORT_T: "report">
+| <ROL_T: "rol">
+| <ROR_T: "ror">
+| <RETURN_T: "return">
+| <SELECT_T: "select">
+| <SEQUENCE_T: "sequence">
 | <SEVERITY_T: "severity">
 | <SIGNAL_T: "signal"> {::vhdl::parser::VhdlParser::setLineParsed(SIGNAL_T);}
 | <SHARED_T: "shared">
@@ -213,11 +226,11 @@ TOKEN [IGNORE_CASE] :
 | <UNTIL_T: "until">
 | <USE_T: "use">
 | <VARIABLE_T: "variable">
-| <VMODE_T: "vmode"> 
-| <VPROP_T: "vprop">  
+| <VMODE_T: "vmode">
+| <VPROP_T: "vprop">
 | <VUNIT_T: "vunit">
 | <WAIT_T: "wait">
-| <WHEN_T: "when">  
+| <WHEN_T: "when">
 | <WHILE_T: "while">
 | <WITH_T: "with">
 | <XOR_T: "xor">
@@ -270,16 +283,16 @@ TOKEN :
 
 }
 
-TOKEN: 
+TOKEN:
 {
-  <INTEGER: <DIGIT> ((["_"])? (<DIGIT>))* > 
+  <INTEGER: <DIGIT> ((["_"])? (<DIGIT>))* >
  | <STRINGLITERAL: (( ["\""](<GRAPHIC_CHARACTER>)*) "\"")+ >
  | <BASIC_IDENTIFIER:  (<LETTER> ( (["_"])* <LETTER_OR_DIGIT> )*) >
  | <EXTENDED_CHARACTER: ( ["\\"](<GRAPHIC_CHARACTER>)*["\\"] ) >
- | <CHARACTER_LITERAL: (["'"]<GRAPHIC_CHARACTER>["'"]) > 
+ | <CHARACTER_LITERAL: (["'"]<GRAPHIC_CHARACTER>["'"]) >
  | <DECIMAL_LITERAL: (<INTEGER> (["."]<INTEGER>)? (<EXPONENT>)? ) >
  | <BASED_INTEGER: <LETTER_OR_DIGIT>( <LETTER_OR_DIGIT>)* >
- | <BASED_LITERAL: <INTEGER>["#"]<BASED_INTEGER>(["."] <BASED_INTEGER>)? ["#"] (<EXPONENT>)? > 
+ | <BASED_LITERAL: <INTEGER>["#"]<BASED_INTEGER>(["."] <BASED_INTEGER>)? ["#"] (<EXPONENT>)? >
  | <#EXPONENT: (["e","E"] (["+","-"])? (<INTEGER>)+) >
  | < #BASIC_GRAPHIC_CHARACTER:    (<UPPER_CASE_LETTER>|<DIGIT>|<SPECIAL_CHARACTER>|<SPACE_CHARACTER>) >
  | < #GRAPHIC_CHARACTER: ( <BASIC_GRAPHIC_CHARACTER>|<LOWER_CASE_LETTER>|<OTHER_SPECIAL_CHARACTER> ) >
@@ -294,54 +307,54 @@ TOKEN:
  | < #SPACE_CHARACTER: [" ","\t"] >
  | < #LOWER_CASE_LETTER: ["a"-"z"] >
  | <VHDL2008TOOLDIR  : ["`"](<GRAPHIC_CHARACTER>|<STRINGLITERAL>)+ >
- 
+
 }
 
-QCString abstract_literal() : 
+QCString abstract_literal() :
 {Token *tok;}
 {
-  tok=<DECIMAL_LITERAL> { return tok->image.c_str(); }
- | tok=<INTEGER>            { return tok->image.c_str(); }
-  | tok=<BASED_LITERAL> { return tok->image.c_str(); }
+   tok=<DECIMAL_LITERAL> { return tok->image.c_str(); }
+ | tok=<INTEGER>         { return tok->image.c_str(); }
+ | tok=<BASED_LITERAL>   { return tok->image.c_str(); }
 }
 
 QCString access_type_definition() :
-{Token *tok;QCString str,str1;}
+{Token *tok=0;QCString str,str1;}
 {
-tok=<ACCESS_T> str1=subtype_indication() {str=tok->image.c_str(); return str+str1;}
+  tok=<ACCESS_T> str1=subtype_indication() { str=tok->image.c_str(); return str+str1; }
 }
 
-QCString actual_designator() :  
-{QCString str;Token *t;}
+QCString actual_designator() :
+{QCString str;Token *t=0;}
 {
 t=<OPEN_T> { return t->image.c_str(); }
 |
 LOOKAHEAD(expression())
   str=expression() { return str; }
 |
-  LOOKAHEAD(name()) 
+  LOOKAHEAD(name())
  str=name() { return str; }
 }
 
-QCString actual_parameter_part() :  
+QCString actual_parameter_part() :
 {QCString s;}
 {
    s=association_list() { return s;}
 }
 
-QCString actual_part() :  
+QCString actual_part() :
 {QCString s,s1;}
 {
  LOOKAHEAD(actual_designator())
  s=actual_designator() { return s;}
  |
    <BOX_T> { return "<>";}
- | 
+ |
  s=name() <LPAREN_T> s1=actual_designator() <RPAREN_T> {s+="(";s+=s1+")";return s;}
- 
+
  }
 
-QCString adding_operator () : 
+QCString adding_operator () :
 {}
 {
   <PLUS_T> { return "+";}
@@ -357,12 +370,12 @@ QCString aggregate() :  {QCString s,s1,s2;}
 QCString alias_declaration() :  {QCString s,s1,s2;}
 {
  <ALIAS_T> s2=alias_designator()
- [ <COLON_T>{ s+=":"; } s1=subtype_indication() { s+=s1; }] 
- <IS_T> { s+=" is "; } s1=name() {s+=s1;} [s1=signature() {s+=s1;}] 
+ [ <COLON_T>{ s+=":"; } s1=subtype_indication() { s+=s1; }]
+ <IS_T> { s+=" is "; } s1=name() {s+=s1;} [s1=signature() {s+=s1;}]
  <SEMI_T>
-{ 
+{
  addVhdlType(s2.data(),getLine(ALIAS_T),Entry::VARIABLE_SEC,VhdlDocGen::ALIAS,0,s.data(),Public);
-                                
+
  return s2+" "+s+";";
 }
  }
@@ -376,25 +389,25 @@ QCString alias_designator()  : {Token *tok=0;QCString s;}
 
 void allocator()  :{}
 {
- LOOKAHEAD(3) 
+ LOOKAHEAD(3)
  <NEW_T> qualified_expression()
  |  <NEW_T>  subtype_indication()
 }
 
 void architecture_body() : {QCString s,s1;}
 {
- 
-	<ARCHITECTURE_T> s=identifier() <OF_T> s1=name() <IS_T>
-	{
+
+    <ARCHITECTURE_T> s=identifier() <OF_T> s1=name() <IS_T>
+    {
                   QCString t=s1+"::"+s;
                   genLabels.resize(0);
                   pushLabel(genLabels,s1);
                   lastCompound=current;
                   addVhdlType(t,getLine(ARCHITECTURE_T),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
-	}
+    }
    try{
-   architecture_declarative_part() 
-    }catch(...){error_skipto(BEGIN_T);}  
+   architecture_declarative_part()
+    }catch(...){error_skipto(BEGIN_T);}
    <BEGIN_T>
    architecture_statement_part()
   <END_T> [<ARCHITECTURE_T>] [name()] <SEMI_T>
@@ -417,10 +430,10 @@ QCString array_type_definition ():  { QCString s;}
 {
 
  LOOKAHEAD(unconstraint_array_definition())
- 
+
   s=unconstraint_array_definition() {return s;}
   | s=constraint_array_definition()  {return s;}
-  
+
 }
 
 QCString assertion() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
@@ -439,7 +452,7 @@ QCString assertion_statement() :  {QCString s,s1,s2;Token *t=0;}
   [ s=label() t=<COLON_T> ] s1=assertion() <SEMI_T>
   {
     if(t) s+=":";
-	return s+s1+";";
+    return s+s1+";";
   }
 }
 QCString association_element() : {QCString s,s1;}
@@ -455,14 +468,14 @@ s=association_element() (<COMMA_T> s1=association_element() { s+=","+s1; })* { r
 
 QCString attribute_declaration() : {QCString s,s1;}
 {
- <ATTRIBUTE_T> s=identifier() <COLON_T> s1=type_mark() <SEMI_T> 
-  {    
-	addVhdlType(s.data(),getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,s1.data(),Public);
+ <ATTRIBUTE_T> s=identifier() <COLON_T> s1=type_mark() <SEMI_T>
+  {
+    addVhdlType(s.data(),getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,s1.data(),Public);
     return " attribute "+s+":"+s1+";";
-  }          
+  }
  }
 
-QCString attribute_designator (): {QCString s;Token *tok;}
+QCString attribute_designator (): {QCString s;Token *tok=0;}
 {
   s=identifier() { return s;}
   | tok=<RANGE_T> { return tok->image.c_str(); }
@@ -477,40 +490,40 @@ QCString attribute_name (): {QCString s,s1;}
 QCString attribute_specification():  {QCString s,s1,s2;}
 {
   <ATTRIBUTE_T> s=attribute_designator() <OF_T> s1=entity_specification() <IS_T> s2=expression() <SEMI_T>
-  { 
-   QCString t= s1+" is "+s2; 
+  {
+   QCString t= s1+" is "+s2;
    addVhdlType(s.data(),getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,t.data(),Public);
-   return " attribute "+s+" of "+s1+ " is "+s2+";";           
+   return " attribute "+s+" of "+s1+ " is "+s2+";";
   }
 }
 
-QCString base() :  {Token *tok;}
+QCString base() :  {Token *tok=0;}
 {
   tok=<INTEGER> { return tok->image.c_str();}
 }
 
-QCString base_specifier ():  {Token *tok;}
+QCString base_specifier ():  {Token *tok=0;}
 {
    tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
 
-QCString base_unit_declaration() : 
+QCString base_unit_declaration() :
 {QCString s;}
 {
   s=identifier() { return s; }
 }
 
-QCString based_integer() :  {Token *tok;}
+QCString based_integer() :  {Token *tok=0;}
 {
   tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
 
-QCString based_literal():  {Token *tok;}
+QCString based_literal():  {Token *tok=0;}
 {
  tok=<BASED_LITERAL> { return tok->image.c_str();}
 }
 
-QCString basic_identifier() :  {Token *tok;}
+QCString basic_identifier() :  {Token *tok=0;}
 {
   tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
@@ -522,13 +535,13 @@ void binding_indication() :  {}
  [ port_map_aspect() ]
 }
 
-QCString bit_string_literal ():  {Token *tok;}
+QCString bit_string_literal ():  {Token *tok=0;}
 {
   tok=<BIT_STRING_LITERAL> { return tok->image.c_str();}
 }
 
 
-QCString bit_value() :  {Token *tok;}
+QCString bit_value() :  {Token *tok=0;}
 {
   tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
@@ -537,7 +550,7 @@ void block_configuration() : {}
 {
     <FOR_T> block_specification()
         ( use_clause() )*
-        ( configuration_item())* 
+        ( configuration_item())*
     <END_T> <FOR_T> <SEMI_T>
 }
 
@@ -577,7 +590,7 @@ void block_header() : {}
 [LOOKAHEAD(generic_clause()) generic_clause()[ generic_map_aspect() <SEMI_T> ] ]
 [ port_clause() [ port_map_aspect() <SEMI_T> ] ]
 }
- 
+
 void block_specification() :  {}
 {
   name()[LOOKAHEAD(1) <LPAREN_T> index_specification() <RPAREN_T>]
@@ -590,9 +603,9 @@ void block_statement() :  {QCString s;}
             block_header()
             block_declarative_part()
             <BEGIN_T>
-			block_statement_part() 
-			<END_T> <BLOCK_T> [ identifier() ] <SEMI_T>
-			{
+            block_statement_part()
+            <END_T> <BLOCK_T> [ identifier() ] <SEMI_T>
+            {
               genLabels=popLabel(genLabels);
             }
 }
@@ -605,33 +618,33 @@ void block_statement_part() :  {}
 void  case_statement() : {QCString s;}
 {
 [ identifier() <COLON_T> ]
-  <CASE_T> s=expression() 
+  <CASE_T> s=expression()
     {
      QCString ca="case "+s;
      FlowChart::addFlowChart(FlowChart::CASE_NO,0,ca);
-    }                 
+    }
   <IS_T>
         case_statement_alternative()
         ( case_statement_alternative ())*
-		<END_T> <CASE_T> [ identifier() ] <SEMI_T>
-		{
+        <END_T> <CASE_T> [ identifier() ] <SEMI_T>
+        {
          FlowChart::moveToPrevLevel();
          FlowChart::addFlowChart(FlowChart::END_CASE,"end case",0);
-      	}
+          }
 }
 
 void case_statement_alternative() :  {QCString s;}
 {
-  <WHEN_T> s=choices() <ARROW_T> 
-   {  
+  <WHEN_T> s=choices() <ARROW_T>
+   {
     QCString t="when ";
     t+=s+"=> ";
     FlowChart::addFlowChart(FlowChart::WHEN_NO,s.data(),t);
-	}
+    }
   sequence_of_statement(){FlowChart::moveToPrevLevel(); }
 }
 
-QCString character_literal() :  {Token *tok;}
+QCString character_literal() :  {Token *tok=0;}
 {
   tok=<CHARACTER_LITERAL>{ return tok->image.c_str();}
 }
@@ -640,7 +653,7 @@ QCString choice() : {QCString s;}
 {
    LOOKAHEAD(simple_expression())
   s=simple_expression(){ return s; }
-  | 
+  |
   LOOKAHEAD(discrete_range())
   s=discrete_range(){ return s; }
   |
@@ -648,10 +661,10 @@ QCString choice() : {QCString s;}
   s=identifier(){ return s; }
   | <OTHER_T> { return " others "; }
 }
- 
+
 QCString choices() :  {QCString s,s1;}
 {
-  s=choice() (<BAR_T> s1=choice(){s+="|";s+=s1;})* { return s; } 
+  s=choice() (<BAR_T> s1=choice(){s+="|";s+=s1;})* { return s; }
 }
 
 void component_configuration () :{}
@@ -664,7 +677,7 @@ void component_configuration () :{}
 void component_declaration() :  {QCString s;}
 {
  <COMPONENT_T> s=identifier() [ <IS_T> ]
-   { currP=VhdlDocGen::COMPONENT; }       
+   { currP=VhdlDocGen::COMPONENT; }
   [ generic_clause() ]
   [ port_clause() ]
    {
@@ -678,10 +691,10 @@ void component_declaration() :  {QCString s;}
 void component_instantiation_statement() :  {QCString s,s1;}
 {
 
-s=identifier() <COLON_T> 
+s=identifier() <COLON_T>
  s1=instantiation_unit()
  {
-       addCompInst(s.lower().data(),s1.lower().data(),0,getLine());                      
+       addCompInst(s.lower().data(),s1.lower().data(),0,getLine());
  }
         [ LOOKAHEAD(generic_map_aspect()) generic_map_aspect() ]
         [ port_map_aspect() ] <SEMI_T>
@@ -710,7 +723,7 @@ void concurrent_procedure_call_statement() :  {}
 
 void concurrent_signal_assignment_statement() :  {}
 {
-[ LOOKAHEAD(2) identifier() <COLON_T> ] [<POSTPONED_T> ] 
+[ LOOKAHEAD(2) identifier() <COLON_T> ] [<POSTPONED_T> ]
 (
 LOOKAHEAD(conditional_signal_assignment() )
  conditional_signal_assignment()
@@ -725,21 +738,21 @@ void concurrent_statement() :  {}
 // try {
 LOOKAHEAD([identifier() ":"] <BLOCK_T>)
 block_statement()
-| 
+|
 LOOKAHEAD([identifier() ":"] [<POSTPONED_T>] <PROCESS_T>)
 process_statement()
-| 
+|
 LOOKAHEAD(generate_statement())
 generate_statement()
-| 
+|
 case_scheme()
 |
 LOOKAHEAD([identifier() ":"] [<POSTPONED_T>] <ASSERT_T>)
 concurrent_assertion_statement()
-| 
+|
 LOOKAHEAD(concurrent_signal_assignment_statement())
     concurrent_signal_assignment_statement()
-| 
+|
 LOOKAHEAD(component_instantiation_statement() )
 component_instantiation_statement()
 |
@@ -762,14 +775,14 @@ QCString condition() :  {QCString s;}
 QCString condition_clause() :  {QCString s;}
 {
   <UNTIL_T> s=condition()
-  { 
+  {
     return " until "+s;
   }
 }
 
 void conditional_signal_assignment() :  {}
 {
-  // LOOKAHEAD(  target() "<=" options_() conditional_waveforms() ";") 
+  // LOOKAHEAD(  target() "<=" options_() conditional_waveforms() ";")
  target() <LESSTHAN_T> options() conditional_waveforms() <SEMI_T>
 }
 
@@ -782,7 +795,7 @@ waveform()
 }
 
 // ( waveform() < WHEN_T> condition() <ELSE_T> )*
-//   waveform() [ <WHEN_T> condition() ] 
+//   waveform() [ <WHEN_T> condition() ]
 
 //waveform()
  //   ( LOOKAHEAD( <WHEN> condition() <ELSE>)
@@ -793,12 +806,12 @@ void configuration_declaration() :  {QCString s,s1;}
 {
  <CONFIGURATION_T> s=identifier() <OF_T> s1=name() <IS_T>
   {
- 
+
   confName=s+"::"+s1;
   addVhdlType(s.data(),getLine(CONFIGURATION_T),Entry::VARIABLE_SEC,VhdlDocGen::CONFIG,"configuration",s1.data(),Public);
-  }      
+  }
     configuration_declarative_part()
-    block_configuration() 
+    block_configuration()
  <END_T> [ <CONFIGURATION_T> ] [ name() ] <SEMI_T>
  { genLabels.resize(0); confName="";}
 }
@@ -812,7 +825,7 @@ void configuration_declarative_item() : {}
 
 void configuration_declarative_part() :  {}
 {
- (configuration_declarative_item())* 
+ (configuration_declarative_item())*
 }
 
 void configuration_item ():  {}
@@ -820,25 +833,25 @@ void configuration_item ():  {}
  LOOKAHEAD(component_configuration())
  component_configuration()
  | block_configuration()
- 
+
 }
 
 void configuration_specification() :  {}
 {
-<FOR_T> component_specification() binding_indication() <SEMI_T> 
+<FOR_T> component_specification() binding_indication() <SEMI_T>
 }
 
 QCString constant_declaration() :  {QCString s,s1,s2;Token *t=0;}
 {
-   <CONSTANT_T> s=identifier_list() <COLON_T> s1= subtype_indication() [ t=<VARASSIGN_T> s2=expression() ] <SEMI_T>    
+   <CONSTANT_T> s=identifier_list() <COLON_T> s1= subtype_indication() [ t=<VARASSIGN_T> s2=expression() ] <SEMI_T>
     {
      if(t)
-	  s2.prepend(":=");
-	 QCString it=s1+s2;
+      s2.prepend(":=");
+     QCString it=s1+s2;
      addVhdlType(s.data(),getLine(CONSTANT_T),Entry::VARIABLE_SEC,VhdlDocGen::CONSTANT,0,it.data(),Public);
      it.prepend("constant ");
-	 return it;
-	}
+     return it;
+    }
 }
 
 QCString constraint_array_definition (): {QCString s,s1;}
@@ -852,12 +865,12 @@ void context_clause (): {}
 }
 
 QCString constraint () :{QCString s;}
- {   
-	LOOKAHEAD(range_constraint())
-	s=range_constraint(){ return s;}
+ {
+    LOOKAHEAD(range_constraint())
+    s=range_constraint(){ return s;}
     |
-	LOOKAHEAD(index_constraint())
-	 s=index_constraint(){ return s;}
+    LOOKAHEAD(index_constraint())
+     s=index_constraint(){ return s;}
 }
 
 void context_item() :  {}
@@ -866,7 +879,7 @@ void context_item() :  {}
 | use_clause()
 }
 
-QCString decimal_literal() :  {Token *tok;}
+QCString decimal_literal() :  {Token *tok=0;}
 {
  tok=<DECIMAL_LITERAL> { return tok->image.c_str(); }
 }
@@ -887,7 +900,7 @@ void design_file() :  {}
 void design_unit() :  {}
 {
  context_clause()library_unit()
- 
+
 }
 
 QCString designator() : {QCString s;}
@@ -896,7 +909,7 @@ QCString designator() : {QCString s;}
  | s=operator_symbol(){return s;}
 }
 
-QCString direction ():  {Token *tok;}
+QCString direction ():  {Token *tok=0;}
 {
 tok=<TO_T>  { return tok->image.c_str();}
 | tok=<DOWNTO_T> { return tok->image.c_str();}
@@ -916,18 +929,18 @@ QCString discrete_range() : {QCString s;}
 {
   LOOKAHEAD(range())
   s=range() { return s;}
-  | 
+  |
   LOOKAHEAD(subtype_indication())
    s=subtype_indication() { return s;}
 }
 
 QCString element_association() :  {QCString s,s1;}
 {
-[LOOKAHEAD(choices() <ARROW_T>) s=choices() <ARROW_T> ]  s1=expression() 
- { 
-if(!s.isEmpty()) 
+[LOOKAHEAD(choices() <ARROW_T>) s=choices() <ARROW_T> ]  s1=expression()
+ {
+if(!s.isEmpty())
  return s+"=>"+s1;
-return s1; 
+return s1;
  }
 }
 
@@ -937,7 +950,7 @@ s=identifier_list() <COLON_T> s1=subtype_indication() <SEMI_T> {return s+":"+s1;
 }
 
 
-QCString entity_aspect() :  {Token *tok;QCString s,s1;}
+QCString entity_aspect() :  {Token *tok=0;QCString s,s1;}
 {
 tok=<ENTITY_T> s=name() [ LOOKAHEAD(1)<LPAREN_T> s1=identifier() <RPAREN_T> {s+="("+s1+")";} ] { return s;}
 | tok=<CONFIGURATION_T> s=name() { return tok->image.c_str()+s;}
@@ -967,7 +980,7 @@ QCString entity_class() :  {}
 
 QCString entity_class_entry() :  {QCString s;}
 {
- s=entity_class() [ <BOX_T> {s+="<>";} ] { return s;} 
+ s=entity_class() [ <BOX_T> {s+="<>";} ] { return s;}
 }
 
 QCString entity_class_entry_list() :  {QCString s,s1,s2;}
@@ -978,19 +991,19 @@ QCString entity_class_entry_list() :  {QCString s,s1,s2;}
 void entity_declaration() :  {QCString s;}
 {
    // try{
-	<ENTITY_T> s=identifier()  <IS_T>
-	         {
+    <ENTITY_T> s=identifier()  <IS_T>
+             {
                 lastEntity=current;
                 lastCompound=0;
                 addVhdlType(s.data(),getLine(ENTITY_T),Entry::CLASS_SEC,VhdlDocGen::ENTITY,0,0,Public);
                }
         entity_header()
         entity_declarative_part ()
-      [ <BEGIN_T> entity_statement_part() ] 
+      [ <BEGIN_T> entity_statement_part() ]
        <END_T> [ <ENTITY_T> ] [ name() ]
-     //	}catch(...){error_skipto(SEMI_T);}  
-	 <SEMI_T>
-	 { lastEntity=0;lastCompound=0; genLabels.resize(0); }
+     //    }catch(...){error_skipto(SEMI_T);}
+     <SEMI_T>
+     { lastEntity=0;lastCompound=0; genLabels.resize(0); }
 }
 
 void entity_declarative_item() : {}
@@ -1004,13 +1017,13 @@ subprogram_declaration()
 | variable_declaration()
 | file_declaration()
 | alias_declaration()
-| 
+|
 LOOKAHEAD(attribute_declaration())
 attribute_declaration()
 | attribute_specification()
 | disconnection_specification()
 | use_clause()
-| 
+|
 LOOKAHEAD(3)
 group_template_declaration()
 | group_declaration()
@@ -1034,7 +1047,7 @@ s=entity_tag() [ s1=signature() ] { return s+s1;}
 void entity_header() : {}
 {
  [  { currP=VhdlDocGen::GENERIC;parse_sec=GEN_SEC; } generic_clause()]
- [ { currP=VhdlDocGen::PORT; } port_clause()] 
+ [ { currP=VhdlDocGen::PORT; } port_clause()]
 }
 
 QCString entity_name_list() :  {QCString s,s1;}
@@ -1062,7 +1075,7 @@ LOOKAHEAD(process_statement())
 
 void entity_statement_part() :  {}
 {
- (entity_statement())*  
+ (entity_statement())*
 }
 
 
@@ -1086,14 +1099,14 @@ QCString enumeration_type_definition() : {QCString s,s1;}
 
 QCString exit_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 {
-[ s=identifier() t=<COLON_T> ] <EXIT_T> [ s1=identifier() ] 
+[ s=identifier() t=<COLON_T> ] <EXIT_T> [ s1=identifier() ]
 [ t1=<WHEN_T> s2=condition() ] <SEMI_T>
 {
-  lab.resize(0);         
+  lab.resize(0);
   if(t) s+=":";
   if(t1) s2.prepend(" when ");
-   FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2.data(),s1.data()); 
- 
+   FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2.data(),s1.data());
+
   return s+s1+s2+";";
 }
 }
@@ -1128,10 +1141,10 @@ s=primary() [LOOKAHEAD(1) <DOUBLEMULT_T> s1=primary(){ s+="**";s+=s1;} ] { retur
 
 QCString file_declaration() :  {QCString s,s1,s2,s3;}
 {
- <FILE_T> s=identifier_list() <COLON_T> s2=subtype_indication() [ s3=file_open_information() ] <SEMI_T> 
+ <FILE_T> s=identifier_list() <COLON_T> s2=subtype_indication() [ s3=file_open_information() ] <SEMI_T>
    {
    QCString t1=s2+" "+s3;
-   addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,t1.data(),Public);     
+   addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,t1.data(),Public);
    return " file "+s+":"+s2+" "+s3+";";
    }
  }
@@ -1156,10 +1169,10 @@ QCString floating_type_definition() :  {QCString s;}
   s=range_constraint(){ return s;}
 }
 
-QCString formal_designator() : {QCString s;Token *tok;} 
+QCString formal_designator() : {QCString s;Token *tok=0;}
 {
     s=name()  { return s; }
-	|tok=<INTEGER> { return tok->image.c_str();}
+    |tok=<INTEGER> { return tok->image.c_str();}
 }
 
 
@@ -1177,13 +1190,13 @@ QCString full_type_declaration() :  {QCString s,s1,s2;}
 {
 <TYPE_T> s=identifier() <IS_T>
  try{
-     s2=type_definition() 
-   	}catch(...){error_skipto(SEMI_T);}  
-	 <SEMI_T>  
-	 {
-	   addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,s2.data(),Public);
-   	   return "type "+s+" is "+s2+";";
-	 }
+     s2=type_definition()
+       }catch(...){error_skipto(SEMI_T);}
+     <SEMI_T>
+     {
+       addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,s2.data(),Public);
+          return "type "+s+" is "+s2+";";
+     }
 }
 
 QCString function_call() :  {QCString s,s1;}
@@ -1195,12 +1208,12 @@ void generate_statement() :  {QCString s;}
 {
 s=identifier() <COLON_T>
           try{
-		generate_scheme() <GENERATE_T> 
+        generate_scheme() <GENERATE_T>
         { pushLabel(genLabels,s); }
           generate_statement_body1()
-		<END_T> 
-			     }catch(...){error_skipto(GENERATE_T);}  
-		<GENERATE_T> [ identifier() ] <SEMI_T> {genLabels=popLabel(genLabels); }
+        <END_T>
+                 }catch(...){error_skipto(GENERATE_T);}
+        <GENERATE_T> [ identifier() ] <SEMI_T> {genLabels=popLabel(genLabels); }
 }
 
 void generate_scheme() : {}
@@ -1226,18 +1239,18 @@ void generic_map_aspect() :  {}
 
 QCString group_constituent() :  {QCString s;}
 {
- s=name() { return s; } 
+ s=name() { return s; }
  | s=character_literal() { return s;}
 }
 
 QCString group_constituent_list() : {QCString s,s1,s2;}
 {
-  (s1=group_constituent())(<COMMA_T> s=group_constituent(){s2+=",";s2+=s1;})* { return s+s2;} 
+  (s1=group_constituent())(<COMMA_T> s=group_constituent(){s2+=",";s2+=s1;})* { return s+s2;}
 }
 
 QCString group_declaration() :  {QCString s,s1,s2;}
 {
-  <GROUP_T> s=identifier() <COLON_T> s1=identifier() <LPAREN_T> s2=group_constituent_list() <RPAREN_T> <SEMI_T> 
+  <GROUP_T> s=identifier() <COLON_T> s1=identifier() <LPAREN_T> s2=group_constituent_list() <RPAREN_T> <SEMI_T>
   {
    return "group "+s+":"+s1+"("+s2+");";
   }
@@ -1245,7 +1258,7 @@ QCString group_declaration() :  {QCString s,s1,s2;}
 
 QCString group_template_declaration() : {QCString s,s1;}
 {
- <GROUP_T> s=identifier() <IS_T> <LPAREN_T> s1=entity_class_entry_list() <RPAREN_T> <SEMI_T> 
+ <GROUP_T> s=identifier() <IS_T> <LPAREN_T> s1=entity_class_entry_list() <RPAREN_T> <SEMI_T>
   {
     return "group "+s+ "is ("+s1+");";
   }
@@ -1256,7 +1269,7 @@ void guarded_signal_specification() : {}
  signal_list() <COLON_T> type_mark()
 }
 
-QCString identifier() : {Token *tok;}
+QCString identifier() : {Token *tok=0;}
 {
   tok=<EXTENDED_CHARACTER>{ return tok->image.c_str(); }
   |tok=<BASIC_IDENTIFIER> { return tok->image.c_str(); }
@@ -1271,33 +1284,33 @@ void if_statement() :  {QCString s,s1;}
 {
 [LOOKAHEAD(1) identifier() <COLON_T> ]
     <IF_T> s=condition() <THEN_T>
-	{
+    {
     s.prepend("if ");
     FlowChart::addFlowChart(FlowChart::IF_NO,0,s);
-  }  
-        sequence_of_statement() 
-		( 
-		  <ELSIF_T> s1=condition() <THEN_T> 
-		  { 
+  }
+        sequence_of_statement()
+        (
+          <ELSIF_T> s1=condition() <THEN_T>
+          {
            s1.prepend("elsif ");
            FlowChart::addFlowChart(FlowChart::ELSIF_NO,0,s1.data());
           }
-		  sequence_of_statement() 
-		)*
-		[LOOKAHEAD(1) <ELSE_T> 
-		 {
+          sequence_of_statement()
+        )*
+        [LOOKAHEAD(1) <ELSE_T>
+         {
            FlowChart::addFlowChart(FlowChart::ELSE_NO,0,0);
-         } 
-		sequence_of_statement() ] <END_T> <IF_T> [ identifier() ] <SEMI_T> 
-		 {
+         }
+        sequence_of_statement() ] <END_T> <IF_T> [ identifier() ] <SEMI_T>
+         {
           FlowChart::moveToPrevLevel();
           FlowChart::addFlowChart(FlowChart::ENDIF_NO,0,0);
-        } 
+        }
 }
 
 QCString incomplete_type_declaration() :  {QCString s;}
 {
-  <TYPE_T> s=identifier() <SEMI_T> 
+  <TYPE_T> s=identifier() <SEMI_T>
   {
    return "type "+s+";";
   }
@@ -1319,17 +1332,17 @@ QCString index_specification() : {QCString s;}
 
 QCString index_subtype_definition() :  {QCString s;}
 {
- s=type_mark() <RANGE_T> <BOX_T> { return s+" range <> ";} 
+ s=type_mark() <RANGE_T> <BOX_T> { return s+" range <> ";}
 }
 
-QCString instantiation_unit() :  {QCString s,s1,s2;Token *tok;}
+QCString instantiation_unit() :  {QCString s,s1,s2;Token *tok=0;}
 {
 [ tok=<COMPONENT_T> ] s=identifier() {s1="component"; return s; }
 | tok=<ENTITY_T> s2=name() {s=tok->image.c_str()+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
 | <CONFIGURATION_T> s=name() {s1="configuration ";return s;}
 }
 
-QCString instantiation_list() : {QCString s;Token *tok;}
+QCString instantiation_list() : {QCString s;Token *tok=0;}
 {
   s=identifier_list() { return s;}
 | tok=<OTHER_T> {return tok->image.c_str();}
@@ -1353,13 +1366,13 @@ LOOKAHEAD(5)
  s=interface_subprogram_declaration() { return s;}
 
 |interface_package_declaration() { return s;}
-| 
+|
  LOOKAHEAD(5)
  s=interface_variable_declaration() { return s;}
-| 
+|
 LOOKAHEAD(5)
 interface_file_declaration() { return s;}
-| 
+|
 LOOKAHEAD(subprogram_declaration())
 subprogram_declaration() { return s;}
 |
@@ -1367,8 +1380,8 @@ subprogram_declaration() { return s;}
  {
  if (parse_sec==GEN_SEC)
     addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,currP,s1.data(),0,Public);
-    return s;    
-	}
+    return s;
+    }
 }
 
 QCString interface_element() :  {QCString s;}
@@ -1379,7 +1392,7 @@ s=interface_declaration(){ return s;}
 QCString interface_file_declaration() : {QCString s,s1;}
 {
 <FILE_T> s=identifier_list() <COLON_T> s1=subtype_indication()
-{ 
+{
    addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,s1.data(),Public);
    return " file "+s+":"+s1;
 }
@@ -1394,20 +1407,20 @@ s=interface_element() (LOOKAHEAD(1) <SEMI_T> s1=interface_element(){s2+=";";s2+=
 
 QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *tok2=0;QCString s,s1,s2,s3,s4,s5;}
 {
-[( tok=<VARIABLE_T> | tok=<SIGNAL_T> | tok=<CONSTANT_T>|tok=<SHARED_T>) ] 
-  s=identifier_list() <COLON_T> [ s1=mode() ] 
-  s2=subtype_indication()  [ tok1=<BUS_T> ] [ tok2=<VARASSIGN_T> s4=expression() ] 
+[( tok=<VARIABLE_T> | tok=<SIGNAL_T> | tok=<CONSTANT_T>|tok=<SHARED_T>) ]
+  s=identifier_list() <COLON_T> [ s1=mode() ]
+  s2=subtype_indication()  [ tok1=<BUS_T> ] [ tok2=<VARASSIGN_T> s4=expression() ]
 {
                     if(tok)
-					s5=tok->image.c_str();
-					
-					if(tok1)
-					 s3=tok1->image.data();
-					 
-					if(tok2)
-					 s3+=":=";
-					 
-					QCString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
+                    s5=tok->image.c_str();
+
+                    if(tok1)
+                     s3=tok1->image.data();
+
+                    if(tok2)
+                     s3+=":=";
+
+                    QCString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
                     if (currP!=VhdlDocGen::COMPONENT)
                     {
                       if (currP==VhdlDocGen::FUNCTION || currP==VhdlDocGen::PROCEDURE)
@@ -1424,8 +1437,8 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
                       }
                       //   fprintf(stderr,"\n\n <<port  %s  >>\n",$$.data());
                     } // if component
-			  return it;
-			}
+              return it;
+            }
 }
 
 QCString iteration_scheme() :  {QCString s;}
@@ -1434,15 +1447,15 @@ QCString iteration_scheme() :  {QCString s;}
 {
    s.prepend("while ");
    FlowChart::addFlowChart(FlowChart::WHILE_NO,0,s.data(),lab.data());
-   lab="";    
-  return s;   
+   lab="";
+  return s;
 }
 | <FOR_T> s=parameter_specification()
 {
     QCString q=lab+" for "+s;
     FlowChart::addFlowChart(FlowChart::FOR_NO,0,q.data(),lab.data());
     lab="";
-	return q;
+    return q;
 }
 }
 
@@ -1454,14 +1467,14 @@ QCString label() :  {QCString s;}
 QCString library_clause() :  {QCString s;}
 {
  (<LIBRARY_T> s=identifier_list() <SEMI_T>
- ) 
+ )
  {
                if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
                    {
-				           addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,s.data(),"_library_",Public);          
+                           addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,s.data(),"_library_",Public);
                    }
                    QCString s1="library "+s;
-				   return s1;
+                   return s1;
  }
 }
 
@@ -1471,19 +1484,19 @@ LOOKAHEAD(2)
 primary_unit() {  return s; }
 |  secondary_unit() {  return s; }
 |  context_declaration()
- 
+
 }
 
 QCString literal() :  {QCString s;}
 {
- 
+
  LOOKAHEAD(bit_string_literal())
 s=bit_string_literal() { return s;}
 |
  LOOKAHEAD(numeric_literal())
  s=numeric_literal() { return s;}
-| 
- 
+|
+
 LOOKAHEAD(enumeration_literal())
 s=enumeration_literal() { return s;}
 | s=string_literal() { return s;}
@@ -1499,21 +1512,21 @@ QCString loop_statement() :  {QCString s,s1,s2,s3;}
 {
 [ s=identifier() <COLON_T> {s+=":";} ]
     [ s1=iteration_scheme()  ]
-	  {
-	   if(s1.isEmpty())
- 	   FlowChart::addFlowChart(FlowChart::LOOP_NO,0,"infinite");
-	   }
-	  <LOOP_T>
-        s2=sequence_of_statement() 
-		<END_T> <LOOP_T> [ s3=identifier() ] <SEMI_T> 
-		{
-		 QCString q = s+" loop "+s2+" end loop" +s3;
+      {
+       if(s1.isEmpty())
+        FlowChart::addFlowChart(FlowChart::LOOP_NO,0,"infinite");
+       }
+      <LOOP_T>
+        s2=sequence_of_statement()
+        <END_T> <LOOP_T> [ s3=identifier() ] <SEMI_T>
+        {
+         QCString q = s+" loop "+s2+" end loop" +s3;
          QCString endLoop="end loop" + s3;
          FlowChart::moveToPrevLevel();
          FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop.data(),0);
-		return q;
-		}
-		
+        return q;
+        }
+
 }
 
 
@@ -1524,7 +1537,7 @@ QCString miscellaneous_operator():{Token *t=0;}
   | <NOT_T> {return "not";}
 }
 
-QCString mode() :  {Token *tok;}
+QCString mode() :  {Token *tok=0;}
 {
 tok=<IN_T> { return "in"; }
 | tok=<OUT_T> { return "out"; }
@@ -1533,7 +1546,7 @@ tok=<IN_T> { return "in"; }
 | tok=<LINKAGE_T> { return "linkage"; }
 }
 
-QCString multiplying_operation() : {Token *tok;}
+QCString multiplying_operation() : {Token *tok=0;}
 {
 tok=<MULT_T>      { return tok->image.c_str(); }
 | tok=<SLASH_T>  { return tok->image.c_str(); }
@@ -1558,46 +1571,46 @@ QCString name_ext1() : {QCString s,s1,s2;}
 
  QCString name_ext() : {QCString s,s1,s2;}
  {
- 
+
   (
- LOOKAHEAD(<DOT_T> suffix()) 
+ LOOKAHEAD(<DOT_T> suffix())
  <DOT_T> s1=suffix(){s+=".";s+=s1;}
-| 
+|
   LOOKAHEAD(test_att_name())
    s1=test_att_name() { s+=s1;}
- | 
+ |
  LOOKAHEAD( <LPAREN_T> discrete_range() <RPAREN_T>)
   <LPAREN_T> s1=discrete_range() <RPAREN_T> {s+="(";s+=s1;s+=")";}
-   | 
+   |
   LOOKAHEAD( "(" expression() ("," expression() )* ")" )
-  <LPAREN_T> s1=expression() {s+="(";s+=s1;} (LOOKAHEAD(1) <COMMA_T>  s1=expression(){s+=",";s+=s1;})*  <RPAREN_T> { s+=")";} 
+  <LPAREN_T> s1=expression() {s+="(";s+=s1;} (LOOKAHEAD(1) <COMMA_T>  s1=expression(){s+=",";s+=s1;})*  <RPAREN_T> { s+=")";}
 
  )
  {return s;}
  }
- 
+
  QCString test_att_name() : {QCString s,s1;}
  {
-  [ LOOKAHEAD(<LBRACKET_T>) s1=signature() {s=s1;}] 
-  <APOSTROPHE_T> s1=attribute_designator() {s+="'";s+=s1;} 
-  [LOOKAHEAD(1) <LPAREN_T> s1=expression() <RPAREN_T> {s+="(";s+=s1;s+=")";}] 
+  [ LOOKAHEAD(<LBRACKET_T>) s1=signature() {s=s1;}]
+  <APOSTROPHE_T> s1=attribute_designator() {s+="'";s+=s1;}
+  [LOOKAHEAD(1) <LPAREN_T> s1=expression() <RPAREN_T> {s+="(";s+=s1;s+=")";}]
    { return s;}
  }
- 
+
  QCString indexed_name() : {QCString s,s1,s2;}
- {   
+ {
    s2=identifier() <LPAREN_T> s1=expression(){s=s2+"("+s1;} (<COMMA_T> s1=expression(){s+=",";s+=s1;})* <RPAREN_T> {return s+")";}
- } 
+ }
 
 QCString next_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 {
-[LOOKAHEAD(1) s=identifier() t=<COLON_T> ] <NEXT_T> [ s1=identifier() ] 
+[LOOKAHEAD(1) s=identifier() t=<COLON_T> ] <NEXT_T> [ s1=identifier() ]
 [LOOKAHEAD(1)  t1=<WHEN_T> s2=condition() ] <SEMI_T>
 {
   if(t) s+=":";
-   FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2.data(),s1.data()); 
+   FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2.data(),s1.data());
     lab.resize(0);
-  if(t1) s2.prepend("when ");                
+  if(t1) s2.prepend("when ");
   return s+s1+s2+";";
 }
 }
@@ -1609,7 +1622,7 @@ QCString null_statement() : {QCString s;}
 
 QCString numeric_literal() :  {QCString s;}
 {
- 
+
  LOOKAHEAD(physical_literal())
   s=physical_literal(){ return s;}
  | s=abstract_literal() { return s;}
@@ -1625,14 +1638,14 @@ QCString object_class() :  {}
 |<TYPE_T>              { return "type"; }
 }
 
-QCString operator_symbol() :  {Token *tok;}
+QCString operator_symbol() :  {Token *tok=0;}
 {
 tok=<STRINGLITERAL> {return tok->image.c_str();}
 }
 
 void options() :  {}
 {
-  [ <GUARDED_T> ] [ delay_mechanism() ] 
+  [ <GUARDED_T> ] [ delay_mechanism() ]
 }
 
 void package_body() :  {QCString s;}
@@ -1643,7 +1656,7 @@ void package_body() :  {QCString s;}
                         s.prepend("_");
                         addVhdlType(s,getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
                       }
- package_body_declarative_part() 
+ package_body_declarative_part()
 
 <END_T> [<PACKAGE_T> <BODY_T>  ] [ name() ] <SEMI_T> { lastCompound=0; genLabels.resize(0); }
 }
@@ -1659,7 +1672,7 @@ subprogram_declaration()
 | file_declaration()
 | alias_declaration()
 | use_clause()
-| 
+|
 LOOKAHEAD(3)
 group_template_declaration()
 | group_declaration()
@@ -1672,7 +1685,7 @@ void package_body_declarative_part() :  {}
 
 void package_declaration():  {QCString s;}
 {
- 
+
  <PACKAGE_T> s=identifier() <IS_T>
                           {
                           lastCompound=current;
@@ -1680,14 +1693,14 @@ void package_declaration():  {QCString s;}
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
                           clone->name=s;
-                          clone->startLine=getLine();
-                          clone->bodyLine=getLine();
+                          clone->startLine=getLine(PACKAGE_T);
+                          clone->bodyLine=getLine(PACKAGE_T);
                           clone->protection=Package;
                           current_root->addSubEntry(clone);
-                          addVhdlType(s,getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);  
-						  }
-	package_declarative_part() 
-<END_T> [ <PACKAGE_T>] [ name() ] <SEMI_T> 
+                          addVhdlType(s,getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
+                          }
+    package_declarative_part()
+<END_T> [ <PACKAGE_T>] [ name() ] <SEMI_T>
 { lastEntity=0;lastCompound=0; genLabels.resize(0); }
 }
 
@@ -1746,13 +1759,13 @@ QCString physical_type_definition() : {QCString s,s1,s2;}
         <UNITS_T>
             s=identifier()<SEMI_T>
             (s1=secondary_unit_declaration(){s2+=s1;s2+="#";})*
-			<END_T> <UNITS_T>  [name()] 
-			{  
-			 current->args=s2;
-          	 current->args.prepend("units");
+            <END_T> <UNITS_T>  [name()]
+            {
+             current->args=s2;
+               current->args.prepend("units");
              current->spec=VhdlDocGen::UNITS;
-		    return s2;
-		   }
+            return s2;
+           }
 }
 
 void port_clause() :  {}
@@ -1777,21 +1790,21 @@ s=function_call() { return s;}
 |
 LOOKAHEAD(<LPAREN_T> expression() <RPAREN_T>)
  <LPAREN_T> s1=expression() <RPAREN_T>{ s="("+s1+")"; return s;}
-| 
+|
 LOOKAHEAD(qualified_expression())
 s=qualified_expression() { return s;}
-| 
+|
 LOOKAHEAD(type_conversion())
 s=type_conversion() { return s;}
-| 
+|
 LOOKAHEAD(literal())
 s=literal() { s.prepend(" ");return s;}
-| 
+|
 LOOKAHEAD(name())
 s=name() { return s;}
-| 
+|
 allocator() { return "";}
-| 
+|
 s=aggregate() { return s; }
 }
 
@@ -1800,7 +1813,7 @@ void primary_unit() : {}
 {
 entity_declaration()
 | configuration_declaration()
-| 
+|
 LOOKAHEAD(package_instantiation_declaration())
 package_instantiation_declaration()
 |
@@ -1812,13 +1825,13 @@ LOOKAHEAD(4)
 
 QCString procedure_call() : {QCString s,s1;}
 {
- s=name()  [ <LPAREN_T> s1=actual_parameter_part() <RPAREN_T>{ s1.prepend("("); s1.append(")");}] 
+ s=name()  [ <LPAREN_T> s1=actual_parameter_part() <RPAREN_T>{ s1.prepend("("); s1.append(")");}]
 { return s+s1;}
  }
 
 QCString procedure_call_statement() :  {QCString s,s1;}
 {
-[LOOKAHEAD(2) s=identifier() <COLON_T> { s+=":"; }] s1=procedure_call() <SEMI_T> 
+[LOOKAHEAD(2) s=identifier() <COLON_T> { s+=":"; }] s1=procedure_call() <SEMI_T>
 {
   return s+s1+";";
 }
@@ -1834,12 +1847,12 @@ subprogram_declaration() { return "";}
 | s=variable_declaration() { return s;}
 | s=file_declaration() { return s;}
 | s=alias_declaration() { return s;}
-| 
+|
 LOOKAHEAD(3)
 s=attribute_declaration() { return s;}
 | s=attribute_specification() { return s;}
 | s=use_clause() { return s;}
-| 
+|
 LOOKAHEAD(3)
 s=group_template_declaration()  { return s;}
 | s=group_declaration() { return s;}
@@ -1853,38 +1866,38 @@ QCString process_declarative_part() :{QCString s,s1;}
 void process_statement() : {QCString s,s1,s2;Token *tok=0;}
 {
 [ s=identifier() <COLON_T> ]
-[ <POSTPONED_T> ] 
- {  
-               currP=VhdlDocGen::PROCESS; 
+[ <POSTPONED_T> ]
+ {
+               currP=VhdlDocGen::PROCESS;
                current->startLine=getLine();
                current->bodyLine=getLine();
   }
  <PROCESS_T>
  //try{
  [ <LPAREN_T> (tok=<ALL_T> | s1=sensitivity_list()) <RPAREN_T> ] [ <IS_T> ]
-        s2=process_declarative_part() 
-		     {
+        s2=process_declarative_part()
+             {
               if (s2.data())
                   FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2.data(),0);
                 FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
                }
-		<BEGIN_T>
+        <BEGIN_T>
         process_statement_part()
-		<END_T> [ <POSTPONED_T> ] 
-		 // }catch(...){error_skipto(PROCESS_T);}  
-		<PROCESS_T> [ identifier() ] <SEMI_T>
- { 
+        <END_T> [ <POSTPONED_T> ]
+         // }catch(...){error_skipto(PROCESS_T);}
+        <PROCESS_T> [ identifier() ] <SEMI_T>
+ {
   if(s.isEmpty())
    currName=VhdlDocGen::getProcessNumber();
    else
    currName=s;
-   
+
    current->name=currName;
    tempEntry=current;
    current->endBodyLine=getLine();
    currP=0;
  if(tok)
-   s1=tok->image.data(); 
+   s1=tok->image.data();
   createFunction(currName,VhdlDocGen::PROCESS,s1.data());
   createFlow();
    currName="";
@@ -1894,16 +1907,16 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;}
 
 void process_statement_part() :  {}
 {
-  (sequential_statement())* 
+  (sequential_statement())*
 }
 
 QCString qualified_expression() :  {QCString s,s1;}
 {
-  s1=identifier() <APOSTROPHE_T> {s=s1+"'";} 
-  ( 
+  s1=identifier() <APOSTROPHE_T> {s=s1+"'";}
+  (
     LOOKAHEAD(aggregate())
-	s1=aggregate(){s+=s1;}
-	| <LPAREN_T> s1=expression() <RPAREN_T>{s+="(";s+=s1;s+=")";}
+    s1=aggregate(){s+=s1;}
+    | <LPAREN_T> s1=expression() <RPAREN_T>{s+="(";s+=s1;s+=")";}
  )
  {return s;}
 }
@@ -1912,7 +1925,7 @@ QCString range() :  {QCString s,s1,s2;}
 {
    LOOKAHEAD( simple_expression() direction() simple_expression())
    s=simple_expression() s1=direction() s2=simple_expression(){return s+" "+s1+" "+s2;}
-  | 
+  |
  LOOKAHEAD(attribute_name())
   s=attribute_name(){ return s;}
 }
@@ -1921,15 +1934,15 @@ QCString range_constraint() :  {QCString s,s1;}
 {
 <RANGE_T> s=range(){return " range "+s;}
 }
- 
+
 void record_type_definition() : {}
 {
     <RECORD_T>
      //  try{
-	   (element_declaration())+ 
-	   	 //    }catch(...){error_skipto(END_T);}  
-       <END_T> 
-	   <RECORD_T> [ name()] 
+       (element_declaration())+
+            //    }catch(...){error_skipto(END_T);}
+       <END_T>
+       <RECORD_T> [ name()]
 }
 
 QCString relation() :  {QCString s,s1,s2;}
@@ -1945,25 +1958,25 @@ QCString relation_operator() :  {}
  |<GREATERTHAN_T> {return ">=";}
  |<LESSTHAN_T> {return "<=";}
  |<NOTEQU_T> {return "/=";}
- 
+
 }
 
 QCString report_statement() :  {Token *t=0;Token *t1=0;QCString s,s1,s2;}
 {
 [ s=identifier() t=<COLON_T> ]
     <REPORT_T> s1=expression()
-        [ t1=<SEVERITY_T> s2=expression() ] <SEMI_T> 
-		{
-		if(t) s.append(":");
-		s1.prepend(" report ");
-		if(t1) s2.prepend(" severity ");
-		return s+s1+s2+";";
-		}
+        [ t1=<SEVERITY_T> s2=expression() ] <SEMI_T>
+        {
+        if(t) s.append(":");
+        s1.prepend(" report ");
+        if(t1) s2.prepend(" severity ");
+        return s+s1+s2+";";
+        }
 }
 
 QCString return_statement() :  {QCString s,s1;}
 {
-[ s=identifier() <COLON_T> { s+=":";}] <RETURN_T> [ s1=expression() ] <SEMI_T> 
+[ s=identifier() <COLON_T> { s+=":";}] <RETURN_T> [ s1=expression() ] <SEMI_T>
 { return s+" return "+s1+";";}
 }
 
@@ -1982,7 +1995,7 @@ architecture_body()
 
 QCString secondary_unit_declaration() :  {QCString s,s1;}
 {
-s=identifier() <EQU_T> s1=physical_literal() <SEMI_T> { return s+"="+s1; } 
+s=identifier() <EQU_T> s1=physical_literal() <SEMI_T> { return s+"="+s1; }
 }
 
 QCString selected_name() : {QCString s,s1;}
@@ -2024,47 +2037,47 @@ QCString sequence_of_statement() : {QCString s,s1;}
 QCString sequential_statement() :{QCString s;}
 {
     LOOKAHEAD( [ identifier() ":" ] target() "<=")
-	s=signal_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
-    | 
-	LOOKAHEAD(3)
-	s=assertion_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
-    | 
-	 LOOKAHEAD(3)
-	s=report_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
-    | 
-	LOOKAHEAD(3)
-	s=wait_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
-    | 
+    s=signal_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
+    |
+    LOOKAHEAD(3)
+    s=assertion_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
+    |
+     LOOKAHEAD(3)
+    s=report_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
+    |
+    LOOKAHEAD(3)
+    s=wait_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
+    |
     LOOKAHEAD(  [ identifier() ":" ] target() ":=" )
-	s=variable_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
-    | 
+    s=variable_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
+    |
     LOOKAHEAD(3)
-	s=procedure_call_statement(){ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s; }
-    | 
-	 LOOKAHEAD(3)
-	if_statement(){return s;}
-    | 
-	 LOOKAHEAD(3)
-	case_statement(){return s;}
-    | 
-	LOOKAHEAD(3)
-	loop_statement(){return s;}
-    | 
-	LOOKAHEAD(3)
-	s=next_statement() {return s;} 
-	| 
-	LOOKAHEAD(3)	
-	s=exit_statement(){return s;}
-    | 
+    s=procedure_call_statement(){ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s; }
+    |
+     LOOKAHEAD(3)
+    if_statement(){return s;}
+    |
+     LOOKAHEAD(3)
+    case_statement(){return s;}
+    |
     LOOKAHEAD(3)
-	s=return_statement(){FlowChart::addFlowChart(FlowChart::RETURN_NO,s.data(),0);return s;}
-    | 
-	s=null_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
+    loop_statement(){return s;}
+    |
+    LOOKAHEAD(3)
+    s=next_statement() {return s;}
+    |
+    LOOKAHEAD(3)
+    s=exit_statement(){return s;}
+    |
+    LOOKAHEAD(3)
+    s=return_statement(){FlowChart::addFlowChart(FlowChart::RETURN_NO,s.data(),0);return s;}
+    |
+    s=null_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
 }
 
 QCString shift_expression() :  {QCString s,s1,s2;}
 {
- s=simple_expression() [ s1=shift_operator() s2=simple_expression() ] { return s+s1+s2;} 
+ s=simple_expression() [ s1=shift_operator() s2=simple_expression() ] { return s+s1+s2;}
 }
 QCString shift_operator() :  {}
 {
@@ -2087,14 +2100,14 @@ QCString signal_assignment_statement() : {QCString s,s1,s2,s3;}
 
   LOOKAHEAD(conditional_signal_assignment_wave())
   conditional_signal_assignment_wave(){ return ""; }
-| 
+|
   LOOKAHEAD(selected_signal_assignment_wave())
   selected_signal_assignment_wave() { return ""; }
   |
-  [LOOKAHEAD(2) s=identifier() <COLON_T> {s+=":";} ] 
-s1=target() <LESSTHAN_T> 
-[ s2=delay_mechanism() ] 
-s3=waveform() <SEMI_T> 
+  [LOOKAHEAD(2) s=identifier() <COLON_T> {s+=":";} ]
+s1=target() <LESSTHAN_T>
+[ s2=delay_mechanism() ]
+s3=waveform() <SEMI_T>
 {
   return s+s1+"<="+s2+s3+";";
 }
@@ -2103,38 +2116,38 @@ s3=waveform() <SEMI_T>
 
 void semi() :  {}
 {
-<SEMI_T> 
+<SEMI_T>
 }
 
 void signal_declaration() :  { Token* tok=0;QCString s,s1,s2,s3,s4;}
 {
-<SIGNAL_T> s=identifier_list() <COLON_T> s1=subtype_indication() [ s2=signal_kind() ] [ tok=<VARASSIGN_T> s3=expression() ] <SEMI_T> 
+<SIGNAL_T> s=identifier_list() <COLON_T> s1=subtype_indication() [ s2=signal_kind() ] [ tok=<VARASSIGN_T> s3=expression() ] <SEMI_T>
      {
-	 if(tok)
-	  s3.prepend(":=");
-	 s4=s1+s2+s3;
-	 addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SIGNAL,0,s4.data(),Public);
+     if(tok)
+      s3.prepend(":=");
+     s4=s1+s2+s3;
+     addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SIGNAL,0,s4.data(),Public);
      }
 }
 QCString signal_kind() :  {}
 {
-  <REGISTER_T> { return "register";} 
+  <REGISTER_T> { return "register";}
   | <BUS_T>  { return "bus";}
 }
 
 QCString signal_list() : {QCString s,s1;}
 {
- s=name() (<COMMA_T>  s1=name() { s+=",";s+=s1;})*  
+ s=name() (<COMMA_T>  s1=name() { s+=",";s+=s1;})*
 | <OTHER_T> { return "other";}
 | <ALL_T> { return "all";}
 }
 
 QCString signature() : {QCString s,s1,s2;}
 {
-<LBRACKET_T> 
- [ s=name()  (<COMMA_T> s1=name() {s+=",";s+=s1; })* ] 
+<LBRACKET_T>
+ [ s=name()  (<COMMA_T> s1=name() {s+=",";s+=s1; })* ]
  [ <RETURN_T> s1=name() {s+="return ";s+=s1;}]
-  <RBRACKET_T> 
+  <RBRACKET_T>
   { s1="["+s+"]";return s1;}
  }
 
@@ -2153,14 +2166,14 @@ QCString slice_name() :  {QCString s,s1;}
  s=identifier() <LPAREN_T> s1=discrete_range() <RPAREN_T> {return s+"("+s1+")";}
 }
 
-QCString string_literal() : {Token *tok;}
+QCString string_literal() : {Token *tok=0;}
 {
 tok=<STRINGLITERAL> {return tok->image.c_str();}
 }
 
  void subprogram_body() : {QCString s;}
 {
-//subprogram_specification() 
+//subprogram_specification()
 <IS_T>
  //try{
  s=subprogram_declarative_part()
@@ -2170,14 +2183,14 @@ tok=<STRINGLITERAL> {return tok->image.c_str();}
         FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s,0);
       }
       FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
-    } 
- // }catch(...){error_skipto(BEGIN_T);}  
+    }
+ // }catch(...){error_skipto(BEGIN_T);}
 <BEGIN_T>
 subprogram_statement_part()
-<END_T> [ subprogram_kind() ] [ designator() ] <SEMI_T> 
+<END_T> [ subprogram_kind() ] [ designator() ] <SEMI_T>
  {
       tempEntry->endBodyLine=getLine(END_T);
-      createFlow();    
+      createFlow();
       currP=0;
     }
 }
@@ -2192,7 +2205,7 @@ subprogram_specification()subprogram_1(){currP=0;}
 
 void subprogram_1() :  {}
 {
- 
+
  subprogram_body()
  | <SEMI_T>
 }
@@ -2207,12 +2220,12 @@ subprogram_declaration(){ return "";}
 | s=variable_declaration(){ return s;}
 | s=file_declaration(){ return s;}
 | s=alias_declaration(){ return s;}
-| 
+|
 LOOKAHEAD(attribute_declaration())
 s=attribute_declaration(){ return s;}
 | s=attribute_specification(){ return s;}
 | s=use_clause(){ return s;}
-| 
+|
 LOOKAHEAD(3)
 s=group_template_declaration(){ return s;}
 | s=group_declaration() { return s;}
@@ -2231,33 +2244,33 @@ void subprogram_kind() :  {}
 
 void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
 {
- <PROCEDURE_T> s=designator() 
+ <PROCEDURE_T> s=designator()
  {
-              currP=VhdlDocGen::PROCEDURE; 
-              createFunction(s.data(),currP,0); 
+              currP=VhdlDocGen::PROCEDURE;
+              createFunction(s.data(),currP,0);
               tempEntry=current;
-			   current->startLine=getLine(PROCEDURE_T);
-	           current->bodyLine=getLine(PROCEDURE_T);
-			  
-			  } [LOOKAHEAD(1) <LPAREN_T> { param_sec=PARAM_SEC; } interface_list() { param_sec=0; }<RPAREN_T> ]
-			 [LOOKAHEAD(2) gen_interface_list()]
-			 [ LOOKAHEAD(2) gen_assoc_list()] 
-			 param()
-			  {  newEntry(); }
+               current->startLine=getLine(PROCEDURE_T);
+               current->bodyLine=getLine(PROCEDURE_T);
+
+              } [LOOKAHEAD(1) <LPAREN_T> { param_sec=PARAM_SEC; } interface_list() { param_sec=0; }<RPAREN_T> ]
+             [LOOKAHEAD(2) gen_interface_list()]
+             [ LOOKAHEAD(2) gen_assoc_list()]
+             param()
+              {  newEntry(); }
 |
- [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> s=designator() 
+ [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> s=designator()
   {
      currP=VhdlDocGen::FUNCTION;
-	 if(tok)
-     createFunction(tok->image.c_str(),currP,s.data()); 
-	 else
-	 createFunction(0,currP,s.data()); 	 
-	  tempEntry=current;
-	  current->startLine=getLine(FUNCTION_T);
-	  current->bodyLine=getLine(FUNCTION_T);
+     if(tok)
+     createFunction(tok->image.c_str(),currP,s.data());
+     else
+     createFunction(0,currP,s.data());
+      tempEntry=current;
+      current->startLine=getLine(FUNCTION_T);
+      current->bodyLine=getLine(FUNCTION_T);
   }
  [{ param_sec=PARAM_SEC; } <LPAREN_T> formal_parameter_list() <RPAREN_T> { param_sec=0; }]
-    <RETURN_T> s=type_mark() 
+    <RETURN_T> s=type_mark()
              {
                 tempEntry=current;
                 current->type=s;
@@ -2303,7 +2316,7 @@ QCString target() :  {QCString s;}
 
 QCString term() : {QCString s,s1,s2;}
 {
- s=factor() ( LOOKAHEAD(2) s1=multiplying_operation() s2=factor(){s+=s1;s+=s2;} )* { return s;} 
+ s=factor() ( LOOKAHEAD(2) s1=multiplying_operation() s2=factor(){s+=s1;s+=s2;} )* { return s;}
 }
 
 QCString timeout_clause() : {QCString s;}
@@ -2334,7 +2347,7 @@ s=scalar_type_definition(){ return s;}
 | s=access_type_definition(){ return s;}
 | s=file_type_definition(){ return s;}
 |
- LOOKAHEAD(2) 
+ LOOKAHEAD(2)
  protected_type_body()            { return ""; }
 | protected_type_declaration()     { return ""; }
 //}catch(...){error_skipto(SEMI_T); return "";}
@@ -2358,15 +2371,15 @@ QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
                    QStringList ql1=QStringList::split(",",s,FALSE);
                    for (uint j=0;j<ql1.count();j++)
                    {
-                    QStringList ql=QStringList::split(".",ql1[j],FALSE);                    
-					QCString it=ql[1].utf8();
+                    QStringList ql=QStringList::split(".",ql1[j],FALSE);
+                    QCString it=ql[1].utf8();
                      if ( parse_sec==0 && Config_getBool("SHOW_INCLUDE_FILES") )
                      {
                        VhdlParser::addVhdlType(it.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
                      }
                    }
                    s1="use "+s;
-				   return s1;
+                   return s1;
    }
 }
 
@@ -2375,35 +2388,35 @@ QCString variable_assignment_statement() :  {QCString s,s1,s2;}
 [LOOKAHEAD(2) s=identifier() <COLON_T> {s+=":";}]
  s1=target() <VARASSIGN_T> s2=expression() <SEMI_T>
  {return s+s1+":="+s2+";";}
- | 
- selected_variable_assignment() { return "";  } 
+ |
+ selected_variable_assignment() { return "";  }
 }
 
 QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
 {
-[ tok=<SHARED_T> ] <VARIABLE_T> s=identifier_list() <COLON_T> s1=subtype_indication() 
-[ t1=<VARASSIGN_T> s2=expression() ] <SEMI_T> 
+[ tok=<SHARED_T> ] <VARIABLE_T> s=identifier_list() <COLON_T> s1=subtype_indication()
+[ t1=<VARASSIGN_T> s2=expression() ] <SEMI_T>
 
 {
     int spec;
-	if(t1)
-	 s2.prepend(":=");
-	QCString val=" variable "+s+":"+s1+s2+";";
-	QCString it=s1;
-	if(tok != 0)
-	{
-	 it.prepend(" shared ");
-	 val.prepend(" shared");
-	 spec=VhdlDocGen::SHAREDVARIABLE;
-	 }
-	 else
-	 spec=VhdlDocGen::SHAREDVARIABLE;
-    
-	if(t1){
-	 it+=":=";
+    if(t1)
+     s2.prepend(":=");
+    QCString val=" variable "+s+":"+s1+s2+";";
+    QCString it=s1;
+    if(tok != 0)
+    {
+     it.prepend(" shared ");
+     val.prepend(" shared");
+     spec=VhdlDocGen::SHAREDVARIABLE;
+     }
+     else
+     spec=VhdlDocGen::SHAREDVARIABLE;
+
+    if(t1){
+     it+=":=";
      it+=s2;
-	 }
-	addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,spec,0,it.data(),Public);
+     }
+    addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,spec,0,it.data(),Public);
     return val;
  }
 
@@ -2411,7 +2424,7 @@ QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
 
 QCString wait_statement() :  {QCString s,s1,s2,s3;Token *t=0;}
 {
-[ s=identifier() t=<COLON_T> ] <WAIT_T> [ s1=sensitivity_clause() ] [ s2=condition_clause() ] [ s3=timeout_clause() ] <SEMI_T> 
+[ s=identifier() t=<COLON_T> ] <WAIT_T> [ s1=sensitivity_clause() ] [ s2=condition_clause() ] [ s3=timeout_clause() ] <SEMI_T>
 {
   if(t) s.append(":");
   return s+" wait "+s1+s2+s3+";";
@@ -2421,16 +2434,16 @@ QCString wait_statement() :  {QCString s,s1,s2,s3;Token *t=0;}
 QCString waveform() :  {QCString s,s1;}
 {
 s=waveform_element() (LOOKAHEAD(1) <COMMA_T> s1=waveform_element(){s+=","; s+=s1;})* { return s;}
-| 
+|
 <UNAFFECTED_T> { return " unaffected ";}
 
 }
 
 QCString waveform_element() :  {QCString s,s1;}
 {
- s=expression() [ <AFTER_T> s1=expression(){ s1.prepend(" after ");} ] 
+ s=expression() [ <AFTER_T> s1=expression(){ s1.prepend(" after ");} ]
  { return s+s1;}
-//<NULL_T> [ <AFTER_T> expression() ] 
+//<NULL_T> [ <AFTER_T> expression() ]
 }
 
 // -----------------------------------------------------------------
@@ -2440,60 +2453,60 @@ QCString waveform_element() :  {QCString s,s1;}
 QCString protected_type_body() :{ }
 {
   // try{
-   <PROTECTED_T> <BODY_T> 
-          protected_type_body_declarative_part()    
-   
-	//}catch(...){error_skipto(END_T);} 
-	<END_T><PROTECTED_T> <BODY_T>   [identifier()]  {return "";}  
+   <PROTECTED_T> <BODY_T>
+          protected_type_body_declarative_part()
+
+    //}catch(...){error_skipto(END_T);}
+    <END_T><PROTECTED_T> <BODY_T>   [identifier()]  {return "";}
 }
 
 void protected_type_body_declarative_item() :    { }
- {   
-	subprogram_declaration()    
-    | subprogram_body()    
-    | type_declaration()   
+ {
+    subprogram_declaration()
+    | subprogram_body()
+    | type_declaration()
     | subtype_declaration()
     | constant_declaration()
     | variable_declaration()
     | file_declaration()
     | alias_declaration()
-    | 
-	  LOOKAHEAD( attribute_declaration())
-	  attribute_declaration()
+    |
+      LOOKAHEAD( attribute_declaration())
+      attribute_declaration()
     | attribute_specification()
     | use_clause()
     | LOOKAHEAD(3)
-	  group_template_declaration()
+      group_template_declaration()
     | group_declaration()
-	
+
 }
 
 void protected_type_body_declarative_part() :{  }
 {
-    ( protected_type_body_declarative_item ())*   
+    ( protected_type_body_declarative_item ())*
 }
 
 
 QCString protected_type_declaration() : {  }
- {   
-   <PROTECTED_T>    
-        try{  
-		  protected_type_declarative_part() 
-		}catch(...){error_skipto(END_T);}  
+ {
+   <PROTECTED_T>
+        try{
+          protected_type_declarative_part()
+        }catch(...){error_skipto(END_T);}
        <END_T><PROTECTED_T> [ identifier() ] { return "";}
  }
 
 
 void protected_type_declarative_item():    { }
 {
-    subprogram_specification()   
-    | attribute_specification()    
-    | use_clause()    
+    subprogram_specification()
+    | attribute_specification()
+    | use_clause()
 }
 
 void protected_type_declarative_part() :    {}
 {
-    (protected_type_declarative_item ()<SEMI_T>)*   
+    (protected_type_declarative_item ()<SEMI_T>)*
 }
 
 // -----------------------------------------------------------------
@@ -2501,10 +2514,10 @@ void protected_type_declarative_part() :    {}
 // -----------------------------------------------------------------
 
 QCString context_ref() : {QCString s;}
-{ 
- <CONTEXT_T>  s=identifier_list() <SEMI_T> 
- {  
-  return "context "+s ; 
+{
+ <CONTEXT_T>  s=identifier_list() <SEMI_T>
+ {
+  return "context "+s ;
  }
 }
 
@@ -2518,7 +2531,7 @@ void context_declaration(): {QCString s,s1;}
 }
 
 QCString libustcont_stats(): {QCString s;}
-{  
+{
    s=use_clause()  { return s;}
    | s=library_clause() { return s;}
    | s=context_ref() { return s;}
@@ -2528,20 +2541,20 @@ QCString libustcont_stats(): {QCString s;}
  {
  <PACKAGE_T> s=identifier() <IS_T>  <NEW_T> s1=name() s2=signature() [gen_assoc_list()] <SEMI_T>
     {
-      QCString q=" is new "+s1+s2; 
+      QCString q=" is new "+s1+s2;
       addVhdlType(s.data(),getLine(PACKAGE_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"package",q.data(),Public);
     }
 }
-	
+
 QCString interface_package_declaration(): {QCString s,s1;}
 {
- <PACKAGE_T> s=identifier() <IS_T> <NEW_T> s1=name() [gen_assoc_list()] 
+ <PACKAGE_T> s=identifier() <IS_T> <NEW_T> s1=name() [gen_assoc_list()]
                         {
                           current->name=s;
-  				          return "package "+s+" is new "+s1;
+                            return "package "+s+" is new "+s1;
                          }
-}		
-	
+}
+
 QCString subprogram_instantiation_declaration():{QCString s,s1,s2;}
 {
  <FUNCTION_T>  s=identifier() <IS_T> <NEW_T> s1=name()  s2=signature() [gen_assoc_list()] <SEMI_T>
@@ -2549,10 +2562,10 @@ QCString subprogram_instantiation_declaration():{QCString s,s1,s2;}
      QCString q= " is new "+s1+s2;
       addVhdlType(s.data(),getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Public);
     return q;
-	}
+    }
 }
-		
-	
+
+
 void gen_assoc_list():{}
 {
    <GENERIC_T> <MAP_T> <LPAREN_T>  association_list()<RPAREN_T>
@@ -2570,8 +2583,8 @@ void gen_interface_list() : {}
                         //  QCString vo=$3;
                           parse_sec=0;
                         }
-						<RPAREN_T>
-}	
+                        <RPAREN_T>
+}
 
 void case_scheme (): {}
 {
@@ -2589,14 +2602,14 @@ void when_stats() : {}
 void ttend(): {}
 {
   <END_T> [identifier()] <SEMI_T>
- } 
+ }
 
- 
+
 void generate_statement_body() : {}
 {
    <BEGIN_T> generate_statement_body()
 }
- 
+
 void generate_statement_body1() : {}
 {
    LOOKAHEAD(block_declarative_item()<BEGIN_T> )
@@ -2610,7 +2623,7 @@ QCString external_name(): {QCString s,s1,s2;}
                         {
                          QCString t="<<"+s;
                          QCString t1=s1+":"+s2+">>";
-                         return   s+s1;					
+                         return   s+s1;
                         }
 }
 
@@ -2619,7 +2632,7 @@ QCString sig_stat(): {Token *t;}
   t=<CONSTANT_T>      { return t->image.data(); }
   | t=<SIGNAL_T>      { return t->image.data(); }
   | t=<VARIABLE_T>   { return t->image.data(); }
- 
+
 }
 
 QCString external_pathname(): {QCString s;}
@@ -2632,7 +2645,7 @@ QCString external_pathname(): {QCString s;}
 QCString absolute_pathname(): {QCString s,s1;}
 {
  LOOKAHEAD(<DOT_T>  pathname_element_list())
- <DOT_T>  s=pathname_element_list() s1=identifier() { return "."+s+s1;} 
+ <DOT_T>  s=pathname_element_list() s1=identifier() { return "."+s+s1;}
 | <DOT_T>  s=identifier (){ return "."+s;}
 }
 
@@ -2643,24 +2656,24 @@ QCString relative_pathname():{QCString s,s1,s2;}
 
 QCString neg_list(): {QCString s;}
 {
- (<NEG_T> <DOT_T>{s+="^.";})+     {return s; }  
+ (<NEG_T> <DOT_T>{s+="^.";})+     {return s; }
 }
 
 QCString pathname_element ():{QCString s,s1;}
 {
-  s=identifier() [<LPAREN_T> s1=expression()  <RPAREN_T>] 
+  s=identifier() [<LPAREN_T> s1=expression()  <RPAREN_T>]
   {
     if(!s1.isEmpty())
-	 return s+"("+s1+")";
-	
-    return s;	
+     return s+"("+s1+")";
+
+    return s;
   }
  }
 
 QCString pathname_element_list():{QCString s,s1,s2;}
 {
-        ( s=pathname_element() <DOT_T> ) {s+=".";} (LOOKAHEAD(pathname_element() <DOT_T>) s1=pathname_element() <DOT_T> {s2+=s1;s2+="."; })* 
-		{ return s+s2; }
+        ( s=pathname_element() <DOT_T> ) {s+=".";} (LOOKAHEAD(pathname_element() <DOT_T>) s1=pathname_element() <DOT_T> {s2+=s1;s2+="."; })*
+        { return s+s2; }
 }
 
 QCString package_path_name():{QCString s;}
@@ -2669,10 +2682,10 @@ QCString package_path_name():{QCString s;}
 }
 
 void conditional_signal_assignment_wave(): {}
-{ 
+{
   LOOKAHEAD(conditional_force_assignment())
-  conditional_force_assignment() 
-  |conditional_waveform_assignment()   
+  conditional_force_assignment()
+  |conditional_waveform_assignment()
 }
 
 void conditional_waveform_assignment():{}
@@ -2680,7 +2693,7 @@ void conditional_waveform_assignment():{}
  target() <LESSTHAN_T> [LOOKAHEAD(1) delay_mechanism() ] waveform_element() <WHEN_T> expression() [else_wave_list()] <SEMI_T>
  }
 
-void  else_wave_list(): {} 
+void  else_wave_list(): {}
 {
 <ELSE_T> expression() [ <WHEN_T> expression()]
 }
@@ -2690,15 +2703,15 @@ void conditional_force_assignment(): {}
  target()  <LESSTHAN_T> <FORCE_T>  [inout_stat()] expression() <WHEN_T> [expression() else_stat()] <SEMI_T>
 }
 
-void selected_signal_assignment_wave() : {} 
+void selected_signal_assignment_wave() : {}
 {
  LOOKAHEAD(selected_force_assignment() )
- selected_force_assignment() 
+ selected_force_assignment()
 | selected_waveform_assignment()
 }
 
 void selected_variable_assignment():{}
-{ 
+{
   <WITH_T> expression() <SELECT_T> [<Q_T>] select_name() <VARASSIGN_T> sel_var_list() // { $$=""; }
 }
 
@@ -2707,7 +2720,7 @@ void select_name(): {}
  LOOKAHEAD(aggregate())
  aggregate()
   | name()
-  
+
 }
 
 void selected_waveform_assignment():{}
@@ -2717,7 +2730,7 @@ void selected_waveform_assignment():{}
 }
 
 void selected_force_assignment():{}
-{ 
+{
 <WITH_T> expression() <SELECT_T> [<Q_T>] target() <LESSTHAN_T> <FORCE_T>
                                                   [inout_stat()] sel_var_list()
 }
@@ -2730,23 +2743,23 @@ void sel_var_list(): {}
 
 
 void sel_wave_list() : {}
-{  
+{
    waveform_element() <WHEN_T> choices() (LOOKAHEAD(1) <COMMA_T> sel_wave_list())* <SEMI_T>
   // |  sel_wave_list_1()
 }
 
 void inout_stat(): {}
-{ 
-  <IN_T> 
- | <OUT_T> 
+{
+  <IN_T>
+ | <OUT_T>
  }
 
 void else_stat(): {}
-{ 
+{
    (<ELSE_T> expression() [LOOKAHEAD(1) <WHEN_T> expression()])+
 }
 
-					
+
 
 QCString interface_subprogram_declaration(): {QCString s;}
 {
@@ -2754,32 +2767,32 @@ QCString interface_subprogram_declaration(): {QCString s;}
  | s=ifunc()  { return s; }
 }
 
-QCString iproc(): {QCString s,s1;} 
+QCString iproc(): {QCString s,s1;}
  {
-  <PROCEDURE_T> s=identifier()  s1=param() 
-  { 
-  current->name=s; 
-  return "procedure "+s+s1; 
+  <PROCEDURE_T> s=identifier()  s1=param()
+  {
+  current->name=s;
+  return "procedure "+s+s1;
   }
  }
 
 QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
 {
- 
+
  [t=<PURE_T> | t=<IMPURE_T> ] <FUNCTION_T>  s=name() s1=param() <RETURN_T> s2=name() [t1=<IS_T> (s3=identifier() | t2=<BOX_T>)]
-    {  
-	  QCString q;
-	  if(t) q=t->image.data();
+    {
+      QCString q;
+      if(t) q=t->image.data();
       if(t2) s3="<>";
-	  if (!s3.isEmpty())
+      if (!s3.isEmpty())
       {
         s3.prepend(" is ");
       }
      current->name=s;
-	if (parse_sec==GEN_SEC)
+    if (parse_sec==GEN_SEC)
                     {
-                      QCString ss=q+" function "+s1+" return "+s2+s3; 
-					  int a=getLine(FUNCTION_T);
+                      QCString ss=q+" function "+s1+" return "+s2+s3;
+                      int a=getLine(FUNCTION_T);
                       int b=getLine(PROCEDURE_T);
 
                       if (a>b) b=a;
@@ -2787,25 +2800,25 @@ QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
                     }
          currP=0;return "";
        }
-   	
+
     }
- 
- 
-QCString param(): {QCString s,s1;Token *tok=0;} 
-{ 
+
+
+QCString param(): {QCString s,s1;Token *tok=0;}
+{
 [ tok=<PARAMETER_T> ] { param_sec=PARAM_SEC; }
                   [ <LPAREN_T>  s1=interface_list() <RPAREN_T>]
-                   { 
-				  	 if(tok) 
-					 {
-					  s = tok->image.data();
-					     param_sec=0; 
-				    }
-					  return s+"("+s1+")";
-					}
-	    
+                   {
+                       if(tok)
+                     {
+                      s = tok->image.data();
+                         param_sec=0;
+                    }
+                      return s+"("+s1+")";
+                    }
+
  }
- 
+
  // -----------------------------------------------------------------
  // needed for inline (function/process/procedure) parsing
 

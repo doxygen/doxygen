@@ -90,7 +90,8 @@ class VhdlString
     char &      operator[](int i)       { return m_str[i]; }
     const char &operator[](int i) const { return m_str[i]; }
     void        clear()                 { free(m_str); init(); }
-    VhdlString  operator+=(char c)      { char s[2]; s[0]=c; s[1]=0; return append(s); }
+    VhdlString  &operator+=(char c)      { char s[2]; s[0]=c; s[1]=0; return append(s); }
+    VhdlString  &operator+=(const char *s) { return append(s); }
 
   private:
     void init() { m_str=(char*)calloc(1,1); m_len=0; }

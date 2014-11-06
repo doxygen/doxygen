@@ -1785,21 +1785,6 @@ QCString VhdlDocGen::convertArgumentListToString(const ArgumentList* al,bool fun
 void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
     OutputList& ol,GroupDef* gd,ClassDef* cd,FileDef *fd,NamespaceDef* nd)
 {
-  static ClassDef *cdef;
-  //static GroupDef* gdef;
-  if (cd && cdef!=cd)
-  { // only one inline link
-    VhdlDocGen::writeInlineClassLink(cd,ol);
-    cdef=cd;
-  }
-
-  /*
-     if (gd && gdef==gd) return;
-     if (gd && gdef!=gd)
-     {
-     gdef=gd;
-     }
-   */
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),0,FALSE,VhdlDocGen::LIBRARY);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),0,FALSE,VhdlDocGen::USE);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),0,FALSE,VhdlDocGen::FUNCTION);
