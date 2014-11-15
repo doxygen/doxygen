@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="class_sender" kind="class" prot="public">
+  <compounddef id="class_sender" kind="class" language="C++" prot="public">
     <compoundname>Sender</compoundname>
     <sectiondef kind="public-func">
       <memberdef kind="function" id="class_sender_1a8ad2c6f9baa4e798868fe4a4d45f8fda" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

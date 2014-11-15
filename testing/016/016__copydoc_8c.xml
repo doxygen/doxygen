@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="016__copydoc_8c" kind="file">
+  <compounddef id="016__copydoc_8c" kind="file" language="C++">
     <compoundname>016_copydoc.c</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="016__copydoc_8c_1af721a79655a3857b98d70fa6ada8a916" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

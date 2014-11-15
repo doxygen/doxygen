@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="054__parblock_8cpp" kind="file">
+  <compounddef id="054__parblock_8cpp" kind="file" language="C++">
     <compoundname>054_parblock.cpp</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="054__parblock_8cpp_1a2dd0ac47f42a9994b91d34403be05fe9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

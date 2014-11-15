@@ -1251,7 +1251,8 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << classOutputFileBase(cd) << "\" kind=\"" 
-    << cd->compoundTypeString() << "\" prot=\"";
+    << cd->compoundTypeString() << "\" language=\""
+    << langToString(cd->getLanguage()) << "\" prot=\"";
   switch (cd->protection())
   {
     case Public:    t << "public";    break;
@@ -1448,8 +1449,9 @@ static void generateXMLForNamespace(NamespaceDef *nd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
   
   writeXMLHeader(t);
-  t << "  <compounddef id=\"" 
-    << nd->getOutputFileBase() << "\" kind=\"namespace\">" << endl;
+  t << "  <compounddef id=\"" << nd->getOutputFileBase() 
+    << "\" kind=\"namespace\" language=\"" 
+    << langToString(nd->getLanguage()) << "\">" << endl;
   t << "    <compoundname>";
   writeXMLString(t,nd->name());
   t << "</compoundname>" << endl;
@@ -1528,8 +1530,9 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   //t.setEncoding(FTextStream::UnicodeUTF8);
 
   writeXMLHeader(t);
-  t << "  <compounddef id=\"" 
-    << fd->getOutputFileBase() << "\" kind=\"file\">" << endl;
+  t << "  <compounddef id=\"" << fd->getOutputFileBase()
+    << "\" kind=\"file\" language=\"" 
+    << langToString(fd->getLanguage()) << "\">" << endl;
   t << "    <compoundname>";
   writeXMLString(t,fd->name());
   t << "</compoundname>" << endl;

@@ -1,3 +1,19 @@
+#!/usr/bin/python
+# Script that compiles a set of resources into a single C++ source file. The C++ file
+# offers an initResources() function, which registers the resources with the resource
+# manager (class ResourceMgr)
+#
+# Copyright (C) 1997-2014 by Dimitri van Heesch.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby
+# granted. No representations are made about the suitability of this software
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+#
+# Documents produced by Doxygen are derivative works derived from the
+# input used in their production; they are not affected by this license.
+#
 from __future__ import print_function
 from os         import listdir, stat, walk
 from os.path    import isfile, join, splitext
@@ -78,7 +94,7 @@ class LumaFile(File):
 
 def main():
 	if len(sys.argv)<3:
-		sys.exit('Usage: %s directory output_file.c' % sys.argv[0])
+		sys.exit('Usage: %s directory output_file.cpp' % sys.argv[0])
 	directory = sys.argv[1]
 	files = []
 	for dirName, subdirList, fileList in walk(directory):

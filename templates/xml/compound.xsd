@@ -39,6 +39,7 @@
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:string" />
     <xsd:attribute name="kind" type="DoxCompoundKind" />
+    <xsd:attribute name="language" type="DoxLanguage" use="optional"/>
     <xsd:attribute name="prot" type="DoxProtectionKind" />
     <xsd:attribute name="final" type="DoxBool" use="optional"/>
     <xsd:attribute name="sealed" type="DoxBool" use="optional"/>
@@ -683,6 +684,26 @@
       <xsd:enumeration value="protected" />
       <xsd:enumeration value="private" />
       <xsd:enumeration value="package" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxLanguage">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Unknown" />
+      <xsd:enumeration value="IDL" />
+      <xsd:enumeration value="Java" />
+      <xsd:enumeration value="C#" />
+      <xsd:enumeration value="D" />
+      <xsd:enumeration value="PHP" />
+      <xsd:enumeration value="Objective-C" />
+      <xsd:enumeration value="C++" />
+      <xsd:enumeration value="Javascript" />
+      <xsd:enumeration value="Python" />
+      <xsd:enumeration value="Fortran" />
+      <xsd:enumeration value="VHDL" />
+      <xsd:enumeration value="XML" />
+      <xsd:enumeration value="Tcl" />
+      <xsd:enumeration value="Markdown" />
     </xsd:restriction>
   </xsd:simpleType>
 

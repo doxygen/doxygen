@@ -121,6 +121,6 @@ TO_C_CMD=$(PYTHON) to_c_cmd.py < $< > $@
 $(GENERATED_SRC)/layout_default.xml.h: layout_default.xml
 	$(TO_C_CMD)
 
-../generated_src/doxygen/resources.cpp: res2cc_cmd.py $(wildcard ../templates/html/*)
+../generated_src/doxygen/resources.cpp: res2cc_cmd.py $(wildcard ../templates/html/*) $(wildcard ../templates/xml) $(wildcard ../templates/latex)
 	$(PYTHON) res2cc_cmd.py ../templates ../generated_src/doxygen/resources.cpp
 
