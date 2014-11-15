@@ -5760,7 +5760,8 @@ class ClassTreeContext::Private : public PropertyMapper
     SharedPtr<NestingContext> m_classTree;
     struct Cachable
     {
-      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      Cachable() : maxDepth(0), maxDepthComputed(FALSE),
+                   preferredDepth(0), preferredDepthComputed(FALSE) {}
       int   maxDepth;
       bool  maxDepthComputed;
       int   preferredDepth;
@@ -6168,7 +6169,8 @@ class FileTreeContext::Private : public PropertyMapper
     SharedPtr<NestingContext> m_dirFileTree;
     struct Cachable
     {
-      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      Cachable() : maxDepth(0), maxDepthComputed(FALSE),
+                   preferredDepth(0), preferredDepthComputed(FALSE) {}
       int   maxDepth;
       bool  maxDepthComputed;
       int   preferredDepth;

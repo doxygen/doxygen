@@ -3700,7 +3700,7 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
 
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
-  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  for (;(srcA=srcAli.current()) && (dstA=dstAli.current());++srcAli,++dstAli)
   {
     if (srcA->defval.isEmpty() && !dstA->defval.isEmpty())
     {

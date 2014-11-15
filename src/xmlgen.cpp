@@ -224,12 +224,11 @@ class XMLCodeGenerator : public CodeOutputInterface
 {
   public:
 
-    XMLCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1),
-      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), 
-      m_insideSpecialHL(FALSE) {}
+    XMLCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
+      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE) {}
     virtual ~XMLCodeGenerator() { }
-    
-    void codify(const char *text) 
+
+    void codify(const char *text)
     {
       XML_DB(("(codify \"%s\")\n",text));
       if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
@@ -237,11 +236,11 @@ class XMLCodeGenerator : public CodeOutputInterface
         m_t << "<highlight class=\"normal\">";
         m_normalHLNeedStartTag=FALSE;
       }
-      writeXMLCodeString(m_t,text,col);
+      writeXMLCodeString(m_t,text,m_col);
     }
     void writeCodeLink(const char *ref,const char *file,
                        const char *anchor,const char *name,
-                       const char *tooltip) 
+                       const char *tooltip)
     {
       XML_DB(("(writeCodeLink)\n"));
       if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
@@ -250,7 +249,7 @@ class XMLCodeGenerator : public CodeOutputInterface
         m_normalHLNeedStartTag=FALSE;
       }
       writeXMLLink(m_t,ref,file,anchor,name,tooltip);
-      col+=qstrlen(name);
+      m_col+=qstrlen(name);
     }
     void writeTooltip(const char *, const DocLinkInfo &, const char *,
                       const char *, const SourceLinkInfo &, const SourceLinkInfo &
@@ -258,7 +257,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     {
       XML_DB(("(writeToolTip)\n"));
     }
-    void startCodeLine(bool) 
+    void startCodeLine(bool)
     {
       XML_DB(("(startCodeLine)\n"));
       m_t << "<codeline";
@@ -282,11 +281,11 @@ class XMLCodeGenerator : public CodeOutputInterface
           m_t << " external=\"" << m_external << "\"";
         }
       }
-      m_t << ">"; 
+      m_t << ">";
       m_insideCodeLine=TRUE;
-      col=0;
+      m_col=0;
     }
-    void endCodeLine() 
+    void endCodeLine()
     {
       XML_DB(("(endCodeLine)\n"));
       if (!m_insideSpecialHL && !m_normalHLNeedStartTag)
@@ -300,7 +299,7 @@ class XMLCodeGenerator : public CodeOutputInterface
       m_external.resize(0);
       m_insideCodeLine=FALSE;
     }
-    void startFontClass(const char *colorClass) 
+    void startFontClass(const char *colorClass)
     {
       XML_DB(("(startFontClass)\n"));
       if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
@@ -325,7 +324,7 @@ class XMLCodeGenerator : public CodeOutputInterface
                          const char *anchorId,int l)
     {
       XML_DB(("(writeLineNumber)\n"));
-      // we remember the information provided here to use it 
+      // we remember the information provided here to use it
       // at the <codeline> start tag.
       m_lineNumber = l;
       if (compId)
@@ -349,12 +348,12 @@ class XMLCodeGenerator : public CodeOutputInterface
     }
 
   private:
-    FTextStream &m_t;  
+    FTextStream &m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber;
     bool m_isMemberRef;
-    int col;
+    int m_col;
 
     bool m_insideCodeLine;
     bool m_normalHLNeedStartTag;

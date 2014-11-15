@@ -1354,26 +1354,6 @@ void writeJavascriptSearchIndex()
   Doxygen::indexList->addStyleSheetFile("search/search.js");
 }
 
-void writeSearchCategories(FTextStream &t)
-{
-#if 0
-  static SearchIndexCategoryMapping map;
-  int i,j=0;
-  for (i=0;i<NUM_SEARCH_INDICES;i++)
-  {
-    if (g_searchIndexCount[i]>0)
-    {
-      t << "<a class=\"SelectItem\" href=\"javascript:void(0)\" "
-        << "onclick=\"searchBox.OnSelectItem(" << j << ")\">"
-        << "<span class=\"SelectionMark\">&#160;</span>"
-        << convertToXML(map.categoryLabel[i])
-        << "</a>";
-      j++;
-    }
-  }
-#endif
-}
-
 //---------------------------------------------------------------------------------------------
 
 void initSearchIndexer()

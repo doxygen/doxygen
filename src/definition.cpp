@@ -58,10 +58,10 @@ class DefinitionImpl
 
     SectionDict *sectionDict;  // dictionary of all sections, not accessible
 
-    MemberSDict *sourceRefByDict;       
-    MemberSDict *sourceRefsDict;        
-    QList<ListItemInfo> *xrefListItems; 
-    GroupList *partOfGroups;            
+    MemberSDict *sourceRefByDict;
+    MemberSDict *sourceRefsDict;
+    QList<ListItemInfo> *xrefListItems;
+    GroupList *partOfGroups;
 
     DocInfo   *details;    // not exported
     DocInfo   *inbodyDocs; // not exported
@@ -89,11 +89,11 @@ class DefinitionImpl
     QCString id; // clang unique id
 };
 
-DefinitionImpl::DefinitionImpl() 
-  : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0), 
+DefinitionImpl::DefinitionImpl()
+  : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0),
     xrefListItems(0), partOfGroups(0),
-    details(0), inbodyDocs(0), brief(0), body(0), 
-    outerScope(0)
+    details(0), inbodyDocs(0), brief(0), body(0), hidden(FALSE), isArtificial(FALSE),
+    outerScope(0), lang(SrcLangExt_Unknown)
 {
 }
 

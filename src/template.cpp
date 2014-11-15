@@ -116,7 +116,7 @@ static QCString replace(const char *s,char csrc,char cdst)
 class TemplateVariant::Private
 {
   public:
-    Private() : raw(FALSE) {}
+    Private(Type t) : type(t), intVal(0), boolVal(TRUE), strukt(0), list(0), raw(FALSE) {}
     Type                type;
     int                 intVal;
     QCString            strVal;
@@ -129,60 +129,52 @@ class TemplateVariant::Private
 
 TemplateVariant::TemplateVariant()
 {
-  p = new Private;
-  p->type=None;
+  p = new Private(None);
 }
 
 TemplateVariant::TemplateVariant(bool b)
 {
-  p = new Private;
-  p->type = Bool;
+  p = new Private(Bool);
   p->boolVal = b;
 }
 
 TemplateVariant::TemplateVariant(int v)
 {
-  p = new Private;
-  p->type = Integer;
+  p = new Private(Integer);
   p->intVal = v;
 }
 
 TemplateVariant::TemplateVariant(const char *s,bool raw)
 {
-  p = new Private;
-  p->type = String;
+  p = new Private(String);
   p->strVal = s;
   p->raw = raw;
 }
 
 TemplateVariant::TemplateVariant(const QCString &s,bool raw)
 {
-  p = new Private;
-  p->type = String;
+  p = new Private(String);
   p->strVal = s;
   p->raw = raw;
 }
 
 TemplateVariant::TemplateVariant(TemplateStructIntf *s)
 {
-  p = new Private;
-  p->type = Struct;
+  p = new Private(Struct);
   p->strukt = s;
   p->strukt->addRef();
 }
 
 TemplateVariant::TemplateVariant(TemplateListIntf *l)
 {
-  p = new Private;
-  p->type = List;
+  p = new Private(List);
   p->list = l;
   p->list->addRef();
 }
 
 TemplateVariant::TemplateVariant(const TemplateVariant::Delegate &delegate)
 {
-  p = new Private;
-  p->type = Function;
+  p = new Private(Function);
   p->delegate = delegate;
 }
 
@@ -195,8 +187,7 @@ TemplateVariant::~TemplateVariant()
 
 TemplateVariant::TemplateVariant(const TemplateVariant &v)
 {
-  p = new Private;
-  p->type    = v.p->type;
+  p = new Private(v.p->type);
   p->raw     = v.p->raw;
   switch (p->type)
   {
@@ -1436,11 +1427,11 @@ class ExprAstVariable : public ExprAst
     const QCString &name() const { return m_name; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
-      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       TemplateVariant v = c->get(m_name);
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (!v.isValid())
       {
-        ci->warn(ci->templateName(),ci->line(),"undefined variable '%s' in expression",m_name.data());
+        if (ci) ci->warn(ci->templateName(),ci->line(),"undefined variable '%s' in expression",m_name.data());
       }
       return v;
     }
@@ -1487,6 +1478,7 @@ class ExprAstFilter : public ExprAst
     TemplateVariant apply(const TemplateVariant &v,TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return v; // should not happen
       TRACE(("Applying filter '%s' to '%s' (type=%d)\n",m_name.data(),v.toString().data(),v.type()));
       TemplateVariant arg;
       if (m_arg) arg = m_arg->resolve(c);
@@ -1578,6 +1570,7 @@ class ExprAstBinary : public ExprAst
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return TemplateVariant(); // should not happen
       TemplateVariant lhs = m_lhs->resolve(c);
       TemplateVariant rhs = m_rhs ? m_rhs->resolve(c) : TemplateVariant();
       switch(m_operator)
@@ -2609,6 +2602,7 @@ class TemplateNodeText : public TemplateNode
     {
       //printf("TemplateNodeText::render(%s)\n",m_data.data());
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       if (ci->spacelessEnabled())
       {
         ts << ci->spacelessIntf()->remove(m_data);
@@ -2647,6 +2641,7 @@ class TemplateNodeVariable : public TemplateNode
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_var)
       {
@@ -2797,6 +2792,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeIf::render #trueNodes=%d #falseNodes=%d\n",m_trueNodes.count(),m_falseNodes.count());
       bool processed=FALSE;
@@ -2861,6 +2857,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       TemplateVariant v;
       if (m_expr && (v=m_expr->resolve(c)).type()==TemplateVariant::Integer)
@@ -2973,6 +2970,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeRange::render #loopNodes=%d\n",
       //    m_loopNodes.count());
@@ -3134,6 +3132,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeFor::render #loopNodes=%d #emptyNodes=%d\n",
       //    m_loopNodes.count(),m_emptyNodes.count());
@@ -3235,6 +3234,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       TemplateEscapeIntf *escIntf = ci->escapeIntf();
       ci->setActiveEscapeIntf(0); // avoid escaping things we send to standard out
@@ -3276,6 +3276,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       TemplateImpl *t = getTemplate();
       if (t)
@@ -3356,6 +3357,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_extendExpr==0) return;
 
@@ -3374,7 +3376,6 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
         if (baseTemplate)
         {
           // fill block context
-          TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
           TemplateBlockContext *bc = ci->blockContext();
 
           // add overruling blocks to the context
@@ -3435,6 +3436,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_includeExpr)
       {
@@ -3514,6 +3516,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_templateExpr && m_fileExpr)
       {
@@ -3661,6 +3664,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
     {
       //printf("TemplateNodeTree::render()\n");
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       TemplateVariant v = m_treeExpr->resolve(c);
       const TemplateListIntf *list = v.toList();
@@ -3732,9 +3736,10 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
     }
     void render(FTextStream &, TemplateContext *c)
     {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       if (!m_name.isEmpty())
       {
-        TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
         ci->setLocation(m_templateName,m_line);
         QListIterator<Mapping> it(m_args);
         Mapping *mapping;
@@ -3775,9 +3780,10 @@ class TemplateNodeOpenSubIndex : public TemplateNodeCreator<TemplateNodeOpenSubI
     }
     void render(FTextStream &, TemplateContext *c)
     {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       if (!m_name.isEmpty())
       {
-        TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
         ci->setLocation(m_templateName,m_line);
         ci->openSubIndex(m_name);
       }
@@ -3810,9 +3816,10 @@ class TemplateNodeCloseSubIndex : public TemplateNodeCreator<TemplateNodeCloseSu
     }
     void render(FTextStream &, TemplateContext *c)
     {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       if (!m_name.isEmpty())
       {
-        TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
         ci->setLocation(m_templateName,m_line);
         ci->closeSubIndex(m_name);
       }
@@ -3873,6 +3880,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       c->push();
       QListIterator<Mapping> it(m_args);
@@ -3984,6 +3992,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_mapping)
       {
@@ -4014,6 +4023,7 @@ class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       bool wasSpaceless = ci->spacelessEnabled();
       ci->enableSpaceless(TRUE);
@@ -4056,6 +4066,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
     void render(FTextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (!m_var.isEmpty() && m_listExpr && m_patternExpr)
       {
@@ -4152,9 +4163,15 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       }
       TRACE(("}TemplateNodeResource(%s)\n",data.data()));
     }
+    ~TemplateNodeResource()
+    {
+      delete m_resExpr;
+      delete m_asExpr;
+    }
     void render(FTextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_resExpr)
       {
@@ -4712,12 +4729,13 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const cha
 
 void TemplateImpl::render(FTextStream &ts, TemplateContext *c)
 {
+  TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+  if (ci==0) return; // should not happen
   if (!m_nodes.isEmpty())
   {
     TemplateNodeExtend *ne = dynamic_cast<TemplateNodeExtend*>(m_nodes.getFirst());
     if (ne==0) // normal template, add blocks to block context
     {
-      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       TemplateBlockContext *bc = ci->blockContext();
       QListIterator<TemplateNode> li(m_nodes);
       TemplateNode *n;

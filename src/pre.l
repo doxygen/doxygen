@@ -71,8 +71,8 @@ struct CondCtx
 
 struct FileState
 {
-  FileState(int size) : fileBuf(size), 
-                        oldFileBuf(0), oldFileBufPos(0) {}
+  FileState(int size) : lineNr(1), fileBuf(size),
+                        oldFileBuf(0), oldFileBufPos(0), bufState(0) {}
   int lineNr;
   BufStr fileBuf;
   BufStr *oldFileBuf;

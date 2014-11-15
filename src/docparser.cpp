@@ -2089,6 +2089,11 @@ DocFormula::DocFormula(DocNode *parent,int id) :
     m_name.sprintf("form_%d",m_id);
     m_text = formula->getFormulaText();
   }
+  else // wrong \form#<n> command
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Wrong formula id %d",id);
+    m_id = -1;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -2366,7 +2371,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
       //    compound->definitionType());
       return;
     }
-    else if (compound->definitionType()==Definition::TypeFile && 
+    else if (compound && compound->definitionType()==Definition::TypeFile &&
              ((FileDef*)compound)->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
@@ -2485,9 +2490,8 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
 
 DocLink::DocLink(DocNode *parent,const QCString &target) 
 {
-  m_parent = parent; 
-  Definition *compound;
-  //PageInfo *page;
+  m_parent = parent;
+  Definition *compound = 0;
   QCString anchor;
   m_refText = target;
   m_relPath = g_relPath;
@@ -2504,7 +2508,7 @@ DocLink::DocLink(DocNode *parent,const QCString &target)
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
     }
-    else if (compound->definitionType()==Definition::TypeFile && 
+    else if (compound && compound->definitionType()==Definition::TypeFile && 
              ((FileDef*)compound)->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
@@ -3308,7 +3312,6 @@ int DocIndexEntry::parse()
         break;
     }
   }
-  if (tok!=0) retval=tok;
   doctokenizerYYsetStatePara();
   m_entry = m_entry.stripWhiteSpace();
 endindexentry:
@@ -6786,17 +6789,13 @@ int DocSection::parse()
   }
   else if ((m_level<=1+Doxygen::subpageNestingLevel && retval==RetVal_Subsubsection) ||
            (m_level<=2+Doxygen::subpageNestingLevel && retval==RetVal_Paragraph)
-          ) 
+          )
   {
-    int level; 
-    if (retval==RetVal_Subsection) level=2; 
-    else if (retval==RetVal_Subsubsection) level=3;
-    else level=4;
+    int level = (retval==RetVal_Subsubsection) ? 3 : 4;
     warn_doc_error(g_fileName,doctokenizerYYlineno,"Unexpected %s "
             "command found inside %s!",
             sectionLevelToName[level],sectionLevelToName[m_level]);
     retval=0; // stop parsing
-            
   }
   else
   {

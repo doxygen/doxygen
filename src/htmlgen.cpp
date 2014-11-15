@@ -737,17 +737,24 @@ void HtmlGenerator::init()
     if (f.open(IO_WriteOnly))
     {
       const Resource *res = mgr.get("dynsections.js");
-      FTextStream t(&f);
-      t << (const char *)res->data;
-      if (Config_getBool("SOURCE_BROWSER") && Config_getBool("SOURCE_TOOLTIPS"))
+      if (res)
       {
-        t << endl <<
-          "$(document).ready(function() {\n"
-          "  $('.code,.codeRef').each(function() {\n"
-          "    $(this).data('powertip',$('#'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
-          "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
-          "  });\n"
-          "});\n";
+        FTextStream t(&f);
+        t << (const char *)res->data;
+        if (Config_getBool("SOURCE_BROWSER") && Config_getBool("SOURCE_TOOLTIPS"))
+        {
+          t << endl <<
+            "$(document).ready(function() {\n"
+            "  $('.code,.codeRef').each(function() {\n"
+            "    $(this).data('powertip',$('#'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
+            "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
+            "  });\n"
+            "});\n";
+        }
+      }
+      else
+      {
+        err("Resource dynsections.js not compiled in");
       }
     }
   }
@@ -896,7 +903,6 @@ void HtmlGenerator::writeSearchInfo(FTextStream &t,const QCString &relPath)
     t << "     onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
     t << "     onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
     t << "     onkeydown=\"return searchBox.OnSearchSelectKey(event)\">\n";
-    writeSearchCategories(t);
     t << "</div>\n";
     t << "\n";
     t << "<!-- iframe showing the search results (closed by default) -->\n";
