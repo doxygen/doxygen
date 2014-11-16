@@ -938,6 +938,7 @@ STARTDOCSYMS      "##"
       			}
 
      ")"                { // end of parameter list
+        		  current->args = argListToString(current->argList);
                         }
 
      ":"{B}             {
