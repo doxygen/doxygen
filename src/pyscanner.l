@@ -1268,6 +1268,19 @@ STARTDOCSYMS      "##"
 			  BEGIN(VariableEnd);
 			}
                       }
+    {TRIDOUBLEQUOTE}  { // start of a comment block
+                        g_specialBlock = FALSE;
+			current->program+=yytext;
+			initTriDoubleQuoteBlock();
+			BEGIN(TripleComment);
+                      }
+
+    {TRISINGLEQUOTE}  { // start of a comment block
+                        g_specialBlock = FALSE;
+			current->program+=yytext;
+			initTriSingleQuoteBlock();
+			BEGIN(TripleComment);
+                      }
    "\""	              {
        			g_stringContext=YY_START;
 			current->initializer+="\"";
