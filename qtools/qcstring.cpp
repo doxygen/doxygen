@@ -29,8 +29,9 @@ QCString &QCString::sprintf( const char *format, ... )
   va_list ap;
   va_start( ap, format );
   const int minlen=256;
-  if (length()<minlen) resize(minlen);
-  vsnprintf( data(), minlen, format, ap);
+  int l = length();
+  if (l<minlen) { resize(minlen); l=minlen; }
+  int n=vsnprintf( data(), l, format, ap);
   resize(qstrlen(data())+1);
   va_end( ap );
   return *this;
