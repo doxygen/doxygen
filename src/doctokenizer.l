@@ -370,6 +370,7 @@ SCOPECPP  {SCOPEPRE}*(~)?{ID}{TEMPLPART}?
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
 SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
 FUNCARG   "("{FUNCPART}")"({BLANK}*("volatile"|"const"){BLANK})?
+FUNCARG2  "("{FUNCPART}")"({BLANK}*("volatile"|"const"))?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
@@ -390,7 +391,7 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
-REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG}?
+REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG2}?
 REFWORD3  ({ID}":")*{ID}":"?
 REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 
