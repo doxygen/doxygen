@@ -3507,7 +3507,7 @@ void MemberDef::addListReference(Definition *)
     addRefItem(xrefItems,
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
-        getOutputFileBase()+"#"+anchor(),memName,memArgs);
+        getOutputFileBase()+"#"+anchor(),memName,memArgs,pd);
   }
 }
 

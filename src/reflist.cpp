@@ -20,6 +20,7 @@
 #include "reflist.h"
 #include "util.h"
 #include "ftextstream.h"
+#include "definition.h"
 
 /*! Create a list of items that are cross referenced with documentation blocks
  *  @param listName String representing the name of the list.
@@ -144,6 +145,12 @@ void RefList::generatePage()
     doc +=  "\\anchor ";
     doc += item->listAnchor;
     doc += "\n";
+    if (item->scope)
+    {
+      doc += "\\_setscope ";
+      doc += item->scope->name();
+      doc += " ";
+    }
     doc += item->prefix;
     doc += " \\_internalref ";
     doc += item->name;
@@ -166,6 +173,7 @@ void RefList::generatePage()
     doc += "</dd>";
   }
   doc += "</dl>\n";
+  //printf("generatePage('%s')\n",doc.data());
   addRelatedPage(m_listName,m_pageTitle,doc,0,m_listName,1,0,0,0);
 }
 

@@ -832,7 +832,8 @@ void NamespaceDef::addListReferences()
           theTranslator->trModule(TRUE,TRUE) : 
           theTranslator->trNamespace(TRUE,TRUE),
         getOutputFileBase(),displayName(),
-        0
+        0,
+        this
         );
   }
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);

@@ -1410,6 +1410,17 @@ reparsetoken:
             doctokenizerYYsetStatePara();
           }
           break;
+        case CMD_SETSCOPE:
+          {
+            QCString scope;
+            doctokenizerYYsetStateSetScope();
+            doctokenizerYYlex();
+            scope = g_token->name;
+            g_context = scope;
+            //printf("Found scope='%s'\n",scope.data());
+            doctokenizerYYsetStatePara();
+          }
+          break;
         default:
           return FALSE;
       }

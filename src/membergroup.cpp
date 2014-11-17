@@ -326,7 +326,7 @@ void MemberGroup::addListReferences(Definition *def)
         name,
         theTranslator->trGroup(TRUE,TRUE),
         name,
-        grpHeader,0);
+        grpHeader,0,def);
   }
 }
 

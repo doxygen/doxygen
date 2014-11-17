@@ -6364,7 +6364,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 void addRefItem(const QList<ListItemInfo> *sli,
     const char *key, 
-    const char *prefix, const char *name,const char *title,const char *args)
+    const char *prefix, const char *name,const char *title,const char *args,Definition *scope)
 {
   //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
   if (sli && key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
@@ -6389,6 +6389,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
         ASSERT(item!=0);
 
         item->prefix = prefix;
+        item->scope  = scope;
         item->name   = name;
         item->title  = title;
         item->args   = args;

@@ -3879,7 +3879,8 @@ void ClassDef::addListReferences()
                                       : theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),
              displayName(),
-             0
+             0,
+             this
             );
   }
   if (m_impl->memberGroupSDict)

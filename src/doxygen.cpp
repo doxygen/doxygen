@@ -5221,7 +5221,7 @@ static void addListReferences()
       addRefItem(xrefItems,
           name,
           theTranslator->trPage(TRUE,TRUE),
-          name,pd->title(),0);
+          name,pd->title(),0,0);
     }
   }
 
@@ -5238,7 +5238,7 @@ static void addListReferences()
     addRefItem(xrefItems,
         name,
         theTranslator->trDir(TRUE,TRUE),
-        name,dd->displayName(),0);
+        name,dd->displayName(),0,0);
   }
 }
 
@@ -8629,7 +8629,7 @@ static void buildPageList(EntryNav *rootNav)
                "page",
                name,
                title,
-               0
+               0,0
                );
 
     rootNav->releaseEntry();

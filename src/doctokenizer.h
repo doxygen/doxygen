@@ -161,5 +161,6 @@ void doctokenizerYYsetStateSnippet();
 void doctokenizerYYstartAutoList();
 void doctokenizerYYendAutoList();
 void doctokenizerYYsetStatePlantUML();
+void doctokenizerYYsetStateSetScope();
 
 #endif

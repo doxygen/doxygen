@@ -436,6 +436,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 %x St_SkipTitle
 %x St_Anchor
 %x St_Snippet
+%x St_SetScope
 
 %x St_Sections
 %s St_SecLabel1
@@ -1012,6 +1013,13 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
+<St_SetScope>{SCOPEMASK}{BLANK} {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.stripWhiteSpace();
+			 return TK_WORD;
+  		       }
+<St_SetScope>{BLANK}   {
+                       }
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
@@ -1409,6 +1417,11 @@ void doctokenizerYYsetStateAnchor()
 void doctokenizerYYsetStateSnippet()
 {
   BEGIN(St_Snippet);
+}
+
+void doctokenizerYYsetStateSetScope()
+{
+  BEGIN(St_SetScope);
 }
 
 void doctokenizerYYcleanup()

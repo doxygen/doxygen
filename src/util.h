@@ -316,7 +316,7 @@ int filterCRLF(char *buf,int len);
 
 void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
                 const char *key,
-                const char *name,const char *title,const char *args);
+                const char *name,const char *title,const char *args,Definition *scope);
 
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<SectionInfo> *anchors,

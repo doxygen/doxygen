@@ -1409,6 +1409,7 @@ void FileDef::addListReferences()
                getOutputFileBase(),
                theTranslator->trFile(TRUE,TRUE),
                getOutputFileBase(),name(),
+               0,
                0
               );
   }

@@ -1534,6 +1534,7 @@ void GroupDef::addListReferences()
              getOutputFileBase(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name(),
+             0,
              0
             );
   }
