@@ -114,6 +114,7 @@ class Scope
   
 static QCString  docBlock;                   //!< contents of all lines of a documentation block
 static QCString  currentModule=0;            //!< name of the current enclosing module
+static QCString  currentClass=0;             //!< name of the current enclosing class
 static UseSDict  *useMembers= new UseSDict;  //!< info about used modules
 static UseEntry  *useEntry = 0;              //!< current use statement info
 static QList<Scope> scopeStack;
@@ -386,8 +387,23 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
     }
   }
 }
+//-------------------------------------------------------------------------------
+/**
+  searches for definition of a module (Namespace)
+  @param mname the name of the module
+  @param cd the entry, if found or null
+  @returns true, if module is found
+*/
+static bool getFortranNamespaceDefs(const QCString &mname,
+                               NamespaceDef *&cd)
+{
+  if (mname.isEmpty()) return FALSE; /* empty name => nothing to link */
 
+  // search for module
+  if ((cd=Doxygen::namespaceSDict->find(mname))) return TRUE;
 
+  return FALSE;
+}
 //-------------------------------------------------------------------------------
 /**
   searches for definition of a type
@@ -467,6 +483,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
       {
         FileDef  *fd=md->getFileDef();
         GroupDef *gd=md->getGroupDef();
+        ClassDef *cd=md->getClassDef();
 
  //cout << "found link with same name: " << fd->fileName() << "  " <<  memberName;
  //if (md->getNamespaceDef() != 0) cout << " in namespace " << md->getNamespaceDef()->name();cout << endl;
@@ -477,7 +494,9 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 
            if (nspace == 0) 
 	   { // found function in global scope
-             return TRUE;
+             if(cd == 0) { // Skip if bound to type
+                return TRUE;
+              }
            }
            else if (moduleName == nspace->name()) 
 	   { // found in local scope
@@ -534,7 +553,7 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
 		    CodeOutputInterface &ol,
 		    const char *text)
 {
-  MemberDef *md;
+  MemberDef *md=0;
   QCString memberName= removeRedundantWhiteSpace(memberText);
 
   if (getFortranDefs(memberName, currentModule, md, usedict) && md->isLinkable())
@@ -563,6 +582,7 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
 static void generateLink(CodeOutputInterface &ol, char *lname)
 {
   ClassDef *cd=0;
+  NamespaceDef *nsd=0;
   QCString tmp = lname;
   tmp = removeRedundantWhiteSpace(tmp.lower());
  
@@ -579,6 +599,12 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
       writeMultiLineCodeLink(ol,cd,tmp);
       addToSearchIndex(tmp.data());
     }
+  }
+  // check for module
+  else if ( (getFortranNamespaceDefs(tmp, nsd)) && nsd->isLinkable() && currentClass!="class" )
+  { // write module link
+    writeMultiLineCodeLink(ol,nsd,tmp);
+    addToSearchIndex(tmp.data());
   }
   // check for function/variable
   else if (getLink(useMembers, tmp, ol, tmp)) 
@@ -807,10 +833,12 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 <UseOnly,Import>{BS},{BS}               { codifyLines(yytext); }
 <UseOnly,Import>{BS}&{BS}"\n"           { codifyLines(yytext); YY_FTN_RESET}
 <UseOnly>{ID}                           {
+                                          QCString tmp = yytext;
+                                          tmp = tmp.lower();
+                                          useEntry->onlyNames.append(tmp);
                                           g_insideBody=TRUE;
                                           generateLink(*g_code, yytext);
                                           g_insideBody=FALSE;
-                                          useEntry->onlyNames.append(yytext);
                                         }
 <Use,UseOnly,Import>"\n"                {
                                           unput(*yytext);
@@ -845,6 +873,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
             endFontClass();
                                           yy_push_state(YY_START);
             BEGIN(ClassName);
+            currentClass="class";
           }
 <ClassName>{ID}               	        {
 	                                  if (currentModule == "module")
@@ -864,6 +893,10 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_pop_state();
 					  YY_FTN_REJECT;
 					}
+<Start>"end"({BS_}"type").*          { // just reset currentClass, rest is done in following rule
+                                          currentClass=0;
+            YY_FTN_REJECT;
+                                        }
 <Start>"end"({BS_}"module").*          { // just reset currentModule, rest is done in following rule
                                           currentModule=0;
 					  YY_FTN_REJECT;
