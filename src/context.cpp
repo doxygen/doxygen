@@ -2946,7 +2946,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     }
     TemplateVariant relPath() const
     {
-      if (m_pageDef==Doxygen::mainPage)
+      if (m_isMainPage)
       {
         return "";
       }
@@ -2957,7 +2957,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     }
     TemplateVariant highlight() const
     {
-      if (m_pageDef==Doxygen::mainPage)
+      if (m_isMainPage)
       {
         return "main";
       }
@@ -8197,7 +8197,11 @@ void generateOutputViaTemplate()
       }
       else
       {
-        ctx->set("mainPage",FALSE);
+        // TODO: for LaTeX output index should be main... => solve in template
+        Doxygen::mainPage = new PageDef("[generated]",1,"index","",theTranslator->trMainPage());
+        Doxygen::mainPage->setFileName("index",TRUE);
+        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage,TRUE));
+        ctx->set("mainPage",mainPage.get());
       }
       //%% GlobalsIndex globalsIndex:
       ctx->set("globalsIndex",globalsIndex.get());

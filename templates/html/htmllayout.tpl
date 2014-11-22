@@ -1,4 +1,4 @@
-{% msg %}----- Start generating HTML output for from template ----{% endmsg %}
+{% msg %}----- Start generating HTML output for {{ config.PROJECT_NAME }} from template ----{% endmsg %}
 
 {# ---- copy fixed resources to the output ----- #}
 
@@ -67,11 +67,9 @@
 {# ----------- HTML DOCUMENTATION PAGES ------------ #}
 
 {# write main page documentation #}
-{% if mainPage %}
-  {% with page=mainPage compound=mainPage %}
-    {% create mainPage.fileName|append:config.HTML_FILE_EXTENSION from 'htmlpage.tpl' %}
-  {% endwith %}
-{% endif %}
+{% with page=mainPage compound=mainPage isMainPage=True %}
+  {% create mainPage.fileName|append:config.HTML_FILE_EXTENSION from 'htmlpage.tpl' %}
+{% endwith %}
 
 {# write namespace documentation pages #}
 {% for compound in namespaceList %}
@@ -110,7 +108,7 @@
 
 {# write related page documentation #}
 {% for compound in pageList %}
-  {% with page=compound %}
+  {% with page=compound isMainPage=False %}
     {% create compound.fileName|append:config.HTML_FILE_EXTENSION from 'htmlpage.tpl' %}
   {% endwith %}
 {% endfor %}
@@ -121,6 +119,8 @@
     {% create compound.fileName|append:config.HTML_FILE_EXTENSION from 'htmlmodule.tpl' %}
   {% endwith %}
 {% endfor %}
+
+{# TODO: write example documentation #}
 
 {# ----------- INDEXES ------------ #}
 
@@ -179,7 +179,7 @@
   {# TODO: write the class inheritance hierarchy #}
   {% if classHierarchy.tree %}
     {% with page=classHierarchy %}
-      {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'hierarchy.tpl' %}
+  {#    {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'hierarchy.tpl' %} #}
     {% endwith %}
   {% endif %}
 
@@ -229,4 +229,4 @@
   {% create 'navtreedata.js' from 'htmljsnavtree.tpl' %}
 {% endif %}
 
-{% msg %}----- End generating HTML output for from template ----{% endmsg %}
+{% msg %}----- End generating HTML output for {{ config.PROJECT_NAME }} from template ----{% endmsg %}
