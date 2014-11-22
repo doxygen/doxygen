@@ -6027,10 +6027,11 @@ QCString substituteTemplateArgumentsInString(
     // for its template instance argument.
     bool found=FALSE;
     for (formAli.toFirst();
-        (formArg=formAli.current()) && !found && (actArg=actAli.current());
+        (formArg=formAli.current()) && !found;
         ++formAli,++actAli
         )
     {
+      actArg = actAli.current();
       if (formArg->type.left(6)=="class " && formArg->name.isEmpty())
       {
         formArg->name = formArg->type.mid(6);
@@ -6046,7 +6047,7 @@ QCString substituteTemplateArgumentsInString(
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
         //printf(">> formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
-        //    formArg->name.data(),actArg->type.data(),actArg->name.data()
+        //    formArg->name.data(),actArg ? actArg->type.data() : "",actArg ? actArg->name.data() : ""
         //    );
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
         {
