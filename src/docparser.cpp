@@ -7122,6 +7122,12 @@ static QCString processCopyDoc(const char *data,uint &len)
                  isBrief?"brief":"details",id.data());
           }
         }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,
+               "@copy%s or @copydoc target '%s' not found", isBrief?"brief":"details",
+               id.data());
+        }
         // skip over command
         i=j;
       }
