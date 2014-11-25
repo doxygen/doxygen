@@ -1104,7 +1104,7 @@ class LayoutParser : public QXmlDefaultHandler
         }
       }
       // create new item and make it the new root
-      m_rootNav = new LayoutNavEntry(m_rootNav,kind,kind==LayoutNavEntry::MainPage?TRUE:isVisible,baseFile,title,intro);
+      m_rootNav = new LayoutNavEntry(m_rootNav,kind,isVisible,baseFile,title,intro);
     }
 
     void endNavEntry()
