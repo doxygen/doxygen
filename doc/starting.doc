@@ -221,6 +221,15 @@ and \ref cfg_use_pdflatex "USE_PDFLATEX" tags to \c YES.
 In this case the \c Makefile will only contain a target to build 
 \c refman.pdf directly.
 
+
+\note In case you get at the end of the \c make process amessage like:
+`"LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right."`
+this means that the default number of loops (default is 8) is insuffient. You can
+try to rerun with more loops. In case you want to rerun with e.g. 10 loops and
+you use `make.bat`  give the command `make 10`, in case you use `Makefile` you can
+give the command `make latex_count=10`.
+
+
 \subsection rtf_out RTF output
 \addindex RTF
 Doxygen combines the RTF output to a single file called refman.rtf. This

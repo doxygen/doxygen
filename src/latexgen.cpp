@@ -74,6 +74,7 @@ static void writeLatexMakefile()
   FTextStream t(&file);
   if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
   {
+    t << "latex_count=8" << endl << endl;
     t << "all: refman.dvi" << endl
       << endl
       << "ps: refman.ps" << endl
@@ -103,12 +104,12 @@ static void writeLatexMakefile()
     }
     t << "\techo \"Rerunning latex....\"" << endl
       << "\t" << latex_command << " refman.tex" << endl
-      << "\tlatex_count=8 ; \\" << endl
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
+      << "\tlocal_count=$(latex_count) ; \\" << endl
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$local_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
       << "\t      " << latex_command << " refman.tex ;\\" << endl
-      << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
+      << "\t      local_count=`expr $$local_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
       << "\t" << latex_command << " refman.tex" << endl << endl
@@ -120,6 +121,7 @@ static void writeLatexMakefile()
   }
   else // use pdflatex for higher quality output
   {
+    t << "latex_count=8" << endl << endl;
     t << "all: refman.pdf" << endl << endl
       << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: clean refman.tex" << endl;
@@ -131,12 +133,12 @@ static void writeLatexMakefile()
       t << "\tpdflatex refman" << endl;
     }
     t << "\tpdflatex refman" << endl
-      << "\tlatex_count=8 ; \\" << endl
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
+      << "\tlocal_count=$(latex_count) ; \\" << endl
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$local_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl
       << "\t      echo \"Rerunning latex....\" ;\\" << endl
       << "\t      pdflatex refman ;\\" << endl
-      << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
+      << "\t      local_count=`expr $$local_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
       << "\tpdflatex refman" << endl << endl;
@@ -178,7 +180,8 @@ static void writeMakeBat()
       t << latex_command << " refman.tex\n";
     }
     t << "setlocal enabledelayedexpansion\n";
-    t << "set count=8\n";
+    t << "set count=%1\n";
+    t << "if \"%1\"==\"\" set count=8\n";
     t << ":repeat\n";
     t << "set content=X\n";
     t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
@@ -210,7 +213,8 @@ static void writeMakeBat()
     t << "echo ----\n";
     t << "pdflatex refman\n\n";
     t << "setlocal enabledelayedexpansion\n";
-    t << "set count=8\n";
+    t << "set count=%1\n";
+    t << "if \"%1\"==\"\" set count=8\n";
     t << ":repeat\n";
     t << "set content=X\n";
     t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
