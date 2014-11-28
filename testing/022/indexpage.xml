@@ -4,14 +4,15 @@
     <compoundname>index</compoundname>
     <title>My Project</title>
     <detaileddescription>
-      <para>Class relations expressed via an inline dot graph: <dot> 
+      <para>Class relations expressed via an inline dot graph: <dot>
 digraph example {
   node [shape=record, fontname=Helvetica, fontsize=10];
   b [ label="class B" URL="\ref B"];
   c [ label="class C" URL="\ref C"];
   b -&gt; c [ arrowhead="open", style="dashed" ];
 }
-</dot> </para>
+</dot>
+ </para>
     </detaileddescription>
   </compounddef>
 </doxygen>
