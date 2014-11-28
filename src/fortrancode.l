@@ -893,11 +893,11 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_pop_state();
 					  YY_FTN_REJECT;
 					}
-<Start>"end"({BS_}"type").*          { // just reset currentClass, rest is done in following rule
+<Start>^{BS}"end"({BS_}"type").*        { // just reset currentClass, rest is done in following rule
                                           currentClass=0;
             YY_FTN_REJECT;
                                         }
-<Start>"end"({BS_}"module").*          { // just reset currentModule, rest is done in following rule
+<Start>^{BS}"end"({BS_}"module").*      { // just reset currentModule, rest is done in following rule
                                           currentModule=0;
 					  YY_FTN_REJECT;
                                         }
