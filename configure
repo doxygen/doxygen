@@ -555,8 +555,8 @@ fi
 if test "$f_libclang" = YES; then
   printf "  Checking for libclang ... "
   if llvm-config --version > /dev/null 2>&1; then
-    libclang_hdr_dir=$(llvm-config --includedir)
-    libclang_lib_dir=$(llvm-config --libdir)
+    libclang_hdr_dir=`llvm-config --includedir`
+    libclang_lib_dir=`llvm-config --libdir`
   else
     libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
     libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib64/llvm /usr/lib/llvm"
