@@ -6502,6 +6502,8 @@ void filterLatexString(FTextStream &t,const char *str,
                    break;           
         case '"':  t << "\\char`\\\"{}";
                    break;
+        case '\'': t << "\\textquotesingle{}";
+                   break;
 
         default:   
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
