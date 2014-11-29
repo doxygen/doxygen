@@ -1857,7 +1857,7 @@ void FileDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCS
     }
     else
     {
-      ml->writeDeclarations(ol,0,0,this,0,title,0,definitionType());
+      ml->writeDeclarations(ol,0,0,this,0,title,0);
     }
   }
 }
