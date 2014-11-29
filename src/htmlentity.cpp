@@ -298,7 +298,7 @@ static struct htmlEntityInfo
 
   // doxygen extension to the HTML4 table of HTML entities
   { SYM(tm),       "\xe2\x84\xa2", "&trade;",    "<trademark/>",         "&#8482;",       "\\texttrademark{}",      "(TM)",   "\\'99",       { "trademark",  DocSymbol::Perl_symbol  }},
-  { SYM(apos),     "'",            "'",          "'",                    "&apos;",        "'",                      "'",      "'",           { "\\\'",       DocSymbol::Perl_string  }},
+  { SYM(apos),     "'",            "'",          "'",                    "&apos;",        "\\textquotesingle{}",    "'",      "'",           { "\\\'",       DocSymbol::Perl_string  }},
 
   // doxygen commands represented as HTML entities
   { SYM(BSlash),   "\\",           "\\",         "\\",                   "\\",            "\\textbackslash{}",      "\\\\",   "\\\\",        { "\\\\",       DocSymbol::Perl_string  }},
