@@ -32,7 +32,8 @@ QCString &QCString::sprintf( const char *format, ... )
   int l = length();
   if (l<minlen) { resize(minlen); l=minlen; }
   int n=vsnprintf( data(), l, format, ap);
-  resize(qstrlen(data())+1);
+  if (n<0) n=l;
+  resize(n+1);
   va_end( ap );
   return *this;
 }
