@@ -1065,7 +1065,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 {
   if (!ref && fn)
   {
-    t << "}{\\pageref{" << fn << "}}{}" << endl;
+    t << "}{\\pageref{" << stripPath(fn) << "}}{}" << endl;
   }
 }
 
