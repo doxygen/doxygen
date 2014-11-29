@@ -9162,6 +9162,33 @@ static void readTagFile(Entry *root,const char *tl)
 }
 
 //----------------------------------------------------------------------------
+static void copyLatexStyleSheet()
+{
+  QStrList latexExtraStyleSheet = Config_getList("LATEX_EXTRA_STYLESHEET");
+  for (uint i=0; i<latexExtraStyleSheet.count(); ++i)
+  {
+    QCString fileName(latexExtraStyleSheet.at(i));
+    if (!fileName.isEmpty())
+    {
+      QFileInfo fi(fileName);
+      if (!fi.exists())
+      {
+        err("Style sheet '%s' specified by LATEX_EXTRA_STYLESHEET does not exist!\n",fileName.data());
+      }
+      else
+      {
+        QCString destFileName = Config_getString("LATEX_OUTPUT")+"/"+fi.fileName().data();
+        if (!checkExtension(fi.fileName().data(), latexStyleExtension))
+        {
+          destFileName += latexStyleExtension;
+        }
+        copyFile(fileName, destFileName);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
   QCString &htmlStyleSheet = Config_getString("HTML_STYLESHEET");
@@ -11365,6 +11392,7 @@ void generateOutput()
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
 
+    copyLatexStyleSheet();
     // copy static stuff
     copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
   }

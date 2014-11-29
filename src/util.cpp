@@ -6559,16 +6559,30 @@ QCString rtfFormatBmkStr(const char *name)
   return *tag;
 }
 
-QCString stripExtension(const char *fName)
+bool checkExtension(const char *fName, const char *ext)
+{
+  return (QCString(fName).right(QCString(ext).length())==ext);
+}
+
+//QCString stripExtension(const char *fName, const char *ext)
+QCString stripExtensionGeneral(const char *fName, const char *ext)
 {
   QCString result=fName;
-  if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+  //if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+  //{
+    //result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+  //}
+  if (result.right(QCString(ext).length())==QCString(ext))
   {
-    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+    result=result.left(result.length()-QCString(ext).length());
   }
   return result;
 }
 
+QCString stripExtension(const char *fName)
+{
+  return stripExtensionGeneral(fName, Doxygen::htmlFileExtension);
+}
 
 void replaceNamespaceAliases(QCString &scope,int i)
 {
