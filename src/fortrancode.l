@@ -601,7 +601,7 @@ static void generateLink(CodeOutputInterface &ol, char *lname)
     }
   }
   // check for module
-  else if ( (getFortranNamespaceDefs(tmp, nsd)) && nsd->isLinkable() && currentClass!="class" )
+  else if ( (getFortranNamespaceDefs(tmp, nsd)) && nsd->isLinkable() )
   { // write module link
     writeMultiLineCodeLink(ol,nsd,tmp);
     addToSearchIndex(tmp.data());
