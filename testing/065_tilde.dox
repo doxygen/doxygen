@@ -1,0 +1,12 @@
+// objective: test \~ command with non default OUTPUT_LANGUAGE which contains '-' letter
+// check: indexpage.xml
+// config: OUTPUT_LANGUAGE = Japanese-en
+/** 
+\mainpage 
+\~english This is English.
+\~dutch Dit is Nederlands.
+\~japanese これは日本語です.
+\~japanese-en これは日本語(en)です.
+\~german Dies ist Deutsch.
+\~ Output for all languages.
+*/
