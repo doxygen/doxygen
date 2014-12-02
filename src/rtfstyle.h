@@ -65,7 +65,7 @@ struct StyleData
 
   unsigned index;   // index in style-sheet, i.e. number in s-clause
   char* reference;  // everything required to apply the style
-  char* definition; // aditional tags like \snext and style name
+  char* definition; // additional tags like \snext and style name
 
   StyleData(const char* reference, const char* definition);
   ~StyleData();
