@@ -737,7 +737,7 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
   if (mdef) return mdef;
 
   // nothing found so far
-  // if we are an architecture or package body search in entitiy
+  // if we are an architecture or package body search in entity
 
   if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS ||
       (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)

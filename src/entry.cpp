@@ -170,7 +170,7 @@ Entry::Entry(const Entry &e)
     anchors->append(new SectionInfo(*s));
   }
 
-  // deep copy type contraint list
+  // deep copy type constraint list
   if (e.typeConstr)
   {
     typeConstr  = e.typeConstr->deepCopy();

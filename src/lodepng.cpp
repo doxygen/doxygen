@@ -1406,7 +1406,7 @@ static unsigned deflateDynamic(ucvector* out, const unsigned char* data, size_t 
     for(i = 0; i < numcodes; i++) uivector_push_back(&lldll, HuffmanTree_getLength(&codes, (unsigned)i));
     for(i = 0; i < numcodesD; i++) uivector_push_back(&lldll, HuffmanTree_getLength(&codesD, (unsigned)i));
     
-    /*make lldl smaller by using repeat codes 16 (copy length 3-6 times), 17 (3-10 zeroes), 18 (11-138 zeroes)*/
+    /*make lldl smaller by using repeat codes 16 (copy length 3-6 times), 17 (3-10 zeros), 18 (11-138 zeros)*/
     for(i = 0; i < (unsigned)lldll.size; i++)
     {
       unsigned j = 0;
@@ -2547,7 +2547,7 @@ unsigned LodePNG_convert(unsigned char* out, const unsigned char* in, LodePNG_In
   return 0;
 }
 
-/*Paeth predicter, used by PNG filter type 4*/
+/*Path predictor, used by PNG filter type 4*/
 static int paethPredictor(int a, int b, int c)
 {
   int p = a + b - c;
@@ -2795,7 +2795,7 @@ static unsigned postProcessScanlines(unsigned char* out, unsigned char* in, cons
 {
   /*
   This function converts the filtered-padded-interlaced data into pure 2D image buffer with the PNG's colortype. Steps:
-  *) if no Adam7: 1) unfilter 2) remove padding bits (= posible extra bits per scanline if bpp < 8)
+  *) if no Adam7: 1) unfilter 2) remove padding bits (= possible extra bits per scanline if bpp < 8)
   *) if adam7: 1) 7x unfilter 2) 7x remove padding bits 3) Adam7_deinterlace
   NOTE: the in buffer will be overwritten with intermediate data!
   */
@@ -3763,7 +3763,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
 {
   /*
   This function converts the pure 2D image with the PNG's colortype, into filtered-padded-interlaced data. Steps:
-  *) if no Adam7: 1) add padding bits (= posible extra bits per scanline if bpp < 8) 2) filter
+  *) if no Adam7: 1) add padding bits (= possible extra bits per scanline if bpp < 8) 2) filter
   *) if adam7: 1) Adam7_interlace 2) 7x add padding bits 3) 7x filter
   */
   unsigned bpp = LodePNG_InfoColor_getBpp(&infoPng->color);
@@ -3791,7 +3791,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
         }
         ucvector_cleanup(&padded);
       }
-      else error = filter(*out, in, w, h, &infoPng->color); /*we can immediatly filter into the out buffer, no other steps needed*/
+      else error = filter(*out, in, w, h, &infoPng->color); /*we can immediately filter into the out buffer, no other steps needed*/
     }
   }
   else /*interlaceMethod is 1 (Adam7)*/
