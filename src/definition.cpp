@@ -755,6 +755,7 @@ bool readCodeFragment(const char *fileName,
     {
       while ((c=fgetc(f))!='\n' && c!=EOF) /* skip */;
       lineNr++; 
+      if (found && c == '\n') c = '\0';
     }
     if (!feof(f))
     {
@@ -763,7 +764,7 @@ bool readCodeFragment(const char *fileName,
       while (lineNr<=endLine && !feof(f) && !found)
       {
         int pc=0;
-        while ((c=fgetc(f))!='{' && c!=':' && c!=EOF) 
+        while ((c=fgetc(f))!='{' && c!=':' && c!=EOF)  // } so vi matching brackets has no problem
         {
           //printf("parsing char `%c'\n",c);
           if (c=='\n') 
@@ -816,7 +817,7 @@ bool readCodeFragment(const char *fileName,
           result+=spaces;
         }
         // copy until end of line
-        result+=c;
+        if (c) result+=c;
         startLine=lineNr;
         if (c==':') 
         {
