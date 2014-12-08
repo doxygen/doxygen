@@ -991,9 +991,17 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 	                                  yy_pop_state();
                                         }
 <Start>{ID}{BS}/"("                     { // function call
-					  g_insideBody=TRUE;
-                                          generateLink(*g_code, yytext);
-					  g_insideBody=FALSE;
+                                          if (g_isFixedForm && yy_my_start == 6)
+                                          {
+                                            // fixed form continuation line
+                                            YY_FTN_REJECT;
+                                          }
+                                          else
+                                          {
+					    g_insideBody=TRUE;
+                                            generateLink(*g_code, yytext);
+					    g_insideBody=FALSE;
+                                          }
                                         }
 
  /*-------- comments ---------------------------------------------------*/
