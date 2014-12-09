@@ -757,12 +757,11 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           codifyLines(yytext);
                                           endFontClass();
                                         }
-<Start>"end"({BS}{FLOW})?/[ \t\n]       { // list is a bit long as not all have possible end
+<Start>"end"({BS}{FLOW})/[ \t\n]       { // list is a bit long as not all have possible end
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-
 <Start>"implicit"{BS}"none"             { 
   					  startFontClass("keywordtype"); 
   					  codifyLines(yytext);
@@ -893,7 +892,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_pop_state();
                                           YY_FTN_RESET
                                         }
-<Start>^{BS}"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"type"|"interface"){BS}     {  // Fortran subroutine or function ends
+<Start>^{BS}"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"type"|"interface")?{BS}     {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endScope();
    					  startFontClass("keyword");
