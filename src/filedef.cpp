@@ -333,6 +333,10 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       { 
         ol.disable(OutputGenerator::Latex);
       }
+      if (ol.isEnabled(OutputGenerator::RTF) && !Config_getBool("RTF_SOURCE_CODE"))
+      { 
+        ol.disable(OutputGenerator::RTF);
+      }
 
       ol.startParagraph();
       QCString refText = theTranslator->trDefinedInSourceFile();
@@ -910,6 +914,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
+  static bool rtfSourceCode     = Config_getBool("RTF_SOURCE_CODE");
   DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
@@ -918,8 +923,8 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputGenerator::Man);
-  ol.disable(OutputGenerator::RTF);
   if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
+  if (!rtfSourceCode) ol.disable(OutputGenerator::RTF);
 
   bool isDocFile = isDocumentationFile();
   bool genSourceFile = !isDocFile && generateSourceFile();
@@ -951,10 +956,12 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   if (isLinkable())
   {
     if (latexSourceCode) ol.disable(OutputGenerator::Latex);
+    if (rtfSourceCode) ol.disable(OutputGenerator::RTF);
     ol.startTextLink(getOutputFileBase(),0);
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
     if (latexSourceCode) ol.enable(OutputGenerator::Latex);
+    if (rtfSourceCode) ol.enable(OutputGenerator::RTF);
   }
 
   (void)sameTu;
