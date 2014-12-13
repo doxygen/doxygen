@@ -326,8 +326,18 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         QCString baseName = writePlantUMLSource(rtfOutput,s->exampleFile(),s->text());
 
         m_t << "\\par{\\qc "; // center picture
-        writePlantUMLFile(baseName);
+        writePlantUMLFile(baseName,TRUE);
         m_t << "} ";
+        // subsequent pages
+        int cnt_newpage = s->text().contains("newpage");
+        char strnum[5];
+        for (int i = 1; i <= cnt_newpage; i++)
+        {
+          sprintf(strnum,"_%03d",i);
+          m_t << "\\par{\\qc "; // center picture
+          writePlantUMLFile(baseName+strnum,FALSE);
+          m_t << "} ";
+        }
       }
       break;
   }
@@ -1717,7 +1727,7 @@ void RTFDocVisitor::writeDiaFile(const QCString &fileName)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::writePlantUMLFile(const QCString &fileName)
+void RTFDocVisitor::writePlantUMLFile(const QCString &fileName,const bool generate)
 {
   QCString baseName=fileName;
   int i;
@@ -1726,7 +1736,7 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName)
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString("RTF_OUTPUT");
-  generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
+  if (generate) generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;

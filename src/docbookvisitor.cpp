@@ -263,10 +263,25 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
         m_t << "        <title>" << shortName << "</title>" << endl;
         m_t << "        <mediaobject>" << endl;
         m_t << "            <imageobject>" << endl;
-        writePlantUMLFile(baseName);
+        writePlantUMLFile(baseName,TRUE);
         m_t << "            </imageobject>" << endl;
         m_t << "       </mediaobject>" << endl;
         m_t << "    </figure>" << endl;
+        // subsequent pages
+        int cnt_newpage = s->text().contains("newpage");
+        char strnum[5];
+        for (int i = 1; i <= cnt_newpage; i++)
+        {
+          sprintf(strnum,"_%03d",i);
+          m_t << "    <figure>" << endl;
+          m_t << "        <title>" << shortName << "</title>" << endl;
+          m_t << "        <mediaobject>" << endl;
+          m_t << "            <imageobject>" << endl;
+          writePlantUMLFile(baseName+strnum,FALSE);
+          m_t << "            </imageobject>" << endl;
+          m_t << "       </mediaobject>" << endl;
+          m_t << "    </figure>" << endl;
+        }
         m_t << "</para>" << endl;
       }
       break;
@@ -1219,7 +1234,7 @@ void DocbookDocVisitor::writeMscFile(const QCString &baseName)
   m_t << "</imagedata>" << endl;
 }
 
-void DocbookDocVisitor::writePlantUMLFile(const QCString &baseName)
+void DocbookDocVisitor::writePlantUMLFile(const QCString &baseName, const bool generate)
 {
   QCString shortName = baseName;
   int i;
@@ -1228,7 +1243,7 @@ void DocbookDocVisitor::writePlantUMLFile(const QCString &baseName)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
-  generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
+  if (generate) generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
   m_t << "                <imagedata";
   m_t << " width=\"50%\"";
   m_t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << shortName << ".png" << "\">";

@@ -440,9 +440,20 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 
         static QCString htmlOutput = Config_getString("HTML_OUTPUT");
         QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text());
+        // base page
         m_t << "<div align=\"center\">" << endl;
-        writePlantUMLFile(baseName,s->relPath(),s->context());
+        writePlantUMLFile(baseName,s->relPath(),s->context(),TRUE);
         m_t << "</div>" << endl;
+        // subsequent pages
+        int cnt_newpage = s->text().contains("newpage");
+        char strnum[5];
+        for (int i = 1; i <= cnt_newpage; i++)
+        {
+          sprintf(strnum,"_%03d",i);
+          m_t << "<div align=\"center\">" << endl;
+          writePlantUMLFile(baseName+strnum,s->relPath(),s->context(),FALSE);
+          m_t << "</div>" << endl;
+        }
         forceStartParagraph(s);
       }
       break;
@@ -1991,7 +2002,8 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
 
 void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
                                        const QCString &relPath,
-                                       const QCString &)
+                                       const QCString &,
+                                       const bool generate)
 {
   QCString baseName=fileName;
   int i;
@@ -2007,7 +2019,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   static QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   if (imgExt=="svg")
   {
-    generatePlantUMLOutput(fileName,outDir,PUML_SVG);
+    if (generate) generatePlantUMLOutput(fileName,outDir,PUML_SVG);
     //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />" << endl;
     //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
     //m_t << "</iframe>" << endl;
@@ -2015,7 +2027,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   }
   else
   {
-    generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
+    if (generate) generatePlantUMLOutput(fileName,outDir,PUML_BITMAP);
     m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
   }
 }

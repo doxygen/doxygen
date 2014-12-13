@@ -327,9 +327,20 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         QCString latexOutput = Config_getString("LATEX_OUTPUT");
         QCString baseName = writePlantUMLSource(latexOutput,s->exampleFile(),s->text());
 
+        // base page
         m_t << "\\begin{center}\n";
-        writePlantUMLFile(baseName);
+        writePlantUMLFile(baseName,TRUE);
         m_t << "\\end{center}\n";
+        // subsequent pages
+        int cnt_newpage = s->text().contains("newpage");
+        char strnum[5];
+        for (int i = 1; i <= cnt_newpage; i++)
+        {
+          sprintf(strnum,"_%03d",i);
+          m_t << "\\begin{center}\n";
+          writePlantUMLFile(baseName+strnum,FALSE);
+          m_t << "\\end{center}\n";
+        }
       }
       break;
   }
@@ -1846,7 +1857,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName)
   m_t << "\\end{DoxyImageNoCaption}\n";
 }
 
-void LatexDocVisitor::writePlantUMLFile(const QCString &baseName)
+void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, const bool generate)
 {
   QCString shortName = baseName;
   int i;
@@ -1855,7 +1866,7 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString("LATEX_OUTPUT");
-  generatePlantUMLOutput(baseName,outDir,PUML_EPS);
+  if (generate) generatePlantUMLOutput(baseName,outDir,PUML_EPS);
   m_t << "\n\\begin{DoxyImageNoCaption}"
          "  \\mbox{\\includegraphics";
   m_t << "{" << shortName << "}";

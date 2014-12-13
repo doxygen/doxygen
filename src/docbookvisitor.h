@@ -156,7 +156,7 @@ class DocbookDocVisitor : public DocVisitor
     const QCString &height, bool hasCaption);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName);
-    void writePlantUMLFile(const QCString &fileName);
+    void writePlantUMLFile(const QCString &fileName,const bool generate);
     //--------------------------------------
     // state variables
     //--------------------------------------
