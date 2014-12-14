@@ -731,8 +731,8 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 
  /*-------- ignore ------------------------------------------------------------*/
 
-<Start>{IGNORE}/{BS}"("?                { // do not search keywords, intrinsics... TODO: complete list
-  					  codifyLines(yytext);
+<Start>{IGNORE}/{BS}"("                 { // do not search keywords, intrinsics... TODO: complete list
+                                          codifyLines(yytext);
                                         }
  /*-------- inner construct ---------------------------------------------------*/
  
@@ -979,9 +979,11 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
  /*-------- subprog calls  -----------------------------------------*/
 
 <Start>"call"{BS_}                      {
-  					  codifyLines(yytext);
+                                          startFontClass("keyword");
+                                          codifyLines(yytext);
+                                          endFontClass();
                                           yy_push_state(YY_START);
-					  BEGIN(SubCall);
+                                          BEGIN(SubCall);
                                         }
 <SubCall>{ID}                           { // subroutine call
 					  g_insideBody=TRUE;
