@@ -34,7 +34,9 @@
     {% if classHierarchy.tree %}
     <li><a href="{{ page.relPath }}hierarchy{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classHierarchy }} </span></a></li>
     {% endif %}
+    {% if classMembersIndex.all %}
     <li><a href="{{ page.relPath }}functions{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classMembers }} </span></a></li>
+    {% endif %}
   </ul>
   </li>
 {% endif %}

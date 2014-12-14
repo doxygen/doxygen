@@ -179,7 +179,12 @@
   {# TODO: write the class inheritance hierarchy #}
   {% if classHierarchy.tree %}
     {% with page=classHierarchy %}
-  {#    {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'hierarchy.tpl' %} #}
+      {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'htmlhierarchy.tpl' %}
+    {% endwith %}
+    {% with page=classHierarchy %}
+      {% if config.HAVE_DOT and config.GRAPHICAL_HIERARCHY %}
+        {% create 'inherits'|append:config.HTML_FILE_EXTENSION from 'htmlgraphhierarchy.tpl' %}
+      {% endif %}
     {% endwith %}
   {% endif %}
 

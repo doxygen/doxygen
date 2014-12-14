@@ -83,7 +83,9 @@
     {% if classHierarchy.tree %}
     <li{% if page.subhighlight=='classhierarchy' %} class="current"{% endif %}><a href="{{ page.relPath }}hierarchy{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classHierarchy|nowrap }}</span></a></li>
     {% endif %}
+    {% if classMembersIndex.all %}
     <li{% if page.subhighlight=='classmembers' %} class="current"{% endif %}><a href="{{ page.relPath }}functions{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classMembers|nowrap }}</span></a></li>
+    {% endif %}
   {% endif %}
   {# file subtabs #}
   {% if page.highlight=='files' %}

@@ -666,6 +666,18 @@ class TranslateContext::Private : public PropertyMapper
       static bool extractAll = Config_getBool("EXTRACT_ALL");
       return theTranslator->trNamespaceMemberDescription(extractAll);
     }
+    TemplateVariant classHierarchyDescription() const
+    {
+      return theTranslator->trClassHierarchyDescription();
+    }
+    TemplateVariant gotoGraphicalHierarchy() const
+    {
+      return theTranslator->trGotoGraphicalHierarchy();
+    }
+    TemplateVariant gotoTextualHierarchy() const
+    {
+      return theTranslator->trGotoTextualHierarchy();
+    }
     TemplateVariant classMembersDescription() const
     {
       static bool extractAll = Config_getBool("EXTRACT_ALL");
@@ -1012,6 +1024,12 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("macros",             this,&Private::macros);
       //%% string namespaceMembersDescription
       addProperty("namespaceMembersDescription",this,&Private::namespaceMembersDescription);
+      //%% string classHierarchyDescription
+      addProperty("classHierarchyDescription",this,&Private::classHierarchyDescription);
+      //%% string gotoGraphicalHierarchy
+      addProperty("gotoGraphicalHierarchy",this,&Private::gotoGraphicalHierarchy);
+      //%% string gotoTextualHierarchy
+      addProperty("gotoTextualHierarchy",this,&Private::gotoTextualHierarchy);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -4822,194 +4840,74 @@ TemplateVariant ClassIndexContext::get(const char *n) const
 
 //------------------------------------------------------------------------
 
-//%% struct ClassInheritanceNode: node in inheritance tree
-//%% {
-class ClassInheritanceNodeContext::Private : public PropertyMapper
+static int computeMaxDepth(const TemplateListIntf *list)
 {
-  public:
-    Private(ClassDef *cd) : m_classDef(cd)
-    {
-      //%% bool is_leaf_node: true if this node does not have any children
-      addProperty("is_leaf_node",this,&Private::isLeafNode);
-      //%% ClassInheritance children: list of nested classes/namespaces
-      addProperty("children",this,&Private::children);
-      //%% Class class: class info
-      addProperty("class",this,&Private::getClass);
-    }
-    void addChildren(const BaseClassList *bcl,bool hideSuper)
-    {
-      if (bcl==0) return;
-      BaseClassListIterator bcli(*bcl);
-      BaseClassDef *bcd;
-      for (bcli.toFirst() ; (bcd=bcli.current()) ; ++bcli)
-      {
-        ClassDef *cd=bcd->classDef;
-        if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
-        {
-          continue;
-        }
-
-        bool b;
-        if (cd->getLanguage()==SrcLangExt_VHDL)
-        {
-          b=hasVisibleRoot(cd->subClasses());
-        }
-        else
-        {
-          b=hasVisibleRoot(cd->baseClasses());
-        }
-
-        if (cd->isVisibleInHierarchy() && b) // hasVisibleRoot(cd->baseClasses()))
-        {
-          bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
-          ClassInheritanceNodeContext *tnc = new ClassInheritanceNodeContext(cd);
-          m_children.append(tnc);
-          if (hasChildren)
-          {
-            //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
-            bool wasVisited=cd->visited;
-            cd->visited=TRUE;
-            if (cd->getLanguage()==SrcLangExt_VHDL)
-            {
-              tnc->addChildren(cd->baseClasses(),wasVisited);
-            }
-            else
-            {
-              tnc->addChildren(cd->subClasses(),wasVisited);
-            }
-          }
-        }
-      }
-    }
-    TemplateVariant isLeafNode() const
-    {
-      return m_children.isEmpty();
-    }
-    TemplateVariant children() const
-    {
-      return TemplateVariant(&m_children);
-    }
-    TemplateVariant getClass() const
-    {
-      if (!m_cache.classContext)
-      {
-        m_cache.classContext.reset(ClassContext::alloc(m_classDef));
-      }
-      return m_cache.classContext.get();
-    }
-  private:
-    ClassDef *m_classDef;
-    GenericNodeListContext m_children;
-    struct Cachable
-    {
-      SharedPtr<ClassContext> classContext;
-    };
-    mutable Cachable m_cache;
-};
-//%% }
-
-ClassInheritanceNodeContext::ClassInheritanceNodeContext(ClassDef *cd) : RefCountedContext("ClassInheritanceNodeContext")
-{
-  p = new Private(cd);
-}
-
-ClassInheritanceNodeContext::~ClassInheritanceNodeContext()
-{
-  delete p;
-}
-
-TemplateVariant ClassInheritanceNodeContext::get(const char *n) const
-{
-  return p->get(n);
-}
-
-void ClassInheritanceNodeContext::addChildren(const BaseClassList *bcl,bool hideSuper)
-{
-  p->addChildren(bcl,hideSuper);
-}
-
-//------------------------------------------------------------------------
-
-//%% list ClassInheritance[ClassInheritanceNode]: list of classes
-class ClassInheritanceContext::Private : public GenericNodeListContext
-{
-  public:
-    void addClasses(const ClassSDict &classSDict)
-    {
-      ClassSDict::Iterator cli(classSDict);
-      ClassDef *cd;
-      for (cli.toFirst();(cd=cli.current());++cli)
-      {
-        bool b;
-        if (cd->getLanguage()==SrcLangExt_VHDL)
-        {
-          if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
-          {
-            continue;
-          }
-          b=!hasVisibleRoot(cd->subClasses());
-        }
-        else
-        {
-          b=!hasVisibleRoot(cd->baseClasses());
-        }
-        if (b)
-        {
-          if (cd->isVisibleInHierarchy()) // should it be visible
-          {
-            // new root level class
-            ClassInheritanceNodeContext *tnc = ClassInheritanceNodeContext::alloc(cd);
-            append(tnc);
-            bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
-            if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
-            {
-              tnc->addChildren(cd->baseClasses(),cd->visited);
-              cd->visited=TRUE;
-            }
-            else if (hasChildren)
-            {
-              tnc->addChildren(cd->subClasses(),cd->visited);
-              cd->visited=TRUE;
-            }
-          }
-        }
-      }
-    }
-};
-
-ClassInheritanceContext::ClassInheritanceContext() : RefCountedContext("ClassInheritanceContext")
-{
-  p = new Private;
-  initClassHierarchy(Doxygen::classSDict);
-  initClassHierarchy(Doxygen::hiddenClasses);
-  p->addClasses(*Doxygen::classSDict);
-  p->addClasses(*Doxygen::hiddenClasses);
-}
-
-ClassInheritanceContext::~ClassInheritanceContext()
-{
-  delete p;
-}
-
-// TemplateListIntf
-int ClassInheritanceContext::count() const
-{
-  return (int)p->count();
-}
-
-TemplateVariant ClassInheritanceContext::at(int index) const
-{
-  TemplateVariant result;
-  if (index>=0 && index<count())
+  int maxDepth=0;
+  if (list)
   {
-    result = p->at(index);
+    TemplateListIntf::ConstIterator *it = list->createIterator();
+    TemplateVariant v;
+    for (it->toFirst();it->current(v);it->toNext())
+    {
+      const TemplateStructIntf *s = v.toStruct();
+      TemplateVariant child = s->get("children");
+      int d = computeMaxDepth(child.toList())+1;
+      if (d>maxDepth) maxDepth=d;
+    }
+    delete it;
   }
-  return result;
+  return maxDepth;
 }
 
-TemplateListIntf::ConstIterator *ClassInheritanceContext::createIterator() const
+static int computeNumNodesAtLevel(const TemplateStructIntf *s,int level,int maxLevel)
 {
-  return p->createIterator();
+  int num=0;
+  if (level<maxLevel)
+  {
+    num++;
+    TemplateVariant child = s->get("children");
+    if (child.toList())
+    {
+      TemplateListIntf::ConstIterator *it = child.toList()->createIterator();
+      TemplateVariant v;
+      for (it->toFirst();it->current(v);it->toNext())
+      {
+        num+=computeNumNodesAtLevel(v.toStruct(),level+1,maxLevel);
+      }
+      delete it;
+    }
+  }
+  return num;
+}
+
+static int computePreferredDepth(const TemplateListIntf *list,int maxDepth)
+{
+  int preferredNumEntries = Config_getInt("HTML_INDEX_NUM_ENTRIES");
+  int preferredDepth=1;
+  if (preferredNumEntries>0)
+  {
+    int depth = maxDepth;
+    for (int i=1;i<=depth;i++)
+    {
+      int num=0;
+      TemplateListIntf::ConstIterator *it = list->createIterator();
+      TemplateVariant v;
+      for (it->toFirst();it->current(v);it->toNext())
+      {
+        num+=computeNumNodesAtLevel(v.toStruct(),0,i);
+      }
+      delete it;
+      if (num<=preferredNumEntries)
+      {
+        preferredDepth=i;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+  return preferredDepth;
 }
 
 //------------------------------------------------------------------------
@@ -5019,13 +4917,27 @@ TemplateListIntf::ConstIterator *ClassInheritanceContext::createIterator() const
 class ClassHierarchyContext::Private : public PropertyMapper
 {
   public:
+    Private()
+    {
+      m_classTree.reset(NestingContext::alloc(0,0));
+      initClassHierarchy(Doxygen::classSDict);
+      initClassHierarchy(Doxygen::hiddenClasses);
+      m_classTree->addClassHierarchy(*Doxygen::classSDict,TRUE);
+      m_classTree->addClassHierarchy(*Doxygen::hiddenClasses,TRUE);
+      //%% ClassInheritance tree
+      addProperty("tree",            this,&Private::tree);
+      addProperty("fileName",        this,&Private::fileName);
+      addProperty("relPath",         this,&Private::relPath);
+      addProperty("highlight",       this,&Private::highlight);
+      addProperty("subhighlight",    this,&Private::subhighlight);
+      addProperty("title",           this,&Private::title);
+      addProperty("preferredDepth",  this,&Private::preferredDepth);
+      addProperty("maxDepth",        this,&Private::maxDepth);
+      addProperty("diagrams",        this,&Private::diagrams);
+    }
     TemplateVariant tree() const
     {
-      if (!m_cache.classTree)
-      {
-        m_cache.classTree.reset(ClassInheritanceContext::alloc());
-      }
-      return m_cache.classTree.get();
+      return m_classTree.get();
     }
     TemplateVariant fileName() const
     {
@@ -5043,6 +4955,34 @@ class ClassHierarchyContext::Private : public PropertyMapper
     {
       return "classhierarchy";
     }
+    DotGfxHierarchyTable *getHierarchy() const
+    {
+      if (!m_cache.hierarchy)
+      {
+        m_cache.hierarchy.reset(new DotGfxHierarchyTable());
+      }
+      return m_cache.hierarchy.get();
+    }
+    TemplateVariant diagrams() const
+    {
+      if (!m_cache.diagrams)
+      {
+        TemplateList *diagrams = TemplateList::alloc();
+        DotGfxHierarchyTable *hierarchy = getHierarchy();
+        if (hierarchy->subGraphs())
+        {
+          int id=0;
+          QListIterator<DotNode> li(*hierarchy->subGraphs());
+          DotNode *n;
+          for (li.toFirst();(n=li.current());++li)
+          {
+            diagrams->append(InheritanceGraphContext::alloc(hierarchy,n,id++));
+          }
+        }
+        m_cache.diagrams.reset(diagrams);
+      }
+      return m_cache.diagrams.get();
+    }
     TemplateVariant title() const
     {
       static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
@@ -5055,20 +4995,36 @@ class ClassHierarchyContext::Private : public PropertyMapper
         return theTranslator->trClassHierarchy();
       }
     }
-    Private()
+    TemplateVariant maxDepth() const
     {
-      //%% ClassInheritance tree
-      addProperty("tree",this,&Private::tree);
-      addProperty("fileName",this,&Private::fileName);
-      addProperty("relPath",this,&Private::relPath);
-      addProperty("highlight",this,&Private::highlight);
-      addProperty("subhighlight",this,&Private::subhighlight);
-      addProperty("title",this,&Private::title);
+      if (!m_cache.maxDepthComputed)
+      {
+        m_cache.maxDepth = computeMaxDepth(m_classTree.get());
+        m_cache.maxDepthComputed=TRUE;
+      }
+      return m_cache.maxDepth;
+    }
+    TemplateVariant preferredDepth() const
+    {
+      if (!m_cache.preferredDepthComputed)
+      {
+        m_cache.preferredDepth = computePreferredDepth(m_classTree.get(),maxDepth().toInt());
+        m_cache.preferredDepthComputed=TRUE;
+      }
+      return m_cache.preferredDepth;
     }
   private:
+    SharedPtr<NestingContext> m_classTree;
     struct Cachable
     {
-      SharedPtr<ClassInheritanceContext> classTree;
+      Cachable() : maxDepth(0), maxDepthComputed(FALSE),
+                   preferredDepth(0), preferredDepthComputed(FALSE), hierarchy(0) {}
+      int   maxDepth;
+      bool  maxDepthComputed;
+      int   preferredDepth;
+      bool  preferredDepthComputed;
+      SharedPtr<TemplateList> diagrams;
+      ScopedPtr<DotGfxHierarchyTable> hierarchy;
     };
     mutable Cachable m_cache;
 };
@@ -5097,7 +5053,7 @@ class NestingNodeContext::Private : public PropertyMapper
 {
   public:
     Private(const NestingNodeContext *parent,const NestingNodeContext *thisNode,
-        Definition *d,int index,int level,bool addCls)
+        Definition *d,int index,int level,bool addCls,bool inherit, bool hideSuper)
       : m_parent(parent), m_def(d), m_level(level), m_index(index)
     {
       m_children.reset(NestingContext::alloc(thisNode,level+1));
@@ -5131,7 +5087,7 @@ class NestingNodeContext::Private : public PropertyMapper
       addProperty("fileName",this,&Private::fileName);
 
       addNamespaces(addCls);
-      addClasses();
+      addClasses(inherit,hideSuper);
       addDirFiles();
       addPages();
       addModules();
@@ -5283,12 +5239,34 @@ class NestingNodeContext::Private : public PropertyMapper
       return m_def->getOutputFileBase();
     }
 
-    void addClasses()
+    //------------------------------------------------------------------
+
+    void addClasses(bool inherit, bool hideSuper)
     {
       ClassDef *cd = m_def->definitionType()==Definition::TypeClass ? (ClassDef*)m_def : 0;
-      if (cd && cd->getClassSDict())
+      if (inherit)
       {
-        m_children->addClasses(*cd->getClassSDict(),FALSE);
+        bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
+        if (hasChildren)
+        {
+          bool wasVisited=cd->visited;
+          cd->visited=TRUE;
+          if (cd->getLanguage()==SrcLangExt_VHDL)
+          {
+            m_children->addDerivedClasses(cd->baseClasses(),wasVisited);
+          }
+          else
+          {
+            m_children->addDerivedClasses(cd->subClasses(),wasVisited);
+          }
+        }
+      }
+      else
+      {
+        if (cd && cd->getClassSDict())
+        {
+          m_children->addClasses(*cd->getClassSDict(),FALSE);
+        }
       }
     }
     void addNamespaces(bool addClasses)
@@ -5352,9 +5330,10 @@ class NestingNodeContext::Private : public PropertyMapper
 //%% }
 
 NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
-                                       Definition *d,int index,int level,bool addClass) : RefCountedContext("NestingNodeContext")
+                                       Definition *d,int index,int level,bool addClass,bool inherit,bool hideSuper)
+   : RefCountedContext("NestingNodeContext")
 {
-  p = new Private(parent,this,d,index,level,addClass);
+  p = new Private(parent,this,d,index,level,addClass,inherit,hideSuper);
 }
 
 NestingNodeContext::~NestingNodeContext()
@@ -5394,7 +5373,7 @@ class NestingContext::Private : public GenericNodeListContext
           bool isLinkable  = nd->isLinkableInProject();
           if (isLinkable || hasChildren)
           {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses);
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE);
             append(nnc);
             m_index++;
           }
@@ -5423,7 +5402,7 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (classVisibleInIndex(cd) && cd->templateMaster()==0)
           {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE);
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,FALSE,FALSE);
             append(nnc);
             m_index++;
           }
@@ -5438,7 +5417,7 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (dd->getOuterScope()==Doxygen::globalScope)
         {
-          append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE));
+          append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
           m_index++;
         }
       }
@@ -5449,7 +5428,7 @@ class NestingContext::Private : public GenericNodeListContext
       DirDef *dd;
       for (li.toFirst();(dd=li.current());++li)
       {
-        append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE));
+        append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
         m_index++;
       }
     }
@@ -5465,7 +5444,7 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE));
+            append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE));
             m_index++;
           }
         }
@@ -5477,7 +5456,7 @@ class NestingContext::Private : public GenericNodeListContext
       FileDef *fd;
       for (li.toFirst();(fd=li.current());++li)
       {
-        append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE));
+        append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE));
         m_index++;
       }
     }
@@ -5491,7 +5470,7 @@ class NestingContext::Private : public GenericNodeListContext
             pd->getOuterScope()==0 ||
             pd->getOuterScope()->definitionType()!=Definition::TypePage)
         {
-          append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE));
+          append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE,FALSE,FALSE));
           m_index++;
         }
       }
@@ -5507,7 +5486,7 @@ class NestingContext::Private : public GenericNodeListContext
              (!gd->isReference() || externalGroups)
            )
         {
-          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE));
+          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE));
           m_index++;
         }
       }
@@ -5520,11 +5499,74 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (gd->isVisible())
         {
-          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE));
+          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE));
           m_index++;
         }
       }
     }
+    void addDerivedClasses(const BaseClassList *bcl,bool hideSuper)
+    {
+      if (bcl==0) return;
+      BaseClassListIterator bcli(*bcl);
+      BaseClassDef *bcd;
+      for (bcli.toFirst() ; (bcd=bcli.current()) ; ++bcli)
+      {
+        ClassDef *cd=bcd->classDef;
+        if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+        {
+          continue;
+        }
+
+        bool b;
+        if (cd->getLanguage()==SrcLangExt_VHDL)
+        {
+          b=hasVisibleRoot(cd->subClasses());
+        }
+        else
+        {
+          b=hasVisibleRoot(cd->baseClasses());
+        }
+
+        if (cd->isVisibleInHierarchy() && b)
+        {
+          NestingNodeContext *tnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,hideSuper);
+          append(tnc);
+          m_index++;
+        }
+      }
+    }
+    void addClassHierarchy(const ClassSDict &classSDict,bool)
+    {
+      ClassSDict::Iterator cli(classSDict);
+      ClassDef *cd;
+      for (cli.toFirst();(cd=cli.current());++cli)
+      {
+        bool b;
+        if (cd->getLanguage()==SrcLangExt_VHDL)
+        {
+          if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
+          {
+            continue;
+          }
+          b=!hasVisibleRoot(cd->subClasses());
+        }
+        else
+        {
+          b=!hasVisibleRoot(cd->baseClasses());
+        }
+        if (b)
+        {
+          if (cd->isVisibleInHierarchy()) // should it be visible
+          {
+            // new root level class
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,cd->visited);
+            append(nnc);
+            m_index++;
+          }
+        }
+      }
+    }
+
   private:
     const NestingNodeContext *m_parent;
     int m_level;
@@ -5602,78 +5644,17 @@ void NestingContext::addModules(const GroupList &modules)
   p->addModules(modules);
 }
 
+void NestingContext::addClassHierarchy(const ClassSDict &classSDict,bool rootOnly)
+{
+  p->addClassHierarchy(classSDict,rootOnly);
+}
+
+void NestingContext::addDerivedClasses(const BaseClassList *bcl,bool hideSuper)
+{
+  p->addDerivedClasses(bcl,hideSuper);
+}
+
 //------------------------------------------------------------------------
-
-static int computeMaxDepth(const TemplateListIntf *list)
-{
-  int maxDepth=0;
-  if (list)
-  {
-    TemplateListIntf::ConstIterator *it = list->createIterator();
-    TemplateVariant v;
-    for (it->toFirst();it->current(v);it->toNext())
-    {
-      const TemplateStructIntf *s = v.toStruct();
-      TemplateVariant child = s->get("children");
-      int d = computeMaxDepth(child.toList())+1;
-      if (d>maxDepth) maxDepth=d;
-    }
-    delete it;
-  }
-  return maxDepth;
-}
-
-static int computeNumNodesAtLevel(const TemplateStructIntf *s,int level,int maxLevel)
-{
-  int num=0;
-  if (level<maxLevel)
-  {
-    num++;
-    TemplateVariant child = s->get("children");
-    if (child.toList())
-    {
-      TemplateListIntf::ConstIterator *it = child.toList()->createIterator();
-      TemplateVariant v;
-      for (it->toFirst();it->current(v);it->toNext())
-      {
-        num+=computeNumNodesAtLevel(v.toStruct(),level+1,maxLevel);
-      }
-      delete it;
-    }
-  }
-  return num;
-}
-
-static int computePreferredDepth(const TemplateListIntf *list,int maxDepth)
-{
-  int preferredNumEntries = Config_getInt("HTML_INDEX_NUM_ENTRIES");
-  int preferredDepth=1;
-  if (preferredNumEntries>0)
-  {
-    int depth = maxDepth;
-    for (int i=1;i<=depth;i++)
-    {
-      int num=0;
-      TemplateListIntf::ConstIterator *it = list->createIterator();
-      TemplateVariant v;
-      for (it->toFirst();it->current(v);it->toNext())
-      {
-        num+=computeNumNodesAtLevel(v.toStruct(),0,i);
-      }
-      delete it;
-      if (num<=preferredNumEntries)
-      {
-        preferredDepth=i;
-      }
-      else
-      {
-        break;
-      }
-    }
-  }
-  return preferredDepth;
-}
-
 
 //%% struct ClassTree: Class nesting relations
 //%% {
@@ -7049,6 +7030,56 @@ TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
   return p->get(name);
 }
 
+//------------------------------------------------------------------------
+
+//%% struct InheritanceGraph: a connected graph reprenting part of the overall interitance tree
+//%% {
+class InheritanceGraphContext::Private : public PropertyMapper
+{
+  public:
+    Private(DotGfxHierarchyTable *hierarchy,DotNode *n,int id) : m_hierarchy(hierarchy), m_node(n), m_id(id)
+    {
+      addProperty("graph",this,&Private::graph);
+    }
+    TemplateVariant graph() const
+    {
+      QGString result;
+      static bool haveDot            = Config_getBool("HAVE_DOT");
+      static bool graphicalHierarchy = Config_getBool("GRAPHICAL_HIERARCHY");
+      if (haveDot && graphicalHierarchy)
+      {
+        FTextStream t(&result);
+        m_hierarchy->createGraph(m_node,t,
+                          /*GOF_BITMAP,
+                          EOF_Html,*/
+                          g_globals.outputDir,
+                          g_globals.outputDir+portable_pathSeparator()+"inherits"+Doxygen::htmlFileExtension,
+                          m_id);
+      }
+      return TemplateVariant(result.data(),TRUE);
+    }
+  private:
+    DotGfxHierarchyTable *m_hierarchy;
+    DotNode *m_node;
+    int m_id;
+};
+
+InheritanceGraphContext::InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id)
+   : RefCountedContext("InheritanceGraphContext")
+{
+  p = new Private(hierarchy,n,id);
+}
+
+InheritanceGraphContext::~InheritanceGraphContext()
+{
+  delete p;
+}
+
+TemplateVariant InheritanceGraphContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
 
 //------------------------------------------------------------------------
 
@@ -8086,7 +8117,7 @@ class HtmlSpaceless : public TemplateSpacelessIntf
               {
                 m_insideString='\0';
               }
-              else // start of string
+              else if (m_insideString=='\0') // start of string
               {
                 m_insideString=c;
               }
@@ -8111,8 +8142,8 @@ class HtmlSpaceless : public TemplateSpacelessIntf
         }
       }
       result+='\0';
-      //printf("HtmlSpaceless::remove({%s})={%s} m_insideTag=%d m_insideString=%d removeSpaces=%d\n",s.data(),result.data(),
-      //    m_insideTag,m_insideString,m_removeSpaces);
+      //printf("HtmlSpaceless::remove({%s})={%s} m_insideTag=%d m_insideString=%c (%d) removeSpaces=%d\n",s.data(),result.data(),
+      //    m_insideTag,m_insideString,m_insideString,m_removeSpaces);
       return result.data();
     }
   private:

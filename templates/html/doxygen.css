@@ -227,7 +227,7 @@ span.lineno a:hover {
 	background-color: #C8C8C8;
 }
 
-div.ah {
+div.ah, span.ah {
 	background-color: black;
 	font-weight: bold;
 	color: #ffffff;
@@ -243,6 +243,15 @@ div.ah {
 	-moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#000),color-stop(0.3, #444));
 	background-image: -moz-linear-gradient(center top, #eee 0%, #444 40%, #000);
+}
+
+div.classindex ul {
+        list-style: none;
+        padding-left: 0;
+}
+
+div.classindex span.ai {
+        display: inline-block;
 }
 
 div.groupHeader {
