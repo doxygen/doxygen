@@ -151,13 +151,13 @@ bool GroupDef::addClass(const ClassDef *cd)
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (cd->isHidden()) return FALSE;
   updateLanguage(cd);
-  if (classSDict->find(cd->qualifiedName())==0)
+  QCString qn = cd->name();
+  if (classSDict->find(qn)==0)
   {
-    QCString qn = cd->qualifiedName();
     //printf("--- addClass %s sort=%d\n",qn.data(),sortBriefDocs);
     if (sortBriefDocs)
     {
-      classSDict->inSort(cd->qualifiedName(),cd);
+      classSDict->inSort(qn,cd);
     }
     else
     {
@@ -180,13 +180,13 @@ bool GroupDef::addClass(const ClassDef *cd)
             j++;
           }
           //printf("Found scope at index %d\n",j);
-          classSDict->insertAt(j,cd->qualifiedName(),cd);
+          classSDict->insertAt(j,qn,cd);
           found=TRUE;
         }
       }
       if (!found) // no insertion point found -> just append
       {
-        classSDict->append(cd->qualifiedName(),cd);
+        classSDict->append(qn,cd);
       }
     }
     return TRUE;
