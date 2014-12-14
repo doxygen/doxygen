@@ -452,7 +452,7 @@ static QString getDocsForNode(const QDomElement &child)
   // LaTeX name as formula -> LaTeX
   regexp.setPattern(SA("\\\\f\\$\\\\mbox\\{\\\\LaTeX\\}\\\\f\\$"));
   docs.replace(regexp,SA("LaTeX"));
-  // Other forula's (now just 2) so explicitely mentioned.
+  // Other formula's (now just 2) so explicitly mentioned.
   regexp.setPattern(SA("\\\\f\\$2\\^\\{\\(16\\+\\\\mbox\\{LOOKUP\\\\_CACHE\\\\_SIZE\\}\\)\\}\\\\f\\$"));
   docs.replace(regexp,SA("2^(16+LOOKUP_CACHE_SIZE)"));
   regexp.setPattern(SA("\\\\f\\$2\\^\\{16\\} = 65536\\\\f\\$"));

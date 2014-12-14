@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="047__return_8cpp" kind="file">
+  <compounddef id="047__return_8cpp" kind="file" language="C++">
     <compoundname>047_return.cpp</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="047__return_8cpp_1aab0ee031d46db05d47213d2625ab6aac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

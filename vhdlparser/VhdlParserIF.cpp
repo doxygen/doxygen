@@ -32,6 +32,7 @@ void  VhdlParserIF::parseVhdlfile(const char* inputBuffer,bool inLine)
   //  fprintf(stderr,"\n\nparsed lines: %d\n",yyLineNr);
   //  fprintf(stderr,"\n\nerrors : %d\n\n",myErr->getErrorCount());
   delete myParser;
+  delete myErr;
  
 }
 

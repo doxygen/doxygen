@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="015__cond_8c" kind="file">
+  <compounddef id="015__cond_8c" kind="file" language="C++">
     <compoundname>015_cond.c</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="015__cond_8c_1a2521dcda743ec66ad8e030113d6e0c63" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

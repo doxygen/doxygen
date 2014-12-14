@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="035__invariant_8c" kind="file">
+  <compounddef id="035__invariant_8c" kind="file" language="C++">
     <compoundname>035_invariant.c</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="035__invariant_8c_1a92e32ddd4278ab907422d5aaa34cb796" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

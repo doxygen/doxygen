@@ -2833,14 +2833,18 @@ tcl_inf("TCL_SUBST: use '%s'\n",s);
     }
   }
 
-  if (tcl.input_string.at(tcl.input_string.length()-1) == '\n') 
+  if (tcl.input_string.at(tcl.input_string.length()-1) == 0x1A)
+  {
+  }
+  else if (tcl.input_string.at(tcl.input_string.length()-1) == '\n')
   {
     tcl.input_string[tcl.input_string.length()-1] = 0x1A;
-  } 
-  else 
+  }
+  else
   {
     tcl.input_string += 0x1A;
   }
+
   tcl.code = NULL;
   tcl.code_font=NULL;
   tcl.code_line=1;

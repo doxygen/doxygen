@@ -21,17 +21,8 @@
 #include "util.h"
 #include "language.h"
 #include "ftextstream.h"
+#include "resourcemgr.h"
 #include <qdir.h>
-
-//--------------------------------------------------------------------------
-
-static const char *doxygen_bst =
-#include "doxygen.bst.h"
-;
-
-static const char *bib2xhtml_pl =
-#include "bib2xhtml.pl.h"
-;
 
 //--------------------------------------------------------------------------
 
@@ -153,26 +144,12 @@ void CiteDict::generatePage() const
   f.close();
 
   // 2. generate bib2xhtml
-  QCString bib2xhtmlFile = outputDir+"/bib2xhtml.pl";
-  f.setName(bib2xhtmlFile);
-  QCString bib2xhtml = bib2xhtml_pl;
-  if (!f.open(IO_WriteOnly)) 
-  {
-    err("could not open file %s for writing\n",bib2xhtmlFile.data());
-  }
-  f.writeBlock(bib2xhtml, bib2xhtml.length());
-  f.close();
+  QCString bib2xhtmlFile  = outputDir+"/bib2xhtml.pl";
+  ResourceMgr::instance().copyResource("bib2xhtml.pl",outputDir);
 
   // 3. generate doxygen.bst
   QCString doxygenBstFile = outputDir+"/doxygen.bst";
-  QCString bstData = doxygen_bst;
-  f.setName(doxygenBstFile);
-  if (!f.open(IO_WriteOnly)) 
-  {
-    err("could not open file %s for writing\n",doxygenBstFile.data());
-  }
-  f.writeBlock(bstData, bstData.length());
-  f.close();
+  ResourceMgr::instance().copyResource("doxygen.bst",outputDir);
 
   // 4. for all formats we just copy the bib files to as special output directory
   //    so bibtex can find them without path (bibtex doesn't support paths or

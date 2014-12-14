@@ -943,9 +943,9 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
      *  be followed by a single name or by a list of names
      *  of the category.
      */
-    virtual QCString trMember(bool first_capital, bool singular)
+    virtual QCString trMember(bool, bool singular)
     {
-      QCString result((first_capital ? "član" : "član"));
+      QCString result("član");
       if (!singular)  result+="ovi";
       return result;
     }

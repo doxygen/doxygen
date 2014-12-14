@@ -13,6 +13,7 @@
  *
  */
 
+#include <assert.h>
 #include <qdir.h>
 
 #include "context.h"
@@ -1108,6 +1109,7 @@ class DefinitionContext : public PropertyMapper
   public:
     DefinitionContext(Definition *d) : m_def(d)
     {
+      assert(d!=0);
       //%% string name: the name of the symbol
       addProperty("name",this,&DefinitionContext::name);
       //%% string bareName: the bare name of the symbol with scope info
@@ -5758,7 +5760,8 @@ class ClassTreeContext::Private : public PropertyMapper
     SharedPtr<NestingContext> m_classTree;
     struct Cachable
     {
-      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      Cachable() : maxDepth(0), maxDepthComputed(FALSE),
+                   preferredDepth(0), preferredDepthComputed(FALSE) {}
       int   maxDepth;
       bool  maxDepthComputed;
       int   preferredDepth;
@@ -6166,7 +6169,8 @@ class FileTreeContext::Private : public PropertyMapper
     SharedPtr<NestingContext> m_dirFileTree;
     struct Cachable
     {
-      Cachable() : maxDepthComputed(FALSE), preferredDepthComputed(FALSE) {}
+      Cachable() : maxDepth(0), maxDepthComputed(FALSE),
+                   preferredDepth(0), preferredDepthComputed(FALSE) {}
       int   maxDepth;
       bool  maxDepthComputed;
       int   preferredDepth;
@@ -8147,7 +8151,6 @@ void generateOutputViaTemplate()
       SharedPtr<ExampleListContext>           exampleList          (ExampleListContext::alloc());
       SharedPtr<ModuleTreeContext>            moduleTree           (ModuleTreeContext::alloc());
       SharedPtr<ModuleListContext>            moduleList           (ModuleListContext::alloc());
-      SharedPtr<PageContext>                  mainPage             (PageContext::alloc(Doxygen::mainPage,TRUE));
       SharedPtr<GlobalsIndexContext>          globalsIndex         (GlobalsIndexContext::alloc());
       SharedPtr<ClassMembersIndexContext>     classMembersIndex    (ClassMembersIndexContext::alloc());
       SharedPtr<NamespaceMembersIndexContext> namespaceMembersIndex(NamespaceMembersIndexContext::alloc());
@@ -8187,7 +8190,15 @@ void generateOutputViaTemplate()
       //%% DirList dirList
       ctx->set("dirList",dirList.get());
       //%% Page mainPage
-      ctx->set("mainPage",mainPage.get());
+      if (Doxygen::mainPage)
+      {
+        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage,TRUE));
+        ctx->set("mainPage",mainPage.get());
+      }
+      else
+      {
+        ctx->set("mainPage",FALSE);
+      }
       //%% GlobalsIndex globalsIndex:
       ctx->set("globalsIndex",globalsIndex.get());
       //%% ClassMembersIndex classMembersIndex:

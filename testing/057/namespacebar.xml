@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="namespacebar" kind="namespace">
+  <compounddef id="namespacebar" kind="namespace" language="Tcl">
     <compoundname>bar</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="namespacebar_1aa1678a9adb588c0b91b118de7cc38ddb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

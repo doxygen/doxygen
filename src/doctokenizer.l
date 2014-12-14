@@ -370,12 +370,14 @@ SCOPECPP  {SCOPEPRE}*(~)?{ID}{TEMPLPART}?
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
 SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
 FUNCARG   "("{FUNCPART}")"({BLANK}*("volatile"|"const"){BLANK})?
+FUNCARG2  "("{FUNCPART}")"({BLANK}*("volatile"|"const"))?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {BLANK}+[^<(\r\n.,][^(\r\n.,]*
 OPMASK    ({BLANK}*{OPNORM}{FUNCARG})
 OPMASKOPT ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
+OPMASKOP2 ({BLANK}*{OPNORM}{FUNCARG2}?)|({OPCAST}{FUNCARG2})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  (({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})){CVSPEC}?
@@ -390,9 +392,10 @@ HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
-REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG}?
+REFWORD2  ("#"|"::")?((({ID}{TEMPLPART}?)|{ANONNS})("."|"#"|"::"|"-"|"/"))*({ID}{TEMPLPART}?(":")?){FUNCARG2}?
 REFWORD3  ({ID}":")*{ID}":"?
-REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
+REFWORD4  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOP2})){CVSPEC}?
+REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 
 %option noyywrap
 %option yylineno
@@ -433,6 +436,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 %x St_SkipTitle
 %x St_Anchor
 %x St_Snippet
+%x St_SetScope
 
 %x St_Sections
 %s St_SecLabel1
@@ -1009,6 +1013,13 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{LNKWORD2}
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
+<St_SetScope>{SCOPEMASK}{BLANK} {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.stripWhiteSpace();
+			 return TK_WORD;
+  		       }
+<St_SetScope>{BLANK}   {
+                       }
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          g_token->name = yytext;
   		         return TK_SYMBOL;
@@ -1406,6 +1417,11 @@ void doctokenizerYYsetStateAnchor()
 void doctokenizerYYsetStateSnippet()
 {
   BEGIN(St_Snippet);
+}
+
+void doctokenizerYYsetStateSetScope()
+{
+  BEGIN(St_SetScope);
 }
 
 void doctokenizerYYcleanup()

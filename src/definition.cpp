@@ -58,10 +58,10 @@ class DefinitionImpl
 
     SectionDict *sectionDict;  // dictionary of all sections, not accessible
 
-    MemberSDict *sourceRefByDict;       
-    MemberSDict *sourceRefsDict;        
-    QList<ListItemInfo> *xrefListItems; 
-    GroupList *partOfGroups;            
+    MemberSDict *sourceRefByDict;
+    MemberSDict *sourceRefsDict;
+    QList<ListItemInfo> *xrefListItems;
+    GroupList *partOfGroups;
 
     DocInfo   *details;    // not exported
     DocInfo   *inbodyDocs; // not exported
@@ -89,11 +89,11 @@ class DefinitionImpl
     QCString id; // clang unique id
 };
 
-DefinitionImpl::DefinitionImpl() 
-  : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0), 
+DefinitionImpl::DefinitionImpl()
+  : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0),
     xrefListItems(0), partOfGroups(0),
-    details(0), inbodyDocs(0), brief(0), body(0), 
-    outerScope(0)
+    details(0), inbodyDocs(0), brief(0), body(0), hidden(FALSE), isArtificial(FALSE),
+    outerScope(0), lang(SrcLangExt_Unknown)
 {
 }
 
@@ -755,6 +755,7 @@ bool readCodeFragment(const char *fileName,
     {
       while ((c=fgetc(f))!='\n' && c!=EOF) /* skip */;
       lineNr++; 
+      if (found && c == '\n') c = '\0';
     }
     if (!feof(f))
     {
@@ -763,7 +764,7 @@ bool readCodeFragment(const char *fileName,
       while (lineNr<=endLine && !feof(f) && !found)
       {
         int pc=0;
-        while ((c=fgetc(f))!='{' && c!=':' && c!=EOF) 
+        while ((c=fgetc(f))!='{' && c!=':' && c!=EOF)  // } so vi matching brackets has no problem
         {
           //printf("parsing char `%c'\n",c);
           if (c=='\n') 
@@ -816,7 +817,7 @@ bool readCodeFragment(const char *fileName,
           result+=spaces;
         }
         // copy until end of line
-        result+=c;
+        if (c) result+=c;
         startLine=lineNr;
         if (c==':') 
         {
@@ -890,16 +891,17 @@ QCString Definition::getSourceFileBase() const
 
 QCString Definition::getSourceAnchor() const
 {
-  QCString anchorStr;
+  const int maxAnchorStrLen = 20;
+  char anchorStr[maxAnchorStrLen];
   if (m_impl->body && m_impl->body->startLine!=-1)
   {
     if (Htags::useHtags)
     {
-      anchorStr.sprintf("L%d",m_impl->body->startLine);
+      qsnprintf(anchorStr,maxAnchorStrLen,"L%d",m_impl->body->startLine);
     }
     else
     {
-      anchorStr.sprintf("l%05d",m_impl->body->startLine);
+      qsnprintf(anchorStr,maxAnchorStrLen,"l%05d",m_impl->body->startLine);
     }
   }
   return anchorStr;
@@ -1163,8 +1165,9 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
-          QCString lineStr,anchorStr;
-          anchorStr.sprintf("l%05d",md->getStartBodyLine());
+          const int maxLineNrStr = 10;
+          char anchorStr[maxLineNrStr];
+          qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
           //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
           ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
           ol.popGeneratorState();

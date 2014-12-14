@@ -382,9 +382,9 @@ int Store::read(char *buf,uint size)
 void Store::printFreeList()
 {
   printf("FreeList: ");
-  portable_off_t pos = m_head->pos;
-  while (pos)
+  while (m_head)
   {
+    portable_off_t pos = m_head->pos;
     printf("%x ",(int)pos);
     m_head = m_head->next;
   }

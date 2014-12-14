@@ -738,7 +738,7 @@ MemberDef::MemberDef(const char *df,int dl,int dc,
                      const char *t,const char *na,const char *a,const char *e,
                      Protection p,Specifier v,bool s,Relationship r,MemberType mt,
                      const ArgumentList *tal,const ArgumentList *al
-                    ) : Definition(df,dl,dc,removeRedundantWhiteSpace(na))
+                    ) : Definition(df,dl,dc,removeRedundantWhiteSpace(na)), visited(FALSE)
 {
   //printf("MemberDef::MemberDef(%s)\n",na);
   m_impl = new MemberDefImpl;
@@ -748,7 +748,7 @@ MemberDef::MemberDef(const char *df,int dl,int dc,
   m_isDestructorCached  = 0;
 }
 
-MemberDef::MemberDef(const MemberDef &md) : Definition(md)
+MemberDef::MemberDef(const MemberDef &md) : Definition(md), visited(FALSE)
 {
   m_impl = new MemberDefImpl;
   m_isLinkableCached    = 0;
@@ -3507,7 +3507,7 @@ void MemberDef::addListReference(Definition *)
     addRefItem(xrefItems,
         qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
-        getOutputFileBase()+"#"+anchor(),memName,memArgs);
+        getOutputFileBase()+"#"+anchor(),memName,memArgs,pd);
   }
 }
 

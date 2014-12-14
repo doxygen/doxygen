@@ -33,16 +33,35 @@
 #include "config.h"
 #include "docparser.h"
 
-MemberList::MemberList()
+MemberList::MemberList() : m_listType(MemberListType_pubMethods)
 {
   memberGroupList=0;
+  m_varCnt=0;
+  m_funcCnt=0;
+  m_enumCnt=0;
+  m_enumValCnt=0;
+  m_typeCnt=0;
+  m_protoCnt=0;
+  m_defCnt=0;
+  m_friendCnt=0;
   m_numDecMembers=-1; // special value indicating that value needs to be computed
   m_numDocMembers=-1; // special value indicating that value needs to be computed
+  m_inGroup=FALSE;
+  m_inFile=FALSE;
+  m_needsSorting=FALSE;
 }
 
 MemberList::MemberList(MemberListType lt) : m_listType(lt)
 {
   memberGroupList=0;
+  m_varCnt=0;
+  m_funcCnt=0;
+  m_enumCnt=0;
+  m_enumValCnt=0;
+  m_typeCnt=0;
+  m_protoCnt=0;
+  m_defCnt=0;
+  m_friendCnt=0;
   m_numDecMembers=-1; // special value indicating that value needs to be computed
   m_numDocMembers=-1; // special value indicating that value needs to be computed
   m_inGroup=FALSE;

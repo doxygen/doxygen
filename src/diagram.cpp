@@ -1337,7 +1337,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     QCString epstopdfArgs(4096);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
-    //printf("Converting eps using `%s'\n",epstopdfCmd.data());
+    //printf("Converting eps using `%s'\n",epstopdfArgs.data());
     portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {

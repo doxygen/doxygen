@@ -102,7 +102,7 @@ pdf: docs
 DISTFILES =  Doxyfile vhdlparser libmd5 addon tmake doc examples bin lib objects testing \
              qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
              Makefile.win_make.in INSTALL LANGUAGE.HOWTO LICENSE PLATFORMS \
-             VERSION README.md packages winbuild jquery
+             VERSION README.md packages winbuild jquery templates
 
 archive: clean
 	tar zcvf dx`date +%y%m%d`.tgz $(DISTFILES)

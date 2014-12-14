@@ -100,6 +100,9 @@
 #include "context.h"
 #include "fileparser.h"
 
+// provided by the generated file resources.cpp
+extern void initResources();
+
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
     EntryNavListIterator eli(*var->children()); \
@@ -5218,7 +5221,7 @@ static void addListReferences()
       addRefItem(xrefItems,
           name,
           theTranslator->trPage(TRUE,TRUE),
-          name,pd->title(),0);
+          name,pd->title(),0,0);
     }
   }
 
@@ -5235,7 +5238,7 @@ static void addListReferences()
     addRefItem(xrefItems,
         name,
         theTranslator->trDir(TRUE,TRUE),
-        name,dd->displayName(),0);
+        name,dd->displayName(),0,0);
   }
 }
 
@@ -8626,7 +8629,7 @@ static void buildPageList(EntryNav *rootNav)
                "page",
                name,
                title,
-               0
+               0,0
                );
 
     rootNav->releaseEntry();
@@ -9159,6 +9162,33 @@ static void readTagFile(Entry *root,const char *tl)
 }
 
 //----------------------------------------------------------------------------
+static void copyLatexStyleSheet()
+{
+  QStrList latexExtraStyleSheet = Config_getList("LATEX_EXTRA_STYLESHEET");
+  for (uint i=0; i<latexExtraStyleSheet.count(); ++i)
+  {
+    QCString fileName(latexExtraStyleSheet.at(i));
+    if (!fileName.isEmpty())
+    {
+      QFileInfo fi(fileName);
+      if (!fi.exists())
+      {
+        err("Style sheet '%s' specified by LATEX_EXTRA_STYLESHEET does not exist!\n",fileName.data());
+      }
+      else
+      {
+        QCString destFileName = Config_getString("LATEX_OUTPUT")+"/"+fi.fileName().data();
+        if (!checkExtension(fi.fileName().data(), latexStyleExtension))
+        {
+          destFileName += latexStyleExtension;
+        }
+        copyFile(fileName, destFileName);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
   QCString &htmlStyleSheet = Config_getString("HTML_STYLESHEET");
@@ -9247,8 +9277,9 @@ static ParserInterface *getParserForFile(const char *fn)
 {
   QCString fileName=fn;
   QCString extension;
+  int sep = fileName.findRev('/');
   int ei = fileName.findRev('.');
-  if (ei!=-1)
+  if (ei!=-1 && (sep==-1 || ei>sep)) // matches dir/file.ext but not dir.1/file
   {
     extension=fileName.right(fileName.length()-ei);
   }
@@ -9914,6 +9945,7 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 void initDoxygen()
 {
+  initResources();
   const char *lang = portable_getenv("LC_ALL");
   if (lang) portable_setenv("LANG",lang);
   setlocale(LC_ALL,"");
@@ -10883,7 +10915,7 @@ void parseInput()
 
   QCString htmlOutput;
   bool &generateHtml = Config_getBool("GENERATE_HTML");
-  if (generateHtml)
+  if (generateHtml || g_useOutputTemplate /* TODO: temp hack */)
     htmlOutput = createOutputDirectory(outputDirectory,"HTML_OUTPUT","/html");
 
   QCString docbookOutput;
@@ -11360,6 +11392,7 @@ void generateOutput()
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
 
+    copyLatexStyleSheet();
     // copy static stuff
     copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
   }

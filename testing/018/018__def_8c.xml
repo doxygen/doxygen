@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="018__def_8c" kind="file">
+  <compounddef id="018__def_8c" kind="file" language="C++">
     <compoundname>018_def.c</compoundname>
     <sectiondef kind="define">
       <memberdef kind="define" id="018__def_8c_1a824c99cb152a3c2e9111a2cb9c34891e" prot="public" static="no">

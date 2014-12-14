@@ -178,14 +178,14 @@ class TextGeneratorDocbookImpl : public TextGeneratorIntf
 class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
-    DocbookCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1),
+    DocbookCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1), m_col(0),
     m_insideCodeLine(FALSE), m_insideSpecialHL(FALSE) {}
     virtual ~DocbookCodeGenerator() {}
 
     void codify(const char *text)
     {
       Docbook_DB(("(codify \"%s\")\n",text));
-      writeDocbookCodeString(m_t,text,col);
+      writeDocbookCodeString(m_t,text,m_col);
     }
     void writeCodeLink(const char *ref,const char *file,
         const char *anchor,const char *name,
@@ -193,7 +193,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     {
       Docbook_DB(("(writeCodeLink)\n"));
       writeDocbookLink(m_t,ref,file,anchor,name,tooltip);
-      col+=strlen(name);
+      m_col+=strlen(name);
     }
     void writeTooltip(const char *, const DocLinkInfo &, const char *,
                       const char *, const SourceLinkInfo &, const SourceLinkInfo &
@@ -217,7 +217,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
         }
       }
       m_insideCodeLine=TRUE;
-      col=0;
+      m_col=0;
     }
     void endCodeLine()
     {
@@ -255,7 +255,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
       {
         m_refId=compId;
         if (anchorId) m_refId+=(QCString)"_1"+anchorId;
-        m_isMemberRef = anchorId!=0;
         if (extRef) m_external=extRef;
       }
     }
@@ -275,8 +274,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     QCString m_refId;
     QCString m_external;
     int m_lineNumber;
-    bool m_isMemberRef;
-    int col;
+    int m_col;
     bool m_insideCodeLine;
     bool m_insideSpecialHL;
 };

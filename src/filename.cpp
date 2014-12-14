@@ -45,9 +45,12 @@ void FileName::generateDiskNames()
   {
     // skip references
     for (it.toFirst();(fd=it.current()) && fd->isReference();++it) { }
-    // name if unique, so diskname is simply the name
-    //printf("!!!!!!!! Unique disk name=%s for fd=%s\n",name.data(),fd->diskname.data());
-    fd->m_diskName=name;
+    if (fd)
+    {
+      // name if unique, so diskname is simply the name
+      //printf("!!!!!!!! Unique disk name=%s for fd=%s\n",name.data(),fd->diskname.data());
+      fd->m_diskName=name;
+    }
   }
   else if (count>1) // multiple occurrences of the same file name
   {
@@ -57,28 +60,31 @@ void FileName::generateDiskNames()
     while (!found) // search for the common prefix of all paths
     {
       for (it.toFirst();(fd=it.current()) && fd->isReference();++it) { }
-      char c=fd->m_path.at(i);
-      if (c=='/') j=i; // remember last position of dirname
-      ++it;
-      while ((fd=it.current()) && !found)
+      if (fd)
       {
-        if (!fd->isReference())
-        {
-          //printf("i=%d j=%d fd->path=`%s' fd->name=`%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
-          if (i==(int)fd->m_path.length())
-          {
-            //warning("Input file %s found multiple times!\n"
-            //        "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
-            found=TRUE;
-          }
-          else if (fd->m_path[i]!=c)
-          {
-            found=TRUE;
-          }
-        }
+        char c=fd->m_path.at(i);
+        if (c=='/') j=i; // remember last position of dirname
         ++it;
+        while ((fd=it.current()) && !found)
+        {
+          if (!fd->isReference())
+          {
+            //printf("i=%d j=%d fd->path=`%s' fd->name=`%s'\n",i,j,fd->path.left(i).data(),fd->name().data());
+            if (i==(int)fd->m_path.length())
+            {
+              //warning("Input file %s found multiple times!\n"
+              //        "         The generated documentation for this file may not be correct!\n",fd->absFilePath().data());
+              found=TRUE;
+            }
+            else if (fd->m_path[i]!=c)
+            {
+              found=TRUE;
+            }
+          }
+          ++it;
+        }
+        i++;
       }
-      i++;
     }
     for (it.toFirst();(fd=it.current());++it)
     {

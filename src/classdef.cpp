@@ -3879,7 +3879,8 @@ void ClassDef::addListReferences()
                                       : theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),
              displayName(),
-             0
+             0,
+             this
             );
   }
   if (m_impl->memberGroupSDict)
@@ -4234,7 +4235,13 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QC
   MemberList * ml = getMemberList(lt);
   MemberList * ml2 = getMemberList((MemberListType)lt2);
   if (getLanguage()==SrcLangExt_VHDL) // use specific declarations function
-  {
+  { 
+    static ClassDef *cdef;
+    if (cdef!=this)
+    { // only one inline link
+      VhdlDocGen::writeInlineClassLink(this,ol);
+      cdef=this;
+    }
     if (ml)
     {
       VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0,0);

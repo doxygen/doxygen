@@ -140,6 +140,7 @@ CommandMap cmdMap[] =
   { "diafile",       CMD_DIAFILE },
   { "--",            CMD_NDASH },
   { "---",           CMD_MDASH },
+  { "_setscope",     CMD_SETSCOPE },
   { 0,               0 },
 };
 

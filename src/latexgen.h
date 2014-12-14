@@ -22,6 +22,8 @@
 
 class QFile;
 
+static const char *latexStyleExtension = ".sty";
+
 /** Generator for LaTeX output. */
 class LatexGenerator : public OutputGenerator
 {

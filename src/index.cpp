@@ -2158,7 +2158,8 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
                             const LetterToIndexMap<MemberIndexList> &memberLists,
                             DefinitionIntf::DefType type)
 {
-  ASSERT((int)type<3);
+  int index = (int)type;
+  ASSERT(index<3);
 
   typedef void (*writeLinkForMember_t)(OutputList &ol,MemberDef *md,const char *separator,
                                    QCString &prevNamespaceName);
@@ -2238,8 +2239,11 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
         sep = ", ";
         // link to class for other members with the same name
       }
-      // write the link for the specific list type
-      writeLinkForMemberMap[(int)type](ol,md,sep,prevDefName);
+      if (index<3)
+      {
+        // write the link for the specific list type
+        writeLinkForMemberMap[index](ol,md,sep,prevDefName);
+      }
     }
   }
   if (!firstItem) ol.endItemListItem();

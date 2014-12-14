@@ -18,7 +18,7 @@
 
 static int g_dirCount=0;
 
-DirDef::DirDef(const char *path) : Definition(path,1,1,path)
+DirDef::DirDef(const char *path) : Definition(path,1,1,path), visited(FALSE)
 {
   bool fullPathNames = Config_getBool("FULL_PATH_NAMES");
   // get display name (stipping the paths mentioned in STRIP_FROM_PATH)

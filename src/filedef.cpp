@@ -327,6 +327,13 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     //printf("Writing source ref for file %s\n",name().data());
     if (Config_getBool("SOURCE_BROWSER")) 
     {
+      //if Latex enabled and LATEX_SOURCE_CODE isn't -> skip, bug_738548
+      ol.pushGeneratorState();
+      if (ol.isEnabled(OutputGenerator::Latex) && !Config_getBool("LATEX_SOURCE_CODE"))
+      { 
+        ol.disable(OutputGenerator::Latex);
+      }
+
       ol.startParagraph();
       QCString refText = theTranslator->trDefinedInSourceFile();
       int fileMarkerPos = refText.find("@0");
@@ -339,6 +346,8 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
               refText.length()-fileMarkerPos-2)); // text right from marker 2
       }
       ol.endParagraph();
+      //Restore settings, bug_738548
+      ol.popGeneratorState();
     }
     ol.endTextBlock();
   }
@@ -1400,6 +1409,7 @@ void FileDef::addListReferences()
                getOutputFileBase(),
                theTranslator->trFile(TRUE,TRUE),
                getOutputFileBase(),name(),
+               0,
                0
               );
   }
@@ -1847,7 +1857,7 @@ void FileDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCS
     }
     else
     {
-      ml->writeDeclarations(ol,0,0,this,0,title,0,definitionType());
+      ml->writeDeclarations(ol,0,0,this,0,title,0);
     }
   }
 }

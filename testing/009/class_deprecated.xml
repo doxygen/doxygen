@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="class_deprecated" kind="class" prot="public">
+  <compounddef id="class_deprecated" kind="class" language="C++" prot="public">
     <compoundname>Deprecated</compoundname>
     <sectiondef kind="public-func">
       <memberdef kind="function" id="class_deprecated_1a1d5f6803e72c625727e7083d1722dbf9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
