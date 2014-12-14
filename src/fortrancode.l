@@ -757,7 +757,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           codifyLines(yytext);
                                           endFontClass();
                                         }
-<Start>"end"({BS}{FLOW})/[ \t\n]       { // list is a bit long as not all have possible end
+<Start>{BS}"end"({BS}{FLOW})/[ \t\n]       { // list is a bit long as not all have possible end
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
