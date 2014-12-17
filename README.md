@@ -37,6 +37,8 @@ Developers
   * Quick install see (./INSTALL) 
   * else http://www.doxygen.org/manual/install.html
 
+* Project stats: https://www.openhub.net/p/doxygen
+
 Issues, bugs, requests, ideas
 ----------------------------------
 Use the bug tracker to report bugs:
