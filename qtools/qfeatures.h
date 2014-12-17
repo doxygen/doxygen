@@ -637,7 +637,7 @@
 #   define QT_NO_VBUTTONGROUP
 #endif
 /*!
-  Horizonal box layout widgets
+  Horizontal box layout widgets
 */
 #ifdef QT_NO_FRAME
 # define QT_NO_HBOX

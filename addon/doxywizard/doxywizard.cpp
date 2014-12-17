@@ -10,7 +10,7 @@
 
 #define MAX_RECENT_FILES 10
 
-const int messageTimeout = 5000; //!< status bar message timeout in millisec.
+const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
 MainWindow &MainWindow::instance()
 {
@@ -78,7 +78,7 @@ MainWindow::MainWindow()
   runLayout->addWidget(showSettings);
   runLayout->addWidget(m_saveLog);
 
-  // output produced by doxygen
+  // output produced by Doxygen
   runTabLayout->addLayout(runLayout);
   runTabLayout->addWidget(new QLabel(tr("Output produced by doxygen")));
   QGridLayout *grid = new QGridLayout;
@@ -427,7 +427,7 @@ void MainWindow::runDoxygen()
     qDebug() << tr("Doxygen path: ") << doxygenPath;
     if ( !QFile(doxygenPath + QString::fromAscii("doxygen")).exists() ) 
     {
-      // No doygen binary in the resources, if there is a system doxygen binary, use that instead
+      // No Doxygen binary in the resources, if there is a system Doxygen binary, use that instead
       if ( QFile(QString::fromAscii("/usr/local/bin/doxygen")).exists() )
       {
         doxygenPath = QString::fromAscii("/usr/local/bin/");
