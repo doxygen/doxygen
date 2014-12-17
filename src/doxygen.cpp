@@ -1010,6 +1010,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
   while (i<level)
   {
     int idx=getScopeFragment(name,p,&l);
+    if (idx==-1) return prevScope;
     QCString nsName = name.mid(idx,l);
     if (nsName.isEmpty()) return prevScope;
     if (!fullScope.isEmpty()) fullScope+="::";
