@@ -4716,6 +4716,7 @@ bool resolveLink(/* in */ const char *scName,
   *resContext=0;
 
   QCString linkRef=lr;
+  QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
   //printf("ResolveLink linkRef=%s inSee=%d\n",lr,inSeeBlock);
   FileDef  *fd;
   GroupDef *gd;
@@ -4767,6 +4768,12 @@ bool resolveLink(/* in */ const char *scName,
     return TRUE;
   }
   else if ((cd=getClass(linkRef))) // class link
+  {
+    *resContext=cd;
+    resAnchor=cd->anchor();
+    return TRUE;
+  }
+  else if ((cd=getClass(linkRefWithoutTemplates))) // C#/Java generic class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();

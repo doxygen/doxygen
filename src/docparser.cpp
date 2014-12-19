@@ -232,6 +232,23 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
 
 //---------------------------------------------------------------------------
 
+// replaces { with < and } with > inside string s
+static void unescapeCRef(QCString &s)
+{
+  char *p = s.data();
+  if (p)
+  {
+    char c;
+    while ((c=*p))
+    {
+      if (c=='{') c='<'; else if (c=='}') c='>';
+      *p++=c;
+    }
+  }
+}
+
+//---------------------------------------------------------------------------
+
 /*! search for an image in the imageNameDict and if found
  * copies the image to the output directory (which depends on the \a type
  * parameter).
@@ -6045,6 +6062,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         QCString exceptName;
         if (findAttribute(tagHtmlAttribs,"cref",&exceptName))
         {
+          unescapeCRef(exceptName);
           retval = handleParamSection(exceptName,DocParamSect::Exception,TRUE);
         }
         else
@@ -6089,6 +6107,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         //printf("XML_SEE: empty tag=%d\n",g_token->emptyTag);
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
+          unescapeCRef(cref);
           if (g_token->emptyTag) // <see cref="..."/> style
           {
             bool inSeeBlock = g_inSeeBlock;
@@ -6123,6 +6142,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         QCString cref;
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
+          unescapeCRef(cref);
           // Look for an existing "see" section
           DocSimpleSect *ss=0;
           QListIterator<DocNode> cli(m_children);
