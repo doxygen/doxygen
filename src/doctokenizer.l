@@ -49,6 +49,7 @@ static int g_inputPos = 0;
 static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;
+static int g_sharpCount=0;
 
 // context for section finding phase
 static Definition  *g_definition;
@@ -437,6 +438,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 %x St_Anchor
 %x St_Snippet
 %x St_SetScope
+%x St_SetScopeEnd
 
 %x St_Sections
 %s St_SecLabel1
@@ -1018,7 +1020,28 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
                          g_token->name = g_token->name.stripWhiteSpace();
 			 return TK_WORD;
   		       }
+<St_SetScope>{SCOPEMASK}"<" {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         g_sharpCount=1;
+                         BEGIN(St_SetScopeEnd);
+                       }
 <St_SetScope>{BLANK}   {
+                       }
+<St_SetScopeEnd>"<"    {
+                         g_token->name += yytext;
+                         g_sharpCount++;
+                       }
+<St_SetScopeEnd>">"    {
+                         g_token->name += yytext;
+                         g_sharpCount--;
+                         if (g_sharpCount<=0)
+                         {
+                           return TK_WORD;
+                         }
+                       }
+<St_SetScopeEnd>.      {
+                         g_token->name += yytext;
                        }
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          g_token->name = yytext;
