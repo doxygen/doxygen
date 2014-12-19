@@ -9329,6 +9329,10 @@ static void parseFile(ParserInterface *parser,
     msg("Reading %s...\n",fn);
     readInputFile(fileName,preBuf);
   }
+  if (preBuf.data() && preBuf.curPos()>0 && *(preBuf.data()+preBuf.curPos()-1)!='\n')
+  {
+    preBuf.addChar('\n'); // add extra newline to help parser
+  }
 
   BufStr convBuf(preBuf.curPos()+1024);
 
