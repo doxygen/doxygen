@@ -232,7 +232,8 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
 
 //---------------------------------------------------------------------------
 
-// replaces { with < and } with > inside string s
+// replaces { with < and } with > and also
+// replaces &gt; with < and &gt; with > within string s
 static void unescapeCRef(QCString &s)
 {
   char *p = s.data();
@@ -245,6 +246,9 @@ static void unescapeCRef(QCString &s)
       *p++=c;
     }
   }
+
+  s=substitute(s,"&lt;","<");
+  s=substitute(s,"&gt;",">");
 }
 
 //---------------------------------------------------------------------------
