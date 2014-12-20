@@ -2686,6 +2686,16 @@ EXTRA_PACKAGES=times
 ]]>
       </docs>
     </option>
+    <option type='bool' id='RTF_SOURCE_CODE' defval='0' depends='GENERATE_RTF'>
+      <docs>
+<![CDATA[
+ If the \c RTF_SOURCE_CODE tag is set to \c YES then doxygen will include
+ source code with syntax highlighting in the RTF output.
+ <br>Note that which sources are shown also depends on other settings
+ such as \ref cfg_source_browser "SOURCE_BROWSER".
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Man' docs='Configuration options related to the man page output'>
     <option type='bool' id='GENERATE_MAN' defval='0'>
