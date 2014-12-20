@@ -483,7 +483,7 @@ class PrintDocVisitor : public DocVisitor
         case DocImage::Rtf:     printf("rtf"); break;
         case DocImage::DocBook: printf("docbook"); break;
       }
-      printf("\" width=%s height=%s>\n",img->width().data(),img->height().data());
+      printf("\" %s %s>\n",img->width().data(),img->height().data());
     }
     void visitPost(DocImage *) 
     {

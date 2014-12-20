@@ -202,6 +202,7 @@ class Mapper
 {
   public:
     int map(const char *n);
+    QString find(const int n);
     Mapper(const CommandMap *cm,bool caseSensitive);
   private:
     QDict<int> m_map;

@@ -404,6 +404,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 %x St_Para
 %x St_Comment
 %x St_Title
+%x St_Caption
 %x St_TitleN
 %x St_TitleQ
 %x St_TitleA
@@ -859,14 +860,18 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 <St_Msc>.              { /* msc text */
   			 g_token->verb+=yytext;
   		       }
-<St_PlantUMLOpt>\n     {
-                         g_token->sectionId=g_token->sectionId.stripWhiteSpace();
-                         BEGIN(St_PlantUML);
-                       }
-<St_PlantUMLOpt>["{}]   { // skip curly brackets or quotes around the optional image name
+<St_PlantUMLOpt>{BLANK}*"{"[^}]*"}"   { // skip curly brackets around the optional image name
+                         g_token->sectionId = yytext;
+                         g_token->sectionId = g_token->sectionId.stripWhiteSpace();
+			 g_token->sectionId = g_token->sectionId.left(g_token->sectionId.length()-1);
+			 g_token->sectionId = g_token->sectionId.right(g_token->sectionId.length()-1);
+			 g_token->sectionId = g_token->sectionId.stripWhiteSpace();
+                         return RetVal_OK;
                        }
 <St_PlantUMLOpt>.      {
-                         g_token->sectionId += yytext;
+                         g_token->sectionId = "";
+                         unput(*yytext);
+                         return RetVal_OK;
                        }
 <St_PlantUML>{CMD}"enduml"  {
                          return RetVal_OK;
@@ -875,6 +880,19 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 <St_PlantUML>\n        |
 <St_PlantUML>.         { /* plantuml text */
   			 g_token->verb+=yytext;
+  		       }
+<St_Caption>"\""       { // quoted title
+  			 BEGIN(St_TitleQ);
+                         return TK_WORD;
+  		       } 
+<St_Caption>[ \t]+     {
+                         g_token->name="";
+                         g_token->chars=yytext;
+  			 return TK_WHITESPACE;
+                       }
+<St_Caption>\n	       {
+                         unput(*yytext);
+  			 return 0;
   		       }
 <St_Title>"\""	       { // quoted title
   			 BEGIN(St_TitleQ);
@@ -946,10 +964,38 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
                          unput(*yytext);
   			 return 0;
                        }
+<St_Caption>{BLANK}*"min"{BLANK}* { // title special case min / max
+  			 g_token->name = "min";
+  			 BEGIN(St_TitleA);
+			 return TK_WORD;
+  		       }
+<St_Caption>{BLANK}*"max"{BLANK}* { // title special case min / max
+  			 g_token->name = "max";
+  			 BEGIN(St_TitleA);
+			 return TK_WORD;
+  		       }
+<St_Caption>{BLANK}*"width="{BLANK}* { // title attribute
+  			 g_token->name = yytext;
+			 g_token->name = g_token->name.stripWhiteSpace();
+  			 BEGIN(St_TitleV);
+  		       }
+<St_Caption>{BLANK}*"height="{BLANK}* { // title attribute
+  			 g_token->name = yytext;
+			 g_token->name = g_token->name.stripWhiteSpace();
+  			 BEGIN(St_TitleV);
+  		       }
+<St_TitleA>{BLANK}*"min"{BLANK}* { // title special case min / max
+  			 g_token->name = "min";
+			 return TK_WORD;
+  		       }
+<St_TitleA>{BLANK}*"max"{BLANK}* { // title special case min / max
+  			 g_token->name = "max";
+			 return TK_WORD;
+  		       }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
   			 g_token->name = yytext;
 			 g_token->name = g_token->name.left(
-			       g_token->name.find('=')).stripWhiteSpace();
+			 g_token->name.find('=')).stripWhiteSpace();
   			 BEGIN(St_TitleV);
   		       }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
@@ -957,6 +1003,10 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 			 BEGIN(St_TitleN);
 			 return TK_WORD;
   		       }
+<St_TitleV,St_TitleA>[ \t] {
+                         g_token->chars=yytext;
+  			 return TK_WHITESPACE;
+                       }
 <St_TitleV,St_TitleA>. {
   			 unput(*yytext);
   			 return 0;
@@ -1258,7 +1308,7 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 			 return TK_COMMAND;
                        }
 <*>.                   { 
-                         warn(g_fileName,yylineno,"Unexpected character `%s'",yytext); 
+                         warn(g_fileName,yylineno,"Unexpected character `%s'",yytext);
 		       }
 %%
 
@@ -1299,6 +1349,16 @@ void doctokenizerYYsetStatePara()
 void doctokenizerYYsetStateTitle()
 {
   BEGIN(St_Title);
+}
+
+void doctokenizerYYsetStateCaption()
+{
+  BEGIN(St_Caption);
+}
+
+void doctokenizerYYsetStateTitleAttr()
+{
+  BEGIN(St_TitleA);
 }
 
 void doctokenizerYYsetStateTitleAttrValue()
@@ -1375,11 +1435,17 @@ void doctokenizerYYsetStateMsc()
   BEGIN(St_Msc);
 }
 
-void doctokenizerYYsetStatePlantUML()
+void doctokenizerYYsetStatePlantUMLOpt()
 {
   g_token->verb="";
   g_token->sectionId="";
   BEGIN(St_PlantUMLOpt);
+}
+
+void doctokenizerYYsetStatePlantUML()
+{
+  g_token->verb="";
+  BEGIN(St_PlantUML);
 }
 
 void doctokenizerYYsetStateParam()

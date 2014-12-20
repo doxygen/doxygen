@@ -447,6 +447,11 @@ class DocVerbatim : public DocNode
     QCString relPath() const     { return m_relPath; }
     QCString language() const    { return m_lang; }
     bool isBlock() const         { return m_isBlock; }
+    bool hasCaption() const      { return !m_children.isEmpty(); }
+    QCString width() const       { return m_width; }
+    QCString height() const      { return m_height; }
+    const QList<DocNode> &children() const { return m_children; }
+    QList<DocNode> &children() { return m_children; }
 
   private:
     QCString  m_context;
@@ -457,6 +462,10 @@ class DocVerbatim : public DocNode
     QCString  m_relPath;
     QCString  m_lang;
     bool      m_isBlock;
+  public:
+    QCString  m_width;
+    QCString  m_height;
+    QList<DocNode> m_children;
 };
 
 
@@ -686,7 +695,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
   private:
     HtmlAttribList m_attribs;
     QCString  m_name;
-    Type     m_type;
+    Type      m_type;
     QCString  m_width;
     QCString  m_height;
     QCString  m_relPath;

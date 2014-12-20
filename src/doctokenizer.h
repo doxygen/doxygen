@@ -131,8 +131,10 @@ void doctokenizerYYpushContext();
 bool doctokenizerYYpopContext();
 int  doctokenizerYYlex();
 void doctokenizerYYsetStatePara();
+void doctokenizerYYsetStateCaption();
 void doctokenizerYYsetStateTitle();
 void doctokenizerYYsetStateTitleAttrValue();
+void doctokenizerYYsetStateTitleAttr();
 void doctokenizerYYsetStateCode();
 void doctokenizerYYsetStateXmlCode();
 void doctokenizerYYsetStateHtmlOnly();
@@ -162,5 +164,6 @@ void doctokenizerYYstartAutoList();
 void doctokenizerYYendAutoList();
 void doctokenizerYYsetStatePlantUML();
 void doctokenizerYYsetStateSetScope();
+void doctokenizerYYsetStatePlantUMLOpt();
 
 #endif

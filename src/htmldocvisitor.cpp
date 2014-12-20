@@ -325,6 +325,32 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
 }
 
 
+static void visitPreCaption(FTextStream &t, DocVerbatim *s)
+{
+  if (s->hasCaption())
+  { 
+    t << "<div class=\"caption\">" << endl;
+  }
+}
+
+
+static void visitPostCaption(FTextStream &t, DocVerbatim *s)
+{
+  if (s->hasCaption())
+  {
+    t << "</div>" << endl;
+  }
+}
+
+
+static void visitCaption(HtmlDocVisitor *parent, QList<DocNode> children)
+{
+  QListIterator<DocNode> cli(children);
+  DocNode *n;
+  for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
+}
+
+
 void HtmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
@@ -382,6 +408,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         static int dotindex = 1;
         QCString fileName(4096);
 
+        forceEndParagraph(s);
         fileName.sprintf("%s%d%s", 
             (Config_getString("HTML_OUTPUT")+"/inline_dotgraph_").data(), 
             dotindex++,
@@ -392,16 +419,21 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         {
           err("Could not open file %s for writing\n",fileName.data());
         }
-        file.writeBlock( s->text(), s->text().length() );
-        file.close();
+        else
+        {
+          file.writeBlock( s->text(), s->text().length() );
+          file.close();
 
-        forceEndParagraph(s);
-        m_t << "<div align=\"center\">" << endl;
-        writeDotFile(fileName,s->relPath(),s->context());
-        m_t << "</div>" << endl;
+          m_t << "<div align=\"center\">" << endl;
+          writeDotFile(fileName,s->relPath(),s->context());
+          visitPreCaption(m_t, s);
+          visitCaption(this, s->m_children);
+          visitPostCaption(m_t, s);
+          m_t << "</div>" << endl;
+
+          if (Config_getBool("DOT_CLEANUP")) file.remove();
+        }
         forceStartParagraph(s);
-
-        if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
       break;
     case DocVerbatim::Msc:
@@ -420,17 +452,24 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         {
           err("Could not open file %s.msc for writing\n",baseName.data());
         }
-        QCString text = "msc {";
-        text+=s->text();
-        text+="}";
+        else
+        {
+          QCString text = "msc {";
+          text+=s->text();
+          text+="}";
 
-        file.writeBlock( text, text.length() );
-        file.close();
+          file.writeBlock( text, text.length() );
+          file.close();
 
-        m_t << "<div align=\"center\">" << endl;
-        writeMscFile(baseName+".msc",s->relPath(),s->context());
-        if (Config_getBool("DOT_CLEANUP")) file.remove();
-        m_t << "</div>" << endl;
+          m_t << "<div align=\"center\">" << endl;
+          writeMscFile(baseName+".msc",s->relPath(),s->context());
+          visitPreCaption(m_t, s);
+          visitCaption(this, s->m_children);
+          visitPostCaption(m_t, s);
+          m_t << "</div>" << endl;
+
+          if (Config_getBool("DOT_CLEANUP")) file.remove();
+        }
         forceStartParagraph(s);
       }
       break;
@@ -442,6 +481,9 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         QCString baseName = writePlantUMLSource(htmlOutput,s->exampleFile(),s->text());
         m_t << "<div align=\"center\">" << endl;
         writePlantUMLFile(baseName,s->relPath(),s->context());
+        visitPreCaption(m_t, s);
+        visitCaption(this, s->m_children);
+        visitPostCaption(m_t, s);
         m_t << "</div>" << endl;
         forceStartParagraph(s);
       }
