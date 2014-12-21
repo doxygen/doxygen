@@ -747,6 +747,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 %x UseOnly
 %x Import
 %x Declaration
+%x DeclarationBinding
 %x DeclContLine
 %x Parameterlist
 %x String
@@ -974,6 +975,14 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                             generateLink(*g_code, yytext);
                                           }
 					}
+<Declaration>{BS}("=>"|"="){BS}                        { // Procedure binding
+            BEGIN(DeclarationBinding);
+            g_code->codify(yytext);
+          }
+<DeclarationBinding>{ID}                       { // Type bound procedure link
+                                          generateLink(*g_code, yytext);
+                                          yy_pop_state();
+          }
 <Declaration>[(]			{ // start of array specification
 					  bracketCount++;
 					  g_code->codify(yytext);
@@ -984,7 +993,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  g_code->codify(yytext);
 					}
 
-<Declaration>"&"                        { // continuation line
+<Declaration,DeclarationBinding>"&"                        { // continuation line
 					  g_code->codify(yytext);
                                           yy_push_state(YY_START);
 					  BEGIN(DeclContLine);					  
@@ -995,7 +1004,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                           yy_pop_state();
                                           YY_FTN_RESET
  				 	}
-<Declaration>"\n"                       { // end declaration line
+<Declaration,DeclarationBinding>"\n"                       { // end declaration line
 					  if (g_endComment)
             {
             g_endComment=FALSE;
@@ -1039,7 +1048,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
                                         }
 
  /*-------- comments ---------------------------------------------------*/
-<Start>\n?{BS}"!>"|"!<"                 { // start comment line or comment block
+<Start,Declaration,DeclarationBinding>\n?{BS}"!>"|"!<"                 { // start comment line or comment block
                                           if (yytext[0] == '\n')
                                           {
                                             yy_old_start = 0;
@@ -1052,7 +1061,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
 					  BEGIN(DocBlock);
                                           docBlock=yytext;
 					}
-<Declaration>{BS}"!<"                   { // start comment line or comment block
+<Declaration,DeclarationBinding>{BS}"!<"                   { // start comment line or comment block
                                           yy_push_state(YY_START);
 					  BEGIN(DocBlock);
                                           docBlock=yytext;
