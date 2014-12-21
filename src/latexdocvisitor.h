@@ -164,7 +164,7 @@ class LatexDocVisitor : public DocVisitor
                  const QCString &anchor);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,const bool inl);
     void endDotFile(bool hasCaption);
 
     void startMscFile(const QCString &fileName,const QCString &width,
