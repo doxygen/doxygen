@@ -247,9 +247,9 @@ QCString QCString::right( uint len ) const
 
 QCString QCString::mid( uint index, uint len) const
 {
-  int slen = length();
+  uint slen = (uint)length();
   if (len==0xffffffff) len = slen-index;
-  if (isEmpty() || (int)index>=slen || len==0)
+  if (isEmpty() || index>=slen || len==0)
   {
     return QCString();
   }

@@ -232,6 +232,27 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
 
 //---------------------------------------------------------------------------
 
+// replaces { with < and } with > and also
+// replaces &gt; with < and &gt; with > within string s
+static void unescapeCRef(QCString &s)
+{
+  char *p = s.data();
+  if (p)
+  {
+    char c;
+    while ((c=*p))
+    {
+      if (c=='{') c='<'; else if (c=='}') c='>';
+      *p++=c;
+    }
+  }
+
+  s=substitute(s,"&lt;","<");
+  s=substitute(s,"&gt;",">");
+}
+
+//---------------------------------------------------------------------------
+
 /*! search for an image in the imageNameDict and if found
  * copies the image to the output directory (which depends on the \a type
  * parameter).
@@ -1027,11 +1048,11 @@ static void handleUnclosedStyleCommands()
   }
 }
 
-static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
+static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignoreAutoLinkFlag=FALSE)
 {
   QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
   static bool autolinkSupport = Config_getBool("AUTOLINK_SUPPORT");
-  if (!autolinkSupport) // no autolinking -> add as normal word
+  if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
     children.append(new DocWord(parent,name));
     return;
@@ -1113,7 +1134,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     // special case, where matching Foo: fails to be an Obj-C reference, 
     // but Foo itself might be linkable.
     g_token->name=g_token->name.left(len-1);
-    handleLinkedWord(parent,children);
+    handleLinkedWord(parent,children,ignoreAutoLinkFlag);
     children.append(new DocWord(parent,":"));
   }
   else if (!g_insideHtmlLink && (cd=getClass(g_token->name+"-p")))
@@ -6045,6 +6066,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         QCString exceptName;
         if (findAttribute(tagHtmlAttribs,"cref",&exceptName))
         {
+          unescapeCRef(exceptName);
           retval = handleParamSection(exceptName,DocParamSect::Exception,TRUE);
         }
         else
@@ -6089,12 +6111,13 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         //printf("XML_SEE: empty tag=%d\n",g_token->emptyTag);
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
+          unescapeCRef(cref);
           if (g_token->emptyTag) // <see cref="..."/> style
           {
             bool inSeeBlock = g_inSeeBlock;
             g_token->name = cref;
             g_inSeeBlock = TRUE;
-            handleLinkedWord(this,m_children);
+            handleLinkedWord(this,m_children,TRUE);
             g_inSeeBlock = inSeeBlock;
           }
           else // <see cref="...">...</see> style
@@ -6123,6 +6146,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         QCString cref;
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
+          unescapeCRef(cref);
           // Look for an existing "see" section
           DocSimpleSect *ss=0;
           QListIterator<DocNode> cli(m_children);

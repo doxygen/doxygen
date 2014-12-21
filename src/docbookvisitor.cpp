@@ -1028,6 +1028,8 @@ void DocbookDocVisitor::visitPre(DocParamSect *s)
   }
   m_t << "                        </title>" << endl;
   m_t << "                        <tgroup cols=\"2\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
+  m_t << "                        <colspec colwidth=\"1*\"/>" << endl;
+  m_t << "                        <colspec colwidth=\"4*\"/>" << endl;
   m_t << "                        <tbody>" << endl;
 }
 

@@ -1011,7 +1011,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
   }
-  if (g_nestingCount>0 || (YY_START==CComment && g_lang!=SrcLangExt_Markdown))
+  if (g_nestingCount>0 && g_lang!=SrcLangExt_Markdown)
   {
     QCString tmp= "(probable line reference: ";
     bool first = TRUE;

@@ -126,7 +126,7 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
+    void writeLineNumber(const char *,const char *,const char *,int l) { t << QString("%1").arg(l,5) << " "; }
     void startCodeLine(bool) { col=0; }
     void endCodeLine() { lineBreak(); }
     void startEmphasis() { t << "{\\i ";  }
@@ -277,6 +277,7 @@ class RTFGenerator : public OutputGenerator
     void incrementIndentLevel();
     void decrementIndentLevel();
     int  col;
+    bool m_prettyCode;
 
     bool m_bstartedBody;  // has startbody been called yet?
     int  m_listLevel; // // RTF does not really have a addative indent...manually set list level.

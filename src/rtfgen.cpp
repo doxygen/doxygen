@@ -66,6 +66,7 @@ RTFGenerator::RTFGenerator() : OutputGenerator()
   m_bstartedBody = FALSE;
   m_omitParagraph = FALSE;
   m_numCols = 0;
+  m_prettyCode=Config_getBool("RTF_SOURCE_CODE");
 }
 
 RTFGenerator::~RTFGenerator()
@@ -539,6 +540,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
 {
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+
   switch (is)
   {
     case isTitlePageStart:
@@ -810,6 +813,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
                 t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
                 t << fd->getOutputFileBase();
                 t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
+                {
+                  t << "\\par " << rtf_Style_Reset << endl;
+                  t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"" << fd->getSourceFileBase() << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+                }
                 isFirst=FALSE;
               }
               else
@@ -819,6 +827,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
                 t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
                 t << fd->getOutputFileBase();
                 t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
+                {
+                  t << "\\par " << rtf_Style_Reset << endl;
+                  t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"" << fd->getSourceFileBase() << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+                }
               }
             }
           }

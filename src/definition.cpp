@@ -911,6 +911,7 @@ QCString Definition::getSourceAnchor() const
 void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
+  static bool rtfSourceCode = Config_getBool("RTF_SOURCE_CODE");
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
   QCString fn = getSourceFileBase();
@@ -930,13 +931,16 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         // write text left from linePos marker
         ol.parseText(refText.left(lineMarkerPos)); 
         ol.pushGeneratorState();
-        ol.disable(OutputGenerator::RTF); 
         ol.disable(OutputGenerator::Man); 
         if (!latexSourceCode)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write line link (HTML, LaTeX optionally)
+        if (!rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
+        }
+        // write line link (HTML, LaTeX optionally, RTF optionally)
         ol.writeObjectLink(0,fn,anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -944,7 +948,11 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write normal text (Man/RTF, Latex optionally)
+        if (rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
+        }
+        // write normal text (Man, Latex optionally, RTF optionally)
         ol.docify(lineStr);
         ol.popGeneratorState();
         
@@ -953,13 +961,16 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
               fileMarkerPos-lineMarkerPos-2));
 
         ol.pushGeneratorState();
-        ol.disable(OutputGenerator::RTF); 
         ol.disable(OutputGenerator::Man); 
         if (!latexSourceCode)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write file link (HTML, LaTeX optionally)
+        if (!rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
+        }
+        // write file link (HTML, LaTeX optionally, RTF optionally)
         ol.writeObjectLink(0,fn,0,m_impl->body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -967,7 +978,11 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write normal text (Man/RTF, Latex optionally)
+        if (rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
+        }
+        // write normal text (Man, Latex optionally, RTF optionally)
         ol.docify(m_impl->body->fileDef->name());
         ol.popGeneratorState();
         
@@ -980,11 +995,14 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         // write text left from file marker
         ol.parseText(refText.left(fileMarkerPos)); 
         ol.pushGeneratorState();
-        ol.disable(OutputGenerator::RTF); 
         ol.disable(OutputGenerator::Man); 
         if (!latexSourceCode)
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (!rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
         }
         // write file link (HTML only)
         ol.writeObjectLink(0,fn,0,m_impl->body->fileDef->name());
@@ -994,7 +1012,11 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         {
           ol.disable(OutputGenerator::Latex);
         }
-        // write normal text (Latex/Man only)
+        if (rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
+        }
+        // write normal text (RTF/Latex/Man only)
         ol.docify(m_impl->body->fileDef->name());
         ol.popGeneratorState();
         
@@ -1003,11 +1025,14 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
               lineMarkerPos-fileMarkerPos-2)); 
 
         ol.pushGeneratorState();
-        ol.disable(OutputGenerator::RTF); 
         ol.disable(OutputGenerator::Man); 
         if (!latexSourceCode)
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (!rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
         }
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
@@ -1017,6 +1042,10 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         if (latexSourceCode) 
         {
           ol.disable(OutputGenerator::Latex);
+        }
+        if (rtfSourceCode)
+        {
+          ol.disable(OutputGenerator::RTF);
         }
         // write normal text (Latex/Man only)
         ol.docify(lineStr);
@@ -1107,6 +1136,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
   static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE"); 
+  static bool rtfSourceCode   = Config_getBool("RTF_SOURCE_CODE");
   static bool sourceBrowser   = Config_getBool("SOURCE_BROWSER");
   static bool refLinkSource   = Config_getBool("REFERENCES_LINK_SOURCE");
   ol.pushGeneratorState();
@@ -1159,11 +1189,14 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           ol.pushGeneratorState();
           //ol.disableAllBut(OutputGenerator::Html);
 
-          ol.disable(OutputGenerator::RTF); 
           ol.disable(OutputGenerator::Man); 
           if (!latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
+          }
+          if (!rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
           }
           const int maxLineNrStr = 10;
           char anchorStr[maxLineNrStr];
@@ -1179,6 +1212,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           {
             ol.disable(OutputGenerator::Latex);
           }
+          if (!rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
+          }
           ol.docify(name);
           ol.popGeneratorState();
         }
@@ -1187,11 +1224,14 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           // for HTML write a real link
           ol.pushGeneratorState();
           //ol.disableAllBut(OutputGenerator::Html); 
-          ol.disable(OutputGenerator::RTF); 
           ol.disable(OutputGenerator::Man); 
           if (!latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
+          }
+          if (!rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
           }
 
           ol.writeObjectLink(md->getReference(),
@@ -1205,6 +1245,10 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
           if (latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
+          }
+          if (rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
           }
           ol.docify(name);
           ol.popGeneratorState();
