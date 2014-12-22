@@ -1333,9 +1333,6 @@ void Definition::addSourceReferencedBy(MemberDef *md)
 
 void Definition::addSourceReferences(MemberDef *md)
 {
-  QCString name  = md->name();
-  QCString scope = md->getScopeString();
-
   if (md)
   {
     QCString name  = md->name();
