@@ -2576,6 +2576,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   CiteInfo *cite = Doxygen::citeDict->find(target);
+  //printf("cite=%p text='%s' numBibFiles=%d\n",cite,cite?cite->text.data():"<null>",numBibFiles);
   if (numBibFiles>0 && cite && !cite->text.isEmpty()) // ref to citation
   {
     m_text         = cite->text;
@@ -2587,8 +2588,20 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
     return;
   }
   m_text = target;
-  warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to `%s' for \\cite command",
-           qPrint(target));
+  if (numBibFiles==0)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"\\cite command found but no bib files specified via CITE_BIB_FILES!");
+  }
+  else if (cite==0)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"unable to resolve reference to `%s' for \\cite command",
+             qPrint(target));
+  }
+  else
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"\\cite command to '%s' does not have an associated number",
+             qPrint(target));
+  }
 }
 
 //---------------------------------------------------------------------------
