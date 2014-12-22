@@ -5244,7 +5244,7 @@ class NestingNodeContext::Private : public PropertyMapper
     void addClasses(bool inherit, bool hideSuper)
     {
       ClassDef *cd = m_def->definitionType()==Definition::TypeClass ? (ClassDef*)m_def : 0;
-      if (inherit)
+      if (cd && inherit)
       {
         bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
         if (hasChildren)
