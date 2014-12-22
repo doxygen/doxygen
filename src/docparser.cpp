@@ -6936,23 +6936,62 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
   return id;
 }
 
+// macro to check if the input starts with a specific command.
+// note that data[i] should point to the start of the command (\ or @ character)
+// and the sizeof(str) returns the size of str including the '\0' terminator;
+// a fact we abuse to skip over the start of the command character.
+#define CHECK_FOR_COMMAND(str,action) \
+   do if ((i+sizeof(str)<len) && qstrncmp(data+i+1,str,sizeof(str)-1)==0) \
+   { j=i+sizeof(str); action; } while(0)
+
 static uint isCopyBriefOrDetailsCmd(const char *data, uint i,uint len,bool &brief)
 {
   int j=0;
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
-    if (i+10<len && qstrncmp(data+i+1,"copybrief",9)==0) // @copybrief or \copybrief
-    {
-      j=i+10;
-      brief=TRUE;
-    }
-    else if (i+12<len && qstrncmp(data+i+1,"copydetails",11)==0) // @copydetails or \copydetails
-    {
-      j=i+12;
-      brief=FALSE;
-    }
+    CHECK_FOR_COMMAND("copybrief",brief=TRUE);    // @copybrief or \copybrief
+    CHECK_FOR_COMMAND("copydetails",brief=FALSE); // @copydetails or \copydetails
   }
   return j;
+}
+
+static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMarker)
+{
+  int j=0;
+  if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
+  {
+    CHECK_FOR_COMMAND("dot",endMarker="enddot");
+    CHECK_FOR_COMMAND("code",endMarker="endcode");
+    CHECK_FOR_COMMAND("msc",endMarker="endmsc");
+    CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
+    CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
+    CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");
+    CHECK_FOR_COMMAND("xmlonly",endMarker="endxmlonly");
+    CHECK_FOR_COMMAND("rtfonly",endMarker="endrtfonly");
+    CHECK_FOR_COMMAND("manonly",endMarker="endmanonly");
+    CHECK_FOR_COMMAND("docbookonly",endMarker="enddocbookonly");
+    CHECK_FOR_COMMAND("startuml",endMarker="enduml");
+  }
+  //printf("isVerbatimSection(%s)=%d)\n",QCString(&data[i]).left(10).data(),j);
+  return j;
+}
+
+static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &endMarker)
+{
+  while (i<len)
+  {
+    if ((data[i]=='@' || data[i]=='\\') &&  // start of command character
+        (i==0 || (data[i-1]!='@' && data[i-1]!='\\'))) // that is not escaped
+    {
+      if (i+endMarker.length()+1<=len && qstrncmp(data+i+1,endMarker,endMarker.length())==0)
+      {
+        return i+endMarker.length()+1;
+      }
+    }
+    i++;
+  }
+  // oops no endmarker found...
+  return i<len ? i+1 : len;
 }
 
 static QCString processCopyDoc(const char *data,uint &len)
@@ -6987,7 +7026,7 @@ static QCString processCopyDoc(const char *data,uint &len)
               uint l=brief.length();
               buf.addStr(processCopyDoc(brief,l));
             }
-            else 
+            else
             {
               uint l=doc.length();
               buf.addStr(processCopyDoc(doc,l));
@@ -7012,8 +7051,19 @@ static QCString processCopyDoc(const char *data,uint &len)
       }
       else
       {
-        buf.addChar(c);
-        i++;
+        QCString endMarker;
+        uint k = isVerbatimSection(data,i,len,endMarker);
+        if (k>0)
+        {
+          int orgPos = i;
+          i=skipToEndMarker(data,k,len,endMarker);
+          buf.addStr(data+orgPos,i-orgPos);
+        }
+        else
+        {
+          buf.addChar(c);
+          i++;
+        }
       }
     }
     else // not a command, just copy
