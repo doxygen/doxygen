@@ -7038,7 +7038,7 @@ static void findEnums(EntryNav *rootNav)
 
     if (cd && !name.isEmpty()) // found a enum inside a compound
     {
-      //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
+      //printf("Enum `%s'::`%s'\n",cd->name().data(),name.data());
       fd=0;
       mnsd=Doxygen::memberNameSDict;
       isGlobal=FALSE;
@@ -7071,17 +7071,17 @@ static void findEnums(EntryNav *rootNav)
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       md->setBodyDef(rootNav->fileDef());
-      md->setMemberSpecifiers(root->spec); // UNO IDL "published"
+      md->setMemberSpecifiers(root->spec);
       md->setEnumBaseType(root->args);
-      //printf("Enum %s definition at line %d of %s: protection=%d\n",
-      //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);
+      //printf("Enum %s definition at line %d of %s: protection=%d scope=%s\n",
+      //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection,cd?cd->name().data():"<none>");
       md->addSectionsToDefinition(root->anchors);
       md->setMemberGroupId(root->mGrpId);
       md->enableCallGraph(root->callGraph);
       md->enableCallerGraph(root->callerGraph);
       //printf("%s::setRefItems(%d)\n",md->name().data(),root->sli?root->sli->count():-1);
       md->setRefItems(root->sli);
-      //printf("found enum %s nd=%p\n",name.data(),nd);
+      //printf("found enum %s nd=%p\n",md->name().data(),nd);
       bool defSet=FALSE;
 
       QCString baseType = root->args;
@@ -7255,23 +7255,27 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
             {
               SrcLangExt sle;
               if (
-                   (sle=rootNav->lang())==SrcLangExt_CSharp || 
-                   sle==SrcLangExt_Java || 
+                   (sle=rootNav->lang())==SrcLangExt_CSharp ||
+                   sle==SrcLangExt_Java ||
                    sle==SrcLangExt_XML ||
                    (root->spec&Entry::Strong)
                  )
               {
-                // Unlike classic C/C++ enums, for C++11, C# & Java enum 
-                // values are only visible inside the enum scope, so we must create 
+                // Unlike classic C/C++ enums, for C++11, C# & Java enum
+                // values are only visible inside the enum scope, so we must create
                 // them here and only add them to the enum
                 e->loadEntry(g_storage);
                 Entry *root = e->entry();
                 //printf("md->qualifiedName()=%s rootNav->name()=%s tagInfo=%p name=%s\n",
                 //    md->qualifiedName().data(),rootNav->name().data(),rootNav->tagInfo(),root->name.data());
+                QCString qualifiedName = substitute(rootNav->name(),"::",".");
+                if (!scope.isEmpty() && rootNav->tagInfo())
+                {
+                  qualifiedName=substitute(scope,"::",".")+"."+qualifiedName;
+                }
                 if (substitute(md->qualifiedName(),"::",".")== // TODO: add function to get canonical representation
-                    substitute(rootNav->name(),"::",".") ||    // enum value scope matches that of the enum
-                    rootNav->tagInfo()                         // be less strict for tag files as members can have incomplete scope
-                   ) 
+                    qualifiedName       // enum value scope matches that of the enum
+                   )
                 {
                   MemberDef *fmd=new MemberDef(
                       root->fileName,root->startLine,root->startColumn,
