@@ -315,7 +315,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         file.writeBlock( text, text.length() );
         file.close();
         m_t << "\\par{\\qc "; // center picture
-        writeMscFile(baseName);
+        writeMscFile(baseName,TRUE);
         m_t << "} ";
         if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
@@ -1065,7 +1065,7 @@ void RTFDocVisitor::visitPost(DocDotFile *)
 void RTFDocVisitor::visitPre(DocMscFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocMscFile)}\n");
-  writeMscFile(df->file());
+  writeMscFile(df->file(),FALSE);
 
   // hide caption since it is not supported at the moment
   pushEnabled();
@@ -1677,14 +1677,21 @@ void RTFDocVisitor::writeDotFile(const QCString &fileName)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::writeMscFile(const QCString &fileName)
+void RTFDocVisitor::writeMscFile(const QCString &fileName,const bool inl)
 {
+  static int cntMscFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
+  if (!inl)
+  {
+    baseName += "_";
+    cntMscFile++;
+    baseName += QCString().setNum(cntMscFile);
+  }
   QCString outDir = Config_getString("RTF_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;

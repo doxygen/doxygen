@@ -428,7 +428,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         file.close();
 
         m_t << "<div align=\"center\">" << endl;
-        writeMscFile(baseName+".msc",s->relPath(),s->context());
+        writeMscFile(baseName+".msc",s->relPath(),s->context(),TRUE);
         if (Config_getBool("DOT_CLEANUP")) file.remove();
         m_t << "</div>" << endl;
         forceStartParagraph(s);
@@ -1460,7 +1460,7 @@ void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"mscgraph\">" << endl;
-  writeMscFile(df->file(),df->relPath(),df->context());
+  writeMscFile(df->file(),df->relPath(),df->context(),FALSE);
   if (df->hasCaption())
   { 
     m_t << "<div class=\"caption\">" << endl;
@@ -1946,8 +1946,10 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
 
 void HtmlDocVisitor::writeMscFile(const QCString &fileName,
                                   const QCString &relPath,
-                                  const QCString &context)
+                                  const QCString &context,
+                                  const bool inl)
 {
+  static int cntMscFile = 0;
   QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1) // strip path
@@ -1959,6 +1961,12 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   baseName.prepend("msc_");
+  if (!inl)
+  {
+    baseName += "_";
+    cntMscFile++;
+    baseName += QCString().setNum(cntMscFile);
+  }
   QCString outDir = Config_getString("HTML_OUTPUT");
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   MscOutputFormat mscFormat = MSC_BITMAP;
