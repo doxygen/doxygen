@@ -45,7 +45,7 @@ static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption,
                           const QCString &height)
 {
   QCString tmpStr;
-  
+
   t << "<" << cmd;
   if (writeType)
   {
@@ -65,27 +65,12 @@ static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption,
   }
   if (!width.isEmpty())
   {
-    tmpStr = width;
-    tmpStr = tmpStr.replace(QRegExp("min *width"),"minwidth");
-    tmpStr = tmpStr.replace(QRegExp("max *width"),"maxwidth");
-    tmpStr = tmpStr.replace(QRegExp("="),"=\"");
-    tmpStr = tmpStr.replace(QRegExp(","),"\" ") + "\"";
-    tmpStr = tmpStr.replace(QRegExp("\"\""),"\"");
-    tmpStr = tmpStr.replace(QRegExp("\\"),"\\\\");
-    t << " " << tmpStr;
+    t << " width=\"" << convertToXML(width) << "\"";
   }
-  if (!height.isEmpty())
+  else if (!height.isEmpty())
   {
-    tmpStr = height;
-    tmpStr = tmpStr.replace(QRegExp("min *height"),"minheight");
-    tmpStr = tmpStr.replace(QRegExp("max *height"),"maxheight");
-    tmpStr = tmpStr.replace(QRegExp("="),"=\"");
-    tmpStr = tmpStr.replace(QRegExp(","),"\" ") + "\"";
-    tmpStr = tmpStr.replace(QRegExp("\"\""),"\"");
-    tmpStr = tmpStr.replace(QRegExp("\\"),"\\\\");
-    t << " " << tmpStr;
+    t << " height=\"" << convertToXML(height) << "\"";
   }
-
   if (doCaption)
   {
     t << " caption=\"";

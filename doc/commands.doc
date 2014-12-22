@@ -2572,7 +2572,7 @@ class Receiver
   step before running doxygen, you can also add the name of the image file after \c \\startuml
   and inside curly brackets, i.e.
   \verbatim
-  @startuml{myimage.png}
+  @startuml{myimage.png} "Image Caption" width=5cm
   Alice -> Bob : Hello
   @enduml
   \endverbatim
@@ -2897,15 +2897,16 @@ class Receiver
   specific, so if you want to insert an image for more than one
   format you'll have to repeat this command for each format.
 
-  The first argument specifies the output format. Currently, the
-  following values are supported: \c html, \c latex, \c docbook and \c rtf.
+  The first argument specifies the output format in which the image should
+  be embedded. Currently, the following values are supported:
+  \c html, \c latex, \c docbook and \c rtf.
 
   The second argument specifies the file name of the image.
   doxygen will look for files in the paths (or files) that you specified
   after the \ref cfg_image_path "IMAGE_PATH" tag.
   If the image is found it will be copied to the correct output directory.
-  If the image name contains spaces you'll have to put quotes ("...") around it.
-  You can also specify an absolute URL instead of a file name, but then
+  If the image name contains spaces you'll have to put quotes ("...") around
+  the name. You can also specify an absolute URL instead of a file name, but then
   doxygen does not copy the image nor check its existence.
 
   The third argument is optional and can be used to specify the caption
@@ -2914,16 +2915,12 @@ class Receiver
   spaces. The quotes are stripped before the caption is displayed.
 
   The fourth argument is also optional and can be used to specify the
-  width or height of the image. This can be useful for \LaTeX output
-  (i.e. format=<code>latex</code>).
+  width or height of the image. This can be useful for \LaTeX or docbook output
+  (i.e. format=<code>latex</code> or format=<code>docbook</code>).
   \anchor image_sizeindicator \par Size indication
-  The \c sizeindication can 
-  specify the width or height to be used )or a combination). Possible
-  values are (width, analogous for height): 
-  `width` or `max with` or `min width`. The size should be a valid
-  size specifier in \LaTeX (for example `10cm` or
-  `6in` or a symbolic width like `\\textwidth`). (The `max width` etc.
-  are based on the \LaTeX package `adjustbox`)
+  The \c sizeindication can specify the width or height to be used (or a combination).
+  The size specifier in \LaTeX (for example `10cm` or
+  `4in` or a symbolic width like `\\textwidth`).
 
   Here is example of a comment block:
 

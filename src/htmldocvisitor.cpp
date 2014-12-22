@@ -427,7 +427,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           m_t << "<div align=\"center\">" << endl;
           writeDotFile(fileName,s->relPath(),s->context());
           visitPreCaption(m_t, s);
-          visitCaption(this, s->m_children);
+          visitCaption(this, s->children());
           visitPostCaption(m_t, s);
           m_t << "</div>" << endl;
 
@@ -464,7 +464,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           m_t << "<div align=\"center\">" << endl;
           writeMscFile(baseName+".msc",s->relPath(),s->context());
           visitPreCaption(m_t, s);
-          visitCaption(this, s->m_children);
+          visitCaption(this, s->children());
           visitPostCaption(m_t, s);
           m_t << "</div>" << endl;
 
@@ -482,7 +482,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         m_t << "<div align=\"center\">" << endl;
         writePlantUMLFile(baseName,s->relPath(),s->context());
         visitPreCaption(m_t, s);
-        visitCaption(this, s->m_children);
+        visitCaption(this, s->children());
         visitPostCaption(m_t, s);
         m_t << "</div>" << endl;
         forceStartParagraph(s);

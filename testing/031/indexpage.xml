@@ -6,7 +6,7 @@
     <detaileddescription>
       <para>Some text. <image type="html" name="sample.png"/>
  <image type="latex" name="sample.png" width="5cm">Doxygen logo</image>
-More text. </para>
+ More text. </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

@@ -90,7 +90,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
     }
     if (!width.isEmpty())
     {
-      t << width;
+      t << "width=" << width;
     }
     if (!width.isEmpty() && !height.isEmpty())
     {
@@ -98,7 +98,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
     }
     if (!height.isEmpty())
     {
-      t << height;
+      t << "height=" << height;
     }
     if (width.isEmpty() && height.isEmpty())
     {
@@ -359,7 +359,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
           file.close();
 
           startDotFile(fileName,s->width(),s->height(),s->hasCaption());
-          visitCaption(this, s->m_children);
+          visitCaption(this, s->children());
           endDotFile(s->hasCaption());
 
           if (Config_getBool("DOT_CLEANUP")) file.remove();
@@ -1701,7 +1701,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1747,7 +1747,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName, DocVerbatim *s)
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1762,7 +1762,7 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s
   QCString outDir = Config_getString("LATEX_OUTPUT");
   generatePlantUMLOutput(baseName,outDir,PUML_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 

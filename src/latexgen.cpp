@@ -1952,10 +1952,10 @@ void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 
 void LatexGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  LatexDocVisitor *visitor = 
+  LatexDocVisitor *visitor =
     new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),insideTabbing);
   n->accept(visitor);
-  delete visitor; 
+  delete visitor;
 }
 
 void LatexGenerator::startConstraintList(const char *header)

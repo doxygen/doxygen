@@ -46,14 +46,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
   t << "                <imagedata";
   if (!width.isEmpty())
   {
-    tmpStr = width;
-    tmpStr = tmpStr.replace(QRegExp("min *width"),"minwidth");
-    tmpStr = tmpStr.replace(QRegExp("max *width"),"maxwidth");
-    tmpStr = tmpStr.replace(QRegExp("="),"=\"");
-    tmpStr = tmpStr.replace(QRegExp(","),"\" ") + "\"";
-    tmpStr = tmpStr.replace(QRegExp("\"\""),"\"");
-    tmpStr = tmpStr.replace(QRegExp("\\"),"\\\\");
-    t << " " << tmpStr;
+    t << " width=\"" << convertToXML(width) << "\"";
   }
   else
   {
@@ -61,15 +54,7 @@ static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name, 
   }
   if (!height.isEmpty())
   {
-    tmpStr = height;
-    tmpStr = tmpStr.replace(QRegExp("min *height"),"mindepth");
-    tmpStr = tmpStr.replace(QRegExp("max *height"),"maxdepth");
-    tmpStr = tmpStr.replace(QRegExp("height="),"depth=");
-    tmpStr = tmpStr.replace(QRegExp("="),"=\"");
-    tmpStr = tmpStr.replace(QRegExp(","),"\" ") + "\"";
-    tmpStr = tmpStr.replace(QRegExp("\"\""),"\"");
-    tmpStr = tmpStr.replace(QRegExp("\\"),"\\\\");
-    t << " " << tmpStr;
+    t << " depth=\"" << convertToXML(tmpStr) << "\"";
   }
   t << " align=\"center\" valign=\"middle\" scalefit=\"1\" fileref=\"" << name << "\">";
   t << "</imagedata>" << endl;
@@ -1238,7 +1223,7 @@ void DocbookDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1253,7 +1238,7 @@ void DocbookDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim 
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   generatePlantUMLOutput(baseName,outDir,PUML_BITMAP);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1298,7 +1283,7 @@ void DocbookDocVisitor::writeDiaFile(const QCString &baseName, DocVerbatim *s)
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 
@@ -1344,7 +1329,7 @@ void DocbookDocVisitor::writeDotFile(const QCString &baseName, DocVerbatim *s)
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP);
   visitPreStart(m_t, s->hasCaption(), baseName + ".dot", s->width(),s->height());
-  visitCaption(this, s->m_children);
+  visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
 

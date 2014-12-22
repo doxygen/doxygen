@@ -404,7 +404,6 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 %x St_Para
 %x St_Comment
 %x St_Title
-%x St_Caption
 %x St_TitleN
 %x St_TitleQ
 %x St_TitleA
@@ -860,12 +859,22 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 <St_Msc>.              { /* msc text */
   			 g_token->verb+=yytext;
   		       }
-<St_PlantUMLOpt>{BLANK}*"{"[^}]*"}"   { // skip curly brackets around the optional image name
-                         g_token->sectionId = yytext;
-                         g_token->sectionId = g_token->sectionId.stripWhiteSpace();
-			 g_token->sectionId = g_token->sectionId.left(g_token->sectionId.length()-1);
-			 g_token->sectionId = g_token->sectionId.right(g_token->sectionId.length()-1);
-			 g_token->sectionId = g_token->sectionId.stripWhiteSpace();
+<St_PlantUMLOpt>{BLANK}*"{"[^}]*"}" { // case 1: file name is specified as {filename}
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         // skip curly brackets around the optional image name
+			 g_token->sectionId = g_token->sectionId.mid(1,g_token->sectionId.length()-2).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/"\"" { // case 3: plain file name specified followed by a quoted title
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}*/\n { // case 4: plain file name specified without title or attributes
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>.      {
@@ -881,22 +890,9 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 <St_PlantUML>.         { /* plantuml text */
   			 g_token->verb+=yytext;
   		       }
-<St_Caption>"\""       { // quoted title
-  			 BEGIN(St_TitleQ);
-                         return TK_WORD;
-  		       } 
-<St_Caption>[ \t]+     {
-                         g_token->name="";
-                         g_token->chars=yytext;
-  			 return TK_WHITESPACE;
-                       }
-<St_Caption>\n	       {
-                         unput(*yytext);
-  			 return 0;
-  		       }
 <St_Title>"\""	       { // quoted title
   			 BEGIN(St_TitleQ);
-  		       } 
+  		       }
 <St_Title>[ \t]+       {
                          g_token->chars=yytext;
   			 return TK_WHITESPACE;
@@ -920,6 +916,13 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
                          g_token->name = yytext+1;
 			 g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND;
+                       }
+<St_TitleN>{ID}"="     { /* attribute */
+                         if (yytext[0]=='%') // strip % if present
+			   g_token->name = &yytext[1];
+			 else
+                           g_token->name = yytext;
+			 return TK_WORD;
                        }
 <St_TitleN>{WORD1}     |
 <St_TitleN>{WORD2}     { /* word */
@@ -964,38 +967,9 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
                          unput(*yytext);
   			 return 0;
                        }
-<St_Caption>{BLANK}*"min"{BLANK}* { // title special case min / max
-  			 g_token->name = "min";
-  			 BEGIN(St_TitleA);
-			 return TK_WORD;
-  		       }
-<St_Caption>{BLANK}*"max"{BLANK}* { // title special case min / max
-  			 g_token->name = "max";
-  			 BEGIN(St_TitleA);
-			 return TK_WORD;
-  		       }
-<St_Caption>{BLANK}*"width="{BLANK}* { // title attribute
-  			 g_token->name = yytext;
-			 g_token->name = g_token->name.stripWhiteSpace();
-  			 BEGIN(St_TitleV);
-  		       }
-<St_Caption>{BLANK}*"height="{BLANK}* { // title attribute
-  			 g_token->name = yytext;
-			 g_token->name = g_token->name.stripWhiteSpace();
-  			 BEGIN(St_TitleV);
-  		       }
-<St_TitleA>{BLANK}*"min"{BLANK}* { // title special case min / max
-  			 g_token->name = "min";
-			 return TK_WORD;
-  		       }
-<St_TitleA>{BLANK}*"max"{BLANK}* { // title special case min / max
-  			 g_token->name = "max";
-			 return TK_WORD;
-  		       }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
   			 g_token->name = yytext;
-			 g_token->name = g_token->name.left(
-			 g_token->name.find('=')).stripWhiteSpace();
+			 g_token->name = g_token->name.left(g_token->name.find('=')).stripWhiteSpace();
   			 BEGIN(St_TitleV);
   		       }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
@@ -1003,10 +977,6 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 			 BEGIN(St_TitleN);
 			 return TK_WORD;
   		       }
-<St_TitleV,St_TitleA>[ \t] {
-                         g_token->chars=yytext;
-  			 return TK_WHITESPACE;
-                       }
 <St_TitleV,St_TitleA>. {
   			 unput(*yytext);
   			 return 0;
@@ -1349,16 +1319,6 @@ void doctokenizerYYsetStatePara()
 void doctokenizerYYsetStateTitle()
 {
   BEGIN(St_Title);
-}
-
-void doctokenizerYYsetStateCaption()
-{
-  BEGIN(St_Caption);
-}
-
-void doctokenizerYYsetStateTitleAttr()
-{
-  BEGIN(St_TitleA);
 }
 
 void doctokenizerYYsetStateTitleAttrValue()

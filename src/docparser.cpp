@@ -839,9 +839,6 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 static bool defaultHandleToken(DocNode *parent,int tok, 
                                QList<DocNode> &children,bool
                                handleWord=TRUE);
-static void defaultHandleCaptionSize(const int cmd, DocNode *parent, QList<DocNode> &children,
-                                     QCString &height, QCString &width);
-
 
 static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                                const QCString &cmdName)
@@ -1243,65 +1240,32 @@ static DocAnchor *handleAnchor(DocNode *parent)
 }
 
 
-/* Helper function that deals with the Caption and size argument.
- * @param parent     Parent node, owner of the children list passed as
- *                   the third argument.
- * @param children   The list of child nodes to which the node representing
- *                   the token can be added.
- * @param height     Storagre for, optional, height
- * @param width      Storagre for, optional, width
+/* Helper function that deals with the title, width, and height arguments of various commands.
+ * @param[in] cmd        Command id for which to extract caption and size info.
+ * @param[in] parent     Parent node, owner of the children list passed as
+ *                       the third argument.
+ * @param[in] children   The list of child nodes to which the node representing
+ *                       the token can be added.
+ * @param[out] width     the extracted width specifier
+ * @param[out] height    the extracted height specifier
  */
-static void defaultHandleCaptionSize(const int cmd, DocNode *parent, QList<DocNode> &children, QCString &height, QCString &width)
+static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocNode> &children, QCString &width,QCString &height)
 {
-  QCString preamble = "";
-  int insideString = 0;
   g_nodeStack.push(parent);
 
   // parse title
-  doctokenizerYYsetStateCaption();
+  doctokenizerYYsetStateTitle();
   int tok;
   while ((tok=doctokenizerYYlex()))
   {
-    if (tok==TK_WORD && g_token->name=="width=")
+    if (tok==TK_WORD && (g_token->name=="width=" || g_token->name=="height="))
     {
       // special case: no title, but we do have a size indicator
-      doctokenizerYYsetStateTitleAttr();
+      doctokenizerYYsetStateTitleAttrValue();
       // strip =
-      width=preamble + g_token->name + g_token->chars;
-      g_token->chars = "";
-      g_token->name = "";
-      preamble = "";
-      do
-      {
-        tok=doctokenizerYYlex();
-      } while (tok == TK_WHITESPACE);
+      g_token->name = g_token->name.left(g_token->name.length()-1);
       break;
     }
-    if (tok==TK_WORD && g_token->name=="height=")
-    {
-      // special case: no title, but we do have a size indicator
-      doctokenizerYYsetStateTitleAttr();
-      // strip =
-      height=preamble + g_token->name + g_token->chars;
-      g_token->chars = "";
-      g_token->name = "";
-      preamble = "";
-      do
-      {
-        tok=doctokenizerYYlex();
-      } while (tok == TK_WHITESPACE);
-      break;
-    }
-    if (tok==TK_WORD && (g_token->name=="min" ||  g_token->name=="max"))
-    {
-      // special case: no title, but we do have a size indicator min or max
-      if (!insideString)
-      {
-        preamble = g_token->name + " ";
-        break;
-      }
-    }
-    insideString = 1;
     if (!defaultHandleToken(parent,tok,children))
     {
       switch (tok)
@@ -1330,41 +1294,18 @@ static void defaultHandleCaptionSize(const int cmd, DocNode *parent, QList<DocNo
   {
     if (g_token->name=="width")
     {
-      if (!width.isEmpty()) width += ",";
-      width+=preamble + "width=" + g_token->chars;
-      preamble = "";
-      doctokenizerYYsetStateTitleAttr();
+      width = g_token->chars;
     }
     else if (g_token->name=="height")
     {
-      if (!height.isEmpty()) height += ",";
-      height+=preamble + "height=" + g_token->chars;
-      preamble = "";
-      doctokenizerYYsetStateTitleAttr();
-    }
-    else if (g_token->name=="max")
-    {
-      preamble = "max ";
-    }
-    else if (g_token->name=="min")
-    {
-      preamble = "min ";
+      height = g_token->chars;
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unknown option %s after \\%s command",
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
                      qPrint(g_token->name), Mappers::cmdMapper->find(cmd).data());
     }
-
-    do
-    {
-      tok=doctokenizerYYlex();
-      if (tok==TK_WORD && (g_token->name=="width=" || g_token->name=="height="))
-      {
-        g_token->name=g_token->name.left(g_token->name.length()-1);
-        tok=doctokenizerYYlex();
-      } 
-    } while (tok == TK_WHITESPACE);
+    tok=doctokenizerYYlex();
   }
   doctokenizerYYsetStatePara();
 
@@ -1372,6 +1313,7 @@ static void defaultHandleCaptionSize(const int cmd, DocNode *parent, QList<DocNo
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==parent);
 }
+
 /* Helper function that deals with the most common tokens allowed in
  * title like sections.
  * @param parent     Parent node, owner of the children list passed as
@@ -2786,7 +2728,7 @@ DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &cont
 
 void DocDotFile::parse()
 {
-  defaultHandleCaptionSize(CMD_DOTFILE,this,m_children,m_height, m_width);
+  defaultHandleTitleAndSize(CMD_DOTFILE,this,m_children,m_width,m_height);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::dotFileNameDict,m_name,ambig);
@@ -2820,7 +2762,7 @@ DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &cont
 
 void DocMscFile::parse()
 {
-  defaultHandleCaptionSize(CMD_MSCFILE,this,m_children,m_height, m_width);
+  defaultHandleTitleAndSize(CMD_MSCFILE,this,m_children,m_width,m_height);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::mscFileNameDict,m_name,ambig);
@@ -2856,7 +2798,7 @@ DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &cont
 
 void DocDiaFile::parse()
 {
-  defaultHandleCaptionSize(CMD_DIAFILE,this,m_children,m_height, m_width);
+  defaultHandleTitleAndSize(CMD_DIAFILE,this,m_children,m_width,m_height);
 
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::diaFileNameDict,m_name,ambig);
@@ -2903,7 +2845,7 @@ void DocVhdlFlow::parse()
       switch (tok)
       {
         case TK_COMMAND: 
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\mscfile",
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Illegal command %s as part of a \\vhdlflow",
 	       qPrint(g_token->name));
           break;
         case TK_SYMBOL: 
@@ -2942,7 +2884,7 @@ DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString 
 
 void DocImage::parse()
 {
-  defaultHandleCaptionSize(CMD_IMAGE,this,m_children,m_height, m_width);
+  defaultHandleTitleAndSize(CMD_IMAGE,this,m_children,m_width,m_height);
 }
 
 
@@ -5006,7 +4948,7 @@ void DocPara::handleImage(const QCString &cmdName)
         "%s is not valid",
         qPrint(imgType),qPrint(cmdName));
     return;
-  } 
+  }
   doctokenizerYYsetStateFile();
   tok=doctokenizerYYlex();
   doctokenizerYYsetStatePara();
@@ -5022,7 +4964,8 @@ void DocPara::handleImage(const QCString &cmdName)
   img->parse();
 }
 
-void DocPara::handleDotFile(const QCString &cmdName)
+template<class T>
+void DocPara::handleFile(const QCString &cmdName)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -5041,55 +4984,7 @@ void DocPara::handleDotFile(const QCString &cmdName)
     return;
   }
   QCString name = g_token->name;
-  DocDotFile *df = new DocDotFile(this,name,g_context);
-  m_children.append(df);
-  df->parse();
-}
-
-void DocPara::handleMscFile(const QCString &cmdName)
-{
-  int tok=doctokenizerYYlex();
-  if (tok!=TK_WHITESPACE)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
-    return;
-  }
-  doctokenizerYYsetStateFile();
-  tok=doctokenizerYYlex();
-  doctokenizerYYsetStatePara();
-  if (tok!=TK_WORD)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
-    return;
-  }
-  QCString name = g_token->name;
-  DocMscFile *df = new DocMscFile(this,name,g_context);
-  m_children.append(df);
-  df->parse();
-}
-
-void DocPara::handleDiaFile(const QCString &cmdName)
-{
-  int tok=doctokenizerYYlex();
-  if (tok!=TK_WHITESPACE)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"expected whitespace after %s command",
-        qPrint(cmdName));
-    return;
-  }
-  doctokenizerYYsetStateFile();
-  tok=doctokenizerYYlex();
-  doctokenizerYYsetStatePara();
-  if (tok!=TK_WORD)
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"unexpected token %s as the argument of %s",
-        tokToString(tok),qPrint(cmdName));
-    return;
-  }
-  QCString name = g_token->name;
-  DocDiaFile *df = new DocDiaFile(this,name,g_context);
+  T *df = new T(this,name,g_context);
   m_children.append(df);
   df->parse();
 }
@@ -5520,21 +5415,15 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_DOT:
       {
-        /*
-         * need a temporary variable to store information for width, height and caption
-         * which will be written into te right variable.
-         */
-        DocVerbatim *tmp_dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Dot,g_isExample,g_exampleName);
+        DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Dot,g_isExample,g_exampleName);
         doctokenizerYYsetStatePara();
-        defaultHandleCaptionSize(CMD_DOT,tmp_dv,tmp_dv->m_children,tmp_dv->m_height,tmp_dv-> m_width);
-
+        QCString width,height;
+        defaultHandleTitleAndSize(CMD_DOT,dv,dv->children(),width,height);
         doctokenizerYYsetStateDot();
         retval = doctokenizerYYlex();
-        DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Dot,g_isExample,g_exampleName);
-        dv -> m_width = tmp_dv -> m_width;
-        dv -> m_height = tmp_dv -> m_height;
-        dv -> m_children = tmp_dv -> m_children;
-        delete tmp_dv;
+        dv->setText(g_token->verb);
+        dv->setWidth(width);
+        dv->setHeight(height);
         m_children.append(dv);
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"dot section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5542,21 +5431,15 @@ int DocPara::handleCommand(const QCString &cmdName)
       break;
     case CMD_MSC:
       {
-        /*
-         * need a temporary variable to store information for width, height and caption
-         * which will be written into te right variable.
-         */
-        DocVerbatim *tmp_dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName);
+        DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName);
         doctokenizerYYsetStatePara();
-        defaultHandleCaptionSize(CMD_MSC,tmp_dv,tmp_dv->m_children,tmp_dv->m_height,tmp_dv-> m_width);
-
+        QCString width,height;
+        defaultHandleTitleAndSize(CMD_MSC,dv,dv->children(),width,height);
         doctokenizerYYsetStateMsc();
         retval = doctokenizerYYlex();
-        DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName);
-        dv -> m_width = tmp_dv -> m_width;
-        dv -> m_height = tmp_dv -> m_height;
-        dv -> m_children = tmp_dv -> m_children;
-        delete tmp_dv;
+        dv->setText(g_token->verb);
+        dv->setWidth(width);
+        dv->setHeight(height);
         m_children.append(dv);
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"msc section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5568,27 +5451,22 @@ int DocPara::handleCommand(const QCString &cmdName)
         doctokenizerYYsetStatePlantUMLOpt();
         retval = doctokenizerYYlex();
         QCString plantFile(g_token->sectionId);
-        /*
-         * need a temporary variable to store information for width, height and caption
-         * which will be written into te right variable.
-         */
-        DocVerbatim *tmp_dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName);
+        DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,plantFile);
         doctokenizerYYsetStatePara();
-        defaultHandleCaptionSize(CMD_STARTUML,tmp_dv,tmp_dv->m_children,tmp_dv->m_height,tmp_dv-> m_width);
-
+        QCString width,height;
+        defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
         doctokenizerYYsetStatePlantUML();
         retval = doctokenizerYYlex();
+        dv->setText(g_token->verb);
+        dv->setWidth(width);
+        dv->setHeight(height);
         if (jarPath.isEmpty())
         {
           warn_doc_error(g_fileName,doctokenizerYYlineno,"ignoring \\startuml command because PLANTUML_JAR_PATH is not set");
+          delete dv;
         }
         else
         {
-          DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,plantFile);
-          dv -> m_width = tmp_dv -> m_width;
-          dv -> m_height = tmp_dv -> m_height;
-          dv -> m_children = tmp_dv -> m_children;
-          delete tmp_dv;
           m_children.append(dv);
         }
         if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"startuml section ended without end marker");
@@ -5707,16 +5585,16 @@ int DocPara::handleCommand(const QCString &cmdName)
       handleImage(cmdName);
       break;
     case CMD_DOTFILE:
-      handleDotFile(cmdName);
+      handleFile<DocDotFile>(cmdName);
       break;
     case CMD_VHDLFLOW:
       handleVhdlFlow();
       break;
     case CMD_MSCFILE:
-      handleMscFile(cmdName);
+      handleFile<DocMscFile>(cmdName);
       break;
     case CMD_DIAFILE:
-      handleDiaFile(cmdName);
+      handleFile<DocDiaFile>(cmdName);
       break;
     case CMD_LINK:
       handleLink(cmdName,FALSE);
