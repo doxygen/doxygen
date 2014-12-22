@@ -1338,7 +1338,7 @@ static void addClassToContext(EntryNav *rootNav)
     {
       tArgList = getTemplateArgumentsFromName(fullName,root->tArgLists);
     }
-    cd=new ClassDef(root->fileName,root->startLine,root->startColumn,
+    cd=new ClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
         fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p\n",
         fullName.data(),sec,root->tArgLists ? (int)root->tArgLists->count() : -1, tagInfo);
@@ -1765,7 +1765,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           tagFileName = tagInfo->fileName;
         }
         //printf("++ new namespace %s lang=%s tagName=%s\n",fullName.data(),langToString(root->lang).data(),tagName.data());
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,
+        NamespaceDef *nd=new NamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                              root->startColumn,fullName,tagName,tagFileName,
                              root->type,root->spec&Entry::Published);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -2135,10 +2135,15 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   //printf("found member %s\n",mni->memberName());
                   MemberDef *newMd = 0;
                   {
+                    QCString fileName = root->fileName;
+                    if (fileName.isEmpty() && rootNav->tagInfo())
+                    {
+                      fileName = rootNav->tagInfo()->tagName;
+                    }
                     ArgumentList *templAl = md->templateArguments();
                     ArgumentList *al = md->templateArguments();
                     newMd = new MemberDef(
-                      root->fileName,root->startLine,root->startColumn,
+                      fileName,root->startLine,root->startColumn,
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
                       md->isStatic(),Member,md->memberType(),
@@ -2324,9 +2329,15 @@ static MemberDef *addVariableToClass(
     } 
   }
 
+  QCString fileName = root->fileName;
+  if (fileName.isEmpty() && rootNav->tagInfo())
+  {
+    fileName = rootNav->tagInfo()->tagName;
+  }
+
   // new member variable, typedef or enum value
   MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,root->startColumn,
+      fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       prot,Normal,root->stat,related,
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0);
@@ -2559,11 +2570,18 @@ static MemberDef *addVariableToFile(
       }
     } 
   }
+
+  QCString fileName = root->fileName;
+  if (fileName.isEmpty() && rootNav->tagInfo())
+  {
+    fileName = rootNav->tagInfo()->tagName;
+  }
+
   Debug::print(Debug::Variables,0,
     "    new variable, nd=%s!\n",nd?nd->name().data():"<global>");
   // new global variable, enum value or typedef
   MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,root->startColumn,
+      fileName,root->startLine,root->startColumn,
       root->type,name,root->args,0,
       Public, Normal,root->stat,Member,
       mtype,root->tArgLists ? root->tArgLists->getLast() : 0,0);
@@ -3071,8 +3089,13 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   enum MemberType const type = (rootNav->section()==Entry::EXPORTED_INTERFACE_SEC)
       ? MemberType_Interface
       : MemberType_Service;
+  QCString fileName = root->fileName;
+  if (fileName.isEmpty() && rootNav->tagInfo())
+  {
+    fileName = rootNav->tagInfo()->tagName;
+  }
   MemberDef *const md = new MemberDef(
-      root->fileName, root->startLine, root->startColumn, root->type, rname,
+      fileName, root->startLine, root->startColumn, root->type, rname,
       "", "", root->protection, root->virt, root->stat, Member,
       type, 0, root->argList);
   md->setTagInfo(rootNav->tagInfo());
@@ -3243,13 +3266,19 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
     name=name.left(i); 
   }
 
+  QCString fileName = root->fileName;
+  if (fileName.isEmpty() && rootNav->tagInfo())
+  {
+    fileName = rootNav->tagInfo()->tagName;
+  }
+
   //printf("root->name=`%s; root->args=`%s' root->argList=`%s'\n", 
   //    root->name.data(),root->args.data(),argListToString(root->argList).data()
   //   );
 
   // adding class member
   MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,root->startColumn,
+      fileName,root->startLine,root->startColumn,
       root->type,name,root->args,root->exception,
       root->protection,root->virt,
       root->stat && root->relatesType != MemberOf,
@@ -7277,8 +7306,13 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                     qualifiedName       // enum value scope matches that of the enum
                    )
                 {
+                  QCString fileName = root->fileName;
+                  if (fileName.isEmpty() && rootNav->tagInfo())
+                  {
+                    fileName = rootNav->tagInfo()->tagName;
+                  }
                   MemberDef *fmd=new MemberDef(
-                      root->fileName,root->startLine,root->startColumn,
+                      fileName,root->startLine,root->startColumn,
                       root->type,root->name,root->args,0,
                       Public, Normal,root->stat,Member,
                       MemberType_EnumValue,0,0);
@@ -8409,7 +8443,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
 
     if (rootNav->tagInfo() && !root->name.isEmpty()) // define read from a tag file
     {
-      MemberDef *md=new MemberDef("<tagfile>",1,1,
+      MemberDef *md=new MemberDef(rootNav->tagInfo()->tagName,1,1,
                     "#define",root->name,root->args,0,
                     Public,Normal,FALSE,Member,MemberType_Define,0,0);
       md->setTagInfo(rootNav->tagInfo());
