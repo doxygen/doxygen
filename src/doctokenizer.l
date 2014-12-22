@@ -321,9 +321,9 @@ static int yyread(char *buf,int max_size)
 }
 
 //--------------------------------------------------------------------------
-#define REAL_YY_DECL int doctokenizerYYlex (void)
-#define YY_DECL static int local_doctokinizer(void)
-#define LOCAL_YY_DECL local_doctokinizer()
+//#define REAL_YY_DECL int doctokenizerYYlex (void)
+//#define YY_DECL static int local_doctokinizer(void)
+//#define LOCAL_YY_DECL local_doctokinizer()
 
 %}
 
@@ -1505,13 +1505,13 @@ void doctokenizerYYendAutoList()
   g_autoListLevel--;
 }
 
-REAL_YY_DECL
-{
-  printlex(yy_flex_debug, TRUE, __FILE__, g_fileName);
-  int retval = LOCAL_YY_DECL;
-  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
-  return retval;
-}
+//REAL_YY_DECL
+//{
+//  printlex(yy_flex_debug, TRUE, __FILE__, g_fileName);
+//  int retval = LOCAL_YY_DECL;
+//  printlex(yy_flex_debug, FALSE, __FILE__, g_fileName);
+//  return retval;
+//}
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
     void doctokenizerYYdummy() { yy_flex_realloc(0,0); }
