@@ -895,7 +895,7 @@ static const char *getTableName(const DocNode *n)
   bool isNested=FALSE;
   while (n && !isNested)
   {
-    isNested = n->kind()==DocNode::Kind_HtmlTable;
+    isNested = n->kind()==DocNode::Kind_HtmlTable || n->kind()==DocNode::Kind_ParamSect;
     n  = n->parent();
   }
   return isNested ? "TabularNC" : "TabularC";
