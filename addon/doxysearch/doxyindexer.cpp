@@ -30,11 +30,18 @@
 // Xapian include
 #include <xapian.h>
 
+#define MAX_TERM_LENGTH 245
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
 static char pathSep = '\\';
 #else
 static char pathSep = '/';
 #endif
+
+static void safeAddTerm(const std::string &term,Xapian::Document &doc,int wfd)
+{
+  if (term.length()<=MAX_TERM_LENGTH) doc.add_term(term,wfd);
+}
 
 /** trims \a whitespace characters from the start and end of string \a str. */
 static std::string trim(const std::string& str,
@@ -86,10 +93,10 @@ static void addWords(const std::string &s,Xapian::Document &doc,int wfd)
     std::string word = *it;
     std::string lword = word;
     std::transform(lword.begin(), lword.end(), lword.begin(), ::tolower);
-    doc.add_term(word,wfd);
+    safeAddTerm(word,doc,wfd);
     if (lword!=word)
     {
-      doc.add_term(lword,wfd);
+      safeAddTerm(lword,doc,wfd);
     }
   }
 }
@@ -102,7 +109,7 @@ static void addIdentifiers(const std::string &s,Xapian::Document &doc,int wfd)
   QCString qs = s.c_str();
   while ((i=re.match(qs,p,&l))!=-1)
   {
-    doc.add_term(qs.mid(p,i-p).data(),wfd);
+    safeAddTerm(qs.mid(p,i-p).data(),doc,wfd);
     p=i+l;
   }
 }
@@ -201,18 +208,18 @@ class XMLContentHandler : public QXmlDefaultHandler
             m_doc.get_value(TypeField)=="file" || 
             m_doc.get_value(TypeField)=="namespace") // containers get highest prio
         {
-          m_doc.add_term(term,1000);
+          safeAddTerm(term,m_doc,1000);
           if (!partTerm.empty())
           {
-            m_doc.add_term(partTerm,500);
+            safeAddTerm(partTerm,m_doc,500);
           }
         }
         else // members and others get lower prio
         {
-          m_doc.add_term(m_doc.get_value(NameField),100);
+          safeAddTerm(m_doc.get_value(NameField),m_doc,100);
           if (!partTerm.empty())
           {
-            m_doc.add_term(partTerm,50);
+            safeAddTerm(partTerm,m_doc,50);
           }
         }
         m_db.add_document(m_doc);
