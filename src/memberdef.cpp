@@ -3210,9 +3210,9 @@ void MemberDef::warnIfUndocumented()
   static bool extractAll = Config_getBool("EXTRACT_ALL");
 
   //printf("warnIfUndoc: d->isLinkable()=%d isLinkable()=%d "
-  //       "isDocumentedFriendClass()=%d name()=%s prot=%d\n",
+  //       "isDocumentedFriendClass()=%d name()=%s prot=%d isReference=%d\n",
   //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
-  //       name().data(),prot);
+  //       name().data(),m_impl->prot,isReference());
   if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&
@@ -5090,5 +5090,11 @@ bool MemberDef::isFunctionOrSignalSlot() const
 bool MemberDef::isRelatedOrFriend() const
 {
   return isRelated() || isForeign() || (isFriend() && !isFriendToHide());
+}
+
+bool MemberDef::isReference() const
+{
+  return Definition::isReference() ||
+         (m_impl->templateMaster && m_impl->templateMaster->isReference());
 }
 

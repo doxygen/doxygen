@@ -2673,7 +2673,7 @@ bool ClassDef::isLinkable() const
   }
   else
   {
-    return isLinkableInProject() || isReference();
+    return isReference() || isLinkableInProject();
   }
 }
 
