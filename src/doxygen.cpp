@@ -9256,6 +9256,10 @@ static void copyStyleSheet()
       {
         err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.data());
       }
+      else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
+      {
+        err("Style sheet %s specified by HTML_EXTRA_STYLESHEET is already a built-in stylesheet. Please use a different name\n",fi.fileName().data());
+      }
       else
       {
         QCString destFileName = Config_getString("HTML_OUTPUT")+"/"+fi.fileName().data();
