@@ -5857,6 +5857,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
 
     case XML_SUMMARY:
     case XML_REMARKS:
+    case XML_EXAMPLE:
       g_xmlComment=TRUE;
       // fall through
     case XML_VALUE:
@@ -5866,7 +5867,6 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         retval = TK_NEWPARA;
       }
       break;
-    case XML_EXAMPLE:
     case XML_DESCRIPTION:
       if (insideTable(this))
       {
@@ -5879,6 +5879,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case XML_PARAM:
     case XML_TYPEPARAM:
       {
+        g_xmlComment=TRUE;
         QCString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
@@ -5922,6 +5923,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case XML_EXCEPTION:
       {
+        g_xmlComment=TRUE;
         QCString exceptName;
         if (findAttribute(tagHtmlAttribs,"cref",&exceptName))
         {
@@ -5950,6 +5952,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       }
       break;
     case XML_RETURNS:
+      g_xmlComment=TRUE;
       retval = handleSimpleSection(DocSimpleSect::Return,TRUE);
       g_hasReturnCommand=TRUE;
       break;
@@ -6002,6 +6005,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case XML_SEEALSO:
       {
+        g_xmlComment=TRUE;
         QCString cref;
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
@@ -6060,6 +6064,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case XML_INCLUDE:
     case XML_PERMISSION:
       // These tags are defined in .Net but are currently unsupported
+      g_xmlComment=TRUE;
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Unsupported xml/html tag <%s> found", qPrint(tagName));
