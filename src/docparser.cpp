@@ -5163,6 +5163,10 @@ int DocPara::handleStartCode()
   {
     lang="."+lang;
   }
+  if (g_xmlComment)
+  {
+    g_token->verb = substitute(substitute(g_token->verb,"&lt;","<"),"&gt;",">");
+  }
   // search for the first non-whitespace line, index is stored in li
   int i=0,li=0,l=g_token->verb.length();
   while (i<l && (g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n'))
