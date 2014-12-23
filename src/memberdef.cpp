@@ -118,8 +118,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 //   ol.endMemberDoc(hasArgs=FALSE);
 //
 
-static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
-                                 const QCString & /*scopeName*/,MemberDef *md)
+static bool writeDefArgumentList(OutputList &ol,Definition *scope,MemberDef *md)
 {
   ArgumentList *defArgList=(md->isDocsForDefinition()) ?
                              md->argumentList() : md->declArgumentList();
@@ -182,9 +181,9 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   //printf("===> name=%s isDefine=%d\n",md->name().data(),md->isDefine());
 
   QCString cName;
-  if (cd)
+  if (scope)
   {
-    cName=cd->name();
+    cName=scope->name();
     int il=cName.find('<');
     int ir=cName.findRev('>');
     if (il!=-1 && ir!=-1 && ir>il)
@@ -192,9 +191,9 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       cName=cName.mid(il,ir-il+1);
       //printf("1. cName=%s\n",cName.data());
     }
-    else if (cd->templateArguments())
+    else if (scope->definitionType()==Definition::TypeClass && ((ClassDef*)scope)->templateArguments())
     {
-      cName=tempArgListToString(cd->templateArguments(),cd->getLanguage());
+      cName=tempArgListToString(((ClassDef*)scope)->templateArguments(),scope->getLanguage());
       //printf("2. cName=%s\n",cName.data());
     }
     else // no template specifier
@@ -238,8 +237,8 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       QCString n=a->type.left(vp);
       if (hasFuncPtrType) n=a->type.left(wp);
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
-      if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
+      if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
+      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
     }
     else // non-function pointer type
     {
@@ -247,8 +246,8 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
       if (a->type!="...")
       {
-        if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
-        linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n);
+        if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
+        linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
       }
     }
     if (!isDefine)
@@ -292,17 +291,17 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (hasFuncPtrType) // write the part of the argument type
                         // that comes after the name
     {
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),
+      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),
                   md,a->type.right(a->type.length()-vp));
     }
     if (!a->defval.isEmpty()) // write the default value
     {
       QCString n=a->defval;
-      if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
+      if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
       ol.docify(" = ");
 
       ol.startTypewriter();
-      linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md,n,FALSE,TRUE,TRUE);
+      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n,FALSE,TRUE,TRUE);
       ol.endTypewriter();
 
     }
@@ -361,7 +360,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   if (!defArgList->trailingReturnType.isEmpty())
   {
     linkifyText(TextGeneratorOLImpl(ol), // out
-                cd,                      // scope
+                scope,                   // scope
                 md->getBodyDef(),        // fileScope
                 md,                      // self
                 defArgList->trailingReturnType, // text
@@ -2649,6 +2648,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.startMemberDoc(ciname,name(),memAnchor,title,showInline);
 
     ClassDef *cd=getClassDef();
+    NamespaceDef *nd=getNamespaceDef();
     if (!Config_getBool("HIDE_SCOPE_NAMES"))
     {
       bool first=TRUE;
@@ -2759,7 +2759,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                   this,
                   substitute(ldef,"::",sep)
                  );
-      hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
+      Definition *scope = cd;
+      if (scope==0) scope = nd;
+      hasParameterList=writeDefArgumentList(ol,scope,this);
     }
 
     if (hasOneLineInitializer()) // add initializer
