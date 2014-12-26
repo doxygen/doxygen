@@ -14,7 +14,11 @@
 
 #include "inputbool.h"
 #include "helplabel.h"
-#include <QtGui>
+
+#include <QCheckBox>
+#include <QTextStream>
+#include <QTextCodec>
+#include <QGridLayout>
 
 InputBool::InputBool( QGridLayout *layout, int &row, 
                       const QString &id, bool checked,
@@ -73,11 +77,11 @@ void InputBool::updateDefault()
 {
   if (m_state==m_default || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
   }
   else
   {
-    m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
+    m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
   }
 }
 
@@ -89,9 +93,9 @@ QVariant &InputBool::value()
 void InputBool::update()
 {
   QString v = m_value.toString().toLower();
-  m_state = (v==QString::fromAscii("yes")  || 
-             v==QString::fromAscii("true") || 
-             v==QString::fromAscii("1"));
+  m_state = (v==QString::fromLatin1("yes")  || 
+             v==QString::fromLatin1("true") || 
+             v==QString::fromLatin1("1"));
   m_cb->setChecked( m_state );
   updateDefault();
   updateDependencies();
@@ -105,8 +109,8 @@ void InputBool::reset()
 void InputBool::writeValue(QTextStream &t,QTextCodec *codec)
 {
   if (m_state) 
-    t << codec->fromUnicode(QString::fromAscii("YES")); 
+    t << codec->fromUnicode(QString::fromLatin1("YES")); 
   else 
-    t << codec->fromUnicode(QString::fromAscii("NO"));
+    t << codec->fromUnicode(QString::fromLatin1("NO"));
 }
 

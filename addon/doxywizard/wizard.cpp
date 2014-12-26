@@ -3,46 +3,64 @@
 #include "doxywizard.h"
 
 #include <math.h>
-#include <QtGui>
+
+#include <QGridLayout>
+#include <QImage>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QPixmap>
+#include <QPainter>
+#include <QMouseEvent>
+#include <QLineEdit>
+#include <QCheckBox>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QRadioButton>
+#include <QTreeWidget>
+#include <QStackedWidget>
+#include <qdrawutil.h>
 
 // options configurable via the wizard
-#define STR_PROJECT_NAME          QString::fromAscii("PROJECT_NAME")
-#define STR_PROJECT_LOGO          QString::fromAscii("PROJECT_LOGO")
-#define STR_PROJECT_BRIEF         QString::fromAscii("PROJECT_BRIEF")
-#define STR_INPUT                 QString::fromAscii("INPUT")
-#define STR_OUTPUT_DIRECTORY      QString::fromAscii("OUTPUT_DIRECTORY")
-#define STR_PROJECT_NUMBER        QString::fromAscii("PROJECT_NUMBER")
-#define STR_RECURSIVE             QString::fromAscii("RECURSIVE")
-#define STR_OPTIMIZE_OUTPUT_FOR_C QString::fromAscii("OPTIMIZE_OUTPUT_FOR_C")
-#define STR_OPTIMIZE_OUTPUT_JAVA  QString::fromAscii("OPTIMIZE_OUTPUT_JAVA")
-#define STR_OPTIMIZE_FOR_FORTRAN  QString::fromAscii("OPTIMIZE_FOR_FORTRAN")
-#define STR_OPTIMIZE_OUTPUT_VHDL  QString::fromAscii("OPTIMIZE_OUTPUT_VHDL")
-#define STR_CPP_CLI_SUPPORT       QString::fromAscii("CPP_CLI_SUPPORT")
-#define STR_HIDE_SCOPE_NAMES      QString::fromAscii("HIDE_SCOPE_NAMES")
-#define STR_EXTRACT_ALL           QString::fromAscii("EXTRACT_ALL")
-#define STR_SOURCE_BROWSER        QString::fromAscii("SOURCE_BROWSER")
-#define STR_GENERATE_HTML         QString::fromAscii("GENERATE_HTML")
-#define STR_GENERATE_LATEX        QString::fromAscii("GENERATE_LATEX")
-#define STR_GENERATE_MAN          QString::fromAscii("GENERATE_MAN")
-#define STR_GENERATE_RTF          QString::fromAscii("GENERATE_RTF")
-#define STR_GENERATE_XML          QString::fromAscii("GENERATE_XML")
-#define STR_GENERATE_HTMLHELP     QString::fromAscii("GENERATE_HTMLHELP")
-#define STR_GENERATE_TREEVIEW     QString::fromAscii("GENERATE_TREEVIEW")
-#define STR_USE_PDFLATEX          QString::fromAscii("USE_PDFLATEX")
-#define STR_PDF_HYPERLINKS        QString::fromAscii("PDF_HYPERLINKS")
-#define STR_SEARCHENGINE          QString::fromAscii("SEARCHENGINE")
-#define STR_HAVE_DOT              QString::fromAscii("HAVE_DOT")
-#define STR_CLASS_DIAGRAMS        QString::fromAscii("CLASS_DIAGRAMS")
-#define STR_CLASS_GRAPH           QString::fromAscii("CLASS_GRAPH")
-#define STR_COLLABORATION_GRAPH   QString::fromAscii("COLLABORATION_GRAPH")
-#define STR_GRAPHICAL_HIERARCHY   QString::fromAscii("GRAPHICAL_HIERARCHY")
-#define STR_INCLUDE_GRAPH         QString::fromAscii("INCLUDE_GRAPH")
-#define STR_INCLUDED_BY_GRAPH     QString::fromAscii("INCLUDED_BY_GRAPH")
-#define STR_CALL_GRAPH            QString::fromAscii("CALL_GRAPH")
-#define STR_CALLER_GRAPH          QString::fromAscii("CALLER_GRAPH")
-#define STR_HTML_COLORSTYLE_HUE   QString::fromAscii("HTML_COLORSTYLE_HUE")
-#define STR_HTML_COLORSTYLE_SAT   QString::fromAscii("HTML_COLORSTYLE_SAT")
-#define STR_HTML_COLORSTYLE_GAMMA QString::fromAscii("HTML_COLORSTYLE_GAMMA")
+#define STR_PROJECT_NAME          QString::fromLatin1("PROJECT_NAME")
+#define STR_PROJECT_LOGO          QString::fromLatin1("PROJECT_LOGO")
+#define STR_PROJECT_BRIEF         QString::fromLatin1("PROJECT_BRIEF")
+#define STR_INPUT                 QString::fromLatin1("INPUT")
+#define STR_OUTPUT_DIRECTORY      QString::fromLatin1("OUTPUT_DIRECTORY")
+#define STR_PROJECT_NUMBER        QString::fromLatin1("PROJECT_NUMBER")
+#define STR_RECURSIVE             QString::fromLatin1("RECURSIVE")
+#define STR_OPTIMIZE_OUTPUT_FOR_C QString::fromLatin1("OPTIMIZE_OUTPUT_FOR_C")
+#define STR_OPTIMIZE_OUTPUT_JAVA  QString::fromLatin1("OPTIMIZE_OUTPUT_JAVA")
+#define STR_OPTIMIZE_FOR_FORTRAN  QString::fromLatin1("OPTIMIZE_FOR_FORTRAN")
+#define STR_OPTIMIZE_OUTPUT_VHDL  QString::fromLatin1("OPTIMIZE_OUTPUT_VHDL")
+#define STR_CPP_CLI_SUPPORT       QString::fromLatin1("CPP_CLI_SUPPORT")
+#define STR_HIDE_SCOPE_NAMES      QString::fromLatin1("HIDE_SCOPE_NAMES")
+#define STR_EXTRACT_ALL           QString::fromLatin1("EXTRACT_ALL")
+#define STR_SOURCE_BROWSER        QString::fromLatin1("SOURCE_BROWSER")
+#define STR_GENERATE_HTML         QString::fromLatin1("GENERATE_HTML")
+#define STR_GENERATE_LATEX        QString::fromLatin1("GENERATE_LATEX")
+#define STR_GENERATE_MAN          QString::fromLatin1("GENERATE_MAN")
+#define STR_GENERATE_RTF          QString::fromLatin1("GENERATE_RTF")
+#define STR_GENERATE_XML          QString::fromLatin1("GENERATE_XML")
+#define STR_GENERATE_HTMLHELP     QString::fromLatin1("GENERATE_HTMLHELP")
+#define STR_GENERATE_TREEVIEW     QString::fromLatin1("GENERATE_TREEVIEW")
+#define STR_USE_PDFLATEX          QString::fromLatin1("USE_PDFLATEX")
+#define STR_PDF_HYPERLINKS        QString::fromLatin1("PDF_HYPERLINKS")
+#define STR_SEARCHENGINE          QString::fromLatin1("SEARCHENGINE")
+#define STR_HAVE_DOT              QString::fromLatin1("HAVE_DOT")
+#define STR_CLASS_DIAGRAMS        QString::fromLatin1("CLASS_DIAGRAMS")
+#define STR_CLASS_GRAPH           QString::fromLatin1("CLASS_GRAPH")
+#define STR_COLLABORATION_GRAPH   QString::fromLatin1("COLLABORATION_GRAPH")
+#define STR_GRAPHICAL_HIERARCHY   QString::fromLatin1("GRAPHICAL_HIERARCHY")
+#define STR_INCLUDE_GRAPH         QString::fromLatin1("INCLUDE_GRAPH")
+#define STR_INCLUDED_BY_GRAPH     QString::fromLatin1("INCLUDED_BY_GRAPH")
+#define STR_CALL_GRAPH            QString::fromLatin1("CALL_GRAPH")
+#define STR_CALLER_GRAPH          QString::fromLatin1("CALLER_GRAPH")
+#define STR_HTML_COLORSTYLE_HUE   QString::fromLatin1("HTML_COLORSTYLE_HUE")
+#define STR_HTML_COLORSTYLE_SAT   QString::fromLatin1("HTML_COLORSTYLE_SAT")
+#define STR_HTML_COLORSTYLE_GAMMA QString::fromLatin1("HTML_COLORSTYLE_GAMMA")
 
 static bool g_optimizeMapping[6][6] = 
 {
@@ -76,7 +94,7 @@ static QString g_optimizeOptionNames[6] =
 static bool stringVariantToBool(const QVariant &v)
 {
   QString s = v.toString().toLower();
-  return s==QString::fromAscii("yes") || s==QString::fromAscii("true") || s==QString::fromAscii("1");
+  return s==QString::fromLatin1("yes") || s==QString::fromLatin1("true") || s==QString::fromLatin1("1");
 } 
 
 static bool getBoolOption(
@@ -111,7 +129,7 @@ static void updateBoolOption(
   bool bOld = stringVariantToBool(option->value());
   if (bOld!=bNew)
   {
-    option->value()=QString::fromAscii(bNew ? "true" : "false");
+    option->value()=QString::fromLatin1(bNew ? "true" : "false");
     option->update();
   }
 }
@@ -124,7 +142,7 @@ static void updateIntOption(
   int iOld = option->value().toInt();
   if (iOld!=iNew)
   {
-    option->value()=QString::fromAscii("%1").arg(iNew);
+    option->value()=QString::fromLatin1("%1").arg(iNew);
     option->update();
   }
 }
@@ -148,7 +166,7 @@ TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QD
 {
    setWindowTitle(tr("Tune the color of the HTML output"));
    QGridLayout *layout = new QGridLayout(this);
-   m_image = new QImage(QString::fromAscii(":/images/tunecolor.png"));
+   m_image = new QImage(QString::fromLatin1(":/images/tunecolor.png"));
    m_imageLab = new QLabel;
    updateImage(hue,sat,gamma);
    layout->addWidget(new QLabel(tr("Example output: use the sliders on the right to adjust the color")),0,0);
@@ -519,7 +537,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
 
   m_recursive = new QCheckBox(this);
   m_recursive->setText(tr("Scan recursively"));
-  m_recursive->setChecked(TRUE);
+  m_recursive->setChecked(true);
   layout->addWidget(m_recursive);
 
   //---------------------------------------------------
@@ -574,7 +592,7 @@ void Step1::selectProjectIcon()
     QFile Fout(iconName);
     if(!Fout.exists()) 
     {
-      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromLatin1(");"));
     }
     else
     {
@@ -585,7 +603,7 @@ void Step1::selectProjectIcon()
       }
       else
       {
-        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromLatin1(");"));
       }
     }
   }
@@ -604,7 +622,7 @@ void Step1::selectSourceDir()
   }
   if (dirName.isEmpty())
   {
-    dirName=QString::fromAscii(".");
+    dirName=QString::fromLatin1(".");
   }
   m_sourceDir->setText(dirName);
 }
@@ -621,7 +639,7 @@ void Step1::selectDestinationDir()
   }
   if (dirName.isEmpty())
   {
-    dirName=QString::fromAscii(".");
+    dirName=QString::fromLatin1(".");
   }
   m_destDir->setText(dirName);
 }
@@ -683,7 +701,7 @@ void Step1::init()
     QFile Fout(iconName);
     if(!Fout.exists()) 
     {
-      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromLatin1(");"));
     }
     else
     {
@@ -694,7 +712,7 @@ void Step1::init()
       }
       else
       {
-        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromLatin1(");"));
       }
     }
   }
@@ -1220,7 +1238,7 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
 {
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
-  m_treeWidget->setHeaderLabels(QStringList() << QString::fromAscii("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << QString::fromLatin1("Topics"));
   QList<QTreeWidgetItem*> items;
   items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Project"))));
   items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Mode"))));

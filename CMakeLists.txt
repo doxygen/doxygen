@@ -23,6 +23,7 @@ option(use_sqlite3     "Add support for sqlite3 output [experimental]." OFF)
 option(use_libclang    "Add support for libclang parsing." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
+option(force_qt4       "Forces doxywizard to build using Qt4 even if Qt5 is installed" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(SOURCE "${CMAKE_SOURCE_DIR}")

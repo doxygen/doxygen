@@ -1,5 +1,3 @@
-#include <QtGui>
-#include <QtXml>
 #include "expert.h"
 #include "inputbool.h"
 #include "inputstring.h"
@@ -11,7 +9,22 @@
 #include "configdoc.h"
 #include "settings.h"
 
-#define SA(x) QString::fromAscii(x)
+#include <QTreeWidget>
+#include <QStackedWidget>
+#include <QTextBrowser>
+#include <QSplitter>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QScrollArea>
+#include <QFile>
+#include <QMessageBox>
+#include <QSettings>
+#include <QTextStream>
+#include <QTextCodec>
+#include <QFileInfo>
+
+#define SA(x) QString::fromLatin1(x)
+
 
 static QString convertToComment(const QString &s)
 {
@@ -48,7 +61,7 @@ Expert::Expert()
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
   m_topicStack = new QStackedWidget;
-  m_inShowHelp = FALSE;
+  m_inShowHelp = false;
 
   QFile file(SA(":/config.xml"));
   QString err;
@@ -69,7 +82,7 @@ Expert::Expert()
   createTopics(m_rootElement);
   m_helper = new QTextBrowser;
   m_helper->setReadOnly(true);
-  m_helper->setOpenExternalLinks(TRUE);
+  m_helper->setOpenExternalLinks(true);
   m_splitter = new QSplitter(Qt::Vertical);
   m_splitter->addWidget(m_treeWidget);
   m_splitter->addWidget(m_helper);
@@ -471,7 +484,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
   while (!child.isNull())
   {
     QString setting = child.attribute(SA("setting"));
-    if (setting.isEmpty() || IS_SUPPORTED(setting.toAscii()))
+    if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
     {
       QString type = child.attribute(SA("type"));
       QString docs = getDocsForNode(child);
@@ -634,7 +647,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
     QString dependsOn = child.attribute(SA("depends"));
     QString id        = child.attribute(SA("id"));
     if (!dependsOn.isEmpty() && 
-        (setting.isEmpty() || IS_SUPPORTED(setting.toAscii())))
+        (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
     {
        Input *parentOption = m_options[dependsOn];
        if (parentOption==0)
@@ -740,7 +753,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
     QString setting = childElem.attribute(SA("setting"));
     QString type = childElem.attribute(SA("type"));
     QString name = childElem.attribute(SA("id"));
-    if (setting.isEmpty() || IS_SUPPORTED(setting.toAscii()))
+    if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
     {
       QHash<QString,Input*>::const_iterator i = m_options.find(name);
       if (i!=m_options.end())
@@ -774,10 +787,10 @@ bool Expert::writeConfig(QTextStream &t,bool brief)
   }
 
   QTextCodec *codec = 0;
-  Input *option = m_options[QString::fromAscii("DOXYFILE_ENCODING")];
+  Input *option = m_options[QString::fromLatin1("DOXYFILE_ENCODING")];
   if (option)
   {
-    codec = QTextCodec::codecForName(option->value().toString().toAscii());
+    codec = QTextCodec::codecForName(option->value().toString().toLatin1());
     if (codec==0) // fallback: use UTF-8
     {
       codec = QTextCodec::codecForName("UTF-8");
@@ -809,16 +822,16 @@ void Expert::showHelp(Input *option)
 {
   if (!m_inShowHelp)
   {
-    m_inShowHelp = TRUE;
+    m_inShowHelp = true;
     m_helper->setText(
-        QString::fromAscii("<qt><b>")+option->id()+
-        QString::fromAscii("</b><br>")+
-        QString::fromAscii("<br/>")+
+        QString::fromLatin1("<qt><b>")+option->id()+
+        QString::fromLatin1("</b><br>")+
+        QString::fromLatin1("<br/>")+
         option->docs().
-        replace(QChar::fromAscii('\n'),QChar::fromAscii(' '))+
-        QString::fromAscii("</qt>")
+        replace(QChar::fromLatin1('\n'),QChar::fromLatin1(' '))+
+        QString::fromLatin1("</qt>")
         );
-    m_inShowHelp = FALSE;
+    m_inShowHelp = false;
   }
 }
 
@@ -862,7 +875,7 @@ void Expert::resetToDefaults()
 static bool stringVariantToBool(const QVariant &v)
 {
   QString s = v.toString().toLower();
-  return s==QString::fromAscii("yes") || s==QString::fromAscii("true") || s==QString::fromAscii("1");
+  return s==QString::fromLatin1("yes") || s==QString::fromLatin1("true") || s==QString::fromLatin1("1");
 } 
 
 static bool getBoolOption(
@@ -884,7 +897,7 @@ static QString getStringOption(
 
 bool Expert::htmlOutputPresent(const QString &workingDir) const
 {
-  bool generateHtml = getBoolOption(m_options,QString::fromAscii("GENERATE_HTML"));
+  bool generateHtml = getBoolOption(m_options,QString::fromLatin1("GENERATE_HTML"));
   if (!generateHtml || workingDir.isEmpty()) return false;
   QString indexFile = getHtmlOutputIndex(workingDir);
   QFileInfo fi(indexFile);
@@ -893,8 +906,8 @@ bool Expert::htmlOutputPresent(const QString &workingDir) const
 
 QString Expert::getHtmlOutputIndex(const QString &workingDir) const
 {
-  QString outputDir = getStringOption(m_options,QString::fromAscii("OUTPUT_DIRECTORY"));
-  QString htmlOutputDir = getStringOption(m_options,QString::fromAscii("HTML_OUTPUT"));
+  QString outputDir = getStringOption(m_options,QString::fromLatin1("OUTPUT_DIRECTORY"));
+  QString htmlOutputDir = getStringOption(m_options,QString::fromLatin1("HTML_OUTPUT"));
   //printf("outputDir=%s\n",qPrintable(outputDir));
   //printf("htmlOutputDir=%s\n",qPrintable(htmlOutputDir));
   QString indexFile = workingDir;
@@ -904,7 +917,7 @@ QString Expert::getHtmlOutputIndex(const QString &workingDir) const
   }
   else // append
   { 
-    indexFile += QString::fromAscii("/")+outputDir;
+    indexFile += QString::fromLatin1("/")+outputDir;
   }
   if (QFileInfo(htmlOutputDir).isAbsolute()) // override
   {
@@ -912,27 +925,27 @@ QString Expert::getHtmlOutputIndex(const QString &workingDir) const
   }
   else // append
   {
-    indexFile += QString::fromAscii("/")+htmlOutputDir;
+    indexFile += QString::fromLatin1("/")+htmlOutputDir;
   }
-  indexFile+=QString::fromAscii("/index.html");
+  indexFile+=QString::fromLatin1("/index.html");
   return indexFile;
 }
 
 bool Expert::pdfOutputPresent(const QString &workingDir) const
 {
-  bool generateLatex = getBoolOption(m_options,QString::fromAscii("GENERATE_LATEX"));
-  bool pdfLatex = getBoolOption(m_options,QString::fromAscii("USE_PDFLATEX"));
+  bool generateLatex = getBoolOption(m_options,QString::fromLatin1("GENERATE_LATEX"));
+  bool pdfLatex = getBoolOption(m_options,QString::fromLatin1("USE_PDFLATEX"));
   if (!generateLatex || !pdfLatex) return false;
-  QString latexOutput = getStringOption(m_options,QString::fromAscii("LATEX_OUTPUT"));
+  QString latexOutput = getStringOption(m_options,QString::fromLatin1("LATEX_OUTPUT"));
   QString indexFile;
   if (QFileInfo(latexOutput).isAbsolute())
   {
-    indexFile = latexOutput+QString::fromAscii("/refman.pdf");
+    indexFile = latexOutput+QString::fromLatin1("/refman.pdf");
   }
   else
   {
-    indexFile = workingDir+QString::fromAscii("/")+
-                latexOutput+QString::fromAscii("/refman.pdf");
+    indexFile = workingDir+QString::fromLatin1("/")+
+                latexOutput+QString::fromLatin1("/refman.pdf");
   }
   QFileInfo fi(indexFile);
   return fi.exists() && fi.isFile();

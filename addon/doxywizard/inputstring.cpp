@@ -17,7 +17,14 @@
 #include "doxywizard.h"
 #include "config.h"
 
-#include <QtGui>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QGridLayout>
+#include <QWheelEvent>
+#include <QToolBar>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QTextCodec>
 
 class NoWheelComboBox : public QComboBox
 {
@@ -34,7 +41,7 @@ InputString::InputString( QGridLayout *layout,int &row,
                           StringMode m, const QString &docs,
                           const QString &absPath )
   : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id),
-    m_absPath(absPath==QString::fromAscii("1"))
+    m_absPath(absPath==QString::fromLatin1("1"))
 {
   m_lab = new HelpLabel(id);
   if (m==StringFixed)
@@ -61,7 +68,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       m_br->setIconSize(QSize(24,24));
       if (m==StringFile || m==StringImage) 
       {
-        QAction *file = m_br->addAction(QIcon(QString::fromAscii(":/images/file.png")),QString(),this,SLOT(browse()));
+        QAction *file = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.png")),QString(),this,SLOT(browse()));
         file->setToolTip(tr("Browse to a file"));
         layout->addWidget( m_br,row,2 );
         if (m==StringImage) 
@@ -75,7 +82,7 @@ InputString::InputString( QGridLayout *layout,int &row,
       }
       else 
       {
-        QAction *dir = m_br->addAction(QIcon(QString::fromAscii(":/images/folder.png")),QString(),this,SLOT(browse()));
+        QAction *dir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.png")),QString(),this,SLOT(browse()));
         dir->setToolTip(tr("Browse to a folder"));
         layout->addWidget( m_br,row,2 );
       }
@@ -94,7 +101,7 @@ InputString::InputString( QGridLayout *layout,int &row,
                       this,   SLOT(setValue(const QString&)) );
   if (m_com) connect( m_com,  SIGNAL(activated(const QString &)), 
                       this,   SLOT(setValue(const QString &)) );
-  m_str = s+QChar::fromAscii('!'); // force update
+  m_str = s+QChar::fromLatin1('!'); // force update
   setValue(s);
   connect( m_lab, SIGNAL(enter()), SLOT(help()) );
   connect( m_lab, SIGNAL(reset()), SLOT(reset()) );
@@ -125,11 +132,11 @@ void InputString::updateDefault()
   {
     if (m_str==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
     }
     else
     {
-      m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
+      m_lab->setText(QString::fromLatin1("<qt><font color='red'>")+m_id+QString::fromLatin1("</font></qt>"));
     }
     if (m_im)
     {
@@ -142,7 +149,7 @@ void InputString::updateDefault()
         QFile Fout(m_str);
         if(!Fout.exists()) 
         {
-          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromAscii(");"));
+          m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromLatin1(");"));
         }
         else
         {
@@ -153,7 +160,7 @@ void InputString::updateDefault()
           }
           else
           {
-            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromAscii(");"));
+            m_im->setText(tr("Sorry, no preview available (")+m_str+QString::fromLatin1(");"));
           }
         }
       }
