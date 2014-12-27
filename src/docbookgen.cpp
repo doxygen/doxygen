@@ -589,11 +589,9 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
       t << "_1" << md->anchor() << "\">" << convertToXML(md->name()) << "</link>";
       t << " (" << endl;
       ArgumentList *declAl = md->declArgumentList();
-      ArgumentList *defAl = md->argumentList();
       if (declAl && declAl->count()>0)
       {
         ArgumentListIterator declAli(*declAl);
-        ArgumentListIterator defAli(*defAl);
         Argument *a;
         int cnt=0;
         for (declAli.toFirst();(a=declAli.current());++declAli)
@@ -812,7 +810,7 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
   }
 }
 
-static void generateDocbookSection(Definition *d,FTextStream &t,MemberList *ml,const char *kind,
+static void generateDocbookSection(Definition *d,FTextStream &t,MemberList *ml,const char *,
     bool detailed=0, const char *header=0,const char *documentation=0)
 {
   if (ml==0) return;
@@ -820,7 +818,6 @@ static void generateDocbookSection(Definition *d,FTextStream &t,MemberList *ml,c
   MemberDef *md;
   int count=0;
   int doc_count=0;
-  QCString compkind = kind;
   QCString title, desctitle;
 
   for (mli.toFirst();(md=mli.current());++mli) 

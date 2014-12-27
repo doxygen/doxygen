@@ -1371,7 +1371,6 @@ void PerlModDocVisitor::visitPost(DocParBlock *)
 
 static void addTemplateArgumentList(ArgumentList *al,PerlModOutput &output,const char *)
 {
-  QCString indentStr;
   if (!al)
     return;
   output.openList("template_parameters");

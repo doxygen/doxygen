@@ -2458,7 +2458,6 @@ static MemberDef *addVariableToFile(
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
-  QCString nscope;
   if (!scope.isEmpty())
   {
     if (scope.find('@')!=-1) return 0; // anonymous scope!
@@ -5493,7 +5492,6 @@ static bool findGlobalMember(EntryNav *rootNav,
       {
         Debug::print(Debug::FindMembers,0,"4. Try to add member `%s' to scope `%s'\n",
             md->name().data(),namespaceName.data());
-        QCString nsName = nd ? nd->name().data() : "";
 
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);

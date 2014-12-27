@@ -80,8 +80,6 @@ void DirDef::addFile(FileDef *fd)
 
 static QCString encodeDirName(const QCString &anchor)
 {
-  QCString result;
-
   // convert to md5 hash
   uchar md5_sig[16];
   QCString sigStr(33);
@@ -90,6 +88,7 @@ static QCString encodeDirName(const QCString &anchor)
   return sigStr;
 
   // old algorithm
+//  QCString result;
 
 //  int l = anchor.length(),i;
 //  for (i=0;i<l;i++)

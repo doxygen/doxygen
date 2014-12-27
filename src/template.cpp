@@ -2998,7 +2998,6 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
           {
             c->push();
             //int index = m_reversed ? list.count() : 0;
-            TemplateVariant v;
             const TemplateVariant *parentLoop = c->getRef("forloop");
             uint index = 0;
             int i = m_down ? e : s;

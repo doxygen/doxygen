@@ -63,7 +63,6 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
   t << "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{";
   QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
-  QCString latexOutputDir = Config_getString("LATEX_OUTPUT")+"/";
   int i = 0;
   const char *bibdata = citeDataList.first();
   while (bibdata)

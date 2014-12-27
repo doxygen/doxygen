@@ -1296,7 +1296,6 @@ void FileDef::addIncludedUsingDirectives()
   visited=TRUE;
   //printf("( FileDef::addIncludedUsingDirectives for file %s\n",name().data());
 
-  NamespaceList nl;
   if (m_includeList) // file contains #includes
   {
     {
@@ -1542,7 +1541,6 @@ static Directory *findDirNode(Directory *root,const QCString &name)
 
 static void mergeFileDef(Directory *root,FileDef *fd)
 {
-  QCString rootPath = root->name();
   QCString filePath = fd->absFilePath();
   //printf("merging %s\n",filePath.data());
   Directory *dirNode = findDirNode(root,filePath);

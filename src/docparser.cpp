@@ -844,7 +844,6 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                                const QCString &cmdName)
 {
   DBG(("handleStyleArgument(%s)\n",qPrint(cmdName)));
-  QCString tokenName = g_token->name;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -1178,7 +1177,6 @@ static void handleParameterType(DocNode *parent,QList<DocNode> &children,const Q
 {
   QCString name = g_token->name;
   int p=0,i;
-  QCString type;
   while ((i=paramTypes.find('|',p))!=-1)
   {
     g_token->name = paramTypes.mid(p,i-p);
@@ -2137,7 +2135,6 @@ DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) :
 
 bool DocXRefItem::parse()
 {
-  QCString listName;
   RefList *refList = Doxygen::xrefLists->find(m_key); 
   if (refList && 
       (
@@ -2571,7 +2568,6 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
 {
   static uint numBibFiles = Config_getList("CITE_BIB_FILES").count();
   m_parent = parent;
-  QCString anchor;
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;

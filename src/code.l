@@ -1236,7 +1236,6 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
       {
 	int vi;
 	QCString vn=varName;
-	QCString scope;
 	if ((vi=vn.findRev("::"))!=-1 || (vi=vn.findRev('.'))!=-1)  // explicit scope A::b(), probably static member
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
