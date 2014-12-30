@@ -63,7 +63,7 @@ class MemberGroup
                MemberListType lt,
                ClassDef *inheritedFrom,const QCString &inheritId);
 
-    QCString documentation() const { return doc; }
+    const QCString &documentation() const { return doc; }
     bool allMembersInSameSection() const { return inSameSection; }
     void addToDeclarationSection();
     int countDecMembers(GroupDef *gd=0);

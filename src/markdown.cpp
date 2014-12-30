@@ -2374,8 +2374,8 @@ void MarkdownFileParser::parseInput(const char *fileName,
   bool markdownEnabled = Doxygen::markdownSupport;
   Doxygen::markdownSupport = TRUE;
 
-  bool needsEntry;
-  Protection prot;
+  bool needsEntry = FALSE;
+  Protection prot=Public;
   while (parseCommentBlock(
         this,
         current,

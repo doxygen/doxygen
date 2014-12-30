@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+  <compounddef id="struct_foo" kind="struct" language="C++" prot="public">
+    <compoundname>Foo</compoundname>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type/>
+        <definition>Foo::operator int</definition>
+        <argsstring>()</argsstring>
+        <name>operator int</name>
+        <briefdescription>
+          <para>Conversion to int. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="064_castoperator.cpp" line="22" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="struct_foo_1a870f369cc7af9489418451e78d8bd539" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type/>
+        <definition>Foo::operator int</definition>
+        <argsstring>() const </argsstring>
+        <name>operator int</name>
+        <briefdescription>
+          <para>Conversion to int const. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="064_castoperator.cpp" line="24" column="1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+      <para><ref refid="struct_foo" kindref="compound">Foo</ref>. </para>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <itemizedlist>
+          <listitem>
+            <para>No autolink for operator int()</para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" kindref="member">operator int()</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" kindref="member">title</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" kindref="member">Foo::operator int()</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" kindref="member">Foo::operator int()</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" kindref="member">title</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>No autolink for operator int() const</para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">operator int() const</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">title</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">Foo::operator int() const</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">Foo::operator int() const</ref>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <ref refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" kindref="member">title</ref>
+            </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+    </detaileddescription>
+    <location file="064_castoperator.cpp" bodystart="20" bodyend="25"/>
+    <listofallmembers>
+      <member refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" prot="public" virt="non-virtual">
+        <scope>Foo</scope>
+        <name>operator int</name>
+      </member>
+      <member refid="struct_foo_1a870f369cc7af9489418451e78d8bd539" prot="public" virt="non-virtual">
+        <scope>Foo</scope>
+        <name>operator int</name>
+      </member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

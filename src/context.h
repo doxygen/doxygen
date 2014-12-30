@@ -51,6 +51,8 @@ struct MemberInfo;
 class MemberGroup;
 class MemberGroupSDict;
 class MemberGroupList;
+class DotNode;
+class DotGfxHierarchyTable; 
 
 //----------------------------------------------------
 
@@ -419,6 +421,26 @@ class ClassIndexContext : public RefCountedContext, public TemplateStructIntf
 
 //----------------------------------------------------
 
+class InheritanceGraphContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static InheritanceGraphContext *alloc(DotGfxHierarchyTable *hierarchy,DotNode *n,int id)
+    { return new InheritanceGraphContext(hierarchy,n,id); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id);
+   ~InheritanceGraphContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
 class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
@@ -485,8 +507,8 @@ class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
     static NestingNodeContext *alloc(const NestingNodeContext *parent,Definition *def,
-                                     int index,int level,bool addClasses)
-    { return new NestingNodeContext(parent,def,index,level,addClasses); }
+                                     int index,int level,bool addClasses,bool inherit,bool hideSuper)
+    { return new NestingNodeContext(parent,def,index,level,addClasses,inherit,hideSuper); }
 
     QCString id() const;
 
@@ -497,7 +519,7 @@ class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 
   private:
     NestingNodeContext(const NestingNodeContext *parent,
-                       Definition *,int index,int level,bool addClasses);
+                       Definition *,int index,int level,bool addClasses,bool inherit,bool hideSuper);
    ~NestingNodeContext();
     class Private;
     Private *p;
@@ -527,6 +549,8 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addPages(const PageSDict &pages,bool rootOnly);
     void addModules(const GroupSDict &modules);
     void addModules(const GroupList &modules);
+    void addClassHierarchy(const ClassSDict &clDict,bool rootOnly);
+    void addDerivedClasses(const BaseClassList *bcl,bool hideSuper);
 
   private:
     NestingContext(const NestingNodeContext *parent,int level);

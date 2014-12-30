@@ -116,7 +116,7 @@ static std::string uriDecode(const std::string & sSrc)
 }
 
 /** return list of strings that result when splitting \a s using 
- *  delimeter \a delim 
+ *  delimiter \a delim 
  */
 static std::vector<std::string> split(const std::string &s, char delim) 
 {
@@ -137,7 +137,7 @@ T fromString(const std::string& s)
   return t;
 }
 
-/** Class that holds the startin position of a word */
+/** Class that holds the starting position of a word */
 struct WordPosition
 {
   WordPosition(int s,int i) : start(s), index(i) {}
@@ -196,7 +196,7 @@ static bool insideRange(const std::vector<Range> &ranges,int start,int len)
 }
 
 /** Returns a list of text \a fragments from \a s containing one or
- *  more \a words. The list is sorted occording to the 
+ *  more \a words. The list is sorted according to the 
  *  number of occurrences of words within the fragment.
  */ 
 static void highlighter(const std::string &s,

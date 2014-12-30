@@ -147,16 +147,16 @@ class DocbookDocVisitor : public DocVisitor
     void startMscFile(const QCString &fileName,const QCString &width,
     const QCString &height, bool hasCaption);
     void endMscFile(bool hasCaption);
-    void writeMscFile(const QCString &fileName);
+    void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption);
     void endDiaFile(bool hasCaption);
-    void writeDiaFile(const QCString &fileName);
+    void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
     const QCString &height, bool hasCaption);
     void endDotFile(bool hasCaption);
-    void writeDotFile(const QCString &fileName);
-    void writePlantUMLFile(const QCString &fileName);
+    void writeDotFile(const QCString &fileName, DocVerbatim *s);
+    void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
     //--------------------------------------
     // state variables
     //--------------------------------------

@@ -151,13 +151,13 @@ bool GroupDef::addClass(const ClassDef *cd)
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   if (cd->isHidden()) return FALSE;
   updateLanguage(cd);
-  if (classSDict->find(cd->qualifiedName())==0)
+  QCString qn = cd->name();
+  if (classSDict->find(qn)==0)
   {
-    QCString qn = cd->qualifiedName();
     //printf("--- addClass %s sort=%d\n",qn.data(),sortBriefDocs);
     if (sortBriefDocs)
     {
-      classSDict->inSort(cd->qualifiedName(),cd);
+      classSDict->inSort(qn,cd);
     }
     else
     {
@@ -180,13 +180,13 @@ bool GroupDef::addClass(const ClassDef *cd)
             j++;
           }
           //printf("Found scope at index %d\n",j);
-          classSDict->insertAt(j,cd->qualifiedName(),cd);
+          classSDict->insertAt(j,qn,cd);
           found=TRUE;
         }
       }
       if (!found) // no insertion point found -> just append
       {
-        classSDict->append(cd->qualifiedName(),cd);
+        classSDict->append(qn,cd);
       }
     }
     return TRUE;
@@ -510,7 +510,31 @@ void GroupDef::removeMember(MemberDef *md)
 
 bool GroupDef::containsGroup(const GroupDef *def)
 {
-    return this==def || groupList->find(def) >= 0;
+  if (this==def)
+  {
+    return TRUE;
+  }
+  else if (groupList->find(def)>=0)
+  {
+    return TRUE;
+  }
+  else // look for subgroups as well
+  {
+    GroupList *groups = partOfGroups();
+    if (groups)
+    {
+      GroupListIterator it(*groups);
+      GroupDef *gd;
+      for (;(gd=it.current());++it)
+      {
+        if (gd->containsGroup(def))
+        {
+          return TRUE;
+        }
+      }
+    }
+  }
+  return FALSE;
 }
 
 void GroupDef::addGroup(const GroupDef *def)
@@ -1346,16 +1370,23 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)) &&
-	!gd->containsGroup(subGroup) )
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
-      gd->addGroup(subGroup);
-      subGroup->makePartOfGroup(gd);
-    }
-    else if (gd==subGroup)
-    {
-      warn(root->fileName,root->startLine,"Trying to add group %s to itself!",
-          gd->name().data());
+      if (gd==subGroup)
+      {
+        warn(root->fileName,root->startLine,"Refusing to add group %s to itself",
+            gd->name().data());
+      }
+      else if (gd->containsGroup(subGroup))
+      {
+        warn(root->fileName,root->startLine,"Refusing to add group %s to group %s, since the latter is already a "
+                                            "subgroup of the former\n", subGroup->name().data(),gd->name().data());
+      }
+      else
+      {
+        gd->addGroup(subGroup);
+        subGroup->makePartOfGroup(gd);
+      }
     }
   }
 }
@@ -1503,6 +1534,7 @@ void GroupDef::addListReferences()
              getOutputFileBase(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name(),
+             0,
              0
             );
   }
@@ -1589,7 +1621,7 @@ void GroupDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QC
   }
   if (ml) 
   {
-    ml->writeDeclarations(ol,0,0,0,this,title,0,definitionType());
+    ml->writeDeclarations(ol,0,0,0,this,title,0);
   }
 }
 

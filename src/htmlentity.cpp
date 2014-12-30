@@ -193,7 +193,7 @@ static struct htmlEntityInfo
   { SYM(upsih),    "\xcf\x92",     "&upsih;",    "<upsih/>",             "&#978;",        "{$\\Upsilon$}",          NULL,     "\\u978?",     { NULL,         DocSymbol::Perl_unknown }},
   { SYM(piv),      "\xcf\x96",     "&piv;",      "<piv/>",               "&#982;",        "{$\\varpi$}",            NULL,     "\\u982?",     { NULL,         DocSymbol::Perl_unknown }},
   { SYM(bull),     "\xe2\x80\xa2", "&bull;",     "<bull/>",              "&#8226;",       "\\textbullet{}",         NULL,     "\\'95",       { NULL,         DocSymbol::Perl_unknown }},
-  { SYM(hellip),   "\xe2\x80\xa6", "&hellip;",   "<hellip/>",            "&#8230;",       "{$\\cdots$}",            NULL,     "\\'85",       { NULL,         DocSymbol::Perl_unknown }},
+  { SYM(hellip),   "\xe2\x80\xa6", "&hellip;",   "<hellip/>",            "&#8230;",       "{$\\dots$}",             NULL,     "\\'85",       { NULL,         DocSymbol::Perl_unknown }},
   { SYM(prime),    "\xe2\x80\xb2", "&prime;",    "<prime/>",             "&#8242;",       "'",                      NULL,     "\\u8242?",    { "\\\'",       DocSymbol::Perl_string  }},
   { SYM(Prime),    "\xe2\x80\xb3", "&Prime;",    "<Prime/>",             "&#8243;",       "''",                     NULL,     "\\u8243?",    { "\"",         DocSymbol::Perl_char    }},
   { SYM(oline),    "\xe2\x80\xbe", "&oline;",    "<oline/>",             "&#8254;",       "{$\\overline{\\,}$}",    NULL,     "\\u8254?",    { NULL,         DocSymbol::Perl_unknown }},
@@ -298,7 +298,7 @@ static struct htmlEntityInfo
 
   // doxygen extension to the HTML4 table of HTML entities
   { SYM(tm),       "\xe2\x84\xa2", "&trade;",    "<trademark/>",         "&#8482;",       "\\texttrademark{}",      "(TM)",   "\\'99",       { "trademark",  DocSymbol::Perl_symbol  }},
-  { SYM(apos),     "'",            "'",          "'",                    "&apos;",        "'",                      "'",      "'",           { "\\\'",       DocSymbol::Perl_string  }},
+  { SYM(apos),     "'",            "'",          "'",                    "&apos;",        "\\textquotesingle{}",    "'",      "'",           { "\\\'",       DocSymbol::Perl_string  }},
 
   // doxygen commands represented as HTML entities
   { SYM(BSlash),   "\\",           "\\",         "\\",                   "\\",            "\\textbackslash{}",      "\\\\",   "\\\\",        { "\\\\",       DocSymbol::Perl_string  }},

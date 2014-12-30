@@ -447,6 +447,14 @@ class DocVerbatim : public DocNode
     QCString relPath() const     { return m_relPath; }
     QCString language() const    { return m_lang; }
     bool isBlock() const         { return m_isBlock; }
+    bool hasCaption() const      { return !m_children.isEmpty(); }
+    QCString width() const       { return m_width; }
+    QCString height() const      { return m_height; }
+    const QList<DocNode> &children() const { return m_children; }
+    QList<DocNode> &children()   { return m_children; }
+    void setText(const QCString &t)   { m_text=t;   }
+    void setWidth(const QCString &w)  { m_width=w;  }
+    void setHeight(const QCString &h) { m_height=h; }
 
   private:
     QCString  m_context;
@@ -457,6 +465,9 @@ class DocVerbatim : public DocNode
     QCString  m_relPath;
     QCString  m_lang;
     bool      m_isBlock;
+    QCString  m_width;
+    QCString  m_height;
+    QList<DocNode> m_children;
 };
 
 
@@ -686,7 +697,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
   private:
     HtmlAttribList m_attribs;
     QCString  m_name;
-    Type     m_type;
+    Type      m_type;
     QCString  m_width;
     QCString  m_height;
     QCString  m_relPath;
@@ -1114,9 +1125,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
                            int direction);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
     void handleImage(const QCString &cmdName);
-    void handleDotFile(const QCString &cmdName);
-    void handleMscFile(const QCString &cmdName);
-    void handleDiaFile(const QCString &cmdName);
+    template<class T> void handleFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
     void handleCite();

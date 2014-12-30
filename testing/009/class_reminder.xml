@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="class_reminder" kind="class" prot="public">
+  <compounddef id="class_reminder" kind="class" language="C++" prot="public">
     <compoundname>Reminder</compoundname>
     <sectiondef kind="public-func">
       <memberdef kind="function" id="class_reminder_1a173b5218bb11287b0e86a550d9f0728d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

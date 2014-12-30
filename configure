@@ -17,7 +17,7 @@
 
 doxygen_version_major=1
 doxygen_version_minor=8
-doxygen_version_revision=8
+doxygen_version_revision=9
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
 doxygen_version_mmn=NO
@@ -554,8 +554,13 @@ fi
 
 if test "$f_libclang" = YES; then
   printf "  Checking for libclang ... "
-  libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
-  libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib64/llvm /usr/lib/llvm"
+  if llvm-config --version > /dev/null 2>&1; then
+    libclang_hdr_dir=`llvm-config --includedir`
+    libclang_lib_dir=`llvm-config --libdir`
+  else
+    libclang_hdr_dir="/usr/include /usr/local/include /opt/local/include"
+    libclang_lib_dir="/usr/lib /usr/local/lib /opt/local/lib /usr/lib64/llvm /usr/lib/llvm"
+  fi
   if test "$f_libclangstatic" = NO; then
     libclang_lib_name="libclang.so libclang.dylib libclang.a libclang.dll.a"
   else
@@ -952,7 +957,7 @@ EOF
      #if test "$f_thread" = YES; then
      #  realopts="$realopts thread"
      #fi
-     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_INC%%;$sqlite3_hdr_dir;g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
+     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" -e "s;%%SQLITE3_INC%%;$sqlite3_hdr_dir;g" -e "s;%%SQLITE3_LIBS%%;$sqlite3_link;g" -e "s;%%LIBCLANG_INC%%;$libclang_hdr_dir;g" -e "s;%%LIBCLANG_LIBS%%;$libclang_link;g" >> $DST
      echo "  Created $DST from $SRC..."
 done
 

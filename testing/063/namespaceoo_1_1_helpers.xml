@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="namespaceoo_1_1_helpers" kind="namespace">
+  <compounddef id="namespaceoo_1_1_helpers" kind="namespace" language="Tcl">
     <compoundname>oo::Helpers</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="namespaceoo_1_1_helpers_1a96c5b755588beb2e930cff23ce811d6c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">

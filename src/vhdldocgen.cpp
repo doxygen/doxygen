@@ -737,7 +737,7 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
   if (mdef) return mdef;
 
   // nothing found so far
-  // if we are an architecture or package body search in entitiy
+  // if we are an architecture or package body search in entity
 
   if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS ||
       (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
@@ -1445,7 +1445,7 @@ bool VhdlDocGen::isNumber(const QCString& s)
 void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef* mdef)
 {
   QCString qcs = s;
-  QCString temp(qcs.length());
+  QCString temp;
   qcs.stripPrefix(":");
   qcs.stripPrefix("is");
   qcs.stripPrefix("IS");
@@ -1464,7 +1464,7 @@ void VhdlDocGen::formatString(const QCString &s, OutputList& ol,const MemberDef*
     if (j>0) b=qcs[j-1];
     if (c=='"' || c==',' || c=='\''|| c=='(' || c==')'  || c==':' || c=='[' || c==']' ) // || (c==':' && b!='=')) // || (c=='=' && b!='>'))
     {
-      if (temp.at(index-1) != ' ')
+      if (temp.length()>=index && temp.at(index-1) != ' ')
       {
         temp+=" ";
       }
@@ -1785,21 +1785,6 @@ QCString VhdlDocGen::convertArgumentListToString(const ArgumentList* al,bool fun
 void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
     OutputList& ol,GroupDef* gd,ClassDef* cd,FileDef *fd,NamespaceDef* nd)
 {
-  static ClassDef *cdef;
-  //static GroupDef* gdef;
-  if (cd && cdef!=cd)
-  { // only one inline link
-    VhdlDocGen::writeInlineClassLink(cd,ol);
-    cdef=cd;
-  }
-
-  /*
-     if (gd && gdef==gd) return;
-     if (gd && gdef!=gd)
-     {
-     gdef=gd;
-     }
-   */
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),0,FALSE,VhdlDocGen::LIBRARY);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),0,FALSE,VhdlDocGen::USE);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,nd,fd,gd,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),0,FALSE,VhdlDocGen::FUNCTION);
@@ -2322,6 +2307,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
 {
 
   SDict<QCString> pack(1009);
+  pack.setAutoDelete(TRUE);
 
   bool first=TRUE;
   MemberDef *md;

@@ -122,6 +122,7 @@ class DotNode
     friend class DotNodeList;
     friend class DotCallGraph;
     friend class DotGroupCollaboration;
+    friend class DotInheritanceGraph;
 
     friend QCString computeMd5Signature(
                       DotNode *root, GraphType gt,
@@ -133,12 +134,15 @@ class DotNode
                      );
 };
 
-inline int DotNode::findParent( DotNode *n )
+/** Class representing a list of DotNode objects. */
+class DotNodeList : public QList<DotNode>
 {
-    if( !m_parents )
-        return -1;
-    return m_parents->find(n);
-}
+  public:
+    DotNodeList() : QList<DotNode>() {}
+   ~DotNodeList() {}
+  private:
+    int compareValues(const DotNode *n1,const DotNode *n2) const;
+};
 
 /** Represents a graphical class hierarchy */
 class DotGfxHierarchyTable
@@ -147,6 +151,8 @@ class DotGfxHierarchyTable
     DotGfxHierarchyTable();
    ~DotGfxHierarchyTable();
     void writeGraph(FTextStream &t,const char *path, const char *fileName) const;
+    void createGraph(DotNode *rootNode,FTextStream &t,const char *path,const char *fileName,int id) const;
+    const DotNodeList *subGraphs() const { return m_rootSubgraphs; }
   
   private:
     void addHierarchy(DotNode *n,ClassDef *cd,bool hide);

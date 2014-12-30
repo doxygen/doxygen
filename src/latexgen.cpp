@@ -36,30 +36,7 @@
 #include "classlist.h"
 #include "namespacedef.h"
 #include "filename.h"
-
-static const char doxygenLatexStyle[] =
-#include "doxygen.sty.h"
-;
-
-//static QCString filterTitle(const char *s)
-//{
-//  QCString tmp=s,result;
-//  uint i;for (i=0;i<tmp.length();i++)
-//  {
-//    char c=tmp.at(i);
-//    switch(c)
-//    {
-//      case '#': result+="\\#";  break;
-//      case '"': result+="\\\""; break;
-//      case '%': result+="\\%";  break;
-//      case '[': result+="{";    break;
-//      case ']': result+="}";    break;
-//      default:  result+=c;      break;
-//    }
-//  }
-//  return result;  
-//}
-
+#include "resourcemgr.h"
 
 
 LatexGenerator::LatexGenerator() : OutputGenerator()
@@ -293,7 +270,29 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\usepackage{fixltx2e}\n" // for \textsubscript
        "\\usepackage{calc}\n"
        "\\usepackage{doxygen}\n"
-       "\\usepackage{graphicx}\n"
+       "\\usepackage[export]{adjustbox} % also loads graphicx\n";
+  QStrList extraLatexStyle = Config_getList("LATEX_EXTRA_STYLESHEET");
+  for (uint i=0; i<extraLatexStyle.count(); ++i)
+  {
+    QCString fileName(extraLatexStyle.at(i));
+    if (!fileName.isEmpty())
+    {
+      QFileInfo fi(fileName);
+      if (fi.exists())
+      {
+        if (checkExtension(fi.fileName().data(), latexStyleExtension))
+        {
+          // strip the extension, it will be added by the usepackage in the tex conversion process
+          t << "\\usepackage{" << stripExtensionGeneral(fi.fileName().data(), latexStyleExtension) << "}\n";
+        }
+        else
+        {
+          t << "\\usepackage{" << fi.fileName().utf8() << "}\n";
+        }
+      }
+    }
+  }
+  t << "\\usepackage{graphicx}\n"
        "\\usepackage[utf8]{inputenc}\n"
        "\\usepackage{makeidx}\n"
        "\\usepackage{multicol}\n"
@@ -316,7 +315,6 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // Define default fonts
   t << "% Font selection\n"
        "\\usepackage[T1]{fontenc}\n"
-       "\\usepackage{mathptmx}\n"
        "\\usepackage[scaled=.90]{helvet}\n"
        "\\usepackage{courier}\n"
        "\\usepackage{amssymb}\n"
@@ -525,7 +523,7 @@ static void writeDefaultHeaderPart3(FTextStream &t)
 
 static void writeDefaultStyleSheet(FTextStream &t)
 {
-  t << doxygenLatexStyle;
+  t << ResourceMgr::instance().getAsString("doxygen.sty");
 }
 
 static void writeDefaultFooter(FTextStream &t)
@@ -1089,7 +1087,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 {
   if (!ref && fn)
   {
-    t << "}{\\pageref{" << fn << "}}{}" << endl;
+    t << "}{\\pageref{" << stripPath(fn) << "}}{}" << endl;
   }
 }
 
@@ -1954,10 +1952,10 @@ void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 
 void LatexGenerator::writeDoc(DocNode *n,Definition *ctx,MemberDef *)
 {
-  LatexDocVisitor *visitor = 
+  LatexDocVisitor *visitor =
     new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),insideTabbing);
   n->accept(visitor);
-  delete visitor; 
+  delete visitor;
 }
 
 void LatexGenerator::startConstraintList(const char *header)

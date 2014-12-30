@@ -264,8 +264,9 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
  */
 QCString generateMarker(int id)
 {
-  QCString result;
-  result.sprintf("@%d",id);
+  const int maxMarkerStrLen = 20;
+  char result[maxMarkerStrLen];
+  qsnprintf(result,maxMarkerStrLen,"@%d",id);
   return result;
 }
 
@@ -3699,7 +3700,7 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
 
   ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
   Argument *srcA,*dstA;
-  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  for (;(srcA=srcAli.current()) && (dstA=dstAli.current());++srcAli,++dstAli)
   {
     if (srcA->defval.isEmpty() && !dstA->defval.isEmpty())
     {
@@ -4715,6 +4716,7 @@ bool resolveLink(/* in */ const char *scName,
   *resContext=0;
 
   QCString linkRef=lr;
+  QCString linkRefWithoutTemplates = stripTemplateSpecifiersFromScope(linkRef,FALSE);
   //printf("ResolveLink linkRef=%s inSee=%d\n",lr,inSeeBlock);
   FileDef  *fd;
   GroupDef *gd;
@@ -4766,6 +4768,12 @@ bool resolveLink(/* in */ const char *scName,
     return TRUE;
   }
   else if ((cd=getClass(linkRef))) // class link
+  {
+    *resContext=cd;
+    resAnchor=cd->anchor();
+    return TRUE;
+  }
+  else if ((cd=getClass(linkRefWithoutTemplates))) // C#/Java generic class link
   {
     *resContext=cd;
     resAnchor=cd->anchor();
@@ -4913,8 +4921,10 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
   ambig=FALSE;
   if (n==0) return 0;
 
-  QCString key;
-  key.sprintf("%p:",fnDict);
+  const int maxAddrSize = 20;
+  char addr[maxAddrSize];
+  qsnprintf(addr,maxAddrSize,"%p:",fnDict);
+  QCString key = addr;
   key+=n;
 
   g_findFileDefCache.setAutoDelete(TRUE);
@@ -5025,6 +5035,41 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
       }
     }
   }
+  return result;
+}
+
+//----------------------------------------------------------------------
+
+/// substitute all occurrences of \a src in \a s by \a dst
+QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
+{
+  if (s.isEmpty() || src.isEmpty()) return s;
+  const char *p, *q;
+  int srcLen = src.length();
+  int dstLen = dst.length();
+  int resLen;
+  if (srcLen!=dstLen)
+  {
+    int count;
+    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = s.length()+count*(dstLen-srcLen);
+  }
+  else // result has same size as s
+  {
+    resLen = s.length();
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.data(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    int l = (int)(q-p);
+    memcpy(r,p,l);
+    r+=l;
+    if (dst) memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  qstrcpy(r,p);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
   return result;
 }
 
@@ -5989,10 +6034,11 @@ QCString substituteTemplateArgumentsInString(
     // for its template instance argument.
     bool found=FALSE;
     for (formAli.toFirst();
-        (formArg=formAli.current()) && !found && (actArg=actAli.current());
+        (formArg=formAli.current()) && !found;
         ++formAli,++actAli
         )
     {
+      actArg = actAli.current();
       if (formArg->type.left(6)=="class " && formArg->name.isEmpty())
       {
         formArg->name = formArg->type.mid(6);
@@ -6008,7 +6054,7 @@ QCString substituteTemplateArgumentsInString(
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
         //printf(">> formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
-        //    formArg->name.data(),actArg->type.data(),actArg->name.data()
+        //    formArg->name.data(),actArg ? actArg->type.data() : "",actArg ? actArg->name.data() : ""
         //    );
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
         {
@@ -6249,7 +6295,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
   {
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,startLine);
-    //printf("Adding page docs `%s' pi=%p name=%s\n",doc.data(),pi,name);
+    //printf("Adding page docs `%s' pi=%p name=%s\n",doc.data(),pd,name);
   }
   else // new page
   {
@@ -6326,7 +6372,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
 void addRefItem(const QList<ListItemInfo> *sli,
     const char *key, 
-    const char *prefix, const char *name,const char *title,const char *args)
+    const char *prefix, const char *name,const char *title,const char *args,Definition *scope)
 {
   //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
   if (sli && key && key[0]!='@') // check for @ to skip anonymous stuff (see bug427012)
@@ -6351,6 +6397,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
         ASSERT(item!=0);
 
         item->prefix = prefix;
+        item->scope  = scope;
         item->name   = name;
         item->title  = title;
         item->args   = args;
@@ -6462,6 +6509,8 @@ void filterLatexString(FTextStream &t,const char *str,
                    break;           
         case '"':  t << "\\char`\\\"{}";
                    break;
+        case '\'': t << "\\textquotesingle{}";
+                   break;
 
         default:   
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
@@ -6519,16 +6568,25 @@ QCString rtfFormatBmkStr(const char *name)
   return *tag;
 }
 
-QCString stripExtension(const char *fName)
+bool checkExtension(const char *fName, const char *ext)
+{
+  return (QCString(fName).right(QCString(ext).length())==ext);
+}
+
+QCString stripExtensionGeneral(const char *fName, const char *ext)
 {
   QCString result=fName;
-  if (result.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
+  if (result.right(QCString(ext).length())==QCString(ext))
   {
-    result=result.left(result.length()-Doxygen::htmlFileExtension.length());
+    result=result.left(result.length()-QCString(ext).length());
   }
   return result;
 }
 
+QCString stripExtension(const char *fName)
+{
+  return stripExtensionGeneral(fName, Doxygen::htmlFileExtension);
+}
 
 void replaceNamespaceAliases(QCString &scope,int i)
 {

@@ -71,6 +71,75 @@ static const char *getSectionName(int level)
   return secLabels[QMIN(maxLevels-1,l)];
 }
 
+static void visitPreStart(FTextStream &t, const bool hasCaption, QCString name,  QCString width,  QCString height)
+{
+    if (hasCaption)
+    {
+      t << "\n\\begin{DoxyImage}\n";
+    }
+    else
+    {
+      t << "\n\\begin{DoxyImageNoCaption}\n"
+             "  \\mbox{";
+    }
+
+    t << "\\includegraphics";
+    if (!width.isEmpty() || !height.isEmpty())
+    {
+      t << "[";
+    }
+    if (!width.isEmpty())
+    {
+      t << "width=" << width;
+    }
+    if (!width.isEmpty() && !height.isEmpty())
+    {
+      t << ",";
+    }
+    if (!height.isEmpty())
+    {
+      t << "height=" << height;
+    }
+    if (width.isEmpty() && height.isEmpty())
+    {
+      /* default setting */
+      t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
+    }
+    else
+    {
+      t << "]";
+    }
+
+    t << "{" << name << "}";
+
+    if (hasCaption)
+    {
+      t << "\n\\caption{";
+    }
+}
+
+
+
+static void visitPostEnd(FTextStream &t, const bool hasCaption)
+{
+    t << "}\n"; // end mbox or caption
+    if (hasCaption)
+    {
+      t << "\\end{DoxyImage}\n";
+    }
+    else{
+      t << "\\end{DoxyImageNoCaption}\n";
+    }
+}
+
+
+static void visitCaption(LatexDocVisitor *parent, QList<DocNode> children)
+{
+  QListIterator<DocNode> cli(children);
+  DocNode *n;
+  for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
+}
+
 QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 {
   QCString result;
@@ -284,15 +353,17 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         {
           err("Could not open file %s for writing\n",fileName.data());
         }
-        file.writeBlock( s->text(), s->text().length() );
-        file.close();
+        else
+        {
+          file.writeBlock( s->text(), s->text().length() );
+          file.close();
 
-        m_t << "\\begin{center}\n";
-        startDotFile(fileName,"","",FALSE);
-        endDotFile(FALSE);
-        m_t << "\\end{center}\n";
+          startDotFile(fileName,s->width(),s->height(),s->hasCaption());
+          visitCaption(this, s->children());
+          endDotFile(s->hasCaption());
 
-        if (Config_getBool("DOT_CLEANUP")) file.remove();
+          if (Config_getBool("DOT_CLEANUP")) file.remove();
+        }
       }
       break;
     case DocVerbatim::Msc: 
@@ -309,17 +380,18 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         {
           err("Could not open file %s.msc for writing\n",baseName.data());
         }
-        QCString text = "msc {";
-        text+=s->text();
-        text+="}";
-        file.writeBlock( text, text.length() );
-        file.close();
+        else
+        {
+          QCString text = "msc {";
+          text+=s->text();
+          text+="}";
+          file.writeBlock( text, text.length() );
+          file.close();
 
-        m_t << "\\begin{center}\n";
-        writeMscFile(baseName);
-        m_t << "\\end{center}\n";
+          writeMscFile(baseName, s);
 
-        if (Config_getBool("DOT_CLEANUP")) file.remove();
+          if (Config_getBool("DOT_CLEANUP")) file.remove();
+        }
       }
       break;
     case DocVerbatim::PlantUML: 
@@ -327,9 +399,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         QCString latexOutput = Config_getString("LATEX_OUTPUT");
         QCString baseName = writePlantUMLSource(latexOutput,s->exampleFile(),s->text());
 
-        m_t << "\\begin{center}\n";
-        writePlantUMLFile(baseName);
-        m_t << "\\end{center}\n";
+        writePlantUMLFile(baseName, s);
       }
       break;
   }
@@ -825,7 +895,7 @@ static const char *getTableName(const DocNode *n)
   bool isNested=FALSE;
   while (n && !isNested)
   {
-    isNested = n->kind()==DocNode::Kind_HtmlTable;
+    isNested = n->kind()==DocNode::Kind_HtmlTable || n->kind()==DocNode::Kind_ParamSect;
     n  = n->parent();
   }
   return isNested ? "TabularNC" : "TabularC";
@@ -1098,40 +1168,18 @@ void LatexDocVisitor::visitPost(DocHtmlHeader *)
   if (m_hide) return;
   m_t << "}";
 }
-
 void LatexDocVisitor::visitPre(DocImage *img)
 {
   if (img->type()==DocImage::Latex)
   {
     if (m_hide) return;
-    if (img->hasCaption())
-    {
-      m_t << "\n\\begin{DoxyImage}\n";
-    }
-    else
-    {
-      m_t << "\n\\begin{DoxyImageNoCaption}\n"
-             "  \\mbox{";
-    }
     QCString gfxName = img->name();
     if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
     {
       gfxName=gfxName.left(gfxName.length()-4);
     }
-    m_t << "\\includegraphics";
-    if (!img->width().isEmpty())
-    {
-      m_t << "[width=" << img->width() << "]";
-    }
-    else if (!img->height().isEmpty())
-    {
-      m_t << "[height=" << img->height() << "]";
-    }
-    m_t << "{" << gfxName << "}";
-    if (img->hasCaption())
-    {
-      m_t << "\n\\caption{";
-    }
+
+    visitPreStart(m_t,img->hasCaption(), gfxName, img->width(),  img->height());
   }
   else // other format -> skip
   {
@@ -1145,14 +1193,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
   if (img->type()==DocImage::Latex)
   {
     if (m_hide) return;
-    m_t << "}\n"; // end mbox or caption
-    if (img->hasCaption())
-    {
-      m_t << "\\end{DoxyImage}\n";
-    }
-    else{
-      m_t << "\\end{DoxyImageNoCaption}\n";
-    }
+    visitPostEnd(m_t,img->hasCaption());
   }
   else // other format
   {
@@ -1610,57 +1651,13 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   QCString outDir = Config_getString("LATEX_OUTPUT");
   QCString name = fileName;
   writeDotGraphFromFile(name,outDir,baseName,GOF_EPS);
-  if (hasCaption)
-  {
-    m_t << "\n\\begin{DoxyImage}\n";
-  }
-  else
-  {
-    m_t << "\n\\begin{DoxyImageNoCaption}\n"
-           "  \\mbox{";
-  }
-  m_t << "\\includegraphics";
-  if (!width.isEmpty())
-  {
-    m_t << "[width=" << width << "]";
-  }
-  else if (!height.isEmpty())
-  {
-    m_t << "[height=" << height << "]";
-  }
-  else
-  {
-    m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
-  }
-  m_t << "{" << baseName;
-  //if (Config_getBool("USE_PDFLATEX"))
-  //{
-  //  m_t << ".pdf";
-  //}
-  //else
-  //{
-  //  m_t << ".eps";
-  //}
-  m_t << "}";
-
-  if (hasCaption)
-  {
-    m_t << "\n\\caption{";
-  }
+  visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
 void LatexDocVisitor::endDotFile(bool hasCaption)
 {
   if (m_hide) return;
-  m_t << "}\n"; // end caption or mbox
-  if (hasCaption)
-  {
-    m_t << "\\end{DoxyImage}\n";
-  }
-  else
-  {
-    m_t << "\\end{DoxyImageNoCaption}\n";
-  }
+  visitPostEnd(m_t,hasCaption);
 }
 
 void LatexDocVisitor::startMscFile(const QCString &fileName,
@@ -1683,61 +1680,17 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
 
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS); 
-  if (hasCaption)
-  {
-    m_t << "\n\\begin{DoxyImage}\n";
-  }
-  else
-  {
-    m_t << "\n\\begin{DoxyImageNoCaption}\n"
-           "  \\mbox{";
-  }
-  m_t << "\\includegraphics";
-  if (!width.isEmpty())
-  {
-    m_t << "[width=" << width << "]";
-  }
-  else if (!height.isEmpty())
-  {
-    m_t << "[height=" << height << "]";
-  }
-  else
-  {
-    m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
-  }
-  m_t << "{" << baseName;
-  //if (Config_getBool("USE_PDFLATEX"))
-  //{
-  //  m_t << ".pdf";
-  //}
-  //else
-  //{
-  //  m_t << ".eps";
-  //}
-  m_t << "}";
-
-  if (hasCaption)
-  {
-    m_t << "\n\\caption{";
-  }
+  visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
 void LatexDocVisitor::endMscFile(bool hasCaption)
 {
   if (m_hide) return;
-  m_t << "}\n"; // end caption or mbox
-  if (hasCaption)
-  {
-    m_t << "\\end{DoxyImage}\n";
-  }
-  else
-  {
-    m_t << "\\end{DoxyImageNoCaption}\n";
-  }
+  visitPostEnd(m_t,hasCaption);
 }
 
 
-void LatexDocVisitor::writeMscFile(const QCString &baseName)
+void LatexDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
 {
   QCString shortName = baseName;
   int i;
@@ -1747,11 +1700,9 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName)
   } 
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS);
-  m_t << "\n\\begin{DoxyImageNoCaption}"
-         "  \\mbox{\\includegraphics";
-  m_t << "{" << shortName << "}";
-  m_t << "}\n"; // end mbox
-  m_t << "\\end{DoxyImageNoCaption}\n";
+  visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
+  visitCaption(this, s->children());
+  visitPostEnd(m_t, s->hasCaption());
 }
 
 
@@ -1775,61 +1726,17 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
 
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_EPS);
-  if (hasCaption)
-  {
-    m_t << "\n\\begin{DoxyImage}\n";
-  }
-  else
-  {
-    m_t << "\n\\begin{DoxyImageNoCaption}\n"
-           "  \\mbox{";
-  }
-  m_t << "\\includegraphics";
-  if (!width.isEmpty())
-  {
-    m_t << "[width=" << width << "]";
-  }
-  else if (!height.isEmpty())
-  {
-    m_t << "[height=" << height << "]";
-  }
-  else
-  {
-    m_t << "[width=\\textwidth,height=\\textheight/2,keepaspectratio=true]";
-  }
-  m_t << "{" << baseName;
-  //if (Config_getBool("USE_PDFLATEX"))
-  //{
-  //  m_t << ".pdf";
-  //}
-  //else
-  //{
-  //  m_t << ".eps";
-  //}
-  m_t << "}";
-
-  if (hasCaption)
-  {
-    m_t << "\n\\caption{";
-  }
+  visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
 void LatexDocVisitor::endDiaFile(bool hasCaption)
 {
   if (m_hide) return;
-  m_t << "}\n"; // end caption or mbox
-  if (hasCaption)
-  {
-    m_t << "\\end{DoxyImage}\n";
-  }
-  else
-  {
-    m_t << "\\end{DoxyImageNoCaption}\n";
-  }
+  visitPostEnd(m_t,hasCaption);
 }
 
 
-void LatexDocVisitor::writeDiaFile(const QCString &baseName)
+void LatexDocVisitor::writeDiaFile(const QCString &baseName, DocVerbatim *s)
 {
   QCString shortName = baseName;
   int i;
@@ -1839,14 +1746,12 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName)
   }
   QCString outDir = Config_getString("LATEX_OUTPUT");
   writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS);
-  m_t << "\n\\begin{DoxyImageNoCaption}"
-         "  \\mbox{\\includegraphics";
-  m_t << "{" << shortName << "}";
-  m_t << "}\n"; // end mbox
-  m_t << "\\end{DoxyImageNoCaption}\n";
+  visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
+  visitCaption(this, s->children());
+  visitPostEnd(m_t, s->hasCaption());
 }
 
-void LatexDocVisitor::writePlantUMLFile(const QCString &baseName)
+void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s)
 {
   QCString shortName = baseName;
   int i;
@@ -1856,10 +1761,8 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName)
   }
   QCString outDir = Config_getString("LATEX_OUTPUT");
   generatePlantUMLOutput(baseName,outDir,PUML_EPS);
-  m_t << "\n\\begin{DoxyImageNoCaption}"
-         "  \\mbox{\\includegraphics";
-  m_t << "{" << shortName << "}";
-  m_t << "}\n"; // end mbox
-  m_t << "\\end{DoxyImageNoCaption}\n";
+  visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
+  visitCaption(this, s->children());
+  visitPostEnd(m_t, s->hasCaption());
 }
 

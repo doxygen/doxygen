@@ -31,8 +31,7 @@ regenerate:
 	      VhdlParserConstants.h VhdlParserTokenManager.cc VhdlParserTokenManager.h \
               JavaCC.h
 	javacc vhdlparser.jj
-	patch  <vhdlparser.patch
-	$(CP)  JavaCC.h.in JavaCC.h
+	$(CP) JavaCC.h.in JavaCC.h
 
 distclean: clean
 	$(RM) Makefile vhdlparser.pro

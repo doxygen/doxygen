@@ -550,6 +550,7 @@ int QFile::writeBlock( const char *p, uint len )
 	return -1;
     }
 #endif
+    if (p==0) return 0;
     int nwritten;				// number of bytes written
     if ( isRaw() )				// raw file
 	nwritten = (int)WRITE( fd, p, len );

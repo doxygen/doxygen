@@ -263,6 +263,7 @@ class MemberDef : public Definition
     QCString documentation() const;
     QCString briefDescription(bool abbr=FALSE) const;
     QCString fieldType() const;
+    bool isReference() const;
 
 
     //-----------------------------------------------------------------------------------

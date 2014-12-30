@@ -110,6 +110,5 @@ class SearchIndexExternal : public SearchIndexIntf
 //------- client side search index ----------------------
 
 void writeJavascriptSearchIndex();
-void writeSearchCategories(FTextStream &t);
 
 #endif

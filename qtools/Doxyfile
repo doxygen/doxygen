@@ -127,7 +127,7 @@ REFERENCES_LINK_SOURCE = YES
 SOURCE_TOOLTIPS        = YES
 USE_HTAGS              = NO
 VERBATIM_HEADERS       = YES
-CLANG_ASSISTED_PARSING = YES
+CLANG_ASSISTED_PARSING = NO
 CLANG_OPTIONS          =
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index

@@ -772,18 +772,18 @@ static bool checkDeliverables(const QCString &file1,
 
 //--------------------------------------------------------------------
 
-/** Class representing a list of DotNode objects. */
-class DotNodeList : public QList<DotNode>
+inline int DotNode::findParent( DotNode *n )
 {
-  public:
-    DotNodeList() : QList<DotNode>() {}
-   ~DotNodeList() {}
-  private:
-    int compareValues(const DotNode *n1,const DotNode *n2) const
-    {
-      return qstricmp(n1->m_label,n2->m_label);
-    }
-};
+  if ( !m_parents ) return -1;
+  return m_parents->find(n);
+}
+
+//--------------------------------------------------------------------
+
+int DotNodeList::compareValues(const DotNode *n1,const DotNode *n2) const
+{
+  return qstricmp(n1->m_label,n2->m_label);
+}
 
 //--------------------------------------------------------------------
 
@@ -1908,7 +1908,7 @@ void DotNode::write(FTextStream &t,
                     bool reNumber
                    )
 {
-  //printf("DotNode::write(%d) name=%s this=%p written=%d\n",distance,m_label.data(),this,m_written);
+  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,m_label.data(),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated,reNumber);
@@ -2261,12 +2261,106 @@ const DotNode *DotNode::findDocNode() const
 
 int DotGfxHierarchyTable::m_curNodeNumber;
 
+void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
+       const char *path,const char *fileName,int id) const
+{
+  QDir d(path);
+  QCString baseName;
+  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  baseName.sprintf("inherit_graph_%d",id);
+  QCString imgName = baseName+"."+ imgExt;
+  QCString mapName = baseName+".map";
+  QCString absImgName = QCString(d.absPath().data())+"/"+imgName;
+  QCString absMapName = QCString(d.absPath().data())+"/"+mapName;
+  QCString absBaseName = QCString(d.absPath().data())+"/"+baseName;
+  QListIterator<DotNode> dnli2(*m_rootNodes);
+  DotNode *node;
+
+  // compute md5 checksum of the graph were are about to generate
+  QGString theGraph;
+  FTextStream md5stream(&theGraph);
+  writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
+  md5stream << "  rankdir=\"LR\";" << endl;
+  for (dnli2.toFirst();(node=dnli2.current());++dnli2)
+  {
+    if (node->m_subgraphId==n->m_subgraphId) 
+    {
+      node->clearWriteFlag();
+    }
+  }
+  for (dnli2.toFirst();(node=dnli2.current());++dnli2)
+  {
+    if (node->m_subgraphId==n->m_subgraphId) 
+    {
+      node->write(md5stream,DotNode::Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE,TRUE);
+    }
+  }
+  writeGraphFooter(md5stream);
+  resetReNumbering();
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  bool regenerate=FALSE;
+  if (checkAndUpdateMd5Signature(absBaseName,sigStr) || 
+      !checkDeliverables(absImgName,absMapName))
+  {
+    regenerate=TRUE;
+    // image was new or has changed
+    QCString dotName=absBaseName+".dot";
+    QFile f(dotName);
+    if (!f.open(IO_WriteOnly)) return;
+    FTextStream t(&f);
+    t << theGraph;
+    f.close();
+    resetReNumbering();
+
+    DotRunner *dotRun = new DotRunner(dotName,d.absPath().data(),TRUE,absImgName);
+    dotRun->addJob(imgExt,absImgName);
+    dotRun->addJob(MAP_CMD,absMapName);
+    DotManager::instance()->addRun(dotRun);
+  }
+  else
+  {
+    removeDotGraph(absBaseName+".dot");
+  }
+  Doxygen::indexList->addImageFile(imgName);
+  // write image and map in a table row
+  QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
+  if (imgExt=="svg") // vector graphics
+  {
+    if (regenerate || !writeSVGFigureLink(out,QCString(),baseName,absImgName))
+    {
+      if (regenerate)
+      {
+        DotManager::instance()->addSVGConversion(absImgName,QCString(),
+            FALSE,QCString(),FALSE,0);
+      }
+      int mapId = DotManager::instance()->addSVGObject(fileName,baseName,
+          absImgName,QCString());
+      out << "<!-- SVG " << mapId << " -->" << endl;
+    }
+  }
+  else // normal bitmap
+  {
+    out << "<img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"
+      << mapLabel << "\"/>" << endl;
+
+    if (regenerate || !insertMapFile(out,absMapName,QCString(),mapLabel))
+    {
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,QCString(),
+          FALSE,QCString(),mapLabel);
+      out << "<!-- MAP " << mapId << " -->" << endl;
+    }
+  }
+}
+
 void DotGfxHierarchyTable::writeGraph(FTextStream &out,
                       const char *path,const char *fileName) const
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
-  
+
   if (m_rootSubgraphs->count()==0) return;
 
   QDir d(path);
@@ -2284,97 +2378,8 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
   int count=0;
   for (dnli.toFirst();(n=dnli.current());++dnli)
   {
-    QCString baseName;
-    QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-    baseName.sprintf("inherit_graph_%d",count++);
-    //baseName = convertNameToFile(baseName);
-    QCString imgName = baseName+"."+ imgExt;
-    QCString mapName = baseName+".map";
-    QCString absImgName = QCString(d.absPath().data())+"/"+imgName;
-    QCString absMapName = QCString(d.absPath().data())+"/"+mapName;
-    QCString absBaseName = QCString(d.absPath().data())+"/"+baseName;
-    QListIterator<DotNode> dnli2(*m_rootNodes);
-    DotNode *node;
-
-    // compute md5 checksum of the graph were are about to generate
-    QGString theGraph;
-    FTextStream md5stream(&theGraph);
-    writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
-    md5stream << "  rankdir=\"LR\";" << endl;
-    for (dnli2.toFirst();(node=dnli2.current());++dnli2)
-    {
-      if (node->m_subgraphId==n->m_subgraphId) 
-      {
-        node->clearWriteFlag();
-      }
-    }
-    for (dnli2.toFirst();(node=dnli2.current());++dnli2)
-    {
-      if (node->m_subgraphId==n->m_subgraphId) 
-      {
-        node->write(md5stream,DotNode::Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE,TRUE);
-      }
-    }
-    writeGraphFooter(md5stream);
-    resetReNumbering();
-    uchar md5_sig[16];
-    QCString sigStr(33);
-    MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
-    MD5SigToString(md5_sig,sigStr.data(),33);
-    bool regenerate=FALSE;
-    if (checkAndUpdateMd5Signature(absBaseName,sigStr) || 
-        !checkDeliverables(absImgName,absMapName))
-    {
-      regenerate=TRUE;
-      // image was new or has changed
-      QCString dotName=absBaseName+".dot";
-      QFile f(dotName);
-      if (!f.open(IO_WriteOnly)) return;
-      FTextStream t(&f);
-      t << theGraph;
-      f.close();
-      resetReNumbering();
-
-      DotRunner *dotRun = new DotRunner(dotName,d.absPath().data(),TRUE,absImgName);
-      dotRun->addJob(imgExt,absImgName);
-      dotRun->addJob(MAP_CMD,absMapName);
-      DotManager::instance()->addRun(dotRun);
-    }
-    else
-    {
-      removeDotGraph(absBaseName+".dot");
-    }
-    Doxygen::indexList->addImageFile(imgName);
-    // write image and map in a table row
-    QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
     out << "<tr><td>";
-    if (imgExt=="svg") // vector graphics
-    {
-      if (regenerate || !writeSVGFigureLink(out,QCString(),baseName,absImgName))
-      {
-        if (regenerate)
-        {
-          DotManager::instance()->addSVGConversion(absImgName,QCString(),
-                                                   FALSE,QCString(),FALSE,0);
-        }
-        int mapId = DotManager::instance()->addSVGObject(fileName,baseName,
-                                                         absImgName,QCString());
-        out << "<!-- SVG " << mapId << " -->" << endl;
-      }
-    }
-    else // normal bitmap
-    {
-      out << "<img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"
-        << mapLabel << "\"/>" << endl;
-
-      if (regenerate || !insertMapFile(out,absMapName,QCString(),mapLabel))
-      {
-        int mapId = DotManager::instance()->addMap(fileName,absMapName,QCString(),
-                                                   FALSE,QCString(),mapLabel);
-        out << "<!-- MAP " << mapId << " -->" << endl;
-      }
-    }
-
+    createGraph(n,out,path,fileName,count++);
     out << "</td></tr>" << endl;
   }
   out << "</table>" << endl;

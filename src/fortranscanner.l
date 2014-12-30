@@ -99,13 +99,15 @@ struct SymbolModifiers {
   bool nonoverridable;
   bool nopass;
   bool pass;
+  bool contiguous;
+  bool volat; /* volatile is a reserverd name */
   QCString passVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
     optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
     external(FALSE), intrinsic(FALSE), parameter(FALSE),
     pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
-    nopass(FALSE), pass(FALSE), passVar() {}
+    nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), passVar() {}
 
   SymbolModifiers& operator|=(const SymbolModifiers &mdfs);
   SymbolModifiers& operator|=(QCString mdfrString);
@@ -258,7 +260,7 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE)
+ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE)
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
 /* Assume that attribute statements are almost the same as attributes. */
@@ -470,6 +472,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 
 ^{BS}interface{BS_}{ID}{ARGS}?          { ifType = IF_GENERIC;
+				          current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
                                           yy_push_state(InterfaceBody);
 
                                           // extract generic name
@@ -482,6 +485,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
 <InterfaceBody>^{BS}end{BS}interface({BS_}{ID})? {
                                           // end scope only if GENERIC interface
+                                          last_entry->parent()->endBodyLine = yyLineNr - 1;
                                           if (ifType == IF_GENERIC && !endScope(current_root))
                                             yyterminate();
 
@@ -609,6 +613,7 @@ private                                 {
                                           current->name = yytext;
                                           current->fileName = yyFileName;
                                           current->bodyLine  = yyLineNr; 
+                                          current->startLine  = yyLineNr;
 
                                           /* if type is part of a module, mod name is necessary for output */
                                           if ((current_root) && 
@@ -649,6 +654,7 @@ private                                 {
                                           current->name     = name;
                                           current->fileName = yyFileName;
                                           current->bodyLine = yyLineNr;
+                                          current->startLine  = yyLineNr;
                                           addCurrentEntry(1);
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
@@ -664,6 +670,7 @@ private                                 {
 
 <TypedefBody,TypedefBodyContains>{
 ^{BS}"end"{BS}"type"({BS_}{ID})?{BS}/(\n|!) { /* end type definition */
+                                          last_entry->parent()->endBodyLine = yyLineNr;
                                           if (!endScope(current_root))
                                             yyterminate();
                                           typeMode = false;
@@ -679,6 +686,7 @@ private                                 {
                                            // in a scope of their own, even if multiple
                                            // are group in one INTERFACE/END INTERFACE block.
                                            //
+                                           last_entry->endBodyLine = yyLineNr - 1;
                                            if (ifType == IF_ABSTRACT || ifType == IF_SPECIFIC)
                                              endScope(current_root);
 
@@ -693,6 +701,8 @@ private                                 {
 }
 <Start,ModuleBody,TypedefBody,SubprogBody>{
 ^{BS}{TYPE_SPEC}/{SEPARATE}             {
+				          current->bodyLine = yyLineNr + 1;
+				          current->endBodyLine = yyLineNr + lineCountPrepass;
                                           /* variable declaration starts */
                                           if(YY_START == Start)
                                           {
@@ -804,6 +814,7 @@ private                                 {
 					    current->type = argType;
 					    current->fileName = yyFileName;
 					    current->bodyLine  = yyLineNr; // used for source reference
+                                            current->startLine  = yyLineNr;
                                             addCurrentEntry(1);
                                           } 
 					  else if (!argType.isEmpty())
@@ -883,7 +894,8 @@ private                                 {
 					  // locate !< comment
 					  updateVariablePrepassComment(yyColNr-(int)yyleng, yyColNr);
 					}
-<Variable>{BS}"="                       { yy_push_state(YY_START);
+<Variable>{BS}"="                       {
+                                          yy_push_state(YY_START);
                                           initializer="=";
                                           initializerScope = initializerArrayScope = 0;
 					  BEGIN(Initialization);
@@ -984,6 +996,8 @@ private                                 {
                                          result = QCString(yytext).stripWhiteSpace();
                                          addSubprogram(result);
                                          yy_push_state(Subprog);
+				         current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
+				         current->startLine = yyLineNr;
                                        }
 
 <Subprog>{BS}                          {   /* ignore white space */   }
@@ -1491,7 +1505,9 @@ static void copyEntry(Entry *dest, Entry *src)
 {
    dest->type     = src->type;
    dest->fileName = src->fileName;
+   dest->startLine = src->startLine;
    dest->bodyLine = src->bodyLine;
+   dest->endBodyLine = src->endBodyLine;
    dest->args     = src->args;
    dest->argList  = new ArgumentList(*src->argList);
    dest->doc      = src->doc;
@@ -1572,6 +1588,8 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   nopass |= mdfs.nopass;
   pass |= mdfs.pass;
   passVar = mdfs.passVar;
+  contiguous |= mdfs.contiguous;
+  volat |= mdfs.volat;
   return *this;
 }
 
@@ -1649,6 +1667,14 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
   else if (mdfString=="non_overridable")
   {
     newMdf.nonoverridable = TRUE;
+  }
+  else if (mdfString=="contiguous")
+  {
+    newMdf.contiguous = TRUE;
+  }
+  else if (mdfString=="volatile")
+  {
+    newMdf.volat = TRUE;
   }
   else if (mdfString.contains("pass"))
   {
@@ -1803,6 +1829,16 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "protected";
+  }
+  if (mdfs.contiguous)
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += "contiguous";
+  }
+  if (mdfs.volat)
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += "volatile";
   }
 
   return typeName;
@@ -2007,7 +2043,7 @@ static void addModule(const char *name, bool isModule)
   DBG_CTX((stderr, "0=========> got module %s\n", name));
 
   if (isModule)
-    current->section = Entry::CLASS_SEC;
+    current->section = Entry::NAMESPACE_SEC;
   else
     current->section = Entry::FUNCTION_SEC;
 
@@ -2026,6 +2062,7 @@ static void addModule(const char *name, bool isModule)
   current->type = "program";
   current->fileName  = yyFileName;
   current->bodyLine  = yyLineNr; // used for source reference
+  current->startLine  = yyLineNr;
   current->protection = Public ;
   addCurrentEntry(1);
   startScope(last_entry);
@@ -2042,8 +2079,8 @@ static void addSubprogram(const char *text)
   current->type += " " + subtype;
   current->type = current->type.stripWhiteSpace();
   current->fileName  = yyFileName;
-  current->bodyLine  = yyLineNr; // used for source reference
-  current->startLine = -1; // ??? what is startLine for?
+  current->bodyLine  = yyLineNr; // used for source reference start of body of routine
+  current->startLine  = yyLineNr; // used for source reference start of definition
   current->args.resize(0);
   current->argList->clear();
   docBlock.resize(0);
@@ -2091,6 +2128,7 @@ static void addInterface(QCString name, InterfaceType type)
 
   current->fileName = yyFileName;
   current->bodyLine  = yyLineNr; 
+  current->startLine  = yyLineNr;
   addCurrentEntry(1);
 }
 

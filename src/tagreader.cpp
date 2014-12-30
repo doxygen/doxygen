@@ -251,8 +251,20 @@ class TagFileParser : public QXmlDefaultHandler
     {
       m_startElementHandlers.setAutoDelete(TRUE);
       m_endElementHandlers.setAutoDelete(TRUE);
+      m_curClass=0;
+      m_curFile=0;
+      m_curNamespace=0;
+      m_curPackage=0;
+      m_curGroup=0;
+      m_curPage=0;
+      m_curDir=0;
+      m_curMember=0;
+      m_curEnumValue=0;
+      m_curIncludes=0;
+      m_state = Invalid;
+      m_locator = 0;
     }
-    
+
     void setDocumentLocator ( QXmlLocator * locator )
     {
       m_locator = locator;

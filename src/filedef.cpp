@@ -327,6 +327,17 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
     //printf("Writing source ref for file %s\n",name().data());
     if (Config_getBool("SOURCE_BROWSER")) 
     {
+      //if Latex enabled and LATEX_SOURCE_CODE isn't -> skip, bug_738548
+      ol.pushGeneratorState();
+      if (ol.isEnabled(OutputGenerator::Latex) && !Config_getBool("LATEX_SOURCE_CODE"))
+      { 
+        ol.disable(OutputGenerator::Latex);
+      }
+      if (ol.isEnabled(OutputGenerator::RTF) && !Config_getBool("RTF_SOURCE_CODE"))
+      { 
+        ol.disable(OutputGenerator::RTF);
+      }
+
       ol.startParagraph();
       QCString refText = theTranslator->trDefinedInSourceFile();
       int fileMarkerPos = refText.find("@0");
@@ -339,6 +350,8 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
               refText.length()-fileMarkerPos-2)); // text right from marker 2
       }
       ol.endParagraph();
+      //Restore settings, bug_738548
+      ol.popGeneratorState();
     }
     ol.endTextBlock();
   }
@@ -901,6 +914,7 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
+  static bool rtfSourceCode     = Config_getBool("RTF_SOURCE_CODE");
   DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
@@ -909,8 +923,8 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputGenerator::Man);
-  ol.disable(OutputGenerator::RTF);
   if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
+  if (!rtfSourceCode) ol.disable(OutputGenerator::RTF);
 
   bool isDocFile = isDocumentationFile();
   bool genSourceFile = !isDocFile && generateSourceFile();
@@ -942,10 +956,12 @@ void FileDef::writeSource(OutputList &ol,bool sameTu,QStrList &filesInSameTu)
   if (isLinkable())
   {
     if (latexSourceCode) ol.disable(OutputGenerator::Latex);
+    if (rtfSourceCode) ol.disable(OutputGenerator::RTF);
     ol.startTextLink(getOutputFileBase(),0);
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
     if (latexSourceCode) ol.enable(OutputGenerator::Latex);
+    if (rtfSourceCode) ol.enable(OutputGenerator::RTF);
   }
 
   (void)sameTu;
@@ -1400,6 +1416,7 @@ void FileDef::addListReferences()
                getOutputFileBase(),
                theTranslator->trFile(TRUE,TRUE),
                getOutputFileBase(),name(),
+               0,
                0
               );
   }
@@ -1847,7 +1864,7 @@ void FileDef::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCS
     }
     else
     {
-      ml->writeDeclarations(ol,0,0,this,0,title,0,definitionType());
+      ml->writeDeclarations(ol,0,0,this,0,title,0);
     }
   }
 }

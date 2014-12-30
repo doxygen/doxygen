@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
-  <compounddef id="060__command__switch_8tcl" kind="file">
+  <compounddef id="060__command__switch_8tcl" kind="file" language="Tcl">
     <compoundname>060_command_switch.tcl</compoundname>
     <sectiondef kind="func">
       <memberdef kind="function" id="060__command__switch_8tcl_1aa889853547f65a22ae133cd57ff89601" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
