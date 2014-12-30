@@ -98,6 +98,34 @@ static QValueList<QCString> split(const QCString &str,const QCString &sep,
 
 //----------------------------------------------------------------------------
 
+/** Strips spaces surrounding `=` from string \a in, so
+ *  `foo = 10 bar=5 baz= 'hello'` will become `foo=10 bar=5 baz='hello'`
+ */
+static void removeSpacesAroundEquals(QCString &in)
+{
+  const char *p=in.data();
+  char *q = in.data();
+  char c;
+  while ((c=*p++))
+  {
+    if (c==' ') // found a space, see if there is a = as well
+    {
+      const char *t = p;
+      bool found=FALSE;
+      while (*t==' ' || *t=='=') { if (*t++=='=') found=TRUE; }
+      if (found)
+      {
+        c='=';
+        p=t; // move p to end of '\s*=\s*' sequence
+      }
+    }
+    *q++=c;
+  }
+  if (q<p) in.resize(q-in.data()+1);
+}
+
+//----------------------------------------------------------------------------
+
 #if ENABLE_TRACING
 static QCString replace(const char *s,char csrc,char cdst)
 {
@@ -793,7 +821,7 @@ class FilterAppend
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &arg)
     {
       if ((v.type()==TemplateVariant::String || v.type()==TemplateVariant::Integer) &&
-          arg.type()==TemplateVariant::String)
+          (arg.type()==TemplateVariant::String || arg.type()==TemplateVariant::Integer))
       {
         return TemplateVariant(v.toString() + arg.toString());
       }
@@ -1978,14 +2006,6 @@ class ExpressionParser
       TRACE(("{parseLiteral(%s)\n",m_curToken.id.data()));
       ExprAst *expr = new ExprAstLiteral(m_curToken.id);
       getNextToken();
-      while (m_curToken.type==ExprToken::Operator &&
-             m_curToken.op==Operator::Filter)
-      {
-        getNextToken();
-        ExprAstFilter *filter = parseFilter();
-        if (!filter) break;
-        expr = new ExprAstFilterAppl(expr,filter);
-      }
       TRACE(("}parseLiteral()\n"));
       return expr;
     }
@@ -3865,7 +3885,9 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
       TRACE(("{TemplateNodeWith(%s)\n",data.data()));
       m_args.setAutoDelete(TRUE);
       ExpressionParser expParser(parser,line);
-      QValueList<QCString> args = split(data," ");
+      QCString filteredData = data;
+      removeSpacesAroundEquals(filteredData);
+      QValueList<QCString> args = split(filteredData," ");
       QValueListIterator<QCString> it = args.begin();
       while (it!=args.end())
       {

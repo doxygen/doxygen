@@ -69,6 +69,7 @@
   </ul>
 </div>
 {# second navigation row #}
+{% if page.highlight=='namespace' or page.highlight=='classes' or page.highlight=='files' %}
 <div id="navrow2" class="tabs2">
   <ul class="tablist">
   {# namespace subtabs #}
@@ -94,3 +95,4 @@
   {% endif %}
   </ul>
 </div>
+{% endif %}

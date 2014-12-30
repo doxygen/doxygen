@@ -21,6 +21,9 @@
 {% endif %}
 {% if config.SEARCHENGINE %}
 <link href="{{ page.relPath }}search/search.css" rel="stylesheet" type="text/css"/>
+  {% if not config.SERVER_BASED_SEARCH %}
+<script type="text/javascript" src="{{ page.relPath }}search/searchdata.js"></script>
+  {% endif %}
 <script type="text/javascript" src="{{ page.relPath }}search/search.js"></script>
   {% if config.SERVER_BASED_SEARCH %}
 <script type="text/javascript">

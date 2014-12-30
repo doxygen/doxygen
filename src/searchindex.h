@@ -23,6 +23,9 @@
 #include <qdict.h>
 #include <qintdict.h>
 #include <qvector.h>
+#include "sortdict.h"
+#include "definition.h"
+#include "util.h"
 
 class FTextStream;
 class Definition;
@@ -109,6 +112,56 @@ class SearchIndexExternal : public SearchIndexIntf
 
 //------- client side search index ----------------------
 
+#define SEARCH_INDEX_ALL         0
+#define SEARCH_INDEX_CLASSES     1
+#define SEARCH_INDEX_NAMESPACES  2
+#define SEARCH_INDEX_FILES       3
+#define SEARCH_INDEX_FUNCTIONS   4
+#define SEARCH_INDEX_VARIABLES   5
+#define SEARCH_INDEX_TYPEDEFS    6
+#define SEARCH_INDEX_ENUMS       7
+#define SEARCH_INDEX_ENUMVALUES  8
+#define SEARCH_INDEX_PROPERTIES  9
+#define SEARCH_INDEX_EVENTS     10
+#define SEARCH_INDEX_RELATED    11
+#define SEARCH_INDEX_DEFINES    12
+#define SEARCH_INDEX_GROUPS     13
+#define SEARCH_INDEX_PAGES      14
+#define NUM_SEARCH_INDICES      15
+
+class SearchDefinitionList : public QList<Definition>
+{
+  public:
+    SearchDefinitionList(const QCString &id,const QCString &name) : m_id(id), m_name(name) {}
+    QCString id() const   { return m_id;   }
+    QCString name() const { return m_name; }
+  private:
+    QCString m_id;
+    QCString m_name;
+};
+
+class SearchIndexList : public SDict< SearchDefinitionList >
+{
+  public:
+    typedef Definition ElementType;
+    SearchIndexList(uint letter);
+   ~SearchIndexList();
+    void append(Definition *d);
+    uint letter() const;
+  private:
+    int compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const;
+    uint m_letter;
+};
+
+struct SearchIndexInfo
+{
+  LetterToIndexMap<SearchIndexList> symbolList;
+  QCString name;
+  QCString text;
+};
+
+void createJavascriptSearchIndex();
 void writeJavascriptSearchIndex();
+const SearchIndexInfo *getSearchIndices();
 
 #endif

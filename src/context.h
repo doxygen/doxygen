@@ -52,7 +52,10 @@ class MemberGroup;
 class MemberGroupSDict;
 class MemberGroupList;
 class DotNode;
-class DotGfxHierarchyTable; 
+class DotGfxHierarchyTable;
+struct SearchIndexInfo;
+class SearchIndexList;
+class SearchDefinitionList;
 
 //----------------------------------------------------
 
@@ -1148,6 +1151,173 @@ class ArgumentListContext : public RefCountedContext, public TemplateListIntf
     ArgumentListContext();
     ArgumentListContext(const ArgumentList *al,Definition *def,const QCString &relPath);
    ~ArgumentListContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SymbolContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static SymbolContext *alloc(const Definition *def,const Definition *prev,const Definition *next)
+    { return new SymbolContext(def,prev,next); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SymbolContext(const Definition *def,const Definition *prev,const Definition *next);
+   ~SymbolContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SymbolListContext : public RefCountedContext, public TemplateListIntf
+{
+  public:
+    static SymbolListContext *alloc(const SearchDefinitionList *sdl)
+    { return new SymbolListContext(sdl); }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SymbolListContext(const SearchDefinitionList *sdl);
+   ~SymbolListContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SymbolGroupContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static SymbolGroupContext *alloc(const SearchDefinitionList *sdl)
+    { return new SymbolGroupContext(sdl); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SymbolGroupContext(const SearchDefinitionList *sdl);
+   ~SymbolGroupContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SymbolGroupListContext : public RefCountedContext, public TemplateListIntf
+{
+  public:
+    static SymbolGroupListContext *alloc(const SearchIndexList *sil)
+    { return new SymbolGroupListContext(sil); }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SymbolGroupListContext(const SearchIndexList *sil);
+   ~SymbolGroupListContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SymbolIndexContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static SymbolIndexContext *alloc(const SearchIndexList *sl,const QCString &name)
+    { return new SymbolIndexContext(sl,name); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SymbolIndexContext(const SearchIndexList *sl,const QCString &name);
+   ~SymbolIndexContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SymbolIndicesContext : public RefCountedContext, public TemplateListIntf
+{
+  public:
+    static SymbolIndicesContext *alloc(const SearchIndexInfo *info)
+    { return new SymbolIndicesContext(info); }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SymbolIndicesContext(const SearchIndexInfo *info);
+   ~SymbolIndicesContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SearchIndexContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static SearchIndexContext *alloc(const SearchIndexInfo *info)
+    { return new SearchIndexContext(info); }
+
+    // TemplateStructIntf methods
+    virtual TemplateVariant get(const char *name) const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SearchIndexContext(const SearchIndexInfo *info);
+   ~SearchIndexContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+class SearchIndicesContext : public RefCountedContext, public TemplateListIntf
+{
+  public:
+    static SearchIndicesContext *alloc() { return new SearchIndicesContext; }
+
+    // TemplateListIntf
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    SearchIndicesContext();
+   ~SearchIndicesContext();
     class Private;
     Private *p;
 };

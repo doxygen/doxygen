@@ -22,7 +22,7 @@
       <li>
         <span class="ai">
         {% if forloop.first %}
-        <a name="#letter_{{ section.label }}"></a>
+        <a name="letter_{{ section.label }}"></a>
         <span class="ah">&#160;&#160;{{ section.letter }}&#160;&#160;</span><br/>
         {% endif %}
         {% with obj=cls text=cls.name %}

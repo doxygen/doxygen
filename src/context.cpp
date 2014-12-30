@@ -43,6 +43,7 @@
 #include "portable.h"
 #include "arguments.h"
 #include "groupdef.h"
+#include "searchindex.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -882,6 +883,18 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trDefines();
     }
+    TemplateVariant loading() const
+    {
+      return theTranslator->trLoading();
+    }
+    TemplateVariant searching() const
+    {
+      return theTranslator->trSearching();
+    }
+    TemplateVariant noMatches() const
+    {
+      return theTranslator->trNoMatches();
+    }
     Private()
     {
       //%% string generatedBy
@@ -1030,6 +1043,12 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("gotoGraphicalHierarchy",this,&Private::gotoGraphicalHierarchy);
       //%% string gotoTextualHierarchy
       addProperty("gotoTextualHierarchy",this,&Private::gotoTextualHierarchy);
+      //%% string loading
+      addProperty("loading",            this,&Private::loading);
+      //%% string searching
+      addProperty("searching",          this,&Private::searching);
+      //%% string noMatches
+      addProperty("noMatches",          this,&Private::noMatches);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -8066,6 +8085,486 @@ TemplateListIntf::ConstIterator *ArgumentListContext::createIterator() const
 
 //------------------------------------------------------------------------
 
+// SymbolIndex
+//  - name: string
+//  - letter: string
+//  - symbolGroups: SymbolGroupList
+// SymbolGroupList: list of SymbolGroups
+// SymbolGroup
+//  - id
+//  - name
+//  - symbols: SymbolList
+// SymbolList: list of Symbols
+// Symbol
+//  - obj
+//  - scope
+//  - relPath
+
+//------------------------------------------------------------------------
+
+//%% struct SymbolGroup: search group of similar symbols
+//%% {
+class SymbolContext::Private : public PropertyMapper
+{
+  public:
+    Private(const Definition *d,const Definition *prev,
+            const Definition *next) : m_def(d), m_prevDef(prev), m_nextDef(next)
+    {
+      addProperty("fileName",this,&Private::fileName);
+      addProperty("anchor",  this,&Private::anchor);
+      addProperty("scope",   this,&Private::scope);
+      addProperty("relPath", this,&Private::relPath);
+    }
+    TemplateVariant fileName() const
+    {
+      return m_def->getOutputFileBase();
+    }
+    TemplateVariant anchor() const
+    {
+      return m_def->anchor();
+    }
+    TemplateVariant scope() const
+    {
+      const Definition *scope     = m_def->getOuterScope();
+      const Definition *next      = m_nextDef;
+      const Definition *prev      = m_prevDef;
+      const Definition *nextScope = next ? next->getOuterScope() : 0;
+      const Definition *prevScope = prev ? prev->getOuterScope() : 0;
+      bool isMemberDef            = m_def->definitionType()==Definition::TypeMember;
+      const MemberDef  *md        = isMemberDef ? (const MemberDef*)m_def : 0;
+      bool isFunctionLike   = md && (md->isFunction() || md->isSlot() || md->isSignal());
+      bool overloadedFunction = isFunctionLike &&
+                                ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope));
+      QCString prefix;
+      if (md) prefix=md->localName();
+      if (overloadedFunction) // overloaded member function
+      {
+        prefix+=md->argsString();
+        // show argument list to disambiguate overloaded functions
+      }
+      else if (md && isFunctionLike) // unique member function
+      {
+        prefix+="()"; // only to show it is a function
+      }
+      bool found=FALSE;
+      QCString name;
+      if (m_def->definitionType()==Definition::TypeClass)
+      {
+        name = m_def->displayName();
+        found = TRUE;
+      }
+      else if (m_def->definitionType()==Definition::TypeNamespace)
+      {
+        name = m_def->displayName();
+        found = TRUE;
+      }
+      else if (scope==0 || scope==Doxygen::globalScope) // in global scope
+      {
+        if (md)
+        {
+          FileDef *fd = md->getBodyDef();
+          if (fd==0) fd = md->getFileDef();
+          if (fd)
+          {
+            if (!prefix.isEmpty()) prefix+=": ";
+            name = prefix + convertToXML(fd->localName());
+            found = TRUE;
+          }
+        }
+      }
+      else if (md && (md->getClassDef() || md->getNamespaceDef()))
+        // member in class or namespace scope
+      {
+        SrcLangExt lang = md->getLanguage();
+        name = m_def->getOuterScope()->qualifiedName()
+          + getLanguageSpecificSeparator(lang) + prefix;
+        found = TRUE;
+      }
+      else if (scope) // some thing else? -> show scope
+      {
+        name = prefix + convertToXML(scope->name());
+        found = TRUE;
+      }
+      if (!found) // fallback
+      {
+        name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+      }
+      return name;
+    }
+    TemplateVariant relPath() const
+    {
+      return externalRef("../",m_def->getReference(),TRUE);
+    }
+  private:
+    const Definition *m_def;
+    const Definition *m_prevDef;
+    const Definition *m_nextDef;
+};
+//%% }
+
+SymbolContext::SymbolContext(const Definition *def,const Definition *prevDef,const Definition *nextDef)
+    : RefCountedContext("SymbolContext")
+{
+  p = new Private(def,prevDef,nextDef);
+}
+
+SymbolContext::~SymbolContext()
+{
+  delete p;
+}
+
+TemplateVariant SymbolContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list SymbolList[Symbol] : list of search symbols with the same name
+class SymbolListContext::Private : public GenericNodeListContext
+{
+  public:
+    Private(const SearchDefinitionList *sdl)
+    {
+      QListIterator<Definition> li(*sdl);
+      Definition *def;
+      Definition *prev = 0;
+      for (li.toFirst();(def=li.current());)
+      {
+        ++li;
+        const Definition *next = li.current();
+        append(SymbolContext::alloc(def,prev,next));
+        prev = def;
+      }
+    }
+};
+
+SymbolListContext::SymbolListContext(const SearchDefinitionList *sdl)
+    : RefCountedContext("SymbolListContext")
+{
+  p = new Private(sdl);
+}
+
+SymbolListContext::~SymbolListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int SymbolListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant SymbolListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *SymbolListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+//------------------------------------------------------------------------
+
+//%% struct SymbolGroup: search group of similar symbols
+//%% {
+class SymbolGroupContext::Private : public PropertyMapper
+{
+  public:
+    Private(const SearchDefinitionList *sdl) : m_sdl(sdl)
+    {
+      addProperty("id",     this,&Private::id);
+      addProperty("name",   this,&Private::name);
+      addProperty("symbols",this,&Private::symbolList);
+    }
+    TemplateVariant id() const
+    {
+      return m_sdl->id();
+    }
+    TemplateVariant name() const
+    {
+      return m_sdl->name();
+    }
+    TemplateVariant symbolList() const
+    {
+      if (!m_cache.symbolList)
+      {
+        m_cache.symbolList.reset(SymbolListContext::alloc(m_sdl));
+      }
+      return m_cache.symbolList.get();
+    }
+  private:
+    const SearchDefinitionList *m_sdl;
+    struct Cachable
+    {
+      SharedPtr<SymbolListContext> symbolList;
+    };
+    mutable Cachable m_cache;
+};
+//%% }
+
+SymbolGroupContext::SymbolGroupContext(const SearchDefinitionList *sdl)
+    : RefCountedContext("SymbolGroupContext")
+{
+  p = new Private(sdl);
+}
+
+SymbolGroupContext::~SymbolGroupContext()
+{
+  delete p;
+}
+
+TemplateVariant SymbolGroupContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list SymbolGroupList[SymbolGroup] : list of search groups one per by name
+class SymbolGroupListContext::Private : public GenericNodeListContext
+{
+  public:
+    Private(const SearchIndexList *sil)
+    {
+      SDict<SearchDefinitionList>::Iterator li(*sil);
+      SearchDefinitionList *dl;
+      for (li.toFirst();(dl=li.current());++li)
+      {
+        append(SymbolGroupContext::alloc(dl));
+      }
+    }
+};
+
+SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil) 
+    : RefCountedContext("SymbolGroupListContext")
+{
+  p = new Private(sil);
+}
+
+SymbolGroupListContext::~SymbolGroupListContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int SymbolGroupListContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant SymbolGroupListContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *SymbolGroupListContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+//------------------------------------------------------------------------
+
+//%% struct SymbolIndex: search index
+//%% {
+class SymbolIndexContext::Private : public PropertyMapper
+{
+  public:
+    Private(const SearchIndexList *sl,const QCString &name) : m_searchList(sl), m_name(name)
+    {
+      addProperty("name",        this,&Private::name);
+      addProperty("letter",      this,&Private::letter);
+      addProperty("symbolGroups",this,&Private::symbolGroups);
+    }
+    TemplateVariant name() const
+    {
+      return m_name;
+    }
+    TemplateVariant letter() const
+    {
+      return QString(QChar(m_searchList->letter())).utf8();
+    }
+    TemplateVariant symbolGroups() const
+    {
+      if (!m_cache.symbolGroups)
+      {
+        m_cache.symbolGroups.reset(SymbolGroupListContext::alloc(m_searchList));
+      }
+      return m_cache.symbolGroups.get();
+    }
+  private:
+    const SearchIndexList *m_searchList;
+    QCString m_name;
+    struct Cachable
+    {
+      SharedPtr<SymbolGroupListContext> symbolGroups;
+    };
+    mutable Cachable m_cache;
+};
+//%% }
+
+SymbolIndexContext::SymbolIndexContext(const SearchIndexList *sl,const QCString &name)
+    : RefCountedContext("SymbolIndexContext")
+{
+  p = new Private(sl,name);
+}
+
+SymbolIndexContext::~SymbolIndexContext()
+{
+  delete p;
+}
+
+TemplateVariant SymbolIndexContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list SymbolIndices[SymbolIndex] : list of search indices one per by type
+class SymbolIndicesContext::Private : public GenericNodeListContext
+{
+  public:
+    Private(const SearchIndexInfo *info)
+    {
+      // use info->symbolList to populate the list
+      SIntDict<SearchIndexList>::Iterator it(info->symbolList);
+      const SearchIndexList *sl;
+      for (it.toFirst();(sl=it.current());++it) // for each letter
+      {
+        append(SymbolIndexContext::alloc(sl,info->name));
+      }
+    }
+};
+
+SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo *info) : RefCountedContext("SymbolIndicesContext")
+{
+  p = new Private(info);
+}
+
+SymbolIndicesContext::~SymbolIndicesContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int SymbolIndicesContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant SymbolIndicesContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *SymbolIndicesContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+//------------------------------------------------------------------------
+
+//%% struct SearchIndex: search index
+//%% {
+class SearchIndexContext::Private : public PropertyMapper
+{
+  public:
+    Private(const SearchIndexInfo *info) : m_info(info)
+    {
+      addProperty("name",      this,&Private::name);
+      addProperty("text",      this,&Private::text);
+      addProperty("symbolIndices",this,&Private::symbolIndices);
+    }
+    TemplateVariant name() const
+    {
+      return m_info->name;
+    }
+    TemplateVariant text() const
+    {
+      return m_info->text;
+    }
+    TemplateVariant symbolIndices() const
+    {
+      if (!m_cache.symbolIndices)
+      {
+        m_cache.symbolIndices.reset(SymbolIndicesContext::alloc(m_info));
+      }
+      return m_cache.symbolIndices.get();
+    }
+  private:
+    const SearchIndexInfo *m_info;
+    struct Cachable
+    {
+      SharedPtr<SymbolIndicesContext> symbolIndices;
+    };
+    mutable Cachable m_cache;
+};
+//%% }
+
+SearchIndexContext::SearchIndexContext(const SearchIndexInfo *info)
+    : RefCountedContext("SearchIndexContext")
+{
+  p = new Private(info);
+}
+
+SearchIndexContext::~SearchIndexContext()
+{
+  delete p;
+}
+
+TemplateVariant SearchIndexContext::get(const char *name) const
+{
+  return p->get(name);
+}
+
+//------------------------------------------------------------------------
+
+//%% list SearchIndices[SearchIndex] : list of search indices one per by type
+class SearchIndicesContext::Private : public GenericNodeListContext
+{
+  public:
+    Private()
+    {
+      const SearchIndexInfo *indices = getSearchIndices();
+      for (int i=0;i<NUM_SEARCH_INDICES;i++)
+      {
+        append(SearchIndexContext::alloc(&indices[i]));
+      }
+    }
+};
+
+SearchIndicesContext::SearchIndicesContext() : RefCountedContext("SearchIndicesContext")
+{
+  p = new Private;
+}
+
+SearchIndicesContext::~SearchIndicesContext()
+{
+  delete p;
+}
+
+// TemplateListIntf
+int SearchIndicesContext::count() const
+{
+  return p->count();
+}
+
+TemplateVariant SearchIndicesContext::at(int index) const
+{
+  return p->at(index);
+}
+
+TemplateListIntf::ConstIterator *SearchIndicesContext::createIterator() const
+{
+  return p->createIterator();
+}
+
+
+//------------------------------------------------------------------------
+
 class HtmlEscaper : public TemplateEscapeIntf
 {
   public:
@@ -8183,6 +8682,7 @@ void generateOutputViaTemplate()
       SharedPtr<GlobalsIndexContext>          globalsIndex         (GlobalsIndexContext::alloc());
       SharedPtr<ClassMembersIndexContext>     classMembersIndex    (ClassMembersIndexContext::alloc());
       SharedPtr<NamespaceMembersIndexContext> namespaceMembersIndex(NamespaceMembersIndexContext::alloc());
+      SharedPtr<SearchIndicesContext>         searchIndices        (SearchIndicesContext::alloc());
 
       //%% Doxygen doxygen:
       ctx->set("doxygen",doxygen.get());
@@ -8238,6 +8738,8 @@ void generateOutputViaTemplate()
       ctx->set("classMembersIndex",classMembersIndex.get());
       //%% NamespaceMembersIndex namespaceMembersIndex:
       ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
+      //%% SearchIndicaes searchindicaes
+      ctx->set("searchIndices",searchIndices.get());
 
       // render HTML output
       Template *tpl = e.loadByName("htmllayout.tpl",1);

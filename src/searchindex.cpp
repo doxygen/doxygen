@@ -583,70 +583,9 @@ void SearchIndexExternal::write(const char *fileName)
 #include "doxygen.h"
 #include "message.h"
 
-//static const char search_script[]=
-//#include "search.js.h"
-//;
+static SearchIndexInfo g_searchIndexInfo[NUM_SEARCH_INDICES];
 
-#define SEARCH_INDEX_ALL         0
-#define SEARCH_INDEX_CLASSES     1
-#define SEARCH_INDEX_NAMESPACES  2
-#define SEARCH_INDEX_FILES       3
-#define SEARCH_INDEX_FUNCTIONS   4
-#define SEARCH_INDEX_VARIABLES   5
-#define SEARCH_INDEX_TYPEDEFS    6
-#define SEARCH_INDEX_ENUMS       7
-#define SEARCH_INDEX_ENUMVALUES  8
-#define SEARCH_INDEX_PROPERTIES  9
-#define SEARCH_INDEX_EVENTS     10
-#define SEARCH_INDEX_RELATED    11
-#define SEARCH_INDEX_DEFINES    12
-#define SEARCH_INDEX_GROUPS     13
-#define SEARCH_INDEX_PAGES      14
-#define NUM_SEARCH_INDICES      15
-
-class SearchDefinitionList : public QList<Definition>
-{
-  public:
-    SearchDefinitionList(uint letter) : m_letter(letter) {}
-    uint letter() const { return m_letter; }
-  private:
-    uint m_letter;
-};
-
-class SearchIndexList : public SDict< SearchDefinitionList >
-{
-  public:
-    typedef Definition ElementType;
-    SearchIndexList(uint letter) : SDict<SearchDefinitionList>(17,FALSE), m_letter(letter)
-    {
-      setAutoDelete(TRUE);
-    }
-   ~SearchIndexList() {}
-    void append(Definition *d)
-    {
-      SearchDefinitionList *l = find(d->name());
-      if (l==0)
-      {
-        l=new SearchDefinitionList(m_letter);
-        SDict<SearchDefinitionList>::append(d->name(),l);
-      }
-      l->append(d);
-    }
-    uint letter() const { return m_letter; }
-  private:
-    int compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const
-    {
-      QCString n1 = md1->getFirst()->localName();
-      QCString n2 = md2->getFirst()->localName();
-      return qstricmp(n1.data(),n2.data());
-    }
-    uint m_letter;
-};
-
-static void addMemberToSearchIndex(
-         LetterToIndexMap<SearchIndexList> symbols[NUM_SEARCH_INDICES],
-         int symbolCount[NUM_SEARCH_INDICES],
-         MemberDef *md)
+static void addMemberToSearchIndex(MemberDef *md)
 {
   static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
   bool isLinkable = md->isLinkable();
@@ -654,7 +593,7 @@ static void addMemberToSearchIndex(
   NamespaceDef *nd=0;
   FileDef *fd=0;
   GroupDef *gd=0;
-  if (isLinkable && 
+  if (isLinkable &&
       (
        ((cd=md->getClassDef()) && cd->isLinkable() && cd->templateMaster()==0) ||
        ((gd=md->getGroupDef()) && gd->isLinkable())
@@ -662,58 +601,49 @@ static void addMemberToSearchIndex(
      )
   {
     QCString n = md->name();
-    if (!n.isEmpty()) 
+    if (!n.isEmpty())
     {
       uint letter = getUtf8CodeToLower(n,0);
       bool isFriendToHide = hideFriendCompounds &&
-        (QCString(md->typeString())=="friend class" || 
+        (QCString(md->typeString())=="friend class" ||
          QCString(md->typeString())=="friend struct" ||
          QCString(md->typeString())=="friend union");
       if (!(md->isFriend() && isFriendToHide))
       {
-        symbols[SEARCH_INDEX_ALL].append(letter,md);
-        symbolCount[SEARCH_INDEX_ALL]++;
+        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,md);
       }
       if (md->isFunction() || md->isSlot() || md->isSignal())
       {
-        symbols[SEARCH_INDEX_FUNCTIONS].append(letter,md);
-        symbolCount[SEARCH_INDEX_FUNCTIONS]++;
-      } 
+        g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].symbolList.append(letter,md);
+      }
       else if (md->isVariable())
       {
-        symbols[SEARCH_INDEX_VARIABLES].append(letter,md);
-        symbolCount[SEARCH_INDEX_VARIABLES]++;
+        g_searchIndexInfo[SEARCH_INDEX_VARIABLES].symbolList.append(letter,md);
       }
       else if (md->isTypedef())
       {
-        symbols[SEARCH_INDEX_TYPEDEFS].append(letter,md);
-        symbolCount[SEARCH_INDEX_TYPEDEFS]++;
+        g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].symbolList.append(letter,md);
       }
       else if (md->isEnumerate())
       {
-        symbols[SEARCH_INDEX_ENUMS].append(letter,md);
-        symbolCount[SEARCH_INDEX_ENUMS]++;
+        g_searchIndexInfo[SEARCH_INDEX_ENUMS].symbolList.append(letter,md);
       }
       else if (md->isEnumValue())
       {
-        symbols[SEARCH_INDEX_ENUMVALUES].append(letter,md);
-        symbolCount[SEARCH_INDEX_ENUMVALUES]++;
+        g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].symbolList.append(letter,md);
       }
       else if (md->isProperty())
       {
-        symbols[SEARCH_INDEX_PROPERTIES].append(letter,md);
-        symbolCount[SEARCH_INDEX_PROPERTIES]++;
+        g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].symbolList.append(letter,md);
       }
       else if (md->isEvent())
       {
-        symbols[SEARCH_INDEX_EVENTS].append(letter,md);
-        symbolCount[SEARCH_INDEX_EVENTS]++;
+        g_searchIndexInfo[SEARCH_INDEX_EVENTS].symbolList.append(letter,md);
       }
       else if (md->isRelated() || md->isForeign() ||
                (md->isFriend() && !isFriendToHide))
       {
-        symbols[SEARCH_INDEX_RELATED].append(letter,md);
-        symbolCount[SEARCH_INDEX_RELATED]++;
+        g_searchIndexInfo[SEARCH_INDEX_RELATED].symbolList.append(letter,md);
       }
     }
   }
@@ -727,38 +657,31 @@ static void addMemberToSearchIndex(
     if (!n.isEmpty()) 
     {
       uint letter = getUtf8CodeToLower(n,0);
-      symbols[SEARCH_INDEX_ALL].append(letter,md);
-      symbolCount[SEARCH_INDEX_ALL]++;
+      g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,md);
 
       if (md->isFunction()) 
       {
-        symbols[SEARCH_INDEX_FUNCTIONS].append(letter,md);
-        symbolCount[SEARCH_INDEX_FUNCTIONS]++;
+        g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].symbolList.append(letter,md);
       }
       else if (md->isVariable()) 
       {
-        symbols[SEARCH_INDEX_VARIABLES].append(letter,md);
-        symbolCount[SEARCH_INDEX_VARIABLES]++;
+        g_searchIndexInfo[SEARCH_INDEX_VARIABLES].symbolList.append(letter,md);
       }
       else if (md->isTypedef())
       {
-        symbols[SEARCH_INDEX_TYPEDEFS].append(letter,md);
-        symbolCount[SEARCH_INDEX_TYPEDEFS]++;
+        g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].symbolList.append(letter,md);
       }
       else if (md->isEnumerate())
       {
-        symbols[SEARCH_INDEX_ENUMS].append(letter,md);
-        symbolCount[SEARCH_INDEX_ENUMS]++;
+        g_searchIndexInfo[SEARCH_INDEX_ENUMS].symbolList.append(letter,md);
       }
       else if (md->isEnumValue())
       {
-        symbols[SEARCH_INDEX_ENUMVALUES].append(letter,md);
-        symbolCount[SEARCH_INDEX_ENUMVALUES]++;
+        g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].symbolList.append(letter,md);
       }
       else if (md->isDefine())
       {
-        symbols[SEARCH_INDEX_DEFINES].append(letter,md);
-        symbolCount[SEARCH_INDEX_DEFINES]++;
+        g_searchIndexInfo[SEARCH_INDEX_DEFINES].symbolList.append(letter,md);
       }
     }
   }
@@ -792,55 +715,43 @@ static QCString searchId(const QCString &s)
   return result;
 }
 
-static int g_searchIndexCount[NUM_SEARCH_INDICES];
-static LetterToIndexMap<SearchIndexList> g_searchIndexSymbols[NUM_SEARCH_INDICES];
-static const char *g_searchIndexName[NUM_SEARCH_INDICES] = 
-{ 
-    "all",
-    "classes",
-    "namespaces",
-    "files",
-    "functions",
-    "variables",
-    "typedefs", 
-    "enums", 
-    "enumvalues",
-    "properties", 
-    "events", 
-    "related",
-    "defines",
-    "groups",
-    "pages"
-};
-
-
-class SearchIndexCategoryMapping
+void createJavascriptSearchIndex()
 {
-  public:
-    SearchIndexCategoryMapping()
-    {
-      categoryLabel[SEARCH_INDEX_ALL]        = theTranslator->trAll();
-      categoryLabel[SEARCH_INDEX_CLASSES]    = theTranslator->trClasses();
-      categoryLabel[SEARCH_INDEX_NAMESPACES] = theTranslator->trNamespace(TRUE,FALSE);
-      categoryLabel[SEARCH_INDEX_FILES]      = theTranslator->trFile(TRUE,FALSE);
-      categoryLabel[SEARCH_INDEX_FUNCTIONS]  = theTranslator->trFunctions();
-      categoryLabel[SEARCH_INDEX_VARIABLES]  = theTranslator->trVariables();
-      categoryLabel[SEARCH_INDEX_TYPEDEFS]   = theTranslator->trTypedefs();
-      categoryLabel[SEARCH_INDEX_ENUMS]      = theTranslator->trEnumerations();
-      categoryLabel[SEARCH_INDEX_ENUMVALUES] = theTranslator->trEnumerationValues();
-      categoryLabel[SEARCH_INDEX_PROPERTIES] = theTranslator->trProperties();
-      categoryLabel[SEARCH_INDEX_EVENTS]     = theTranslator->trEvents();
-      categoryLabel[SEARCH_INDEX_RELATED]    = theTranslator->trFriends();
-      categoryLabel[SEARCH_INDEX_DEFINES]    = theTranslator->trDefines();
-      categoryLabel[SEARCH_INDEX_GROUPS]     = theTranslator->trGroup(TRUE,FALSE);
-      categoryLabel[SEARCH_INDEX_PAGES]      = theTranslator->trPage(TRUE,FALSE);
-    }
-    QCString categoryLabel[NUM_SEARCH_INDICES];
-};
+  // set index names
+  g_searchIndexInfo[SEARCH_INDEX_ALL].name        = "all";
+  g_searchIndexInfo[SEARCH_INDEX_CLASSES].name    = "classes";
+  g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].name = "namespaces";
+  g_searchIndexInfo[SEARCH_INDEX_FILES].name      = "files";
+  g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].name  = "functions";
+  g_searchIndexInfo[SEARCH_INDEX_VARIABLES].name  = "variables";
+  g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].name   = "typedefs";
+  g_searchIndexInfo[SEARCH_INDEX_ENUMS].name      = "enums";
+  g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].name = "enumvalues";
+  g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].name = "properties";
+  g_searchIndexInfo[SEARCH_INDEX_EVENTS].name     = "events";
+  g_searchIndexInfo[SEARCH_INDEX_RELATED].name    = "related";
+  g_searchIndexInfo[SEARCH_INDEX_DEFINES].name    = "defines";
+  g_searchIndexInfo[SEARCH_INDEX_GROUPS].name     = "groups";
+  g_searchIndexInfo[SEARCH_INDEX_PAGES].name      = "pages";
 
-void writeJavascriptSearchIndex()
-{
-  if (!Config_getBool("GENERATE_HTML")) return;
+  // set index texts
+  g_searchIndexInfo[SEARCH_INDEX_ALL].text        = theTranslator->trAll();
+  g_searchIndexInfo[SEARCH_INDEX_CLASSES].text    = theTranslator->trClasses();
+  g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].text = theTranslator->trNamespace(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_FILES].text      = theTranslator->trFile(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_FUNCTIONS].text  = theTranslator->trFunctions();
+  g_searchIndexInfo[SEARCH_INDEX_VARIABLES].text  = theTranslator->trVariables();
+  g_searchIndexInfo[SEARCH_INDEX_TYPEDEFS].text   = theTranslator->trTypedefs();
+  g_searchIndexInfo[SEARCH_INDEX_ENUMS].text      = theTranslator->trEnumerations();
+  g_searchIndexInfo[SEARCH_INDEX_ENUMVALUES].text = theTranslator->trEnumerationValues();
+  g_searchIndexInfo[SEARCH_INDEX_PROPERTIES].text = theTranslator->trProperties();
+  g_searchIndexInfo[SEARCH_INDEX_EVENTS].text     = theTranslator->trEvents();
+  g_searchIndexInfo[SEARCH_INDEX_RELATED].text    = theTranslator->trFriends();
+  g_searchIndexInfo[SEARCH_INDEX_DEFINES].text    = theTranslator->trDefines();
+  g_searchIndexInfo[SEARCH_INDEX_GROUPS].text     = theTranslator->trGroup(TRUE,FALSE);
+  g_searchIndexInfo[SEARCH_INDEX_PAGES].text      = theTranslator->trPage(TRUE,FALSE);
+
+  // add symbols to letter -> symbol list map
 
   // index classes
   ClassSDict::Iterator cli(*Doxygen::classSDict);
@@ -850,10 +761,8 @@ void writeJavascriptSearchIndex()
     uint letter = getUtf8CodeToLower(cd->localName(),0);
     if (cd->isLinkable() && isId(letter))
     {
-      g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,cd);
-      g_searchIndexSymbols[SEARCH_INDEX_CLASSES].append(letter,cd);
-      g_searchIndexCount[SEARCH_INDEX_ALL]++;
-      g_searchIndexCount[SEARCH_INDEX_CLASSES]++;
+      g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,cd);
+      g_searchIndexInfo[SEARCH_INDEX_CLASSES].symbolList.append(letter,cd);
     }
   }
 
@@ -865,10 +774,8 @@ void writeJavascriptSearchIndex()
     uint letter = getUtf8CodeToLower(nd->name(),0);
     if (nd->isLinkable() && isId(letter))
     {
-      g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,nd);
-      g_searchIndexSymbols[SEARCH_INDEX_NAMESPACES].append(letter,nd);
-      g_searchIndexCount[SEARCH_INDEX_ALL]++;
-      g_searchIndexCount[SEARCH_INDEX_NAMESPACES]++;
+      g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,nd);
+      g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].symbolList.append(letter,nd);
     }
   }
 
@@ -884,10 +791,8 @@ void writeJavascriptSearchIndex()
       uint letter = getUtf8CodeToLower(fd->name(),0);
       if (fd->isLinkable() && isId(letter))
       {
-        g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,fd);
-        g_searchIndexSymbols[SEARCH_INDEX_FILES].append(letter,fd);
-        g_searchIndexCount[SEARCH_INDEX_ALL]++;
-        g_searchIndexCount[SEARCH_INDEX_FILES]++;
+        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,fd);
+        g_searchIndexInfo[SEARCH_INDEX_FILES].symbolList.append(letter,fd);
       }
     }
   }
@@ -904,7 +809,7 @@ void writeJavascriptSearchIndex()
       // for each member definition
       for (mni.toFirst();(md=mni.current());++mni)
       {
-        addMemberToSearchIndex(g_searchIndexSymbols,g_searchIndexCount,md);
+        addMemberToSearchIndex(md);
       }
     }
   }
@@ -921,7 +826,7 @@ void writeJavascriptSearchIndex()
       // for each member definition
       for (mni.toFirst();(md=mni.current());++mni)
       {
-        addMemberToSearchIndex(g_searchIndexSymbols,g_searchIndexCount,md);
+        addMemberToSearchIndex(md);
       }
     }
   }
@@ -940,10 +845,8 @@ void writeJavascriptSearchIndex()
         uint letter = charCode<128 ? tolower(charCode) : charCode;
         if (isId(letter))
         {
-          g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,gd);
-          g_searchIndexSymbols[SEARCH_INDEX_GROUPS].append(letter,gd);
-          g_searchIndexCount[SEARCH_INDEX_ALL]++;
-          g_searchIndexCount[SEARCH_INDEX_GROUPS]++;
+          g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,gd);
+          g_searchIndexInfo[SEARCH_INDEX_GROUPS].symbolList.append(letter,gd);
         }
       }
     }
@@ -963,10 +866,8 @@ void writeJavascriptSearchIndex()
         uint letter = charCode<128 ? tolower(charCode) : charCode;
         if (isId(letter))
         {
-          g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,pd);
-          g_searchIndexSymbols[SEARCH_INDEX_PAGES].append(letter,pd);
-          g_searchIndexCount[SEARCH_INDEX_ALL]++;
-          g_searchIndexCount[SEARCH_INDEX_PAGES]++;
+          g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,pd);
+          g_searchIndexInfo[SEARCH_INDEX_PAGES].symbolList.append(letter,pd);
         }
       }
     }
@@ -980,38 +881,40 @@ void writeJavascriptSearchIndex()
       uint letter = charCode<128 ? tolower(charCode) : charCode;
       if (isId(letter))
       {
-        g_searchIndexSymbols[SEARCH_INDEX_ALL].append(letter,Doxygen::mainPage);
-        g_searchIndexSymbols[SEARCH_INDEX_PAGES].append(letter,Doxygen::mainPage);
-        g_searchIndexCount[SEARCH_INDEX_ALL]++;
-        g_searchIndexCount[SEARCH_INDEX_PAGES]++;
+        g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,Doxygen::mainPage);
+        g_searchIndexInfo[SEARCH_INDEX_PAGES].symbolList.append(letter,Doxygen::mainPage);
       }
     }
   }
-  
+
   // sort all lists
   int i;
   for (i=0;i<NUM_SEARCH_INDICES;i++)
   {
-    SIntDict<SearchIndexList>::Iterator it(g_searchIndexSymbols[i]);
+    SIntDict<SearchIndexList>::Iterator it(g_searchIndexInfo[i].symbolList);
     SearchIndexList *sl;
     for (it.toFirst();(sl=it.current());++it)
     {
       sl->sort();
     }
   }
+}
 
+void writeJavascriptSearchIndex()
+{
+  int i;
   // write index files
   QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
 
   for (i=0;i<NUM_SEARCH_INDICES;i++) // for each index
   {
-    SIntDict<SearchIndexList>::Iterator it(g_searchIndexSymbols[i]);
+    SIntDict<SearchIndexList>::Iterator it(g_searchIndexInfo[i].symbolList);
     SearchIndexList *sl;
     int p=0;
     for (it.toFirst();(sl=it.current());++it,++p) // for each letter
     {
       QCString baseName;
-      baseName.sprintf("%s_%x",g_searchIndexName[i],p);
+      baseName.sprintf("%s_%x",g_searchIndexInfo[i].name.data(),p);
 
       QCString fileName = searchDirName + "/"+baseName+".html";
       QCString dataFileName = searchDirName + "/"+baseName+".js";
@@ -1083,17 +986,7 @@ void writeJavascriptSearchIndex()
           }
           firstEntry=FALSE;
 
-          QCString dispName = d->localName();
-          if (d->definitionType()==Definition::TypeGroup)
-          {
-            dispName = ((GroupDef*)d)->groupTitle();
-          }
-          else if (d->definitionType()==Definition::TypePage)
-          {
-            dispName = ((PageDef*)d)->title();
-          }
-          ti << "  ['" << searchId(dispName) << "',['" 
-            << convertToXML(dispName) << "',[";
+          ti << "  ['" << dl->id() << "',['" << convertToXML(dl->name()) << "',[";
 
           if (dl->count()==1) // item with a unique name
           {
@@ -1274,12 +1167,12 @@ void writeJavascriptSearchIndex()
       int j=0;
       for (i=0;i<NUM_SEARCH_INDICES;i++)
       {
-        if (g_searchIndexCount[i]>0)
+        if (g_searchIndexInfo[i].symbolList.count()>0)
         {
           if (!first) t << "," << endl;
           t << "  " << j << ": \"";
 
-          SIntDict<SearchIndexList>::Iterator it(g_searchIndexSymbols[i]);
+          SIntDict<SearchIndexList>::Iterator it(g_searchIndexInfo[i].symbolList);
           SearchIndexList *sl;
           for (it.toFirst();(sl=it.current());++it) // for each letter
           {
@@ -1298,10 +1191,10 @@ void writeJavascriptSearchIndex()
       j=0;
       for (i=0;i<NUM_SEARCH_INDICES;i++)
       {
-        if (g_searchIndexCount[i]>0)
+        if (g_searchIndexInfo[i].symbolList.count()>0)
         {
           if (!first) t << "," << endl;
-          t << "  " << j << ": \"" << g_searchIndexName[i] << "\"";
+          t << "  " << j << ": \"" << g_searchIndexInfo[i].name << "\"";
           first=FALSE;
           j++;
         }
@@ -1311,14 +1204,13 @@ void writeJavascriptSearchIndex()
       t << "var indexSectionLabels =" << endl;
       t << "{" << endl;
       first=TRUE;
-      static SearchIndexCategoryMapping map;
       j=0;
       for (i=0;i<NUM_SEARCH_INDICES;i++)
       {
-        if (g_searchIndexCount[i]>0)
+        if (g_searchIndexInfo[i].symbolList.count()>0)
         {
           if (!first) t << "," << endl;
-          t << "  " << j << ": \"" << convertToXML(map.categoryLabel[i]) << "\"";
+          t << "  " << j << ": \"" << convertToXML(g_searchIndexInfo[i].text) << "\"";
           first=FALSE;
           j++;
         }
@@ -1350,6 +1242,55 @@ void writeJavascriptSearchIndex()
     }
   }
   Doxygen::indexList->addStyleSheetFile("search/search.js");
+}
+
+const SearchIndexInfo *getSearchIndices()
+{
+  return g_searchIndexInfo;
+}
+
+//---------------------------------------------------------------------------------------------
+
+SearchIndexList::SearchIndexList(uint letter)
+  : SDict< SearchDefinitionList >(17,FALSE), m_letter(letter)
+{
+  setAutoDelete(TRUE);
+}
+
+SearchIndexList::~SearchIndexList()
+{
+}
+
+void SearchIndexList::append(Definition *d)
+{
+  SearchDefinitionList *l = find(d->name());
+  if (l==0)
+  {
+    QCString dispName = d->localName();
+    if (d->definitionType()==Definition::TypeGroup)
+    {
+      dispName = ((GroupDef*)d)->groupTitle();
+    }
+    else if (d->definitionType()==Definition::TypePage)
+    {
+      dispName = ((PageDef*)d)->title();
+    }
+    l=new SearchDefinitionList(searchId(dispName),dispName);
+    SDict< SearchDefinitionList >::append(d->name(),l);
+  }
+  l->append(d);
+}
+
+uint SearchIndexList::letter() const
+{
+  return m_letter;
+}
+
+int SearchIndexList::compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const
+{
+  QCString n1 = md1->getFirst()->localName();
+  QCString n2 = md2->getFirst()->localName();
+  return qstricmp(n1.data(),n2.data());
 }
 
 //---------------------------------------------------------------------------------------------

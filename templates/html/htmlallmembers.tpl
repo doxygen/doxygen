@@ -9,11 +9,13 @@
 <p>{{ tr.theListOfAllMembers }} <a class="el" href="{{ compound.fileName }}{{ config.HTML_FILE_EXTENSION }}">{{ compound.name }}</a>{{ tr.incInheritedMembers }}</p>
 <table class="directory">
 {% for mi in compound.allMembersList %}
-  <tr {% cycle 'class="even"' '' %}>
+  <tr class="{% cycle 'even' 'odd' %}">
   {# TODO: objective-C #}
-  <td>{% with obj=mi.member text=mi.ambiguityScope|append:mi.member.name %}
+  <td class="entry">{% with obj=mi.member text=mi.ambiguityScope|append:mi.member.name %}
       {% include 'htmlobjlink.tpl' %}
       {% endwith %}
+    {# TODO: add arguments #}
+    {# TODO: add column with scope #}
   </td>
   </tr>
 {% endfor %}

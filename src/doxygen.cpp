@@ -11484,12 +11484,17 @@ void generateOutput()
   static bool searchEngine      = Config_getBool("SEARCHENGINE");
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
 
+  g_s.begin("Generating search indices...\n");
+  if (searchEngine && !serverBasedSearch && (generateHtml || g_useOutputTemplate))
+  {
+    createJavascriptSearchIndex();
+  }
+
   // generate search indices (need to do this before writing other HTML
   // pages as these contain a drop down menu with options depending on
   // what categories we find in this function.
   if (generateHtml && searchEngine)
   {
-    g_s.begin("Generating search indices...\n");
     QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
@@ -11503,8 +11508,8 @@ void generateOutput()
     {
       writeJavascriptSearchIndex();
     }
-    g_s.end();
   }
+  g_s.end();
 
   g_s.begin("Generating example documentation...\n");
   generateExampleDocs();

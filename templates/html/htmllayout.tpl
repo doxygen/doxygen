@@ -183,7 +183,9 @@
     {% endwith %}
     {% with page=classHierarchy %}
       {% if config.HAVE_DOT and config.GRAPHICAL_HIERARCHY %}
-        {% create 'inherits'|append:config.HTML_FILE_EXTENSION from 'htmlgraphhierarchy.tpl' %}
+        {% with fileName='inherits' %}
+          {% create fileName|append:config.HTML_FILE_EXTENSION from 'htmlgraphhierarchy.tpl' %}
+        {% endwith %}
       {% endif %}
     {% endwith %}
   {% endif %}
@@ -228,6 +230,19 @@
 
 {# close the global navigation index #}
 {% closesubindex nav %}
+
+{# write search data #}
+{% if config.SEARCHENGINE and not config.SERVER_BASED_SEARCH %}
+  {% create 'search/searchdata.js' from 'htmljssearchdata.tpl' %}
+  {% for idx in searchIndices %}
+    {% for si in idx.symbolIndices %}
+      {% with baseName=si.name|append:'_'|append:forloop.counter0 %}
+        {% create baseName|prepend:'search/'|append:config.HTML_FILE_EXTENSION from 'htmlsearchresult.tpl' %}
+        {% create baseName|prepend:'search/'|append:'.js' from 'htmljssearchindex.tpl' %}
+      {% endwith %}
+    {% endfor %}
+  {% endfor %}
+{% endif %}
 
 {# write the navigation tree data #}
 {% if config.GENERATE_TREEVIEW %}
