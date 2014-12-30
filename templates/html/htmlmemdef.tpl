@@ -1,6 +1,6 @@
 {# inputs: memberListInfo #}
 {% if memberListInfo %}
-  {% if memberListInfo.members|length>0 %}
+  {% if memberListInfo.members %}
     <h2 class="groupheader">{{ memberListInfo.title }}</h2>
     {% for member in memberListInfo.members %}
       {% if member.hasDetails %}  {# TODO: not the same as isDetailedSectionVisible! #}
@@ -9,7 +9,7 @@
         <div class="memitem">
         <div class="memproto">
         {# write template declarations #}
-        {% if member.language=='cpp' and member.templateDecls|length>0 %}
+        {% if member.language=='cpp' and member.templateDecls %}
           {% for targList in member.templateDecls %}
             {% spaceless %}
               <div class="memtemplate">
@@ -23,7 +23,7 @@
           {% endfor %}
         {% endif %}
         {# start of labels if present #}
-        {% if member.labels|length>0 %}
+        {% if member.labels %}
           <table class="mlabels"><tr><td class="mlabels-left">
         {% endif %}
         <table class="memname">
@@ -31,9 +31,11 @@
             {{ member.definition }}
             {# write argument list #}
             {# TODO: TCL #}
-            {% if member.hasParameterList %}
+            {% if member.hasParameters %}
               {% if member.isObjCMethod %}
+                {% if member.parameters %}
                 </td><td></td>
+                {% endif %}
                 {% for arg in member.parameters %}
                   {% if not forloop.first %}
                     <tr><td class="paramkey">{{ arg.namePart }}</td><td></td>
@@ -43,7 +45,7 @@
                     <em>{% if not arg.name %}{{ arg.type }}{% else %}{{ arg.name }}{% endif %}</em>
                   {% endif %}
 		  {% if not forloop.last %}
-                    ,</td></tr>
+                    </td></tr>
                   {% endif %}
                 {% endfor %}
               {% else %}
@@ -109,7 +111,7 @@
           </td></tr>
         </table>
         {# end of labels if present #}
-        {% if member.labels|length>0 %}
+        {% if member.labels %}
           </td><td class="mlabels-right">{% spaceless %}
           {% for label in member.labels %}
             <span class="mlabel">{{ label }}</span>

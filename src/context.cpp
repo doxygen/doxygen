@@ -895,6 +895,14 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trNoMatches();
     }
+    TemplateVariant enumName() const
+    {
+      return theTranslator->trEnumName();
+    }
+    TemplateVariant enumValue() const
+    {
+      return theTranslator->trEnumValue();
+    }
     Private()
     {
       //%% string generatedBy
@@ -1049,6 +1057,10 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("searching",          this,&Private::searching);
       //%% string noMatches
       addProperty("noMatches",          this,&Private::noMatches);
+      //%% string enumValue
+      addProperty("enumValue",          this,&Private::enumValue);
+      //%% string enumName
+      addProperty("enumName",           this,&Private::enumName);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -3211,6 +3223,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("isObjCMethod",        this,&Private::isObjCMethod);
       addProperty("isObjCProperty",      this,&Private::isObjCProperty);
       addProperty("isAnonymous",         this,&Private::isAnonymous);
+      addProperty("hasParameters",       this,&Private::hasParameters);
       addProperty("declType",            this,&Private::declType);
       addProperty("declArgs",            this,&Private::declArgs);
       addProperty("anonymousType",       this,&Private::anonymousType);
@@ -3226,12 +3239,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("templateAlias",       this,&Private::templateAlias);
       addProperty("propertyAttrs",       this,&Private::propertyAttrs);
       addProperty("eventAttrs",          this,&Private::eventAttrs);
+      addProperty("category",            this,&Private::category);
       addProperty("class",               this,&Private::getClass);
       addProperty("file",                this,&Private::getFile);
       addProperty("namespace",           this,&Private::getNamespace);
       addProperty("definition",          this,&Private::definition);
       addProperty("parameters",          this,&Private::parameters);
-      addProperty("hasParameterList",    this,&Private::hasParameterList);
       addProperty("hasConstQualifier",   this,&Private::hasConstQualifier);
       addProperty("hasVolatileQualifier",this,&Private::hasVolatileQualifier);
       addProperty("trailingReturnType",  this,&Private::trailingReturnType);
@@ -3257,6 +3270,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       addProperty("hasCallerGraph",      this,&Private::hasCallerGraph);
       addProperty("callerGraph",         this,&Private::callerGraph);
       addProperty("fieldType",           this,&Private::fieldType);
+      addProperty("type",                this,&Private::type);
 
       m_cache.propertyAttrs.reset(TemplateList::alloc());
       if (md && md->isProperty())
@@ -3694,6 +3708,21 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         return TemplateVariant(FALSE);
       }
     }
+    TemplateVariant category() const
+    {
+      if (!m_cache.category && m_memberDef->category())
+      {
+        m_cache.category.reset(ClassContext::alloc(m_memberDef->category()));
+      }
+      if (m_cache.category)
+      {
+        return m_cache.category.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
     TemplateVariant getFile() const
     {
       if (!m_cache.fileDef && m_memberDef->getFileDef())
@@ -3750,7 +3779,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       }
       return m_cache.arguments.get();
     }
-    TemplateVariant hasParameterList() const
+    TemplateVariant hasParameters() const
     {
       return getDefArgList()!=0;
     }
@@ -4142,6 +4171,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         return TemplateVariant("");
       }
     }
+    TemplateVariant type() const
+    {
+      return m_memberDef->typeString();
+    }
   private:
     MemberDef *m_memberDef;
     struct Cachable
@@ -4154,6 +4187,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       SharedPtr<MemberListContext>   enumValues;
       SharedPtr<FileContext>         fileDef;
       SharedPtr<NamespaceContext>    namespaceDef;
+      SharedPtr<ClassContext>        category;
       SharedPtr<ClassContext>        classDef;
       SharedPtr<ClassContext>        anonymousType;
       SharedPtr<TemplateList>        templateDecls;
