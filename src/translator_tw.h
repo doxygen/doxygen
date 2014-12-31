@@ -749,7 +749,8 @@ class TranslatorChinesetraditional : public Translator
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,bool)
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+        bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
       QCString result=(QCString)"此";
@@ -765,7 +766,7 @@ class TranslatorChinesetraditional : public Translator
         default: break;
       }
       result+=" 文件是由下列檔案中產生";
-      result+=":";
+      if (single) result+=":"; else result+=":";
       return result;
     }
 
@@ -993,7 +994,7 @@ class TranslatorChinesetraditional : public Translator
         ".<p>\n"
         "請看下面範例:\n"
         "\\code\n"
-        "/*! 因為截斷的不可見類別 */\n"
+        "/*! 因為截斷而造成的不可見類別 */\n"
         "class Invisible { };\n\n"
         "/*! 截斷的類別, 繼承關係被隱藏 */\n"
         "class Truncated : public Invisible { };\n\n"
@@ -1020,32 +1021,32 @@ class TranslatorChinesetraditional : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "若在組態檔中的 \\c MAX_DOT_GRAPH_HEIGHT tag "
-        "設為 240，將會產生下列的圖示:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "這個例子會產生下列的圖示:"
+        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
         "<p>\n"
         "上圖中的各區塊意義如下:\n"
+        "</p>\n"
         "<ul>\n"
         "<li>%A 填滿黑色的區塊代表產生這個圖示的類別或結構 "
         ".\n"
-        "<li>%A 黑邊的區塊代表文件化過的結構或類別.\n"
-        "<li>%A 灰邊的區塊代表未經文件化的結構或是類別.\n"
+        "<li>%A 黑邊的區塊代表文件化過的結構或類別.</li>\n"
+        "<li>%A 灰邊的區塊代表未經文件化的結構或是類別.</li>\n"
         "<li>%A 紅邊的區塊代表文件化的結構或是類別，"
         "這些結構或類別的繼承或包含關係不會全部顯示. %A 圖示 "
-        "若無法塞入指定的邊界中將會被截斷.\n"
+        "若無法塞入指定的邊界中將會被截斷.</li>\n"
         "</ul>\n"
+        "<p>\n"
         "箭頭具有下面的意義:\n"
+        "</p>\n"
         "<ul>\n"
         "<li>%A 深藍色箭頭用來代表兩個類別間的公開繼承 "
         "關係.\n"
-        "<li>%A 深綠色箭頭代表保護繼承.\n"
-        "<li>%A 深紅色箭頭代表私有繼承.\n"
+        "<li>%A 深綠色箭頭代表保護繼承。</li>\n"
+        "<li>%A 深紅色箭頭代表私有繼承。</li>\n"
         "<li>%A 紫色箭頭用來表示類別被另一個包含或是使用."
-        "箭頭上標示著可存取該類別或是結構的對應變數"
-        ".\n"
+        "箭頭上標示著可存取該類別或是結構的對應變數。</li>\n"
         "<li>%A 黃色箭頭代表樣版實體與樣版類別之間的關係。"
-        "箭頭上標記著樣版實體上的參數"
-        ".\n"
+        "箭頭上標記著樣版實體上的參數。</li>\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
@@ -1947,21 +1948,21 @@ class TranslatorChinesetraditional : public Translator
       return result;
     }
     /** UNO IDL service page */
-    virtual QCString trServiceGeneratedFromFiles(bool)
+    virtual QCString trServiceGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
       QCString result=(QCString)"本服務的文件由以下的檔案"
                                 "所產生";
-      result+=":";
+      if (single) result+=":"; else result+=":";
       return result;
     }
     /** UNO IDL singleton page */
-    virtual QCString trSingletonGeneratedFromFiles(bool)
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
       QCString result=(QCString)"本singleton的文件由下面的檔案"
                                 "所產生";
-      result+=":";
+      if (single) result+=":"; else result+=":";
       return result;
     }
 
