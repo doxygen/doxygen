@@ -396,6 +396,8 @@ class TemplateEscapeIntf
   public:
     /** Returns the \a input after escaping certain characters */
     virtual QCString escape(const QCString &input) = 0;
+    /** Setting tabbing mode on or off (for LaTeX) */
+    virtual void enableTabbing(bool b) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -523,12 +525,24 @@ class TemplateEngine
      */
     void unload(Template *t);
 
+    /** Prints the current template file include stack */
     void printIncludeContext(const char *fileName,int line) const;
 
   private:
     friend class TemplateNodeBlock;
+    friend class TemplateNodeCreate;
+
     void enterBlock(const QCString &fileName,const QCString &blockName,int line);
     void leaveBlock();
+
+    /** Sets the extension of the output file. This is used to control the
+     *  format of 'special' tags in the template
+     */
+    void setOutputExtension(const char *extension);
+
+    /** Returns the output extension, set via setOutputExtension() */
+    QCString outputExtension() const;
+
 
     class Private;
     Private *p;

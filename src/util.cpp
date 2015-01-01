@@ -5773,6 +5773,15 @@ QCString convertToJSString(const char *s)
   return convertCharEntitiesToUTF8(growBuf.get());
 }
 
+QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
+{
+  QGString result;
+  FTextStream t(&result);
+  filterLatexString(t,s,insideTabbing,FALSE,FALSE,keepSpaces);
+  return result.data();
+}
+
+
 
 QCString convertCharEntitiesToUTF8(const QCString &s)
 {
@@ -6488,7 +6497,7 @@ void addGroupListToTitle(OutputList &ol,Definition *d)
 }
 
 void filterLatexString(FTextStream &t,const char *str,
-    bool insideTabbing,bool insidePre,bool insideItem)
+    bool insideTabbing,bool insidePre,bool insideItem,bool keepSpaces)
 {
   if (str==0) return;
   //if (strlen(str)<2) stackTrace();
@@ -6509,6 +6518,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '{':  t << "\\{"; break;
         case '}':  t << "\\}"; break;
         case '_':  t << "\\_"; break;
+        case ' ':  if (keepSpaces) t << "~"; else t << ' ';
         default: 
                    t << (char)c;
       }
@@ -6580,6 +6590,8 @@ void filterLatexString(FTextStream &t,const char *str,
                    break;
         case '\'': t << "\\textquotesingle{}";
                    break;
+        case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
+                   break;
 
         default:   
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
@@ -6596,6 +6608,79 @@ void filterLatexString(FTextStream &t,const char *str,
   }
 }
 
+QCString latexEscapeLabelName(const char *s,bool insideTabbing)
+{
+  QGString result;
+  QCString tmp(qstrlen(s)+1);
+  FTextStream t(&result);
+  const char *p=s;
+  char c;
+  int i;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '|': t << "\\texttt{\"|}"; break;
+      case '!': t << "\"!"; break;
+      case '%': t << "\\%";       break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
+      case '~': t << "````~"; break; // to get it a bit better in index together with other special characters
+      // NOTE: adding a case here, means adding it to while below as well!
+      default:  
+        i=0;
+        // collect as long string as possible, before handing it to docify
+        tmp[i++]=c;
+        while ((c=*p) && c!='|' && c!='!' && c!='%' && c!='{' && c!='}' && c!='~')
+        {
+          tmp[i++]=c;
+          p++;
+        }
+        tmp[i]=0;
+        filterLatexString(t,tmp.data(),insideTabbing);
+        break;
+    }
+  }
+  return result.data();
+}
+
+QCString latexEscapeIndexChars(const char *s,bool insideTabbing)
+{
+  QGString result;
+  QCString tmp(qstrlen(s)+1);
+  FTextStream t(&result);
+  const char *p=s;
+  char c;
+  int i;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '!': t << "\"!"; break;
+      case '"': t << "\"\""; break;
+      case '@': t << "\"@"; break;
+      case '|': t << "\\texttt{\"|}"; break;
+      case '[': t << "["; break;
+      case ']': t << "]"; break;
+      case '{': t << "\\lcurly{}"; break;
+      case '}': t << "\\rcurly{}"; break;
+      // NOTE: adding a case here, means adding it to while below as well!
+      default:  
+        i=0;
+        // collect as long string as possible, before handing it to docify
+        tmp[i++]=c;
+        while ((c=*p) && c!='"' && c!='@' && c!='[' && c!=']' && c!='!' && c!='{' && c!='}' && c!='|')
+        {
+          tmp[i++]=c;
+          p++;
+        }
+        tmp[i]=0;
+        filterLatexString(t,tmp.data(),insideTabbing);
+        break;
+    }
+  }
+  return result.data();
+}
 
 QCString rtfFormatBmkStr(const char *name)
 {
@@ -8419,3 +8504,6 @@ QCString getDotImageExtension(void)
   imgExt = imgExt.replace( QRegExp(":.*"), "" );
   return imgExt;
 }
+
+
+

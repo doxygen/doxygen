@@ -409,10 +409,10 @@
 % Used by parameter lists and simple sections
 \newenvironment{Desc}
 {\begin{list}{}{%
-    \settowidth{\labelwidth}{40pt}%
-    \setlength{\leftmargin}{\labelwidth}%
+    \settowidth{\labelwidth}{20pt}%
     \setlength{\parsep}{0pt}%
-    \setlength{\itemsep}{-4pt}%
+    \setlength{\itemsep}{0pt}%
+    \setlength{\leftmargin}{\labelwidth+\labelsep}%
     \renewcommand{\makelabel}{\entrylabel}%
   }
 }{%

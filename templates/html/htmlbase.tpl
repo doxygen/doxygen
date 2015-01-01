@@ -196,7 +196,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% if config.HTML_TIMESTAMP %}
 {{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}
 {% else %}
-{{ tr.generatedby }}
+{{ tr.generatedBy }}
 {% endif %}
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a> {{ doxygen.version }} </li>
@@ -207,7 +207,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% if config.HTML_TIMESTAMP %}
 {{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}
 {% else %}
-{{ tr.generatedby }}
+{{ tr.generatedBy }}
 {% endif %}
 &#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a> 
   {{ doxygen.version }}

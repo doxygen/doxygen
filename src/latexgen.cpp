@@ -38,11 +38,214 @@
 #include "filename.h"
 #include "resourcemgr.h"
 
+//-------------------------------
+
+LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFileName)
+  : m_relPath(relPath), m_sourceFileName(sourceFileName), m_col(0)
+{
+  m_prettyCode=Config_getBool("LATEX_SOURCE_CODE");
+  setTextStream(t);
+}
+
+LatexCodeGenerator::LatexCodeGenerator() : m_col(0)
+{
+  m_prettyCode=Config_getBool("LATEX_SOURCE_CODE");
+}
+
+void LatexCodeGenerator::setTextStream(FTextStream &t)
+{
+  m_streamSet = t.device()!=0;
+  m_t.setDevice(t.device());
+}
+
+void LatexCodeGenerator::setRelativePath(const QCString &path)
+{
+  m_relPath = path;
+}
+
+void LatexCodeGenerator::setSourceFileName(const QCString &name)
+{
+  m_sourceFileName = name;
+}
+
+void LatexCodeGenerator::codify(const char *str)
+{
+  if (str)
+  {
+    const char *p=str;
+    char c;
+    //char cs[5];
+    int spacesToNextTabStop;
+    static int tabSize = Config_getInt("TAB_SIZE");
+    const int maxLineLen = 108;
+    QCString result(4*maxLineLen+1); // worst case for 1 line of 4-byte chars
+    int i;
+    while ((c=*p))
+    {
+      switch(c)
+      {
+        case 0x0c: p++;  // remove ^L
+                   break;
+        case '\t': spacesToNextTabStop =
+                         tabSize - (m_col%tabSize);
+                   m_t << Doxygen::spaces.left(spacesToNextTabStop);
+                   m_col+=spacesToNextTabStop;
+                   p++;
+                   break;
+        case '\n': m_t << '\n'; m_col=0; p++;
+                   break;
+        default:
+                   i=0;
+
+#undef  COPYCHAR
+// helper macro to copy a single utf8 character, dealing with multibyte chars.
+#define COPYCHAR() do {                                           \
+                     result[i++]=c; p++;                          \
+                     if (c<0) /* multibyte utf-8 character */     \
+                     {                                            \
+                       /* 1xxx.xxxx: >=2 byte character */        \
+                       result[i++]=*p++;                          \
+                       if (((uchar)c&0xE0)==0xE0)                 \
+                       {                                          \
+                         /* 111x.xxxx: >=3 byte character */      \
+                         result[i++]=*p++;                        \
+                       }                                          \
+                       if (((uchar)c&0xF0)==0xF0)                 \
+                       {                                          \
+                         /* 1111.xxxx: 4 byte character */        \
+                         result[i++]=*p++;                        \
+                       }                                          \
+                     }                                            \
+                     m_col++;                                       \
+                   } while(0)
+
+                   // gather characters until we find whitespace or are at
+                   // the end of a line
+                   COPYCHAR();
+                   if (m_col>=maxLineLen) // force line break
+                   {
+                     m_t << "\n      ";
+                     m_col=0;
+                   }
+                   else // copy more characters
+                   {
+                     while (m_col<maxLineLen && (c=*p) &&
+                            c!=0x0c && c!='\t' && c!='\n' && c!=' '
+                           )
+                     {
+                       COPYCHAR();
+                     }
+                     if (m_col>=maxLineLen) // force line break
+                     {
+                       m_t << "\n      ";
+                       m_col=0;
+                     }
+                   }
+                   result[i]=0; // add terminator
+                   //if (m_prettyCode)
+                   //{
+                     filterLatexString(m_t,result,FALSE,TRUE);
+                   //}
+                   //else
+                   //{
+                   //  t << result;
+                   //}
+                   break;
+      }
+    }
+  }
+}
+
+
+void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
+                                   const char *anchor,const char *name,
+                                   const char *)
+{
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  int l = qstrlen(name);
+  if (m_col+l>80)
+  {
+    m_t << "\n      ";
+    m_col=0;
+  }
+  if (!ref && usePDFLatex && pdfHyperlinks)
+  {
+    m_t << "\\hyperlink{";
+    if (f) m_t << stripPath(f);
+    if (f && anchor) m_t << "_"; 
+    if (anchor) m_t << anchor; 
+    m_t << "}{";
+    codify(name);
+    m_t << "}";
+  }
+  else
+  {
+    m_t << name;
+  }
+  m_col+=l;
+}
+
+void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
+{
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (m_prettyCode)
+  {
+    QCString lineNumber;
+    lineNumber.sprintf("%05d",l);
+
+    if (fileName && !m_sourceFileName.isEmpty())
+    {
+      QCString lineAnchor;
+      lineAnchor.sprintf("_l%05d",l);
+      lineAnchor.prepend(m_sourceFileName);
+      //if (!m_prettyCode) return;
+      if (usePDFLatex && pdfHyperlinks)
+      {
+        m_t << "\\hypertarget{" << stripPath(lineAnchor) << "}{}";
+      }
+      writeCodeLink(ref,fileName,anchor,lineNumber,0);
+    }
+    else
+    {
+      codify(lineNumber);
+    }
+    m_t << " ";
+  }
+  else
+  {
+    m_t << l << " ";
+  }
+}
+
+
+void LatexCodeGenerator::startCodeLine(bool)
+{
+  m_col=0;
+}
+
+void LatexCodeGenerator::endCodeLine()
+{
+  codify("\n");
+}
+
+void LatexCodeGenerator::startFontClass(const char *name)
+{
+  m_t << "\\textcolor{" << name << "}{";
+}
+
+void LatexCodeGenerator::endFontClass()
+{
+  m_t << "}";
+}
+
+
+//-------------------------------
 
 LatexGenerator::LatexGenerator() : OutputGenerator()
 {
   dir=Config_getString("LATEX_OUTPUT");
-  col=0;
   //printf("LatexGenerator::LatexGenerator() insideTabbing=FALSE\n");
   insideTabbing=FALSE;
   firstDescItem=TRUE;
@@ -332,13 +535,8 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\n";
 
   // Define page & text layout
-  QCString paperName;
-  QCString &paperType=Config_getEnum("PAPER_TYPE");
+  QCString paperName=Config_getEnum("PAPER_TYPE");
   // "a4wide" package is obsolete (see bug 563698)
-  if (paperType=="a4wide")
-    paperName="a4";
-  else
-    paperName=paperType;
   t << "% Page & text layout\n"
        "\\usepackage{geometry}\n"
        "\\geometry{%\n"
@@ -593,7 +791,7 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
 #endif
   QCString fileName=name;
   relPath = relativePathToRoot(fileName);
-  sourceFileName = stripPath(fileName);
+  m_codeGen.setSourceFileName(stripPath(fileName));
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
 }
@@ -601,7 +799,7 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
 void LatexGenerator::endFile()
 {
   endPlainFile();
-  sourceFileName.resize(0);
+  m_codeGen.setSourceFileName("");
 }
 
 //void LatexGenerator::writeIndex()
@@ -612,14 +810,6 @@ void LatexGenerator::endFile()
 void LatexGenerator::startProjectNumber()
 {
   t << "\\\\[1ex]\\large "; 
-}
-
-static QCString convertToLaTeX(const QCString &s)
-{
-  QGString result;
-  FTextStream t(&result);
-  filterLatexString(t,s,FALSE,FALSE,FALSE);
-  return result.data();
 }
 
 void LatexGenerator::startIndexSection(IndexSections is)
@@ -1204,7 +1394,8 @@ void LatexGenerator::endTextLink()
 void LatexGenerator::writeObjectLink(const char *ref, const char *f,
                                      const char *anchor, const char *text)
 {
-  if (!disableLinks && !ref && Config_getBool("PDF_HYPERLINKS"))
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (!disableLinks && !ref && pdfHyperlinks)
   {
     t << "\\hyperlink{";
     if (f) t << stripPath(f);
@@ -1235,34 +1426,6 @@ void LatexGenerator::endPageRef(const char *clname, const char *anchor)
   t << "}";
 }
 
-void LatexGenerator::writeCodeLink(const char *ref,const char *f,
-                                   const char *anchor,const char *name,
-                                   const char *)
-{
-  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
-  int l = qstrlen(name);
-  if (col+l>80)
-  {
-    t << "\n      ";
-    col=0;
-  }
-  if (/*m_prettyCode &&*/ !disableLinks && !ref && usePDFLatex && pdfHyperlinks)
-  {
-    t << "\\hyperlink{";
-    if (f) t << stripPath(f);
-    if (f && anchor) t << "_"; 
-    if (anchor) t << anchor; 
-    t << "}{";
-    codify(name);
-    t << "}";
-  }
-  else
-  {
-    t << name;
-  }
-  col+=l;
-}
 
 void LatexGenerator::startTitleHead(const char *fileName)
 {
@@ -1288,9 +1451,9 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   if (name)
   {
     t << "\\label{" << stripPath(fileName) << "}\\index{";
-    escapeLabelName(name);
+    t << latexEscapeLabelName(name,insideTabbing);
     t << "@{";
-    escapeMakeIndexChars(name);
+    t << latexEscapeIndexChars(name,insideTabbing);
     t << "}}" << endl;
   }
 }
@@ -1369,27 +1532,27 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "\\index{";
     if (clname)
     {
-      escapeLabelName(clname);
+      t << latexEscapeLabelName(clname,insideTabbing);
       t << "@{";
-      escapeMakeIndexChars(clname);
+      t << latexEscapeIndexChars(clname,insideTabbing);
       t << "}!";
     }
-    escapeLabelName(memname);
+    t << latexEscapeLabelName(memname,insideTabbing);
     t << "@{";
-    escapeMakeIndexChars(memname);
+    t << latexEscapeIndexChars(memname,insideTabbing);
     t << "}}" << endl;
 
     t << "\\index{";
-    escapeLabelName(memname);
+    t << latexEscapeLabelName(memname,insideTabbing);
     t << "@{";
-    escapeMakeIndexChars(memname);
+    t << latexEscapeIndexChars(memname,insideTabbing);
     t << "}";
     if (clname)
     {
       t << "!";
-      escapeLabelName(clname);
+      t << latexEscapeLabelName(clname,insideTabbing);
       t << "@{";
-      escapeMakeIndexChars(clname);
+      t << latexEscapeIndexChars(clname,insideTabbing);
       t << "}"; 
     }
     t << "}" << endl;
@@ -1401,21 +1564,15 @@ void LatexGenerator::startMemberDoc(const char *clname,
   if (compactLatex) level++;
   t << "\\" << levelLab[level]; 
 
-  //if (Config_getBool("PDF_HYPERLINKS") && memname) 
-  //{
-  //  t << "["; 
-  //  escapeMakeIndexChars(this,t,memname);
-  //  t << "]";
-  //}
   t << "[{";
-  escapeMakeIndexChars(title);
+  t << latexEscapeIndexChars(title,insideTabbing);
   t << "}]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
   disableLinks=TRUE;
 }
 
-void LatexGenerator::endMemberDoc(bool) 
-{ 
+void LatexGenerator::endMemberDoc(bool)
+{
   disableLinks=FALSE;
   t << "}";
   //if (Config_getBool("COMPACT_LATEX")) t << "\\hfill";
@@ -1474,16 +1631,16 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
   if (s1)
   {
     t << "\\index{";
-    escapeLabelName(s1);
+    t << latexEscapeLabelName(s1,insideTabbing);
     t << "@{";
-    escapeMakeIndexChars(s1);
+    t << latexEscapeIndexChars(s1,insideTabbing);
     t << "}";
     if (s2)
     {
       t << "!";
-      escapeLabelName(s2);
+      t << latexEscapeLabelName(s2,insideTabbing);
       t << "@{";
-      escapeMakeIndexChars(s2);
+      t << latexEscapeIndexChars(s2,insideTabbing);
       t << "}";
     }
     t << "}";
@@ -1537,94 +1694,6 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 void LatexGenerator::docify(const char *str)
 {
   filterLatexString(t,str,insideTabbing,FALSE,FALSE);
-}
-
-void LatexGenerator::codify(const char *str)
-{
-  if (str)
-  { 
-    const char *p=str;
-    char c;
-    //char cs[5];
-    int spacesToNextTabStop;
-    static int tabSize = Config_getInt("TAB_SIZE");
-    const int maxLineLen = 108;
-    QCString result(4*maxLineLen+1); // worst case for 1 line of 4-byte chars
-    int i;
-    while ((c=*p))
-    {
-      switch(c)
-      {
-        case 0x0c: p++;  // remove ^L
-                   break;
-        case '\t': spacesToNextTabStop =
-                         tabSize - (col%tabSize);
-                   t << Doxygen::spaces.left(spacesToNextTabStop); 
-                   col+=spacesToNextTabStop;
-                   p++;
-                   break; 
-        case '\n': t << '\n'; col=0; p++;
-                   break;
-        default:   
-                   i=0;
-
-#undef  COPYCHAR
-// helper macro to copy a single utf8 character, dealing with multibyte chars.
-#define COPYCHAR() do {                                           \
-                     result[i++]=c; p++;                          \
-                     if (c<0) /* multibyte utf-8 character */     \
-                     {                                            \
-                       /* 1xxx.xxxx: >=2 byte character */        \
-                       result[i++]=*p++;                          \
-                       if (((uchar)c&0xE0)==0xE0)                 \
-                       {                                          \
-                         /* 111x.xxxx: >=3 byte character */      \
-                         result[i++]=*p++;                        \
-                       }                                          \
-                       if (((uchar)c&0xF0)==0xF0)                 \
-                       {                                          \
-                         /* 1111.xxxx: 4 byte character */        \
-                         result[i++]=*p++;                        \
-                       }                                          \
-                     }                                            \
-                     col++;                                       \
-                   } while(0)
-
-                   // gather characters until we find whitespace or are at
-                   // the end of a line
-                   COPYCHAR();
-                   if (col>=maxLineLen) // force line break
-                   {
-                     t << "\n      ";
-                     col=0;
-                   }
-                   else // copy more characters
-                   {
-                     while (col<maxLineLen && (c=*p) && 
-                            c!=0x0c && c!='\t' && c!='\n' && c!=' '
-                           )
-                     {
-                       COPYCHAR();
-                     }
-                     if (col>=maxLineLen) // force line break
-                     {
-                       t << "\n      ";
-                       col=0;
-                     }
-                   }
-                   result[i]=0; // add terminator
-                   //if (m_prettyCode)
-                   //{
-                     filterLatexString(t,result,insideTabbing,TRUE);
-                   //}
-                   //else
-                   //{
-                   //  t << result;
-                   //}
-                   break;
-      }
-    }
-  }
 }
 
 void LatexGenerator::writeChar(char c)
@@ -2009,6 +2078,7 @@ void LatexGenerator::endConstraintList()
   t << "\\end{Desc}" << endl;
 }
 
+#if 0
 void LatexGenerator::escapeLabelName(const char *s)
 {
   if (s==0) return;
@@ -2078,6 +2148,7 @@ void LatexGenerator::escapeMakeIndexChars(const char *s)
     }
   }
 }
+#endif
 
 void LatexGenerator::startCodeFragment()
 {
@@ -2087,61 +2158,6 @@ void LatexGenerator::startCodeFragment()
 void LatexGenerator::endCodeFragment()
 {
   t << "\\end{DoxyCode}\n";
-}
-
-void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
-{
-  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
-  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
-  if (m_prettyCode)
-  {
-    QCString lineNumber;
-    lineNumber.sprintf("%05d",l);
-
-    if (fileName && !sourceFileName.isEmpty())
-    {
-      QCString lineAnchor;
-      lineAnchor.sprintf("_l%05d",l);
-      lineAnchor.prepend(sourceFileName);
-      //if (!m_prettyCode) return;
-      if (usePDFLatex && pdfHyperlinks)
-      {
-        t << "\\hypertarget{" << stripPath(lineAnchor) << "}{}";
-      }
-      writeCodeLink(ref,fileName,anchor,lineNumber,0);
-    }
-    else
-    { 
-      codify(lineNumber);
-    }
-    t << " ";
-  }
-  else
-  {
-    t << l << " ";
-  }
-}
-
-void LatexGenerator::startCodeLine(bool)
-{
-  col=0;
-}
-
-void LatexGenerator::endCodeLine()
-{
-  codify("\n");
-}
-
-void LatexGenerator::startFontClass(const char *name)
-{
-  //if (!m_prettyCode) return;
-  t << "\\textcolor{" << name << "}{";
-}
-
-void LatexGenerator::endFontClass()
-{
-  //if (!m_prettyCode) return;
-  t << "}";
 }
 
 void LatexGenerator::startInlineHeader()
@@ -2226,4 +2242,5 @@ void LatexGenerator::writeLabel(const char *l,bool isLast)
 void LatexGenerator::endLabels()
 {
 }
+
 

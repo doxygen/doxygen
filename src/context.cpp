@@ -35,6 +35,8 @@
 #include "docparser.h"
 #include "htmlgen.h"
 #include "htmldocvisitor.h"
+#include "latexgen.h"
+#include "latexdocvisitor.h"
 #include "dot.h"
 #include "diagram.h"
 #include "example.h"
@@ -50,21 +52,23 @@
 
 #define ADD_PROPERTY(name) addProperty(#name,this,&Private::name);
 
+enum ContextOutputFormat
+{
+  ContextOutputFormat_Unspecified=0,
+  ContextOutputFormat_Html,
+  ContextOutputFormat_Latex,
+  ContextOutputFormat_Rtf,
+  ContextOutputFormat_ManPage,
+  ContextOutputFormat_DocBook,
+  ContextOutputFormat_Xml,
+  ContextOutputFormat_TagFile
+};
+
 struct ContextGlobals
 {
-  enum OutputFormat
-  {
-    Html,
-    LateX,
-    Rtf,
-    ManPage,
-    DocBook,
-    Xml,
-    TagFile
-  };
-  int          dynSectionId;
-  QCString     outputDir;
-  OutputFormat outputFormat;
+  int                 dynSectionId;
+  QCString            outputDir;
+  ContextOutputFormat outputFormat;
 } g_globals;
 
 /** @brief Scoped smart pointer */
@@ -368,7 +372,7 @@ class DoxygenContext::Private : public PropertyMapper
     }
     TemplateVariant date() const
     {
-      return TemplateVariant(dateToString(TRUE));
+      return dateToString(TRUE);
     }
     TemplateVariant maxJaxCodeFile() const
     {
@@ -380,7 +384,7 @@ class DoxygenContext::Private : public PropertyMapper
       addProperty("version",this,&Private::version); //makeProperty(this,&Private::version));
       //%% string date
       addProperty("date",   this,&Private::date);
-      //%% string
+      //%% string maxJaxCodeFile
       addProperty("mathJaxCodeFile", this,&Private::maxJaxCodeFile);
     }
   private:
@@ -593,6 +597,10 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trCompoundIndex();
     }
+    TemplateVariant namespaceIndex() const
+    {
+      return theTranslator->trNamespaceIndex();
+    }
     TemplateVariant classHierarchy() const
     {
       return theTranslator->trClassHierarchy();
@@ -604,6 +612,10 @@ class TranslateContext::Private : public PropertyMapper
     TemplateVariant modules() const
     {
       return theTranslator->trModules();
+    }
+    TemplateVariant moduleIndex() const
+    {
+      return theTranslator->trModuleIndex();
     }
     TemplateVariant namespaces() const
     {
@@ -623,6 +635,10 @@ class TranslateContext::Private : public PropertyMapper
     TemplateVariant files() const
     {
       return theTranslator->trFile(TRUE,FALSE);
+    }
+    TemplateVariant fileIndex() const
+    {
+      return theTranslator->trFileIndex();
     }
     TemplateVariant pages() const
     {
@@ -661,6 +677,14 @@ class TranslateContext::Private : public PropertyMapper
       {
         return theTranslator->trNamespaceMembers();
       }
+    }
+    TemplateVariant moduleDocumentation() const
+    {
+      return theTranslator->trModuleDocumentation();
+    }
+    TemplateVariant fileDocumentation() const
+    {
+      return theTranslator->trFileDocumentation();
     }
     TemplateVariant fileList() const
     {
@@ -829,6 +853,10 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trClassDocumentation();
     }
+    TemplateVariant namespaceDocumentation() const
+    {
+      return theTranslator->trNamespaceDocumentation();
+    }
     TemplateVariant compoundMembers() const
     {
       return theTranslator->trCompoundMembers();
@@ -916,10 +944,18 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trEnumValue();
     }
+    TemplateVariant referenceManual() const
+    {
+      return theTranslator->trReferenceManual();
+    }
+    TemplateVariant index() const
+    {
+      return theTranslator->trRTFGeneralIndex();
+    }
     Private()
     {
       //%% string generatedBy
-      addProperty("generatedby",       this,&Private::generatedBy);
+      addProperty("generatedBy",       this,&Private::generatedBy);
       //%% string generatedAt
       addProperty("generatedAt",       this,&Private::generatedAt);
       //%% string search
@@ -934,6 +970,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("classListDescription", this,&Private::classListDescription);
       //%% string classIndex
       addProperty("classIndex",        this,&Private::classIndex);
+      //%% string namespaceIndex
+      addProperty("namespaceIndex",    this,&Private::namespaceIndex);
       //%% string classHierarchy
       addProperty("classHierarchy",    this,&Private::classHierarchy);
       //%% string classMembers
@@ -942,8 +980,12 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("classMembersDescription",this,&Private::classMembersDescription);
       //%% string modules
       addProperty("modules",           this,&Private::modules);
+      //%% string moduleIndex
+      addProperty("moduleIndex",       this,&Private::moduleIndex);
       //%% string namespaces
       addProperty("namespaces",        this,&Private::namespaces);
+      //%% string fileIndex
+      addProperty("fileIndex",         this,&Private::fileIndex);
       //%% string files
       addProperty("files",             this,&Private::files);
       //%% string pages
@@ -1024,6 +1066,12 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("constantgroups",     this,&Private::constantgroups);
       //%% string classDocumentation
       addProperty("classDocumentation", this,&Private::classDocumentation);
+      //%% string namespaceDocumentation
+      addProperty("namespaceDocumentation", this,&Private::namespaceDocumentation);
+      //%% string moduleDocumentation
+      addProperty("moduleDocumentation",this,&Private::moduleDocumentation);
+      //%% string fileDocumentation
+      addProperty("fileDocumentation",  this,&Private::fileDocumentation);
       //%% string compoundMembers
       addProperty("compoundMembers",    this,&Private::compoundMembers);
       //%% string detailLevel
@@ -1034,7 +1082,7 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("namespaceListDescription",this,&Private::namespaceListDescription);
       //%% string directories
       addProperty("directories",        this,&Private::directories);
-      //%% string moduleDescript
+      //%% string moduleDescription
       addProperty("modulesDescription", this,&Private::modulesDescription);
       //%% string all
       addProperty("all",                this,&Private::all);
@@ -1074,6 +1122,10 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("enumValue",          this,&Private::enumValue);
       //%% string enumName
       addProperty("enumName",           this,&Private::enumName);
+      //%% string referenceManual
+      addProperty("referenceManual",    this,&Private::referenceManual);
+      //%% string index
+      addProperty("index",              this,&Private::index);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -1109,10 +1161,27 @@ static TemplateVariant parseDoc(Definition *def,const QCString &file,int line,
   QGString docs;
   {
     FTextStream ts(&docs);
-    // TODO: support other generators
-    HtmlCodeGenerator codeGen(ts,relPath);
-    HtmlDocVisitor visitor(ts,codeGen,def);
-    root->accept(&visitor);
+    switch (g_globals.outputFormat)
+    {
+      case ContextOutputFormat_Html:
+        {
+          HtmlCodeGenerator codeGen(ts,relPath);
+          HtmlDocVisitor visitor(ts,codeGen,def);
+          root->accept(&visitor);
+        }
+        break;
+      case ContextOutputFormat_Latex:
+        {
+          LatexCodeGenerator codeGen(ts,relPath,file);
+          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+          root->accept(&visitor);
+        }
+        break;
+      // TODO: support other generators
+      default:
+        err("context.cpp: output format not yet supported");
+        break;
+    }
   }
   bool isEmpty = root->isEmpty();
   if (isEmpty)
@@ -1130,9 +1199,27 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
   pIntf->resetCodeParserState();
   QGString s;
   FTextStream t(&s);
-  HtmlCodeGenerator codeGen(t,relPath);
-  pIntf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
-                   startLine,endLine,TRUE,md,showLineNumbers,md);
+  switch (g_globals.outputFormat)
+  {
+    case ContextOutputFormat_Html:
+      {
+        HtmlCodeGenerator codeGen(t,relPath);
+        pIntf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+            startLine,endLine,TRUE,md,showLineNumbers,md);
+      }
+      break;
+    case ContextOutputFormat_Latex:
+      {
+        LatexCodeGenerator codeGen(t,relPath,md->docFile());
+        pIntf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+            startLine,endLine,TRUE,md,showLineNumbers,md);
+      }
+      break;
+    // TODO: support other generators
+    default:
+      err("context.cpp: output format not yet supported");
+      break;
+  }
   return TemplateVariant(s.data(),TRUE);
 }
 
@@ -1143,21 +1230,51 @@ static TemplateVariant parseCode(FileDef *fd,const QCString &relPath)
   pIntf->resetCodeParserState();
   QGString s;
   FTextStream t(&s);
-  HtmlCodeGenerator codeGen(t,relPath);
-  pIntf->parseCode(codeGen,0,
-        fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
-        fd->getLanguage(),  // lang
-        FALSE,              // isExampleBlock
-        0,                  // exampleName
-        fd,                 // fileDef
-        -1,                 // startLine
-        -1,                 // endLine
-        FALSE,              // inlineFragment
-        0,                  // memberDef
-        TRUE,               // showLineNumbers
-        0,                  // searchCtx
-        TRUE                // collectXRefs, TODO: should become FALSE
-        );
+  switch (g_globals.outputFormat)
+  {
+    case ContextOutputFormat_Html:
+      {
+        HtmlCodeGenerator codeGen(t,relPath);
+        pIntf->parseCode(codeGen,0,
+              fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
+              fd->getLanguage(),  // lang
+              FALSE,              // isExampleBlock
+              0,                  // exampleName
+              fd,                 // fileDef
+              -1,                 // startLine
+              -1,                 // endLine
+              FALSE,              // inlineFragment
+              0,                  // memberDef
+              TRUE,               // showLineNumbers
+              0,                  // searchCtx
+              TRUE                // collectXRefs, TODO: should become FALSE
+              );
+      }
+      break;
+    case ContextOutputFormat_Latex:
+      {
+        LatexCodeGenerator codeGen(t,relPath,fd->docFile());
+        pIntf->parseCode(codeGen,0,
+              fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
+              fd->getLanguage(),  // lang
+              FALSE,              // isExampleBlock
+              0,                  // exampleName
+              fd,                 // fileDef
+              -1,                 // startLine
+              -1,                 // endLine
+              FALSE,              // inlineFragment
+              0,                  // memberDef
+              TRUE,               // showLineNumbers
+              0,                  // searchCtx
+              TRUE                // collectXRefs, TODO: should become FALSE
+              );
+      }
+      break;
+    // TODO: support other generators
+    default:
+      err("context.cpp: output format not yet supported");
+      break;
+  }
   return TemplateVariant(s.data(),TRUE);
 }
 
@@ -1271,21 +1388,23 @@ class DefinitionContext : public PropertyMapper
     }
     TemplateVariant details() const
     {
-      if (!m_cache.details)
+      if (!m_cache.details || g_globals.outputFormat!=m_cache.detailsOutputFormat)
       {
         m_cache.details.reset(new TemplateVariant(parseDoc(m_def,m_def->docFile(),m_def->docLine(),
                                             relPathAsString(),m_def->documentation(),FALSE)));
+        m_cache.detailsOutputFormat = g_globals.outputFormat;
       }
       return *m_cache.details;
     }
     TemplateVariant brief() const
     {
-      if (!m_cache.brief)
+      if (!m_cache.brief || g_globals.outputFormat!=m_cache.briefOutputFormat)
       {
         if (m_def->hasBriefDescription())
         {
           m_cache.brief.reset(new TemplateVariant(parseDoc(m_def,m_def->briefFile(),m_def->briefLine(),
                              relPathAsString(),m_def->briefDescription(),TRUE)));
+          m_cache.briefOutputFormat = g_globals.outputFormat;
         }
         else
         {
@@ -1296,12 +1415,13 @@ class DefinitionContext : public PropertyMapper
     }
     TemplateVariant inbodyDocs() const
     {
-      if (!m_cache.inbodyDocs)
+      if (!m_cache.inbodyDocs || g_globals.outputFormat!=m_cache.inbodyDocsOutputFormat)
       {
         if (!m_def->inbodyDocumentation().isEmpty())
         {
           m_cache.inbodyDocs.reset(new TemplateVariant(parseDoc(m_def,m_def->inbodyFile(),m_def->inbodyLine(),
                                            relPathAsString(),m_def->inbodyDocumentation(),FALSE)));
+          m_cache.inbodyDocsOutputFormat = g_globals.outputFormat;
         }
         else
         {
@@ -1387,8 +1507,11 @@ class DefinitionContext : public PropertyMapper
     {
       Cachable() { }
       ScopedPtr<TemplateVariant> details;
+      ContextOutputFormat        detailsOutputFormat;
       ScopedPtr<TemplateVariant> brief;
+      ContextOutputFormat        briefOutputFormat;
       ScopedPtr<TemplateVariant> inbodyDocs;
+      ContextOutputFormat        inbodyDocsOutputFormat;
       SharedPtr<TemplateList>    navPath;
       SharedPtr<TemplateList>    sourceDef;
       SharedPtr<TemplateStruct>  fileLink;
@@ -1659,26 +1782,62 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       {
         DotClassGraph *cg = getClassGraph();
         FTextStream t(&result);
-        cg->writeGraph(t,GOF_BITMAP,EOF_Html,
-                       g_globals.outputDir,
-                       g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                       relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
-                      );
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              cg->writeGraph(t,GOF_BITMAP,EOF_Html,
+                             g_globals.outputDir,
+                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                            );
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
+                             g_globals.outputDir,
+                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+".tex",
+                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                            );
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
       }
       else if (classDiagrams)
       {
         ClassDiagram d(m_classDef);
         FTextStream t(&result);
-        QCString name = convertToHtml(m_classDef->displayName());
-        t << "<div class=\"center\">" << endl;
-        t << "<img src=\"";
-        t << relPathAsString() << m_classDef->getOutputFileBase();
-        t << ".png\" usemap=\"#" << name << "_map\" alt=\"\"/>" << endl;
-        t << "<map id=\"" << name << "_map\" name=\"" << name << "_map\">" << endl;
-        d.writeImage(t,g_globals.outputDir,
-                     relPathAsString(),
-                     m_classDef->getOutputFileBase());
-        t << "</div>";
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              QCString name = convertToHtml(m_classDef->displayName());
+              t << "<div class=\"center\">" << endl;
+              t << "<img src=\"";
+              t << relPathAsString() << m_classDef->getOutputFileBase();
+              t << ".png\" usemap=\"#" << name << "_map\" alt=\"\"/>" << endl;
+              t << "<map id=\"" << name << "_map\" name=\"" << name << "_map\">" << endl;
+              d.writeImage(t,g_globals.outputDir,
+                           relPathAsString(),
+                           m_classDef->getOutputFileBase());
+              t << "</div>";
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              d.writeFigure(t,g_globals.outputDir,m_classDef->getOutputFileBase());
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
       }
       g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
@@ -1704,11 +1863,31 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       {
         DotClassGraph *cg = getCollaborationGraph();
         FTextStream t(&result);
-        cg->writeGraph(t,GOF_BITMAP,EOF_Html,
-            g_globals.outputDir,
-            g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-            relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
-            );
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              cg->writeGraph(t,GOF_BITMAP,EOF_Html,
+                             g_globals.outputDir,
+                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                            );
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
+                             g_globals.outputDir,
+                             g_globals.outputDir+portable_pathSeparator()+m_classDef->getOutputFileBase()+".tex",
+                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                            );
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
       }
       g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
@@ -2002,15 +2181,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant typeConstraints() const
     {
-      if (!m_cache.typeConstraints && m_classDef->typeConstraints())
+      if (m_classDef->typeConstraints())
       {
-        m_cache.typeConstraints.reset(ArgumentListContext::alloc(m_classDef->typeConstraints(),m_classDef,relPathAsString()));
+        if (!m_cache.typeConstraints && m_classDef->typeConstraints())
+        {
+          m_cache.typeConstraints.reset(ArgumentListContext::alloc(m_classDef->typeConstraints(),m_classDef,relPathAsString()));
+        }
+        return m_cache.typeConstraints.get();
       }
-      else
-      {
-        m_cache.typeConstraints.reset(ArgumentListContext::alloc());
-      }
-      return m_cache.typeConstraints.get();
+      return FALSE;
     }
     TemplateVariant examples() const
     {
@@ -2578,11 +2757,31 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       {
         DotInclDepGraph *cg = getIncludeGraph();
         FTextStream t(&result);
-        cg->writeGraph(t,GOF_BITMAP,EOF_Html,
-            g_globals.outputDir,
-            g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-            relPathAsString(),TRUE,g_globals.dynSectionId
-            );
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              cg->writeGraph(t,GOF_BITMAP,EOF_Html,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
       }
       g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
@@ -2609,11 +2808,31 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       {
         DotInclDepGraph *cg = getIncludedByGraph();
         FTextStream t(&result);
-        cg->writeGraph(t,GOF_BITMAP,EOF_Html,
-            g_globals.outputDir,
-            g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-            relPathAsString(),TRUE,g_globals.dynSectionId
-            );
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              cg->writeGraph(t,GOF_BITMAP,EOF_Html,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
       }
       g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
@@ -3063,7 +3282,6 @@ class TextGeneratorHtml : public TextGeneratorIntf
     void writeString(const char *s,bool keepSpaces) const
     {
       if (s==0) return;
-      //printf("TextGeneratorOlImpl::writeString('%s',%d)\n",s,keepSpaces);
       if (keepSpaces)
       {
         const char *p=s;
@@ -3123,6 +3341,54 @@ class TextGeneratorHtml : public TextGeneratorIntf
     QCString m_relPath;
 };
 
+//------------------------------------------------------------------------
+
+class TextGeneratorLatex : public TextGeneratorIntf
+{
+  public:
+    TextGeneratorLatex(FTextStream &ts) : m_ts(ts) {}
+    void writeString(const char *s,bool keepSpaces) const
+    {
+      if (s==0) return;
+      m_ts << convertToLaTeX(s,FALSE,keepSpaces);
+    }
+    void writeBreak(int indent) const
+    {
+      m_ts << "\\\\*\n";
+      for (int i=0;i<indent;i++)
+      {
+        m_ts << "~";
+      }
+    }
+    void writeLink(const char *ref,const char *f,
+                   const char *anchor,const char *text
+                  ) const
+    {
+      static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+      if (!ref && pdfHyperlinks)
+      {
+        m_ts << "\\hyperlink{";
+        if (f) m_ts << stripPath(f);
+        if (f && anchor) m_ts << "_";
+        if (anchor) m_ts << anchor;
+        m_ts << "}{";
+        filterLatexString(m_ts,text);
+        m_ts << "}";
+      }
+      else
+      {
+        m_ts << "{\\bf ";
+        filterLatexString(m_ts,text);
+        m_ts << "}";
+      }
+    }
+
+  private:
+    FTextStream &m_ts;
+};
+
+//------------------------------------------------------------------------
+
 class TextGeneratorFactory
 {
   public:
@@ -3136,9 +3402,10 @@ class TextGeneratorFactory
     {
       switch (g_globals.outputFormat)
       {
-        case ContextGlobals::Html:
+        case ContextOutputFormat_Html:
           return new TextGeneratorHtml(ts,relPath);
-          break;
+        case ContextOutputFormat_Latex:
+          return new TextGeneratorLatex(ts);
         default:
           break;
       }
@@ -4132,11 +4399,31 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         DotCallGraph *cg = getCallGraph();
         QGString result;
         FTextStream t(&result);
-        cg->writeGraph(t,GOF_BITMAP,EOF_Html,
-            g_globals.outputDir,
-            g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-            relPathAsString(),TRUE,g_globals.dynSectionId
-            );
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              cg->writeGraph(t,GOF_BITMAP,EOF_Html,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
         g_globals.dynSectionId++;
         return TemplateVariant(result.data(),TRUE);
       }
@@ -4171,11 +4458,31 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         DotCallGraph *cg = getCallerGraph();
         QGString result;
         FTextStream t(&result);
-        cg->writeGraph(t,GOF_BITMAP,EOF_Html,
-            g_globals.outputDir,
-            g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-            relPathAsString(),TRUE,g_globals.dynSectionId
-            );
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              cg->writeGraph(t,GOF_BITMAP,EOF_Html,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
+                  g_globals.outputDir,
+                  g_globals.outputDir+portable_pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
+                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  );
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
         g_globals.dynSectionId++;
         return TemplateVariant(result.data(),TRUE);
       }
@@ -4339,13 +4646,35 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       {
         DotGroupCollaboration *graph = getGroupGraph();
         FTextStream t(&result);
-        graph->writeGraph(t,GOF_BITMAP,
-                          EOF_Html,
-                          g_globals.outputDir,
-                          g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                          relPathAsString(),
-                          TRUE,
-                          g_globals.dynSectionId);
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              graph->writeGraph(t,GOF_BITMAP,
+                                EOF_Html,
+                                g_globals.outputDir,
+                                g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                                relPathAsString(),
+                                TRUE,
+                                g_globals.dynSectionId);
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              graph->writeGraph(t,GOF_EPS,
+                                EOF_LaTeX,
+                                g_globals.outputDir,
+                                g_globals.outputDir+portable_pathSeparator()+m_groupDef->getOutputFileBase()+".tex",
+                                relPathAsString(),
+                                TRUE,
+                                g_globals.dynSectionId);
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
       }
       g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
@@ -8619,6 +8948,36 @@ class HtmlEscaper : public TemplateEscapeIntf
     {
       return convertToHtml(s,TRUE);
     }
+    void enableTabbing(bool) {}
+};
+
+//------------------------------------------------------------------------
+
+class LatexSpaceless : public TemplateSpacelessIntf
+{
+  public:
+    LatexSpaceless() { reset(); }
+    void reset() { }
+    QCString remove(const QCString &s)
+    {
+      QGString result;
+      const char *p = s.data();
+      char c;
+      while ((c=*p++))
+      {
+        switch(c)
+        {
+          case '\t': case ' ': case '\n':
+            break;
+          default:
+            result+=c;
+            break;
+        }
+      }
+      result+='\0';
+      return result.data();
+    }
+  private:
 };
 
 //------------------------------------------------------------------------
@@ -8695,6 +9054,22 @@ class HtmlSpaceless : public TemplateSpacelessIntf
     char m_insideString;
     bool m_removeSpaces;
 };
+
+//------------------------------------------------------------------------
+
+class LatexEscaper : public TemplateEscapeIntf
+{
+  public:
+    LatexEscaper() : m_tabbing(FALSE) {}
+    QCString escape(const QCString &s)
+    {
+      return convertToLaTeX(s,m_tabbing);
+    }
+    void enableTabbing(bool b) { m_tabbing=b; }
+  private:
+    bool m_tabbing;
+};
+
 
 //------------------------------------------------------------------------
 
@@ -8787,27 +9162,52 @@ void generateOutputViaTemplate()
       ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
       //%% SearchIndicaes searchindicaes
       ctx->set("searchIndices",searchIndices.get());
+      //%% string space
+      ctx->set("space"," ");
 
-      // render HTML output
-      Template *tpl = e.loadByName("htmllayout.tpl",1);
-      if (tpl)
-      {
-        g_globals.outputFormat = ContextGlobals::Html;
-        g_globals.dynSectionId = 0;
-        g_globals.outputDir    = Config_getString("HTML_OUTPUT");
-        QDir dir(g_globals.outputDir);
-        createSubDirs(dir);
-        HtmlEscaper htmlEsc;
-        ctx->setEscapeIntf(Config_getString("HTML_FILE_EXTENSION"),&htmlEsc);
-        HtmlSpaceless spl;
-        ctx->setSpacelessIntf(&spl);
-        ctx->setOutputDirectory(g_globals.outputDir);
-        FTextStream ts;
-        tpl->render(ts,ctx);
-        e.unload(tpl);
+      if (Config_getBool("GENERATE_HTML"))
+      { // render HTML output
+        Template *tpl = e.loadByName("htmllayout.tpl",1);
+        if (tpl)
+        {
+          g_globals.outputFormat = ContextOutputFormat_Html;
+          g_globals.dynSectionId = 0;
+          g_globals.outputDir    = Config_getString("HTML_OUTPUT");
+          QDir dir(g_globals.outputDir);
+          createSubDirs(dir);
+          HtmlEscaper htmlEsc;
+          ctx->setEscapeIntf(Config_getString("HTML_FILE_EXTENSION"),&htmlEsc);
+          HtmlSpaceless spl;
+          ctx->setSpacelessIntf(&spl);
+          ctx->setOutputDirectory(g_globals.outputDir);
+          FTextStream ts;
+          tpl->render(ts,ctx);
+          e.unload(tpl);
+        }
       }
 
-      // TODO: render other outputs
+      // TODO: clean index before each run...
+
+      if (Config_getBool("GENERATE_LATEX"))
+      { // render LaTeX output
+        Template *tpl = e.loadByName("latexlayout.tpl",1);
+        if (tpl)
+        {
+          g_globals.outputFormat = ContextOutputFormat_Latex;
+          g_globals.dynSectionId = 0;
+          g_globals.outputDir    = Config_getString("LATEX_OUTPUT");
+          QDir dir(g_globals.outputDir);
+          createSubDirs(dir);
+          LatexEscaper latexEsc;
+          ctx->setEscapeIntf(".tex",&latexEsc);
+          LatexSpaceless spl;
+          ctx->setSpacelessIntf(&spl);
+          ctx->setOutputDirectory(g_globals.outputDir);
+          FTextStream ts;
+          tpl->render(ts,ctx);
+          e.unload(tpl);
+        }
+      }
 
       e.destroyContext(ctx);
     }

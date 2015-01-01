@@ -24,6 +24,48 @@ class QFile;
 
 static const char *latexStyleExtension = ".sty";
 
+class LatexCodeGenerator : public CodeOutputInterface
+{
+  public:
+    LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFile);
+    LatexCodeGenerator();
+    void setTextStream(FTextStream &t);
+    void setRelativePath(const QCString &path);
+    void setSourceFileName(const QCString &sourceFileName);
+    void codify(const char *text);
+    void writeCodeLink(const char *ref,const char *file,
+                       const char *anchor,const char *name,
+                       const char *tooltip);
+    void writeTooltip(const char *,
+                      const DocLinkInfo &,
+                      const char *,
+                      const char *,
+                      const SourceLinkInfo &,
+                      const SourceLinkInfo &
+                     ) {}
+    void writeLineNumber(const char *,const char *,const char *,int);
+    void startCodeLine(bool);
+    void endCodeLine();
+    void startFontClass(const char *);
+    void endFontClass();
+    void writeCodeAnchor(const char *) {}
+    void setCurrentDoc(Definition *,const char *,bool) {}
+    void addWord(const char *,bool) {}
+
+  private:
+    void _writeCodeLink(const char *className,
+                        const char *ref,const char *file,
+                        const char *anchor,const char *name,
+                        const char *tooltip);
+    void docify(const char *str);
+    bool m_streamSet;
+    FTextStream m_t;
+    QCString m_relPath;
+    QCString m_sourceFileName;
+    int m_col;
+    bool m_prettyCode;
+};
+
 /** Generator for LaTeX output. */
 class LatexGenerator : public OutputGenerator
 {
@@ -46,6 +88,32 @@ class LatexGenerator : public OutputGenerator
     void disableIfNot(OutputType o) { if (o!=Latex) disable(); }
     bool isEnabled(OutputType o) { return (o==Latex && active); } 
     OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
+
+    // --- CodeOutputInterface
+    void codify(const char *text)
+    { m_codeGen.codify(text); }
+    void writeCodeLink(const char *ref, const char *file,
+                       const char *anchor,const char *name,
+                       const char *tooltip)
+    { m_codeGen.writeCodeLink(ref,file,anchor,name,tooltip); }
+    void writeLineNumber(const char *ref,const char *file,const char *anchor,int lineNumber)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    void writeTooltip(const char *id, const DocLinkInfo &docInfo, const char *decl,
+                      const char *desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
+                     )
+    { m_codeGen.writeTooltip(id,docInfo,decl,desc,defInfo,declInfo); }
+    void startCodeLine(bool hasLineNumbers)
+    { m_codeGen.startCodeLine(hasLineNumbers); }
+    void endCodeLine()
+    { m_codeGen.endCodeLine(); }
+    void startFontClass(const char *s)
+    { m_codeGen.startFontClass(s); }
+    void endFontClass()
+    { m_codeGen.endFontClass(); }
+    void writeCodeAnchor(const char *anchor)
+    { m_codeGen.writeCodeAnchor(anchor); }
+    // ---------------------------
+
 
     void writeDoc(DocNode *,Definition *ctx,MemberDef *);
 
@@ -83,15 +151,9 @@ class LatexGenerator : public OutputGenerator
     void startIndexItem(const char *ref,const char *file);
     void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
-    void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor,const char *name);
-    void writeCodeLink(const char *ref, const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
-                     ) {}
+
     void startTextLink(const char *,const char *);
     void endTextLink();
     void startHtmlLink(const char *url);
@@ -137,9 +199,6 @@ class LatexGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
-    void writeLineNumber(const char *,const char *,const char *,int l);
-    void startCodeLine(bool hasLineNumbers);
-    void endCodeLine();
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "{\\bfseries "; }
@@ -267,10 +326,6 @@ class LatexGenerator : public OutputGenerator
     void writeLabel(const char *l,bool isLast);
     void endLabels();
 
-    void startFontClass(const char *); // {}
-    void endFontClass(); // {}
-
-    void writeCodeAnchor(const char *) {}
     void setCurrentDoc(Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
@@ -278,17 +333,14 @@ class LatexGenerator : public OutputGenerator
   private:
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
-    void escapeLabelName(const char *s);
-    void escapeMakeIndexChars(const char *s);
-    int col;
     bool insideTabbing;
     bool firstDescItem;
     bool disableLinks;
     QCString relPath;
-    QCString sourceFileName;
     int m_indent;
     bool templateMemberItem;
     bool m_prettyCode;
+    LatexCodeGenerator m_codeGen;
 };
 
 #endif

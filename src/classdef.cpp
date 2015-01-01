@@ -925,10 +925,7 @@ static void writeTemplateSpec(OutputList &ol,Definition *d,
         if (a) ol.docify(", ");
       }
       ol.docify(">");
-      ol.pushGeneratorState();
-      ol.disableAllBut(OutputGenerator::Html);
       ol.lineBreak();
-      ol.popGeneratorState();
     }
     ol.docify(type.lower()+" "+name);
     ol.endSubsubsection();

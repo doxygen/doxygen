@@ -1119,14 +1119,15 @@ void Config::check()
   
   QCString &paperType = Config_getEnum("PAPER_TYPE");
   paperType=paperType.lower().stripWhiteSpace(); 
-  if (paperType.isEmpty())
+  if (paperType.isEmpty() || paperType=="a4wide")
   {
     paperType = "a4";
   }
-  if (paperType!="a4" && paperType!="a4wide" && paperType!="letter" && 
+  if (paperType!="a4" && paperType!="letter" && 
       paperType!="legal" && paperType!="executive")
   {
     config_err("Unknown page type specified\n");
+    paperType="a4";
   }
   
   QCString &outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");

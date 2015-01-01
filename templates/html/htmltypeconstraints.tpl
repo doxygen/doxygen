@@ -1,5 +1,5 @@
 {# obj should be a class or member #}
-{% if obj.typeConstraints|length>0 %}
+{% if obj.typeConstraints %}
   <div class="typecontraint">
   <dl><dt><b>{{ tr.typeConstraints }}</b></dt>
   <dd><table border="0" cellspacing="2" cellpadding="0">

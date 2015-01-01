@@ -276,6 +276,8 @@ QCString stripScope(const char *name);
 
 QCString convertToHtml(const char *s,bool keepEntities=TRUE);
 
+QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpaces=FALSE);
+
 QCString convertToXML(const char *s);
 
 QCString convertToJSString(const char *s);
@@ -334,7 +336,11 @@ void addGroupListToTitle(OutputList &ol,Definition *d);
 void filterLatexString(FTextStream &t,const char *str,
                        bool insideTabbing=FALSE,
                        bool insidePre=FALSE,
-                       bool insideItem=FALSE);
+                       bool insideItem=FALSE,
+                       bool keepSpaces=FALSE);
+
+QCString latexEscapeLabelName(const char *s,bool insideTabbing);
+QCString latexEscapeIndexChars(const char *s,bool insideTabbing);
 
 QCString rtfFormatBmkStr(const char *name);
 
