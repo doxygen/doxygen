@@ -2232,14 +2232,10 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   current->inbodyDocs = "";
 
   // strip \\param or @param, so we can do some extra checking. We will add it later on again.
-  if (loc_doc.find("\\param") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("\\param")).stripWhiteSpace();
-  }
-  else if (loc_doc.find("@param") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("@param")).stripWhiteSpace();
-  }
+  if (!loc_doc.stripPrefix("\\param") &&
+      !loc_doc.stripPrefix("@param")
+     ); // Do nothing work has been done by stripPrefix
+  loc_doc.stripWhiteSpace();
 
   // direction as defined with the declaration of the parameter
   int dir1 = modifiers[current_root][argName.lower()].direction;
@@ -2252,6 +2248,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
     {
       // strip direction
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN]));
+      loc_doc.stripWhiteSpace();
       // in case of emty documentation or (now) just name, consider it as no documemntation
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
@@ -2278,6 +2275,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
         (directionParam[dir1] == directionParam[SymbolModifiers::OUT]))
     {
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::OUT]));
+      loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
         current=tmp_entry;
@@ -2301,6 +2299,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
         (directionParam[dir1] == directionParam[SymbolModifiers::INOUT]))
     {
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::INOUT]));
+      loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
         current=tmp_entry;
@@ -2345,23 +2344,13 @@ static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
   // Still in the specification section so no inbodyDocs yet, but parameter documentation
   current->inbodyDocs = "";
 
-  // strip \\param or @param, so we can do some extra checking. We will add it later on again.
-  if (loc_doc.find("\\returns") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("\\returns")).stripWhiteSpace();
-  }
-  else if (loc_doc.find("@returns") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("@returns")).stripWhiteSpace();
-  }
-  if (loc_doc.find("\\return") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("\\return")).stripWhiteSpace();
-  }
-  else if (loc_doc.find("@return") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("@return")).stripWhiteSpace();
-  }
+  // strip \\returns or @returns. We will add it later on again.
+  if (!loc_doc.stripPrefix("\\returns") &&
+      !loc_doc.stripPrefix("\\return") &&
+      !loc_doc.stripPrefix("@returns") &&
+      !loc_doc.stripPrefix("@return")
+     ); // Do nothing work has been done by stripPrefix
+  loc_doc.stripWhiteSpace();
 
   if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
   {
