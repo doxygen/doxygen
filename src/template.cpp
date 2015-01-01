@@ -1116,6 +1116,25 @@ class FilterGroupBy
 
 //--------------------------------------------------------------------
 
+/** @brief The implementation of the "relative" filter */
+class FilterRelative
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String && v.toString().left(2)=="..")
+      {
+        return TRUE;
+      }
+      else
+      {
+        return FALSE;
+      }
+    }
+};
+
+//--------------------------------------------------------------------
+
 /** @brief The implementation of the "paginate" filter */
 class FilterPaginate
 {
@@ -1416,6 +1435,7 @@ static TemplateFilterFactory::AutoRegister<FilterFlatten>     fFlatten("flatten"
 static TemplateFilterFactory::AutoRegister<FilterDefault>     fDefault("default");
 static TemplateFilterFactory::AutoRegister<FilterPrepend>     fPrepend("prepend");
 static TemplateFilterFactory::AutoRegister<FilterGroupBy>     fGroupBy("groupBy");
+static TemplateFilterFactory::AutoRegister<FilterRelative>    fRelative("relative");
 static TemplateFilterFactory::AutoRegister<FilterListSort>    fListSort("listsort");
 static TemplateFilterFactory::AutoRegister<FilterPaginate>    fPaginate("paginate");
 static TemplateFilterFactory::AutoRegister<FilterStripPath>   fStripPath("stripPath");

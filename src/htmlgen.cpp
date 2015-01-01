@@ -333,10 +333,6 @@ static QCString substituteHtmlKeywords(const QCString &s,
   if (mathJax)
   {
     QCString path = Config_getString("MATHJAX_RELPATH");  
-    if (!path.isEmpty() && path.at(path.length()-1)!='/')  
-    {   
-      path+="/";   
-    }   
     if (path.isEmpty() || path.left(2)=="..") // relative path  
     {  
       path.prepend(relPath);   
@@ -364,7 +360,7 @@ static QCString substituteHtmlKeywords(const QCString &s,
       mathJaxJs += "\n";
     }
     mathJaxJs += "</script>";
-    mathJaxJs += "<script src=\"" + path + "MathJax.js\"></script>\n";
+    mathJaxJs += "<script type=\"text/javascript\" src=\"" + path + "MathJax.js\"></script>\n";
   }
 
   // first substitute generic keywords

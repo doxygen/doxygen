@@ -1198,6 +1198,12 @@ void Config::check()
         exit(1);
       }
     }
+    QCString &path = Config_getString("MATHJAX_RELPATH");
+    if (!path.isEmpty() && path.at(path.length()-1)!='/')
+    {
+      path+="/";
+    }
+
   }
 
   // Test to see if LaTeX header is valid

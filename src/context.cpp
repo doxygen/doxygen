@@ -370,13 +370,26 @@ class DoxygenContext::Private : public PropertyMapper
     {
       return TemplateVariant(dateToString(TRUE));
     }
+    TemplateVariant maxJaxCodeFile() const
+    {
+      return m_cache.maxJaxCodeFile;
+    }
     Private()
     {
       //%% string version
       addProperty("version",this,&Private::version); //makeProperty(this,&Private::version));
       //%% string date
       addProperty("date",   this,&Private::date);
+      //%% string
+      addProperty("mathJaxCodeFile", this,&Private::maxJaxCodeFile);
     }
+  private:
+    struct Cachable
+    {
+      Cachable() { maxJaxCodeFile=fileToString(Config_getString("MATHJAX_CODEFILE")); }
+      QCString maxJaxCodeFile;
+    };
+    mutable Cachable m_cache;
 };
 //%% }
 
