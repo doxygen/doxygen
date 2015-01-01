@@ -988,6 +988,8 @@ private                                 {
                                          result=result.stripWhiteSpace();
                                          addSubprogram(result);
                                          BEGIN(Subprog);
+				         current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
+				         current->startLine = yyLineNr;
                                        }
 
 <Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{SUBPROG}{BS_} {
