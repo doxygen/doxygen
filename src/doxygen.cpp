@@ -9962,7 +9962,7 @@ static void usage(const char *name)
   msg("    If - is used for configName doxygen will read from standard input.\n\n");
   msg("4) Use doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
-  msg("    %s -l layoutFileName.xml\n\n",name);
+  msg("    %s -l [layoutFileName.xml]\n\n",name);
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:        %s -w rtf styleSheetFile\n",name);
   msg("    HTML:       %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
