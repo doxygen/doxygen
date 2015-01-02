@@ -3031,7 +3031,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
       else if (curChar < 128)
       {
          unsigned long long l = 1ULL << (curChar & 077);
-         if (l == 1);
+         if (l == 1)
          do
          {
             switch(jjstateSet[--i])
