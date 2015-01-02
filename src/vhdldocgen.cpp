@@ -800,12 +800,9 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     if (!packages.contains(ecd)) VhdlDocGen::findAllPackages(ecd);
   }
 
-  uint len=packages.count();
-  for (uint j=0;j<len;j++)
-  {
-    for (QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.begin();cList != packages.end();cList++)
-    {
-      if (cList.key()==0) continue;
+ QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.find(ecd);
+      if (cList.key()!=0)
+	  {
       QList<ClassDef> mlist=cList.data();
       for (uint j=0;j<mlist.count();j++)
       {
@@ -814,8 +811,7 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
         mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_pubMethods);
         if (mdef) return mdef;
       }
-    }
-  }
+	  }
   return 0;
 
 }//findMember

@@ -86,6 +86,7 @@ SKIP:
   <#DOXYGEN_VHDL_COMMENT: (" "|"\t")*"--!"(~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>
   | <MULT_DOXYGEN_COMMENT: (<DOXYGEN_VHDL_COMMENT>)+ >
   {
+    {
     QCString doc(image.data());
     int count=doc.contains("--!");
     ::vhdl::parser::VhdlParser::setMultCommentLine();
@@ -94,6 +95,7 @@ SKIP:
       ::vhdl::parser::VhdlParser::oneLineComment(doc);
     else
       ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),FALSE); ;
+    }
 
   }
   |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { ::vhdl::parser::VhdlParser::handleFlowComment(image.data());}
@@ -108,10 +110,12 @@ SKIP :
 {
   <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!"  (~[])* "*/" >
   {
-   QCString q(image.data());
-   q.stripPrefix("/*!");
-   q.resize(q.length()-2);
-  ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
+   {
+     QCString q(image.data());
+     q.stripPrefix("/*!");
+     q.resize(q.length()-2);
+     ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
+   }
   }
   | <MULT_VHDL_2008_COMMENT : "/*"  (~[])* "*/" >  {::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();}
 }
@@ -289,7 +293,7 @@ TOKEN:
  | <STRINGLITERAL: (( ["\""](<GRAPHIC_CHARACTER>)*) "\"")+ >
  | <BASIC_IDENTIFIER:  (<LETTER> ( (["_"])* <LETTER_OR_DIGIT> )*) >
  | <EXTENDED_CHARACTER: ( ["\\"](<GRAPHIC_CHARACTER>)*["\\"] ) >
- | <CHARACTER_LITERAL: (["'"]<GRAPHIC_CHARACTER>["'"]) >
+ | <CHARACTER_LITERAL: (["'"](<GRAPHIC_CHARACTER>|<QUOTE>)["'"]) >
  | <DECIMAL_LITERAL: (<INTEGER> (["."]<INTEGER>)? (<EXPONENT>)? ) >
  | <BASED_INTEGER: <LETTER_OR_DIGIT>( <LETTER_OR_DIGIT>)* >
  | <BASED_LITERAL: <INTEGER>["#"]<BASED_INTEGER>(["."] <BASED_INTEGER>)? ["#"] (<EXPONENT>)? >
@@ -306,6 +310,7 @@ TOKEN:
  | < #OTHER_SPECIAL_CHARACTER: ["%","!","$","@","?","[","\\","]","^","`","{","}","~","\u00A0"-"\u00FF"]>
  | < #SPACE_CHARACTER: [" ","\t"] >
  | < #LOWER_CASE_LETTER: ["a"-"z"] >
+ | < #QUOTE: ["\""] >
  | <VHDL2008TOOLDIR  : ["`"](<GRAPHIC_CHARACTER>|<STRINGLITERAL>)+ >
 
 }
@@ -577,7 +582,7 @@ attribute_declaration()
 LOOKAHEAD(3)
 group_template_declaration()
 | group_declaration()
-| <VHDL2008TOOLDIR>
+//| <VHDL2008TOOLDIR>
 }
 
 void block_declarative_part() : {}
@@ -2612,9 +2617,10 @@ void generate_statement_body() : {}
 
 void generate_statement_body1() : {}
 {
-   LOOKAHEAD(block_declarative_item()<BEGIN_T> )
-   (block_declarative_item() )*  <BEGIN_T> (concurrent_statement())*
-   | (concurrent_statement())*
+  //   [LOOKAHEAD(block_declarative_item()<BEGIN_T> )(block_declarative_item() )*  <BEGIN_T>] (concurrent_statement())*
+
+   [(LOOKAHEAD(block_declarative_item())block_declarative_item() )*  <BEGIN_T>] (concurrent_statement())*
+  // | (concurrent_statement())*
 }
 
 QCString external_name(): {QCString s,s1,s2;}

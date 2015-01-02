@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 /** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
  *  string requirements.
  */
@@ -98,5 +99,9 @@ class VhdlString
     char *m_str;
     int   m_len;
 };
+
+extern VhdlString addUnicodeEscapes(VhdlString str);
+
+#define finally
 
 #endif
