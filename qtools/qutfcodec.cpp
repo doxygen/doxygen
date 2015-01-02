@@ -203,14 +203,14 @@ public:
 	if ( headerdone ) {
 	    len_in_out = uc.length()*(int)sizeof(QChar);
 	    QCString d(len_in_out);
-	    memcpy(d.data(),uc.unicode(),len_in_out);
+	    memcpy(d.rawData(),uc.unicode(),len_in_out);
 	    return d;
 	} else {
 	    headerdone = TRUE;
 	    len_in_out = (1+uc.length())*(int)sizeof(QChar);
 	    QCString d(len_in_out);
-	    memcpy(d.data(),&QChar::byteOrderMark,sizeof(QChar));
-	    memcpy(d.data()+sizeof(QChar),uc.unicode(),uc.length()*sizeof(QChar));
+	    memcpy(d.rawData(),&QChar::byteOrderMark,sizeof(QChar));
+	    memcpy(d.rawData()+sizeof(QChar),uc.unicode(),uc.length()*sizeof(QChar));
 	    return d;
 	}
     }

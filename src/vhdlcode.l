@@ -620,7 +620,7 @@ static void appStringLower(QCString& qcs,const char* text)
 static QCString g_temp;
 
 /* writes and links a port map statement */
-static void codifyMapLines(char *text)
+static void codifyMapLines(const char *text)
 {
   if (text==0) return;
   g_temp.resize(0);       
@@ -628,7 +628,7 @@ static void codifyMapLines(char *text)
   int wordCounter=0;
   QCString ctemp;
   //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
-  char *p=text; //,*sp=p;
+  const char *p=text; //,*sp=p;
   char c;
   bool done=FALSE;
   while (!done)

@@ -599,8 +599,8 @@ QCString HtmlHelp::recode(const QCString &s)
   QCString output(oSize);
   size_t iLeft     = iSize;
   size_t oLeft     = oSize;
-  char *iPtr       = s.data();
-  char *oPtr       = output.data();
+  char *iPtr       = s.rawData();
+  char *oPtr       = output.rawData();
   if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
   {
     oSize -= (int)oLeft;

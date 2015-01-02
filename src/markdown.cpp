@@ -132,7 +132,7 @@ static void convertStringFragment(QCString &result,const char *data,int size)
 {
   if (size<0) size=0;
   result.resize(size+1);
-  memcpy(result.data(),data,size);
+  memcpy(result.rawData(),data,size);
   result.at(size)='\0';
 }
 

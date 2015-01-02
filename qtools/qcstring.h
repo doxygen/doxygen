@@ -204,9 +204,18 @@ public:
     }
 
     /** Returns a pointer to the contents of the string in the form of a 0-terminated C string */
-    char *data() const
+    const char *data() const
     {
       return m_rep.data();
+    }
+
+    /** Returns a writable pointer to the data.
+     *  @warning if the string is shared it will modifying the string directly and
+     *  this will overwrite all copies as well!
+     */
+    char *rawData() const
+    {
+      return m_rep.rawData();
     }
 
     /** Resizes the string to hold \a newlen characters
@@ -242,7 +251,7 @@ public:
     {
       if (length()==0) return QCString();
       QCString cs(length()+1);
-      memcpy(cs.data(),data(),length());
+      memcpy(cs.rawData(),data(),length());
       return cs;
     }
 
@@ -299,7 +308,7 @@ public:
       int len1 = length();
       int len2 = (int)strlen(str);
       resize(len1+len2+1);
-      memcpy(data()+len1,str,len2);
+      memcpy(rawData()+len1,str,len2);
       return *this;
     }
 
@@ -308,7 +317,7 @@ public:
     {
       int len = length();
       resize(len+2);
-      data()[len]=c;
+      rawData()[len]=c;
       return *this;
     }
 
@@ -568,9 +577,21 @@ public:
         }
         uint length() const
         {
-          return u.s.isShort ? u.s.len : u.l.d->len;
+          uint l = u.s.isShort ? u.s.len : u.l.d->len;
+          return l;
         }
-        char *data() const
+        const char *data() const
+        {
+          if (u.s.isShort)
+          {
+            return u.s.len==0 ? 0 : u.s.str;
+          }
+          else
+          {
+            return u.l.d->len==0 ? 0 : u.l.d->toStr();
+          }
+        }
+        char *rawData() const
         {
           if (u.s.isShort)
           {
@@ -578,6 +599,7 @@ public:
           }
           else
           {
+            //assert(u.l.d->refCount==0); // string may not be shared when accessed raw
             return u.l.d->len==0 ? 0 : u.l.d->toStr();
           }
         }
@@ -645,24 +667,20 @@ public:
         bool fill( char c, int len )
         {
           if (len<0) len=length();
-          if (len!=(int)length())
+          if (!u.s.isShort) // detach from shared string
+          {
+            resize(len+1);
+          }
+          else if (len!=(int)length())
           {
             if (len>0)
             {
               resize(len+1);
             }
-            else
-            {
-              if (!u.s.isShort)
-              {
-                u.l.d->dispose();
-              }
-              initEmpty();
-            }
           }
           if (len>0)
           {
-            memset(data(),c,len);
+            memset(rawData(),c,len);
           }
           return TRUE;
         }

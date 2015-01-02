@@ -85,7 +85,7 @@ static QCString convertToComment(const QCString &s, const QCString &u)
   if (!s.isEmpty())
   {
     QCString tmp=s.stripWhiteSpace();
-    char *p=tmp.data();
+    const char *p=tmp.data();
     char c;
     result+="#";
     if (*p && *p!='\n')
@@ -495,8 +495,8 @@ static QCString configStringRecode(
   }
   size_t iLeft=(size_t)inputSize;
   size_t oLeft=(size_t)outputSize;
-  char *inputPtr  = str.data();
-  char *outputPtr = output.data();
+  char *inputPtr  = str.rawData();
+  char *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=(int)oLeft;
@@ -1695,7 +1695,7 @@ static QCString configFileToString(const char *name)
       QCString contents(bSize);
       int totalSize=0;
       int size;
-      while ((size=f.readBlock(contents.data()+totalSize,bSize))==bSize)
+      while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
       {
         totalSize+=bSize;
         contents.resize(totalSize+bSize); 
@@ -1721,7 +1721,7 @@ static QCString configFileToString(const char *name)
     {
       int fsize=f.size();
       QCString contents(fsize+2);
-      f.readBlock(contents.data(),fsize);
+      f.readBlock(contents.rawData(),fsize);
       f.close();
       if (fsize==0 || contents[fsize-1]=='\n') 
 	contents[fsize]='\0';

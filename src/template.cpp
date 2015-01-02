@@ -4395,7 +4395,7 @@ TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileNa
   m_engine(engine), m_fileName(fileName)
 {
   m_data.resize(size+1);
-  memcpy(m_data.data(),data,size);
+  memcpy(m_data.rawData(),data,size);
   m_data[size]=0;
 }
 
@@ -4602,7 +4602,7 @@ void TemplateLexer::addToken(QList<TemplateToken> &tokens,
   {
     int len = endPos-startPos+1;
     QCString text(len);
-    qstrncpy(text.data(),data+startPos,len);
+    qstrncpy(text.rawData(),data+startPos,len);
     if (type!=TemplateToken::Text) text = text.stripWhiteSpace();
     tokens.append(new TemplateToken(type,text,line));
   }

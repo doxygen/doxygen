@@ -132,7 +132,7 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
           if (f.open(IO_WriteOnly))
           {
             QCString buf(res->size+1);
-            memcpy(buf.data(),res->data,res->size);
+            memcpy(buf.rawData(),res->data,res->size);
             FTextStream t(&f);
             buf = replaceColorMarkers(buf);
             if (qstrcmp(name,"navtree.css")==0)
@@ -172,7 +172,7 @@ QCString ResourceMgr::getAsString(const char *name) const
   if (res)
   {
     QCString result(res->size+1);
-    memcpy(result.data(),res->data,res->size);
+    memcpy(result.rawData(),res->data,res->size);
     return result;
   }
   else

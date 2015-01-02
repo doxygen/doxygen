@@ -1865,7 +1865,7 @@ void generateXML()
     if (len>0)
     {
       QCString s(len+1);
-      qstrncpy(s.data(),startLine,len);
+      qstrncpy(s.rawData(),startLine,len);
       s[len]='\0';
       if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
       {

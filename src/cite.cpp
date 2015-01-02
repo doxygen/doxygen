@@ -211,7 +211,7 @@ void CiteDict::generatePage() const
   QCString doc;
   QFileInfo fi(citeListFile);
   QCString input(fi.size()+1);
-  f.readBlock(input.data(),fi.size());
+  f.readBlock(input.rawData(),fi.size());
   f.close();
   input.at(fi.size())='\0';
   int p=0,s;

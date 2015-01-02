@@ -396,7 +396,7 @@ void VHDLLanguageScanner::parsePrototype(const char *text)
   varr=TRUE;
 }
 
-void VhdlParser::addCompInst(char *n, char* instName, char* comp,int iLine)
+void VhdlParser::addCompInst(const char *n, const char* instName, const char* comp,int iLine)
 {
   current->spec=VhdlDocGen::INSTANTIATION;
   current->section=Entry::VARIABLE_SEC;

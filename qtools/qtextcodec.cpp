@@ -1192,7 +1192,7 @@ public:
             lenInOut = uc.length();
         int rlen = lenInOut*max_bytes_per_char;
         QCString rstr(rlen);
-        char* cursor = rstr.data();
+        char* cursor = rstr.rawData();
         char* s=0;
         int l = lenInOut;
         int lout = 0;
@@ -1881,7 +1881,7 @@ QCString QSimpleTextCodec::fromUnicode(const QString& uc, int& len ) const
     int i = len;
     int u;
     const QChar* ucp = uc.unicode();
-    char* rp = r.data();
+    char* rp = r.rawData();
     char* rmp = reverseMap->data();
     int rmsize = (int) reverseMap->size();
     while( i-- )

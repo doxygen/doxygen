@@ -59,7 +59,7 @@ void TooltipManager::clearTooltips()
 static QCString escapeId(const char *s)
 {
   QCString res=s;
-  char *p=res.data();
+  char *p=res.rawData();
   while (*p)
   {
     if (!isId(*p)) *p='_';

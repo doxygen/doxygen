@@ -543,7 +543,7 @@ bool Definition::_docsAlreadyAdded(const QCString &doc,QCString &sigList)
   // double whitespaces...
   QCString docStr = doc.simplifyWhiteSpace();
   MD5Buffer((const unsigned char *)docStr.data(),docStr.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.data(),33);
+  MD5SigToString(md5_sig,sigStr.rawData(),33);
   //printf("%s:_docsAlreadyAdded doc='%s' sig='%s' docSigs='%s'\n",
   //    name().data(),doc.data(),sigStr.data(),sigList.data());
   if (sigList.find(sigStr)==-1) // new docs, add signature to prevent re-adding it

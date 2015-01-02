@@ -236,7 +236,8 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
 // replaces &gt; with < and &gt; with > within string s
 static void unescapeCRef(QCString &s)
 {
-  char *p = s.data();
+  QCString tmp(s);
+  char *p = tmp.rawData();
   if (p)
   {
     char c;
@@ -247,8 +248,9 @@ static void unescapeCRef(QCString &s)
     }
   }
 
-  s=substitute(s,"&lt;","<");
-  s=substitute(s,"&gt;",">");
+  tmp=substitute(tmp,"&lt;","<");
+  tmp=substitute(tmp,"&gt;",">");
+  s = tmp;
 }
 
 //---------------------------------------------------------------------------
@@ -6939,7 +6941,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
   }
   e=j;
   QCString id(e-s+1);
-  if (e>s) memcpy(id.data(),data+s,e-s);
+  if (e>s) memcpy(id.rawData(),data+s,e-s);
   id.at(e-s)='\0';
   //printf("extractCopyDocId='%s' input='%s'\n",id.data(),&data[s]);
   return id;

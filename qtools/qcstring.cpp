@@ -31,7 +31,7 @@ QCString &QCString::sprintf( const char *format, ... )
   const int minlen=256;
   int l = length();
   if (l<minlen) { resize(minlen); l=minlen; }
-  int n=vsnprintf( data(), l, format, ap);
+  int n=vsnprintf( rawData(), l, format, ap);
   if (n<0) n=l;
   resize(n+1);
   va_end( ap );
@@ -62,7 +62,7 @@ int QCString::find( const char *str, int index, bool cs ) const
   if (index<0 || index>=l) return -1; // index outside string
   if (!str)  return -1;               // no string to search for
   if (!*str) return index;           // empty string matching at index
-  register char *pos;
+  register const char *pos;
   if (cs) // case sensitive
   {
     pos = strstr(data()+index,str);
@@ -132,7 +132,7 @@ int QCString::findRev( const char *str, int index, bool cs) const
   else if (index>len) return -1; // bad index
   else if (index+slen>len) index=len-slen; // str would be too long
   if (index<0) return -1; // no match possible
-  register char *pos = data()+index;
+  register const char *pos = data()+index;
   if (cs) // case sensitive
   {
     for (int i=index; i>=0; i--) if (qstrncmp(pos--,str,slen)==0) return i;
@@ -204,9 +204,7 @@ bool QCString::stripPrefix(const char *prefix)
   int len = qstrlen(prefix);
   if (qstrncmp(prefix,data(),len)==0)
   {
-    int newlen = length()-len+1;
-    qmemmove(data(),data()+len,newlen);
-    resize(newlen);
+    m_rep=mid(len,length()-len).m_rep; // need to make a deep copy
     return TRUE;
   }
   return FALSE;
@@ -225,7 +223,7 @@ QCString QCString::left( uint len )  const
   else
   {
     QCString s( len+1 );
-    memcpy( s.data(), data(), len);
+    memcpy( s.rawData(), data(), len);
     return s;
   }
 }
@@ -255,9 +253,9 @@ QCString QCString::mid( uint index, uint len) const
   }
   else
   {
-    register char *p = data()+index;
+    register const char *p = data()+index;
     QCString s(len+1);
-    qstrncpy( s.data(), p, len+1 );
+    qstrncpy( s.rawData(), p, len+1 );
     return s;
   }
 }
@@ -266,7 +264,7 @@ QCString QCString::lower() const
 {
   if (length()==0) return QCString();
   QCString s(data());
-  register char *pos = s.data();
+  register char *pos = s.rawData();
   if (pos)
   {
     while (*pos)
@@ -282,7 +280,7 @@ QCString QCString::upper() const
 {
   if (length()==0) return QCString();
   QCString s(data());
-  register char *pos = s.data();
+  register char *pos = s.rawData();
   if (pos)
   {
     while (*pos)
@@ -299,13 +297,13 @@ QCString QCString::stripWhiteSpace() const
   if ( isEmpty() )                            // nothing to do
     return *this;
 
-  register char *s = data();
+  register const char *cs = data();
   int reslen = length();
-  if ( !isspace((uchar)s[0]) && !isspace((uchar)s[reslen-1]) )
+  if ( !isspace((uchar)cs[0]) && !isspace((uchar)cs[reslen-1]) )
     return *this;                             // returns a copy
 
-  QCString result(s);
-  s = result.data();
+  QCString result(cs);
+  register char *s = result.rawData();
   int start = 0;
   int end = reslen - 1;
   while ( isspace((uchar) s[start]) )                 // skip white space from start
@@ -317,7 +315,7 @@ QCString QCString::stripWhiteSpace() const
   while ( end && isspace((uchar) s[end]) )            // skip white space from end
     end--;
   end -= start - 1;
-  qmemmove( result.data(), &s[start], end );
+  qmemmove( s, &s[start], end );
   result.resize( end + 1 );
   return result;
 }
@@ -328,8 +326,8 @@ QCString QCString::simplifyWhiteSpace() const
     return *this;
 
   QCString result( length()+1 );
-  char *from  = data();
-  char *to    = result.data();
+  const char *from  = data();
+  char *to    = result.rawData();
   char *first = to;
   while ( TRUE )
   {
@@ -363,14 +361,14 @@ QCString &QCString::insert( uint index, const char *s )
   if ((int)index>=olen)
   {
     resize(nlen+index-olen+1);
-    memset(data()+olen, ' ', index-olen);
-    memcpy(data()+index,s, len+1);
+    memset(rawData()+olen, ' ', index-olen);
+    memcpy(rawData()+index,s, len+1);
   }
   else
   {
     resize(nlen+1);
-    qmemmove(data()+index+len,data()+index,olen-index+1);
-    memcpy(data()+index,s,len);
+    qmemmove(rawData()+index+len,data()+index,olen-index+1);
+    memcpy(rawData()+index,s,len);
   }
   return *this;
 }
@@ -402,8 +400,10 @@ QCString &QCString::remove( uint index, uint len )
   }
   else if ( len != 0 )
   {
-    qmemmove( data()+index, data()+index+len, olen-index-len+1 );
+    QCString tmp(olen-index-len+1);
+    qmemmove( tmp.rawData(), data()+index+len, olen-index-len+1 );
     resize( olen-len+1 );
+    memcpy( rawData()+index,tmp.data(),tmp.length() );
   }
   return *this;
 }
@@ -635,7 +635,7 @@ QDataStream &operator>>( QDataStream &s, QCString &str )
 	len = 0;
     }
     if ( len > 0 )				// not null array
-	s.readRawBytes( str.data(), (uint)len );
+	s.readRawBytes( str.rawData(), (uint)len );
     return s;
 }
 
