@@ -1414,6 +1414,11 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
   if (x->title().isEmpty()) return;
   bool anonymousEnum = x->file()=="@";
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocXRefItem)}\n");
+  if (!m_lastIsPara)
+  {
+    m_t << "\\par" << endl;
+    m_lastIsPara=TRUE;
+  }
   m_t << "{"; // start param list
   //m_t << "{\\b "; // start bold
   m_t << "{" << rtf_Style["Heading5"]->reference << endl;
