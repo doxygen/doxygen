@@ -64,7 +64,7 @@ class GroupDef : public Definition
     void addDir(const DirDef *dd);
     bool insertMember(MemberDef *def,bool docOnly=FALSE);
     void removeMember(MemberDef *md);
-    bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
+    bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
