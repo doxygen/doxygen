@@ -11963,7 +11963,7 @@ QChar* QString::asciiToUnicode( const QByteArray& ba, uint* len )
     int l = 0;
     while ( l < (int)ba.size() && ba[l] )
 	l++;
-    char* str = ba.data();
+    const char* str = ba.data();
     QChar *uc = new QChar[ l ];	  // Can't use macro, since function is public
     QChar *result = uc;
     if ( len )
@@ -11982,7 +11982,7 @@ static QChar* internalAsciiToUnicode( const QByteArray& ba, uint* len )
     int l = 0;
     while ( l < (int)ba.size() && ba[l] )
 	l++;
-    char* str = ba.data();
+    const char* str = ba.data();
     QChar *uc = QT_ALLOC_QCHAR_VEC( l );
     QChar *result = uc;
     if ( len )
@@ -15257,7 +15257,7 @@ QCString qt_winQString2MB( const QString& s, int uclen )
     QCString mb(bufSize);
     int len;
     while ( !(len=WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)s.unicode(), uclen,
-		mb.data(), bufSize-1, 0, &used_def)) )
+		mb.rawData(), bufSize-1, 0, &used_def)) )
     {
 	int r = GetLastError();
 	if ( r == ERROR_INSUFFICIENT_BUFFER ) {
