@@ -2370,14 +2370,12 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
       err("read error in %s before end of RTF header!\n",infName.data());
       return FALSE;
     }
-    lineBuf.resize(len+1);
     if (bIncludeHeader) encodeForOutput(t,lineBuf.data());
   } while (lineBuf.find("\\comment begin body")==-1);
 
 
   while ((len=f.readLine(lineBuf.rawData(),maxLineLength))!=-1)
   {
-    lineBuf.resize(len+1);
     int pos;
     if ((pos=lineBuf.find("INCLUDETEXT"))!=-1)
     {
