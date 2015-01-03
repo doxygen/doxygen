@@ -1601,7 +1601,6 @@ static void writeAnnotatedClassList(OutputList &ol)
     }
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      QCString type=cd->compoundTypeString();
       ol.startIndexKey();
       if (cd->getLanguage()==SrcLangExt_VHDL)
       {

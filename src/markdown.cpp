@@ -810,7 +810,6 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   {
     return 0;
   }
-  static QRegExp re("^[@\\]ref ");
   if (isToc) // special case for [TOC]
   {
     if (g_current) g_current->stat=TRUE;

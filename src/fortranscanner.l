@@ -165,7 +165,6 @@ static ScanVar          v_type       = V_IGNORE; // type of parsed variable
 static QList<Entry>     moduleProcedures; // list of all interfaces which contain unresolved 
                                           // module procedures
 static QCString         docBlock;
-static QCString         docBlockName;
 static bool             docBlockInBody = FALSE;
 static bool             docBlockJavaStyle;
 

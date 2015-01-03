@@ -169,7 +169,6 @@ QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
   QCString mscExe = Config_getString("MSCGEN_PATH")+"mscgen"+portable_commandExtension();
   QCString mscArgs = "-T ismap -i \"";
   mscArgs+=inFile;
-  QFileInfo fi(inFile);
   mscArgs+="\" -o \"";
   mscArgs+=outFile + "\"";
 
@@ -201,7 +200,6 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
  			    )
 {
   QCString mapName = baseName+".map";
-  QCString mapFile = inFile+".map";
   t << "<img src=\"" << relPath << baseName << ".";
   switch (format)
   {

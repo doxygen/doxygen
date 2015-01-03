@@ -437,7 +437,6 @@ void VhdlParser::addCompInst(const char *n, const char* instName, const char* co
 void VhdlParser::addVhdlType(const char *n,int startLine,int section,
     uint64 spec,const char* args,const char* type,Protection prot)
 {
-  static QRegExp reg("[\\s]");
   QCString name(n);
   if (isFuncProcProced() || VhdlDocGen::getFlowMember())  return;
 
@@ -540,7 +539,6 @@ void VhdlParser::pushLabel( QCString &label,QCString & val)
 
  QCString  VhdlParser::popLabel(QCString & q)
 {
-  QCString u=q;
   int i=q.findRev("|");
   if (i<0) return "";
   q = q.left(i);
@@ -550,8 +548,7 @@ void VhdlParser::pushLabel( QCString &label,QCString & val)
 void VhdlParser::addConfigureNode(const char* a,const char*b, bool,bool isLeaf,bool inlineConf)
 {
   VhdlConfNode* co=0;
-  QCString ent,arch,lab;
-  QCString l=genLabels;
+  QCString ent;
   ent=a;
 
   if (b)
@@ -606,7 +603,6 @@ void VhdlParser::addProto(const char *s1,const char *s2,const char *s3,
     const char *s4,const char *s5,const char *s6)
 {
   (void)s5; // avoid unused warning
-  static QRegExp reg("[\\s]");
   QCString name=s2;
   QStringList ql=QStringList::split(",",name,FALSE);
 

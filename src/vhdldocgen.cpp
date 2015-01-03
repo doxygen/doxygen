@@ -70,7 +70,6 @@ static QDict<QCString> g_vhdlKeyDict0(17,FALSE);
 static QDict<QCString> g_vhdlKeyDict1(17,FALSE);
 static QDict<QCString> g_vhdlKeyDict2(17,FALSE);
 static QDict<QCString> g_vhdlKeyDict3(17,FALSE);
-static QDict<QCString> g_xilinxUcfDict(17,FALSE);
 
 static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
@@ -170,7 +169,6 @@ static void createSVG()
     QCString dir="-o \""+ov+"/vhdl_design_overview.html\"";
     ov+="/vhdl_design.dot";
 
-    QRegExp ep("[\\s]");
     QCString vlargs="-Tsvg \""+ov+"\" "+dir ;
 
     if (portable_system("dot",vlargs)!=0)
@@ -200,7 +198,6 @@ void VhdlDocGen::writeOverview()
   QCString ov =Config_getString("HTML_OUTPUT");
   QCString fileName=ov+"/vhdl_design.dot";
   QFile f(fileName);
-  QStringList qli;
   FTextStream  t(&f);
 
   if (!f.open(IO_WriteOnly))
@@ -502,7 +499,6 @@ static QList<MemberDef>* getPorts(ClassDef *cd)
 
 static void writeTable(QList<MemberDef>* port,FTextStream & t)
 {
-  QCString space(" ");
   MemberDef *md;
   uint len=port->count();
 
@@ -712,7 +708,6 @@ ClassDef *VhdlDocGen::getClass(const char *name)
 ClassDef* VhdlDocGen::getPackageName(const QCString & name)
 {
   ClassDef* cd=0;
-  QStringList ql=QStringList::split(".",name,FALSE);
   cd=getClass(name);
 
   return cd;
@@ -1123,7 +1118,6 @@ ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
 void VhdlDocGen::writeVhdlLink(const ClassDef* ccd ,OutputList& ol,QCString& type,QCString& nn,QCString& behav)
 {
   if (ccd==0)  return;
-  QCString temp=ccd->getOutputFileBase();
   ol.startBold();
   ol.docify(type.data());
   ol.endBold();
@@ -1181,7 +1175,6 @@ void VhdlDocGen::parseFuncProto(const char* text,QList<Argument>& qlist,
 
   if ((end-index)>0)
   {
-    QCString tt=s1.mid(index,(end-index+1));
     temp=s1.mid(index+1,(end-index-1));
     //getFuncParams(qlist,temp);
   }
@@ -1816,8 +1809,6 @@ static void setGlobalType(MemberList *ml)
   MemberListIterator mmli(*ml);
   for ( ; (mdd=mmli.current()); ++mmli )
   {
-    QCString l=mdd->typeString();
-
     if (qstrcmp(mdd->argsString(),"package")==0)
     {
  	mdd->setMemberSpecifiers(VhdlDocGen::INSTANTIATION);
@@ -1978,10 +1969,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
     bool /*inGroup*/)
 {
-  static QRegExp reg("[%]");
-
   Definition *d=0;
-
 
   ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 ||
       mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY ||
@@ -2657,7 +2645,6 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
 {
   QCString ucFile(input);
   int lineNo=0;
-  QCString newLine="\n";
   QCString comment("#!");
   QCString brief;
 
@@ -2713,7 +2700,6 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
 static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCString & fileName,QCString & brief)
 {
   if (qcs.isEmpty())return;
-  QRegExp sp("\\s");
   QRegExp reg("[\\s=]");
   QCString n;
   // bool bo=(qstricmp(type,qcs.data())==0);
@@ -2836,7 +2822,6 @@ QCString  VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 {
   int index;
   QCString label;
-  QCString ent("entity");
   if (!entity.contains(":")) return "";
 
   QRegExp exp("[:()\\s]");
@@ -2926,7 +2911,7 @@ void assignBinding(VhdlConfNode * conf)
   QListIterator<Entry> eli(instList);
   Entry *cur=0;
   ClassDef *archClass=0,*entClass=0;
-  QCString archName,entityName;
+  QCString archName;
   QCString arcBind,entBind;
 
   bool others,all;
@@ -2991,7 +2976,7 @@ void assignBinding(VhdlConfNode * conf)
   {
     if (cur->exception.lower()==label || conf->isInlineConf)
     {
-      QCString sign,archy;
+      QCString archy;
 
       if (all || others)
       {
@@ -3993,7 +3978,6 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
   }
 
   t<<getNodeName(fl->id).data();
-  QCString q=getNodeType(fl->type);
 
 #ifdef DEBUGFLOW
   QCString qq(getNodeName(fl->id).data());
@@ -4049,7 +4033,6 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
   {
     if (fl->text.isEmpty()) return;
     bool var=(fl->type & FlowChart::VARIABLE_NO);
-    QCString repl("<BR ALIGN=\"LEFT\"/>");
     QCString q=fl->text;
 
     if (exit)

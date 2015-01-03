@@ -431,19 +431,11 @@ static bool             *b=0;
 static QStrList         *l=0;
 static int               lastState;
 static QCString          elemStr;
-static QCString          includeName;
 static QStrList          includePathList;
 static QStack<ConfigFileState> includeStack;  
 static int               includeDepth;
 static bool              config_upd = FALSE;
 
-static QCString     tabSizeString;
-static QCString     maxInitLinesString;
-static QCString     colsInAlphaIndexString;
-static QCString     enumValuesPerLineString;
-static QCString     treeViewWidthString;
-static QCString     maxDotGraphWidthString;
-static QCString     maxDotGraphHeightString;
 static QCString     encoding;
 
 static Config      *config;

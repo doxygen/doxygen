@@ -105,7 +105,6 @@ bool Htags::execute(const QCString &htmldir)
 bool Htags::loadFilemap(const QCString &htmlDir)
 {
   QCString fileMapName = htmlDir+"/HTML/FILEMAP";
-  QCString fileMap;
   QFileInfo fi(fileMapName);
   /*
    * Construct FILEMAP dictionary using QDict.

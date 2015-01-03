@@ -310,7 +310,6 @@ void SearchIndex::write(const char *fileName)
   padding = size - padding;
 
   //int statsOffset = size;
-  QDictIterator<IndexWord> wdi(m_words);
   //IndexWord *iw;
   int *wordStatOffsets = new int[m_words.count()];
   
@@ -1077,7 +1076,6 @@ void writeJavascriptSearchIndex()
         for (li.toFirst();(dl=li.current());++li)
         {
           Definition *d = dl->getFirst();
-          QCString id = d->localName();
 
           if (!firstEntry)
           {

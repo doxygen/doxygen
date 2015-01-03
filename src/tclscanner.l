@@ -1123,7 +1123,6 @@ D
 static tcl_scan *tcl_scan_start(char type, QString content, QCString ns, Entry *entry_cl, Entry *entry_fn)
 {
   tcl_scan *myScan=tcl.scan.at(0);
-  QCString myName;
 tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.ascii());
 
   myScan->line1=yylineno;
@@ -2298,7 +2297,7 @@ D
 static void tcl_command_ITCL_CLASS()
 {
 D
-  QCString myNs, myName, myStr;
+  QCString myNs, myName;
   Entry *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);
 
@@ -2327,7 +2326,7 @@ D
 static void tcl_command_OO_CLASS()
 {
 D
-  QCString myNs, myName, myStr;
+  QCString myNs, myName;
   //Entry *myEntryNs;
   Entry *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);

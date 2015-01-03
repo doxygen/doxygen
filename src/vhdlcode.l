@@ -68,7 +68,6 @@ static bool       g_startCode = FALSE;
 static QCString   g_PrevString;
 static QCString   g_CurrClass;
 static QDict<QCString>g_vhdlKeyDict;   
-static QCString   g_tempClass;
 static QCString   g_tempComp;
 static QCString   g_PortMapComp;
 static MemberDef *g_vhdlMember;
@@ -77,7 +76,6 @@ static QCString   g_FuncProto;
 //-----------------------------------------------------------
   
 static CodeOutputInterface * g_code;
-static QCString      g_curClassName;
 static QCString      g_parmType;
 static QCString      g_parmName;
 static const char *  g_inputString;     //!< the code fragment as text
@@ -90,9 +88,6 @@ static Definition   *g_searchCtx;
 static QCString      g_exampleName;
 static QCString      g_exampleFile;
 
-static QCString      g_type;
-static QCString      g_name;
-static QCString      g_args;
 static QCString      g_classScope;
    
 static QCString      g_CurrScope;
@@ -1055,7 +1050,6 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 
 
 <ClassesName>{FUNCNAME} {
-                         QDict<QCString> mem;
                          appStringLower(g_PrevString,vhdlcodeYYtext);
                          g_CurrClass.resize(0);
                          g_CurrClass.append(vhdlcodeYYtext);

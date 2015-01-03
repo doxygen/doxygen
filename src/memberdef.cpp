@@ -2553,7 +2553,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   QCString cname   = container->name();
   QCString cfname  = getOutputFileBase();
-  QCString cfiname = container->getOutputFileBase();
 
   // get member name
   QCString doxyName=name();

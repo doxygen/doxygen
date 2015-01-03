@@ -45,7 +45,6 @@ static QCString      funcTempList;
 static QCString      type;
 static QCString      name;
 static QCString      args;
-static QCString      tmpType;
 static int          sharpCount;
 static bool         classTempListFound;
 static bool         funcTempListFound;

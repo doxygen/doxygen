@@ -156,8 +156,6 @@ static const char svgZoomFooter[] =
 
 //--------------------------------------------------------------------
 
-static const int maxCmdLine = 40960;
-
 /*! mapping from protection levels to color names */
 static const char *normalEdgeColorMap[] =
 {
@@ -3148,8 +3146,6 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
     regenerate=TRUE;
     if (graphFormat==GOF_BITMAP) // run dot to create a bitmap image
     {
-      QCString dotArgs(maxCmdLine);
-
       DotRunner *dotRun = new DotRunner(absDotName,
                               d.absPath().data(),TRUE,absImgName);
       dotRun->addJob(imgExt,absImgName);
@@ -3507,7 +3503,6 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
     if (graphFormat==GOF_BITMAP)
     {
       // run dot to create a bitmap image
-      QCString dotArgs(maxCmdLine);
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
       dotRun->addJob(imgExt,absImgName);
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
@@ -3820,7 +3815,6 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat graphForma
     if (graphFormat==GOF_BITMAP)
     {
       // run dot to create a bitmap image
-      QCString dotArgs(maxCmdLine);
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
       dotRun->addJob(imgExt,absImgName);
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
@@ -3985,7 +3979,6 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
     if (graphFormat==GOF_BITMAP)
     {
       // run dot to create a bitmap image
-      QCString dotArgs(maxCmdLine);
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
       dotRun->addJob(imgExt,absImgName);
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
@@ -4513,7 +4506,6 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   QCString imgExt      = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString baseName    = m_diskName;
   QCString imgName     = baseName+"."+imgExt;
-  QCString mapName     = baseName+".map";
   QCString absPath     = d.absPath().data();
   QCString absBaseName = absPath+"/"+baseName;
   QCString absDotName  = absBaseName+".dot";
@@ -4540,8 +4532,6 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
 
     if (graphFormat==GOF_BITMAP) // run dot to create a bitmap image
     {
-      QCString dotArgs(maxCmdLine);
-
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
       dotRun->addJob(imgExt,absImgName);
       if (writeImageMap) dotRun->addJob(MAP_CMD,absMapName);

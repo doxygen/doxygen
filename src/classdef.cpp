@@ -4031,7 +4031,6 @@ int ClassDef::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
     static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
     if (!inlineInheritedMembers) // show inherited members as separate lists
     {
-      QPtrDict<void> visited(17);
       count+=countInheritedDecMembers(lt,inheritedFrom,invert,showAlways,visitedClasses);
     }
   }

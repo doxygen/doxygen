@@ -3317,7 +3317,7 @@ static QCString getCanonicalTypeForIdentifier(
 {
   if (count>10) return word; // oops recursion
 
-  QCString symName,scope,result,templSpec,tmpName;
+  QCString symName,result,templSpec,tmpName;
   //DefinitionList *defList=0;
   if (tSpec && !tSpec->isEmpty()) 
     templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
@@ -4110,8 +4110,6 @@ bool getDefs(const QCString &scName,
         continue;
 
       if (!args) break;
-
-      QCString className = mmd->getClassDef()->name();
 
       ArgumentList *mmdAl = mmd->argumentList();
       if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
