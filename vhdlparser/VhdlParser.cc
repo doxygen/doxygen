@@ -1,5 +1,6 @@
 /* VhdlParser.cc */
-#include "./VhdlParser.h"
+#include "VhdlParser.h"
+#include "TokenMgrError.h"
 namespace vhdl {
 namespace parser {
   unsigned int jj_la1_0[] = {
@@ -12753,26 +12754,16 @@ void VhdlParser::parseInline() {
 
  VhdlParser::VhdlParser(TokenManager *tm){
     head = NULL;
+    errorHandlerCreated = false;
     ReInit(tm);
 }
-   VhdlParser::~VhdlParser()
+VhdlParser::~VhdlParser()
 {
-  if (token_source) delete token_source;
-  if (head) {
-    Token *next, *t = head;
-    while (t) {
-      next = t->next;
-      delete t;
-      t = next;
-    }
-  }
-  if (errorHandlerCreated) {
-    delete errorHandler;
-  }
+  clear();
 }
 
 void VhdlParser::ReInit(TokenManager *tm){
-    if (head) delete head;
+    clear();
     errorHandler = new ErrorHandler();
     errorHandlerCreated = true;
     hasError = false;
@@ -12792,6 +12783,24 @@ void VhdlParser::ReInit(TokenManager *tm){
     jj_gen = 0;
     for (int i = 0; i < 293; i++) jj_la1[i] = -1;
   }
+
+
+void VhdlParser::clear(){
+  //Since token manager was generate from outside,
+  //parser should not take care of deleting
+  //if (token_source) delete token_source;
+  if (head) {
+    Token *next, *t = head;
+    while (t) {
+      next = t->next;
+      delete t;
+      t = next;
+    }
+  }
+  if (errorHandlerCreated) {
+    delete errorHandler;
+  }
+}
 
 
 Token * VhdlParser::jj_consume_token(int kind)  {
@@ -12873,26 +12882,23 @@ int VhdlParser::jj_ntk_f(){
   }
 
 
-void VhdlParser::jj_add_error_token(int kind, int pos)  {
+  void VhdlParser::jj_add_error_token(int kind, int pos)  {
   }
 
-  /** Generate ParseException. */
 
  void  VhdlParser::parseError()   {
       fprintf(stderr, "Parse error at: %d:%d, after token: %s encountered: %s\n", token->beginLine, token->beginColumn, addUnicodeEscapes(token->image).c_str(), addUnicodeEscapes(getToken(1)->image).c_str());
    }
 
 
- void VhdlParser::enable_tracing()  {
+  void VhdlParser::enable_tracing()  {
   }
 
-  /** Disable tracing. */
-
- void VhdlParser::disable_tracing()  {
+  void VhdlParser::disable_tracing()  {
   }
 
 
-void VhdlParser::jj_rescan_token(){
+  void VhdlParser::jj_rescan_token(){
     jj_rescan = true;
     for (int i = 0; i < 114; i++) {
       JJCalls *p = &jj_2_rtns[i];
@@ -13023,7 +13029,7 @@ void VhdlParser::jj_rescan_token(){
   }
 
 
-void VhdlParser::jj_save(int index, int xla){
+  void VhdlParser::jj_save(int index, int xla){
     JJCalls *p = &jj_2_rtns[index];
     while (p->gen > jj_gen) {
       if (p->next == NULL) { p = p->next = new JJCalls(); break; }

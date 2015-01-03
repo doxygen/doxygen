@@ -100,8 +100,4 @@ class VhdlString
     int   m_len;
 };
 
-extern VhdlString addUnicodeEscapes(VhdlString str);
-
-#define finally
-
 #endif

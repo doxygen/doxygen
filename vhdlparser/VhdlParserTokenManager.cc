@@ -1,5 +1,6 @@
 /* VhdlParserTokenManager.cc */
-#include "./VhdlParserTokenManager.h"
+#include "VhdlParserTokenManager.h"
+#include "TokenMgrError.h"
 namespace vhdl {
 namespace parser {
 static const unsigned long long jjbitVec0[] = {
@@ -2693,7 +2694,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
       if (curChar < 64)
       {
          unsigned long long l = 1ULL << curChar;
-         if (l == 1);
+         (void)l;
          do
          {
             switch(jjstateSet[--i])
@@ -3031,7 +3032,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
       else if (curChar < 128)
       {
          unsigned long long l = 1ULL << (curChar & 077);
-         if (l == 1);
+         (void)l;
          do
          {
             switch(jjstateSet[--i])
@@ -3245,7 +3246,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
                      { jjAddStates(50, 51); }
                   break;
-               default : if (i1 == 0 || l1 == 0 || i2 == 0 || l2 == 0) break; else break;
+               default : if (i1 == 0 || l1 == 0 || i2 == 0 ||  l2 == 0) break; else break;
             }
          } while(i != startsAt);
       }
@@ -3309,10 +3310,10 @@ bool VhdlParserTokenManager::jjCanMove_1(int hiByte, int i1, int i2, unsigned lo
 Token * VhdlParserTokenManager::jjFillToken(){
    Token *t;
    JAVACC_STRING_TYPE curTokenImage;
-   int beginLine;
-   int endLine;
-   int beginColumn;
-   int endColumn;
+   int beginLine   = -1;
+   int endLine     = -1;
+   int beginColumn = -1;
+   int endColumn   = -1;
    JAVACC_STRING_TYPE im = jjstrLiteralImages[jjmatchedKind];
    curTokenImage = (im.length() == 0) ? input_stream->GetImage() : im;
    if (input_stream->getTrackLineColumn()) {
@@ -3321,7 +3322,9 @@ Token * VhdlParserTokenManager::jjFillToken(){
      endLine = input_stream->getEndLine();
      endColumn = input_stream->getEndColumn();
    }
-   t = Token::newToken(jjmatchedKind, curTokenImage);
+   t = Token::newToken(jjmatchedKind);
+   t->kind = jjmatchedKind;
+   t->image = curTokenImage;
    t->specialToken = NULL;
    t->next = NULL;
 
@@ -3392,7 +3395,7 @@ Token * VhdlParserTokenManager::getNextToken(){
    if (!EOFSeen) {
       error_after = curPos <= 1 ? EMPTY : input_stream->GetImage();
    }
-   lexicalError();
+   errorHandler->lexicalError(EOFSeen, curLexState, error_line, error_column, error_after, curChar, this);
   }
 }
 
@@ -3400,11 +3403,12 @@ Token * VhdlParserTokenManager::getNextToken(){
 void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
    switch(jjmatchedKind)
    {
-      case 3 :
+      case 3 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
         ::vhdl::parser::VhdlParser::lineCount();
          break;
-      case 6 :
+       }
+      case 6 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
     {
     QCString doc(image.data());
@@ -3417,15 +3421,18 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),FALSE); ;
     }
          break;
-      case 7 :
+       }
+      case 7 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                                                                                ::vhdl::parser::VhdlParser::handleFlowComment(image.data());
          break;
-      case 8 :
+       }
+      case 8 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
     ::vhdl::parser::VhdlParser::lineCount(image.data());
          break;
-      case 9 :
+       }
+      case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
    {
      QCString q(image.data());
@@ -3434,10 +3441,12 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
      ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
    }
          break;
-      case 10 :
+       }
+      case 10 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                                                     ::vhdl::parser::VhdlParser::lineCount(image.data());image.clear();
          break;
+       }
       default :
          break;
    }
@@ -3446,105 +3455,128 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
 void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
    switch(jjmatchedKind)
    {
-      case 17 :
+      case 17 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                                     ::vhdl::parser::VhdlParser::setLineParsed(ARCHITECTURE_T);
          break;
-      case 18 :
+       }
+      case 18 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                       VhdlParser::setLineParsed(ARRAY_T);
          break;
-      case 22 :
+       }
+      case 22 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                               ::vhdl::parser::VhdlParser::setLineParsed(ATTRIBUTE_T);
          break;
-      case 25 :
+       }
+      case 25 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                     ::vhdl::parser::VhdlParser::setLineParsed(BODY_T);
          break;
-      case 28 :
+       }
+      case 28 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                               VhdlParser::setLineParsed(COMPONENT_T);
          break;
-      case 30 :
+       }
+      case 30 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                                       VhdlParser::setLineParsed(CONFIGURATION_T);
          break;
-      case 31 :
+       }
+      case 31 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                              VhdlParser::setLineParsed(CONSTANT_T);
          break;
-      case 32 :
+       }
+      case 32 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                           VhdlParser::setLineParsed(CONTEXT_T);
          break;
-      case 39 :
+       }
+      case 39 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                   VhdlParser::setLineParsed(END_T);
          break;
-      case 40 :
+       }
+      case 40 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                         VhdlParser::setLineParsed(ENTITY_T);
          break;
-      case 43 :
+       }
+      case 43 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                     VhdlParser::setLineParsed(FILE_T);
          break;
-      case 46 :
+       }
+      case 46 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                              VhdlParser::setLineParsed(FUNCTION_T);
          break;
-      case 49 :
+       }
+      case 49 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                       VhdlParser::setLineParsed(GROUP_T);
          break;
-      case 58 :
+       }
+      case 58 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                           VhdlParser::setLineParsed(LIBRARY_T);
          break;
-      case 76 :
+       }
+      case 76 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                           ::vhdl::parser::VhdlParser::setLineParsed(PACKAGE_T);
          break;
-      case 78 :
+       }
+      case 78 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                     ::vhdl::parser::VhdlParser::setLineParsed(PORT_T);
          break;
-      case 80 :
+       }
+      case 80 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                               ::vhdl::parser::VhdlParser::setLineParsed(PROCEDURE_T);
          break;
-      case 81 :
+       }
+      case 81 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                           ::vhdl::parser::VhdlParser::setLineParsed(PROCESS_T);
          break;
-      case 86 :
+       }
+      case 86 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                         ::vhdl::parser::VhdlParser::setLineParsed(RECORD_T);
          break;
-      case 100 :
+       }
+      case 100 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                         ::vhdl::parser::VhdlParser::setLineParsed(SIGNAL_T);
          break;
-      case 107 :
+       }
+      case 107 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                           ::vhdl::parser::VhdlParser::setLineParsed(SUBTYPE_T);
          break;
-      case 111 :
+       }
+      case 111 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                     ::vhdl::parser::VhdlParser::setLineParsed(TYPE_T);
          break;
-      case 113 :
+       }
+      case 113 : {
         image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                       ::vhdl::parser::VhdlParser::setLineParsed(UNITS_T);
          break;
+       }
       default :
          break;
    }
 }
   /** Reinitialise parser. */
   void VhdlParserTokenManager::ReInit(JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg) {
-    if (input_stream) delete input_stream;
+    clear();
     jjmatchedPos = jjnewStateCnt = 0;
     curLexState = lexState;
     input_stream = stream;
@@ -3552,6 +3584,8 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
     debugStream = stdout; // init
     SwitchTo(lexState);
     parser = parserArg;
+    errorHandler = new TokenManagerErrorHandler();
+    errorHandlerCreated = true;
   }
 
   void VhdlParserTokenManager::ReInitRounds() {
@@ -3563,10 +3597,17 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
 
   /** Switch to specified lex state. */
   void VhdlParserTokenManager::SwitchTo(int lexState) {
-    if (lexState >= 1 || lexState < 0)
-      assert(false);
-      //throw 1;//new TokenMgrError("Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.", TokenMgrError.INVALID_LEXICAL_STATE);
-    else
+    if (lexState >= 1 || lexState < 0) {
+      JAVACC_STRING_TYPE message;
+#ifdef WIDE_CHAR
+      message += L"Error: Ignoring invalid lexical state : ";
+      message += lexState; message += L". State unchanged.";
+#else
+      message += "Error: Ignoring invalid lexical state : ";
+      message += lexState; message += ". State unchanged.";
+#endif
+      throw new TokenMgrError(message, INVALID_LEXICAL_STATE);
+    } else
       curLexState = lexState;
   }
 
@@ -3574,12 +3615,23 @@ void  VhdlParserTokenManager::TokenLexicalActions(Token *matchedToken){
   VhdlParserTokenManager::VhdlParserTokenManager (JAVACC_CHARSTREAM *stream, int lexState, VhdlParser *parserArg)
   {
     input_stream = NULL;
+    errorHandlerCreated = false;
     ReInit(stream, lexState, parserArg);
   }
 
   // Destructor
   VhdlParserTokenManager::~VhdlParserTokenManager () {
-    if (input_stream) delete input_stream;
+    clear();
   }
+
+  // clear
+  void VhdlParserTokenManager::clear() {
+    //Since input_stream was generated outside of TokenManager
+    //TokenManager should not take care of deleting it
+    //if (input_stream) delete input_stream;
+    if (errorHandlerCreated) delete errorHandler;    
+  }
+
+
 }
 }

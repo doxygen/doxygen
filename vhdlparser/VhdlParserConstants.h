@@ -6,6 +6,7 @@
  */
 #ifndef VHDLPARSERCONSTANTS_H
 #define VHDLPARSERCONSTANTS_H
+#include "JavaCC.h"
 
 namespace vhdl {
 namespace parser {
