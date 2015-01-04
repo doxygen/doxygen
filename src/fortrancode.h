@@ -34,4 +34,5 @@ void parseFortranCode(CodeOutputInterface &,const char *,const QCString &,
 void resetFortranCodeParserState();
 void codeFreeScanner();
 
+const int fixedCommentAfter = 72;
 #endif

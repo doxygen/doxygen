@@ -1411,11 +1411,15 @@ static const char* prepassFixedForm(const char* contents)
   int prevLineLength=0;
   int prevLineAmpOrExclIndex=-1;
   bool emptyLabel=TRUE;
+  bool commented=FALSE;
+  bool inSingle=FALSE;
+  bool inDouble=FALSE;
+  bool inBackslash=FALSE;
   int newContentsSize = strlen(contents)+3; // \000, \n (when necessary) and one spare character (to avoid reallocation)
   char* newContents = (char*)malloc(newContentsSize);
 
   for(int i=0, j=0;;i++,j++) {
-    if(j>=newContentsSize-1) { // check for one spare character, which may be eventually used below (by &)
+    if(j>=newContentsSize-3) { // check for spare characters, which may be eventually used below (by & and '! ')
       newContents = (char*)realloc(newContents, newContentsSize+1000);
       newContentsSize = newContentsSize+1000;
     }
@@ -1428,9 +1432,11 @@ static const char* prepassFixedForm(const char* contents)
         prevLineAmpOrExclIndex=getAmpOrExclAtTheEnd(&contents[i-prevLineLength+1], prevLineLength);
         column=0;
 	emptyLabel=TRUE;
+        commented=FALSE;
         newContents[j]=c;
         break;
       case ' ':
+      case '\t':
         newContents[j]=c;
         break;
       case '\000':
@@ -1444,21 +1450,55 @@ static const char* prepassFixedForm(const char* contents)
           newContents[newContentsSize + 1] = '\000';
         }
         return newContents;
-      case 'C':
+      case '"':
+      case '\'':
+      case '\\':
+        if ((column <= fixedCommentAfter) && (column!=6) && !commented)
+	{
+          // we have some special cases in respect to strings and exscaped string characters
+	  newContents[j]=c;
+          if (c == '\\')
+          {
+            inBackslash = !inBackslash;
+            break;
+          }
+          else if (c == '\'')
+          {
+            if (!inDouble) inSingle = !inSingle;
+            break;
+          }
+          else if (c == '"')
+          {
+            if (!inSingle) inDouble = !inDouble;
+            break;
+          }
+        }
+        inBackslash = FALSE;
       case 'c':
       case '*':
-        if (column!=6)
+      case '!':
+        if ((column <= fixedCommentAfter) && (column!=6))
 	{
 	  emptyLabel=FALSE;
 	  if(column==1)
+          {
 	    newContents[j]='!';
-	  else
+            commented = TRUE;
+          }
+	  else if ((c == '!') && !inDouble && !inSingle)
+          {
 	    newContents[j]=c;
+            commented = TRUE;
+          }
+	  else
+          {
+	    newContents[j]=c;
+          }
 	  break;
 	}
       default:
         if(column==6 && emptyLabel) { // continuation
-          if (c != '0') { // 0 not allowed as continuatioin character, see f95 standard paragraph 3.3.2.3
+          if (c != '0') { // 0 not allowed as continuation character, see f95 standard paragraph 3.3.2.3
             newContents[j]=' ';
 
             if(prevLineAmpOrExclIndex==-1) { // add & just before end of previous line
@@ -1471,6 +1511,15 @@ static const char* prepassFixedForm(const char* contents)
 	  } else {
 	    newContents[j]=c; // , just handle like space
           }
+	} else if ((column > fixedCommentAfter) && !commented) {
+          // first non commented non blank character after position fixedCommentAfter
+          if (c != '!') {
+            // I'm not a possible start of doxygen comment
+	    newContents[j++]='!';
+	    newContents[j++]=' '; // so that '<' and '>' as first character are not converted to doxygen comment
+          }
+	  newContents[j]=c;
+          commented = TRUE;
 	} else {
 	  newContents[j]=c;
 	  emptyLabel=FALSE;
@@ -2235,7 +2284,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   // strip \\param or @param, so we can do some extra checking. We will add it later on again.
   if (!loc_doc.stripPrefix("\\param") &&
       !loc_doc.stripPrefix("@param")
-     ); // Do nothing work has been done by stripPrefix
+     ) (void)loc_doc; // Do nothing work has been done by stripPrefix; (void)loc_doc: to overcome 'empty controlled statement' warning
   loc_doc.stripWhiteSpace();
 
   // direction as defined with the declaration of the parameter
@@ -2350,7 +2399,7 @@ static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
       !loc_doc.stripPrefix("\\return") &&
       !loc_doc.stripPrefix("@returns") &&
       !loc_doc.stripPrefix("@return")
-     ); // Do nothing work has been done by stripPrefix
+     ) (void)loc_doc; // Do nothing work has been done by stripPrefix; (void)loc_doc: to overcome 'empty controlled statement' warning
   loc_doc.stripWhiteSpace();
 
   if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))

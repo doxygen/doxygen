@@ -50,6 +50,7 @@
 #include "filedef.h"
 #include "namespacedef.h"
 #include "tooltip.h"
+#include "fortrancode.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -211,9 +212,14 @@ static void endFontClass()
 
 static void startFontClass(const char *s)
 {
-  endFontClass();
-  g_code->startFontClass(s);
-  g_currentFontClass=s;
+  // if font class is already set don't stop and start it.
+  // strcmp does not like null pointers as input.
+  if (!g_currentFontClass || !s || strcmp(g_currentFontClass,s))
+  {
+    endFontClass();
+    g_code->startFontClass(s);
+    g_currentFontClass=s;
+  }
 }
 
 static void setCurrentDoc(const QCString &anchor)
@@ -1179,11 +1185,22 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
             }
                                           YY_FTN_RESET
   					}
-<*>^{BS}"type"{BS}"="                     { g_code->codify(yytext); }
+<*>^{BS}"type"{BS}"="                   { g_code->codify(yytext); }
 
-<*>.					{ 
-  					  g_code->codify(yytext);
-					}
+<*>.                                    { 
+                                          if (g_isFixedForm && yy_my_start > fixedCommentAfter)
+                                          {
+                                            //yy_push_state(YY_START);
+                                            //BEGIN(DocBlock);
+                                            //docBlock=yytext;
+                                            startFontClass("comment");
+                                            codifyLines(yytext);
+                                          }
+                                          else
+                                          {
+                                            g_code->codify(yytext);
+                                          }
+                                        }
 <*>{LOG_OPER}                           { // Fortran logical comparison keywords
                                           g_code->codify(yytext);
                                         }
