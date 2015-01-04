@@ -81,7 +81,7 @@ sub compare_ok {
 
 sub chop_volatile {
   my $line = shift;
-  $line =~ s/version="\d\.\d.\d+"/version=""/g; # strip version
+  $line =~ s/version="\d\.\d+\.\d+(\.\d+)?"/version=""/g; # strip version
   $line =~ s/file=".*\/(.*)"/file="$1"/g; # strip location
   return $line;
 }
