@@ -1150,8 +1150,8 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 <St_Comment>"-->"      { /* end of html comment */
                          BEGIN(g_commentState); 
                        }
-<St_Comment>[^-\n]+       /* inside html comment */
-<St_Comment>.             /* inside html comment */
+<St_Comment>[^-]+      /* inside html comment */
+<St_Comment>.          /* inside html comment */
 
      /* State for skipping title (all chars until the end of the line) */
 
