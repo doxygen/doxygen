@@ -1474,6 +1474,8 @@ static const char* prepassFixedForm(const char* contents)
           }
         }
         inBackslash = FALSE;
+        // fallthrough
+      case 'C':
       case 'c':
       case '*':
       case '!':
@@ -1496,6 +1498,7 @@ static const char* prepassFixedForm(const char* contents)
           }
 	  break;
 	}
+        // fallthrough
       default:
         if(column==6 && emptyLabel) { // continuation
           if (c != '0') { // 0 not allowed as continuation character, see f95 standard paragraph 3.3.2.3
