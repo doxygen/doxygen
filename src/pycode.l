@@ -79,7 +79,6 @@ static int           g_paramParens;
 
 static bool          g_exampleBlock;
 static QCString      g_exampleName;
-static QCString      g_exampleFile;
 
 static QCString      g_type;
 static QCString      g_name;

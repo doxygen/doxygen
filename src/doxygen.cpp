@@ -2458,7 +2458,6 @@ static MemberDef *addVariableToFile(
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
-  QCString nscope;
   if (!scope.isEmpty())
   {
     if (scope.find('@')!=-1) return 0; // anonymous scope!
@@ -5493,7 +5492,6 @@ static bool findGlobalMember(EntryNav *rootNav,
       {
         Debug::print(Debug::FindMembers,0,"4. Try to add member `%s' to scope `%s'\n",
             md->name().data(),namespaceName.data());
-        QCString nsName = nd ? nd->name().data() : "";
 
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
@@ -9962,7 +9960,7 @@ static void usage(const char *name)
   msg("    If - is used for configName doxygen will read from standard input.\n\n");
   msg("4) Use doxygen to generate a template file controlling the layout of the\n");
   msg("   generated documentation:\n");
-  msg("    %s -l layoutFileName.xml\n\n",name);
+  msg("    %s -l [layoutFileName.xml]\n\n",name);
   msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:        %s -w rtf styleSheetFile\n",name);
   msg("    HTML:       %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);

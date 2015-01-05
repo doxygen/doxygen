@@ -236,7 +236,8 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
 // replaces &gt; with < and &gt; with > within string s
 static void unescapeCRef(QCString &s)
 {
-  char *p = s.data();
+  QCString tmp(s);
+  char *p = tmp.rawData();
   if (p)
   {
     char c;
@@ -247,8 +248,9 @@ static void unescapeCRef(QCString &s)
     }
   }
 
-  s=substitute(s,"&lt;","<");
-  s=substitute(s,"&gt;",">");
+  tmp=substitute(tmp,"&lt;","<");
+  tmp=substitute(tmp,"&gt;",">");
+  s = tmp;
 }
 
 //---------------------------------------------------------------------------
@@ -844,7 +846,6 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                                const QCString &cmdName)
 {
   DBG(("handleStyleArgument(%s)\n",qPrint(cmdName)));
-  QCString tokenName = g_token->name;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -1178,7 +1179,6 @@ static void handleParameterType(DocNode *parent,QList<DocNode> &children,const Q
 {
   QCString name = g_token->name;
   int p=0,i;
-  QCString type;
   while ((i=paramTypes.find('|',p))!=-1)
   {
     g_token->name = paramTypes.mid(p,i-p);
@@ -2137,7 +2137,6 @@ DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) :
 
 bool DocXRefItem::parse()
 {
-  QCString listName;
   RefList *refList = Doxygen::xrefLists->find(m_key); 
   if (refList && 
       (
@@ -2571,7 +2570,6 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
 {
   static uint numBibFiles = Config_getList("CITE_BIB_FILES").count();
   m_parent = parent;
-  QCString anchor;
   //printf("DocCite::DocCite(target=%s)\n",target.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
@@ -6939,7 +6937,7 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
   }
   e=j;
   QCString id(e-s+1);
-  if (e>s) memcpy(id.data(),data+s,e-s);
+  if (e>s) memcpy(id.rawData(),data+s,e-s);
   id.at(e-s)='\0';
   //printf("extractCopyDocId='%s' input='%s'\n",id.data(),&data[s]);
   return id;

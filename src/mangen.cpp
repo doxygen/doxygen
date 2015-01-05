@@ -107,7 +107,6 @@ ManGenerator::~ManGenerator()
 
 void ManGenerator::init()
 {
-  QCString ext = getExtension();
   QCString &manOutput = Config_getString("MAN_OUTPUT");
   
   QDir d(manOutput);

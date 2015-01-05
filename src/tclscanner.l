@@ -657,7 +657,7 @@ static void tcl_font_end()
 }
 
 //! Codify 'str' with special font class 's'.
-static void tcl_codify(const char *s,char *str)
+static void tcl_codify(const char *s,const char *str)
 {
   if (!tcl.code || !str) return;
   if (s && qstrcmp(s,"NULL")!=0)
@@ -666,7 +666,7 @@ static void tcl_codify(const char *s,char *str)
     tcl.code->startFontClass(s);
     tcl.code_font=s;
   }
-  char *p=str,*sp=p;
+  const char *p=str,*sp=p;
   char c;
   bool done=FALSE;
   while (!done)
@@ -676,7 +676,7 @@ static void tcl_codify(const char *s,char *str)
     if (c=='\n')
     {
       tcl.code_line++;
-      *(p-1)='\0';
+      // *(p-1)='\0'; // Dimitri: is this really needed?
       tcl.code->codify(sp);
       if (tcl.code_font)
       {
@@ -719,7 +719,6 @@ static void tcl_codify(const char *s,const QString &str)
   if (tcl.code==NULL) return;
   tcl_codify(s,str.utf8());
 }
-#endif
 
 //! Codify 'str' with special font class 's'.
 static void tcl_codify(const char *s,const QCString &str)
@@ -727,6 +726,7 @@ static void tcl_codify(const char *s,const QCString &str)
   if (!tcl.code) return;
   tcl_codify(s,str.data());
 }
+#endif
 
 static void tcl_codify_cmd(const char *s,int i)
 {
@@ -1123,7 +1123,6 @@ D
 static tcl_scan *tcl_scan_start(char type, QString content, QCString ns, Entry *entry_cl, Entry *entry_fn)
 {
   tcl_scan *myScan=tcl.scan.at(0);
-  QCString myName;
 tcl_inf("line=%d type=%d '%s'\n",tcl.line_body0,type,content.ascii());
 
   myScan->line1=yylineno;
@@ -2298,7 +2297,7 @@ D
 static void tcl_command_ITCL_CLASS()
 {
 D
-  QCString myNs, myName, myStr;
+  QCString myNs, myName;
   Entry *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);
 
@@ -2327,7 +2326,7 @@ D
 static void tcl_command_OO_CLASS()
 {
 D
-  QCString myNs, myName, myStr;
+  QCString myNs, myName;
   //Entry *myEntryNs;
   Entry *myEntryCl;
   tcl_scan *myScan = tcl.scan.at(0);

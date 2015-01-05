@@ -72,7 +72,7 @@
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
 
-enum ScanVar { V_IGNORE, V_VARIABLE, V_PARAMETER};
+enum ScanVar { V_IGNORE, V_VARIABLE, V_PARAMETER, V_RESULT};
 enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };
 
 // {{{ ----- Helper structs -----
@@ -165,7 +165,6 @@ static ScanVar          v_type       = V_IGNORE; // type of parsed variable
 static QList<Entry>     moduleProcedures; // list of all interfaces which contain unresolved 
                                           // module procedures
 static QCString         docBlock;
-static QCString         docBlockName;
 static bool             docBlockInBody = FALSE;
 static bool             docBlockJavaStyle;
 
@@ -202,6 +201,7 @@ static int yyread(char *buf,int max_size);
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void subrHandleCommentBlock(const QCString &doc,bool brief);
+static void subrHandleCommentBlockResult(const QCString &doc,bool brief);
 static void addCurrentEntry(int case_insens);
 static void addModule(const char *name, bool isModule=FALSE);
 static void addSubprogram(const char *text);
@@ -844,6 +844,7 @@ private                                 {
 						QCString rght;
 						if (strt != -1)
 						{
+                                                  v_type = V_RESULT;
 						  lft = "";
 						  rght = "";
 						  if (strt != 0) lft = current_root->type.left(strt).stripWhiteSpace();
@@ -864,6 +865,10 @@ private                                 {
 						  }
 						  if (current_root->type.length() > 0) current_root->type += " ";
 						  current_root->type += "function";
+					          if (!docBlock.isNull()) 
+					          {
+  					            subrHandleCommentBlockResult(docBlock,TRUE);
+					          }
 						}
 						else
 						{
@@ -982,6 +987,8 @@ private                                 {
                                          result=result.stripWhiteSpace();
                                          addSubprogram(result);
                                          BEGIN(Subprog);
+				         current->bodyLine = yyLineNr + lineCountPrepass + 1; // we have to be at the line after the definition and we have to take continuation lines into account.
+				         current->startLine = yyLineNr;
                                        }
 
 <Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{SUBPROG}{BS_} {
@@ -1104,6 +1111,10 @@ private                                 {
 					  else if (v_type == V_PARAMETER) 
 					  {
 					    subrHandleCommentBlock(docBlock,TRUE);
+                                          }
+					  else if (v_type == V_RESULT) 
+					  {
+					    subrHandleCommentBlockResult(docBlock,TRUE);
                                           }
 					  yy_pop_state();
 					  docBlock.resize(0);
@@ -2222,14 +2233,10 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
   current->inbodyDocs = "";
 
   // strip \\param or @param, so we can do some extra checking. We will add it later on again.
-  if (loc_doc.find("\\param") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("\\param")).stripWhiteSpace();
-  }
-  else if (loc_doc.find("@param") == 0)
-  {
-    loc_doc = loc_doc.right(loc_doc.length()-strlen("@param")).stripWhiteSpace();
-  }
+  if (!loc_doc.stripPrefix("\\param") &&
+      !loc_doc.stripPrefix("@param")
+     ); // Do nothing work has been done by stripPrefix
+  loc_doc.stripWhiteSpace();
 
   // direction as defined with the declaration of the parameter
   int dir1 = modifiers[current_root][argName.lower()].direction;
@@ -2242,6 +2249,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
     {
       // strip direction
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::IN]));
+      loc_doc.stripWhiteSpace();
       // in case of emty documentation or (now) just name, consider it as no documemntation
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
@@ -2268,6 +2276,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
         (directionParam[dir1] == directionParam[SymbolModifiers::OUT]))
     {
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::OUT]));
+      loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
         current=tmp_entry;
@@ -2291,6 +2300,7 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
         (directionParam[dir1] == directionParam[SymbolModifiers::INOUT]))
     {
       loc_doc = loc_doc.right(loc_doc.length()-strlen(directionParam[SymbolModifiers::INOUT]));
+      loc_doc.stripWhiteSpace();
       if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
       {
         current=tmp_entry;
@@ -2318,6 +2328,37 @@ static void subrHandleCommentBlock(const QCString &doc,bool brief)
     handleCommentBlock(QCString("\n\n@param ") + directionParam[dir1] + " " + 
                        argName + " " + loc_doc,brief);
   }
+
+  // reset current back to the part inside the routine
+  current=tmp_entry;
+}
+//----------------------------------------------------------------------------
+/// Handle result description as defined after the declaration of the parameter
+static void subrHandleCommentBlockResult(const QCString &doc,bool brief)
+{
+  QCString loc_doc;
+  loc_doc = doc.stripWhiteSpace();
+
+  Entry *tmp_entry = current; 
+  current = subrCurrent.getFirst(); // temporarily switch to the entry of the subroutine / function
+
+  // Still in the specification section so no inbodyDocs yet, but parameter documentation
+  current->inbodyDocs = "";
+
+  // strip \\returns or @returns. We will add it later on again.
+  if (!loc_doc.stripPrefix("\\returns") &&
+      !loc_doc.stripPrefix("\\return") &&
+      !loc_doc.stripPrefix("@returns") &&
+      !loc_doc.stripPrefix("@return")
+     ); // Do nothing work has been done by stripPrefix
+  loc_doc.stripWhiteSpace();
+
+  if (loc_doc.isEmpty() || (loc_doc.lower() == argName.lower()))
+  {
+    current=tmp_entry;
+    return;
+  }
+  handleCommentBlock(QCString("\n\n@returns ") + loc_doc,brief);
 
   // reset current back to the part inside the routine
   current=tmp_entry;

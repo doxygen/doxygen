@@ -3123,18 +3123,19 @@ void ClassDef::mergeCategory(ClassDef *category)
           Protection prot = mi->prot;
           //if (makePrivate) prot = Private;
           MemberDef *newMd = mi->memberDef->deepCopy();
-          //printf("Copying member %s\n",mi->memberDef->name().data());
-          newMd->moveTo(this);
-
-          MemberInfo *newMi=new MemberInfo(newMd,prot,mi->virt,mi->inherited);
-          newMi->scopePath=mi->scopePath;
-          newMi->ambigClass=mi->ambigClass;
-          newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope;
-          newMni->append(newMi);
-
-          // also add the newly created member to the global members list
           if (newMd)
           {
+            //printf("Copying member %s\n",mi->memberDef->name().data());
+            newMd->moveTo(this);
+
+            MemberInfo *newMi=new MemberInfo(newMd,prot,mi->virt,mi->inherited);
+            newMi->scopePath=mi->scopePath;
+            newMi->ambigClass=mi->ambigClass;
+            newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope;
+            newMni->append(newMi);
+
+            // also add the newly created member to the global members list
+
             MemberName *mn;
             QCString name = newMd->name();
             if ((mn=Doxygen::memberNameSDict->find(name)))
@@ -3147,17 +3148,17 @@ void ClassDef::mergeCategory(ClassDef *category)
               mn->append(newMd);
               Doxygen::memberNameSDict->append(name,mn);
             }
+          
+            newMd->setCategory(category);
+            newMd->setCategoryRelation(mi->memberDef);
+            mi->memberDef->setCategoryRelation(newMd);
+            if (makePrivate || isExtension)
+            {
+             newMd->makeImplementationDetail();
+            }
+            internalInsertMember(newMd,prot,FALSE);
           }
-
-          newMd->setCategory(category);
-          newMd->setCategoryRelation(mi->memberDef);
-          mi->memberDef->setCategoryRelation(newMd);
-          if (makePrivate || isExtension)
-          {
-            newMd->makeImplementationDetail();
-          }
-          internalInsertMember(newMd,prot,FALSE);
-        }
+		}
 
         // add it to the dictionary
         dstMnd->append(newMni->memberName(),newMni);
@@ -4031,7 +4032,6 @@ int ClassDef::countMemberDeclarations(MemberListType lt,ClassDef *inheritedFrom,
     static bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB");
     if (!inlineInheritedMembers) // show inherited members as separate lists
     {
-      QPtrDict<void> visited(17);
       count+=countInheritedDecMembers(lt,inheritedFrom,invert,showAlways,visitedClasses);
     }
   }

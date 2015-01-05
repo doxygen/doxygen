@@ -132,7 +132,7 @@ static void convertStringFragment(QCString &result,const char *data,int size)
 {
   if (size<0) size=0;
   result.resize(size+1);
-  memcpy(result.data(),data,size);
+  memcpy(result.rawData(),data,size);
   result.at(size)='\0';
 }
 
@@ -810,7 +810,6 @@ static int processLink(GrowBuf &out,const char *data,int,int size)
   {
     return 0;
   }
-  static QRegExp re("^[@\\]ref ");
   if (isToc) // special case for [TOC]
   {
     if (g_current) g_current->stat=TRUE;

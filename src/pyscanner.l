@@ -83,7 +83,6 @@ static Specifier 	virt;
 
 static int              docBlockContext;
 static QCString         docBlock;
-static QCString         docBlockName;
 static bool             docBlockInBody;
 static bool             docBlockJavaStyle;
 static bool             docBrief;
@@ -97,7 +96,6 @@ static int              g_indent = 0;
 static int              g_curIndent = 0;
 
 static QDict<QCString>  g_packageNameCache(257);
-static QCString         g_packageScope;
 
 static char             g_atomStart;
 static char             g_atomEnd;
@@ -931,7 +929,6 @@ STARTDOCSYMS      "##"
     "="		        { // default value
                           // TODO: this rule is too simple, need to be able to
                           // match things like =")" as well!
-      			  QCString defVal=&yytext[1];
 			  g_defVal.resize(0);
 			  g_braceCount=0;
 			  BEGIN(FunctionParamDefVal);

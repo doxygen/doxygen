@@ -235,6 +235,7 @@ static JAVACC_CHAR_TYPE jjstrLiteralChars_183[] = {0};
 static JAVACC_CHAR_TYPE jjstrLiteralChars_184[] = {0};
 static JAVACC_CHAR_TYPE jjstrLiteralChars_185[] = {0};
 static JAVACC_CHAR_TYPE jjstrLiteralChars_186[] = {0};
+static JAVACC_CHAR_TYPE jjstrLiteralChars_187[] = {0};
 static const JAVACC_STRING_TYPE jjstrLiteralImages[] = {
 jjstrLiteralChars_0, 
 jjstrLiteralChars_1, 
@@ -423,6 +424,7 @@ jjstrLiteralChars_183,
 jjstrLiteralChars_184, 
 jjstrLiteralChars_185, 
 jjstrLiteralChars_186, 
+jjstrLiteralChars_187, 
 };
 
 /** Lexer state names. */
@@ -432,7 +434,7 @@ static const JAVACC_STRING_TYPE lexStateNames[] = {
 lexStateNames_arr_0, 
 };
 static const unsigned long long jjtoToken[] = {
-   0xfffffffffffff801ULL, 0xffffffffffffffffULL, 0x4081fffffffffffULL, 
+   0xfffffffffffff801ULL, 0xffffffffffffffffULL, 0x8081fffffffffffULL, 
 };
 static const unsigned long long jjtoSkip[] = {
    0x7deULL, 0x0ULL, 0x0ULL, 
@@ -2796,7 +2798,7 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                      jjstateSet[jjnewStateCnt++] = 18;
                   break;
                case 18:
-                  if ((0xfffffffb00000200ULL & l) != 0L)
+                  if ((0xffffffff00000200ULL & l) != 0L)
                      jjstateSet[jjnewStateCnt++] = 19;
                   break;
                case 19:
@@ -2833,15 +2835,15 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                case 28:
                   if (curChar != 34)
                      break;
-                  if (kind > 186)
-                     kind = 186;
+                  if (kind > 187)
+                     kind = 187;
                   { jjCheckNAddTwoStates(26, 29); }
                   break;
                case 29:
                   if ((0xfffffffb00000200ULL & l) == 0L)
                      break;
-                  if (kind > 186)
-                     kind = 186;
+                  if (kind > 187)
+                     kind = 187;
                   { jjCheckNAddTwoStates(26, 29); }
                   break;
                case 30:
@@ -3117,8 +3119,8 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                case 29:
                   if ((0x7fffffffffffffffULL & l) == 0L)
                      break;
-                  if (kind > 186)
-                     kind = 186;
+                  if (kind > 187)
+                     kind = 187;
                   { jjCheckNAddTwoStates(26, 29); }
                   break;
                case 32:
@@ -3218,8 +3220,8 @@ int VhdlParserTokenManager::jjMoveNfa_0(int startState, int curPos){
                case 29:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
-                  if (kind > 186)
-                     kind = 186;
+                  if (kind > 187)
+                     kind = 187;
                   { jjAddStates(52, 53); }
                   break;
                case 32:
@@ -3408,6 +3410,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
        }
       case 6 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
+    {
     QCString doc(image.data());
     int count=doc.contains("--!");
     ::vhdl::parser::VhdlParser::setMultCommentLine();
@@ -3416,6 +3419,7 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
       ::vhdl::parser::VhdlParser::oneLineComment(doc);
     else
       ::vhdl::parser::VhdlParser::handleCommentBlock(image.data(),FALSE); ;
+    }
          break;
        }
       case 7 : {
@@ -3430,10 +3434,12 @@ void  VhdlParserTokenManager::SkipLexicalActions(Token *matchedToken){
        }
       case 9 : {
          image.append(input_stream->GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-   QCString q(image.data());
-   q.stripPrefix("/*!");
-   q.resize(q.length()-2);
-  ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
+   {
+     QCString q(image.data());
+     q.stripPrefix("/*!");
+     q.resize(q.length()-2);
+     ::vhdl::parser::VhdlParser::handleCommentBlock(q.data(),TRUE);image.clear();
+   }
          break;
        }
       case 10 : {

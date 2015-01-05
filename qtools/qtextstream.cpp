@@ -1443,17 +1443,17 @@ QTextStream &QTextStream::operator>>( QCString &str )
 	if ( i >= buflen-1 ) {
 	    if ( !dynbuf )  {			// create dynamic buffer
 		dynbuf = new QCString(buflen*2);
-		memcpy( dynbuf->data(), s, i );	// copy old data
+		memcpy( dynbuf->rawData(), s, i );	// copy old data
 	    } else if ( i >= (int)dynbuf->size()-1 ) {
 		dynbuf->resize( dynbuf->size()*2 );
 	    }
-	    s = dynbuf->data();
+	    s = dynbuf->rawData();
 	}
 	s[i++] = c;
 	c = ts_getc();
     }
     str.resize( i+1 );
-    memcpy( str.data(), s, i );
+    memcpy( str.rawData(), s, i );
     delete dynbuf;
     return *this;
 }

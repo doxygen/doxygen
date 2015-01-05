@@ -456,7 +456,7 @@ QCString unmarshalQCString(StorageIntf *s)
   result.at(len)='\0';
   if (len>0)
   {
-    s->read(result.data(),len);
+    s->read(result.rawData(),len);
   }
   //printf("unmarshalQCString: result=%s\n",result.data());
   return result;

@@ -508,29 +508,21 @@ void GroupDef::removeMember(MemberDef *md)
   }
 }
 
-bool GroupDef::containsGroup(const GroupDef *def)
+bool GroupDef::findGroup(const GroupDef *def) const
 {
   if (this==def)
   {
     return TRUE;
   }
-  else if (groupList->find(def)>=0)
+  else if (groupList)
   {
-    return TRUE;
-  }
-  else // look for subgroups as well
-  {
-    GroupList *groups = partOfGroups();
-    if (groups)
+    GroupListIterator it(*groupList);
+    GroupDef *gd;
+    for (;(gd=it.current());++it)
     {
-      GroupListIterator it(*groups);
-      GroupDef *gd;
-      for (;(gd=it.current());++it)
+      if (gd->findGroup(def))
       {
-        if (gd->containsGroup(def))
-        {
-          return TRUE;
-        }
+        return TRUE;
       }
     }
   }
@@ -1377,12 +1369,12 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
         warn(root->fileName,root->startLine,"Refusing to add group %s to itself",
             gd->name().data());
       }
-      else if (gd->containsGroup(subGroup))
+      else if (subGroup->findGroup(gd))
       {
         warn(root->fileName,root->startLine,"Refusing to add group %s to group %s, since the latter is already a "
                                             "subgroup of the former\n", subGroup->name().data(),gd->name().data());
       }
-      else
+      else if (!gd->findGroup(subGroup))
       {
         gd->addGroup(subGroup);
         subGroup->makePartOfGroup(gd);

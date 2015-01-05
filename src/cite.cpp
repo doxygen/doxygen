@@ -63,7 +63,6 @@ void CiteDict::writeLatexBibliography(FTextStream &t)
   t << "\\bibliographystyle{" << style << "}\n"
        "\\bibliography{";
   QStrList &citeDataList = Config_getList("CITE_BIB_FILES");
-  QCString latexOutputDir = Config_getString("LATEX_OUTPUT")+"/";
   int i = 0;
   const char *bibdata = citeDataList.first();
   while (bibdata)
@@ -211,7 +210,7 @@ void CiteDict::generatePage() const
   QCString doc;
   QFileInfo fi(citeListFile);
   QCString input(fi.size()+1);
-  f.readBlock(input.data(),fi.size());
+  f.readBlock(input.rawData(),fi.size());
   f.close();
   input.at(fi.size())='\0';
   int p=0,s;

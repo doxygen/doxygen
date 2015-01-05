@@ -1326,7 +1326,6 @@ void DocbookDocVisitor::writeDotFile(const QCString &baseName, DocVerbatim *s)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString("DOCBOOK_OUTPUT");
-  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP);
   visitPreStart(m_t, s->hasCaption(), baseName + ".dot", s->width(),s->height());
   visitCaption(this, s->children());

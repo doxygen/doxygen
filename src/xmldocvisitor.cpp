@@ -44,8 +44,6 @@ static void visitPreStart(FTextStream &t, const char *cmd, const bool doCaption,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width, 
                           const QCString &height)
 {
-  QCString tmpStr;
-
   t << "<" << cmd;
   if (writeType)
   {

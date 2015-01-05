@@ -1448,7 +1448,7 @@ static ClassDef *getResolvedClassRec(Definition *scope,
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
   QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+1);
-  char *p=key.data();
+  char *p=key.rawData();
   qstrcpy(p,scope->name()); *(p+scopeNameLen-1)='+';
   p+=scopeNameLen;
   qstrcpy(p,name); *(p+nameLen-1)='+';
@@ -2379,8 +2379,8 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   {
     size_t iLeft=inputSize;
     size_t oLeft=outputSize;
-    char *inputPtr = input.data();
-    char *outputPtr = output.data();
+    char *inputPtr = input.rawData();
+    char *outputPtr = output.rawData();
     if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
     {
       outputSize-=(int)oLeft;
@@ -2418,12 +2418,12 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       QCString contents(bSize);
       int totalSize=0;
       int size;
-      while ((size=f.readBlock(contents.data()+totalSize,bSize))==bSize)
+      while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
       {
         totalSize+=bSize;
-        contents.resize(totalSize+bSize); 
+        contents.resize(totalSize+bSize);
       }
-      totalSize = filterCRLF(contents.data(),totalSize+size)+2;
+      totalSize = filterCRLF(contents.rawData(),totalSize+size)+2;
       contents.resize(totalSize);
       contents.at(totalSize-2)='\n'; // to help the scanner
       contents.at(totalSize-1)='\0';
@@ -3317,7 +3317,7 @@ static QCString getCanonicalTypeForIdentifier(
 {
   if (count>10) return word; // oops recursion
 
-  QCString symName,scope,result,templSpec,tmpName;
+  QCString symName,result,templSpec,tmpName;
   //DefinitionList *defList=0;
   if (tSpec && !tSpec->isEmpty()) 
     templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
@@ -4110,8 +4110,6 @@ bool getDefs(const QCString &scName,
         continue;
 
       if (!args) break;
-
-      QCString className = mmd->getClassDef()->name();
 
       ArgumentList *mmdAl = mmd->argumentList();
       if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl,
@@ -5060,7 +5058,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   }
   QCString result(resLen+1);
   char *r;
-  for (r=result.data(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
   {
     int l = (int)(q-p);
     memcpy(r,p,l);
@@ -5340,7 +5338,7 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
       uchar md5_sig[16];
       QCString sigStr(33);
       MD5Buffer((const unsigned char *)result.data(),resultLen,md5_sig);
-      MD5SigToString(md5_sig,sigStr.data(),33);
+      MD5SigToString(md5_sig,sigStr.rawData(),33);
       result=result.left(128-32)+sigStr; 
     }
   }
@@ -6550,7 +6548,7 @@ QCString rtfFormatBmkStr(const char *name)
     g_tagDict.insert( key, tag );
 
     // This is the increment part
-    char* nxtTag = g_nextTag.data() + g_nextTag.length() - 1;
+    char* nxtTag = g_nextTag.rawData() + g_nextTag.length() - 1;
     for ( unsigned int i = 0; i < g_nextTag.length(); ++i, --nxtTag )
     {
       if ( ( ++(*nxtTag) ) > 'Z' )

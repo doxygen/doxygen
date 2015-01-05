@@ -2,6 +2,29 @@
 \tableofcontents
 \section log_1_8 1.8 Series
 
+\subsection log_1_8_9_1 Release 1.8.9.1
+\htmlonly
+<b>(release date 04-01-2015)</b>
+<a name="1.8.9.1"></a>
+<ul>
+<li>Fixed a couple of cases where sharing string data could lead to corruption [<a href="http://github.com/doxygen/doxygen/commit/312bef563a5be72f6423377247db1b80044bf711">view</a>]</li>
+<li>Various VHDL related fixes [<a href="http://github.com/doxygen/doxygen/commit/34b00c442308efe169cc89fad62588fdce1d84e8">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=742151">742151</a> - Bogus warning: citelist: Unexpected new line character [<a href="http://github.com/doxygen/doxygen/commit/5c321cbb6359bc1bb875729c08beba2edc084500">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=742230">742230</a> - @todo paragraphs incorrectly placed in rtf output [<a href="http://github.com/doxygen/doxygen/commit/600d5859d7bcb94b08ef656fd427914766ae9afe">view</a>]</li>
+<li>Bug <a href="https://bugzilla.gnome.org/show_bug.cgi?id=742235">742235</a> - Bogus message with addtogroup [<a href="http://github.com/doxygen/doxygen/commit/b75af9180ae53f7c7abb94ccf906333169247785">view</a>]</li>
+<li>Documentation HTML Header, Footer, and Stylesheet changes [<a href="http://github.com/doxygen/doxygen/commit/478207365d7f09f0e676a76f654502c084806e4e">view</a>]</li>
+<li>Documenting RESULT variable of Fortran FUNCTION [<a href="http://github.com/doxygen/doxygen/commit/4d52beec3760244d959ab4d5528aea1acba505e7">view</a>]</li>
+<li>Fix potential null pointer dereference in src/context.cpp [<a href="http://github.com/doxygen/doxygen/commit/2690774f87b9fcb12b35153de82cde22248b3949">view</a>]</li>
+<li>Fixed compilation issue on Windows [<a href="http://github.com/doxygen/doxygen/commit/d75455eef7c91f11c2b9061d9a086ce93c4231b2">view</a>]</li>
+<li>Fortran FUNCTION source code [<a href="http://github.com/doxygen/doxygen/commit/25a90990662449808c5ba58c243a7835d13ba750">view</a>]</li>
+<li>Fortran: code color GOTO as flow keyword. [<a href="http://github.com/doxygen/doxygen/commit/8090675790ad9265bcffdf07ab4d48fc8c037276">view</a>]</li>
+<li>Help message regarding layout file [<a href="http://github.com/doxygen/doxygen/commit/7569f42d95332a5948e9d35e94e88d56d11634a9">view</a>]</li>
+<li>Remove unused local and static global variables [<a href="http://github.com/doxygen/doxygen/commit/d03e4c2ae1864c6f27a4341449ce97133aeb6847">view</a>]</li>
+<li>Suggestion to use stripPrefix has been implemented for RESULT. For consistency also implemented for arguments. [<a href="http://github.com/doxygen/doxygen/commit/6720a714461b9454c7cdbae7ceff7eb735feeb3b">view</a>]</li>
+<li>Switched back to version 6.2 of JavaCC for VHDL parser generation. [<a href="http://github.com/doxygen/doxygen/commit/088896f27f460b6ac03c2d64df148e3617c1e519">view</a>]</li>
+</ul>
+\endhtmlonly
+
 \subsection log_1_8_9 Release 1.8.9
 \htmlonly
 <b>(release date 25-12-2014)</b>

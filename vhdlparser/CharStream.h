@@ -179,12 +179,12 @@ public:
   }
 
   CharStream(ReaderStream *input_stream, int startline,
-             int startcolumn, int buffersize) :
+             int startcolumn, int) :
     bufline(NULL), bufcolumn(NULL), buffer(NULL), bufpos(0), bufsize(0), 
     tokenBegin(0), column(0), line(0), prevCharIsCR(false), prevCharIsLF(false),
     available(0), maxNextCharInd(0), inBuf(0), tabSize(1), trackLineColumn(true),
     inputStream(NULL), deleteStream(false) {
-    ReInit(input_stream, startline, startcolumn, buffersize);
+    ReInit(input_stream, startline, startcolumn, INITIAL_BUFFER_SIZE);
   }
 
   CharStream(ReaderStream *input_stream, int startline, int startcolumn) :

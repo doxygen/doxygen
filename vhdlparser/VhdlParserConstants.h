@@ -375,7 +375,9 @@ const  int SPACE_CHARACTER = 184;
   /** RegularExpression Id. */
 const  int LOWER_CASE_LETTER = 185;
   /** RegularExpression Id. */
-const  int VHDL2008TOOLDIR = 186;
+const  int QUOTE = 186;
+  /** RegularExpression Id. */
+const  int VHDL2008TOOLDIR = 187;
 
   /** Lexical state. */
 const  int DEFAULT = 0;
@@ -754,6 +756,8 @@ const  int DEFAULT = 0;
   static JAVACC_CHAR_TYPE tokenImage_arr_185[] = 
 {0x22, 0x3c, 0x4c, 0x4f, 0x57, 0x45, 0x52, 0x5f, 0x43, 0x41, 0x53, 0x45, 0x5f, 0x4c, 0x45, 0x54, 0x54, 0x45, 0x52, 0x3e, 0x22, 0};
   static JAVACC_CHAR_TYPE tokenImage_arr_186[] = 
+{0x22, 0x3c, 0x51, 0x55, 0x4f, 0x54, 0x45, 0x3e, 0x22, 0};
+  static JAVACC_CHAR_TYPE tokenImage_arr_187[] = 
 {0x22, 0x3c, 0x56, 0x48, 0x44, 0x4c, 0x32, 0x30, 0x30, 0x38, 0x54, 0x4f, 0x4f, 0x4c, 0x44, 0x49, 0x52, 0x3e, 0x22, 0};
   static JAVACC_STRING_TYPE tokenImage[] = {
 tokenImage_arr_0, 
@@ -943,6 +947,7 @@ tokenImage_arr_183,
 tokenImage_arr_184, 
 tokenImage_arr_185, 
 tokenImage_arr_186, 
+tokenImage_arr_187, 
   };
 
 }

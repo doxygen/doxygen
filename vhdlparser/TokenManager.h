@@ -5,8 +5,6 @@
 #include "JavaCC.h"
 #include "Token.h"
 
-using namespace std;
-
 namespace vhdl {
 namespace parser {
 /**
@@ -23,6 +21,7 @@ public:
   virtual       ~TokenManager() { }
   virtual Token *getNextToken() = 0;
   virtual void   lexicalError() {
+  	fprintf(stderr,"Lexical error encountered.");
   }
 
 };

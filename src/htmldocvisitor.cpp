@@ -1063,7 +1063,6 @@ void HtmlDocVisitor::visitPost(DocPara *p)
     }
   }
 
-  QCString context;
   // if the last element of a paragraph is something that should be outside of
   // the paragraph (<ul>,<dl>,<table>) then that will already have ended the 
   // paragraph and we don't need to do it here

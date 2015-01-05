@@ -83,7 +83,6 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              padCount     = 0 ;
-static QCString         slString;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
@@ -114,7 +113,6 @@ static QCString         aliasName;
 static QCString         baseName;
 static QCString*        specName;
 static QCString         formulaText;
-static QCString         formulaEnd;
 static bool             useOverrideCommands = FALSE;
 
 static SrcLangExt       language;
@@ -162,13 +160,7 @@ static bool             needsSemi;
 
 //static int              depthIf;
 static int  	        initBracketCount;
-static QCString         memberGroupRelates;
-static QCString         memberGroupInside;
-static QCString         xrefItemKey;
-static QCString         xrefItemTitle;
-static QCString         xrefListTitle;
 
-static QCString         g_skipBlockName;
 static QCString         oldStyleArgType;
 static QCString         docBackup;
 static QCString         briefBackup;

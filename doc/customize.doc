@@ -117,9 +117,9 @@ This will create 3 files:
 You should edit these files and then reference them from the config file.
 - \ref cfg_html_header "HTML_HEADER" = \c header.html
 - \ref cfg_html_footer "HTML_FOOTER" = \c footer.html
-- \ref cfg_html_stylesheet "HTML_STYLESHEET" = \c customdoxygen.css <b>&larr;obsolete</b>
+- \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" = \c my_customdoxygen.css
 
-\note it is not longer recommended to use HTML_STYLESHEET this way,
+\note it is not longer recommended to use \ref cfg_html_stylesheet "HTML_STYLESHEET",
 as it make it difficult to upgrade to a newer version of doxygen. Use
 \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead.
 

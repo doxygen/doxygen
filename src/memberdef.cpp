@@ -2553,7 +2553,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   QCString cname   = container->name();
   QCString cfname  = getOutputFileBase();
-  QCString cfiname = container->getOutputFileBase();
 
   // get member name
   QCString doxyName=name();
@@ -3331,7 +3330,7 @@ void MemberDef::setAnchor()
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)memAnchor.data(),memAnchor.length(),md5_sig);
   //printf("memAnchor=%s\n",memAnchor.data());
-  MD5SigToString(md5_sig,sigStr.data(),33);
+  MD5SigToString(md5_sig,sigStr.rawData(),33);
   m_impl->anc = "a"+sigStr;
 }
 

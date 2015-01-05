@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 /** @brief Minimal string class with std::string like behaviour that fulfills the JavaCC
  *  string requirements.
  */

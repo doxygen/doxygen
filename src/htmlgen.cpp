@@ -125,7 +125,7 @@ QCString clearBlock(const char *s,const char *begin,const char *end)
 
   QCString result(resLen+1);
   char *r;
-  for (r=result.data(), p=s; (q=strstr(p,begin))!=0; p=q+endLen)
+  for (r=result.rawData(), p=s; (q=strstr(p,begin))!=0; p=q+endLen)
   {
     int l = (int)(q-p);
     memcpy(r,p,l);
@@ -186,7 +186,7 @@ static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSe
 static QCString removeEmptyLines(const QCString &s)
 {
   BufStr out(s.length()+1);
-  char *p=s.data();
+  const char *p=s.data();
   if (p)
   {
     char c;
@@ -194,7 +194,7 @@ static QCString removeEmptyLines(const QCString &s)
     {
       if (c=='\n')
       {
-        char *e = p;
+        const char *e = p;
         while (*e==' ' || *e=='\t') e++;
         if (*e=='\n') 
         {
