@@ -535,14 +535,18 @@ static void writeDefaultFooter(FTextStream &t)
   Doxygen::citeDict->writeLatexBibliography(t);
 
   // Index
+  t << "% Index\n";
   QCString unit;
   if (Config_getBool("COMPACT_LATEX"))
+  {
     unit = "section";
+  }
   else
+  {
     unit = "chapter";
-  t << "% Index\n"
-       "\\backmatter\n"
-       "\\newpage\n"
+    t << "\\backmatter\n";
+  }
+  t << "\\newpage\n"
        "\\phantomsection\n"
        "\\clearemptydoublepage\n"
        "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trRTFGeneralIndex() << "}\n"
