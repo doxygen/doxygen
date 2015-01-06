@@ -6837,7 +6837,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".md",       "md");
   updateLanguageMapping(".markdown", "md");
 
-  //updateLanguageMapping(".xml",   "dbusxml");
+  updateLanguageMapping(".xml",   "dbusxml");
 }
 
 SrcLangExt getLanguageFromFileName(const QCString fileName)
