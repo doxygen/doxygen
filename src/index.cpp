@@ -3116,14 +3116,14 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
     {
       //printf("*** adding %s\n",pageTitle.data());
       ftv->addContentsItem(
-          hasSubPages,pageTitle,
+          hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
           0,hasSubPages,TRUE,pd); 
     }
     if (addToIndex && pd!=Doxygen::mainPage)
     {
       Doxygen::indexList->addContentsItem(
-          hasSubPages,pageTitle,
+          hasSubPages || hasSections,pageTitle,
           pd->getReference(),pd->getOutputFileBase(),
           0,hasSubPages,TRUE);
     }
