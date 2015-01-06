@@ -28,6 +28,11 @@
 #include "util.h"
 #include "arguments.h"
 
+#include "outputgen.h"
+#include "memberdef.h"
+
+#include "xmlcode.h"
+
 // -----------------------------------------------------------------------
 // Convenience defines:
 // -----------------------------------------------------------------------
@@ -855,24 +860,30 @@ void DBusXMLScanner::parseInput(const char * fileName,
 bool DBusXMLScanner::needsPreprocessing(const QCString & /* extension */)
 { return (false); }
 
-void DBusXMLScanner::parseCode(CodeOutputInterface & /* codeOutIntf */,
-                               const char * /* scopeName */,
-                               const QCString & /* input */,
-                               SrcLangExt /* lang */,
-                               bool /* isExampleBlock */,
-                               const char * /* exampleName */,
-                               FileDef * /* fileDef */,
-                               int /* startLine */,
-                               int /* endLine */,
-                               bool /* inlineFragment */,
-                               MemberDef * /* memberDef */,
-                               bool /*showLineNumbers*/,
-                               Definition * /* searchCtx */,
-                               bool /*collectXRefs*/ )
-{ }
+void DBusXMLScanner::parseCode(CodeOutputInterface & codeOutIntf,
+                               const char * scopeName,
+                               const QCString & input,
+                               SrcLangExt /*lang*/,
+                               bool isExampleBlock,
+                               const char * exampleName,
+                               FileDef * fileDef,
+                               int startLine,
+                               int endLine,
+                               bool inlineFragment,
+                               MemberDef * memberDef,
+                               bool showLineNumbers,
+                               Definition * searchCtx,
+                               bool collectXRefs )
+{      
+      parseXmlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                    fileDef,startLine,endLine,inlineFragment,memberDef,
+                    showLineNumbers,searchCtx,collectXRefs);
+}
 
 void DBusXMLScanner::resetCodeParserState()
-{ }
+{
+    resetXmlCodeParserState();
+}
 
 void DBusXMLScanner::parsePrototype(const char * /* text */)
 { }
