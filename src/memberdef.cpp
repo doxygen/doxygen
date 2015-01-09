@@ -3203,7 +3203,13 @@ void MemberDef::warnIfUndocumented()
   if (cd)
     t="class", d=cd;
   else if (nd)
-    t="namespace", d=nd;
+  {
+    d=nd;
+    if (d->getLanguage() == SrcLangExt_Fortran)
+      t="module";
+    else
+      t="namespace";
+  }
   else if (gd)
     t="group", d=gd;
   else

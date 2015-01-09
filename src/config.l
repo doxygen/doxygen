@@ -1478,6 +1478,7 @@ void Config::check()
       !Config_getBool("GENERATE_XML")     &&
       !Config_getBool("GENERATE_PERLMOD") &&
       !Config_getBool("GENERATE_RTF")     &&
+      !Config_getBool("GENERATE_DOCBOOK") &&
       !Config_getBool("GENERATE_AUTOGEN_DEF") &&
       Config_getString("GENERATE_TAGFILE").isEmpty()
      )
