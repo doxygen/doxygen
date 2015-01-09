@@ -810,7 +810,11 @@ void DotRunner::addPostProcessing(const char *cmd,const char *args)
 bool DotRunner::run()
 {
   int exitCode=0;
-  QCString dotExe   = Config_getString("DOT_PATH")+"dot";
+  // we need to use data here to make a copy of the string, as Config_getString can be called by
+  // multiple threads simulaneously and the reference counting is not thread safe.
+  QCString dotExe   = Config_getString("DOT_PATH").data();
+  dotExe+="dot";
+
   bool multiTargets = Config_getBool("DOT_MULTI_TARGETS");
   QCString dotArgs;
   QListIterator<QCString> li(m_jobs);
