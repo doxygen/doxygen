@@ -65,6 +65,8 @@ Problem!
    Deprecated: nån hygglig svensk översättning???
 
    Skicka gärna synpunkter.
+2015/01/09
+* Uppdaterat den till senaste versionen 1.8.9.1
 */
 
 #ifndef TRANSLATOR_SE_H
@@ -491,8 +493,8 @@ class TranslatorSwedish : public Translator
         case ClassDef::Struct: result+=" strukt"; break;
         case ClassDef::Union:  result+=" union"; break;
         case ClassDef::Interface:  result+=" gränssnitt"; break;
-        case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
-        case ClassDef::Category:   result+=" category"; break; // translate me!
+        case ClassDef::Protocol:   result+=" protokoll"; break;
+        case ClassDef::Category:   result+=" kategori"; break;
         case ClassDef::Exception:  result+=" undantag"; break;
         default: break;
       }
@@ -633,8 +635,8 @@ class TranslatorSwedish : public Translator
         case ClassDef::Struct:     result+="denna strukt "; break;
         case ClassDef::Union:      result+="denna union "; break;
         case ClassDef::Interface:  result+="detta gränssnitt "; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
+        case ClassDef::Protocol:   result+="detta protokoll"; break;
+        case ClassDef::Category:   result+="denna kategori"; break;
         case ClassDef::Exception:  result+="detta undantag "; break;
         default: break;
       }
@@ -877,9 +879,9 @@ class TranslatorSwedish : public Translator
         "genererar.<p>\n"
         "Tag följande exempel:\n"
         "\\code\n"
-	"/*! Osynlig klass på grund av stympning */\n"
+	"/*! Osynlig klass på grund av trunkering */\n"
         "class Invisible { };\n\n"
-	"/*! Stympad klass, ärvningsrelationen är dold */\n"
+	"/*! Trunkerad klass, ärvningsrelationen är dold */\n"
         "class Truncated : public Invisible { };\n\n"
 	"/* Klass utan doxygen-kommentarer */\n"
         "class Undocumented { };\n\n"
@@ -904,34 +906,33 @@ class TranslatorSwedish : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-	"Om \\c MAX_DOT_GRAPH_HEIGHT är satt till 240 i konfigurationsfilen, "
-	"kommer följande graf att generas:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+	"Detta resulterar i att följande graf genereras:"
+        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
         "<p>\n"
 	"Rektanglarna i den ovanstående grafen har följande betydelser:\n"
         "<ul>\n"
-	"<li>%En fylld svart rektangel representerar den strukt eller klass "
-	"som har genererat grafen.\n"
-	"<li>%En rektangel med svart kant symboliserar en dokumenterad "
-	"strukt eller klass.\n"
-	"<li>%En rektangel med grå kant symboliserar en odokumenterad strukt "
-	"eller klass.\n"
+	"<li>%En fylld grå rektangel representerar den strukt eller klass "
+	"som har genererat grafen.</li>\n"
+	"<li>%En rektangel med svart kant symboliserar en dokumenterad strukt eller klass.</li>\n"
+	"<li>%En rektangel med grå kant symboliserar en odokumenterad strukt eller klass.</li>\n"
 	"<li>%En klass med röd kant symboliserar en strukt eller klass där "
-	"alla dess relationer inte visas. %En graf stympas om den inte får "
-	"plats inom de givna gränserna.\n"
+	"alla dess relationer inte visas. %En graf trunkeras om den inte får "
+	"plats inom de givna gränserna.</li>\n"
         "</ul>\n"
+        "<p>\n"
 	"Pilarna har följande betydelser:\n"
+        "</p>\n"
         "<ul>\n"
 	"<li>%En mörkblå pil används för att visualisera en publik arvrelation "
-	"mellan två klasser.\n"
-	"<li>%En mörkgrön pil används för en skyddad arvsrelation.\n"
-	"<li>%En mörkröd pil används för en privat arvsrelation.\n"
+	"mellan två klasser.</li>\n"
+	"<li>%En mörkgrön pil används för en skyddad arvsrelation.</li>\n"
+	"<li>%En mörkröd pil används för en privat arvsrelation.\n</li>"
 	"<li>%En sträckad lila pil används om en klass är innesluten eller "
 	"använd av en annan klass. Vid pilen står namnet på den eller de "
-	"variabler som klassen pilen pekar på kommer åt.\n"
+	"variabler som klassen pilen pekar på kommer åt.</li>\n"
 	"<li>%En sträckad gul pil symboliserar förhållandet mellan en "
 	"template-instans och template-klassen, som den instantierades från.\n"
-	"Vid pilen står instansens template-parametrar.\n"
+	"Vid pilen står instansens template-parametrar.</li>\n"
         "</ul>\n";
     }
 
@@ -1719,7 +1720,7 @@ class TranslatorSwedish : public Translator
 
     /*! Used in dot graph when UML_LOOK is enabled and there are many fields */
     virtual QCString trAndMore(const QCString &number)
-    { return "och "+number+" mera..."; }
+    { return "och "+number+" flera..."; }
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
