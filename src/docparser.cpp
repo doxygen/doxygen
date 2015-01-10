@@ -1743,6 +1743,15 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 static void readTextFileByName(const QCString &file,QCString &text)
 {
+  if (portable_isAbsolutePath(file.data()))
+  {
+    QFileInfo fi(file);
+    if (fi.exists())
+    {
+      text = fileToString(file,Config_getBool("FILTER_SOURCE_FILES"));
+      return;
+    }
+  }
   QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
   char *s=examplePathList.first();
   while (s)
