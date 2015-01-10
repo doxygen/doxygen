@@ -174,6 +174,7 @@ static char             docBlockTerm;
 
 static QCString         idlAttr;
 static QCString         idlProp;
+static bool             odlProp;
 
 static bool             g_lexInit = FALSE;
 static bool             externC;
@@ -3390,6 +3391,15 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    idlAttr.resize(0);
 					    idlProp.resize(0);
 					    current->mtype = mtype;
+
+					    if (Config_getBool("IDL_PROPERTY_SUPPORT") &&
+					         current->mtype == Property)
+					    { // we are inside the properties section of a dispinterface
+					      odlProp = true;
+					      current->spec |= Entry::Gettable;
+					      current->spec |= Entry::Settable;
+					    }
+
 					    BEGIN( IDLAttribute );
 					  }
                                           else if (insideCS &&
@@ -3444,7 +3454,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                            current->spec |= Entry::Optional;
                          }
 <IDLAttribute>"readonly" { // on UNO IDL attribute or property
-					  current->spec |= Entry::Readonly;
+					  if (Config_getBool("IDL_PROPERTY_SUPPORT") && odlProp)
+					  {
+					    current->spec ^= Entry::Settable;
+					  }
+					  else
+					  {
+					    current->spec |= Entry::Readonly;
+					  }
 					}
 <IDLAttribute>"bound" { // on UNO IDL attribute or property
 					  current->spec |= Entry::Bound;
@@ -3471,6 +3488,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <IDLPropName>{BN}*{ID}{BN}*		{
 					  // return type (probably HRESULT) - skip it
+
+					  if (odlProp)
+					  { // property type
+					    idlProp = yytext;
+					  }
 					}
 <IDLPropName>{ID}{BN}*"("		{
   					  current->name = yytext;
@@ -3478,6 +3500,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   					  current->startLine = yyLineNr;
 					  current->startColumn = yyColNr;
 					  BEGIN( IDLProp );
+					}
+<IDLPropName>{BN}*"("{BN}*{ID}{BN}*")"{BN}*	{
+					   if (odlProp)
+					   {
+					     idlProp += yytext;
+					   }
+					}
+<IDLPropName>{ID}{BN}*/";"		{
+					   if (odlProp)
+					   {
+					     current->name = yytext;
+					     idlProp = idlProp.stripWhiteSpace();
+					     odlProp = false;
+
+					     BEGIN( IDLProp );
+					   }
 					}
 <IDLProp>{BN}*"["[^\]]*"]"{BN}*		{  // attribute of a parameter
 					   idlAttr = yytext;
