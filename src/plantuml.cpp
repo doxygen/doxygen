@@ -43,7 +43,7 @@ QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,con
   {
     err("Could not open file %s for writing\n",baseName.data());
   }
-  QCString text = "@startuml\n";
+  QCString text = "@startuml";
   text+=content;
   text+="@enduml\n";
   file.writeBlock( text, text.length() );
