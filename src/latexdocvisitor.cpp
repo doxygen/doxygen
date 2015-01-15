@@ -932,7 +932,7 @@ void LatexDocVisitor::visitPost(DocHtmlTable *t)
 void LatexDocVisitor::visitPre(DocHtmlCaption *c)
 {
   if (m_hide) return;
-  m_t << "\\end{" << getTableName(c->parent()) << "}\n\\centering\n\\caption{";
+  m_t << "\\end{" << getTableName(c->parent()->parent()) << "}\n\\centering\n\\caption{";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlCaption *) 
