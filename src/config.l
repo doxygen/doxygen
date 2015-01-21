@@ -617,6 +617,13 @@ static void readIncludeFile(const char *incName)
 %%
 
 <*>\0x0d
+/*
+  <PreStart>"##".*"\n" { config->appendStartComment(yytext);}
+  <PreStart>. {
+              BEGIN(Start);
+              REJECT;
+            }
+*/
 <Start,GetString,GetStrList,GetBool,SkipInvalid>"##".*"\n" { config->appendUserComment(yytext);}
 <Start,GetString,GetStrList,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
@@ -851,6 +858,12 @@ static void readIncludeFile(const char *incName)
 
 void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
 {
+  /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
+  if (m_startComment)
+  {
+    t << takeStartComment();
+    t << "\n";
+  }
   t << "# Doxyfile " << versionString << endl << endl;
   if (!sl)
   {

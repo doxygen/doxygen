@@ -69,7 +69,7 @@ class ConfigOption
     QCString dependsOn() const { return m_dependency; }
     void addDependency(const char *dep) { m_dependency = dep; }
     void setEncoding(const QCString &e) { m_encoding = e; }
-    void setUserComment(const QCString &u) { m_userComment = u; }
+    void setUserComment(const QCString &u) { m_userComment += u; }
 
   protected:
     virtual void writeTemplate(FTextStream &t,bool sl,bool upd) = 0;
@@ -507,11 +507,26 @@ class Config
      */
     void create();
 
+    /*! Append user start comment
+     */
+    void appendStartComment(const QCString &u)
+    {
+      m_startComment += u;
+    }
     /*! Append user comment
      */
     void appendUserComment(const QCString &u)
     {
       m_userComment += u;
+    }
+    /*! Take the user start comment and reset it internally
+     *  \returns user start comment
+     */
+    QCString takeStartComment()
+    {
+      QCString result=m_startComment;
+      m_startComment.resize(0);
+      return result.replace(QRegExp("\r"),"");
     }
     /*! Take the user comment and reset it internally
      *  \returns user comment
@@ -552,6 +567,7 @@ class Config
     QList<ConfigOption> *m_disabled;
     QDict<ConfigOption> *m_dict;
     static Config *m_instance;
+    QCString m_startComment;
     QCString m_userComment;
     bool m_initialized;
     QCString m_header;

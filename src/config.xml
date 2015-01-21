@@ -29,7 +29,9 @@ parsed by \c doxygen. The file may contain tabs and newlines for
 formatting purposes. The statements in the file are case-sensitive.
 Comments may be placed anywhere within the file (except within quotes).
 Comments beginning with two hash characters (\c \#\#) are kept when updating
-the configuration file and are placed in front of the TAG are in front of.
+the configuration file and are placed in front of the TAG they are in front of.
+Comments beginning with two hash characters (\c \#\#) at the beginning of the
+configuration file are also kept and placed at the beginning of the file.
 Comments beginning with two hash characters (\c \#\#) at the end of the
 configuration file are also kept and placed at the end of the file.
 Comments begin with the hash character (\c \#) and ends at the end of the line.
