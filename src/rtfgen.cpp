@@ -1818,18 +1818,18 @@ void RTFGenerator::startClassDiagram()
 }
 
 void RTFGenerator::endClassDiagram(const ClassDiagram &d,
-    const char *fileName,const char *)
+    const char *fileName,const char *name)
 {
   newParagraph();
 
   // create a png file
-  d.writeImage(t,dir,relPath,fileName,FALSE);
+  d.writeImage(t,dir,relPath,name,FALSE);
 
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  t << fileName << ".png\"";
+  t << name << ".png\"";
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
