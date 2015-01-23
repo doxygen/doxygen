@@ -6483,7 +6483,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '&':  // possibility to have a special symbol
                    q = p;
                    cnt = 2; // we have to count & and ; as well
-                   while (*q && *q != ';')
+                   while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
                    {
                      cnt++;
                      q++;
@@ -6500,6 +6500,7 @@ void filterLatexString(FTextStream &t,const char *str,
                       else
                       {
                         t << HtmlEntityMapper::instance()->latex(res);
+                        q++;
                         p = q;
                       }
                    }
