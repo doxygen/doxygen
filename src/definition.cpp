@@ -495,7 +495,11 @@ void Definition::addSectionsToIndex()
       }
       QCString title = si->title;
       if (title.isEmpty()) title = si->label;
-      Doxygen::indexList->addContentsItem(TRUE,title,
+      // determine if there is a next level inside this item
+      ++li;
+      bool isDir = ((li.current()) ? (int)(li.current()->type > nextLevel):FALSE);
+      --li;
+      Doxygen::indexList->addContentsItem(isDir,title,
                                          getReference(),
                                          getOutputFileBase(),
                                          si->label,
