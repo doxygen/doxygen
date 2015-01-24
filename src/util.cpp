@@ -6452,6 +6452,8 @@ void filterLatexString(FTextStream &t,const char *str,
   //printf("filterLatexString(%s)\n",str);
   //if (strlen(str)<2) stackTrace();
   const unsigned char *p=(const unsigned char *)str;
+  const unsigned char *q;
+  int cnt;
   unsigned char c;
   unsigned char pc='\0';
   while (*p)
@@ -6478,7 +6480,35 @@ void filterLatexString(FTextStream &t,const char *str,
         case '$':  t << "\\$";           break;
         case '%':  t << "\\%";           break;
         case '^':  t << "$^\\wedge$";    break;
-        case '&':  t << "\\&";           break;
+        case '&':  // possibility to have a special symbol
+                   q = p;
+                   cnt = 2; // we have to count & and ; as well
+                   while ((*q >= 'a' && *q <= 'z') || (*q >= 'A' && *q <= 'Z') || (*q >= '0' && *q <= '9'))
+                   {
+                     cnt++;
+                     q++;
+                   }
+                   if (*q == ';')
+                   {
+                      --p; // we need & as well
+                      DocSymbol::SymType res = HtmlEntityMapper::instance()->name2sym(QCString((char *)p).left(cnt));
+                      if (res == DocSymbol::Sym_Unknown)
+                      {
+                        p++;
+                        t << "\\&";
+                      }
+                      else
+                      {
+                        t << HtmlEntityMapper::instance()->latex(res);
+                        q++;
+                        p = q;
+                      }
+                   }
+                   else
+                   {
+                     t << "\\&";
+                   }
+                   break;
         case '*':  t << "$\\ast$";       break;
         case '_':  if (!insideTabbing) t << "\\+";  
                    t << "\\_"; 
