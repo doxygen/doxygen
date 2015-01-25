@@ -382,11 +382,14 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
   {
     QCString buf(maxLineLen);
     int numBytes = f.readLine(buf.rawData(),maxLineLen);
-    buf[numBytes-1]='\0';
-
-    if (buf.left(5)=="<area")
+    if (numBytes>0)
     {
-      t << replaceRef(buf,relPath,urlOnly,context);
+      buf.resize(numBytes+1);
+
+      if (buf.left(5)=="<area")
+      {
+        t << replaceRef(buf,relPath,urlOnly,context);
+      }
     }
   }
   return TRUE;
@@ -995,6 +998,7 @@ bool DotFilePatcher::run()
     {
       break;
     }
+    line.resize(numBytes+1);
 
     //printf("line=[%s]\n",line.stripWhiteSpace().data());
     int i;
