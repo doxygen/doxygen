@@ -7676,8 +7676,12 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
       if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.
         result.prepend(relPath);
+        l+=relPath.length();
       }
-      if (!href) result.prepend("doxygen=\""+ref+":");
+      if (!href){
+        result.prepend("doxygen=\""+ref+":");
+        l+=10+ref.length();
+      }
       if (l>0 && result.at(l-1)!='/') result+='/';
       if (!href) result.append("\" ");
     }
