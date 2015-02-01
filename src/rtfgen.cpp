@@ -1823,13 +1823,13 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
   newParagraph();
 
   // create a png file
-  d.writeImage(t,dir,relPath,name,FALSE);
+  d.writeImage(t,dir,relPath,escapeCharsInString(name,FALSE),FALSE);
 
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  t << name << ".png\"";
+  t << escapeCharsInString(name,FALSE) << ".png\"";
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }

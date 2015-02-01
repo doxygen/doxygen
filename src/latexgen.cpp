@@ -1638,7 +1638,7 @@ void LatexGenerator::startClassDiagram()
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
                                        const char *,const char *name)
 {
-  d.writeFigure(t,dir,name);
+  d.writeFigure(t,dir,escapeCharsInString(name,FALSE));
 }
 
 
