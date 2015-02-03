@@ -10636,7 +10636,7 @@ static void writeTagFile()
     FileDef *fd;
     for (fni.toFirst();(fd=fni.current());++fni)
     {
-      fd->writeTagFile(tagFile);
+      if (fd->isLinkableInProject()) fd->writeTagFile(tagFile);
     }
   }
   // for each class
@@ -10644,28 +10644,28 @@ static void writeTagFile()
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
-    cd->writeTagFile(tagFile);
+    if (cd->isLinkableInProject()) cd->writeTagFile(tagFile);
   }
   // for each namespace
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
-    nd->writeTagFile(tagFile);
+    if (nd->isLinkableInProject()) nd->writeTagFile(tagFile);
   }
   // for each group
   GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
-    gd->writeTagFile(tagFile);
+    if (gd->isLinkableInProject()) gd->writeTagFile(tagFile);
   }
   // for each page
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    pd->writeTagFile(tagFile);
+    if (pd->isLinkableInProject()) pd->writeTagFile(tagFile);
   }
   if (Doxygen::mainPage) Doxygen::mainPage->writeTagFile(tagFile);
 
