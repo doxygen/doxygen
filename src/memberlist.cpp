@@ -968,6 +968,15 @@ void MemberList::writeTagFile(FTextStream &tagFile)
     if (md->getLanguage()!=SrcLangExt_VHDL)
     {
       md->writeTagFile(tagFile);
+      if (md->memberType()==MemberType_Enumeration && md->enumFieldList() && !md->isStrong())
+      {
+        MemberListIterator vmli(*md->enumFieldList());
+        MemberDef *vmd;
+        for ( ; (vmd=vmli.current()) ; ++vmli)
+        {
+          vmd->writeTagFile(tagFile);
+        }
+      }
     }
     else
     {
