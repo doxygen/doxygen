@@ -753,7 +753,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_8_2
         "};\n"
         "\\endcode\n"
         "To će rezultirati grafikonom:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Pravokutnici imaju slijedeće značenje:\n"
         "<ul>\n"

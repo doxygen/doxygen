@@ -1016,7 +1016,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_7_5
         "};\n"
         "\\endcode\n"
         "Bu kod aşağıdaki şemayı oluşturur:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Yukarıdaki şemadaki kutular aşağıda açıklanmıştır:\n"
         "<ul>\n"

@@ -656,7 +656,7 @@ class TranslatorDutch : public Translator
         "};\n"
         "\\endcode\n"
         "Dit voorbeeld zal resulteren in de volgende graaf:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "De rechthoeken in the bovenstaande graaf hebben de volgende betekenis:\n"
         "<ul>\n"

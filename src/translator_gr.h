@@ -987,7 +987,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
         "};\n"
         "\\endcode\n"
         "Αυτό οδηγεί στο επόμενο διάγραμμα:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "Τα κουτιά στο παραπάνω διάγραμμα έχουν την ακόλουθη σημασία:\n"
         "</p>\n"

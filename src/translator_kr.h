@@ -1035,7 +1035,7 @@ class TranslatorKorean : public Translator
         "};\n"
         "\\endcode\n"
         "다음과 같은 그래프가 출력될 것입니다. :"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "위 그래프의 박스들은 다음과 같은 의미를 가집니다. :\n"
         "<ul>\n"
