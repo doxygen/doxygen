@@ -2,6 +2,8 @@
 .*sw?
 \#*
 .DS_Store
+.kdev4/*
+doxygen.kdev4
 
 *.rej
 *.orig
