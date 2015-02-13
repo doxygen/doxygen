@@ -340,6 +340,11 @@ class DotRunner
     DotRunner(const QCString &file,const QCString &fontPath,bool checkResult,
         const QCString &imageName = QCString());
 
+    /** Adds external preprocessing to the dot file
+     *  before the standard run.
+     */
+    void addPreProcessing(const char *cmd,const char *args);
+    
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
      */
@@ -357,6 +362,8 @@ class DotRunner
     QList<QCString> m_jobs;
     QCString m_postArgs;
     QCString m_postCmd;
+    QCString m_preArgs;
+    QCString m_preCmd;
     QCString m_file;
     QCString m_path;
     bool m_checkResult;

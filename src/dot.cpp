@@ -810,6 +810,12 @@ void DotRunner::addPostProcessing(const char *cmd,const char *args)
   m_postArgs = args;
 }
 
+void DotRunner::addPreProcessing(const char *cmd,const char *args)
+{
+  m_preCmd = cmd;
+  m_preArgs = args;
+}
+
 bool DotRunner::run()
 {
   int exitCode=0;
@@ -827,8 +833,17 @@ bool DotRunner::run()
   QCString imageName = m_imageName;
   QCString postCmd   = m_postCmd;
   QCString postArgs  = m_postArgs;
+  QCString preCmd   = m_preCmd;
+  QCString preArgs  = m_preArgs;
   bool checkResult   = m_checkResult;
   bool cleanUp       = m_cleanUp;
+  
+  if (!preCmd.isEmpty() && portable_system(preCmd,preArgs)!=0)
+  {
+    err("Problems running '%s' as a pre-processing step for dot output\n",m_preCmd.data());
+    return FALSE;
+  }
+  
   if (multiTargets)
   {
     dotArgs="\""+file+"\"";
@@ -3514,6 +3529,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
       dotRun->addJob(imgExt,absImgName);
       if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      //TODO Add Preprocess Here
       DotManager::instance()->addRun(dotRun);
     }
     else if (graphFormat==GOF_EPS)
@@ -3527,6 +3543,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
       {
         dotRun->addJob("ps",absEpsName);
       }
+      //TODO Add Preprocess Here
       DotManager::instance()->addRun(dotRun);
     }
   }
