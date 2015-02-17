@@ -2143,13 +2143,13 @@ static void writeNamespaceLinkForMember(OutputList &ol,MemberDef *md,const char 
                              QCString &prevNamespaceName)
 {
   NamespaceDef *nd=md->getNamespaceDef();
-  if (nd && prevNamespaceName!=nd->name())
+  if (nd && prevNamespaceName!=nd->displayName())
   {
     ol.docify(separator);
     ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),md->anchor(),
-        nd->name());
+        nd->displayName());
     ol.writeString("\n");
-    prevNamespaceName = nd->name();
+    prevNamespaceName = nd->displayName();
   }
 }
 
