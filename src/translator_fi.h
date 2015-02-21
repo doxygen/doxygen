@@ -1114,7 +1114,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         "\\endcode\n"
         "Tuloksena on seuraavanlainen kaavio:"
         //"This will result in the following graph:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Ylläolevassa kaaviossa laatikoilla on seuraavat merkitykset\n:"
         // "The boxes in the above graph have the following meaning:\n"

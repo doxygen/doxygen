@@ -1077,7 +1077,7 @@ class TranslatorFrench : public Translator
             "};\n"
             "\\endcode\n"
             "Cela aboutira au graphe suivant :"
-            "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+            "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
             "<p>\n"
             "Les rectangles du graphe ci-dessus ont la signification suivante :\n"
             "<ul>\n"

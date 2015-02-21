@@ -1021,7 +1021,7 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
         "};\n"
         "\\endcode\n"
         "Kết quả trong biểu đồ sau đây:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Các hộp trong biểu đồ trên có ý nghĩa như sau:\n"
         "<ul>\n"

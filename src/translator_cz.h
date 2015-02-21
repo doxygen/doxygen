@@ -1070,7 +1070,7 @@ class TranslatorCzech : public Translator
         "};\n"
         "\\endcode\n"
         "K výše uvedenému bude vygenerován následující graf:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Bloky (tj. uzly) v uvedeném grafu mají následující význam:\n"
         "<ul>\n"

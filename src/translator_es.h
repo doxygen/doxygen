@@ -1045,7 +1045,7 @@ class TranslatorSpanish : public Translator
         "};\n"
         "\\endcode\n"
         "Dará como resultado el siguiente gráfico:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "Las cajas en el gráfico arriba tienen el siguiente significado:\n"
         "</p>\n"

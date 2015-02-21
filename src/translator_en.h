@@ -1014,7 +1014,7 @@ class TranslatorEnglish : public Translator
         "};\n"
         "\\endcode\n"
         "This will result in the following graph:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "The boxes in the above graph have the following meaning:\n"
         "</p>\n"

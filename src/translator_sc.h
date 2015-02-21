@@ -1033,7 +1033,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
         "\\endcode\n"
         "Ако је \\c MAX_DOT_GRAPH_HEIGHT таг у конфигурационој датотеци "
         "подешен на 240, то ће резултовати на следећи начин:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Правоугаоници имају следеће значење:\n"
         "<ul>\n"

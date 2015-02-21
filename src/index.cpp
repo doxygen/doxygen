@@ -3266,7 +3266,8 @@ void writeGraphInfo(OutputList &ol)
   QCString legendDocs = theTranslator->trLegendDocs();
   int s = legendDocs.find("<center>");
   int e = legendDocs.find("</center>");
-  if (Config_getEnum("DOT_IMAGE_FORMAT")=="svg" && s!=-1 && e!=-1)
+  QCString imgExt = getDotImageExtension();
+  if (imgExt=="svg" && s!=-1 && e!=-1)
   {
     legendDocs = legendDocs.left(s+8) + "[!-- SVG 0 --]\n" + legendDocs.mid(e); 
     //printf("legendDocs=%s\n",legendDocs.data());

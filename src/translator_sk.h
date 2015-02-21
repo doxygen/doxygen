@@ -1004,7 +1004,7 @@ class TranslatorSlovak : public Translator
         "};\n"
         "\\endcode\n"
         "K vyššie uvedenému bude vygenerovaný nasledujúci graf:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Bloky (tj. uzly) v uvedenom grafe majú nasledujúci význam:\n"
         "<ul>\n"

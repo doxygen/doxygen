@@ -1002,7 +1002,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
         "\\endcode\n"
         "As die \\c MAX_DOT_GRAPH_HEIGHT merker in die konfigurasie leër "
         "aan 240 gelyk gestel is, word die volgende diagram geproduseer:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Die reghoeke in die diagram het die volgende betekenis:\n"
         "<ul>\n"
