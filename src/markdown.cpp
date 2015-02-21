@@ -231,6 +231,24 @@ static QCString isBlockCommand(const char *data,int offset,int size)
   return QCString();
 }
 
+static bool isAlphaNumeric(const char *bytes)
+{
+  uint cp = static_cast<uchar>(bytes[0]);
+  if (cp >= 0xC2) { // is multibyte
+    if (cp < 0xE0) { // is two-byte code point
+      cp = (cp << 8) + static_cast<uchar>(bytes[1]);
+    } else if (cp < 0xF0) { // is three-byte code point
+      cp = (cp << 16) + (static_cast<uchar>(bytes[1]) << 8)
+                      + static_cast<uchar>(bytes[2]);
+    } else { // is four-byte code point
+      cp = (cp << 24) + (static_cast<uchar>(bytes[1]) << 16)
+                      + (static_cast<uchar>(bytes[2]) << 8)
+                      + static_cast<uchar>(bytes[3]);
+    }
+  }
+  return QChar(cp).isLetterOrNumber();
+}
+
 /** looks for the next emph char, skipping other constructs, and
  *  stopping when either it is found, or we are at the end of a paragraph.
  */
@@ -589,8 +607,8 @@ static int processHtmlTag(GrowBuf &out,const char *data,int offset,int size)
 static int processEmphasis(GrowBuf &out,const char *data,int offset,int size)
 {
   if ((offset>0 && !isOpenEmphChar(-1)) || // invalid char before * or _
-      (size>1 && data[0]!=data[1] && !isIdChar(1)) || // invalid char after * or _
-      (size>2 && data[0]==data[1] && !isIdChar(2)))   // invalid char after ** or __
+      (size>1 && data[0]!=data[1] && !isAlphaNumeric(data + 1)) || // invalid char after * or _
+      (size>2 && data[0]==data[1] && !isAlphaNumeric(data + 2)))   // invalid char after ** or __
   {
     return 0;
   }
