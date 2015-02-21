@@ -907,7 +907,7 @@ class TranslatorSwedish : public Translator
         "};\n"
         "\\endcode\n"
 	"Detta resulterar i att följande graf genereras:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
 	"Rektanglarna i den ovanstående grafen har följande betydelser:\n"
         "<ul>\n"

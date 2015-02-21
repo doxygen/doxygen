@@ -2001,7 +2001,7 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
   }
   baseName.prepend("msc_");
   QCString outDir = Config_getString("HTML_OUTPUT");
-  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString imgExt = getDotImageExtension();
   MscOutputFormat mscFormat = MSC_BITMAP;
   if ("svg" == imgExt)
     mscFormat = MSC_SVG;
@@ -2045,7 +2045,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
     baseName=baseName.left(i);
   }
   static QCString outDir = Config_getString("HTML_OUTPUT");
-  static QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
   {
     generatePlantUMLOutput(fileName,outDir,PUML_SVG);

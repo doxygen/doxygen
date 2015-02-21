@@ -1019,7 +1019,7 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
         "};\n"
         "\\endcode\n"
         "Resultarà el gràfic següent:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Les caixes del gràfic superior tenen aquesta interpretació:\n"
         "<ul>\n"

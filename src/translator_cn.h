@@ -910,7 +910,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_2
         "};\n"
         "\\endcode\n"
         "结果将会生成以下图:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "上图中的矩形有如下意义:\n"
         "</p>\n"

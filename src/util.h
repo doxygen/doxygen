@@ -443,6 +443,8 @@ bool protectionLevelVisible(Protection prot);
 
 QCString stripIndentation(const QCString &s);
 
+QCString getDotImageExtension(void);
+
 bool fileVisibleInIndex(FileDef *fd,bool &genSourceFile);
 
 void addDocCrossReference(MemberDef *src,MemberDef *dst);

@@ -8378,3 +8378,9 @@ bool mainPageHasTitle()
   return TRUE;
 }
 
+QCString getDotImageExtension(void)
+{
+  QCString imgExt      = Config_getEnum("DOT_IMAGE_FORMAT");
+  imgExt = imgExt.replace( QRegExp(":.*"), "" );
+  return imgExt;
+}

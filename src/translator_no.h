@@ -1048,7 +1048,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
         "\\endcode\n"
         "Hvis \\c MAX_DOT_GRAPH_HEIGHT er satt til 200 i "
         "konfigurasjonsfila vil dette resultere i følgende graf:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Boksene i grafen over betyr følgende:\n"
         "<ul>\n"

@@ -1017,7 +1017,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
         "};\n"
         "\\endcode\n"
         "Tio ĉi liveros la sekvan diagramon:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "La skatoloj de la supra diagramo havas la sekvajn signifojn:\n"
         "<ul>\n"

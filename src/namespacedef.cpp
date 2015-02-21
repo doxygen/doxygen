@@ -1136,7 +1136,7 @@ QCString NamespaceDef::title() const
 {
   SrcLangExt lang = getLanguage();
   QCString pageTitle;
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+  if (lang==SrcLangExt_Java)
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
@@ -1160,9 +1160,13 @@ QCString NamespaceDef::title() const
 QCString NamespaceDef::compoundTypeString() const
 {
   SrcLangExt lang = getLanguage();
-  if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+  if (lang==SrcLangExt_Java)
   {
     return "package";
+  }
+  else if(lang==SrcLangExt_CSharp)
+  {
+	return "namespace";
   }
   else if (lang==SrcLangExt_Fortran)
   {

@@ -2792,7 +2792,8 @@ bool VhdlDocGen::findConstraintFile(LayoutNavEntry *lne)
   QCString file;
   QCString co("Constraints");
 
-  if (Config_getBool("HAVE_DOT") && Config_getEnum("DOT_IMAGE_FORMAT")=="svg")
+  QCString imgExt = getDotImageExtension();
+  if (Config_getBool("HAVE_DOT") && imgExt=="svg")
   {
     QCString ov = theTranslator->trDesignOverview();
     QCString ofile("vhdl_design_overview");

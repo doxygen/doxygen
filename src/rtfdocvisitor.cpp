@@ -1676,7 +1676,8 @@ void RTFDocVisitor::writeDotFile(const QCString &fileName)
   m_t << "{" << endl;
   m_t << rtf_Style_Reset;
   m_t << "\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  m_t << baseName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString imgExt = getDotImageExtension();
+  m_t << baseName << "." << imgExt;
   m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   m_t << "}" << endl;
   m_lastIsPara=TRUE;

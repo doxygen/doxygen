@@ -993,7 +993,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
         "\\endcode\n"
         "Hvis \\c MAX_DOT_GRAPH_HEIGHT i konfigurationsfilen "
         "er sat til 240, vil dette resultere i følgende graf:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "De forskellige slags kasser i ovenstående graf har følgende "
 		"betydninger:\n"

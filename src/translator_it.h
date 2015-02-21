@@ -1028,7 +1028,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
         "};\n"
         "\\endcode\n"
         "Verrà prodotto il grafo seguente:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "I riquadri nel grafo qui sopra hanno il seguente significato:\n"
         "</p>\n"

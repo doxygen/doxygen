@@ -1022,7 +1022,7 @@ class TranslatorChinesetraditional : public Translator
         "};\n"
         "\\endcode\n"
         "這個例子會產生下列的圖示:"
-        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
+        "<p><center><img alt=\"\" src=\"graph_legend."+getDotImageExtension()+"\"></center></p>\n"
         "<p>\n"
         "上圖中的各區塊意義如下:\n"
         "</p>\n"

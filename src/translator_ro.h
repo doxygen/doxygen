@@ -1031,7 +1031,7 @@ class TranslatorRomanian : public Translator
         "\\endcode\n"
         "Dacă tagul \\c MAX_DOT_GRAPH_HEIGHT din fişierul de configurare "
         "este setat la 200, acesta este graful rezultat:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "<p><center><img src=\"graph_legend."+getDotImageExtension()+"\"></center>\n"
         "<p>\n"
         "Căsuţele din partea de sus au următoarea semnificaţie:\n"
         "<ul>\n"
