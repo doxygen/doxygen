@@ -1817,7 +1817,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
                                           QCString text=yytext;
 					  isTypedef    = text.find("typedef")!=-1;
-                                          bool isStrongEnum = text.find("struct")!=-1 || text.find("class")!=-1;
+                                          bool isStrongEnum = text.find("struct")!=-1 || text.find("class")!=-1 || insideCS;
 					  if (insideJava)
 					  {
 					    current->section = Entry::CLASS_SEC;
