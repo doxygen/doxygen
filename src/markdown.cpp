@@ -56,7 +56,8 @@
 #define isIdChar(i) \
   ((data[i]>='a' && data[i]<='z') || \
    (data[i]>='A' && data[i]<='Z') || \
-   (data[i]>='0' && data[i]<='9'))   \
+   (data[i]>='0' && data[i]<='9') || \
+   (((unsigned char)data[i])>=0x80)) // unicode characters
 
 // is character at position i in data allowed before an emphasis section
 #define isOpenEmphChar(i) \
