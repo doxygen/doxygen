@@ -649,6 +649,7 @@
       <xsd:enumeration value="public-inheritance" />
       <xsd:enumeration value="protected-inheritance" />
       <xsd:enumeration value="private-inheritance" />
+      <xsd:enumeration value="type-constraint" />
     </xsd:restriction>
   </xsd:simpleType>
 

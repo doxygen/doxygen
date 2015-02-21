@@ -1741,9 +1741,11 @@ nextChar:
     }
     else if (i>0 &&
          (
-          (s.at(i-1)==')' && isId(c))
+          (s.at(i-1)==')' && isId(c)) // ")id" -> ") id"
           ||
-          (c=='\''  && s.at(i-1)==' ')
+          (c=='\''  && s.at(i-1)==' ')  // "'id" -> "' id"
+          ||
+          (i>1 && s.at(i-2)==' ' && s.at(i-1)==' ') // "  id" -> " id"
          )
         )
     {
@@ -2228,6 +2230,11 @@ QCString tempArgListToString(ArgumentList *al,SrcLangExt lang)
       {
         result+=a->type;
       }
+    }
+    if (!a->typeConstraint.isEmpty() && lang==SrcLangExt_Java)
+    {
+      result+=" extends "; // TODO: now Java specific, C# has where...
+      result+=a->typeConstraint;
     }
     ++ali;
     a=ali.current();

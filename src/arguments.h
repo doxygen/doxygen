@@ -30,37 +30,39 @@ struct Argument
   /*! Construct a new argument. */
   Argument() {}
   /*! Copy an argument (does a deep copy of all strings). */
-  Argument(const Argument &a) 
-  { 
-    attrib=a.attrib.copy();
-    type=a.type.copy(); 
-    name=a.name.copy(); 
-    defval=a.defval.copy(); 
-    docs=a.docs.copy();
-    array=a.array.copy();
+  Argument(const Argument &a)
+  {
+    attrib=a.attrib;
+    type=a.type;
+    name=a.name;
+    array=a.array;
+    defval=a.defval;
+    docs=a.docs;
+    typeConstraint=a.typeConstraint;
   }
   /*! Assignment of an argument (does a deep copy of all strings). */
   Argument &operator=(const Argument &a)
   {
     if (this!=&a)
     {
-      attrib=a.attrib.copy();
-      type=a.type.copy(); 
-      name=a.name.copy(); 
-      defval=a.defval.copy(); 
-      docs=a.docs.copy();
-      array=a.array.copy();
+      attrib=a.attrib;
+      type=a.type;
+      name=a.name;
+      array=a.array;
+      defval=a.defval;
+      docs=a.docs;
+      typeConstraint=a.typeConstraint;
     }
     return *this;
   }
   /*! return TRUE if this argument is documentation and the argument has a
    *  non empty name.
    */
-  bool hasDocumentation() const 
-  { 
-    return !name.isEmpty() && !docs.isEmpty(); 
+  bool hasDocumentation() const
+  {
+    return !name.isEmpty() && !docs.isEmpty();
   }
-  
+
   QCString attrib;   /*!< Argument's attribute (IDL only) */
   QCString type;     /*!< Argument's type */
   QCString canType;  /*!< Cached value of canonical type (after type resolution). Empty initially. */
@@ -68,6 +70,7 @@ struct Argument
   QCString array;    /*!< Argument's array specifier (may be empty) */
   QCString defval;   /*!< Argument's default value (may be empty) */
   QCString docs;     /*!< Argument's documentation (may be empty) */
+  QCString typeConstraint;  /*!< Used for Java generics: <T extends C> */
 };
 
 /*! \brief This class represents an function or template argument list. 

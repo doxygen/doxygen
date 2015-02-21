@@ -73,6 +73,7 @@ static QCString		g_curArgName;
 static QCString		g_curArgDocs;
 static QCString		g_curArgAttrib;
 static QCString		g_curArgArray;
+static QCString         g_curTypeConstraint;
 static QCString		g_extraTypeChars;
 static int              g_argRoundCount;
 static int              g_argSharpCount;
@@ -80,6 +81,7 @@ static int              g_argCurlyCount;
 static int              g_readArgContext;
 static int              g_lastDocContext;
 static int              g_lastDocChar;
+static int              g_lastExtendsContext;
 static QCString         g_delimiter;
 
 /* -----------------------------------------------------------------
@@ -120,6 +122,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 %x	FuncQual
 %x	ReadDocBlock
 %x	ReadDocLine
+%x      ReadTypeConstraint
 %x      TrailingReturn
 
 
@@ -332,8 +335,9 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      int i=l-1;
 					      while (i>=0 && (isspace((uchar)g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && (isId(g_curArgTypeName.at(i)) || g_curArgTypeName.at(i)=='$')) i--;
-					      Argument *a = new Argument; 
-					      a->attrib = g_curArgAttrib.copy();
+					      Argument *a = new Argument;
+					      a->attrib  = g_curArgAttrib.copy();
+                                              a->typeConstraint = g_curTypeConstraint.stripWhiteSpace();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
 					      //        a->type.data(),a->name.data(),i,l);
 					      a->array.resize(0);
@@ -413,6 +417,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    g_curArgDefValue.resize(0);
 					    g_curArgArray.resize(0);
 					    g_curArgDocs.resize(0);
+                                            g_curTypeConstraint.resize(0);
 					    if (*yytext==')')
 					    {
 					      BEGIN(FuncQual);
@@ -424,6 +429,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    }
 					  }
   					}
+<ReadFuncArgType,ReadFuncArgPtr>"extends" {
+                                          g_curTypeConstraint.resize(0);
+                                          g_lastExtendsContext=YY_START;
+                                          BEGIN(ReadTypeConstraint);
+                                        }
 <ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
   					  QCString name=yytext; //resolveDefines(yytext);
 					  if (YY_START==ReadFuncArgType && g_curArgArray=="[]") // Java style array
@@ -451,13 +461,23 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
 					  *g_copyArgValue += *yytext;
 					}
-<FuncQual>"const"		       	{ 
+<ReadTypeConstraint>[,)>]               {
+                                          unput(*yytext);
+                                          BEGIN(g_lastExtendsContext);
+                                        }
+<ReadTypeConstraint>.                   {
+                                          g_curTypeConstraint+=yytext;
+                                        }
+<ReadTypeConstraint>\n                  {
+                                          g_curTypeConstraint+=' ';
+                                        }
+<FuncQual>"const"		       	{
 					  g_argList->constSpecifier=TRUE;
 					}
-<FuncQual>"volatile"		    	{ 
+<FuncQual>"volatile"		    	{
 					  g_argList->volatileSpecifier=TRUE;
 					}
-<FuncQual,TrailingReturn>"="{B}*"0"  	{ 
+<FuncQual,TrailingReturn>"="{B}*"0"  	{
 					  g_argList->pureSpecifier=TRUE;
                                           BEGIN(FuncQual);
 					}
@@ -534,6 +554,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extr
   g_curArgDocs.resize(0);
   g_curArgAttrib.resize(0);
   g_curArgArray.resize(0);
+  g_curTypeConstraint.resize(0);
   g_extraTypeChars.resize(0);
   g_argRoundCount = 0;
   g_argSharpCount = 0;

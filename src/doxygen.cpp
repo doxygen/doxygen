@@ -5018,6 +5018,7 @@ static void findUsedTemplateInstances()
     {
       rootNav->loadEntry(g_storage);
       findUsedClassesForClass(rootNav,cd,cd,cd,TRUE);
+      cd->addTypeConstraints();
       rootNav->releaseEntry();
     }
   }

@@ -3592,6 +3592,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  sharpCount++;	
 					}
 <Sharp>{BN}+				{
+                                          current->type += ' ';
   					  lineCount();
 					}
 <Sharp>.				{ current->type += *yytext ; }

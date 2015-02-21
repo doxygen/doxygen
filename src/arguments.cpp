@@ -54,6 +54,7 @@ ArgumentList *ArgumentList::unmarshal(StorageIntf *s)
     a->array   = unmarshalQCString(s);
     a->defval  = unmarshalQCString(s);
     a->docs    = unmarshalQCString(s);
+    a->typeConstraint = unmarshalQCString(s);
     result->append(a);
   }
   result->constSpecifier     = unmarshalBool(s);
@@ -85,6 +86,7 @@ void ArgumentList::marshal(StorageIntf *s,ArgumentList *argList)
         marshalQCString(s,a->array);    
         marshalQCString(s,a->defval);    
         marshalQCString(s,a->docs);    
+        marshalQCString(s,a->typeConstraint);
       }
     }
     marshalBool(s,argList->constSpecifier);

@@ -118,6 +118,8 @@ class ClassDefImpl
     UsesClassDict *usedByImplClassDict;
     UsesClassDict *usesIntfClassDict;
 
+    ConstraintClassDict *constraintClassDict;
+
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
      */
@@ -216,6 +218,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   usesImplClassDict=0;
   usedByImplClassDict=0;
   usesIntfClassDict=0;
+  constraintClassDict=0;
   memberGroupSDict = 0;
   innerClasses = 0;
   subGrouping=Config_getBool("SUBGROUPING");
@@ -267,6 +270,7 @@ ClassDefImpl::~ClassDefImpl()
   delete usesImplClassDict;
   delete usedByImplClassDict;
   delete usesIntfClassDict;
+  delete constraintClassDict;
   delete incInfo;
   delete memberGroupSDict;
   delete innerClasses;
@@ -2526,20 +2530,66 @@ bool ClassDef::hasExamples() const
   return result;
 }
 
-
-void ClassDef::setTemplateArguments(ArgumentList *al)
+void ClassDef::addTypeConstraint(const QCString &typeConstraint,const QCString &type)
 {
-  if (al==0) return;
-  if (!m_impl->tempArgs) delete m_impl->tempArgs; // delete old list if needed
-  m_impl->tempArgs=new ArgumentList;
-  ArgumentListIterator ali(*al);
-  Argument *a;
-  for (;(a=ali.current());++ali)
+  static bool hideUndocRelation = Config_getBool("HIDE_UNDOC_RELATIONS");
+  if (typeConstraint.isEmpty() || type.isEmpty()) return;
+  ClassDef *cd = getClass(typeConstraint);
+  if (cd==0 && !hideUndocRelation)
   {
-    m_impl->tempArgs->append(new Argument(*a));
+    cd = new ClassDef(getDefFileName(),getDefLine(),getDefColumn(),typeConstraint,ClassDef::Class);
+    cd->setUsedOnly(TRUE);
+    cd->setLanguage(getLanguage());
+    Doxygen::hiddenClasses->append(typeConstraint,cd);
+    //printf("Adding undocumented constraint '%s' to class %s on type %s\n",
+    //       typeConstraint.data(),name().data(),type.data());
+  }
+  if (cd)
+  {
+    if (m_impl->constraintClassDict==0)
+    {
+      m_impl->constraintClassDict = new ConstraintClassDict(17);
+      m_impl->constraintClassDict->setAutoDelete(TRUE);
+    }
+    ConstraintClassDef *ccd=m_impl->constraintClassDict->find(typeConstraint);
+    if (ccd==0)
+    {
+      ccd = new ConstraintClassDef(cd);
+      m_impl->constraintClassDict->insert(typeConstraint,ccd);
+    }
+    ccd->addAccessor(type);
+    //printf("Adding constraint '%s' to class %s on type %s\n",
+    //       typeConstraint.data(),name().data(),type.data());
   }
 }
 
+// Java Type Constrains: A<T extends C & I>
+void ClassDef::addTypeConstraints()
+{
+  if (m_impl->tempArgs)
+  {
+    ArgumentListIterator ali(*m_impl->tempArgs);
+    Argument *a;
+    for (;(a=ali.current());++ali)
+    {
+      if (!a->typeConstraint.isEmpty())
+      {
+        QCString typeConstraint;
+        int i=0,p=0;
+        while ((i=a->typeConstraint.find('&',p))!=-1) // typeConstraint="A &I" for C<T extends A & I>
+        {
+          typeConstraint = a->typeConstraint.mid(p,i-p).stripWhiteSpace();
+          addTypeConstraint(typeConstraint,a->type);
+          p=i+1;
+        }
+        typeConstraint = a->typeConstraint.right(a->typeConstraint.length()-p).stripWhiteSpace();
+        addTypeConstraint(typeConstraint,a->type);
+      }
+    }
+  }
+}
+
+// C# Type Constraints: D<T> where T : C, I
 void ClassDef::setTypeConstraints(ArgumentList *al)
 {
   if (al==0) return;
@@ -2550,6 +2600,20 @@ void ClassDef::setTypeConstraints(ArgumentList *al)
   for (;(a=ali.current());++ali)
   {
     m_impl->typeConstraints->append(new Argument(*a));
+  }
+}
+
+void ClassDef::setTemplateArguments(ArgumentList *al)
+{
+  if (al==0) return;
+  if (!m_impl->tempArgs) delete m_impl->tempArgs; // delete old list if needed
+  //printf("setting template args '%s' for '%s'\n",tempArgListToString(al,getLanguage()).data(),name().data());
+  m_impl->tempArgs=new ArgumentList;
+  ArgumentListIterator ali(*al);
+  Argument *a;
+  for (;(a=ali.current());++ali)
+  {
+    m_impl->tempArgs->append(new Argument(*a));
   }
 }
 
@@ -4403,6 +4467,11 @@ UsesClassDict *ClassDef::usedByImplementationClasses() const
 UsesClassDict *ClassDef::usedInterfaceClasses() const
 {
   return m_impl->usesIntfClassDict;
+}
+
+ConstraintClassDict *ClassDef::templateTypeConstraints() const
+{
+  return m_impl->constraintClassDict;
 }
 
 bool ClassDef::isTemplateArgument() const

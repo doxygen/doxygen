@@ -164,7 +164,8 @@ static const char *normalEdgeColorMap[] =
   "firebrick4",    // Private
   "darkorchid3",   // "use" relation
   "grey75",        // Undocumented
-  "orange"         // template relation
+  "orange",        // template relation
+  "orange"         // type constraint
 };
 
 static const char *normalArrowStyleMap[] =
@@ -190,7 +191,8 @@ static const char *umlEdgeColorMap[] =
   "firebrick4",    // Private
   "grey25",        // "use" relation
   "grey75",        // Undocumented
-  "orange"         // template relation
+  "orange",        // template relation
+  "orange"         // type constraint
 };
 
 static const char *umlArrowStyleMap[] =
@@ -2003,6 +2005,7 @@ void DotNode::writeXML(FTextStream &t,bool isClassGraph)
           case EdgeInfo::Red:     t << "private-inheritance"; break;
           case EdgeInfo::Purple:  t << "usage"; break;
           case EdgeInfo::Orange:  t << "template-instance"; break;
+          case EdgeInfo::Orange2: t << "type-constraint"; break;
           case EdgeInfo::Grey:    ASSERT(0); break;
         }
       }
@@ -2071,6 +2074,7 @@ void DotNode::writeDocbook(FTextStream &t,bool isClassGraph)
           case EdgeInfo::Red:     t << "private-inheritance"; break;
           case EdgeInfo::Purple:  t << "usage"; break;
           case EdgeInfo::Orange:  t << "template-instance"; break;
+          case EdgeInfo::Orange2: t << "type-constraint"; break;
           case EdgeInfo::Grey:    ASSERT(0); break;
         }
       }
@@ -2148,6 +2152,7 @@ void DotNode::writeDEF(FTextStream &t)
         case EdgeInfo::Red:     t << "private-inheritance"; break;
         case EdgeInfo::Purple:  t << "usage"; break;
         case EdgeInfo::Orange:  t << "template-instance"; break;
+        case EdgeInfo::Orange2: t << "type-constraint"; break;
         case EdgeInfo::Grey:    ASSERT(0); break;
       }
       t << ';' << endl;
@@ -2591,7 +2596,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
 {
   if (Config_getBool("HIDE_UNDOC_CLASSES") && !cd->isLinkable()) return;
 
-  int edgeStyle = (label || prot==EdgeInfo::Orange) ? EdgeInfo::Dashed : EdgeInfo::Solid;
+  int edgeStyle = (label || prot==EdgeInfo::Orange || prot==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   if (usedName) // name is a typedef
   {
@@ -2797,6 +2802,7 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
 
 void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
 {
+  static bool templateRelations = Config_getBool("TEMPLATE_RELATIONS");
   //printf("DocClassGraph::buildGraph(%s,distance=%d,base=%d)\n",
   //    cd->name().data(),distance,base);
   // ---- Add inheritance relations
@@ -2856,10 +2862,43 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
       }
     }
   }
+  if (templateRelations && base)
+  {
+    ConstraintClassDict *dict = cd->templateTypeConstraints();
+    if (dict)
+    {
+      ConstraintClassDictIterator ccdi(*dict);
+      ConstraintClassDef *ccd;
+      for (;(ccd=ccdi.current());++ccdi)
+      {
+        QCString label;
+        QDictIterator<void> dvi(*ccd->accessors);
+        const char *s;
+        bool first=TRUE;
+        int count=0;
+        int maxLabels=10;
+        for (;(s=dvi.currentKey()) && count<maxLabels;++dvi,++count)
+        {
+          if (first)
+          {
+            label=s;
+            first=FALSE;
+          }
+          else
+          {
+            label+=QCString("\n")+s;
+          }
+        }
+        if (count==maxLabels) label+="\n...";
+        //printf("addClass: %s templSpec=%s\n",ucd->classDef->name().data(),ucd->templSpecifiers.data());
+        addClass(ccd->classDef,n,EdgeInfo::Orange2,label,0,
+            0,TRUE,distance);
+      }
+    }
+  }
 
   // ---- Add template instantiation relations
 
-  static bool templateRelations = Config_getBool("TEMPLATE_RELATIONS");
   if (templateRelations)
   {
     if (base) // template relations for base classes
