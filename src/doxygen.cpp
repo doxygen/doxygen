@@ -10322,16 +10322,19 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstricmp(formatName,"latex")==0)
         {
-          if (optind+4<argc) // use config file to get settings
+          if (optind+4<argc || QFileInfo("Doxyfile").exists())
           {
-            if (!Config::instance()->parse(argv[optind+4]))
+            QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
+            if (!Config::instance()->parse(df))
             {
               err("error opening or reading configuration file %s!\n",argv[optind+4]);
+              cleanUpDoxygen();
               exit(1);
             }
             Config::instance()->substituteEnvironmentVars();
             Config::instance()->convertStrToVal();
             Config_getString("LATEX_HEADER")="";
+            Config_getString("LATEX_FOOTER")="";
             Config::instance()->check();
           }
           else // use default config

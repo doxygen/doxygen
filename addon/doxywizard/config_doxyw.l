@@ -71,18 +71,21 @@ static int yyread(char *buf,int maxSize)
     }
 }
 
+static QString warning_str = QString::fromAscii("warning: ");
+static QString error_str = QString::fromAscii("error: ");
+
 void config_err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
+  vfprintf(stderr, qPrintable(error_str.append(QString::fromAscii(fmt))), args);
   va_end(args); 
 }
 void config_warn(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
+  vfprintf(stderr, qPrintable(warning_str.append(QString::fromAscii(fmt))), args);
   va_end(args);
 }
 
@@ -111,7 +114,7 @@ static FILE *tryPath(const QString &path,const QString &fileName)
   {
     FILE *f = fopen(absName.toLocal8Bit(),"r");
     if (f==NULL)
-      config_err("Error: could not open file %s for reading\n",absName.toLatin1().data());
+      config_err("could not open file %s for reading\n",qPrintable(absName));
     else 
       return f;
   }
@@ -141,7 +144,7 @@ static void readIncludeFile(const QString &incName)
 {
   if (g_includeDepth==MAX_INCLUDE_DEPTH) 
   {
-    config_err("Error: maximum include depth (%d) reached, %s is not included. Aborting...\n",
+    config_err("maximum include depth (%d) reached, %s is not included. Aborting...\n",
 	MAX_INCLUDE_DEPTH,qPrintable(incName));
     exit(1);
   } 
@@ -162,7 +165,7 @@ static void readIncludeFile(const QString &incName)
     // For debugging
 #if SHOW_INCLUDES
     for (i=0;i<includeStack.count();i++) msg("  ");
-    msg("@INCLUDE = %s: parsing...\n",inc.toLatin1().data());
+    msg("@INCLUDE = %s: parsing...\n",qPrintable(inc));
 #endif
 
     // store the state of the old file 
@@ -180,7 +183,7 @@ static void readIncludeFile(const QString &incName)
   } 
   else
   {
-    config_err("Error: @INCLUDE = %s: not found!\n",inc.toLatin1().data());
+    config_err("@INCLUDE = %s: not found!\n",qPrintable(inc));
     exit(1);
   }
 }
@@ -210,7 +213,7 @@ static void readIncludeFile(const QString &incName)
 					   g_curOption = g_options->value(cmd);
 					   if (g_curOption==0) // oops not known
 					   {
-					     config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+					     config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
 						 qPrintable(cmd),yylineno,qPrintable(g_yyFileName)); 
 					     BEGIN(SkipInvalid);
 					   }
@@ -235,7 +238,7 @@ static void readIncludeFile(const QString &incName)
 					         BEGIN(GetString);
 						 break;
 					       case Input::Obsolete:
-					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_warn("Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
 							    "file using \"doxygen -u\"\n", qPrintable(cmd),
 							    yylineno,qPrintable(g_yyFileName)); 
@@ -249,7 +252,7 @@ static void readIncludeFile(const QString &incName)
 					  g_curOption = g_options->value(cmd);
 					  if (g_curOption==0) // oops not known
 					  {
-					    config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+					    config_warn("ignoring unsupported tag `%s' at line %d, file %s\n",
 						yytext,yylineno,qPrintable(g_yyFileName)); 
 					    BEGIN(SkipInvalid);
 					  }
@@ -265,12 +268,12 @@ static void readIncludeFile(const QString &incName)
 					      case Input::String:
 					      case Input::Int:
 					      case Input::Bool:
-					        config_err("Warning: operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
+					        config_warn("operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
 						    yytext,yylineno,qPrintable(g_yyFileName)); 
 					        BEGIN(SkipInvalid);
 						break;
 					      case Input::Obsolete:
-					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_warn("Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
 							    "file using \"doxygen -u\"\n", 
 							    qPrintable(cmd),yylineno,qPrintable(g_yyFileName)); 
@@ -307,12 +310,12 @@ static void readIncludeFile(const QString &incName)
 					  }
   					}
 
-<Start>[a-z_A-Z0-9]+			{ config_err("Warning: ignoring unknown tag `%s' at line %d, file %s\n",yytext,yylineno,qPrintable(g_yyFileName)); }
+<Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag `%s' at line %d, file %s\n",yytext,yylineno,qPrintable(g_yyFileName)); }
 <GetString,SkipInvalid>\n	        { BEGIN(Start); }
 <GetStrList>\n				{ 
 					  if (!g_elemStr.isEmpty())
 					  {
-					    //printf("elemStr1=`%s'\n",elemStr.toLatin1().data());
+					    //printf("elemStr1=`%s'\n",qPrintable(elemStr));
 					    *g_arg = QVariant(g_arg->toStringList() << g_elemStr);
 					  }
 					  BEGIN(Start); 
@@ -320,7 +323,7 @@ static void readIncludeFile(const QString &incName)
 <GetStrList>[ \t]+			{
   				          if (!g_elemStr.isEmpty())
 					  {
-					    //printf("elemStr2=`%s'\n",elemStr.toLatin1().data());
+					    //printf("elemStr2=`%s'\n",qPrintable(elemStr));
   					    *g_arg = QVariant(g_arg->toStringList() << g_elemStr);
 					  }
 					  g_elemStr = QString();
@@ -336,7 +339,7 @@ static void readIncludeFile(const QString &incName)
 <GetQuotedString>"\""|"\n" 		{ 
                                           // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
                                           g_tmpString+=" ";
-  					  //printf("Quoted String = `%s'\n",tmpString.toLatin1().data());
+  					  //printf("Quoted String = `%s'\n",qPrintable(tmpString));
   					  if (g_lastState==GetString)
 					  {
 					    *g_arg = g_codec->toUnicode(g_tmpString);
@@ -348,7 +351,7 @@ static void readIncludeFile(const QString &incName)
 					  }
 					  if (*yytext=='\n')
 					  {
-					    config_err("Warning: Missing end quote (\") on line %d, file %s\n",yylineno,
+					    config_warn("Missing end quote (\") on line %d, file %s\n",yylineno,
                                                 qPrintable(g_yyFileName));
 					  }
 					  BEGIN(g_lastState);
@@ -377,11 +380,11 @@ static void substEnvVarsInString(QString &s)
   if (s.isEmpty()) return;
   int p=0;
   int i,l;
-  //printf("substEnvVarInString(%s) start\n",s.toLatin1().data());
+  //printf("substEnvVarInString(%s) start\n",qPrintable(s));
   while ((i=re.indexIn(s,p))!=-1)
   {
     l = re.matchedLength();
-    //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,s.mid(i+2,l-3).toLatin1().data());
+    //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,qPrintable(s.mid(i+2,l-3)));
     QString env=g_codec->toUnicode(getenv(s.mid(i+2,l-3).toLatin1()));
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
@@ -389,7 +392,7 @@ static void substEnvVarsInString(QString &s)
   }
   s=s.trimmed(); // to strip the bogus space that was added when an argument
                          // has quotes
-  //printf("substEnvVarInString(%s) end\n",s.toLatin1().data());
+  //printf("substEnvVarInString(%s) end\n",qPrintable(s));
 }
 
 static void substEnvVarsInStrList(QStringList &sl)
@@ -404,7 +407,7 @@ static void substEnvVarsInStrList(QStringList &sl)
     // here we strip the quote again
     substEnvVarsInString(result);
 
-    //printf("Result %s was quoted=%d\n",result.toLatin1().data(),wasQuoted);
+    //printf("Result %s was quoted=%d\n",qPrintable(result),wasQuoted);
 
     if (!wasQuoted) /* as a result of the expansion, a single string
 		       may have expanded into a list, which we'll
