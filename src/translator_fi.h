@@ -1101,7 +1101,7 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
         "{\n"
         "  private:\n"
         "    Kaytetty *m_kaytettyLuokka;\n"
-        "}\n";
+        "}\n"
         // "class Inherited : public PublicBase,\n"
         // "                  protected ProtectedBase,\n"
         // "                  private PrivateBase,\n"
