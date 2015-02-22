@@ -2043,7 +2043,7 @@ void MemberDef::getLabels(QStrList &sl,Definition *container) const
 void MemberDef::_writeCallGraph(OutputList &ol)
 {
   // write call graph
-  if ((m_impl->hasCallGraph || Config_getBool("CALL_GRAPH"))
+  if (m_impl->hasCallGraph
       && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
      )
   {
@@ -2068,7 +2068,7 @@ void MemberDef::_writeCallGraph(OutputList &ol)
 
 void MemberDef::_writeCallerGraph(OutputList &ol)
 {
-  if ((m_impl->hasCallerGraph || Config_getBool("CALLER_GRAPH"))
+  if (m_impl->hasCallerGraph
       && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
      )
   {
