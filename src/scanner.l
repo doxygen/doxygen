@@ -668,6 +668,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x      SkipString
 %x      SkipPHPString
 %x	SkipInits
+%x	SkipC11Inits
 %x	SkipCPP
 %x	SkipCPPBlock
 %x	SkipComment
@@ -5008,7 +5009,17 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <SkipInits>{ID}{BN}*"{"                 { // C++11 style initializer (see bug 688647)
                                           lineCount();
+                                          curlyCount=1;
+                                          BEGIN(SkipC11Inits);
+                                        }
+<SkipC11Inits>"{"                       {
                                           ++curlyCount;
+                                        }
+<SkipC11Inits>"}"                       {
+  					  if ( --curlyCount<=0 )
+                                          {
+                                            BEGIN(SkipInits);
+                                          }
                                         }
 <SkipInits>"{"				{ // C++11 style initializer
   					  unput('{');
@@ -5113,7 +5124,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody(yytext);
   					  BEGIN( SkipCurlyCpp );
 					}
-<SkipCurly,SkipInits>\n			{
+<SkipCurly,SkipC11Inits,SkipInits>\n	{
                                           lineCount();
   				          //addToBody(yytext);
   					}
@@ -5142,22 +5153,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
   				          //addToBody(yytext);
                                           lineCount();
 					}
-<SkipInits,SkipCurly,SkipCurlyCpp>"/*"	{
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp>"/*"	{
   				          //addToBody(yytext);
   					  lastCContext = YY_START;
 					  BEGIN(SkipComment);
   					}
-<SkipInits,SkipCurly,SkipCurlyCpp>"//"  {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp>"//"  {
   				          //addToBody(yytext);
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
-<SkipInits>"("                          {
+<SkipInits,SkipC11Inits>"("             {
                                           roundCount=0;
                                           lastSkipRoundContext=YY_START;
                                           BEGIN(SkipRound);
                                         }
-<SkipInits>\"				{
+<SkipInits,SkipC11Inits>\"	        {
   					  lastStringContext=YY_START;
   				          BEGIN( SkipString ); 
 					}
@@ -5192,7 +5203,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    BEGIN(SkipPHPString);
 					  }
 					}
-<SkipInits,SkipCurly,SkipCurlyCpp>.	{ }
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp>.	{ }
 <SkipString,SkipPHPString>\\.		{ }
 <SkipString>\"				{ 
   					  BEGIN( lastStringContext ); 
@@ -5981,7 +5992,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					}
 <Comment>.				{ current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/*!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,Bases,OldStyleArgs>("//"{B}*)?"/*!" { 
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
