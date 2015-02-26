@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
  * Copyright (C) 2010-2011 by Rene Zaumseil
  *
  * Permission to use, copy, modify, and distribute this software and its

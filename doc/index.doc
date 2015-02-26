@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2014 by Dimitri van Heesch.
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -118,7 +118,7 @@ The third part provides information for developers:
 \addindex license
 \addindex GPL
 
-Copyright &copy; 1997-2014 by 
+Copyright &copy; 1997-2015 by 
 <a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
