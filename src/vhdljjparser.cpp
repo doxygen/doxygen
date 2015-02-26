@@ -40,7 +40,7 @@ static int              yyLineNr      = 1;
 static int*             lineParse;
 static int              iDocLine      = -1;
 static QCString         inputString;
-static Entry            gBlock;
+static Entry*           gBlock        = 0;
 static Entry*           previous      = 0;
 //-------------------------------------------------------
 
@@ -102,38 +102,40 @@ Entry* getVhdlCompound()
 void startCodeBlock(int index)
 {
   int ll=strComment.length();
+  if (!gBlock) gBlock = new Entry;
   iCodeLen=inputString.findRev(strComment.data())+ll;
   // fprintf(stderr,"\n startin code..%d %d %d\n",iCodeLen,num_chars,ll);
-  gBlock.reset();
+  gBlock->reset();
   int len=strComment.length();
   QCString name=strComment.right(len-index);//
   name=VhdlDocGen::getIndexWord(name.data(),1);
   if (!name)
-    gBlock.name="misc"+ VhdlDocGen::getRecordNumber();
+    gBlock->name="misc"+ VhdlDocGen::getRecordNumber();
   else
-    gBlock.name=name;
+    gBlock->name=name;
 
-  gBlock.startLine=yyLineNr;
-  gBlock.bodyLine=yyLineNr;
+  gBlock->startLine=yyLineNr;
+  gBlock->bodyLine=yyLineNr;
 
   strComment=strComment.left(index);
   VhdlDocGen::prepareComment(strComment);
-  gBlock.brief+=strComment;
+  gBlock->brief+=strComment;
 }
 
 void makeInlineDoc(int endCode)
 {
   int len=endCode-iCodeLen;
+  if (!gBlock) gBlock = new Entry;
   QCString par=inputString.mid(iCodeLen,len);
   //fprintf(stderr,"\n inline code: \n<%s>",par.data());
-  gBlock.doc=par;
-  gBlock.inbodyDocs=par;
-  gBlock.section=Entry::VARIABLE_SEC;
-  gBlock.spec=VhdlDocGen::MISCELLANEOUS;
-  gBlock.fileName = yyFileName;
-  gBlock.endBodyLine=yyLineNr-1;
-  gBlock.lang=SrcLangExt_VHDL;
-  Entry *temp=new Entry(gBlock);
+  gBlock->doc=par;
+  gBlock->inbodyDocs=par;
+  gBlock->section=Entry::VARIABLE_SEC;
+  gBlock->spec=VhdlDocGen::MISCELLANEOUS;
+  gBlock->fileName = yyFileName;
+  gBlock->endBodyLine=yyLineNr-1;
+  gBlock->lang=SrcLangExt_VHDL;
+  Entry *temp=new Entry(*gBlock);
   Entry* compound=getVhdlCompound();
 
   if (compound)
@@ -146,7 +148,7 @@ void makeInlineDoc(int endCode)
     VhdlParser::current_root->addSubEntry(temp);
   }
   strComment.resize(0);
-  gBlock.reset();
+  gBlock->reset();
 }// makeInlineDoc
 
 
