@@ -101,7 +101,9 @@ static bool handleNoSubGrouping(const QCString &);
 static bool handleShowInitializer(const QCString &);
 static bool handleHideInitializer(const QCString &);
 static bool handleCallgraph(const QCString &);
+static bool handleHideCallgraph(const QCString &);
 static bool handleCallergraph(const QCString &);
+static bool handleHideCallergraph(const QCString &);
 static bool handleInternal(const QCString &);
 static bool handleLineBr(const QCString &);
 static bool handleStatic(const QCString &);
@@ -204,7 +206,9 @@ static DocCmdMap docCmdMap[] =
   { "showinitializer", &handleShowInitializer,  FALSE },
   { "hideinitializer", &handleHideInitializer,  FALSE },
   { "callgraph",       &handleCallgraph,        FALSE },
+  { "hidecallgraph",   &handleHideCallgraph,    FALSE },
   { "callergraph",     &handleCallergraph,      FALSE },
+  { "hidecallergraph", &handleHideCallergraph,  FALSE },
   { "internal",        &handleInternal,         TRUE  },
   { "_linebr",         &handleLineBr,           FALSE },
   { "static",          &handleStatic,           FALSE },
@@ -2689,9 +2693,21 @@ static bool handleCallgraph(const QCString &)
   return FALSE;
 }
 
+static bool handleHideCallgraph(const QCString &)
+{
+  current->callGraph = FALSE; // OFF
+  return FALSE;
+}
+
 static bool handleCallergraph(const QCString &)
 {
   current->callerGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleHideCallergraph(const QCString &)
+{
+  current->callerGraph = FALSE; // OFF
   return FALSE;
 }
 

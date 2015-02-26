@@ -661,9 +661,6 @@ private:
         entry->startLine = lineNumber();
         entry->bodyLine = lineNumber();
 
-        entry->callGraph = false;
-        entry->callerGraph = false;
-
         initGroupInfo(entry);
 
         m_currentEntry = entry;

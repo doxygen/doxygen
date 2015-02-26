@@ -4056,8 +4056,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant hasCallGraph() const
     {
       static bool haveDot = Config_getBool("HAVE_DOT");
-      static bool callGraph = Config_getBool("CALL_GRAPH");
-      if ((callGraph || m_memberDef->hasCallGraph()) && haveDot &&
+      if (m_memberDef->hasCallGraph() && haveDot &&
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
         DotCallGraph *cg = getCallGraph();
@@ -4096,8 +4095,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant hasCallerGraph() const
     {
       static bool haveDot = Config_getBool("HAVE_DOT");
-      static bool callerGraph = Config_getBool("CALLER_GRAPH");
-      if ((callerGraph || m_memberDef->hasCallerGraph()) && haveDot &&
+      if (m_memberDef->hasCallerGraph() && haveDot &&
           (m_memberDef->isFunction() || m_memberDef->isSlot() || m_memberDef->isSignal()))
       {
         DotCallGraph *cg = getCallerGraph();

@@ -8007,12 +8007,10 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
   static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
   static bool referencesRelation   = Config_getBool("REFERENCES_RELATION");
-  static bool callerGraph          = Config_getBool("CALLER_GRAPH");
-  static bool callGraph            = Config_getBool("CALL_GRAPH");
 
   //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
-  if ((referencedByRelation || callerGraph || dst->hasCallerGraph()) && 
+  if ((referencedByRelation || dst->hasCallerGraph()) && 
       src->showInCallGraph()
      )
   {
@@ -8028,7 +8026,7 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
       mdDecl->addSourceReferencedBy(src);
     }
   }
-  if ((referencesRelation || callGraph || src->hasCallGraph()) && 
+  if ((referencesRelation || src->hasCallGraph()) && 
       src->showInCallGraph()
      )
   {
