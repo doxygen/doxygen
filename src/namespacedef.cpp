@@ -1188,7 +1188,7 @@ QCString NamespaceDef::compoundTypeString() const
     }
     else
     {
-      err("Internal inconsistency: namespace in IDL not module, library or constant group\n");
+      err_full(getDefFileName(),getDefLine(),"Internal inconsistency: namespace in IDL not module, library or constant group");
     }
   }
   return "";

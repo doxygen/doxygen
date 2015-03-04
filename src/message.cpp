@@ -151,7 +151,7 @@ static void format_warn(const char *file,int line,const char *text)
 
 static void do_warn(const char *tag, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
-  if (!Config_getBool(tag)) return; // warning type disabled
+  if (tag && !Config_getBool(tag)) return; // warning type disabled
   const int bufSize = 40960;
   char text[bufSize];
   int l=0;
@@ -213,6 +213,14 @@ void err(const char *fmt, ...)
   va_list args;
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
+  va_end(args); 
+}
+
+extern void err_full(const char *file,int line,const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_warn(NULL, file, line, error_str, fmt, args);
   va_end(args); 
 }
 
