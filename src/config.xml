@@ -2492,10 +2492,19 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
       <docs>
 <![CDATA[
  The \c EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$ 
- package names that should be included in the \f$\mbox{\LaTeX}\f$ output.
- To get the times font for instance you can specify 
+ package names that should be included in the \f$\mbox{\LaTeX}\f$ output. The package
+ can be specified just by its name or with the correct syntax as to be used with the
+ \f$\mbox{\LaTeX}\f$ `\usepackage` command.
+
+ To get the `times` font for instance you can specify :
 \verbatim
-EXTRA_PACKAGES=times
+  EXTRA_PACKAGES=times
+or 
+  EXTRA_PACKAGES={times}
+\endverbatim
+ To use the option `intlimits` with the `amsmath` package you can specify:
+\verbatim
+   EXTRA_PACKAGES=[intlimits]{amsmath}
 \endverbatim
  If left blank no extra packages will be included.
 ]]>
