@@ -421,7 +421,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     const char *pkgName=extraPackages.first();
     while (pkgName)
     {
-      t << "\\usepackage{" << pkgName << "}\n";
+      if ((pkgName[0] == '[') || (pkgName[0] == '{'))
+        t << "\\usepackage" << pkgName << "\n";
+      else
+        t << "\\usepackage{" << pkgName << "}\n";
       pkgName=extraPackages.next();
     }
     t << "\n";
