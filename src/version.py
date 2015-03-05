@@ -17,12 +17,15 @@ major = 0
 minor = 0
 revision = 0
 mnt = 'NO'
+configure = '../configure'
+if len(sys.argv) > 2:
+    configure = sys.argv[2]
 #
 # open input file
 #  read file and get relevant information
 # close
 #
-f = open('../configure', 'r')
+f = open(configure, 'r')
 for line in f:
     # check if line can match (saves 3 comparisons)
     if (line.startswith('doxygen_version')):
