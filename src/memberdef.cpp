@@ -1808,7 +1808,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
         ol.disableAllBut(OutputGenerator::Html);
         //ol.endEmphasis();
         ol.docify(" ");
-        if (separateMemberPages || (m_impl->group!=0 && gd==0)) // forward link to the page or group
+        if (separateMemberPages ||
+            (m_impl->group!=0 && gd==0) ||
+            (m_impl->nspace!=0 && nd==0)
+           ) // forward link to the page or group or namespace
         {
           ol.startTextLink(getOutputFileBase(),anchor());
         }
