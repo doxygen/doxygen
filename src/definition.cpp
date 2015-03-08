@@ -897,6 +897,7 @@ QCString Definition::getSourceAnchor() const
 {
   const int maxAnchorStrLen = 20;
   char anchorStr[maxAnchorStrLen];
+  anchorStr[0]='\0';
   if (m_impl->body && m_impl->body->startLine!=-1)
   {
     if (Htags::useHtags)
