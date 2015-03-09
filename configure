@@ -363,18 +363,27 @@ if test "$f_wizard" = YES; then
     echo "  QTDIR environment variable not set!"
     printf "  Checking for Qt..."
     for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4} /usr; do
-      if test -x "$d/bin/qmake"; then
-        QTDIR=$d
-        break 2
-      fi
+      for e in qmake gmake-qt4; do
+        if test -x "$d/bin/$e"; then
+          QTDIR=$d
+          QMAKEEXE=$e
+          break 2
+        fi
+      done
     done
   else
-    if test -e "$QTDIR/bin/qmake"; then
-      printf "  Detected Qt via the QTDIR environment variable..."
-    else
+    for e in qmake gmake-qt4; do
+      if test -x "$QTDIR/bin/$e"; then
+        if test -e "$QTDIR/bin/$e"; then
+          printf "  Detected Qt via the QTDIR environment variable..."
+          QMAKEEXE=$e
+        fi
+      fi
+    done
+    if test -z "$QMAKEEXE"; then
       printf "ERROR Detected Qt via the QTDIR environment variable..."
-      echo ", but $QTDIR/bin/qmake does not exist."
-      echo "      Set the QTDIR environment variable such that \$QTDIR/bin/qmake exists."
+      echo ", but $QTDIR/bin/qmake or variant does not exist."
+      echo "      Set the QTDIR environment variable such that \$QTDIR/bin/qmake or variant exists."
       exit 2
     fi
   fi
@@ -771,6 +780,7 @@ INSTTOOL  = $f_insttool
 DOXYDOCS  = ..
 DOCDIR    = $f_docdir
 QTDIR     = $QTDIR
+QMAKEEXE  = $QMAKEEXE
 EOF
 
 if test "$f_dot" != NO; then
