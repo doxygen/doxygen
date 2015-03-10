@@ -363,7 +363,7 @@ if test "$f_wizard" = YES; then
     echo "  QTDIR environment variable not set!"
     printf "  Checking for Qt..."
     for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4} /usr; do
-      for e in qmake gmake-qt4; do
+      for e in qmake qmake-qt4; do
         if test -x "$d/bin/$e"; then
           QTDIR=$d
           QMAKEEXE=$e
@@ -372,7 +372,7 @@ if test "$f_wizard" = YES; then
       done
     done
   else
-    for e in qmake gmake-qt4; do
+    for e in qmake qmake-qt4; do
       if test -x "$QTDIR/bin/$e"; then
         if test -e "$QTDIR/bin/$e"; then
           printf "  Detected Qt via the QTDIR environment variable..."
