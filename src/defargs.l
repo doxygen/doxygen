@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,13 +16,13 @@
  */
 
 /*! \file
- *  This scanner is used to convert a string into a list of function or 
+ *  This scanner is used to convert a string into a list of function or
  *  template arguments. Each parsed argument results in a Argument struct,
  *  that is put into an ArgumentList in declaration order.
  *  Comment blocks for arguments can also be included in the string.
  *  The argument string does not contain new-lines (except inside any
  *  comment blocks).
- *  An Argument consists of the string fields: 
+ *  An Argument consists of the string fields:
  *                 type,name,default value, and documentation
  *  The Argument list as a whole can be pure, constant or volatile.
  *
@@ -34,7 +34,7 @@
  *    "(char c,const char)"
  *  \endcode
  *
- *  Note: It is not always possible to distinguish between the name and 
+ *  Note: It is not always possible to distinguish between the name and
  *        type of an argument. In case of doubt the name is added to the
  *        type, and the matchArgumentList in util.cpp is be used to
  *        further determine the correct separation.
@@ -56,10 +56,10 @@
 #include "util.h"
 #include "arguments.h"
 #include "message.h"
-  
+
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
-  
+
 /* -----------------------------------------------------------------
  *	state variables
  */
@@ -133,7 +133,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgType>{B}*			{
   					  g_curArgTypeName+=" ";
   					}
-<ReadFuncArgType>"["[^\]]*"]"		{ 
+<ReadFuncArgType>"["[^\]]*"]"		{
 					  if (g_curArgTypeName.stripWhiteSpace().isEmpty())
 					  {
 					    g_curArgAttrib=yytext; // for M$-IDL
@@ -146,7 +146,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgDef>"'"\\[0-7]{1,3}"'"	{ g_curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"\\."'"		{ g_curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ g_curArgDefValue+=yytext; }
-<ReadFuncArgDef>{RAWBEGIN}              { g_curArgDefValue+=yytext; 
+<ReadFuncArgDef>{RAWBEGIN}              { g_curArgDefValue+=yytext;
                                           QCString text=yytext;
                                           int i=text.find('"');
                                           g_delimiter = yytext+i+1;
@@ -157,7 +157,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  g_curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
-<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{B}*/{ID} { 
+<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*({ID}{B}*)?[&*\^]+{B}*/{ID} {
   					  // function pointer as argument
 					  g_curArgTypeName+=yytext;
 					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
@@ -191,7 +191,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgType>"<="|">="|"->"|">>"|"<<" { // handle operators in defargs
   					  g_curArgTypeName+=yytext;
   					}
-<ReadFuncArgType,ReadFuncArgDef>[({<]	{	 
+<ReadFuncArgType,ReadFuncArgDef>[({<]	{
 					  if (YY_START==ReadFuncArgType)
 					  {
 					    g_curArgTypeName+=*yytext;
@@ -202,22 +202,22 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					    g_curArgDefValue+=*yytext;
 					    g_copyArgValue=&g_curArgDefValue;
 					  }
-					  g_readArgContext = YY_START; 
+					  g_readArgContext = YY_START;
 					  if (*yytext=='(')
 					  {
-					    g_argRoundCount=0; 
-					    BEGIN( CopyArgRound ); 
+					    g_argRoundCount=0;
+					    BEGIN( CopyArgRound );
 					  }
 					  else if (*yytext=='{')
 					  {
-					    g_argCurlyCount=0; 
-					    BEGIN( CopyArgCurly ); 
+					    g_argCurlyCount=0;
+					    BEGIN( CopyArgCurly );
 					  }
 					  else // yytext=='<'
 					  {
-					    g_argSharpCount=0; 
-					    g_argRoundCount=0; 
-					    BEGIN( CopyArgSharp ); 
+					    g_argSharpCount=0;
+					    g_argRoundCount=0;
+					    BEGIN( CopyArgSharp );
 					  }
 					}
 <CopyArgRound,CopyArgRound2>"("		{
@@ -226,11 +226,11 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <CopyArgRound,CopyArgRound2>")"({B}*{ID})* {
 					  *g_copyArgValue += yytext;
-					  if (g_argRoundCount>0) 
+					  if (g_argRoundCount>0)
 					  {
 					    g_argRoundCount--;
 					  }
-					  else 
+					  else
 					  {
 					    if (YY_START==CopyArgRound2)
 					    {
@@ -311,7 +311,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*("/*"[*!]|"//"[/!])"<" {
 					  g_lastDocContext=YY_START;
-					  g_lastDocChar=*yytext;  
+					  g_lastDocChar=*yytext;
 					  QCString text=yytext;
 					  if (text.find("//")!=-1)
 					    BEGIN( ReadDocLine );
@@ -377,15 +377,15 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 						    a->type=="const"             ||
 						    a->type=="volatile"
 						   )
-						{ 
+						{
 						  a->type = a->type + " " + a->name;
 						  a->name.resize(0);
 						}
 						//printf(" --> a->type='%s'\n",a->type.data());
 					      }
-					      else // assume only the type was specified, try to determine name later 
+					      else // assume only the type was specified, try to determine name later
 					      {
-						a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
+						a->type = removeRedundantWhiteSpace(g_curArgTypeName);
 					      }
                                               if (!a->type.isEmpty() && a->type.at(0)=='$') // typeless PHP name?
                                               {
@@ -395,7 +395,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					      a->array  += removeRedundantWhiteSpace(g_curArgArray);
 					      //printf("array=%s\n",a->array.data());
 					      int alen = a->array.length();
-					      if (alen>2 && a->array.at(0)=='(' && 
+					      if (alen>2 && a->array.at(0)=='(' &&
 						            a->array.at(alen-1)==')') // fix-up for int *(a[10])
 					      {
 						int i=a->array.find('[')-1;
@@ -434,7 +434,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
                                           g_lastExtendsContext=YY_START;
                                           BEGIN(ReadTypeConstraint);
                                         }
-<ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
+<ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} {
   					  QCString name=yytext; //resolveDefines(yytext);
 					  if (YY_START==ReadFuncArgType && g_curArgArray=="[]") // Java style array
 					  {
@@ -444,7 +444,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 					  //printf("resolveName `%s'->`%s'\n",yytext,name.data());
   					  g_curArgTypeName+=name;
 					}
-<ReadFuncArgType,ReadFuncArgPtr>.	{ 
+<ReadFuncArgType,ReadFuncArgPtr>.	{
   					  g_curArgTypeName+=*yytext;
 					}
 
@@ -495,7 +495,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <TrailingReturn>\n                      {
                                           g_argList->trailingReturnType+=yytext;
                                         }
-<FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
+<FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array,
                                           // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
   					  g_extraTypeChars=yytext;
   					}
@@ -505,10 +505,10 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadDocLine>[^\n]+			{
   					  g_curArgDocs+=yytext;
   					}
-<ReadDocBlock>"*/"			{ 
+<ReadDocBlock>"*/"			{
   					  if (g_lastDocChar!=0)
 					    unput(g_lastDocChar);
-  					  BEGIN(g_lastDocContext); 
+  					  BEGIN(g_lastDocContext);
 					}
 <ReadDocLine>\n				{
   					  if (g_lastDocChar!=0)
@@ -523,7 +523,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					}
 <*>("/*"[*!]|"//"[/!])("<"?)		{
   					  g_lastDocContext=YY_START;
-					  g_lastDocChar=0;  
+					  g_lastDocChar=0;
 					  if (yytext[1]=='/')
 					    BEGIN( ReadDocLine );
 					  else
@@ -540,13 +540,13 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 /*! Converts an argument string into an ArgumentList.
  *  \param[in] argsString the list of Arguments.
  *  \param[out] al a reference to resulting argument list pointer.
- *  \param[out] extraTypeChars point to string to which trailing characters 
+ *  \param[out] extraTypeChars point to string to which trailing characters
  *              for complex types are written to
  */
- 
+
 void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extraTypeChars)
 {
-  if (al==0) return; 
+  if (al==0) return;
   if (argsString==0) return;
   printlex(yy_flex_debug, TRUE, __FILE__, NULL);
 
@@ -575,9 +575,9 @@ void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extr
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
 }
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
+#if !defined(YY_FLEX_SUBMINOR_VERSION)
 extern "C" { // some bogus code to keep the compiler happy
-  void defargsYYdummy() { yy_flex_realloc(0,0); } 
+  void defargsYYdummy() { yy_flex_realloc(0,0); }
 }
 #endif
 
