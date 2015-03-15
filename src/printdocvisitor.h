@@ -189,7 +189,7 @@ class PrintDocVisitor : public DocVisitor
     void visit(DocFormula *f)
     {
       indent_leaf();
-      printf("<formula name=%s test=%s/>",f->name().data(),f->text().data());
+      printf("<formula name=%s text=%s/>",f->name().data(),f->text().data());
     }
     void visit(DocIndexEntry *i)
     {
