@@ -168,6 +168,10 @@ easy ways to get debug information.
     command is specified)
   - validate<br>
     Currently not used
+  - lex<br>
+    Provide output of the `lex` files used. When a lexer is started and when a lexer
+    ends the name of the `lex` file is given so it is possible to see in which lexer the
+    problem occurs. This makes it easier to select the file to be compiled in `lex` debug mode.
 
 Producing output
 ----------------
