@@ -485,7 +485,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
 <InterfaceBody>^{BS}end{BS}interface({BS_}{ID})? {
                                           // end scope only if GENERIC interface
-                                          last_entry->parent()->endBodyLine = yyLineNr - 1;
+                                          if (ifType == IF_GENERIC)last_entry->parent()->endBodyLine = yyLineNr - 1;
                                           if (ifType == IF_GENERIC && !endScope(current_root))
                                             yyterminate();
 
