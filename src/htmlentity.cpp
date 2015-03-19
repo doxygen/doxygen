@@ -59,7 +59,7 @@ static struct htmlEntityInfo
   { SYM(shy),      "\xc2\xad",     "&shy;",      "<shy/>",               "&#173;",        "{$\\-$}",                NULL,     "\\-",         { NULL,         DocSymbol::Perl_unknown }},
   { SYM(reg),      "\xc2\xae",     "&reg;",      "<registered/>",        "&#174;",        "\\textregistered{}",     "(R)",    "\\'AE",       { "registered", DocSymbol::Perl_symbol  }},
   { SYM(macr),     "\xc2\xaf",     "&macr;",     "<macr/>",              "&#175;",        "\\={}",                  NULL,     "\\'AF",       { NULL,         DocSymbol::Perl_unknown }},
-  { SYM(deg),      "\xc2\xb0",     "&deg;",      "<deg/>",               "&#176;",        "\\textdegree",           NULL,     "\\'B0",       { "deg",        DocSymbol::Perl_symbol  }},
+  { SYM(deg),      "\xc2\xb0",     "&deg;",      "<deg/>",               "&#176;",        "\\textdegree{}",         NULL,     "\\'B0",       { "deg",        DocSymbol::Perl_symbol  }},
   { SYM(plusmn),   "\xc2\xb1",     "&plusmn;",   "<plusmn/>",            "&#177;",        "{$\\pm$}",               NULL,     "\\'B1",       { "+/-",        DocSymbol::Perl_string  }},
   { SYM(sup2),     "\xc2\xb2",     "&sup2;",     "<sup2/>",              "&#178;",        "\\texttwosuperior{}",    NULL,     "\\'B2",       { NULL,         DocSymbol::Perl_unknown }},
   { SYM(sup3),     "\xc2\xb3",     "&sup3;",     "<sup3/>",              "&#179;",        "\\textthreesuperior{}",  NULL,     "\\'B3",       { NULL,         DocSymbol::Perl_unknown }},

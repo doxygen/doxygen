@@ -70,7 +70,7 @@ struct Argument
   QCString array;    /*!< Argument's array specifier (may be empty) */
   QCString defval;   /*!< Argument's default value (may be empty) */
   QCString docs;     /*!< Argument's documentation (may be empty) */
-  QCString typeConstraint;  /*!< Used for Java generics: <T extends C> */
+  QCString typeConstraint;  /*!< Used for Java generics: \<T extends C\> */
 };
 
 /*! \brief This class represents an function or template argument list. 

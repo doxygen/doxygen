@@ -394,6 +394,12 @@ static void writeTemplateArgumentList(ArgumentList *al,
         linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->defval);
         t << "</defval>" << endl;
       }
+      if (!a->typeConstraint.isEmpty())
+      {
+        t << indentStr << "    <typeconstraint>";
+        linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a->typeConstraint);
+        t << "</typeconstraint>" << endl;
+      }
       t << indentStr << "  </param>" << endl;
     }
     t << indentStr << "</templateparamlist>" << endl;
