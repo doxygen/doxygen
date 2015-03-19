@@ -8726,9 +8726,8 @@ static void findMainPage(EntryNav *rootNav)
     {
       Entry *root = rootNav->entry();
       warn(root->fileName,root->startLine,
-          "found more than one \\mainpage comment block! Skipping this "
-          "block."
-          );
+           "found more than one \\mainpage comment block! (first occurrence: %s, line %d), Skipping current block!",
+           Doxygen::mainPage->docFile().data(),Doxygen::mainPage->docLine());
     }
 
     rootNav->releaseEntry();
