@@ -3230,7 +3230,7 @@ class Receiver
 
   \addindex \\\.
   This command writes a dot (`.`) to the output. This can be useful to 
-  prevent ending a brief description when JAVADOC_AUTOBRIEF is enabled
+  prevent ending a brief description when \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is enabled
   or to prevent starting a numbered list when the dot follows a number at
   the start of a line.
 
