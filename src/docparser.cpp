@@ -519,8 +519,8 @@ static void checkUndocumentedParams()
         }
         else
         {
-           warn_doc_error(g_memberDef->docFile(),
-                          g_memberDef->docLine(),
+           warn_doc_error(g_memberDef->getDefFileName(),
+                          g_memberDef->getDefLine(),
                           substitute(errMsg,"%","%%"));
         }
       }
