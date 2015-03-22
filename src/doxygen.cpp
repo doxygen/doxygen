@@ -1353,7 +1353,7 @@ static void addClassToContext(EntryNav *rootNav)
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());    
 
     //printf("class %s template args=%s\n",fullName.data(),     
-    //    tArgList ? tempArgListToString(tArgList).data() : "<none>");          
+    //    tArgList ? tempArgListToString(tArgList,root->lang).data() : "<none>");          
     cd->setTemplateArguments(tArgList);         
     cd->setProtection(root->protection);        
     cd->setIsStatic(root->stat);        

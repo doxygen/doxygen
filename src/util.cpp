@@ -1724,7 +1724,7 @@ nextChar:
       growBuf.addChar(' ');
     }
     else if (i>0 && c=='>' && // current char is a >
-        (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
+        (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&' || s.at(i-1)=='.') && // prev char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
@@ -2225,6 +2225,10 @@ QCString tempArgListToString(ArgumentList *al,SrcLangExt lang)
       if (i>0)
       {
         result+=a->type.right(a->type.length()-i-1);
+        if (a->type.find("...")!=-1)
+        {
+          result+="...";
+        }
       }
       else // nothing found -> take whole name
       {
