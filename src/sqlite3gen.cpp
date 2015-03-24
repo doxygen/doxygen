@@ -754,7 +754,7 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     bindIntParameter(memberdef_insert,":new",md->isNew());
     bindIntParameter(memberdef_insert,":optional",md->isOptional());
     bindIntParameter(memberdef_insert,":required",md->isRequired());
-    
+
     bindIntParameter(memberdef_insert,":virt",md->virtualness());
   }
   // place in the arguments and linkify the arguments
@@ -1027,9 +1027,16 @@ static void generateSqlite3ForClass(sqlite3 *db, ClassDef *cd)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      bindTextParameter(derivedcompoundref_insert,":base",cd->displayName());
-      bindTextParameter(derivedcompoundref_insert,":dervied",bcd->classDef->displayName());
-      bindTextParameter(derivedcompoundref_insert,":refid",bcd->classDef->getOutputFileBase());
+      bindTextParameter(derivedcompoundref_insert,":base",cd->displayName(),FALSE);
+      if (!bcd->templSpecifiers.isEmpty())
+      {
+        bindTextParameter(derivedcompoundref_insert,":derived",insertTemplateSpecifierInScope(bcd->classDef->name(),bcd->templSpecifiers),FALSE);
+      }
+      else
+      {
+        bindTextParameter(derivedcompoundref_insert,":derived",bcd->classDef->displayName(),FALSE);
+      }
+      bindTextParameter(derivedcompoundref_insert,":refid",bcd->classDef->getOutputFileBase(),FALSE);
       bindIntParameter(derivedcompoundref_insert,":prot",bcd->prot);
       bindIntParameter(derivedcompoundref_insert,":virt",bcd->virt);
       step(db,derivedcompoundref_insert);
