@@ -3,7 +3,7 @@
 // config: EXAMPLE_PATH = .
 
 /** \mainpage
- *  A bubble sort algoritm
+ *  A bubble sort algorithm
  *  First get the inputs
  *  \snippet snippet_test.cpp input
  *  Then do the bubbling
