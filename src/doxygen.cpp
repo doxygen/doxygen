@@ -11672,7 +11672,7 @@ void generateOutput()
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString("HTML_OUTPUT"));
     portable_sysTimerStart();
-    if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
+	if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", Debug::isFlagSet(Debug::ExtCmd)))
     {
       err("failed to run html help compiler on index.hhp\n");
     }
