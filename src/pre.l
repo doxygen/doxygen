@@ -2465,7 +2465,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>"```"[~]*                 {
+<SkipCComment>"```"[`]*                 {
                                           static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
                                           if (!markdownSupport)
                                           {
@@ -2619,7 +2619,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             BEGIN(SkipCComment);
                                           }
                                         }
-<SkipVerbatim>"```"[~]*                 {
+<SkipVerbatim>"```"[`]*                 {
   					  outputArray(yytext,(int)yyleng);
                                           if (g_fenceSize==yyleng)
                                           {
