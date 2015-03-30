@@ -6271,6 +6271,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
+<DocBlock>"```"[~]*                     {
+                                          docBlock+=yytext;
+                                          docBlockName="```";
+                                          g_fencedSize=yyleng;
+                                          g_nestedComment=FALSE;
+                                          BEGIN(DocCopyBlock);
+                                        }
 <DocBlock>{B}*"<code>"                  {
   					  if (insideCS)
 					  {
@@ -6383,6 +6390,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <DocCopyBlock>"~~~"[~]*                 {
+                                          docBlock+=yytext;
+                                          if (g_fencedSize==yyleng)
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
+                                        }
+<DocCopyBlock>"```"[~]*                 {
                                           docBlock+=yytext;
                                           if (g_fencedSize==yyleng)
                                           {

@@ -1366,7 +1366,9 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
   int startTildes=0;
   while (i<size && data[i]==' ') indent++,i++;
   if (indent>=refIndent+4) return FALSE; // part of code block
-  while (i<size && data[i]=='~') startTildes++,i++;
+  char tildaChar='~';
+  if (i<size && data[i]=='`') tildaChar='`';
+  while (i<size && data[i]==tildaChar) startTildes++,i++;
   if (startTildes<3) return FALSE; // not enough tildes
   if (i<size && data[i]=='{') i++; // skip over optional {
   int startLang=i;
@@ -1376,11 +1378,11 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
   start=i;
   while (i<size)
   {
-    if (data[i]=='~')
+    if (data[i]==tildaChar)
     {
       end=i-1;
       int endTildes=0;
-      while (i<size && data[i]=='~') endTildes++,i++; 
+      while (i<size && data[i]==tildaChar) endTildes++,i++;
       while (i<size && data[i]==' ') i++;
       if (i==size || data[i]=='\n') 
       {
