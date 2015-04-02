@@ -2591,6 +2591,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ldef=ldef.mid(2);
     }
   }
+  else if (isFunction())
+  {
+    title+=argsString();
+  }
   int i=0,l;
   static QRegExp r("@[0-9]+");
 
