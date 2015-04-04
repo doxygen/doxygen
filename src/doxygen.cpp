@@ -8726,9 +8726,8 @@ static void findMainPage(EntryNav *rootNav)
     {
       Entry *root = rootNav->entry();
       warn(root->fileName,root->startLine,
-          "found more than one \\mainpage comment block! Skipping this "
-          "block."
-          );
+           "found more than one \\mainpage comment block! (first occurrence: %s, line %d), Skipping current block!",
+           Doxygen::mainPage->docFile().data(),Doxygen::mainPage->docLine());
     }
 
     rootNav->releaseEntry();
@@ -11673,7 +11672,7 @@ void generateOutput()
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString("HTML_OUTPUT"));
     portable_sysTimerStart();
-    if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
+	if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", Debug::isFlagSet(Debug::ExtCmd)))
     {
       err("failed to run html help compiler on index.hhp\n");
     }

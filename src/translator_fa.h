@@ -1022,7 +1022,7 @@ class TranslatorPersian : public TranslatorAdapter_1_7_5
         "<li>%A filled black box represents the struct or class for which the "
         "graph is generated.\n"
         "<li>%A box with a black border denotes a documented struct or class.\n"
-        "<li>%A box with a grey border denotes an undocumented struct or class.\n"
+        "<li>%A box with a gray border denotes an undocumented struct or class.\n"
         "<li>%A box with a red border denotes a documented struct or class for"
         "which not all inheritance/containment relations are shown. %A graph is "
         "truncated if it does not fit within the specified boundaries.\n"

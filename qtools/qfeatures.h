@@ -378,7 +378,7 @@
 */
 //#define QT_NO_QWS_DEPTH_1
 /*!
-    4-bit greyscale
+    4-bit grayscale
 */
 //#define QT_NO_QWS_DEPTH_4
 /*!

@@ -1028,6 +1028,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
         "Nesting level %d %s",g_nestingCount+1,tmp.data()); // add one for "normal" expected end of comment
   }
   g_commentStack.clear();
+  g_nestingCount = 0;
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     g_outBuf->at(g_outBuf->curPos())='\0';

@@ -17,7 +17,7 @@
 @interface Integer (Arithmetic)
 /** add operation */
 - (id) add: (Integer *) addend;
-/** substract operation */
+/** subtract operation */
 - (id) sub: (Integer *) subtrahend;
 @end
 
