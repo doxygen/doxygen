@@ -6427,6 +6427,7 @@ static void findMember(EntryNav *rootNav,
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
+          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
@@ -6494,6 +6495,7 @@ static void findMember(EntryNav *rootNav,
           doc+="<p>";
           doc+=root->doc;
           md->setDocumentation(doc,root->docFile,root->docLine);
+          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
