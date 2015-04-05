@@ -2452,7 +2452,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment>"~~~"[~]*                 {
+<SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
                                           static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
                                           if (!markdownSupport)
                                           {
@@ -2465,7 +2465,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>"```"[`]*                 {
+<SkipCComment>^({B}*"*"+)?{B}{0,3}"```"[`]*            {
                                           static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
                                           if (!markdownSupport)
                                           {
@@ -2612,14 +2612,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(SkipCComment);
 					  }
   					}
-<SkipVerbatim>"~~~"[~]*                 {
+<SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
   					  outputArray(yytext,(int)yyleng);
                                           if (g_fenceSize==yyleng)
                                           {
                                             BEGIN(SkipCComment);
                                           }
                                         }
-<SkipVerbatim>"```"[`]*                 {
+<SkipVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
   					  outputArray(yytext,(int)yyleng);
                                           if (g_fenceSize==yyleng)
                                           {
@@ -2629,7 +2629,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipVerbatim>"*/"|"/*"			{
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment,SkipVerbatim>[^*\\@\x06~\n\/]+ {
+<SkipCComment,SkipVerbatim>[^*\\@\x06~`\n\/]+ {
   					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 

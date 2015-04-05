@@ -6264,14 +6264,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
-<DocBlock>"~~~"[~]*                     {
+<DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
                                           docBlock+=yytext;
                                           docBlockName="~~~";
                                           g_fencedSize=yyleng;
                                           g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>"```"[`]*                     {
+<DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                {
                                           docBlock+=yytext;
                                           docBlockName="```";
                                           g_fencedSize=yyleng;
@@ -6389,14 +6389,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    REJECT;
 					  }
   					}
-<DocCopyBlock>"~~~"[~]*                 {
+<DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
                                           docBlock+=yytext;
                                           if (g_fencedSize==yyleng)
                                           {
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>"```"[`]*                 {
+<DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           docBlock+=yytext;
                                           if (g_fencedSize==yyleng)
                                           {
