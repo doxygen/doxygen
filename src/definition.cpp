@@ -1667,7 +1667,8 @@ void Definition::writeToc(OutputList &ol)
       }
       cs[0]='0'+nextLevel;
       if (inLi[nextLevel]) ol.writeString("</li>\n");
-      ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:si->title)+"</a>");
+      QCString titleDoc = convertToHtml(si->title);
+      ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
       inLi[nextLevel]=TRUE;
       level = nextLevel;
     }
