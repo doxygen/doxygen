@@ -2318,7 +2318,7 @@ QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,cons
   // finally process the inline markup (links, emphasis and code spans)
   processInline(out,s,s.length());
   out.addChar(0);
-  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n---------\n",input.data(),out.get());
+  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n---------\n",qPrint(input),qPrint(out.get()));
   return out.get();
 }
 

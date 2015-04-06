@@ -1741,7 +1741,7 @@ void FileDef::acquireFileVersion()
   {
     msg("Version of %s : ",m_filePath.data());
     QCString cmd = vercmd+" \""+m_filePath+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
     FILE *f=portable_popen(cmd,"r");
     if (!f)
     {

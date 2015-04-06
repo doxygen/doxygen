@@ -238,15 +238,15 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
   if (dbg)
   {
     if (fileName)
-      fprintf(stderr,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, lexName, fileName);
+      fprintf(stderr,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, qPrint(lexName), qPrint(fileName));
     else
-      fprintf(stderr,"--%s lexical analyzer: %s\n",enter_txt, lexName);
+      fprintf(stderr,"--%s lexical analyzer: %s\n",enter_txt, qPrint(lexName));
   }
   else
   {
     if (fileName)
-      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, lexName, fileName);
+      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, qPrint(lexName), qPrint(fileName));
     else
-      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, lexName);
+      Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, qPrint(lexName));
   }
 }

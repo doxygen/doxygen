@@ -7521,7 +7521,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
   else
   {
     QCString cmd=filterName+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
     FILE *f=portable_popen(cmd,"r");
     if (!f)
     {
@@ -7539,7 +7539,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
     portable_pclose(f);
     inBuf.at(inBuf.curPos()) ='\0';
     Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",inBuf.data());
+    Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(inBuf));
   }
 
   int start=0;

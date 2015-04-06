@@ -2915,7 +2915,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
-               "input=[\n%s]\n",fileName.data(),lineNr,comment.data()
+               "input=[\n%s]\n",qPrint(fileName),lineNr,qPrint(comment)
               );
   
   commentscanYYrestart( commentscanYYin );
@@ -2962,9 +2962,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   Debug::print(Debug::CommentScan,0,
                "brief=[line=%d\n%s]\ndocs=[line=%d\n%s]\ninbody=[line=%d\n%s]\n===========\n",
-	       current->briefLine,current->brief.data(),
-               current->docLine,current->doc.data(),
-               current->inbodyLine,current->inbodyDocs.data()
+	       current->briefLine,qPrint(current->brief),
+               current->docLine,qPrint(current->doc),
+               current->inbodyLine,qPrint(current->inbodyDocs)
               );
   
   checkFormula();

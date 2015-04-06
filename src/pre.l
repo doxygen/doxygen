@@ -1618,11 +1618,11 @@ static void readIncludeFile(const QCString &inc)
       {
 	if (alreadyIncluded)
 	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",incFileName.data());
+          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",qPrint(incFileName));
 	}
 	else
 	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",incFileName.data());
+          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",qPrint(incFileName));
 	}
         //printf("error: include file %s not found\n",yytext);
       }
@@ -3199,7 +3199,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
       Define *def;
       for (di.toFirst();(def=di.current());++di)
       {
-        Debug::print(Debug::Preprocessor,0,"%s ",def->name.data());
+        Debug::print(Debug::Preprocessor,0,"%s ",qPrint(def->name));
       }
       Debug::print(Debug::Preprocessor,0,"\n---------\n");
     }

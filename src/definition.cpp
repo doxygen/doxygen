@@ -741,7 +741,7 @@ bool readCodeFragment(const char *fileName,
   else // use filter
   {
     QCString cmd=filter+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
     f = portable_popen(cmd,"r");
   }
   bool found = lang==SrcLangExt_VHDL   || 
@@ -868,7 +868,7 @@ bool readCodeFragment(const char *fileName,
     {
       portable_pclose(f); 
       Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",result.data());
+      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
     }
     else 
     {

@@ -3714,7 +3714,7 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
   ClassDef *templateClass=m_impl->templateInstances->find(templSpec);
   if (templateClass==0)
   {
-    Debug::print(Debug::Classes,0,"      New template instance class `%s'`%s'\n",name().data(),templSpec.data());
+    Debug::print(Debug::Classes,0,"      New template instance class `%s'`%s'\n",qPrint(name()),qPrint(templSpec));
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
     templateClass = new ClassDef(
         fileName,startLine,startColumn,tcname,ClassDef::Class);
