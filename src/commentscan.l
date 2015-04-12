@@ -3114,7 +3114,7 @@ void closeGroup(Entry *e,const char *fileName,int,bool foundInline)
     g_memberGroupId=DOX_NOGROUP;
     g_memberGroupRelates.resize(0);
     g_memberGroupDocs.resize(0);
-    e->mGrpId=DOX_NOGROUP;
+    if (!foundInline) e->mGrpId=DOX_NOGROUP;
     //printf("new group id=%d\n",g_memberGroupId);
   }
   else if (!g_autoGroupStack.isEmpty()) // end of auto group
