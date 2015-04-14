@@ -306,6 +306,7 @@ void ManGenerator::docify(const char *str)
     {
       switch(c)
       {
+        case '-':  t << "\\-"; break; // see  bug747780
         case '.':  t << "\\&."; break; // see  bug652277
         case '\\': t << "\\\\"; col++; break;
         case '\n': t << "\n"; col=0; break;
