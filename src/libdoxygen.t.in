@@ -71,6 +71,9 @@ sub GenerateLex {
 #$ GenerateDep("\$(GENERATED_SRC)/pycode.cpp","pycode.l");
 #$ GenerateLex("pycode",0);
 
+#$ GenerateDep("\$(GENERATED_SRC)/xmlcode.cpp","xmlcode.l");
+#$ GenerateLex("xmlcode",0);
+
 #$ GenerateDep("\$(GENERATED_SRC)/fortranscanner.cpp","fortranscanner.l");
 #$ GenerateLex("fortranscanner",1);
 

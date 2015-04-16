@@ -876,6 +876,9 @@
 			<File
 				RelativePath="$(IntDir)\pycode.cpp"
 				>
+			<File
+				RelativePath="$(IntDir)\xmlcode.cpp"
+				>
 			</File>
 			<File
 				RelativePath="$(IntDir)\pyscanner.cpp"
@@ -1157,6 +1160,9 @@
 			</File>
 			<File
 				RelativePath="..\src\pycode.l"
+				>
+			<File
+				RelativePath="..\src\xmlcode.l"
 				>
 			</File>
 			<File
@@ -4672,6 +4678,9 @@
 			<File
 				RelativePath="..\src\pycode.h"
 				>
+			<File
+				RelativePath="..\src\xmlcode.h"
+				>
 			</File>
 			<File
 				RelativePath="..\src\pyscanner.h"
@@ -4992,6 +5001,7 @@
 			<File
 				RelativePath="..\vhdlparser\vhdlstring.h"
 				>
+			</File>
 			</File>
 			<File
 				RelativePath="..\src\xmldocvisitor.h"
