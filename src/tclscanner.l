@@ -666,7 +666,9 @@ static void tcl_codify(const char *s,const char *str)
     tcl.code->startFontClass(s);
     tcl.code_font=s;
   }
-  const char *p=str,*sp=p;
+  char *tmp = (char *) malloc(strlen(str)+1);
+  strcpy(tmp, str);
+  char *p=tmp,*sp=p;
   char c;
   bool done=FALSE;
   while (!done)
@@ -676,7 +678,10 @@ static void tcl_codify(const char *s,const char *str)
     if (c=='\n')
     {
       tcl.code_line++;
-      // *(p-1)='\0'; // Dimitri: is this really needed?
+      *(p-1)='\0'; // Dimitri: is this really needed?
+                   // wtschueller: As far as I can see: yes.
+                   // Deletes that \n that would produce ugly source listings otherwise.
+                   // However, there may exist more sophisticated solutions.
       tcl.code->codify(sp);
       if (tcl.code_font)
       {
@@ -699,6 +704,7 @@ static void tcl_codify(const char *s,const char *str)
       done=TRUE;
     }
   }
+  free(tmp);
   tcl_font_end();
 }
 
