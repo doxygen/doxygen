@@ -986,7 +986,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
       FileDef *bodyDef = md->getBodyDef();
       if (bodyDef)
       {
-        t << " bodyfile=\"" << bodyDef->absFilePath() << "\"";
+        t << " bodyfile=\"" << stripFromPath(bodyDef->absFilePath()) << "\"";
       }
       t << " bodystart=\"" << md->getStartBodyLine() << "\" bodyend=\"" 
         << md->getEndBodyLine() << "\"";
@@ -1412,7 +1412,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
       FileDef *bodyDef = cd->getBodyDef();
       if (bodyDef)
       {
-        t << " bodyfile=\"" << bodyDef->absFilePath() << "\"";
+        t << " bodyfile=\"" << stripFromPath(bodyDef->absFilePath()) << "\"";
       }
       t << " bodystart=\"" << cd->getStartBodyLine() << "\" bodyend=\"" 
         << cd->getEndBodyLine() << "\"";
