@@ -2805,7 +2805,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}"[^*]*"*/"	{
-  					  closeGroup(current,yyFileName,yyLineNr);
+                                          bool insideEnum = YY_START==FindFields || (YY_START==ReadInitializer && lastInitializerContext==FindFields); // see bug746226
+  					  closeGroup(current,yyFileName,yyLineNr,insideEnum);
   					}
 <FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  current->bodyLine = yyLineNr;
@@ -6264,9 +6265,16 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           g_nestedComment=FALSE;
   					  BEGIN(DocCopyBlock);
   					}
-<DocBlock>"~~~"[~]*                     {
+<DocBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                {
                                           docBlock+=yytext;
                                           docBlockName="~~~";
+                                          g_fencedSize=yyleng;
+                                          g_nestedComment=FALSE;
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                {
+                                          docBlock+=yytext;
+                                          docBlockName="```";
                                           g_fencedSize=yyleng;
                                           g_nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
@@ -6382,7 +6390,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					    REJECT;
 					  }
   					}
-<DocCopyBlock>"~~~"[~]*                 {
+<DocCopyBlock>^({B}*"*"+)?{B}{0,3}"~~~"[~]* {
+                                          docBlock+=yytext;
+                                          if (g_fencedSize==yyleng)
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
+                                        }
+<DocCopyBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
                                           docBlock+=yytext;
                                           if (g_fencedSize==yyleng)
                                           {

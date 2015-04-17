@@ -2591,6 +2591,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ldef=ldef.mid(2);
     }
   }
+  else if (isFunction())
+  {
+    title+=argsString();
+  }
   int i=0,l;
   static QRegExp r("@[0-9]+");
 
@@ -2991,13 +2995,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   {
     if (!hasDocumentedParams())
     {
-      warn_doc_error(docFile(),docLine(),
+      warn_doc_error(getDefFileName(),getDefLine(),
           "parameters of member %s are not (all) documented",
           qPrint(qualifiedName()));
     }
     if (!hasDocumentedReturnType() && isFunction() && hasDocumentation())
     {
-      warn_doc_error(docFile(),docLine(),
+      warn_doc_error(getDefFileName(),getDefLine(),
           "return type of member %s is not documented",
           qPrint(qualifiedName()));
     }
@@ -3230,7 +3234,7 @@ void MemberDef::warnIfUndocumented()
       !isReference()
      )
   {
-    warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
+    warn_undoc(d->getDefFileName(),d->getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
          qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),t,qPrint(d->name()));
   }
 }

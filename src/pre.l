@@ -1618,11 +1618,11 @@ static void readIncludeFile(const QCString &inc)
       {
 	if (alreadyIncluded)
 	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",incFileName.data());
+          Debug::print(Debug::Preprocessor,0,"#include %s: already included! skipping...\n",qPrint(incFileName));
 	}
 	else
 	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",incFileName.data());
+          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",qPrint(incFileName));
 	}
         //printf("error: include file %s not found\n",yytext);
       }
@@ -2452,7 +2452,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment>"~~~"[~]*                 {
+<SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
+                                          static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
+                                          if (!markdownSupport)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+  					    outputArray(yytext,(int)yyleng);
+                                            g_fenceSize=yyleng;
+                                            BEGIN(SkipVerbatim);
+                                          }
+                                        }
+<SkipCComment>^({B}*"*"+)?{B}{0,3}"```"[`]*            {
                                           static bool markdownSupport = Config_getBool("MARKDOWN_SUPPORT");
                                           if (!markdownSupport)
                                           {
@@ -2599,7 +2612,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(SkipCComment);
 					  }
   					}
-<SkipVerbatim>"~~~"[~]*                 {
+<SkipVerbatim>^({B}*"*"+)?{B}{0,3}"~~~"[~]*                 {
+  					  outputArray(yytext,(int)yyleng);
+                                          if (g_fenceSize==yyleng)
+                                          {
+                                            BEGIN(SkipCComment);
+                                          }
+                                        }
+<SkipVerbatim>^({B}*"*"+)?{B}{0,3}"```"[`]*                 {
   					  outputArray(yytext,(int)yyleng);
                                           if (g_fenceSize==yyleng)
                                           {
@@ -2609,7 +2629,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipVerbatim>"*/"|"/*"			{
   					  outputArray(yytext,(int)yyleng);
   					}
-<SkipCComment,SkipVerbatim>[^*\\@\x06~\n\/]+ {
+<SkipCComment,SkipVerbatim>[^*\\@\x06~`\n\/]+ {
   					  outputArray(yytext,(int)yyleng);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 
@@ -3179,7 +3199,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
       Define *def;
       for (di.toFirst();(def=di.current());++di)
       {
-        Debug::print(Debug::Preprocessor,0,"%s ",def->name.data());
+        Debug::print(Debug::Preprocessor,0,"%s ",qPrint(def->name));
       }
       Debug::print(Debug::Preprocessor,0,"\n---------\n");
     }

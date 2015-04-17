@@ -1444,18 +1444,18 @@ void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 void LatexGenerator::writeAnchor(const char *fName,const char *name)
 { 
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
-  t << "\\label{" << name << "}" << endl; 
+  t << "\\label{" << stripPath(name) << "}" << endl; 
   static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   if (usePDFLatex && pdfHyperlinks)
   {
     if (fName)
     {
-      t << "\\hypertarget{" << stripPath(fName) << "_" << name << "}{}" << endl;
+      t << "\\hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}{}" << endl;
     }
     else
     {
-      t << "\\hypertarget{" << name << "}{}" << endl;
+      t << "\\hypertarget{" << stripPath(name) << "}{}" << endl;
     }
   }
 }

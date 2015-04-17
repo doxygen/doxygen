@@ -741,7 +741,7 @@ bool readCodeFragment(const char *fileName,
   else // use filter
   {
     QCString cmd=filter+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
     f = portable_popen(cmd,"r");
   }
   bool found = lang==SrcLangExt_VHDL   || 
@@ -868,7 +868,7 @@ bool readCodeFragment(const char *fileName,
     {
       portable_pclose(f); 
       Debug::print(Debug::FilterOutput, 0, "Filter output\n");
-      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",result.data());
+      Debug::print(Debug::FilterOutput,0,"-------------\n%s\n-------------\n",qPrint(result));
     }
     else 
     {
@@ -1667,7 +1667,8 @@ void Definition::writeToc(OutputList &ol)
       }
       cs[0]='0'+nextLevel;
       if (inLi[nextLevel]) ol.writeString("</li>\n");
-      ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:si->title)+"</a>");
+      QCString titleDoc = convertToHtml(si->title);
+      ol.writeString("<li class=\"level"+QCString(cs)+"\"><a href=\"#"+si->label+"\">"+(si->title.isEmpty()?si->label:titleDoc)+"</a>");
       inLi[nextLevel]=TRUE;
       level = nextLevel;
     }
