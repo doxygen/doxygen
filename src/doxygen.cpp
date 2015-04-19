@@ -72,7 +72,7 @@
 #include "htags.h"
 #include "pyscanner.h"
 #include "fortranscanner.h"
-#include "dbusxmlscanner.h"
+#include "xmlscanner.h"
 #include "tclscanner.h"
 #include "code.h"
 #include "objcache.h"
@@ -10010,7 +10010,7 @@ void initDoxygen()
   Doxygen::parserManager->registerParser("fortranfree",  new FortranLanguageScannerFree);
   Doxygen::parserManager->registerParser("fortranfixed", new FortranLanguageScannerFixed);
   Doxygen::parserManager->registerParser("vhdl",         new VHDLLanguageScanner);
-  Doxygen::parserManager->registerParser("dbusxml",      new DBusXMLScanner);
+  Doxygen::parserManager->registerParser("xml",          new XMLScanner);
   Doxygen::parserManager->registerParser("tcl",          new TclLanguageScanner);
   Doxygen::parserManager->registerParser("md",           new MarkdownFileParser);
 
@@ -11395,6 +11395,9 @@ void generateOutput()
   /**************************************************************************
    *            Initialize output generators                                *
    **************************************************************************/
+
+  /// add extra languages for which we can only produce syntax highlighted code
+  addCodeOnlyMappings();
 
   //// dump all symbols
   if (g_dumpSymbolMap)

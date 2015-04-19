@@ -6781,7 +6781,7 @@ g_lang2extMap[] =
   { "fortranfree", "fortranfree",   SrcLangExt_Fortran  },
   { "fortranfixed", "fortranfixed", SrcLangExt_Fortran  },
   { "vhdl",        "vhdl",          SrcLangExt_VHDL     },
-  { "dbusxml",     "dbusxml",       SrcLangExt_XML      },
+  { "xml",         "xml",           SrcLangExt_XML      },
   { "tcl",         "tcl",           SrcLangExt_Tcl      },
   { "md",          "md",            SrcLangExt_Markdown },
   { 0,             0,              (SrcLangExt)0        }
@@ -6875,8 +6875,11 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".qsf",      "vhdl");
   updateLanguageMapping(".md",       "md");
   updateLanguageMapping(".markdown", "md");
+}
 
-  updateLanguageMapping(".xml",   "dbusxml");
+void addCodeOnlyMappings()
+{
+  updateLanguageMapping(".xml",   "xml");
 }
 
 SrcLangExt getLanguageFromFileName(const QCString fileName)
