@@ -978,7 +978,7 @@ static void generateXMLForMember(MemberDef *md,FTextStream &ti,FTextStream &t,De
   if (md->getDefLine()!=-1)
   {
     t << "        <location file=\"" 
-      << md->getDefFileName() << "\" line=\"" 
+      << stripFromPath(md->getDefFileName()) << "\" line=\"" 
       << md->getDefLine() << "\"" << " column=\"" 
       << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
@@ -1404,7 +1404,7 @@ static void generateXMLForClass(ClassDef *cd,FTextStream &ti)
     t << "    </collaborationgraph>" << endl;
   }
   t << "    <location file=\"" 
-    << cd->getDefFileName() << "\" line=\"" 
+    << stripFromPath(cd->getDefFileName()) << "\" line=\"" 
     << cd->getDefLine() << "\"" << " column=\"" 
     << cd->getDefColumn() << "\"" ;
     if (cd->getStartBodyLine()!=-1)
@@ -1492,7 +1492,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,FTextStream &ti)
   writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
   t << "    </detaileddescription>" << endl;
   t << "    <location file=\""
-    << nd->getDefFileName() << "\" line=\""
+    << stripFromPath(nd->getDefFileName()) << "\" line=\""
     << nd->getDefLine() << "\"" << " column=\""
     << nd->getDefColumn() << "\"/>" << endl ;
   t << "  </compounddef>" << endl;
@@ -1634,7 +1634,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
     writeXMLCodeBlock(t,fd);
     t << "    </programlisting>" << endl;
   }
-  t << "    <location file=\"" << fd->getDefFileName() << "\"/>" << endl;
+  t << "    <location file=\"" << stripFromPath(fd->getDefFileName()) << "\"/>" << endl;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 
@@ -1748,7 +1748,7 @@ static void generateXMLForDir(DirDef *dd,FTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,dd->docFile(),dd->docLine(),dd,0,dd->documentation());
   t << "    </detaileddescription>" << endl;
-  t << "    <location file=\"" << dd->name() << "\"/>" << endl; 
+  t << "    <location file=\"" << stripFromPath(dd->name()) << "\"/>" << endl; 
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
 
