@@ -94,7 +94,7 @@ HEADERS      =	arguments.h \
                 pyscanner.h \
                 fortrancode.h \
                 fortranscanner.h \
-                dbusxmlscanner.h \
+                xmlscanner.h \
 		qhp.h \
 		qhpxmlwriter.h \
 		reflist.h \
@@ -135,7 +135,6 @@ SOURCES      =	arguments.cpp \
 		condparser.cpp \
 		context.cpp \
 		cppvalue.cpp \
-                dbusxmlscanner.cpp \
 		debug.cpp \
                 defgen.cpp \
 		define.cpp \

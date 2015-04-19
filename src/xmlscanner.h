@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 2009 by Tobias Hunger <tobias@aquazul.com>
+ * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby
- * granted. No representations are made about the suitability of this software
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,34 +13,28 @@
  *
  */
 
-#ifndef SCANNER_DBUSXML_H
-#define SCANNER_DBUSXML_H
+#ifndef XMLSCANNER_H
+#define XMLSCANNER_H
 
 #include "parserintf.h"
+#include "xmlcode.h"
 
-/** D-Bus XML parser.
- *
- *  This is the D-Bus XML parser for doxygen.
+/** XML scanner. Only support syntax highlighting of code at the moment.
  */
-class DBusXMLScanner : public ParserInterface
+class XMLScanner : public ParserInterface
 {
 public:
-    DBusXMLScanner();
-    virtual ~DBusXMLScanner();
+    XMLScanner() {}
+    virtual ~XMLScanner() {}
     void startTranslationUnit(const char *) {}
     void finishTranslationUnit() {}
-    void parseInput(const char *fileName,
-                    const char *fileBuf,
-                    Entry *root,
-                    bool sameTranslationUnit,
-                    QStrList &filesInSameTranslationUnit);
-
-    bool needsPreprocessing(const QCString &extension);
+    void parseInput(const char *, const char *, Entry *, bool , QStrList &) {}
+    bool needsPreprocessing(const QCString &) { return FALSE; }
 
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
-                   SrcLangExt lang,
+                   SrcLangExt,
                    bool isExampleBlock,
                    const char *exampleName=0,
                    FileDef *fileDef=0,
@@ -53,11 +45,19 @@ public:
                    bool showLineNumbers=TRUE,
                    Definition *searchCtx=0,
                    bool collectXRefs=TRUE
-                  );
+                  )
+    {
+      parseXmlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                    fileDef,startLine,endLine,inlineFragment,memberDef,
+                    showLineNumbers,searchCtx,collectXRefs);
+    }
 
-    void resetCodeParserState();
+    void resetCodeParserState()
+    {
+      resetXmlCodeParserState();
+    }
 
-    void parsePrototype(const char *text);
+    void parsePrototype(const char *) {}
 
 private:
 };

@@ -234,7 +234,7 @@ namestart   [A-Za-z\200-\377_]
 namechar    [:A-Za-z\200-\377_0-9.-]
 esc         "&#"[0-9]+";"|"&#x"[0-9a-fA-F]+";"
 name        {namestart}{namechar}*
-comment     {open}"!!--"([^-]|"-"[^-])*"--"{close}
+comment     {open}"!--"([^-]|"-"[^-])*"--"{close}
 data        "random string"
 string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
  
@@ -299,8 +299,8 @@ string      \"([^"&]|{esc})*\"|\'([^'&]|{esc})*\'
                     }
 {comment}           {
                         // Strip off the extra '!'
-                        yytext++; // <
-                        *yytext = '<'; // replace '!' with '<'
+                        // yytext++; // <
+                        // *yytext = '<'; // replace '!' with '<'
 
                         startFontClass("comment");
                         codifyLines(yytext);
