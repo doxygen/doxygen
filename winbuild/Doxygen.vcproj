@@ -5001,7 +5001,6 @@
 				RelativePath="..\vhdlparser\vhdlstring.h"
 				>
 			</File>
-			</File>
 			<File
 				RelativePath="..\src\xmldocvisitor.h"
 				>
