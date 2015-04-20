@@ -5634,9 +5634,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 					  BEGIN( ClassVar );
 					}
 <ClassVar>":"				{ 
-					  if (current->section==Entry::ENUM_SEC) // enum E:2, see bug 313527, 
+					  if (current->section==Entry::ENUM_SEC || current->section==Entry::VARIABLE_SEC) // enum E:2, see bug 313527,
                                                                                  // or C++11 style enum: 'E : unsigned int {...}'
 					  {
+						current->section = Entry::ENUM_SEC;
 					    current->args.resize(0);
   					    BEGIN(EnumBaseType);
 					  }
