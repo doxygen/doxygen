@@ -6214,7 +6214,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
  /* ---- Comments blocks ------ */
 
 <DocBlock>"*"*"*/"			{ // end of comment block
-  				          handleCommentBlock(docBlock.data(),FALSE);
+					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
 					  BEGIN(docBlockContext);
   					}
 <DocBlock>^{B}*"*"+/[^/]		{ 
