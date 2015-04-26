@@ -3664,7 +3664,8 @@ int DocHtmlTable::parseXml()
   DBG(("DocHtmlTable::parseXml() end\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
-  return retval==RetVal_EndTable ? RetVal_OK : retval;
+  tagId=Mappers::htmlTagMapper->map(g_token->name);
+  return tagId==XML_LIST && g_token->endTag ? RetVal_OK : retval;
 }
 
 /** Helper class to compute the grid for an HTML style table */
@@ -6237,9 +6238,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case XML_REMARKS:
     case XML_PARA:
     case XML_VALUE:
-    case XML_LIST:
     case XML_EXAMPLE:
     case XML_PARAM:
+    case XML_LIST:
     case XML_TYPEPARAM:
     case XML_RETURNS:
     case XML_SEE:
