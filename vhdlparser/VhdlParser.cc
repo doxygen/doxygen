@@ -1673,7 +1673,7 @@ assert(false);
 QCString VhdlParser::choice() {QCString s;
     if (jj_2_10(2147483647)) {if (!hasError) {
       
-      s = simple_expression();
+      s = discrete_range();
       }
       if (!hasError) {
       
@@ -1682,7 +1682,7 @@ return s;
       
     } else if (jj_2_11(2147483647)) {if (!hasError) {
       
-      s = discrete_range();
+      s = simple_expression();
       }
       if (!hasError) {
       
@@ -1998,7 +1998,7 @@ return s;
       }
       if (!hasError) {
       
-return s;
+return s+"#";
       }
       
       break;
@@ -2960,7 +2960,9 @@ QCString VhdlParser::element_declaration() {QCString s,s1;if (!hasError) {
     jj_consume_token(SEMI_T);
     }
     
-return s+":"+s1;
+addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s1.data(),Public);
+  //addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,s1.data(),Public);
+  return s+":"+s1;
 assert(false);
   }
 
@@ -4411,7 +4413,7 @@ assert(false);
   }
 
 
-QCString VhdlParser::full_type_declaration() {QCString s,s1,s2;if (!hasError) {
+QCString VhdlParser::full_type_declaration() {Entry *tmpEntry;QCString s,s1,s2;if (!hasError) {
     
     jj_consume_token(TYPE_T);
     }
@@ -4422,6 +4424,11 @@ QCString VhdlParser::full_type_declaration() {QCString s,s1,s2;if (!hasError) {
     if (!hasError) {
     
     jj_consume_token(IS_T);
+    }
+    if (!hasError) {
+    
+tmpEntry=current;
+  addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,0,Public);
     }
     if (!hasError) {
     
@@ -4439,8 +4446,25 @@ error_skipto(SEMI_T);
     jj_consume_token(SEMI_T);
     }
     
-addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,s2.data(),Public);
-          return "type "+s+" is "+s2+";";
+if (s2.contains("#")) {
+        VhdlDocGen::deleteAllChars(s2,'#');
+        tmpEntry->spec=VhdlDocGen::RECORD;
+        tmpEntry->type=s2.data();
+        //addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s2.data(),Public);
+      }
+      else if (s2.contains("%")) {
+        VhdlDocGen::deleteAllChars(s2,'%');
+        tmpEntry->spec=VhdlDocGen::UNITS;
+        tmpEntry->type=s2.data();
+        //addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::UNITS,s2.data(),s2.data(),Public);
+      }
+      else {
+        tmpEntry->spec=VhdlDocGen::TYPE;
+        tmpEntry->type=s2.data();
+        //addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,s2.data(),Public);
+      }
+      tmpEntry=0;
+      return "type "+s+" is "+s2+";";
 assert(false);
   }
 
@@ -7171,6 +7195,10 @@ QCString VhdlParser::physical_type_definition() {QCString s,s1,s2;if (!hasError)
     }
     if (!hasError) {
     
+addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,0,Public);
+    }
+    if (!hasError) {
+    
     while (!hasError) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case BASIC_IDENTIFIER:
@@ -7184,10 +7212,6 @@ QCString VhdlParser::physical_type_definition() {QCString s,s1,s2;if (!hasError)
       }if (!hasError) {
       
       s1 = secondary_unit_declaration();
-      }
-      if (!hasError) {
-      
-s2+=s1;s2+="#";
       }
       
     }
@@ -7220,10 +7244,7 @@ s2+=s1;s2+="#";
     }
     }
     
-current->args=s2;
-               current->args.prepend("units");
-             current->spec=VhdlDocGen::UNITS;
-            return s2;
+return s+"%";
 assert(false);
   }
 
@@ -8352,7 +8373,7 @@ return s;
       }
       if (!hasError) {
       
-s+=" ";s+=s1;return s;
+return s+" "+s1+"%";
       }
       
       break;
@@ -8407,7 +8428,10 @@ QCString VhdlParser::secondary_unit_declaration() {QCString s,s1;if (!hasError) 
     jj_consume_token(SEMI_T);
     }
     
-return s+"="+s1;
+//printf("\n %s %s [%d]",s.data(),s1.data(),getLine());
+  addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,s1.data(),Public);
+
+  return s+"="+s1;
 assert(false);
   }
 
