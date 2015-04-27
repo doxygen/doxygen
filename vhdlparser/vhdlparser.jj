@@ -18,7 +18,7 @@ options {
   TOKEN_MANAGER_INCLUDES="VhdlParser.h";
 
  //OUTPUT_DIRECTORY = ".";
-// DEBUG_PARSER=true;
+ //DEBUG_PARSER=true;
  //DEBUG_LOOKAHEAD=true;
 
   }
@@ -256,7 +256,7 @@ TOKEN :
 | < COMMA_T: "," >
 | < VARASSIGN_T: ":=" >
 | < COLON_T: ":" >
-| < SEMI_T: ";" >
+| < SEMI_T: ";" >{::vhdl::parser::VhdlParser::setLineParsed(SEMI_T);}
 | < LESSTHAN_T: "<=" >
 | < GREATERTHAN_T: ">=" >
 | < LT_T: "<" >
@@ -303,7 +303,7 @@ TOKEN:
  | < #LETTER_OR_DIGIT: ( <LETTER> | <DIGIT> ) >
  | < #LETTER: (<UPPER_CASE_LETTER>|<LOWER_CASE_LETTER>) >
  | < #UPPER_CASE_LETTER: ["A"-"Z"]  >
- | <BIT_STRING_LITERAL : <BASE_SPECIFIER >["\""](<LETTER_OR_DIGIT>)* ["\""] >
+ | <BIT_STRING_LITERAL : <BASE_SPECIFIER >["\""](<LETTER_OR_DIGIT>((["_"])*<LETTER_OR_DIGIT>)*) ["\""] >
  | <#BASE_SPECIFIER:["B","O","X","b","o","x"]>
  | < #DIGIT: ["0"-"9"] >
  | < #SPECIAL_CHARACTER: ["#","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","_","|"] >
@@ -656,11 +656,11 @@ QCString character_literal() :  {Token *tok=0;}
 
 QCString choice() : {QCString s;}
 {
-   LOOKAHEAD(simple_expression())
-  s=simple_expression(){ return s; }
-  |
   LOOKAHEAD(discrete_range())
   s=discrete_range(){ return s; }
+  |
+   LOOKAHEAD(simple_expression())
+   s=simple_expression(){ return s; }
   |
   LOOKAHEAD(identifier())
   s=identifier(){ return s; }
@@ -713,7 +713,7 @@ instantiation_list() <COLON_T> name()
 QCString composite_type_definition() :  { QCString s,s1;}
 {
  s=array_type_definition(){ return s; }
-| record_type_definition(){ return s; }
+| record_type_definition(){ return s+"#"; }
 }
 
 void concurrent_assertion_statement() :  {}
@@ -951,7 +951,13 @@ return s1;
 
 QCString element_declaration() :  {QCString s,s1;}
 {
-s=identifier_list() <COLON_T> s1=subtype_indication() <SEMI_T> {return s+":"+s1;}
+s=identifier_list() <COLON_T> s1=subtype_indication() <SEMI_T>
+{
+
+  addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s1.data(),Public);
+  //addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,s1.data(),Public);
+  return s+":"+s1;
+}
 }
 
 
@@ -1191,16 +1197,37 @@ QCString formal_part() : {QCString s,s1;}
 s=name() [<LPAREN_T> formal_designator() <RPAREN_T> {s+"("+s1+")";}] {return s;}
 }
 
-QCString full_type_declaration() :  {QCString s,s1,s2;}
+QCString full_type_declaration() :  {Entry *tmpEntry;QCString s,s1,s2;}
 {
 <TYPE_T> s=identifier() <IS_T>
+{
+  tmpEntry=current;
+  addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,0,Public);
+}
  try{
      s2=type_definition()
        }catch(...){error_skipto(SEMI_T);}
      <SEMI_T>
      {
-       addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,s2.data(),Public);
-          return "type "+s+" is "+s2+";";
+      if (s2.contains("#")) {
+        VhdlDocGen::deleteAllChars(s2,'#');
+        tmpEntry->spec=VhdlDocGen::RECORD;
+        tmpEntry->type=s2.data();
+        //addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s2.data(),Public);
+      }
+      else if (s2.contains("%")) {
+        VhdlDocGen::deleteAllChars(s2,'%');
+        tmpEntry->spec=VhdlDocGen::UNITS;
+        tmpEntry->type=s2.data();
+        //addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::UNITS,s2.data(),s2.data(),Public);
+      }
+      else {
+        tmpEntry->spec=VhdlDocGen::TYPE;
+        tmpEntry->type=s2.data();
+        //addVhdlType(s.data(),getLine(TYPE_T),Entry::VARIABLE_SEC,VhdlDocGen::TYPE,0,s2.data(),Public);
+      }
+      tmpEntry=0;
+      return "type "+s+" is "+s2+";";
      }
 }
 
@@ -1762,15 +1789,13 @@ QCString physical_literal() :  {QCString s,s1;}
 QCString physical_type_definition() : {QCString s,s1,s2;}
 {
         <UNITS_T>
-            s=identifier()<SEMI_T>
-            (s1=secondary_unit_declaration(){s2+=s1;s2+="#";})*
+            s=identifier()<SEMI_T> { addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,0,Public);}
+            (
+             s1=secondary_unit_declaration()
+            )*
             <END_T> <UNITS_T>  [name()]
-            {
-             current->args=s2;
-               current->args.prepend("units");
-             current->spec=VhdlDocGen::UNITS;
-            return s2;
-           }
+            { return s+"%";}
+
 }
 
 void port_clause() :  {}
@@ -1989,7 +2014,7 @@ QCString scalar_type_definition() : {QCString s,s1;}
 {
 
 s=enumeration_type_definition(){ return s;}
-| s=range_constraint() [LOOKAHEAD( physical_type_definition()) s1=physical_type_definition()] { s+=" ";s+=s1;return s;}
+| s=range_constraint() [LOOKAHEAD( physical_type_definition()) s1=physical_type_definition()] { return s+" "+s1+"%";}
 }
 
 void secondary_unit() :  {}
@@ -2000,7 +2025,12 @@ architecture_body()
 
 QCString secondary_unit_declaration() :  {QCString s,s1;}
 {
-s=identifier() <EQU_T> s1=physical_literal() <SEMI_T> { return s+"="+s1; }
+s=identifier() <EQU_T> s1=physical_literal() <SEMI_T>
+{
+  //printf("\n %s %s [%d]",s.data(),s1.data(),getLine());
+  addVhdlType(s.data(),getLine(),Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,s1.data(),Public);
+
+  return s+"="+s1; }
 }
 
 QCString selected_name() : {QCString s,s1;}
