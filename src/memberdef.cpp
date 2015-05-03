@@ -3231,7 +3231,7 @@ void MemberDef::warnIfUndocumented()
       !isFriendClass() &&
       name().find('@')==-1 && d && d->name().find('@')==-1 &&
       protectionLevelVisible(m_impl->prot) &&
-      !isReference()
+      !isReference() && !isDeleted()
      )
   {
     warn_undoc(d->getDefFileName(),d->getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
@@ -3258,11 +3258,16 @@ bool MemberDef::isDocumentedFriendClass() const
          (fcd=getClass(baseName)) && fcd->isLinkable());
 }
 
+bool MemberDef::isDeleted() const
+{
+  return m_impl->defArgList && m_impl->defArgList->isDeleted;
+}
+
 bool MemberDef::hasDocumentation() const
 {
   return Definition::hasDocumentation() ||
          (m_impl->mtype==MemberType_Enumeration && m_impl->docEnumValues) ||  // has enum values
-         (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation()); // has doc arguments
+         (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation());   // has doc arguments
 }
 
 #if 0

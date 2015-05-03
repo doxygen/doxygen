@@ -86,7 +86,8 @@ class ArgumentList : public QList<Argument>
     ArgumentList() : QList<Argument>(), 
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
-                     pureSpecifier(FALSE)
+                     pureSpecifier(FALSE),
+                     isDeleted(FALSE)
                      { setAutoDelete(TRUE); }
     /*! Destroys the argument list */
    ~ArgumentList() {}
@@ -102,7 +103,8 @@ class ArgumentList : public QList<Argument>
     bool pureSpecifier;
     /*! C++11 style Trailing return type? */
     QCString trailingReturnType;
-    /*! C++11 defaulted method */
+    /*! method with =delete */
+    bool isDeleted;
 
     static ArgumentList *unmarshal(StorageIntf *s);
     static void marshal(StorageIntf *s,ArgumentList *argList);

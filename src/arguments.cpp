@@ -32,6 +32,7 @@ ArgumentList *ArgumentList::deepCopy() const
   argList->volatileSpecifier  = volatileSpecifier;
   argList->pureSpecifier      = pureSpecifier;
   argList->trailingReturnType = trailingReturnType;
+  argList->isDeleted          = isDeleted;
 
   return argList;
 }
@@ -61,6 +62,7 @@ ArgumentList *ArgumentList::unmarshal(StorageIntf *s)
   result->volatileSpecifier  = unmarshalBool(s);
   result->pureSpecifier      = unmarshalBool(s);
   result->trailingReturnType = unmarshalQCString(s);
+  result->isDeleted          = unmarshalBool(s);
   return result;
 }
 
@@ -93,6 +95,7 @@ void ArgumentList::marshal(StorageIntf *s,ArgumentList *argList)
     marshalBool(s,argList->volatileSpecifier);
     marshalBool(s,argList->pureSpecifier);
     marshalQCString(s,argList->trailingReturnType);
+    marshalBool(s,argList->isDeleted);
   }
 }
 
