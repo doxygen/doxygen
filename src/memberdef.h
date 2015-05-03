@@ -188,6 +188,7 @@ class MemberDef : public Definition
     bool isLinkable() const;
     bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
     //bool hasUserDocumentation() const; // overrides hasUserDocumentation
+    bool isDeleted() const;
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup,bool inFile) const;
     bool isDetailedSectionLinkable() const;

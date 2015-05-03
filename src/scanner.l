@@ -4663,6 +4663,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           lineCount();
                                           current->args += " = delete";
 					  current->spec |= Entry::Delete;
+					  current->argList->isDeleted=TRUE;
                                           BEGIN(FuncQual);
                                         }
 <FuncQual,TrailingReturn>{BN}*"="{BN}*"default"{BN}*     { // C++11 explicitly defaulted constructor/assignment operator
