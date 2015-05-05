@@ -23,7 +23,7 @@
        - links to interface functions 
        - references to variables
 **/
-
+%option never-interactive
 %{
 
 /*
@@ -56,9 +56,9 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_TOP_STATE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 /*
  * For fixed formatted code position 6 is of importance (continuation character).

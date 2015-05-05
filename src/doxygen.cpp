@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <qtextcodec.h>
-#include <unistd.h>
 #include <errno.h>
 #include <qptrdict.h>
 #include <qtextstream.h>

@@ -14,7 +14,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+%option never-interactive
 %{
 
 /*
@@ -54,11 +54,11 @@
 #include "memberdef.h"
 #include "membername.h"
 
+#define YY_NO_UNISTD_H 1
+
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
-
-#define YY_NEVER_INTERACTIVE 1
 
 struct CondCtx
 {

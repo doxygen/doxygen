@@ -37,7 +37,7 @@
  *
  * - Must track yyLineNr when using REJECT, unput() or similar commands.
  */
-
+%option never-interactive
 %{
 
 #include <stdio.h> 
@@ -48,7 +48,6 @@
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
-#include <unistd.h> 
 #include <qfile.h>
 #include <qmap.h>
   
@@ -69,8 +68,8 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 enum ScanVar { V_IGNORE, V_VARIABLE, V_PARAMETER, V_RESULT};
 enum InterfaceType { IF_NONE, IF_SPECIFIC, IF_GENERIC, IF_ABSTRACT };

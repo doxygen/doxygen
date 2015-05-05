@@ -21,7 +21,7 @@
  *  taught by Peter H. Froehlich <phf@acm.org>.
  */
 
-
+%option never-interactive
 %{
 
 /*
@@ -35,7 +35,6 @@
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
-#include <unistd.h>
 #include <qfile.h>
 #include <qfileinfo.h>
   
@@ -55,8 +54,8 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 /* -----------------------------------------------------------------
  *

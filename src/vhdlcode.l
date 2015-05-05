@@ -17,7 +17,7 @@
  * written by M. Kreis
  * supports VHDL-87/93/2008
  ******************************************************************************/
-
+%option never-interactive
 %{
 
 /*
@@ -44,8 +44,8 @@
 #include "filedef.h"
 #include "tooltip.h"
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
   
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
