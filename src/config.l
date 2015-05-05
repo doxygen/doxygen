@@ -9,7 +9,7 @@
  * See the GNU General Public License for more details.
  *
  */
-
+%option never-interactive
 %{
 
 /*
@@ -45,6 +45,7 @@
 #undef Config_getBool
 
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 // use in-class definitions
 #define Config_getString(val)  getString(__FILE__,__LINE__,val)

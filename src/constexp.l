@@ -15,7 +15,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+%option never-interactive
 %{
 
 #include "constexp.h"  
@@ -23,8 +23,8 @@
 #include "ce_parse.h" // generated header file
 #include "message.h"
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
   
 QCString    g_strToken;  
 CPPValue    g_resultValue;

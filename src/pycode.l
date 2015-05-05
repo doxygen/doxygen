@@ -21,7 +21,7 @@
  *  taught by Peter H. Froehlich <phf@acm.org>.
  */
 
-
+%option never-interactive
 %{
 
 #include <stdio.h>
@@ -48,8 +48,8 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 static ClassSDict    g_codeClassSDict(17);
 static QCString      g_curClassName;

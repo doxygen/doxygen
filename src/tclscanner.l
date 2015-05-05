@@ -14,12 +14,12 @@
  * input used in their production; they are not affected by this license.
  *
  */ 
+%option never-interactive
 %{
 #include <stdio.h> 
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
-#include <unistd.h> 
 
 #include <qstring.h>
 #include <qstringlist.h>
@@ -51,8 +51,8 @@
 #include "namespacedef.h"
 #include "filedef.h"
 
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 #define MAX_INCLUDE_DEPTH 10
 
