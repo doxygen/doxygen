@@ -39,7 +39,7 @@
  *        type, and the matchArgumentList in util.cpp is be used to
  *        further determine the correct separation.
  */
-
+%option never-interactive
 %{
 
 /*
@@ -57,8 +57,8 @@
 #include "arguments.h"
 #include "message.h"
   
-#define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
   
 /* -----------------------------------------------------------------
  *	state variables

@@ -12,7 +12,8 @@
  * input used in their production; they are not affected by this license.
  *
  */
-  
+
+%option never-interactive
 %{
 
 /*
@@ -26,7 +27,6 @@
 #include <qarray.h>
 #include <qstack.h>
 #include <qregexp.h>
-#include <unistd.h>
 #include <qfile.h>
   
 #include "scanner.h"
@@ -49,6 +49,7 @@
 #include "formula.h"
 
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 // forward declarations
 static bool handleBrief(const QCString &);

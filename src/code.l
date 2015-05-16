@@ -14,7 +14,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+%option never-interactive
 %{
 
 /*
@@ -46,7 +46,7 @@
 //#define DBG_CTX(x) fprintf x
 #define DBG_CTX(x) do { } while(0)
 
-#define YY_NEVER_INTERACTIVE 1
+#define YY_NO_UNISTD_H 1
 
 #define CLASSBLOCK (int *)4
 #define SCOPEBLOCK (int *)8

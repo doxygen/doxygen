@@ -14,10 +14,8 @@
  * input used in their production; they are not affected by this license.
  *
  */
-
+%option never-interactive
 %{
-
-#define YY_NEVER_INTERACTIVE 1
 
   
 #include <stdio.h>
@@ -39,6 +37,7 @@
 #include <assert.h>
 
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 #define ADDCHAR(c)    g_outBuf->addChar(c)
 #define ADDARRAY(a,s) g_outBuf->addArray(a,s)
