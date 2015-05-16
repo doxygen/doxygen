@@ -62,66 +62,47 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
 
+# all resource files
+file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/templates/*/*)
 
 # resources.cpp
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/resources.cpp"
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/res2cc_cmd.py ${CMAKE_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
+    DEPENDS ${RESOURCES}
     OUTPUT ${GENERATED_SRC}/resources.cpp
 )
 set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 1)
 
-
-#
-function( to_c_cmd in_file out_file)
+# layout_default.xml
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/to_c_cmd.py < ${CMAKE_SOURCE_DIR}/templates/html/${in_file} > ${GENERATED_SRC}/${out_file}
-    DEPENDS ${CMAKE_SOURCE_DIR}/templates/html/${in_file}
-    OUTPUT ${GENERATED_SRC}/${out_file}
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/to_c_cmd.py < ${CMAKE_SOURCE_DIR}/src/layout_default.xml > ${GENERATED_SRC}/layout_default.xml.h
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/layout_default.xml
+    OUTPUT  ${GENERATED_SRC}/layout_default.xml.h
 )
-set_source_files_properties(${GENERATED_SRC}/${out_file} PROPERTIES GENERATED 1)
-endfunction()
+set_source_files_properties(${GENERATED_SRC}/layout_default.xml.h PROPERTIES GENERATED 1)
 
+# Targets for flex/bison   generated files
+FLEX_TARGET(scanner        scanner.l        ${GENERATED_SRC}/scanner.cpp        COMPILE_FLAGS "-PscannerYY")
+FLEX_TARGET(code           code.l           ${GENERATED_SRC}/code.cpp           COMPILE_FLAGS "-PcodeYY")
+FLEX_TARGET(pyscanner      pyscanner.l      ${GENERATED_SRC}/pyscanner.cpp      COMPILE_FLAGS "-PpyscannerYY")
+FLEX_TARGET(pycode         pycode.l         ${GENERATED_SRC}/pycode.cpp         COMPILE_FLAGS "-PpycodeYY")
+FLEX_TARGET(fortranscanner fortranscanner.l ${GENERATED_SRC}/fortranscanner.cpp COMPILE_FLAGS "-PfortranscannerYY -i")
+FLEX_TARGET(fortrancode    fortrancode.l    ${GENERATED_SRC}/fortrancode.cpp    COMPILE_FLAGS "-PfortrancodeYY -i")
+FLEX_TARGET(vhdlcode       vhdlcode.l       ${GENERATED_SRC}/vhdlcode.cpp       COMPILE_FLAGS "-PvhdlcodeYY -i")
+FLEX_TARGET(tclscanner     tclscanner.l     ${GENERATED_SRC}/tclscanner.cpp     COMPILE_FLAGS "-PtclscannerYY -i")
+FLEX_TARGET(pre            pre.l            ${GENERATED_SRC}/pre.cpp            COMPILE_FLAGS "-PpreYY")
+FLEX_TARGET(declinfo       declinfo.l       ${GENERATED_SRC}/declinfo.cpp       COMPILE_FLAGS "-PdeclinfoYY")
+FLEX_TARGET(defargs        defargs.l        ${GENERATED_SRC}/defargs.cpp        COMPILE_FLAGS "-PdefargsYY")
+FLEX_TARGET(doctokenizer   doctokenizer.l   ${GENERATED_SRC}/doctokenizer.cpp   COMPILE_FLAGS "-PdoctokenizerYY")
+FLEX_TARGET(commentcnv     commentcnv.l     ${GENERATED_SRC}/commentcnv.cpp     COMPILE_FLAGS "-PcommentcnvYY")
+FLEX_TARGET(commentscan    commentscan.l    ${GENERATED_SRC}/commentscan.cpp    COMPILE_FLAGS "-PcommentscanYY")
+FLEX_TARGET(constexp       constexp.l       ${GENERATED_SRC}/constexp.cpp       COMPILE_FLAGS "-PconstexpYY")
+FLEX_TARGET(xmlcode        xmlcode.l        ${GENERATED_SRC}/xmlcode.cpp        COMPILE_FLAGS "-PxmlcodeYY")
+FLEX_TARGET(config         config.l         ${GENERATED_SRC}/config.cpp         COMPILE_FLAGS "-PconfigYY")
 
-# Targets for flex/bison generated files
-FLEX_TARGET(scanner     scanner.l     ${GENERATED_SRC}/scanner.cpp      COMPILE_FLAGS "-PscannerYY")
-FLEX_TARGET(code        code.l        ${GENERATED_SRC}/code.cpp         COMPILE_FLAGS "-PcodeYY")
-FLEX_TARGET(pyscanner   pyscanner.l   ${GENERATED_SRC}/pyscanner.cpp    COMPILE_FLAGS "-PpyscannerYY")
-FLEX_TARGET(pycode      pycode.l      ${GENERATED_SRC}/pycode.cpp       COMPILE_FLAGS "-PpycodeYY")
-FLEX_TARGET(fortranscanner fortranscanner.l ${GENERATED_SRC}/fortranscanner.cpp COMPILE_FLAGS "-i -PfortranscannerYY")
-FLEX_TARGET(fortrancode fortrancode.l ${GENERATED_SRC}/fortrancode.cpp  COMPILE_FLAGS "-i -PfortrancodeYY")
-FLEX_TARGET(vhdlcode    vhdlcode.l    ${GENERATED_SRC}/vhdlcode.cpp     COMPILE_FLAGS "-i -PvhdlcodeYY")
-FLEX_TARGET(tclscanner  tclscanner.l  ${GENERATED_SRC}/tclscanner.cpp   COMPILE_FLAGS "-i -PtclscannerYY")
-FLEX_TARGET(pre         pre.l         ${GENERATED_SRC}/pre.cpp          COMPILE_FLAGS "-PpreYY")
-FLEX_TARGET(declinfo    declinfo.l    ${GENERATED_SRC}/declinfo.cpp     COMPILE_FLAGS "-PdeclinfoYY")
-FLEX_TARGET(defargs     defargs.l     ${GENERATED_SRC}/defargs.cpp      COMPILE_FLAGS "-PdefargsYY")
-FLEX_TARGET(doctokenizer doctokenizer.l     ${GENERATED_SRC}/doctokenizer.cpp   COMPILE_FLAGS "-PdoctokenizerYY")
-FLEX_TARGET(commentcnv  commentcnv.l  ${GENERATED_SRC}/commentcnv.cpp   COMPILE_FLAGS "-PcommentcnvYY")
-FLEX_TARGET(commentscan commentscan.l ${GENERATED_SRC}/commentscan.cpp  COMPILE_FLAGS "-PcommentscanYY")
-FLEX_TARGET(constexp    constexp.l    ${GENERATED_SRC}/constexp.cpp     COMPILE_FLAGS "-PconstexpYY")
-FLEX_TARGET(xmlcode     xmlcode.l     ${GENERATED_SRC}/xmlcode.cpp      COMPILE_FLAGS "-PxmlcodeYY")
-
-FLEX_TARGET(config      config.l      ${GENERATED_SRC}/config.cpp       COMPILE_FLAGS "-PconfigYY")
-
-BISON_TARGET(vhdlparser vhdlparser.y  ${GENERATED_SRC}/vhdlparser.cpp   COMPILE_FLAGS "-l -p vhdlscannerYY")
-BISON_TARGET(constexp   constexp.y    ${GENERATED_SRC}/ce_parse.cpp     COMPILE_FLAGS "-l -p constexpYY")
-
-
-to_c_cmd(navtree.js navtree.js.h)
-to_c_cmd(navtree.css navtree.css.h)
-to_c_cmd(resize.js resize.js.h)
-to_c_cmd(header.html header.html.h)
-to_c_cmd(footer.html footer.html.h)
-to_c_cmd(doxygen.css doxygen.css.h)
-to_c_cmd(layout_default.xml layout_default.xml.h)
-to_c_cmd(search_functions.php search_functions.php.h)
-to_c_cmd(search_opensearch.php search_opensearch.php.h)
-to_c_cmd(search.css search.css.h)
-to_c_cmd(jquery.js jquery.js.h)
-to_c_cmd(svgpan.js svgpan.js.h)
-to_c_cmd(dynsections.js dynsections.js.h)
-to_c_cmd(extsearch.js extsearch.js.h)
-to_c_cmd(search.js search.js.h)
+BISON_TARGET(vhdlparser    vhdlparser.y     ${GENERATED_SRC}/vhdlparser.cpp     COMPILE_FLAGS "-l -p vhdlscannerYY")
+BISON_TARGET(constexp      constexp.y       ${GENERATED_SRC}/ce_parse.cpp       COMPILE_FLAGS "-l -p constexpYY")
 
 add_library(doxycfg
     ${GENERATED_SRC}/lang_cfg.h
@@ -135,6 +116,7 @@ add_library(_doxygen
     # custom generated files
     ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/settings.h
+    ${GENERATED_SRC}/layout_default.xml.h
     ${GENERATED_SRC}/version.cpp
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
@@ -157,22 +139,6 @@ add_library(_doxygen
     ${GENERATED_SRC}/xmlcode.cpp
     #
     ${GENERATED_SRC}/ce_parse.cpp
-    # generated by to_c_cmd
-    ${GENERATED_SRC}/navtree.js.h
-    ${GENERATED_SRC}/navtree.css.h
-    ${GENERATED_SRC}/resize.js.h
-    ${GENERATED_SRC}/header.html.h
-    ${GENERATED_SRC}/footer.html.h
-    ${GENERATED_SRC}/doxygen.css.h
-    ${GENERATED_SRC}/layout_default.xml.h
-    ${GENERATED_SRC}/search_functions.php.h
-    ${GENERATED_SRC}/search_opensearch.php.h
-    ${GENERATED_SRC}/search.css.h
-    ${GENERATED_SRC}/jquery.js.h
-    ${GENERATED_SRC}/svgpan.js.h
-    ${GENERATED_SRC}/dynsections.js.h
-    ${GENERATED_SRC}/extsearch.js.h
-    ${GENERATED_SRC}/search.js.h
     #
     plantuml.cpp
     arguments.cpp
