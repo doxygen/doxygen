@@ -5,6 +5,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/libmd5
     ${CMAKE_SOURCE_DIR}/vhdlparser/
     ${CMAKE_SOURCE_DIR}/src
+    ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
 
@@ -233,4 +234,8 @@ target_link_libraries(doxygen
     ${ICONV_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBS}
+    ${CLANG_LIBS}
 )
+
+install(TARGETS doxygen DESTINATION bin)
+

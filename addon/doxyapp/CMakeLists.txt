@@ -20,6 +20,9 @@ vhdlparser
 ${ICONV_LIBRARIES}
 ${CMAKE_THREAD_LIBS_INIT}
 ${SQLITE3_LIBRARIES}
+${EXTRA_LIBS}
 )
+
+install(TARGETS doxyapp DESTINATION bin)
 
 endif()

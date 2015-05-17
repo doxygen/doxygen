@@ -1,25 +1,38 @@
+if (build_doc)
+
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(SED NAMES sed )
+find_program(MAKE NAMES make gmake )
+
+file(GLOB DOC_FILES "*")
+file(COPY ${DOC_FILES}   DESTINATION ${DOXYDOCS})
+file(COPY ${EXAMPLE_DIR} DESTINATION ${PROJECT_BINARY_DIR})
+
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
 
 add_custom_target(doc
-	ALL
 	COMMENT "Generating documentation in ${DOXYDOCS}"
 	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen
 	COMMAND ${CMAKE_COMMAND} -E remove_directory ../latex/refman.tex
 	COMMAND ${CMAKE_COMMAND} -E copy doxygen_logo.gif ../html
 	COMMAND ${CMAKE_COMMAND} -E copy doxygen_logo_low.gif ../html
 	COMMAND ${CMAKE_COMMAND} -E copy Makefile.latex ../latex/Makefile
-	COMMAND ${SED} -e "s/\$$VERSION/$(VERSION)/g" doxygen_manual.tex > ../latex/doxygen_manual.tex
-	COMMAND ${SED} -e "s/\$$VERSION/$(VERSION)/g" doxygen.sty > ../latex/doxygen.sty
+	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen_manual.tex > ../latex/doxygen_manual.tex
+	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen.sty > ../latex/doxygen.sty
 	COMMAND ${EPSTOPDF} doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
+        COMMAND ${MAKE} -C ../latex
 	DEPENDS doxygen language.doc config.doc
+                "${PROJECT_BINARY_DIR}/man/doxygen.1"
+                "${PROJECT_BINARY_DIR}/man/doxywizard.1"
+                "${PROJECT_BINARY_DIR}/man/doxysearch.1"
+                "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
 	WORKING_DIRECTORY ${DOXYDOCS}
 	VERBATIM
 	)
 
 # language.doc
 add_custom_command(
-	COMMAND ${PYTHON_EXECUTABLE} ${DOXYDOCS}/translator.py
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/run_translator.cmake
 	DEPENDS ${DOXYDOCS}/translator.py
 	DEPENDS maintainers.txt language.tpl translator.py
 	OUTPUT language.doc
@@ -35,3 +48,46 @@ add_custom_command(
 	WORKING_DIRECTORY ${DOXYDOCS}
 )
 set_source_files_properties(${DOXYDOCS}/config.doc PROPERTIES GENERATED 1)
+
+string(TIMESTAMP TODAY "%d-%m-%Y")
+
+add_custom_command(
+	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxygen.1 > "${PROJECT_BINARY_DIR}/man/doxygen.1"
+        OUTPUT "${PROJECT_BINARY_DIR}/man/doxygen.1"
+)
+
+add_custom_command(
+	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxywizard.1 > "${PROJECT_BINARY_DIR}/man/doxywizard.1"
+        OUTPUT "${PROJECT_BINARY_DIR}/man/doxywizard.1"
+)
+
+add_custom_command(
+	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxysearch.1 > "${PROJECT_BINARY_DIR}/man/doxysearch.1"
+        OUTPUT "${PROJECT_BINARY_DIR}/man/doxysearch.1"
+)
+
+add_custom_command(
+	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxyindexer.1 > "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
+        OUTPUT "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
+)
+
+install(FILES
+        "${PROJECT_BINARY_DIR}/man/doxygen.1"
+        "${PROJECT_BINARY_DIR}/man/doxywizard.1"
+        "${PROJECT_BINARY_DIR}/man/doxysearch.1"
+        "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
+        DESTINATION man/man1
+)
+
+install(FILES
+        "${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
+)
+
+install(DIRECTORY
+        "${PROJECT_BINARY_DIR}/examples"
+        "${PROJECT_BINARY_DIR}/html"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
+)
+
+endif()
