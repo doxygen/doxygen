@@ -1,0 +1,6 @@
+set(doxygen_version_major    "1" CACHE STRING "Major")
+set(doxygen_version_minor    "8" CACHE STRING "Minor")
+set(doxygen_version_revision "8" CACHE STRING "Revision")
+#set(doxygen_version_mmn      "-5" CACHE STRING "Mmn")
+set(VERSION "${doxygen_version_major}.${doxygen_version_minor}.${doxygen_version_revision}${doxygen_version_mmn}")
+set(ENV{VERSION} "${VERSION}")
