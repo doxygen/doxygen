@@ -3,9 +3,11 @@ compiler:
   - gcc
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install -qq  texlive texlive-extra-utils libxml2-utils perl
+    - sudo apt-get install -qq  texlive texlive-extra-utils libxml2-utils perl cmake
 script:
-    - ./configure --with-doxywizard
+    - mkdir build
+    - cd build
+    - cmake -Dbuild_wizard=true ..
     - make
     - make docs
     - make test

@@ -34,8 +34,6 @@
 /addon/doxyapp/Makefile.doxyapp
 /addon/doxywizard/Makefile
 /addon/doxywizard/Makefile.doxywizard
-/addon/doxmlparser/objects
-/addon/doxmlparser/lib
 /addon/doxmlparser/test/Makefile.xmlparse
 /addon/doxmlparser/test/xmlparse.exe
 /addon/doxmlparser/examples/metrics/obj
@@ -45,10 +43,6 @@
 /examples/Makefile
 /Makefile
 
-/bin
-/lib
-/generated_src
-/objects
 /moc
 /rcc
 
