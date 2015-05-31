@@ -2,14 +2,14 @@ language: cpp
 compiler:
   - gcc
 before_install:
-    - echo "yes" | sudo add-apt-repository ppa:kalakris/cmake
     - sudo apt-get update -qq
-    - sudo apt-get install -qq  texlive texlive-extra-utils libxml2-utils perl cmake
+    - sudo apt-get install -qq  texlive texlive-extra-utils libxml2-utils
+    - wget -qO- http://www.cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.tar.gz | tar xvz
 
 script:
     - mkdir build
     - cd build
-    - cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
+    - cmake-3.1.0-Linux-x86_64/bin/cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
     - make docs
     - make tests
