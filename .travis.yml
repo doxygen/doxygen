@@ -2,8 +2,10 @@ language: cpp
 compiler:
   - gcc
 before_install:
+    - echo "yes" | sudo add-apt-repository ppa:kalakris/cmake
     - sudo apt-get update -qq
-    - sudo apt-get install -qq  texlive texlive-extra-utils libxml2-utils perl
+    - sudo apt-get install -qq  texlive texlive-extra-utils libxml2-utils perl cmake
+
 script:
     - mkdir build
     - cd build
