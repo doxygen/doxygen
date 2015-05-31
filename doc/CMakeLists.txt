@@ -32,7 +32,7 @@ add_custom_target(docs
 
 # language.doc
 add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/run_translator.cmake
+        COMMAND ${CMAKE_COMMAND} "-DSOURCE=${CMAKE_SOURCE_DIR}" -P ${CMAKE_SOURCE_DIR}/cmake/run_translator.cmake
 	DEPENDS ${DOXYDOCS}/translator.py
 	DEPENDS maintainers.txt language.tpl translator.py
 	OUTPUT language.doc
