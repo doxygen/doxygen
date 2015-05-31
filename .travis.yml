@@ -9,7 +9,7 @@ before_install:
 script:
     - mkdir build
     - cd build
-    - ./cmake-3.1.0-Linux-x86_64/bin/cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
+    - ../cmake-3.1.0-Linux-x86_64/bin/cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
     - make docs
     - make tests
