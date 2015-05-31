@@ -1,4 +1,4 @@
-include(${CMAKE_SOURCE_DIR}/cmake/version.cmake)
+include(${CMAKE_SOURCE_DIR}/../cmake/version.cmake)
 find_program(PYTHON NAMES python)
 execute_process(
     COMMAND ${PYTHON} ${CMAKE_SOURCE_DIR}/translator.py
