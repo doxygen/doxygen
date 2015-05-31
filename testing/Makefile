@@ -1,3 +1,3 @@
 tests: 
-	@perl runtests.pl --doxygen ../bin/doxygen
+	@python runtests.py --doxygen ../build/bin/doxygen
 

@@ -1,6 +1,5 @@
 // objective: test the \snippet command
 // check: indexpage.xml
-// config: EXAMPLE_PATH = .
 
 /** \mainpage
  *  A bubble sort algorithm

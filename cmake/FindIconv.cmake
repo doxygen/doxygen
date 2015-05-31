@@ -45,14 +45,25 @@ if(NOT ICONV_INCLUDE_DIR STREQUAL "ICONV_INCLUDE_DIR-NOTFOUND")
 endif()
 
 if(NOT ICONV_IN_GLIBC)
-    find_library(ICONV_LIBRARY
-        NAMES iconv
-        HINTS
-        ${CMAKE_PREFIX_PATH}
-        ${ICONV_DIR}
-        $ENV{ICONV_DIR}
-        PATH_SUFFIXES lib64 lib
-        )
+    if (CMAKE_CL_64)
+        find_library(ICONV_LIBRARY
+            NAMES iconv64
+            HINTS
+            ${CMAKE_PREFIX_PATH}
+            ${ICONV_DIR}
+            $ENV{ICONV_DIR}
+            PATH_SUFFIXES lib64 lib
+            )
+    else()
+        find_library(ICONV_LIBRARY
+            NAMES iconv
+            HINTS
+            ${CMAKE_PREFIX_PATH}
+            ${ICONV_DIR}
+            $ENV{ICONV_DIR}
+            PATH_SUFFIXES lib64 lib
+            )
+    endif()
     set(ICONV_TEST ${ICONV_LIBRARY})
 else()
     set(ICONV_TEST "In glibc")

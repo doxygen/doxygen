@@ -1,6 +1,5 @@
 // objective: test the \htmlinclude command
 // check: indexpage.xml
-// config: EXAMPLE_PATH = .
 /** \mainpage
  * Some text.
  * \htmlinclude sample.html

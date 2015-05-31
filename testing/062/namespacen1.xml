@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="062_namespace_resolution.tcl" bodystart="12" bodyend="16"/>
+        <location file="062_namespace_resolution.tcl" line="12" column="1" bodyfile="062_namespace_resolution.tcl" bodystart="12" bodyend="16"/>
         <references refid="namespacen1_1a0bff29f718fa43e49b7ca79985afb5fa" compoundref="062__namespace__resolution_8tcl" startline="17" endline="20">p2</references>
       </memberdef>
       <memberdef kind="function" id="namespacen1_1a0bff29f718fa43e49b7ca79985afb5fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -29,7 +29,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="062_namespace_resolution.tcl" bodystart="17" bodyend="20"/>
+        <location file="062_namespace_resolution.tcl" line="17" column="1" bodyfile="062_namespace_resolution.tcl" bodystart="17" bodyend="20"/>
         <referencedby refid="namespacen1_1a9f23d7a7f141915457e8e26023d70cb4" compoundref="062__namespace__resolution_8tcl" startline="12" endline="16">p1</referencedby>
       </memberdef>
     </sectiondef>

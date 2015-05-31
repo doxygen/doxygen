@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="025_example.cpp" bodystart="20" bodyend="20"/>
+        <location file="025_example.cpp" line="17" column="1" bodyfile="025_example.cpp" bodystart="20" bodyend="20"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -25,7 +25,7 @@
     <detaileddescription>
       <para>More details about this class. </para>
     </detaileddescription>
-    <location file="025_example.cpp" bodystart="10" bodyend="18"/>
+    <location file="025_example.cpp" line="11" column="1" bodyfile="025_example.cpp" bodystart="10" bodyend="18"/>
     <listofallmembers>
       <member refid="class_test_1a47b775f65718978f1ffcd96376f8ecfa" prot="public" virt="non-virtual">
         <scope>Test</scope>

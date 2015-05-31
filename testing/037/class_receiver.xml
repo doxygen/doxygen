@@ -32,7 +32,7 @@
 </msc>
  </para>
     </detaileddescription>
-    <location file="037_msc.cpp" bodystart="28" bodyend="33"/>
+    <location file="037_msc.cpp" line="29" column="1" bodyfile="037_msc.cpp" bodystart="28" bodyend="33"/>
     <listofallmembers>
       <member refid="class_receiver_1a162099741e0324e6254c9bc570566e40" prot="public" virt="non-virtual">
         <scope>Receiver</scope>

@@ -1,7 +1,7 @@
 // objective: test the \cite command
 // check: indexpage.xml
 // check: citelist.xml
-// config: CITE_BIB_FILES = sample.bib
+// config: CITE_BIB_FILES = $INPUTDIR/sample.bib
 /** \mainpage
  *  See \cite knuth79 for more info.
  */

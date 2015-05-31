@@ -8,7 +8,7 @@
     <detaileddescription>
       <para>A class </para>
     </detaileddescription>
-    <location file="013_class.h" bodystart="10" bodyend="12"/>
+    <location file="013_class.h" line="11" column="1" bodyfile="013_class.h" bodystart="10" bodyend="12"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

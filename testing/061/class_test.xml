@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="061_bug_705503.tcl" bodystart="12" bodyend="12"/>
+        <location file="061_bug_705503.tcl" line="12" column="1" bodyfile="061_bug_705503.tcl" bodystart="12" bodyend="12"/>
       </memberdef>
       <memberdef kind="function" id="class_test_1ac7148d2852b30d157e078fe0fe58a350" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
@@ -29,7 +29,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="061_bug_705503.tcl" bodystart="16" bodyend="16"/>
+        <location file="061_bug_705503.tcl" line="16" column="1" bodyfile="061_bug_705503.tcl" bodystart="16" bodyend="16"/>
       </memberdef>
       <memberdef kind="function" id="class_test_1abdf3375950ec49e29f4bae947b7e3f26" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
@@ -43,7 +43,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="061_bug_705503.tcl" bodystart="19" bodyend="19"/>
+        <location file="061_bug_705503.tcl" line="19" column="1" bodyfile="061_bug_705503.tcl" bodystart="19" bodyend="19"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -51,7 +51,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="061_bug_705503.tcl" bodystart="10" bodyend="13"/>
+    <location file="061_bug_705503.tcl" line="10" column="1" bodyfile="061_bug_705503.tcl" bodystart="10" bodyend="13"/>
     <listofallmembers>
       <member refid="class_test_1ac7148d2852b30d157e078fe0fe58a350" prot="public" virt="non-virtual">
         <scope>Test</scope>

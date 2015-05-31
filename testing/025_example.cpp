@@ -1,7 +1,7 @@
 // objective: test the \example command
 // check: example_test_8cpp-example.xml
 // check: class_test.xml
-// config: EXAMPLE_PATH = .
+
 
 /** \brief A Test class.
  *

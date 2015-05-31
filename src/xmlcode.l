@@ -17,6 +17,7 @@
  * written by Weston Thayer
  ******************************************************************************/
 
+%option never-interactive
 %{
 
 #include <stdio.h>
@@ -35,6 +36,7 @@
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
+#define YY_NO_UNISTD_H 1
 
 static CodeOutputInterface * g_code;
 static QCString      g_curClassName;

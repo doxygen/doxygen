@@ -14,7 +14,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="015_cond.c" bodystart="20" bodyend="22"/>
+        <location file="015_cond.c" line="20" column="1" bodyfile="015_cond.c" bodystart="20" bodyend="22"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

@@ -8,7 +8,7 @@
     <detaileddescription>
       <para>class <ref refid="class_t2" kindref="compound">T2</ref> </para>
     </detaileddescription>
-    <location file="013_class.h" bodystart="14" bodyend="16"/>
+    <location file="013_class.h" line="15" column="1" bodyfile="013_class.h" bodystart="14" bodyend="16"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

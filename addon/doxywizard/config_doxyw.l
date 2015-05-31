@@ -12,6 +12,7 @@
  *
  */
 
+%option never-interactive
 %{
 
 /*
@@ -20,6 +21,8 @@
 #include "config.h"
 #include "input.h"
 #include <QtCore>
+
+#define YY_NO_UNISTD_H 1
 
 #define MAX_INCLUDE_DEPTH 10
 

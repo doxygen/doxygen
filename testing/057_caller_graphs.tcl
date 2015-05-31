@@ -15,7 +15,7 @@
 #// config: INLINE_SOURCES = no
 #// config: REFERENCED_BY_RELATION = yes
 #// config: REFERENCES_RELATION = yes
-#// config: INPUT = 057_caller_graphs.tcl _057_caller_graphs.tcl
+#// config: INPUT = $INPUTDIR/057_caller_graphs.tcl $INPUTDIR/_057_caller_graphs.tcl
 # config: HAVE_DOT = yes
 # config: CALLER_GRAPH = yes
 # config: CALL_GRAPH = yes

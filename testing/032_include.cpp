@@ -1,6 +1,5 @@
 // objective: test the \include and \includelineno commands
 // check: indexpage.xml
-// config: EXAMPLE_PATH = .
 
 /** \mainpage 
  *  Some text.

@@ -1,6 +1,5 @@
 // objective: test \verbatim and \verbinclude commands
 // check: indexpage.xml
-// config: EXAMPLE_PATH = .
 /** 
 \mainpage 
 Some normal text.

@@ -97,7 +97,7 @@
         </itemizedlist>
       </para>
     </detaileddescription>
-    <location file="064_castoperator.cpp" bodystart="20" bodyend="25"/>
+    <location file="064_castoperator.cpp" line="20" column="1" bodyfile="064_castoperator.cpp" bodystart="20" bodyend="25"/>
     <listofallmembers>
       <member refid="struct_foo_1aab9774d892b6cd4a0fbebd034b4c1fad" prot="public" virt="non-virtual">
         <scope>Foo</scope>

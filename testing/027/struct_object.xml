@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="027_extends.c" bodystart="21" bodyend="-1"/>
+        <location file="027_extends.c" line="21" column="1" bodyfile="027_extends.c" bodystart="21" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -86,7 +86,7 @@
         </childnode>
       </node>
     </inheritancegraph>
-    <location file="027_extends.c" bodystart="19" bodyend="22"/>
+    <location file="027_extends.c" line="20" column="1" bodyfile="027_extends.c" bodystart="19" bodyend="22"/>
     <listofallmembers>
       <member refid="struct_object_1a71225073d06a793b9a6ea9263ed37b12" prot="public" virt="non-virtual">
         <scope>Object</scope>

@@ -1,6 +1,5 @@
 // objective: test the \dontinclude, \skip, \until, \skipline, \line commands
 // check: indexpage.xml
-// config: EXAMPLE_PATH = .
 /*! A test class. */
 
 class Test

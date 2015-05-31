@@ -55,7 +55,7 @@
     <detaileddescription>
       <para>More details about this class. </para>
     </detaileddescription>
-    <location file="039_name.cpp" bodystart="8" bodyend="24"/>
+    <location file="039_name.cpp" line="9" column="1" bodyfile="039_name.cpp" bodystart="8" bodyend="24"/>
     <listofallmembers>
       <member refid="class_test_1a78e37a450a276b60a5a2fa4a46c86f2e" prot="public" virt="non-virtual">
         <scope>Test</scope>

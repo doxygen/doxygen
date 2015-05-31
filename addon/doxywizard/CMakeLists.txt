@@ -41,23 +41,6 @@ OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
-if (qt_static)
-    set(CompilerFlags
-        CMAKE_CXX_FLAGS
-        CMAKE_CXX_FLAGS_DEBUG
-        CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL
-        CMAKE_CXX_FLAGS_RELWITHDEBINFO
-        CMAKE_C_FLAGS
-        CMAKE_C_FLAGS_DEBUG
-        CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL
-        CMAKE_C_FLAGS_RELWITHDEBINFO)
-    foreach(CompilerFlag ${CompilerFlags})
-      string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-    endforeach()
-endif()
-
 FLEX_TARGET(config_doxyw config_doxyw.l ${GENERATED_SRC_WIZARD}/config_doxyw.cpp COMPILE_FLAGS "-Pconfig_doxywYY")
 
 QT4_WRAP_CPP(doxywizard_MOC

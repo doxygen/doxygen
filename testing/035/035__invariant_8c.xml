@@ -33,7 +33,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="035_invariant.c" bodystart="10" bodyend="15"/>
+        <location file="035_invariant.c" line="10" column="1" bodyfile="035_invariant.c" bodystart="10" bodyend="15"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

@@ -37,7 +37,7 @@
         </xrefsect>
       </para>
     </detaileddescription>
-    <location file="009_bug.cpp" bodystart="55" bodyend="60"/>
+    <location file="009_bug.cpp" line="56" column="1" bodyfile="009_bug.cpp" bodystart="55" bodyend="60"/>
     <listofallmembers>
       <member refid="class_reminder_1a173b5218bb11287b0e86a550d9f0728d" prot="public" virt="non-virtual">
         <scope>Reminder</scope>

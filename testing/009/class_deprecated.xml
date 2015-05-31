@@ -30,7 +30,7 @@
         </xrefsect>
       </para>
     </detaileddescription>
-    <location file="009_bug.cpp" bodystart="29" bodyend="36"/>
+    <location file="009_bug.cpp" line="30" column="1" bodyfile="009_bug.cpp" bodystart="29" bodyend="36"/>
     <listofallmembers>
       <member refid="class_deprecated_1a1d5f6803e72c625727e7083d1722dbf9" prot="public" virt="non-virtual">
         <scope>Deprecated</scope>

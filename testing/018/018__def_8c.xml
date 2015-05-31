@@ -40,7 +40,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" bodystart="13" bodyend="13"/>
+        <location file="018_def.c" line="13" column="1" bodyfile="018_def.c" bodystart="13" bodyend="13"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
@@ -56,7 +56,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" bodystart="12" bodyend="-1"/>
+        <location file="018_def.c" line="12" column="1" bodyfile="018_def.c" bodystart="12" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
@@ -73,7 +73,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" bodystart="9" bodyend="-1"/>
+        <location file="018_def.c" line="9" column="1" bodyfile="018_def.c" bodystart="9" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -92,7 +92,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" bodystart="10" bodyend="10"/>
+        <location file="018_def.c" line="10" column="1" bodyfile="018_def.c" bodystart="10" bodyend="10"/>
       </memberdef>
       <memberdef kind="function" id="018__def_8c_1a2652ccbfb85efa2df3c70ba6c4628f8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -112,7 +112,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" bodystart="11" bodyend="11"/>
+        <location file="018_def.c" line="11" column="1" bodyfile="018_def.c" bodystart="11" bodyend="11"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

@@ -21,7 +21,7 @@ option(build_search    "Build external search tools (doxysearch and doxyindexer)
 option(build_doc       "Build user manual" OFF)
 option(use_sqlite3     "Add support for sqlite3 output [experimental]." OFF)
 option(use_libclang    "Add support for libclang parsing." OFF)
-option(qt_static       "Link doxywizard with /MT in stead of /MD on windows" OFF)
+option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(version)
@@ -35,7 +35,6 @@ if (use_libclang)
 	set(clang    "1" CACHE INTERNAL "used in settings.h")
         find_package(LibClang REQUIRED)
 endif()
-
 
 if (${CMAKE_SYSTEM} MATCHES "Darwin")
     set(CMAKE_CXX_FLAGS "-Wno-deprecated-register -mmacosx-version-min=10.5 ${CMAKE_CXX_FLAGS}")
@@ -80,6 +79,24 @@ endif()
 if (${CUSTOM_LINK_DIR})
    link_directories(${CUSTOM_LINK_DIR})
 endif()
+
+if (win_static)
+    set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL
+        CMAKE_C_FLAGS_RELWITHDEBINFO)
+    foreach(CompilerFlag ${CompilerFlags})
+      string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+    endforeach()
+endif()
+
 
 add_subdirectory(libmd5)
 add_subdirectory(qtools)

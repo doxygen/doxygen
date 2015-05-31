@@ -18,7 +18,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="027_extends.c" bodystart="69" bodyend="-1"/>
+        <location file="027_extends.c" line="69" column="1" bodyfile="027_extends.c" bodystart="69" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -68,7 +68,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="027_extends.c" bodystart="67" bodyend="70"/>
+    <location file="027_extends.c" line="68" column="1" bodyfile="027_extends.c" bodystart="67" bodyend="70"/>
     <listofallmembers>
       <member refid="struct_car_1ab8ff28306286da5a8b14fa9bdccaafaa" prot="protected" virt="non-virtual">
         <scope>Car</scope>

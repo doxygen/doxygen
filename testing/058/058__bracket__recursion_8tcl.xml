@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="10" bodyend="13"/>
+        <location file="058_bracket_recursion.tcl" line="10" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="10" bodyend="13"/>
         <referencedby refid="058__bracket__recursion_8tcl_1ab08ae027fc5777bc4f0629f1b60b35db" compoundref="058__bracket__recursion_8tcl" startline="22" endline="25">a</referencedby>
         <referencedby refid="058__bracket__recursion_8tcl_1a68bdb74c144118d936931c46f75d4b3e" compoundref="058__bracket__recursion_8tcl" startline="28" endline="32">b</referencedby>
         <referencedby refid="058__bracket__recursion_8tcl_1ab14f56bc3bd7680490ece4ad7815465f" compoundref="058__bracket__recursion_8tcl" startline="33" endline="37">c</referencedby>
@@ -51,7 +51,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="16" bodyend="19"/>
+        <location file="058_bracket_recursion.tcl" line="16" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="16" bodyend="19"/>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1ab08ae027fc5777bc4f0629f1b60b35db" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
@@ -64,7 +64,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="22" bodyend="25"/>
+        <location file="058_bracket_recursion.tcl" line="22" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="22" bodyend="25"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a68bdb74c144118d936931c46f75d4b3e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -78,7 +78,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="28" bodyend="32"/>
+        <location file="058_bracket_recursion.tcl" line="28" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="28" bodyend="32"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1ab14f56bc3bd7680490ece4ad7815465f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -92,7 +92,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="33" bodyend="37"/>
+        <location file="058_bracket_recursion.tcl" line="33" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="33" bodyend="37"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1af43f4b1f0064a33b2d662af9f06d3a00" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -106,7 +106,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="38" bodyend="42"/>
+        <location file="058_bracket_recursion.tcl" line="38" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="38" bodyend="42"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1aff65a51a703804e0ad1adbcfd76c86f8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -120,7 +120,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="43" bodyend="46"/>
+        <location file="058_bracket_recursion.tcl" line="43" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="43" bodyend="46"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1af6830d2c644b45088ea8f1f74a46b778" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -134,7 +134,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="47" bodyend="50"/>
+        <location file="058_bracket_recursion.tcl" line="47" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="47" bodyend="50"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1af08b4b5bfa9edf0b0a7dee1c2b2c29e0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -148,7 +148,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="51" bodyend="55"/>
+        <location file="058_bracket_recursion.tcl" line="51" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="51" bodyend="55"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1af96fd0966e32a310a0778d2e5c357700" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -162,7 +162,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="56" bodyend="59"/>
+        <location file="058_bracket_recursion.tcl" line="56" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="56" bodyend="59"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a8c90afd4641b25be86bd09983c3cbee0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -176,7 +176,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="64" bodyend="68"/>
+        <location file="058_bracket_recursion.tcl" line="64" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="64" bodyend="68"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a2aaa92757686acea102cba3475f0c13b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -190,7 +190,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="69" bodyend="73"/>
+        <location file="058_bracket_recursion.tcl" line="69" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="69" bodyend="73"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a20363f854eb4098a446733d63d34dbc1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -204,7 +204,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="74" bodyend="77"/>
+        <location file="058_bracket_recursion.tcl" line="74" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="74" bodyend="77"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1aff56f84b49947b84b2a304f51cf8e678" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -218,7 +218,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="78" bodyend="81"/>
+        <location file="058_bracket_recursion.tcl" line="78" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="78" bodyend="81"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a78d127e8bda64d4471ac811ad512fbd9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -232,7 +232,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="82" bodyend="85"/>
+        <location file="058_bracket_recursion.tcl" line="82" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="82" bodyend="85"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1acdde3cd86eb2421ce8dbb2e85227d368" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -246,7 +246,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="86" bodyend="89"/>
+        <location file="058_bracket_recursion.tcl" line="86" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="86" bodyend="89"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a495e7a4ede0831107e9d435080a7c268" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -260,7 +260,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="90" bodyend="94"/>
+        <location file="058_bracket_recursion.tcl" line="90" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="90" bodyend="94"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a8a57650834f5708d404e9c386b2edf87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -274,7 +274,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="98" bodyend="101"/>
+        <location file="058_bracket_recursion.tcl" line="98" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="98" bodyend="101"/>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a15229b450f26d8fa1c10bea4f3279f4d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type/>
@@ -287,7 +287,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="102" bodyend="107"/>
+        <location file="058_bracket_recursion.tcl" line="102" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="102" bodyend="107"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1ab678a0a9a7e94bce5b17141f40220d88" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -301,7 +301,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="108" bodyend="114"/>
+        <location file="058_bracket_recursion.tcl" line="108" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="108" bodyend="114"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a0a0bd3dc69dd06934c4e6362155e0ace" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -315,7 +315,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="115" bodyend="120"/>
+        <location file="058_bracket_recursion.tcl" line="115" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="115" bodyend="120"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a011c73f2dbb87635a3b4206c72355f6e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -329,7 +329,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="121" bodyend="126"/>
+        <location file="058_bracket_recursion.tcl" line="121" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="121" bodyend="126"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a69e959f6901827e4d8271aeaa5fba0fc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -343,7 +343,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="128" bodyend="131"/>
+        <location file="058_bracket_recursion.tcl" line="128" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="128" bodyend="131"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a2fb1c5cf58867b5bbc9a1b145a86f3a0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -357,7 +357,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="137" bodyend="142"/>
+        <location file="058_bracket_recursion.tcl" line="137" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="137" bodyend="142"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
       <memberdef kind="function" id="058__bracket__recursion_8tcl_1a25ed1bcb423b0b7200f485fc5ff71c8e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
@@ -371,7 +371,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="058_bracket_recursion.tcl" bodystart="143" bodyend="148"/>
+        <location file="058_bracket_recursion.tcl" line="143" column="1" bodyfile="058_bracket_recursion.tcl" bodystart="143" bodyend="148"/>
         <references refid="058__bracket__recursion_8tcl_1aa889853547f65a22ae133cd57ff89601" compoundref="058__bracket__recursion_8tcl" startline="10" endline="13">Invoked</references>
       </memberdef>
     </sectiondef>

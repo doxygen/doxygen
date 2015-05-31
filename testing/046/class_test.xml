@@ -61,7 +61,7 @@
       <para>A test class <simplesect kind="see"><para><ref refid="class_test_1a1683da699dc049d74101488d143c8e98" kindref="member">Test::method()</ref></para></simplesect>
 </para>
     </detaileddescription>
-    <location file="046_related.cpp" bodystart="10" bodyend="15"/>
+    <location file="046_related.cpp" line="11" column="1" bodyfile="046_related.cpp" bodystart="10" bodyend="15"/>
     <listofallmembers>
       <member refid="class_test_1a1283d836e0611ff772c1b06a31ecbbfe" prot="public" virt="non-virtual">
         <scope>Test</scope>

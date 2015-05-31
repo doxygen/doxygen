@@ -32,7 +32,7 @@
         </xrefsect>
       </para>
     </detaileddescription>
-    <location file="009_bug.cpp" bodystart="15" bodyend="26"/>
+    <location file="009_bug.cpp" line="16" column="1" bodyfile="009_bug.cpp" bodystart="15" bodyend="26"/>
     <listofallmembers>
       <member refid="class_bug_1a1f720954dd97cd1203e80501a6eae74c" prot="public" virt="non-virtual">
         <scope>Bug</scope>

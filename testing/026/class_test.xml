@@ -41,7 +41,7 @@
       <para>A <ref refid="class_test" kindref="compound">Test</ref> class. More details about this class. <parameterlist kind="templateparam"><parameteritem><parameternamelist><parametername>T</parametername></parameternamelist><parameterdescription><para>A template parameter. </para></parameterdescription></parameteritem></parameterlist>
 </para>
     </detaileddescription>
-    <location file="026_exception.cpp" bodystart="8" bodyend="20"/>
+    <location file="026_exception.cpp" line="9" column="1" bodyfile="026_exception.cpp" bodystart="8" bodyend="20"/>
     <listofallmembers>
       <member refid="class_test_1abf9d5fbdaa4c23d0a513ee9746060779" prot="public" virt="non-virtual">
         <scope>Test</scope>
