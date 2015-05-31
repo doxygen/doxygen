@@ -10,7 +10,7 @@ file(COPY ${EXAMPLE_DIR} DESTINATION ${PROJECT_BINARY_DIR})
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
 
-add_custom_target(doc
+add_custom_target(docs
 	COMMENT "Generating documentation in ${DOXYDOCS}"
 	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen
 	COMMAND ${CMAKE_COMMAND} -E remove_directory ../latex/refman.tex

@@ -47,5 +47,5 @@ To see the current value is of the various options, you can run
 
   cmake -L path/to/root/of/doxygen/source/tree
 
-The build target for building the documentation is 'doc' and the build target for
+The build target for building the documentation is 'docs' and the build target for
 the regression tests is 'tests'
