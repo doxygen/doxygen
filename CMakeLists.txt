@@ -25,6 +25,7 @@ option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(SOURCE "${CMAKE_SOURCE_DIR}")
 include(version)
 
 set(sqlite3  "0" CACHE INTERNAL "used in settings.h")
