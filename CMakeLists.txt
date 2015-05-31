@@ -22,6 +22,7 @@ option(build_doc       "Build user manual" OFF)
 option(use_sqlite3     "Add support for sqlite3 output [experimental]." OFF)
 option(use_libclang    "Add support for libclang parsing." OFF)
 option(win_static      "Link with /MT in stead of /MD on windows" OFF)
+option(english_only    "Only compile in support for the English language" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(version)
@@ -71,6 +72,19 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(CUSTOM_INCLUDE_DIR "" CACHE FILEPATH "Extra include path")
 set(CUSTOM_LINK_DIR "" CACHE FILEPATH "Extra library path")
+
+# gather lang codes for translation
+if (english_only) # user only wants English
+  set(LANG_CODES "ENONLY")
+else() # find languages based on available translator files
+  set(LANG_CODES "")
+  file(GLOB lang_files RELATIVE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/src/translator_??.h")
+  foreach (_lang ${lang_files})
+    string(REGEX REPLACE "translator_(.*).h" "\\1" _lang_code ${_lang})
+    string(TOUPPER ${_lang_code} lang_code)
+    list(APPEND LANG_CODES "${lang_code}")
+  endforeach()
+endif()
 
 if (${CUSTOM_INCLUDE_DIR})
    include_directories(${CUSTOM_INCLUDE_DIR})

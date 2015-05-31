@@ -11,6 +11,7 @@ include_directories(
 
 
 file(MAKE_DIRECTORY ${GENERATED_SRC})
+file(GLOB LANGUAGE_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
 
 # instead of increasebuffer.py
 add_definitions(-DYY_BUF_SIZE=262144 -DYY_READ_BUF_SIZE=262144)
@@ -54,11 +55,11 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 
-
 # lang_cfg.h
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ENONLY 2> ${GENERATED_SRC}/lang_cfg.h
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ${LANG_CODES} 2> ${GENERATED_SRC}/lang_cfg.h
+    DEPENDS ${LANGUAGE_FILES}
     OUTPUT ${GENERATED_SRC}/lang_cfg.h
 )
 set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
