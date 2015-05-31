@@ -5,10 +5,16 @@ find_program(SED NAMES sed )
 find_program(MAKE NAMES make gmake )
 
 file(GLOB DOC_FILES "*")
+file(GLOB LANG_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
 file(COPY ${DOC_FILES}   DESTINATION ${DOXYDOCS})
 file(COPY ${EXAMPLE_DIR} DESTINATION ${PROJECT_BINARY_DIR})
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src)
+file(COPY ${CMAKE_SOURCE_DIR}/src/translator.h DESTINATION ${PROJECT_BINARY_DIR}/src)
+file(COPY ${CMAKE_SOURCE_DIR}/src/translator_adapter.h DESTINATION ${PROJECT_BINARY_DIR}/src)
+file(COPY ${LANG_FILES} DESTINATION ${PROJECT_BINARY_DIR}/src)
+file(COPY ${CMAKE_SOURCE_DIR}/VERSION DESTINATION ${PROJECT_BINARY_DIR})
 
 add_custom_target(docs
 	COMMENT "Generating documentation in ${DOXYDOCS}"
@@ -21,7 +27,7 @@ add_custom_target(docs
 	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen.sty > ../latex/doxygen.sty
 	COMMAND ${EPSTOPDF} doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
         COMMAND ${MAKE} -C ../latex
-	DEPENDS doxygen language.doc config.doc
+	DEPENDS doxygen ${PROJECT_BINARY_DIR}/doc/language.doc config.doc
                 "${PROJECT_BINARY_DIR}/man/doxygen.1"
                 "${PROJECT_BINARY_DIR}/man/doxywizard.1"
                 "${PROJECT_BINARY_DIR}/man/doxysearch.1"
@@ -35,7 +41,7 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} "-DSOURCE=${CMAKE_SOURCE_DIR}" -P ${CMAKE_SOURCE_DIR}/cmake/run_translator.cmake
 	DEPENDS ${DOXYDOCS}/translator.py
 	DEPENDS maintainers.txt language.tpl translator.py
-	OUTPUT language.doc
+	OUTPUT ${PROJECT_BINARY_DIR}/doc/language.doc
 	WORKING_DIRECTORY ${DOXYDOCS}
 )
 set_source_files_properties(${DOXYDOCS}/language.doc PROPERTIES GENERATED 1)
