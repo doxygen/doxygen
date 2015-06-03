@@ -26,7 +26,7 @@ class Tester:
 			return (True,'%s absent' % expected_file)
 		else:
 			diff = os.popen('diff -u %s %s' % (got_file,expected_file)).read()
-			if diff and not diff.isspace():
+			if diff and not diff.startswith("No differences"):
 				return (True,'Difference between generated output and reference:\n%s' % diff)
 		return (False,'')
 
