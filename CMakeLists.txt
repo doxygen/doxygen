@@ -75,17 +75,17 @@ set(CUSTOM_INCLUDE_DIR "" CACHE FILEPATH "Extra include path")
 set(CUSTOM_LINK_DIR "" CACHE FILEPATH "Extra library path")
 
 # gather lang codes for translation
+file(GLOB lang_files RELATIVE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/src/translator_??.h")
+set(lcodes "")
+foreach (_lang ${lang_files})
+  string(REGEX REPLACE "translator_(.*).h" "\\1" _lang_code ${_lang})
+  string(TOUPPER ${_lang_code} lang_code)
+  list(APPEND lcodes "${lang_code}")
+endforeach()
 if (english_only) # user only wants English
-  set(LANG_CODES "ENONLY")
-else() # find languages based on available translator files
-  set(LANG_CODES "")
-  file(GLOB lang_files RELATIVE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/src/translator_??.h")
-  foreach (_lang ${lang_files})
-    string(REGEX REPLACE "translator_(.*).h" "\\1" _lang_code ${_lang})
-    string(TOUPPER ${_lang_code} lang_code)
-    list(APPEND LANG_CODES "${lang_code}")
-  endforeach()
+  set(lcodes "ENONLY")
 endif()
+set(LANG_CODES ${lcodes} CACHE STRING "List of language codes for which translations should be compiled in")
 
 if (${CUSTOM_INCLUDE_DIR})
    include_directories(${CUSTOM_INCLUDE_DIR})

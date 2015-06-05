@@ -1,7 +1,7 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
 
 The first step is to create a build directory where the output should be stored.
-Doxygen directory can be fully build outside of the source tree.
+Doxygen can be fully build outside of the source tree.
 
 The second step is to invoke cmake from within the build directory with the desired generator.
 
@@ -27,11 +27,12 @@ Doxygen's cmake configuration provides a number of options:
 - build_wizard    Build the GUI frontend for doxygen.
 - build_app       Example showing how to embed doxygen in an application.
 - build_xmlparser Example showing how to parse doxygen's XML output.
-- build_search    Build external search tools (doxysearch and doxyindexer)
-- build_doc       Build user manual
+- build_search    Build external search tools (doxysearch and doxyindexer).
+- build_doc       Build user manual.
 - use_sqlite3     Add support for sqlite3 output [experimental].
 - use_libclang    Add support for libclang parsing.
-- win_static      Link with /MT in stead of /MD on windows
+- win_static      Link with /MT in stead of /MD on windows.
+- english_only    Only compile in support for the English language.
 
 An option can be turned on, by adding -D<option>=ON as a command line option, this can be
 done when generating the initial build files, but also afterwards, i.e. to enable building
