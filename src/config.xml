@@ -1243,7 +1243,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  The \c INPUT tag is used to specify the files and/or directories that contain 
  documented source files. You may enter file names like 
  \c myfile.cpp or directories like \c /usr/src/myproject. 
- Separate the files or directories with spaces.
+ Separate the files or directories with spaces. See also
+ \ref cfg_file_patterns "FILE_PATTERNS"  and
+ \ref cfg_extension_mapping "EXTENSION_MAPPING"
 
  \note If this tag is empty the current directory is searched.
 ]]>
@@ -1267,7 +1269,11 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If the value of the \ref cfg_input "INPUT" tag contains directories, you can use the 
  \c FILE_PATTERNS tag to specify one or more wildcard patterns 
  (like `*.cpp` and `*.h`) to filter out the source-files 
- in the directories. If left blank the following patterns are tested:
+ in the directories.<br>
+ Note that for custom extensions or not directly supported extensions you also
+ need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
+ otherwise the files are not read by doxygen.<br>
+ If left blank the following patterns are tested:
 ]]>
       </docs>
       <value name='*.c'/>
