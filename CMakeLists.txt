@@ -63,6 +63,7 @@ endif()
 find_package(Iconv REQUIRED)
 include_directories(${ICONV_INCLUDE_DIR})
 
+
 #set(DOXYDOCS ${CMAKE_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")
 set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
 set(EXAMPLE_DIR ${CMAKE_SOURCE_DIR}/examples)
@@ -73,6 +74,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(CUSTOM_INCLUDE_DIR "" CACHE FILEPATH "Extra include path")
 set(CUSTOM_LINK_DIR "" CACHE FILEPATH "Extra library path")
+
+# place binaries for all build types in the same directory, so we know where to find it
+# when running tests or generating docs
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXECUTABLE_OUTPUT_PATH})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${EXECUTABLE_OUTPUT_PATH})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${EXECUTABLE_OUTPUT_PATH})
 
 # gather lang codes for translation
 file(GLOB lang_files RELATIVE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/src/translator_??.h")
