@@ -15,7 +15,7 @@
 #include "inputint.h"
 #include "helplabel.h"
 
-#include <QtGui>
+#include <QtWidgets/QtWidgets>
 
 class NoWheelSpinBox : public QSpinBox
 {
@@ -74,11 +74,11 @@ void InputInt::updateDefault()
   {
     if (m_val==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+      m_lab->setText(QStringLiteral("<qt>")+m_id+QStringLiteral("</qt"));
     }
     else
     {
-      m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
+      m_lab->setText(QStringLiteral("<qt><font color='red'>")+m_id+QStringLiteral("</font></qt>"));
     }
     emit changed(); 
   }

@@ -2,7 +2,7 @@
 #define EXPERT_H
 
 #include <QSplitter>
-#include <QDomElement>
+#include <QtXml/QDomElement>
 #include <QHash>
 
 #include "docintf.h"

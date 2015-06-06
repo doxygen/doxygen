@@ -3,46 +3,46 @@
 #include "doxywizard.h"
 
 #include <math.h>
-#include <QtGui>
+#include <QtWidgets/QtWidgets>
 
 // options configurable via the wizard
-#define STR_PROJECT_NAME          QString::fromAscii("PROJECT_NAME")
-#define STR_PROJECT_LOGO          QString::fromAscii("PROJECT_LOGO")
-#define STR_PROJECT_BRIEF         QString::fromAscii("PROJECT_BRIEF")
-#define STR_INPUT                 QString::fromAscii("INPUT")
-#define STR_OUTPUT_DIRECTORY      QString::fromAscii("OUTPUT_DIRECTORY")
-#define STR_PROJECT_NUMBER        QString::fromAscii("PROJECT_NUMBER")
-#define STR_RECURSIVE             QString::fromAscii("RECURSIVE")
-#define STR_OPTIMIZE_OUTPUT_FOR_C QString::fromAscii("OPTIMIZE_OUTPUT_FOR_C")
-#define STR_OPTIMIZE_OUTPUT_JAVA  QString::fromAscii("OPTIMIZE_OUTPUT_JAVA")
-#define STR_OPTIMIZE_FOR_FORTRAN  QString::fromAscii("OPTIMIZE_FOR_FORTRAN")
-#define STR_OPTIMIZE_OUTPUT_VHDL  QString::fromAscii("OPTIMIZE_OUTPUT_VHDL")
-#define STR_CPP_CLI_SUPPORT       QString::fromAscii("CPP_CLI_SUPPORT")
-#define STR_HIDE_SCOPE_NAMES      QString::fromAscii("HIDE_SCOPE_NAMES")
-#define STR_EXTRACT_ALL           QString::fromAscii("EXTRACT_ALL")
-#define STR_SOURCE_BROWSER        QString::fromAscii("SOURCE_BROWSER")
-#define STR_GENERATE_HTML         QString::fromAscii("GENERATE_HTML")
-#define STR_GENERATE_LATEX        QString::fromAscii("GENERATE_LATEX")
-#define STR_GENERATE_MAN          QString::fromAscii("GENERATE_MAN")
-#define STR_GENERATE_RTF          QString::fromAscii("GENERATE_RTF")
-#define STR_GENERATE_XML          QString::fromAscii("GENERATE_XML")
-#define STR_GENERATE_HTMLHELP     QString::fromAscii("GENERATE_HTMLHELP")
-#define STR_GENERATE_TREEVIEW     QString::fromAscii("GENERATE_TREEVIEW")
-#define STR_USE_PDFLATEX          QString::fromAscii("USE_PDFLATEX")
-#define STR_PDF_HYPERLINKS        QString::fromAscii("PDF_HYPERLINKS")
-#define STR_SEARCHENGINE          QString::fromAscii("SEARCHENGINE")
-#define STR_HAVE_DOT              QString::fromAscii("HAVE_DOT")
-#define STR_CLASS_DIAGRAMS        QString::fromAscii("CLASS_DIAGRAMS")
-#define STR_CLASS_GRAPH           QString::fromAscii("CLASS_GRAPH")
-#define STR_COLLABORATION_GRAPH   QString::fromAscii("COLLABORATION_GRAPH")
-#define STR_GRAPHICAL_HIERARCHY   QString::fromAscii("GRAPHICAL_HIERARCHY")
-#define STR_INCLUDE_GRAPH         QString::fromAscii("INCLUDE_GRAPH")
-#define STR_INCLUDED_BY_GRAPH     QString::fromAscii("INCLUDED_BY_GRAPH")
-#define STR_CALL_GRAPH            QString::fromAscii("CALL_GRAPH")
-#define STR_CALLER_GRAPH          QString::fromAscii("CALLER_GRAPH")
-#define STR_HTML_COLORSTYLE_HUE   QString::fromAscii("HTML_COLORSTYLE_HUE")
-#define STR_HTML_COLORSTYLE_SAT   QString::fromAscii("HTML_COLORSTYLE_SAT")
-#define STR_HTML_COLORSTYLE_GAMMA QString::fromAscii("HTML_COLORSTYLE_GAMMA")
+#define STR_PROJECT_NAME          QStringLiteral("PROJECT_NAME")
+#define STR_PROJECT_LOGO          QStringLiteral("PROJECT_LOGO")
+#define STR_PROJECT_BRIEF         QStringLiteral("PROJECT_BRIEF")
+#define STR_INPUT                 QStringLiteral("INPUT")
+#define STR_OUTPUT_DIRECTORY      QStringLiteral("OUTPUT_DIRECTORY")
+#define STR_PROJECT_NUMBER        QStringLiteral("PROJECT_NUMBER")
+#define STR_RECURSIVE             QStringLiteral("RECURSIVE")
+#define STR_OPTIMIZE_OUTPUT_FOR_C QStringLiteral("OPTIMIZE_OUTPUT_FOR_C")
+#define STR_OPTIMIZE_OUTPUT_JAVA  QStringLiteral("OPTIMIZE_OUTPUT_JAVA")
+#define STR_OPTIMIZE_FOR_FORTRAN  QStringLiteral("OPTIMIZE_FOR_FORTRAN")
+#define STR_OPTIMIZE_OUTPUT_VHDL  QStringLiteral("OPTIMIZE_OUTPUT_VHDL")
+#define STR_CPP_CLI_SUPPORT       QStringLiteral("CPP_CLI_SUPPORT")
+#define STR_HIDE_SCOPE_NAMES      QStringLiteral("HIDE_SCOPE_NAMES")
+#define STR_EXTRACT_ALL           QStringLiteral("EXTRACT_ALL")
+#define STR_SOURCE_BROWSER        QStringLiteral("SOURCE_BROWSER")
+#define STR_GENERATE_HTML         QStringLiteral("GENERATE_HTML")
+#define STR_GENERATE_LATEX        QStringLiteral("GENERATE_LATEX")
+#define STR_GENERATE_MAN          QStringLiteral("GENERATE_MAN")
+#define STR_GENERATE_RTF          QStringLiteral("GENERATE_RTF")
+#define STR_GENERATE_XML          QStringLiteral("GENERATE_XML")
+#define STR_GENERATE_HTMLHELP     QStringLiteral("GENERATE_HTMLHELP")
+#define STR_GENERATE_TREEVIEW     QStringLiteral("GENERATE_TREEVIEW")
+#define STR_USE_PDFLATEX          QStringLiteral("USE_PDFLATEX")
+#define STR_PDF_HYPERLINKS        QStringLiteral("PDF_HYPERLINKS")
+#define STR_SEARCHENGINE          QStringLiteral("SEARCHENGINE")
+#define STR_HAVE_DOT              QStringLiteral("HAVE_DOT")
+#define STR_CLASS_DIAGRAMS        QStringLiteral("CLASS_DIAGRAMS")
+#define STR_CLASS_GRAPH           QStringLiteral("CLASS_GRAPH")
+#define STR_COLLABORATION_GRAPH   QStringLiteral("COLLABORATION_GRAPH")
+#define STR_GRAPHICAL_HIERARCHY   QStringLiteral("GRAPHICAL_HIERARCHY")
+#define STR_INCLUDE_GRAPH         QStringLiteral("INCLUDE_GRAPH")
+#define STR_INCLUDED_BY_GRAPH     QStringLiteral("INCLUDED_BY_GRAPH")
+#define STR_CALL_GRAPH            QStringLiteral("CALL_GRAPH")
+#define STR_CALLER_GRAPH          QStringLiteral("CALLER_GRAPH")
+#define STR_HTML_COLORSTYLE_HUE   QStringLiteral("HTML_COLORSTYLE_HUE")
+#define STR_HTML_COLORSTYLE_SAT   QStringLiteral("HTML_COLORSTYLE_SAT")
+#define STR_HTML_COLORSTYLE_GAMMA QStringLiteral("HTML_COLORSTYLE_GAMMA")
 
 static bool g_optimizeMapping[6][6] = 
 {
@@ -76,7 +76,7 @@ static QString g_optimizeOptionNames[6] =
 static bool stringVariantToBool(const QVariant &v)
 {
   QString s = v.toString().toLower();
-  return s==QString::fromAscii("yes") || s==QString::fromAscii("true") || s==QString::fromAscii("1");
+  return s==QStringLiteral("yes") || s==QStringLiteral("true") || s==QStringLiteral("1");
 } 
 
 static bool getBoolOption(
@@ -111,7 +111,7 @@ static void updateBoolOption(
   bool bOld = stringVariantToBool(option->value());
   if (bOld!=bNew)
   {
-    option->value()=QString::fromAscii(bNew ? "true" : "false");
+    option->value()=(bNew ? QStringLiteral("true") : QStringLiteral("false"));
     option->update();
   }
 }
@@ -124,7 +124,7 @@ static void updateIntOption(
   int iOld = option->value().toInt();
   if (iOld!=iNew)
   {
-    option->value()=QString::fromAscii("%1").arg(iNew);
+    option->value()=QStringLiteral("%1").arg(iNew);
     option->update();
   }
 }
@@ -148,7 +148,7 @@ TuneColorDialog::TuneColorDialog(int hue,int sat,int gamma,QWidget *parent) : QD
 {
    setWindowTitle(tr("Tune the color of the HTML output"));
    QGridLayout *layout = new QGridLayout(this);
-   m_image = new QImage(QString::fromAscii(":/images/tunecolor.png"));
+   m_image = new QImage(QStringLiteral(":/images/tunecolor.png"));
    m_imageLab = new QLabel;
    updateImage(hue,sat,gamma);
    layout->addWidget(new QLabel(tr("Example output: use the sliders on the right to adjust the color")),0,0);
@@ -519,7 +519,7 @@ Step1::Step1(Wizard *wizard,const QHash<QString,Input*> &modelData) : m_wizard(w
 
   m_recursive = new QCheckBox(this);
   m_recursive->setText(tr("Scan recursively"));
-  m_recursive->setChecked(TRUE);
+  m_recursive->setChecked(true);
   layout->addWidget(m_recursive);
 
   //---------------------------------------------------
@@ -574,7 +574,7 @@ void Step1::selectProjectIcon()
     QFile Fout(iconName);
     if(!Fout.exists()) 
     {
-      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QStringLiteral(");"));
     }
     else
     {
@@ -585,7 +585,7 @@ void Step1::selectProjectIcon()
       }
       else
       {
-        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QStringLiteral(");"));
       }
     }
   }
@@ -604,7 +604,7 @@ void Step1::selectSourceDir()
   }
   if (dirName.isEmpty())
   {
-    dirName=QString::fromAscii(".");
+    dirName=QStringLiteral(".");
   }
   m_sourceDir->setText(dirName);
 }
@@ -621,7 +621,7 @@ void Step1::selectDestinationDir()
   }
   if (dirName.isEmpty())
   {
-    dirName=QString::fromAscii(".");
+    dirName=QStringLiteral(".");
   }
   m_destDir->setText(dirName);
 }
@@ -683,7 +683,7 @@ void Step1::init()
     QFile Fout(iconName);
     if(!Fout.exists()) 
     {
-      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QString::fromAscii(");"));
+      m_projIconLab->setText(tr("Sorry, cannot find file(")+iconName+QStringLiteral(");"));
     }
     else
     {
@@ -694,7 +694,7 @@ void Step1::init()
       }
       else
       {
-        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QString::fromAscii(");"));
+        m_projIconLab->setText(tr("Sorry, no preview available (")+iconName+QStringLiteral(");"));
       }
     }
   }
@@ -1220,7 +1220,7 @@ Wizard::Wizard(const QHash<QString,Input*> &modelData, QWidget *parent) :
 {
   m_treeWidget = new QTreeWidget;
   m_treeWidget->setColumnCount(1);
-  m_treeWidget->setHeaderLabels(QStringList() << QString::fromAscii("Topics"));
+  m_treeWidget->setHeaderLabels(QStringList() << QStringLiteral("Topics"));
   QList<QTreeWidgetItem*> items;
   items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Project"))));
   items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(tr("Mode"))));
