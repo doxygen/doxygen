@@ -483,13 +483,13 @@ static void generateDocbookForMember(MemberDef *md,FTextStream &t,Definition *de
           cnt++;
         }
         t << endl << "}";
-        t << "</literallayout>" << endl;
-        if (md->briefDescription())
-        {
-            t << "<para><emphasis>";
-            writeDocbookString(t,md->briefDescription());
-            t << "</emphasis></para>" << endl;
-        }
+      }
+      t << "</literallayout>" << endl;
+      if (md->briefDescription())
+      {
+          t << "<para><emphasis>";
+          writeDocbookString(t,md->briefDescription());
+          t << "</emphasis></para>" << endl;
       }
     }
     else if (md->memberType()==MemberType_Define) 
