@@ -10856,7 +10856,7 @@ void searchInputFiles()
    *             Determine Input Files                                      *
    **************************************************************************/
 
-  g_s.begin("Searching for files to process...\n");
+  g_s.begin("Searching INPUT for files to process...\n");
   QDict<void> *killDict = new QDict<void>(10007);
   QStrList &inputList=Config_getList("INPUT");
   g_inputFiles.setAutoDelete(TRUE);
