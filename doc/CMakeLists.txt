@@ -2,7 +2,7 @@ if (build_doc)
 
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(SED NAMES sed )
-find_program(MAKE NAMES make gmake )
+find_program(MAKE NAMES make gmake nmake )
 
 file(GLOB DOC_FILES "*")
 file(GLOB LANG_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
