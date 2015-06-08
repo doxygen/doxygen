@@ -740,10 +740,11 @@ static void generateSqlite3ForMember(sqlite3*db,MemberDef *md,Definition *def)
     default:
       break;
   }
+
   if (isFunc)
   {
     ArgumentList *al = md->argumentList();
-    if (al!=0 && al->constSpecifier)
+    if (al!=0)
     {
       bindIntParameter(memberdef_insert,":const",al->constSpecifier);
     }
