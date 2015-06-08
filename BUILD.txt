@@ -29,6 +29,7 @@ Doxygen's cmake configuration provides a number of options:
 - build_xmlparser Example showing how to parse doxygen's XML output.
 - build_search    Build external search tools (doxysearch and doxyindexer).
 - build_doc       Build user manual.
+- build_examples  Build the example projects.
 - use_sqlite3     Add support for sqlite3 output [experimental].
 - use_libclang    Add support for libclang parsing.
 - win_static      Link with /MT in stead of /MD on windows.
