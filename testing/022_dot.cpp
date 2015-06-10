@@ -1,7 +1,7 @@
 // objective: test the \dot and \enddot commands
 // check: indexpage.xml
 // config: HAVE_DOT = YES
-// config: DOTFILE_DIRS = .
+// config: DOTFILE_DIRS = $INPUTDIR
 
 /*! class B */
 class B {};
