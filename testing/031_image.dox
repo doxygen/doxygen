@@ -1,6 +1,6 @@
 // objective: test the \image command
 // check: indexpage.xml
-// config: IMAGE_PATH = .
+// config: IMAGE_PATH = $INPUTDIR
 /** \mainpage
  * Some text.
  * \image html sample.png

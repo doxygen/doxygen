@@ -25,7 +25,7 @@ class Tester:
 		elif not os.path.isfile(expected_file):
 			return (True,'%s absent' % expected_file)
 		else:
-			diff = os.popen('diff -u %s %s' % (got_file,expected_file)).read()
+			diff = os.popen('diff -b -w -u %s %s' % (got_file,expected_file)).read()
 			if diff and not diff.startswith("No differences"):
 				return (True,'Difference between generated output and reference:\n%s' % diff)
 		return (False,'')
@@ -66,7 +66,11 @@ class Tester:
 			sys.exit(1)
 
 		# run doxygen
-		if os.system('%s %s/Doxyfile 2>/dev/null' % (self.args.doxygen,self.test_out))!=0:
+		if (sys.platform == 'win32'):
+			redir=' > nul:'             
+		else:
+			redir=' 2> /dev/null'             
+		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out, redir))!=0:
 			print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out));
 			sys.exit(1)
 
