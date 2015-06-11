@@ -83,6 +83,7 @@ class NamespaceDef : public Definition
     virtual Definition *findInnerCompound(const char *name);
     void addInnerCompound(Definition *d);
     void addListReferences();
+    void setFileName(const QCString &fn);
 
     bool subGrouping() const { return m_subGrouping; }
     

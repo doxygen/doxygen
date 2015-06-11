@@ -46,8 +46,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,int dc,
   }
   else
   {
-    fileName="namespace";
-    fileName+=name;
+    setFileName(name);
   }
   classSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
@@ -87,6 +86,12 @@ NamespaceDef::~NamespaceDef()
   delete usingDeclList;
   delete memberGroupSDict;
   delete m_allMembersDict;
+}
+
+void NamespaceDef::setFileName(const QCString &fn)
+{
+  fileName="namespace";
+  fileName+=fn;
 }
 
 void NamespaceDef::distributeMemberGroupDocumentation()

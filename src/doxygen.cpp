@@ -1745,6 +1745,13 @@ static void buildNamespaceList(EntryNav *rootNav)
         {
           nd->setLanguage(root->lang);
         }
+        if (rootNav->tagInfo()==0) // if we found the namespace in a tag file
+                                   // and also in a project file, then remove
+                                   // the tag file reference
+        {
+          nd->setReference("");
+          nd->setFileName(fullName);
+        }
 
         // file definition containing the namespace nd
         FileDef *fd=rootNav->fileDef();
