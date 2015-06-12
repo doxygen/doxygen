@@ -2,7 +2,19 @@ if (build_doc)
 
 find_program(EPSTOPDF NAMES epstopdf )
 find_program(SED NAMES sed )
-find_program(MAKE NAMES make gmake nmake )
+if (WIN32)
+    set(CMD1 cd ..\\latex)
+    set(MAKE "make.bat"  CACHE FILEPATH "Windows uses generated make.bat")
+    set(CMD2 make.bat > ..\\latex_out.txt )
+    set(CMD3 cd ..\\doc)
+    set(CMD4 ${CMAKE_COMMAND} -E copy make.bat ../latex/make.bat)
+else(WIN32)
+    find_program(MAKE NAMES make gmake nmake )
+    set(CMD1 )
+    set(CMD2 ${MAKE} -C ../latex > latex_out.txt)
+    set(CMD3 )
+    set(CMD4 )
+endif(WIN32)
 
 file(GLOB DOC_FILES "*")
 file(GLOB LANG_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
@@ -23,10 +35,13 @@ add_custom_target(docs
 	COMMAND ${CMAKE_COMMAND} -E copy doxygen_logo.gif ../html
 	COMMAND ${CMAKE_COMMAND} -E copy doxygen_logo_low.gif ../html
 	COMMAND ${CMAKE_COMMAND} -E copy Makefile.latex ../latex/Makefile
+        COMMAND ${CMD4}
 	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen_manual.tex > ../latex/doxygen_manual.tex
 	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen.sty > ../latex/doxygen.sty
 	COMMAND ${EPSTOPDF} doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
-        COMMAND ${MAKE} -C ../latex > latex_out.txt
+        COMMAND ${CMD1}
+        COMMAND ${CMD2}
+        COMMAND ${CMD3}
 	DEPENDS doxygen ${PROJECT_BINARY_DIR}/doc/language.doc config.doc
                 "${PROJECT_BINARY_DIR}/man/doxygen.1"
                 "${PROJECT_BINARY_DIR}/man/doxywizard.1"
