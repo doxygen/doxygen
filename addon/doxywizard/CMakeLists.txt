@@ -10,10 +10,9 @@ include_directories(
 set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
 file(MAKE_DIRECTORY ${GENERATED_SRC_WIZARD})
 
-add_definitions(-DQT_ARCH_X86_64 -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DUNICODE)
-set(QT_USE_QTXML TRUE)
-find_package(Qt4 REQUIRED)
-include(${QT_USE_FILE})
+add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Xml REQUIRED)
 
 # generate settings.h
 file(GENERATE OUTPUT ${GENERATED_SRC_WIZARD}/settings.h
@@ -43,23 +42,15 @@ set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GEN
 
 FLEX_TARGET(config_doxyw config_doxyw.l ${GENERATED_SRC_WIZARD}/config_doxyw.cpp COMPILE_FLAGS "-Pconfig_doxywYY")
 
-QT4_WRAP_CPP(doxywizard_MOC
-doxywizard.h
-expert.h
-helplabel.h
-inputint.h
-inputbool.h
-inputstring.h
-inputstrlist.h
-wizard.h
-)
+set(CMAKE_AUTOMOC ON)
 
-QT4_ADD_RESOURCES(doxywizard_RESOURCES_RCC doxywizard.qrc)
+qt5_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
 add_executable(doxywizard
 doxywizard.cpp
 expert.cpp
 wizard.cpp
+helplabel.cpp
 inputbool.cpp
 inputstring.cpp
 inputint.cpp
@@ -68,12 +59,10 @@ ${GENERATED_SRC_WIZARD}/settings.h
 ${GENERATED_SRC_WIZARD}/version.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
-${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
 )
-target_link_libraries(doxywizard
-${QT_LIBRARIES}
-)
+target_link_libraries(doxywizard)
+qt5_use_modules(doxywizard LINK_PUBLIC Widgets Xml)
 
 install(TARGETS doxywizard DESTINATION bin)
 

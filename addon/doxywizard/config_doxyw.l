@@ -52,7 +52,7 @@ static QVariant                      *g_arg;
 static Input                         *g_curOption=0;
 static QString                        g_elemStr;
 static QTextCodec                    *g_codec     = QTextCodec::codecForName("UTF-8");
-static QString                        g_codecName = QString::fromAscii("UTF-8");
+static QString                        g_codecName = QStringLiteral("UTF-8");
 static int                            g_lastState;
 static QByteArray                     g_tmpString;
 
@@ -74,21 +74,21 @@ static int yyread(char *buf,int maxSize)
     }
 }
 
-static QString warning_str = QString::fromAscii("warning: ");
-static QString error_str = QString::fromAscii("error: ");
+static QString warning_str = QStringLiteral("warning: ");
+static QString error_str = QStringLiteral("error: ");
 
 void config_err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, qPrintable(error_str.append(QString::fromAscii(fmt))), args);
+  vfprintf(stderr, qPrintable(error_str.append(QString::fromUtf8(fmt))), args);
   va_end(args); 
 }
 void config_warn(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, qPrintable(warning_str.append(QString::fromAscii(fmt))), args);
+  vfprintf(stderr, qPrintable(warning_str.append(QString::fromUtf8(fmt))), args);
   va_end(args);
 }
 
@@ -97,10 +97,10 @@ static void substEnvVarsInString(QString &s);
 
 static void checkEncoding()
 {
-  Input *option = g_options->value(QString::fromAscii("DOXYFILE_ENCODING"));
+  Input *option = g_options->value(QStringLiteral("DOXYFILE_ENCODING"));
   if (option && option->value().toString()!=g_codecName)
   {
-    QTextCodec *newCodec = QTextCodec::codecForName(option->value().toString().toAscii());
+    QTextCodec *newCodec = QTextCodec::codecForName(option->value().toString().toLatin1());
     if (newCodec)
     {
       g_codec = newCodec;
@@ -111,7 +111,7 @@ static void checkEncoding()
 
 static FILE *tryPath(const QString &path,const QString &fileName)
 {
-  QString absName=!path.isEmpty() ? path+QString::fromAscii("/")+fileName : fileName;
+  QString absName=!path.isEmpty() ? path+QStringLiteral("/")+fileName : fileName;
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
@@ -140,7 +140,7 @@ static FILE *findFile(const QString &fileName)
     if (f) return f;
   }
   // try cwd if g_includePathList fails
-  return tryPath(QString::fromAscii("."),fileName);
+  return tryPath(QStringLiteral("."),fileName);
 }
 
 static void readIncludeFile(const QString &incName)
@@ -156,8 +156,8 @@ static void readIncludeFile(const QString &incName)
   substEnvVarsInString(inc);
   inc = inc.trimmed();
   uint incLen = inc.length();
-  if (inc.at(0)==QChar::fromAscii('"') && 
-      inc.at(incLen-1)==QChar::fromAscii('"')) // strip quotes
+  if (inc.at(0)==QLatin1Char('"') && 
+      inc.at(incLen-1)==QLatin1Char('"')) // strip quotes
   {
     inc=inc.mid(1,incLen-2);
   }
@@ -379,7 +379,7 @@ static void readIncludeFile(const QString &incName)
 
 static void substEnvVarsInString(QString &s)
 {
-  static QRegExp re(QString::fromAscii("\\$\\([a-z_A-Z0-9]+\\)"));
+  static QRegExp re(QStringLiteral("\\$\\([a-z_A-Z0-9]+\\)"));
   if (s.isEmpty()) return;
   int p=0;
   int i,l;
@@ -405,8 +405,8 @@ static void substEnvVarsInStrList(QStringList &sl)
   foreach (QString result, sl)
   {
     // an argument with quotes will have an extra space at the end, so wasQuoted will be TRUE.
-    bool wasQuoted = (result.indexOf(QChar::fromAscii(' '))!=-1) || 
-                     (result.indexOf(QChar::fromAscii('\t'))!=-1);
+    bool wasQuoted = (result.indexOf(QLatin1Char(' '))!=-1) || 
+                     (result.indexOf(QLatin1Char('\t'))!=-1);
     // here we strip the quote again
     substEnvVarsInString(result);
 
@@ -426,33 +426,33 @@ static void substEnvVarsInStrList(QStringList &sl)
       {
 	QChar c=0;
 	// skip until start of new word
-	while (i<l && ((c=result.at(i))==QChar::fromAscii(' ') || c==QChar::fromAscii('\t'))) i++; 
+	while (i<l && ((c=result.at(i))==QLatin1Char(' ') || c==QLatin1Char('\t'))) i++; 
 	p=i; // p marks the start index of the word
 	// skip until end of a word
-	while (i<l && ((c=result.at(i))!=QChar::fromAscii(' ') && 
-	              c!=QChar::fromAscii('\t') && 
-		      c!=QChar::fromAscii('"'))) i++;
+	while (i<l && ((c=result.at(i))!=QLatin1Char(' ') && 
+	              c!=QLatin1Char('\t') && 
+		      c!=QLatin1Char('"'))) i++;
 	if (i<l) // not at the end of the string
 	{
-	  if (c==QChar::fromAscii('"')) // word within quotes
+	  if (c==QLatin1Char('"')) // word within quotes
 	  {
 	    p=i+1;
 	    for (i++;i<l;i++)
 	    {
 	      c=result.at(i);
-	      if (c==QChar::fromAscii('"')) // end quote
+	      if (c==QLatin1Char('"')) // end quote
 	      {
                 out += result.mid(p,i-p);
 		p=i+1;
 		break; 
 	      }
-	      else if (c==QChar::fromAscii('\\')) // skip escaped stuff
+	      else if (c==QLatin1Char('\\')) // skip escaped stuff
 	      {
 		i++;
 	      }
 	    }
 	  }
-	  else if (c==QChar::fromAscii(' ') || c==QChar::fromAscii('\t')) // separator
+	  else if (c==QLatin1Char(' ') || c==QLatin1Char('\t')) // separator
 	  {
             out += result.mid(p,i-p);
 	    p=i+1;
@@ -525,7 +525,7 @@ bool parseConfig(
 void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
 {
   QChar c;
-  bool needsEscaping=FALSE;
+  bool needsEscaping=false;
   // convert the string back to it original encoding
   //QByteArray se = codec->fromUnicode(s);
   t.setCodec(codec);
@@ -534,10 +534,10 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
   {
     while (!(c=*p++).isNull() && !needsEscaping) 
     {
-      needsEscaping = (c==QChar::fromAscii(' ')  || 
-	               c==QChar::fromAscii('\n') || 
-		       c==QChar::fromAscii('\t') || 
-		       c==QChar::fromAscii('"'));
+      needsEscaping = (c==QLatin1Char(' ')  || 
+	               c==QLatin1Char('\n') || 
+		       c==QLatin1Char('\t') || 
+		       c==QLatin1Char('"'));
     }
     if (needsEscaping)
     { 
@@ -545,9 +545,9 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
       p=s.data();
       while (!p->isNull())
       {
-	if (*p   ==QChar::fromAscii(' ') && 
-	   *(p+1)==QChar::fromAscii('\0')) break; // skip inserted space at the end
-	if (*p   ==QChar::fromAscii('"')) t << "\\"; // escape quotes
+	if (*p   ==QLatin1Char(' ') && 
+	   *(p+1)==QLatin1Char('\0')) break; // skip inserted space at the end
+	if (*p   ==QLatin1Char('"')) t << "\\"; // escape quotes
 	t << *p++;
       }
       t << "\"";

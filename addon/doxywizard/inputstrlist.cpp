@@ -17,7 +17,7 @@
 #include "doxywizard.h"
 #include "config.h"
 
-#include <QtGui>
+#include <QtWidgets/QtWidgets>
 
 InputStrList::InputStrList( QGridLayout *layout,int &row,
                             const QString & id, 
@@ -32,13 +32,13 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
 
   QToolBar *toolBar = new QToolBar;
   toolBar->setIconSize(QSize(24,24));
-  m_add = toolBar->addAction(QIcon(QString::fromAscii(":/images/add.png")),QString(),
+  m_add = toolBar->addAction(QIcon(QStringLiteral(":/images/add.png")),QString(),
                              this,SLOT(addString()));
   m_add->setToolTip(tr("Add item"));
-  m_del = toolBar->addAction(QIcon(QString::fromAscii(":/images/del.png")),QString(),
+  m_del = toolBar->addAction(QIcon(QStringLiteral(":/images/del.png")),QString(),
                              this,SLOT(delString()));
   m_del->setToolTip(tr("Delete selected item"));
-  m_upd = toolBar->addAction(QIcon(QString::fromAscii(":/images/refresh.png")),QString(),
+  m_upd = toolBar->addAction(QIcon(QStringLiteral(":/images/refresh.png")),QString(),
                              this,SLOT(updateString()));
   m_upd->setToolTip(tr("Update selected item"));
 
@@ -52,13 +52,13 @@ InputStrList::InputStrList( QGridLayout *layout,int &row,
   {
     if (lm&ListFile)
     {
-      m_brFile = toolBar->addAction(QIcon(QString::fromAscii(":/images/file.png")),QString(),
+      m_brFile = toolBar->addAction(QIcon(QStringLiteral(":/images/file.png")),QString(),
                                     this,SLOT(browseFiles()));
       m_brFile->setToolTip(tr("Browse to a file"));
     } 
     if (lm&ListDir)
     {
-      m_brDir = toolBar->addAction(QIcon(QString::fromAscii(":/images/folder.png")),QString(),
+      m_brDir = toolBar->addAction(QIcon(QStringLiteral(":/images/folder.png")),QString(),
                                    this,SLOT(browseDir()));
       m_brDir->setToolTip(tr("Browse to a folder"));
     }
@@ -188,7 +188,7 @@ void InputStrList::browseDir()
     }
     if (dirName.isEmpty())
     {
-      dirName=QString::fromAscii(".");
+      dirName=QStringLiteral(".");
     }
     m_lb->addItem(dirName);
     m_strList.append(dirName);
@@ -225,11 +225,11 @@ void InputStrList::updateDefault()
 {
   if (m_strList==m_default || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+    m_lab->setText(QStringLiteral("<qt>")+m_id+QStringLiteral("</qt"));
   }
   else
   {
-    m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
+    m_lab->setText(QStringLiteral("<qt><font color='red'>")+m_id+QStringLiteral("</font></qt>"));
   }
 }
 
@@ -240,7 +240,7 @@ void InputStrList::reset()
 
 void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
 {
-  bool first=TRUE;
+  bool first=true;
   foreach (QString s, m_strList) 
   {
     if (!first) 
@@ -248,7 +248,7 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
       t << " \\" << endl;
       t << "                         ";
     }
-    first=FALSE;
+    first=false;
     writeStringValue(t,codec,s);
   }
 }
