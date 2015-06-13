@@ -3,6 +3,10 @@ if (build_doc)
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/html/examples)
 file(COPY ${EXAMPLE_DIR} DESTINATION ${PROJECT_BINARY_DIR})
 
+if (DOT)
+  set(DIAGRAM_EXAMPLE ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html)
+endif()
+
 add_custom_target(examples
 	DEPENDS doxygen
                 ${PROJECT_BINARY_DIR}/html/examples/class/html/index.html
@@ -26,13 +30,13 @@ add_custom_target(examples
                 ${PROJECT_BINARY_DIR}/html/examples/template/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/tag/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/group/html/index.html
-                ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/memgrp/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/docstring/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/pyexample/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/tclexample/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/mux/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/manual/html/index.html
+                ${DIAGRAM_EXAMPLE}
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/examples
 )
 
