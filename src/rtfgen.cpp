@@ -605,7 +605,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
         t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
         t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
-        t << "Version " << Config_getString("PROJECT_NUMBER") << "\\par";
+        t << theTranslator->trVersion() << " " << Config_getString("PROJECT_NUMBER") << "\\par";
         t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
           "{\\fldrslt "<< dateToString(FALSE) << " }}\\par"<<endl;
         t << "\\page\\page";
