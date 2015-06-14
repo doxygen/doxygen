@@ -541,6 +541,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
   static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  static QCString projectName = Config_getString("PROJECT_NAME");
 
   switch (is)
   {
@@ -549,7 +550,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         // User has overridden document title in extensions file
         t << "}" << rtf_title;
       else
-        t << "}" << Config_getString("PROJECT_NAME");
+        t << "}" << projectName;
       break;
     case isTitlePageAuthor:
       {
@@ -578,7 +579,17 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
 
         t << rtf_Style_Reset << rtf_Style["Title"]->reference << endl; // set to title style
-        t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt TITLE}}\\par" << endl;
+        if (rtf_title)
+          // User has overridden document title in extensions file
+          t << "{\\field\\fldedit {\\*\\fldinst " << rtf_title << " \\\\*MERGEFORMAT}{\\fldrslt " << rtf_title << "}}\\par" << endl;
+        else
+        {
+          DocText *root = validatingParseText(projectName);
+          t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
+          writeDoc(root,0,0);
+          t << "}}\\par" << endl;
+          
+        }
 
         t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to title style
         t << "\\par\n";
@@ -596,7 +607,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
         t << "Version " << Config_getString("PROJECT_NUMBER") << "\\par";
         t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
-          "{\\fldrslt CREATEDATE}}\\par"<<endl;
+          "{\\fldrslt "<< dateToString(FALSE) << " }}\\par"<<endl;
         t << "\\page\\page";
         DBG_RTF(t << "{\\comment End title page}" << endl)
 
