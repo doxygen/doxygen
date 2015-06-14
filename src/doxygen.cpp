@@ -11439,21 +11439,11 @@ void generateOutput()
     if (generateDocSet)      Doxygen::indexList->addIndex(new DocSets);
     Doxygen::indexList->initialize();
     HtmlGenerator::writeTabData();
-
-    // copy static stuff
-    copyStyleSheet();
-    copyLogo();
-    copyExtraFiles("HTML_EXTRA_FILES","HTML_OUTPUT");
-    FTVHelp::generateTreeViewImages();
   }
   if (generateLatex) 
   {
     g_outputList->add(new LatexGenerator);
     LatexGenerator::init();
-
-    copyLatexStyleSheet();
-    // copy static stuff
-    copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
   }
   if (generateMan)
   {
@@ -11673,6 +11663,20 @@ void generateOutput()
     g_s.begin("Running dot...\n");
     DotManager::instance()->run();
     g_s.end();
+  }
+
+  // copy static stuff
+  if (generateHtml)  
+  {
+    FTVHelp::generateTreeViewImages();
+    copyStyleSheet();
+    copyLogo();
+    copyExtraFiles("HTML_EXTRA_FILES","HTML_OUTPUT");
+  }
+  if (generateLatex) 
+  {
+    copyLatexStyleSheet();
+    copyExtraFiles("LATEX_EXTRA_FILES","LATEX_OUTPUT");
   }
 
   if (generateHtml &&
