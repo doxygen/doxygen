@@ -604,7 +604,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\\par\n";
 
         t << rtf_Style_Reset << rtf_Style["SubTitle"]->reference << endl; // set to subtitle style
-        t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
+        if (rtf_author)
+          t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt "<< rtf_author << " }}\\par" << endl;
+        else
+          t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
+
         t << theTranslator->trVersion() << " " << Config_getString("PROJECT_NUMBER") << "\\par";
         t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
           "{\\fldrslt "<< dateToString(FALSE) << " }}\\par"<<endl;
@@ -2374,7 +2378,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
   // files because the first line before the body
   // ALWAYS contains "{\comment begin body}"
   int len;
-  do
+  for(;;)
   {
     lineBuf.resize(maxLineLength);
     if ((len=f.readLine(lineBuf.rawData(),maxLineLength))==-1)
@@ -2383,8 +2387,9 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
       return FALSE;
     }
     lineBuf.resize(len+1);
+    if (lineBuf.find("\\comment begin body")!=-1) break;
     if (bIncludeHeader) encodeForOutput(t,lineBuf.data());
-  } while (lineBuf.find("\\comment begin body")==-1);
+  }
 
 
   lineBuf.resize(maxLineLength);
