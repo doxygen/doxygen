@@ -2,6 +2,7 @@ language: cpp
 compiler:
   - gcc
 before_install:
+    - sudo add-apt-repository ppa:texlive-backports/ppa -qq
     - sudo apt-get update -qq
     - sudo apt-get install -qq  texlive texlive-extra-utils texlive-latex-extra libxml2-utils
     - wget -qO- http://www.cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.tar.gz | tar xvz
@@ -12,3 +13,4 @@ script:
     - ../cmake-3.1.0-Linux-x86_64/bin/cmake -G "Unix Makefiles" -Dbuild_doc=ON -Dbuild_wizard=ON ..
     - make
     - make tests
+    - make docs
