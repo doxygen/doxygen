@@ -1,82 +1,155 @@
+cmake_minimum_required(VERSION 3.0)
+project(doxygen_doc)
+
 if (build_doc)
 
-find_program(EPSTOPDF NAMES epstopdf )
-find_program(SED NAMES sed )
-find_program(MAKE NAMES make gmake nmake )
+set(TOP ${PROJECT_SOURCE_DIR}/..)
+include (${TOP}/cmake/version.cmake)
+string(TIMESTAMP DATE "%d-%m-%Y")
 
-file(GLOB DOC_FILES "*")
-file(GLOB LANG_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
-file(COPY ${DOC_FILES}   DESTINATION ${DOXYDOCS})
-file(COPY ${EXAMPLE_DIR} DESTINATION ${PROJECT_BINARY_DIR})
+find_package(PythonInterp REQUIRED)
+find_program(EPSTOPDF NAMES epstopdf )
+find_program(PDFLATEX NAMES pdflatex )
+find_program(MAKEINDEX NAMES makeindex )
+
+
+set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
+set(EXAMPLE_DIR ${TOP}/examples)
+set(DOC_FILES
+        arch.doc
+        archoverview.eps
+        archoverview.gif
+        autolink.doc
+        changelog.doc
+        commands.doc
+        custcmd.doc
+        customize.doc
+        diagrams.doc
+        docblocks.doc
+        Doxyfile
+        doxygen_manual.css
+        doxygen_usage.doc
+        doxywizard_expert.png
+        doxywizard.gif
+        doxywizard_main.png
+        doxywizard_menu.png
+        doxywizard_page1.png
+        doxywizard_page2.png
+        doxywizard_page3.png
+        doxywizard_page4.png
+        doxywizard_usage.doc
+        external.doc
+        extsearch.doc
+        extsearch_flow.dot
+        extsearch_flow.eps
+        extsearch_flow.png
+        faq.doc
+        features.doc
+        formulas.doc
+        grouping.doc
+        htmlcmds.doc
+        index.doc
+        index.hhp.txt
+        infoflow.eps
+        infoflow.fig
+        infoflow.png
+        install.doc
+        install_prefix
+        language.tpl
+        lists.doc
+        maintainers.txt
+        markdown.doc
+        output.doc
+        perlmod.doc
+        perlmod_tree.doc
+        preprocessing.doc
+        searching.doc
+        starting.doc
+        translator.py
+        trouble.doc
+        xmlcmds.doc
+)
+file(GLOB LANG_FILES "${TOP}/src/translator_??.h")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src)
-file(COPY ${CMAKE_SOURCE_DIR}/src/translator.h DESTINATION ${PROJECT_BINARY_DIR}/src)
-file(COPY ${CMAKE_SOURCE_DIR}/src/translator_adapter.h DESTINATION ${PROJECT_BINARY_DIR}/src)
-file(COPY ${LANG_FILES} DESTINATION ${PROJECT_BINARY_DIR}/src)
-file(COPY ${CMAKE_SOURCE_DIR}/VERSION DESTINATION ${PROJECT_BINARY_DIR})
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/doc)
 
+file(COPY ${TOP}/VERSION                  DESTINATION ${PROJECT_BINARY_DIR}/)
+file(COPY ${TOP}/src/translator.h         DESTINATION ${PROJECT_BINARY_DIR}/src/)
+file(COPY ${TOP}/src/translator_adapter.h DESTINATION ${PROJECT_BINARY_DIR}/src/)
+file(COPY ${LANG_FILES}                   DESTINATION ${PROJECT_BINARY_DIR}/src/)
+file(COPY ${DOC_FILES}                    DESTINATION ${PROJECT_BINARY_DIR}/doc/)
+file(COPY ${EXAMPLE_DIR}                  DESTINATION ${PROJECT_BINARY_DIR}/)
+
+configure_file(${PROJECT_SOURCE_DIR}/doxygen.sty        doc/doxygen.sty)
+configure_file(${PROJECT_SOURCE_DIR}/doxygen_manual.tex doc/doxygen_manual.tex)
+configure_file(${PROJECT_SOURCE_DIR}/doxygen.1          man/doxygen.1)
+configure_file(${PROJECT_SOURCE_DIR}/doxywizard.1       man/doxywizard.1)
+configure_file(${PROJECT_SOURCE_DIR}/doxysearch.1       man/doxysearch.1)
+configure_file(${PROJECT_SOURCE_DIR}/doxyindexer.1      man/doxyindexer.1)
+
+# doc/language.doc (see tag Doxyfile:INPUT)
+add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE} translator.py
+        DEPENDS maintainers.txt language.tpl translator.py
+        OUTPUT language.doc
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
+)
+set_source_files_properties(language.doc PROPERTIES GENERATED 1)
+
+# doc/config.doc (see tag Doxyfile:INPUT)
+add_custom_command(
+        COMMAND ${PYTHON_EXECUTABLE}  ${TOP}/src/configgen.py -doc ${TOP}/src/config.xml > config.doc
+        DEPENDS ${TOP}/src/config.xml ${TOP}/src/configgen.py
+        OUTPUT config.doc
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
+)
+set_source_files_properties(config.doc PROPERTIES GENERATED 1)
+################################################################################
+if (doxygen_BINARY_DIR)
+    set(DOXYGEN_EXECUTABLE ${doxygen_BINARY_DIR}/bin/doxygen)
+endif()
+add_custom_target(run_doxygen
+        COMMENT "Generating Latex and HTML documentation."
+        COMMAND ${DOXYGEN_EXECUTABLE}
+        DEPENDS language.doc config.doc
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
+)
+if (doxygen_BINARY_DIR)
+    # building from project `doxygen'
+    add_dependencies(run_doxygen
+       doxygen
+    )
+else()
+    # building from project `doxygen_doc'
+    find_package(Doxygen)
+endif()
+
+add_custom_target(doxygen_pdf
+        COMMENT "Generating Doxygen Manual PDF."
+        COMMAND ${CMAKE_COMMAND} -E remove_directory refman.tex
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen.sty  .
+        COMMAND ${EPSTOPDF} ${PROJECT_SOURCE_DIR}/doxygen_logo.eps --outfile=doxygen_logo.pdf
+        COMMAND ${PDFLATEX}  doxygen_manual.tex
+        COMMAND ${MAKEINDEX} doxygen_manual.idx
+        COMMAND ${PDFLATEX}  doxygen_manual.tex
+	DEPENDS run_doxygen
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/latex
+)
 add_custom_target(docs
-	COMMENT "Generating documentation in ${DOXYDOCS}"
-	COMMAND ${EXECUTABLE_OUTPUT_PATH}/doxygen
-	COMMAND ${CMAKE_COMMAND} -E remove_directory ../latex/refman.tex
-	COMMAND ${CMAKE_COMMAND} -E copy doxygen_logo.gif ../html
-	COMMAND ${CMAKE_COMMAND} -E copy doxygen_logo_low.gif ../html
-	COMMAND ${CMAKE_COMMAND} -E copy Makefile.latex ../latex/Makefile
-	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen_manual.tex > ../latex/doxygen_manual.tex
-	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen.sty > ../latex/doxygen.sty
-	COMMAND ${EPSTOPDF} doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
-        COMMAND ${MAKE} -C ../latex > latex_out.txt
-	DEPENDS doxygen ${PROJECT_BINARY_DIR}/doc/language.doc config.doc examples
-                "${PROJECT_BINARY_DIR}/man/doxygen.1"
-                "${PROJECT_BINARY_DIR}/man/doxywizard.1"
-                "${PROJECT_BINARY_DIR}/man/doxysearch.1"
-                "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-	WORKING_DIRECTORY ${DOXYDOCS}
-	VERBATIM
-	)
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doxygen_logo.gif      html/
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doxygen_logo_low.gif  html/
+        DEPENDS ${PROJECT_BINARY_DIR}/man/doxygen.1
+                ${PROJECT_BINARY_DIR}/man/doxywizard.1
+                ${PROJECT_BINARY_DIR}/man/doxysearch.1
+                ${PROJECT_BINARY_DIR}/man/doxyindexer.1
+                doxygen_pdf
+        VERBATIM
+        )
 
-# language.doc
-add_custom_command(
-        COMMAND ${CMAKE_COMMAND} "-DSOURCE=${CMAKE_SOURCE_DIR}" -P ${CMAKE_SOURCE_DIR}/cmake/run_translator.cmake
-	DEPENDS ${DOXYDOCS}/translator.py
-	DEPENDS maintainers.txt language.tpl translator.py
-	OUTPUT ${PROJECT_BINARY_DIR}/doc/language.doc
-	WORKING_DIRECTORY ${DOXYDOCS}
-)
-set_source_files_properties(${DOXYDOCS}/language.doc PROPERTIES GENERATED 1)
-
-# config.doc
-add_custom_command(
-	COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -doc ${CMAKE_SOURCE_DIR}/src/config.xml > config.doc
-	DEPENDS ${CMAKE_SOURCE_DIR}/src/config.xml ${CMAKE_SOURCE_DIR}/src/configgen.py
-	OUTPUT config.doc
-	WORKING_DIRECTORY ${DOXYDOCS}
-)
-set_source_files_properties(${DOXYDOCS}/config.doc PROPERTIES GENERATED 1)
-
-string(TIMESTAMP TODAY "%d-%m-%Y")
-
-add_custom_command(
-	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxygen.1 > "${PROJECT_BINARY_DIR}/man/doxygen.1"
-        OUTPUT "${PROJECT_BINARY_DIR}/man/doxygen.1"
-)
-
-add_custom_command(
-	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxywizard.1 > "${PROJECT_BINARY_DIR}/man/doxywizard.1"
-        OUTPUT "${PROJECT_BINARY_DIR}/man/doxywizard.1"
-)
-
-add_custom_command(
-	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxysearch.1 > "${PROJECT_BINARY_DIR}/man/doxysearch.1"
-        OUTPUT "${PROJECT_BINARY_DIR}/man/doxysearch.1"
-)
-
-add_custom_command(
-	COMMAND ${SED} -e "s/DATE/${TODAY}/g" -e "s/VERSION/${VERSION}/g" doxyindexer.1 > "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-        OUTPUT "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-)
-
+################################################################################
 install(FILES
         "${PROJECT_BINARY_DIR}/man/doxygen.1"
         "${PROJECT_BINARY_DIR}/man/doxywizard.1"
