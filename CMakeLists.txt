@@ -25,7 +25,7 @@ option(win_static      "Link with /MT in stead of /MD on windows" OFF)
 option(english_only    "Only compile in support for the English language" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-set(SOURCE "${CMAKE_SOURCE_DIR}")
+set(TOP "${CMAKE_SOURCE_DIR}")
 include(version)
 
 set(sqlite3  "0" CACHE INTERNAL "used in settings.h")
@@ -66,8 +66,6 @@ include_directories(${ICONV_INCLUDE_DIR})
 
 
 #set(DOXYDOCS ${CMAKE_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")
-set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
-set(EXAMPLE_DIR ${CMAKE_SOURCE_DIR}/examples)
 set(DOXYDOCS ${PROJECT_BINARY_DIR}/doc)
 set(ENV{DOXYGEN_DOCDIR} ${DOXYDOCS})
 set(GENERATED_SRC "${CMAKE_BINARY_DIR}/generated_src" CACHE INTERNAL "Stores generated files")
