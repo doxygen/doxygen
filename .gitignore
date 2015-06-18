@@ -11,22 +11,7 @@
 *.idb
 *.pdb
 
-
-/doc/translator_report.txt
-/doc/config.doc
-/doc/language.doc
-
 /doxygen_docs
 /doxygen.tag
 
-/examples/*/html
-/html
-/latex
-/rtf
-/xml
-/man
-/docbook
-/perlmod
-!/templates/html
-!/templates/latex
 
