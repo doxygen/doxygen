@@ -6,8 +6,6 @@ find_program(MAKE NAMES make gmake nmake )
 
 file(GLOB DOC_FILES "*")
 file(GLOB LANG_FILES "${CMAKE_SOURCE_DIR}/src/translator_??.h")
-file(COPY ${DOC_FILES}   DESTINATION ${DOXYDOCS})
-file(COPY ${EXAMPLE_DIR} DESTINATION ${PROJECT_BINARY_DIR})
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man)
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src)
@@ -15,6 +13,14 @@ file(COPY ${CMAKE_SOURCE_DIR}/src/translator.h DESTINATION ${PROJECT_BINARY_DIR}
 file(COPY ${CMAKE_SOURCE_DIR}/src/translator_adapter.h DESTINATION ${PROJECT_BINARY_DIR}/src)
 file(COPY ${LANG_FILES} DESTINATION ${PROJECT_BINARY_DIR}/src)
 file(COPY ${CMAKE_SOURCE_DIR}/VERSION DESTINATION ${PROJECT_BINARY_DIR})
+
+# copy all doc files
+add_custom_target(copy_docs)
+foreach(doc_file ${DOC_FILES})
+  add_custom_command(TARGET copy_docs PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                         copy ${doc_file} ${DOXYDOCS})
+endforeach()
 
 add_custom_target(docs
 	COMMENT "Generating documentation in ${DOXYDOCS}"
@@ -27,7 +33,7 @@ add_custom_target(docs
 	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen.sty > ../latex/doxygen.sty
 	COMMAND ${EPSTOPDF} doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
         COMMAND ${MAKE} -C ../latex > latex_out.txt
-	DEPENDS doxygen ${PROJECT_BINARY_DIR}/doc/language.doc config.doc examples
+	DEPENDS doxygen copy_docs ${PROJECT_BINARY_DIR}/doc/language.doc config.doc examples
                 "${PROJECT_BINARY_DIR}/man/doxygen.1"
                 "${PROJECT_BINARY_DIR}/man/doxywizard.1"
                 "${PROJECT_BINARY_DIR}/man/doxysearch.1"

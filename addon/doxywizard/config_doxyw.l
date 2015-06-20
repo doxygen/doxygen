@@ -79,16 +79,20 @@ static QString error_str = QString::fromAscii("error: ");
 
 void config_err(const char *fmt, ...)
 {
+  QString msg = error_str;
+  msg.append(QString::fromAscii(fmt));
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, qPrintable(error_str.append(QString::fromAscii(fmt))), args);
-  va_end(args); 
+  vfprintf(stderr, qPrintable(msg), args);
+  va_end(args);
 }
 void config_warn(const char *fmt, ...)
 {
+  QString msg = warning_str;
+  msg.append(QString::fromAscii(fmt));
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, qPrintable(warning_str.append(QString::fromAscii(fmt))), args);
+  vfprintf(stderr, qPrintable(msg), args);
   va_end(args);
 }
 

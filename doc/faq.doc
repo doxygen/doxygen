@@ -63,7 +63,7 @@ PREDEFINED             = MY_MACRO()=
       manual for more information.
   </ol> 
 
-\section faq_extract_allWhen I set EXTRACT_ALL to NO none of my functions are shown in the documentation.
+\section faq_extract_all When I set EXTRACT_ALL to NO none of my functions are shown in the documentation.
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
@@ -77,6 +77,19 @@ block containing the \ref cmddefgroup "\\defgroup" command.
 For member functions or functions that are part of a namespace you should
 document either the class or namespace.
  
+\section faq_ext_mapping My file with a custom extension is not parsed (properly) (anymore).
+
+Doxygen only parses files that are specified as input (via the \ref cfg_input "INPUT" tag)
+and that match a specified extension (mentioned in \ref cfg_file_patterns "FILE_PATTERNS")
+The list of files is then reduced by excluding files listed as \ref cfg_exclude "EXCLUDE" or 
+files that match the patterns set by \ref cfg_exclude_patterns "EXCLUDE_PATTERNS".
+
+In the past doxygen parsed all files with an unknown extension as C files which could lead to
+undesired results. Since version 1.8.8, doxygen requires that you specify a mapping that tells
+for a certain file extension, which parser to use. 
+This mapping is specified using the \ref cfg_extension_mapping "EXTENSION_MAPPING" tag.
+If no mapping is specified the file's contents will be ignored.
+
 \section faq_code How can I make doxygen ignore some code fragment?
 
 The new and easiest way is to add one comment block 
