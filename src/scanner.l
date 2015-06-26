@@ -6748,7 +6748,8 @@ static void parseCompounds(Entry *rt)
       initEntry();
 
       // deep copy group list from parent (see bug 727732)
-      if (rt->groups)
+      static bool autoGroupNested = Config_getBool("GROUP_NESTED_COMPOUNDS");
+      if (rt->groups && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
       {
         QListIterator<Grouping> gli(*rt->groups);
         Grouping *g;
