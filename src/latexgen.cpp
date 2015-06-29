@@ -1422,6 +1422,10 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
                                      const char *anchor, const char *,
                                      const char *)
 {
+}
+
+void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
+{
   static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
   static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   if (usePDFLatex && pdfHyperlinks)
@@ -1431,10 +1435,6 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
     if (anchor) t << "_" << anchor;
     t << "}{}";
   }
-}
-
-void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
-{
   t << "\\label{";
   if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;

@@ -199,6 +199,7 @@ class LatexDocVisitor : public DocVisitor
     int m_currentColumn;
     bool m_inRowspan;
     bool m_inColspan;
+    bool m_firstRow;
 };
 
 #endif

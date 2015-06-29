@@ -6461,7 +6461,6 @@ void filterLatexString(FTextStream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem)
 {
   if (str==0) return;
-  //printf("filterLatexString(%s)\n",str);
   //if (strlen(str)<2) stackTrace();
   const unsigned char *p=(const unsigned char *)str;
   const unsigned char *q;
@@ -6555,7 +6554,7 @@ void filterLatexString(FTextStream &t,const char *str,
         default:   
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing && 
-                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0') || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";

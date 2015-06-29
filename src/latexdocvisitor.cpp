@@ -173,7 +173,7 @@ LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
     m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
     m_insideTable(FALSE), m_langExt(langExt), m_currentColumn(0), 
-    m_inRowspan(FALSE), m_inColspan(FALSE)
+    m_inRowspan(FALSE), m_inColspan(FALSE), m_firstRow(FALSE)
 {
   m_rowSpans.setAutoDelete(TRUE);
 }
@@ -913,6 +913,17 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
   m_t << "\\begin{" << getTableName(t->parent()) << "}{" << t->numColumns() << "}\n";
   m_numCols = t->numColumns();
   m_t << "\\hline\n";
+
+  // check if first row is a heading and then render the row already here
+  // and end it with \endfirsthead (triggered via m_firstRow==TRUE)
+  // then repeat the row as normal and end it with \endhead (m_firstRow==FALSE)
+  DocHtmlRow *firstRow = t->firstRow();
+  if (firstRow && firstRow->isHeading())
+  {
+    m_firstRow=TRUE;
+    firstRow->accept(this);
+    m_firstRow=FALSE;
+  }
 }
 
 void LatexDocVisitor::visitPost(DocHtmlTable *t)
@@ -944,7 +955,7 @@ void LatexDocVisitor::visitPost(DocHtmlCaption *)
 void LatexDocVisitor::visitPre(DocHtmlRow *r)
 {
   m_currentColumn = 0;
-  if (r->isHeading()) m_t << "\\rowcolor{lightgray}";
+  if (r->isHeading()) m_t << "\\rowcolor{\\tableheadbgcolor}";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlRow *row) 
@@ -1011,6 +1022,19 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
   }
 
   m_t << "\n";
+
+  if (row->isHeading() && row->rowIndex()==1)
+  {
+    if (m_firstRow)
+    {
+      m_t << "\\endfirsthead" << endl;
+      m_t << "\\hline" << endl;
+    }
+    else
+    {
+      m_t << "\\endhead" << endl;
+    }
+  }
 }
 
 void LatexDocVisitor::visitPre(DocHtmlCell *c)
@@ -1076,7 +1100,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
         << m_numCols << "-\\arrayrulewidth*"
         << row->visibleCells() << ")*" 
         << cs <<"/"<< m_numCols << "}|}{";
-    if (c->isHeading()) m_t << "\\cellcolor{lightgray}";
+    if (c->isHeading()) m_t << "\\cellcolor{\\tableheadbgcolor}";
   }
   int rs = c->rowSpan();
   if (rs>0)

@@ -9,7 +9,8 @@
 \RequirePackage{ifthen}
 \RequirePackage{verbatim}
 \RequirePackage[table]{xcolor}
-\RequirePackage{xtab}
+\RequirePackage{longtable}
+\RequirePackage{tabu}
 
 %---------- Internal commands used in this style file ----------------
 
@@ -267,46 +268,38 @@
 
 % Used by parameter lists
 \newenvironment{DoxyParams}[2][]{%
+    \tabulinesep=1mm%
     \par%
-    \tabletail{\hline}%
-    \tablelasttail{\hline}%
-    \tablefirsthead{}%
-    \tablehead{}%
     \ifthenelse{\equal{#1}{}}%
-    {\tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]}%
-     \begin{xtabular}{|>{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
-                        p{0.805\textwidth}|}}%
+      {\begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}}% name + description
     {\ifthenelse{\equal{#1}{1}}%
-      {\tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]}%
-       \begin{xtabular}{|>{\centering}p{0.10\textwidth}|%
-                         >{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
-                         p{0.678\textwidth}|}}%
-      {\tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]}%
-       \begin{xtabular}{|>{\centering}p{0.10\textwidth}|%
-                         >{\centering\hspace{0pt}}p{0.15\textwidth}|%
-                         >{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
-                         p{0.501\textwidth}|}}%
-    }\hline%
+      {\begin{longtabu} spread 0pt [l]{|X[-1,c]|X[-1,r]|X[-1,l]|}}% in/out + name + desc
+      {\begin{longtabu} spread 0pt [l]{|X[-1,c]|X[-1,c]|X[-1,r]|X[-1,l]|}}% in/out + type + name + desc
+    }
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
+    \hline%
+    \endfirsthead%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
+    \hline%
+    \endhead%
 }{%
-    \end{xtabular}%
-    \tablefirsthead{}%
+    \end{longtabu}%
     \vspace{6pt}%
 }
 
 % Used for fields of simple structs
 \newenvironment{DoxyFields}[1]{%
+    \tabulinesep=1mm%
     \par%
-    \tabletail{\hline}%
-    \tablelasttail{\hline}%
-    \tablehead{}%
-    \tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]}%
-    \begin{xtabular}{|>{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
-                         p{0.15\textwidth}|%
-                         p{0.63\textwidth}|}%
+    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|X[-1,l]|}%
+    \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
+    \endfirsthead%
+    \multicolumn{3}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \hline%
+    \endhead%
 }{%
-    \end{xtabular}%
-    \tablefirsthead{}%
+    \end{longtabu}%
     \vspace{6pt}%
 }
 
@@ -318,49 +311,49 @@
 
 % Used by return value lists
 \newenvironment{DoxyRetVals}[1]{%
+    \tabulinesep=1mm%
     \par%
-    \tabletail{\hline}%
-    \tablelasttail{\hline}%
-    \tablehead{}%
-    \tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]}%
-    \begin{xtabular}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
-                          p{0.705\textwidth}|}%
+    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
+    \endfirsthead%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \hline%
+    \endhead%
 }{%
-    \end{xtabular}%
-    \tablefirsthead{}%
+    \end{longtabu}%
     \vspace{6pt}%
 }
 
 % Used by exception lists
 \newenvironment{DoxyExceptions}[1]{%
+    \tabulinesep=1mm%
     \par%
-    \tabletail{\hline}%
-    \tablelasttail{\hline}%
-    \tablehead{}%
-    \tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]}%
-    \begin{xtabular}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
-                          p{0.705\textwidth}|}%
+    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
+    \endfirsthead%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \hline%
+    \endhead%
 }{%
-    \end{xtabular}%
-    \tablefirsthead{}%
+    \end{longtabu}%
     \vspace{6pt}%
 }
 
 % Used by template parameter lists
 \newenvironment{DoxyTemplParams}[1]{%
+    \tabulinesep=1mm%
     \par%
-    \tabletail{\hline}%
-    \tablelasttail{\hline}%
-    \tablehead{}%
-    \tablefirsthead{\multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]}%
-    \begin{xtabular}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
-                          p{0.705\textwidth}|}%
+    \begin{longtabu} spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
     \hline%
+    \endfirsthead%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \hline%
+    \endhead%
 }{%
-    \end{xtabular}%
-    \tablefirsthead{}%
+    \end{longtabu}%
     \vspace{6pt}%
 }
 
@@ -426,25 +419,14 @@
 
 % Used by tables
 \newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
-\newlength{\tmplength}%
 \newenvironment{TabularC}[1]%
-{%
-\setlength{\tmplength}%
-     {\linewidth/(#1)-\tabcolsep*2-\arrayrulewidth*(#1+1)/(#1)}%
-      \par\begin{xtabular*}{\linewidth}%
-             {*{#1}{|>{\PBS\raggedright\hspace{0pt}}p{\the\tmplength}}|}%
-}%
-{\end{xtabular*}\par}%
+{\tabulinesep=1mm
+\begin{longtabu} spread 0pt [l]{*#1{|X[-1]}|}}%
+{\end{longtabu}\par}%
 
-% Used by nested tables
 \newenvironment{TabularNC}[1]%
-{%
-\setlength{\tmplength}%
-     {\linewidth/(#1)-\tabcolsep*2-\arrayrulewidth*(#1+1)/(#1)}%
-      \par\begin{tabular*}{\linewidth}%
-             {*{#1}{|>{\PBS\raggedright\hspace{0pt}}p{\the\tmplength}}|}%
-}%
-{\end{tabular*}\par}%
+{\begin{tabu} spread 0pt [l]{*#1{|X[-1]}|}}%
+{\end{tabu}\par}%
 
 % Used for member group headers
 \newenvironment{Indent}{%
@@ -466,7 +448,7 @@
 \newcommand{\lcurly}{\{}
 \newcommand{\rcurly}{\}}
 
-% Used for syntax highlighting
+% Colors used for syntax highlighting
 \definecolor{comment}{rgb}{0.5,0.0,0.0}
 \definecolor{keyword}{rgb}{0.0,0.5,0.0}
 \definecolor{keywordtype}{rgb}{0.38,0.25,0.125}
@@ -478,3 +460,6 @@
 \definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
 \definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}
 \definecolor{vhdlchar}{rgb}{0.0,0.0,0.0}
+
+% Color used for table heading
+\newcommand{\tableheadbgcolor}{lightgray}%

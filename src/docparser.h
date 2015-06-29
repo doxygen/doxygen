@@ -1303,8 +1303,18 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
     int parseXml(bool header);
-    bool isHeading() const     { return m_children.count()>0 && 
-                                 ((DocHtmlCell*)m_children.getFirst())->isHeading(); 
+    bool isHeading() const     { // a row is a table heading if all cells are marked as such
+                                 bool heading=TRUE;
+                                 QListIterator<DocNode> it(m_children);
+                                 DocNode *n;
+                                 for (;(n=it.current());++it)
+                                 {
+                                   if (n->kind()==Kind_HtmlCell)
+                                   {
+                                     heading = heading && ((DocHtmlCell*)n)->isHeading();
+                                   }
+                                 }
+                                 return m_children.count()>0 && heading;
                                }
     void setVisibleCells(int n) { m_visibleCells = n; }
     int visibleCells() const    { return m_visibleCells; }
@@ -1332,6 +1342,11 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     int parseXml();
     uint numColumns() const { return m_numCols; }
     void accept(DocVisitor *v);
+    DocHtmlRow *firstRow() {
+                             DocNode *n = m_children.getFirst();
+                             if (n && n->kind()==Kind_HtmlRow) return (DocHtmlRow*)n;
+                             return 0;
+                           }
 
   private:
     void computeTableGrid();
