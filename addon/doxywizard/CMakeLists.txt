@@ -56,7 +56,7 @@ wizard.h
 
 QT4_ADD_RESOURCES(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
-add_executable(doxywizard
+add_executable(doxywizard WIN32
 doxywizard.cpp
 expert.cpp
 wizard.cpp
@@ -72,7 +72,7 @@ ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
 )
 target_link_libraries(doxywizard
-${QT_LIBRARIES}
+${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY}
 )
 
 install(TARGETS doxywizard DESTINATION bin)
