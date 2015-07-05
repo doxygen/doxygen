@@ -59,7 +59,7 @@ bool Htags::execute(const QCString &htmldir)
   }
   else
   {
-    err("If you use USE_HTAGS then INPUT should specific a single directory. \n");
+    err("If you use USE_HTAGS then INPUT should specify a single directory.\n");
     return FALSE;
   }
 
