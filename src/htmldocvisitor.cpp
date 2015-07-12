@@ -1902,6 +1902,8 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
     {
       case '&':  m_t << "&amp;"; break;
       case '"':  m_t << "&quot;"; break;
+      case '<':  m_t << "&lt;"; break;
+      case '>':  m_t << "&gt;"; break;
        // For SGML compliance, and given the SGML declaration for HTML syntax,
        // it's enough to replace these two, provided that the declaration
        // for the HTML version we generate (and as supported by the browser)
