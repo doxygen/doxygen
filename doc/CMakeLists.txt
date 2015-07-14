@@ -32,7 +32,8 @@ add_custom_target(docs
 	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" doxygen_manual.tex > ../latex/doxygen_manual.tex
 	COMMAND ${SED} -e "s/\$VERSION/${VERSION}/g" manual.sty > ../latex/manual.sty
 	COMMAND ${EPSTOPDF} doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
-        COMMAND ${MAKE} -C ../latex > latex_out.txt
+        COMMAND ${MAKE} -C ../latex 
+#> latex_out.txt
 	DEPENDS doxygen copy_docs ${PROJECT_BINARY_DIR}/doc/language.doc config.doc examples
                 "${PROJECT_BINARY_DIR}/man/doxygen.1"
                 "${PROJECT_BINARY_DIR}/man/doxywizard.1"
