@@ -2506,7 +2506,7 @@ only copy the detailed documentation, not the brief description.
 
   The second argument is also optional and can be used to specify the
   width or height of the image.
-  For a descriptionm of the possibilities see the paragraph
+  For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
@@ -2551,7 +2551,7 @@ class C {};
 
   The second argument is also optional and can be used to specify the
   width or height of the image. 
-  For a descriptionm of the possibilities see the paragraph
+  For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
@@ -2626,7 +2626,7 @@ class Receiver
 
   The third argument is also optional and can be used to specify the
   width or height of the image.
-  For a descriptionm of the possibilities see the paragraph
+  For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
@@ -2681,7 +2681,7 @@ class Receiver
 
   The third argument is also optional and can be used to specify the
   width or height of the image.
-  For a descriptionm of the possibilities see the paragraph
+  For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
@@ -2708,7 +2708,7 @@ class Receiver
 
   The third argument is also optional and can be used to specify the
   width or height of the image.
-  For a descriptionm of the possibilities see the paragraph
+  For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
@@ -2734,7 +2734,7 @@ class Receiver
 
   The third argument is also optional and can be used to specify the
   width or height of the image.
-  For a descriptionm of the possibilities see the paragraph
+  For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
 
