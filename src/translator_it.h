@@ -19,13 +19,17 @@
  *
  * Revision history
  *
+ *  2015/07: updated translation of new items used since version 1.8.2 and 1.8.4
+ *           corrected a typo
+ *           updated translator mail address
  *  2012/04: updated translation of new items used since version 1.7.5 and 1.8.0
  *  2010/08: updated translation of new items used since version 1.6.0 and 1.6.3
  *           completely reviewed the translation in the trLegendDocs() function
  *           corrected some typos all around
  *           reviewed some translations all around
  *  2007/11: updated translation of new items used since version 1.5.4
- *  2007/10: Included corrections provided by Arialdo Martini <arialdomartini@bebox.it>, updated some strings marked with 'translate me' comment
+ *  2007/10: Included corrections provided by Arialdo Martini <arialdomartini@bebox.it>
+ *           updated some strings marked with 'translate me' comment
  *  2006/10: made class to derive directly from Translator class (reported in Petr Prikryl October 9 translator report)
  *  2006/06: updated translation of new items used since version 1.4.6
  *  2006/05: translated new items used since version 1.4.6
@@ -79,13 +83,13 @@
  * tecnica (ad es. "lista dei file" e non "lista dei files")
  *
  * Se avete suggerimenti sulla traduzione di alcuni termini o volete segnalare
- * eventuali sviste potete scrivermi all'indirizzo: alessandro@falappa.net
+ * eventuali sviste potete scrivermi all'indirizzo: alex.falappa@gmail.com
  */
 
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_8_2
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1832,7 +1836,7 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool single)
-    { QCString result = "La documentazione per questo tipo enumerato è stata generata";
+    { QCString result = "La documentazione per questo tipo enumerato è stata generata a partire";
       if (!single) result += " dai seguenti";
       else result += " dal seguente";
       result+=" file:";
@@ -1852,6 +1856,127 @@ class TranslatorItalian : public TranslatorAdapter_1_8_2
      */
     virtual QCString trAdditionalInheritedMembers()
     { return "Altri membri ereditati"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a tooltip for the toggle button that appears in the
+     *  navigation tree in the HTML output when GENERATE_TREEVIEW is
+     *  enabled. This tooltip explains the meaning of the button.
+     */
+    virtual QCString trPanelSynchronisationTooltip(bool enable)
+    {
+      QCString opt = enable ? "abilitare" : "disabilitare";
+      return "cliccare per "+opt+" la sincronizzazione del pannello";
+    }
+
+    /*! Used in a method of an Objective-C class that is declared in a
+     *  a category. Note that the @1 marker is required and is replaced
+     *  by a link.
+     */
+    virtual QCString trProvidedByCategory()
+    {
+      return "Fornito dalla categoria @1.";
+    }
+
+    /*! Used in a method of an Objective-C category that extends a class.
+     *  Note that the @1 marker is required and is replaced by a link to
+     *  the class method.
+     */
+    virtual QCString trExtendsClass()
+    {
+      return "Estende la classe @1.";
+    }
+
+    /*! Used as the header of a list of class methods in Objective-C.
+     *  These are similar to static public member functions in C++.
+     */
+    virtual QCString trClassMethods()
+    {
+      return "Metodi della classe";
+    }
+
+    /*! Used as the header of a list of instance methods in Objective-C.
+     *  These are similar to public member functions in C++.
+     */
+    virtual QCString trInstanceMethods()
+    {
+      return "Metodi di instanza";
+    }
+
+    /*! Used as the header of the member functions of an Objective-C class.
+     */
+    virtual QCString trMethodDocumentation()
+    {
+      return "Documentazione dei metodi";
+    }
+
+    /*! Used as the title of the design overview picture created for the
+     *  VHDL output.
+     */
+    virtual QCString trDesignOverview()
+    {
+      return "Panoramica del progetto";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.4
+//////////////////////////////////////////////////////////////////////////
+
+    /** old style UNO IDL services: implemented interfaces */
+    virtual QCString trInterfaces()
+    { return "Interfacce esportate"; }
+
+    /** old style UNO IDL services: inherited services */
+    virtual QCString trServices()
+    { return "Servizi inclusi"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroups()
+    { return "Gruppi di costanti"; }
+
+    /** UNO IDL constant groups */
+    virtual QCString trConstantGroupReference(const char *namespaceName)
+    {
+      QCString result="Riferimenti per il gruppo di costanti ";
+      result+=namespaceName;
+      return result;
+    }
+    /** UNO IDL service page title */
+    virtual QCString trServiceReference(const char *sName)
+    {
+      QCString result=(QCString)"Riferimenti per il servizio ";
+      result+=sName;
+      return result;
+    }
+    /** UNO IDL singleton page title */
+    virtual QCString trSingletonReference(const char *sName)
+    {
+      QCString result=(QCString)"Riferimenti per il singleton ";
+      result+=sName;
+      return result;
+    }
+    /** UNO IDL service page */
+    virtual QCString trServiceGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"La documentazione per questo servizio "
+                                "è stata generata a partire ";
+      if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
+      return result;
+    }
+    /** UNO IDL singleton page */
+    virtual QCString trSingletonGeneratedFromFiles(bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"La documentazione per questo singleton "
+                                "è stata generata a partire ";
+      if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
 
 };
 
