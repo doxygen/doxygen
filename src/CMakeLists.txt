@@ -114,7 +114,7 @@ add_library(doxycfg
     portable_c.c
 )
 
-add_library(_doxygen
+add_library(libdoxygen
     # custom generated files
     ${GENERATED_SRC}/lang_cfg.h
     ${GENERATED_SRC}/settings.h
@@ -226,7 +226,7 @@ add_library(_doxygen
 
 add_executable(doxygen main.cpp)
 target_link_libraries(doxygen
-    _doxygen
+    libdoxygen
     doxycfg
     qtools
     md5
