@@ -13935,6 +13935,60 @@ bye:
 }
 
 /*!
+  Returns the string converted to an <code>unsigned long</code>
+  value.
+
+  If \a ok is non-null, \a *ok is set to TRUE if there are no
+  conceivable errors, and FALSE if the string is not a number at all,
+  or if it has trailing garbage.
+*/
+
+uint64 QString::toUInt64( bool *ok, int base ) const
+{
+    const QChar *p = unicode();
+    uint64 val=0;
+    int l = length();
+    const uint64 max_mult = 1844674407370955161ULL;  // ULLONG_MAX/10, rounded down
+    bool is_ok = FALSE;
+    if ( !p )
+	goto bye;
+    while ( l && p->isSpace() )			// skip leading space
+	l--,p++;
+    if ( *p == '+' )
+	l--,p++;
+
+    // NOTE: toULong() code is similar
+    if ( !l || !ok_in_base(*p,base) )
+	goto bye;
+    while ( l && ok_in_base(*p,base) ) {
+	l--;
+	uint dv;
+	if ( p->isDigit() ) {
+	    dv = p->digitValue();
+	} else {
+	    if ( *p >= 'a' && *p <= 'z' )
+		dv = *p - 'a' + 10;
+	    else
+		dv = *p - 'A' + 10;
+	}
+	if ( val > max_mult || (val == max_mult && dv > (ULLONG_MAX%base)) )
+	    goto bye;
+	val = base*val + dv;
+	p++;
+    }
+
+    while ( l && p->isSpace() )			// skip trailing space
+	l--,p++;
+    if ( !l )
+	is_ok = TRUE;
+bye:
+    if ( ok )
+	*ok = is_ok;
+    return is_ok ? val : 0;
+}
+
+
+/*!
   Returns the string converted to a <code>short</code> value.
 
   If \a ok is non-null, \a *ok is set to TRUE if there are no

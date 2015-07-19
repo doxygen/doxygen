@@ -288,6 +288,7 @@ public:
     uint toUInt( bool *ok=0 ) const;
     long toLong( bool *ok=0 ) const;
     ulong toULong( bool *ok=0 )	const;
+    uint64 toUInt64( bool *ok=0 ) const;
     QCString &setNum(short n);
     QCString &setNum(ushort n);
     QCString &setNum(int n);

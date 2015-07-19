@@ -460,6 +460,12 @@ ulong QCString::toULong(bool *ok) const
   return s.toULong(ok);
 }
 
+uint64 QCString::toUInt64(bool *ok) const
+{
+  QString s(data());
+  return s.toUInt64(ok);
+}
+
 QCString &QCString::setNum(short n)
 {
   return setNum((long)n);
