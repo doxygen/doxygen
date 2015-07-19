@@ -226,13 +226,13 @@ void CiteDict::generatePage() const
     else if (insideBib) doc+=line+"\n";
     int i;
     // determine text to use at the location of the @cite command
-    if (insideBib && (i=line.find("<a name=\"CITEREF_"))!=-1)
+    if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
     {
       int j=line.find("\">[");
       int k=line.find("]</a>");
       if (j!=-1 && k!=-1)
       {
-        QCString label = line.mid(i+17,j-i-17);
+        QCString label = line.mid(i+14,j-i-14);
         QCString number = line.mid(j+2,k-j-1);
         CiteInfo *ci = m_entries.find(label);
         //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),ci);
