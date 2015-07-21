@@ -135,3 +135,6 @@ add_subdirectory(addon/doxywizard)
 
 enable_testing()
 add_subdirectory(testing)
+
+include(cmake/packaging.cmake) # set CPACK_xxxx properties
+include(CPack)
