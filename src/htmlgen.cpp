@@ -1952,11 +1952,6 @@ static void endQuickIndexItem(FTextStream &t,const char *l)
   t << "</li>\n";
 }
 
-static QCString fixSpaces(const QCString &s)
-{
-  return substitute(s," ","&#160;");
-}
-
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
   static bool showFiles = Config_getBool("SHOW_FILES");
