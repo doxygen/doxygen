@@ -963,7 +963,9 @@ STARTDOCSYMS      "##"
 			    {
 			      current->argList->getLast()->defval=g_defVal.stripWhiteSpace();
 			    }
-       			    BEGIN(FunctionParams);
+			    if (*yytext == ')')
+			      current->args = argListToString(current->argList);
+			    BEGIN(FunctionParams);
 			  }
 			  else // continue
 			  {
