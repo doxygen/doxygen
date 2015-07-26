@@ -173,7 +173,7 @@ install(FILES
         "${PROJECT_BINARY_DIR}/man/doxywizard.1"
         "${PROJECT_BINARY_DIR}/man/doxysearch.1"
         "${PROJECT_BINARY_DIR}/man/doxyindexer.1"
-        DESTINATION man/man1
+        DESTINATION share/man/man1
 )
 
 install(FILES
