@@ -284,5 +284,6 @@ void initNamespaceMemberIndices();
 void addClassMemberNameToIndex(MemberDef *md);
 void addFileMemberNameToIndex(MemberDef *md);
 void addNamespaceMemberNameToIndex(MemberDef *md);
+QCString fixSpaces(const QCString &s);
 
 #endif
