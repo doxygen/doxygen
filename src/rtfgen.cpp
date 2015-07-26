@@ -2606,6 +2606,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   if (!outf.open(IO_WriteOnly))
   {
     err("Failed to open %s for writing!\n",combinedName.data());
+    QDir::setCurrent(oldDir);
     return FALSE;
   }
   FTextStream outt(&outf);
