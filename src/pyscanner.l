@@ -1280,6 +1280,12 @@ STARTDOCSYMS      "##"
 			initTriSingleQuoteBlock();
 			BEGIN(TripleComment);
                       }
+   "'"	              {
+       			g_stringContext=YY_START;
+			current->initializer+="'";
+			g_copyString=&current->initializer;
+                        BEGIN( SingleQuoteString );
+                      }
    "\""	              {
        			g_stringContext=YY_START;
 			current->initializer+="\"";
