@@ -2,22 +2,24 @@ if (build_doc)
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/examples)
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/html/examples)
-file(GLOB EXAMPLE_FILES "*")
+file(GLOB EXAMPLE_FILES RELATIVE ${CMAKE_SOURCE_DIR}/examples "*")
 
 if (DOT)
   set(DIAGRAM_EXAMPLE ${PROJECT_BINARY_DIR}/html/examples/diagrams/html/index.html)
 endif()
 
-# copy all example files
-add_custom_target(copy_examples)
-foreach(example_file ${EXAMPLE_FILES})
-  add_custom_command(TARGET copy_examples PRE_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E
-                         copy ${example_file} ${PROJECT_BINARY_DIR}/examples)
+foreach (f  ${EXAMPLE_FILES})
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/examples/${f}" "${PROJECT_BINARY_DIR}/examples/"
+        DEPENDS "${CMAKE_SOURCE_DIR}/examples/${f}"
+        OUTPUT "${PROJECT_BINARY_DIR}/examples/${f}"
+    )
+    set_source_files_properties("${PROJECT_BINARY_DIR}/examples/${f}" PROPERTIES GENERATED 1)
+    list(APPEND OUT_EXAMPLE_FILES "${PROJECT_BINARY_DIR}/examples/${f}")
 endforeach()
 
 add_custom_target(examples
-	DEPENDS doxygen copy_examples
+  DEPENDS ${OUT_EXAMPLE_FILES}
                 ${PROJECT_BINARY_DIR}/html/examples/class/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/define/html/index.html
                 ${PROJECT_BINARY_DIR}/html/examples/enum/html/index.html
