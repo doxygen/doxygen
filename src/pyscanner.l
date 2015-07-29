@@ -1384,11 +1384,14 @@ STARTDOCSYMS      "##"
 			    docBlock += yytext;
 			  }
       			}
-    [^"'\n \t]+          {
+    [^"'\n \t\\]+       {
 			  docBlock += yytext;
                         }
     \n			{
       			  incLineNr();
+			  docBlock += yytext;
+      			}
+    \\.		        { // espaced char
 			  docBlock += yytext;
       			}
     .			{
