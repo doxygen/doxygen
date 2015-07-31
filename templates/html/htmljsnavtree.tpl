@@ -18,3 +18,6 @@ var NAVTREEINDEX =
   {% endfor %}
 {% endwith %}
 ];
+
+var SYNCONMSG  = '{{ tr.panelSyncOn }}';
+var SYNCOFFMSG = '{{ tr.panelSyncOff }}';

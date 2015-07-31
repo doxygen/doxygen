@@ -24,6 +24,14 @@
 {% resource 'nav_g.png' %}
 {% resource 'nav_h.lum' %}
 {% resource 'navtree.css' %}
+{% resource 'navtree.js' %}
+{% resource 'resize.js' %}
+{% resource 'doc.luma' %}
+{% resource 'folderopen.luma' %}
+{% resource 'folderclosed.luma' %}
+{% resource 'arrowdown.luma' %}
+{% resource 'arrowright.luma' %}
+{% resource 'splitbar.lum' %}
 
 {# general search resources #}
 {% resource 'search_l.png' as 'search/search_l.png' %}

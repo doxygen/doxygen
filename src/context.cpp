@@ -952,6 +952,14 @@ class TranslateContext::Private : public PropertyMapper
     {
       return theTranslator->trRTFGeneralIndex();
     }
+    TemplateVariant panelSyncOn() const
+    {
+      return theTranslator->trPanelSynchronisationTooltip(FALSE);
+    }
+    TemplateVariant panelSyncOff() const
+    {
+      return theTranslator->trPanelSynchronisationTooltip(TRUE);
+    }
     Private()
     {
       //%% string generatedBy
@@ -1126,6 +1134,10 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("referenceManual",    this,&Private::referenceManual);
       //%% string index
       addProperty("index",              this,&Private::index);
+      //%% string panelSyncOn
+      addProperty("panelSyncOn",        this,&Private::panelSyncOn);
+      //%% string panelSyncOff
+      addProperty("panelSyncOff",       this,&Private::panelSyncOff);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -9079,6 +9091,7 @@ int RefCountedContext::s_totalCount;
 
 void generateOutputViaTemplate()
 {
+  msg("Generating output via template engine...\n");
   {
     TemplateEngine e;
     TemplateContext *ctx = e.createContext();
@@ -9165,7 +9178,7 @@ void generateOutputViaTemplate()
       //%% string space
       ctx->set("space"," ");
 
-      if (Config_getBool("GENERATE_HTML"))
+      //if (Config_getBool("GENERATE_HTML"))
       { // render HTML output
         Template *tpl = e.loadByName("htmllayout.tpl",1);
         if (tpl)
@@ -9188,7 +9201,7 @@ void generateOutputViaTemplate()
 
       // TODO: clean index before each run...
 
-      if (Config_getBool("GENERATE_LATEX"))
+      //if (Config_getBool("GENERATE_LATEX"))
       { // render LaTeX output
         Template *tpl = e.loadByName("latexlayout.tpl",1);
         if (tpl)
