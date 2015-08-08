@@ -611,7 +611,18 @@ static void detectNoDocumentedParams()
     {
       g_memberDef->setHasDocumentedReturnType(TRUE);
     }
-       
+    if ( // see if return type is documented in a function w/o return type
+        g_memberDef->hasDocumentedReturnType() &&
+        (returnType.isEmpty()              || // empty return type
+         returnType.find("void")!=-1       || // void return type
+         returnType.find("subroutine")!=-1 || // fortran subroutine
+         g_memberDef->isConstructor()      || // a constructor
+         g_memberDef->isDestructor()          // or destructor
+        )
+       )
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"documented empty return type");
+    }
   }
 }
 
