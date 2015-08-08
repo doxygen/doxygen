@@ -593,7 +593,7 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
   if (desc)
   {
     m_t << "<div class=\"ttdoc\">";
-    m_t << desc; // desc is already HTML escaped
+    docify(desc); // desc is already HTML escaped; but there are still < and > signs
     m_t << "</div>";
   }
   if (!defInfo.file.isEmpty())
