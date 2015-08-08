@@ -138,11 +138,11 @@ static void format_warn(const char *file,int line,const char *text)
               outputFormat,
               "$file",fileSubst
             ),
-            "$text",textSubst
+            "$line",lineSubst
           ),
-          "$line",lineSubst
+          "$version",versionSubst
         ),
-        "$version",versionSubst
+        "$text",textSubst
       )+'\n';
 
   // print resulting message
