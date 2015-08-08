@@ -169,8 +169,7 @@ static void processSection()
   if ((si=Doxygen::sectionDict->find(g_secLabel)))
   {
     si->fileName = file;
-    //si = new SectionInfo(file,g_secLabel,g_secTitle,g_secType);
-    //Doxygen::sectionDict.insert(g_secLabel,si);
+    si->type     = g_secType;
   }
 }
 
@@ -389,6 +388,7 @@ WORD1     {ESCWORD}|{CHARWORDQ}+|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="|"'"
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"|"="|"'"
+CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
@@ -1160,8 +1160,26 @@ REFWORD   {LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 
      /* State for the pass used to find the anchors and sections */ 
 
-<St_Sections>[^\n@\\]+
-<St_Sections>"@@"|"\\\\"
+<St_Sections>[^\n@\\<]+
+<St_Sections>"@@"|"\\\\"|"@<"|"\\<"
+<St_Sections>"<"{CAPTION}({WS}+{ATTRIB})*">" {
+                                      QCString tag=yytext;
+                                      int s=tag.find("id=");
+                                      if (s!=-1) // command has id attribute
+                                      {
+                                        char c=tag[s+3];
+                                        if (c=='\'' || c=='"') // valid start
+                                        {
+                                          int e=tag.find(c,s+4);
+                                          if (e!=-1) // found matching end
+                                          {
+                                            g_secType = SectionInfo::Table;
+                                            g_secLabel=tag.mid(s+4,e-s-4); // extract id
+                                            processSection();
+                                          }
+                                        }
+                                      }
+                                    }
 <St_Sections>{CMD}"anchor"{BLANK}+  { 
                                       g_secType = SectionInfo::Anchor; 
 				      BEGIN(St_SecLabel1); 

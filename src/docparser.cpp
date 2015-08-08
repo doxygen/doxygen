@@ -2418,7 +2418,7 @@ void DocInternalRef::parse()
 //---------------------------------------------------------------------------
 
 DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) : 
-   m_refToSection(FALSE), m_refToAnchor(FALSE), m_isSubPage(FALSE)
+   m_refType(Unknown), m_isSubPage(FALSE)
 {
   m_parent = parent; 
   Definition  *compound = 0;
@@ -2444,8 +2444,18 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
 
     m_ref          = sec->ref;
     m_file         = stripKnownExtensions(sec->fileName);
-    m_refToAnchor  = sec->type==SectionInfo::Anchor;
-    m_refToSection = sec->type!=SectionInfo::Anchor;
+    if (sec->type==SectionInfo::Anchor)
+    {
+      m_refType = Anchor;
+    }
+    else if (sec->type==SectionInfo::Table)
+    {
+      m_refType = Table;
+    }
+    else
+    {
+      m_refType = Section;
+    }
     m_isSubPage    = pd && pd->hasParentPage();
     if (sec->type!=SectionInfo::Page || m_isSubPage) m_anchor = sec->label;
     //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d type=%d\n",
@@ -3239,6 +3249,41 @@ endindexentry:
 
 //---------------------------------------------------------------------------
 
+DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
+{
+  m_hasCaptionId = FALSE;
+  HtmlAttribListIterator li(attribs);
+  HtmlAttrib *opt;
+  for (li.toFirst();(opt=li.current());++li)
+  {
+    if (opt->name=="id") // interpret id attribute as an anchor
+    {
+      SectionInfo *sec = Doxygen::sectionDict->find(opt->value);
+      if (sec)
+      {
+        //printf("Found anchor %s\n",id.data());
+        m_file   = sec->fileName;
+        m_anchor = sec->label;
+        m_hasCaptionId = TRUE;
+        if (g_sectionDict && g_sectionDict->find(opt->value)==0)
+        {
+          //printf("Inserting in dictionary!\n");
+          g_sectionDict->append(opt->value,sec);
+        }
+      }
+      else
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Invalid caption id `%s'",qPrint(opt->value));
+      }
+    }
+    else // copy attribute
+    {
+      m_attribs.append(new HtmlAttrib(*opt));
+    }
+  }
+  m_parent = parent;
+}
+
 int DocHtmlCaption::parse()
 {
   int retval=0;
@@ -3744,12 +3789,14 @@ void DocHtmlTable::accept(DocVisitor *v)
 { 
   v->visitPre(this); 
   // for HTML output we put the caption first
-  if (m_caption && v->id()==DocVisitor_Html) m_caption->accept(v);
+  //if (m_caption && v->id()==DocVisitor_Html) m_caption->accept(v);
+  // doxygen 1.8.11: always put the caption first
+  if (m_caption) m_caption->accept(v);
   QListIterator<DocNode> cli(m_children);
   DocNode *n;
   for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
   // for other output formats we put the caption last
-  if (m_caption && v->id()!=DocVisitor_Html) m_caption->accept(v);
+  //if (m_caption && v->id()!=DocVisitor_Html) m_caption->accept(v);
   v->visitPost(this); 
 }
 

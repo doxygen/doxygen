@@ -31,7 +31,8 @@ struct SectionInfo
                      Subsection    = 2, 
                      Subsubsection = 3, 
                      Paragraph     = 4, 
-                     Anchor        = 5 
+                     Anchor        = 5,
+                     Table         = 6
                    };
   SectionInfo(const char *f,const int lin,const char *l,const char *t,
               SectionType st,int lev,const char *r=0) :

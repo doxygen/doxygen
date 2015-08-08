@@ -159,7 +159,7 @@ class LatexDocVisitor : public DocVisitor
     
     void filter(const char *str);
     void startLink(const QCString &ref,const QCString &file,
-                   const QCString &anchor);
+                   const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,
                  const QCString &anchor);
     QCString escapeMakeIndexChars(const char *s);
@@ -190,6 +190,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
+    bool m_hideCaption;
     bool m_insideTabbing;
     bool m_insideTable;
     int  m_numCols;

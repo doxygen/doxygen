@@ -834,6 +834,29 @@ static inline void setOutput(OutputContext ctx)
   }
 }
 
+
+static void addAnchor(const char *anchor)
+{
+  SectionInfo *si = Doxygen::sectionDict->find(anchor);
+  if (si)
+  {
+    if (si->lineNr != -1)
+    {
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",anchor,si->fileName.data(),si->lineNr);
+    }
+    else
+    {
+      warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",anchor,si->fileName.data());
+    }
+  }
+  else
+  {
+    si = new SectionInfo(yyFileName,yyLineNr,anchor,0,SectionInfo::Anchor,0);
+    Doxygen::sectionDict->append(anchor,si);
+    current->anchors->append(si);
+  }
+}
+
 // add a string to the output
 static inline void addOutput(const char *s)
 {
@@ -905,6 +928,7 @@ IMG       [iI][mM][gG]
 HR        [hH][rR]
 PARA      [pP][aA][rR][aA]
 CODE      [cC][oO][dD][eE]
+CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 DETAILEDHTML {PRE}|{UL}|{TABLE}|{OL}|{DL}|{P}|[Hh][1-6]|{IMG}|{HR}|{PARA}
 DETAILEDHTMLOPT {CODE}
 BN        [ \t\n\r]
@@ -1053,6 +1077,24 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>"</remarks>"			{ // end of a brief or detailed description
                                           addOutput(yytext);
   					}
+<Comment>"<"{CAPTION}{ATTR}">"          {
+                                          QCString tag=yytext;
+                                          int s=tag.find("id=");
+                                          if (s!=-1) // command has id attribute
+                                          {
+                                            char c=tag[s+3];
+                                            if (c=='\'' || c=='"') // valid start
+                                            {
+                                              int e=tag.find(c,s+4);
+                                              if (e!=-1) // found matching end
+                                              {
+                                                QCString id=tag.mid(s+4,e-s-4); // extract id
+                                                addAnchor(id);
+                                              }
+                                            }
+                                          }
+                                          addOutput(yytext);
+                                        }
 <Comment>"<"{PRE}{ATTR}">"              {
                                           insidePre=TRUE;
                                           addOutput(yytext);
@@ -1745,24 +1787,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel>{LABELID}			{ // found argument
-                                          SectionInfo *si = Doxygen::sectionDict->find(yytext);
-                                          if (si)
-                                          {
-                                            if (si->lineNr != -1)
-                                            {
-                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",yytext,si->fileName.data(),si->lineNr);
-                                            }
-                                            else
-                                            {
-                                              warn(yyFileName,yyLineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",yytext,si->fileName.data());
-                                            }
-                                          }
-                                          else
-                                          {
-                                            si = new SectionInfo(yyFileName,yyLineNr,yytext,0,SectionInfo::Anchor,0);
-                                            Doxygen::sectionDict->append(yytext,si);
-  					    current->anchors->append(si);
-                                          }
+                                          addAnchor(yytext);
 					  addOutput(yytext);
 					  BEGIN( Comment );
   					}

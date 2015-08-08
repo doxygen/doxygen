@@ -1353,9 +1353,14 @@ void HtmlDocVisitor::visitPost(DocHtmlCell *c)
 void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
 {
   if (m_hide) return;
+  if (c->hasCaptionId())
+  {
+    m_t << "<a class=\"anchor\" id=\"" << c->anchor() << "\"></a>\n";
+  }
   bool hasAlign      = FALSE;
   HtmlAttribListIterator li(c->attribs());
   HtmlAttrib *att;
+  QCString id;
   for (li.toFirst();(att=li.current());++li)
   {
     if (att->name=="align") hasAlign=TRUE;

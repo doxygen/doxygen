@@ -822,15 +822,16 @@ class DocRef : public CompAccept<DocRef>, public DocNode
     QCString anchor() const       { return m_anchor; }
     QCString targetTitle() const  { return m_text; }
     bool hasLinkText() const     { return !m_children.isEmpty(); }
-    bool refToAnchor() const     { return m_refToAnchor; }
-    bool refToSection() const    { return m_refToSection; }
+    bool refToAnchor() const     { return m_refType==Anchor; }
+    bool refToSection() const    { return m_refType==Section; }
+    bool refToTable() const      { return m_refType==Table; }
     bool isSubPage() const       { return m_isSubPage; }
     void accept(DocVisitor *v)   { CompAccept<DocRef>::accept(this,v); }
 
   private:
-    bool      m_refToSection;
-    bool      m_refToAnchor;
-    bool      m_isSubPage;
+    enum RefType { Unknown, Anchor, Section, Table };
+    RefType    m_refType;
+    bool       m_isSubPage;
     QCString   m_file;
     QCString   m_relPath;
     QCString   m_ref;
@@ -1279,15 +1280,20 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
 class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
 {
   public:
-    DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs) : 
-      m_attribs(attribs) { m_parent = parent; }
+    DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs);
     Kind kind() const          { return Kind_HtmlCaption; }
     void accept(DocVisitor *v) { CompAccept<DocHtmlCaption>::accept(this,v); }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
+    bool hasCaptionId() const { return m_hasCaptionId; }
+    QCString file() const     { return m_file;         }
+    QCString anchor() const   { return m_anchor;       }
 
   private:
     HtmlAttribList m_attribs;
+    bool           m_hasCaptionId;
+    QCString       m_file;
+    QCString       m_anchor;
 };
 
 /** Node representing a HTML table row */
@@ -1342,7 +1348,8 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     int parseXml();
     uint numColumns() const { return m_numCols; }
     void accept(DocVisitor *v);
-    DocHtmlRow *firstRow() {
+    DocHtmlCaption *caption() const { return m_caption; }
+    DocHtmlRow *firstRow() const {
                              DocNode *n = m_children.getFirst();
                              if (n && n->kind()==Kind_HtmlRow) return (DocHtmlRow*)n;
                              return 0;

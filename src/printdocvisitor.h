@@ -536,10 +536,11 @@ class PrintDocVisitor : public DocVisitor
       indent_pre();
       printf("<ref ref=\"%s\" file=\"%s\" "
              "anchor=\"%s\" targetTitle=\"%s\""
-             " hasLinkText=\"%s\" refToAnchor=\"%s\" refToSection=\"%s\">\n",
+             " hasLinkText=\"%s\" refToAnchor=\"%s\" refToSection=\"%s\" refToTable=\"%s\">\n",
              ref->ref().data(),ref->file().data(),ref->anchor().data(),
              ref->targetTitle().data(),ref->hasLinkText()?"yes":"no",
-             ref->refToAnchor()?"yes":"no", ref->refToSection()?"yes":"no");
+             ref->refToAnchor()?"yes":"no", ref->refToSection()?"yes":"no",
+             ref->refToTable()?"yes":"no");
     }
     void visitPost(DocRef *) 
     {

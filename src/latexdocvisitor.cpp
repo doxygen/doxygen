@@ -171,7 +171,7 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                                  const char *langExt,bool insideTabbing) 
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
-    m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
+    m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
     m_insideTable(FALSE), m_langExt(langExt), m_currentColumn(0), 
     m_inRowspan(FALSE), m_inColspan(FALSE), m_firstRow(FALSE)
 {
@@ -908,9 +908,28 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
   if (m_hide) return;
   if (t->hasCaption())
   {
-    m_t << "\\begin{table}[h]";
+    DocHtmlCaption *c = t->caption();
+    static bool pdfHyperLinks = Config_getBool("PDF_HYPERLINKS");
+    if (!c->file().isEmpty() && pdfHyperLinks)
+    {
+      m_t << "\\hypertarget{" << stripPath(c->file()) << "_" << c->anchor()
+        << "}{}";
+    }
+    m_t << endl;
   }
+
   m_t << "\\begin{" << getTableName(t->parent()) << "}{" << t->numColumns() << "}\n";
+
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "\\caption{";
+    visitCaption(this, c->children());
+    m_t << "}";
+    m_t << "\\label{" << stripPath(c->file()) << "_" << c->anchor() << "}";
+    m_t << "\\\\\n";
+  }
+
   m_numCols = t->numColumns();
   m_t << "\\hline\n";
 
@@ -930,26 +949,18 @@ void LatexDocVisitor::visitPost(DocHtmlTable *t)
 {
   m_insideTable=FALSE;
   if (m_hide) return;
-  if (t->hasCaption())
-  {
-    m_t << "\\end{table}\n";
-  }
-  else
-  {
-    m_t << "\\end{" << getTableName(t->parent()) << "}\n";
-  }
+  m_t << "\\end{" << getTableName(t->parent()) << "}\n";
 }
 
 void LatexDocVisitor::visitPre(DocHtmlCaption *c)
 {
-  if (m_hide) return;
-  m_t << "\\end{" << getTableName(c->parent()->parent()) << "}\n\\centering\n\\caption{";
+  m_hideCaption = m_hide;
+  m_hide        = TRUE;
 }
 
-void LatexDocVisitor::visitPost(DocHtmlCaption *) 
+void LatexDocVisitor::visitPost(DocHtmlCaption *c)
 {
-  if (m_hide) return;
-  m_t << "}\n";
+  m_hide        = m_hideCaption;
 }
 
 void LatexDocVisitor::visitPre(DocHtmlRow *r)
@@ -1029,6 +1040,8 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
     {
       m_t << "\\endfirsthead" << endl;
       m_t << "\\hline" << endl;
+      m_t << "\\endfoot" << endl;
+      m_t << "\\hline" << endl;
     }
     else
     {
@@ -1077,16 +1090,6 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
     }
   }
 
-#if 0
-  QMap<int, int>::Iterator it = m_rowspanIndices.find(m_currentColumn);
-  if (it!=m_rowspanIndices.end() && it.data()>0)
-  {
-    m_t << "&";
-    m_currentColumn++;
-    it++;
-  }
-#endif
-
   int cs = c->colSpan();
   if (cs>1 && row)
   {
@@ -1106,7 +1109,6 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   if (rs>0)
   {
     m_inRowspan = TRUE;
-    //m_rowspanIndices[m_currentColumn] = rs;
     m_rowSpans.append(new ActiveRowSpan(c,rs,cs,m_currentColumn));
     m_t << "\\multirow{" << rs << "}{\\linewidth}{";
   }
@@ -1282,7 +1284,7 @@ void LatexDocVisitor::visitPre(DocRef *ref)
   }
   else
   {
-    if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
+    if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor(),ref->refToTable());
   }
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
@@ -1598,15 +1600,20 @@ void LatexDocVisitor::filter(const char *str)
   filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);
 }
 
-void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
+void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
 {
-  if (ref.isEmpty() && Config_getBool("PDF_HYPERLINKS")) // internal PDF link 
+  static bool pdfHyperLinks = Config_getBool("PDF_HYPERLINKS");
+  if (ref.isEmpty() && pdfHyperLinks) // internal PDF link 
   {
     m_t << "\\hyperlink{";
     if (!file.isEmpty()) m_t << stripPath(file);
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
+  }
+  else if (refToTable)
+  {
+    m_t << "\\doxytableref{";
   }
   else if (ref.isEmpty()) // internal non-PDF link
   {
@@ -1621,9 +1628,10 @@ void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const Q
 void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
   m_t << "}";
-  if (ref.isEmpty() && !Config_getBool("PDF_HYPERLINKS"))
+  static bool pdfHyperLinks = Config_getBool("PDF_HYPERLINKS");
+  if (ref.isEmpty() && !pdfHyperLinks)
   {
-    m_t << "{"; 
+    m_t << "{";
     filter(theTranslator->trPageAbbreviation());
     m_t << "}{" << file;
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";

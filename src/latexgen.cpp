@@ -455,8 +455,11 @@ static void writeDefaultHeaderPart1(FTextStream &t)
        "\\newcommand{\\clearemptydoublepage}{%\n"
        "  \\newpage{\\pagestyle{empty}\\cleardoublepage}%\n"
        "}\n"
-       "\n"
        "\n";
+
+  // caption style definition
+  t << "\\usepackage{caption}\n"
+    << "\\captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}\n\n";
 
   // End of preamble, now comes the document contents
   t << "%===== C O N T E N T S =====\n"

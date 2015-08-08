@@ -444,6 +444,11 @@
   \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
 }
 
+% Used to link to a table when hyperlinks are turned off
+\newcommand{\doxytableref}[3]{%
+  \ref{#3}%
+}
+
 % Used by @addindex
 \newcommand{\lcurly}{\{}
 \newcommand{\rcurly}{\}}
