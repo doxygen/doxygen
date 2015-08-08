@@ -30,7 +30,6 @@ else()
 endif()
 
 set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path where to install the documentation")
-set(EXAMPLE_DIR ${TOP}/examples)
 set(DOC_FILES
         arch.doc
         archoverview.eps
@@ -95,7 +94,6 @@ file(COPY ${TOP}/VERSION                  DESTINATION ${PROJECT_BINARY_DIR}/)
 file(COPY ${TOP}/src/translator.h         DESTINATION ${PROJECT_BINARY_DIR}/src/)
 file(COPY ${TOP}/src/translator_adapter.h DESTINATION ${PROJECT_BINARY_DIR}/src/)
 file(COPY ${LANG_FILES}                   DESTINATION ${PROJECT_BINARY_DIR}/src/)
-file(COPY ${EXAMPLE_DIR}                  DESTINATION ${PROJECT_BINARY_DIR}/)
 
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
@@ -134,15 +132,12 @@ set_source_files_properties(config.doc PROPERTIES GENERATED 1)
 add_custom_target(run_doxygen
         COMMENT "Generating Latex and HTML documentation."
         COMMAND ${DOXYGEN_EXECUTABLE}
-        DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc ${OUT_DOC_FILES}
+        DEPENDS ${PROJECT_BINARY_DIR}/doc/language.doc ${PROJECT_BINARY_DIR}/doc/config.doc
+        DEPENDS ${OUT_DOC_FILES}
+        DEPENDS examples
+        DEPENDS doxygen
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc/
 )
-if (doxygen_BINARY_DIR)
-    # building from project `doxygen'
-    add_dependencies(run_doxygen
-       doxygen
-    )
-endif()
 
 add_custom_target(doxygen_pdf
         COMMENT "Generating Doxygen Manual PDF."
