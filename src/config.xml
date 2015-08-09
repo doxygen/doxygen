@@ -3240,6 +3240,26 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    
+    <option type='bool' id='INCLUDE_GRAPH_PREPROCESS' defval='NO' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ If yes, then run a script on Include Graph and Included By dot files before 
+ generating the images. 
+]]>
+      </docs>
+    </option>
+    
+    <option type='string' id='INCLUDE_GRAPH_PP_CMD' defval='' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ Executable script that should be run to preprocess Include Graph and Included by 
+ Graph dot files.
+]]>
+      </docs>
+    </option>
+    
+    
     <option type='bool' id='INCLUDED_BY_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
@@ -3251,6 +3271,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
+    
     <option type='bool' id='CALL_GRAPH' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
