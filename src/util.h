@@ -464,6 +464,7 @@ void convertProtectionLevel(
                   );
 
 bool mainPageHasTitle();
+void initFilePattern(void);
 
 #endif
 

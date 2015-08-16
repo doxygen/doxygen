@@ -6854,6 +6854,7 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
 
 void initDefaultExtensionMapping()
 {
+  // NOTE: when adding an extension, also add the extension in config.xml
   g_extLookup.setAutoDelete(TRUE);
   //                  extension      parser id
   updateLanguageMapping(".dox",      "c");
@@ -8418,4 +8419,24 @@ QCString getDotImageExtension(void)
   QCString imgExt      = Config_getEnum("DOT_IMAGE_FORMAT");
   imgExt = imgExt.replace( QRegExp(":.*"), "" );
   return imgExt;
+}
+
+
+void initFilePattern(void)
+{
+  // add default pattern if needed
+  QStrList &filePatternList = Config_getList("FILE_PATTERNS");
+  if (filePatternList.isEmpty())
+  {
+    QDictIterator<int> it( g_extLookup );
+    QCString pattern;
+    bool caseSens =  portable_fileSystemIsCaseSensitive();
+    for (;it.current();++it)
+    {
+      pattern = "*";
+      pattern += it.currentKey();
+      filePatternList.append(pattern.data());
+      if (caseSens) filePatternList.append(pattern.upper().data());
+    }
+  }
 }
