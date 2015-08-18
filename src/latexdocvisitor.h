@@ -192,15 +192,85 @@ class LatexDocVisitor : public DocVisitor
     bool m_hide;
     bool m_hideCaption;
     bool m_insideTabbing;
-    bool m_insideTable;
-    int  m_numCols;
     QStack<bool> m_enabled;
     QCString m_langExt;
-    RowSpanList m_rowSpans;
-    int m_currentColumn;
-    bool m_inRowspan;
-    bool m_inColspan;
-    bool m_firstRow;
+
+    struct TableState
+    {
+      TableState() : numCols(0), currentColumn(0), inRowSpan(FALSE), 
+                     inColSpan(FALSE), firstRow(FALSE)
+      { rowSpans.setAutoDelete(TRUE); }
+      RowSpanList rowSpans;
+      int  numCols;
+      int currentColumn;
+      bool inRowSpan;
+      bool inColSpan;
+      bool firstRow;
+    };
+    QStack<TableState> m_tableStateStack; // needed for nested tables
+    RowSpanList m_emptyRowSpanList;
+
+    void pushTableState()
+    {
+      m_tableStateStack.push(new TableState);
+    }
+    void popTableState()
+    {
+      delete m_tableStateStack.pop();
+    }
+    int currentColumn() const
+    {
+      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->currentColumn : 0;
+    }
+    void setCurrentColumn(int col)
+    {
+      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->currentColumn = col;
+    }
+    int numCols() const
+    {
+      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->numCols : 0;
+    }
+    void setNumCols(int num)
+    {
+      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->numCols = num;
+    }
+    bool inRowSpan() const
+    {
+      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->inRowSpan : FALSE;
+    }
+    void setInRowSpan(bool b)
+    {
+      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->inRowSpan = b;
+    }
+    bool inColSpan() const
+    {
+      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->inColSpan : FALSE;
+    }
+    void setInColSpan(bool b)
+    {
+      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->inColSpan = b;
+    }
+    bool firstRow() const
+    {
+      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->firstRow : FALSE;
+    }
+    void setFirstRow(bool b)
+    {
+      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->firstRow = b;
+    }
+    const RowSpanList &rowSpans()
+    {
+      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->rowSpans : m_emptyRowSpanList;
+    }
+    void addRowSpan(ActiveRowSpan *span)
+    {
+      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->rowSpans.append(span);
+    }
+    bool insideTable() const
+    {
+      return !m_tableStateStack.isEmpty();
+    }
+
 };
 
 #endif

@@ -832,6 +832,10 @@ address {
 	color: ##33;
 }
 
+table.doxtable caption {
+	caption-side: top;
+}
+
 table.doxtable {
 	border-collapse:collapse;
         margin-top: 4px;

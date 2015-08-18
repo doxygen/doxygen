@@ -1301,6 +1301,11 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 
   forceEndParagraph(t);
 
+  if (t->hasCaption())
+  {
+    m_t << "<a class=\"anchor\" id=\"" << t->caption()->anchor() << "\"></a>\n";
+  }
+
   QString attrs = htmlAttribsToString(t->attribs());
   if (attrs.isEmpty())
   {
@@ -1353,21 +1358,11 @@ void HtmlDocVisitor::visitPost(DocHtmlCell *c)
 void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
 {
   if (m_hide) return;
-  if (c->hasCaptionId())
-  {
-    m_t << "<a class=\"anchor\" id=\"" << c->anchor() << "\"></a>\n";
-  }
   bool hasAlign      = FALSE;
   HtmlAttribListIterator li(c->attribs());
   HtmlAttrib *att;
   QCString id;
-  for (li.toFirst();(att=li.current());++li)
-  {
-    if (att->name=="align") hasAlign=TRUE;
-  }
-  m_t << "<caption" << htmlAttribsToString(c->attribs());
-  if (!hasAlign) m_t << " align=\"bottom\"";
-  m_t << ">";
+  m_t << "<caption" << htmlAttribsToString(c->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlCaption *) 
@@ -1813,7 +1808,6 @@ void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
 {
   if (m_hide) return;
   forceEndParagraph(b);
-
   QString attrs = htmlAttribsToString(b->attribs());
   if (attrs.isEmpty())
   {

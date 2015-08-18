@@ -11,6 +11,7 @@
 \RequirePackage[table]{xcolor}
 \RequirePackage{longtable}
 \RequirePackage{tabu}
+\RequirePackage{tabularx}
 
 %---------- Internal commands used in this style file ----------------
 
@@ -421,7 +422,7 @@
 \newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}%
 \newenvironment{TabularC}[1]%
 {\tabulinesep=1mm
-\begin{longtabu} spread 0pt [l]{*#1{|X[-1]}|}}%
+\begin{longtabu} spread 0pt [c]{*#1{|X[-1]}|}}%
 {\end{longtabu}\par}%
 
 \newenvironment{TabularNC}[1]%
@@ -442,6 +443,11 @@
 % Used when hyperlinks are turned off
 \newcommand{\doxyref}[3]{%
   \textbf{#1} (\textnormal{#2}\,\pageref{#3})%
+}
+
+% Used to link to a table when hyperlinks are turned on
+\newcommand{\doxytablelink}[2]{%
+  \ref{#1}%
 }
 
 % Used to link to a table when hyperlinks are turned off
