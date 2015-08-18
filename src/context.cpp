@@ -1709,7 +1709,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         MemberList *ml = m_classDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_classDef,relPathAsString(),ml,title,detailed));
+          list.reset(MemberListInfoContext::alloc(m_classDef,relPathAsString(),ml,title,""));
         }
       }
       if (list)
@@ -2312,7 +2312,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
         MemberList *ml = m_namespaceDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,detailed));
+          list.reset(MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,""));
         }
       }
       if (list)
@@ -2672,7 +2672,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         MemberList *ml = m_fileDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_fileDef,relPathAsString(),ml,title,detailed));
+          list.reset(MemberListInfoContext::alloc(m_fileDef,relPathAsString(),ml,title,""));
         }
       }
       if (list)
@@ -4453,7 +4453,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         MemberList *ml = m_groupDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_groupDef,relPathAsString(),ml,title,detailed));
+          list.reset(MemberListInfoContext::alloc(m_groupDef,relPathAsString(),ml,title,""));
         }
       }
       if (list)

@@ -1960,7 +1960,6 @@ void ClassDef::writeDocumentationContents(OutputList &ol,const QCString & /*page
 
   QCString pageType = " ";
   pageType += compoundTypeString();
-  toupper(pageType.at(1));
 
   Doxygen::indexList->addIndexItem(this,0);
 

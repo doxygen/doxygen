@@ -468,10 +468,6 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
       if (ii)
       {
         decl=ii->includeName;
-        if (decl.isEmpty())
-        {
-          decl=ii->local;
-        }
       }
     }
     else if (nd)

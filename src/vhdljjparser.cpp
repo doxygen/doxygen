@@ -407,7 +407,10 @@ void VhdlParser::addCompInst(const char *n, const char* instName, const char* co
   current->type=instName;                       // foo:instname e.g proto or work. proto(ttt)
   current->exception=genLabels.lower();         // |arch|label1:label2...
   current->name=n;                              // foo
-  current->args=lastCompound->name;             // architecture name
+  if (lastCompound)
+  {
+    current->args=lastCompound->name;             // architecture name
+  }
   current->includeName=comp;                    // component/enity/configuration
   int u=genLabels.find("|",1);
   if (u>0)

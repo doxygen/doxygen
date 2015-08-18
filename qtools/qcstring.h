@@ -149,7 +149,7 @@ public:
     /** creates a string with room for size characters
      *  @param[in] size the number of character to allocate (including the 0-terminator)
      */
-    QCString( int size ) : m_rep(size)
+    explicit QCString( int size ) : m_rep(size)
     {
     }
 

@@ -1037,7 +1037,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
 void HtmlDocVisitor::visitPost(DocPara *p)
 {
   bool needsTag = FALSE;
-  if (p && p->parent()) 
+  if (p->parent()) 
   {
     switch (p->parent()->kind()) 
     {
@@ -1067,7 +1067,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   // the paragraph (<ul>,<dl>,<table>) then that will already have ended the 
   // paragraph and we don't need to do it here
   int nodeIndex = p->children().count()-1;
-  if (p && nodeIndex>=0)
+  if (nodeIndex>=0)
   {
     while (nodeIndex>=0 && p->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace)
     {

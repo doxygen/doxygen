@@ -2074,7 +2074,10 @@ static void findUsingDeclarations(EntryNav *rootNav)
       else
       {
         Debug::print(Debug::Classes,0,"  Found used class %s in scope=%s\n",
-            qPrint(usingCd->name()),nd?qPrint(nd->name()):qPrint(fd->name()));
+            qPrint(usingCd->name()),
+                        nd?qPrint(nd->name()):
+                        fd?qPrint(fd->name()):
+                        "<unknown>");
       }
 
       if (nd)
@@ -6120,7 +6123,7 @@ static void findMember(EntryNav *rootNav,
             //       stripTemplateSpecifiersFromScope(scopeName,FALSE).data());
 
             ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
-            if (tcd==0 && stripAnonymousNamespaceScope(cd->name())==scopeName)
+            if (tcd==0 && cd && stripAnonymousNamespaceScope(cd->name())==scopeName)
             {
               // don't be fooled by anonymous scopes
               tcd=cd;

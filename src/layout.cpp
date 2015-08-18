@@ -888,7 +888,7 @@ class LayoutParser : public QXmlDefaultHandler
         // no MainPage node... add one as the first item of the root node...
         new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE, 
             /*Config_getBool("GENERATE_TREEVIEW") ? "main" :*/ "index",
-            theTranslator->trMainPage(),TRUE);
+            theTranslator->trMainPage(),"",TRUE);
       }
     }
 

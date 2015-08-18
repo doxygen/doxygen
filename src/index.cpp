@@ -3787,7 +3787,7 @@ static void writeIndex(OutputList &ol)
   {
     title = theTranslator->trMainPage();
   }
-  else 
+  else if (Doxygen::mainPage)
   {
     title = filterTitle(Doxygen::mainPage->title());
   }
@@ -4086,7 +4086,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
       for (i=oldSize;i<newSize;i++) indexWritten.at(i)=FALSE;
     }
     //printf("starting %s kind=%d\n",lne->title().data(),lne->kind());
-    bool addToIndex=lne==0 || lne->visible();
+    bool addToIndex=lne->visible();
     bool needsClosing=FALSE;
     if (!indexWritten.at(index))
     {

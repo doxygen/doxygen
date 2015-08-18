@@ -511,18 +511,9 @@ static void checkUndocumentedParams()
             errMsg+="  parameter '"+argName+"'";
           }
         }
-        if (g_memberDef->inheritsDocsFrom())
-        {
-           warn_doc_error(g_memberDef->getDefFileName(),
-                          g_memberDef->getDefLine(),
-                          substitute(errMsg,"%","%%"));
-        }
-        else
-        {
-           warn_doc_error(g_memberDef->getDefFileName(),
-                          g_memberDef->getDefLine(),
-                          substitute(errMsg,"%","%%"));
-        }
+        warn_doc_error(g_memberDef->getDefFileName(),
+                       g_memberDef->getDefLine(),
+                       substitute(errMsg,"%","%%"));
       }
     }
   }

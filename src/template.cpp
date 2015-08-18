@@ -1978,16 +1978,13 @@ class ExpressionParser
       TRACE(("{parseLiteral(%s)\n",m_curToken.id.data()));
       ExprAst *expr = new ExprAstLiteral(m_curToken.id);
       getNextToken();
-      if (expr)
+      while (m_curToken.type==ExprToken::Operator &&
+             m_curToken.op==Operator::Filter)
       {
-        while (m_curToken.type==ExprToken::Operator &&
-               m_curToken.op==Operator::Filter)
-        {
-          getNextToken();
-          ExprAstFilter *filter = parseFilter();
-          if (!filter) break;
-          expr = new ExprAstFilterAppl(expr,filter);
-        }
+        getNextToken();
+        ExprAstFilter *filter = parseFilter();
+        if (!filter) break;
+        expr = new ExprAstFilterAppl(expr,filter);
       }
       TRACE(("}parseLiteral()\n"));
       return expr;

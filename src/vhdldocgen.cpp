@@ -967,7 +967,6 @@ QCString VhdlDocGen::getClassTitle(const ClassDef *cd)
 {
   QCString pageTitle;
   if (cd==0) return "";
-  pageTitle+=cd->displayName();
   pageTitle=VhdlDocGen::getClassName(cd);
   int ii=cd->protection();
   pageTitle+=" ";
@@ -2163,7 +2162,6 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
       {
         if (VhdlDocGen::isConfig(mdef) || VhdlDocGen::isCompInst(mdef))
         {
-          nn=mdef->getOutputFileBase();
           nn=ltype;
         }
         else

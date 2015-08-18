@@ -76,7 +76,7 @@ void MemberGroup::insertMember(MemberDef *md)
   //       md,md->name().data());
 
   MemberDef *firstMd = memberList->getFirst();
-  if (inSameSection && memberList->count()>0 && 
+  if (inSameSection && firstMd &&
       firstMd->getSectionList(m_parent)!=md->getSectionList(m_parent))
   {
     inSameSection=FALSE;

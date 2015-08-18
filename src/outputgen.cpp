@@ -44,11 +44,6 @@ void OutputGenerator::startPlainFile(const char *name)
   //printf("startPlainFile(%s)\n",name);
   fileName=dir+"/"+name;
   file = new QFile(fileName);
-  if (!file)
-  {
-    err("Could not create file object for %s\n",fileName.data());
-    exit(1);
-  }
   if (!file->open(IO_WriteOnly))
   {
     err("Could not open file %s for writing\n",fileName.data());

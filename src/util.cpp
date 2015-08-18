@@ -4291,7 +4291,7 @@ bool getDefs(const QCString &scName,
         bool found=FALSE;
         MemberListIterator mmli(*mn);
         MemberDef *mmd;
-        for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
+        for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
           MemberDef *tmd = mmd->getEnumScope();
           //printf("try member %s tmd=%s\n",mmd->name().data(),tmd?tmd->name().data():"<none>");
@@ -8353,7 +8353,7 @@ void convertProtectionLevel(
         if (extractPrivate)
         {
           *outListType1=MemberListType_pubSlots;
-          *outListType1=MemberListType_proSlots;
+          *outListType2=MemberListType_proSlots;
         }
         else
         {
