@@ -273,7 +273,9 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    n->ref.data(),n->file.data(),n->anchor.data());
-  if (n->file.isEmpty()) // no link
+  if (n->file.isEmpty() // no link
+  || Config_getBool("SOURCE_BROWSER_ONLY")
+  )
   {
     t << "<b>" << convertToHtml(n->name) << "</b>";
   }

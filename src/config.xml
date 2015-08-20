@@ -1495,6 +1495,16 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SOURCE_BROWSER_ONLY' defval='0' depends='SOURCE_TOOLTIPS'>
+      <docs>
+<![CDATA[
+ If the \c SOURCE_BROWSER_ONLY is set to \c YES, then doxygen will skip
+ generating the documentation and diagrams, leaving only the highlighted
+ source files.
+ The highlighted sources will offer infos through SOURCE_TOOLTIPS
+]]>
+      </docs>
+    </option>
     <option type='bool' id='INLINE_SOURCES' defval='0'>
       <docs>
 <![CDATA[
