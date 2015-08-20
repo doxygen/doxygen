@@ -41,10 +41,7 @@ class Tester:
 					if (key=='config'):
 						value = value.replace('$INPUTDIR',self.args.inputdir)
 					#print('key=%s value=%s' % (key,value))
-					if key in config:
-						config[key].append(value)
-					else:
-						config[key] = [value]
+					config.setdefault(key, []).append(value)
 		return config
 
 	def prepare_test(self):
