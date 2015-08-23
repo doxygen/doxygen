@@ -1756,6 +1756,7 @@ static QCString configFileToString(const char *name)
   if (!fileOpened)  
   {
     config_err("cannot open file `%s' for reading\n",name);
+    exit(1);
   }
   return "";
 }
