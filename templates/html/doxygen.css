@@ -206,6 +206,11 @@ div.line {
 	transition-duration: 0.5s;
 }
 
+div.line:after {
+    content:"\000A";
+    white-space: pre;
+}
+
 div.line.glow {
 	background-color: cyan;
 	box-shadow: 0 0 10px cyan;

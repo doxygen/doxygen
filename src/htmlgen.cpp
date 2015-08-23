@@ -653,7 +653,7 @@ void HtmlCodeGenerator::startCodeLine(bool hasLineNumbers)
 
 void HtmlCodeGenerator::endCodeLine() 
 { 
-  if (m_streamSet) m_t << "</div>\n";
+  if (m_streamSet) m_t << "</div>";
 }
 
 void HtmlCodeGenerator::startFontClass(const char *s) 
