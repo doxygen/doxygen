@@ -1071,7 +1071,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 {
   //static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   ol.pushGeneratorState();
-  startFile(ol,getOutputFileBase(),name(),title,HLI_None);
+  startFile(ol,getOutputFileBase(),name(),title,HLI_Modules);
 
   ol.startHeaderSection();
   writeSummaryLinks(ol);
