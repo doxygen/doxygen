@@ -61,6 +61,7 @@ set(DOC_FILES
         faq.doc
         features.doc
         formulas.doc
+        tables.doc
         grouping.doc
         htmlcmds.doc
         index.doc

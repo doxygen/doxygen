@@ -585,7 +585,8 @@ static void detectNoDocumentedParams()
         g_memberDef->setHasDocumentedParams(TRUE);
       }
     }
-    //printf("Member %s hasReturnCommand=%d\n",g_memberDef->name().data(),g_hasReturnCommand);
+    //printf("Member %s hadDocumentedReturnType()=%d hasReturnCommand=%d\n",
+    //    g_memberDef->name().data(),g_memberDef->hasDocumentedReturnType(),g_hasReturnCommand);
     if (!g_memberDef->hasDocumentedReturnType() && // docs not yet found
         g_hasReturnCommand)
     {
@@ -602,7 +603,7 @@ static void detectNoDocumentedParams()
     {
       g_memberDef->setHasDocumentedReturnType(TRUE);
     }
-    if ( // see if return type is documented in a function w/o return type
+    else if ( // see if return type is documented in a function w/o return type
         g_memberDef->hasDocumentedReturnType() &&
         (returnType.isEmpty()              || // empty return type
          returnType.find("void")!=-1       || // void return type
