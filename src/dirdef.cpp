@@ -385,7 +385,7 @@ void DirDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   
   QCString title=theTranslator->trDirReference(m_dispName);
-  startFile(ol,getOutputFileBase(),name(),title,HLI_None,!generateTreeView);
+  startFile(ol,getOutputFileBase(),name(),title,HLI_Files,!generateTreeView);
 
   if (!generateTreeView)
   {
@@ -610,7 +610,7 @@ bool DirDef::isParentOf(DirDef *dir) const
 
 bool DirDef::depGraphIsTrivial() const
 {
-  return FALSE;
+  return m_usedDirs->count()==0;
 }
 
 //----------------------------------------------------------------------
@@ -694,11 +694,6 @@ DirDef *DirDef::mergeDirectoryInTree(const QCString &path)
     p=i+1;
   }
   return dir;
-}
-
-void DirDef::writeDepGraph(FTextStream &t)
-{
-    writeDotDirDepGraph(t,this);
 }
 
 //----------------------------------------------------------------------

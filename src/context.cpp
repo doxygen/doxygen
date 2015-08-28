@@ -456,6 +456,18 @@ class TranslateContext::Private : public PropertyMapper
       }
       return TemplateVariant();
     }
+    TemplateVariant handleDirDependencyGraphFor(const QValueList<TemplateVariant> &args) const
+    {
+      if (args.count()==1)
+      {
+        return theTranslator->trDirDepGraph(args[0].toString());
+      }
+      else
+      {
+        err("tr.dirDependencyGraphFor should take one argument, got %d!\n",args.count());
+      }
+      return TemplateVariant();
+    }
     TemplateVariant handleInheritsList(const QValueList<TemplateVariant> &args) const
     {
       if (args.count()==1)
@@ -570,6 +582,10 @@ class TranslateContext::Private : public PropertyMapper
     TemplateVariant collaborationDiagramFor() const
     {
       return TemplateVariant::Delegate::fromMethod<Private,&Private::handleCollaborationDiagramFor>(this);
+    }
+    TemplateVariant dirDependencyGraphFor() const
+    {
+      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleDirDependencyGraphFor>(this);
     }
     TemplateVariant search() const
     {
@@ -1138,6 +1154,8 @@ class TranslateContext::Private : public PropertyMapper
       addProperty("panelSyncOn",        this,&Private::panelSyncOn);
       //%% string panelSyncOff
       addProperty("panelSyncOff",       this,&Private::panelSyncOff);
+      //%% string dirDependencyGraph
+      addProperty("dirDependencyGraphFor", this,&Private::dirDependencyGraphFor);
 
       m_javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
       m_fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -1819,6 +1837,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             err("context.cpp: output format not yet supported");
             break;
         }
+        g_globals.dynSectionId++;
       }
       else if (classDiagrams)
       {
@@ -1850,8 +1869,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             err("context.cpp: output format not yet supported");
             break;
         }
+        g_globals.dynSectionId++;
       }
-      g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
     }
     DotClassGraph *getCollaborationGraph() const
@@ -1900,8 +1919,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             err("context.cpp: output format not yet supported");
             break;
         }
+        g_globals.dynSectionId++;
       }
-      g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
     }
 
@@ -2794,8 +2813,8 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             err("context.cpp: output format not yet supported");
             break;
         }
+        g_globals.dynSectionId++;
       }
-      g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
     }
     DotInclDepGraph *getIncludedByGraph() const
@@ -2845,8 +2864,8 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             err("context.cpp: output format not yet supported");
             break;
         }
+        g_globals.dynSectionId++;
       }
-      g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
     }
     TemplateVariant hasDetails() const
@@ -3109,6 +3128,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       addProperty("dirs",          this,&Private::dirs);
       addProperty("files",         this,&Private::files);
       addProperty("hasDetails",    this,&Private::hasDetails);
+      addProperty("hasDirGraph",   this,&Private::hasDirGraph);
+      addProperty("dirGraph",      this,&Private::dirGraph);
       addProperty("compoundType",  this,&Private::compoundType);
     }
     virtual ~Private() {}
@@ -3176,6 +3197,70 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     {
       return "";
     }
+    DotDirDeps *getDirDepsGraph() const
+    {
+      if (!m_cache.dirDepsGraph)
+      {
+        m_cache.dirDepsGraph.reset(new DotDirDeps(m_dirDef));
+      }
+      return m_cache.dirDepsGraph.get();
+    }
+    TemplateVariant hasDirGraph() const
+    {
+      bool result=FALSE;
+      static bool haveDot  = Config_getBool("HAVE_DOT");
+      static bool dirGraph = Config_getBool("DIRECTORY_GRAPH");
+      if (haveDot && dirGraph)
+      {
+        DotDirDeps *graph = getDirDepsGraph();
+        result = !graph->isTrivial();
+      }
+      return result;
+    }
+    TemplateVariant dirGraph() const
+    {
+      QGString result;
+      static bool haveDot  = Config_getBool("HAVE_DOT");
+      static bool dirGraph = Config_getBool("DIRECTORY_GRAPH");
+      if (haveDot && dirGraph)
+      {
+        DotDirDeps *graph = getDirDepsGraph();
+        FTextStream t(&result);
+        switch (g_globals.outputFormat)
+        {
+          case ContextOutputFormat_Html:
+            {
+              graph->writeGraph(t,GOF_BITMAP,
+                                EOF_Html,
+                                g_globals.outputDir,
+                                g_globals.outputDir+portable_pathSeparator()+m_dirDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                                relPathAsString(),
+                                TRUE,
+                                g_globals.dynSectionId,
+                                FALSE);
+            }
+            break;
+          case ContextOutputFormat_Latex:
+            {
+              graph->writeGraph(t,GOF_EPS,
+                                EOF_LaTeX,
+                                g_globals.outputDir,
+                                g_globals.outputDir+portable_pathSeparator()+m_dirDef->getOutputFileBase()+".tex",
+                                relPathAsString(),
+                                TRUE,
+                                g_globals.dynSectionId,
+                                FALSE);
+            }
+            break;
+            // TODO: support other generators
+          default:
+            err("context.cpp: output format not yet supported");
+            break;
+        }
+        g_globals.dynSectionId++;
+      }
+      return TemplateVariant(result.data(),TRUE);
+    }
 
   private:
     DirDef *m_dirDef;
@@ -3184,6 +3269,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       Cachable() {}
       SharedPtr<TemplateList>  dirs;
       SharedPtr<TemplateList>  files;
+      ScopedPtr<DotDirDeps>    dirDepsGraph;
     };
     mutable Cachable m_cache;
 };
@@ -4687,8 +4773,8 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             err("context.cpp: output format not yet supported");
             break;
         }
+        g_globals.dynSectionId++;
       }
-      g_globals.dynSectionId++;
       return TemplateVariant(result.data(),TRUE);
     }
     TemplateVariant hasDetails() const

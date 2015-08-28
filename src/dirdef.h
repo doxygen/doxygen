@@ -71,7 +71,6 @@ class DirDef : public Definition
 
     // generate output
     void writeDocumentation(OutputList &ol);
-    void writeDepGraph(FTextStream &t);
     void writeTagFile(FTextStream &t);
 
     static DirDef *mergeDirectoryInTree(const QCString &path);

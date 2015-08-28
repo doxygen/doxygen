@@ -3965,6 +3965,7 @@ bool DotCallGraph::isTooBig() const
 }
 
 //-------------------------------------------------------------
+static void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations);
 
 DotDirDeps::DotDirDeps(DirDef *dir) : m_dir(dir)
 {
@@ -3981,7 +3982,8 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
                             const char *fileName,
                             const char *relPath,
                             bool generateImageMap,
-                            int graphId) const
+                            int graphId,
+                            bool linkRelations) const
 {
   QDir d(path);
   // store the original directory
@@ -4006,7 +4008,8 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   // compute md5 checksum of the graph were are about to generate
   QGString theGraph;
   FTextStream md5stream(&theGraph);
-  m_dir->writeDepGraph(md5stream);
+  //m_dir->writeDepGraph(md5stream);
+  writeDotDirDepGraph(md5stream,m_dir,linkRelations);
   uchar md5_sig[16];
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
@@ -4764,7 +4767,7 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,
   t << "  rankdir=LR;\n";
 }
 
-void writeDotDirDepGraph(FTextStream &t,DirDef *dd)
+void writeDotDirDepGraph(FTextStream &t,DirDef *dd,bool linkRelations)
 {
     t << "digraph \"" << dd->displayName() << "\" {\n";
     if (Config_getBool("DOT_TRANSPARENT"))
@@ -4896,11 +4899,14 @@ void writeDotDirDepGraph(FTextStream &t,DirDef *dd)
                 new DirRelation(relationName,dir,udir));
           }
           int nrefs = udir->filePairs().count();
-          t << "  " << dir->getOutputFileBase() << "->" 
+          t << "  " << dir->getOutputFileBase() << "->"
                     << usedDir->getOutputFileBase();
           t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
-          t << " headhref=\"" << relationName << Doxygen::htmlFileExtension 
-            << "\"];\n";
+          if (linkRelations)
+          {
+            t << " headhref=\"" << relationName << Doxygen::htmlFileExtension << "\"";
+          }
+          t << "];\n";
         }
       }
     }

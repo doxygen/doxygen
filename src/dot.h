@@ -262,7 +262,8 @@ class DotDirDeps
                         const char *fileName,
                         const char *relPath,
                         bool writeImageMap=TRUE,
-                        int graphId=-1) const;
+                        int graphId=-1,
+                        bool linkRelations=TRUE) const;
   private:
     DirDef *m_dir;
 };
@@ -458,7 +459,5 @@ void writeDotImageMapFromFile(FTextStream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
                               const QCString& context,int graphId=-1);
-
-void writeDotDirDepGraph(FTextStream &t,DirDef *dd);
 
 #endif

@@ -45,7 +45,18 @@
     {% endif %}
   {% endif %}
 {# dir graph #}
-{# TODO #}
+  {% if compound.hasDirGraph %}
+    {% with obj=compound %}
+      {% include 'htmldynheader.tpl' %}
+    {% endwith %}
+      {{ tr.dirDependencyGraphFor:compound.dirName }}
+    </div>
+    {% with obj=compound %}
+      {% include 'htmldyncontents.tpl' %}
+    {% endwith %}
+      {{ compound.dirGraph }}
+    </div>
+  {% endif %}
 {# member declarations #}
   {# directories #}
     {% with list=compound.dirs label='subdirs' title=tr.directories local=False %}
