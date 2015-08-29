@@ -18,7 +18,7 @@
 
 Doxygen supports two ways to put tables in the documentation.
 
-The easiest is to use the Markdown format as shown @ref md_tables "here".
+The easiest is to use the Markdown format as shown in @ref markdown_extra section @ref md_tables.
 
 Although this format is easy to use and read, it is also rather limited.
 It supports only a simple grid of cells, while each cell is a
@@ -58,7 +58,7 @@ It has a caption, table heading, various row and column spans,
 a nested table as one of the cells, and a item list in another cell.
 
 Note that the end tags (like `</td>`) are left out in the example above.
-This is allowed, and in the HTML output doxygen will be add the end tags again.
+This is allowed, and in the HTML output doxygen will add the end tags again.
 
 The output will look as follows:
 
