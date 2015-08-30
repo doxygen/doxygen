@@ -2347,7 +2347,7 @@ unsigned LodePNG_InfoRaw_copy(LodePNG_InfoRaw* dest, const LodePNG_InfoRaw* sour
   LodePNG_InfoRaw_cleanup(dest);
   *dest = *source;
   LodePNG_InfoColor_init(&dest->color);
-  error = LodePNG_InfoColor_copy(&dest->color, &source->color); if(error) return error;
+  error = LodePNG_InfoColor_copy(&dest->color, &source->color);
   return error;
 }
 

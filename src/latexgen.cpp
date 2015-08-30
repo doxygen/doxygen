@@ -791,9 +791,11 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
 #endif
   QCString fileName=name;
   relPath = relativePathToRoot(fileName);
-  m_codeGen.setSourceFileName(stripPath(fileName));
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
+  m_codeGen.setTextStream(t);
+  m_codeGen.setRelativePath(relPath);
+  m_codeGen.setSourceFileName(stripPath(fileName));
 }
 
 void LatexGenerator::endFile()
