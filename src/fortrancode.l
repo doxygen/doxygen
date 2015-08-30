@@ -795,7 +795,7 @@ PREFIX    (RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,3}(RECURSIVE|I
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>"implicit"{BS}"none"             { 
+<Start>"implicit"{BS}("none"|{TYPE_SPEC})  { 
   					  startFontClass("keywordtype"); 
   					  codifyLines(yytext);
 					  endFontClass();

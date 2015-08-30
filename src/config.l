@@ -242,7 +242,7 @@ QStrList &Config::getList(const char *fileName,int num,const char *name) const
   }
   else if (opt->kind()!=ConfigOption::O_List)
   {
-    config_err("%d<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
+    config_err("%s<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigList *)opt)->valueRef();
@@ -1077,7 +1077,7 @@ void Config::checkFileName(const char *optionName)
       (val=="no"  || val=="false" || val=="0" || val=="none")) 
   {
     config_err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
-    s=""; // note tihe use of &s above: this will change the option value!
+    s=""; // note the use of &s above: this will change the option value!
   }
 }
 
@@ -1763,6 +1763,7 @@ static QCString configFileToString(const char *name)
   if (!fileOpened)  
   {
     config_err("cannot open file `%s' for reading\n",name);
+    exit(1);
   }
   return "";
 }

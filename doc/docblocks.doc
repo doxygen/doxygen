@@ -601,15 +601,15 @@ Markdown is designed to be very easy to read and write.
 It's formatting is inspired by plain text mail.
 Markdown works great for simple, generic formatting, like an introduction
 page for your project. Doxygen also supports reading of markdown files 
-directly. See \ref markdown "here" for more details regards Markdown support.
+directly. For more details see chapter \ref markdown.
 
 For programming language specific formatting doxygen has two
 forms of additional markup on top of Markdown formatting.
 
 1. <a href="http://en.wikipedia.org/wiki/Javadoc">Javadoc</a> like markup.
-   See \ref cmd_intro "here" for a complete overview of all commands supported by doxygen.
+   See \ref commands for a complete overview of all commands supported by doxygen.
 2. <a href="http://en.wikipedia.org/wiki/C_Sharp_(programming_language)#XML_documentation_system">XML</a> markup
-   as specified in the C# standard. See \ref xmlcmds "here" for the XML commands supported by doxygen.
+   as specified in the C# standard. See \ref xmlcmds for the XML commands supported by doxygen.
 
 If this is still not enough doxygen also supports a \ref htmlcmds "subset" of 
 the <a href="http://en.wikipedia.org/wiki/HTML">HTML</a> markup language.

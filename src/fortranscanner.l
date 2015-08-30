@@ -100,13 +100,14 @@ struct SymbolModifiers {
   bool pass;
   bool contiguous;
   bool volat; /* volatile is a reserverd name */
+  bool value; /* volatile is a reserverd name */
   QCString passVar;
 
   SymbolModifiers() : type(), returnName(), protection(NONE_P), direction(NONE_D),
     optional(FALSE), protect(FALSE), dimension(), allocatable(FALSE),
     external(FALSE), intrinsic(FALSE), parameter(FALSE),
     pointer(FALSE), target(FALSE), save(FALSE), deferred(FALSE), nonoverridable(FALSE),
-    nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), passVar() {}
+    nopass(FALSE), pass(FALSE), contiguous(FALSE), volat(FALSE), value(FALSE), passVar() {}
 
   SymbolModifiers& operator|=(const SymbolModifiers &mdfs);
   SymbolModifiers& operator|=(QCString mdfrString);
@@ -259,7 +260,7 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE)
+ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE|VALUE)
 ACCESS_SPEC (PRIVATE|PUBLIC)
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
 /* Assume that attribute statements are almost the same as attributes. */
@@ -1652,6 +1653,7 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
   passVar = mdfs.passVar;
   contiguous |= mdfs.contiguous;
   volat |= mdfs.volat;
+  value |= mdfs.value;
   return *this;
 }
 
@@ -1737,6 +1739,10 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
   else if (mdfString=="volatile")
   {
     newMdf.volat = TRUE;
+  }
+  else if (mdfString=="value")
+  {
+    newMdf.value = TRUE;
   }
   else if (mdfString.contains("pass"))
   {
@@ -1901,6 +1907,11 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "volatile";
+  }
+  if (mdfs.value)
+  {
+    if (!typeName.isEmpty()) typeName += ", ";
+    typeName += "value";
   }
 
   return typeName;

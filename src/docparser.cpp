@@ -5945,7 +5945,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           {
             if (Config_getBool("WARN_NO_PARAMDOC"))
             {
-              warn_doc_error(g_fileName,doctokenizerYYlineno,"empty 'name' attribute for <param> tag.");
+              warn_doc_error(g_fileName,doctokenizerYYlineno,"empty 'name' attribute for <param%s> tag.",tagId==XML_PARAM?"":"type");
             }
           }
           else
@@ -5957,7 +5957,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'name' attribute from <param> tag.");
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'name' attribute from <param%s> tag.",tagId==XML_PARAM?"":"type");
         }
       }
       break;
@@ -5990,7 +5990,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'name' attribute from <exception> tag.");
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Missing 'cref' attribute from <exception> tag.");
         }
       }
       break;

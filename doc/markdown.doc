@@ -337,6 +337,8 @@ which will look as follows:
 | 10    | 10     | 10    |
 | 1000  | 1000   | 1000  |
 
+For more complex tables in doxygen please have a look at: \ref tables
+
 \subsection md_fenced Fenced Code Blocks
 
 Another feature defined by "Markdown Extra" is support for
@@ -437,7 +439,7 @@ details).
 By default the name and title of the page are derived from the file name.
 If the file starts with a level 1 header however, it is used as the title
 of the page. If you specify a label for the 
-header (as shown \ref md_header_id "here") doxygen will use that as the
+header (as shown in \ref md_header_id) doxygen will use that as the
 page name. 
 
 If the label is called `index` or `mainpage` doxygen will put the
