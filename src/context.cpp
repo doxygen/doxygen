@@ -1739,6 +1739,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       addProperty("allMembersFileName",        this,&Private::allMembersFileName);
       addProperty("memberGroups",              this,&Private::memberGroups);
       addProperty("additionalInheritedMembers",this,&Private::additionalInheritedMembers);
+      addProperty("isSimple",                  this,&Private::isSimple);
     }
     virtual ~Private() {}
     TemplateVariant title() const
@@ -2361,6 +2362,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         m_cache.additionalInheritedMembers.reset(ctx);
       }
       return m_cache.additionalInheritedMembers.get();
+    }
+    TemplateVariant isSimple() const
+    {
+      return m_classDef->isSimple();
     }
 
   private:
@@ -5192,7 +5197,8 @@ class ClassListContext::Private : public GenericNodeListContext
         {
           continue;
         }
-        if (cd->isLinkableInProject() && cd->templateMaster()==0)
+        if (cd->isLinkableInProject() && cd->templateMaster()==0 &&
+            !cd->isHidden() && !cd->isEmbeddedInOuterScope())
         {
           append(ClassContext::alloc(cd));
         }

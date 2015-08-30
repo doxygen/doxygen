@@ -180,7 +180,6 @@
     </div>
   {% endif %}
 {# memberdecls #}
-  {# TODO: isSimple #}
     {# nestedClasses #}
       {% with list=compound.classes label='nested-classes' title=tr.classes local=1 %}
         {% include 'htmldeclcomp.tpl' %}
@@ -379,9 +378,9 @@
 {% endif %}
 {# member definitions #}
   {# inline classes #}
-  {% if compound.classes %}
-    {# TODO write inlined simple classes: tr.classDocumentation / tr.typeDocumentation #}
-  {% endif %}
+    {% with classList=compound.classes %}
+      {% include 'htmlinlineclasses.tpl' %}
+    {% endwith %}
   {# typedefs #}
     {% with memberListInfo=compound.detailedTypedefs %}
       {% include 'htmlmemdef.tpl' %}
