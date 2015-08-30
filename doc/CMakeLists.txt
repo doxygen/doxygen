@@ -142,7 +142,7 @@ add_custom_target(run_doxygen
 
 add_custom_target(doxygen_pdf
         COMMENT "Generating Doxygen Manual PDF."
-        COMMAND ${CMAKE_COMMAND} -E remove_directory refman.tex
+        COMMAND ${CMAKE_COMMAND} -E remove refman.tex
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
         COMMAND ${EPSTOPDF} ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.eps --outfile=doxygen_logo.pdf
