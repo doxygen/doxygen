@@ -1433,71 +1433,7 @@ void Config::check()
     }
   }
 
-  // add default pattern if needed
-  QStrList &filePatternList = Config_getList("FILE_PATTERNS");
-  if (filePatternList.isEmpty())
-  {
-    filePatternList.append("*.c");
-    filePatternList.append("*.cc"); 
-    filePatternList.append("*.cxx");
-    filePatternList.append("*.cpp");
-    filePatternList.append("*.c++");
-    //filePatternList.append("*.d");
-    filePatternList.append("*.java");
-    filePatternList.append("*.ii");
-    filePatternList.append("*.ixx");
-    filePatternList.append("*.ipp");
-    filePatternList.append("*.i++");
-    filePatternList.append("*.inl");
-    filePatternList.append("*.h");
-    filePatternList.append("*.hh");
-    filePatternList.append("*.hxx");
-    filePatternList.append("*.hpp");
-    filePatternList.append("*.h++");
-    filePatternList.append("*.idl");
-    filePatternList.append("*.odl");
-    filePatternList.append("*.cs");
-    filePatternList.append("*.php");
-    filePatternList.append("*.php3");
-    filePatternList.append("*.inc");
-    filePatternList.append("*.m");
-    filePatternList.append("*.mm");
-    filePatternList.append("*.dox");
-    filePatternList.append("*.py");
-    filePatternList.append("*.f90");
-    filePatternList.append("*.f");
-    filePatternList.append("*.for");
-    filePatternList.append("*.vhd");
-    filePatternList.append("*.vhdl");
-    filePatternList.append("*.tcl");
-    filePatternList.append("*.md");
-    filePatternList.append("*.markdown");
-    if (portable_fileSystemIsCaseSensitive())
-    {
-      // unix => case sensitive match => also include useful uppercase versions
-      filePatternList.append("*.C");
-      filePatternList.append("*.CC"); 
-      filePatternList.append("*.C++");
-      filePatternList.append("*.II");
-      filePatternList.append("*.I++");
-      filePatternList.append("*.H");
-      filePatternList.append("*.HH");
-      filePatternList.append("*.H++");
-      filePatternList.append("*.CS");
-      filePatternList.append("*.PHP");
-      filePatternList.append("*.PHP3");
-      filePatternList.append("*.M");
-      filePatternList.append("*.MM");
-      filePatternList.append("*.PY");
-      filePatternList.append("*.F90");
-      filePatternList.append("*.F");
-      filePatternList.append("*.VHD");
-      filePatternList.append("*.VHDL");
-      filePatternList.append("*.TCL");
-      filePatternList.append("*.MD");
-      filePatternList.append("*.MARKDOWN");
-    }
-  }
+  initFilePattern();
 
   // add default pattern if needed
   QStrList &examplePatternList = Config_getList("EXAMPLE_PATTERNS");
