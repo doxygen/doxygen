@@ -732,25 +732,17 @@ void HtmlGenerator::init()
     QFile f(dname+"/dynsections.js");
     if (f.open(IO_WriteOnly))
     {
-      const Resource *res = mgr.get("dynsections.js");
-      if (res)
+      FTextStream t(&f);
+      t << mgr.getAsString("dynsections.js");
+      if (Config_getBool("SOURCE_BROWSER") && Config_getBool("SOURCE_TOOLTIPS"))
       {
-        FTextStream t(&f);
-        t << (const char *)res->data;
-        if (Config_getBool("SOURCE_BROWSER") && Config_getBool("SOURCE_TOOLTIPS"))
-        {
-          t << endl <<
-            "$(document).ready(function() {\n"
-            "  $('.code,.codeRef').each(function() {\n"
-            "    $(this).data('powertip',$('#'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
-            "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
-            "  });\n"
-            "});\n";
-        }
-      }
-      else
-      {
-        err("Resource dynsections.js not compiled in");
+        t << endl <<
+          "$(document).ready(function() {\n"
+          "  $('.code,.codeRef').each(function() {\n"
+          "    $(this).data('powertip',$('#'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
+          "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
+          "  });\n"
+          "});\n";
       }
     }
   }
@@ -815,20 +807,16 @@ void HtmlGenerator::writeSearchData(const char *dir)
   QFile f(searchDirName+"/search.css");
   if (f.open(IO_WriteOnly))
   {
-    const Resource *res = mgr.get("search.css");
-    if (res)
+    FTextStream t(&f);
+    QCString searchCss = replaceColorMarkers(mgr.getAsString("search.css"));
+    searchCss = substitute(searchCss,"$doxygenversion",versionString);
+    if (Config_getBool("DISABLE_INDEX"))
     {
-      FTextStream t(&f);
-      QCString searchCss = replaceColorMarkers((const char *)res->data);
-      searchCss = substitute(searchCss,"$doxygenversion",versionString);
-      if (Config_getBool("DISABLE_INDEX"))
-      {
-        // move up the search box if there are no tabs
-        searchCss = substitute(searchCss,"margin-top: 8px;","margin-top: 0px;");
-      }
-      t << searchCss;
-      Doxygen::indexList->addStyleSheetFile("search/search.css");
+      // move up the search box if there are no tabs
+      searchCss = substitute(searchCss,"margin-top: 8px;","margin-top: 0px;");
     }
+    t << searchCss;
+    Doxygen::indexList->addStyleSheetFile("search/search.css");
   }
 }
 

@@ -2410,7 +2410,7 @@ class TemplateNodeList : public QList<TemplateNode>
 class TemplateImpl : public TemplateNode, public Template
 {
   public:
-    TemplateImpl(TemplateEngine *e,const QCString &name,const char *data,int size,
+    TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data,
                  const QCString &extension);
     void render(FTextStream &ts, TemplateContext *c);
 
@@ -4537,7 +4537,7 @@ void TemplateBlockContext::push(TemplateNodeBlock *block)
 class TemplateLexer
 {
   public:
-    TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const char *data,int size);
+    TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data);
     void tokenize(QList<TemplateToken> &tokens);
     void setOpenCloseCharacters(char openChar,char closeChar)
     { m_openChar=openChar; m_closeChar=closeChar; }
@@ -4553,12 +4553,9 @@ class TemplateLexer
     char m_closeChar;
 };
 
-TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const char *data,int size) :
-  m_engine(engine), m_fileName(fileName)
+TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data) :
+  m_engine(engine), m_fileName(fileName), m_data(data)
 {
-  m_data.resize(size+1);
-  memcpy(m_data.rawData(),data,size);
-  m_data[size]=0;
   m_openChar='{';
   m_closeChar='}';
 }
@@ -4908,13 +4905,13 @@ void TemplateParser::warn(const char *fileName,int line,const char *fmt,...) con
 //----------------------------------------------------------
 
 
-TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const char *data,int size,
+TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCString &data,
     const QCString &extension)
   : TemplateNode(0)
 {
   m_name = name;
   m_engine = engine;
-  TemplateLexer lexer(engine,name,data,size);
+  TemplateLexer lexer(engine,name,data);
   if (extension=="tex")
   {
     lexer.setOpenCloseCharacters('<','>');
@@ -4988,10 +4985,10 @@ class TemplateEngine::Private
       Template *templ = m_templateCache.find(fileName);
       if (templ==0)
       {
-        const Resource *res = ResourceMgr::instance().get(fileName);
-        if (res)
+        const QCString data = ResourceMgr::instance().getAsString(fileName);
+        if (!data.isEmpty())
         {
-          templ = new TemplateImpl(m_engine,fileName,(const char *)res->data,res->size,m_extension);
+          templ = new TemplateImpl(m_engine,fileName,data,m_extension);
           m_templateCache.insert(fileName,templ);
         }
         else
