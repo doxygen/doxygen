@@ -1,5 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/qtools)
-add_library(vhdlparser
+add_library(vhdlparser STATIC
 CharStream.cc
 ParseException.cc
 Token.cc
