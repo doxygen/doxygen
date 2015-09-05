@@ -37,7 +37,11 @@ class File(object):
 
 	def writeBytes(self,data,outputFile):
 		bytes_per_line=16
-		print("static const unsigned char %s_data[] = " % self.bareName,file=outputFile)
+                if (len(data) == 0 and  sys.platform == "win32"):
+                  print("static const unsigned char %s_data[1] = " % self.bareName,file=outputFile)
+                else:
+                  print("static const unsigned char %s_data[] = " % self.bareName,file=outputFile)
+
 		print("{",file=outputFile)
 		lines = [data[x:x+bytes_per_line] for x in range(0,len(data),bytes_per_line)]
 		linesAsString = ',\n  '.join([', '.join(['0x'+self.formatByte(byte) for byte in line]) for line in lines])
