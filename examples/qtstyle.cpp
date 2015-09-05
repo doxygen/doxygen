@@ -3,7 +3,7 @@
   A more elaborate class description.
 */
 
-class Test
+class QTstyle_Test
 {
   public:
 
@@ -25,20 +25,20 @@ class Test
     /*!
       A more elaborate description of the constructor.
     */
-    Test();
+    QTstyle_Test();
 
     //! A destructor.
     /*!
       A more elaborate description of the destructor.
     */
-   ~Test();
+   ~QTstyle_Test();
     
     //! A normal member taking two arguments and returning an integer value.
     /*!
       \param a an integer argument.
       \param s a constant character pointer.
       \return The test results
-      \sa Test(), ~Test(), testMeToo() and publicVar()
+      \sa QTstyle_Test(), ~QTstyle_Test(), testMeToo() and publicVar()
     */
     int testMe(int a,const char *s);
        
