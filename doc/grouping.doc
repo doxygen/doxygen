@@ -135,7 +135,7 @@ files to define the hierarchy and \ref cmdweakgroup "\\weakgroup"
 in .c files without having to duplicate the hierarchy exactly.
 
 \par Example:
-\verbinclude group.cpp
+\include group.cpp
 
 \htmlonly
 Click <a href="examples/group/html/modules.html">here</a> 
@@ -192,7 +192,7 @@ you should put a \ref cmdnosubgrouping "\\nosubgrouping" command inside the
 documentation of the class. 
 
 \par Example:
-\verbinclude memgrp.cpp
+\include memgrp.cpp
 
 \htmlonly
 Click <a href="examples/memgrp/html/class_test.html">here</a> 
