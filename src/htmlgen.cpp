@@ -1340,7 +1340,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   startSectionContent(t,m_sectionCount);
   t << " <div class=\"center\">" << endl;
   t << "  <img src=\"";
-  t << relPath << fileName << ".png\" usemap=\"#";
+  t << relPath << escapeCharsInString(name,FALSE) << ".png\" usemap=\"#";
   docify(name);
   t << "_map\" alt=\"\"/>" << endl;
   t << "  <map id=\"";
@@ -1349,7 +1349,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   docify(name);
   t << "_map\">" << endl;
 
-  d.writeImage(t,dir,relPath,fileName);
+  d.writeImage(t,dir,relPath,escapeCharsInString(name,FALSE));
   t << " </div>";
   endSectionContent(t);
   m_sectionCount++;
