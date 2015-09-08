@@ -1943,4 +1943,27 @@ bool Definition::hasBriefDescription() const
   return !briefDescription().isEmpty() && briefMemberDesc;
 }
 
+QCString Definition::externalReference(const QCString &relPath) const
+{
+  QCString ref = getReference();
+  if (!ref.isEmpty())
+  {
+    QCString *dest = Doxygen::tagDestinationDict[ref];
+    if (dest)
+    {
+      QCString result = *dest;
+      int l = result.length();
+      if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
+      { // relative path -> prepend relPath.
+        result.prepend(relPath);
+        l+=relPath.length();
+      }
+      if (l>0 && result.at(l-1)!='/') result+='/';
+      return result;
+    }
+  }
+  return relPath;
+}
+
+
 

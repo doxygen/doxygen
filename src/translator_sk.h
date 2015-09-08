@@ -1866,7 +1866,7 @@ class TranslatorSlovak : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Deklarované v kategórii @1.";
+      return "Deklarované v kategórii @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1875,7 +1875,7 @@ class TranslatorSlovak : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "Rozširuje triedu @1.";
+      return "Rozširuje triedu @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

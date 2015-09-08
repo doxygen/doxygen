@@ -2,9 +2,11 @@
 {% msg %}Generating HTML output for page {{ compound.name }}{% endmsg %}
 
 {% block navpath %}
-{% with navpath=compound.navigationPath %}
-  {% include 'htmlnavpath.tpl' %}
-{% endwith %}
+  {% if not config.GENERATE_TREEVIEW %}
+    {% with navpath=compound.navigationPath %}
+      {% include 'htmlnavpath.tpl' %}
+    {% endwith %}
+  {% endif %}
 {% endblock %}
 
 {% block content %}

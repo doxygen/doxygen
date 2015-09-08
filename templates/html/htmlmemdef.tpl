@@ -3,9 +3,8 @@
   {% if memberListInfo.members %}
     <h2 class="groupheader">{{ memberListInfo.title }}</h2>
     {% for member in memberListInfo.members %}
-      {% if member.hasDetails %}  {# TODO: not the same as isDetailedSectionVisible! #}
-        {# TODO: handle enum + anonymous members #}
-        <a class="anchor" id="{{ member.anchor }}"></a> {# TODO: for namespace members written in a file we need to prepend file_ #}
+      {% if member.detailsVisibleFor:compound.compoundKind %}
+        <a class="anchor" id="{{ member.anchor }}"></a>
         <div class="memitem">
         <div class="memproto">
         {# write template declarations #}
@@ -120,7 +119,22 @@
         {% endif %}
         </div>
         <div class="memdoc">
-        {# TODO: write group include #}
+        {# write group include #}
+          {% if compound.compoundKind=="module" and config.SHOW_GROUPED_MEMB_INC and member.file %}
+            <p><tt>{% spaceless %}
+            {% if compound.language=='java' or compound.language=='idl' %}
+            import&#160; "
+            {% else %}
+            #include&#160;&lt;
+            {% endif %}
+            {% with obj=member.file text=member.file.bareName %}
+              {% include 'htmlobjlink.tpl' %}
+            {% endwith %}
+            {% if compound.language=='java' or compound.language=='idl' %}"
+            {% else %}&gt;
+            {% endif %}
+            {% endspaceless %}</tt></p>
+          {% endif %}
         {# multi-line initializer #}
           {% if member.hasMultiLineInitializer %}
             <b>{% if member.isDefine %}{{ tr.defineValue }}{% else %}{{ tr.initialValue }}{% endif %}</b>
@@ -187,9 +201,25 @@
             </p>
           {% endif %}
         {# category relation #}
-
-          {# TODO #}
-
+          {% if member.class and member.categoryRelation %}
+            {% if member.category %}
+              <p>
+              {% markers mem in member.categoryRelation|list with tr.providedByCategory %}
+                {% with obj=mem text=member.category.name %}
+                  {% include 'htmlobjlink.tpl' %}
+                {% endwith %}
+              {% endmarkers %}
+              </p>
+            {% elif member.class.categoryOf %}
+              <p>
+              {% markers mem in member.categoryRelation|list with tr.extendsClass %}
+                {% with obj=mem text=member.class.categoryOf.name %}
+                  {% include 'htmlobjlink.tpl' %}
+                {% endwith %}
+              {% endmarkers %}
+              </p>
+            {% endif %}
+          {% endif %}
         {# examples #}
           {% if member.examples %}
             <dl><dt><b>{{ tr.examples }}</b><dd>
@@ -280,7 +310,6 @@
         </div>
       {% endif %}
     {% endfor %} {# for each member #}
-    {# TODO: write member group docs #}
   {% endif %}
 {% endif %}
 

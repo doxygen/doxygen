@@ -7,7 +7,7 @@
 <p><a href="inherits{{ config.HTML_FILE_EXTENSION }}">{{ tr.gotoGraphicalHierarchy }}</a></p>
 {% endif %}
 </div>
-{% indexentry nav name=tr.classHierarchy file=page.fileName anchor='' %}
+{% indexentry nav name=tr.classHierarchy file=page.fileName anchor='' isReference=False %}
 {% opensubindex nav %}
 {% with tree=classHierarchy %}
   {% include 'htmldirtree.tpl' %}

@@ -1866,7 +1866,7 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "由 @1 分類所提供.";
+      return "由 @0 分類所提供.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1875,7 +1875,7 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "延伸 @1 類別 .";
+      return "延伸 @0 類別 .";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

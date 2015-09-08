@@ -1878,7 +1878,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "@1 カテゴリーから提供されています。";
+      return "@0 カテゴリーから提供されています。";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1887,7 +1887,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "@1 を拡張しています。";
+      return "@0 を拡張しています。";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

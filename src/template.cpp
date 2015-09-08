@@ -839,6 +839,31 @@ class FilterRaw
 
 //-----------------------------------------------------------------------------
 
+/** @brief The implementation of the "list" filter */
+class FilterList
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid())
+      {
+        if (v.type()==TemplateVariant::List) // input is already a list
+        {
+          return v;
+        }
+        // create a list with v as the only element
+        TemplateList *list = TemplateList::alloc();
+        list->append(v);
+        return list;
+      }
+      else
+      {
+        return v;
+      }
+    }
+};
+
+//-----------------------------------------------------------------------------
 /** @brief The implementation of the "texlabel" filter */
 class FilterTexLabel
 {
@@ -1268,16 +1293,19 @@ class FilterAlphaIndex
     static QCString keyToLabel(uint startLetter)
     {
       char s[11]; // 0x12345678 + '\0'
-      if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
+      if ((startLetter>='0' && startLetter<='9') ||
+          (startLetter>='a' && startLetter<='z') ||
+          (startLetter>='A' && startLetter<='Z'))
       {
-        s[0]=tolower((char)startLetter);
-        s[1]=0;
+        int i=0;
+        if (startLetter>='0' && startLetter<='9') s[i++] = 'x';
+        s[i++]=tolower((char)startLetter);
+        s[i++]=0;
       }
       else
       {
         const char hex[]="0123456789abcdef";
         int i=0;
-        s[i++]='0';
         s[i++]='x';
         if (startLetter>(1<<24)) // 4 byte character
         {
@@ -1492,6 +1520,7 @@ class TemplateFilterFactory
 static TemplateFilterFactory::AutoRegister<FilterAdd>         fAdd("add");
 static TemplateFilterFactory::AutoRegister<FilterGet>         fGet("get");
 static TemplateFilterFactory::AutoRegister<FilterRaw>         fRaw("raw");
+static TemplateFilterFactory::AutoRegister<FilterList>        fList("list");
 static TemplateFilterFactory::AutoRegister<FilterAppend>      fAppend("append");
 static TemplateFilterFactory::AutoRegister<FilterLength>      fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>      fNoWrap("nowrap");
@@ -2429,7 +2458,7 @@ class TemplateImpl : public TemplateNode, public Template
 
 TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
   : m_engine(e), m_templateName("<unknown>"), m_line(1), m_activeEscapeIntf(0),
-    m_spacelessIntf(0), m_spacelessEnabled(FALSE), m_indices(TemplateStruct::alloc())
+    m_spacelessIntf(0), m_spacelessEnabled(FALSE), m_tabbingEnabled(FALSE), m_indices(TemplateStruct::alloc())
 {
   m_indexStacks.setAutoDelete(TRUE);
   m_contextStack.setAutoDelete(TRUE);

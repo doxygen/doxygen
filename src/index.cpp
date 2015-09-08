@@ -1640,7 +1640,7 @@ static void writeAnnotatedClassList(OutputList &ol)
 static QCString letterToLabel(uint startLetter)
 {
   char s[11]; // max 0x12345678 + '\0'
-  if (startLetter>0x20 && startLetter<=0x7f) // printable ASCII character
+  if (isId(startLetter)) // printable ASCII character
   {
     s[0]=(char)startLetter;
     s[1]=0;
@@ -2476,8 +2476,8 @@ static void writeQuickMemberIndex(OutputList &ol,
       anchor=fullName+extension+"#index_";
     else 
       anchor=fullName+"_"+letterToLabel(i)+extension+"#index_";
-    startQuickIndexItem(ol,anchor+ci,i==page,TRUE,first);
-    ol.writeString(is);
+    startQuickIndexItem(ol,anchor+is,i==page,TRUE,first);
+    ol.writeString(ci);
     endQuickIndexItem(ol);
     first=FALSE;
   }

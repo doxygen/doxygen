@@ -1954,7 +1954,7 @@ class TranslatorFrench : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Déclarée dans la catégorie @1.";
+      return "Déclarée dans la catégorie @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1963,7 +1963,7 @@ class TranslatorFrench : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "Dérive la classe @1.";
+      return "Dérive la classe @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

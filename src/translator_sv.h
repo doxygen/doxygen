@@ -1764,7 +1764,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Tillhandahålls av kategori @1.";
+      return "Tillhandahålls av kategori @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1773,7 +1773,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "Utökar klass @1.";
+      return "Utökar klass @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

@@ -549,7 +549,7 @@ void HtmlCodeGenerator::_writeCodeLink(const char *className,
   if (f) m_t << f << Doxygen::htmlFileExtension;
   if (anchor) m_t << "#" << anchor;
   m_t << "\"";
-  if (tooltip) m_t << " title=\"" << tooltip << "\"";
+  if (tooltip) m_t << " title=\"" << convertToHtml(tooltip) << "\"";
   m_t << ">";
   docify(name);
   m_t << "</a>";
@@ -1340,11 +1340,9 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   startSectionContent(t,m_sectionCount);
   t << " <div class=\"center\">" << endl;
   t << "  <img src=\"";
-  t << relPath << fileName << ".png\" usemap=\"#";
-  docify(name);
+  t << relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
   t << "_map\" alt=\"\"/>" << endl;
-  t << "  <map id=\"";
-  docify(name);
+  t << "  <map id=\"" << convertToId(name);
   t << "_map\" name=\"";
   docify(name);
   t << "_map\">" << endl;

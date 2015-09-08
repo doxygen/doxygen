@@ -1903,7 +1903,7 @@ class TranslatorBrazilian : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Provido pela categoria @1.";
+      return "Provido pela categoria @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1912,7 +1912,7 @@ class TranslatorBrazilian : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "estende a classe @1.";
+      return "estende a classe @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

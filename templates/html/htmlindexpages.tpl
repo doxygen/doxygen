@@ -9,7 +9,7 @@
     {% for sect in index %}
       {% with letter=sect.letter %}
          {% set page_postfix=section|append:'_'|append:sect.label %}
-         {% indexentry nav name=letter file=page.fileName|append:page_postfix anchor='' %}
+         {% indexentry nav name=letter file=page.fileName|append:page_postfix anchor='' isReference=False %}
          {# create index pages for all globals starting with a specific letter #}
          {% create page.fileName|append:page_postfix|append:config.HTML_FILE_EXTENSION from template %}
       {% endwith %}

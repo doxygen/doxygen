@@ -17,7 +17,7 @@
     enum&#160;</td><td class="memTemplItemRight" valign="bottom">
     {# write name #}
     {% if not member.isAnonymous %}
-      {% with obj=member text=member.name %}
+      {% with obj=member text=member.nameWithContextFor:compound.compoundKind %}
         {% include 'htmlobjlink.tpl' %}
       {% endwith %}
     {% endif %}
@@ -74,7 +74,7 @@
         {% with ctx=member.anonymousType anonymousNestingLevel=anonymousNestingLevel|add:1 %}
           {{ ctx.compoundType }}
           {% if ctx.bareName %}
-            &#160;<b>{{ ctx.bareName }}</b> {# TODO: associated documentation is lost! #}
+            &#160;<b>{{ ctx.bareName }}</b>
           {% endif %}
           {</td></tr>
           {# recursively write members that can appear inside the anonymous class/struct #}
@@ -128,11 +128,7 @@
         <td class="memItemLeft" valign="top">{% repeat anonymousNestingLevel %}&#160;&#160;&#160;{% endrepeat %}
         }
       {% else %}
-        {% if member.isObjCMethod %}
-          {% if member.isStatic %}+&#160;{% else %}-&#160;{% endif %}
-        {% else %}
-          {{ member.declType }}
-        {% endif %}
+        {{ member.declType }}
       {% endif %}
       {% spaceless %}
         &#160;
@@ -140,16 +136,19 @@
            &#160;&#160;
         {% else %}
           </td><td class="{% if member.templateArgs %}memTemplItemRight{% else %}memItemRight{% endif %}" valign="bottom">
+          {% if member.isObjCMethod %}
+            {% if member.isStatic %}+&#160;{% else %}-&#160;{% endif %}
+          {% endif %}
         {% endif %}
       {% endspaceless %}
     {# write name #}
       {% if not member.isAnonymous %}
         {% if member.anonymousMember %}
-          {% with obj=member.anonymousMember text=member.anonymousMember.name %}
+	  {% with obj=member.anonymousMember text=member.anonymousMember.nameWithContextFor:compound.compoundKind %}
             {% include 'htmlobjlink.tpl' %}
           {% endwith %}
         {% else %}
-          {% with obj=member text=member.name %}
+          {% with obj=member text=member.nameWithContextFor:compound.compoundKind %}
             {% include 'htmlobjlink.tpl' %}
           {% endwith %}
         {% endif %}
@@ -205,8 +204,7 @@
       <tr class="memdesc:{{ member.anchor }}{% if inheritId %} inherit {{ inheritId }}{% endif %}"><td class="mdescLeft">&#160;</td><td class="mdescRight">
       {{ member.brief }}
       {% if member.hasDetails %}
-        {# TODO: link to group if member is grouped #}
-        <a href="#{{ member.anchor }}">{{ tr.more }}</a>
+        <a href="{{ member.fileName }}{{ config.HTML_FILE_EXTENSION }}#{{ member.anchor }}">{{ tr.more }}</a>
       {% endif %}
       <br/></td></tr>
     {% endif %}

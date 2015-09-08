@@ -967,7 +967,7 @@ QCString MemberDef::getOutputFileBase() const
       return baseName;
     }
   }
-  else if (m_impl->nspace)
+  else if (m_impl->nspace && m_impl->nspace->isLinkableInProject())
   {
     baseName=m_impl->nspace->getOutputFileBase();
   }
@@ -1092,7 +1092,8 @@ void MemberDef::_computeLinkableInProject()
     m_isLinkableCached = 1; // in class but class not linkable
     return;
   }
-  if (!m_impl->group && m_impl->nspace && !m_impl->related && !m_impl->nspace->isLinkableInProject())
+  if (!m_impl->group && m_impl->nspace && !m_impl->related && !m_impl->nspace->isLinkableInProject()
+      && (m_impl->fileDef==0 || !m_impl->fileDef->isLinkableInProject()))
   {
     //printf("in a namespace but namespace not linkable!\n");
     m_isLinkableCached = 1; // in namespace but namespace not linkable
@@ -1914,7 +1915,7 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const
   static bool inlineSimpleStructs = Config_getBool("INLINE_SIMPLE_STRUCTS");
   static bool hideUndocMembers = Config_getBool("HIDE_UNDOC_MEMBERS");
   bool groupFilter = getGroupDef()==0 || inGroup || separateMemPages;
-  bool fileFilter  = getNamespaceDef()==0 || !inFile;
+  bool fileFilter  = getNamespaceDef()==0 || !getNamespaceDef()->isLinkable() || !inFile;
   bool simpleFilter = (hasBriefDescription() || !hideUndocMembers) && inlineSimpleStructs &&
                       getClassDef()!=0 && getClassDef()->isSimple();
 
@@ -2261,7 +2262,7 @@ void MemberDef::_writeCategoryRelation(OutputList &ol)
         text = theTranslator->trExtendsClass();
         name = m_impl->classDef->categoryOf()->displayName();
       }
-      i=text.find("@1");
+      i=text.find("@0");
       if (i!=-1)
       {
         MemberDef *md = m_impl->categoryRelation;
@@ -2495,7 +2496,7 @@ void MemberDef::_writeGroupInclude(OutputList &ol,bool inGroup)
 
     if (isIDLorJava) ol.docify("\""); else ol.docify("<");
 
-    if (fd && fd->isLinkable())
+    if (fd->isLinkable())
     {
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),fd->anchor(),nm);
     }
@@ -4479,6 +4480,11 @@ bool MemberDef::isDocsForDefinition() const
 MemberDef *MemberDef::getEnumScope() const
 {
   return m_impl->enumScope;
+}
+
+bool MemberDef::livesInsideEnum() const
+{
+  return m_impl->livesInsideEnum;
 }
 
 MemberList *MemberDef::enumFieldList() const

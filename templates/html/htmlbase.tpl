@@ -192,6 +192,15 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 <div id="nav-path" class="navpath">{# id is needed for treeview function! #}
   <ul>
     {# navpath #}
+    {% if page|get:'navigationPath' %}
+      {% for obj in page.navigationPath %}
+        <li class="navelem">
+          {% with text=obj.text %}
+            {% include 'htmlobjlink.tpl' %}
+          {% endwith %}
+        </li>
+      {% endfor %}
+    {% endif %}
     <li class="footer">
 {% if config.HTML_TIMESTAMP %}
 {{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}

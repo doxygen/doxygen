@@ -1903,7 +1903,7 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "카테고리 @1에 의해 제공됨.";
+      return "카테고리 @0에 의해 제공됨.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1912,7 +1912,7 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "클래스 @1 확장.";
+      return "클래스 @0 확장.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

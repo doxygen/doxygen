@@ -1864,7 +1864,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Παρέχεται από την κατηγορία @1.";
+      return "Παρέχεται από την κατηγορία @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1873,7 +1873,7 @@ class TranslatorGreek : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExtendsClass()
     {
-      return "Κληρονομει την κλάση @1.";
+      return "Κληρονομει την κλάση @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

@@ -62,14 +62,14 @@
 {# -------------------------------------------------- #}
 
 {# global constants #}
-{% set maxItemsForFlatList=2 %}
-{% set maxItemsForMultiPageList=4 %}
+{% set maxItemsForFlatList=30 %}
+{% set maxItemsForMultiPageList=200 %}
 
 {# global variable #}
 {% set page_postfix='' %}
 
 {# open the global navigation index #}
-{% indexentry nav name=tr.mainPage file='index' anchor='' %}
+{% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False %}
 {% opensubindex nav %}
 
 {# ----------- HTML DOCUMENTATION PAGES ------------ #}
@@ -100,7 +100,6 @@
 {% for compound in fileList %}
   {% with page=compound %}
     {# TODO: to deal with clang optimisation, we need to write the sources in a different order! #}
-    {# TODO: now writing sources has the side-effect of creating cross-references. Need to split that up! #}
     {% if compound.hasSourceFile %}
       {% create compound.sourceFileName|append:config.HTML_FILE_EXTENSION from 'htmlsource.tpl' %}
     {% endif %}
@@ -128,7 +127,12 @@
   {% endwith %}
 {% endfor %}
 
-{# TODO: write example documentation #}
+{# write example documentation #}
+{% for compound in exampleList %}
+  {% with page=compound %}
+    {% create compound.fileName|append:config.HTML_FILE_EXTENSION from 'htmlexample.tpl' %}
+  {% endwith %}
+{% endfor %}
 
 {# ----------- INDEXES ------------ #}
 
@@ -136,6 +140,13 @@
 {% if pageTree.tree %}
   {% with page=pageTree %}
     {% create pageTree.fileName|append:config.HTML_FILE_EXTENSION from 'htmlpages.tpl' %}
+  {% endwith %}
+{% endif %}
+
+{# ---- examples --- #}
+{% if exampleTree.tree %}
+  {% with page=exampleTree %}
+    {% create exampleTree.fileName|append:config.HTML_FILE_EXTENSION from 'htmlexamples.tpl' %}
   {% endwith %}
 {% endif %}
 
@@ -147,8 +158,9 @@
 {% endif %}
 
 {# --- namespaces --- #}
-{% indexentry nav name=tr.namespaces file='' anchor='' %}
-{% opensubindex nav %}
+{% if namespaceList %}
+  {% indexentry nav name=tr.namespaces file='' anchor='' isReference=False %}
+  {% opensubindex nav %}
 
   {% if namespaceTree.tree %}
     {% with page=namespaceTree %}
@@ -159,16 +171,18 @@
   {# write symbol indices for namespace members #}
   {% if namespaceMembersIndex.all %}
     {% with page=namespaceMembersIndex scope='namespace' template='htmlnsmembers.tpl' %}
-      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' %}
+      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
 
-{% closesubindex nav %}
+  {% closesubindex nav %}
+{% endif %}
 
 {# --- classes --- #}
-{% indexentry nav name=tr.classes file='' anchor='' %}
-{% opensubindex nav %}
+{% if classList %}
+  {% indexentry nav name=tr.classes file='' anchor='' isReference=False %}
+  {% opensubindex nav %}
 
   {# write the annotated class list #}
   {% if classTree.tree %}
@@ -184,12 +198,10 @@
     {% endwith %}
   {% endif %}
 
-  {# TODO: write the class inheritance hierarchy #}
+  {# write the class inheritance hierarchy #}
   {% if classHierarchy.tree %}
     {% with page=classHierarchy %}
       {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'htmlhierarchy.tpl' %}
-    {% endwith %}
-    {% with page=classHierarchy %}
       {% if config.HAVE_DOT and config.GRAPHICAL_HIERARCHY %}
         {% with fileName='inherits' %}
           {% create fileName|append:config.HTML_FILE_EXTENSION from 'htmlgraphhierarchy.tpl' %}
@@ -201,16 +213,18 @@
   {# write symbol indices for class members #}
   {% if classMembersIndex.all %}
     {% with page=classMembersIndex scope='class' template='htmlclmembers.tpl' %}
-      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' %}
+      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
 
-{% closesubindex nav %}
+  {% closesubindex nav %}
+{% endif %}
 
 {# --- files --- #}
-{% indexentry nav name=tr.files file='' anchor='' %}
-{% opensubindex nav %}
+{% if fileList %}
+  {% indexentry nav name=tr.files file='' anchor='' isReference=False %}
+  {% opensubindex nav %}
 
   {# write the directory/file hierarchy #}
   {% if fileTree.tree %}
@@ -222,12 +236,13 @@
   {# write symbol indices for global namespace #}
   {% if globalsIndex.all %}
     {% with page=globalsIndex scope='file' template='htmlflmembers.tpl' %}
-      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' %}
+      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
 
-{% closesubindex nav %}
+  {% closesubindex nav %}
+{% endif %}
 
 {# write directory documentation pages #}
 {% for compound in dirList %}

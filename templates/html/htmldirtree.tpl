@@ -11,7 +11,7 @@
 {# the table with entries #}
 <table class="directory">
 {% recursetree tree.tree %}
-  {% indexentry nav name=node.name file=node.fileName anchor=node.anchor %}
+  {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference %}
   {% spaceless %}
   <tr id="row_{{ node.id }}" class="{% cycle 'even' 'odd' %}"{%if node.level>tree.preferredDepth %} style="display:none;"{% endif %}>
     <td class="entry">
@@ -30,7 +30,13 @@
   {% elif node.dir %}
     <span id="img_{{ node.id }}" class="iconf{%if node.level+1<tree.preferredDepth %}open{% else %}closed{% endif %}" onclick="toggleFolder('{{ node.id }}')">&#160;</span>
   {% elif node.file %}
+    {% if node.file.hasSourceFile %}
+      <a href="{{ node.file.sourceFileName }}{{ config.HTML_FILE_EXTENSION }}">
+    {% endif %}
     <span class="icondoc"></span>
+    {% if node.file.hasSourceFile %}
+      </a>
+    {% endif %}
   {% endif %}
   {% with obj=node text=node.name %}
     {% include 'htmlobjlink.tpl' %}

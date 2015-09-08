@@ -4,7 +4,7 @@
 <div class="textblock">
 {{ tr.fileListDescription }}
 </div>
-{% indexentry nav name=tr.fileList file=page.fileName anchor='' %}
+{% indexentry nav name=tr.fileList file=page.fileName anchor='' isReference=False %}
 {% opensubindex nav %}
 {% with tree=fileTree %}
   {% include 'htmldirtree.tpl' %}

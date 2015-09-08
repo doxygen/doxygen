@@ -93,7 +93,7 @@
     <% if compound.examples %>
       <dl><dt><b><{ tr.examples }></b><dd>
       <% markers obj in compound.examples with tr.exampleList:compound.examples|length %>
-        <% with text=obj.text %>
+        <% with page=compound text=obj.text %>
           <% include 'htmlobjlink.tpl' %>
         <% endwith %>
       <% endmarkers %>
@@ -102,7 +102,7 @@
   <# source definition #>
     <% if compound.sourceDef %>
       <% markers obj in compound.sourceDef with tr.definedAtLineInSourceFile %>
-        <% with text=obj.text %>
+        <% with page=compound text=obj.text %>
           <% include 'htmlobjlink.tpl' %>
         <% endwith %>
       <% endmarkers %>

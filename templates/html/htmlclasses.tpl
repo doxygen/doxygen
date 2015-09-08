@@ -2,7 +2,7 @@
 {% block content %}
 <div class="contents">
 <div class="textblock">
-{% indexentry nav name=tr.classIndex file=page.fileName anchor='' %}
+{% indexentry nav name=tr.classIndex file=page.fileName anchor='' isReference=False %}
 </div>
 {% with index=classIndex.list|alphaIndex:'name' %}
   {# quick index at top #}

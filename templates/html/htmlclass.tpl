@@ -2,9 +2,11 @@
 {% msg %}Generating HTML output for class {{ compound.name }}{% endmsg %}
 
 {% block navpath %}
-{% with navpath=compound.navigationPath %}
-  {% include 'htmlnavpath.tpl' %}
-{% endwith %}
+{% if not config.GENERATE_TREEVIEW %}
+  {% with navpath=compound.navigationPath %}
+    {% include 'htmlnavpath.tpl' %}
+  {% endwith %}
+{% endif %}
 {% endblock %}
 
 {% block title %}
@@ -378,7 +380,7 @@
 {% endif %}
 {# member definitions #}
   {# inline classes #}
-    {% with classList=compound.classes %}
+    {% with classList=compound.innerClasses %}
       {% include 'htmlinlineclasses.tpl' %}
     {% endwith %}
   {# typedefs #}

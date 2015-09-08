@@ -1869,7 +1869,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trProvidedByCategory()
     {
-      return "По группам @1.";
+      return "По группам @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1878,7 +1878,7 @@ class TranslatorRussian : public Translator
      */
     virtual QCString trExtendsClass()
     {
-      return "Расширяет класс @1.";
+      return "Расширяет класс @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

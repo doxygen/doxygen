@@ -2,11 +2,11 @@
 {% block content %}
 <div class="contents">
 <div class="textblock">
-{{ tr.modulesDescription }}
+{{ tr.examplesDescription }}
 </div>
-{% indexentry nav name=tr.modules file=page.fileName anchor='' isReference=False %}
+{% indexentry nav name=tr.examples file=page.fileName anchor='' isReference=False %}
 {% opensubindex nav %}
-{% with tree=moduleTree %}
+{% with tree=exampleTree %}
   {% include 'htmldirtree.tpl' %}
 {% endwith %}
 {% closesubindex nav %}

@@ -1866,7 +1866,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Забезпечено категорією @1.";
+      return "Забезпечено категорією @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1875,7 +1875,7 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExtendsClass()
     {
-      return "Розширює клас @1.";
+      return "Розширює клас @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

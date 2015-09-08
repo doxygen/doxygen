@@ -435,8 +435,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 }
                 delete rootNode;
               }
-              ol.endMemberDeclaration(md->anchor(),inheritId);
               ol.endMemberItem();
+              ol.endMemberDeclaration(md->anchor(),inheritId);
             }
             md->warnIfUndocumented();
             break;
@@ -681,7 +681,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   }
   if (memberGroupList)
   {
-    //printf("MemberList::writeDocumentation()  --  member groups\n");
+    printf("MemberList::writeDocumentation()  --  member groups %d\n",memberGroupList->count());
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)

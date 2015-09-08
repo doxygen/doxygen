@@ -231,6 +231,9 @@ class Definition : public DefinitionIntf
     /*! Returns TRUE if this definition is imported via a tag file. */
     virtual bool isReference() const;
 
+    /*! Convenience method to return a resolved external link */
+    QCString externalReference(const QCString &relPath) const;
+
     /*! Returns the first line of the body of this item (applicable to classes and 
      *  functions).
      */

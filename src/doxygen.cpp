@@ -7847,7 +7847,7 @@ static void generateFileSources()
             QStrList filesInSameTu;
             fd->getAllIncludeFilesRecursively(filesInSameTu);
             fd->startParsing();
-            if (fd->generateSourceFile()) // sources need to be shown in the output
+            if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
               fd->writeSource(*g_outputList,FALSE,filesInSameTu);
@@ -7870,7 +7870,7 @@ static void generateFileSources()
                 FileDef *ifd=findFileDef(Doxygen::inputNameDict,incFile,ambig);
                 if (ifd && !ifd->isReference())
                 {
-                  if (ifd->generateSourceFile()) // sources need to be shown in the output
+                  if (ifd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
                   {
                     msg(" Generating code for file %s...\n",ifd->docName().data());
                     ifd->writeSource(*g_outputList,TRUE,moreFiles);
@@ -7903,7 +7903,7 @@ static void generateFileSources()
           {
             QStrList filesInSameTu;
             fd->startParsing();
-            if (fd->generateSourceFile()) // sources need to be shown in the output
+            if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
             {
               msg("Generating code for file %s...\n",fd->docName().data());
               fd->writeSource(*g_outputList,FALSE,filesInSameTu);
@@ -7933,7 +7933,7 @@ static void generateFileSources()
         {
           QStrList filesInSameTu;
           fd->startParsing();
-          if (fd->generateSourceFile()) // sources need to be shown in the output
+          if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
           {
             msg("Generating code for file %s...\n",fd->docName().data());
             fd->writeSource(*g_outputList,FALSE,filesInSameTu);

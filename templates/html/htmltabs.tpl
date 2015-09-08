@@ -24,7 +24,7 @@
    <li{% if page.highlight=='files' %} class="current"{% endif %}><a href="{{ page.relPath }}files{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.files|nowrap }}</span></a></li>
     {% endif %}
   {# examples tab #}
-    {% if exampleList.items %}
+    {% if exampleTree.tree %}
    <li{% if page.highlight=='examples' %} class="current"{% endif %}><a href="{{ page.relPath }}examples{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.examples|nowrap }}</span></a></li>
     {% endif %}
   {# search box #}

@@ -17,6 +17,6 @@ var NAVTREEINDEX =
 {# write all sub indices #}
 {% for entries in navTree.subindices %}
   {% with idx=forloop.counter0 %}
-    {% create idx|prepend:'navtreeindex'|append:'.js' from htmlnavindex.tpl' %}
+    {% create idx|prepend:'navtreeindex'|append:'.js' from 'htmlnavindex.tpl' %}
   {% endwith %}
 {% endfor %}

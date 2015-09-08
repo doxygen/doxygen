@@ -21,7 +21,6 @@
         <tr class="memdesc:{{ nc.anchor }}"><td class="mdescLeft">&#160;</td><td class="mdescRight">
         {{ nc.brief }}
         {% if nc.hasDetails %}
-          {# TODO: link to group if member is grouped #}
           <a href="{{ page.relPath }}{{ nc.fileName }}{{ config.HTML_FILE_EXTENSION}}{% if nc.anchor %}#{{ nc.anchor }}{% endif %}">{{ tr.more }}</a>
         {% endif %}
         <br/></td></tr>

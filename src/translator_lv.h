@@ -1901,7 +1901,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Nodrošina kategorija @1.";
+      return "Nodrošina kategorija @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1910,7 +1910,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExtendsClass()
     {
-      return "Paplašina klasi @1.";
+      return "Paplašina klasi @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.

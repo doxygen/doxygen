@@ -274,7 +274,7 @@ static void writeMapArea(FTextStream &t,ClassDef *cd,QCString relPath,
     QCString tooltip = cd->briefDescriptionAsTooltip();
     if (!tooltip.isEmpty())
     {
-      t << "title=\"" << tooltip << "\" ";
+      t << "title=\"" << convertToHtml(tooltip) << "\" ";
     }
     t << "alt=\"" << convertToXML(cd->displayName()); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";

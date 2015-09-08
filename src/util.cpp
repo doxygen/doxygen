@@ -5676,6 +5676,37 @@ QCString stripScope(const char *name)
   return name;
 }
 
+/*! Converts a string to a HTML id string */
+QCString convertToId(const char *s)
+{
+  static const char hex[] = "0123456789ABCDEF";
+  static GrowBuf growBuf;
+  growBuf.clear();
+  if (s==0) return "";
+  const char *p=s;
+  char c;
+  bool first=TRUE;
+  while ((c=*p++))
+  {
+    char encChar[4];
+    if ((c>='0' && c<='9') || (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='-' || c==':' || c=='.')
+    { // any permissive character except _
+      if (first && c>='0' && c<='9') growBuf.addChar('a'); // don't start with a digit
+      growBuf.addChar(c);
+    }
+    else
+    {
+      encChar[0]='_';
+      encChar[1]=hex[((unsigned char)c)>>4];
+      encChar[2]=hex[((unsigned char)c)&0xF];
+      encChar[3]=0;
+      growBuf.addStr(encChar);
+    }
+    first=FALSE;
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
@@ -6519,8 +6550,10 @@ void filterLatexString(FTextStream &t,const char *str,
         case '}':  t << "\\}"; break;
         case '_':  t << "\\_"; break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
-        default: 
+                   break;
+        default:
                    t << (char)c;
+                   break;
       }
     }
     else

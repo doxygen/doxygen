@@ -329,7 +329,7 @@ class DirContext : public RefCountedContext, public TemplateStructIntf
 class PageContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static PageContext *alloc(PageDef *pd,bool isMainPage=FALSE) { return new PageContext(pd,isMainPage); }
+    static PageContext *alloc(PageDef *pd,bool isMainPage,bool isExample) { return new PageContext(pd,isMainPage,isExample); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -337,7 +337,7 @@ class PageContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    PageContext(PageDef *,bool isMainPage);
+    PageContext(PageDef *,bool isMainPage,bool isExample);
    ~PageContext();
     class Private;
     Private *p;
@@ -710,7 +710,7 @@ class PageListContext : public RefCountedContext, public TemplateListIntf
 class PageTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static PageTreeContext *alloc() { return new PageTreeContext; }
+    static PageTreeContext *alloc(const PageSDict *pages) { return new PageTreeContext(pages); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -718,7 +718,7 @@ class PageTreeContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    PageTreeContext();
+    PageTreeContext(const PageSDict *pages);
    ~PageTreeContext();
     class Private;
     Private *p;
@@ -788,10 +788,32 @@ class ModuleTreeContext : public RefCountedContext, public TemplateStructIntf
 
 //----------------------------------------------------
 
-class ExampleListContext : public RefCountedContext, public TemplateStructIntf
+class ExampleListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static ExampleListContext *alloc() { return new ExampleListContext(); }
+    static ExampleListContext *alloc() { return new ExampleListContext; }
+
+    // TemplateListIntf methods
+    virtual int  count() const;
+    virtual TemplateVariant at(int index) const;
+    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual int addRef()  { return RefCountedContext::addRef(); }
+    virtual int release() { return RefCountedContext::release(); }
+
+  private:
+    ExampleListContext();
+   ~ExampleListContext();
+    class Private;
+    Private *p;
+};
+
+//----------------------------------------------------
+
+
+class ExampleTreeContext : public RefCountedContext, public TemplateStructIntf
+{
+  public:
+    static ExampleTreeContext *alloc() { return new ExampleTreeContext; }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -799,8 +821,8 @@ class ExampleListContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    ExampleListContext();
-   ~ExampleListContext();
+    ExampleTreeContext();
+   ~ExampleTreeContext();
     class Private;
     Private *p;
 };

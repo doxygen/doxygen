@@ -1898,7 +1898,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trProvidedByCategory()
     {
-      return "Provizita de kategorio @1.";
+      return "Provizita de kategorio @0.";
     }
 
     /*! Used in a method of an Objective-C category that extends a class.
@@ -1907,7 +1907,7 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
      */
     virtual QCString trExtendsClass()
     {
-      return "Etendi klason @1.";
+      return "Etendi klason @0.";
     }
 
     /*! Used as the header of a list of class methods in Objective-C.
